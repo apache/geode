@@ -392,8 +392,8 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
     return attributesFactory;
   }
 
-  protected class MyRegionFactory<K, V> extends RegionFactory {
-    public MyRegionFactory(RegionFactory<K, V> regionFactory) {
+  protected static class MyRegionFactory<K, V> extends RegionFactory<K, V> {
+    MyRegionFactory(RegionFactory<K, V> regionFactory) {
       super(regionFactory);
     }
   }

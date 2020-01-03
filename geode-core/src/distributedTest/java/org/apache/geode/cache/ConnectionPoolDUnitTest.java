@@ -34,7 +34,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
@@ -113,30 +112,20 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
   @Before
   public void setup() {
     vm0 = VM.getVM(0);
-    vm1 = VM.getVM(1);
+    vm1 = VM.getVM(-1);
     vm2 = VM.getVM(2);
     vm3 = VM.getVM(3);
   }
 
   @After
   public void tearDown() {
-    getSystem();
-    Invoke.invokeInEveryVM("getSystem", new SerializableRunnable() {
-      @Override
-      public void run() {
-        getSystem();
-      }
-    });
-  }
-
-  @Override
-  public final void postTearDownCacheTestCase() {
     Invoke.invokeInEveryVM(() -> {
-      Map<String, Pool> pools = PoolManager.getAll();
-      assertThat(pools).describedAs("found pools remaining after teardown: " + pools).isEmpty();
+      if (basicGetCache() != null) {
+        basicGetCache().close();
+      }
+      PoolManager.getAll().forEach((key, value) -> value.destroy());
     });
   }
-
 
   private static PoolImpl getPool(Region r) {
     PoolImpl result = null;
@@ -333,9 +322,6 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
       Region<Object, Object> region = getRootRegion().getSubregion(name);
       region.localDestroyRegion();
     });
-
-    vm0.invoke("Stop CacheServer", () -> stopBridgeServer(getCache()));
-
   }
 
   /**
@@ -364,6 +350,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
       createRegion(name, factory);
       startBridgeServer(0);
     });
+
     final int port = vm0.invoke(ConnectionPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName();
 
@@ -399,8 +386,6 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
       TestCacheWriter writer = getTestWriter(region);
       assertThat(writer.wasInvoked()).isTrue();
     });
-
-    vm0.invoke("Stop CacheServer", () -> stopBridgeServer(getCache()));
   }
 
   /**
@@ -558,8 +543,6 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
     });
 
     ThreadUtils.join(inv2, 30 * 1000);
-    server.invoke("stop CacheServer", () -> stopBridgeServer(getCache()));
-
   }
 
   private void validateDS() {
@@ -663,8 +646,6 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
       assertThat(p.isDestroyed()).isFalse();
       assertThat(p.getAttachCount()).isEqualTo(0);
     });
-
-    vm0.invoke("Stop CacheServer", () -> stopBridgeServer(getCache()));
   }
 
   /**
@@ -783,9 +764,6 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
       Region<Object, Object> region = getRootRegion().getSubregion(name);
       region.localDestroyRegion();
     });
-
-    // Stop the last cache server
-    vm1.invoke(() -> stopBridgeServer(getCache()));
   }
 
 
@@ -933,9 +911,6 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
           region.localDestroyRegion();
           PoolManager.find(poolName).destroy();
         });
-
-        vm1.invoke("Stop CacheServer", () -> stopBridgeServer(getCache()));
-        vm0.invoke("Stop CacheServer", () -> stopBridgeServer(getCache()));
       }
     }
   }
@@ -1002,8 +977,6 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
 
     vm1.invoke("Close Pool", close);
     vm2.invoke("Close Pool", close);
-
-    vm0.invoke("Stop CacheServer", () -> stopBridgeServer(getCache()));
   }
 
   /**
@@ -1102,7 +1075,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
     vm1.invoke(closePool);
     vm2.invoke(closePool);
 
-    vm0.invoke("Stop CacheServer", () -> stopBridgeServer(getCache()));
+
   }
 
   /**
@@ -1196,8 +1169,36 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
 
     vm1.invoke("Close Pool", closePool);
     vm2.invoke("Close Pool", closePool);
+  }
 
-    vm0.invoke("Stop CacheServer", () -> stopBridgeServer(getCache()));
+
+  private <K, V> List<CacheEvent<K, V>> assertForOpCount(String regionName, Operation operation,
+      int count) {
+    Region<K, V> region = getRootRegion().getSubregion(regionName);
+    CertifiableTestCacheListener<K, V> ctl =
+        (CertifiableTestCacheListener<K, V>) region.getAttributes()
+            .getCacheListeners()[0];
+    List<CacheEvent<K, V>> list = new ArrayList<>(ctl.getEventHistory());
+
+    await().until(() -> {
+      list.addAll(ctl.getEventHistory());
+      return list.size() >= count;
+    });
+    int countOfOps = 0;
+    for (CacheEvent<K, V> cacheEvent : list) {
+
+      if (cacheEvent.getOperation() == operation) {
+        countOfOps++;
+      } else {
+        logger.info("assertForOpCount: Got an unexpected message " + cacheEvent);
+      }
+    }
+
+    assertThat(countOfOps).isEqualTo(count);
+    assertThat(countOfOps)
+        .describedAs("assertForOpCount: There were excess operations in the list " + list)
+        .isEqualTo(list.size());
+    return list;
   }
 
   /**
@@ -1213,11 +1214,12 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
       RegionFactory<Object, Object> factory = getBridgeServerRegionAttributes(null, null);
       createRegion(name, factory);
       startBridgeServer(0);
+
     });
     final int port = vm0.invoke(ConnectionPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName();
 
-    SerializableRunnable create = new CacheSerializableRunnable() {
+    vm1.invoke("Create region", new CacheSerializableRunnable() {
       @Override
       public void run2() throws CacheException {
         getLonerSystem();
@@ -1230,16 +1232,27 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
         Region rgn = createRegion(name, factory);
         rgn.registerInterestRegex(".*", false, false);
       }
-    };
-
-    vm1.invoke("Create region", create);
+    });
     vm1.invoke("Populate region", () -> {
       Region<Object, Object> region = getRootRegion().getSubregion(name);
       for (int i = 0; i < 10; i++) {
         region.put(i, "old" + i);
       }
     });
-    vm2.invoke("Create region", create);
+    vm2.invoke("Create region", new CacheSerializableRunnable() {
+      @Override
+      public void run2() throws CacheException {
+        getLonerSystem();
+        getCache();
+        RegionFactory<Object, Object> factory = getCache().createRegionFactory();
+        factory.setScope(Scope.LOCAL);
+        factory.setConcurrencyChecksEnabled(false);
+        configureConnectionPool(factory, host0, new int[] {port}, true, -1, -1, null);
+        factory.addCacheListener(new CertifiableTestCacheListener<>());
+        Region rgn = createRegion(name, factory);
+        rgn.registerInterestRegex(".*", false, false);
+      }
+    });
 
     vm1.invoke("Turn on history", () -> {
       await().until(() -> getRootRegion().getSubregion(name) != null);
@@ -1262,6 +1275,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
       CertifiableTestCacheListener<Object, Object> ctl =
           (CertifiableTestCacheListener<Object, Object>) region.getAttributes()
               .getCacheListeners()[0];
+
       for (int i = 0; i < 10; i++) {
         Object key = i;
         ctl.waitForInvalidated(key);
@@ -1269,18 +1283,16 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
         assertThat(entry).isNotNull();
         assertThat(entry.getValue()).isNull();
       }
-      {
-        List<CacheEvent<Object, Object>> list = ctl.getEventHistory();
-        assertThat(10).isEqualTo(list.size());
-        for (int i = 0; i < 10; i++) {
-          Object key = i;
-          EntryEvent ee = (EntryEvent) list.get(i);
-          assertThat(ee.getKey()).isEqualTo(key);
-          assertThat("old" + i).isEqualTo(ee.getOldValue());
-          assertThat(Operation.INVALIDATE).isEqualTo(ee.getOperation());
-          assertThat("callbackArg" + i).isEqualTo(ee.getCallbackArgument());
-          assertThat(ee.isOriginRemote()).isTrue();
-        }
+
+      List<CacheEvent<Object, Object>> list = assertForOpCount(name, Operation.INVALIDATE, 10);
+
+      for (int i = 0; i < 10; i++) {
+        Object key = i;
+        EntryEvent ee = (EntryEvent) list.get(i);
+        assertThat(ee.getKey()).isEqualTo(key);
+        assertThat("old" + i).isEqualTo(ee.getOldValue());
+        assertThat("callbackArg" + i).isEqualTo(ee.getCallbackArgument());
+        assertThat(ee.isOriginRemote()).isTrue();
       }
     });
 
@@ -1288,8 +1300,9 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
       Region<Object, Object> region = getRootRegion().getSubregion(name);
       for (int i = 0; i < 10; i++) {
         Object key = i;
-        assertThat("new" + i).isEqualTo(region.getEntry(key).getValue());
+        assertThat(region.getEntry(key).getValue()).isEqualTo("new" + i);
         region.destroy(key, "destroyCB" + i);
+        assertThat(region.getEntry(key)).isNull();
       }
     });
 
@@ -1298,75 +1311,70 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
       CertifiableTestCacheListener<Object, Object> ctl =
           (CertifiableTestCacheListener<Object, Object>) region.getAttributes()
               .getCacheListeners()[0];
+
       for (int i = 0; i < 10; i++) {
         Object key = i;
         ctl.waitForDestroyed(key);
         Region.Entry entry = region.getEntry(key);
         assertThat(entry).isNull();
       }
-      {
-        List<CacheEvent<Object, Object>> list = ctl.getEventHistory();
-        assertThat(10).isEqualTo(list.size());
-        for (int i = 0; i < 10; i++) {
-          Object key = i;
-          EntryEvent ee = (EntryEvent) list.get(i);
-          assertThat(ee.getKey()).isEqualTo(key);
-          assertThat(ee.getOldValue()).isNull();
-          assertThat(Operation.DESTROY).isEqualTo(ee.getOperation());
-          assertThat("destroyCB" + i).isEqualTo(ee.getCallbackArgument());
-          assertThat(ee.isOriginRemote()).isTrue();
-        }
+
+      List<CacheEvent<Object, Object>> list = assertForOpCount(name, Operation.DESTROY, 10);
+
+      for (int i = 0; i < 10; i++) {
+        Object key = i;
+        EntryEvent ee = (EntryEvent) list.get(i);
+        assertThat(ee.getKey()).isEqualTo(key);
+        assertThat(ee.getOldValue()).isNull();
+        assertThat("destroyCB" + i).isEqualTo(ee.getCallbackArgument());
+        assertThat(ee.isOriginRemote()).isTrue();
       }
     });
+
     vm2.invoke("recreate", () -> {
       Region<Object, Object> region = getRootRegion().getSubregion(name);
       for (int i = 0; i < 10; i++) {
         Object key = i;
-        region.create(key, "create" + i);
+        region.create(key, "recreate" + i, "recreateCB" + i);
       }
     });
 
-    vm1.invoke("Verify creates", () -> {
+    vm1.invoke("Verify Local Load Creates", () -> {
       Region<Object, Object> region = getRootRegion().getSubregion(name);
-      CertifiableTestCacheListener<Object, Object> ctl =
-          (CertifiableTestCacheListener<Object, Object>) region.getAttributes()
-              .getCacheListeners()[0];
-      List<CacheEvent<Object, Object>> list = ctl.getEventHistory();
-      logger
-          .info("history (should be empty): " + list);
-      assertThat(list).isEmpty();
-      // now see if we can get it from the server
+
+      await().untilAsserted(() -> {
+        for (int i = 0; i < 10; i++) {
+          Object key = i;
+          assertThat(region.containsKeyOnServer(key)).isTrue();
+        }
+      });
+
       for (int i = 0; i < 10; i++) {
         Object key = i;
-        assertThat("create" + i).isEqualTo(region.get(key, "loadCB" + i));
+        region.get(key, "recreateCB");
       }
-      list = ctl.getEventHistory();
-      assertThat(10).isEqualTo(list.size());
+
+      List<CacheEvent<Object, Object>> list =
+          assertForOpCount(name, Operation.LOCAL_LOAD_CREATE, 10);
+
       for (int i = 0; i < 10; i++) {
         Object key = i;
         EntryEvent ee = (EntryEvent) list.get(i);
-        logger.info("processing " + ee);
         assertThat(ee.getKey()).isEqualTo(key);
         assertThat(ee.getOldValue()).isNull();
-        assertThat(ee.getNewValue()).isEqualTo("create" + i);
-        assertThat(Operation.LOCAL_LOAD_CREATE).isEqualTo(ee.getOperation());
-        assertThat("loadCB" + i).isEqualTo(ee.getCallbackArgument());
+        assertThat(ee.getNewValue()).isEqualTo("recreate" + i);
         assertThat(ee.isOriginRemote()).isFalse();
       }
     });
 
-    SerializableRunnable close = new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        region.localDestroyRegion();
-      }
-    };
-
-    vm1.invoke("Close Pool", close);
-    vm2.invoke("Close Pool", close);
-
-    vm0.invoke("Stop CacheServer", () -> stopBridgeServer(getCache()));
+    vm1.invoke("Close Pool", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      region.localDestroyRegion();
+    });
+    vm2.invoke("Close Pool", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      region.localDestroyRegion();
+    });
   }
 
   /**
@@ -1550,7 +1558,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
       region.localDestroyRegion();
     }));
 
-    vm0.invoke("Stop CacheServer", () -> stopBridgeServer(getCache()));
+
   }
 
   /**
@@ -1685,7 +1693,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
       region.localDestroyRegion();
     }));
 
-    vm0.invoke("Stop CacheServer", () -> stopBridgeServer(getCache()));
+
   }
 
   /**
@@ -1778,7 +1786,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
     });
 
     // Stop cache server
-    vm0.invoke("Stop CacheServer", () -> stopBridgeServer(getCache()));
+
   }
 
   private <K, V> RegionFactory<K, V> getBridgeServerRegionAttributes(CacheLoader<K, V> cl,
@@ -1910,7 +1918,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
       region1.localDestroyRegion();
     });
 
-    vm0.invoke("Stop CacheServer", () -> stopBridgeServer(getCache()));
+
   }
 
   /**
@@ -2071,7 +2079,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
     }));
 
     // Stop cache server
-    vm0.invoke("Stop CacheServer", () -> stopBridgeServer(getCache()));
+
   }
 
   /**
@@ -2107,7 +2115,6 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
       configureConnectionPool(factory, host0, new int[] {port}, true, -1, -1, null);
       createRegion(name, factory);
     }));
-
 
     // Get values for key 1 and key 6 so that there are entries in the clients.
     // Register interest in a list of keys.
@@ -2162,7 +2169,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
     });
 
     // Stop cache server
-    vm0.invoke("Stop CacheServer", () -> stopBridgeServer(getCache()));
+
   }
 
   static class ConnectionPoolDUnitTestSerializable2 implements java.io.Serializable {
@@ -2267,9 +2274,6 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
       assertThat(region1.getEntry("key-string-1")).isNull();
       assertThat(region1.get("key-string-1")).isNull();
     });
-
-    server1.invoke("Stop CacheServer", () -> stopBridgeServer(getCache()));
-
   }
 
   @Test
@@ -2344,8 +2348,6 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
             .isEqualTo(ccnStats.getClientUnRegisterRequests());
       }
     });
-
-    server1.invoke("Stop CacheServer", () -> stopBridgeServer(getCache()));
   }
 
   /**
@@ -2410,7 +2412,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
       });
     }
 
-    vm0.invoke("Stop CacheServer", () -> stopBridgeServer(getCache()));
+
   }
 
   /**
@@ -2481,8 +2483,6 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
       Region<Object, Object> region = getRootRegion().getSubregion(name);
       region.localDestroyRegion();
     }));
-
-    vm0.invoke("Stop CacheServer", () -> stopBridgeServer(getCache()));
   }
 
   /**
@@ -2603,8 +2603,6 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
       Region<Object, Object> region = getRootRegion().getSubregion(name);
       region.localDestroyRegion();
     }));
-
-    vm0.invoke("Stop CacheServer", () -> stopBridgeServer(getCache()));
   }
 
   /**
@@ -2676,12 +2674,8 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
       assertThat(getRootRegion().getSubregion(name)).isNull();
     });
 
-    vm2.invoke("Verify destroy propagate", () -> {
-      await().until(() -> getRootRegion().getSubregion(name) == null);
-    });
-
-    vm0.invoke("Stop CacheServer", () -> stopBridgeServer(getCache()));
-
+    vm2.invoke("Verify destroy propagate",
+        () -> await().until(() -> getRootRegion().getSubregion(name) == null));
   }
 
   /**
@@ -2801,11 +2795,6 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
         region.localDestroyRegion();
       });
     });
-
-
-
-    // Stop cache server
-    vm0.invoke("Stop CacheServer", () -> stopBridgeServer(getCache()));
   }
 
   /**
@@ -2901,8 +2890,6 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
       Region<Object, Object> region = getRootRegion().getSubregion(name);
       region.localDestroyRegion();
     }));
-    // Stop cache server
-    vm0.invoke("Stop CacheServer", () -> stopBridgeServer(getCache()));
   }
 
   /**
@@ -3165,7 +3152,6 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
     });
   }
 
-
   /**
    * Test for bug 36279
    */
@@ -3223,8 +3209,6 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
       Region<Object, Object> region = getRootRegion().getSubregion(name);
       region.localDestroyRegion();
     });
-
-    vm0.invoke("Stop CacheServer", () -> stopBridgeServer(getCache()));
   }
 
   /**
@@ -3338,8 +3322,6 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
       Region<Object, Object> region = getRootRegion().getSubregion(name);
       region.localDestroyRegion();
     }));
-    // Stop cache server
-    vm0.invoke("Stop CacheServer", () -> stopBridgeServer(getCache()));
   }
 
   /**
@@ -3396,8 +3378,6 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
       Region<Object, Object> region = getRootRegion().getSubregion(name);
       region.localDestroyRegion();
     }));
-
-    vm0.invoke("Stop CacheServer", () -> stopBridgeServer(getCache()));
   }
 
   /**
@@ -3434,11 +3414,9 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
 
       assertThat(thrown).hasCauseInstanceOf(NotSerializableException.class);
 
-
       Throwable thrown2 =
           catchThrowable(() -> region.put(1, new ConnectionPoolTestNonSerializable()));
       assertThat(thrown2).hasCauseInstanceOf(NotSerializableException.class);
-
 
       Throwable thrown3 =
           catchThrowable(() -> region.get(new ConnectionPoolTestNonSerializable()));
@@ -3446,8 +3424,6 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
 
       region.localDestroyRegion();
     });
-
-    vm0.invoke("Stop CacheServer", () -> stopBridgeServer(getCache()));
   }
 
   static class ConnectionPoolTestNonSerializable {
