@@ -24,7 +24,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_PARAMETER
 import static org.apache.geode.internal.security.SecurableCommunicationChannel.CLUSTER;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 import java.io.File;
@@ -154,7 +153,7 @@ public class SSLSocketParameterExtensionIntegrationTest {
     SNIHostName serverName = new SNIHostName("11");
     serverNames.add(serverName);
 
-    assertEquals(sslSocket.getSSLParameters().getServerNames(), serverNames);
+    assertThat(sslSocket.getSSLParameters().getServerNames()).isEqualTo(serverNames);
 
     // transmit expected string from Client to Server
     ObjectOutputStream output = new ObjectOutputStream(this.clientSocket.getOutputStream());
@@ -188,7 +187,8 @@ public class SSLSocketParameterExtensionIntegrationTest {
         Socket socket = serverSocket.accept();
         SocketCreatorFactory.getSocketCreatorForComponent(CLUSTER).handshakeIfSocketIsSSL(socket,
             timeoutMillis);
-        assertEquals(0, socket.getSoTimeout());
+        assertThat(socket.getSoTimeout()).isEqualTo(0);
+
         ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
         messageFromClient.set((String) ois.readObject());
       } catch (Throwable throwable) {

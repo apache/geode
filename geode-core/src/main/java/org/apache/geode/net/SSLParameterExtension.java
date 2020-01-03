@@ -33,8 +33,12 @@ public interface SSLParameterExtension {
    */
   default void init(DistributionConfig config) {}
 
-  SSLParameters modifySSLClientSocketParameters(SSLParameters parameters);
+  default SSLParameters modifySSLClientSocketParameters(SSLParameters parameters) {
+    return parameters;
+  }
 
-  SSLParameters modifySSLServerSocketParameters(SSLParameters parameters);
+  default SSLParameters modifySSLServerSocketParameters(SSLParameters parameters) {
+    return parameters;
+  }
 
 }
