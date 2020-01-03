@@ -1977,7 +1977,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
       GMSMembership.this.address =
           services.getMessenger().getMemberID();
 
-      lifecycleListener.setLocalAddress(address);
+      lifecycleListener.joinCompleted(address);
 
       GMSMembership.this.hasJoined = true;
 

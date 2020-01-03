@@ -15,25 +15,51 @@
 package org.apache.geode.distributed.internal.membership.api;
 
 
+/**
+ * You may supply a LifecycleListener when building a Membership. Your listener
+ * will be invoked at various points in the lifecycle of the Membership.
+ *
+ * @param <ID>
+ */
 public interface LifecycleListener<ID extends MemberIdentifier> {
 
+  /**
+   * Invoked when the Membership is starting. All membership services will have been
+   * initialized and had their "start" methods invoked but we will not yet have joined the cluster.
+   *
+   * @param memberID the initial membership identifier, which will not yet have a view ID
+   */
   void start(
       final ID memberID);
 
+  /**
+   * Invoked when the Membership is starting. All membership services will have been
+   * initialized and had their "started" methods invoked but we will not yet have joined
+   * the cluster.
+   */
+  void started();
+
+  /**
+   * Invoked when the Membership has successfully joined the cluster. At this point the
+   * membership address is stable.
+   */
+  void joinCompleted(ID address);
+
+  /**
+   * Invoked when Membership is shutting down
+   *
+   * @param exception if not null, this is the reason for Membership shutdown
+   */
   boolean disconnect(Exception exception);
 
   /**
-   * TODO - (GEODE-7464) it seems like this could really just happen during
-   * {@link #start(ID)}
-   * The member ID passed to this method is exactly the same id as the one passed to start. However,
-   * this method has side affects in DirectChannel which may or may not need to happen at the point
-   * in time this method is called?
+   * Invoked when a member of the cluster has left and resources associated with that member
+   * should be released.
    */
-  void setLocalAddress(ID address);
-
   void destroyMember(ID member, String reason);
 
-  void started();
-
+  /**
+   * Invoked if Membership has been forced out of the cluster.
+   */
   void forcedDisconnect();
 }

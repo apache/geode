@@ -16,6 +16,12 @@ package org.apache.geode.distributed.internal.membership.api;
 
 import java.util.Properties;
 
+/**
+ * You may provide an Authenticator when building a Membership. Your Authenticator
+ * will be asked for credentials when joining the cluster. If this node is acting
+ * as membership coordinator the Authenticator will be asked to authenticate new members
+ * that are attempting to join the cluster.
+ */
 public interface Authenticator<ID extends MemberIdentifier> {
 
   /**
@@ -29,10 +35,10 @@ public interface Authenticator<ID extends MemberIdentifier> {
   String authenticate(ID member, Properties credentials);
 
   /**
-   * Get credential object for the given GemFire distributed member.
+   * Get the credentials for this member
    *
-   * @param member the target distributed member
+   * @param localIdentifier the address of the member hosting this Authenticator
    * @return the credentials
    */
-  Properties getCredentials(ID member);
+  Properties getCredentials(ID localIdentifier);
 }

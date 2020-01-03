@@ -29,7 +29,7 @@ public class LifecycleListenerNoOp<ID extends MemberIdentifier> implements Lifec
   }
 
   @Override
-  public void setLocalAddress(final ID address) {
+  public void joinCompleted(final ID address) {
 
   }
 
