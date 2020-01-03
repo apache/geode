@@ -1166,7 +1166,6 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
       internalCache = null;
 
       logger.info("Locator restart: initializing TcpServer peer location services");
-      restartHandlers.forEach(handler -> handler.restarting(null, null, null));
       membershipLocator.restarting();
 
       if (productUseLog.isClosed()) {

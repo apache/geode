@@ -304,7 +304,7 @@ public class ClusterDistributionManager implements DistributionManager {
 
       int vmKind;
 
-      if (Boolean.getBoolean(InternalLocator.FORCE_LOCATOR_DM_TYPE)) {
+      if (Boolean.getBoolean(InternalLocator.FORCE_LOCATOR_DM_TYPE) || Locator.hasLocator()) {
         // if this DM is starting for a locator, set it to be a locator DM
         vmKind = LOCATOR_DM_TYPE;
 
