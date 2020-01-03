@@ -58,6 +58,11 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 public class LocatorStarterRule extends MemberStarterRule<LocatorStarterRule> implements Locator {
   private transient InternalLocator locator;
 
+  public LocatorStarterRule() {
+    // in test environment, enable management request/response logging
+    withSystemProperty("geode.management.request.logging", "true");
+  }
+
   @Override
   public void before() {
     super.before();
