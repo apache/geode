@@ -33,8 +33,6 @@ import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLe
  * <p>
  * Once you've created a Membership instance use the start() method to boot it up and
  * join the cluster.
- *
- * @param <ID>
  */
 public interface Membership<ID extends MemberIdentifier> {
   /**

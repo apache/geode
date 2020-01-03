@@ -22,6 +22,12 @@ import java.util.List;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.api.Message;
 
+/**
+ * AbstractGMSMessage is the superclass of most Membership messages. These messages
+ * may be sent via the Messenger service or via a TcpClient.
+ *
+ * @param <ID>
+ */
 public abstract class AbstractGMSMessage<ID extends MemberIdentifier> implements Message<ID> {
   private List<ID> recipients;
   private ID sender;

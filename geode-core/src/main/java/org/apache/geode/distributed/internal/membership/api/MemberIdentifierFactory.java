@@ -21,7 +21,7 @@ import java.util.Comparator;
  * A MemberIdentifierFactory is provided when building a membership service. It must provide
  * implementations of the MemberIdentifier interface for use as identifiers in the membership
  * service. For Geode this implementation is InternalDistributedMember.<br>
- * See {@link MembershipBuilder} - where you inject your factory into GMS
+ * See {@link MembershipBuilder} - where you inject your factory into a Membership.
  */
 public interface MemberIdentifierFactory<ID extends MemberIdentifier> {
   /**

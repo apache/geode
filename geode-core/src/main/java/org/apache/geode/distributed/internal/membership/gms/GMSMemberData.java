@@ -29,7 +29,9 @@ import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
 
 /**
- * GMSMember is the membership identifier class for Group Membership Services.
+ * GMSMember contains data that is required to identify a member of the cluster.
+ * Unfortunately it is also used in identifying client caches in a client/server
+ * configuration and so contains weird things like a durable-id and a durable-timeout.
  */
 public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
   /** The type for regular members */

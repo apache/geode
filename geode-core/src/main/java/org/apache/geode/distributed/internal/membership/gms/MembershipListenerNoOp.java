@@ -21,6 +21,10 @@ import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.api.MembershipListener;
 import org.apache.geode.distributed.internal.membership.api.MembershipView;
 
+/**
+ * MembershipListenerNoOp is the default implementation of MembershipListener. Construct and
+ * install your own if you want to receive membership events.
+ */
 public class MembershipListenerNoOp<ID extends MemberIdentifier> implements MembershipListener<ID> {
   @Override
   public void viewInstalled(final MembershipView<ID> view) {

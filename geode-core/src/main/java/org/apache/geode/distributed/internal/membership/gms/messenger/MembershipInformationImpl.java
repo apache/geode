@@ -22,7 +22,7 @@ import org.jgroups.Message;
 import org.apache.geode.distributed.internal.membership.api.MembershipInformation;
 
 /**
- * Class MembershipInformation is used to pass membership data from a GMS that was
+ * Class MembershipInformationImpl is used to pass membership data from a GMS that was
  * kicked out of the cluster to a new one during auto-reconnect operations.
  */
 public class MembershipInformationImpl implements MembershipInformation {

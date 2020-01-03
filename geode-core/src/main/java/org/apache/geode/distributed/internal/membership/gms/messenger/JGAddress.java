@@ -34,7 +34,7 @@ import org.apache.geode.util.internal.GeodeGlossary;
 /**
  * This is a copy of JGroups 3.6.4 IpAddress (Apache 2.0 License) that is repurposed to be a Logical
  * address so that we can quickly pull a physical address out of the logical address set in a
- * message by JGroupsMessenger.
+ * message sent by JGroupsMessenger.
  */
 
 public class JGAddress extends UUID {

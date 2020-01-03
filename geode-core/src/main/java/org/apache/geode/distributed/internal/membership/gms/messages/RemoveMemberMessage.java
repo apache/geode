@@ -25,6 +25,12 @@ import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
 
+/**
+ * A member of the cluster can request that another member be removed. This message is
+ * sent to the cluster's membership coordinator. This message is also sent to non-members
+ * that attempt to communicate with the cluster. They should respond by shutting down.
+ * No response message is required.
+ */
 public class RemoveMemberMessage<ID extends MemberIdentifier> extends AbstractGMSMessage<ID>
     implements HasMemberID<ID> {
   private ID memberID;

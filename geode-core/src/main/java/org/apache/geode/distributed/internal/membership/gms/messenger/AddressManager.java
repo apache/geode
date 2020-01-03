@@ -34,8 +34,6 @@ import org.apache.geode.distributed.internal.membership.gms.Services;
  * "logical address" and requests physical addresses from the Discovery protocol that is normally in
  * a JGroups stack. We don't have one of these, so we need to maintain a mapping between logical and
  * physical addresses.
- *
- *
  */
 public class AddressManager extends Protocol {
 

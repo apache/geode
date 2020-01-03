@@ -17,6 +17,10 @@ package org.apache.geode.distributed.internal.membership.gms;
 import org.apache.geode.distributed.internal.membership.api.LifecycleListener;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 
+/**
+ * LifecycleListenerNoOp is the default implementation of LifecycleListener. Create and
+ * install your own if you want to receive Membership lifecycle notifications.
+ */
 public class LifecycleListenerNoOp<ID extends MemberIdentifier> implements LifecycleListener<ID> {
   @Override
   public void start(final ID memberID) {

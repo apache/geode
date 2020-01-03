@@ -32,6 +32,17 @@ import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
 
+/**
+ * FindCoordinatorResponse is sent as a response to a FindCoordinatorRequest. A Locator
+ * sends this to a member that is attempting to join the cluster. The "registrants" field
+ * will contain addresses of other nodes attempting to join at the same time. The "view"
+ * field will contain a membership view, if one is known by the Locator. The coordinator
+ * field will contain the Locator's best guess of who is the cluster's membership coordinator.
+ * <p>
+ * Good luck in your attempt to find the coordinator and join the cluster!
+ *
+ * @param <ID>
+ */
 public class FindCoordinatorResponse<ID extends MemberIdentifier> extends AbstractGMSMessage<ID>
     implements DataSerializableFixedID {
 

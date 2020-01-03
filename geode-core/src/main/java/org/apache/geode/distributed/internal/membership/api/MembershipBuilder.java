@@ -21,8 +21,9 @@ import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
 
 /**
- * Builder for creating a new {@link Membership}.
- *
+ * A builder for creating a new {@link Membership}. Use this builder to configure a
+ * new Membership and to install various sorts of listeners Listeners receive lifecycle,
+ * cluster and peer-to-peer message notification.
  */
 public interface MembershipBuilder<ID extends MemberIdentifier> {
   MembershipBuilder<ID> setAuthenticator(Authenticator<ID> authenticator);

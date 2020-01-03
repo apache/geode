@@ -20,6 +20,12 @@ import org.jgroups.Message;
 
 import org.apache.geode.internal.serialization.Version;
 
+/**
+ * GMSPingPonger is used to detect whether a member exists by sending UDP Ping and Pong
+ * messages. A member can send a Ping message to another member and receive a Pong message
+ * in response. GMSPingPonger is largely used to detect whether a quorum of the cluster
+ * is reachable.
+ */
 public class GMSPingPonger {
   private byte[] pingInBytes = new byte[] {'p', 'i', 'n', 'g'};
   private byte[] pongInBytes = new byte[] {'p', 'o', 'n', 'g'};

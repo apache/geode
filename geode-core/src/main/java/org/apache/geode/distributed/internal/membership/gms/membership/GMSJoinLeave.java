@@ -73,8 +73,13 @@ import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
- * GMSJoinLeave handles membership communication with other processes in the distributed system. It
- * replaces the JGroups channel membership services that Geode formerly used for this purpose.
+ * GMSJoinLeave is responsible for finding the membership coordinator and joining the
+ * cluster. It is also responsible for informing other members of the cluster when
+ * Membership is shutting down.
+ * <p>
+ * One member of the cluster must also take on the role of coordinator. This is typically
+ * the oldest member of the cluster. The coordinator is responsible for sending out new
+ * membership "views" that announce cluster membership.
  */
 public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> {
 

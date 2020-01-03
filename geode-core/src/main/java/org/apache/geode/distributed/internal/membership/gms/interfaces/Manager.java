@@ -24,7 +24,7 @@ import org.apache.geode.distributed.internal.membership.gms.Services;
 
 /**
  * Manager presents the GMS services to the outside world and handles startup/shutdown race
- * conditions. It is also the default MessageHandler
+ * conditions. It is also the default MessageHandler for the Messenger service.
  */
 public interface Manager<ID extends MemberIdentifier>
     extends Service<ID>, MessageHandler<Message<ID>> {
