@@ -47,6 +47,7 @@ import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.CacheListenerAdapter;
@@ -85,9 +86,7 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
   private static VM clientVM2 = null;
 
   private static final Logger logger = LogService.getLogger();
-  private static int numOfCreates = 0;
   private static int numOfUpdates = 0;
-  private static int numOfInvalidates = 0;
   private static Object[] deletedValues = null;
 
   private int PORT1;
@@ -110,9 +109,7 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
     PORT2 = serverVM1.invoke(
         () -> HARQueueNewImplDUnitTest.createServerCache(HARegionQueue.HA_EVICTION_POLICY_ENTRY));
 
-    numOfCreates = 0;
     numOfUpdates = 0;
-    numOfInvalidates = 0;
   }
 
   /**
@@ -156,11 +153,10 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
 
   public static Integer createServerCache(String ePolicy, Integer cap) throws Exception {
     new HARQueueNewImplDUnitTest().createCache(new Properties());
-    AttributesFactory<Object, Object> factory = new AttributesFactory<>();
+    RegionFactory<Object, Object> factory = cache.createRegionFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(DataPolicy.REPLICATE);
-    RegionAttributes<Object, Object> attrs = factory.create();
-    cache.createRegion(regionName, attrs);
+    factory.create(regionName);
 
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     CacheServer server1 = cache.addCacheServer();
@@ -213,18 +209,6 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
     if (addListener) {
       factory.addCacheListener(new CacheListenerAdapter<Object, Object>() {
         @Override
-        public void afterInvalidate(EntryEvent event) {
-          logger.debug("Invalidate Event: <" + event.getKey() + ", " + event.getNewValue() + ">");
-          numOfInvalidates++;
-        }
-
-        @Override
-        public void afterCreate(EntryEvent event) {
-          logger.debug("Create Event: <" + event.getKey() + ", " + event.getNewValue() + ">");
-          numOfCreates++;
-        }
-
-        @Override
         public void afterUpdate(EntryEvent event) {
           logger.debug("Update Event: <" + event.getKey() + ", " + event.getNewValue() + ">");
           numOfUpdates++;
@@ -243,9 +227,9 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
 
   private static void registerInterestListAll() {
     try {
-      Region<Object, Object> r = cache.getRegion("/" + regionName);
-      assertThat(r).isNotNull();
-      r.registerInterest("ALL_KEYS");
+      Region<Object, Object> region = cache.getRegion("/" + regionName);
+      assertThat(region).isNotNull();
+      region.registerInterest("ALL_KEYS");
     } catch (GemFireException ex) {
       fail("failed in registerInterestListAll", ex);
     }
@@ -253,11 +237,11 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
 
   private static void registerInterestList() {
     try {
-      Region<Object, Object> r = cache.getRegion("/" + regionName);
-      assertThat(r).isNotNull();
-      r.registerInterest("k1");
-      r.registerInterest("k3");
-      r.registerInterest("k5");
+      Region<Object, Object> region = cache.getRegion("/" + regionName);
+      assertThat(region).isNotNull();
+      region.registerInterest("k1");
+      region.registerInterest("k3");
+      region.registerInterest("k5");
     } catch (GemFireException ex) {
       fail("failed while registering keys", ex);
     }
@@ -266,14 +250,14 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
   private static void putEntries() {
     try {
 
-      Region<Object, Object> r = cache.getRegion("/" + regionName);
-      assertThat(r).isNotNull();
+      Region<Object, Object> region = cache.getRegion("/" + regionName);
+      assertThat(region).isNotNull();
 
-      r.put("k1", "pv1");
-      r.put("k2", "pv2");
-      r.put("k3", "pv3");
-      r.put("k4", "pv4");
-      r.put("k5", "pv5");
+      region.put("k1", "pv1");
+      region.put("k2", "pv2");
+      region.put("k3", "pv3");
+      region.put("k4", "pv4");
+      region.put("k5", "pv5");
     } catch (GemFireException ex) {
       fail("failed in putEntries()", ex);
     }
@@ -281,14 +265,14 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
 
   public static void createEntries() {
     try {
-      Region<Object, Object> r = cache.getRegion("/" + regionName);
-      assertThat(r).isNotNull();
+      Region<Object, Object> region = cache.getRegion("/" + regionName);
+      assertThat(region).isNotNull();
 
-      r.create("k1", "v1");
-      r.create("k2", "v2");
-      r.create("k3", "v3");
-      r.create("k4", "v4");
-      r.create("k5", "v5");
+      region.create("k1", "v1");
+      region.create("k2", "v2");
+      region.create("k3", "v3");
+      region.create("k4", "v4");
+      region.create("k5", "v5");
     } catch (GemFireException ex) {
       fail("failed in createEntries()", ex);
     }
@@ -296,10 +280,10 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
 
   public static void createEntries(Long num) {
     try {
-      Region<Object, Object> r = cache.getRegion("/" + regionName);
-      assertThat(r).isNotNull();
+      Region<Object, Object> region = cache.getRegion("/" + regionName);
+      assertThat(region).isNotNull();
       for (long i = 0; i < num; i++) {
-        r.create("k" + i, "v" + i);
+        region.create("k" + i, "v" + i);
       }
     } catch (GemFireException ex) {
       fail("failed in createEntries(Long)", ex);
@@ -309,11 +293,11 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
   private static void putHeavyEntries(Integer num) {
     try {
       byte[] val;
-      Region<Object, Object> r = cache.getRegion("/" + regionName);
-      assertThat(r).isNotNull();
+      Region<Object, Object> region = cache.getRegion("/" + regionName);
+      assertThat(region).isNotNull();
       for (long i = 0; i < num; i++) {
         val = new byte[1024 * 1024 * 5]; // 5 MB
-        r.put("k0", val);
+        region.put("k0", val);
       }
     } catch (GemFireException ex) {
       fail("failed in putHeavyEntries(Long)", ex);
@@ -349,10 +333,8 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
 
     serverVM1.invoke(HARQueueNewImplDUnitTest::startServer);
 
-    serverVM0.invoke(() -> HARQueueNewImplDUnitTest.verifyRegionSize(5, 5
-    ));
-    serverVM1.invoke(() -> HARQueueNewImplDUnitTest.verifyRegionSize(5, 5
-    ));
+    serverVM0.invoke(() -> HARQueueNewImplDUnitTest.verifyRegionSize(5, 5));
+    serverVM1.invoke(() -> HARQueueNewImplDUnitTest.verifyRegionSize(5, 5));
   }
 
   /**
@@ -401,13 +383,14 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
   private void ValidateRegionSizes(int port) {
     await().untilAsserted(() -> {
       Region region = cache.getRegion("/" + regionName);
-      Region<Object, Object> msgsRegion = cache.getRegion(CacheServerImpl.generateNameForClientMsgsRegion(port));
+      Region<Object, Object> msgsRegion =
+          cache.getRegion(CacheServerImpl.generateNameForClientMsgsRegion(port));
       int clientMsgRegionSize = msgsRegion.size();
       int regionSize = region.size();
       assertThat(((5 == clientMsgRegionSize) && (5 == regionSize))).describedAs(
           "Region sizes were not as expected after 60 seconds elapsed. Actual region size = "
-              + regionSize + "Actual client msg region size = " + clientMsgRegionSize
-          ).isTrue();
+              + regionSize + "Actual client msg region size = " + clientMsgRegionSize)
+          .isTrue();
     });
   }
 
@@ -435,15 +418,13 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
 
     serverVM0.invoke((SerializableRunnableIF) HARQueueNewImplDUnitTest::createEntries);
 
-    serverVM0.invoke(() -> HARQueueNewImplDUnitTest.verifyRegionSize(5, 5
-    ));
+    serverVM0.invoke(() -> HARQueueNewImplDUnitTest.verifyRegionSize(5, 5));
 
     serverVM0.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
     serverVM0.invoke(() -> HARQueueNewImplDUnitTest
-        .waitTillMessagesAreDispatched(PORT1, 5000L));
+        .waitTillMessagesAreDispatched(PORT1));
 
-    serverVM0.invoke(() -> HARQueueNewImplDUnitTest.verifyRegionSize(5, 0
-    ));
+    serverVM0.invoke(() -> HARQueueNewImplDUnitTest.verifyRegionSize(5, 0));
   }
 
   /**
@@ -473,13 +454,11 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
 
     serverVM1.invoke(HARQueueNewImplDUnitTest::startServer);
 
-    serverVM1.invoke(() -> HARQueueNewImplDUnitTest.verifyRegionSize(5, 5
-    ));
+    serverVM1.invoke(() -> HARQueueNewImplDUnitTest.verifyRegionSize(5, 5));
 
     serverVM0.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
 
-    serverVM1.invoke(() -> HARQueueNewImplDUnitTest.verifyRegionSize(5, 0
-    ));
+    serverVM1.invoke(() -> HARQueueNewImplDUnitTest.verifyRegionSize(5, 0));
   }
 
   /**
@@ -562,18 +541,18 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
     serverVM1.invoke(HARQueueNewImplDUnitTest::stopServer);
 
     serverVM0.invoke((SerializableRunnableIF) HARQueueNewImplDUnitTest::createEntries);
-    serverVM0.invoke(() -> HARQueueNewImplDUnitTest.makeValuesOfSomeKeysNullInClientMsgsRegion(PORT1,new String[] {"k1", "k3"}));
+    serverVM0.invoke(() -> HARQueueNewImplDUnitTest
+        .makeValuesOfSomeKeysNullInClientMsgsRegion(PORT1, new String[] {"k1", "k3"}));
     // 3. start the second server.
     serverVM1.invoke(HARQueueNewImplDUnitTest::startServer);
-    serverVM0.invoke(() -> HARQueueNewImplDUnitTest.verifyRegionSize(5, 3
-    ));
+    serverVM0.invoke(() -> HARQueueNewImplDUnitTest.verifyRegionSize(5, 3));
 
     serverVM1.invoke(() -> HARQueueNewImplDUnitTest.verifyNullValuesInCMR(
-        PORT2,new String[] {"k1", "k3"}));
-    serverVM1.invoke(() -> HARQueueNewImplDUnitTest.verifyRegionSize(5, 3
-    ));
+        PORT2, new String[] {"k1", "k3"}));
+    serverVM1.invoke(() -> HARQueueNewImplDUnitTest.verifyRegionSize(5, 3));
 
-    serverVM0.invoke(() -> HARQueueNewImplDUnitTest.populateValuesOfSomeKeysInClientMsgsRegion(PORT1,new String[] {"k1", "k3"}));
+    serverVM0.invoke(() -> HARQueueNewImplDUnitTest
+        .populateValuesOfSomeKeysInClientMsgsRegion(PORT1, new String[] {"k1", "k3"}));
 
     serverVM0.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
     serverVM1.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
@@ -605,8 +584,7 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
 
     serverVM0.invoke((SerializableRunnableIF) HARQueueNewImplDUnitTest::createEntries);
 
-    serverVM0.invoke(() -> HARQueueNewImplDUnitTest.verifyRegionSize(5, 5
-    ));
+    serverVM0.invoke(() -> HARQueueNewImplDUnitTest.verifyRegionSize(5, 5));
     serverVM0.invoke(
         () -> HARQueueNewImplDUnitTest.verifyRegionSize(5, 5));
   }
@@ -633,16 +611,13 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
     clientVM1.invoke((SerializableRunnableIF) HARQueueNewImplDUnitTest::createEntries);
     serverVM0.invoke(HARQueueNewImplDUnitTest::putEntries);
 
-    serverVM0.invoke(() -> HARQueueNewImplDUnitTest
-        .waitTillMessagesAreDispatched(PORT1, 5000L));
-    serverVM0.invoke(
-        () -> HARQueueNewImplDUnitTest.waitTillMessagesAreDispatched(port3, 5000L));
+    serverVM0.invoke(() -> HARQueueNewImplDUnitTest.waitTillMessagesAreDispatched(PORT1));
+    serverVM0.invoke(() -> HARQueueNewImplDUnitTest.waitTillMessagesAreDispatched(port3));
 
     // expect updates
-    verifyUpdatesReceived(5, Boolean.TRUE, 5000L);
+    verifyUpdatesReceived();
     // expect invalidates
-    clientVM1.invoke(() -> HARQueueNewImplDUnitTest.verifyUpdatesReceived(5,
-        Boolean.TRUE, 5000L));
+    clientVM1.invoke(HARQueueNewImplDUnitTest::verifyUpdatesReceived);
   }
 
   /**
@@ -869,7 +844,7 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
   }
 
   private static Long getUsedMemoryAndVerifyRegionSize(Integer haContainerSize,
-                                                       Integer port) {
+      Integer port) {
     Long retVal = null;
     try {
       retVal = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
@@ -955,7 +930,7 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
   }
 
   private static void verifyNullValuesInCMR(final Integer port,
-                                            String[] keys) {
+      String[] keys) {
     final Region<Object, Object> msgsRegion =
         cache.getRegion(generateNameForClientMsgsRegion(port));
 
@@ -1046,65 +1021,68 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
 
   private static void verifyRegionSize(final Integer regionSize, final Integer msgsRegionSize) {
     GeodeAwaitility.await().until(() -> {
-        try {
-          // Get the clientMessagesRegion and check the size.
+      try {
+        // Get the clientMessagesRegion and check the size.
         Region<Object, Object> region = cache.getRegion("/" + regionName);
-          int sz = region.size();
-          if (regionSize != sz) {
-            return false;
-          }
-
-          Iterator iterator = cache.getCacheServers().iterator();
-          if (iterator.hasNext()) {
-            CacheServerImpl server = (CacheServerImpl) iterator.next();
-            Map msgsRegion = server.getAcceptor().getCacheClientNotifier().getHaContainer();
-
-            sz = msgsRegion.size();
-          return msgsRegionSize == sz;
-          }
-          return true;
-        } catch (GemFireException e) {
+        int sz = region.size();
+        if (regionSize != sz) {
           return false;
         }
-    });
+
+        Iterator iterator = cache.getCacheServers().iterator();
+        if (iterator.hasNext()) {
+          CacheServerImpl server = (CacheServerImpl) iterator.next();
+          Map msgsRegion = server.getAcceptor().getCacheClientNotifier().getHaContainer();
+
+          sz = msgsRegion.size();
+          return msgsRegionSize == sz;
+        }
+        return true;
+      } catch (GemFireException e) {
+        return false;
       }
+    });
+  }
 
   private static void verifyRegionSize(final Integer msgsRegionSize) {
 
     GeodeAwaitility.await().until(() -> {
-        try {
-          // Get the clientMessagesRegion and check the size.
+      try {
+        // Get the clientMessagesRegion and check the size.
         Region<Object, Object> region = cache.getRegion("/" + regionName);
-          int sz = region.size();
+        int sz = region.size();
         if (sz != 1) {
-            return false;
-          }
-          Iterator iterator = cache.getCacheServers().iterator();
-          if (!iterator.hasNext()) {
-            return true;
-          }
-          CacheServerImpl server = (CacheServerImpl) iterator.next();
-          sz = server.getAcceptor().getCacheClientNotifier().getHaContainer().size();
-        return sz == msgsRegionSize;
-      } catch (Exception e) {
           return false;
         }
+        Iterator iterator = cache.getCacheServers().iterator();
+        if (!iterator.hasNext()) {
+          return true;
+        }
+        CacheServerImpl server = (CacheServerImpl) iterator.next();
+        sz = server.getAcceptor().getCacheClientNotifier().getHaContainer().size();
+        return sz == msgsRegionSize;
+      } catch (Exception e) {
+        return false;
+      }
     });
   }
 
   private static void verifyHaContainerType(Boolean isRegion, Integer port) {
     try {
-      Map haMap = cache.getRegion(CacheServerImpl.generateNameForClientMsgsRegion(port));
+      Map<Object, Object> haMap =
+          cache.getRegion(CacheServerImpl.generateNameForClientMsgsRegion(port));
       if (isRegion) {
         assertThat(haMap).isNotNull();
         assertThat(haMap instanceof LocalRegion).isTrue();
-        haMap = ((CacheServerImpl) cache.getCacheServers().toArray()[0]).getAcceptor()
+        haMap = (Map<Object, Object>) ((CacheServerImpl) cache.getCacheServers().toArray()[0])
+            .getAcceptor()
             .getCacheClientNotifier().getHaContainer();
         assertThat(haMap).isNotNull();
         assertThat(haMap instanceof HAContainerRegion).isTrue();
       } else {
         assertThat(haMap).isNull();
-        haMap = ((CacheServerImpl) cache.getCacheServers().toArray()[0]).getAcceptor()
+        haMap = (Map<Object, Object>) ((CacheServerImpl) cache.getCacheServers().toArray()[0])
+            .getAcceptor()
             .getCacheClientNotifier().getHaContainer();
         assertThat(haMap).isNotNull();
         assertThat(haMap instanceof HAContainerMap).isTrue();
@@ -1118,7 +1096,7 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
   private static void verifyRootRegionsDoesNotReturnCMR(Integer port) {
     try {
       String cmrName = CacheServerImpl.generateNameForClientMsgsRegion(port);
-      Map haMap = cache.getRegion(cmrName);
+      Map<Object, Object> haMap = cache.getRegion(cmrName);
       assertThat(haMap).isNotNull();
       String rName;
 
@@ -1135,20 +1113,15 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
-  private static void verifyUpdatesReceived(final Integer num, Boolean isUpdate, Long waitLimit) {
+  private static void verifyUpdatesReceived() {
     try {
-      if (isUpdate) {
-        GeodeAwaitility.await().until(() -> num == numOfUpdates);
-      } else {
-
-        GeodeAwaitility.await().until(() -> num == numOfInvalidates);
-      }
+      GeodeAwaitility.await().until(() -> 5 == numOfUpdates);
     } catch (GemFireException e) {
       fail("failed in verifyUpdatesReceived()" + e);
     }
   }
 
-  private static void waitTillMessagesAreDispatched(Integer port, Long waitLimit) {
+  private static void waitTillMessagesAreDispatched(Integer port) {
     try {
       Map haContainer;
       haContainer = cache.getRegion(
@@ -1165,7 +1138,7 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
       }
       final Map m = haContainer;
       GeodeAwaitility.await().until(() -> m.size() == 0);
-    } catch (Exception e) {
+    } catch (GemFireException e) {
       fail("failed in waitTillMessagesAreDispatched()" + e);
     }
   }
@@ -1173,7 +1146,6 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
   public static void closeCache() {
     if (cache != null && !cache.isClosed()) {
       cache.close();
-      cache.getDistributedSystem().disconnect();
     }
   }
 
