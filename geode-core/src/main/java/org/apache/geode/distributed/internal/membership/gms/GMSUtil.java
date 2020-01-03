@@ -135,18 +135,20 @@ public class GMSUtil {
 
       final InetSocketAddress isa = new InetSocketAddress(host, port);
 
-      final InetAddress locatorAddress = isa.getAddress();
+      if (checkLoopback) {
+        final InetAddress locatorAddress = isa.getAddress();
 
-      if (locatorAddress == null) {
-        throw new MembershipConfigurationException("This process is attempting to use a locator" +
-            " at an unknown address or FQDN: " + host);
-      }
+        if (locatorAddress == null) {
+          throw new MembershipConfigurationException("This process is attempting to use a locator" +
+              " at an unknown address or FQDN: " + host);
+        }
 
-      if (checkLoopback && isLoopback && !locatorAddress.isLoopbackAddress()) {
-        throw new MembershipConfigurationException(
-            "This process is attempting to join with a loopback address (" + bindAddress
-                + ") using a locator that does not have a local address (" + isa
-                + ").  On Unix this usually means that /etc/hosts is misconfigured.");
+        if (isLoopback && !locatorAddress.isLoopbackAddress()) {
+          throw new MembershipConfigurationException(
+              "This process is attempting to join with a loopback address (" + bindAddress
+                  + ") using a locator that does not have a local address (" + isa
+                  + ").  On Unix this usually means that /etc/hosts is misconfigured.");
+        }
       }
 
       HostAddress la = new HostAddress(isa, host);
