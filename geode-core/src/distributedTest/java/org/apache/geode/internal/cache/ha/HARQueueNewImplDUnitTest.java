@@ -34,7 +34,10 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -65,6 +68,7 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 
 /**
@@ -86,17 +90,22 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
   private static VM clientVM2 = null;
 
   private static final Logger logger = LogService.getLogger();
+  private static int numOfCreates = 0;
   private static int numOfUpdates = 0;
+  private static int numOfInvalidates = 0;
   private static Object[] deletedValues = null;
 
   private int PORT1;
   private int PORT2;
 
+  @Rule
+  public DistributedRule distributedRule = new DistributedRule();
+
   /**
    * Sets up the test.
    */
-  @Override
-  public final void postSetUp() throws Exception {
+  @Before
+  public void setUp() {
     map.clear();
 
     serverVM0 = VM.getVM(0);
@@ -109,14 +118,21 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
     PORT2 = serverVM1.invoke(
         () -> HARQueueNewImplDUnitTest.createServerCache(HARegionQueue.HA_EVICTION_POLICY_ENTRY));
 
+    numOfCreates = 0;
     numOfUpdates = 0;
+    numOfInvalidates = 0;
+    clientVM1.invoke(() -> {
+      numOfCreates = 0;
+      numOfUpdates = 0;
+      numOfInvalidates = 0;
+    });
   }
 
   /**
    * Tears down the test.
    */
-  @Override
-  public final void preTearDown() throws Exception {
+  @After
+  public void tearDown() {
     map.clear();
 
     closeCache();
@@ -130,6 +146,8 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
     // then close the servers
     serverVM0.invoke(HARQueueNewImplDUnitTest::closeCache);
     serverVM1.invoke(HARQueueNewImplDUnitTest::closeCache);
+
+
     disconnectAllFromDS();
   }
 
@@ -208,6 +226,18 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
 
     if (addListener) {
       factory.addCacheListener(new CacheListenerAdapter<Object, Object>() {
+        @Override
+        public void afterInvalidate(EntryEvent event) {
+          logger.debug("Invalidate Event: <" + event.getKey() + ", " + event.getNewValue() + ">");
+          numOfInvalidates++;
+        }
+
+        @Override
+        public void afterCreate(EntryEvent event) {
+          logger.debug("Create Event: <" + event.getKey() + ", " + event.getNewValue() + ">");
+          numOfCreates++;
+        }
+
         @Override
         public void afterUpdate(EntryEvent event) {
           logger.debug("Update Event: <" + event.getKey() + ", " + event.getNewValue() + ">");
@@ -615,9 +645,9 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
     serverVM0.invoke(() -> HARQueueNewImplDUnitTest.waitTillMessagesAreDispatched(port3));
 
     // expect updates
-    verifyUpdatesReceived();
+    verifyUpdatesReceived(true);
     // expect invalidates
-    clientVM1.invoke(HARQueueNewImplDUnitTest::verifyUpdatesReceived);
+    clientVM1.invoke(() -> verifyUpdatesReceived(false));
   }
 
   /**
@@ -1113,9 +1143,21 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
-  private static void verifyUpdatesReceived() {
+  private static void verifyUpdatesReceived(Boolean isUpdates) {
     try {
-      GeodeAwaitility.await().until(() -> 5 == numOfUpdates);
+      if (true) {
+
+        GeodeAwaitility.await().until(() -> {
+          logger.info("MLH number of updates = " + numOfUpdates);
+          return 5 == numOfUpdates;
+        });
+      } else {
+        GeodeAwaitility.await().until(() -> {
+          logger.info("MLH number of invalidates = " + numOfInvalidates);
+          return 5 == numOfInvalidates;
+        });
+
+      }
     } catch (GemFireException e) {
       fail("failed in verifyUpdatesReceived()" + e);
     }
@@ -1146,6 +1188,7 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
   public static void closeCache() {
     if (cache != null && !cache.isClosed()) {
       cache.close();
+      cache.getDistributedSystem().getDistributedMember();
     }
   }
 
