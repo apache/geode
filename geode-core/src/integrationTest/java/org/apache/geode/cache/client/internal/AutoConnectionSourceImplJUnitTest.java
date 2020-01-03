@@ -67,7 +67,6 @@ import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.PoolStatHelper;
 import org.apache.geode.distributed.internal.ProtocolCheckerImpl;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.tcpserver.LocatorAddress;
@@ -79,7 +78,6 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.PoolStats;
 import org.apache.geode.internal.cache.client.protocol.ClientProtocolServiceLoader;
 import org.apache.geode.internal.cache.tier.InternalClientMembership;
-import org.apache.geode.internal.cache.tier.sockets.TcpServerFactory;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.management.membership.ClientMembershipEvent;
@@ -339,7 +337,7 @@ public class AutoConnectionSourceImplJUnitTest {
         new TcpServer(secondPort, InetAddress.getLocalHost(), handler,
             "tcp server", new ProtocolCheckerImpl(null, new ClientProtocolServiceLoader()),
             DistributionStats::getStatTime,
-            TcpServerFactory.createExecutorServiceSupplier(new FakeHelper()),
+            Executors::newCachedThreadPool,
             asTcpSocketCreator(
                 SocketCreatorFactory
                     .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
@@ -427,7 +425,7 @@ public class AutoConnectionSourceImplJUnitTest {
     server = new TcpServer(port, InetAddress.getLocalHost(), handler,
         "Tcp Server", new ProtocolCheckerImpl(null, new ClientProtocolServiceLoader()),
         DistributionStats::getStatTime,
-        TcpServerFactory.createExecutorServiceSupplier(new FakeHelper()),
+        Executors::newCachedThreadPool,
         asTcpSocketCreator(
             SocketCreatorFactory
                 .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
@@ -464,16 +462,6 @@ public class AutoConnectionSourceImplJUnitTest {
 
     @Override
     public void endResponse(Object request, long startTime) {}
-  }
-
-  public static class FakeHelper implements PoolStatHelper {
-
-    @Override
-    public void endJob() {}
-
-    @Override
-    public void startJob() {}
-
   }
 
   public class FakePool implements InternalPool {

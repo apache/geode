@@ -31,6 +31,7 @@ import java.net.ConnectException;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Properties;
+import java.util.concurrent.Executors;
 
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
@@ -43,10 +44,8 @@ import org.mockito.Mockito;
 
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.DistributionStats;
-import org.apache.geode.distributed.internal.PoolStatHelper;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.cache.tier.sockets.TcpServerFactory;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.net.SocketCreatorFailHandshake;
@@ -93,9 +92,8 @@ public class TCPServerSSLJUnitTest {
         Mockito.mock(TcpHandler.class),
         "server thread",
         (socket, input, firstByte) -> false, DistributionStats::getStatTime,
-        TcpServerFactory.createExecutorServiceSupplier(Mockito.mock(PoolStatHelper.class)),
-        asTcpSocketCreator(
-            socketCreator),
+        Executors::newCachedThreadPool,
+        asTcpSocketCreator(socketCreator),
         InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
         InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer(),
         GeodeGlossary.GEMFIRE_PREFIX + "TcpServer.READ_TIMEOUT",

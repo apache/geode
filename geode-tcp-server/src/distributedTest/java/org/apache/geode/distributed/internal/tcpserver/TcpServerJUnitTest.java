@@ -37,6 +37,7 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -52,12 +53,13 @@ import org.apache.geode.DataSerializable;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.InfoRequestHandler;
+import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.PoolStatHelper;
 import org.apache.geode.distributed.internal.ProtocolCheckerImpl;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.client.protocol.ClientProtocolServiceLoader;
-import org.apache.geode.internal.cache.tier.sockets.TcpServerFactory;
+import org.apache.geode.internal.logging.CoreLoggingExecutors;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.test.junit.categories.MembershipTest;
@@ -90,7 +92,10 @@ public class TcpServerJUnitTest {
 
     server = new TcpServer(port, localhost, handler,
         "server thread", new ProtocolCheckerImpl(null, new ClientProtocolServiceLoader()),
-        DistributionStats::getStatTime, TcpServerFactory.createExecutorServiceSupplier(stats),
+        DistributionStats::getStatTime,
+        () -> CoreLoggingExecutors.newThreadPoolWithSynchronousFeed("locator request thread ",
+            InternalLocator.MAX_POOL_SIZE, stats, InternalLocator.POOL_IDLE_TIMEOUT,
+            new ThreadPoolExecutor.CallerRunsPolicy()),
         asTcpSocketCreator(
             SocketCreatorFactory
                 .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),

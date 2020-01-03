@@ -39,8 +39,10 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -81,10 +83,10 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheBuilder;
 import org.apache.geode.internal.cache.client.protocol.ClientProtocolServiceLoader;
-import org.apache.geode.internal.cache.tier.sockets.TcpServerFactory;
 import org.apache.geode.internal.cache.wan.WANServiceProvider;
 import org.apache.geode.internal.config.JAXBService;
 import org.apache.geode.internal.inet.LocalHostUtil;
+import org.apache.geode.internal.logging.CoreLoggingExecutors;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogWriterFactory;
 import org.apache.geode.internal.net.SocketCreatorFactory;
@@ -130,6 +132,10 @@ import org.apache.geode.security.AuthTokenEnabledComponents;
  * @since GemFire 4.0
  */
 public class InternalLocator extends Locator implements ConnectListener, LogConfigSupplier {
+  public static final int MAX_POOL_SIZE =
+      Integer.getInteger(GEMFIRE_PREFIX + "TcpServer.MAX_POOL_SIZE", 100);
+  public static final int POOL_IDLE_TIMEOUT = 60 * 1000;
+
   private static final Logger logger = LogService.getLogger();
 
   /**
@@ -528,12 +534,17 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
       MembershipConfig config = new ServiceConfig(
           new RemoteTransportConfig(distributionConfig, MemberIdentifier.LOCATOR_DM_TYPE),
           distributionConfig);
+      Supplier<ExecutorService> executor = () -> CoreLoggingExecutors
+          .newThreadPoolWithSynchronousFeed("locator request thread ",
+              MAX_POOL_SIZE, new DelayedPoolStatHelper(),
+              POOL_IDLE_TIMEOUT,
+              new ThreadPoolExecutor.CallerRunsPolicy());
       membershipLocator =
           MembershipLocatorBuilder.<InternalDistributedMember>newLocatorBuilder().setPort(port)
               .setBindAddress(bindAddress)
               .setProtocolChecker(new ProtocolCheckerImpl(this, new ClientProtocolServiceLoader()))
               .setExecutorServiceSupplier(
-                  TcpServerFactory.createExecutorServiceSupplier(new DelayedPoolStatHelper()))
+                  executor)
               .setSocketCreator(asTcpSocketCreator(
                   SocketCreatorFactory
                       .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)))
