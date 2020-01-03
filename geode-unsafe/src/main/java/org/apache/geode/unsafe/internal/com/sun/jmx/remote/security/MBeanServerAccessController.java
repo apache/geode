@@ -13,26 +13,8 @@
  * the License.
  */
 
-package org.apache.geode.management.internal;
+package org.apache.geode.unsafe.internal.com.sun.jmx.remote.security;
 
-
-import org.apache.geode.unsafe.internal.com.sun.jmx.remote.security.MBeanServerAccessController;
-
-public class BlockMBeanCreationController extends MBeanServerAccessController {
-
-  @Override
-  protected void checkCreate(String className) {
-    throw new SecurityException(
-        "Access Denied. Remote MBean creation is not allowed unless a security manager is enabled");
-  }
-
-  @Override
-  protected void checkRead() {
-
-  }
-
-  @Override
-  protected void checkWrite() {
-
-  }
+public abstract class MBeanServerAccessController
+    extends com.sun.jmx.remote.security.MBeanServerAccessController {
 }
