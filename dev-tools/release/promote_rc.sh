@@ -165,6 +165,7 @@ echo "Updating Geode Dockerfile"
 echo "============================================================"
 set -x
 cd ${GEODE}/docker
+git pull -r
 set +x
 sed -e "s/^ENV GEODE_GPG.*/ENV GEODE_GPG ${SIGNING_KEY}/" \
     -e "s/^ENV GEODE_VERSION.*/ENV GEODE_VERSION ${VERSION}/" \
@@ -185,6 +186,7 @@ echo "Updating Native Dockerfile"
 echo "============================================================"
 set -x
 cd ${GEODE_NATIVE}/docker
+git pull -r
 set +x
 sed -e "/wget.*closer.*apache-geode-/s#http.*filename=geode#https://www.apache.org/dist/geode#" \
     -e "/wget.*closer.*apache-rat-/s#http.*filename=creadur#https://archive.apache.org/dist/creadur#" \
