@@ -14,1049 +14,1301 @@
  */
 package org.apache.geode.internal.cache.execute;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.stream.Collectors.toList;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTHENTICATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
+import static org.apache.geode.internal.cache.execute.DistributedRegionFunctionExecutionDUnitTest.UncheckedUtils.cast;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
+import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
+import static org.apache.geode.test.dunit.VM.getController;
+import static org.apache.geode.test.dunit.VM.getVM;
+import static org.apache.geode.test.dunit.VM.toArray;
+import static org.apache.geode.util.internal.GeodeGlossary.GEMFIRE_PREFIX;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.IntStream;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.AttributesFactory;
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.Pool;
+import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.PoolManager;
+import org.apache.geode.cache.client.internal.InternalClientCache;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
-import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionInvocationTargetException;
 import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.cache.execute.RegionFunctionContext;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.server.CacheServer;
-import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.LonerDistributionManager;
-import org.apache.geode.internal.AvailablePort;
-import org.apache.geode.internal.cache.functions.DistributedRegionFunction;
-import org.apache.geode.internal.cache.functions.DistributedRegionFunctionFunctionInvocationException;
-import org.apache.geode.internal.cache.functions.TestFunction;
-import org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.security.templates.DummyAuthenticator;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
-import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.dunit.LogWriterUtils;
-import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.dunit.rules.CacheRule;
+import org.apache.geode.test.dunit.rules.ClientCacheRule;
+import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.FunctionServiceTest;
 
-@Category({FunctionServiceTest.class})
-public class DistributedRegionFunctionExecutionDUnitTest extends JUnit4DistributedTestCase {
+@Category(FunctionServiceTest.class)
+@SuppressWarnings("serial")
+public class DistributedRegionFunctionExecutionDUnitTest implements Serializable {
 
-  VM replicate1 = null;
+  private static final AtomicReference<Region<?, ?>> REGION = new AtomicReference<>();
+  private static final AtomicReference<CountDownLatch> LATCH = new AtomicReference<>();
 
-  VM replicate2 = null;
+  private final Set<String> filter = new HashSet<>();
 
-  VM replicate3 = null;
+  private String regionName;
+  private String poolName;
 
-  VM normal = null;
+  private VM empty;
+  private VM normal;
+  private VM replicate1;
+  private VM replicate2;
+  private VM replicate3;
 
-  public static final String REGION_NAME = "DistributedRegionFunctionExecutionDUnitTest";
+  @Rule
+  public CacheRule cacheRule = new CacheRule();
 
-  public static Cache cache = null;
+  @Rule
+  public ClientCacheRule clientCacheRule = new ClientCacheRule();
 
-  public static Region region = null;
+  @Rule
+  public DistributedRestoreSystemProperties restoreSystemProperties =
+      new DistributedRestoreSystemProperties();
 
-  public static final Function function = new DistributedRegionFunction();
+  @Before
+  public void setUp() throws Exception {
+    empty = getController();
+    replicate1 = getVM(0);
+    replicate2 = getVM(1);
+    replicate3 = getVM(2);
+    normal = getVM(3);
 
-  public static final Function functionWithNoResultThrowsException = new MyFunctionException();
+    for (VM vm : toArray(empty, normal, replicate1, replicate2, replicate3)) {
+      // zero is no-op unless test replaces the reference
+      vm.invoke(() -> LATCH.set(new CountDownLatch(0)));
+    }
 
-  public static final Function longRunningFunction =
-      new TestFunction(true, TestFunction.TEST_FUNCTION_RUNNING_FOR_LONG_TIME);
+    regionName = getClass().getSimpleName() + "_region";
+    poolName = getClass().getSimpleName() + "_pool";
 
-
-  @Override
-  public final void postSetUp() throws Exception {
-    Host host = Host.getHost(0);
-    replicate1 = host.getVM(0);
-    replicate2 = host.getVM(1);
-    replicate3 = host.getVM(2);
-    normal = host.getVM(3);
+    for (int i = 100; i < 120; i++) {
+      filter.add("execKey-" + i);
+    }
   }
 
-  @Override
-  public final void preTearDown() throws Exception {
-    // this test creates a cache that is incompatible with CacheTestCase,
-    // so we need to close it and null out the cache variable
-    disconnectAllFromDS();
+  @After
+  public void tearDown() {
+    for (VM vm : toArray(empty, normal, replicate1, replicate2, replicate3)) {
+      vm.invoke(() -> LATCH.get().countDown());
+    }
   }
-
-  @Override
-  public Properties getDistributedSystemProperties() {
-    Properties result = super.getDistributedSystemProperties();
-    result.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
-        "org.apache.geode.internal.cache.functions.**;org.apache.geode.internal.cache.execute.**;org.apache.geode.test.dunit.**");
-    return result;
-  }
-
-
 
   @Test
   public void testDistributedRegionFunctionExecutionOnDataPolicyEmpty() {
-    createCacheInVm(); // Empty
-    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate3.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    for (VM vm : toArray(empty, normal, replicate1, replicate2, replicate3)) {
+      vm.invoke(() -> createCache(getDistributedSystemProperties()));
+    }
 
-    createPeer(DataPolicy.EMPTY);
-    populateRegion();
-    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.NORMAL));
-    replicate1
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
-    replicate2
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
-    replicate3
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
-    executeFunction();
+    empty.invoke(() -> createRegion(DataPolicy.EMPTY));
+    normal.invoke(() -> createRegion(DataPolicy.NORMAL));
+    for (VM vm : toArray(replicate1, replicate2, replicate3)) {
+      vm.invoke(() -> createRegion(DataPolicy.REPLICATE));
+    }
+
+    empty.invoke(() -> {
+      populateRegion(200);
+
+      executeDistributedRegionFunction();
+    });
   }
 
   @Test
   public void testDistributedRegionFunctionExecutionOnDataPolicyEmpty_SendException() {
-    createCacheInVm(); // Empty
-    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate3.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    for (VM vm : toArray(empty, normal, replicate1, replicate2, replicate3)) {
+      vm.invoke(() -> createCache(getDistributedSystemProperties()));
+    }
 
-    createPeer(DataPolicy.EMPTY);
-    populateRegion();
-    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.NORMAL));
-    replicate1
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
-    replicate2
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
-    replicate3
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
-    executeFunction_SendException();
+    empty.invoke(() -> createRegion(DataPolicy.EMPTY));
+    normal.invoke(() -> createRegion(DataPolicy.NORMAL));
+    for (VM vm : toArray(replicate1, replicate2, replicate3)) {
+      vm.invoke(() -> createRegion(DataPolicy.REPLICATE));
+    }
+
+    empty.invoke(() -> {
+      populateRegion(200);
+
+      executeResultWithExceptionFunction();
+    });
   }
 
   @Test
   public void testDistributedRegionFunctionExecutionOnDataPolicyEmpty_NoLastResult() {
-    createCacheInVm(); // Empty
-    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate3.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    for (VM vm : toArray(empty, normal, replicate1, replicate2, replicate3)) {
+      vm.invoke(() -> createCache(getDistributedSystemProperties()));
+    }
 
-    createPeer(DataPolicy.EMPTY);
-    populateRegion();
-    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.NORMAL));
-    replicate1
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
-    replicate2
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
-    replicate3
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
-    executeFunction_NoLastResult();
+    empty.invoke(() -> createRegion(DataPolicy.EMPTY));
+    normal.invoke(() -> createRegion(DataPolicy.NORMAL));
+    for (VM vm : toArray(replicate1, replicate2, replicate3)) {
+      vm.invoke(() -> createRegion(DataPolicy.REPLICATE));
+    }
+
+    empty.invoke(() -> {
+      populateRegion(200);
+
+      executeNoLastResultFunction();
+    });
   }
-
-
 
   @Test
   public void testDistributedRegionFunctionExecutionOnDataPolicyNormal() {
-    createCacheInVm(); // Empty
-    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate3.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-
-    createPeer(DataPolicy.EMPTY);
-    populateRegion();
-    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.NORMAL));
-    replicate1
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
-    replicate2
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
-    replicate3
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
-    try {
-      normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.executeFunction());
-      fail(
-          "Function execution was expecting an Exception as it was executed on Region with DataPolicy.NORMAL");
-    } catch (Exception expected) {
-
+    for (VM vm : toArray(empty, normal, replicate1, replicate2, replicate3)) {
+      vm.invoke(() -> createCache(getDistributedSystemProperties()));
     }
+
+    empty.invoke(() -> createRegion(DataPolicy.EMPTY));
+    normal.invoke(() -> createRegion(DataPolicy.NORMAL));
+    for (VM vm : toArray(replicate1, replicate2, replicate3)) {
+      vm.invoke(() -> createRegion(DataPolicy.REPLICATE));
+    }
+
+    empty.invoke(() -> populateRegion(200));
+
+    normal.invoke(() -> {
+      Throwable thrown = catchThrowable(() -> executeDistributedRegionFunction());
+
+      assertThat(thrown)
+          .isInstanceOf(FunctionException.class)
+          .hasMessage("Function execution on region with DataPolicy.NORMAL is not supported");
+    });
   }
 
   @Test
   public void testDistributedRegionFunctionExecutionOnDataPolicyReplicate() {
-    createCacheInVm(); // Empty
-    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate3.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    for (VM vm : toArray(empty, normal, replicate1, replicate2, replicate3)) {
+      vm.invoke(() -> createCache(getDistributedSystemProperties()));
+    }
 
-    createPeer(DataPolicy.EMPTY);
-    populateRegion();
-    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.NORMAL));
-    replicate1
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
-    replicate2
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
-    replicate3
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
-    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.executeFunction());
+    empty.invoke(() -> createRegion(DataPolicy.EMPTY));
+    normal.invoke(() -> createRegion(DataPolicy.NORMAL));
+    for (VM vm : toArray(replicate1, replicate2, replicate3)) {
+      vm.invoke(() -> createRegion(DataPolicy.REPLICATE));
+    }
+
+    empty.invoke(() -> populateRegion(200));
+
+    replicate1.invoke(() -> executeDistributedRegionFunction());
   }
 
   @Test
-  public void testDistributedRegionFunctionExecutionOnDataPolicyReplicateNotTimedOut() {
-    createCacheInVm(); // Empty
-    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate3.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+  public void testDistributedRegionFunctionExecutionOnDataPolicyReplicateNotTimedOut()
+      throws Exception {
+    for (VM vm : toArray(empty, normal, replicate1, replicate2, replicate3)) {
+      vm.invoke(() -> {
+        createCache(getDistributedSystemProperties());
 
-    createPeer(DataPolicy.EMPTY);
-    populateRegion();
-    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.NORMAL));
-    replicate1
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
-    replicate2
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
-    replicate3
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
-    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest
-        .executeLongRunningFunctionNotTimedOut());
+        LATCH.set(new CountDownLatch(1));
+
+        FunctionService.registerFunction(new DistributedRegionFunction());
+        FunctionService.registerFunction(new LongRunningFunction(LATCH.get()));
+      });
+    }
+
+    empty.invoke(() -> createRegion(DataPolicy.EMPTY));
+    normal.invoke(() -> createRegion(DataPolicy.NORMAL));
+    for (VM vm : toArray(replicate1, replicate2, replicate3)) {
+      vm.invoke(() -> createRegion(DataPolicy.REPLICATE));
+    }
+
+    empty.invoke(() -> populateRegion(200));
+
+    AsyncInvocation executeFunctionInReplicate1 = replicate1.invokeAsync(() -> {
+      ResultCollector<String, List<String>> resultCollector = FunctionServiceCast
+          .<Void, String, List<String>>onRegion(getRegion())
+          .withFilter(filter)
+          .execute(LongRunningFunction.class.getSimpleName(), getTimeout().getValueInMS(),
+              MILLISECONDS);
+
+      assertThat(resultCollector.getResult().get(0))
+          .isEqualTo("LongRunningFunction completed");
+    });
+
+    // how long LongRunningFunction runs for is now controlled here:
+    Thread.sleep(2000);
+
+    for (VM vm : toArray(empty, normal, replicate1, replicate2, replicate3)) {
+      vm.invoke(() -> {
+        LATCH.get().countDown();
+      });
+    }
+
+    executeFunctionInReplicate1.await();
   }
 
   @Test
   public void testDistributedRegionFunctionExecutionOnDataPolicyReplicateTimedOut() {
-    createCacheInVm(); // Empty
-    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate3.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    for (VM vm : toArray(empty, normal, replicate1, replicate2, replicate3)) {
+      vm.invoke(() -> {
+        createCache(getDistributedSystemProperties());
 
-    createPeer(DataPolicy.EMPTY);
-    populateRegion();
-    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.NORMAL));
-    replicate1
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
-    replicate2
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
-    replicate3
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
+        LATCH.set(new CountDownLatch(1));
 
-    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest
-        .executeLongRunningFunctionTimedOut());
+        FunctionService.registerFunction(new DistributedRegionFunction());
+        FunctionService.registerFunction(new LongRunningFunction(LATCH.get()));
+      });
+    }
+
+    empty.invoke(() -> createRegion(DataPolicy.EMPTY));
+    normal.invoke(() -> createRegion(DataPolicy.NORMAL));
+    for (VM vm : toArray(replicate1, replicate2, replicate3)) {
+      vm.invoke(() -> createRegion(DataPolicy.REPLICATE));
+    }
+
+    empty.invoke(() -> populateRegion(200));
+
+    replicate1.invoke(() -> {
+      Throwable thrown = catchThrowable(() -> {
+        FunctionServiceCast
+            .<Void, String, List<String>>onRegion(getRegion())
+            .withFilter(filter)
+            .execute(LongRunningFunction.class.getSimpleName(), 1000, MILLISECONDS);
+      });
+
+      assertThat(thrown)
+          .hasCauseInstanceOf(FunctionException.class)
+          .hasMessageContaining("All results not received in time provided");
+    });
   }
 
   @Test
   public void testDistributedRegionFunctionExecutionOnDataPolicyReplicate_SendException() {
-    createCacheInVm(); // Empty
-    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate3.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    for (VM vm : toArray(empty, normal, replicate1, replicate2, replicate3)) {
+      vm.invoke(() -> createCache(getDistributedSystemProperties()));
+    }
 
-    createPeer(DataPolicy.EMPTY);
-    populateRegion();
-    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.NORMAL));
-    replicate1
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
-    replicate2
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
-    replicate3
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
-    replicate1
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.executeFunction_SendException());
+    empty.invoke(() -> createRegion(DataPolicy.EMPTY));
+    normal.invoke(() -> createRegion(DataPolicy.NORMAL));
+    for (VM vm : toArray(replicate1, replicate2, replicate3)) {
+      vm.invoke(() -> createRegion(DataPolicy.REPLICATE));
+    }
+
+    empty.invoke(() -> populateRegion(200));
+
+    replicate1.invoke(() -> executeResultWithExceptionFunction());
   }
 
   @Test
   public void testDistributedRegionFunctionExecutionOnDataPolicyReplicate_NoLastResult() {
-    createCacheInVm(); // Empty
-    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate3.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    for (VM vm : toArray(empty, normal, replicate1, replicate2, replicate3)) {
+      vm.invoke(() -> createCache(getDistributedSystemProperties()));
+    }
 
-    createPeer(DataPolicy.EMPTY);
-    populateRegion();
-    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.NORMAL));
-    replicate1
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
-    replicate2
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
-    replicate3
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
-    replicate1
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.executeFunction_NoLastResult());
+    empty.invoke(() -> createRegion(DataPolicy.EMPTY));
+    normal.invoke(() -> createRegion(DataPolicy.NORMAL));
+    for (VM vm : toArray(replicate1, replicate2, replicate3)) {
+      vm.invoke(() -> createRegion(DataPolicy.REPLICATE));
+    }
+
+    empty.invoke(() -> populateRegion(200));
+
+    replicate1.invoke(() -> executeNoLastResultFunction());
   }
 
   @Test
   public void testDistributedRegionFunctionExecutionWithFunctionInvocationTargetException() {
-    createCacheInVm(); // Empty
-    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate3.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    for (VM vm : toArray(empty, normal, replicate1, replicate2, replicate3)) {
+      vm.invoke(() -> createCache(getDistributedSystemProperties()));
+    }
 
-    registerFunction(new Boolean(true), new Integer(5));
+    empty.invoke(() -> createRegion(DataPolicy.EMPTY));
+    normal.invoke(() -> createRegion(DataPolicy.NORMAL));
+    for (VM vm : toArray(replicate1, replicate2, replicate3)) {
+      vm.invoke(() -> createRegion(DataPolicy.REPLICATE));
+    }
 
-    createPeer(DataPolicy.EMPTY);
-    populateRegion();
-    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.NORMAL));
-    replicate1
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
-    replicate2
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
-    replicate3
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
+    for (VM vm : toArray(empty, normal, replicate1, replicate2, replicate3)) {
+      vm.invoke(() -> registerThrowsFunctionInvocationTargetExceptionFunction(true, 5));
+    }
 
-    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest
-        .registerFunction(new Boolean(true), new Integer(5)));
-    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest
-        .registerFunction(new Boolean(true), new Integer(5)));
-    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest
-        .registerFunction(new Boolean(true), new Integer(5)));
-    replicate3.invoke(() -> DistributedRegionFunctionExecutionDUnitTest
-        .registerFunction(new Boolean(true), new Integer(5)));
+    empty.invoke(() -> populateRegion(200));
 
-    // add expected exception to avoid suspect strings
-    final IgnoredException ex = IgnoredException.addIgnoredException("I have been thrown");
-    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest
-        .executeFunctionFunctionInvocationTargetException());
-    ex.remove();
+    replicate1.invoke(() -> {
+      try (IgnoredException ie = addIgnoredException("I have been thrown")) {
+        executeFunctionFunctionInvocationTargetException();
+      }
+    });
   }
 
   @Test
   public void testDistributedRegionFunctionExecutionWithFunctionInvocationTargetException_WithoutHA() {
-    createCacheInVm(); // Empty
-    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate3.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    for (VM vm : toArray(empty, normal, replicate1, replicate2, replicate3)) {
+      vm.invoke(() -> createCache(getDistributedSystemProperties()));
+    }
 
-    registerFunction(new Boolean(false), new Integer(0));
-    createPeer(DataPolicy.EMPTY);
-    populateRegion();
-    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.NORMAL));
-    replicate1
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
-    replicate2
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
-    replicate3
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
+    empty.invoke(() -> createRegion(DataPolicy.EMPTY));
+    normal.invoke(() -> createRegion(DataPolicy.NORMAL));
+    for (VM vm : toArray(replicate1, replicate2, replicate3)) {
+      vm.invoke(() -> createRegion(DataPolicy.REPLICATE));
+    }
 
-    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest
-        .registerFunction(new Boolean(false), new Integer(0)));
-    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest
-        .registerFunction(new Boolean(false), new Integer(0)));
-    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest
-        .registerFunction(new Boolean(false), new Integer(0)));
-    replicate3.invoke(() -> DistributedRegionFunctionExecutionDUnitTest
-        .registerFunction(new Boolean(false), new Integer(0)));
+    for (VM vm : toArray(empty, normal, replicate1, replicate2, replicate3)) {
+      vm.invoke(() -> registerThrowsFunctionInvocationTargetExceptionFunction(false, 0));
+    }
 
-    // add expected exception to avoid suspect strings
-    final IgnoredException ex = IgnoredException.addIgnoredException("I have been thrown");
-    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest
-        .executeFunctionFunctionInvocationTargetExceptionWithoutHA());
-    ex.remove();
+    empty.invoke(() -> populateRegion(200));
+
+    replicate1.invoke(() -> {
+      try (IgnoredException ie = addIgnoredException("I have been thrown")) {
+        executeFunctionFunctionInvocationTargetExceptionWithoutHA();
+      }
+    });
   }
 
   @Test
   public void testDistributedRegionFunctionExecutionWithFunctionInvocationTargetExceptionForEmptyDataPolicy() {
-    createCacheInVm(); // Empty
-    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate3.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    for (VM vm : toArray(empty, normal, replicate1, replicate2, replicate3)) {
+      vm.invoke(() -> createCache(getDistributedSystemProperties()));
+    }
 
-    registerFunction(new Boolean(true), new Integer(5));
+    empty.invoke(() -> createRegion(DataPolicy.EMPTY));
+    normal.invoke(() -> createRegion(DataPolicy.NORMAL));
+    for (VM vm : toArray(replicate1, replicate2, replicate3)) {
+      vm.invoke(() -> createRegion(DataPolicy.REPLICATE));
+    }
 
-    createPeer(DataPolicy.EMPTY);
-    populateRegion();
-    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.NORMAL));
-    replicate1
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
-    replicate2
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
-    replicate3
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
+    for (VM vm : toArray(empty, normal, replicate1, replicate2, replicate3)) {
+      vm.invoke(() -> registerThrowsFunctionInvocationTargetExceptionFunction(true, 5));
+    }
 
-    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest
-        .registerFunction(new Boolean(true), new Integer(5)));
-    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest
-        .registerFunction(new Boolean(true), new Integer(5)));
-    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest
-        .registerFunction(new Boolean(true), new Integer(5)));
-    replicate3.invoke(() -> DistributedRegionFunctionExecutionDUnitTest
-        .registerFunction(new Boolean(true), new Integer(5)));
+    empty.invoke(() -> populateRegion(200));
 
-    // add expected exception to avoid suspect strings
-    final IgnoredException ex = IgnoredException.addIgnoredException("I have been thrown");
-    executeFunctionFunctionInvocationTargetException();
-    ex.remove();
+    empty.invoke(() -> {
+      try (IgnoredException ie = addIgnoredException("I have been thrown")) {
+        executeFunctionFunctionInvocationTargetException();
+      }
+    });
   }
 
   @Test
   public void testDistributedRegionFunctionExecutionWithFunctionInvocationTargetExceptionForEmptyDataPolicy_WithoutHA() {
-    createCacheInVm(); // Empty
-    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate3.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    for (VM vm : toArray(empty, normal, replicate1, replicate2, replicate3)) {
+      vm.invoke(() -> createCache(getDistributedSystemProperties()));
+    }
 
-    registerFunction(new Boolean(false), new Integer(0));
-    createPeer(DataPolicy.EMPTY);
-    populateRegion();
-    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.NORMAL));
-    replicate1
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
-    replicate2
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
-    replicate3
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
+    empty.invoke(() -> createRegion(DataPolicy.EMPTY));
+    normal.invoke(() -> createRegion(DataPolicy.NORMAL));
+    for (VM vm : toArray(replicate1, replicate2, replicate3)) {
+      vm.invoke(() -> createRegion(DataPolicy.REPLICATE));
+    }
 
-    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest
-        .registerFunction(new Boolean(false), new Integer(0)));
-    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest
-        .registerFunction(new Boolean(false), new Integer(0)));
-    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest
-        .registerFunction(new Boolean(false), new Integer(0)));
-    replicate3.invoke(() -> DistributedRegionFunctionExecutionDUnitTest
-        .registerFunction(new Boolean(false), new Integer(0)));
+    for (VM vm : toArray(empty, normal, replicate1, replicate2, replicate3)) {
+      vm.invoke(() -> registerThrowsFunctionInvocationTargetExceptionFunction(false, 0));
+    }
 
-    // add expected exception to avoid suspect strings
-    final IgnoredException ex = IgnoredException.addIgnoredException("I have been thrown");
-    executeFunctionFunctionInvocationTargetExceptionWithoutHA();
-    ex.remove();
+    empty.invoke(() -> populateRegion(200));
+
+    empty.invoke(() -> {
+      try (IgnoredException ie = addIgnoredException("I have been thrown")) {
+        executeFunctionFunctionInvocationTargetExceptionWithoutHA();
+      }
+    });
   }
 
   @Test
   public void testDistributedRegionFunctionExecutionHACacheClosedException() {
-    VM empty = normal;
-
-    empty.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-
-    empty.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.EMPTY));
-
-    replicate1
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
-
-    empty.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.populateRegion());
-
-    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate2
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
-
-    /*
-     * (original code below is not proper since function execution may not find any node for
-     * execution when the first node closes; now closing cache from within function body) int
-     * AsyncInvocationArrSize = 1; AsyncInvocation[] async = new
-     * AsyncInvocation[AsyncInvocationArrSize]; async[0] = empty.invokeAsync(() ->
-     * DistributedRegionFunctionExecutionDUnitTest.executeFunctionHA());
-     *
-     * replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.closeCache());
-     *
-     * replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-     * replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(
-     * DataPolicy.REPLICATE ));
-     *
-     * DistributedTestCase.join(async[0], 50 * 1000, getLogWriter()); if (async[0].getException() !=
-     * null) { fail("UnExpected Exception Occurred : ", async[0].getException()); } List l =
-     * (List)async[0].getReturnValue();
-     */
-    List l = (List) empty
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.executeFunctionHACacheClose());
-    assertEquals(5001, l.size());
-    for (int i = 0; i < 5001; i++) {
-      assertEquals(l.get(i), Boolean.TRUE);
+    for (VM vm : toArray(empty, replicate1)) {
+      vm.invoke(() -> createCache(getDistributedSystemProperties()));
     }
+
+    empty.invoke(() -> createRegion(DataPolicy.EMPTY));
+    replicate1.invoke(() -> createRegion(DataPolicy.REPLICATE));
+
+    empty.invoke(() -> populateRegion(200));
+
+    replicate2.invoke(() -> {
+      createCache(getDistributedSystemProperties());
+      createRegion(DataPolicy.REPLICATE);
+    });
+
+    empty.invoke(() -> {
+      List<Boolean> result = executeDistributedRegionFunction();
+
+      assertThat(result)
+          .hasSize(5001)
+          .containsOnly(true);
+    });
   }
 
   @Test
-  public void testDistributedRegionFunctionExecutionHANodeFailure() {
-    VM empty = normal;
-
-    empty.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-
-    empty.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.EMPTY));
-
-    replicate1
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
-
-    empty.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.populateRegion());
-
-    int AsyncInvocationArrSize = 1;
-    AsyncInvocation[] async = new AsyncInvocation[AsyncInvocationArrSize];
-    async[0] =
-        empty.invokeAsync(() -> DistributedRegionFunctionExecutionDUnitTest.executeFunctionHA());
-
-    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate2
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
-
-    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.disconnect());
-
-    ThreadUtils.join(async[0], 50 * 1000);
-    if (async[0].getException() != null) {
-      Assert.fail("UnExpected Exception Occurred : ", async[0].getException());
+  public void testDistributedRegionFunctionExecutionHANodeFailure() throws Exception {
+    for (VM vm : toArray(empty, replicate1)) {
+      vm.invoke(() -> createCache(getDistributedSystemProperties()));
     }
-    List l = (List) async[0].getReturnValue();
-    assertEquals(5001, l.size());
-    for (int i = 0; i < 5001; i++) {
-      assertEquals(l.get(i), Boolean.TRUE);
-    }
+
+    empty.invoke(() -> createRegion(DataPolicy.EMPTY));
+    replicate1.invoke(() -> createRegion(DataPolicy.REPLICATE));
+
+    empty.invoke(() -> populateRegion(200));
+
+    AsyncInvocation<List<Boolean>> executeFunctionHaInEmptyVM =
+        empty.invokeAsync(() -> executeDistributedRegionFunction());
+
+    replicate2.invoke(() -> {
+      createCache(getDistributedSystemProperties());
+      createRegion(DataPolicy.REPLICATE);
+    });
+
+    replicate1.invoke(() -> getCache().close());
+
+    List<Boolean> result = executeFunctionHaInEmptyVM.get();
+
+    assertThat(result)
+        .hasSize(5001)
+        .containsOnly(true);
   }
-
 
   @Test
   public void testDistributedRegionFunctionExecutionOnDataPolicyEmpty_ClientServer() {
     VM empty1 = replicate3;
     VM empty2 = normal;
-    empty2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    empty1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    VM client = empty;
 
-    createCacheInClientVm();
+    for (VM vm : toArray(empty2, replicate1, replicate2, empty1)) {
+      vm.invoke(() -> createCache(getDistributedSystemProperties()));
+    }
 
-    Integer port1 = (Integer) empty1
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createServer(DataPolicy.EMPTY));
-    Integer port2 = (Integer) empty2
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createServer(DataPolicy.EMPTY));
-    replicate1
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
-    replicate2
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
-    createClientAndPopulateClientRegion(DataPolicy.EMPTY, port1, port2);
+    client.invoke(() -> createClientCache());
 
-    executeFunction();
+    int port1 = empty1.invoke(() -> {
+      createRegion(DataPolicy.EMPTY);
+      return createCacheServer();
+    });
+    int port2 = empty2.invoke(() -> {
+      createRegion(DataPolicy.EMPTY);
+      return createCacheServer();
+    });
+
+    for (VM vm : toArray(replicate1, replicate2)) {
+      vm.invoke(() -> createRegion(DataPolicy.REPLICATE));
+    }
+
+    client.invoke(() -> {
+      createClientRegion(port1, port2);
+      populateClientRegion(200);
+
+      executeDistributedRegionFunction();
+    });
   }
 
   @Test
   public void testDistributedRegionFunctionExecutionOnDataPolicyEmpty_ClientServer_SendException() {
     VM empty1 = replicate3;
     VM empty2 = normal;
-    empty2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    empty1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    VM client = empty;
 
-    createCacheInClientVm();
+    for (VM vm : toArray(empty2, replicate1, replicate2, empty1)) {
+      vm.invoke(() -> createCache(getDistributedSystemProperties()));
+    }
 
-    Integer port1 = (Integer) empty1
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createServer(DataPolicy.EMPTY));
-    Integer port2 = (Integer) empty2
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createServer(DataPolicy.EMPTY));
-    replicate1
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
-    replicate2
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
-    createClientAndPopulateClientRegion(DataPolicy.EMPTY, port1, port2);
+    client.invoke(() -> createClientCache());
 
-    executeFunction_SendException();
+    int port1 = empty1.invoke(() -> {
+      createRegion(DataPolicy.EMPTY);
+      return createCacheServer();
+    });
+    int port2 = empty2.invoke(() -> {
+      createRegion(DataPolicy.EMPTY);
+      return createCacheServer();
+    });
+
+    for (VM vm : toArray(replicate1, replicate2)) {
+      vm.invoke(() -> createRegion(DataPolicy.REPLICATE));
+    }
+
+    client.invoke(() -> {
+      createClientRegion(port1, port2);
+      populateClientRegion(200);
+
+      executeResultWithExceptionFunction();
+    });
   }
 
   @Test
   public void testDistributedRegionFunctionExecutionOnDataPolicyEmpty_ClientServer_NoLastResult() {
     VM empty1 = replicate3;
     VM empty2 = normal;
-    empty2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    empty1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    VM client = empty;
 
-    createCacheInClientVm();
-
-    Integer port1 = (Integer) empty1
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createServer(DataPolicy.EMPTY));
-    Integer port2 = (Integer) empty2
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createServer(DataPolicy.EMPTY));
-    replicate1
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
-    replicate2
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
-    createClientAndPopulateClientRegion(DataPolicy.EMPTY, port1, port2);
-    // add ExpectedException's to servers since client can connect to any
-    // one of those
-    final IgnoredException expectedEx =
-        IgnoredException.addIgnoredException("did not send last result", empty1);
-    final IgnoredException expectedEx2 =
-        IgnoredException.addIgnoredException("did not send last result", empty2);
-    try {
-      executeFunction_NoLastResult();
-    } finally {
-      expectedEx.remove();
-      expectedEx2.remove();
+    for (VM vm : toArray(empty2, replicate1, replicate2, empty1)) {
+      vm.invoke(() -> createCache(getDistributedSystemProperties()));
     }
+
+    client.invoke(() -> createClientCache());
+
+    int port1 = empty1.invoke(() -> {
+      createRegion(DataPolicy.EMPTY);
+      return createCacheServer();
+    });
+    int port2 = empty2.invoke(() -> {
+      createRegion(DataPolicy.EMPTY);
+      return createCacheServer();
+    });
+
+    for (VM vm : toArray(replicate1, replicate2)) {
+      vm.invoke(() -> createRegion(DataPolicy.REPLICATE));
+    }
+
+    client.invoke(() -> {
+      createClientRegion(port1, port2);
+      populateClientRegion(200);
+
+      try (IgnoredException ie1 = addIgnoredException("did not send last result", empty1);
+          IgnoredException ie2 = addIgnoredException("did not send last result", empty2)) {
+        executeNoLastResultFunction();
+      }
+    });
   }
 
-  /*
-   * Ensure that the while executing the function if the servers is down then the execution is
-   * failover to other available server
+  /**
+   * If one server goes down while executing a function, that function should failover to other
+   * available server.
    */
   @Test
   public void testServerFailoverWithTwoServerAliveHA() throws InterruptedException {
-
     VM emptyServer1 = replicate1;
     VM client = normal;
 
-    emptyServer1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate3.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    client.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInClientVm());
-
-    Integer port1 = (Integer) emptyServer1
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createServer(DataPolicy.EMPTY));
-    Integer port2 = (Integer) replicate2.invoke(
-        () -> DistributedRegionFunctionExecutionDUnitTest.createServer(DataPolicy.REPLICATE));
-    replicate3
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
-    client.invoke(() -> DistributedRegionFunctionExecutionDUnitTest
-        .createClientAndPopulateClientRegion(DataPolicy.EMPTY, port1, port2));
-
-    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.stopServerHA());
-    int AsyncInvocationArrSize = 1;
-    AsyncInvocation[] async = new AsyncInvocation[AsyncInvocationArrSize];
-    async[0] =
-        client.invokeAsync(() -> DistributedRegionFunctionExecutionDUnitTest.executeFunctionHA());
-    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.startServerHA());
-    emptyServer1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.closeCacheHA());
-    ThreadUtils.join(async[0], 4 * 60 * 1000);
-    if (async[0].getException() != null) {
-      Assert.fail("UnExpected Exception Occurred : ", async[0].getException());
-    }
-    List l = (List) async[0].getReturnValue();
-    assertEquals(5001, l.size());
-    for (int i = 0; i < 5001; i++) {
-      assertEquals(l.get(i), Boolean.TRUE);
+    for (VM vm : toArray(emptyServer1, replicate2, replicate3)) {
+      vm.invoke(() -> createCache(getDistributedSystemProperties()));
     }
 
+    int port1 = emptyServer1.invoke(() -> {
+      createRegion(DataPolicy.EMPTY);
+      return createCacheServer();
+    });
+    int port2 = replicate2.invoke(() -> {
+      createRegion(DataPolicy.REPLICATE);
+      return createCacheServer();
+    });
+
+    replicate3.invoke(() -> createRegion(DataPolicy.REPLICATE));
+
+    client.invoke(() -> {
+      LATCH.set(new CountDownLatch(1));
+      createClientCache();
+      createClientRegion(port1, port2);
+      populateClientRegion(200);
+    });
+
+    replicate2.invoke(() -> stopServerHA());
+
+    AsyncInvocation<List<Boolean>> executeFunctionHaInClientVm =
+        client.invokeAsync(() -> executeDistributedRegionFunction());
+
+    replicate2.invoke(() -> {
+      startServerHA();
+      client.invoke(() -> LATCH.get().countDown());
+    });
+
+    client.invoke(() -> {
+      LATCH.get().await(getTimeout().getValueInMS(), MILLISECONDS);
+    });
+
+    emptyServer1.invoke(() -> closeCacheHA());
+
+    List<Boolean> result = executeFunctionHaInClientVm.get();
+
+    assertThat(result)
+        .hasSize(5001)
+        .containsOnly(true);
   }
 
   @Test
   public void testDistributedRegionFunctionExecutionOnDataPolicyNormal_ClientServer() {
+    VM client = empty;
     VM normal1 = normal;
     VM normal2 = replicate3;
     VM empty = replicate2;
 
-    normal1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    empty.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    normal2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-
-    createCacheInClientVm();
-
-    Integer port1 = (Integer) normal1
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createServer(DataPolicy.NORMAL));
-    Integer port2 = (Integer) normal2
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createServer(DataPolicy.NORMAL));
-    empty.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.EMPTY));
-    replicate1
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
-
-    createClientAndPopulateClientRegion(DataPolicy.EMPTY, port1, port2);
-    // add expected exception
-    final IgnoredException ex =
-        IgnoredException.addIgnoredException("DataPolicy.NORMAL is not supported");
-    try {
-      executeFunction();
-      fail("Function execution was expecting an Exception as it was executed "
-          + "on Region with DataPolicy.NORMAL");
-    } catch (Exception expected) {
-      assertTrue("Got unexpected exception message: " + expected,
-          expected.getMessage().contains("DataPolicy.NORMAL is not supported"));
-    } finally {
-      ex.remove();
+    for (VM vm : toArray(normal1, replicate1, empty, normal2)) {
+      vm.invoke(() -> createCache(getDistributedSystemProperties()));
     }
+
+    client.invoke(() -> createClientCache());
+
+    int port1 = normal1.invoke(() -> {
+      createRegion(DataPolicy.NORMAL);
+      return createCacheServer();
+    });
+    int port2 = normal2.invoke(() -> {
+      createRegion(DataPolicy.NORMAL);
+      return createCacheServer();
+    });
+
+    for (VM vm : toArray(empty, replicate1)) {
+      vm.invoke(() -> createRegion(DataPolicy.EMPTY));
+    }
+
+    client.invoke(() -> {
+      createClientRegion(port1, port2);
+      populateClientRegion(200);
+
+      // add expected exception
+      try (IgnoredException ie = addIgnoredException(FunctionException.class)) {
+        Throwable thrown = catchThrowable(() -> executeDistributedRegionFunction());
+
+        assertThat(thrown)
+            .isInstanceOf(FunctionException.class)
+            .hasMessageContaining(
+                "Function execution on region with DataPolicy.NORMAL is not supported");
+      }
+    });
   }
 
   @Test
   public void testDistributedRegionFunctionExecutionOnDataPolicyReplicate_ClientServer() {
+    VM client = empty;
     VM empty = replicate3;
 
-    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    empty.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    for (VM vm : toArray(normal, replicate1, replicate2, empty)) {
+      vm.invoke(() -> createCache(getDistributedSystemProperties()));
+    }
 
-    createCacheInClientVm();
+    client.invoke(() -> createClientCache());
 
-    Integer port1 = (Integer) replicate1.invoke(
-        () -> DistributedRegionFunctionExecutionDUnitTest.createServer(DataPolicy.REPLICATE));
-    Integer port2 = (Integer) replicate2.invoke(
-        () -> DistributedRegionFunctionExecutionDUnitTest.createServer(DataPolicy.REPLICATE));
-    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.NORMAL));
-    empty.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.EMPTY));
+    int port1 = replicate1.invoke(() -> {
+      createRegion(DataPolicy.REPLICATE);
+      return createCacheServer();
+    });
+    int port2 = replicate2.invoke(() -> {
+      createRegion(DataPolicy.REPLICATE);
+      return createCacheServer();
+    });
 
-    createClientAndPopulateClientRegion(DataPolicy.EMPTY, port1, port2);
+    normal.invoke(() -> createRegion(DataPolicy.NORMAL));
+    empty.invoke(() -> createRegion(DataPolicy.EMPTY));
 
-    executeUnregisteredFunction();
+    client.invoke(() -> {
+      createClientRegion(port1, port2);
+      populateClientRegion(200);
+
+      executeUnregisteredFunction();
+    });
   }
 
   @Test
   public void testDistributedRegionFunctionExecutionOnDataPolicyReplicate_ClientServer_WithoutRegister() {
+    VM client = empty;
     VM empty = replicate3;
 
-    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    empty.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    for (VM vm : toArray(normal, replicate1, replicate2, empty)) {
+      vm.invoke(() -> createCache(getDistributedSystemProperties()));
+    }
 
-    createCacheInClientVm();
+    client.invoke(() -> createClientCache());
 
-    Integer port1 = (Integer) replicate1.invoke(
-        () -> DistributedRegionFunctionExecutionDUnitTest.createServer(DataPolicy.REPLICATE));
-    Integer port2 = (Integer) replicate2.invoke(
-        () -> DistributedRegionFunctionExecutionDUnitTest.createServer(DataPolicy.REPLICATE));
-    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.NORMAL));
-    empty.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.EMPTY));
+    int port1 = replicate1.invoke(() -> {
+      createRegion(DataPolicy.REPLICATE);
+      return createCacheServer();
+    });
+    int port2 = replicate2.invoke(() -> {
+      createRegion(DataPolicy.REPLICATE);
+      return createCacheServer();
+    });
 
-    createClientAndPopulateClientRegion(DataPolicy.EMPTY, port1, port2);
+    normal.invoke(() -> createRegion(DataPolicy.NORMAL));
+    empty.invoke(() -> createRegion(DataPolicy.EMPTY));
 
-    executeFunction();
+    client.invoke(() -> {
+      createClientRegion(port1, port2);
+      populateClientRegion(200);
+
+      executeDistributedRegionFunction();
+    });
   }
 
   @Test
   public void testDistributedRegionFunctionExecutionOnDataPolicyReplicate_ClientServer_FunctionInvocationTargetException() {
+    VM client = empty;
     VM empty = replicate3;
 
-    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    empty.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    for (VM vm : toArray(normal, replicate1, replicate2, empty)) {
+      vm.invoke(() -> createCache(getDistributedSystemProperties()));
+    }
 
-    createCacheInClientVm();
-    registerFunction(new Boolean(true), new Integer(5));
+    int port1 = replicate1.invoke(() -> {
+      createRegion(DataPolicy.REPLICATE);
+      return createCacheServer();
+    });
+    int port2 = replicate2.invoke(() -> {
+      createRegion(DataPolicy.REPLICATE);
+      return createCacheServer();
+    });
 
-    Integer port1 = (Integer) replicate1.invoke(
-        () -> DistributedRegionFunctionExecutionDUnitTest.createServer(DataPolicy.REPLICATE));
-    Integer port2 = (Integer) replicate2.invoke(
-        () -> DistributedRegionFunctionExecutionDUnitTest.createServer(DataPolicy.REPLICATE));
-    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.NORMAL));
-    empty.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.EMPTY));
+    client.invoke(() -> createClientCache());
+    normal.invoke(() -> createRegion(DataPolicy.NORMAL));
+    empty.invoke(() -> createRegion(DataPolicy.EMPTY));
 
-    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest
-        .registerFunction(new Boolean(true), new Integer(5)));
-    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest
-        .registerFunction(new Boolean(true), new Integer(5)));
-    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest
-        .registerFunction(new Boolean(true), new Integer(5)));
-    empty.invoke(() -> DistributedRegionFunctionExecutionDUnitTest
-        .registerFunction(new Boolean(true), new Integer(5)));
+    for (VM vm : toArray(client, replicate1, replicate2, normal, empty)) {
+      vm.invoke(() -> registerThrowsFunctionInvocationTargetExceptionFunction(true, 5));
+    }
 
-    createClientAndPopulateClientRegion(DataPolicy.EMPTY, port1, port2);
+    client.invoke(() -> {
+      createClientRegion(port1, port2);
+      populateClientRegion(200);
 
-    // add expected exception to avoid suspect strings
-    final IgnoredException ex = IgnoredException.addIgnoredException("I have been thrown");
-    executeFunctionFunctionInvocationTargetException_ClientServer();
-    ex.remove();
+      // add expected exception to avoid suspect strings
+      try (IgnoredException ie = addIgnoredException("I have been thrown")) {
+        executeFunctionFunctionInvocationTargetException_ClientServer();
+      }
+    });
   }
 
   @Test
   public void testDistributedRegionFunctionExecutionOnDataPolicyReplicate_ClientServer_FunctionInvocationTargetException_WithoutHA() {
+    VM client = empty;
     VM empty = replicate3;
 
-    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    empty.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    for (VM vm : toArray(normal, replicate1, replicate2, empty)) {
+      vm.invoke(() -> createCache(getDistributedSystemProperties()));
+    }
 
-    createCacheInClientVm();
-    registerFunction(new Boolean(false), new Integer(0));
+    int port1 = replicate1.invoke(() -> {
+      createRegion(DataPolicy.REPLICATE);
+      return createCacheServer();
+    });
+    int port2 = replicate2.invoke(() -> {
+      createRegion(DataPolicy.REPLICATE);
+      return createCacheServer();
+    });
 
-    Integer port1 = (Integer) replicate1.invoke(
-        () -> DistributedRegionFunctionExecutionDUnitTest.createServer(DataPolicy.REPLICATE));
-    Integer port2 = (Integer) replicate2.invoke(
-        () -> DistributedRegionFunctionExecutionDUnitTest.createServer(DataPolicy.REPLICATE));
-    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.NORMAL));
-    empty.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.EMPTY));
+    client.invoke(() -> createClientCache());
+    normal.invoke(() -> createRegion(DataPolicy.NORMAL));
+    empty.invoke(() -> createRegion(DataPolicy.EMPTY));
 
-    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest
-        .registerFunction(new Boolean(false), new Integer(0)));
-    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest
-        .registerFunction(new Boolean(false), new Integer(0)));
-    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest
-        .registerFunction(new Boolean(false), new Integer(0)));
-    empty.invoke(() -> DistributedRegionFunctionExecutionDUnitTest
-        .registerFunction(new Boolean(false), new Integer(0)));
+    for (VM vm : toArray(client, replicate1, replicate2, normal, empty)) {
+      vm.invoke(() -> registerThrowsFunctionInvocationTargetExceptionFunction(false, 0));
+    }
 
-    createClientAndPopulateClientRegion(DataPolicy.EMPTY, port1, port2);
+    client.invoke(() -> {
+      createClientRegion(port1, port2);
+      populateClientRegion(200);
 
-    // add expected exception to avoid suspect strings
-    final IgnoredException ex = IgnoredException.addIgnoredException("I have been thrown");
-    executeFunctionFunctionInvocationTargetException_ClientServer_WithoutHA();
-    ex.remove();
+      // add expected exception to avoid suspect strings
+      try (IgnoredException ie = addIgnoredException("I have been thrown")) {
+        executeFunctionFunctionInvocationTargetException_ClientServer_WithoutHA();
+      }
+    });
   }
 
   @Test
   public void testDistributedRegionFunctionExecutionOnDataPolicyEmpty_ClientServer_FunctionInvocationTargetException() {
+    VM client = empty;
     VM empty1 = replicate3;
     VM empty2 = normal;
-    empty2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    empty1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
 
-    createCacheInClientVm();
-    registerFunction(new Boolean(true), new Integer(5));
+    for (VM vm : toArray(empty2, replicate1, replicate2, empty1)) {
+      vm.invoke(() -> createCache(getDistributedSystemProperties()));
+    }
 
-    Integer port1 = (Integer) empty1
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createServer(DataPolicy.EMPTY));
-    Integer port2 = (Integer) empty2
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createServer(DataPolicy.EMPTY));
-    replicate1
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
-    replicate2
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
-    createClientAndPopulateClientRegion(DataPolicy.EMPTY, port1, port2);
+    int port1 = empty1.invoke(() -> {
+      createRegion(DataPolicy.EMPTY);
+      return createCacheServer();
+    });
+    int port2 = empty2.invoke(() -> {
+      createRegion(DataPolicy.EMPTY);
+      return createCacheServer();
+    });
 
-    empty1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest
-        .registerFunction(new Boolean(true), new Integer(5)));
-    empty2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest
-        .registerFunction(new Boolean(true), new Integer(5)));
-    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest
-        .registerFunction(new Boolean(true), new Integer(5)));
-    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest
-        .registerFunction(new Boolean(true), new Integer(5)));
+    client.invoke(() -> createClientCache());
+    for (VM vm : toArray(replicate1, replicate2)) {
+      vm.invoke(() -> createRegion(DataPolicy.REPLICATE));
+    }
 
-    // add expected exception to avoid suspect strings
-    final IgnoredException ex = IgnoredException.addIgnoredException("I have been thrown");
-    executeFunctionFunctionInvocationTargetException_ClientServer();
-    ex.remove();
+    client.invoke(() -> {
+      createClientRegion(port1, port2);
+      populateClientRegion(200);
+    });
+
+    for (VM vm : toArray(client, empty1, empty2, replicate1, replicate2)) {
+      vm.invoke(() -> registerThrowsFunctionInvocationTargetExceptionFunction(true, 5));
+    }
+
+    client.invoke(() -> {
+      // add expected exception to avoid suspect strings
+      try (IgnoredException ie = addIgnoredException("I have been thrown")) {
+        executeFunctionFunctionInvocationTargetException_ClientServer();
+      }
+    });
   }
 
   @Test
   public void testDistributedRegionFunctionExecutionOnDataPolicyEmpty_ClientServer_FunctionInvocationTargetException_WithoutHA() {
+    VM client = empty;
     VM empty1 = replicate3;
     VM empty2 = normal;
-    empty2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    empty1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
 
-    createCacheInClientVm();
-    registerFunction(new Boolean(false), new Integer(0));
+    for (VM vm : toArray(empty2, replicate1, replicate2, empty1)) {
+      vm.invoke(() -> createCache(getDistributedSystemProperties()));
+    }
 
-    Integer port1 = (Integer) empty1
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createServer(DataPolicy.EMPTY));
-    Integer port2 = (Integer) empty2
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createServer(DataPolicy.EMPTY));
-    replicate1
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
-    replicate2
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
-    createClientAndPopulateClientRegion(DataPolicy.EMPTY, port1, port2);
+    client.invoke(() -> createClientCache());
 
-    empty1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest
-        .registerFunction(new Boolean(false), new Integer(0)));
-    empty2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest
-        .registerFunction(new Boolean(false), new Integer(0)));
-    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest
-        .registerFunction(new Boolean(false), new Integer(0)));
-    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest
-        .registerFunction(new Boolean(false), new Integer(0)));
+    int port1 = empty1.invoke(() -> {
+      createRegion(DataPolicy.EMPTY);
+      return createCacheServer();
+    });
+    int port2 = empty2.invoke(() -> {
+      createRegion(DataPolicy.EMPTY);
+      return createCacheServer();
+    });
 
-    // add expected exception to avoid suspect strings
-    final IgnoredException ex = IgnoredException.addIgnoredException("I have been thrown");
-    executeFunctionFunctionInvocationTargetException_ClientServer_WithoutHA();
-    ex.remove();
+    for (VM vm : toArray(replicate1, replicate2)) {
+      vm.invoke(() -> createRegion(DataPolicy.REPLICATE));
+    }
+
+    client.invoke(() -> {
+      createClientRegion(port1, port2);
+      populateClientRegion(200);
+    });
+
+    for (VM vm : toArray(client, empty1, empty2, replicate1, replicate2)) {
+      vm.invoke(() -> registerThrowsFunctionInvocationTargetExceptionFunction(false, 0));
+    }
+
+    client.invoke(() -> {
+      // add expected exception to avoid suspect strings
+      try (IgnoredException ie = addIgnoredException("I have been thrown")) {
+        executeFunctionFunctionInvocationTargetException_ClientServer_WithoutHA();
+      }
+    });
   }
 
   @Test
-  public void testBug40714() {
+  public void inlineFunctionIsUsedOnClientInsteadOfLookingUpFunctionById() {
+    VM client = empty;
     VM empty = replicate3;
-    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    empty.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
 
-    Integer port1 = (Integer) replicate1.invoke(
-        () -> DistributedRegionFunctionExecutionDUnitTest.createServer(DataPolicy.REPLICATE));
-    Integer port2 = (Integer) replicate2.invoke(
-        () -> DistributedRegionFunctionExecutionDUnitTest.createServer(DataPolicy.REPLICATE));
-    normal
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
-    empty
-        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
+    for (VM vm : toArray(normal, empty, replicate1, replicate2)) {
+      vm.invoke(() -> createCache(getDistributedSystemProperties()));
+    }
+    client.invoke(() -> createClientCache(getClientProperties()));
 
-    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.registerFunction());
-    empty.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.registerFunction());
-    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.registerFunction());
-    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.registerFunction());
-    createCacheInVm();
-    createClientAndPopulateClientRegion(DataPolicy.EMPTY, port1, port2);
+    int port1 = replicate1.invoke(() -> {
+      createRegion(DataPolicy.REPLICATE);
+      return createCacheServer();
+    });
+    int port2 = replicate2.invoke(() -> {
+      createRegion(DataPolicy.REPLICATE);
+      return createCacheServer();
+    });
 
-    registerFunction();
-    executeInlineFunction();
+    for (VM vm : toArray(normal, empty)) {
+      vm.invoke(() -> createRegion(DataPolicy.REPLICATE));
+    }
+    client.invoke(() -> {
+      createClientRegion(port1, port2);
+      populateClientRegion(200);
+    });
 
+    for (VM vm : toArray(normal, empty, replicate1, replicate2, client)) {
+      vm.invoke(() -> FunctionService.registerFunction(inlineFunction("Failure", false)));
+    }
+
+    client.invoke(() -> {
+      ResultCollector<Boolean, List<Boolean>> resultCollector = FunctionServiceCast
+          .<Boolean, Boolean, List<Boolean>>onRegion(getRegion())
+          .setArguments(true)
+          .execute(inlineFunction("Success", true));
+
+      assertThat(resultCollector.getResult())
+          .hasSize(1)
+          .containsOnly(true);
+    });
   }
 
   /**
-   * This tests make sure that, in case of LonerDistributedSystem we don't get ClassCast Exception.
-   * Just making sure that the function is executed successfully on lonerDistribuedSystem
-   */
-
-  @Test
-  public void testBug41118() {
-    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.bug41118());
-  }
-
-  /**
-   * Test for bug41367: This test is to verify that
-   * the"org.apache.geode.security.AuthenticationRequiredException: No security-* properties are
-   * provided" is not thrown. We have to grep for this exception in logs for any occerence.
+   * Verify that AuthenticationRequiredException is not thrown when security-* properties are NOT
+   * provided. We have to grep for this exception in logs for any occurrence.
    */
   @Test
-  public void testBug41367() {
+  public void authenticationRequiredExceptionIsNotThrownWhenSecurityIsNotConfigured() {
     VM client = replicate1;
     VM server = replicate2;
 
-    server.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm_41367());
+    int port = server.invoke(() -> {
+      createCacheWithSecurity();
+      createRegion(DataPolicy.REPLICATE);
+      return createCacheServer();
+    });
 
-    client.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInClientVm_41367());
+    client.invoke(() -> {
+      createClientCacheWithSecurity();
+      createClientRegion(port);
 
-    Integer port1 = (Integer) server.invoke(
-        () -> DistributedRegionFunctionExecutionDUnitTest.createServer(DataPolicy.REPLICATE));
-
-    client.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createClient_41367(port1));
-
-    for (int i = 0; i < 3; i++) {
-      try {
-        client.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.executeFunction_NoResult());
-        client.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.put());
-      } catch (Exception e) {
-        fail("Exception " + e + " not expected");
-        e.printStackTrace();
-      }
-    }
+      executeNoResultFunction();
+      doPut();
+    });
   }
 
   @Test
   public void testFunctionWithNoResultThrowsException() {
-    IgnoredException.addIgnoredException("RuntimeException");
-    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
-    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    VM client = empty;
 
-    createCacheInClientVm();
+    int port1 = replicate1.invoke(() -> {
+      createCache(getDistributedSystemProperties());
+      createRegion(DataPolicy.REPLICATE);
+      return createCacheServer();
+    });
+    int port2 = replicate2.invoke(() -> {
+      createCache(getDistributedSystemProperties());
+      createRegion(DataPolicy.REPLICATE);
+      return createCacheServer();
+    });
 
-    Integer port1 = (Integer) replicate1.invoke(
-        () -> DistributedRegionFunctionExecutionDUnitTest.createServer(DataPolicy.REPLICATE));
-    Integer port2 = (Integer) replicate2.invoke(
-        () -> DistributedRegionFunctionExecutionDUnitTest.createServer(DataPolicy.REPLICATE));
+    client.invoke(() -> {
+      createClientCache();
+      createClientRegion(port1, port2);
+      populateClientRegion(200);
 
-    createClientAndPopulateClientRegion(DataPolicy.EMPTY, port1, port2);
-
-    executeFunctionWithNoResultThrowException();
-    Wait.pause(10000);
+      try (IgnoredException ie = addIgnoredException(RuntimeException.class)) {
+        executeThrowsRuntimeExceptionFunction();
+      }
+    });
   }
 
-  public static void executeFunction_NoResult() {
-    Function function = new TestFunction(false, TestFunction.TEST_FUNCTION1);
-    Execution dataset = FunctionService.onRegion(region);
-    dataset.execute(function);
+  private Properties getDistributedSystemProperties() {
+    Properties props = DistributedRule.getDistributedSystemProperties();
+    props.setProperty(SERIALIZABLE_OBJECT_FILTER,
+        "org.apache.geode.internal.cache.functions.**;org.apache.geode.internal.cache.execute.**;org.apache.geode.test.dunit.**");
+    return props;
   }
 
-  public static void put() {
+  private Properties getClientProperties() {
+    Properties props = new Properties();
+    props.setProperty(SERIALIZABLE_OBJECT_FILTER,
+        "org.apache.geode.internal.cache.functions.**;org.apache.geode.internal.cache.execute.**;org.apache.geode.test.dunit.**");
+    return props;
+  }
+
+  private void createCache(Properties props) {
+    cacheRule.createCache(props);
+  }
+
+  private void createClientCache(Properties props) {
+    clientCacheRule.createClientCache(props);
+  }
+
+  private InternalCache getCache() {
+    return cacheRule.getCache();
+  }
+
+  private InternalClientCache getClientCache() {
+    return clientCacheRule.getClientCache();
+  }
+
+  private void createCacheWithSecurity() {
+    Properties props = getDistributedSystemProperties();
+    props.setProperty(NAME, "SecurityServer");
+    props.setProperty(SECURITY_CLIENT_AUTHENTICATOR,
+        DummyAuthenticator.class.getName() + ".create");
+
+    createCache(props);
+  }
+
+  private void createClientCache() {
+    Properties props = getDistributedSystemProperties();
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
+
+    createClientCache(props);
+  }
+
+  private void createClientCacheWithSecurity() {
+    Properties props = getDistributedSystemProperties();
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
+    props.setProperty(NAME, "SecurityClient");
+    props.setProperty(SECURITY_CLIENT_AUTH_INIT, UserPasswordAuthInit.class.getName() + ".create");
+    props.setProperty("security-username", "reader1");
+    props.setProperty("security-password", "reader1");
+
+    createClientCache(props);
+  }
+
+  private void createClientRegion(int... ports) {
+    System.setProperty(GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints", "true");
+
+    PoolFactory poolFactory = PoolManager.createFactory();
+    for (int port : ports) {
+      poolFactory.addServer("localhost", port);
+    }
+    Pool pool = poolFactory
+        .setMaxConnections(10)
+        .setMinConnections(6)
+        .setPingInterval(3000)
+        .setReadTimeout(2000)
+        .setRetryAttempts(2)
+        .setSocketBufferSize(1000)
+        .setSubscriptionEnabled(false)
+        .setSubscriptionRedundancy(-1)
+        .create(poolName);
+
+    Region<?, ?> region = getClientCache()
+        .createClientRegionFactory(ClientRegionShortcut.PROXY)
+        .setPoolName(pool.getName())
+        .create(regionName);
+
+    setRegion(region);
+  }
+
+  private void createRegion(DataPolicy dataPolicy) {
+    Region<?, ?> region = getCache().createRegionFactory()
+        .setDataPolicy(dataPolicy)
+        .setScope(Scope.DISTRIBUTED_ACK)
+        .create(regionName);
+
+    setRegion(region);
+  }
+
+  private int createCacheServer() throws IOException {
+    CacheServer cacheServer = getCache().addCacheServer();
+    cacheServer.setPort(0);
+    cacheServer.start();
+    return cacheServer.getPort();
+  }
+
+  private void doPut() {
+    Region<String, String> region = getRegion();
     region.put("K1", "B1");
   }
 
-  public static void bug41118() {
-    InternalDistributedSystem ds = new DistributedRegionFunctionExecutionDUnitTest().getSystem();
-    assertNotNull(ds);
-    ds.disconnect();
-    Properties props = new Properties();
-    props.setProperty(MCAST_PORT, "0");
-    ds = (InternalDistributedSystem) DistributedSystem.connect(props);
-
-    DistributionManager dm = ds.getDistributionManager();
-    assertEquals("Distributed System is not loner", true, dm instanceof LonerDistributionManager);
-
-    Cache cache = CacheFactory.create(ds);
-    AttributesFactory factory = new AttributesFactory();
-    factory.setScope(Scope.LOCAL);
-    factory.setDataPolicy(DataPolicy.REPLICATE);
-    assertNotNull(cache);
-    region = cache.createRegion(REGION_NAME, factory.create());
-    try {
-      executeInlineFunction();
-      ds.disconnect();
-    } catch (Exception e) {
-      LogWriterUtils.getLogWriter().info("Exception Occurred : " + e.getMessage());
-      e.printStackTrace();
-      Assert.fail("Test failed", e);
+  private void populateRegion(int count) {
+    Region<String, Integer> region = getRegion();
+    for (int i = 1; i <= count; i++) {
+      region.put("execKey-" + i, i);
     }
   }
 
-
-  public static void executeInlineFunction() {
-    List list = (List) FunctionService.onRegion(region).setArguments(Boolean.TRUE)
-        .execute(new FunctionAdapter() {
-          @Override
-          public void execute(FunctionContext context) {
-            if (context.getArguments() instanceof String) {
-              context.getResultSender().lastResult("Success");
-            } else if (context.getArguments() instanceof Boolean) {
-              context.getResultSender().lastResult(Boolean.TRUE);
-            }
-          }
-
-          @Override
-          public String getId() {
-            return "Function";
-          }
-
-          @Override
-          public boolean hasResult() {
-            return true;
-          }
-        }).getResult();
-    assertEquals(1, list.size());
-    assertEquals(Boolean.TRUE, list.get(0));
+  private void populateClientRegion(int count) {
+    Region<String, Integer> region = getRegion();
+    for (int i = 1; i <= count; i++) {
+      region.put("execKey-" + i, i);
+    }
   }
 
-  public static void registerFunction() {
-    FunctionService.registerFunction(new FunctionAdapter() {
+  private void startServerHA() throws IOException {
+    for (CacheServer cacheServer : getCache().getCacheServers()) {
+      cacheServer.start();
+    }
+  }
+
+  private void stopServerHA() {
+    for (CacheServer cacheServer : getCache().getCacheServers()) {
+      cacheServer.stop();
+    }
+  }
+
+  private void closeCacheHA() {
+    for (CacheServer cacheServer : getCache().getCacheServers()) {
+      cacheServer.stop();
+    }
+
+    getCache().close();
+  }
+
+  private void registerThrowsFunctionInvocationTargetExceptionFunction(boolean isHA,
+      int retryCount) {
+    FunctionService.registerFunction(
+        new ThrowsFunctionInvocationTargetExceptionFunction(isHA, retryCount));
+  }
+
+  private void executeNoResultFunction() {
+    FunctionServiceCast
+        .onRegion(getRegion())
+        .execute(new NoResultFunction());
+  }
+
+  private List<Boolean> executeDistributedRegionFunction() {
+    return FunctionServiceCast
+        .<Boolean, Boolean, List<Boolean>>onRegion(getRegion())
+        .withFilter(filter)
+        .setArguments(false)
+        .execute(new DistributedRegionFunction())
+        .getResult();
+  }
+
+  private void executeThrowsRuntimeExceptionFunction() {
+    FunctionServiceCast
+        .<Void, Void, Void>onRegion(getRegion())
+        .withFilter(filter)
+        .execute(new ThrowsRuntimeExceptionFunction());
+  }
+
+  private void executeResultWithExceptionFunction() {
+    Function function = new ResultWithExceptionFunction();
+
+    Set<String> filter = new HashSet<>();
+    for (int i = 0; i <= 19; i++) {
+      filter.add("execKey-" + 100 + i);
+    }
+
+    ResultCollector<Object, List<Object>> resultCollector = FunctionServiceCast
+        .<Boolean, Object, List<Object>>onRegion(getRegion())
+        .withFilter(filter)
+        .setArguments(true)
+        .execute(function);
+
+    List<Object> result = resultCollector.getResult();
+    result.sort(new NumericComparator());
+
+    assertThat(result.get(0))
+        .as("First element of " + resultCollector.getResult())
+        .isInstanceOf(CustomRuntimeException.class);
+
+    resultCollector = FunctionServiceCast
+        .<Set<String>, Object, List<Object>>onRegion(getRegion())
+        .withFilter(filter)
+        .setArguments(filter)
+        .execute(function);
+
+    result = resultCollector.getResult();
+    result.sort(new NumericComparator());
+
+    assertThat(result)
+        .hasSize(filter.size() + 1)
+        .containsAll(IntStream.rangeClosed(0, 19).boxed().collect(toList()));
+
+    assertThat(result.get(result.size() - 1))
+        .as("Last element of " + result)
+        .isInstanceOf(CustomRuntimeException.class);
+  }
+
+  private void executeNoLastResultFunction() {
+    Throwable thrown = catchThrowable(() -> {
+      FunctionServiceCast
+          .onRegion(getRegion())
+          .withFilter(filter)
+          .execute(new NoLastResultFunction())
+          .getResult();
+    });
+
+    assertThat(thrown)
+        .hasMessageContaining("did not send last result");
+  }
+
+  private void executeUnregisteredFunction() {
+    FunctionService.unregisterFunction(new DistributedRegionFunction().getId());
+
+    FunctionServiceCast
+        .<Void, Boolean, List<Boolean>>onRegion(getRegion())
+        .withFilter(filter)
+        .execute(new DistributedRegionFunction())
+        .getResult();
+  }
+
+  private void executeFunctionFunctionInvocationTargetException() {
+    ResultCollector<Integer, List<Integer>> resultCollector = FunctionServiceCast
+        .<Boolean, Integer, List<Integer>>onRegion(getRegion())
+        .setArguments(true)
+        .execute(ThrowsFunctionInvocationTargetExceptionFunction.class.getSimpleName());
+
+    assertThat(resultCollector.getResult())
+        .containsOnly(5);
+  }
+
+  private void executeFunctionFunctionInvocationTargetExceptionWithoutHA() {
+    Throwable thrown = catchThrowable(() -> {
+      FunctionServiceCast
+          .<Boolean, Integer, List<Integer>>onRegion(getRegion())
+          .setArguments(true)
+          .execute(ThrowsFunctionInvocationTargetExceptionFunction.class.getSimpleName())
+          .getResult();
+    });
+
+    assertThat(thrown)
+        .isInstanceOf(FunctionException.class);
+
+    assertThat(thrown.getCause())
+        .isInstanceOf(FunctionInvocationTargetException.class);
+  }
+
+  private void executeFunctionFunctionInvocationTargetException_ClientServer() {
+    ResultCollector<Integer, List<Integer>> resultCollector = FunctionServiceCast
+        .<Boolean, Integer, List<Integer>>onRegion(getRegion())
+        .setArguments(true)
+        .execute(ThrowsFunctionInvocationTargetExceptionFunction.class.getSimpleName());
+
+    assertThat(resultCollector.getResult())
+        .containsOnly(5);
+  }
+
+  private void executeFunctionFunctionInvocationTargetException_ClientServer_WithoutHA() {
+    Throwable thrown = catchThrowable(() -> {
+      FunctionServiceCast
+          .<Boolean, Integer, List<Integer>>onRegion(getRegion())
+          .setArguments(true)
+          .execute(ThrowsFunctionInvocationTargetExceptionFunction.class.getSimpleName())
+          .getResult();
+    });
+
+    assertThat(thrown)
+        .isInstanceOf(FunctionException.class);
+
+    assertThat(thrown.getCause())
+        .isInstanceOf(FunctionInvocationTargetException.class);
+  }
+
+  private static <K, V> Region<K, V> getRegion() {
+    return cast(REGION.get());
+  }
+
+  private static void setRegion(Region<?, ?> region) {
+    REGION.set(region);
+  }
+
+  private static Function<Object> inlineFunction(String stringResult, boolean booleanResult) {
+    return new Function<Object>() {
       @Override
-      public void execute(FunctionContext context) {
+      public void execute(FunctionContext<Object> context) {
         if (context.getArguments() instanceof String) {
-          context.getResultSender().lastResult("Failure");
+          context.getResultSender().lastResult(stringResult);
         } else if (context.getArguments() instanceof Boolean) {
-          context.getResultSender().lastResult(Boolean.FALSE);
+          context.getResultSender().lastResult(booleanResult);
         }
       }
 
@@ -1064,444 +1316,267 @@ public class DistributedRegionFunctionExecutionDUnitTest extends JUnit4Distribut
       public String getId() {
         return "Function";
       }
-
-      @Override
-      public boolean hasResult() {
-        return true;
-      }
-    });
-  }
-
-  public static void registerFunction(Boolean isHA, Integer retryCount) {
-    Function function =
-        new DistributedRegionFunctionFunctionInvocationException(isHA.booleanValue(),
-            retryCount.intValue());
-    FunctionService.registerFunction(function);
-  }
-
-  public static void createCacheInVm() {
-    new DistributedRegionFunctionExecutionDUnitTest().createCache(new Properties());
-  }
-
-  public static void createCacheInVm_41367() {
-    Properties props = new Properties();
-    props.put(NAME, "SecurityServer");
-    props.put(SECURITY_CLIENT_AUTHENTICATOR, DummyAuthenticator.class.getName() + ".create");
-    new DistributedRegionFunctionExecutionDUnitTest().createCache(props);
-  }
-
-  public static void createCacheInClientVm() {
-    Properties props = new Properties();
-    props.put(MCAST_PORT, "0");
-    props.put(LOCATORS, "");
-    new DistributedRegionFunctionExecutionDUnitTest().createCache(new Properties());
-  }
-
-  public static void createCacheInClientVm_41367() {
-    Properties props = new Properties();
-    props.put(MCAST_PORT, "0");
-    props.put(LOCATORS, "");
-    props.put(NAME, "SecurityClient");
-    props.put(SECURITY_CLIENT_AUTH_INIT, UserPasswordAuthInit.class.getName() + ".create");
-    props.put("security-username", "reader1");
-    props.put("security-password", "reader1");
-    new DistributedRegionFunctionExecutionDUnitTest().createCache(props);
-  }
-
-  public static void executeFunction() {
-    Set filter = new HashSet();
-    for (int i = 100; i < 120; i++) {
-      filter.add("execKey-" + i);
-    }
-    FunctionService.onRegion(region).withFilter(filter).execute(function).getResult();
-  }
-
-  public static void executeLongRunningFunctionNotTimedOut() {
-    Set filter = new HashSet();
-    for (int i = 100; i < 120; i++) {
-      filter.add("execKey-" + i);
-    }
-    long timeout = 8000;
-    TimeUnit unit = TimeUnit.MILLISECONDS;
-    ResultCollector rc = FunctionService.onRegion(region).withFilter(filter)
-        .execute(TestFunction.TEST_FUNCTION_RUNNING_FOR_LONG_TIME, timeout, unit);
-    List li = (ArrayList) rc.getResult();
-    assertEquals(li.get(0), "Ran executeFunctionRunningForLongTime for 2000");
-  }
-
-  public static void executeLongRunningFunctionTimedOut() {
-    Set filter = new HashSet();
-    for (int i = 100; i < 120; i++) {
-      filter.add("execKey-" + i);
-    }
-    long timeout = 1000;
-    TimeUnit unit = TimeUnit.MILLISECONDS;
-    assertThatThrownBy(() -> {
-      FunctionService.onRegion(region).withFilter(filter)
-          .execute(TestFunction.TEST_FUNCTION_RUNNING_FOR_LONG_TIME, timeout, unit);
-    }).hasCauseInstanceOf(FunctionException.class)
-        .hasMessageContaining("All results not received in time provided");
-  }
-
-  public static void executeLongRunningFunctionNotTimedOut_byInstance() {
-    Set filter = new HashSet();
-    for (int i = 100; i < 120; i++) {
-      filter.add("execKey-" + i);
-    }
-    long timeout = 8000;
-    TimeUnit unit = TimeUnit.MILLISECONDS;
-    ResultCollector rc = FunctionService.onRegion(region).withFilter(filter)
-        .execute(longRunningFunction, timeout, unit);
-    List li = (ArrayList) rc.getResult();
-    assertEquals(li.get(0), "Ran executeFunctionRunningForLongTime for 2000");
-  }
-
-  public static void executeLongRunningFunctionTimedOut_byInstance() {
-    Set filter = new HashSet();
-    for (int i = 100; i < 120; i++) {
-      filter.add("execKey-" + i);
-    }
-    long timeout = 1000;
-    TimeUnit unit = TimeUnit.MILLISECONDS;
-    assertThatThrownBy(() -> {
-      FunctionService.onRegion(region).withFilter(filter)
-          .execute(longRunningFunction, timeout, unit);
-    }).hasCauseInstanceOf(FunctionException.class)
-        .hasMessageContaining("All results not received in time provided");
-  }
-
-  public static void executeFunctionWithNoResultThrowException() {
-    Set filter = new HashSet();
-    for (int i = 100; i < 120; i++) {
-      filter.add("execKey-" + i);
-    }
-    FunctionService.onRegion(region).withFilter(filter)
-        .execute(functionWithNoResultThrowsException);
-  }
-
-  public static void executeFunction_SendException() {
-    Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_SEND_EXCEPTION);
-
-    Set filter = new HashSet();
-    for (int i = 100; i < 120; i++) {
-      filter.add("execKey-" + i);
-    }
-    ResultCollector rs = FunctionService.onRegion(region).withFilter(filter)
-        .setArguments(Boolean.TRUE).execute(function);
-    List list = (List) rs.getResult();
-    assertTrue(list.get(0) instanceof MyFunctionExecutionException);
-
-    rs = FunctionService.onRegion(region).withFilter(filter).setArguments((Serializable) filter)
-        .execute(function);
-    List resultList = (List) rs.getResult();
-    assertEquals((filter.size() + 1), resultList.size());
-    Iterator resultIterator = resultList.iterator();
-    int exceptionCount = 0;
-    while (resultIterator.hasNext()) {
-      Object o = resultIterator.next();
-      if (o instanceof MyFunctionExecutionException) {
-        exceptionCount++;
-      }
-    }
-    assertEquals(1, exceptionCount);
-  }
-
-  public static void executeFunction_NoLastResult() {
-    Set filter = new HashSet();
-    for (int i = 100; i < 120; i++) {
-      filter.add("execKey-" + i);
-    }
-    try {
-      FunctionService.onRegion(region).withFilter(filter)
-          .execute(new TestFunction(true, TestFunction.TEST_FUNCTION_NO_LASTRESULT)).getResult();
-      fail("FunctionException expected : Function did not send last result");
-    } catch (Exception ex) { // TODO: this is too broad -- catch just the expected exception
-      assertTrue(ex.getMessage().contains("did not send last result"));
-    }
-  }
-
-
-
-  public static void executeUnregisteredFunction() {
-    FunctionService.unregisterFunction(function.getId());
-
-    Set filter = new HashSet();
-    for (int i = 100; i < 120; i++) {
-      filter.add("execKey-" + i);
-    }
-    FunctionService.onRegion(region).withFilter(filter).execute(function).getResult();
-  }
-
-  public static void executeFunctionFunctionInvocationTargetException() {
-    try {
-      ResultCollector rc1 = FunctionService.onRegion(region).setArguments(Boolean.TRUE)
-          .execute("DistributedRegionFunctionFunctionInvocationException");
-      List list = (ArrayList) rc1.getResult();
-      assertEquals(5, list.get(0));
-    } catch (Exception e) {
-      e.printStackTrace();
-      Assert.fail("This is not expected Exception", e);
-    }
-  }
-
-  public static void executeFunctionFunctionInvocationTargetExceptionWithoutHA() {
-    try {
-      ResultCollector rc1 = FunctionService.onRegion(region).setArguments(Boolean.TRUE)
-          .execute("DistributedRegionFunctionFunctionInvocationException");
-      rc1.getResult();
-      fail("Function Invocation Target Exception should be thrown");
-    } catch (Exception e) {
-      e.printStackTrace();
-      if (!(e.getCause() instanceof FunctionInvocationTargetException)) {
-        fail("FunctionInvocationTargetException should be thrown");
-      }
-    }
-  }
-
-  public static void executeFunctionFunctionInvocationTargetException_ClientServer() {
-    try {
-      List list = (ArrayList) FunctionService.onRegion(region).setArguments(Boolean.TRUE)
-          .execute("DistributedRegionFunctionFunctionInvocationException").getResult();
-      assertEquals(1, list.size());
-      assertEquals(5, list.get(0));
-    } catch (Exception e) {
-      e.printStackTrace();
-      Assert.fail("This is not expected Exception", e);
-    }
-  }
-
-  public static void executeFunctionFunctionInvocationTargetException_ClientServer_WithoutHA() {
-    try {
-      FunctionService.onRegion(region).setArguments(Boolean.TRUE)
-          .execute("DistributedRegionFunctionFunctionInvocationException").getResult();
-      fail("Function Invocation Target Exception should be thrown");
-    } catch (Exception e) {
-      e.printStackTrace();
-      if (!(e.getCause() instanceof FunctionInvocationTargetException)) {
-        fail("FunctionInvocationTargetException should be thrown");
-      }
-    }
-  }
-
-  public static List executeFunctionHA() {
-    Set filter = new HashSet();
-    for (int i = 100; i < 120; i++) {
-      filter.add("execKey-" + i);
-    }
-    List list =
-        (List) FunctionService.onRegion(region).withFilter(filter).execute(function).getResult();
-    return list;
+    };
   }
 
   /**
-   * This will do a cache close from within the body of function to simulate failover during
-   * function execution.
+   * Return Integers provided as Arguments and a last result of CustomRuntimeException.
    */
-  public static List executeFunctionHACacheClose() {
-    Set filter = new HashSet();
-    for (int i = 100; i < 120; i++) {
-      filter.add("execKey-" + i);
-    }
-    // dummy argument Boolean.TRUE indicates that cache should be closed
-    // in the function body itself on the first try
-    List list = (List) FunctionService.onRegion(region).withFilter(filter)
-        .setArguments(Boolean.TRUE).execute(function).getResult();
-    return list;
-  }
+  private static class ResultWithExceptionFunction implements Function<Object> {
 
-  public static void createClientAndPopulateClientRegion(DataPolicy policy, Integer port1,
-      Integer port2) {
-    CacheServerTestUtil.disableShufflingOfEndpoints();
-    Pool p;
-    try {
-      p = PoolManager.createFactory().addServer("localhost", port1.intValue())
-          .addServer("localhost", port2.intValue()).setPingInterval(3000)
-          .setSubscriptionEnabled(false).setSubscriptionRedundancy(-1).setReadTimeout(2000)
-          .setSocketBufferSize(1000).setMinConnections(6).setMaxConnections(10).setRetryAttempts(2)
-          .create("DistributedRegionFunctionExecutionDUnitTest_pool");
-    } finally {
-      CacheServerTestUtil.enableShufflingOfEndpoints();
-    }
-    AttributesFactory factory = new AttributesFactory();
-    factory.setScope(Scope.LOCAL);
-    factory.setDataPolicy(DataPolicy.EMPTY);
-    factory.setPoolName(p.getName());
-    factory.setDataPolicy(policy);
-    assertNotNull(cache);
-    region = cache.createRegion(REGION_NAME, factory.create());
-    LogWriterUtils.getLogWriter().info("Client Region Created :" + region);
-    assertNotNull(region);
-    for (int i = 1; i <= 200; i++) {
-      region.put("execKey-" + i, new Integer(i));
-    }
-  }
-
-  public static void createClient_41367(Integer port1) {
-    CacheServerTestUtil.disableShufflingOfEndpoints();
-    Pool p;
-    try {
-      p = PoolManager.createFactory().addServer("localhost", port1.intValue()).setPingInterval(3000)
-          .setSubscriptionEnabled(false).setSubscriptionRedundancy(-1).setReadTimeout(2000)
-          .setSocketBufferSize(1000).setMinConnections(1).setMaxConnections(1).setRetryAttempts(2)
-          .create("DistributedRegionFunctionExecutionDUnitTest_pool");
-    } finally {
-      CacheServerTestUtil.enableShufflingOfEndpoints();
-    }
-    AttributesFactory factory = new AttributesFactory();
-    factory.setDataPolicy(DataPolicy.EMPTY);
-    factory.setPoolName(p.getName());
-    assertNotNull(cache);
-    region = cache.createRegion(REGION_NAME, factory.create());
-    LogWriterUtils.getLogWriter().info("Client Region Created :" + region);
-    assertNotNull(region);
-  }
-
-  public static Integer createServer(DataPolicy policy) {
-    AttributesFactory factory = new AttributesFactory();
-    factory.setScope(Scope.DISTRIBUTED_ACK);
-    factory.setDataPolicy(policy);
-    assertNotNull(cache);
-    region = cache.createRegion(REGION_NAME, factory.create());
-    LogWriterUtils.getLogWriter().info("Region Created :" + region);
-    assertNotNull(region);
-
-    CacheServer server = cache.addCacheServer();
-    assertNotNull(server);
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    server.setPort(port);
-    try {
-      server.start();
-    } catch (IOException e) {
-      Assert.fail("Failed to start the Server", e);
-    }
-    assertTrue(server.isRunning());
-    return new Integer(server.getPort());
-  }
-
-  public static void createPeer(DataPolicy policy) {
-    AttributesFactory factory = new AttributesFactory();
-    factory.setScope(Scope.DISTRIBUTED_ACK);
-    factory.setDataPolicy(policy);
-    assertNotNull(cache);
-    region = cache.createRegion(REGION_NAME, factory.create());
-    LogWriterUtils.getLogWriter().info("Region Created :" + region);
-    assertNotNull(region);
-  }
-
-  public static void populateRegion() {
-    assertNotNull(cache);
-    region = cache.getRegion(REGION_NAME);
-    assertNotNull(region);
-    for (int i = 1; i <= 200; i++) {
-      region.put("execKey-" + i, new Integer(i));
-    }
-  }
-
-  private void createCache(Properties props) {
-    try {
-      props.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
-          "org.apache.geode.internal.cache.functions.**;org.apache.geode.internal.cache.execute.**;org.apache.geode.test.dunit.**");
-      DistributedSystem ds = getSystem(props);
-      assertNotNull(ds);
-      ds.disconnect();
-      ds = getSystem(props);
-      cache = CacheFactory.create(ds);
-      LogWriterUtils.getLogWriter().info("Created Cache on peer");
-      assertNotNull(cache);
-      FunctionService.registerFunction(function);
-      FunctionService.registerFunction(longRunningFunction);
-    } catch (Exception e) {
-      Assert.fail(
-          "DistributedRegionFunctionExecutionDUnitTest#createCache() Failed while creating the cache",
-          e);
-    }
-  }
-
-  public static void closeCache() {
-    long startTime = System.currentTimeMillis();
-    Wait.pause(3000);
-    long endTime = System.currentTimeMillis();
-    region.getCache().getLogger().fine("Time wait for Cache Close = " + (endTime - startTime));
-    cache.close();
-  }
-
-  public static void startServerHA() {
-    Wait.pause(2000);
-    Collection bridgeServers = cache.getCacheServers();
-    LogWriterUtils.getLogWriter()
-        .info("Start Server cache servers list : " + bridgeServers.size());
-    Iterator bridgeIterator = bridgeServers.iterator();
-    CacheServer bridgeServer = (CacheServer) bridgeIterator.next();
-    LogWriterUtils.getLogWriter().info("start Server cache server" + bridgeServer);
-    try {
-      bridgeServer.start();
-    } catch (IOException e) {
-      fail("not able to start the server");
-    }
-  }
-
-  public static void stopServerHA() {
-    Wait.pause(1000);
-    try {
-      Iterator iter = cache.getCacheServers().iterator();
-      if (iter.hasNext()) {
-        CacheServer server = (CacheServer) iter.next();
-        server.stop();
-      }
-    } catch (Exception e) {
-      fail("failed while stopServer()" + e);
-    }
-  }
-
-  public static void closeCacheHA() {
-    Wait.pause(1000);
-    if (cache != null && !cache.isClosed()) {
-      try {
-        Iterator iter = cache.getCacheServers().iterator();
-        if (iter.hasNext()) {
-          CacheServer server = (CacheServer) iter.next();
-          server.stop();
+    @Override
+    public void execute(FunctionContext<Object> context) {
+      if (context.getArguments() instanceof Set) {
+        Set<Integer> arguments = cast(context.getArguments());
+        for (int i = 0; i < arguments.size(); i++) {
+          context.getResultSender().sendResult(i);
         }
-      } catch (Exception e) {
-        fail("failed while stopServer()" + e);
       }
-      cache.close();
-      cache.getDistributedSystem().disconnect();
+      context.getResultSender().sendException(
+          new CustomRuntimeException("I have been thrown from TestFunction with set"));
+    }
+
+    @Override
+    public String getId() {
+      return getClass().getName();
+    }
+
+    @Override
+    public boolean isHA() {
+      return false;
     }
   }
 
-  public static void disconnect() {
-    long startTime = System.currentTimeMillis();
-    Wait.pause(2000);
-    long endTime = System.currentTimeMillis();
-    region.getCache().getLogger().fine("Time wait for Disconnecting = " + (endTime - startTime));
-    cache.getDistributedSystem().disconnect();
+  /**
+   * Throw RuntimeException without sending any results.
+   */
+  private static class ThrowsRuntimeExceptionFunction implements Function<Void> {
+
+    @Override
+    public void execute(FunctionContext<Void> context) {
+      throw new RuntimeException("failure");
+    }
+
+    @Override
+    public String getId() {
+      return getClass().getName();
+    }
+
+    @Override
+    public boolean hasResult() {
+      return false;
+    }
+
+    @Override
+    public boolean isHA() {
+      return false;
+    }
   }
 
-}
+  /**
+   * Return the Integer 5 or throw FunctionInvocationTargetException depending on object state.
+   */
+  private static class ThrowsFunctionInvocationTargetExceptionFunction implements Function<Void> {
 
+    private final AtomicInteger count = new AtomicInteger();
+    private final int retryCount;
+    private final boolean isHA;
 
-class MyFunctionException extends FunctionAdapter {
+    private ThrowsFunctionInvocationTargetExceptionFunction(boolean isHA, int retryCount) {
+      this.isHA = isHA;
+      this.retryCount = retryCount;
+    }
 
-  @Override
-  public void execute(FunctionContext context) {
-    System.out.println("SKSKSK ");
-    throw new RuntimeException("failure");
+    @Override
+    public void execute(FunctionContext<Void> context) {
+      count.incrementAndGet();
+      if (retryCount != 0 && count.get() >= retryCount) {
+        context.getResultSender().lastResult(5);
+      } else {
+        throw new FunctionInvocationTargetException("I have been thrown from " + getId());
+      }
+    }
+
+    @Override
+    public String getId() {
+      return getClass().getSimpleName();
+    }
+
+    @Override
+    public boolean isHA() {
+      return isHA;
+    }
   }
 
-  @Override
-  public String getId() {
-    return this.getClass().getName();
+  /**
+   * Validate DataPolicy and Filter state, perform Region put operations, and then return 5000
+   * boolean true values and a last result of boolean false.
+   */
+  private static class DistributedRegionFunction implements Function<Boolean> {
+
+    @Override
+    public void execute(FunctionContext<Boolean> context) {
+      RegionFunctionContext regionFunctionContext = (RegionFunctionContext) context;
+      Region<Object, Object> region = regionFunctionContext.getDataSet();
+      InternalDistributedSystem sys = InternalDistributedSystem.getConnectedInstance();
+
+      assertThat(region.getAttributes().getDataPolicy().withStorage()).isTrue();
+      assertThat(region.getAttributes().getDataPolicy()).isNotEqualTo(DataPolicy.NORMAL);
+      assertThat(regionFunctionContext.getFilter()).hasSize(20);
+
+      // argument true indicates that CacheClose has to be done from the body itself
+      if (context.getArguments() != null && context.getArguments()) {
+        // do not close cache in retry
+        if (!regionFunctionContext.isPossibleDuplicate()) {
+          sys.disconnect();
+          throw new CacheClosedException(
+              "Throwing CacheClosedException to simulate failover during function exception");
+        }
+      }
+
+      // intentionally doing region operation to cause cacheClosedException
+      region.put("execKey-201", 201);
+
+      if (regionFunctionContext.isPossibleDuplicate()) {
+        // Below operation is done when the function is reexecuted
+        region.put("execKey-202", 202);
+        region.put("execKey-203", 203);
+      }
+
+      for (int i = 0; i < 5000; i++) {
+        context.getResultSender().sendResult(true);
+      }
+      context.getResultSender().lastResult(true);
+    }
+
+    @Override
+    public String getId() {
+      return getClass().getSimpleName();
+    }
   }
 
-  @Override
-  public boolean hasResult() {
-    return false;
+  /**
+   * Execute until the provided CountDownLatch counts down to zero.
+   */
+  private static class LongRunningFunction implements Function<Void> {
+
+    private final CountDownLatch latch;
+
+    private LongRunningFunction(CountDownLatch latch) {
+      this.latch = latch;
+    }
+
+    @Override
+    public void execute(FunctionContext<Void> context) {
+      try {
+        latch.await(getTimeout().getValueInMS(), MILLISECONDS);
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+      }
+
+      context.getResultSender().lastResult("LongRunningFunction completed");
+    }
+
+    @Override
+    public String getId() {
+      return getClass().getSimpleName();
+    }
   }
 
-  @Override
-  public boolean isHA() {
-    return false;
+  /**
+   * Complete immediately with no results.
+   */
+  private static class NoResultFunction implements Function<Void> {
+
+    @Override
+    public void execute(FunctionContext<Void> context) {
+      // no result
+    }
+
+    @Override
+    public String getId() {
+      return getClass().getSimpleName();
+    }
+
+    @Override
+    public boolean hasResult() {
+      return false;
+    }
+
+    @Override
+    public boolean isHA() {
+      return false;
+    }
   }
 
+  /**
+   * Return Arguments as results without a last result.
+   */
+  private static class NoLastResultFunction implements Function<Object> {
+
+    @Override
+    public void execute(FunctionContext<Object> context) {
+      context.getResultSender().sendResult(context.getArguments());
+    }
+
+    @Override
+    public String getId() {
+      return getClass().getSimpleName();
+    }
+  }
+
+  /**
+   * Custom RuntimeException.
+   */
+  private static class CustomRuntimeException extends RuntimeException {
+
+    private CustomRuntimeException(String message) {
+      super(message);
+    }
+  }
+
+  /**
+   * Use natural ordering for Integers and moves optional Exception to end of Collection.
+   */
+  private static class NumericComparator implements Comparator<Object>, Serializable {
+
+    @Override
+    public int compare(Object o1, Object o2) {
+      if (o1 == o2) {
+        return 0;
+      }
+      if (!(o1 instanceof Integer)) {
+        return 1;
+      }
+      if (!(o2 instanceof Integer)) {
+        return -1;
+      }
+      if ((int) o1 > (int) o2) {
+        return 1;
+      }
+      return -1;
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  static class FunctionServiceCast {
+
+    /**
+     * Provide unchecked cast of FunctionService.onRegion.
+     */
+    static <IN, OUT, AGG> Execution<IN, OUT, AGG> onRegion(Region<?, ?> region) {
+      return FunctionService.onRegion(region);
+    }
+  }
+
+  @SuppressWarnings({"unchecked", "unused"})
+  static class UncheckedUtils {
+
+    /**
+     * Provide unchecked cast of specified Object.
+     */
+    static <T> T cast(Object object) {
+      return (T) object;
+    }
+  }
 }
