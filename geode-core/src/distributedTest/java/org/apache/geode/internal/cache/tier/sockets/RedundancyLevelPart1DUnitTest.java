@@ -505,7 +505,8 @@ public class RedundancyLevelPart1DUnitTest implements Serializable {
   private void verifyInterestRegistration() {
     await().untilAsserted(() -> assertThat(cache.getCacheServers()).hasSize(1));
 
-    InternalCacheServer cacheServer = (InternalCacheServer) cache.getCacheServers().iterator().next();
+    InternalCacheServer cacheServer =
+        (InternalCacheServer) cache.getCacheServers().iterator().next();
     assertThat(cacheServer).isNotNull();
     assertThat(cacheServer.getAcceptor()).isNotNull();
     assertThat(cacheServer.getAcceptor().getCacheClientNotifier()).isNotNull();
