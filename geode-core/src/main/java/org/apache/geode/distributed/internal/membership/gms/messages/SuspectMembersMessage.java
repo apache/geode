@@ -26,6 +26,10 @@ import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
 
+/**
+ * The HealthMonitor will send SuspectMembersMessages to inform other members of the cluster
+ * that a member may have crashed. No response is required.
+ */
 public class SuspectMembersMessage<ID extends MemberIdentifier> extends AbstractGMSMessage<ID> {
   final List<SuspectRequest<ID>> suspectRequests;
 

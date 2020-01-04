@@ -58,6 +58,13 @@ import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
+/**
+ * GMSLocator responds to requests to find the membership coordinator in a cluster.
+ * While a Service, it has a complicated life-cycle because it must be started before
+ * Services have joined the cluster.
+ *
+ * @param <ID>
+ */
 public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID>, TcpHandler {
 
   static final int LOCATOR_FILE_STAMP = 0x7b8cf741;

@@ -12,25 +12,9 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.distributed.internal.membership.api;
 
-import java.util.Comparator;
+package org.apache.geode.unsafe.internal.com.sun.jmx.remote.security;
 
-
-/**
- * A MemberIdentifierFactory is provided when building a membership service. It must provide
- * implementations of the MemberIdentifier interface for use as identifiers in the membership
- * service. For Geode this implementation is InternalDistributedMember.<br>
- * See {@link MembershipBuilder} - where you inject your factory into a Membership.
- */
-public interface MemberIdentifierFactory<ID extends MemberIdentifier> {
-  /**
-   * Create a new identifier instance
-   */
-  ID create(MemberData memberInfo);
-
-  /**
-   * Create a Comparator for the implementation of identifiers provided by this factory
-   */
-  Comparator<ID> getComparator();
+public abstract class MBeanServerAccessController
+    extends com.sun.jmx.remote.security.MBeanServerAccessController {
 }

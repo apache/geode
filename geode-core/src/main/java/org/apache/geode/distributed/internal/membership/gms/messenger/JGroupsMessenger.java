@@ -99,6 +99,15 @@ import org.apache.geode.logging.internal.OSProcess;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 
+/**
+ * JGroupsMessenger performs all Membership messaging using a JGroups UDP stack.
+ * It uses one of two JGroups configuration files stored in the Geode jar file to
+ * configure a simple JGroups stack depending on whether or not multicast is enabled.<br>
+ * JGroupsMessenger can send UDP messages using either reliable or non-reliable
+ * protocols.<br>
+ * Messages must implement the membership Message interface and must be serializable
+ * via the serializer/deserializer installed in a Membership.
+ */
 @SuppressWarnings("StatementWithEmptyBody")
 public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<ID> {
 

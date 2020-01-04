@@ -44,9 +44,6 @@
       ]
     },
     {
-      "type": "windows-restart"
-    },
-    {
       "type": "powershell",
       "inline": [
         "$ErrorActionPreference = \"Stop\"",
@@ -61,18 +58,12 @@
       ]
     },
     {
-      "type": "windows-restart"
-    },
-    {
       "type": "powershell",
       "inline": [
         "$ErrorActionPreference = \"Stop\"",
         "Set-ExecutionPolicy Bypass -Scope Process -Force",
         "Invoke-WebRequest https://chocolatey.org/install.ps1 -UseBasicParsing | Invoke-Expression"
       ]
-    },
-    {
-      "type": "windows-restart"
     },
     {
       "type": "powershell",
@@ -104,9 +95,6 @@
       ]
     },
     {
-      "type": "windows-restart"
-    },
-    {
       "type": "powershell",
       "inline": [
 
@@ -129,7 +117,14 @@
       ]
     },
     {
-      "type": "windows-restart"
+      "type": "windows-restart",
+      "restart_timeout": "30m"
+    },
+    {
+      "type": "powershell",
+      "inline": [
+        "GCESysprep -NoShutDown"
+      ]
     }
   ]
 }

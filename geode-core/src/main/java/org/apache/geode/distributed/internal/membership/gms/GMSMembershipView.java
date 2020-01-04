@@ -42,8 +42,8 @@ import org.apache.geode.internal.serialization.Version;
 
 /**
  * The GMSMembershipView class represents a membership view For Geode this is translated
- * into a MembershipView by GMSMembershipManager. The membership identifiers are GMSMembers,
- * which for Geode means they are InternalDistributedMember instances.
+ * into a MembershipView for use in geode-core. GMSMembershipView includes information
+ * not available in the geode-core membership view, such as failure-detection ports.
  *
  * Note that this class is not synchronized, so take
  * that under advisement if you decide to modify a view with add() or remove().

@@ -26,8 +26,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import org.apache.logging.log4j.Logger;
-
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.api.MembershipConfigurationException;
 import org.apache.geode.distributed.internal.membership.gms.membership.HostAddress;
@@ -35,10 +33,11 @@ import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 
+/**
+ * GMSUtil contains a few static utility methods that should probably reside in other classes
+ */
 public class GMSUtil {
-  private static final Logger logger = LogService.getLogger();
 
   /**
    * parse locators & check that the resulting address is compatible with the given address

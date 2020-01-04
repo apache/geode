@@ -24,8 +24,11 @@ import java.util.Set;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 
 /**
- * The MembershipView class represents a membership view. Note that this class is not synchronized,
- * so take that under advisement if you decide to modify a view with add() or remove().
+ * The MembershipView class represents a membership view. MembershipViews are typically
+ * unmodifiable though you an create and manipulate one for local usel A MembershipView
+ * defines who is in the cluster and knows which node created the view. It also knows which
+ * members left or were removed when the view was created. MemberIdentifiers in the view
+ * are marked with the viewId of the MembershipView in which they joined the cluster.
  */
 public class MembershipView<ID extends MemberIdentifier> {
 

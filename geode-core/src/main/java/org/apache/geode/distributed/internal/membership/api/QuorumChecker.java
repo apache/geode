@@ -17,9 +17,8 @@ package org.apache.geode.distributed.internal.membership.api;
 
 /**
  * A QuorumChecker is created after a forced-disconnect in order to probe the network to see if
- * there is a quorum of members that can be contacted.
- *
- *
+ * there is a quorum of members that can be contacted. It is currently used in geode-core's
+ * InternalDistributedSystem auto-reconnect code.
  */
 public interface QuorumChecker {
 

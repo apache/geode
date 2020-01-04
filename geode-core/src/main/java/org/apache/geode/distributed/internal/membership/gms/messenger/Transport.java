@@ -27,6 +27,11 @@ import org.jgroups.util.LazyThreadFactory;
 
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 
+/**
+ * Transport is a refinement of the JGroups UDP protocol that does a few things that
+ * JGroupsMessenger
+ * needs, such as sniffing for Ping messages and responding with Pong messages.
+ */
 public class Transport<ID extends MemberIdentifier> extends UDP {
 
   /**

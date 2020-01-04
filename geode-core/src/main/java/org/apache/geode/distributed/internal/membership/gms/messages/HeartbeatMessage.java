@@ -23,6 +23,11 @@ import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 
+/**
+ * Members send HeartbeatMessages to other members periodically in order to inform them
+ * that the sender is alive and should not be subjected to suspect-processing.<br>
+ * No response is required.
+ */
 public class HeartbeatMessage<ID extends MemberIdentifier> extends AbstractGMSMessage<ID> {
   /**
    * RequestId identifies the HeartbeatRequestMessage for which this is a response. If it is < 0

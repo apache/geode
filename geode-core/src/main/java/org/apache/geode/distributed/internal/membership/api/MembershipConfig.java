@@ -18,6 +18,11 @@ package org.apache.geode.distributed.internal.membership.api;
 import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.util.internal.GeodeGlossary;
 
+/**
+ * MembershipConfig is used to set parameters for a new Membership instance created with
+ * a MembershipBuilder. Most of the settings are configured in Geode with DistributedSystem
+ * properties (that is, gemfire.properties).
+ */
 public interface MembershipConfig {
   /** stall time to wait for concurrent join/leave/remove requests to be received */
   long MEMBER_REQUEST_COLLECTION_INTERVAL =

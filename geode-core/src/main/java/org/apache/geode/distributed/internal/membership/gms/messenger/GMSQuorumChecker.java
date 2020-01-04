@@ -39,6 +39,10 @@ import org.apache.geode.distributed.internal.membership.api.QuorumChecker;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
+/**
+ * GMSQuorumChecker is the implementation of QuorumChecker and can be used to determine
+ * whether a quorum of membership is accessible.
+ */
 public class GMSQuorumChecker<ID extends MemberIdentifier> implements QuorumChecker {
   private static final Logger logger = LogService.getLogger();
   private boolean isInfoEnabled = false;

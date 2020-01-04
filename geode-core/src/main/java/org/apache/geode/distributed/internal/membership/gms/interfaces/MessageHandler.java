@@ -19,7 +19,8 @@ import org.apache.geode.distributed.internal.membership.api.MemberShunnedExcepti
 
 /**
  * MessageHandler processes a message received by Messenger. Handlers are registered with Messenger
- * to consume specific classes of message.
+ * to consume specific classes of message. The default handler for unregistered message classes
+ * is the Manager service.
  */
 public interface MessageHandler<T> {
 

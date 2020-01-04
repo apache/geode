@@ -75,6 +75,12 @@ import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
+/**
+ * Services holds all of the membership services of a GMSMembership. It serves as a
+ * directory for the services, enabling them to find one another. It also controls the
+ * lifecycle of the services and holds a Stopper that services should consult in
+ * exceptional situations to see if Membership is shutting down.
+ */
 @SuppressWarnings("ConstantConditions")
 public class Services<ID extends MemberIdentifier> {
 

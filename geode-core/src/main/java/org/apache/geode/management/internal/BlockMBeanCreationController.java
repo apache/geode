@@ -16,7 +16,7 @@
 package org.apache.geode.management.internal;
 
 
-import com.sun.jmx.remote.security.MBeanServerAccessController;
+import org.apache.geode.unsafe.internal.com.sun.jmx.remote.security.MBeanServerAccessController;
 
 public class BlockMBeanCreationController extends MBeanServerAccessController {
 

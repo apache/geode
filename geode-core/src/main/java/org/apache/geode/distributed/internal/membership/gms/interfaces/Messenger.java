@@ -23,6 +23,12 @@ import org.apache.geode.distributed.internal.membership.api.Message;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.messenger.GMSQuorumChecker;
 
+/**
+ * The Messenger service fulfills the role of message sending/receiving for a Membership.
+ * It must provide both reliable and unreliable (connectionless) messaging. MessageHandlers
+ * may be installed to inform a Messenger of who should consume messages it receives. The default
+ * handler of messages received by a Messenger is the Manager service.
+ */
 public interface Messenger<ID extends MemberIdentifier> extends Service<ID> {
   /**
    * adds a handler for the given class/interface of messages

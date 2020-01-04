@@ -14,6 +14,10 @@
  */
 package org.apache.geode.distributed.internal.membership.api;
 
+/**
+ * Create and install a MessageListener when you build a Membership to receive UDP messages
+ * sent by another member via Membership.send().
+ */
 public interface MessageListener<ID extends MemberIdentifier> {
 
   /**
