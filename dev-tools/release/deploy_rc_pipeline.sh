@@ -388,6 +388,6 @@ jobs:
               verifyArtifactSignature apache-geode-examples-${VERSION}.zip 256
               verifyArtifactSignature apache-geode-native-${VERSION}-src.tar.gz 512
 EOF
-fly -t concourse.apachegeode-ci.info login --concourse-url https://concourse.apachegeode-ci.info/
-fly -t concourse.apachegeode-ci.info set-pipeline -p apache-release-${VERSION//./-}-rc -c $PIPEYML
+fly -t concourse.apachegeode-ci.info-main login --team-name main --concourse-url https://concourse.apachegeode-ci.info/
+fly -t concourse.apachegeode-ci.info-main set-pipeline -p apache-release-${VERSION//./-}-rc -c $PIPEYML
 rm $PIPEYML
