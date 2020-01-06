@@ -47,12 +47,12 @@ import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier
 import org.apache.geode.distributed.internal.membership.gms.api.Membership;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.SystemTimer;
+import org.apache.geode.internal.lang.JavaWorkarounds;
 import org.apache.geode.internal.logging.CoreLoggingExecutors;
 import org.apache.geode.internal.net.BufferPool;
 import org.apache.geode.internal.net.SocketCloser;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.util.internal.JavaWorkarounds;
 
 /**
  * ConnectionTable holds all of the Connection objects in a conduit. Connections represent a pipe

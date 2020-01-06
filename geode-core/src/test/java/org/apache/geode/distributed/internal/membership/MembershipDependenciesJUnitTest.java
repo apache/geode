@@ -31,7 +31,7 @@ import org.junit.runner.RunWith;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.LocatorStats;
 import org.apache.geode.internal.inet.LocalHostUtil;
-import org.apache.geode.util.internal.JavaWorkarounds;
+import org.apache.geode.internal.lang.JavaWorkarounds;
 
 @RunWith(ArchUnitRunner.class)
 @AnalyzeClasses(packages = "org.apache.geode.distributed.internal.membership.gms..",

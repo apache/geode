@@ -35,13 +35,13 @@ import org.apache.geode.cache.query.NameNotFoundException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.internal.cache.Token;
+import org.apache.geode.internal.lang.JavaWorkarounds;
 import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxSerializationException;
 import org.apache.geode.pdx.internal.InternalPdxInstance;
 import org.apache.geode.pdx.internal.PdxType;
 import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.security.NotAuthorizedException;
-import org.apache.geode.util.internal.JavaWorkarounds;
 
 /**
  * Utility for managing an attribute

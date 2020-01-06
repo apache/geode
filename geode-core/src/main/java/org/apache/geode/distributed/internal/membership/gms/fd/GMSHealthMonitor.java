@@ -70,10 +70,10 @@ import org.apache.geode.distributed.internal.membership.gms.messages.SuspectMemb
 import org.apache.geode.distributed.internal.membership.gms.messages.SuspectRequest;
 import org.apache.geode.distributed.internal.tcpserver.ConnectionWatcher;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
+import org.apache.geode.internal.lang.JavaWorkarounds;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.util.internal.GeodeGlossary;
-import org.apache.geode.util.internal.JavaWorkarounds;
 
 /**
  * Failure Detection

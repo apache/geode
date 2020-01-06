@@ -45,10 +45,10 @@ import org.apache.geode.internal.cache.TXId;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.ServerSideHandshake;
+import org.apache.geode.internal.lang.JavaWorkarounds;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.util.internal.JavaWorkarounds;
 
 /**
  * Class <code>ClientHealthMonitor</code> is a server-side singleton that monitors the health of
