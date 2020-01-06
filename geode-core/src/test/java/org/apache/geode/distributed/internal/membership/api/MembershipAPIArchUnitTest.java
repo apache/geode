@@ -29,6 +29,7 @@ import org.junit.runner.RunWith;
 
 import org.apache.geode.distributed.internal.membership.gms.MemberDataBuilderImpl;
 import org.apache.geode.distributed.internal.membership.gms.MembershipBuilderImpl;
+import org.apache.geode.distributed.internal.membership.gms.MembershipLocatorBuilderImpl;
 
 @RunWith(ArchUnitRunner.class)
 @AnalyzeClasses(packages = "org.apache.geode.distributed.internal.membership.api",
@@ -49,5 +50,6 @@ public class MembershipAPIArchUnitTest {
               .or(resideInAPackage("org.apache.geode.distributed.internal.tcpserver.."))
               // allowed
               .or(type(MembershipBuilderImpl.class))
+              .or(type(MembershipLocatorBuilderImpl.class))
               .or(type(MemberDataBuilderImpl.class)));
 }

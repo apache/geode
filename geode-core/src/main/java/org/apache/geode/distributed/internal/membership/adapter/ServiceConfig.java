@@ -326,4 +326,9 @@ public class ServiceConfig implements MembershipConfig {
   public boolean getIsReconnectingDS() {
     return transport.getIsReconnectingDS();
   }
+
+  @Override
+  public boolean getHasLocator() {
+    return Locator.hasLocator();
+  }
 }

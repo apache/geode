@@ -57,6 +57,7 @@ import org.apache.geode.distributed.internal.membership.api.MessageListener;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
+import org.apache.geode.distributed.internal.tcpserver.TcpServer;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
@@ -176,7 +177,7 @@ public class GMSLocatorRecoveryIntegrationTest {
 
     DistributionConfigImpl config = new DistributionConfigImpl(nonDefault);
     RemoteTransportConfig transport =
-        new RemoteTransportConfig(config, MemberIdentifier.NORMAL_DM_TYPE);
+        new RemoteTransportConfig(config, MemberIdentifier.LOCATOR_DM_TYPE);
 
     MembershipListener mockListener = mock(MembershipListener.class);
     MessageListener mockMessageListener = mock(MessageListener.class);
@@ -205,7 +206,8 @@ public class GMSLocatorRecoveryIntegrationTest {
         InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
         InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());
     gmsLocator.setViewFile(new File(temporaryFolder.getRoot(), "locator2.dat"));
-    gmsLocator.init(null);
+    TcpServer server = mock(TcpServer.class);
+    gmsLocator.init(server);
 
     assertThat(gmsLocator.getMembers())
         .contains(distribution.getLocalMember());

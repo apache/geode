@@ -12,19 +12,12 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.distributed.internal.membership;
+package org.apache.geode.distributed.internal.membership.api;
 
-import org.apache.geode.distributed.internal.RestartableTcpHandler;
-import org.apache.geode.distributed.internal.membership.api.Membership;
+public interface MembershipLocatorStatistics {
+  long getStatTime();
 
-public interface NetLocator extends RestartableTcpHandler {
+  void endLocatorRequest(long startTime);
 
-  /**
-   * This must be called after booting the membership manager so that the locator can use its
-   * services
-   *
-   * @return true if the membership manager was accepted
-   */
-  boolean setMembership(Membership<InternalDistributedMember> membership);
-
+  void endLocatorResponse(long startTime);
 }

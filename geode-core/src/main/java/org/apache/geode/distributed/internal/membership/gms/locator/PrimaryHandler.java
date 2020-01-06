@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.geode.distributed.internal;
+package org.apache.geode.distributed.internal.membership.gms.locator;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -24,60 +24,34 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.cache.GemFireCache;
-import org.apache.geode.cache.client.internal.locator.wan.LocatorMembershipListener;
-import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.membership.gms.locator.PeerLocatorRequest;
 import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
-public class PrimaryHandler implements RestartableTcpHandler {
+public class PrimaryHandler implements TcpHandler {
   private static final Logger logger = LogService.getLogger();
 
-  private final LocatorMembershipListener locatorListener;
-  private final InternalLocator internalLocator;
+  private final TcpHandler fallbackHandler;
 
-  private volatile Map<Class, RestartableTcpHandler> handlerMapping = new HashMap<>();
-  private volatile Set<RestartableTcpHandler> allHandlers = new HashSet<>();
+  private volatile Map<Class<?>, TcpHandler> handlerMapping = new HashMap<>();
+  private volatile Set<TcpHandler> allHandlers = new HashSet<>();
 
   private TcpServer tcpServer;
+  private int locatorWaitTime;
 
-  PrimaryHandler(InternalLocator locator, LocatorMembershipListener listener) {
-    locatorListener = listener;
-    internalLocator = locator;
+  PrimaryHandler(TcpHandler fallbackHandler, int locatorWaitTime) {
+    this.locatorWaitTime = locatorWaitTime;
+    this.fallbackHandler = fallbackHandler;
+    allHandlers.add(fallbackHandler);
   }
 
   // this method is synchronized to make sure that no new handlers are added while
   // initialization is taking place.
   @Override
   public synchronized void init(TcpServer tcpServer) {
-    if (locatorListener != null) {
-      // This is deferred until now as the initial requested port could have been 0
-      locatorListener.setPort(internalLocator.getPort());
-    }
     this.tcpServer = tcpServer;
     for (TcpHandler handler : allHandlers) {
       handler.init(tcpServer);
-    }
-  }
-
-  @Override
-  public void restarting(DistributedSystem ds, GemFireCache cache,
-      InternalConfigurationPersistenceService sharedConfig) {
-    if (ds != null) {
-      for (RestartableTcpHandler handler : allHandlers) {
-        handler.restarting(ds, cache, sharedConfig);
-      }
-    }
-  }
-
-  @Override
-  public void restartCompleted(DistributedSystem ds) {
-    if (ds != null) {
-      for (RestartableTcpHandler handler : allHandlers) {
-        handler.restartCompleted(ds);
-      }
     }
   }
 
@@ -96,13 +70,13 @@ public class PrimaryHandler implements RestartableTcpHandler {
         return handler.processRequest(request);
       }
 
-      if (locatorListener != null) {
-        return locatorListener.handleRequest(request);
+      if (fallbackHandler != null) {
+        return fallbackHandler.processRequest(request);
       }
 
       // either there is a configuration problem or the locator is still starting up
       if (giveup == 0) {
-        int locatorWaitTime = internalLocator.getConfig().getLocatorWaitTime();
+        int locatorWaitTime = this.locatorWaitTime;
         if (locatorWaitTime <= 0) {
           // always retry some number of times
           locatorWaitTime = 30;
@@ -124,22 +98,22 @@ public class PrimaryHandler implements RestartableTcpHandler {
 
   @Override
   public void shutDown() {
-    try {
-      for (TcpHandler handler : allHandlers) {
+    for (TcpHandler handler : allHandlers) {
+      try {
         handler.shutDown();
+      } catch (Throwable e) {
+        logger.error("Caught exception shutting down handler", e);
       }
-    } finally {
-      internalLocator.handleShutdown();
     }
   }
 
-  synchronized boolean isHandled(Class clazz) {
+  synchronized boolean isHandled(Class<?> clazz) {
     return handlerMapping.containsKey(clazz);
   }
 
-  public synchronized void addHandler(Class clazz, RestartableTcpHandler handler) {
-    Map<Class, RestartableTcpHandler> tmpHandlerMapping = new HashMap<>(handlerMapping);
-    Set<RestartableTcpHandler> tmpAllHandlers = new HashSet<>(allHandlers);
+  public synchronized void addHandler(Class<?> clazz, TcpHandler handler) {
+    Map<Class<?>, TcpHandler> tmpHandlerMapping = new HashMap<>(handlerMapping);
+    Set<TcpHandler> tmpAllHandlers = new HashSet<>(allHandlers);
     tmpHandlerMapping.put(clazz, handler);
     if (tmpAllHandlers.add(handler) && tcpServer != null) {
       handler.init(tcpServer);

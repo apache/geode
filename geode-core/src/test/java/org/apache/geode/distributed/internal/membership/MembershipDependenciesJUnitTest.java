@@ -16,7 +16,6 @@ package org.apache.geode.distributed.internal.membership;
 
 import static com.tngtech.archunit.base.DescribedPredicate.not;
 import static com.tngtech.archunit.core.domain.JavaClass.Predicates.resideInAPackage;
-import static com.tngtech.archunit.core.domain.JavaClass.Predicates.type;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 
 import com.tngtech.archunit.core.importer.ImportOption;
@@ -28,8 +27,6 @@ import com.tngtech.archunit.junit.CacheMode;
 import com.tngtech.archunit.lang.ArchRule;
 import org.junit.runner.RunWith;
 
-import org.apache.geode.distributed.Locator;
-import org.apache.geode.distributed.internal.LocatorStats;
 
 @RunWith(ArchUnitRunner.class)
 @AnalyzeClasses(packages = "org.apache.geode.distributed.internal.membership.gms..",
@@ -99,12 +96,6 @@ public class MembershipDependenciesJUnitTest {
 
               // TODO: we dursn't depend on the test package cause it depends on pkgs in geode-core
               .or(resideInAPackage("org.apache.geode.test.."))
-
-              // TODO: Create a new stats interface for membership
-              .or(type(LocatorStats.class))
-
-              // TODO: break dependencies on locator-related classes
-              .or(type(Locator.class))
 
   );
 }

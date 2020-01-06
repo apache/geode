@@ -12,20 +12,23 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.distributed.internal.membership;
+package org.apache.geode.distributed.internal.membership.gms;
 
-import java.net.InetAddress;
-import java.nio.file.Path;
+import org.apache.geode.distributed.internal.membership.api.MembershipLocatorStatistics;
 
-import org.apache.geode.distributed.internal.LocatorStats;
-import org.apache.geode.distributed.internal.membership.adapter.GMSLocatorAdapter;
+public class MembershipLocatorStatisticsNoOp implements MembershipLocatorStatistics {
+  @Override
+  public long getStatTime() {
+    return 0;
+  }
 
-public class NetLocatorFactory {
-  public static NetLocator newLocatorHandler(InetAddress bindAddress, String locatorString,
-      boolean usePreferredCoordinators, boolean networkPartitionDetectionEnabled,
-      LocatorStats stats, String securityUDPDHAlgo, Path workingDirectory) {
+  @Override
+  public void endLocatorRequest(long startTime) {
 
-    return new GMSLocatorAdapter(bindAddress, locatorString, usePreferredCoordinators,
-        networkPartitionDetectionEnabled, stats, securityUDPDHAlgo, workingDirectory);
+  }
+
+  @Override
+  public void endLocatorResponse(long startTime) {
+
   }
 }

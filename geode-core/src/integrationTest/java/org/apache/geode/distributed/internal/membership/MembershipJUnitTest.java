@@ -156,7 +156,7 @@ public class MembershipJUnitTest {
       nonDefault.put(LOCATORS, localHost.getHostName() + '[' + port + ']');
       DistributionConfigImpl config = new DistributionConfigImpl(nonDefault);
       RemoteTransportConfig transport =
-          new RemoteTransportConfig(config, ClusterDistributionManager.NORMAL_DM_TYPE);
+          new RemoteTransportConfig(config, ClusterDistributionManager.LOCATOR_DM_TYPE);
 
       // start the first membership manager
       m1 = createMembershipManager(config, transport).getLeft();
@@ -343,7 +343,7 @@ public class MembershipJUnitTest {
       nonDefault.put(ConfigurationProperties.SECURITY_UDP_DHALGO, "AES:128");
       DistributionConfigImpl config = new DistributionConfigImpl(nonDefault);
       RemoteTransportConfig transport =
-          new RemoteTransportConfig(config, ClusterDistributionManager.NORMAL_DM_TYPE);
+          new RemoteTransportConfig(config, ClusterDistributionManager.LOCATOR_DM_TYPE);
 
       // start the first membership manager
       m1 = createMembershipManager(config, transport).getLeft();

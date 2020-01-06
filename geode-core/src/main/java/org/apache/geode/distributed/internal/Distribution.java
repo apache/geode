@@ -128,6 +128,6 @@ public interface Distribution {
    */
   void setCloseInProgress();
 
-  Membership getMembership();
+  Membership<InternalDistributedMember> getMembership();
 
 }

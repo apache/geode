@@ -86,6 +86,7 @@ public class InternalLocatorIntegrationTest {
   @Test
   public void constructs() {
     when(distributionConfig.getLogFile()).thenReturn(logFile);
+    when(distributionConfig.getLocators()).thenReturn("");
     when(distributionConfig.getSecurableCommunicationChannels()).thenReturn(
         new SecurableCommunicationChannel[0]);
 
