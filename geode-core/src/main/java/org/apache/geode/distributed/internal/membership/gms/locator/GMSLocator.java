@@ -459,7 +459,7 @@ public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID> {
         Version geodeVersion = Version.fromOrdinalNoThrow((short) version, false);
         logger.info("Peer locator found that persistent view was written with version {}",
             geodeVersion);
-        if (geodeVersion.equals(Version.GEODE_1_11_0)) {
+        if (Version.GEODE_1_11_0.equals(geodeVersion)) {
           // v1.11 did not create the file with an ObjectOutputStream, so don't use one here
           input = new VersionedDataInputStream(fileInputStream, geodeVersion);
         } else {
