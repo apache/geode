@@ -30,8 +30,6 @@ import org.junit.runner.RunWith;
 
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.LocatorStats;
-import org.apache.geode.internal.inet.LocalHostUtil;
-import org.apache.geode.internal.util.JavaWorkarounds;
 
 @RunWith(ArchUnitRunner.class)
 @AnalyzeClasses(packages = "org.apache.geode.distributed.internal.membership.gms..",
@@ -94,7 +92,8 @@ public class MembershipDependenciesJUnitTest {
               .or(resideInAPackage("org.apache.geode.logging.internal.."))
               .or(resideInAPackage("org.apache.geode.logging.internal.executors.."))
               .or(resideInAPackage("org.apache.geode.distributed.internal.tcpserver.."))
-              .or(type(LocalHostUtil.class))
+              .or(resideInAPackage("org.apache.geode.internal.inet.."))
+              .or(resideInAPackage("org.apache.geode.internal.lang.."))
 
               .or(not(resideInAPackage("org.apache.geode..")))
 
@@ -106,9 +105,6 @@ public class MembershipDependenciesJUnitTest {
 
               // TODO: break dependencies on locator-related classes
               .or(type(Locator.class))
-
-              // TODO:
-              .or(type(JavaWorkarounds.class))
 
   );
 }
