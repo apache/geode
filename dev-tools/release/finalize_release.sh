@@ -76,7 +76,7 @@ set -x
 cd ${0%/*}/../../ci/pipelines/meta
 DEVELOP_META=$(pwd)
 cd ${GEODE}
-fly -t concourse.apachegeode-ci.info login --concourse-url https://concourse.apachegeode-ci.info/
+fly -t concourse.apachegeode-ci.info-main login --team-name main --concourse-url https://concourse.apachegeode-ci.info/
 ${DEVELOP_META}/destroy_pipelines.sh
 set +x
 

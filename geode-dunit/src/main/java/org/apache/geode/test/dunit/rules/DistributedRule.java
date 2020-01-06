@@ -20,6 +20,8 @@ import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
 import static org.apache.geode.test.dunit.Invoke.invokeInLocator;
 import static org.apache.geode.test.dunit.VM.DEFAULT_VM_COUNT;
 
+import java.util.Properties;
+
 import org.apache.geode.cache.query.QueryTestUtils;
 import org.apache.geode.cache.query.internal.QueryObserverHolder;
 import org.apache.geode.cache30.ClientServerTestCase;
@@ -145,6 +147,10 @@ public class DistributedRule extends AbstractDistributedRule {
   @Override
   protected void after() {
     TearDown.doTearDown();
+  }
+
+  public static Properties getDistributedSystemProperties() {
+    return DUnitLauncher.getDistributedSystemProperties();
   }
 
   /**

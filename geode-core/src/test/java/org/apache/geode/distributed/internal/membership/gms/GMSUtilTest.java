@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.util.List;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
@@ -68,6 +69,15 @@ public class GMSUtilTest {
             InetAddress.getLoopbackAddress()))
                 .isInstanceOf(MembershipConfigurationException.class)
                 .hasMessageContaining("unknown address or FQDN: " + UNRESOLVEABLE_HOST);
+  }
+
+  @Test
+  public void unresolveableAddressNotChecked() throws MembershipConfigurationException {
+    final List<HostAddress> hostAddresses =
+        parseLocators(UNRESOLVEABLE_HOST + "[" + PORT + "]", (InetAddress) null);
+    assertThat(hostAddresses)
+        .contains(new HostAddress(new InetSocketAddress(UNRESOLVEABLE_HOST, PORT),
+            UNRESOLVEABLE_HOST));
   }
 
   @Test

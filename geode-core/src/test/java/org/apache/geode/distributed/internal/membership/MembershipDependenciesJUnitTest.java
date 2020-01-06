@@ -16,7 +16,6 @@ package org.apache.geode.distributed.internal.membership;
 
 import static com.tngtech.archunit.base.DescribedPredicate.not;
 import static com.tngtech.archunit.core.domain.JavaClass.Predicates.resideInAPackage;
-import static com.tngtech.archunit.core.domain.JavaClass.Predicates.type;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 
 import com.tngtech.archunit.core.importer.ImportOption;
@@ -28,8 +27,6 @@ import com.tngtech.archunit.junit.CacheMode;
 import com.tngtech.archunit.lang.ArchRule;
 import org.junit.runner.RunWith;
 
-import org.apache.geode.internal.inet.LocalHostUtil;
-import org.apache.geode.internal.util.JavaWorkarounds;
 
 @RunWith(ArchUnitRunner.class)
 @AnalyzeClasses(packages = "org.apache.geode.distributed.internal.membership.gms..",
@@ -92,15 +89,13 @@ public class MembershipDependenciesJUnitTest {
               .or(resideInAPackage("org.apache.geode.logging.internal.."))
               .or(resideInAPackage("org.apache.geode.logging.internal.executors.."))
               .or(resideInAPackage("org.apache.geode.distributed.internal.tcpserver.."))
-              .or(type(LocalHostUtil.class))
+              .or(resideInAPackage("org.apache.geode.internal.inet.."))
+              .or(resideInAPackage("org.apache.geode.internal.lang.."))
 
               .or(not(resideInAPackage("org.apache.geode..")))
 
               // TODO: we dursn't depend on the test package cause it depends on pkgs in geode-core
               .or(resideInAPackage("org.apache.geode.test.."))
-
-              // TODO:
-              .or(type(JavaWorkarounds.class))
 
   );
 }
