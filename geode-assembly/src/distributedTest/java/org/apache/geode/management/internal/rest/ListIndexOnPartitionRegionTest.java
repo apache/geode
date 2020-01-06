@@ -17,6 +17,7 @@ package org.apache.geode.management.internal.rest;
 
 import static org.apache.geode.test.junit.assertions.ClusterManagementListResultAssert.assertManagementListResult;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -26,6 +27,7 @@ import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.api.ClusterManagementListResult;
+import org.apache.geode.management.api.ClusterManagementRealizationResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.Index;
@@ -103,5 +105,50 @@ public class ListIndexOnPartitionRegionTest {
     // even though this index configuration exists on 3 groups, it should only return one back
     // since they are identical
     assertManagementListResult(list).hasConfigurations().hasSize(1);
+
+    // create same region on group4
+    Region config = new Region();
+    config.setName("testRegion");
+    config.setType(RegionType.PARTITION);
+    config.setGroup("group4");
+    cms.create(config);
+
+    // assert group4 region has no index
+    locator.invoke(() -> {
+      InternalConfigurationPersistenceService cps =
+          ClusterStartupRule.getLocator().getConfigurationPersistenceService();
+      CacheConfig group4 = cps.getCacheConfig("group4");
+      assertThat(group4.findRegionConfiguration("testRegion").getIndexes()).isEmpty();
+    });
+
+    // try to create index again
+    assertThatThrownBy(() -> cms.create(index))
+        .hasMessageContaining("Index 'index' already exists");
+
+    // delete the index
+    ClusterManagementRealizationResult deleteResult = cms.delete(index);
+    assertThat(deleteResult.getStatusMessage()).contains("Successfully removed configuration")
+        .contains("group1").contains("group2").contains("group2").doesNotContain("group4");
+
+    // create the index again
+    cms.create(index);
+
+    // verify that index configuration is saved on all groups
+    locator.invoke(() -> {
+      InternalConfigurationPersistenceService cps =
+          ClusterStartupRule.getLocator().getConfigurationPersistenceService();
+      CacheConfig group1 = cps.getCacheConfig("group1");
+      assertThat(group1.findRegionConfiguration("testRegion").getIndexes())
+          .extracting(RegionConfig.Index::getName).containsExactly("index");
+      CacheConfig group2 = cps.getCacheConfig("group2");
+      assertThat(group2.findRegionConfiguration("testRegion").getIndexes())
+          .extracting(RegionConfig.Index::getName).containsExactly("index");
+      CacheConfig group3 = cps.getCacheConfig("group3");
+      assertThat(group3.findRegionConfiguration("testRegion").getIndexes())
+          .extracting(RegionConfig.Index::getName).containsExactly("index");
+      CacheConfig group4 = cps.getCacheConfig("group3");
+      assertThat(group4.findRegionConfiguration("testRegion").getIndexes())
+          .extracting(RegionConfig.Index::getName).containsExactly("index");
+    });
   }
 }
