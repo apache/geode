@@ -172,16 +172,16 @@ public class LocatorClusterManagementService implements ClusterManagementService
     if (config instanceof RegionAware) {
       String regionName = ((RegionAware) config).getRegionName();
       groups = memberValidator.findGroups(regionName);
-      if (groups.size() == 0) {
+      if (groups.isEmpty()) {
         raise(StatusCode.ENTITY_NOT_FOUND, "Region provided does not exist: " + regionName);
       }
-      targetedMembers = memberValidator.findMembers(false, groups.toArray(new String[0]));
+      targetedMembers = memberValidator.findServers(groups.toArray(new String[0]));
     } else {
       final String groupName =
           AbstractConfiguration.isCluster(config.getGroup()) ? AbstractConfiguration.CLUSTER
               : config.getGroup();
       groups.add(groupName);
-      targetedMembers = memberValidator.findMembers(false, groupName);
+      targetedMembers = memberValidator.findServers(groupName);
     }
 
 
@@ -202,17 +202,11 @@ public class LocatorClusterManagementService implements ClusterManagementService
     }
 
     // persist configuration in cache config
-    if (groups.size() == 1) {
-      String groupName = groups.iterator().next();
+    for (String groupName : groups) {
       configurationManager.add(config, groupName);
-      result.setStatus(StatusCode.OK,
-          "Successfully updated configuration for " + groupName + ".");
-    } else {
-      for (String groupName : groups) {
-        configurationManager.add(config, groupName);
-      }
-      result.setStatus(StatusCode.OK, "Successfully updated configuration");
     }
+    result.setStatus(StatusCode.OK,
+        "Successfully updated configuration for " + StringUtils.join(groups, ", ") + ".");
 
     // add the config object which includes the HATEOAS information of the element created
     if (result.isSuccessful()) {
@@ -258,7 +252,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     List<RealizationResult> functionResults = executeAndGetFunctionResult(
         new CacheRealizationFunction(),
         Arrays.asList(config, CacheElementOperation.DELETE),
-        memberValidator.findMembers(false, groupsWithThisElement));
+        memberValidator.findServers(groupsWithThisElement));
     functionResults.forEach(result::addMemberStatus);
 
     // if any false result is added to the member list

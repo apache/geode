@@ -73,9 +73,8 @@ public class MemberValidator {
 
     // if other group and this new group has common members, then throw exception
     String[] groups = existingElementsAndTheirGroups.keySet().toArray(new String[0]);
-    Set<DistributedMember> membersOfExistingGroups =
-        findMembers(false, groups);
-    Set<DistributedMember> membersOfNewGroup = findMembers(false, config.getGroup());
+    Set<DistributedMember> membersOfExistingGroups = findServers(groups);
+    Set<DistributedMember> membersOfNewGroup = findServers(config.getGroup());
     Set<DistributedMember> intersection = new HashSet<>(membersOfExistingGroups);
     intersection.retainAll(membersOfNewGroup);
     if (intersection.size() > 0) {
@@ -127,16 +126,24 @@ public class MemberValidator {
     return results;
   }
 
+  /**
+   * @param groups should not be null contains no element
+   */
+  public Set<DistributedMember> findServers(String... groups) {
+    return findMembers(false, groups);
+  }
+
+
   public Set<DistributedMember> findServers(AbstractConfiguration configuration) {
     if (configuration instanceof RegionAware) {
       Set<String> groups = findGroups(((RegionAware) configuration).getRegionName());
       if (groups.size() == 0) {
         return Collections.emptySet();
       }
-      return findMembers(false, groups.toArray(new String[0]));
+      return findServers(groups.toArray(new String[0]));
     }
 
-    return findMembers(false, configuration.getGroup());
+    return findServers(configuration.getGroup());
   }
 
   /**
