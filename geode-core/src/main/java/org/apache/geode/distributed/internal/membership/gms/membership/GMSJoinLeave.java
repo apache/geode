@@ -1223,27 +1223,6 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
       }
       state.possibleCoordinator = oldest;
     }
-    ID coord = null;
-    boolean coordIsNoob = true;
-    for (; it.hasNext();) {
-      ID mbr = it.next();
-      if (!state.alreadyTried.contains(mbr)) {
-        boolean mbrIsNoob = (mbr.getVmViewId() < 0);
-        if (mbrIsNoob) {
-          // member has not yet joined
-          if (coordIsNoob && (coord == null
-              || services.getMemberFactory().getComparator().compare(coord, mbr) > 0)) {
-            coord = mbr;
-          }
-        } else {
-          // member has already joined
-          if (coordIsNoob || mbr.getVmViewId() > coord.getVmViewId()) {
-            coord = mbr;
-            coordIsNoob = false;
-          }
-        }
-      }
-    }
     logger.info("findCoordinator chose {} out of these possible coordinators: {}",
         state.possibleCoordinator, possibleCoordinators);
     return true;
