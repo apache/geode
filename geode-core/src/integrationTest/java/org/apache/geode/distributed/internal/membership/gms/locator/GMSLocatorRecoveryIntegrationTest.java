@@ -234,7 +234,7 @@ public class GMSLocatorRecoveryIntegrationTest {
       oos.writeInt(fileStamp);
       oos.writeInt(ordinal);
       oos.flush();
-      DataOutput dataOutput = new DataOutputStream(fileStream);
+      DataOutput dataOutput = new DataOutputStream(oos);
       DataSerializer.writeObject(object, dataOutput);
       fileStream.flush();
     }

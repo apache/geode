@@ -365,7 +365,7 @@ public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID>, Tcp
       oos.writeInt(LOCATOR_FILE_STAMP);
       oos.writeInt(Version.getCurrentVersion().ordinal());
       oos.flush();
-      DataOutputStream dataOutputStream = new DataOutputStream(fileStream);
+      DataOutputStream dataOutputStream = new DataOutputStream(oos);
       objectSerializer.writeObject(view, dataOutputStream);
     } catch (Exception e) {
       logger.warn(
@@ -442,7 +442,8 @@ public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID>, Tcp
       return false;
     }
 
-    logger.info("Peer locator recovering from {}", file.getAbsolutePath());
+    logger.info("Peer locator recovering from {} with size {}",
+        file.getAbsolutePath(), file.length());
     try (FileInputStream fileInputStream = new FileInputStream(file);
         ObjectInputStream ois = new ObjectInputStream(fileInputStream)) {
       int stamp = ois.readInt();
@@ -452,15 +453,21 @@ public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID>, Tcp
 
       int version = ois.readInt();
       int currentVersion = Version.getCurrentVersion().ordinal();
-      DataInputStream input = new DataInputStream(fileInputStream);
-      if (version != currentVersion) {
+      DataInputStream input;
+      if (version == currentVersion) {
+        input = new DataInputStream(ois);
+      } else if (version > currentVersion) {
+        return false;
+      } else {
         Version geodeVersion = Version.fromOrdinalNoThrow((short) version, false);
         logger.info("Peer locator found that persistent view was written with version {}",
             geodeVersion);
-        if (version > currentVersion) {
-          return false;
+        if (Version.GEODE_1_11_0.equals(geodeVersion)) {
+          // v1.11 did not create the file with an ObjectOutputStream, so don't use one here
+          input = new VersionedDataInputStream(fileInputStream, geodeVersion);
+        } else {
+          input = new VersionedDataInputStream(ois, geodeVersion);
         }
-        input = new VersionedDataInputStream(ois, geodeVersion);
       }
 
       // TBD - services isn't available when we recover from disk so this will throw an NPE
