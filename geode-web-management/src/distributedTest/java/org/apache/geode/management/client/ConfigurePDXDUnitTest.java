@@ -107,7 +107,7 @@ public class ConfigurePDXDUnitTest {
     pdxType.setDiskStoreName("diskstore");
     assertThatThrownBy(() -> client.create(pdxType))
         .isInstanceOf(ClusterManagementException.class)
-        .hasMessageContaining("ENTITY_EXISTS: Pdx 'PDX' already exists in group cluster");
+        .hasMessageContaining("ENTITY_EXISTS: Pdx 'PDX' already exists");
 
     // verify the get
     ClusterManagementGetResult<Pdx, PdxInfo> getResult = client.get(new Pdx());
@@ -140,7 +140,7 @@ public class ConfigurePDXDUnitTest {
     pdxType.setDiskStoreName("diskstore");
     assertThatThrownBy(() -> client.create(pdxType))
         .isInstanceOf(ClusterManagementException.class)
-        .hasMessageContaining("ENTITY_EXISTS: Pdx 'PDX' already exists in group cluster");
+        .hasMessageContaining("ENTITY_EXISTS: Pdx 'PDX' already exists");
 
     // verify the get
     ClusterManagementGetResult<Pdx, PdxInfo> getResult = client.get(new Pdx());

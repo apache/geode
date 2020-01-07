@@ -141,19 +141,14 @@ public class RegionManagementIntegrationTest {
         .andExpect(status().isConflict())
         .andExpect(jsonPath("$.statusCode", Matchers.is("ENTITY_EXISTS")))
         .andExpect(jsonPath("$.statusMessage",
-            Matchers.containsString("Index 'index1' already exists in group cluster.")));
+            Matchers.containsString("Index 'index1' already exists.")));
 
-    // trying to create another index in this region in another group
+    // trying to create another index in this region
     index.setName("index2");
     index.setRegionPath("region1");
     index.setExpression("key");
-    index.setGroup("notExist");
     context.perform(post("/v1/regions/region1/indexes").content(mapper.writeValueAsString(index)))
-        .andExpect(status().isNotFound())
-        .andExpect(jsonPath("$.statusCode", Matchers.is("ENTITY_NOT_FOUND")))
-        .andExpect(jsonPath("$.statusMessage",
-            Matchers
-                .containsString("Region provided does not exist: region1.")));
+        .andExpect(status().isCreated());
 
     assertManagementResult(client.delete(region))
         .hasStatusCode(ClusterManagementResult.StatusCode.OK);
@@ -180,48 +175,11 @@ public class RegionManagementIntegrationTest {
 
   }
 
-  @Test
-  public void createIndex_failsOnNonExistentRegionGroup() throws Exception {
-    createClusterRegion();
-
-    index.setRegionPath("region1");
-    index.setExpression("i am le tired");
-    index.setName("wontwork");
-    index.setGroup("legroup");
-
-    context.perform(post("/v1/regions/region1/indexes").content(mapper.writeValueAsString(index)))
-        .andExpect(status().isNotFound())
-        .andExpect(jsonPath("$.statusCode", Matchers.is("ENTITY_NOT_FOUND")))
-        .andExpect(jsonPath("$.statusMessage",
-            Matchers
-                .containsString("Region provided does not exist: region1.")));
-
-    deleteRegion();
-  }
-
   private void createClusterRegion() {
     region.setName("region1");
     region.setType(RegionType.PARTITION);
     assertManagementResult(client.create(region))
         .hasStatusCode(ClusterManagementResult.StatusCode.OK);
-  }
-
-  @Test
-  public void createIndex_failsOnNonExistentClusterRegion() throws Exception {
-    createGroupRegion();
-
-    index.setRegionPath("region1");
-    index.setExpression("i am le tired");
-    index.setName("wontwork");
-
-    context.perform(post("/v1/regions/region1/indexes").content(mapper.writeValueAsString(index)))
-        .andExpect(status().isNotFound())
-        .andExpect(jsonPath("$.statusCode", Matchers.is("ENTITY_NOT_FOUND")))
-        .andExpect(jsonPath("$.statusMessage",
-            Matchers
-                .containsString("Region provided does not exist: region1.")));
-
-    deleteRegion();
   }
 
   @Test
@@ -231,7 +189,6 @@ public class RegionManagementIntegrationTest {
     index.setRegionPath("region1");
     index.setExpression("i am le tired");
     index.setName("itworks");
-    index.setGroup("group1");
 
     context.perform(
         post("/v1/regions/region1/indexes").content(mapper.writeValueAsString(index)))
@@ -278,33 +235,33 @@ public class RegionManagementIntegrationTest {
 
 
   @Test
-  public void deleteIndex_fails_region_not_found_with_group() throws Exception {
+  public void deleteIndex_in_cluster_group_success() throws Exception {
     createClusterRegion();
 
     createClusterIndex();
 
-    context.perform(delete("/v1/regions/region1/indexes/index1").param("group", "group1"))
-        .andExpect(status().isNotFound())
-        .andExpect(jsonPath("$.statusCode", Matchers.is("ENTITY_NOT_FOUND")))
+    context.perform(delete("/v1/regions/region1/indexes/index1"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.statusCode", Matchers.is("OK")))
         .andExpect(jsonPath("$.statusMessage",
             Matchers
-                .containsString("Region provided does not exist: region1.")));
+                .containsString("Successfully removed configuration for [cluster]")));
 
     deleteRegion();
   }
 
   @Test
-  public void deleteIndex_fails_region_not_found() throws Exception {
+  public void deleteIndex_Index_in_group_success() throws Exception {
     createGroupRegion();
 
     createGroupIndex();
 
     context.perform(delete("/v1/regions/region1/indexes/index1"))
-        .andExpect(status().isNotFound())
-        .andExpect(jsonPath("$.statusCode", Matchers.is("ENTITY_NOT_FOUND")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.statusCode", Matchers.is("OK")))
         .andExpect(jsonPath("$.statusMessage",
             Matchers
-                .containsString("Region provided does not exist: region1.")));
+                .containsString("Successfully removed configuration for [group1]")));
 
     deleteRegion();
   }
@@ -355,7 +312,6 @@ public class RegionManagementIntegrationTest {
     index.setRegionPath("region1");
     index.setIndexType(IndexType.RANGE);
     index.setName("index1");
-    index.setGroup("group1");
     index.setExpression("some expression");
     assertManagementResult(client.create(index))
         .hasStatusCode(ClusterManagementResult.StatusCode.OK);

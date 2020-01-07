@@ -132,7 +132,7 @@ public class LocatorClusterManagementServiceTest {
 
   @Test
   public void create_validatorIsCalledCorrectly() {
-    doReturn(Collections.emptySet()).when(memberValidator).findServers(anyString());
+    doReturn(Collections.emptySet()).when(memberValidator).findMembers(eq(false), anyString());
     doNothing().when(persistenceService).updateCacheConfig(any(), any());
     service.create(regionConfig);
     verify(cacheElementValidator).validate(CacheElementOperation.CREATE, regionConfig);
@@ -151,7 +151,8 @@ public class LocatorClusterManagementServiceTest {
     verify(cacheElementValidator).validate(CacheElementOperation.DELETE, regionConfig);
     verify(regionValidator).validate(CacheElementOperation.DELETE, regionConfig);
     verify(memberValidator).findGroupsWithThisElement(regionConfig, regionManager);
-    verify(memberValidator).findServers("cluster");
+    verify(memberValidator);
+    memberValidator.findServers("cluster");
   }
 
   @Test
@@ -282,8 +283,8 @@ public class LocatorClusterManagementServiceTest {
 
     doReturn(new String[] {"cluster"}).when(memberValidator).findGroupsWithThisElement(any(),
         any());
-    doReturn(Collections.singleton(mock(DistributedMember.class))).when(memberValidator)
-        .findServers();
+    doReturn(Collections.singleton(mock(DistributedMember.class))).when(memberValidator);
+    memberValidator.findServers();
 
     CacheConfig config = new CacheConfig();
     RegionConfig regionConfig = new RegionConfig();
@@ -310,8 +311,8 @@ public class LocatorClusterManagementServiceTest {
 
     doReturn(new String[] {"cluster"}).when(memberValidator).findGroupsWithThisElement(any(),
         any());
-    doReturn(Collections.singleton(mock(DistributedMember.class))).when(memberValidator)
-        .findServers();
+    doReturn(Collections.singleton(mock(DistributedMember.class))).when(memberValidator);
+    memberValidator.findServers();
 
     CacheConfig config = new CacheConfig();
     RegionConfig regionConfig = new RegionConfig();
@@ -336,7 +337,8 @@ public class LocatorClusterManagementServiceTest {
     doReturn(new String[] {"cluster"}).when(memberValidator).findGroupsWithThisElement(any(),
         any());
     // no members found in any group
-    doReturn(Collections.emptySet()).when(memberValidator).findServers();
+    doReturn(Collections.emptySet()).when(memberValidator);
+    memberValidator.findServers();
     doReturn(null).when(persistenceService).getConfiguration(any());
     org.apache.geode.cache.Region mockRegion = mock(org.apache.geode.cache.Region.class);
     doReturn(mockRegion).when(persistenceService).getConfigurationRegion();

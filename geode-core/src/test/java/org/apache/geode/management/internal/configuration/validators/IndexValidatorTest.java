@@ -29,7 +29,6 @@ import org.junit.Test;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
-import org.apache.geode.management.api.ClusterManagementException;
 import org.apache.geode.management.configuration.Index;
 import org.apache.geode.management.configuration.IndexType;
 import org.apache.geode.management.internal.CacheElementOperation;
@@ -46,7 +45,7 @@ public class IndexValidatorTest {
     configurationPersistenceService = mock(ConfigurationPersistenceService.class);
     cacheConfig = mock(CacheConfig.class);
     regionConfig = mock(RegionConfig.class);
-    indexValidator = new IndexValidator(configurationPersistenceService);
+    indexValidator = new IndexValidator();
     index = new Index();
     index.setName("testIndex");
     index.setExpression("testExpression");
@@ -59,17 +58,6 @@ public class IndexValidatorTest {
         .thenReturn(cacheConfig);
     when(cacheConfig.findRegionConfiguration(anyString())).thenReturn(regionConfig);
     indexValidator.validate(CacheElementOperation.CREATE, index);
-  }
-
-  @Test
-  public void validate_regionMissing() {
-    when(configurationPersistenceService.getCacheConfig(any(), anyBoolean()))
-        .thenReturn(cacheConfig);
-    when(cacheConfig.findRegionConfiguration(anyString())).thenReturn(null);
-
-    assertThatThrownBy(() -> indexValidator.validate(CacheElementOperation.CREATE, index))
-        .isInstanceOf(ClusterManagementException.class)
-        .hasMessageContaining("Region provided does not exist: testRegion.");
   }
 
   @Test

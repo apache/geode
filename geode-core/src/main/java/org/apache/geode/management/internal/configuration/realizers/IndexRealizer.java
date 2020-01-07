@@ -51,7 +51,12 @@ public class IndexRealizer implements ConfigurationRealizer<Index, IndexInfo> {
       realizationResult.setSuccess(true);
       realizationResult.setMessage("Index " + indexName + " successfully created");
       return realizationResult;
-    } catch (IndexNameConflictException | IndexExistsException | RegionNotFoundException e) {
+    } catch (IndexNameConflictException | IndexExistsException e) {
+      // index creation is a distributed operation. sometimes the index might already be created
+      // via actions on another server.
+      realizationResult.setSuccess(true);
+      realizationResult.setMessage(e.getMessage());
+    } catch (RegionNotFoundException e) {
       realizationResult.setSuccess(false);
       realizationResult.setMessage(e.getMessage());
     } catch (RuntimeException r) {
