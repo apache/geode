@@ -57,6 +57,7 @@ public class ListIndexOnPartitionRegionTest {
         .setHostAddress("localhost", locator.getHttpPort())
         .build();
 
+    // set up the same region in 3 different groups, one is a proxy region, but with the same name
     Region config = new Region();
     config.setName("testRegion");
     config.setType(RegionType.PARTITION);
@@ -121,9 +122,12 @@ public class ListIndexOnPartitionRegionTest {
       assertThat(group4.findRegionConfiguration("testRegion").getIndexes()).isEmpty();
     });
 
-    // try to create index again
+    // try to create index again will throw an error since index already exists on some groups
     assertThatThrownBy(() -> cms.create(index))
         .hasMessageContaining("Index 'index' already exists");
+
+    // demonstrate that the only way to put the index on the newly created region on group4 is
+    // to delete the index and then recreate the index again.
 
     // delete the index
     ClusterManagementRealizationResult deleteResult = cms.delete(index);

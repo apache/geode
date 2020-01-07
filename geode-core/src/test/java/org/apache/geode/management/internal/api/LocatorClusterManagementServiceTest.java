@@ -132,8 +132,7 @@ public class LocatorClusterManagementServiceTest {
 
   @Test
   public void create_validatorIsCalledCorrectly() {
-    doReturn(Collections.emptySet()).when(memberValidator);
-    memberValidator.findMembers(eq(false), new String[] {anyString()});
+    doReturn(Collections.emptySet()).when(memberValidator).findMembers(eq(false), anyString());
     doNothing().when(persistenceService).updateCacheConfig(any(), any());
     service.create(regionConfig);
     verify(cacheElementValidator).validate(CacheElementOperation.CREATE, regionConfig);
@@ -143,8 +142,7 @@ public class LocatorClusterManagementServiceTest {
 
   @Test
   public void delete_validatorIsCalledCorrectly() {
-    doReturn(Collections.emptySet()).when(memberValidator);
-    memberValidator.findMembers(eq(false), new String[] {anyString()});
+    doReturn(Collections.emptySet()).when(memberValidator).findServers(anyString());
     doReturn(new String[] {"cluster"}).when(memberValidator).findGroupsWithThisElement(
         regionConfig,
         regionManager);
@@ -154,7 +152,7 @@ public class LocatorClusterManagementServiceTest {
     verify(regionValidator).validate(CacheElementOperation.DELETE, regionConfig);
     verify(memberValidator).findGroupsWithThisElement(regionConfig, regionManager);
     verify(memberValidator);
-    memberValidator.findServers(new String[] {"cluster"});
+    memberValidator.findServers("cluster");
   }
 
   @Test
@@ -165,8 +163,8 @@ public class LocatorClusterManagementServiceTest {
         new RealizationResult().setMemberName("member2").setSuccess(false).setMessage("failed"));
     doReturn(functionResults).when(service).executeAndGetFunctionResult(any(), any(), any());
 
-    doReturn(Collections.singleton(mock(DistributedMember.class))).when(memberValidator);
-    memberValidator.findServers(new String[] {});
+    doReturn(Collections.singleton(mock(DistributedMember.class))).when(memberValidator)
+        .findServers();
 
     when(persistenceService.getCacheConfig("cluster", true)).thenReturn(new CacheConfig());
     regionConfig.setName("test");
@@ -181,8 +179,8 @@ public class LocatorClusterManagementServiceTest {
     functionResults.add(new RealizationResult().setMemberName("member2"));
     doReturn(functionResults).when(service).executeAndGetFunctionResult(any(), any(), any());
 
-    doReturn(Collections.singleton(mock(DistributedMember.class))).when(memberValidator);
-    memberValidator.findServers(new String[] {});
+    doReturn(Collections.singleton(mock(DistributedMember.class))).when(memberValidator)
+        .findServers();
 
     CacheConfig cacheConfig = new CacheConfig();
     when(persistenceService.getCacheConfig("cluster", true)).thenReturn(cacheConfig);
@@ -286,7 +284,7 @@ public class LocatorClusterManagementServiceTest {
     doReturn(new String[] {"cluster"}).when(memberValidator).findGroupsWithThisElement(any(),
         any());
     doReturn(Collections.singleton(mock(DistributedMember.class))).when(memberValidator);
-    memberValidator.findServers(new String[] {});
+    memberValidator.findServers();
 
     CacheConfig config = new CacheConfig();
     RegionConfig regionConfig = new RegionConfig();
@@ -314,7 +312,7 @@ public class LocatorClusterManagementServiceTest {
     doReturn(new String[] {"cluster"}).when(memberValidator).findGroupsWithThisElement(any(),
         any());
     doReturn(Collections.singleton(mock(DistributedMember.class))).when(memberValidator);
-    memberValidator.findServers(new String[] {});
+    memberValidator.findServers();
 
     CacheConfig config = new CacheConfig();
     RegionConfig regionConfig = new RegionConfig();
@@ -340,7 +338,7 @@ public class LocatorClusterManagementServiceTest {
         any());
     // no members found in any group
     doReturn(Collections.emptySet()).when(memberValidator);
-    memberValidator.findServers(new String[] {});
+    memberValidator.findServers();
     doReturn(null).when(persistenceService).getConfiguration(any());
     org.apache.geode.cache.Region mockRegion = mock(org.apache.geode.cache.Region.class);
     doReturn(mockRegion).when(persistenceService).getConfigurationRegion();

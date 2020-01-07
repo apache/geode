@@ -68,7 +68,7 @@ import org.apache.geode.management.configuration.Links;
 import org.apache.geode.management.configuration.Member;
 import org.apache.geode.management.configuration.Pdx;
 import org.apache.geode.management.configuration.Region;
-import org.apache.geode.management.configuration.RegionAware;
+import org.apache.geode.management.configuration.RegionScoped;
 import org.apache.geode.management.internal.CacheElementOperation;
 import org.apache.geode.management.internal.ClusterManagementOperationStatusResult;
 import org.apache.geode.management.internal.configuration.mutators.CacheConfigurationManager;
@@ -169,8 +169,8 @@ public class LocatorClusterManagementService implements ClusterManagementService
     // find the targeted members
     Set<String> groups = new HashSet<>();
     Set<DistributedMember> targetedMembers;
-    if (config instanceof RegionAware) {
-      String regionName = ((RegionAware) config).getRegionName();
+    if (config instanceof RegionScoped) {
+      String regionName = ((RegionScoped) config).getRegionName();
       groups = memberValidator.findGroups(regionName);
       if (groups.isEmpty()) {
         raise(StatusCode.ENTITY_NOT_FOUND, "Region provided does not exist: " + regionName);
@@ -206,7 +206,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
       configurationManager.add(config, groupName);
     }
     result.setStatus(StatusCode.OK,
-        "Successfully updated configuration for " + StringUtils.join(groups, ", ") + ".");
+        "Successfully updated configuration for " + String.join(", ", groups) + ".");
 
     // add the config object which includes the HATEOAS information of the element created
     if (result.isSuccessful()) {
@@ -323,11 +323,8 @@ public class LocatorClusterManagementService implements ClusterManagementService
             }
           });
         }
-        list.stream().forEach(t -> {
-          if (!resultList.contains(t)) {
-            resultList.add(t);
-          }
-        });
+        list.stream().filter(t -> !resultList.contains(t))
+            .forEach(resultList::add);
       }
     }
 

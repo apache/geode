@@ -32,7 +32,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.configuration.AbstractConfiguration;
 import org.apache.geode.management.configuration.GroupableConfiguration;
-import org.apache.geode.management.configuration.RegionAware;
+import org.apache.geode.management.configuration.RegionScoped;
 import org.apache.geode.management.internal.configuration.mutators.CacheConfigurationManager;
 import org.apache.geode.management.internal.exceptions.EntityExistsException;
 
@@ -135,8 +135,8 @@ public class MemberValidator {
 
 
   public Set<DistributedMember> findServers(AbstractConfiguration configuration) {
-    if (configuration instanceof RegionAware) {
-      Set<String> groups = findGroups(((RegionAware) configuration).getRegionName());
+    if (configuration instanceof RegionScoped) {
+      Set<String> groups = findGroups(((RegionScoped) configuration).getRegionName());
       if (groups.size() == 0) {
         return Collections.emptySet();
       }

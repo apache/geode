@@ -61,6 +61,6 @@ public class ClusterManagementRealizationResult extends ClusterManagementResult 
 
   @Override
   public String toString() {
-    return super.toString() + " " + StringUtils.join(memberStatuses, ";");
+    return super.toString() + " " + StringUtils.join(memberStatuses, "; ");
   }
 }

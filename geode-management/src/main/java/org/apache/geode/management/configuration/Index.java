@@ -23,7 +23,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.management.runtime.IndexInfo;
 
-public class Index extends AbstractConfiguration<IndexInfo> implements RegionAware {
+public class Index extends AbstractConfiguration<IndexInfo> implements RegionScoped {
   public static final String INDEXES = "/indexes";
   private String name;
   private String expression;

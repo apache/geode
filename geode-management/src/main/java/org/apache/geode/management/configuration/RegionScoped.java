@@ -15,6 +15,6 @@
 
 package org.apache.geode.management.configuration;
 
-public interface RegionAware {
+public interface RegionScoped {
   String getRegionName();
 }
