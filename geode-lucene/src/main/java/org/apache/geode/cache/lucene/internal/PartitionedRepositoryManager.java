@@ -148,8 +148,15 @@ public class PartitionedRepositoryManager implements RepositoryManager {
   protected IndexRepository computeRepository(Integer bucketId, LuceneSerializer serializer,
       InternalLuceneIndex index, PartitionedRegion userRegion, IndexRepository oldRepository)
       throws IOException {
-    return indexRepositoryFactory.computeIndexRepository(bucketId, serializer, index, userRegion,
-        oldRepository, this);
+
+    LogService.getLogger()
+        .warn("##### [JUAN]: PartitionedRepositoryManager.computeRepository()...");
+    IndexRepository indexRepository = indexRepositoryFactory.computeIndexRepository(bucketId,
+        serializer, index, userRegion, oldRepository, this);
+    LogService.getLogger()
+        .warn("##### [JUAN]: PartitionedRepositoryManager.computeRepository()... Done!");
+
+    return indexRepository;
   }
 
 

@@ -110,6 +110,16 @@ public class IndexRepositoryFactory {
       }
     }
 
+    LogService.getLogger().warn(
+        "##### [JUAN]: IndexRepositoryFactory.finishComputingRepository() acquired lock {}, fileAndChunkBucket.getBucketAdvisor().isPrimary(1) -> {}",
+        lockName, fileAndChunkBucket.getBucketAdvisor().isPrimary());
+
+    try {
+      Thread.sleep(5000);
+    } catch (Exception exception) {
+      exception.printStackTrace();
+    }
+
     final IndexRepository repo;
     InternalCache cache = (InternalCache) userRegion.getRegionService();
     boolean initialPdxReadSerializedFlag = cache.getPdxReadSerializedOverride();
@@ -119,6 +129,9 @@ public class IndexRepositoryFactory {
       Map bucketTargetingMap = getBucketTargetingMap(fileAndChunkBucket, bucketId);
       RegionDirectory dir =
           new RegionDirectory(bucketTargetingMap, indexForPR.getFileSystemStats());
+      LogService.getLogger().warn(
+          "##### [JUAN]: IndexRepositoryFactory.finishComputingRepository() fileAndChunkBucket.getBucketAdvisor().isPrimary(2) -> {}",
+          fileAndChunkBucket.getBucketAdvisor().isPrimary());
       IndexWriterConfig config = new IndexWriterConfig(indexForPR.getAnalyzer());
       IndexWriter writer = new IndexWriter(dir, config);
       repo = new IndexRepositoryImpl(fileAndChunkBucket, writer, serializer,
