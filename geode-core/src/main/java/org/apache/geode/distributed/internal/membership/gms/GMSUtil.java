@@ -90,8 +90,7 @@ public class GMSUtil {
     List<HostAddress> result = new ArrayList<>(2);
     Set<InetSocketAddress> inetAddresses = new HashSet<>();
     String host;
-    boolean checkLoopback = (bindAddress != null);
-    boolean isLoopback = (checkLoopback && bindAddress.isLoopbackAddress());
+    final boolean isLoopback = ((bindAddress != null) && bindAddress.isLoopbackAddress());
 
     StringTokenizer parts = new StringTokenizer(locatorsString, ",");
     while (parts.hasMoreTokens()) {
@@ -134,7 +133,7 @@ public class GMSUtil {
 
       final InetSocketAddress isa = new InetSocketAddress(host, port);
 
-      if (checkLoopback) {
+      if (isLoopback) {
         final InetAddress locatorAddress = isa.getAddress();
 
         if (locatorAddress == null) {
@@ -142,7 +141,7 @@ public class GMSUtil {
               " at an unknown address or FQDN: " + host);
         }
 
-        if (isLoopback && !locatorAddress.isLoopbackAddress()) {
+        if (!locatorAddress.isLoopbackAddress()) {
           throw new MembershipConfigurationException(
               "This process is attempting to join with a loopback address (" + bindAddress
                   + ") using a locator that does not have a local address (" + isa

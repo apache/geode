@@ -119,4 +119,42 @@ public class GMSUtilTest {
                 "fdf0:76cf:a0ed:9449::5"));
   }
 
+  @Test
+  public void multipleHosts() throws MembershipConfigurationException {
+    final List<HostAddress> addys =
+        parseLocators(
+            "geodecluster-sample-locator-0.geodecluster-sample-locator[10334],"
+                + "geodecluster-sample-locator-1.geodecluster-sample-locator[10334],"
+                + "geodecluster-sample-locator-2.geodecluster-sample-locator[10334]",
+            (InetAddress) null);
+    assertThat(addys).contains(
+        new HostAddress(
+            new InetSocketAddress("geodecluster-sample-locator-2.geodecluster-sample-locator",
+                10334),
+            "geodecluster-sample-locator-2.geodecluster-sample-locator"));
+    assertThat(addys).hasSize(3);
+  }
+
+  @Test
+  public void multipleHostsWithBindAddress() throws MembershipConfigurationException {
+    assertThatThrownBy(() -> parseLocators(
+        "geodecluster-sample-locator-0.geodecluster-sample-locator[10334],"
+            + "geodecluster-sample-locator-1.geodecluster-sample-locator[10334],"
+            + "geodecluster-sample-locator-2.geodecluster-sample-locator[10334]",
+        "127.0.0.1"))
+            .isInstanceOf(MembershipConfigurationException.class)
+            .hasMessageContaining("unknown address or FQDN");
+  }
+
+  @Test
+  public void nonLoopbackBindAddressDoesNotResolveLocatorAddress()
+      throws MembershipConfigurationException {
+    final List<HostAddress> hostAddresses =
+        parseLocators(UNRESOLVEABLE_HOST + "[" + PORT + "]",
+            RESOLVEABLE_NON_LOOPBACK_HOST);
+    assertThat(hostAddresses)
+        .contains(new HostAddress(new InetSocketAddress(UNRESOLVEABLE_HOST, PORT),
+            UNRESOLVEABLE_HOST));
+  }
+
 }
