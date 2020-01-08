@@ -486,7 +486,7 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
             region = getRootRegion().getSubregion(regionName);
           }
           region.getAttributesMutator()
-              .addCacheListener(new CertifiableTestCacheListener(LogWriterUtils.getLogWriter()));
+              .addCacheListener(new CertifiableTestCacheListener());
         } catch (Exception cqe) {
           AssertionError err = new AssertionError("Failed to get Region.");
           err.initCause(cqe);
@@ -532,7 +532,7 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
             region = getRootRegion().getSubregion(regionName);
           }
           region.getAttributesMutator()
-              .addCacheListener(new CertifiableTestCacheListener(LogWriterUtils.getLogWriter()));
+              .addCacheListener(new CertifiableTestCacheListener());
         } catch (Exception cqe) {
           AssertionError err = new AssertionError("Failed to get Region.");
           err.initCause(cqe);
@@ -796,7 +796,7 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
             region = getRootRegion().getSubregion(regionName);
           }
           region.getAttributesMutator()
-              .addCacheListener(new CertifiableTestCacheListener(LogWriterUtils.getLogWriter()));
+              .addCacheListener(new CertifiableTestCacheListener());
         } catch (Exception cqe) {
           AssertionError err = new AssertionError("Failed to get Region.");
           err.initCause(cqe);
