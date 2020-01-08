@@ -270,15 +270,15 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
   /**
    * Get Initial locators from current locator list
    */
-  private Set<HostAddress> getInitLocators() {
+  private Set<LocatorAddress> getInitLocators() {
 
-    Set<HostAddress> initLocators = new HashSet<>(initialLocators.size());
+    Set<LocatorAddress> initLocators = new HashSet<>(initialLocators.size());
     LocatorList locatorList = locators.get();
 
     boolean locatorfound;
-    for (HostAddress initloc : initialLocators) {
+    for (LocatorAddress initloc : initialLocators) {
       locatorfound = false;
-      for (HostAddress currloc : locatorList.getLocatorAddresses()) {
+      for (LocatorAddress currloc : locatorList.getLocatorAddresses()) {
         if (initloc.getHostName().equals(currloc.getHostName())
             && initloc.getPort() == currloc.getPort()) {
           initLocators.add(currloc);
@@ -299,7 +299,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
     return locators.get().getLocators();
   }
 
-  protected List<HostAddress> getCurrentLocatorsAddresses() {
+  protected List<LocatorAddress> getCurrentLocatorsAddresses() {
     return locators.get().getLocatorAddresses();
   }
 
@@ -335,9 +335,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
     List<LocatorAddress> newLocatorAddresses = new ArrayList<>(locatorResponse.size());
     List<LocatorAddress> newOnlineLocators = new ArrayList<>(locatorResponse.size());
 
-
-    Set<LocatorAddress> badLocators = new HashSet<>(initialLocators);
-//    Set<HostAddress> badLocators = getInitLocators();
+    Set<LocatorAddress> badLocators = getInitLocators();
 
     for (ServerLocation locator : locatorResponse) {
       InetSocketAddress address = new InetSocketAddress(locator.getHostName(), locator.getPort());

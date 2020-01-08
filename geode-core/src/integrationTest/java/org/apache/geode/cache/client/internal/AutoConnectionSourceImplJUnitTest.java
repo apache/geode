@@ -420,9 +420,12 @@ public class AutoConnectionSourceImplJUnitTest {
     assertEquals(updateLocatorInterval, source.getLocatorUpdateInterval());
   }
 
-
+  /**
+   * This tests validates update of IP of locator from initialLocators list.
+   * In this test we validate this using identityHashCode.
+   */
   @Test
-  public void testLocatorIpChange2() {
+  public void testinitialLocatorIpChange() {
     int port = 11011;
     List<InetSocketAddress> locators = new ArrayList<>();
     InetSocketAddress floc1 = InetSocketAddress.createUnresolved("localhost", port);
@@ -431,21 +434,21 @@ public class AutoConnectionSourceImplJUnitTest {
     locators.add(floc1);
     locators.add(floc2);
 
-    List<HostAddress> la = new ArrayList<>();
-    la.add(new HostAddress(floc1, floc1.getHostName()));
-    la.add(new HostAddress(floc2, floc2.getHostName()));
+    List<LocatorAddress> la = new ArrayList<>();
+    la.add(new LocatorAddress(floc1, floc1.getHostName()));
+    la.add(new LocatorAddress(floc2, floc2.getHostName()));
 
     AutoConnectionSourceImpl src = new AutoConnectionSourceImpl(la, "", 60 * 1000);
     src.setPool(pool);
 
     // This method will create a new InetSocketAddress of floc1
-    src.updateLocatorInLocatorList(new HostAddress(floc1, floc1.getHostName()));
+    src.updateLocatorInLocatorList(new LocatorAddress(floc1, floc1.getHostName()));
 
-    List<HostAddress> cLocList = src.getCurrentLocatorsAddresses();
+    List<LocatorAddress> cLocList = src.getCurrentLocatorsAddresses();
 
     Assert.assertEquals(2, cLocList.size());
 
-    for (HostAddress t : cLocList) {
+    for (LocatorAddress t : cLocList) {
       Assert.assertNotSame("Should have replaced floc1 instance", t.getSocketInetAddressNoLookup(),
           floc1);
     }
@@ -456,10 +459,10 @@ public class AutoConnectionSourceImplJUnitTest {
 
     src.updateLocatorList(response);
 
-    List<HostAddress> cLocList2 = src.getCurrentLocatorsAddresses();
+    List<LocatorAddress> cLocList2 = src.getCurrentLocatorsAddresses();
 
     Assert.assertEquals(2, cLocList2.size());
-    for (HostAddress t : cLocList2) {
+    for (LocatorAddress t : cLocList2) {
       Assert.assertNotSame("Should have replaced floc1 instance", t.getSocketInetAddressNoLookup(),
           floc1);
     }
