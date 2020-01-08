@@ -14,9 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM ubuntu:bionic
-RUN apt-get update
-RUN apt-get install -y openjdk-11-jre
+FROM openjdk:11
 COPY geode /geode
 ENV GEODE_HOME="/geode"
 ENV PATH="${GEODE_HOME}/bin:${PATH}"
