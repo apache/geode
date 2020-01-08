@@ -356,7 +356,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
     // using the client's version to ensure it gets the proper on-wire form
     // of the identifier
     // See GEODE-3072
-    if (version.compareTo(Version.GEODE_1_1_0) < 0) {
+    if (membershipID != null && version.compareTo(Version.GEODE_1_1_0) < 0) {
       InternalDistributedMember member = getDistributedMember(Version.GFE_90);
       // reserialize with the client's version so that we write the UUID
       // bytes
