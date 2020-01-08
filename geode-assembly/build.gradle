@@ -673,6 +673,7 @@ task dumpInstalledJars(dependsOn: installDist) {
 }
 
 docker {
+  dependsOn(tasks.installDist)
   name 'geode:develop'
-  copySpec.from('build/install/apache-geode').into('geode')
+  copySpec.from(tasks.installDist.outputs).into('geode')
 }
