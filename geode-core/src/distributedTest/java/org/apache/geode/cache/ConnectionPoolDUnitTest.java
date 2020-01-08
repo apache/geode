@@ -1425,6 +1425,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
       Region rgn = createRegion(name, factory);
       rgn.registerInterestRegex(".*", false, false);
     });
+
     vm1.invoke("Turn on history", () -> {
       Region<Object, Object> region = getRootRegion().getSubregion(name);
       CertifiableTestCacheListener<Object, Object> ctl =
@@ -1432,6 +1433,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
               .getCacheListeners()[0];
       ctl.enableEventHistory();
     });
+
     vm2.invoke("Update region", () -> {
       Region<Object, Object> region = getRootRegion().getSubregion(name);
       for (int i = 0; i < 10; i++) {
@@ -1441,15 +1443,10 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
 
     vm1.invoke("Verify invalidates", () -> {
       Region<Object, Object> region = getRootRegion().getSubregion(name);
-      await().untilAsserted(() -> {
-        for (int i = 0; i < 10; i++) {
-          assertThat(region.get("new" + i)).isEqualTo("callbackArg" + i);
-        }
-      });
-
       CertifiableTestCacheListener<Object, Object> ctl =
           (CertifiableTestCacheListener<Object, Object>) region.getAttributes()
               .getCacheListeners()[0];
+
       for (int i = 0; i < 10; i++) {
         Object key = i;
         ctl.waitForInvalidated(key);
@@ -1457,7 +1454,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
       }
       {
         List<CacheEvent<Object, Object>> list = ctl.getEventHistory();
-        assertThat(10).isEqualTo(list.size());
+        assertThat(list.size()).isEqualTo(10);
         for (int i = 0; i < 10; i++) {
           Object key = i;
           EntryEvent ee = (EntryEvent) list.get(i);
