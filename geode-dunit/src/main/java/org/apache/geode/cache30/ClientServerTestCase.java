@@ -146,7 +146,6 @@ public abstract class ClientServerTestCase extends JUnit4CacheTestCase {
   public static Pool configureConnectionPool(AttributesFactory factory, String host, int[] ports,
       boolean establish, int redundancy, int connectionsPerServer, String serverGroup,
       int pingInterval, int idleTimeout, int lifetimeTimeout) {
-    /* poolName */
     return configureConnectionPoolWithNameAndFactory(factory, host, ports, establish, redundancy,
         connectionsPerServer, serverGroup, null, PoolManager.createFactory(), pingInterval,
         idleTimeout, lifetimeTimeout, -1);
@@ -155,7 +154,6 @@ public abstract class ClientServerTestCase extends JUnit4CacheTestCase {
   public static Pool configureConnectionPool(AttributesFactory factory, String host, int[] ports,
       boolean establish, int redundancy, int connectionsPerServer, String serverGroup,
       int pingInterval, int idleTimeout, int lifetimeTimeout, int statisticInterval) {
-    /* poolName */
     return configureConnectionPoolWithNameAndFactory(factory, host, ports, establish, redundancy,
         connectionsPerServer, serverGroup, null, PoolManager.createFactory(), pingInterval,
         idleTimeout, lifetimeTimeout, statisticInterval);

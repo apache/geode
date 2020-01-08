@@ -136,15 +136,10 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
   public final void postTearDownCacheTestCase() {
     Invoke.invokeInEveryVM(() -> {
       Map pools = PoolManager.getAll();
-      if (!pools.isEmpty()) {
-        logger.warn("found pools remaining after teardown: " + pools);
-        assertThat(pools.size()).isEqualTo(0);
-      }
+      assertThat(pools).describedAs("found pools remaining after teardown: " + pools).isEmpty();
     });
-    postTearDownConnectionPoolDUnitTest();
   }
 
-  private void postTearDownConnectionPoolDUnitTest() {}
 
   private static PoolImpl getPool(Region r) {
     PoolImpl result = null;
@@ -165,9 +160,6 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
     Cache cache = getCache();
     CacheServer bridge = cache.addCacheServer();
     bridge.setPort(port);
-    if (-1 != -1) {
-      bridge.setSocketBufferSize(-1);
-    }
     bridge.setMaxThreads(0);
     bridge.setLoadPollInterval(CacheServer.DEFAULT_LOAD_POLL_INTERVAL);
     bridge.start();
@@ -188,7 +180,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
   private void createLonerDS() {
     disconnectFromDS();
     InternalDistributedSystem ds = getLonerSystem();
-    assertThat(0).isEqualTo(ds.getDistributionManager().getOtherDistributionManagerIds().size());
+    assertThat(ds.getDistributionManager().getOtherDistributionManagerIds()).isEmpty();
   }
 
   /**
@@ -498,8 +490,8 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
     AsyncInvocation inv2 = vm2.invokeAsync("Initialize Client", initializeClient);
     AsyncInvocation inv3 = vm3.invokeAsync("Initialize Client", initializeClient);
 
-    inv2.get();
-    inv3.get();
+    inv2.await();
+    inv3.await();
   }
 
   /**
@@ -676,7 +668,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
       }
       region.localDestroyRegion();
       assertThat(p.isDestroyed()).isFalse();
-      assertThat(0).isEqualTo(p.getAttachCount());
+      assertThat(p.getAttachCount()).isEqualTo(0);
     });
 
     vm0.invoke("Stop CacheServer", () -> stopBridgeServer(getCache()));
@@ -932,12 +924,12 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
       try {
         if (putAI != null) {
           // Verify that no exception has occurred in the putter thread
-          putAI.get();
+          putAI.await();
         }
 
         if (putAI2 != null) {
           // Verify that no exception has occurred in the putter thread
-          putAI.get();
+          putAI.await();
         }
       } finally {
         vm2.invoke("Stop Putters", () -> stopTestLifetimeExpire = false);
@@ -1101,7 +1093,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
       for (int i = 0; i < 10; i++) {
         Object value = region.get("key-bytes-" + i);
         assertThat(value).isNotNull();
-        assertThat(value instanceof byte[]).isTrue();
+        assertThat(value).isInstanceOf(byte[].class);
         assertThat("value-" + i).isEqualTo(new String((byte[]) value));
       }
     });
@@ -1290,7 +1282,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
         for (int i = 0; i < 10; i++) {
           Object key = i;
           EntryEvent ee = (EntryEvent) list.get(i);
-          assertThat(key).isEqualTo(ee.getKey());
+          assertThat(ee.getKey()).isEqualTo(key);
           assertThat("old" + i).isEqualTo(ee.getOldValue());
           assertThat(Operation.INVALIDATE).isEqualTo(ee.getOperation());
           assertThat("callbackArg" + i).isEqualTo(ee.getCallbackArgument());
@@ -1325,7 +1317,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
         for (int i = 0; i < 10; i++) {
           Object key = i;
           EntryEvent ee = (EntryEvent) list.get(i);
-          assertThat(key).isEqualTo(ee.getKey());
+          assertThat(ee.getKey()).isEqualTo(key);
           assertThat(ee.getOldValue()).isNull();
           assertThat(Operation.DESTROY).isEqualTo(ee.getOperation());
           assertThat("destroyCB" + i).isEqualTo(ee.getCallbackArgument());
@@ -1349,7 +1341,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
       List<CacheEvent<Object, Object>> list = ctl.getEventHistory();
       logger
           .info("history (should be empty): " + list);
-      assertThat(0).isEqualTo(list.size());
+      assertThat(list).isEmpty();
       // now see if we can get it from the server
       for (int i = 0; i < 10; i++) {
         Object key = i;
@@ -1361,9 +1353,9 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
         Object key = i;
         EntryEvent ee = (EntryEvent) list.get(i);
         logger.info("processing " + ee);
-        assertThat(key).isEqualTo(ee.getKey());
+        assertThat(ee.getKey()).isEqualTo(key);
         assertThat(ee.getOldValue()).isNull();
-        assertThat("create" + i).isEqualTo(ee.getNewValue());
+        assertThat(ee.getNewValue()).isEqualTo("create" + i);
         assertThat(Operation.LOCAL_LOAD_CREATE).isEqualTo(ee.getOperation());
         assertThat("loadCB" + i).isEqualTo(ee.getCallbackArgument());
         assertThat(ee.isOriginRemote()).isFalse();
@@ -1451,7 +1443,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
       Region<Object, Object> region = getRootRegion().getSubregion(name);
       await().untilAsserted(() -> {
         for (int i = 0; i < 10; i++) {
-          assertThat(region.get("new" + i) == ("callbackArg" + i));
+          assertThat(region.get("new" + i)).isEqualTo("callbackArg" + i);
         }
       });
 
@@ -1469,7 +1461,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
         for (int i = 0; i < 10; i++) {
           Object key = i;
           EntryEvent ee = (EntryEvent) list.get(i);
-          assertThat(key).isEqualTo(ee.getKey());
+          assertThat(ee.getKey()).isEqualTo(key);
           assertThat(ee.getOldValue()).isNull();
           assertThat(ee.isOldValueAvailable()).isFalse(); // failure
           assertThat(Operation.INVALIDATE).isEqualTo(ee.getOperation());
@@ -1504,7 +1496,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
         for (int i = 0; i < 10; i++) {
           Object key = i;
           EntryEvent ee = (EntryEvent) list.get(i);
-          assertThat(key).isEqualTo(ee.getKey());
+          assertThat(ee.getKey()).isEqualTo(key);
           assertThat(ee.getOldValue()).isNull();
           assertThat(ee.isOldValueAvailable()).isFalse();
           assertThat(Operation.DESTROY).isEqualTo(ee.getOperation());
@@ -1536,7 +1528,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
       for (int i = 0; i < 10; i++) {
         Object key = i;
         EntryEvent ee = (EntryEvent) list.get(i);
-        assertThat(key).isEqualTo(ee.getKey());
+        assertThat(ee.getKey()).isEqualTo(key);
         assertThat(ee.getOldValue()).isNull();
         assertThat(ee.isOldValueAvailable()).isFalse();
         assertThat(Operation.INVALIDATE).isEqualTo(ee.getOperation());
@@ -1554,9 +1546,9 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
       for (int i = 0; i < 10; i++) {
         Object key = i;
         EntryEvent ee = (EntryEvent) list.get(i);
-        assertThat(key).isEqualTo(ee.getKey());
+        assertThat(ee.getKey()).isEqualTo(key);
         assertThat(ee.getOldValue()).isNull();
-        assertThat("create" + i).isEqualTo(ee.getNewValue());
+        assertThat(ee.getNewValue()).isEqualTo("create" + i);
         assertThat(Operation.LOCAL_LOAD_CREATE).isEqualTo(ee.getOperation());
         assertThat("loadCB" + i).isEqualTo(ee.getCallbackArgument());
         assertThat(ee.isOriginRemote()).isFalse();
@@ -1678,7 +1670,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
       await().until(() -> ctl.getEventHistory().size() == 0);
 
       List<CacheEvent<Object, Object>> list = ctl.getEventHistory();
-      assertThat(0).isEqualTo(list.size());
+      assertThat(list).isEmpty();
       // now see if we can get it from the server
       for (int i = 0; i < 10; i++) {
         Object key = i;
@@ -1689,9 +1681,9 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
       for (int i = 0; i < 10; i++) {
         Object key = i;
         EntryEvent ee = (EntryEvent) list.get(i);
-        assertThat(key).isEqualTo(ee.getKey());
+        assertThat(ee.getKey()).isEqualTo(key);
         assertThat(ee.getOldValue()).isNull();
-        assertThat("create" + i).isEqualTo(ee.getNewValue());
+        assertThat(ee.getNewValue()).isEqualTo("create" + i);
         assertThat(Operation.LOCAL_LOAD_CREATE).isEqualTo(ee.getOperation());
         assertThat("loadCB" + i).isEqualTo(ee.getCallbackArgument());
         assertThat(ee.isOriginRemote()).isFalse();
@@ -1819,9 +1811,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
     if (cl != null) {
       regionFactory.setCacheLoader(cl);
     }
-    if (null != null) {
-      regionFactory.setCacheWriter(null);
-    }
+
     regionFactory.setScope(Scope.DISTRIBUTED_ACK);
     regionFactory.setConcurrencyChecksEnabled(false);
     regionFactory.setDataPolicy(DataPolicy.REPLICATE);
@@ -1906,12 +1896,12 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
       Region<Object, Object> region1 = getRootRegion().getSubregion(name1);
       for (int i = 0; i < 10; i++) {
         final int testInt = i;
-        await().until(() -> ("Region1New" + testInt).compareTo((String) region1.get(testInt)) == 0);
+        await().until(() -> (region1.get(testInt).equals("Region1New" + testInt)));
       }
       Region<Object, Object> region2 = getRootRegion().getSubregion(name2);
       for (int i = 0; i < 10; i++) {
         final int testInt = i;
-        await().until(() -> ("Region2Old" + testInt).compareTo((String) region2.get(testInt)) == 0);
+        await().until(() -> region2.get(testInt).equals(("Region2Old" + testInt)));
       }
     });
 
@@ -3284,7 +3274,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
         assertThat(entry).isNotNull();
         byte[] value = (byte[]) entry.getValue();
         assertThat(value).isNotNull();
-        assertThat(0).isEqualTo(value.length);
+        assertThat(value.length).isEqualTo(0);
       }
     });
 
@@ -3295,7 +3285,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
         assertThat(entry).isNotNull();
         byte[] value = (byte[]) entry.getValue();
         assertThat(value).isNotNull();
-        assertThat(0).isEqualTo(value.length);
+        assertThat(value.length).isEqualTo(0);
       }
     });
 
@@ -3455,7 +3445,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
       Region<Object, Object> region = getRootRegion().getSubregion(name);
       Set keySet = region.keySetOnServer();
       assertThat(keySet).isNotNull();
-      assertThat(0).isEqualTo(keySet.size());
+      assertThat(keySet).isEmpty();
     });
 
     vm1.invoke("Put values", () -> {
