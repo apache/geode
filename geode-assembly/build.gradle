@@ -674,6 +674,6 @@ task dumpInstalledJars(dependsOn: installDist) {
 
 docker {
   dependsOn(tasks.installDist)
-  name 'geode:develop'
+  name geodeDockerImageName
   copySpec.from(tasks.installDist.outputs).into('geode')
 }
