@@ -977,7 +977,7 @@ toData,22
 org/apache/geode/internal/cache/EventID,4
 fromData,53
 fromDataPre_GFE_8_0_0_0,33
-toData,99
+toData,106
 toDataPre_GFE_8_0_0_0,24
 
 org/apache/geode/internal/cache/EvictionAttributesImpl,2
