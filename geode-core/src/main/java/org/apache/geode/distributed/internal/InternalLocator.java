@@ -74,6 +74,7 @@ import org.apache.geode.distributed.internal.membership.api.QuorumChecker;
 import org.apache.geode.distributed.internal.tcpserver.InfoRequest;
 import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
+import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
 import org.apache.geode.internal.CopyOnWriteHashSet;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.InternalDataSerializer;
@@ -539,22 +540,23 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
               MAX_POOL_SIZE, new DelayedPoolStatHelper(),
               POOL_IDLE_TIMEOUT,
               new ThreadPoolExecutor.CallerRunsPolicy());
+      final TcpSocketCreator socketCreator = asTcpSocketCreator(
+          SocketCreatorFactory
+              .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR));
       membershipLocator =
-          MembershipLocatorBuilder.<InternalDistributedMember>newLocatorBuilder().setPort(port)
+          MembershipLocatorBuilder.<InternalDistributedMember>newLocatorBuilder(
+              socketCreator,
+              InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
+              InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer(),
+              workingDirectory,
+              config,
+              executor)
+              .setPort(port)
               .setBindAddress(bindAddress)
               .setProtocolChecker(new ProtocolCheckerImpl(this, new ClientProtocolServiceLoader()))
-              .setExecutorServiceSupplier(
-                  executor)
-              .setSocketCreator(asTcpSocketCreator(
-                  SocketCreatorFactory
-                      .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)))
-              .setObjectSerializer(
-                  InternalDataSerializer.getDSFIDSerializer().getObjectSerializer())
-              .setObjectDeserializer(
-                  InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer())
               .setFallbackHandler(handler)
               .setLocatorsAreCoordinators(shouldLocatorsBeCoordinators())
-              .setLocatorStats(locatorStats).setWorkingDirectory(workingDirectory).setConfig(config)
+              .setLocatorStats(locatorStats)
               .create();
     } catch (MembershipConfigurationException | UnknownHostException e) {
       throw new GemFireConfigException(e.getMessage());

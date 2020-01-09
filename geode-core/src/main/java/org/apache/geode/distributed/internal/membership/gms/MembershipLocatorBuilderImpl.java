@@ -41,12 +41,27 @@ public final class MembershipLocatorBuilderImpl<ID extends MemberIdentifier> imp
   private TcpHandler fallbackHandler = new TcpHandlerNoOp();
   private MembershipLocatorStatistics locatorStats = new MembershipLocatorStatisticsNoOp();
   private boolean locatorsAreCoordinators = true;
-  private TcpSocketCreator socketCreator;
-  private ObjectSerializer objectSerializer;
-  private ObjectDeserializer objectDeserializer;
-  private Path workingDirectory;
-  private MembershipConfig config;
-  private Supplier<ExecutorService> executorServiceSupplier;
+  private final TcpSocketCreator socketCreator;
+  private final ObjectSerializer objectSerializer;
+  private final ObjectDeserializer objectDeserializer;
+  private final Path workingDirectory;
+  private final MembershipConfig config;
+  private final Supplier<ExecutorService> executorServiceSupplier;
+
+  public MembershipLocatorBuilderImpl(
+      final TcpSocketCreator socketCreator,
+      final ObjectSerializer objectSerializer,
+      final ObjectDeserializer objectDeserializer,
+      final Path workingDirectory,
+      final MembershipConfig config,
+      final Supplier<ExecutorService> executorServiceSupplier) {
+    this.socketCreator = socketCreator;
+    this.objectSerializer = objectSerializer;
+    this.objectDeserializer = objectDeserializer;
+    this.workingDirectory = workingDirectory;
+    this.config = config;
+    this.executorServiceSupplier = executorServiceSupplier;
+  }
 
   @Override
   public MembershipLocatorBuilder<ID> setPort(int port) {
@@ -67,31 +82,6 @@ public final class MembershipLocatorBuilderImpl<ID extends MemberIdentifier> imp
   }
 
   @Override
-  public MembershipLocatorBuilder<ID> setExecutorServiceSupplier(
-      Supplier<ExecutorService> executorServiceSupplier) {
-    this.executorServiceSupplier = executorServiceSupplier;
-    return this;
-  }
-
-  @Override
-  public MembershipLocatorBuilder<ID> setSocketCreator(TcpSocketCreator socketCreator) {
-    this.socketCreator = socketCreator;
-    return this;
-  }
-
-  @Override
-  public MembershipLocatorBuilder<ID> setObjectSerializer(ObjectSerializer objectSerializer) {
-    this.objectSerializer = objectSerializer;
-    return this;
-  }
-
-  @Override
-  public MembershipLocatorBuilder<ID> setObjectDeserializer(ObjectDeserializer objectDeserializer) {
-    this.objectDeserializer = objectDeserializer;
-    return this;
-  }
-
-  @Override
   public MembershipLocatorBuilder<ID> setFallbackHandler(TcpHandler fallbackHandler) {
     this.fallbackHandler = fallbackHandler;
     return this;
@@ -106,18 +96,6 @@ public final class MembershipLocatorBuilderImpl<ID extends MemberIdentifier> imp
   @Override
   public MembershipLocatorBuilder<ID> setLocatorStats(MembershipLocatorStatistics locatorStats) {
     this.locatorStats = locatorStats;
-    return this;
-  }
-
-  @Override
-  public MembershipLocatorBuilder<ID> setWorkingDirectory(Path workingDirectory) {
-    this.workingDirectory = workingDirectory;
-    return this;
-  }
-
-  @Override
-  public MembershipLocatorBuilder<ID> setConfig(MembershipConfig config) {
-    this.config = config;
     return this;
   }
 
