@@ -64,6 +64,7 @@ import org.apache.geode.distributed.internal.membership.api.Message;
 import org.apache.geode.distributed.internal.membership.api.MessageListener;
 import org.apache.geode.distributed.internal.membership.api.QuorumChecker;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
+import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.net.SocketCreatorFactory;
@@ -126,7 +127,19 @@ public class DistributionImpl implements Distribution {
 
     memberTimeout = system.getConfig().getMemberTimeout();
     try {
-      membership = MembershipBuilder.<InternalDistributedMember>newMembershipBuilder()
+      final TcpClient locatorClient = new TcpClient(
+          asTcpSocketCreator(
+              SocketCreatorFactory
+                  .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
+          InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
+          InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());
+      final TcpSocketCreator socketCreator = asTcpSocketCreator(SocketCreatorFactory
+          .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER));
+      membership = MembershipBuilder.<InternalDistributedMember>newMembershipBuilder(
+          socketCreator,
+          locatorClient,
+          InternalDataSerializer.getDSFIDSerializer(),
+          new ClusterDistributionManager.ClusterDistributionManagerIDFactory())
           .setAuthenticator(
               new GMSAuthenticator(system.getSecurityProperties(), system.getSecurityService(),
                   system.getSecurityLogWriter(), system.getInternalLogWriter()))
@@ -134,17 +147,7 @@ public class DistributionImpl implements Distribution {
           .setMessageListener(messageListener)
           .setMembershipListener(listener)
           .setConfig(new ServiceConfig(transport, system.getConfig()))
-          .setSerializer(InternalDataSerializer.getDSFIDSerializer())
           .setLifecycleListener(new LifecycleListenerImpl(this))
-          .setMemberIDFactory(new ClusterDistributionManager.ClusterDistributionManagerIDFactory())
-          .setLocatorClient(new TcpClient(
-              asTcpSocketCreator(
-                  SocketCreatorFactory
-                      .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
-              InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
-              InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer()))
-          .setSocketCreator(asTcpSocketCreator(SocketCreatorFactory
-              .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER)))
           .create();
     } catch (MembershipConfigurationException e) {
       throw new GemFireConfigException(e.getMessage(), e.getCause());

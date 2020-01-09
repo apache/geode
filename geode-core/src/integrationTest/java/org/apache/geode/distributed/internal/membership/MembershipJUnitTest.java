@@ -70,6 +70,7 @@ import org.apache.geode.distributed.internal.membership.api.MembershipListener;
 import org.apache.geode.distributed.internal.membership.api.MembershipView;
 import org.apache.geode.distributed.internal.membership.api.MessageListener;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
+import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
@@ -250,8 +251,8 @@ public class MembershipJUnitTest {
   private Pair<Membership, MessageListener> createMembershipManager(
       final DistributionConfigImpl config,
       final RemoteTransportConfig transport) throws MemberStartupException {
-    final MembershipListener listener = mock(MembershipListener.class);
-    final MessageListener messageListener = mock(MessageListener.class);
+    final MembershipListener<InternalDistributedMember> listener = mock(MembershipListener.class);
+    final MessageListener<InternalDistributedMember> messageListener = mock(MessageListener.class);
     final DMStats stats1 = mock(DMStats.class);
     final InternalDistributedSystem mockSystem = mock(InternalDistributedSystem.class);
     final SecurityService securityService = SecurityServiceFactory.create();
@@ -263,36 +264,41 @@ public class MembershipJUnitTest {
         return new InternalDistributedMember((MemberData) invocation.getArgument(0));
       }
     });
-    LifecycleListener lifeCycleListener = mock(LifecycleListener.class);
-    final Membership m1 =
-        MembershipBuilder.<InternalDistributedMember>newMembershipBuilder()
-            .setAuthenticator(new GMSAuthenticator(config.getSecurityProps(), securityService,
-                mockSystem.getSecurityLogWriter(), mockSystem.getInternalLogWriter()))
+    LifecycleListener<InternalDistributedMember> lifeCycleListener = mock(LifecycleListener.class);
+
+    final MemberIdentifierFactory<InternalDistributedMember> memberIdentifierFactory =
+        new MemberIdentifierFactory<InternalDistributedMember>() {
+          @Override
+          public InternalDistributedMember create(MemberData memberInfo) {
+            return new InternalDistributedMember(memberInfo);
+          }
+
+          @Override
+          public Comparator<InternalDistributedMember> getComparator() {
+            return Comparator.naturalOrder();
+          }
+        };
+
+    final TcpClient locatorClient = new TcpClient(
+        asTcpSocketCreator(
+            SocketCreatorFactory
+                .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
+        InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
+        InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());
+    final TcpSocketCreator socketCreator = asTcpSocketCreator(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER));
+    final GMSAuthenticator authenticator =
+        new GMSAuthenticator(config.getSecurityProps(), securityService,
+            mockSystem.getSecurityLogWriter(), mockSystem.getInternalLogWriter());
+    final Membership<InternalDistributedMember> m1 =
+        MembershipBuilder.<InternalDistributedMember>newMembershipBuilder(
+            socketCreator, locatorClient, serializer, memberIdentifierFactory)
+            .setAuthenticator(authenticator)
             .setStatistics(stats1)
             .setMessageListener(messageListener)
             .setMembershipListener(listener)
             .setConfig(new ServiceConfig(transport, config))
-            .setSerializer(serializer)
             .setLifecycleListener(lifeCycleListener)
-            .setMemberIDFactory(new MemberIdentifierFactory() {
-              @Override
-              public InternalDistributedMember create(MemberData memberInfo) {
-                return new InternalDistributedMember(memberInfo);
-              }
-
-              @Override
-              public Comparator<InternalDistributedMember> getComparator() {
-                return Comparator.naturalOrder();
-              }
-            })
-            .setLocatorClient(new TcpClient(
-                asTcpSocketCreator(
-                    SocketCreatorFactory
-                        .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
-                InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
-                InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer()))
-            .setSocketCreator(asTcpSocketCreator(SocketCreatorFactory
-                .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER)))
             .create();
     doAnswer(invocation -> {
       DistributionImpl.connectLocatorToServices(m1);

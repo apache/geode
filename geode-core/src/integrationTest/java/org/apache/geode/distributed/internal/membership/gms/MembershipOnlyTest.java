@@ -109,19 +109,16 @@ public class MembershipOnlyTest {
     MemberIdentifierFactoryImpl memberIdFactory = new MemberIdentifierFactoryImpl();
 
 
-    TcpClient client = new TcpClient(socketCreator, dsfidSerializer.getObjectSerializer(),
+    TcpClient locatorClient = new TcpClient(socketCreator, dsfidSerializer.getObjectSerializer(),
         dsfidSerializer.getObjectDeserializer());
 
     LifecycleListener<InternalDistributedMember> lifeCycleListener = mock(LifecycleListener.class);
 
     final Membership<InternalDistributedMember> membership =
-        MembershipBuilder.<InternalDistributedMember>newMembershipBuilder()
+        MembershipBuilder.<InternalDistributedMember>newMembershipBuilder(
+            socketCreator, locatorClient, dsfidSerializer, memberIdFactory)
             .setConfig(config)
-            .setSerializer(dsfidSerializer)
             .setLifecycleListener(lifeCycleListener)
-            .setMemberIDFactory(memberIdFactory)
-            .setLocatorClient(client)
-            .setSocketCreator(socketCreator)
             .create();
 
 
