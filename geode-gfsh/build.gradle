@@ -23,6 +23,7 @@ dependencies {
     api(platform(project(':boms:geode-all-bom')))
     compile(project(':geode-core'))
     compile(project(':geode-logging'))
+    compile(project(':geode-membership'))
     compile(project(':geode-serialization'))
     compile(project(':geode-unsafe'))
 

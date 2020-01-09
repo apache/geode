@@ -27,6 +27,7 @@ dependencies {
     upgradeTestCompile('xml-apis:xml-apis:2.0.2')
   }
   implementation(project(':geode-logging'))
+  implementation(project(':geode-membership'))
   implementation(project(':geode-serialization'))
   implementation(project(':geode-tcp-server'))
   compile(project(':geode-core'))

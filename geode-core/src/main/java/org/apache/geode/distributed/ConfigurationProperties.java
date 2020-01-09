@@ -15,6 +15,8 @@
 
 package org.apache.geode.distributed;
 
+import org.apache.geode.distributed.internal.membership.api.MembershipConfig;
+
 /**
  * This interface defines all the configuration properties that can be used. <U>Since</U>: Geode 1.0
  */
@@ -1188,7 +1190,7 @@ public interface ConfigurationProperties {
    * <p>
    * <U>Default</U>: ""
    */
-  String LOCATORS = "locators";
+  String LOCATORS = MembershipConfig.LOCATORS;
   /**
    * The static String definition of the <i>"log-disk-space-limit"</i> property <a
    * name="log-disk-space-limit"/a>
@@ -1767,7 +1769,7 @@ public interface ConfigurationProperties {
    * <p>
    * <U>Default</U>: "" (doesn't start a locator)
    */
-  String START_LOCATOR = "start-locator";
+  String START_LOCATOR = MembershipConfig.START_LOCATOR;
   /**
    * The static String definition of the <i>"statistic-archive-file"</i> property <a
    * name="statistic-archive-file"/a>

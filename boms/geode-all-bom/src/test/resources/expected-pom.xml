@@ -867,6 +867,12 @@
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
+        <artifactId>geode-membership</artifactId>
+        <version>1.12.0-SNAPSHOT</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.geode</groupId>
         <artifactId>geode-memcached</artifactId>
         <version>1.12.0-SNAPSHOT</version>
         <scope>compile</scope>

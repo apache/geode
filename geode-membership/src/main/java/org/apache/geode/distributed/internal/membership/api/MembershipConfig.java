@@ -57,6 +57,7 @@ public interface MembershipConfig {
   int DEFAULT_MCAST_RECV_BUFFER_SIZE = 1048576;
   int DEFAULT_UDP_RECV_BUFFER_SIZE = 1048576;
   int DEFAULT_UDP_SEND_BUFFER_SIZE = 65535;
+  int DEFAULT_UDP_RECV_BUFFER_SIZE_REDUCED = 65535;
   int DEFAULT_MCAST_BYTE_ALLOWANCE = 1048576;
   float DEFAULT_MCAST_RECHARGE_THRESHOLD = (float) 0.25;
   int DEFAULT_MCAST_RECHARGE_BLOCKING_MS = 5000;
@@ -67,6 +68,9 @@ public interface MembershipConfig {
   Object DEFAULT_OLD_MEMBERSHIP_INFO = null;
   boolean DEFAULT_IS_RECONNECTING_DS = false;
   int DEFAULT_JOIN_TIMEOUT = 24000;
+
+  String LOCATORS = "locators";
+  String START_LOCATOR = "start-locator";
 
   default boolean isReconnecting() {
     return false;

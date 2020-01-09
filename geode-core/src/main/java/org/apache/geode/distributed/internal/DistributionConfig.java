@@ -1608,12 +1608,6 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
   int DEFAULT_UDP_RECV_BUFFER_SIZE = MembershipConfig.DEFAULT_UDP_RECV_BUFFER_SIZE;
 
   /**
-   * The default size of the {@link ConfigurationProperties#UDP_RECV_BUFFER_SIZE} if tcp/ip sockets
-   * are enabled and multicast is disabled
-   */
-  int DEFAULT_UDP_RECV_BUFFER_SIZE_REDUCED = 65535;
-
-  /**
    * The minimum size of the {@link ConfigurationProperties#UDP_RECV_BUFFER_SIZE}, in bytes.
    * <p>
    * Actual value of this constant is <code>2048</code>.
