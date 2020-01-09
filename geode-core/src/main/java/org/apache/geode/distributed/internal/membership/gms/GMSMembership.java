@@ -42,12 +42,8 @@ import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.GemFireConfigException;
-import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.StartupMessage;
 import org.apache.geode.distributed.internal.membership.api.LifecycleListener;
 import org.apache.geode.distributed.internal.membership.api.MemberDisconnectedException;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
@@ -62,6 +58,7 @@ import org.apache.geode.distributed.internal.membership.api.MembershipView;
 import org.apache.geode.distributed.internal.membership.api.Message;
 import org.apache.geode.distributed.internal.membership.api.MessageListener;
 import org.apache.geode.distributed.internal.membership.api.QuorumChecker;
+import org.apache.geode.distributed.internal.membership.api.StopShunningMarker;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Manager;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
@@ -561,7 +558,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
   /**
    * Joins the distributed system
    *
-   * @throws GemFireConfigException - configuration error
+   * @throws MemberStartupException - configuration error
    */
   private void join() throws MemberStartupException {
     services.setShutdownCause(null);
@@ -902,7 +899,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
       latestViewWriteLock.lock();
       try {
         if (isShunned(m)) {
-          if (msg instanceof StartupMessage) {
+          if (msg instanceof StopShunningMarker) {
             endShun(m);
           } else {
             // fix for bug 41538 - sick alert listener causes deadlock
@@ -1217,8 +1214,6 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
   /**
    * Close the receiver, avoiding all potential deadlocks and eschewing any attempts at being
    * graceful.
-   *
-   * @see SystemFailure#emergencyClose()
    */
   @Override
   public void emergencyClose() {
@@ -1877,7 +1872,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
 
 
       surpriseMemberTimeout =
-          Math.max(20 * DistributionConfig.DEFAULT_MEMBER_TIMEOUT, 20 * config.getMemberTimeout());
+          Math.max(20 * MembershipConfig.DEFAULT_MEMBER_TIMEOUT, 20 * config.getMemberTimeout());
       surpriseMemberTimeout =
           Long.getLong(GeodeGlossary.GEMFIRE_PREFIX + "surprise-member-timeout",
               surpriseMemberTimeout).longValue();

@@ -21,8 +21,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
-
 /**
  * The MembershipView class represents a membership view. MembershipViews are typically
  * unmodifiable though you an create and manipulate one for local usel A MembershipView
@@ -156,7 +154,7 @@ public class MembershipView<ID extends MemberIdentifier> {
 
   public ID getLeadMember() {
     for (ID mbr : this.members) {
-      if (mbr.getVmKind() == ClusterDistributionManager.NORMAL_DM_TYPE) {
+      if (mbr.getVmKind() == MemberIdentifier.NORMAL_DM_TYPE) {
         return mbr;
       }
     }
