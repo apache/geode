@@ -59,7 +59,7 @@ import org.apache.geode.test.junit.categories.WanTest;
 public class SerialGatewaySenderQueueDUnitTest extends WANTestBase {
 
   @Test
-  public void unprocessEventsLinger() throws Exception {
+  public void unprocessedTokensMapShouldDrainCompletely() throws Exception {
     Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
 
     Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));

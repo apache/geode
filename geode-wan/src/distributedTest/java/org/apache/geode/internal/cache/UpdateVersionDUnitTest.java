@@ -61,7 +61,6 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.partitioned.PRLocallyDestroyedException;
-import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
@@ -271,11 +270,7 @@ public class UpdateVersionDUnitTest extends JUnit4DistributedTestCase {
 
     EntryEventImpl event =
         createNewEvent((DistributedRegion) region, versionTag, entry.getKey(), "value-3");
-    try {
-      ((LocalRegion) region).basicUpdate(event, false, true, 0L, false);
-    } catch (ConcurrentCacheModificationException ex) {
-      // do nothing
-    }
+    ((LocalRegion) region).basicUpdate(event, false, true, 0L, false);
 
     // Verify the new stamp
     entry = region.getEntry(key);

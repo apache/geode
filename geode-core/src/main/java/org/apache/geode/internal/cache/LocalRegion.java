@@ -5547,6 +5547,11 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    *        the following effect: even when ifNew is true will write over DESTROYED token when
    *        overwriteDestroyed is false and ifNew or ifOld is true then if the put doesn't occur
    *        because there is a DESTROYED token present then the entry flag blockedDestroyed is set.
+   * @param invokeCallbacks true if this operation should notify bridge clients and gateway senders
+   *        in the event of a ConcurrentCacheModificationException being thrown during the update
+   * @param throwConcurrentModificationException true if this operation should be allowed to throw
+   *        any ConcurrentCacheModificationException that occurs during the update. If false, any
+   *        ConcurrentCacheModificationExceptions that are thrown will be suppressed
    * @return false if ifNew is true and there is an existing key, or ifOld is true and there is no
    *         existing entry; otherwise return true.
    */

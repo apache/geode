@@ -152,7 +152,9 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
           // then basicPut will set the blockedDestroyed flag in the event
           boolean overwriteDestroyed = ev.getOperation().isCreate();
           try {
-            if (rgn.basicUpdate(ev, true, false, lastMod, overwriteDestroyed, true, true)) {
+            boolean firstBasicUpdateSuccess =
+                rgn.basicUpdate(ev, true, false, lastMod, overwriteDestroyed, true, true);
+            if (firstBasicUpdateSuccess) {
               rgn.getCachePerfStats().endPut(startPut, ev.isOriginRemote());
               // we did a create, or replayed a create event
               doUpdate = false;
@@ -186,15 +188,16 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
             br.getPartitionedRegion().getPrStats().startApplyReplication();
           }
           try {
-            boolean secondUpdateSuccess;
+            boolean secondBasicUpdateSuccess;
             try {
-              secondUpdateSuccess = rgn.basicUpdate(ev, false, true, lastMod, overwriteDestroyed,
-                  invokeCallbacks, true);
+              secondBasicUpdateSuccess =
+                  rgn.basicUpdate(ev, false, true, lastMod, overwriteDestroyed,
+                      invokeCallbacks, true);
             } catch (ConcurrentCacheModificationException ex) {
-              secondUpdateSuccess = false;
+              secondBasicUpdateSuccess = false;
               invokeCallbacks = false;
             }
-            if (secondUpdateSuccess) {
+            if (secondBasicUpdateSuccess) {
               rgn.getCachePerfStats().endPut(startPut, ev.isOriginRemote());
               if (logger.isTraceEnabled()) {
                 logger.trace("Processing put key {} in region {}", ev.getKey(), rgn.getFullPath());
@@ -206,9 +209,9 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
               if (rgn.isUsedForPartitionedRegionBucket()
                   || (rgn.getDataPolicy().withReplication() && rgn.getConcurrencyChecksEnabled())) {
                 ev.makeCreate();
-                boolean thirdUpdateSuccess =
+                boolean thirdBasicUpdateSuccess =
                     rgn.basicUpdate(ev, false, false, lastMod, true, invokeCallbacks, false);
-                if (thirdUpdateSuccess) {
+                if (thirdBasicUpdateSuccess) {
                   rgn.getCachePerfStats().endPut(startPut, ev.isOriginRemote());
                   updated = true;
                 }
