@@ -114,12 +114,6 @@ public class IndexRepositoryFactory {
         "##### [JUAN]: IndexRepositoryFactory.finishComputingRepository() acquired lock {}, fileAndChunkBucket.getBucketAdvisor().isPrimary(1) -> {}",
         lockName, fileAndChunkBucket.getBucketAdvisor().isPrimary());
 
-    try {
-      Thread.sleep(5000);
-    } catch (Exception exception) {
-      exception.printStackTrace();
-    }
-
     final IndexRepository repo;
     InternalCache cache = (InternalCache) userRegion.getRegionService();
     boolean initialPdxReadSerializedFlag = cache.getPdxReadSerializedOverride();
