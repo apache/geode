@@ -58,7 +58,7 @@ import org.apache.geode.distributed.internal.membership.api.MembershipView;
 import org.apache.geode.distributed.internal.membership.api.Message;
 import org.apache.geode.distributed.internal.membership.api.MessageListener;
 import org.apache.geode.distributed.internal.membership.api.QuorumChecker;
-import org.apache.geode.distributed.internal.membership.api.StartupMessageMarker;
+import org.apache.geode.distributed.internal.membership.api.StopShunningMarker;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Manager;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
@@ -899,7 +899,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
       latestViewWriteLock.lock();
       try {
         if (isShunned(m)) {
-          if (msg instanceof StartupMessageMarker) {
+          if (msg instanceof StopShunningMarker) {
             endShun(m);
           } else {
             // fix for bug 41538 - sick alert listener causes deadlock

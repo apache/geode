@@ -14,5 +14,12 @@
  */
 package org.apache.geode.distributed.internal.membership.api;
 
-public interface StartupMessageMarker {
+/**
+ * This interface implemented by message to be used for determination of ending shunned status for a
+ * given member.
+ *
+ * Upon receiving a message from a member that implements this interface,
+ * we will stop shunning of that member, which removes the member from the list of shunned members.
+ */
+public interface StopShunningMarker {
 }
