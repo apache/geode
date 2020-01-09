@@ -2212,7 +2212,9 @@ public class InternalDistributedSystem extends DistributedSystem
      * @param oldSystem the old DS, which is in a partially disconnected state and cannot be used
      *        for messaging
      */
-    void reconnecting(InternalDistributedSystem oldSystem);
+    default void reconnecting(InternalDistributedSystem oldSystem) {
+      // nothing
+    }
 
     /**
      * Invoked after a reconnect to the distributed system
@@ -2220,7 +2222,10 @@ public class InternalDistributedSystem extends DistributedSystem
      * @param oldSystem the old DS
      * @param newSystem the new DS
      */
-    void onReconnect(InternalDistributedSystem oldSystem, InternalDistributedSystem newSystem);
+    default void onReconnect(InternalDistributedSystem oldSystem,
+        InternalDistributedSystem newSystem) {
+      // nothing
+    }
   }
 
   /**
