@@ -20,7 +20,6 @@ import java.util.Set;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 
-import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
 
 /**
@@ -215,8 +214,6 @@ public interface Membership<ID extends MemberIdentifier> {
 
   /**
    * Release critical resources, avoiding any possibility of deadlock
-   *
-   * @see SystemFailure#emergencyClose()
    */
   void emergencyClose();
 
