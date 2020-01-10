@@ -30,6 +30,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import org.apache.http.conn.util.InetAddressUtils;
+
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.annotations.Immutable;
@@ -705,7 +707,8 @@ public class InternalDistributedMember
       host = add.getHostAddress();
     else {
       String hostName = memberData.getHostName();
-      host = SocketCreator.resolve_dns ? shortName(hostName) : hostName;
+      boolean isIpAddress = InetAddressUtils.isIPv4Address(hostName) || InetAddressUtils.isIPv6Address(hostName);
+      host = isIpAddress ? hostName : shortName(hostName);
     }
 
     sb.append(host);
