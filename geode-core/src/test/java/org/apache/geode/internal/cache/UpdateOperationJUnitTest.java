@@ -65,12 +65,16 @@ public class UpdateOperationJUnitTest {
    */
   @Test
   public void createSucceedShouldNotRetryAnymore() {
-    when(region.basicUpdate(eq(event), eq(true), eq(false), anyLong(), eq(true)))
-        .thenReturn(true);
+    when(
+        region.basicUpdate(eq(event), eq(true), eq(false), anyLong(), eq(true), eq(true), eq(true)))
+            .thenReturn(true);
     message.basicOperateOnRegion(event, region);
-    verify(region, times(1)).basicUpdate(eq(event), eq(true), eq(false), anyLong(), eq(true));
-    verify(region, times(0)).basicUpdate(eq(event), eq(false), eq(true), anyLong(), eq(true));
-    verify(region, times(0)).basicUpdate(eq(event), eq(false), eq(false), anyLong(), eq(true));
+    verify(region, times(1)).basicUpdate(eq(event), eq(true), eq(false), anyLong(), eq(true),
+        eq(true), eq(true));
+    verify(region, times(0)).basicUpdate(eq(event), eq(false), eq(true), anyLong(), eq(true),
+        eq(true), eq(true));
+    verify(region, times(0)).basicUpdate(eq(event), eq(false), eq(false), anyLong(), eq(true),
+        eq(true), eq(true));
   }
 
   /**
@@ -80,13 +84,17 @@ public class UpdateOperationJUnitTest {
    */
   @Test
   public void createFailWithConcurrencyConflictShouldNotRetry() {
-    when(region.basicUpdate(eq(event), eq(true), eq(false), anyLong(), eq(true)))
-        .thenReturn(false);
+    when(
+        region.basicUpdate(eq(event), eq(true), eq(false), anyLong(), eq(true), eq(true), eq(true)))
+            .thenReturn(false);
     when(event.isConcurrencyConflict()).thenReturn(true);
     message.basicOperateOnRegion(event, region);
-    verify(region, times(1)).basicUpdate(eq(event), eq(true), eq(false), anyLong(), eq(true));
-    verify(region, times(0)).basicUpdate(eq(event), eq(false), eq(true), anyLong(), eq(true));
-    verify(region, times(0)).basicUpdate(eq(event), eq(false), eq(false), anyLong(), eq(true));
+    verify(region, times(1)).basicUpdate(eq(event), eq(true), eq(false), anyLong(), eq(true),
+        eq(true), eq(true));
+    verify(region, times(0)).basicUpdate(eq(event), eq(false), eq(true), anyLong(), eq(true),
+        eq(true), eq(true));
+    verify(region, times(0)).basicUpdate(eq(event), eq(false), eq(false), anyLong(), eq(true),
+        eq(true), eq(true));
   }
 
   /**
@@ -95,14 +103,19 @@ public class UpdateOperationJUnitTest {
    */
   @Test
   public void updateSucceedShouldNotRetryAnymore() {
-    when(region.basicUpdate(eq(event), eq(true), eq(false), anyLong(), eq(true)))
-        .thenReturn(false);
-    when(region.basicUpdate(eq(event), eq(false), eq(true), anyLong(), eq(true)))
-        .thenReturn(true);
+    when(
+        region.basicUpdate(eq(event), eq(true), eq(false), anyLong(), eq(true), eq(true), eq(true)))
+            .thenReturn(false);
+    when(
+        region.basicUpdate(eq(event), eq(false), eq(true), anyLong(), eq(true), eq(true), eq(true)))
+            .thenReturn(true);
     message.basicOperateOnRegion(event, region);
-    verify(region, times(1)).basicUpdate(eq(event), eq(true), eq(false), anyLong(), eq(true));
-    verify(region, times(1)).basicUpdate(eq(event), eq(false), eq(true), anyLong(), eq(true));
-    verify(region, times(0)).basicUpdate(eq(event), eq(false), eq(false), anyLong(), eq(true));
+    verify(region, times(1)).basicUpdate(eq(event), eq(true), eq(false), anyLong(), eq(true),
+        eq(true), eq(true));
+    verify(region, times(1)).basicUpdate(eq(event), eq(false), eq(true), anyLong(), eq(true),
+        eq(true), eq(true));
+    verify(region, times(0)).basicUpdate(eq(event), eq(false), eq(false), anyLong(), eq(true),
+        eq(true), eq(true));
   }
 
   /**
@@ -112,14 +125,19 @@ public class UpdateOperationJUnitTest {
    */
   @Test
   public void doPutOrCreate3rdRetryShouldBeUpdate() {
-    when(region.basicUpdate(eq(event), eq(true), eq(false), anyLong(), eq(true)))
-        .thenReturn(false);
-    when(region.basicUpdate(eq(event), eq(false), eq(true), anyLong(), eq(true)))
-        .thenReturn(false);
+    when(
+        region.basicUpdate(eq(event), eq(true), eq(false), anyLong(), eq(true), eq(true), eq(true)))
+            .thenReturn(false);
+    when(
+        region.basicUpdate(eq(event), eq(false), eq(true), anyLong(), eq(true), eq(true), eq(true)))
+            .thenReturn(false);
     message.basicOperateOnRegion(event, region);
-    verify(region, times(1)).basicUpdate(eq(event), eq(true), eq(false), anyLong(), eq(true));
-    verify(region, times(1)).basicUpdate(eq(event), eq(false), eq(true), anyLong(), eq(true));
-    verify(region, times(1)).basicUpdate(eq(event), eq(false), eq(false), anyLong(), eq(true));
+    verify(region, times(1)).basicUpdate(eq(event), eq(true), eq(false), anyLong(), eq(true),
+        eq(true), eq(true));
+    verify(region, times(1)).basicUpdate(eq(event), eq(false), eq(true), anyLong(), eq(true),
+        eq(true), eq(true));
+    verify(region, times(1)).basicUpdate(eq(event), eq(false), eq(false), anyLong(), eq(true),
+        eq(true), eq(false));
   }
 
 }

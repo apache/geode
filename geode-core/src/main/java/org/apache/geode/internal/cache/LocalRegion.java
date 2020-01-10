@@ -5528,6 +5528,12 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     getDataView().updateEntryVersion(event);
   }
 
+  boolean basicUpdate(final EntryEventImpl event, final boolean ifNew, final boolean ifOld,
+      final long lastModified, final boolean overwriteDestroyed)
+      throws TimeoutException, CacheWriterException {
+    return this.basicUpdate(event, ifNew, ifOld, lastModified, overwriteDestroyed, true, false);
+  }
+
   /**
    * Allows null as new value to accommodate create with a null value.
    *
@@ -5541,11 +5547,17 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    *        the following effect: even when ifNew is true will write over DESTROYED token when
    *        overwriteDestroyed is false and ifNew or ifOld is true then if the put doesn't occur
    *        because there is a DESTROYED token present then the entry flag blockedDestroyed is set.
+   * @param invokeCallbacks true if this operation should notify bridge clients and gateway senders
+   *        in the event of a ConcurrentCacheModificationException being thrown during the update
+   * @param throwConcurrentModificationException true if this operation should be allowed to throw
+   *        any ConcurrentCacheModificationException that occurs during the update. If false, any
+   *        ConcurrentCacheModificationExceptions that are thrown will be suppressed
    * @return false if ifNew is true and there is an existing key, or ifOld is true and there is no
    *         existing entry; otherwise return true.
    */
   boolean basicUpdate(final EntryEventImpl event, final boolean ifNew, final boolean ifOld,
-      final long lastModified, final boolean overwriteDestroyed)
+      final long lastModified, final boolean overwriteDestroyed, final boolean invokeCallbacks,
+      final boolean throwConcurrentModificationException)
       throws TimeoutException, CacheWriterException {
 
     // check validity of key against keyConstraint
@@ -5560,7 +5572,14 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     validateValue(event.basicGetNewValue());
 
     return getDataView().putEntry(event, ifNew, ifOld, null, false, lastModified,
-        overwriteDestroyed);
+        overwriteDestroyed, invokeCallbacks, throwConcurrentModificationException);
+  }
+
+  public boolean virtualPut(final EntryEventImpl event, final boolean ifNew, final boolean ifOld,
+      Object expectedOldValue, boolean requireOldValue, final long lastModified,
+      final boolean overwriteDestroyed) throws TimeoutException, CacheWriterException {
+    return this.virtualPut(event, ifNew, ifOld, expectedOldValue, requireOldValue, lastModified,
+        overwriteDestroyed, true, false);
   }
 
   /**
@@ -5569,7 +5588,9 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   @Override
   public boolean virtualPut(final EntryEventImpl event, final boolean ifNew, final boolean ifOld,
       Object expectedOldValue, boolean requireOldValue, final long lastModified,
-      final boolean overwriteDestroyed) throws TimeoutException, CacheWriterException {
+      final boolean overwriteDestroyed, boolean invokeCallbacks,
+      boolean throwsConcurrentModification)
+      throws TimeoutException, CacheWriterException {
 
     if (!MemoryThresholds.isLowMemoryExceptionDisabled()) {
       checkIfAboveThreshold(event);
@@ -5581,17 +5602,23 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     try {
       oldEntry = entries.basicPut(event, lastModified, ifNew, ifOld, expectedOldValue,
           requireOldValue, overwriteDestroyed);
-    } catch (ConcurrentCacheModificationException ignore) {
-      // this can happen in a client cache when another thread
-      // managed to slip in its version info to the region entry before this
-      // thread got around to doing so
+    } catch (ConcurrentCacheModificationException concCacheModException) {
+      // this can happen in a client cache when another thread managed to slip in its version info
+      // to the region entry before this thread got around to doing so
       if (logger.isDebugEnabled()) {
         logger.debug("caught concurrent modification attempt when applying {}", event);
       }
-      notifyBridgeClients(event);
-      notifyGatewaySender(event.getOperation().isUpdate() ? EnumListenerEvent.AFTER_UPDATE
-          : EnumListenerEvent.AFTER_CREATE, event);
-      return false;
+      if (invokeCallbacks) {
+        notifyBridgeClients(event);
+        notifyGatewaySender(event.getOperation().isUpdate() ? EnumListenerEvent.AFTER_UPDATE
+            : EnumListenerEvent.AFTER_CREATE, event);
+      }
+      if (throwsConcurrentModification) {
+        throw concCacheModException;
+      } else {
+        return false;
+      }
+
     }
 
     // for EMPTY clients, see if a concurrent map operation had an entry on the server

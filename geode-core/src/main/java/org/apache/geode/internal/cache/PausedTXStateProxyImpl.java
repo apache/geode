@@ -253,6 +253,13 @@ public class PausedTXStateProxyImpl implements TXStateProxy {
   }
 
   @Override
+  public boolean putEntry(EntryEventImpl event, boolean ifNew, boolean ifOld,
+      Object expectedOldValue, boolean requireOldValue, long lastModified,
+      boolean overwriteDestroyed, boolean invokeCallbacks, boolean throwConcurrentModification) {
+    return false;
+  }
+
+  @Override
   public boolean putEntryOnRemote(EntryEventImpl event, boolean ifNew, boolean ifOld,
       Object expectedOldValue, boolean requireOldValue, long lastModified,
       boolean overwriteDestroyed) throws DataLocationException {

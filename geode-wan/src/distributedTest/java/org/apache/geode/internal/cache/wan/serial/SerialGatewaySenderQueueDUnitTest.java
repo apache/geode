@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.wan.serial;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -48,6 +49,7 @@ import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.WANTestBase;
+import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
@@ -55,6 +57,85 @@ import org.apache.geode.test.junit.categories.WanTest;
 
 @Category({WanTest.class})
 public class SerialGatewaySenderQueueDUnitTest extends WANTestBase {
+
+  @Test
+  public void unprocessedTokensMapShouldDrainCompletely() throws Exception {
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+
+    vm2.invoke(() -> WANTestBase.createCache(nyPort));
+    vm3.invoke(() -> WANTestBase.createCache(nyPort));
+
+    vm2.invoke(
+        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
+    vm3.invoke(
+        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
+
+    vm2.invoke(WANTestBase::createReceiver);
+    vm3.invoke(WANTestBase::createReceiver);
+
+    vm4.invoke(() -> WANTestBase.createCache(lnPort));
+    vm5.invoke(() -> WANTestBase.createCache(lnPort));
+    vm6.invoke(() -> WANTestBase.createCache(lnPort));
+    vm7.invoke(() -> WANTestBase.createCache(lnPort));
+
+    vm4.invoke(() -> WANTestBase.createSenderWithMultipleDispatchers("ln", 2, false, 100, 10, false,
+        false, null, true, 1, OrderPolicy.KEY));
+    vm5.invoke(() -> WANTestBase.createSenderWithMultipleDispatchers("ln", 2, false, 100, 10, false,
+        false, null, true, 1, OrderPolicy.KEY));
+
+    startSenderInVMs("ln", vm4, vm5);
+
+    vm4.invoke(
+        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
+    vm5.invoke(
+        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
+    vm6.invoke(
+        () -> WANTestBase.createReplicatedProxyRegion(getTestMethodName() + "_RR", "ln",
+            isOffHeap()));
+    vm7.invoke(
+        () -> WANTestBase.createReplicatedProxyRegion(getTestMethodName() + "_RR", "ln",
+            isOffHeap()));
+
+    AsyncInvocation a1 =
+        vm6.invokeAsync(() -> WANTestBase.doPutsSameKey(getTestMethodName() + "_RR", 1000, "DA"));
+    AsyncInvocation a2 =
+        vm7.invokeAsync(() -> WANTestBase.doPutsSameKey(getTestMethodName() + "_RR", 1000, "DA"));
+
+    a1.await();
+    a2.await();
+
+    // Give the unprocessedTokens map time to empty
+    Thread.sleep(2000);
+
+    int numUnprocessedTokensVM4 = vm4.invoke(() -> unprocessedTokensSize("ln"));
+    assertThat(numUnprocessedTokensVM4).isEqualTo(0);
+
+    int numUnprocessedTokensVM5 = vm5.invoke(() -> unprocessedTokensSize("ln"));
+    assertThat(numUnprocessedTokensVM5).isEqualTo(0);
+  }
+
+  private int unprocessedTokensSize(String senderId) {
+    AbstractGatewaySender sender = (AbstractGatewaySender) findGatewaySender(senderId);
+    SerialGatewaySenderEventProcessor processor =
+        (SerialGatewaySenderEventProcessor) sender.getEventProcessor();
+    return processor.numUnprocessedEventTokens();
+  }
+
+  private GatewaySender findGatewaySender(String senderId) {
+    Set<GatewaySender> senders = cache.getGatewaySenders();
+    GatewaySender sender = null;
+    for (GatewaySender s : senders) {
+      if (s.getId().equals(senderId)) {
+        sender = s;
+        break;
+      }
+    }
+
+    return sender;
+  }
+
 
   @Test
   public void testPrimarySecondaryQueueDrainInOrder_RR() throws Exception {
@@ -148,6 +229,7 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase {
     vm4.invoke(() -> WANTestBase.getSenderStats("ln", 0));
     vm5.invoke(() -> WANTestBase.getSenderStats("ln", 0));
   }
+
 
   protected void checkPrimarySenderUpdatesOnVM5(HashMap primarySenderUpdates) {
     vm5.invoke(() -> WANTestBase.checkQueueOnSecondary(primarySenderUpdates));

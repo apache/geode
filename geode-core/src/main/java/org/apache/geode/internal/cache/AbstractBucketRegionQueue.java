@@ -294,10 +294,11 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
   @Override
   public boolean virtualPut(EntryEventImpl event, boolean ifNew, boolean ifOld,
       Object expectedOldValue, boolean requireOldValue, long lastModified,
-      boolean overwriteDestroyed) throws TimeoutException, CacheWriterException {
+      boolean overwriteDestroyed, boolean invokeCallbacks, boolean throwConcurrentModificaiton)
+      throws TimeoutException, CacheWriterException {
     try {
       boolean success = super.virtualPut(event, ifNew, ifOld, expectedOldValue, requireOldValue,
-          lastModified, overwriteDestroyed);
+          lastModified, overwriteDestroyed, invokeCallbacks, throwConcurrentModificaiton);
       if (success) {
         if (logger.isDebugEnabled()) {
           logger.debug("Key : ----> {}", event.getKey());

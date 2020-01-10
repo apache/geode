@@ -86,6 +86,9 @@ public interface InternalDataView {
   Entry getEntryOnRemote(KeyInfo key, LocalRegion localRegion, boolean allowTombstones)
       throws DataLocationException;
 
+  boolean putEntry(EntryEventImpl event, boolean ifNew, boolean ifOld, Object expectedOldValue,
+      boolean requireOldValue, long lastModified, boolean overwriteDestroyed);
+
   /**
    * Put or create an entry in the data view.
    *
@@ -93,7 +96,8 @@ public interface InternalDataView {
    * @return true if operation updated existing data, otherwise false
    */
   boolean putEntry(EntryEventImpl event, boolean ifNew, boolean ifOld, Object expectedOldValue,
-      boolean requireOldValue, long lastModified, boolean overwriteDestroyed);
+      boolean requireOldValue, long lastModified, boolean overwriteDestroyed,
+      boolean invokeCallbacks, boolean throwConcurrentModification);
 
   /**
    * Put or create an entry in the data view. Called only on the farside.
