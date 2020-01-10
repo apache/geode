@@ -1023,9 +1023,6 @@ public class InternalDistributedMember
 
     String hostName = DataSerializer.readString(in);
 
-    hostName = SocketCreator.resolve_dns
-        ? SocketCreator.getCanonicalHostName(inetAddr, hostName) : inetAddr.getHostAddress();
-
     int flags = in.readUnsignedByte();
     boolean sbEnabled = (flags & NPD_ENABLED_BIT) != 0;
     boolean elCoord = (flags & COORD_ENABLED_BIT) != 0;
@@ -1077,9 +1074,6 @@ public class InternalDistributedMember
     int port = in.readInt();
 
     String hostName = DataSerializer.readString(in);
-
-    hostName = SocketCreator.resolve_dns
-        ? SocketCreator.getCanonicalHostName(inetAddr, hostName) : inetAddr.getHostAddress();
 
     int flags = in.readUnsignedByte();
     boolean sbEnabled = (flags & NPD_ENABLED_BIT) != 0;
