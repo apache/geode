@@ -549,8 +549,8 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
               InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
               InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer(),
               workingDirectory,
-              config,
               executor)
+              .setConfig(config)
               .setPort(port)
               .setBindAddress(bindAddress)
               .setProtocolChecker(new ProtocolCheckerImpl(this, new ClientProtocolServiceLoader()))

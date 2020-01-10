@@ -32,6 +32,8 @@ public interface MembershipLocatorBuilder<ID extends MemberIdentifier> {
 
   MembershipLocatorBuilder<ID> setBindAddress(InetAddress bindAddress);
 
+  MembershipLocatorBuilder<ID> setConfig(MembershipConfig membershipConfig);
+
   MembershipLocatorBuilder<ID> setProtocolChecker(ProtocolChecker protocolChecker);
 
   MembershipLocatorBuilder<ID> setFallbackHandler(TcpHandler fallbackHandler);
@@ -48,9 +50,8 @@ public interface MembershipLocatorBuilder<ID extends MemberIdentifier> {
       final ObjectSerializer objectSerializer,
       final ObjectDeserializer objectDeserializer,
       final Path workingDirectory,
-      final MembershipConfig config,
       final Supplier<ExecutorService> executorServiceSupplier) {
     return new MembershipLocatorBuilderImpl<ID>(socketCreator, objectSerializer, objectDeserializer,
-        workingDirectory, config, executorServiceSupplier);
+        workingDirectory, executorServiceSupplier);
   }
 }

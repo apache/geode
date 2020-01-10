@@ -45,7 +45,7 @@ public final class MembershipLocatorBuilderImpl<ID extends MemberIdentifier> imp
   private final ObjectSerializer objectSerializer;
   private final ObjectDeserializer objectDeserializer;
   private final Path workingDirectory;
-  private final MembershipConfig config;
+  private MembershipConfig config = new MembershipConfig() {};
   private final Supplier<ExecutorService> executorServiceSupplier;
 
   public MembershipLocatorBuilderImpl(
@@ -53,13 +53,11 @@ public final class MembershipLocatorBuilderImpl<ID extends MemberIdentifier> imp
       final ObjectSerializer objectSerializer,
       final ObjectDeserializer objectDeserializer,
       final Path workingDirectory,
-      final MembershipConfig config,
       final Supplier<ExecutorService> executorServiceSupplier) {
     this.socketCreator = socketCreator;
     this.objectSerializer = objectSerializer;
     this.objectDeserializer = objectDeserializer;
     this.workingDirectory = workingDirectory;
-    this.config = config;
     this.executorServiceSupplier = executorServiceSupplier;
   }
 
@@ -72,6 +70,12 @@ public final class MembershipLocatorBuilderImpl<ID extends MemberIdentifier> imp
   @Override
   public MembershipLocatorBuilder<ID> setBindAddress(InetAddress bindAddress) {
     this.bindAddress = bindAddress;
+    return this;
+  }
+
+  @Override
+  public MembershipLocatorBuilder<ID> setConfig(final MembershipConfig config) {
+    this.config = config;
     return this;
   }
 

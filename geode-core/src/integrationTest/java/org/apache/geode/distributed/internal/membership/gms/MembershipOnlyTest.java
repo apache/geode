@@ -75,7 +75,6 @@ public class MembershipOnlyTest {
         dsfidSerializer.getObjectSerializer(),
         dsfidSerializer.getObjectDeserializer(),
         temporaryFolder.newFile("locator").toPath(),
-        new MembershipConfig() {},
         executorServiceSupplier)
         .create();
 
