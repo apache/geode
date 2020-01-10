@@ -32,16 +32,9 @@ public interface MembershipLocatorBuilder<ID extends MemberIdentifier> {
 
   MembershipLocatorBuilder<ID> setBindAddress(InetAddress bindAddress);
 
+  MembershipLocatorBuilder<ID> setConfig(MembershipConfig membershipConfig);
+
   MembershipLocatorBuilder<ID> setProtocolChecker(ProtocolChecker protocolChecker);
-
-  MembershipLocatorBuilder<ID> setExecutorServiceSupplier(
-      Supplier<ExecutorService> executorServiceSupplier);
-
-  MembershipLocatorBuilder<ID> setSocketCreator(TcpSocketCreator socketCreator);
-
-  MembershipLocatorBuilder<ID> setObjectSerializer(ObjectSerializer objectSerializer);
-
-  MembershipLocatorBuilder<ID> setObjectDeserializer(ObjectDeserializer objectDeserializer);
 
   MembershipLocatorBuilder<ID> setFallbackHandler(TcpHandler fallbackHandler);
 
@@ -49,14 +42,16 @@ public interface MembershipLocatorBuilder<ID extends MemberIdentifier> {
 
   MembershipLocatorBuilder<ID> setLocatorStats(MembershipLocatorStatistics locatorStats);
 
-  MembershipLocatorBuilder<ID> setWorkingDirectory(Path workingDirectory);
-
-  MembershipLocatorBuilder<ID> setConfig(MembershipConfig config);
-
   MembershipLocator<ID> create()
       throws UnknownHostException, MembershipConfigurationException;
 
-  static <ID extends MemberIdentifier> MembershipLocatorBuilder<ID> newLocatorBuilder() {
-    return new MembershipLocatorBuilderImpl<ID>();
+  static <ID extends MemberIdentifier> MembershipLocatorBuilder<ID> newLocatorBuilder(
+      final TcpSocketCreator socketCreator,
+      final ObjectSerializer objectSerializer,
+      final ObjectDeserializer objectDeserializer,
+      final Path workingDirectory,
+      final Supplier<ExecutorService> executorServiceSupplier) {
+    return new MembershipLocatorBuilderImpl<ID>(socketCreator, objectSerializer, objectDeserializer,
+        workingDirectory, executorServiceSupplier);
   }
 }

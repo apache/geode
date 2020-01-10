@@ -35,19 +35,28 @@ import org.apache.geode.internal.serialization.DSFIDSerializer;
  * a GMSMembership.
  */
 public class MembershipBuilderImpl<ID extends MemberIdentifier> implements MembershipBuilder<ID> {
-  private TcpSocketCreator socketCreator;
-  private TcpClient locatorClient;
+  private final TcpSocketCreator socketCreator;
+  private final TcpClient locatorClient;
   private MembershipListener<ID> membershipListener = new MembershipListenerNoOp();
   private MessageListener<ID> messageListener = message -> {
   };
   private MembershipStatistics statistics = new MembershipStatisticsNoOp();
   private Authenticator<ID> authenticator = new AuthenticatorNoOp();
   private MembershipConfig membershipConfig = new MembershipConfig() {};
-  private DSFIDSerializer serializer;
-  private MemberIdentifierFactory<ID> memberFactory;
+  private final DSFIDSerializer serializer;
+  private final MemberIdentifierFactory<ID> memberFactory;
   private LifecycleListener<ID> lifecycleListener = new LifecycleListenerNoOp();
 
-  public MembershipBuilderImpl() {}
+  public MembershipBuilderImpl(
+      final TcpSocketCreator socketCreator,
+      final TcpClient locatorClient,
+      final DSFIDSerializer serializer,
+      final MemberIdentifierFactory<ID> memberFactory) {
+    this.socketCreator = socketCreator;
+    this.locatorClient = locatorClient;
+    this.serializer = serializer;
+    this.memberFactory = memberFactory;
+  }
 
   @Override
   public MembershipBuilder<ID> setAuthenticator(Authenticator<ID> authenticator) {
@@ -76,30 +85,6 @@ public class MembershipBuilderImpl<ID extends MemberIdentifier> implements Membe
   @Override
   public MembershipBuilder<ID> setConfig(MembershipConfig membershipConfig) {
     this.membershipConfig = membershipConfig;
-    return this;
-  }
-
-  @Override
-  public MembershipBuilder<ID> setSerializer(DSFIDSerializer serializer) {
-    this.serializer = serializer;
-    return this;
-  }
-
-  @Override
-  public MembershipBuilder<ID> setMemberIDFactory(MemberIdentifierFactory<ID> memberFactory) {
-    this.memberFactory = memberFactory;
-    return this;
-  }
-
-  @Override
-  public MembershipBuilder<ID> setLocatorClient(final TcpClient locatorClient) {
-    this.locatorClient = locatorClient;
-    return this;
-  }
-
-  @Override
-  public MembershipBuilder<ID> setSocketCreator(final TcpSocketCreator socketCreator) {
-    this.socketCreator = socketCreator;
     return this;
   }
 

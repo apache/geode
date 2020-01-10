@@ -95,7 +95,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
   private final ManagerImpl gmsManager;
 
 
-  private LifecycleListener<ID> lifecycleListener;
+  private final LifecycleListener<ID> lifecycleListener;
 
   private volatile boolean isCloseInProgress;
 

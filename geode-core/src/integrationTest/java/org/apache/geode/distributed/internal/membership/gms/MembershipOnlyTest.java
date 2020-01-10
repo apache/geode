@@ -21,6 +21,8 @@ import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.util.concurrent.ExecutorService;
+import java.util.function.Supplier;
 
 import org.junit.After;
 import org.junit.Before;
@@ -66,13 +68,14 @@ public class MembershipOnlyTest {
     // TODO - using geode-core socket creator
     socketCreator = asTcpSocketCreator(new SocketCreator(new SSLConfig.Builder().build()));
 
-    membershipLocator = MembershipLocatorBuilder.<InternalDistributedMember>newLocatorBuilder()
-        .setExecutorServiceSupplier(() -> LoggingExecutors.newCachedThreadPool("membership", false))
-        .setSocketCreator(socketCreator)
-        .setObjectSerializer(dsfidSerializer.getObjectSerializer())
-        .setObjectDeserializer(dsfidSerializer.getObjectDeserializer())
-        .setWorkingDirectory(temporaryFolder.newFile("locator").toPath())
-        .setConfig(new MembershipConfig() {})
+    final Supplier<ExecutorService> executorServiceSupplier =
+        () -> LoggingExecutors.newCachedThreadPool("membership", false);
+    membershipLocator = MembershipLocatorBuilder.<InternalDistributedMember>newLocatorBuilder(
+        socketCreator,
+        dsfidSerializer.getObjectSerializer(),
+        dsfidSerializer.getObjectDeserializer(),
+        temporaryFolder.newFile("locator").toPath(),
+        executorServiceSupplier)
         .create();
 
     membershipLocator.start();
@@ -109,19 +112,16 @@ public class MembershipOnlyTest {
     MemberIdentifierFactoryImpl memberIdFactory = new MemberIdentifierFactoryImpl();
 
 
-    TcpClient client = new TcpClient(socketCreator, dsfidSerializer.getObjectSerializer(),
+    TcpClient locatorClient = new TcpClient(socketCreator, dsfidSerializer.getObjectSerializer(),
         dsfidSerializer.getObjectDeserializer());
 
     LifecycleListener<InternalDistributedMember> lifeCycleListener = mock(LifecycleListener.class);
 
     final Membership<InternalDistributedMember> membership =
-        MembershipBuilder.<InternalDistributedMember>newMembershipBuilder()
+        MembershipBuilder.<InternalDistributedMember>newMembershipBuilder(
+            socketCreator, locatorClient, dsfidSerializer, memberIdFactory)
             .setConfig(config)
-            .setSerializer(dsfidSerializer)
             .setLifecycleListener(lifeCycleListener)
-            .setMemberIDFactory(memberIdFactory)
-            .setLocatorClient(client)
-            .setSocketCreator(socketCreator)
             .create();
 
 

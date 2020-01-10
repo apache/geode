@@ -36,19 +36,15 @@ public interface MembershipBuilder<ID extends MemberIdentifier> {
 
   MembershipBuilder<ID> setConfig(MembershipConfig membershipConfig);
 
-  MembershipBuilder<ID> setSerializer(DSFIDSerializer serializer);
-
-  MembershipBuilder<ID> setMemberIDFactory(MemberIdentifierFactory<ID> memberFactory);
-
   MembershipBuilder<ID> setLifecycleListener(LifecycleListener<ID> lifecycleListener);
-
-  MembershipBuilder<ID> setLocatorClient(final TcpClient tcpClient);
-
-  MembershipBuilder<ID> setSocketCreator(final TcpSocketCreator socketCreator);
 
   Membership<ID> create() throws MembershipConfigurationException;
 
-  static <ID extends MemberIdentifier> MembershipBuilder<ID> newMembershipBuilder() {
-    return new MembershipBuilderImpl<>();
+  static <ID extends MemberIdentifier> MembershipBuilder<ID> newMembershipBuilder(
+      final TcpSocketCreator socketCreator,
+      final TcpClient locatorClient,
+      final DSFIDSerializer serializer,
+      final MemberIdentifierFactory<ID> memberFactory) {
+    return new MembershipBuilderImpl<>(socketCreator, locatorClient, serializer, memberFactory);
   }
 }
