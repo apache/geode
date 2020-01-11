@@ -32,7 +32,6 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -169,7 +168,6 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
   private final LocatorMembershipListener locatorListener;
   private final AtomicBoolean shutdownHandled = new AtomicBoolean(false);
   private final LoggingSession loggingSession;
-  private final Set<LogConfigListener> logConfigListeners = new HashSet<>();
   private final LocatorStats locatorStats;
   private final Path workingDirectory;
   private final MembershipLocator<InternalDistributedMember> membershipLocator;
@@ -1287,12 +1285,12 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
 
   @Override
   public void addLogConfigListener(LogConfigListener logConfigListener) {
-    logConfigListeners.add(logConfigListener);
+    // No op
   }
 
   @Override
   public void removeLogConfigListener(LogConfigListener logConfigListener) {
-    logConfigListeners.remove(logConfigListener);
+    // No op
   }
 
   public SharedConfigurationStatusResponse getSharedConfigurationStatus() {
