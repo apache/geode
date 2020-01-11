@@ -289,6 +289,6 @@ fi
 
 echo "Successfully deployed ${CONCOURSE_URL}/teams/${CONCOURSE_TEAM}/pipelines/${PIPELINE_PREFIX}main"
 
-rm ci/pipelines/meta/generated-pipeline.yml
-rm ci/pipelines/meta/pipelineProperties.yml
-rm ci/pipelines/meta/repository.yml
+rm -f ${SCRIPTDIR}/generated-pipeline.yml
+rm -f ${SCRIPTDIR}/pipelineProperties.yml
+rm -f ${SCRIPTDIR}/repository.yml
