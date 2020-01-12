@@ -23,12 +23,10 @@ package org.apache.geode;
  *
  * <P>
  *
- * A <code>StatisticsFactory</code> can create a {@link StatisticDescriptor statistic} of three
- * numeric types: <code>int</code>, <code>long</code>, and <code>double</code>. A statistic
+ * A <code>StatisticsFactory</code> can create a {@link StatisticDescriptor statistic} of two
+ * numeric types: <code>long</code>, and <code>double</code>. A statistic
  * (<code>StatisticDescriptor</code>) can either be a <I>gauge</I> meaning that its value can
- * increase and decrease or a <I>counter</I> meaning that its value is strictly increasing. Marking
- * a statistic as a counter allows statistic display tools to properly display a statistics whose
- * value "wraps around" (that is, exceeds its maximum value).
+ * increase and decrease or a <I>counter</I> meaning that its value is strictly increasing.
  *
  * <P>
  * The following code is an example of how to create a type using the api. In this example the type
@@ -40,7 +38,7 @@ package org.apache.geode;
         "StatSampler",
         "Stats on the statistic sampler.",
         new StatisticDescriptor[] {
-            f.createIntCounter("sampleCount",
+            f.createLongCounter("sampleCount",
                                "Total number of samples taken by this sampler.",
                                "samples"),
             f.createLongCounter("sampleTime",
@@ -56,7 +54,7 @@ package org.apache.geode;
  * Later on the stat ids can be used to increment the stats:
  *
  * <pre>
- * this.samplerStats.incInt(this.sampleCountId, 1);
+ * this.samplerStats.incLong(this.sampleCountId, 1);
  * this.samplerStats.incLong(this.sampleTimeId, nanosSpentWorking / 1000000);
  * </pre>
  * <P>
@@ -70,7 +68,7 @@ package org.apache.geode;
     &lt;statistics&gt;
       &lt;type name="StatSampler"&gt;
         &lt;description&gt;Stats on the statistic sampler.&lt;/description&gt;
-        &lt;stat name="sampleCount" storage="int" counter="true"&gt;
+        &lt;stat name="sampleCount" storage="long" counter="true"&gt;
           &lt;description&gt;Total number of samples taken by this sampler.&lt;/description&gt;
           &lt;unit&gt;samples&lt;/unit&gt;
         &lt;/stat&gt;

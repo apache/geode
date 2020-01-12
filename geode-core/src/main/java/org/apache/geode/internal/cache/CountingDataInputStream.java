@@ -14,7 +14,10 @@
  */
 package org.apache.geode.internal.cache;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * A data input stream that counts the bytes it plans on reading.
@@ -49,86 +52,101 @@ public class CountingDataInputStream implements DataInput {
     return this.fileLength == this.count;
   }
 
+  @Override
   public void readFully(byte b[]) throws IOException {
     this.dis.readFully(b);
     this.count += b.length;
   }
 
+  @Override
   public void readFully(byte b[], int off, int len) throws IOException {
     this.dis.readFully(b, off, len);
     this.count += len;
   }
 
+  @Override
   public int skipBytes(int n) throws IOException {
     int result = this.dis.skipBytes(n);
     this.count += result;
     return result;
   }
 
+  @Override
   public boolean readBoolean() throws IOException {
     boolean result = this.dis.readBoolean();
     this.count += 1;
     return result;
   }
 
+  @Override
   public byte readByte() throws IOException {
     byte result = this.dis.readByte();
     this.count += 1;
     return result;
   }
 
+  @Override
   public int readUnsignedByte() throws IOException {
     int result = this.dis.readUnsignedByte();
     this.count += 1;
     return result;
   }
 
+  @Override
   public short readShort() throws IOException {
     short result = this.dis.readShort();
     this.count += 2;
     return result;
   }
 
+  @Override
   public int readUnsignedShort() throws IOException {
     int result = this.dis.readUnsignedShort();
     this.count += 2;
     return result;
   }
 
+  @Override
   public char readChar() throws IOException {
     char result = this.dis.readChar();
     this.count += 2;
     return result;
   }
 
+  @Override
   public int readInt() throws IOException {
     int result = this.dis.readInt();
     this.count += 4;
     return result;
   }
 
+  @Override
   public long readLong() throws IOException {
     long result = this.dis.readLong();
     this.count += 8;
     return result;
   }
 
+  @Override
   public float readFloat() throws IOException {
     float result = this.dis.readFloat();
     this.count += 4;
     return result;
   }
 
+  @Override
   public double readDouble() throws IOException {
     double result = this.dis.readDouble();
     this.count += 8;
     return result;
   }
 
+  @Override
   public String readLine() throws IOException {
     throw new IllegalStateException("method not supported");
   }
 
+  @Override
   public String readUTF() throws IOException {
     return DataInputStream.readUTF(this);
   }

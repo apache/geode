@@ -15,7 +15,8 @@
 
 package org.apache.geode.internal.cache;
 
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.ExpirationAction;
+import org.apache.geode.cache.ExpirationAttributes;
 
 /**
  * EntryExpiryTask already implements the algorithm for figuring out expiration. This class has it

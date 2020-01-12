@@ -62,14 +62,13 @@ import org.apache.geode.admin.StatisticResource;
 import org.apache.geode.admin.SystemMember;
 import org.apache.geode.admin.SystemMemberCacheServer;
 import org.apache.geode.admin.jmx.Agent;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.InterestPolicy;
 import org.apache.geode.cache.SubscriptionAttributes;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.admin.remote.ClientHealthStats;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * This class uses the JMX Attributes/Operations that use (return/throw) GemFire types. This is the
@@ -126,8 +125,6 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
    *
    * @param agent Admin Agent instance
    * @throws OperationsException if ObjectName can't be formed for this MBean
-   * @throws MBeanRegistrationException
-   * @throws AdminException
    */
   MemberInfoWithStatsMBean(Agent agent)
       throws OperationsException, MBeanRegistrationException, AdminException {
@@ -320,9 +317,7 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
 
   /**
    *
-   * @param memberId
    * @return SystemMemberJmx instance for given memberId
-   * @throws AdminException
    */
   private SystemMemberJmx findMember(String memberId) throws AdminException {
     SystemMemberJmx foundMember = null;
@@ -385,15 +380,12 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
         members = membersList.toArray(members);
       }
     } catch (AdminException e) {
-      logger.warn(
-          LocalizedMessage.create(
-              LocalizedStrings.MemberInfoWithStatsMBean_EXCEPTION_FOR_OPERATION_0, "getMembers"),
+      logger.warn("Exception occurred for operation: getMembers",
           e);
       throw new OperationsException(e.getMessage());
     } catch (Exception e) {
       logger.warn(
-          LocalizedMessage.create(
-              LocalizedStrings.MemberInfoWithStatsMBean_EXCEPTION_FOR_OPERATION_0, "getMembers"),
+          "Exception occurred for operation: getMembers",
           e);
       throw new OperationsException(e.getMessage());
     }
@@ -426,14 +418,14 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
           }
         }
       } catch (AdminException e) {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.MemberInfoWithStatsMBean_EXCEPTION_FOR_OPERATION_0_FOR_MEMBER_1,
-            new Object[] {"getRegions", memberId}), e);
+        logger.warn(String.format("Exception occurred for operation: %s for member: %s",
+            new Object[] {"getRegions", memberId}),
+            e);
         throw new OperationsException(e.getMessage());
       } catch (Exception e) {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.MemberInfoWithStatsMBean_EXCEPTION_FOR_OPERATION_0_FOR_MEMBER_1,
-            new Object[] {"getRegions", memberId}), e);
+        logger.warn(String.format("Exception occurred for operation: %s for member: %s",
+            new Object[] {"getRegions", memberId}),
+            e);
         throw new OperationsException(e.getMessage());
       }
     }
@@ -458,9 +450,10 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
           try {
             initializeCacheRegionsAndStats((SystemMemberJmx) cacheVms[i]);
           } catch (AdminException e) {
-            logger.info(LocalizedMessage.create(
-                LocalizedStrings.MemberInfoWithStatsMBean_EXCEPTION_WHILE_INTIALIZING_0_CONTINUING,
-                cacheVms[i].getId()), e);
+            logger.info(String.format(
+                "Exception occurred while intializing : %s. Contiuning with next  ...",
+                cacheVms[i].getId()),
+                e);
           }
         }
         SystemMember[] appVms = adminDSJmx.getSystemMemberApplications();
@@ -468,19 +461,18 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
           try {
             initializeCacheRegionsAndStats((SystemMemberJmx) appVms[i]);
           } catch (AdminException e) {
-            logger.info(LocalizedMessage.create(
-                LocalizedStrings.MemberInfoWithStatsMBean_EXCEPTION_WHILE_INTIALIZING_0_CONTINUING,
-                appVms[i].getId()), e);
+            logger.info(String.format(
+                "Exception occurred while intializing : %s. Contiuning with next  ...",
+                appVms[i].getId()),
+                e);
           }
         }
       }
     } catch (AdminException e) {
-      logger.warn(LocalizedMessage
-          .create(LocalizedStrings.MemberInfoWithStatsMBean_EXCEPTION_WHILE_INTIALIZING), e);
+      logger.warn("Exception occurred while intializing.", e);
       throw new OperationsException(e.getMessage());
     } catch (Exception e) {
-      logger.warn(LocalizedMessage
-          .create(LocalizedStrings.MemberInfoWithStatsMBean_EXCEPTION_WHILE_INTIALIZING), e);
+      logger.warn("Exception occurred while intializing.", e);
       throw new OperationsException(e.getMessage());
     }
 
@@ -545,9 +537,10 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
       try {
         initializeRegionSubRegions(cache, subRegion);
       } catch (AdminException e) {
-        logger.info(LocalizedMessage.create(
-            LocalizedStrings.MemberInfoWithStatsMBean_EXCEPTION_WHILE_INTIALIZING_0_CONTINUING,
-            subRegion.getFullPath()), e);
+        logger.info(
+            String.format("Exception occurred while intializing : %s. Contiuning with next  ...",
+                subRegion.getFullPath()),
+            e);
       }
     }
   }
@@ -571,89 +564,87 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
    * Cache.addCacheServer().
    */
 
-  private static final String MEMBER_ID = DistributionConfig.GEMFIRE_PREFIX + "member.id.string";
+  private static final String MEMBER_ID = GeodeGlossary.GEMFIRE_PREFIX + "member.id.string";
   private static final String MEMBER_NAME =
-      DistributionConfig.GEMFIRE_PREFIX + "member.name.string";
+      GeodeGlossary.GEMFIRE_PREFIX + "member.name.string";
   private static final String MEMBER_HOST =
-      DistributionConfig.GEMFIRE_PREFIX + "member.host.string";
-  private static final String MEMBER_PORT = DistributionConfig.GEMFIRE_PREFIX + "member.port.int";
+      GeodeGlossary.GEMFIRE_PREFIX + "member.host.string";
+  private static final String MEMBER_PORT = GeodeGlossary.GEMFIRE_PREFIX + "member.port.int";
   private static final String MEMBER_UPTIME =
-      DistributionConfig.GEMFIRE_PREFIX + "member.uptime.long";
+      GeodeGlossary.GEMFIRE_PREFIX + "member.uptime.long";
   private static final String MEMBER_CLIENTS =
-      DistributionConfig.GEMFIRE_PREFIX + "member.clients.map";
+      GeodeGlossary.GEMFIRE_PREFIX + "member.clients.map";
   private static final String MEMBER_REGIONS =
-      DistributionConfig.GEMFIRE_PREFIX + "member.regions.map";
+      GeodeGlossary.GEMFIRE_PREFIX + "member.regions.map";
   private static final String MEMBER_TYPE =
-      DistributionConfig.GEMFIRE_PREFIX + "member.type.string";
+      GeodeGlossary.GEMFIRE_PREFIX + "member.type.string";
   private static final String IS_SERVER =
-      DistributionConfig.GEMFIRE_PREFIX + "member.isserver.boolean";
+      GeodeGlossary.GEMFIRE_PREFIX + "member.isserver.boolean";
   private static final String IS_GATEWAY =
-      DistributionConfig.GEMFIRE_PREFIX + "member.isgateway.boolean";
+      GeodeGlossary.GEMFIRE_PREFIX + "member.isgateway.boolean";
 
   private static final String MEMBER_STATSAMPLING_ENABLED =
-      DistributionConfig.GEMFIRE_PREFIX + "member.config.statsamplingenabled.boolean";
+      GeodeGlossary.GEMFIRE_PREFIX + "member.config.statsamplingenabled.boolean";
   private static final String MEMBER_TIME_STATS_ENABLED =
-      DistributionConfig.GEMFIRE_PREFIX + "member.config.timestatsenabled.boolean";
+      GeodeGlossary.GEMFIRE_PREFIX + "member.config.timestatsenabled.boolean";
 
   private static final String STATS_PROCESSCPUTIME =
-      DistributionConfig.GEMFIRE_PREFIX + "member.stat.processcputime.long";
+      GeodeGlossary.GEMFIRE_PREFIX + "member.stat.processcputime.long";
   private static final String STATS_CPUS =
-      DistributionConfig.GEMFIRE_PREFIX + "member.stat.cpus.int";
+      GeodeGlossary.GEMFIRE_PREFIX + "member.stat.cpus.int";
   private static final String STATS_USEDMEMORY =
-      DistributionConfig.GEMFIRE_PREFIX + "member.stat.usedmemory.long";
+      GeodeGlossary.GEMFIRE_PREFIX + "member.stat.usedmemory.long";
   private static final String STATS_MAXMEMORY =
-      DistributionConfig.GEMFIRE_PREFIX + "member.stat.maxmemory.long";
+      GeodeGlossary.GEMFIRE_PREFIX + "member.stat.maxmemory.long";
   private static final String STATS_GETS =
-      DistributionConfig.GEMFIRE_PREFIX + "member.stat.gets.int";
+      GeodeGlossary.GEMFIRE_PREFIX + "member.stat.gets.int";
   private static final String STATS_GETTIME =
-      DistributionConfig.GEMFIRE_PREFIX + "member.stat.gettime.long";
+      GeodeGlossary.GEMFIRE_PREFIX + "member.stat.gettime.long";
   private static final String STATS_PUTS =
-      DistributionConfig.GEMFIRE_PREFIX + "member.stat.puts.int";
+      GeodeGlossary.GEMFIRE_PREFIX + "member.stat.puts.int";
   private static final String STATS_PUTTIME =
-      DistributionConfig.GEMFIRE_PREFIX + "member.stat.puttime.long";
+      GeodeGlossary.GEMFIRE_PREFIX + "member.stat.puttime.long";
 
   private static final String REGION_NAME =
-      DistributionConfig.GEMFIRE_PREFIX + "region.name.string";
+      GeodeGlossary.GEMFIRE_PREFIX + "region.name.string";
   private static final String REGION_PATH =
-      DistributionConfig.GEMFIRE_PREFIX + "region.path.string";
+      GeodeGlossary.GEMFIRE_PREFIX + "region.path.string";
   private static final String REGION_SCOPE =
-      DistributionConfig.GEMFIRE_PREFIX + "region.scope.string";
+      GeodeGlossary.GEMFIRE_PREFIX + "region.scope.string";
   private static final String REGION_DATAPOLICY =
-      DistributionConfig.GEMFIRE_PREFIX + "region.datapolicy.string";
+      GeodeGlossary.GEMFIRE_PREFIX + "region.datapolicy.string";
   private static final String REGION_INTERESTPOLICY =
-      DistributionConfig.GEMFIRE_PREFIX + "region.interestpolicy.string";
+      GeodeGlossary.GEMFIRE_PREFIX + "region.interestpolicy.string";
   private static final String REGION_ENTRYCOUNT =
-      DistributionConfig.GEMFIRE_PREFIX + "region.entrycount.int";
+      GeodeGlossary.GEMFIRE_PREFIX + "region.entrycount.int";
   private static final String REGION_DISKATTRS =
-      DistributionConfig.GEMFIRE_PREFIX + "region.diskattrs.string";
+      GeodeGlossary.GEMFIRE_PREFIX + "region.diskattrs.string";
 
-  private static final String CLIENT_ID = DistributionConfig.GEMFIRE_PREFIX + "client.id.string";
+  private static final String CLIENT_ID = GeodeGlossary.GEMFIRE_PREFIX + "client.id.string";
   private static final String CLIENT_NAME =
-      DistributionConfig.GEMFIRE_PREFIX + "client.name.string";
+      GeodeGlossary.GEMFIRE_PREFIX + "client.name.string";
   private static final String CLIENT_HOST =
-      DistributionConfig.GEMFIRE_PREFIX + "client.host.string";
+      GeodeGlossary.GEMFIRE_PREFIX + "client.host.string";
   private static final String CLIENT_QUEUESIZE =
-      DistributionConfig.GEMFIRE_PREFIX + "client.queuesize.int";
+      GeodeGlossary.GEMFIRE_PREFIX + "client.queuesize.int";
   private static final String CLIENT_STATS_GETS =
-      DistributionConfig.GEMFIRE_PREFIX + "client.stats.gets.int";
+      GeodeGlossary.GEMFIRE_PREFIX + "client.stats.gets.int";
   private static final String CLIENT_STATS_PUTS =
-      DistributionConfig.GEMFIRE_PREFIX + "client.stats.puts.int";
+      GeodeGlossary.GEMFIRE_PREFIX + "client.stats.puts.int";
   private static final String CLIENT_STATS_CACHEMISSES =
-      DistributionConfig.GEMFIRE_PREFIX + "client.stats.cachemisses.int";
+      GeodeGlossary.GEMFIRE_PREFIX + "client.stats.cachemisses.int";
   private static final String CLIENT_STATS_CPUUSAGE =
-      DistributionConfig.GEMFIRE_PREFIX + "client.stats.cpuusage.long";
+      GeodeGlossary.GEMFIRE_PREFIX + "client.stats.cpuusage.long";
   private static final String CLIENT_STATS_CPUS =
-      DistributionConfig.GEMFIRE_PREFIX + "client.stats.cpus.int";
+      GeodeGlossary.GEMFIRE_PREFIX + "client.stats.cpus.int";
   private static final String CLIENT_STATS_UPDATETIME =
-      DistributionConfig.GEMFIRE_PREFIX + "client.stats.updatetime.long";
+      GeodeGlossary.GEMFIRE_PREFIX + "client.stats.updatetime.long";
   private static final String CLIENT_STATS_THREADS =
-      DistributionConfig.GEMFIRE_PREFIX + "client.stats.threads.int";
+      GeodeGlossary.GEMFIRE_PREFIX + "client.stats.threads.int";
 
   /**
    *
-   * @param memberId
    * @return All the required details for a member with given memberId
-   * @throws OperationsException
    */
   public Map<String, Object> getMemberDetails(String memberId) throws OperationsException {
     Map<String, Object> allDetails = new TreeMap<String, Object>();
@@ -730,14 +721,14 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
         }
 
       } catch (AdminException e) {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.MemberInfoWithStatsMBean_EXCEPTION_FOR_OPERATION_0_FOR_MEMBER_1,
-            new Object[] {"getMemberDetails", memberId}), e);
+        logger.warn(String.format("Exception occurred for operation: %s for member: %s",
+            new Object[] {"getMemberDetails", memberId}),
+            e);
         throw new OperationsException(e.getMessage());
       } catch (Exception e) {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.MemberInfoWithStatsMBean_EXCEPTION_FOR_OPERATION_0_FOR_MEMBER_1,
-            new Object[] {"getMemberDetails", memberId}), e);
+        logger.warn(String.format("Exception occurred for operation: %s for member: %s",
+            new Object[] {"getMemberDetails", memberId}),
+            e);
         throw new OperationsException(e.getMessage());
       }
     }
@@ -747,7 +738,6 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
 
   /**
    *
-   * @param snapshot
    * @return Map of client details
    */
   @SuppressWarnings("rawtypes")
@@ -811,12 +801,10 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
         RegionSubRegionSnapshot regionSnapshot = cache.getRegionSnapshot();
         collectAllRegionsDetails(cache, regionSnapshot, regionsInfo, existingRegionMbeans);
       } catch (AdminException e) {
-        logger.warn(LocalizedMessage.create(LocalizedStrings.ONE_ARG,
-            "Exception occurred while getting region details."), e);
+        logger.warn("Exception occurred while getting region details.", e);
         throw new OperationsException(e.getMessage());
       } catch (Exception e) {
-        logger.warn(LocalizedMessage.create(LocalizedStrings.ONE_ARG,
-            "Exception occurred while getting region details."), e);
+        logger.warn("Exception occurred while getting region details.", e);
         throw new OperationsException(e.getMessage());
       }
     }
@@ -1028,9 +1016,8 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
         }
 
         if (needToReinit) {
-          logger.info(LocalizedMessage.create(
-              LocalizedStrings.MemberInfoWithStatsMBean_REINITIALIZING_STATS_FOR_0,
-              member.getId()));
+          logger.info("Re-initializing statistics for: {}",
+              member.getId());
           initStats(member);
 
           vmMemoryUsageStats = getExistingStats(member.getId(), "vmHeapMemoryStats");
@@ -1196,6 +1183,7 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
    * @see NotificationEmitter#addNotificationListener(NotificationListener, NotificationFilter,
    *      Object)
    */
+  @Override
   public void addNotificationListener(NotificationListener listener, NotificationFilter filter,
       Object handback) throws IllegalArgumentException {
     forwarder.addNotificationListener(listener, filter, handback);
@@ -1204,6 +1192,7 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
   /**
    * @see NotificationEmitter#removeNotificationListener(NotificationListener)
    */
+  @Override
   public void removeNotificationListener(NotificationListener listener)
       throws ListenerNotFoundException {
     forwarder.removeNotificationListener(listener);
@@ -1212,6 +1201,7 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
   /**
    * @see NotificationEmitter#getNotificationInfo()
    */
+  @Override
   public MBeanNotificationInfo[] getNotificationInfo() {
     return getMBeanInfo().getNotifications();
   }
@@ -1220,6 +1210,7 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
    * @see NotificationEmitter#removeNotificationListener(NotificationListener, NotificationFilter,
    *      Object)
    */
+  @Override
   public void removeNotificationListener(NotificationListener listener, NotificationFilter filter,
       Object handback) throws ListenerNotFoundException {
     forwarder.removeNotificationListener(listener, filter, handback);
@@ -1242,7 +1233,8 @@ class NotificationForwarder extends NotificationBroadcasterSupport implements No
   private static final Logger logger = LogService.getLogger();
 
   /* sequence generator for notifications from GemFireTypesWrapper MBean */
-  private static AtomicLong notificationSequenceNumber = new AtomicLong();
+  @MakeNotStatic
+  private static final AtomicLong notificationSequenceNumber = new AtomicLong();
 
   /* reference to the MBeanServer instance */
   private MBeanServer mBeanServer;
@@ -1271,6 +1263,7 @@ class NotificationForwarder extends NotificationBroadcasterSupport implements No
    *
    * @see NotificationListener#handleNotification(Notification, Object)
    */
+  @Override
   public void handleNotification(Notification notification, Object handback) {
     Object notifSource = notification.getSource();
     if (AdminDistributedSystemJmxImpl.NOTIF_MEMBER_JOINED.equals(notification.getType())) {
@@ -1287,46 +1280,27 @@ class NotificationForwarder extends NotificationBroadcasterSupport implements No
         }
         logger.debug("getStatistics call completed with no exceptions.");
       } catch (ReflectionException e) {
-        logger.info(LocalizedMessage.create(
-            LocalizedStrings.MemberInfoWithStatsMBean_EXCEPTION_WHILE_INITIALIZING_STATISICS_FOR_0,
-            source.toString()), e);
+        logger.info(String.format("Exception while initializing statistics for: %s",
+            source.toString()),
+            e);
       } catch (MBeanException e) {
-        logger.info(LocalizedMessage.create(
-            LocalizedStrings.MemberInfoWithStatsMBean_EXCEPTION_WHILE_INITIALIZING_STATISICS_FOR_0,
-            source.toString()), e);
+        logger.info(String.format("Exception while initializing statistics for: %s",
+            source.toString()),
+            e);
       } catch (InstanceNotFoundException e) {
-        logger.info(LocalizedMessage.create(
-            LocalizedStrings.MemberInfoWithStatsMBean_EXCEPTION_WHILE_INITIALIZING_STATISICS_FOR_0,
-            source.toString()), e);
+        logger.info(String.format("Exception while initializing statistics for: %s",
+            source.toString()),
+            e);
       }
       // register this listener for joined member's cache/region notifications
       try {
         registerNotificationListener(source);
       } catch (OperationsException e) {
-        logger.info(LocalizedMessage.create(
-            LocalizedStrings.MemberInfoWithStatsMBean_EXCEPTION_WHILE_REGISTERING_NOTIFICATION_LISTENER_FOR_0,
-            source.toString()), e);
+        logger.info(String.format("Exception while registering notification listener for: %s",
+            source.toString()),
+            e);
       }
-    } /*
-       * else if (AdminDistributedSystemJmxImpl.NOTIF_MEMBER_LEFT.equals(notification.getType()) ||
-       * AdminDistributedSystemJmxImpl.NOTIF_MEMBER_CRASHED.equals(notification.getType())) {
-       * ObjectName source = (ObjectName) notifSource; //unregister this listener from left member's
-       * cache/region notifications try { unregisterNotificationListener(source); } catch
-       * (OperationsException e) { logwriter.info(LocalizedMessage.create(LocalizedStrings.
-       * MemberInfoWithStatsMBean_EXCEPTION_WHILE_UNREGISTERING_NOTIFICATION_LISTENER_FOR_0,
-       * source.toString(), e); } } else if
-       * (AdminDistributedSystemJmxImpl.NOTIF_ADMIN_SYSTEM_DISCONNECT.equals(notification.getType())
-       * ) { String source = (String) notifSource; //This notification does not have ObjectName as a
-       * source. try { ObjectName instance = ObjectName.getInstance(source);
-       * unregisterNotificationListener(instance); } catch (OperationsException e) {
-       * logwriter.info(LocalizedMessage.create(LocalizedStrings.
-       * MemberInfoWithStatsMBean_EXCEPTION_WHILE_UNREGISTERING_NOTIFICATION_LISTENER_FOR_0,
-       * source.toString(), e); } catch (NullPointerException e) {
-       * logwriter.info(LocalizedMessage.create(LocalizedStrings.
-       * MemberInfoWithStatsMBean_EXCEPTION_WHILE_UNREGISTERING_NOTIFICATION_LISTENER_FOR_0,
-       * source.toString(), e); } }
-       */
-    // NOTIF_ALERT is sent as is
+    }
 
     // TODO: Check if same notification instance can be reused by simply changing the sequence
     // number

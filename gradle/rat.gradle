@@ -14,12 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 apply plugin: "org.nosphere.apache.rat"
 
 rat {
-  xmlOutput = false
-  htmlOutput = false
-  plainOutput = true
+  inputDir = rootDir
 
   excludes = [
     // git
@@ -39,6 +38,7 @@ rat {
     '**/build/**',
     '**/build-*/**',
     '.buildinfo',
+    '**/release-features.rendered', // just for jenkins
 
     // Geode examples
     'geode-examples/.idea/**',
@@ -99,6 +99,10 @@ rat {
     // other text files
     '**/log4j*.xml',
 
+    // local configuration files that are ignored by git
+    'ci/pipelines/meta/meta.properties.local',
+    '.java-version', // file created by `jenv local`
+
     // modules
     'extensions/**/log4j.properties',
     'extensions/**/tomcat-users.xml',
@@ -110,7 +114,6 @@ rat {
     'extensions/geode-modules/src/test/resources/org/apache/geode/modules/Person.hbm.xml',
 
     // cargo log files
-//    'geode-assembly/cargo_logs/*',
     'geode-assembly/cargo_logs/**',
 
     // these are test files that don't expect the first element to be a comment
@@ -170,7 +173,7 @@ rat {
     'geode-pulse/src/main/webapp/css/jquery-ui.css',
 
     // BSD License
-    'geode-core/src/main/java/org/apache/geode/management/internal/cli/shell/jline/ANSIBuffer.java',
+    'geode-gfsh/src/main/java/org/apache/geode/management/internal/cli/shell/jline/ANSIBuffer.java',
     'geode-pulse/src/main/webapp/scripts/lib/jquery.sparkline.js',
 
     // Apache License
@@ -181,6 +184,4 @@ rat {
   ]
 }
 
-subprojects {
-  check.dependsOn rat
-}
+check.dependsOn rat

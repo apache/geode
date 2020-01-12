@@ -450,7 +450,6 @@ public interface DistributedSystemMXBean {
    * @param member name or id of the member
    * @param diskStoreName name of the disk store
    * @return a ObjectName
-   * @throws Exception
    */
   ObjectName fetchDiskStoreObjectName(String member, String diskStoreName) throws Exception;
 

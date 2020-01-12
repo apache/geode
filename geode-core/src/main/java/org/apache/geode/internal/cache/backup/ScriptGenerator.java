@@ -34,5 +34,4 @@ interface ScriptGenerator {
   void writeComment(BufferedWriter writer, String string) throws IOException;
 
   String getScriptName();
-
 }

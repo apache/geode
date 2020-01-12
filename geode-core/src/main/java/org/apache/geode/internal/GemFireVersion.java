@@ -34,22 +34,25 @@ import java.io.StringWriter;
 import java.net.URL;
 import java.util.StringTokenizer;
 
+import org.apache.geode.annotations.Immutable;
+
 /**
  * This class provides build and version information about GemFire. It gathers this information from
  * the resource property file for this class.
  */
 public class GemFireVersion {
-  /** The singleton instance */
-  private static VersionDescription description;
+  @Immutable
+  private static final VersionDescription description = createDescription();
 
   private GemFireVersion() {}
 
-  private static synchronized VersionDescription getDescription() {
-    if (description == null) {
-      String name =
-          GemFireVersion.class.getPackage().getName().replace('.', '/') + "/" + RESOURCE_NAME;
-      description = new VersionDescription(name);
-    }
+  private static VersionDescription createDescription() {
+    String name =
+        GemFireVersion.class.getPackage().getName().replace('.', '/') + "/" + RESOURCE_NAME;
+    return new VersionDescription(name);
+  }
+
+  private static VersionDescription getDescription() {
     return description;
   }
 

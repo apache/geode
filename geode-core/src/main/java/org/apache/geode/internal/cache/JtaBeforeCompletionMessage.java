@@ -26,7 +26,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ReliableReplyProcessor21;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class JtaBeforeCompletionMessage extends TXMessage {
   private static final Logger logger = LogService.getLogger();
@@ -71,6 +71,7 @@ public class JtaBeforeCompletionMessage extends TXMessage {
     return true;
   }
 
+  @Override
   public int getDSFID() {
     return JTA_BEFORE_COMPLETION_MESSAGE;
   }

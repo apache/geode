@@ -14,14 +14,15 @@
  */
 package org.apache.geode.distributed.internal.membership;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.Role;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * <p>
@@ -52,6 +53,7 @@ public class InternalRole implements Role {
   private final String name;
 
   /** Static canonical instances of roles. key=name, value=InternalRole */
+  @MakeNotStatic
   private static final Map roles = new HashMap(); // could use ConcurrentHashMap
 
   /** Contructs a new InternalRole instance for the specified role name */
@@ -59,6 +61,7 @@ public class InternalRole implements Role {
     this.name = name;
   }
 
+  @Override
   public String getName() {
     return this.name;
   }
@@ -73,11 +76,11 @@ public class InternalRole implements Role {
    * @exception java.lang.ClassCastException if the specified object's type prevents it from being
    *            compared to this Object.
    */
+  @Override
   public int compareTo(Role o) {
     if ((o == null) || !(o instanceof InternalRole)) {
       throw new ClassCastException(
-          LocalizedStrings.InternalRole_INTERNALROLECOMPARETO_COMPARISON_BETWEEN_DIFFERENT_CLASSES
-              .toLocalizedString());
+          "InternalRole.compareTo(): comparison between different classes");
     }
     InternalRole other = (InternalRole) o;
     return this.name.compareTo(other.name);
@@ -136,23 +139,23 @@ public class InternalRole implements Role {
     }
   }
 
+  @Override
   public boolean isPresent() {
     InternalDistributedSystem sys = InternalDistributedSystem.getAnyInstance();
     if (sys == null) {
       throw new IllegalStateException(
-          LocalizedStrings.InternalRole_ISPRESENT_REQUIRES_A_CONNECTION_TO_THE_DISTRIBUTED_SYSTEM
-              .toLocalizedString());
+          "isPresent requires a connection to the distributed system.");
     }
     DistributionManager dm = sys.getDistributionManager();
     return dm.isRolePresent(this);
   }
 
+  @Override
   public int getCount() {
     InternalDistributedSystem sys = InternalDistributedSystem.getAnyInstance();
     if (sys == null) {
       throw new IllegalStateException(
-          LocalizedStrings.InternalRole_GETCOUNT_REQUIRES_A_CONNECTION_TO_THE_DISTRIBUTED_SYSTEM
-              .toLocalizedString());
+          "getCount requires a connection to the distributed system.");
     }
     DistributionManager dm = sys.getDistributionManager();
     return dm.getRoleCount(this);

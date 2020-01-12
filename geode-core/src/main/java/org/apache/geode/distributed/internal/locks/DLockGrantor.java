@@ -15,7 +15,19 @@
 
 package org.apache.geode.distributed.internal.locks;
 
-import java.util.*;
+import static java.util.concurrent.TimeUnit.DAYS;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -23,10 +35,11 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.CommitConflictException;
+import org.apache.geode.cache.TransactionDataNodeHasDepartedException;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.LockServiceDestroyedException;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.locks.DLockQueryProcessor.DLockQueryMessage;
@@ -35,12 +48,12 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.IdentityArrayList;
 import org.apache.geode.internal.cache.TXReservationMgr;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.util.concurrent.StoppableCountDownLatch;
 import org.apache.geode.internal.util.concurrent.StoppableReentrantReadWriteLock;
+import org.apache.geode.logging.internal.executors.LoggingThread;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Provides lock grantor authority to a distributed lock service. This is responsible for granting,
@@ -56,7 +69,7 @@ public class DLockGrantor {
 
   public static final boolean DEBUG_SUSPEND_LOCK = // TODO:LOG:CONVERT: REMOVE THIS
       Boolean.getBoolean(
-          DistributionConfig.GEMFIRE_PREFIX + "DLockService.DLockGrantor.debugSuspendLock");
+          GeodeGlossary.GEMFIRE_PREFIX + "DLockService.DLockGrantor.debugSuspendLock");
 
   /**
    * Default wait before grantor thread will reawaken to check for expirations and timeouts.
@@ -137,6 +150,9 @@ public class DLockGrantor {
    * Handles special lock-reservation type for transactions.
    */
   private final TXReservationMgr resMgr = new TXReservationMgr(false);
+
+  private final Map<InternalDistributedMember, Long> membersDepartedTime = new LinkedHashMap();
+  private final long departedMemberKeptInMapMilliSeconds = DAYS.toMillis(1);
 
   /**
    * Enforces waiting until this grantor is initialized. Used to block all lock requests until
@@ -290,7 +306,7 @@ public class DLockGrantor {
         return null;
       if (!grantor.isReady())
         return null;
-      // Now make sure the service still has this guy as its grantor
+      // Now make sure the service still has this member as its grantor
       oldGrantor = grantor;
       grantor = getGrantorForService(svc);
     } while (oldGrantor != grantor);
@@ -449,7 +465,7 @@ public class DLockGrantor {
   private void throwIfDestroyed(boolean destroyed) {
     if (destroyed) {
       throw new LockGrantorDestroyedException(
-          LocalizedStrings.DLockGrantor_GRANTOR_IS_DESTROYED.toLocalizedString());
+          "Grantor is destroyed");
     }
   }
 
@@ -461,16 +477,22 @@ public class DLockGrantor {
    * @throws LockGrantorDestroyedException if grantor is destroyed
    */
   void handleLockBatch(DLockRequestMessage request) throws InterruptedException {
+    DLockLessorDepartureHandler handler = this.dlock.getDLockLessorDepartureHandler();
+    // make sure the tx locks of departed members have been cleared so we don't have
+    // conflicts with non-existent members. This is done in a waiting-pool thread launched
+    // when the member-departure is announced.
+    handler.waitForInProcessDepartures();
+
     synchronized (this.batchLocks) { // assures serial processing
-      waitWhileInitializing(); // calcWaitMillisFromNow
+      waitWhileInitializing();
       if (request.checkForTimeout()) {
         cleanupSuspendState(request);
         return;
       }
 
-      final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS);
-      if (isDebugEnabled_DLS) {
-        logger.trace(LogMarker.DLS, "[DLockGrantor.handleLockBatch]");
+      final boolean isTraceEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS_VERBOSE);
+      if (isTraceEnabled_DLS) {
+        logger.trace(LogMarker.DLS_VERBOSE, "[DLockGrantor.handleLockBatch]");
       }
       if (!acquireDestroyReadLock(0)) {
         waitUntilDestroyed();
@@ -478,64 +500,35 @@ public class DLockGrantor {
       }
       try {
         checkDestroyed();
-        if (isDebugEnabled_DLS) {
-          logger.trace(LogMarker.DLS, "[DLockGrantor.handleLockBatch] request: {}", request);
+        if (isTraceEnabled_DLS) {
+          logger.trace(LogMarker.DLS_VERBOSE, "[DLockGrantor.handleLockBatch] request: {}",
+              request);
         }
 
         DLockBatch batch = (DLockBatch) request.getObjectName();
-        this.resMgr.makeReservation((IdentityArrayList) batch.getReqs());
-        if (isDebugEnabled_DLS) {
-          logger.trace(LogMarker.DLS, "[DLockGrantor.handleLockBatch] granting {}",
+        checkIfHostDeparted(batch.getOwner());
+        resMgr.makeReservation((IdentityArrayList) batch.getReqs());
+        if (isTraceEnabled_DLS) {
+          logger.trace(LogMarker.DLS_VERBOSE, "[DLockGrantor.handleLockBatch] granting {}",
               batch.getBatchId());
         }
         this.batchLocks.put(batch.getBatchId(), batch);
         request.respondWithGrant(Long.MAX_VALUE);
-        // // try-lock every lock in batch...
-        // Object name = null;
-        // Set lockNames = batch.getLockNames();
-        // Set acquiredLocks = new HashSet();
-        // long leaseExpireTime = -1;
-
-        // for (Iterator iter = lockNames.iterator(); iter.hasNext();) {
-        // name = iter.next();
-        // DLockGrantToken grant = getOrCreateGrant(
-        // this.dlock.getOrCreateToken(name));
-
-        // // calc lease expire time just once...
-        // if (leaseExpireTime == -1) {
-        // leaseExpireTime = grant.calcLeaseExpireTime(request.getLeaseTime());
-        // }
-
-        // // try to grant immediately else fail...
-        // if (grant.grantBatchLock(request.getSender(), leaseExpireTime)) {
-        // acquiredLocks.add(grant);
-        // } else {
-        // // fail out and release all..
-        // break;
-        // }
-        // } // for-loop
-
-        // if (acquiredLocks.size() == lockNames.size()) {
-        // // got the locks!
-        // logFine("[DLockGrantor.handleLockBatch] granting " +
-        // batch.getBatchId() + "; leaseExpireTime=" + leaseExpireTime);
-
-        // // save the batch for later release...
-        // this.batchLocks.put(batch.getBatchId(), batch);
-        // request.respondWithGrant(leaseExpireTime);
-        // }
-        // else {
-        // // failed... release them all...
-        // for (Iterator iter = acquiredLocks.iterator(); iter.hasNext();) {
-        // DLockGrantToken grant = (DLockGrantToken) iter.next();
-        // grant.release();
-        // }
-        // request.respondWithTryLockFailed(name);
-        // }
       } catch (CommitConflictException ex) {
         request.respondWithTryLockFailed(ex.getMessage());
       } finally {
         releaseDestroyReadLock();
+      }
+    }
+  }
+
+  private void checkIfHostDeparted(InternalDistributedMember owner) {
+    // Already held batchLocks; hold membersDepartedTime lock just for clarity
+    synchronized (membersDepartedTime) {
+      // the transaction host/txLock requester has departed.
+      if (membersDepartedTime.containsKey(owner)) {
+        throw new TransactionDataNodeHasDepartedException(
+            "The transaction host " + owner + " is no longer a member of the cluster.");
       }
     }
   }
@@ -551,6 +544,10 @@ public class DLockGrantor {
   public DLockBatch[] getLockBatches(InternalDistributedMember owner) {
     // Key: Object batchId, Value: DLockBatch batch
     synchronized (this.batchLocks) {
+      // put owner into the map first so that no new threads will handle in-flight requests
+      // from the departed member to lock keys
+      recordMemberDepartedTime(owner);
+
       List batchList = new ArrayList();
       for (Iterator iter = this.batchLocks.values().iterator(); iter.hasNext();) {
         DLockBatch batch = (DLockBatch) iter.next();
@@ -558,8 +555,32 @@ public class DLockGrantor {
           batchList.add(batch);
         }
       }
-      return (DLockBatch[]) batchList.toArray(new DLockBatch[batchList.size()]);
+      return (DLockBatch[]) batchList.toArray(new DLockBatch[0]);
     }
+  }
+
+  void recordMemberDepartedTime(InternalDistributedMember owner) {
+    // Already held batchLocks; hold membersDepartedTime lock just for clarity
+    synchronized (membersDepartedTime) {
+      long currentTime = getCurrentTime();
+      for (Iterator iterator = membersDepartedTime.values().iterator(); iterator.hasNext();) {
+        if ((long) iterator.next() < currentTime - departedMemberKeptInMapMilliSeconds) {
+          iterator.remove();
+        } else {
+          break;
+        }
+      }
+      membersDepartedTime.put(owner, currentTime);
+    }
+  }
+
+  long getCurrentTime() {
+    return System.currentTimeMillis();
+  }
+
+  @VisibleForTesting
+  Map getMembersDepartedTimeRecords() {
+    return membersDepartedTime;
   }
 
   /**
@@ -577,9 +598,9 @@ public class DLockGrantor {
    */
   public DLockBatch getLockBatch(Object batchId) throws InterruptedException {
     DLockBatch ret = null;
-    final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS);
-    if (isDebugEnabled_DLS) {
-      logger.trace(LogMarker.DLS, "[DLockGrantor.getLockBatch] enter: {}", batchId);
+    final boolean isTraceEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS_VERBOSE);
+    if (isTraceEnabled_DLS) {
+      logger.trace(LogMarker.DLS_VERBOSE, "[DLockGrantor.getLockBatch] enter: {}", batchId);
     }
     synchronized (this.batchLocks) {
       waitWhileInitializing();
@@ -594,8 +615,8 @@ public class DLockGrantor {
         releaseDestroyReadLock();
       }
     }
-    if (isDebugEnabled_DLS) {
-      logger.trace(LogMarker.DLS, "[DLockGrantor.getLockBatch] exit: {}", batchId);
+    if (isTraceEnabled_DLS) {
+      logger.trace(LogMarker.DLS_VERBOSE, "[DLockGrantor.getLockBatch] exit: {}", batchId);
     }
     return ret;
   }
@@ -614,9 +635,9 @@ public class DLockGrantor {
    * @see org.apache.geode.internal.cache.locks.TXLockBatch#getBatchId()
    */
   public void updateLockBatch(Object batchId, DLockBatch newBatch) throws InterruptedException {
-    final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS);
-    if (isDebugEnabled_DLS) {
-      logger.trace(LogMarker.DLS, "[DLockGrantor.updateLockBatch] enter: {}", batchId);
+    final boolean isTraceEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS_VERBOSE);
+    if (isTraceEnabled_DLS) {
+      logger.trace(LogMarker.DLS_VERBOSE, "[DLockGrantor.updateLockBatch] enter: {}", batchId);
     }
     synchronized (this.batchLocks) {
       waitWhileInitializing();
@@ -634,8 +655,8 @@ public class DLockGrantor {
         releaseDestroyReadLock();
       }
     }
-    if (isDebugEnabled_DLS) {
-      logger.trace(LogMarker.DLS, "[DLockGrantor.updateLockBatch] exit: {}", batchId);
+    if (isTraceEnabled_DLS) {
+      logger.trace(LogMarker.DLS_VERBOSE, "[DLockGrantor.updateLockBatch] exit: {}", batchId);
     }
   }
 
@@ -650,8 +671,8 @@ public class DLockGrantor {
    */
   public void releaseLockBatch(Object batchId, InternalDistributedMember owner)
       throws InterruptedException {
-    if (logger.isTraceEnabled(LogMarker.DLS)) {
-      logger.trace(LogMarker.DLS, "[DLockGrantor.releaseLockBatch]");
+    if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
+      logger.trace(LogMarker.DLS_VERBOSE, "[DLockGrantor.releaseLockBatch]");
     }
     synchronized (this.batchLocks) {
       waitWhileInitializing();
@@ -665,13 +686,6 @@ public class DLockGrantor {
         if (batch != null) {
           this.resMgr.releaseReservation((IdentityArrayList) batch.getReqs());
         }
-        // Set lockNames = batch.getLockNames();
-        // for (Iterator iter = lockNames.iterator(); iter.hasNext();) {
-        // Object name = iter.next();
-        // DLockGrantToken grant = getOrCreateGrant(
-        // this.dlock.getOrCreateToken(name));
-        // grant.releaseIfLockedBy(owner);
-        // }
       } finally {
         releaseDestroyReadLock();
       }
@@ -714,8 +728,8 @@ public class DLockGrantor {
    * @return DLockGrantToken for the lock or null
    */
   DLockGrantToken handleLockQuery(DLockQueryMessage query) throws InterruptedException {
-    if (logger.isTraceEnabled(LogMarker.DLS)) {
-      logger.trace(LogMarker.DLS, "[DLockGrantor.handleLockQuery] {}", query);
+    if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
+      logger.trace(LogMarker.DLS_VERBOSE, "[DLockGrantor.handleLockQuery] {}", query);
     }
     if (acquireDestroyReadLock(0)) {
       try {
@@ -746,22 +760,23 @@ public class DLockGrantor {
 
     waitWhileInitializing(); // calcWaitMillisFromNow
 
-    final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS);
-    if (isDebugEnabled_DLS) {
-      logger.trace(LogMarker.DLS, "[DLockGrantor.handleLockRequest] {}", request);
+    final boolean isTraceEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS_VERBOSE);
+    if (isTraceEnabled_DLS) {
+      logger.trace(LogMarker.DLS_VERBOSE, "[DLockGrantor.handleLockRequest] {}", request);
     }
 
     if (!acquireDestroyReadLock(0)) {
       if (isLocalRequest(request) && this.dlock.isDestroyed()) {
-        if (isDebugEnabled_DLS) {
-          logger.trace(LogMarker.DLS, "[DLockGrantor.handleLockRequest] about to throwIfDestroyed");
+        if (isTraceEnabled_DLS) {
+          logger.trace(LogMarker.DLS_VERBOSE,
+              "[DLockGrantor.handleLockRequest] about to throwIfDestroyed");
         }
         // this special case is one fix for deadlock between waitUntilDestroyed
         // and dlock waitForGrantorCallsInProgress (when request is local)
         throwIfDestroyed(true);
       } else {
-        if (isDebugEnabled_DLS) {
-          logger.trace(LogMarker.DLS,
+        if (isTraceEnabled_DLS) {
+          logger.trace(LogMarker.DLS_VERBOSE,
               "[DLockGrantor.handleLockRequest] about to waitUntilDestroyed");
         }
         // is there still a deadlock when an explicit become is destroying
@@ -771,6 +786,13 @@ public class DLockGrantor {
       }
     }
     try {
+      // make sure we don't grant a dlock held by a departed member until that member's
+      // transactions are resolved
+      DLockLessorDepartureHandler dLockLessorDepartureHandler =
+          this.dlock.getDLockLessorDepartureHandler();
+      if (dLockLessorDepartureHandler != null) {
+        dLockLessorDepartureHandler.waitForInProcessDepartures();
+      }
       checkDestroyed();
       if (acquireLockPermission(request)) {
         handlePermittedLockRequest(request);
@@ -792,8 +814,8 @@ public class DLockGrantor {
    *        {@link #acquireDestroyReadLock(long)}
    */
   private void handlePermittedLockRequest(final DLockRequestMessage request) {
-    if (logger.isTraceEnabled(LogMarker.DLS)) {
-      logger.trace(LogMarker.DLS, "[DLockGrantor.handlePermittedLockRequest] {}", request);
+    if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
+      logger.trace(LogMarker.DLS_VERBOSE, "[DLockGrantor.handlePermittedLockRequest] {}", request);
     }
     Assert.assertTrue(request.getRemoteThread() != null);
     DLockGrantToken grant = getOrCreateGrant(request.getObjectName());
@@ -853,7 +875,7 @@ public class DLockGrantor {
       synchronized (this.grantTokens) {
         Set members = this.dlock.getDistributionManager().getDistributionManagerIds();
 
-        final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS);
+        final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS_VERBOSE);
         for (Iterator iter = tokens.iterator(); iter.hasNext();) {
           DLockRemoteToken token = (DLockRemoteToken) iter.next();
           DLockGrantToken grantToken = getOrCreateGrant(token.getName());
@@ -863,7 +885,7 @@ public class DLockGrantor {
             if (!members.contains(owner)) {
               // skipping because member is no longer in view
               if (isDebugEnabled_DLS) {
-                logger.trace(LogMarker.DLS,
+                logger.trace(LogMarker.DLS_VERBOSE,
                     "Initialization of held locks is skipping {} because owner {} is not in view: ",
                     token, owner, members);
               }
@@ -876,10 +898,9 @@ public class DLockGrantor {
 
             synchronized (grantToken) {
               if (grantToken.isLeaseHeld()) {
-                logger.error(LogMarker.DLS,
-                    LocalizedMessage.create(
-                        LocalizedStrings.DLockGrantor_INITIALIZATION_OF_HELD_LOCKS_IS_SKIPPING_0_BECAUSE_LOCK_IS_ALREADY_HELD_1,
-                        new Object[] {token, grantToken}));
+                logger.error(LogMarker.DLS_MARKER,
+                    "Initialization of held locks is skipping {} because lock is already held: {}",
+                    token, grantToken);
                 continue;
               }
 
@@ -947,9 +968,9 @@ public class DLockGrantor {
       // to fix GEODE-678 no longer call request.checkForTimeout
       DLockGrantToken grant = getGrantToken(request.getObjectName());
       if (grant == null) {
-        if (logger.isTraceEnabled(LogMarker.DLS)) {
-          logger.trace(LogMarker.DLS, "[DLockGrantor.reenterLock] no grantToken found for {}",
-              request.getObjectName());
+        if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
+          logger.trace(LogMarker.DLS_VERBOSE,
+              "[DLockGrantor.reenterLock] no grantToken found for {}", request.getObjectName());
         }
         return 0;
       }
@@ -959,8 +980,8 @@ public class DLockGrantor {
           return 0;
         }
         if (!grant.isLockedBy(request.getSender(), request.getLockId())) {
-          if (logger.isTraceEnabled(LogMarker.DLS)) {
-            logger.trace(LogMarker.DLS,
+          if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
+            logger.trace(LogMarker.DLS_VERBOSE,
                 "[DLockGrantor.reenterLock] grant is not locked by sender={} lockId={} grant={}",
                 request.getSender(), request.getLockId(), grant);
           }
@@ -1076,12 +1097,12 @@ public class DLockGrantor {
     // bug 32657 has another cause in this method... interrupted thread from
     // connection/channel layer caused acquireDestroyReadLock to fail...
     // fixed by Darrel in org.apache.geode.internal.tcp.Connection
-    final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS);
+    final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS_VERBOSE);
     if (acquireDestroyReadLock(0)) {
       try {
         if (isDestroyed()) {
           if (isDebugEnabled_DLS) {
-            logger.trace(LogMarker.DLS,
+            logger.trace(LogMarker.DLS_VERBOSE,
                 "[DLockGrantor.handleDepartureOf] grantor is destroyed; ignoring {}", owner);
           }
           return;
@@ -1089,14 +1110,15 @@ public class DLockGrantor {
         try {
           DLockLessorDepartureHandler handler = this.dlock.getDLockLessorDepartureHandler();
           if (isDebugEnabled_DLS) {
-            logger.trace(LogMarker.DLS, "[DLockGrantor.handleDepartureOf] handler = {}", handler);
+            logger.trace(LogMarker.DLS_VERBOSE, "[DLockGrantor.handleDepartureOf] handler = {}",
+                handler);
           }
           if (handler != null) {
             handler.handleDepartureOf(owner, this);
           }
         } catch (CancelException e) {
           if (isDebugEnabled_DLS) {
-            logger.trace(LogMarker.DLS,
+            logger.trace(LogMarker.DLS_VERBOSE,
                 "[DlockGrantor.handleDepartureOf] ignored cancellation (1)");
           }
         } finally {
@@ -1114,7 +1136,7 @@ public class DLockGrantor {
                 postReleaseLock((RemoteThread) it.next(), null);
               } catch (CancelException e) {
                 if (isDebugEnabled_DLS) {
-                  logger.trace(LogMarker.DLS,
+                  logger.trace(LogMarker.DLS_VERBOSE,
                       "[DlockGrantor.handleDepartureOf] ignored cancellation (2)");
                 }
               }
@@ -1133,7 +1155,7 @@ public class DLockGrantor {
                 grant.checkDepartureOf(owner, grantsReferencingMember);
               } catch (CancelException e) {
                 if (isDebugEnabled_DLS) {
-                  logger.trace(LogMarker.DLS,
+                  logger.trace(LogMarker.DLS_VERBOSE,
                       "[DlockGrantor.handleDepartureOf] ignored cancellation (3)");
                 }
               }
@@ -1147,7 +1169,7 @@ public class DLockGrantor {
                 grant.handleDepartureOf(owner, grantsToRemoveIfUnused);
               } catch (CancelException e) {
                 if (isDebugEnabled_DLS) {
-                  logger.trace(LogMarker.DLS,
+                  logger.trace(LogMarker.DLS_VERBOSE,
                       "[DlockGrantor.handleDepartureOf] ignored cancellation (4)");
                 }
               }
@@ -1161,7 +1183,7 @@ public class DLockGrantor {
                 removeGrantIfUnused(grant);
               } catch (CancelException e) {
                 if (isDebugEnabled_DLS) {
-                  logger.trace(LogMarker.DLS,
+                  logger.trace(LogMarker.DLS_VERBOSE,
                       "[DlockGrantor.handleDepartureOf] ignored cancellation (5)");
                 }
               }
@@ -1183,9 +1205,9 @@ public class DLockGrantor {
     synchronized (this) {
       if (isDestroyed())
         return;
-      final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS);
+      final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS_VERBOSE);
       if (isDebugEnabled_DLS) {
-        logger.trace(LogMarker.DLS, "[simpleDestroy]");
+        logger.trace(LogMarker.DLS_VERBOSE, "[simpleDestroy]");
       }
       // wait for the destroy write lock ignoring interrupts...
       boolean acquired = false;
@@ -1213,7 +1235,7 @@ public class DLockGrantor {
             }
           }
           if (isDebugEnabled_DLS) {
-            logger.trace(LogMarker.DLS, "[simpleDestroy] {} locks held",
+            logger.trace(LogMarker.DLS_VERBOSE, "[simpleDestroy] {} locks held",
                 (locksHeld ? "with" : "without"));
           }
         } finally {
@@ -1251,40 +1273,21 @@ public class DLockGrantor {
       Collection grants = this.grantTokens.values();
       for (Iterator iter = grants.iterator(); iter.hasNext();) {
         DLockGrantToken grant = (DLockGrantToken) iter.next();
-        try {
-          grant.handleGrantorDestruction();
-        }
-        // catch (VirtualMachineError err) {
-        // SystemFailure.initiateFailure(err);
-        // // If this ever returns, rethrow the error. We're poisoned
-        // // now, so don't let this thread continue.
-        // throw err;
-        // }
-        // catch (Throwable t) {
-        // // Whenever you catch Error or Throwable, you must also
-        // // catch VirtualMachineError (see above). However, there is
-        // // _still_ a possibility that you are dealing with a cascading
-        // // error condition, so you also need to check to see if the JVM
-        // // is still usable:
-        // SystemFailure.checkFailure();
-        // }
-        finally {
-
-        }
+        grant.handleGrantorDestruction();
       }
     }
 
     synchronized (suspendLock) {
-      final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS);
+      final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS_VERBOSE);
       if (isDebugEnabled_DLS) {
-        logger.trace(LogMarker.DLS,
+        logger.trace(LogMarker.DLS_VERBOSE,
             "[DLockGrantor.destroyAndRemove] responding to {} permitted requests.",
             permittedRequests.size());
       }
       respondWithNotGrantor(permittedRequests.iterator());
 
       if (isDebugEnabled_DLS) {
-        logger.trace(LogMarker.DLS,
+        logger.trace(LogMarker.DLS_VERBOSE,
             "[DLockGrantor.destroyAndRemove] responding to {} requests awaiting permission.",
             suspendQueue.size());
       }
@@ -1293,7 +1296,7 @@ public class DLockGrantor {
       for (Iterator iter = permittedRequestsDrain.iterator(); iter.hasNext();) {
         final List drain = (List) iter.next();
         if (isDebugEnabled_DLS) {
-          logger.trace(LogMarker.DLS,
+          logger.trace(LogMarker.DLS_VERBOSE,
               "[DLockGrantor.destroyAndRemove] responding to {} drained permitted requests.",
               drain.size());
         }
@@ -1312,37 +1315,8 @@ public class DLockGrantor {
   private void respondWithNotGrantor(Iterator requests) {
     while (requests.hasNext()) {
       final DLockRequestMessage request = (DLockRequestMessage) requests.next();
-      try {
-        request.respondWithNotGrantor();
-      }
-      // catch (VirtualMachineError err) {
-      // SystemFailure.initiateFailure(err);
-      // // If this ever returns, rethrow the error. We're poisoned
-      // // now, so don't let this thread continue.
-      // throw err;
-      // }
-      // catch (Throwable t) {
-      // // Whenever you catch Error or Throwable, you must also
-      // // catch VirtualMachineError (see above). However, there is
-      // // _still_ a possibility that you are dealing with a cascading
-      // // error condition, so you also need to check to see if the JVM
-      // // is still usable:
-      // SystemFailure.checkFailure();
-      // }
-      finally {
-
-      }
+      request.respondWithNotGrantor();
     }
-  }
-
-  /**
-   * TEST HOOK: Log additional debugging info about this grantor.
-   */
-  void debug() {
-    logger.info(LogMarker.DLS,
-        LocalizedMessage.create(LocalizedStrings.TESTING,
-            "[DLockGrantor.debug] svc=" + this.dlock.getName() + "; state=" + this.state
-                + "; initLatch.ct=" + this.whileInitializing.getCount()));
   }
 
   /**
@@ -1363,13 +1337,13 @@ public class DLockGrantor {
       }
     }
     assertInitializing();
-    if (logger.isTraceEnabled(LogMarker.DLS)) {
+    if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
       StringBuffer sb =
           new StringBuffer("DLockGrantor " + this.dlock.getName() + " initialized with:");
       for (Iterator tokens = grantTokens.values().iterator(); tokens.hasNext();) {
         sb.append("\n\t" + tokens.next());
       }
-      logger.trace(LogMarker.DLS, sb.toString());
+      logger.trace(LogMarker.DLS_VERBOSE, sb.toString());
     }
     this.state = READY;
     this.whileInitializing.countDown();
@@ -1396,10 +1370,8 @@ public class DLockGrantor {
       checkDestroyed();
       drainPermittedRequests();
       grantLock(objectName);
-    } catch (LockServiceDestroyedException e) {
+    } catch (LockServiceDestroyedException | LockGrantorDestroyedException e) {
       // ignore... service was destroyed and that's ok
-    } catch (LockGrantorDestroyedException e) {
-      // ignore... grantor was destroyed and that's ok
     } finally {
       releaseDestroyReadLock();
     }
@@ -1497,8 +1469,9 @@ public class DLockGrantor {
     try {
       this.thread.shutdown();
       this.state = DESTROYED;
-      if (logger.isTraceEnabled(LogMarker.DLS)) {
-        logger.trace(LogMarker.DLS, "DLockGrantor {} state is DESTROYED", this.dlock.getName());
+      if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
+        logger.trace(LogMarker.DLS_VERBOSE, "DLockGrantor {} state is DESTROYED",
+            this.dlock.getName());
       }
       if (this.untilDestroyed.getCount() > 0) {
         this.untilDestroyed.countDown();
@@ -1656,9 +1629,9 @@ public class DLockGrantor {
     if (removed != null) {
       Assert.assertTrue(removed == grantToken);
       grantToken.destroy();
-      if (logger.isTraceEnabled(LogMarker.DLS)) {
-        logger.trace(LogMarker.DLS, "[DLockGrantor.basicRemoveGrantToken] removed {}; removed={}",
-            grantToken, removed);
+      if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
+        logger.trace(LogMarker.DLS_VERBOSE,
+            "[DLockGrantor.basicRemoveGrantToken] removed {}; removed={}", grantToken, removed);
       }
     }
   }
@@ -1714,7 +1687,6 @@ public class DLockGrantor {
    * <p>
    * Synchronizes on suspendLock.
    *
-   * @param value
    */
   public void setDebugHandleSuspendTimeouts(int value) {
     synchronized (suspendLock) {
@@ -1770,10 +1742,9 @@ public class DLockGrantor {
     }
     if (localDebugHandleSuspendTimeouts > 0) {
       try {
-        logger.info(LogMarker.DLS,
-            LocalizedMessage.create(
-                LocalizedStrings.DLockGrantor_DEBUGHANDLESUSPENDTIMEOUTS_SLEEPING_FOR__0,
-                localDebugHandleSuspendTimeouts));
+        logger.info(LogMarker.DLS_MARKER,
+            "debugHandleSuspendTimeouts sleeping for  {}",
+            localDebugHandleSuspendTimeouts);
         Thread.sleep(localDebugHandleSuspendTimeouts);
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
@@ -1830,8 +1801,8 @@ public class DLockGrantor {
         break;
     }
     if (stateDesc == null) {
-      throw new IllegalArgumentException(LocalizedStrings.DLockGrantor_UNKNOWN_STATE_FOR_GRANTOR_0
-          .toLocalizedString(Integer.valueOf(state)));
+      throw new IllegalArgumentException(String.format("Unknown state for grantor: %s",
+          Integer.valueOf(state)));
     }
     return stateDesc;
   }
@@ -1845,8 +1816,8 @@ public class DLockGrantor {
     if (this.state != INITIALIZING) {
       String stateDesc = stateToString(this.state);
       throw new IllegalStateException(
-          LocalizedStrings.DLockGrantor_DLOCKGRANTOR_OPERATION_ONLY_ALLOWED_WHEN_INITIALIZING_NOT_0
-              .toLocalizedString(stateDesc));
+          String.format("DLockGrantor operation only allowed when initializing, not %s",
+              stateDesc));
     }
   }
 
@@ -1864,14 +1835,14 @@ public class DLockGrantor {
     if (DEBUG_SUSPEND_LOCK) {
       Assert.assertHoldsLock(this.suspendLock, true);
     }
-    if (logger.isTraceEnabled(LogMarker.DLS)) {
-      logger.trace(LogMarker.DLS, "Suspend locking of {} by {} with lockId of {}", this.dlock,
-          myRThread, lockId);
+    if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
+      logger.trace(LogMarker.DLS_VERBOSE, "Suspend locking of {} by {} with lockId of {}",
+          this.dlock, myRThread, lockId);
     }
     Assert.assertTrue(myRThread != null, "Attempted to suspend locking for null RemoteThread");
     Assert.assertTrue(this.lockingSuspendedBy == null || this.lockingSuspendedBy.equals(myRThread),
         "Attempted to suspend locking for " + myRThread + " but locking is already suspended by "
-            + this.lockingSuspendedBy); // KIRK: assert fails in bug 37945
+            + this.lockingSuspendedBy);
     this.suspendedLockId = lockId;
     this.lockingSuspendedBy = myRThread;
   }
@@ -1885,8 +1856,8 @@ public class DLockGrantor {
     if (DEBUG_SUSPEND_LOCK) {
       Assert.assertHoldsLock(this.suspendLock, true);
     }
-    if (logger.isTraceEnabled(LogMarker.DLS)) {
-      logger.trace(LogMarker.DLS, "Resume locking of {}", this.dlock);
+    if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
+      logger.trace(LogMarker.DLS_VERBOSE, "Resume locking of {}", this.dlock);
     }
     this.lockingSuspendedBy = null;
     this.suspendedLockId = INVALID_LOCK_ID;
@@ -1970,9 +1941,9 @@ public class DLockGrantor {
   private void postReleaseSuspendLock(RemoteThread rThread, Object lock) {
     if (!isLockingSuspendedBy(rThread)) {
       // hit bug related to 35749
-      if (logger.isTraceEnabled(LogMarker.DLS)) {
-        logger.trace(LogMarker.DLS, "[postReleaseSuspendLock] locking is no longer suspended by {}",
-            rThread);
+      if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
+        logger.trace(LogMarker.DLS_VERBOSE,
+            "[postReleaseSuspendLock] locking is no longer suspended by {}", rThread);
       }
       return;
     }
@@ -2012,8 +1983,8 @@ public class DLockGrantor {
         permittedRequests.add(suspendQueue.removeFirst());
       }
     }
-    if (logger.isTraceEnabled(LogMarker.DLS)) {
-      logger.trace(LogMarker.DLS, "[postReleaseSuspendLock] new status {}",
+    if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
+      logger.trace(LogMarker.DLS_VERBOSE, "[postReleaseSuspendLock] new status {}",
           displayStatus(rThread, null));
     }
   }
@@ -2022,18 +1993,17 @@ public class DLockGrantor {
    * guarded.By {@link #suspendLock}
    */
   private void postReleaseReadLock(RemoteThread rThread, Object lock) {
-    final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS);
+    final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS_VERBOSE);
 
     // handle release of regular lock
     // boolean permitSuspend = false;
     Integer integer = (Integer) readLockCountMap.get(rThread);
     int readLockCount = integer == null ? 0 : integer.intValue();
-    // Assert.assertTrue(readLockCount > 0, rThread + " not found in " + readLockCountMap); // KIRK
     if (readLockCount < 1) {
       // hit bug 35749
       if (isDebugEnabled_DLS) {
-        logger.trace(LogMarker.DLS, "[postReleaseReadLock] no locks are currently held by {}",
-            rThread);
+        logger.trace(LogMarker.DLS_VERBOSE,
+            "[postReleaseReadLock] no locks are currently held by {}", rThread);
       }
       return;
     }
@@ -2048,7 +2018,7 @@ public class DLockGrantor {
 
     if (totalReadLockCount < 0) {
       if (isDebugEnabled_DLS) {
-        logger.trace(LogMarker.DLS, "Total readlock count has dropped to {} for {}",
+        logger.trace(LogMarker.DLS_VERBOSE, "Total readlock count has dropped to {} for {}",
             totalReadLockCount, this);
       }
     }
@@ -2065,15 +2035,14 @@ public class DLockGrantor {
             .append(", writeLockWaiters=").append(writeLockWaiters).append(",\nsuspendQueue=")
             .append(suspendQueue).append(",\npermittedRequests=").append(permittedRequests)
             .toString();
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.DLockGrantor_RELEASED_REGULAR_LOCK_WITH_WAITING_READ_LOCK_0, s));
+        logger.warn("Released regular lock with waiting read lock: {}", s);
         Assert.assertTrue(false,
-            LocalizedStrings.DLockGrantor_RELEASED_REGULAR_LOCK_WITH_WAITING_READ_LOCK_0
-                .toString(s));
+            String.format("Released regular lock with waiting read lock: %s",
+                s));
       }
     }
     if (isDebugEnabled_DLS) {
-      logger.trace(LogMarker.DLS, "[postReleaseReadLock] new status {}",
+      logger.trace(LogMarker.DLS_VERBOSE, "[postReleaseReadLock] new status {}",
           displayStatus(rThread, null));
     }
     checkTotalReadLockCount();
@@ -2091,8 +2060,8 @@ public class DLockGrantor {
     Assert.assertTrue(rThread != null);
     synchronized (suspendLock) {
       checkDestroyed();
-      if (logger.isTraceEnabled(LogMarker.DLS)) {
-        logger.trace(LogMarker.DLS,
+      if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
+        logger.trace(LogMarker.DLS_VERBOSE,
             "[postReleaseLock] rThread={} lock={} permittedRequests={} suspendQueue={}", rThread,
             lock, permittedRequests, suspendQueue);
       }
@@ -2138,9 +2107,9 @@ public class DLockGrantor {
       this.permittedRequests = new ArrayList();
     } // suspendLock sync
 
-    final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS);
+    final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS_VERBOSE);
     if (isDebugEnabled_DLS) {
-      logger.trace(LogMarker.DLS, "[drainPermittedRequests] draining {}", drain);
+      logger.trace(LogMarker.DLS_VERBOSE, "[drainPermittedRequests] draining {}", drain);
     }
 
     // iterate and attempt to grantOrSchedule each request
@@ -2152,8 +2121,8 @@ public class DLockGrantor {
       } catch (LockGrantorDestroyedException e) {
         try {
           if (isDebugEnabled_DLS) {
-            logger.trace(LogMarker.DLS, "LockGrantorDestroyedException respondWithNotGrantor to {}",
-                request);
+            logger.trace(LogMarker.DLS_VERBOSE,
+                "LockGrantorDestroyedException respondWithNotGrantor to {}", request);
           }
           request.respondWithNotGrantor();
         } finally {
@@ -2162,17 +2131,17 @@ public class DLockGrantor {
       } catch (LockServiceDestroyedException e) {
         try {
           if (isDebugEnabled_DLS) {
-            logger.trace(LogMarker.DLS, "LockServiceDestroyedException respondWithNotGrantor to {}",
-                request);
+            logger.trace(LogMarker.DLS_VERBOSE,
+                "LockServiceDestroyedException respondWithNotGrantor to {}", request);
           }
           request.respondWithNotGrantor();
         } finally {
 
         }
       } catch (RuntimeException e) {
-        logger.error(LocalizedMessage.create(
-            LocalizedStrings.DLockGrantor_PROCESSING_OF_POSTREMOTERELEASELOCK_THREW_UNEXPECTED_RUNTIMEEXCEPTION,
-            e));
+        logger.error(
+            "Processing of postRemoteReleaseLock threw unexpected RuntimeException",
+            e);
         request.respondWithException(e);
       } finally {
 
@@ -2196,34 +2165,33 @@ public class DLockGrantor {
     synchronized (suspendLock) {
       checkDestroyed();
       if (!dm.isCurrentMember(request.getSender())) {
-        logger.info(LogMarker.DLS, LocalizedMessage
-            .create(LocalizedStrings.DLockGrantor_IGNORING_LOCK_REQUEST_FROM_NONMEMBER_0, request));
+        logger.info(LogMarker.DLS_MARKER, "Ignoring lock request from non-member: {}", request);
         return false;
       }
       Integer integer = (Integer) readLockCountMap.get(rThread);
       int readLockCount = integer == null ? 0 : integer.intValue();
       boolean othersHaveReadLocks = totalReadLockCount > readLockCount;
-      final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS);
+      final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS_VERBOSE);
       if (isLockingSuspended() || writeLockWaiters > 0 || othersHaveReadLocks) {
         writeLockWaiters++;
         suspendQueue.addLast(request);
         this.thread.checkTimeToWait(calcWaitMillisFromNow(request), false);
         checkWriteLockWaiters();
         if (isDebugEnabled_DLS) {
-          logger.trace(LogMarker.DLS,
+          logger.trace(LogMarker.DLS_VERBOSE,
               "[DLockGrantor.acquireSuspend] added '{}' to end of suspendQueue.", request);
         }
       } else {
         permitLockRequest = true;
         suspendLocking(rThread, request.getLockId());
         if (isDebugEnabled_DLS) {
-          logger.trace(LogMarker.DLS,
+          logger.trace(LogMarker.DLS_VERBOSE,
               "[DLockGrantor.acquireSuspendLockPermission] permitted and suspended for {}",
               request);
         }
       }
       if (isDebugEnabled_DLS) {
-        logger.trace(LogMarker.DLS,
+        logger.trace(LogMarker.DLS_VERBOSE,
             "[DLockGrantor.acquireSuspendLockPermission] new status  permitLockRequest = {}{}",
             permitLockRequest, displayStatus(rThread, null));
       }
@@ -2241,19 +2209,18 @@ public class DLockGrantor {
     synchronized (suspendLock) {
       checkDestroyed();
       if (!dm.isCurrentMember(request.getSender())) {
-        logger.info(LogMarker.DLS, LocalizedMessage
-            .create(LocalizedStrings.DLockGrantor_IGNORING_LOCK_REQUEST_FROM_NONMEMBER_0, request));
+        logger.info(LogMarker.DLS_MARKER, "Ignoring lock request from non-member: %s", request);
         return false;
       }
       Integer integer = (Integer) readLockCountMap.get(rThread);
       int readLockCount = integer == null ? 0 : integer.intValue();
       boolean threadHoldsLock = readLockCount > 0 || isLockingSuspendedBy(rThread);
-      final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS);
+      final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS_VERBOSE);
       if (!threadHoldsLock && (isLockingSuspended() || writeLockWaiters > 0)) {
         suspendQueue.addLast(request);
         this.thread.checkTimeToWait(calcWaitMillisFromNow(request), false);
         if (isDebugEnabled_DLS) {
-          logger.trace(LogMarker.DLS,
+          logger.trace(LogMarker.DLS_VERBOSE,
               "[DLockGrantor.acquireReadLockPermission] added {} to end of suspendQueue.", request);
         }
       } else {
@@ -2262,12 +2229,12 @@ public class DLockGrantor {
         totalReadLockCount++;
         permitLockRequest = true;
         if (isDebugEnabled_DLS) {
-          logger.trace(LogMarker.DLS, "[DLockGrantor.acquireReadLockPermission] permitted {}",
-              request);
+          logger.trace(LogMarker.DLS_VERBOSE,
+              "[DLockGrantor.acquireReadLockPermission] permitted {}", request);
         }
       }
       if (isDebugEnabled_DLS) {
-        logger.trace(LogMarker.DLS,
+        logger.trace(LogMarker.DLS_VERBOSE,
             "[DLockGrantor.acquireReadLockPermission] new status  threadHoldsLock = {} permitLockRequest = {}{}",
             threadHoldsLock, permitLockRequest, displayStatus(rThread, null));
       }
@@ -2285,8 +2252,8 @@ public class DLockGrantor {
    * @param request the lock request to acquire permission for
    */
   private boolean acquireLockPermission(final DLockRequestMessage request) {
-    if (logger.isTraceEnabled(LogMarker.DLS)) {
-      logger.trace(LogMarker.DLS, "[DLockGrantor.acquireLockPermission] {}", request);
+    if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
+      logger.trace(LogMarker.DLS_VERBOSE, "[DLockGrantor.acquireLockPermission] {}", request);
     }
 
     boolean permitLockRequest = false;
@@ -2331,9 +2298,9 @@ public class DLockGrantor {
         DLockGrantToken token = (DLockGrantToken) entry.getValue();
         buffer.append(token.toString()).append("\n");
       }
-      logger.info(LogMarker.DLS, LocalizedMessage.create(LocalizedStrings.TESTING, buffer));
-      logger.info(LogMarker.DLS, LocalizedMessage.create(LocalizedStrings.TESTING,
-          "\nreadLockCountMap:\n" + readLockCountMap));
+      logger.info(LogMarker.DLS_MARKER, "{}", buffer);
+      logger.info(LogMarker.DLS_MARKER, "{}",
+          "\nreadLockCountMap:\n" + readLockCountMap);
     }
   }
 
@@ -2488,8 +2455,9 @@ public class DLockGrantor {
       }
 
       // add the request to the sorted set...
-      if (logger.isTraceEnabled(LogMarker.DLS)) {
-        logger.trace(LogMarker.DLS, "[DLockGrantToken.schedule] {} scheduling: {}", this, request);
+      if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
+        logger.trace(LogMarker.DLS_VERBOSE, "[DLockGrantToken.schedule] {} scheduling: {}", this,
+            request);
       }
       if (this.pendingRequests == null) {
         this.pendingRequests = new LinkedList();
@@ -2569,14 +2537,14 @@ public class DLockGrantor {
      * @return true if lock was granted to the request
      */
     protected synchronized boolean grantLockToRequest(DLockRequestMessage request) {
-      Assert.assertTrue(request.getRemoteThread() != null); // KIRK search for these assertions and
-                                                            // remove
+      Assert.assertTrue(request.getRemoteThread() != null);
       if (isGranted(true) || hasWaitingRequests()) {
         return false;
       }
 
-      if (logger.isTraceEnabled(LogMarker.DLS)) {
-        logger.trace(LogMarker.DLS, "[DLockGrantToken.grantLockToRequest] granting: {}", request);
+      if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
+        logger.trace(LogMarker.DLS_VERBOSE, "[DLockGrantToken.grantLockToRequest] granting: {}",
+            request);
       }
 
       long newLeaseExpireTime = grantAndRespondToRequest(request);
@@ -2617,9 +2585,10 @@ public class DLockGrantor {
       }
       if (released) {
         // don't bother synchronizing requests for this log statement...
-        if (logger.isTraceEnabled(LogMarker.DLS)) {
+        if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
           synchronized (this) {
-            logger.trace(LogMarker.DLS, "[DLockGrantToken.releaseIfLockedBy] pending requests: {}",
+            logger.trace(LogMarker.DLS_VERBOSE,
+                "[DLockGrantToken.releaseIfLockedBy] pending requests: {}",
                 (this.pendingRequests == null ? "none" : "" + this.pendingRequests.size()));
           }
         }
@@ -2698,7 +2667,7 @@ public class DLockGrantor {
         final ArrayList grantsToRemoveIfUnused) {
       boolean released = false;
       RemoteThread rThread = null;
-      final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS);
+      final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS_VERBOSE);
       try {
         synchronized (this) {
           try {
@@ -2718,7 +2687,7 @@ public class DLockGrantor {
                   this.grantor.cleanupSuspendState(req);
                 } catch (CancelException e) {
                   if (isDebugEnabled_DLS) {
-                    logger.trace(LogMarker.DLS,
+                    logger.trace(LogMarker.DLS_VERBOSE,
                         "[DLockGrantToken.handleDepartureOf] ignored cancellation (1)");
                   }
                 }
@@ -2744,7 +2713,7 @@ public class DLockGrantor {
               if (releasedToken) {
                 released = true;
                 if (isDebugEnabled_DLS) {
-                  logger.trace(LogMarker.DLS,
+                  logger.trace(LogMarker.DLS_VERBOSE,
                       "[DLockGrantToken.handleDepartureOf] pending requests: {}",
                       (this.pendingRequests == null ? "none" : "" + this.pendingRequests.size()));
                 }
@@ -2759,7 +2728,7 @@ public class DLockGrantor {
             this.grantor.postReleaseLock(rThread, getName());
           } catch (CancelException e) {
             if (isDebugEnabled_DLS) {
-              logger.trace(LogMarker.DLS,
+              logger.trace(LogMarker.DLS_VERBOSE,
                   "[DLockGrantToken.handleDepartureOf] ignored cancellation (2)");
             }
           }
@@ -2825,9 +2794,9 @@ public class DLockGrantor {
      * @return true if the lock was granted to next request
      */
     protected boolean grantLockToNextRequest() {
-      final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS);
+      final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS_VERBOSE);
       if (isDebugEnabled_DLS) {
-        logger.trace(LogMarker.DLS,
+        logger.trace(LogMarker.DLS_VERBOSE,
             "[DLockGrantToken.grantLock] {} isGranted={} hasWaitingRequests={}", getName(),
             isLeaseHeld(), hasWaitingRequests());
       }
@@ -2848,8 +2817,8 @@ public class DLockGrantor {
           }
 
           if (isDebugEnabled_DLS) {
-            logger.trace(LogMarker.DLS, "[DLockGrantToken.grantLock] granting {} to {}", getName(),
-                request.getSender());
+            logger.trace(LogMarker.DLS_VERBOSE, "[DLockGrantToken.grantLock] granting {} to {}",
+                getName(), request.getSender());
           }
 
           long newLeaseExpireTime = grantAndRespondToRequest(request);
@@ -2947,8 +2916,8 @@ public class DLockGrantor {
       if (newLeaseExpireTime < leaseTime) { // rolled over MAX_VALUE...
         newLeaseExpireTime = Long.MAX_VALUE;
       }
-      if (logger.isTraceEnabled(LogMarker.DLS)) {
-        logger.trace(LogMarker.DLS,
+      if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
+        logger.trace(LogMarker.DLS_VERBOSE,
             "[DLockGrantToken.calcLeaseExpireTime] currentTime={} newLeaseExpireTime={}",
             currentTime, newLeaseExpireTime);
       }
@@ -3188,19 +3157,15 @@ public class DLockGrantor {
           this.lesseeThread = null;
           this.leaseExpireTime = -1;
 
-          if (logger.isTraceEnabled(LogMarker.DLS)) {
-            logger.trace(LogMarker.DLS, "[checkForExpiration] Expired token at {}: {}", currentTime,
-                toString(true));
+          if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
+            logger.trace(LogMarker.DLS_VERBOSE, "[checkForExpiration] Expired token at {}: {}",
+                currentTime, toString(true));
           }
 
           this.grantor.postReleaseLock(rThread, this.lockName);
 
           return true;
         }
-        /*
-         * else if (this.log.fineEnabled()) { this.log.fine("[checkForExpiration] not expired: " +
-         * this); }
-         */
       }
       return false;
     }
@@ -3240,8 +3205,8 @@ public class DLockGrantor {
       this.leaseExpireTime = newLeaseExpireTime;
       this.leaseId = lockId;
       this.lesseeThread = remoteThread;
-      if (logger.isTraceEnabled(LogMarker.DLS)) {
-        logger.trace(LogMarker.DLS, "[DLockGrantToken.grantLock.grantor] Granting {}",
+      if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
+        logger.trace(LogMarker.DLS_VERBOSE, "[DLockGrantToken.grantLock.grantor] Granting {}",
             toString(false));
       }
     }
@@ -3285,7 +3250,6 @@ public class DLockGrantor {
       if (this.destroyed) {
         String s = "Attempting to use destroyed grant token: " + this;
         IllegalStateException e = new IllegalStateException(s);
-        // log.warning(e); -enable for debugging
         throw e;
       }
     }
@@ -3306,9 +3270,9 @@ public class DLockGrantor {
       checkDestroyed();
 
       if (isLeaseHeldBy(member, lockId)) {
-        if (logger.isTraceEnabled(LogMarker.DLS)) {
-          logger.trace(LogMarker.DLS, "[DLockGrantToken.releaseLock] releasing ownership: {}",
-              this);
+        if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
+          logger.trace(LogMarker.DLS_VERBOSE,
+              "[DLockGrantToken.releaseLock] releasing ownership: {}", this);
         }
 
         this.lessee = null;
@@ -3318,9 +3282,9 @@ public class DLockGrantor {
 
         return true;
       }
-      if (logger.isTraceEnabled(LogMarker.DLS)) {
-        logger.trace(LogMarker.DLS, "[DLockGrantToken.releaseLock] {} attempted to release: {}",
-            member, this);
+      if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
+        logger.trace(LogMarker.DLS_VERBOSE,
+            "[DLockGrantToken.releaseLock] {} attempted to release: {}", member, this);
       }
       return false;
     }
@@ -3347,7 +3311,7 @@ public class DLockGrantor {
   /**
    * Thread dedicated to handling background tasks for this grantor.
    */
-  private static class DLockGrantorThread extends Thread {
+  private static class DLockGrantorThread extends LoggingThread {
     private static final long MAX_WAIT = 60 * 1000; // 60 seconds...
     private volatile boolean shutdown = false;
     private boolean waiting = false;
@@ -3366,8 +3330,7 @@ public class DLockGrantor {
     private long nextExpire = DLockGrantorThread.MAX_WAIT;
 
     DLockGrantorThread(DLockGrantor grantor, CancelCriterion stopper) {
-      super(DLockService.getThreadGroup(), "Lock Grantor for " + grantor.dlock.getName());
-      setDaemon(true);
+      super("Lock Grantor for " + grantor.dlock.getName());
       this.grantor = grantor;
       this.stopper = stopper;
     }
@@ -3410,45 +3373,21 @@ public class DLockGrantor {
               this.goIntoWait = true;
               this.lock.notify();
             }
-            /*
-             * if (this.log.fineEnabled()) { this.log.fine("[DLockGrantorThread.checkTimeToWait.k2]"
-             * + " newTimeToWait=" + newTimeToWait + " expire=" + expire + " newWakeupTimeStamp=" +
-             * newWakeupTimeStamp + " expectedWakeupTimeStamp=" + expectedWakeupTimeStamp +
-             * " nextExpire=" + this.nextExpire + " nextTimeout=" + this.nextTimeout +
-             * " timeToWait=" + this.timeToWait + " goIntoWait=" + this.goIntoWait ); }
-             */
           } else {
             this.timeToWait = newTimeToWait;
             this.requireTimeToWait = true;
-            /*
-             * if (this.log.fineEnabled()) { this.log.fine("[DLockGrantorThread.checkTimeToWait.k3]"
-             * + " newTimeToWait=" + newTimeToWait + " expire=" + expire +
-             * " expectedWakeupTimeStamp=" + expectedWakeupTimeStamp + " nextExpire=" +
-             * this.nextExpire + " nextTimeout=" + this.nextTimeout + " timeToWait=" +
-             * this.timeToWait + " goIntoWait=" + this.goIntoWait ); }
-             */
           }
         } // end if newTimeToWait
-
-        /*
-         * else if (this.log.fineEnabled()) {
-         * this.log.fine("[DLockGrantorThread.checkTimeToWait.k4]" + " newTimeToWait=" +
-         * newTimeToWait + " expire=" + expire + " expectedWakeupTimeStamp=" +
-         * expectedWakeupTimeStamp + " nextExpire=" + this.nextExpire + " nextTimeout=" +
-         * this.nextTimeout + " timeToWait=" + this.timeToWait + " goIntoWait=" + this.goIntoWait );
-         * }
-         */
       } // end sync this.lock
     }
 
     @Override
     public void run() {
-      final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS);
+      final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS_VERBOSE);
 
       DistributedLockStats stats = this.grantor.dlock.getStats();
       boolean recalcTimeToWait = false;
       while (!this.shutdown) {
-        // SystemFailure.checkFailure(); stopper checks this
         if (stopper.isCancelInProgress()) {
           break; // done
         }
@@ -3475,21 +3414,22 @@ public class DLockGrantor {
                 if (this.timeToWait < 0)
                   this.timeToWait = 0;
                 if (isDebugEnabled_DLS) {
-                  logger.trace(LogMarker.DLS,
+                  logger.trace(LogMarker.DLS_VERBOSE,
                       "DLockGrantorThread will wait for {} ms. nextExpire={} nextTimeout={} now={}",
                       this.timeToWait, this.nextExpire, this.nextTimeout, now);
                 }
               } else {
                 this.timeToWait = Long.MAX_VALUE;
                 if (isDebugEnabled_DLS) {
-                  logger.trace(LogMarker.DLS, "DLockGrantorThread will wait until rescheduled.");
+                  logger.trace(LogMarker.DLS_VERBOSE,
+                      "DLockGrantorThread will wait until rescheduled.");
                 }
               }
             }
             if (this.timeToWait > 0) {
               if (isDebugEnabled_DLS) {
-                logger.trace(LogMarker.DLS, "DLockGrantorThread is about to wait for {} ms.",
-                    this.timeToWait);
+                logger.trace(LogMarker.DLS_VERBOSE,
+                    "DLockGrantorThread is about to wait for {} ms.", this.timeToWait);
               }
               if (this.timeToWait != Long.MAX_VALUE) {
                 this.expectedWakeupTimeStamp = now() + this.timeToWait;
@@ -3520,7 +3460,7 @@ public class DLockGrantor {
                 }
               }
               if (isDebugEnabled_DLS) {
-                logger.trace(LogMarker.DLS, "DLockGrantorThread has woken up...");
+                logger.trace(LogMarker.DLS_VERBOSE, "DLockGrantorThread has woken up...");
               }
               if (this.shutdown)
                 break;
@@ -3540,7 +3480,8 @@ public class DLockGrantor {
               return;
             }
             if (isDebugEnabled_DLS) {
-              logger.trace(LogMarker.DLS, "DLockGrantorThread about to expireAndGrantLocks...");
+              logger.trace(LogMarker.DLS_VERBOSE,
+                  "DLockGrantorThread about to expireAndGrantLocks...");
             }
             {
               long smallestExpire = this.grantor.expireAndGrantLocks(grants.iterator());
@@ -3558,7 +3499,8 @@ public class DLockGrantor {
               return;
             }
             if (isDebugEnabled_DLS) {
-              logger.trace(LogMarker.DLS, "DLockGrantorThread about to handleRequestTimeouts...");
+              logger.trace(LogMarker.DLS_VERBOSE,
+                  "DLockGrantorThread about to handleRequestTimeouts...");
             }
             {
               long smallestRequestTimeout = this.grantor.handleRequestTimeouts(grants.iterator());
@@ -3579,7 +3521,8 @@ public class DLockGrantor {
               return;
             }
             if (isDebugEnabled_DLS) {
-              logger.trace(LogMarker.DLS, "DLockGrantorThread about to removeUnusedGrants...");
+              logger.trace(LogMarker.DLS_VERBOSE,
+                  "DLockGrantorThread about to removeUnusedGrants...");
             }
             this.grantor.removeUnusedGrants(grants.iterator());
             stats.endGrantorThreadRemoveUnusedTokens(timing);
@@ -3591,6 +3534,9 @@ public class DLockGrantor {
             stats.endGrantorThread(statStart);
           }
 
+        } catch (LockGrantorDestroyedException ex) {
+          this.shutdown = true;
+          return;
         } catch (InterruptedException e) {
           // shutdown probably interrupted us
 
@@ -3600,31 +3546,11 @@ public class DLockGrantor {
           if (this.shutdown) {
             // ok to ignore since this thread will now shutdown
           } else {
-            logger.warn(
-                LocalizedMessage.create(
-                    LocalizedStrings.DLockGrantor_DLOCKGRANTORTHREAD_WAS_UNEXPECTEDLY_INTERRUPTED),
+            logger.warn("DLockGrantorThread was unexpectedly interrupted",
                 e);
             // do not set interrupt flag since this thread needs to resume
             stopper.checkCancelInProgress(e);
           }
-        }
-        // catch (VirtualMachineError err) {
-        // SystemFailure.initiateFailure(err);
-        // // If this ever returns, rethrow the error. We're poisoned
-        // // now, so don't let this thread continue.
-        // throw err;
-        // }
-        // catch (Throwable e) {
-        // // Whenever you catch Error or Throwable, you must also
-        // // catch VirtualMachineError (see above). However, there is
-        // // _still_ a possibility that you are dealing with a cascading
-        // // error condition, so you also need to check to see if the JVM
-        // // is still usable:
-        // SystemFailure.checkFailure();
-        // this.log.warning(LocalizedStrings.DLockGrantor_DLOCKGRANTORTHREAD_CAUGHT_EXCEPTION, e);
-        // }
-        finally {
-
         }
       }
     }
@@ -3636,15 +3562,19 @@ public class DLockGrantor {
 
   /** Detects loss of the lock grantor and initiates grantor recovery. */
   private MembershipListener membershipListener = new MembershipListener() {
+    @Override
     public void memberJoined(DistributionManager distributionManager,
         InternalDistributedMember id) {}
 
+    @Override
     public void quorumLost(DistributionManager distributionManager,
         Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {}
 
+    @Override
     public void memberSuspect(DistributionManager distributionManager, InternalDistributedMember id,
         InternalDistributedMember whoSuspected, String reason) {}
 
+    @Override
     public void memberDeparted(DistributionManager distMgr, final InternalDistributedMember id,
         final boolean crashed) {
       final DLockGrantor me = DLockGrantor.this;
@@ -3654,36 +3584,37 @@ public class DLockGrantor {
       if (distMgr.getCancelCriterion().isCancelInProgress()) {
         return;
       }
-      final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS);
+      final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS_VERBOSE);
       try {
         if (isDebugEnabled_DLS) {
-          logger.trace(LogMarker.DLS,
+          logger.trace(LogMarker.DLS_VERBOSE,
               "[DLockGrantor.memberDeparted] waiting thread pool will process id={}", id);
         }
-        distMgr.getWaitingThreadPool().execute(new Runnable() {
+        distMgr.getExecutors().getWaitingThreadPool().execute(new Runnable() {
+          @Override
           public void run() {
             try {
               processMemberDeparted(id, crashed, me);
             } catch (InterruptedException e) {
               // ignore
               if (isDebugEnabled_DLS) {
-                logger.trace(LogMarker.DLS, "Ignored interrupt processing departed member");
+                logger.trace(LogMarker.DLS_VERBOSE, "Ignored interrupt processing departed member");
               }
             }
           }
         });
       } catch (RejectedExecutionException e) {
         if (isDebugEnabled_DLS) {
-          logger.trace(LogMarker.DLS, "[DLockGrantor.memberDeparted] rejected handling of id={}",
-              id);
+          logger.trace(LogMarker.DLS_VERBOSE,
+              "[DLockGrantor.memberDeparted] rejected handling of id={}", id);
         }
       }
     }
 
     protected void processMemberDeparted(InternalDistributedMember id, boolean crashed,
         DLockGrantor me) throws InterruptedException {
-      if (logger.isTraceEnabled(LogMarker.DLS)) {
-        logger.trace(LogMarker.DLS, "[DLockGrantor.processMemberDeparted] id={}", id);
+      if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
+        logger.trace(LogMarker.DLS_VERBOSE, "[DLockGrantor.processMemberDeparted] id={}", id);
       }
       try {
         me.waitWhileInitializing();

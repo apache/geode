@@ -14,8 +14,6 @@
  */
 package org.apache.geode.modules.session.catalina.callback;
 
-import java.util.Properties;
-
 import javax.servlet.http.HttpSession;
 
 import org.apache.geode.cache.CacheLoader;
@@ -32,11 +30,11 @@ public class LocalSessionCacheLoader implements CacheLoader<String, HttpSession>
     this.backingRegion = backingRegion;
   }
 
+  @Override
   public HttpSession load(LoaderHelper<String, HttpSession> helper) throws CacheLoaderException {
     return this.backingRegion.get(helper.getKey());
   }
 
+  @Override
   public void close() {}
-
-  public void init(Properties p) {}
 }

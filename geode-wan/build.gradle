@@ -15,10 +15,63 @@
  * limitations under the License.
  */
 
-dependencies {
-  provided project(':geode-core')
+apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 
-  testCompile files(project(':geode-core').sourceSets.test.output)
-  testCompile project(':geode-junit')
-  testCompile project(':geode-old-versions')
+apply from: "${project.projectDir}/../gradle/publish-java.gradle"
+
+
+dependencies {
+  compile(platform(project(':boms:geode-all-bom')))
+  gradleLint.ignore {
+    // See GEODE-6128 -- ignore xml-apis in linter to avoid changes with every run.
+    upgradeTestCompile('xml-apis:xml-apis:2.0.2')
+  }
+  implementation(project(':geode-logging'))
+  implementation(project(':geode-serialization'))
+  implementation(project(':geode-tcp-server'))
+  compile(project(':geode-core'))
+
+  compileOnly('org.apache.logging.log4j:log4j-api:2.12.1')
+
+  testCompile(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
+
+  testCompile('org.assertj:assertj-core')
+  testCompile('junit:junit')
+  testCompile('org.mockito:mockito-core')
+
+  integrationTestCompile(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
+
+  integrationTestCompile('org.assertj:assertj-core')
+  integrationTestCompile('junit:junit')
+
+  distributedTestCompile(project(':geode-dunit')){
+    exclude module: 'geode-core'
+  }
+  distributedTestCompile(project(':geode-junit'))
+
+  distributedTestCompile('mx4j:mx4j')
+  distributedTestCompile('org.awaitility:awaitility')
+  distributedTestCompile('junit:junit')
+  distributedTestCompile('org.hamcrest:hamcrest-core')
+  distributedTestCompile('org.hamcrest:hamcrest-library')
+  distributedTestCompile('org.mockito:mockito-core')
+  distributedTestCompile('org.hamcrest:hamcrest-all')
+  distributedTestCompile('org.apache.commons:commons-lang3')
+  distributedTestCompile('commons-io:commons-io')
+  distributedTestCompile('org.assertj:assertj-core')
+  distributedTestCompile('pl.pragmatists:JUnitParams')
+
+  upgradeTestCompile(project(':geode-junit'))
+  upgradeTestCompile(project(':geode-dunit')) {
+    exclude module: 'geode-core'
+  }
+  upgradeTestCompile('org.awaitility:awaitility')
+  upgradeTestCompile('org.assertj:assertj-core')
+  upgradeTestCompile('junit:junit')
+
+  upgradeTestRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
 }

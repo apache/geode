@@ -14,7 +14,9 @@
  */
 package org.apache.geode.internal;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.UTFDataFormatException;
 
 import org.apache.geode.DataSerializer;
 
@@ -69,6 +71,7 @@ public class NullDataOutputStream extends OutputStream implements ObjToByteArray
    * @param v the boolean to be written.
    * @exception IOException if an I/O error occurs.
    */
+  @Override
   public void writeBoolean(boolean v) throws IOException {
     write(v ? 1 : 0);
   }
@@ -83,6 +86,7 @@ public class NullDataOutputStream extends OutputStream implements ObjToByteArray
    * @param v the byte value to be written.
    * @exception IOException if an I/O error occurs.
    */
+  @Override
   public void writeByte(int v) throws IOException {
     write(v);
   }
@@ -106,6 +110,7 @@ public class NullDataOutputStream extends OutputStream implements ObjToByteArray
    * @param v the <code>short</code> value to be written.
    * @exception IOException if an I/O error occurs.
    */
+  @Override
   public void writeShort(int v) throws IOException {
     this.size += 2;
   }
@@ -129,6 +134,7 @@ public class NullDataOutputStream extends OutputStream implements ObjToByteArray
    * @param v the <code>char</code> value to be written.
    * @exception IOException if an I/O error occurs.
    */
+  @Override
   public void writeChar(int v) throws IOException {
     this.size += 2;
   }
@@ -153,6 +159,7 @@ public class NullDataOutputStream extends OutputStream implements ObjToByteArray
    * @param v the <code>int</code> value to be written.
    * @exception IOException if an I/O error occurs.
    */
+  @Override
   public void writeInt(int v) throws IOException {
     this.size += 4;
   }
@@ -181,6 +188,7 @@ public class NullDataOutputStream extends OutputStream implements ObjToByteArray
    * @param v the <code>long</code> value to be written.
    * @exception IOException if an I/O error occurs.
    */
+  @Override
   public void writeLong(long v) throws IOException {
     this.size += 8;
   }
@@ -196,6 +204,7 @@ public class NullDataOutputStream extends OutputStream implements ObjToByteArray
    * @param v the <code>float</code> value to be written.
    * @exception IOException if an I/O error occurs.
    */
+  @Override
   public void writeFloat(float v) throws IOException {
     this.size += 4;
   }
@@ -211,6 +220,7 @@ public class NullDataOutputStream extends OutputStream implements ObjToByteArray
    * @param v the <code>double</code> value to be written.
    * @exception IOException if an I/O error occurs.
    */
+  @Override
   public void writeDouble(double v) throws IOException {
     this.size += 8;
   }
@@ -229,6 +239,7 @@ public class NullDataOutputStream extends OutputStream implements ObjToByteArray
    * @param str the string of bytes to be written.
    * @exception IOException if an I/O error occurs.
    */
+  @Override
   public void writeBytes(String str) throws IOException {
     int strlen = str.length();
     if (strlen > 0) {
@@ -247,6 +258,7 @@ public class NullDataOutputStream extends OutputStream implements ObjToByteArray
    * @param s the string value to be written.
    * @exception IOException if an I/O error occurs.
    */
+  @Override
   public void writeChars(String s) throws IOException {
     int len = s.length();
     if (len > 0) {
@@ -305,6 +317,7 @@ public class NullDataOutputStream extends OutputStream implements ObjToByteArray
    * @param str the string value to be written.
    * @exception IOException if an I/O error occurs.
    */
+  @Override
   public void writeUTF(String str) throws IOException {
     int strlen = str.length();
     if (strlen > 65535) {
@@ -331,6 +344,7 @@ public class NullDataOutputStream extends OutputStream implements ObjToByteArray
    * Writes the given object to this stream as a byte array. The byte array is produced by
    * serializing v. The serialization is done by calling DataSerializer.writeObject.
    */
+  @Override
   public void writeAsSerializedByteArray(Object v) throws IOException {
     if (v instanceof HeapDataOutputStream) {
       this.size += 4; // length is encoded as an int (or less)

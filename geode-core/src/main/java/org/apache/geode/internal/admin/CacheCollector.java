@@ -15,9 +15,11 @@
 
 package org.apache.geode.internal.admin;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.annotations.internal.MakeNotStatic;
+
 
 /**
  * A <code>CacheCollector</code> is {@linkplain GfManagerAgent#setCacheCollector registered} on a
@@ -51,8 +53,9 @@ public class CacheCollector {
 
   /**
    * A sequence number for the snapshots requested by this VM. We use this sequence number to ignore
-   * snapshot segments that are not relevent to the current snapshot
+   * snapshot segments that are not relevant to the current snapshot
    */
+  @MakeNotStatic
   private static int snapshotCount;
 
   /**
@@ -142,8 +145,7 @@ public class CacheCollector {
     if (update instanceof EntrySnapshot) {
       if (snaps instanceof CompoundRegionSnapshot) {
         throw new IllegalStateException(
-            LocalizedStrings.CacheCollector_UNABLE_TO_MIX_REGION_AND_ENTRY_SNAPSHOTS_IN_CACHECOLLECTOR
-                .toLocalizedString());
+            "Unable to mix region and entry snapshots in CacheCollector.");
       }
       if (snaps == null) {
         snaps = new CompoundEntrySnapshot(update.getName());
@@ -152,8 +154,7 @@ public class CacheCollector {
     } else if (update instanceof RegionSnapshot) {
       if (snaps instanceof CompoundEntrySnapshot) {
         throw new IllegalStateException(
-            LocalizedStrings.CacheCollector_UNABLE_TO_MIX_REGION_AND_ENTRY_SNAPSHOTS_IN_CACHECOLLECTOR
-                .toLocalizedString());
+            "Unable to mix region and entry snapshots in CacheCollector.");
       }
       if (snaps == null) {
         snaps = new CompoundRegionSnapshot(update.getName().toString());

@@ -26,16 +26,18 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * A message that is sent in response to a {@link BridgeServerResponse}. It perform an operation on
- * a bridge server and returns the result to the sender.
+ * a cache server and returns the result to the sender.
  *
  * @since GemFire 4.0
  */
 public class BridgeServerResponse extends AdminResponse {
 
-  /** Information about the bridge server that was operated on */
+  /** Information about the cache server that was operated on */
   private RemoteBridgeServer bridgeInfo;
 
   /** An exception thrown while performing the operation */
@@ -114,7 +116,7 @@ public class BridgeServerResponse extends AdminResponse {
           }
 
           default:
-            Assert.assertTrue(false, "Unknown bridge server operation: " + operation);
+            Assert.assertTrue(false, "Unknown cache server operation: " + operation);
         }
       }
 
@@ -148,15 +150,17 @@ public class BridgeServerResponse extends AdminResponse {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     DataSerializer.writeObject(this.bridgeInfo, out);
     DataSerializer.writeObject(this.exception, out);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.bridgeInfo = DataSerializer.readObject(in);
     this.exception = DataSerializer.readObject(in);
   }

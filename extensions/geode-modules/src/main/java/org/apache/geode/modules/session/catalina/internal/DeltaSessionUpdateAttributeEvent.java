@@ -18,19 +18,23 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
-import org.apache.geode.Instantiator;
-import org.apache.geode.modules.session.catalina.DeltaSession;
 import org.apache.geode.modules.session.catalina.DeltaSessionInterface;
 
 @SuppressWarnings("serial")
 public class DeltaSessionUpdateAttributeEvent implements DeltaSessionAttributeEvent {
-
   private String attributeName;
-
   private Object attributeValue;
 
+  String getAttributeName() {
+    return attributeName;
+  }
+
+  Object getAttributeValue() {
+    return attributeValue;
+  }
+
+  @SuppressWarnings("unused")
   public DeltaSessionUpdateAttributeEvent() {}
 
   public DeltaSessionUpdateAttributeEvent(String attributeName, Object attributeValue) {
@@ -38,39 +42,26 @@ public class DeltaSessionUpdateAttributeEvent implements DeltaSessionAttributeEv
     this.attributeValue = attributeValue;
   }
 
-  public String getAttributeName() {
-    return this.attributeName;
-  }
-
-  public Object getAttributeValue() {
-    return this.attributeValue;
-  }
-
+  @Override
   public void apply(DeltaSessionInterface session) {
     session.localUpdateAttribute(this.attributeName, this.attributeValue);
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.attributeName = DataSerializer.readString(in);
     this.attributeValue = DataSerializer.readObject(in);
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeString(this.attributeName, out);
     DataSerializer.writeObject(this.attributeValue, out);
   }
 
-  public static void registerInstantiator(int id) {
-    Instantiator.register(new Instantiator(DeltaSessionUpdateAttributeEvent.class, id) {
-      public DataSerializable newInstance() {
-        return new DeltaSessionUpdateAttributeEvent();
-      }
-    });
-  }
-
   public String toString() {
-    return new StringBuilder().append("DeltaSessionUpdateAttributeEvent[").append("attributeName=")
-        .append(this.attributeName).append("; attributeValue=").append(this.attributeValue)
-        .append("]").toString();
+    return "DeltaSessionUpdateAttributeEvent[" + "attributeName="
+        + this.attributeName + "; attributeValue=" + this.attributeValue
+        + "]";
   }
 }

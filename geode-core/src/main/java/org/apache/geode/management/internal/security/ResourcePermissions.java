@@ -25,29 +25,44 @@ import static org.apache.geode.security.ResourcePermission.Target.DISK;
 import static org.apache.geode.security.ResourcePermission.Target.GATEWAY;
 import static org.apache.geode.security.ResourcePermission.Target.QUERY;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 
 public final class ResourcePermissions {
+  @Immutable
   public static final ResourcePermission ALL = new ResourcePermission(Resource.ALL, Operation.ALL);
+  @Immutable
   public static final ResourcePermission DATA_ALL = new ResourcePermission(DATA, Operation.ALL);
+  @Immutable
   public static final ResourcePermission CLUSTER_ALL =
       new ResourcePermission(CLUSTER, Operation.ALL);
+  @Immutable
   public static final ResourcePermission DATA_READ = new ResourcePermission(DATA, READ);
+  @Immutable
   public static final ResourcePermission DATA_WRITE = new ResourcePermission(DATA, WRITE);
+  @Immutable
   public static final ResourcePermission DATA_MANAGE = new ResourcePermission(DATA, MANAGE);
+  @Immutable
   public static final ResourcePermission CLUSTER_READ = new ResourcePermission(CLUSTER, READ);
+  @Immutable
   public static final ResourcePermission CLUSTER_WRITE = new ResourcePermission(CLUSTER, WRITE);
+  @Immutable
   public static final ResourcePermission CLUSTER_MANAGE = new ResourcePermission(CLUSTER, MANAGE);
+  @Immutable
   public static final ResourcePermission CLUSTER_READ_QUERY =
       new ResourcePermission(CLUSTER, READ, QUERY);
+  @Immutable
   public static final ResourcePermission CLUSTER_MANAGE_QUERY =
       new ResourcePermission(CLUSTER, MANAGE, QUERY);
+  @Immutable
   public static final ResourcePermission CLUSTER_MANAGE_DEPLOY =
       new ResourcePermission(CLUSTER, MANAGE, DEPLOY);
+  @Immutable
   public static final ResourcePermission CLUSTER_MANAGE_DISK =
       new ResourcePermission(CLUSTER, MANAGE, DISK);
+  @Immutable
   public static final ResourcePermission CLUSTER_MANAGE_GATEWAY =
       new ResourcePermission(CLUSTER, MANAGE, GATEWAY);
 

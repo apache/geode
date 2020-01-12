@@ -22,7 +22,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.AmbiguousNameException;
 import org.apache.geode.cache.query.FunctionDomainException;
 import org.apache.geode.cache.query.NameResolutionException;
-import org.apache.geode.cache.query.QueryException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
@@ -56,8 +55,10 @@ public abstract class CompiledArithmetic extends AbstractCompiledValue
     return list;
   }
 
+  @Override
   public abstract int getType();
 
+  @Override
   public Object evaluate(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     Object left = _left.evaluate(context);

@@ -14,32 +14,43 @@
  */
 package org.apache.geode.distributed.internal;
 
+import static org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace;
 import static org.apache.geode.distributed.ConfigurationProperties.BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.internal.membership.adapter.TcpSocketCreatorAdapter.asTcpSocketCreator;
+import static org.apache.geode.internal.admin.remote.DistributionLocatorId.asDistributionLocatorIds;
+import static org.apache.geode.util.internal.GeodeGlossary.GEMFIRE_PREFIX;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.ConnectException;
 import java.net.InetAddress;
+import java.net.URI;
 import java.net.UnknownHostException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.GemFireConfigException;
+import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.client.internal.locator.ClientConnectionRequest;
 import org.apache.geode.cache.client.internal.locator.ClientReplacementRequest;
 import org.apache.geode.cache.client.internal.locator.GetAllServersRequest;
@@ -47,49 +58,73 @@ import org.apache.geode.cache.client.internal.locator.LocatorListRequest;
 import org.apache.geode.cache.client.internal.locator.LocatorStatusRequest;
 import org.apache.geode.cache.client.internal.locator.QueueConnectionRequest;
 import org.apache.geode.cache.client.internal.locator.wan.LocatorMembershipListener;
+import org.apache.geode.cache.internal.HttpService;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.Locator;
-import org.apache.geode.distributed.LockServiceDestroyedException;
 import org.apache.geode.distributed.internal.InternalDistributedSystem.ConnectListener;
-import org.apache.geode.distributed.internal.InternalDistributedSystem.DisconnectListener;
-import org.apache.geode.distributed.internal.membership.MemberFactory;
-import org.apache.geode.distributed.internal.membership.QuorumChecker;
-import org.apache.geode.distributed.internal.membership.gms.NetLocator;
-import org.apache.geode.distributed.internal.membership.gms.locator.PeerLocatorRequest;
-import org.apache.geode.distributed.internal.tcpserver.LocatorCancelException;
-import org.apache.geode.distributed.internal.tcpserver.TcpClient;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.membership.adapter.ServiceConfig;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
+import org.apache.geode.distributed.internal.membership.api.MembershipConfig;
+import org.apache.geode.distributed.internal.membership.api.MembershipConfigurationException;
+import org.apache.geode.distributed.internal.membership.api.MembershipLocator;
+import org.apache.geode.distributed.internal.membership.api.MembershipLocatorBuilder;
+import org.apache.geode.distributed.internal.membership.api.QuorumChecker;
+import org.apache.geode.distributed.internal.tcpserver.InfoRequest;
 import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
+import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
+import org.apache.geode.internal.CopyOnWriteHashSet;
+import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
+import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.tier.sockets.TcpServerFactory;
+import org.apache.geode.internal.cache.InternalCacheBuilder;
+import org.apache.geode.internal.cache.client.protocol.ClientProtocolServiceLoader;
 import org.apache.geode.internal.cache.wan.WANServiceProvider;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.config.JAXBService;
+import org.apache.geode.internal.inet.LocalHostUtil;
+import org.apache.geode.internal.logging.CoreLoggingExecutors;
 import org.apache.geode.internal.logging.InternalLogWriter;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LogWriterFactory;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
-import org.apache.geode.internal.logging.log4j.LogWriterAppenders;
-import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.internal.statistics.StatisticsConfig;
+import org.apache.geode.logging.internal.LoggingSession;
+import org.apache.geode.logging.internal.NullLoggingSession;
+import org.apache.geode.logging.internal.executors.LoggingThread;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.logging.internal.spi.LogConfig;
+import org.apache.geode.logging.internal.spi.LogConfigListener;
+import org.apache.geode.logging.internal.spi.LogConfigSupplier;
+import org.apache.geode.management.api.ClusterManagementService;
+import org.apache.geode.management.internal.AgentUtil;
 import org.apache.geode.management.internal.JmxManagerLocator;
 import org.apache.geode.management.internal.JmxManagerLocatorRequest;
+import org.apache.geode.management.internal.api.LocatorClusterManagementService;
 import org.apache.geode.management.internal.configuration.domain.SharedConfigurationStatus;
+import org.apache.geode.management.internal.configuration.handlers.ClusterManagementServiceInfoRequestHandler;
 import org.apache.geode.management.internal.configuration.handlers.SharedConfigurationStatusRequestHandler;
+import org.apache.geode.management.internal.configuration.messages.ClusterManagementServiceInfoRequest;
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusRequest;
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusResponse;
+import org.apache.geode.security.AuthTokenEnabledComponents;
 
 /**
  * Provides the implementation of a distribution {@code Locator} as well as internal-only
  * functionality.
+ *
  * <p>
  * This class has APIs that perform essentially three layers of services. At the bottom layer is the
  * JGroups location service. On top of that you can start a distributed system. And then on top of
  * that you can start server location services.
+ *
  * <p>
  * Server Location Service DistributedSystem Peer Location Service
+ *
  * <p>
  * The startLocator() methods provide a way to start all three services in one call. Otherwise, the
  * services can be started independently {@code  locator = createLocator();
@@ -97,7 +132,11 @@ import org.apache.geode.management.internal.configuration.messages.SharedConfigu
  *
  * @since GemFire 4.0
  */
-public class InternalLocator extends Locator implements ConnectListener {
+public class InternalLocator extends Locator implements ConnectListener, LogConfigSupplier {
+  public static final int MAX_POOL_SIZE =
+      Integer.getInteger(GEMFIRE_PREFIX + "TcpServer.MAX_POOL_SIZE", 100);
+  public static final int POOL_IDLE_TIMEOUT = 60 * 1000;
+
   private static final Logger logger = LogService.getLogger();
 
   /**
@@ -114,102 +153,71 @@ public class InternalLocator extends Locator implements ConnectListener {
    * system property name for forcing locators to be preferred as coordinators
    */
   public static final String LOCATORS_PREFERRED_AS_COORDINATORS =
-      DistributionConfig.GEMFIRE_PREFIX + "disable-floating-coordinator";
-
-  /**
-   * The tcp server responding to locator requests
-   */
-  private final TcpServer server;
-
-  /**
-   * @since GemFire 5.7
-   */
-  private final PrimaryHandler handler;
-
-  /**
-   * The distributed system owned by this locator, if any. Note that if a ds already exists because
-   * the locator is being colocated in a normal member this field will be null.
-   */
-  private InternalDistributedSystem myDs;
-  /**
-   * The cache owned by this locator, if any. Note that if a cache already exists because the
-   * locator is being colocated in a normal member this field will be null.
-   */
-  private InternalCache myCache;
-
-  /**
-   * product use logging
-   */
-  private ProductUseLog productUseLog;
-
-  private boolean peerLocator;
-
-  private ServerLocator serverLocator;
-
-  protected volatile LocatorStats stats;
-
-  private Properties env;
-
-  /**
-   * the TcpHandler used for peer location
-   */
-  private NetLocator locatorImpl;
-
-  private DistributionConfigImpl config;
-
-  private final LocatorMembershipListener locatorListener;
-
-  private WanLocatorDiscoverer locatorDiscoverer;
-
-  /**
-   * whether the locator was stopped during forced-disconnect processing but a reconnect will occur
-   */
-  private volatile boolean stoppedForReconnect;
-
-  /**
-   * whether the locator was stopped during forced-disconnect processing
-   */
-  private volatile boolean forcedDisconnect;
-
-  private final AtomicBoolean shutdownHandled = new AtomicBoolean(false);
-
-  private ClusterConfigurationService sharedConfig;
-
-  private volatile boolean isSharedConfigurationStarted = false;
-
-  private volatile Thread restartThread;
-
-  boolean isSharedConfigurationEnabled() {
-    return this.config.getEnableClusterConfiguration();
-  }
-
-  private boolean loadFromSharedConfigDir() {
-    return this.config.getLoadClusterConfigFromDir();
-  }
-
-  public boolean isSharedConfigurationRunning() {
-    return this.sharedConfig != null
-        && this.sharedConfig.getStatus() == SharedConfigurationStatus.RUNNING;
-  }
+      GEMFIRE_PREFIX + "disable-floating-coordinator";
 
   /**
    * the locator hosted by this JVM. As of 7.0 it is a singleton.
    *
    * GuardedBy must synchronize on locatorLock
    */
+  @MakeNotStatic
   private static InternalLocator locator;
 
   private static final Object locatorLock = new Object();
 
-  // TODO: getLocator() overrides static method of a superclass
+  private final Set<RestartHandler> restartHandlers = new CopyOnWriteHashSet<>();
+  private final LocatorMembershipListener locatorListener;
+  private final AtomicBoolean shutdownHandled = new AtomicBoolean(false);
+  private final LoggingSession loggingSession;
+  private final Set<LogConfigListener> logConfigListeners = new HashSet<>();
+  private final LocatorStats locatorStats;
+  private final Path workingDirectory;
+  private final MembershipLocator<InternalDistributedMember> membershipLocator;
+
+  /**
+   * whether the locator was stopped during forced-disconnect processing but a reconnect will occur
+   */
+  private volatile boolean stoppedForReconnect;
+  private volatile boolean reconnected;
+
+  /**
+   * whether the locator was stopped during forced-disconnect processing
+   */
+  private volatile boolean forcedDisconnect;
+  private volatile boolean isSharedConfigurationStarted;
+  private volatile Thread restartThread;
+
+  /**
+   * The distributed system owned by this locator, if any. Note that if a ds already exists because
+   * the locator is being colocated in a normal member this field will be null.
+   */
+  private InternalDistributedSystem internalDistributedSystem;
+
+  /**
+   * The cache owned by this locator, if any. Note that if a cache already exists because the
+   * locator is being colocated in a normal member this field will be null.
+   */
+  private InternalCache internalCache;
+
+  /**
+   * product use logging
+   */
+  private ProductUseLog productUseLog;
+  private boolean peerLocator;
+  private ServerLocator serverLocator;
+  private Properties env;
+
+  private DistributionConfigImpl distributionConfig;
+  private WanLocatorDiscoverer locatorDiscoverer;
+  private InternalConfigurationPersistenceService configurationPersistenceService;
+  private LocatorClusterManagementService clusterManagementService;
+
   public static InternalLocator getLocator() {
-    // synchronize in order to fix #46336 (race condition in createLocator)
     synchronized (locatorLock) {
       return locator;
     }
   }
 
-  // TODO: hasLocator() overrides static method of a superclass
   public static boolean hasLocator() {
     synchronized (locatorLock) {
       return locator != null;
@@ -221,18 +229,12 @@ public class InternalLocator extends Locator implements ConnectListener {
       return;
     }
     synchronized (locatorLock) {
-      LogWriterAppenders.stop(LogWriterAppenders.Identifier.MAIN);
-      LogWriterAppenders.stop(LogWriterAppenders.Identifier.SECURITY);
-      LogWriterAppenders.destroy(LogWriterAppenders.Identifier.MAIN);
-      LogWriterAppenders.destroy(LogWriterAppenders.Identifier.SECURITY);
+      locator.loggingSession.stopSession();
+      locator.loggingSession.shutdown();
       if (locator.equals(InternalLocator.locator)) {
         InternalLocator.locator = null;
       }
     }
-  }
-
-  public LocatorMembershipListener getlocatorMembershipListener() {
-    return this.locatorListener;
   }
 
   /**
@@ -241,24 +243,56 @@ public class InternalLocator extends Locator implements ConnectListener {
    * startPeerLocation on the locator object.
    *
    * @param port the tcp/ip port to listen on
+   * @param loggingSession the LoggingSession to use, may be a NullLoggingSession which does
+   *        nothing
    * @param logFile the file that log messages should be written to
-   * @param logger a log writer that should be used (logFile parameter is ignored)
-   * @param securityLogger the logger to be used for security related log messages
+   * @param logWriter a log writer that should be used (logFile parameter is ignored)
+   * @param securityLogWriter the logWriter to be used for security related log messages
    * @param distributedSystemProperties optional properties to configure the distributed system
    *        (e.g., mcast addr/port, other locators)
    * @param startDistributedSystem if true then this locator will also start its own ds
+   *
+   * @deprecated Please use
+   *             {@link #createLocator(int, LoggingSession, File, InternalLogWriter, InternalLogWriter, InetAddress, String, Properties, Path)}
+   *             instead.
    */
-  public static InternalLocator createLocator(int port, File logFile, InternalLogWriter logger,
-      InternalLogWriter securityLogger, InetAddress bindAddress, String hostnameForClients,
-      Properties distributedSystemProperties, boolean startDistributedSystem) {
+  @Deprecated
+  public static InternalLocator createLocator(int port, LoggingSession loggingSession, File logFile,
+      InternalLogWriter logWriter, InternalLogWriter securityLogWriter, InetAddress bindAddress,
+      String hostnameForClients, Properties distributedSystemProperties,
+      boolean startDistributedSystem) {
+    return createLocator(port, loggingSession, logFile, logWriter, securityLogWriter, bindAddress,
+        hostnameForClients, distributedSystemProperties,
+        Paths.get(System.getProperty("user.dir")));
+  }
+
+  /**
+   * Create a locator that listens on a given port. This locator will not have peer or server
+   * location services available until they are started by calling startServerLocation or
+   * startPeerLocation on the locator object.
+   *
+   * @param port the tcp/ip port to listen on
+   * @param loggingSession the LoggingSession to use, may be a NullLoggingSession which does
+   *        nothing
+   * @param logFile the file that log messages should be written to
+   * @param logWriter a log writer that should be used (logFile parameter is ignored)
+   * @param securityLogWriter the logWriter to be used for security related log messages
+   * @param distributedSystemProperties optional properties to configure the distributed system
+   *        (e.g., mcast addr/port, other locators)
+   * @param workingDirectory the working directory to use for any files
+   */
+  public static InternalLocator createLocator(int port, LoggingSession loggingSession, File logFile,
+      InternalLogWriter logWriter, InternalLogWriter securityLogWriter, InetAddress bindAddress,
+      String hostnameForClients, Properties distributedSystemProperties, Path workingDirectory) {
     synchronized (locatorLock) {
       if (hasLocator()) {
         throw new IllegalStateException(
             "A locator can not be created because one already exists in this JVM.");
       }
       InternalLocator locator =
-          new InternalLocator(port, logFile, logger, securityLogger, bindAddress,
-              hostnameForClients, distributedSystemProperties, null, startDistributedSystem);
+          new InternalLocator(port, loggingSession, logFile, logWriter, securityLogWriter,
+              bindAddress, hostnameForClients, distributedSystemProperties, null,
+              workingDirectory);
       InternalLocator.locator = locator;
       return locator;
     }
@@ -270,62 +304,103 @@ public class InternalLocator extends Locator implements ConnectListener {
         throw new IllegalStateException(
             "A locator can not be created because one already exists in this JVM.");
       }
+
       InternalLocator.locator = locator;
     }
   }
 
   /**
-   * Creates a distribution locator that runs in this VM on the given port and bind address.
+   * Creates a distribution locator that runs in this VM on the given port and bind address in the
+   * default working directory (Java "user.dir" System Property).
+   *
    * <p>
    * This is for internal use only as it does not create a distributed system unless told to do so.
    *
    * @param port the tcp/ip port to listen on
    * @param logFile the file that log messages should be written to
-   * @param logger a log writer that should be used (logFile parameter is ignored)
-   * @param securityLogger the logger to be used for security related log messages
+   * @param logWriter a log writer that should be used (logFile parameter is ignored)
+   * @param securityLogWriter the logWriter to be used for security related log messages
    * @param startDistributedSystem if true, a distributed system is started
-   * @param dsProperties optional properties to configure the distributed system (e.g., mcast
+   * @param distributedSystemProperties optional properties to configure the distributed system
+   *        (e.g., mcast
    *        addr/port, other locators)
    * @param hostnameForClients the name to give to clients for connecting to this locator
    */
-  public static InternalLocator startLocator(int port, File logFile, InternalLogWriter logger,
-      InternalLogWriter securityLogger, InetAddress bindAddress, boolean startDistributedSystem,
-      Properties dsProperties, String hostnameForClients) throws IOException {
+  public static InternalLocator startLocator(int port, File logFile, InternalLogWriter logWriter,
+      InternalLogWriter securityLogWriter, InetAddress bindAddress, boolean startDistributedSystem,
+      Properties distributedSystemProperties, String hostnameForClients)
+      throws IOException {
+    return startLocator(port, logFile, logWriter, securityLogWriter, bindAddress,
+        startDistributedSystem, distributedSystemProperties, hostnameForClients,
+        Paths.get(System.getProperty("user.dir")));
+  }
 
+  /**
+   * Creates a distribution locator that runs in this VM on the given port and bind address in the
+   * specified working directory.
+   *
+   * <p>
+   * This is for internal use only as it does not create a distributed system unless told to do so.
+   *
+   * @param port the tcp/ip port to listen on
+   * @param logFile the file that log messages should be written to
+   * @param logWriter a log writer that should be used (logFile parameter is ignored)
+   * @param securityLogWriter the logWriter to be used for security related log messages
+   * @param startDistributedSystem if true, a distributed system is started
+   * @param distributedSystemProperties optional properties to configure the distributed system
+   *        (e.g., mcast
+   *        addr/port, other locators)
+   * @param hostnameForClients the name to give to clients for connecting to this locator
+   * @param workingDirectory the working directory to use for any files
+   */
+  public static InternalLocator startLocator(int port, File logFile, InternalLogWriter logWriter,
+      InternalLogWriter securityLogWriter, InetAddress bindAddress, boolean startDistributedSystem,
+      Properties distributedSystemProperties, String hostnameForClients, Path workingDirectory)
+      throws IOException {
     System.setProperty(FORCE_LOCATOR_DM_TYPE, "true");
     InternalLocator newLocator = null;
 
     boolean startedLocator = false;
     try {
 
-      newLocator = createLocator(port, logFile, logger, securityLogger, bindAddress,
-          hostnameForClients, dsProperties, startDistributedSystem);
+      // if startDistributedSystem is true then Locator uses a NullLoggingSession (does nothing)
+      LoggingSession loggingSession =
+          startDistributedSystem ? NullLoggingSession.create() : LoggingSession.create();
+
+      newLocator = createLocator(port, loggingSession, logFile, logWriter, securityLogWriter,
+          bindAddress, hostnameForClients, distributedSystemProperties,
+          workingDirectory);
+
+      loggingSession.createSession(newLocator);
+      loggingSession.startSession();
 
       try {
         newLocator.startPeerLocation();
 
         if (startDistributedSystem) {
+
           try {
             newLocator.startDistributedSystem();
           } catch (RuntimeException e) {
             newLocator.stop();
             throw e;
           }
-          // fix bug #46324
-          final InternalDistributedSystem ids = newLocator.myDs;
-          if (ids != null) {
-            ids.getDistributionManager().addHostedLocators(ids.getDistributedMember(),
+
+          InternalDistributedSystem system = newLocator.internalDistributedSystem;
+          if (system != null) {
+            system.getDistributionManager().addHostedLocators(system.getDistributedMember(),
                 getLocatorStrings(), newLocator.isSharedConfigurationEnabled());
           }
         }
-      } catch (final LocatorCancelException ignored) {
+      } catch (IllegalStateException e) {
         newLocator.stop();
+        throw e;
       }
 
-      InternalDistributedSystem sys = InternalDistributedSystem.getConnectedInstance();
-      if (sys != null) {
+      InternalDistributedSystem system = InternalDistributedSystem.getConnectedInstance();
+      if (system != null) {
         try {
-          newLocator.startServerLocation(sys);
+          newLocator.startServerLocation(system);
         } catch (RuntimeException e) {
           newLocator.stop();
           throw e;
@@ -337,18 +412,18 @@ public class InternalLocator extends Locator implements ConnectListener {
       return newLocator;
 
     } finally {
-      System.getProperties().remove(FORCE_LOCATOR_DM_TYPE);
+      System.clearProperty(FORCE_LOCATOR_DM_TYPE);
+
       if (!startedLocator) {
-        // fix for bug 46314
         removeLocator(newLocator);
       }
     }
   }
 
-  /***
+  /**
    * Determines if this VM is a locator which must ignore a shutdown.
    *
-   * @return true if this VM is a locator which should ignore a shutdown , false if it is a normal
+   * @return true if this VM is a locator which should ignore a shutdown, false if it is a normal
    *         member.
    */
   public static boolean isDedicatedLocator() {
@@ -357,147 +432,187 @@ public class InternalLocator extends Locator implements ConnectListener {
       return false;
     }
 
-    InternalDistributedSystem ids = internalLocator.myDs;
-    if (ids == null) {
+    InternalDistributedSystem system = internalLocator.internalDistributedSystem;
+    if (system == null) {
       return false;
     }
-    DistributionManager dm = ids.getDistributionManager();
-    if (dm.isLoner()) {
+    DistributionManager distributionManager = system.getDistributionManager();
+    if (distributionManager.isLoner()) {
       return false;
     }
-    ClusterDistributionManager distMgr = (ClusterDistributionManager) ids.getDistributionManager();
-    return distMgr.getDMType() == ClusterDistributionManager.LOCATOR_DM_TYPE;
+    ClusterDistributionManager clusterDistributionManager =
+        (ClusterDistributionManager) system.getDistributionManager();
+    return clusterDistributionManager.getDMType() == ClusterDistributionManager.LOCATOR_DM_TYPE;
   }
 
   /**
-   * Creates a new {@code Locator} with the given port, log file, logger, and bind address.
+   * Creates a new {@code Locator} with the given port, log file, logWriter, and bind address.
    *
    * @param port the tcp/ip port to listen on
-   * @param logF the file that log messages should be written to
+   * @param logFile the file that log messages should be written to
    * @param logWriter a log writer that should be used (logFile parameter is ignored)
    * @param securityLogWriter the log writer to be used for security related log messages
    * @param hostnameForClients the name to give to clients for connecting to this locator
    * @param distributedSystemProperties optional properties to configure the distributed system
    *        (e.g., mcast addr/port, other locators)
-   * @param cfg the config if being called from a distributed system; otherwise null.
-   * @param startDistributedSystem if true locator will start its own distributed system
+   * @param distributionConfig the config if being called from a distributed system; otherwise null.
+   * @param workingDirectory the working directory to use for files
    */
-  private InternalLocator(int port, File logF, InternalLogWriter logWriter,
-      // LOG: 3 non-null sources: GemFireDistributionLocator, InternalDistributedSystem,
-      // LocatorLauncher
-      InternalLogWriter securityLogWriter,
-      // LOG: 1 non-null source: GemFireDistributionLocator(same instance as logWriter),
-      // InternalDistributedSystem
-      InetAddress bindAddress, String hostnameForClients, Properties distributedSystemProperties,
-      DistributionConfigImpl cfg, boolean startDistributedSystem) {
-
-    // TODO: the following three assignments are already done in superclass
-    this.logFile = logF;
+  @VisibleForTesting
+  InternalLocator(int port, LoggingSession loggingSession, File logFile,
+      InternalLogWriter logWriter, InternalLogWriter securityLogWriter, InetAddress bindAddress,
+      String hostnameForClients, Properties distributedSystemProperties,
+      DistributionConfigImpl distributionConfig, Path workingDirectory) {
+    this.logFile = logFile;
     this.bindAddress = bindAddress;
     this.hostnameForClients = hostnameForClients;
 
-    this.config = cfg;
+    this.workingDirectory = workingDirectory;
 
-    this.env = new Properties();
+
+    env = new Properties();
 
     // set bind-address explicitly only if not wildcard and let any explicit
-    // value in distributedSystemProperties take precedence (#46870)
+    // value in distributedSystemProperties take precedence
     if (bindAddress != null && !bindAddress.isAnyLocalAddress()) {
-      this.env.setProperty(BIND_ADDRESS, bindAddress.getHostAddress());
+      env.setProperty(BIND_ADDRESS, bindAddress.getHostAddress());
     }
 
     if (distributedSystemProperties != null) {
-      this.env.putAll(distributedSystemProperties);
+      env.putAll(distributedSystemProperties);
     }
-    this.env.setProperty(CACHE_XML_FILE, "");
+    env.setProperty(CACHE_XML_FILE, "");
 
     // create a DC so that all of the lookup rules, gemfire.properties, etc,
     // are considered and we have a config object we can trust
-    if (this.config == null) {
-      this.config = new DistributionConfigImpl(this.env);
-      this.env.clear();
-      this.env.putAll(this.config.getProps());
+    if (distributionConfig == null) {
+      distributionConfig = new DistributionConfigImpl(env);
+      env.clear();
+      env.putAll(distributionConfig.getProps());
     }
+    this.distributionConfig = distributionConfig;
 
-    final boolean hasLogFileButConfigDoesNot = this.logFile != null && this.config.getLogFile()
-        .toString().equals(DistributionConfig.DEFAULT_LOG_FILE.toString());
+    boolean hasLogFileButConfigDoesNot =
+        this.logFile != null && this.distributionConfig.getLogFile()
+            .toString().equals(DistributionConfig.DEFAULT_LOG_FILE.toString());
     if (logWriter == null && hasLogFileButConfigDoesNot) {
       // LOG: this is(was) a hack for when logFile and config don't match -- if config specifies a
       // different log-file things will break!
-      this.config.unsafeSetLogFile(this.logFile);
+      this.distributionConfig.unsafeSetLogFile(this.logFile);
     }
 
-    // LOG: create LogWriterAppenders (these are closed at shutdown)
-    final boolean hasLogFile =
-        this.config.getLogFile() != null && !this.config.getLogFile().equals(new File(""));
-    final boolean hasSecurityLogFile = this.config.getSecurityLogFile() != null
-        && !this.config.getSecurityLogFile().equals(new File(""));
-    LogService.configureLoggers(hasLogFile, hasSecurityLogFile);
-    if (hasLogFile || hasSecurityLogFile) {
-
-      if (hasLogFile) {
-        // if log-file then create logWriterAppender
-        LogWriterAppenders.getOrCreateAppender(LogWriterAppenders.Identifier.MAIN, true, false,
-            this.config, !startDistributedSystem);
-      }
-
-      if (hasSecurityLogFile) {
-        // if security-log-file then create securityLogWriterAppender
-        LogWriterAppenders.getOrCreateAppender(LogWriterAppenders.Identifier.SECURITY, true, false,
-            this.config, false);
-      }
-      // do not create a LogWriterAppender for security -- let it go through to logWriterAppender
+    if (loggingSession == null) {
+      throw new Error("LoggingSession must not be null");
     }
+    this.loggingSession = loggingSession;
 
     // LOG: create LogWriters for GemFireTracer (or use whatever was passed in)
     if (logWriter == null) {
-      logWriter = LogWriterFactory.createLogWriterLogger(false, false, this.config, false);
+      LogWriterFactory.createLogWriterLogger(this.distributionConfig, false);
       if (logger.isDebugEnabled()) {
         logger.debug("LogWriter for locator is created.");
       }
     }
 
     if (securityLogWriter == null) {
-      securityLogWriter = LogWriterFactory.createLogWriterLogger(false, true, this.config, false);
-      logWriter.setLogWriterLevel(this.config.getSecurityLogLevel());
+      securityLogWriter = LogWriterFactory.createLogWriterLogger(this.distributionConfig, true);
       securityLogWriter.fine("SecurityLogWriter for locator is created.");
     }
 
-    SocketCreatorFactory.setDistributionConfig(this.config);
+    SocketCreatorFactory.setDistributionConfig(this.distributionConfig);
 
-    this.locatorListener = WANServiceProvider.createLocatorMembershipListener();
-    if (this.locatorListener != null) {
+    locatorListener = WANServiceProvider.createLocatorMembershipListener();
+    if (locatorListener != null) {
       // We defer setting the port until the handler is init'd - that way we'll have an actual port
       // in the case where we're starting with port = 0.
-      this.locatorListener.setConfig(getConfig());
+      locatorListener.setConfig(getConfig());
     }
-    this.handler = new PrimaryHandler(this, locatorListener);
 
-    ThreadGroup group = LoggingThreadGroup.createThreadGroup("Distribution locators", logger);
-    this.stats = new LocatorStats();
+    locatorStats = new LocatorStats();
 
-    this.server = new TcpServerFactory().makeTcpServer(port, this.bindAddress, null, this.config,
-        this.handler, new DelayedPoolStatHelper(), group, this.toString(), this);
+    InternalLocatorTcpHandler handler = new InternalLocatorTcpHandler();
+    try {
+      MembershipConfig config = new ServiceConfig(
+          new RemoteTransportConfig(distributionConfig, MemberIdentifier.LOCATOR_DM_TYPE),
+          distributionConfig);
+      Supplier<ExecutorService> executor = () -> CoreLoggingExecutors
+          .newThreadPoolWithSynchronousFeed("locator request thread ",
+              MAX_POOL_SIZE, new DelayedPoolStatHelper(),
+              POOL_IDLE_TIMEOUT,
+              new ThreadPoolExecutor.CallerRunsPolicy());
+      final TcpSocketCreator socketCreator = asTcpSocketCreator(
+          SocketCreatorFactory
+              .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR));
+      membershipLocator =
+          MembershipLocatorBuilder.<InternalDistributedMember>newLocatorBuilder(
+              socketCreator,
+              InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
+              InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer(),
+              workingDirectory,
+              executor)
+              .setConfig(config)
+              .setPort(port)
+              .setBindAddress(bindAddress)
+              .setProtocolChecker(new ProtocolCheckerImpl(this, new ClientProtocolServiceLoader()))
+              .setFallbackHandler(handler)
+              .setLocatorsAreCoordinators(shouldLocatorsBeCoordinators())
+              .setLocatorStats(locatorStats)
+              .create();
+    } catch (MembershipConfigurationException | UnknownHostException e) {
+      throw new GemFireConfigException(e.getMessage());
+    }
+
+    membershipLocator.addHandler(InfoRequest.class, new InfoRequestHandler());
+    restartHandlers.add((ds, cache, sharedConfig) -> {
+      InternalDistributedSystem ids = (InternalDistributedSystem) ds;
+      Distribution distribution = ids.getDM().getDistribution();
+      membershipLocator.setMembership(distribution.getMembership());
+    });
+  }
+
+  public boolean isSharedConfigurationEnabled() {
+    return distributionConfig.getEnableClusterConfiguration();
+  }
+
+  private boolean loadFromSharedConfigDir() {
+    return distributionConfig.getLoadClusterConfigFromDir();
+  }
+
+  public boolean isSharedConfigurationRunning() {
+    return configurationPersistenceService != null
+        && configurationPersistenceService.getStatus() == SharedConfigurationStatus.RUNNING;
+  }
+
+  public LocatorMembershipListener getLocatorMembershipListener() {
+    return locatorListener;
+  }
+
+  /**
+   * @deprecated Please use {@link #getLocatorMembershipListener()} instead.
+   */
+  @Deprecated
+  public LocatorMembershipListener getlocatorMembershipListener() {
+    return getLocatorMembershipListener();
   }
 
   private void startTcpServer() throws IOException {
-    logger.info(LocalizedMessage.create(LocalizedStrings.InternalLocator_STARTING_0, this));
-    this.server.start();
+    logger.info("Starting {}", this);
+    membershipLocator.start();
   }
 
-  public ClusterConfigurationService getSharedConfiguration() {
-    return this.sharedConfig;
+  public InternalConfigurationPersistenceService getConfigurationPersistenceService() {
+    return configurationPersistenceService;
   }
 
   public DistributionConfigImpl getConfig() {
-    return this.config;
+    return distributionConfig;
   }
 
   public InternalCache getCache() {
-    if (myCache == null) {
+    if (internalCache == null) {
       return GemFireCacheImpl.getInstance();
     }
-    return myCache;
+    return internalCache;
   }
 
   /**
@@ -510,64 +625,58 @@ public class InternalLocator extends Locator implements ConnectListener {
   int startPeerLocation() throws IOException {
     if (isPeerLocator()) {
       throw new IllegalStateException(
-          LocalizedStrings.InternalLocator_PEER_LOCATION_IS_ALREADY_RUNNING_FOR_0
-              .toLocalizedString(this));
+          String.format("Peer location is already running for %s", this));
     }
-    logger.info(LocalizedMessage
-        .create(LocalizedStrings.InternalLocator_STARTING_PEER_LOCATION_FOR_0, this));
+    logger.info("Starting peer location for {}", this);
 
-    String locatorsProp = this.config.getLocators();
-
-    // check for settings that would require only locators to hold the
-    // coordinator - e.g., security and network-partition detection
-    boolean locatorsAreCoordinators;
-    boolean networkPartitionDetectionEnabled = this.config.getEnableNetworkPartitionDetection();
-    String securityUDPDHAlgo = this.config.getSecurityUDPDHAlgo();
-    if (networkPartitionDetectionEnabled) {
-      locatorsAreCoordinators = true;
-    } else {
-      // check if security is enabled
-      String prop = this.config.getSecurityPeerAuthInit();
-      locatorsAreCoordinators = prop != null && !prop.isEmpty();
-      if (!locatorsAreCoordinators) {
-        locatorsAreCoordinators = Boolean.getBoolean(LOCATORS_PREFERRED_AS_COORDINATORS);
-      }
-    }
-
-    this.locatorImpl = MemberFactory.newLocatorHandler(this.bindAddress, locatorsProp,
-        locatorsAreCoordinators, networkPartitionDetectionEnabled, this.stats, securityUDPDHAlgo);
-    this.handler.addHandler(PeerLocatorRequest.class, this.locatorImpl);
-    this.peerLocator = true;
-    if (!this.server.isAlive()) {
-      startTcpServer();
-    }
-    int boundPort = this.server.getPort();
-    File productUseFile = new File("locator" + boundPort + "views.log");
+    peerLocator = true;
+    int boundPort =
+        membershipLocator
+            .start();
+    File productUseFile = workingDirectory.resolve("locator" + boundPort + "views.log").toFile();
     productUseLog = new ProductUseLog(productUseFile);
 
     return boundPort;
   }
 
+  private boolean shouldLocatorsBeCoordinators() {
+    // check for settings that would require only locators to hold the
+    // coordinator - e.g., security and network-partition detection
+    boolean locatorsAreCoordinators;
+    boolean networkPartitionDetectionEnabled =
+        distributionConfig.getEnableNetworkPartitionDetection();
+    if (networkPartitionDetectionEnabled) {
+      locatorsAreCoordinators = true;
+    } else {
+      // check if security is enabled
+      String prop = distributionConfig.getSecurityPeerAuthInit();
+      locatorsAreCoordinators = prop != null && !prop.isEmpty();
+      if (!locatorsAreCoordinators) {
+        locatorsAreCoordinators = Boolean.getBoolean(LOCATORS_PREFERRED_AS_COORDINATORS);
+      }
+    }
+    return locatorsAreCoordinators;
+  }
+
   /**
    * @return the TcpHandler for peer to peer discovery
    */
-  public NetLocator getLocatorHandler() {
-    return this.locatorImpl;
+  public MembershipLocator getMembershipLocator() {
+    return membershipLocator;
   }
 
   /**
    * For backward-compatibility we retain this method
-   * <p>
-   * TODO: parameters peerLocator and serverLocator and b1 are never used
    *
    * @deprecated use a form of the method that does not have peerLocator/serverLocator parameters
    */
   @Deprecated
   public static InternalLocator startLocator(int locatorPort, File logFile,
-      InternalLogWriter logger, InternalLogWriter logger1, InetAddress addr,
-      Properties dsProperties, boolean peerLocator, boolean serverLocator, String s, boolean b1)
-      throws IOException {
-    return startLocator(locatorPort, logFile, logger, logger1, addr, true, dsProperties, s);
+      InternalLogWriter logWriter, InternalLogWriter securityLogWriter, InetAddress bindAddress,
+      Properties distributedSystemProperties, boolean peerLocator, boolean serverLocator,
+      String hostnameForClients, boolean b1) throws IOException {
+    return startLocator(locatorPort, logFile, logWriter, securityLogWriter, bindAddress, true,
+        distributedSystemProperties, hostnameForClients);
   }
 
   /**
@@ -577,95 +686,138 @@ public class InternalLocator extends Locator implements ConnectListener {
    *
    * @since GemFire 5.7
    */
-  private void startDistributedSystem() throws UnknownHostException {
+  private void startDistributedSystem() throws IOException {
     InternalDistributedSystem existing = InternalDistributedSystem.getConnectedInstance();
     if (existing != null) {
       // LOG: changed from config to info
-      logger.info(LocalizedMessage
-          .create(LocalizedStrings.InternalLocator_USING_EXISTING_DISTRIBUTED_SYSTEM__0, existing));
+      logger.info("Using existing distributed system: {}", existing);
       startCache(existing);
     } else {
 
       StringBuilder sb = new StringBuilder(100);
-      if (this.bindAddress != null) {
-        sb.append(this.bindAddress.getHostAddress());
+      if (bindAddress != null) {
+        sb.append(bindAddress.getHostAddress());
       } else {
-        sb.append(SocketCreator.getLocalHost().getHostAddress());
+        sb.append(LocalHostUtil.getLocalHost().getHostAddress());
       }
       sb.append('[').append(getPort()).append(']');
       String thisLocator = sb.toString();
 
-
-      if (this.peerLocator) {
+      if (peerLocator) {
         // append this locator to the locators list from the config properties
-        // this.logger.config("ensuring that this locator is in the locators list");
         boolean setLocatorsProp = false;
-        String locatorsProp = this.config.getLocators();
-        if (StringUtils.isNotBlank(locatorsProp)) {
-          if (!locatorsProp.contains(thisLocator)) {
-            locatorsProp = locatorsProp + ',' + thisLocator;
+        String locatorsConfigValue = distributionConfig.getLocators();
+        if (StringUtils.isNotBlank(locatorsConfigValue)) {
+          if (!locatorsConfigValue.contains(thisLocator)) {
+            locatorsConfigValue = locatorsConfigValue + ',' + thisLocator;
             setLocatorsProp = true;
           }
         } else {
-          locatorsProp = thisLocator;
+          locatorsConfigValue = thisLocator;
           setLocatorsProp = true;
         }
         if (setLocatorsProp) {
           Properties updateEnv = new Properties();
-          updateEnv.setProperty(LOCATORS, locatorsProp);
-          this.config.setApiProps(updateEnv);
-          // fix for bug 41248
-          String propName = DistributionConfig.GEMFIRE_PREFIX + LOCATORS;
-          if (System.getProperty(propName) != null) {
-            System.setProperty(propName, locatorsProp);
+          updateEnv.setProperty(LOCATORS, locatorsConfigValue);
+          distributionConfig.setApiProps(updateEnv);
+          String locatorsPropertyName = GEMFIRE_PREFIX + LOCATORS;
+          if (System.getProperty(locatorsPropertyName) != null) {
+            System.setProperty(locatorsPropertyName, locatorsConfigValue);
           }
         }
-        // No longer default mcast-port to zero. See 46277.
+        // No longer default mcast-port to zero.
       }
 
-      Properties connectEnv = new Properties();
+      Properties distributedSystemProperties = new Properties();
       // LogWriterAppender is now shared via that class
       // using a DistributionConfig earlier in this method
-      connectEnv.put(DistributionConfig.DS_CONFIG_NAME, this.config);
+      distributedSystemProperties.put(DistributionConfig.DS_CONFIG_NAME, distributionConfig);
 
-      logger.info(
-          LocalizedMessage.create(LocalizedStrings.InternalLocator_STARTING_DISTRIBUTED_SYSTEM));
+      logger.info("Starting distributed system");
 
-      this.myDs = (InternalDistributedSystem) DistributedSystem.connect(connectEnv);
+      internalDistributedSystem =
+          (InternalDistributedSystem) DistributedSystem.connect(distributedSystemProperties);
 
-      if (this.peerLocator) {
-        this.locatorImpl.setMembershipManager(this.myDs.getDM().getMembershipManager());
+      if (peerLocator) {
+        // We've created a peer location message handler - it needs to be connected to
+        // the membership service in order to get membership view notifications
+        membershipLocator
+            .setMembership(internalDistributedSystem.getDM().getDistribution().getMembership());
       }
 
-      this.myDs.addDisconnectListener(new DisconnectListener() {
-        @Override
-        public void onDisconnect(InternalDistributedSystem sys) {
-          stop(false, false, false);
-        }
-      });
+      internalDistributedSystem.addDisconnectListener(sys -> stop(false, false, false));
 
-      startCache(myDs);
+      startCache(internalDistributedSystem);
 
-      logger.info(LocalizedMessage.create(LocalizedStrings.InternalLocator_LOCATOR_STARTED_ON__0,
-          thisLocator));
+      logger.info("Locator started on {}", thisLocator);
 
-      myDs.setDependentLocator(this);
+      internalDistributedSystem.setDependentLocator(this);
     }
   }
 
-  private void startCache(DistributedSystem ds) {
+  private void startCache(DistributedSystem system) throws IOException {
     InternalCache internalCache = GemFireCacheImpl.getInstance();
     if (internalCache == null) {
       logger.info("Creating cache for locator.");
-      this.myCache = (InternalCache) new CacheFactory(ds.getProperties()).create();
-      internalCache = this.myCache;
+      this.internalCache = new InternalCacheBuilder(system.getProperties())
+          .create((InternalDistributedSystem) system);
+      internalCache = this.internalCache;
     } else {
       logger.info("Using existing cache for locator.");
-      ((InternalDistributedSystem) ds).handleResourceEvent(ResourceEvent.LOCATOR_START, this);
+      ((InternalDistributedSystem) system).handleResourceEvent(ResourceEvent.LOCATOR_START, this);
     }
     startJmxManagerLocationService(internalCache);
 
-    startSharedConfigurationService();
+    startClusterManagementService();
+  }
+
+  private void startClusterManagementService() throws IOException {
+    startConfigurationPersistenceService();
+
+    if (internalCache == null) {
+      return;
+    }
+
+    clusterManagementService = new LocatorClusterManagementService(locator.internalCache,
+        locator.configurationPersistenceService);
+
+    // start management rest service
+    AgentUtil agentUtil = new AgentUtil(GemFireVersion.getGemFireVersion());
+
+    // Find the V2 Management rest WAR file
+    URI gemfireManagementWar = agentUtil.findWarLocation("geode-web-management");
+    if (gemfireManagementWar == null) {
+      logger.info(
+          "Unable to find GemFire V2 Management REST API WAR file; the Management REST Interface for Geode will not be accessible.");
+      return;
+    }
+
+    Map<String, Object> serviceAttributes = new HashMap<>();
+    serviceAttributes.put(HttpService.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM,
+        internalCache.getSecurityService());
+    serviceAttributes.put(HttpService.CLUSTER_MANAGEMENT_SERVICE_CONTEXT_PARAM,
+        clusterManagementService);
+
+    String[] authEnabledComponents = distributionConfig.getSecurityAuthTokenEnabledComponents();
+
+    boolean managementAuthTokenEnabled = Arrays.stream(authEnabledComponents)
+        .anyMatch(AuthTokenEnabledComponents::hasManagement);
+    serviceAttributes.put(HttpService.AUTH_TOKEN_ENABLED_PARAM, managementAuthTokenEnabled);
+
+    if (distributionConfig.getEnableManagementRestService()) {
+      internalCache.getOptionalService(HttpService.class).ifPresent(x -> {
+        try {
+          logger.info("Geode Property {}=true Geode Management Rest Service is enabled.",
+              ConfigurationProperties.ENABLE_MANAGEMENT_REST_SERVICE);
+          x.addWebApplication("/management", Paths.get(gemfireManagementWar), serviceAttributes);
+        } catch (Throwable e) {
+          logger.warn("Unable to start management service: {}", e.getMessage());
+        }
+      });
+    } else {
+      logger.info("Geode Property {}=false Geode Management Rest Service is disabled.",
+          ConfigurationProperties.ENABLE_MANAGEMENT_REST_SERVICE);
+    }
   }
 
   /**
@@ -673,24 +825,25 @@ public class InternalLocator extends Locator implements ConnectListener {
    * and distributed system are started.
    *
    * @param distributedSystem The distributed system to use for the statistics.
-   *
    * @since GemFire 5.7
    */
   void endStartLocator(InternalDistributedSystem distributedSystem) {
-    this.env = null;
+    env = null;
+
     if (distributedSystem == null) {
       distributedSystem = InternalDistributedSystem.getConnectedInstance();
     }
+
     if (distributedSystem != null) {
       onConnect(distributedSystem);
     } else {
       InternalDistributedSystem.addConnectListener(this);
     }
 
-    this.locatorDiscoverer = WANServiceProvider.createLocatorDiscoverer();
-    if (this.locatorDiscoverer != null) {
-      this.locatorDiscoverer.discover(getPort(), this.config, this.locatorListener,
-          this.hostnameForClients);
+    locatorDiscoverer = WANServiceProvider.createLocatorDiscoverer();
+    if (locatorDiscoverer != null) {
+      locatorDiscoverer.discover(getPort(), distributionConfig, locatorListener,
+          hostnameForClients);
     }
   }
 
@@ -700,43 +853,40 @@ public class InternalLocator extends Locator implements ConnectListener {
    *
    * @param distributedSystem The distributed system which the server location services should use.
    *        If null, the method will try to find an already connected distributed system.
-   *
    * @since GemFire 5.7
    */
   void startServerLocation(InternalDistributedSystem distributedSystem) throws IOException {
     if (isServerLocator()) {
       throw new IllegalStateException(
-          LocalizedStrings.InternalLocator_SERVER_LOCATION_IS_ALREADY_RUNNING_FOR_0
-              .toLocalizedString(this));
+          String.format("Server location is already running for %s", this));
     }
-    logger.info(LocalizedMessage
-        .create(LocalizedStrings.InternalLocator_STARTING_SERVER_LOCATION_FOR_0, this));
+    logger.info("Starting server location for {}", this);
 
     if (distributedSystem == null) {
       distributedSystem = InternalDistributedSystem.getConnectedInstance();
       if (distributedSystem == null) {
         throw new IllegalStateException(
-            LocalizedStrings.InternalLocator_SINCE_SERVER_LOCATION_IS_ENABLED_THE_DISTRIBUTED_SYSTEM_MUST_BE_CONNECTED
-                .toLocalizedString());
+            "Since server location is enabled the distributed system must be connected.");
       }
     }
 
-    ServerLocator serverLocator =
-        new ServerLocator(getPort(), this.bindAddress, this.hostnameForClients, this.logFile,
-            this.productUseLog, getConfig().getName(), distributedSystem, this.stats);
-    this.handler.addHandler(LocatorListRequest.class, serverLocator);
-    this.handler.addHandler(ClientConnectionRequest.class, serverLocator);
-    this.handler.addHandler(QueueConnectionRequest.class, serverLocator);
-    this.handler.addHandler(ClientReplacementRequest.class, serverLocator);
-    this.handler.addHandler(GetAllServersRequest.class, serverLocator);
-    this.handler.addHandler(LocatorStatusRequest.class, serverLocator);
+    ServerLocator serverLocator = new ServerLocator(getPort(), bindAddress, hostnameForClients,
+        logFile, productUseLog, getConfig().getName(), distributedSystem, locatorStats);
+    restartHandlers.add(serverLocator);
+    membershipLocator.addHandler(LocatorListRequest.class, serverLocator);
+    membershipLocator.addHandler(ClientConnectionRequest.class, serverLocator);
+    membershipLocator.addHandler(QueueConnectionRequest.class, serverLocator);
+    membershipLocator.addHandler(ClientReplacementRequest.class, serverLocator);
+    membershipLocator.addHandler(GetAllServersRequest.class, serverLocator);
+    membershipLocator.addHandler(LocatorStatusRequest.class, serverLocator);
+
     this.serverLocator = serverLocator;
-    if (!this.server.isAlive()) {
+    if (!membershipLocator.isAlive()) {
       startTcpServer();
     }
     // the product use is not guaranteed to be initialized until the server is started, so
     // the last thing we do is tell it to start logging
-    this.productUseLog.monitorUse(distributedSystem);
+    productUseLog.monitorUse(distributedSystem);
   }
 
   /**
@@ -754,22 +904,23 @@ public class InternalLocator extends Locator implements ConnectListener {
    * @param waitForDisconnect - wait up to 60 seconds for the locator to completely stop
    */
   public void stop(boolean forcedDisconnect, boolean stopForReconnect, boolean waitForDisconnect) {
-    final boolean isDebugEnabled = logger.isDebugEnabled();
+    boolean isDebugEnabled = logger.isDebugEnabled();
 
-    this.stoppedForReconnect = stopForReconnect;
+    stoppedForReconnect = stopForReconnect;
     this.forcedDisconnect = forcedDisconnect;
 
-    if (this.server.isShuttingDown()) {
+    if (membershipLocator.isShuttingDown()) {
       // fix for bug 46156
       // If we are already shutting down don't do all of this again.
       // But, give the server a bit of time to shut down so a new
       // locator can be created, if desired, when this method returns
       if (!stopForReconnect && waitForDisconnect) {
         long endOfWait = System.currentTimeMillis() + 60000;
-        if (isDebugEnabled && this.server.isAlive()) {
+        if (isDebugEnabled && membershipLocator.isAlive()) {
           logger.debug("sleeping to wait for the locator server to shut down...");
         }
-        while (this.server.isAlive() && System.currentTimeMillis() < endOfWait) {
+
+        while (membershipLocator.isAlive() && System.currentTimeMillis() < endOfWait) {
           try {
             Thread.sleep(500);
           } catch (InterruptedException ignored) {
@@ -777,8 +928,9 @@ public class InternalLocator extends Locator implements ConnectListener {
             return;
           }
         }
+
         if (isDebugEnabled) {
-          if (this.server.isAlive()) {
+          if (membershipLocator.isAlive()) {
             logger.debug(
                 "60 seconds have elapsed waiting for the locator server to shut down - terminating wait and returning");
           } else {
@@ -789,48 +941,20 @@ public class InternalLocator extends Locator implements ConnectListener {
       return;
     }
 
-    if (this.locatorDiscoverer != null) {
-      this.locatorDiscoverer.stop();
-      this.locatorDiscoverer = null;
+    if (locatorDiscoverer != null) {
+      locatorDiscoverer.stop();
+      locatorDiscoverer = null;
     }
 
-    if (this.server.isAlive()) {
-      logger.info(LocalizedMessage.create(LocalizedStrings.InternalLocator_STOPPING__0, this));
-      try {
-        new TcpClient().stop(this.bindAddress, getPort());
-      } catch (ConnectException ignore) {
-        // must not be running
-      }
-      boolean interrupted = Thread.interrupted();
-      try {
-        this.server.join(TcpServer.SHUTDOWN_WAIT_TIME * 1000 + 10000);
-
-      } catch (InterruptedException ex) {
-        interrupted = true;
-        logger.warn(LocalizedMessage
-            .create(LocalizedStrings.InternalLocator_INTERRUPTED_WHILE_STOPPING__0, this), ex);
-
-        // Continue running -- doing our best to stop everything...
-      } finally {
-        if (interrupted) {
-          Thread.currentThread().interrupt();
-        }
-      }
-
-      if (this.server.isAlive()) {
-        logger.fatal(LocalizedMessage
-            .create(LocalizedStrings.InternalLocator_COULD_NOT_STOP__0__IN_60_SECONDS, this));
-      }
-    }
+    membershipLocator.stop();
 
     removeLocator(this);
 
     handleShutdown();
+    logger.info("{} is stopped", this);
 
-    logger.info(LocalizedMessage.create(LocalizedStrings.InternalLocator_0__IS_STOPPED, this));
-
-    if (this.stoppedForReconnect) {
-      if (this.myDs != null) {
+    if (stoppedForReconnect) {
+      if (internalDistributedSystem != null) {
         launchRestartThread();
       }
     }
@@ -840,42 +964,43 @@ public class InternalLocator extends Locator implements ConnectListener {
    * answers whether this locator is currently stopped
    */
   public boolean isStopped() {
-    return this.server == null || !this.server.isAlive();
+    return !membershipLocator.isAlive();
   }
 
-  private void handleShutdown() {
-    if (!this.shutdownHandled.compareAndSet(false, true)) {
-      return; // already shutdown
+  void handleShutdown() {
+    if (!shutdownHandled.compareAndSet(false, true)) {
+      // already shutdown
+      return;
     }
-    if (this.productUseLog != null) {
-      this.productUseLog.close();
+    if (productUseLog != null) {
+      productUseLog.close();
     }
-    if (this.myDs != null) {
-      this.myDs.setDependentLocator(null);
+    if (internalDistributedSystem != null) {
+      internalDistributedSystem.setDependentLocator(null);
     }
-    if (this.myCache != null && !this.stoppedForReconnect && !this.forcedDisconnect) {
+
+    if (internalCache != null && !stoppedForReconnect && !forcedDisconnect) {
       logger.info("Closing locator's cache");
       try {
-        this.myCache.close();
+        internalCache.close();
       } catch (RuntimeException ex) {
         logger.info("Could not close locator's cache because: {}", ex.getMessage(), ex);
       }
     }
 
-    if (this.stats != null) {
-      this.stats.close();
+    if (locatorStats != null) {
+      locatorStats.close();
     }
 
-    if (this.locatorListener != null) {
-      this.locatorListener.clearLocatorInfo();
+    if (locatorListener != null) {
+      locatorListener.clearLocatorInfo();
     }
 
-    this.isSharedConfigurationStarted = false;
-    if (this.myDs != null && !this.forcedDisconnect) {
-      if (this.myDs.isConnected()) {
-        logger.info(LocalizedMessage
-            .create(LocalizedStrings.InternalLocator_DISCONNECTING_DISTRIBUTED_SYSTEM_FOR_0, this));
-        this.myDs.disconnect();
+    isSharedConfigurationStarted = false;
+    if (internalDistributedSystem != null && !forcedDisconnect) {
+      if (internalDistributedSystem.isConnected()) {
+        logger.info("Disconnecting distributed system for {}", this);
+        internalDistributedSystem.disconnect();
       }
     }
   }
@@ -888,16 +1013,20 @@ public class InternalLocator extends Locator implements ConnectListener {
   public void waitToStop() throws InterruptedException {
     boolean restarted;
     do {
-      DistributedSystem ds = this.myDs;
+      DistributedSystem system = internalDistributedSystem;
       restarted = false;
-      this.server.join();
-      if (this.stoppedForReconnect) {
+      membershipLocator.waitToShutdown();
+      if (stoppedForReconnect) {
         logger.info("waiting for distributed system to disconnect...");
-        while (ds.isConnected()) {
+        while (system.isConnected()) {
           Thread.sleep(5000);
         }
         logger.info("waiting for distributed system to reconnect...");
-        restarted = ds.waitUntilReconnected(-1, TimeUnit.SECONDS);
+        try {
+          restarted = system.waitUntilReconnected(-1, TimeUnit.SECONDS);
+        } catch (CancelException e) {
+          // reconnect attempt failed
+        }
         if (restarted) {
           logger.info("system restarted");
         } else {
@@ -918,30 +1047,29 @@ public class InternalLocator extends Locator implements ConnectListener {
    * launch a thread that will restart location services
    */
   private void launchRestartThread() {
-    // create a thread group having a last-chance exception-handler
-    ThreadGroup group = LoggingThreadGroup.createThreadGroup("Locator restart thread group");
-    // TODO: non-atomic operation on volatile field restartThread
-    this.restartThread = new Thread(group, "Location services restart thread") {
-      @Override
-      public void run() {
-        boolean restarted = false;
-        try {
-          restarted = attemptReconnect();
-          logger.info("attemptReconnect returned {}", restarted);
-        } catch (InterruptedException e) {
-          logger.info("attempt to restart location services was interrupted", e);
-        } catch (IOException e) {
-          logger.info("attempt to restart location services terminated", e);
-        } finally {
-          if (!restarted) {
-            stoppedForReconnect = false;
-          }
+    String threadName = "Location services restart thread";
+    restartThread = new LoggingThread(threadName, () -> {
+      boolean restarted = false;
+      try {
+        restarted = attemptReconnect();
+        logger.info("attemptReconnect returned {}", restarted);
+      } catch (InterruptedException e) {
+        logger.info("attempt to restart location services was interrupted", e);
+      } catch (IOException e) {
+        logger.info("attempt to restart location services terminated", e);
+      } finally {
+        if (!restarted) {
+          stoppedForReconnect = false;
         }
-        InternalLocator.this.restartThread = null;
+        reconnected = restarted;
       }
-    };
-    this.restartThread.setDaemon(true);
-    this.restartThread.start();
+      restartThread = null;
+    });
+    restartThread.start();
+  }
+
+  public boolean isReconnected() {
+    return reconnected;
   }
 
   /**
@@ -955,124 +1083,174 @@ public class InternalLocator extends Locator implements ConnectListener {
    */
   private boolean attemptReconnect() throws InterruptedException, IOException {
     boolean restarted = false;
-    if (this.stoppedForReconnect) {
+    if (stoppedForReconnect) {
       logger.info("attempting to restart locator");
       boolean tcpServerStarted = false;
-      InternalDistributedSystem ds = this.myDs;
-      long waitTime = ds.getConfig().getMaxWaitTimeForReconnect() / 2;
-      QuorumChecker checker = null;
-      while (ds.getReconnectedSystem() == null && !ds.isReconnectCancelled()) {
-        if (checker == null) {
-          checker = this.myDs.getQuorumChecker();
-          if (checker != null) {
-            logger.info("The distributed system returned this quorum checker: {}", checker);
+      InternalDistributedSystem system = internalDistributedSystem;
+      long waitTime = system.getConfig().getMaxWaitTimeForReconnect() / 2;
+      QuorumChecker quorumChecker = null;
+
+      while (system.getReconnectedSystem() == null && !system.isReconnectCancelled()) {
+        if (quorumChecker == null) {
+          quorumChecker = internalDistributedSystem.getQuorumChecker();
+          if (quorumChecker != null) {
+            logger.info("The distributed system returned this quorum checker: {}", quorumChecker);
           }
         }
-        if (checker != null && !tcpServerStarted) {
-          boolean start = checker.checkForQuorum(3 * this.myDs.getConfig().getMemberTimeout());
+
+        if (quorumChecker != null && !tcpServerStarted) {
+          boolean start = quorumChecker
+              .checkForQuorum(3L * internalDistributedSystem.getConfig().getMemberTimeout());
           if (start) {
-            // start up peer location. server location is started after the DS finishes
-            // reconnecting
+            // start up peer location. server location is started after the DS finishes reconnecting
             logger.info("starting peer location");
-            if (this.locatorListener != null) {
-              this.locatorListener.clearLocatorInfo();
+            if (locatorListener != null) {
+              locatorListener.clearLocatorInfo();
             }
-            this.stoppedForReconnect = false;
-            this.myDs = null;
-            this.myCache = null;
-            restartWithoutDS();
+            stoppedForReconnect = false;
+            internalDistributedSystem = null;
+            internalCache = null;
+            restartWithoutSystem();
             tcpServerStarted = true;
             setLocator(this);
           }
         }
-        ds.waitUntilReconnected(waitTime, TimeUnit.MILLISECONDS);
-      }
-      InternalDistributedSystem newSystem = (InternalDistributedSystem) ds.getReconnectedSystem();
-      if (newSystem != null) {
-        if (!tcpServerStarted) {
-          if (this.locatorListener != null) {
-            this.locatorListener.clearLocatorInfo();
-          }
-          this.stoppedForReconnect = false;
+
+        try {
+          system.waitUntilReconnected(waitTime, TimeUnit.MILLISECONDS);
+        } catch (CancelException e) {
+          logger.info("Attempt to reconnect failed and further attempts have been terminated");
+          stoppedForReconnect = false;
+          return false;
         }
-        restartWithDS(newSystem, GemFireCacheImpl.getInstance());
-        setLocator(this);
+      }
+
+      InternalDistributedSystem newSystem =
+          (InternalDistributedSystem) system.getReconnectedSystem();
+      if (newSystem != null) {
+        boolean noprevlocator = false;
+        if (!hasLocator()) {
+          setLocator(this);
+          noprevlocator = true;
+        }
+        if (!tcpServerStarted) {
+          if (locatorListener != null) {
+            locatorListener.clearLocatorInfo();
+          }
+          stoppedForReconnect = false;
+        }
+
+        try {
+          restartWithSystem(newSystem, GemFireCacheImpl.getInstance());
+        } catch (CancelException e) {
+          stoppedForReconnect = true;
+          if (noprevlocator) {
+            removeLocator(this);
+          }
+          return false;
+        }
+
         restarted = true;
       }
     }
+
     logger.info("restart thread exiting.  Service was {}restarted", restarted ? "" : "not ");
     return restarted;
   }
 
-  private void restartWithoutDS() throws IOException {
+  private void restartWithoutSystem() throws IOException {
     synchronized (locatorLock) {
       if (locator != this && hasLocator()) {
         throw new IllegalStateException(
             "A locator can not be created because one already exists in this JVM.");
       }
-      this.myDs = null;
-      this.myCache = null;
+      internalDistributedSystem = null;
+      internalCache = null;
+
       logger.info("Locator restart: initializing TcpServer peer location services");
-      this.server.restarting(null, null, null);
-      if (this.productUseLog.isClosed()) {
-        this.productUseLog.reopen();
+      membershipLocator.restarting();
+
+      if (productUseLog.isClosed()) {
+        productUseLog.reopen();
       }
-      if (!this.server.isAlive()) {
+
+      if (!membershipLocator.isAlive()) {
         logger.info("Locator restart: starting TcpServer");
         startTcpServer();
       }
     }
   }
 
-  private void restartWithDS(InternalDistributedSystem newSystem, InternalCache newCache)
+  private void restartWithSystem(InternalDistributedSystem newSystem, InternalCache newCache)
       throws IOException {
     synchronized (locatorLock) {
       if (locator != this && hasLocator()) {
         throw new IllegalStateException(
             "A locator can not be created because one already exists in this JVM.");
       }
-      this.myDs = newSystem;
-      this.myCache = newCache;
-      this.myDs.setDependentLocator(this);
-      logger.info("Locator restart: initializing TcpServer");
-
-      this.server.restarting(newSystem, newCache, this.sharedConfig);
-      if (this.productUseLog.isClosed()) {
-        this.productUseLog.reopen();
-      }
-      this.productUseLog.monitorUse(newSystem);
-      if (isSharedConfigurationEnabled()) {
-        this.sharedConfig = new ClusterConfigurationService(newCache);
-        startSharedConfigurationService();
-      }
-      if (!this.server.isAlive()) {
-        logger.info("Locator restart: starting TcpServer");
-        startTcpServer();
-      }
-      logger.info("Locator restart: initializing JMX manager");
-      startJmxManagerLocationService(newCache);
-      endStartLocator(this.myDs);
-      logger.info("Locator restart completed");
     }
+    internalDistributedSystem = newSystem;
+    internalCache = newCache;
+    internalDistributedSystem.setDependentLocator(this);
+    logger.info("Locator restart: initializing TcpServer");
+
+    try {
+      restartHandlers.forEach(
+          handler -> handler.restarting(newSystem, newCache, configurationPersistenceService));
+      membershipLocator.restarting();
+    } catch (CancelException e) {
+      internalDistributedSystem = null;
+      internalCache = null;
+      logger.info("Locator restart: attempt to restart location services failed", e);
+      throw e;
+    }
+
+    if (productUseLog.isClosed()) {
+      productUseLog.reopen();
+    }
+    productUseLog.monitorUse(newSystem);
+
+    if (isSharedConfigurationEnabled()) {
+      configurationPersistenceService =
+          new InternalConfigurationPersistenceService(newCache, workingDirectory,
+              JAXBService.create());
+      startClusterManagementService();
+    }
+
+    if (!membershipLocator.isAlive()) {
+      logger.info("Locator restart: starting TcpServer");
+      startTcpServer();
+    }
+
+    logger.info("Locator restart: initializing JMX manager");
+    startJmxManagerLocationService(newCache);
+    endStartLocator(internalDistributedSystem);
+    logger.info("Locator restart completed");
+
+    restartHandlers.forEach(handler -> handler.restartCompleted(newSystem));
+  }
+
+  public ClusterManagementService getClusterManagementService() {
+    return clusterManagementService;
   }
 
   @Override
   public DistributedSystem getDistributedSystem() {
-    if (myDs == null) {
+    if (internalDistributedSystem == null) {
       return InternalDistributedSystem.getAnyInstance();
     }
 
-    return myDs;
+    return internalDistributedSystem;
   }
 
   @Override
   public boolean isPeerLocator() {
-    return this.peerLocator;
+    return peerLocator;
   }
 
   @Override
   public boolean isServerLocator() {
-    return this.serverLocator != null;
+    return serverLocator != null;
   }
 
   /**
@@ -1080,7 +1258,7 @@ public class InternalLocator extends Locator implements ConnectListener {
    * locator.
    */
   public ServerLocator getServerLocatorAdvisee() {
-    return this.serverLocator;
+    return serverLocator;
   }
 
   /**
@@ -1091,176 +1269,55 @@ public class InternalLocator extends Locator implements ConnectListener {
    */
   @Override
   public Integer getPort() {
-    if (this.server != null) {
-      return this.server.getPort();
+    if (membershipLocator != null && membershipLocator.isAlive()) {
+      return membershipLocator.getPort();
     }
     return null;
   }
 
-  class FetchSharedConfigStatus implements Callable<SharedConfigurationStatusResponse> {
+  @Override
+  public LogConfig getLogConfig() {
+    return distributionConfig;
+  }
 
-    static final int SLEEPTIME = 1000;
-    static final byte MAX_RETRIES = 5;
+  @Override
+  public StatisticsConfig getStatisticsConfig() {
+    return distributionConfig;
+  }
 
-    @Override
-    public SharedConfigurationStatusResponse call() throws InterruptedException {
-      final InternalLocator locator = InternalLocator.this;
+  @Override
+  public void addLogConfigListener(LogConfigListener logConfigListener) {
+    logConfigListeners.add(logConfigListener);
+  }
 
-      SharedConfigurationStatusResponse response;
-      if (locator.sharedConfig != null) {
-        response = locator.sharedConfig.createStatusResponse();
-      } else {
-        response = new SharedConfigurationStatusResponse();
-        response.setStatus(SharedConfigurationStatus.UNDETERMINED);
-      }
-      return response;
-    }
+  @Override
+  public void removeLogConfigListener(LogConfigListener logConfigListener) {
+    logConfigListeners.remove(logConfigListener);
   }
 
   public SharedConfigurationStatusResponse getSharedConfigurationStatus() {
-    ExecutorService es = this.myCache.getDistributionManager().getWaitingThreadPool();
+    ExecutorService waitingPoolExecutor =
+        internalCache.getDistributionManager().getExecutors().getWaitingThreadPool();
     Future<SharedConfigurationStatusResponse> statusFuture =
-        es.submit(new FetchSharedConfigStatus());
+        waitingPoolExecutor.submit(new FetchSharedConfigStatus());
     SharedConfigurationStatusResponse response;
 
     try {
       response = statusFuture.get(5, TimeUnit.SECONDS);
     } catch (Exception e) {
-      logger.info("Exception occurred while fetching the status {}",
-          ExceptionUtils.getStackTrace(e));
+      logger.info("Exception occurred while fetching the status {}", getStackTrace(e));
       response = new SharedConfigurationStatusResponse();
       response.setStatus(SharedConfigurationStatus.UNDETERMINED);
     }
     return response;
   }
 
-  public static class PrimaryHandler implements TcpHandler {
-
-    private volatile HashMap<Class, TcpHandler> handlerMapping = new HashMap<>();
-    private volatile HashSet<TcpHandler> allHandlers = new HashSet<>();
-    private TcpServer tcpServer;
-    private final LocatorMembershipListener locatorListener;
-    private final InternalLocator internalLocator;
-
-    PrimaryHandler(InternalLocator locator, LocatorMembershipListener listener) {
-      this.locatorListener = listener;
-      this.internalLocator = locator;
-    }
-
-    // this method is synchronized to make sure that no new handlers are added while
-    // initialization is taking place.
-    @Override
-    public synchronized void init(TcpServer tcpServer) {
-      if (this.locatorListener != null) {
-        // This is deferred until now as the initial requested port could have been 0
-        this.locatorListener.setPort(this.internalLocator.getPort());
-      }
-      this.tcpServer = tcpServer;
-      for (TcpHandler handler : this.allHandlers) {
-        handler.init(tcpServer);
-      }
-    }
-
-    @Override
-    public void restarting(DistributedSystem ds, GemFireCache cache,
-        ClusterConfigurationService sharedConfig) {
-      if (ds != null) {
-        for (TcpHandler handler : this.allHandlers) {
-          handler.restarting(ds, cache, sharedConfig);
-        }
-      }
-    }
-
-    @Override
-    public Object processRequest(Object request) throws IOException {
-      long giveup = 0;
-      while (giveup == 0 || System.currentTimeMillis() < giveup) {
-        TcpHandler handler;
-        if (request instanceof PeerLocatorRequest) {
-          handler = this.handlerMapping.get(PeerLocatorRequest.class);
-        } else {
-          handler = this.handlerMapping.get(request.getClass());
-        }
-
-        if (handler != null) {
-          return handler.processRequest(request);
-        } else {
-          if (this.locatorListener != null) {
-            return this.locatorListener.handleRequest(request);
-          } else {
-            // either there is a configuration problem or the locator is still starting up
-            if (giveup == 0) {
-              int locatorWaitTime = this.internalLocator.getConfig().getLocatorWaitTime();
-              if (locatorWaitTime <= 0) {
-                // always retry some number of times
-                locatorWaitTime = 30;
-              }
-              giveup = System.currentTimeMillis() + locatorWaitTime * 1000;
-              try {
-                Thread.sleep(1000);
-              } catch (InterruptedException ignored) {
-                // running in an executor - no need to set the interrupted flag on the thread
-                return null;
-              }
-            }
-          }
-        }
-      } // while
-      logger.info(
-          "Received a location request of class {} but the handler for this is "
-              + "either not enabled or is not ready to process requests",
-          request.getClass().getSimpleName());
-      return null;
-    }
-
-    @Override
-    public void shutDown() {
-      try {
-        for (TcpHandler handler : this.allHandlers) {
-          handler.shutDown();
-        }
-      } finally {
-        this.internalLocator.handleShutdown();
-      }
-    }
-
-    synchronized boolean isHandled(Class clazz) {
-      return this.handlerMapping.containsKey(clazz);
-    }
-
-    public synchronized void addHandler(Class clazz, TcpHandler handler) {
-      HashMap<Class, TcpHandler> tmpHandlerMapping = new HashMap<>(this.handlerMapping);
-      HashSet<TcpHandler> tmpAllHandlers = new HashSet<>(this.allHandlers);
-      tmpHandlerMapping.put(clazz, handler);
-      if (tmpAllHandlers.add(handler) && this.tcpServer != null) {
-        handler.init(this.tcpServer);
-      }
-      this.handlerMapping = tmpHandlerMapping;
-      this.allHandlers = tmpAllHandlers;
-    }
-
-    @Override
-    public void endRequest(Object request, long startTime) {
-      TcpHandler handler = this.handlerMapping.get(request.getClass());
-      if (handler != null) {
-        handler.endRequest(request, startTime);
-      }
-    }
-
-    @Override
-    public void endResponse(Object request, long startTime) {
-      TcpHandler handler = this.handlerMapping.get(request.getClass());
-      if (handler != null) {
-        handler.endResponse(request, startTime);
-      }
-    }
-  }
-
   @Override
   public void onConnect(InternalDistributedSystem sys) {
     try {
-      this.stats.hookupStats(sys,
-          SocketCreator.getLocalHost().getCanonicalHostName() + '-' + this.server.getBindAddress());
+      locatorStats.hookupStats(sys,
+          LocalHostUtil.getLocalHost().getCanonicalHostName() + '-' + membershipLocator
+              .getBindAddress());
     } catch (UnknownHostException e) {
       logger.warn(e);
     }
@@ -1275,42 +1332,28 @@ public class InternalLocator extends Locator implements ConnectListener {
   public static Collection<String> getLocatorStrings() {
     Collection<String> locatorStrings;
     try {
-      Collection<DistributionLocatorId> locatorIds =
-          DistributionLocatorId.asDistributionLocatorIds(getLocators());
+      Collection<DistributionLocatorId> locatorIds = asDistributionLocatorIds(getLocators());
       locatorStrings = DistributionLocatorId.asStrings(locatorIds);
     } catch (UnknownHostException ignored) {
       locatorStrings = null;
     }
     if (locatorStrings == null || locatorStrings.isEmpty()) {
       return null;
-    } else {
-      return locatorStrings;
     }
+    return locatorStrings;
   }
 
-  /**
-   * A helper object so that the TcpServer can record its stats to the proper place. Stats are only
-   * recorded if a distributed system is started.
-   */
-  protected class DelayedPoolStatHelper implements PoolStatHelper {
-    @Override
-    public void startJob() {
-      stats.incRequestInProgress(1);
+  private void startConfigurationPersistenceService() throws IOException {
+    installRequestHandlers();
 
-    }
-
-    @Override
-    public void endJob() {
-      stats.incRequestInProgress(-1);
-    }
-  }
-
-  private void startSharedConfigurationService() {
-    installSharedConfigHandler();
-
-    if (!config.getEnableClusterConfiguration()) {
+    if (!distributionConfig.getEnableClusterConfiguration()) {
       logger.info("Cluster configuration service is disabled");
       return;
+    }
+
+    if (!distributionConfig.getJmxManager()) {
+      throw new IllegalStateException(
+          "Cannot start cluster configuration without jmx-manager=true");
     }
 
     if (isSharedConfigurationStarted) {
@@ -1319,48 +1362,116 @@ public class InternalLocator extends Locator implements ConnectListener {
     }
 
     if (!isDedicatedLocator()) {
-      logger.info("Cluster configuration service not enabled as it is only supported "
-          + "in dedicated locators");
+      logger.info(
+          "Cluster configuration service not enabled as it is only supported in dedicated locators");
       return;
     }
 
-    try {
-      if (locator.sharedConfig == null) {
-        // locator.sharedConfig will already be created in case of auto-reconnect
-        locator.sharedConfig = new ClusterConfigurationService(locator.myCache);
-      }
-      locator.sharedConfig.initSharedConfiguration(locator.loadFromSharedConfigDir());
-      logger.info(
-          "Cluster configuration service start up completed successfully and is now running ....");
-      isSharedConfigurationStarted = true;
-    } catch (CancelException | LockServiceDestroyedException e) {
-      if (logger.isDebugEnabled()) {
-        logger.debug("Cluster configuration start up was cancelled", e);
-      }
-    } catch (Exception e) {
-      logger.error(e.getMessage(), e);
+
+    if (locator.configurationPersistenceService == null) {
+      // configurationPersistenceService will already be created in case of auto-reconnect
+      locator.configurationPersistenceService =
+          new InternalConfigurationPersistenceService(locator.internalCache, workingDirectory,
+              JAXBService.create());
     }
+    locator.configurationPersistenceService
+        .initSharedConfiguration(locator.loadFromSharedConfigDir());
+    logger.info(
+        "Cluster configuration service start up completed successfully and is now running ....");
+    isSharedConfigurationStarted = true;
   }
 
   public void startJmxManagerLocationService(InternalCache internalCache) {
     if (internalCache.getJmxManagerAdvisor() != null) {
-      if (!this.handler.isHandled(JmxManagerLocatorRequest.class)) {
-        this.handler.addHandler(JmxManagerLocatorRequest.class,
-            new JmxManagerLocator(internalCache));
+      if (!membershipLocator.isHandled(JmxManagerLocatorRequest.class)) {
+        JmxManagerLocator jmxHandler = new JmxManagerLocator(internalCache);
+        restartHandlers.add(jmxHandler);
+        membershipLocator.addHandler(JmxManagerLocatorRequest.class,
+            jmxHandler);
       }
     }
   }
 
-  private void installSharedConfigHandler() {
-    if (!this.handler.isHandled(SharedConfigurationStatusRequest.class)) {
-      this.handler.addHandler(SharedConfigurationStatusRequest.class,
+  private void installRequestHandlers() {
+    if (!membershipLocator.isHandled(SharedConfigurationStatusRequest.class)) {
+      membershipLocator.addHandler(SharedConfigurationStatusRequest.class,
           new SharedConfigurationStatusRequestHandler());
       logger.info("SharedConfigStatusRequestHandler installed");
+    }
+
+    if (!membershipLocator.isHandled(ClusterManagementServiceInfoRequest.class)) {
+      membershipLocator.addHandler(ClusterManagementServiceInfoRequest.class,
+          new ClusterManagementServiceInfoRequestHandler());
+      logger.info("ClusterManagementServiceInfoRequestHandler installed");
     }
   }
 
   public boolean hasHandlerForClass(Class messageClass) {
-    return this.handler.isHandled(messageClass);
+    return membershipLocator.isHandled(messageClass);
   }
 
+  class FetchSharedConfigStatus implements Callable<SharedConfigurationStatusResponse> {
+
+    @Override
+    public SharedConfigurationStatusResponse call() throws InterruptedException {
+      InternalLocator locator = InternalLocator.this;
+
+      SharedConfigurationStatusResponse response;
+      if (locator.configurationPersistenceService != null) {
+        response = locator.configurationPersistenceService.createStatusResponse();
+      } else {
+        response = new SharedConfigurationStatusResponse();
+        response.setStatus(SharedConfigurationStatus.UNDETERMINED);
+      }
+      return response;
+    }
+  }
+
+  /**
+   * A helper object so that the TcpServer can record its stats to the proper place. Stats are only
+   * recorded if a distributed system is started.
+   */
+  protected class DelayedPoolStatHelper implements PoolStatHelper {
+
+    @Override
+    public void startJob() {
+      locatorStats.incRequestInProgress(1);
+
+    }
+
+    @Override
+    public void endJob() {
+      locatorStats.incRequestInProgress(-1);
+    }
+  }
+
+  private class InternalLocatorTcpHandler implements TcpHandler {
+    @Override
+    public Object processRequest(Object request) throws IOException {
+      return locatorListener == null ? null : locatorListener.handleRequest(request);
+    }
+
+    @Override
+    public void endRequest(Object request, long startTime) {
+
+    }
+
+    @Override
+    public void endResponse(Object request, long startTime) {
+
+    }
+
+    @Override
+    public void shutDown() {
+      handleShutdown();
+    }
+
+    @Override
+    public void init(TcpServer tcpServer) {
+      if (locatorListener != null) {
+        // This is deferred until now as the initial requested port could have been 0
+        locatorListener.setPort(tcpServer.getPort());
+      }
+    }
+  }
 }

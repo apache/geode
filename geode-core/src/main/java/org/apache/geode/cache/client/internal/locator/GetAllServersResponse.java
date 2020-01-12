@@ -18,19 +18,15 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 
-import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.ServerLocation;
-import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 
-/**
- *
- *
- */
 public class GetAllServersResponse extends ServerLocationResponse {
 
-  private ArrayList servers;
+  private ArrayList<ServerLocation> servers;
 
   private boolean serversFound = false;
 
@@ -39,25 +35,29 @@ public class GetAllServersResponse extends ServerLocationResponse {
     super();
   }
 
-  public GetAllServersResponse(ArrayList servers) {
+  public GetAllServersResponse(ArrayList<ServerLocation> servers) {
     this.servers = servers;
     if (servers != null && !servers.isEmpty()) {
       this.serversFound = true;
     }
   }
 
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  @Override
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     this.servers = SerializationHelper.readServerLocationList(in);
     if (this.servers != null && !this.servers.isEmpty()) {
       this.serversFound = true;
     }
   }
 
-  public void toData(DataOutput out) throws IOException {
+  @Override
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     SerializationHelper.writeServerLocationList(servers, out);
   }
 
-  public ArrayList getServers() {
+  public ArrayList<ServerLocation> getServers() {
     return servers;
   }
 
@@ -66,6 +66,7 @@ public class GetAllServersResponse extends ServerLocationResponse {
     return "GetAllServersResponse{servers=" + getServers() + "}";
   }
 
+  @Override
   public int getDSFID() {
     return DataSerializableFixedID.GET_ALL_SERVRES_RESPONSE;
   }

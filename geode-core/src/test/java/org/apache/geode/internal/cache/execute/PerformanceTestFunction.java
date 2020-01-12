@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.cache.execute;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -35,6 +35,7 @@ public class PerformanceTestFunction extends FunctionAdapter {
    *
    * @since GemFire 5.8Beta
    */
+  @Override
   public void execute(FunctionContext context) {
     if (context instanceof RegionFunctionContext) {
       RegionFunctionContext prContext = (RegionFunctionContext) context;
@@ -59,14 +60,17 @@ public class PerformanceTestFunction extends FunctionAdapter {
    * @return an object identifying this function
    * @since GemFire 5.8Beta
    */
+  @Override
   public String getId() {
     return getClass().getName();
   }
 
+  @Override
   public boolean hasResult() {
     return true;
   }
 
+  @Override
   public boolean isHA() {
     return false;
   }

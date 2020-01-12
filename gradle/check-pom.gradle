@@ -1,0 +1,151 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import java.nio.file.Paths
+
+def expectedPomFile = Paths.get(projectDir.toString(), 'src', 'test', 'resources', 'expected-pom.xml')
+
+task('checkPom') {
+  // The XmlParser used below has a strange tendency to return lists of fields rather than the field
+  // you actually want. Be careful with that, future developer.
+  group 'verification'
+  dependsOn('generatePomFileForMavenPublication')
+  description 'Checks the generated POM against an expected POM for dependency changes.' +
+    '  Ignores versions of Apache Geode dependencies.'
+
+  def actualPomFile = tasks.named('generatePomFileForMavenPublication').get().outputs.files.first()
+  def thisOutput = project.buildDir.toPath().resolve('reports').resolve('checkPom.out')
+  inputs.files { [expectedPomFile, actualPomFile] }
+  outputs.files { thisOutput }
+
+  // We impose the following rules on our produced poms:
+  // * Versions are to be specified in the <dependencyManagement> block, not the <dependency> block
+  // * org.apache.geode versions will be ignored, in favor of this build's version
+  // * <dependency> blocks in produced POMs are as expected (ordering ignored)
+  // * <dependencyManagement> blocks in produced POMs are as expected (ordering ignored)
+  // * Published groupId = "org.apache.geode"
+  // * Published artifactId = project.artifactName if it exists, else project.name
+
+  def anyVersionDefinitionNotInDependencyManagement = { pom ->
+    pom.dependencies.dependency.any {
+      it.get("version")*.value() != []
+    }
+  }
+
+  def ignoreGeodeVersionInExpectedPom = { pom ->
+    pom.dependencyManagement.dependencies.dependency.each { dep ->
+      if (dep.toString().contains("org.apache.geode")) {
+        // since the project version is the source of truth, use that for comparison instead of
+        // whatever is stored in the expected pom file
+        dep.get("version")*.setValue([version])
+      }
+    }
+  }
+
+  def dependenciesBlocksMatch = { actual, expected ->
+    def actualTreeSet = actual.dependencies.dependency.collect {it.toString()}.toSet()
+    def expectedTreeSet = expected.dependencies.dependency.collect {it.toString()}.toSet()
+    actualTreeSet.equals(expectedTreeSet)
+  }
+
+  def groupMismatches = { pom ->
+    def groupId = pom["groupId"]
+    groupId*.value().flatten().any {
+      it != project.group
+    }
+  }
+
+  def artifactMismatches = { pom ->
+    // This work-around for 'artifactName' or 'project.name' is for geode-assembly, which re-names its output
+    def artifactId = pom["artifactId"]
+    artifactId*.value().flatten().any {
+      it != (project.findProperty('artifactName') ?: project.name)
+    }
+  }
+
+  doLast {
+    if (tasks.getByName("generatePomFileForMavenPublication").enabled) {
+      if (null == expectedPomFile) {
+        throw new RuntimeException("expected-pom.xml not found.")
+      }
+      def expectedPom = new XmlParser().parse(expectedPomFile.toString())
+      ignoreGeodeVersionInExpectedPom(expectedPom)
+
+      // Sanity checks against the expected pom.
+      def pathologicalArtifactId = artifactMismatches(expectedPom)
+      def pathologicalGroupId = groupMismatches(expectedPom)
+      def pathologicalVersionedDeps = anyVersionDefinitionNotInDependencyManagement(expectedPom)
+
+      if (pathologicalArtifactId || pathologicalGroupId || pathologicalVersionedDeps) {
+        def errorSummary = ""
+        errorSummary += pathologicalArtifactId ? "Expected POM header pathologically incorrect. Fix artifactId to match subproject name.\n" : ""
+        errorSummary += pathologicalGroupId ? "Expected POM header pathologically incorrect. Fix groupId to be 'org.apache.geode'.\n" : ""
+        errorSummary += pathologicalVersionedDeps ? "Expected POM should not declare dependency versions outside the Spring dependency-management constraints." : ""
+        throw new GradleException(errorSummary)
+      }
+
+      def actualPom = new XmlParser().parse(actualPomFile)
+
+      def badArtifactId = artifactMismatches(actualPom)
+      def badGroupId = groupMismatches(actualPom)
+      def improperlyVersionedDeps = anyVersionDefinitionNotInDependencyManagement(actualPom)
+      def depsMismatch = !dependenciesBlocksMatch(expectedPom, actualPom)
+      def versionMismatch = !dependenciesBlocksMatch(expectedPom.dependencyManagement, actualPom.dependencyManagement)
+
+      if (badArtifactId || badGroupId || improperlyVersionedDeps || depsMismatch || versionMismatch) {
+        def errorSummary = ""
+        errorSummary += badArtifactId ? "POM header information incorrect. Fix artifactId.\n" : ""
+        errorSummary += badGroupId ? "POM header information incorrect. Fix groupId.\n" : ""
+        errorSummary += improperlyVersionedDeps ? "Version definition should be in the <dependencyManagement> block only.\n" : ""
+        errorSummary += depsMismatch ? "<dependencies> blocks do not match.\n" : ""
+        errorSummary += versionMismatch ? "<dependencyManagement> blocks do not match.\n" : ""
+
+        def message = """
+The POM produced by the ${project.name}'s publication task has changed from expectation.
+This is typically the result of changing or new dependencies, or dependency versions.
+The actual publication candidate POM can be found here: ${actualPomFile}
+The associated expected POM can be found here: ${expectedPomFile}
+
+${errorSummary}
+Please review the differences between the files indicated above.
+This task is meant to be comprehensive -- there should be no change in the POM for which you are not responsible.
+A possible exception is the listed Geode project dependencies, which are modified to reflect the current build's version.
+
+Once the differences in the above files are reviewed and confirmed to be intentional,
+  please update the expected POM file to reflect your changes.
+Alternatively, run './gradlew ${project.path}:updateExpectedPom' to replace the expected POM with the generated POM.
+"""
+        thisOutput.write(message)
+        throw new RuntimeException(message)
+      }
+    }
+  }
+}
+check.dependsOn('checkPom')
+
+task updateExpectedPom(dependsOn: generatePomFileForMavenPublication, type: Copy) {
+  description 'After having verified changes with checkPom, this task will perform the copy.'
+
+  def expectedPomDir = expectedPomFile.parent
+  def actualPomFile = generatePomFileForMavenPublication.outputs.files.first()
+  if (tasks.getByName("generatePomFileForMavenPublication").enabled) {
+    from actualPomFile
+    into expectedPomDir
+    rename '.*.xml', "expected-pom.xml"
+  }
+}
+checkPom.mustRunAfter(updateExpectedPom)

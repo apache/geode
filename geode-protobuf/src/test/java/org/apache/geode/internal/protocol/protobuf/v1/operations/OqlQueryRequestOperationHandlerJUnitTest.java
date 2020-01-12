@@ -33,6 +33,7 @@ import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.TypeMismatchException;
+import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.cache.query.internal.InternalQueryService;
 import org.apache.geode.cache.query.internal.LinkedStructSet;
 import org.apache.geode.cache.query.internal.ResultsBag;
@@ -42,16 +43,15 @@ import org.apache.geode.cache.query.internal.types.StructTypeImpl;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.protocol.TestExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
-import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI.OQLQueryRequest;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI.OQLQueryResponse;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
-import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 
-@Category(UnitTest.class)
+@Category({ClientServerTest.class})
 public class OqlQueryRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTest {
 
   public static final String SELECT_STAR_QUERY = "select * from /region";
@@ -70,7 +70,7 @@ public class OqlQueryRequestOperationHandlerJUnitTest extends OperationHandlerJU
   public void queryForSingleObject() throws ConnectionStateException, DecodingException,
       InvalidExecutionContextException, EncodingException, NameResolutionException,
       TypeMismatchException, QueryInvocationTargetException, FunctionDomainException {
-    Query query = mock(Query.class);
+    Query query = mock(DefaultQuery.class);
     when(queryService.newQuery(eq(SELECT_STAR_QUERY))).thenReturn(query);
     when(query.execute((Object[]) any())).thenReturn(STRING_RESULT_1);
     final OQLQueryRequest request =
@@ -86,7 +86,7 @@ public class OqlQueryRequestOperationHandlerJUnitTest extends OperationHandlerJU
   public void queryForMultipleObjects() throws ConnectionStateException, DecodingException,
       InvalidExecutionContextException, EncodingException, NameResolutionException,
       TypeMismatchException, QueryInvocationTargetException, FunctionDomainException {
-    Query query = mock(Query.class);
+    Query query = mock(DefaultQuery.class);
     when(queryService.newQuery(eq(SELECT_STAR_QUERY))).thenReturn(query);
     SelectResults results = new ResultsBag();
     results.setElementType(new ObjectTypeImpl());
@@ -108,7 +108,7 @@ public class OqlQueryRequestOperationHandlerJUnitTest extends OperationHandlerJU
   public void queryForMultipleStructs() throws ConnectionStateException, DecodingException,
       InvalidExecutionContextException, EncodingException, NameResolutionException,
       TypeMismatchException, QueryInvocationTargetException, FunctionDomainException {
-    Query query = mock(Query.class);
+    Query query = mock(DefaultQuery.class);
     when(queryService.newQuery(eq(SELECT_STAR_QUERY))).thenReturn(query);
 
 

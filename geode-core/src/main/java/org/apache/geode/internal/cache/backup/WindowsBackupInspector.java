@@ -55,27 +55,28 @@ class WindowsBackupInspector extends BackupInspector {
   }
 
   @Override
-  protected void parseOplogLines(final BufferedReader reader) throws IOException {
-    String line = null;
+  void parseOplogLines(final BufferedReader reader) throws IOException {
+    String line;
 
     int beginIndex, endIndex;
-    String oplogName = "";
+    String oplogName;
     while (null != (line = reader.readLine())) {
       if (line.startsWith("IF")) {
+        // skip IF statements as they have oplog file exists checks.
         continue;
       } else if (line.contains(WindowsScriptGenerator.EXIT_MARKER)) {
         break;
       } else {
         beginIndex = line.lastIndexOf("\"") + 1;
         endIndex = line.indexOf(WindowsScriptGenerator.ROBOCOPY_NO_JOB_HEADER, beginIndex) - 1;
-        oplogName = (line.substring(beginIndex, endIndex)).trim();
+        oplogName = line.substring(beginIndex, endIndex).trim();
         addOplogLine(oplogName, line);
       }
     }
   }
 
   @Override
-  protected File getRestoreFile(final File backupDir) {
+  File getRestoreFile(final File backupDir) {
     return new File(backupDir, RESTORE_FILE);
   }
 }

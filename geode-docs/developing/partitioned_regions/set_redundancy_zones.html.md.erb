@@ -23,18 +23,18 @@ Group members into redundancy zones so <%=vars.product_name%> will separate redu
 
 Understand how to set a member's `gemfire.properties` settings. See [Reference](../../reference/book_intro.html#reference).
 
-Group your partition region hosts into redundancy zones with the `gemfire.properties` setting `redundancy-zone`. 
+Group your partition region hosts into redundancy zones with the `gemfire.properties` setting `redundancy-zone`.
 
 For example, if you had redundancy set to 1, so you have one primary and one secondary copy of each data entry, you could split primary and secondary data copies between two machine racks by defining one redundancy zone for each rack. To do this, you set this zone in the `gemfire.properties` for all members that run on one rack:
+
 ``` pre
 redundancy-zone=rack1
 ```
 
 You would set this zone `gemfire.properties` for all members on the other rack:
+
 ``` pre
 redundancy-zone=rack2
 ```
 
 Each secondary copy would be hosted on the rack opposite the rack where its primary copy is hosted.
-
-

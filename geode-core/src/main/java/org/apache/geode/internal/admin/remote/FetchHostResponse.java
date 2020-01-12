@@ -31,10 +31,10 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.GemFireVersion;
-import org.apache.geode.internal.cache.CacheServerLauncher;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.inet.LocalHostUtil;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 
 /**
@@ -74,11 +74,11 @@ public class FetchHostResponse extends AdminResponse {
         // handled in the finally block
       } finally {
         if (host == null) {
-          host = SocketCreator.getLocalHost();
+          host = LocalHostUtil.getLocalHost();
         }
       }
       m.host = host;
-      m.isDedicatedCacheServer = CacheServerLauncher.isDedicatedCacheServer;
+      m.isDedicatedCacheServer = false;
 
       DistributionConfig config = dm.getSystem().getConfig();
       m.name = config.getName();
@@ -88,7 +88,7 @@ public class FetchHostResponse extends AdminResponse {
       URL url = GemFireVersion.getJarURL();
       if (url == null) {
         throw new IllegalStateException(
-            LocalizedStrings.FetchHostResponse_COULD_NOT_FIND_GEMFIREJAR.toLocalizedString());
+            "Could not find gemfire.jar.");
       }
       String path = url.getPath();
       if (path.startsWith("file:")) {
@@ -139,13 +139,15 @@ public class FetchHostResponse extends AdminResponse {
     return this.isDedicatedCacheServer;
   }
 
+  @Override
   public int getDSFID() {
     return FETCH_HOST_RESPONSE;
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     DataSerializer.writeString(this.name, out);
     DataSerializer.writeObject(this.host, out);
     DataSerializer.writeObject(this.geodeHomeDir, out);
@@ -155,8 +157,9 @@ public class FetchHostResponse extends AdminResponse {
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.name = DataSerializer.readString(in);
     this.host = (InetAddress) DataSerializer.readObject(in);
     this.geodeHomeDir = (File) DataSerializer.readObject(in);
@@ -167,7 +170,7 @@ public class FetchHostResponse extends AdminResponse {
 
   @Override
   public String toString() {
-    return LocalizedStrings.FetchHostResponse_FETCHHOSTRESPONSE_FOR_0_HOST_1
-        .toLocalizedString(new Object[] {this.getRecipient(), this.host});
+    return String.format("FetchHostResponse for %s host=%s",
+        new Object[] {this.getRecipient(), this.host});
   }
 }

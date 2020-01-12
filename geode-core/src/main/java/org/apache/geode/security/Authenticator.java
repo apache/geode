@@ -56,6 +56,7 @@ public interface Authenticator extends CacheCallback {
   void init(Properties securityProps, LogWriter systemLogger, LogWriter securityLogger)
       throws AuthenticationFailedException;
 
+  @Override
   default void init(Properties securityProps) throws AuthenticationFailedException {
     init(securityProps, null, null);
   }

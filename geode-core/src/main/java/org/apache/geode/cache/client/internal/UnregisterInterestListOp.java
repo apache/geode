@@ -53,7 +53,7 @@ public class UnregisterInterestListOp {
     public UnregisterInterestListOpImpl(String region, List keys, boolean isClosing,
         boolean keepAlive) {
       super(MessageType.UNREGISTER_INTEREST_LIST, 4 + keys.size());
-      getMessage().addStringPart(region);
+      getMessage().addStringPart(region, true);
       {
         byte closingByte = (byte) (isClosing ? 0x01 : 0x00);
         getMessage().addBytesPart(new byte[] {closingByte});

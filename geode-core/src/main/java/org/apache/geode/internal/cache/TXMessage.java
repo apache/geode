@@ -36,8 +36,9 @@ import org.apache.geode.distributed.internal.ReplySender;
 import org.apache.geode.distributed.internal.SerialDistributionMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.partitioned.PartitionMessage;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public abstract class TXMessage extends SerialDistributionMessage
     implements MessageWithReply, TransactionMessage {
@@ -61,6 +62,7 @@ public abstract class TXMessage extends SerialDistributionMessage
     this.processorId = processor == null ? 0 : processor.getProcessorId();
   }
 
+  @Override
   public boolean canStartRemoteTransaction() {
     return false;
   }
@@ -76,12 +78,12 @@ public abstract class TXMessage extends SerialDistributionMessage
       InternalCache cache = dm.getCache();
       if (checkCacheClosing(cache) || checkDSClosing(cache.getInternalDistributedSystem())) {
         if (cache == null) {
-          thr = new CacheClosedException(LocalizedStrings.PartitionMessage_REMOTE_CACHE_IS_CLOSED_0
-              .toLocalizedString(dm.getId()));
+          thr = new CacheClosedException(String.format("Remote cache is closed: %s",
+              dm.getId()));
         } else {
           thr = cache
-              .getCacheClosedException(LocalizedStrings.PartitionMessage_REMOTE_CACHE_IS_CLOSED_0
-                  .toLocalizedString(dm.getId()));
+              .getCacheClosedException(String.format("Remote cache is closed: %s",
+                  dm.getId()));
         }
         return;
       }
@@ -103,8 +105,8 @@ public abstract class TXMessage extends SerialDistributionMessage
         logger.debug("shutdown caught, abandoning message: " + se);
       }
     } catch (RegionDestroyedException rde) {
-      thr = new ForceReattemptException(LocalizedStrings.PartitionMessage_REGION_IS_DESTROYED_IN_0
-          .toLocalizedString(dm.getDistributionManagerId()), rde);
+      thr = new ForceReattemptException(String.format("Region is destroyed in %s",
+          dm.getDistributionManagerId()), rde);
     } catch (VirtualMachineError err) {
       SystemFailure.initiateFailure(err);
       // If this ever returns, rethrow the error. We're poisoned
@@ -171,26 +173,30 @@ public abstract class TXMessage extends SerialDistributionMessage
   protected abstract boolean operateOnTx(TXId txId, ClusterDistributionManager dm)
       throws RemoteOperationException;
 
+  @Override
   public int getTXUniqId() {
     return this.txUniqId;
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     out.writeInt(this.processorId);
     out.writeInt(this.txUniqId);
     DataSerializer.writeObject(this.txMemberId, out);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.processorId = in.readInt();
     this.txUniqId = in.readInt();
     this.txMemberId = DataSerializer.readObject(in);
   }
 
+  @Override
   public InternalDistributedMember getMemberToMasqueradeAs() {
     if (txMemberId == null) {
       return getSender();
@@ -203,6 +209,7 @@ public abstract class TXMessage extends SerialDistributionMessage
     return this.processorId;
   }
 
+  @Override
   public InternalDistributedMember getTXOriginatorClient() {
     return this.txMemberId;
   }

@@ -35,11 +35,9 @@ import javax.transaction.xa.XAResource;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.internal.jta.TransactionManagerImpl;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * This class implements a connection pool manager for managed connections (JCA) for transactional
@@ -80,9 +78,10 @@ public class FacetsJCAConnectionManagerImpl
       isActive = true;
       mannPoolCache = new ManagedPoolCacheImpl(mcf, null, null, this, configs);
     } catch (Exception ex) {
-      logger.fatal(LocalizedMessage.create(
-          LocalizedStrings.FacetsJCAConnectionManagerImpl_FACETSJCACONNECTIONMANAGERIMPL_CONSTRUCTOR_AN_EXCEPTION_WAS_CAUGHT_WHILE_INITIALIZING_DUE_TO_0,
-          ex.getMessage()), ex);
+      logger.fatal(String.format(
+          "FacetsJCAConnectionManagerImpl::Constructor: An Exception was caught while initializing due to %s",
+          ex.getMessage()),
+          ex);
     }
   }
 
@@ -92,14 +91,13 @@ public class FacetsJCAConnectionManagerImpl
    *
    * @param javax.resource.spi.ConnectionRequestInfo
    *
-   * @throws ResourceException
    */
+  @Override
   public Object allocateConnection(ManagedConnectionFactory mcf, ConnectionRequestInfo reqInfo)
       throws ResourceException {
     if (!isActive) {
       throw new ResourceException(
-          LocalizedStrings.FacetsJCAConnectionManagerImpl_FACETSJCACONNECTIONMANAGERIMPLALLOCATECONNECTIONNO_VALID_CONNECTION_AVAILABLE
-              .toLocalizedString());
+          "FacetsJCAConnectionManagerImpl::allocateConnection::No valid Connection available");
     }
     ManagedConnection conn = null;
     try {
@@ -107,8 +105,9 @@ public class FacetsJCAConnectionManagerImpl
     } catch (PoolException ex) {
       ex.printStackTrace();
       throw new ResourceException(
-          LocalizedStrings.FacetsJCAConnectionManagerImpl_FACETSJCACONNECTIONMANAGERIMPL_ALLOCATECONNECTION_IN_GETTING_CONNECTION_FROM_POOL_DUE_TO_0
-              .toLocalizedString(ex.getMessage()),
+          String.format(
+              "FacetsJCAConnectionManagerImpl:: allocateConnection : in getting connection from pool due to %s",
+              ex.getMessage()),
           ex);
     }
     // Check if a connection is having a transactional context
@@ -142,13 +141,15 @@ public class FacetsJCAConnectionManagerImpl
       }
     } catch (RollbackException ex) {
       String exception =
-          LocalizedStrings.FacetsJCAConnectionManagerImpl_FACETSJCACONNECTIONMANAGERIMPL_AN_EXCEPTION_WAS_CAUGHT_WHILE_ALLOCATING_A_CONNECTION_DUE_TO_0
-              .toLocalizedString(ex.getMessage());
+          String.format(
+              "FacetsJCAConnectionManagerImpl:: An Exception was caught while allocating a connection due to %s",
+              ex.getMessage());
       throw new ResourceException(exception, ex);
     } catch (SystemException ex) {
       throw new ResourceException(
-          LocalizedStrings.FacetsJCAConnectionManagerImpl_FACETSJCACONNECTIONMANAGERIMPL_ALLOCATECONNECTION_SYSTEM_EXCEPTION_DUE_TO_0
-              .toLocalizedString(ex.getMessage()),
+          String.format(
+              "FacetsJCAConnectionManagerImpl:: allocateConnection :system exception due to %s",
+              ex.getMessage()),
           ex);
     }
     return conn.getConnection(subject, reqInfo);
@@ -159,6 +160,7 @@ public class FacetsJCAConnectionManagerImpl
    *
    * @param event ConnectionEvent
    */
+  @Override
   public void connectionErrorOccurred(ConnectionEvent event) {
     if (isActive) {
       // If its an XAConnection
@@ -195,6 +197,7 @@ public class FacetsJCAConnectionManagerImpl
    *
    * @param event ConnectionEvent Object.
    */
+  @Override
   public void connectionClosed(ConnectionEvent event) {
     if (isActive) {
       ManagedConnection conn = (ManagedConnection) event.getSource();
@@ -218,6 +221,7 @@ public class FacetsJCAConnectionManagerImpl
   /*
    * Local Transactions are not supported by Gemfire cache.
    */
+  @Override
   public void localTransactionCommitted(ConnectionEvent arg0) {
     // do nothing.
   }
@@ -225,6 +229,7 @@ public class FacetsJCAConnectionManagerImpl
   /*
    * Local Transactions are not supported by Gemfire cache.
    */
+  @Override
   public void localTransactionRolledback(ConnectionEvent arg0) {
     // do nothing.
   }
@@ -232,6 +237,7 @@ public class FacetsJCAConnectionManagerImpl
   /*
    * Local Transactions are not supported by Gemfire cache.
    */
+  @Override
   public void localTransactionStarted(ConnectionEvent arg0) {
     // do nothing
   }
@@ -246,6 +252,7 @@ public class FacetsJCAConnectionManagerImpl
    *
    * @see javax.transaction.Synchronization#afterCompletion(int)
    */
+  @Override
   public void afterCompletion(int arg0) {
     // DELIST THE XARESOURCE FROM THE LIST. RETURN ALL THE CONNECTIONS TO THE
     // POOL.
@@ -264,6 +271,7 @@ public class FacetsJCAConnectionManagerImpl
    *
    * @see javax.transaction.Synchronization#beforeCompletion()
    */
+  @Override
   public void beforeCompletion() {
     // TODO Auto-generated method stub
   }

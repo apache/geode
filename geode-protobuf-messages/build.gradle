@@ -15,48 +15,60 @@
  * limitations under the License.
  */
 
-apply plugin: 'com.google.protobuf'
-apply plugin: 'idea'
+apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
+
+import org.apache.geode.gradle.plugins.DependencyConstraints
 
 buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'com.google.protobuf:protobuf-gradle-plugin:' + project.'protobuf-gradle-plugin.version'
-    }
+  repositories {
+    mavenCentral()
+  }
+  dependencies {
+    classpath 'com.google.protobuf:protobuf-gradle-plugin:' + DependencyConstraints.get('protobuf-gradle-plugin.version')
+  }
 }
 
+apply plugin: 'com.google.protobuf'
+apply plugin: 'idea'
+apply from: "${project.projectDir}/../gradle/publish-java.gradle"
+
 dependencies {
-    compile 'com.google.protobuf:protobuf-java:' + project.'protobuf-java.version'
+  api(platform(project(':boms:geode-all-bom')))
+
+  api('com.google.protobuf:protobuf-java')
 }
 
 protobuf {
-    protoc {
-        // The artifact spec for the Protobuf Compiler
-        artifact = 'com.google.protobuf:protoc:' + project.'protoc.version'
-    }
-    generatedFilesBaseDir = "$buildDir/generated-src/proto"
+  protoc {
+    // The artifact spec for the Protobuf Compiler
+    artifact = 'com.google.protobuf:protoc:' + DependencyConstraints.get('protoc.version')
+  }
+  generatedFilesBaseDir = "$buildDir/generated-src/proto"
 }
 
 sourceSets {
-    main {
-        java {
-            srcDir "$buildDir/generated-src/proto/main/java"
-        }
+  main {
+    java {
+      srcDir "$buildDir/generated-src/proto/main/java"
     }
+  }
 }
+
 // let IntelliJ know where the generated sources are.
 idea {
-    module {
-        sourceDirs += file("${protobuf.generatedFilesBaseDir}/main/java")
-    }
+  module {
+    sourceDirs += file("${protobuf.generatedFilesBaseDir}/main/java")
+  }
 }
 
 task zip(type: Zip) {
-    from 'src/main/proto'
-    baseName = "${project.name}-definitions"
-    destinationDir = file("$buildDir/libs")
+  from 'src/main/proto'
+  baseName = "${project.name}-definitions"
+  destinationDir = file("$buildDir/libs")
 }
 
 assemble.dependsOn 'zip'
+
+afterEvaluate {
+  rootProject.generate.dependsOn(generateProto)
+}

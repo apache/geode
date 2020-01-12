@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.xmlcache;
 
+import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
+
 import java.util.List;
 
 import org.apache.geode.CancelCriterion;
@@ -32,59 +34,72 @@ import org.apache.geode.internal.cache.wan.GatewaySenderAttributes;
 public class SerialAsyncEventQueueCreation extends AbstractGatewaySender implements GatewaySender {
 
   public SerialAsyncEventQueueCreation(InternalCache cache, GatewaySenderAttributes attrs) {
-    super(cache, attrs);
+    super(cache, disabledClock(), attrs);
   }
 
+  @Override
   public void distribute(EnumListenerEvent operation, EntryEventImpl event,
       List<Integer> remoteDSIds) {}
 
   @Override
   public void start() {}
 
+  @Override
   public void stop() {}
 
+  @Override
   public void rebalance() {
     throw new UnsupportedOperationException();
   }
 
+  @Override
   public void fillInProfile(Profile profile) {}
 
+  @Override
   public CancelCriterion getCancelCriterion() {
     return null;
   }
 
+  @Override
   public DistributionAdvisor getDistributionAdvisor() {
     return null;
   }
 
+  @Override
   public DistributionManager getDistributionManager() {
     return null;
   }
 
+  @Override
   public String getFullPath() {
     return null;
   }
 
+  @Override
   public String getName() {
     return null;
   }
 
+  @Override
   public DistributionAdvisee getParentAdvisee() {
     return null;
   }
 
+  @Override
   public Profile getProfile() {
     return null;
   }
 
+  @Override
   public int getSerialNumber() {
     return 0;
   }
 
+  @Override
   public InternalDistributedSystem getSystem() {
     return null;
   }
 
   @Override
-  protected void setModifiedEventId(EntryEventImpl clonedEvent) {}
+  public void setModifiedEventId(EntryEventImpl clonedEvent) {}
 }

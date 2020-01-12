@@ -32,7 +32,8 @@ import java.io.IOException;
 public interface Delta {
 
   /**
-   * Returns true if this object has pending changes it can write out.
+   * Returns true if this object has pending changes it can write out as a delta.
+   * Returns false if this object must be transmitted in its entirety.
    */
   boolean hasDelta();
 
@@ -43,7 +44,6 @@ public interface Delta {
    *
    * Any delta state should be reset in this method.
    *
-   * @throws IOException
    */
   void toDelta(DataOutput out) throws IOException;
 
@@ -54,8 +54,6 @@ public interface Delta {
    * cannot be applied to the object. GemFire automatically handles an {@link InvalidDeltaException}
    * by reattempting the update by sending the full application object.
    *
-   * @throws IOException
-   * @throws InvalidDeltaException
    */
   void fromDelta(DataInput in) throws IOException, InvalidDeltaException;
 }

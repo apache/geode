@@ -14,13 +14,18 @@
  */
 package org.apache.geode.internal.sequencelog;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.cache.*;
+import org.apache.geode.internal.cache.CachedDeserializable;
+import org.apache.geode.internal.cache.EntryEventImpl;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.PlaceHolderDiskRegion;
+import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.entries.DiskEntry.RecoveredEntry;
 import org.apache.geode.internal.cache.persistence.DiskStoreID;
 import org.apache.geode.internal.offheap.StoredObject;
 import org.apache.geode.internal.offheap.annotations.Unretained;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 
 /**
@@ -30,12 +35,13 @@ import org.apache.geode.internal.offheap.annotations.Unretained;
  * TODO - I think I need some options to choose to deserialize a key to record states.
  */
 public class EntryLogger {
+  @Immutable
   private static final SequenceLogger GRAPH_LOGGER = SequenceLoggerImpl.getInstance();
-  private static ThreadLocal<String> SOURCE = new ThreadLocal<String>();
-  private static ThreadLocal<String> SOURCE_TYPE = new ThreadLocal<String>();
+  private static final ThreadLocal<String> SOURCE = new ThreadLocal<String>();
+  private static final ThreadLocal<String> SOURCE_TYPE = new ThreadLocal<String>();
 
   public static final String TRACK_VALUES_PROPERTY =
-      DistributionConfig.GEMFIRE_PREFIX + "EntryLogger.TRACK_VALUES";
+      GeodeGlossary.GEMFIRE_PREFIX + "EntryLogger.TRACK_VALUES";
   private static final boolean TRACK_VALUES = Boolean.getBoolean(TRACK_VALUES_PROPERTY);
 
   public static void clearSource() {

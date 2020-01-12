@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.ANY_INIT;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,6 +29,7 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheWriterException;
@@ -47,17 +50,16 @@ import org.apache.geode.cache.partition.PartitionNotAvailableException;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.cache.util.CacheWriterAdapter;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.cache.LocalRegion.InitializationLevel;
 import org.apache.geode.internal.cache.partitioned.Bucket;
 import org.apache.geode.internal.cache.partitioned.PRLocallyDestroyedException;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 public class PartitionedRegionHelper {
   private static final Logger logger = LogService.getLogger();
@@ -83,7 +85,7 @@ public class PartitionedRegionHelper {
    * meta-data and this property controls the delay before giving up trying to acquire a global lock
    */
   static final String VM_OWNERSHIP_WAIT_TIME_PROPERTY =
-      DistributionConfig.GEMFIRE_PREFIX + "VM_OWNERSHIP_WAIT_TIME";
+      GeodeGlossary.GEMFIRE_PREFIX + "VM_OWNERSHIP_WAIT_TIME";
 
   /** Wait forever for ownership */
   static final long VM_OWNERSHIP_WAIT_TIME_DEFAULT = Long.MAX_VALUE;
@@ -94,8 +96,10 @@ public class PartitionedRegionHelper {
 
   public static final int DEFAULT_TOTAL_WAIT_RETRY_ITERATION = 60 * 60 * 1000; // milliseconds
 
+  @Immutable
   public static final DataPolicy DEFAULT_DATA_POLICY = DataPolicy.PARTITION;
 
+  @Immutable
   public static final Set ALLOWED_DATA_POLICIES;
 
   static final Object dlockMonitor = new Object();
@@ -160,9 +164,10 @@ public class PartitionedRegionHelper {
           try {
             root.destroy(regionIdentifier);
           } catch (EntryNotFoundException e) {
-            logger.warn(LocalizedMessage.create(
-                LocalizedStrings.PartitionedRegionHelper_GOT_ENTRYNOTFOUNDEXCEPTION_IN_DESTROY_OP_FOR_ALLPRREGION_KEY_0,
-                regionIdentifier), e);
+            logger.warn(
+                String.format("Got EntryNotFoundException in destroy Op for allPRRegion key, %s",
+                    regionIdentifier),
+                e);
           }
         } else {
           prConfig.removeNode(failedNode);
@@ -209,7 +214,7 @@ public class PartitionedRegionHelper {
       factory.setScope(Scope.DISTRIBUTED_ACK);
       factory.setDataPolicy(DataPolicy.REPLICATE);
       factory.addCacheListener(new FixedPartitionAttributesListener());
-      if (Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "PRDebug")) {
+      if (Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "PRDebug")) {
         factory.addCacheListener(new CacheListenerAdapter() {
           @Override
           public void afterCreate(EntryEvent event) {
@@ -250,8 +255,9 @@ public class PartitionedRegionHelper {
             final PartitionRegionConfig oldConf = (PartitionRegionConfig) event.getOldValue();
             if (newConf != oldConf && !newConf.isGreaterNodeListVersion(oldConf)) {
               throw new CacheWriterException(
-                  LocalizedStrings.PartitionedRegionHelper_NEW_PARTITIONEDREGIONCONFIG_0_DOES_NOT_HAVE_NEWER_VERSION_THAN_PREVIOUS_1
-                      .toLocalizedString(new Object[] {newConf, oldConf}));
+                  String.format(
+                      "New PartitionedRegionConfig %s does not have newer version than previous %s",
+                      new Object[] {newConf, oldConf}));
             }
           }
         });
@@ -260,8 +266,10 @@ public class PartitionedRegionHelper {
       RegionAttributes ra = factory.create();
       // Create anonymous stats holder for Partitioned Region meta data
       final HasCachePerfStats prMetaStatsHolder = new HasCachePerfStats() {
+        @Override
         public CachePerfStats getCachePerfStats() {
-          return new CachePerfStats(cache.getDistributedSystem(), "partitionMetaData");
+          return new CachePerfStats(cache.getDistributedSystem(), "RegionStats-partitionMetaData",
+              cache.getStatisticsClock());
         }
       };
 
@@ -373,14 +381,16 @@ public class PartitionedRegionHelper {
           // Fix for #45365, we don't schedule an asynchronous task until
           // we have determined the node to remove (Which includes the
           // serial number).
-          cache.getDistributionManager().getPrMetaDataCleanupThreadPool().execute(new Runnable() {
-            public void run() {
-              cleanPartitionedRegionMetaDataForNode(cache, node1, prConf, prName);
-              if (postCleanupTask != null) {
-                postCleanupTask.run();
-              }
-            }
-          });
+          cache.getDistributionManager().getExecutors().getPrMetaDataCleanupThreadPool()
+              .execute(new Runnable() {
+                @Override
+                public void run() {
+                  cleanPartitionedRegionMetaDataForNode(cache, node1, prConf, prName);
+                  if (postCleanupTask != null) {
+                    postCleanupTask.run();
+                  }
+                }
+              });
           runPostCleanUp = false;
           return;
         }
@@ -531,27 +541,30 @@ public class PartitionedRegionHelper {
         if (partition == null) {
           Object[] prms = new Object[] {pr.getName(), resolver};
           throw new IllegalStateException(
-              LocalizedStrings.PartitionedRegionHelper_FOR_REGION_0_PARTITIONRESOLVER_1_RETURNED_PARTITION_NAME_NULL
-                  .toLocalizedString(prms));
+              String.format("For region %s, partition resolver %s returned partition name null",
+                  prms));
         }
         Integer[] bucketArray = partitionMap.get(partition);
         if (bucketArray == null) {
           Object[] prms = new Object[] {pr.getName(), partition};
           throw new PartitionNotAvailableException(
-              LocalizedStrings.PartitionedRegionHelper_FOR_FIXED_PARTITIONED_REGION_0_FIXED_PARTITION_1_IS_NOT_AVAILABLE_ON_ANY_DATASTORE
-                  .toLocalizedString(prms));
+              String.format(
+                  "For FixedPartitionedRegion %s, partition %s is not available on any datastore.",
+                  prms));
         }
         int numBukets = bucketArray[1];
         resolveKey = (numBukets == 1) ? partition : resolver.getRoutingObject(event);
       } else if (resolver == null) {
         throw new IllegalStateException(
-            LocalizedStrings.PartitionedRegionHelper_FOR_FIXED_PARTITIONED_REGION_0_FIXED_PARTITION_RESOLVER_IS_NOT_AVAILABLE
-                .toString(pr.getName()));
-      } else if (!(resolver instanceof FixedPartitionResolver)) {
+            String.format(
+                "For FixedPartitionedRegion %s, FixedPartitionResolver is not available (neither through the partition attribute partition-resolver nor key/callbackArg implementing FixedPartitionResolver)",
+                pr.getName()));
+      } else {
         Object[] prms = new Object[] {pr.getName(), resolver};
         throw new IllegalStateException(
-            LocalizedStrings.PartitionedRegionHelper_FOR_FIXED_PARTITIONED_REGION_0_RESOLVER_DEFINED_1_IS_NOT_AN_INSTANCE_OF_FIXEDPARTITIONRESOLVER
-                .toLocalizedString(prms));
+            String.format(
+                "For FixedPartitionedRegion %s, Resolver defined %s is not an instance of FixedPartitionResolver",
+                prms));
       }
       return assignFixedBucketId(pr, partition, resolveKey);
     } else {
@@ -569,8 +582,7 @@ public class PartitionedRegionHelper {
         resolveKey = resolver.getRoutingObject(event);
         if (resolveKey == null) {
           throw new IllegalStateException(
-              LocalizedStrings.PartitionedRegionHelper_THE_ROUTINGOBJECT_RETURNED_BY_PARTITIONRESOLVER_IS_NULL
-                  .toLocalizedString());
+              "The RoutingObject returned by PartitionResolver is null.");
         }
       }
       // Finally, calculate the hash.
@@ -624,16 +636,17 @@ public class PartitionedRegionHelper {
       if (isPartitionAvailable) {
         Object[] prms = new Object[] {pr.getName(), partition};
         throw new IllegalStateException(
-            LocalizedStrings.PartitionedRegionHelper_FOR_REGION_0_FOR_PARTITION_1_PARTITIION_NUM_BUCKETS_ARE_SET_TO_0_BUCKETS_CANNOT_BE_CREATED_ON_THIS_MEMBER
-                .toLocalizedString(prms));
+            String.format(
+                "For region %s, For partition %s partition-num-buckets is set to 0. Buckets cann not be created on this partition.",
+                prms));
       }
     }
 
     if (!isPartitionAvailable) {
       Object[] prms = new Object[] {pr.getName(), partition};
       throw new PartitionNotAvailableException(
-          LocalizedStrings.PartitionedRegionHelper_FOR_REGION_0_PARTITION_NAME_1_IS_NOT_AVAILABLE_ON_ANY_DATASTORE
-              .toLocalizedString(prms));
+          String.format("For region %s, partition name %s is not available on any datastore.",
+              prms));
     }
     int hc = resolveKey.hashCode();
     int bucketId = Math.abs(hc % partitionNumBuckets);
@@ -691,8 +704,7 @@ public class PartitionedRegionHelper {
     // PartitionedRegion.getPRFromId(Integer.parseInt(prid));
 
     Region region;
-    int oldLevel = // Set thread local flag to allow entrance through initialization Latch
-        LocalRegion.setThreadInitLevelRequirement(LocalRegion.ANY_INIT);
+    final InitializationLevel oldLevel = LocalRegion.setThreadInitLevelRequirement(ANY_INIT);
     try {
       region = cache.getRegion(prid);
     } finally {
@@ -759,7 +771,7 @@ public class PartitionedRegionHelper {
   }
 
 
-  public static String TWO_SEPARATORS = Region.SEPARATOR + Region.SEPARATOR;
+  public static final String TWO_SEPARATORS = Region.SEPARATOR + Region.SEPARATOR;
 
   public static String unescapePRPath(String escapedPath) {
     String path = escapedPath.replace('_', Region.SEPARATOR_CHAR);
@@ -823,7 +835,7 @@ public class PartitionedRegionHelper {
    */
   public static void logForDataLoss(PartitionedRegion partitionedRegion, int bucketId,
       String callingMethod) {
-    if (!Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "PRDebug")) {
+    if (!Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "PRDebug")) {
       return;
     }
     Region root = PartitionedRegionHelper.getPRRoot(partitionedRegion.getCache());
@@ -835,21 +847,18 @@ public class PartitionedRegionHelper {
       return;
 
     Set members = partitionedRegion.getDistributionManager().getDistributionManagerIds();
-    logger.warn(LocalizedMessage.create(
-        LocalizedStrings.PartitionedRegionHelper_DATALOSS___0____SIZE_OF_NODELIST_AFTER_VERIFYBUCKETNODES_FOR_BUKID___1__IS_0,
-        new Object[] {callingMethod, bucketId}));
-    logger.warn(LocalizedMessage.create(
-        LocalizedStrings.PartitionedRegionHelper_DATALOSS___0____NODELIST_FROM_PRCONFIG___1,
-        new Object[] {callingMethod, printCollection(prConfig.getNodes())}));
-    logger.warn(LocalizedMessage.create(
-        LocalizedStrings.PartitionedRegionHelper_DATALOSS___0____CURRENT_MEMBERSHIP_LIST___1,
-        new Object[] {callingMethod, printCollection(members)}));
+    logger.warn(
+        "DATALOSS (  {}  ) :: Size of nodeList After verifyBucketNodes for bucket ID,  {}  is 0",
+        callingMethod, bucketId);
+    logger.warn("DATALOSS (  {}  ) :: NodeList from prConfig,  {}",
+        callingMethod, printCollection(prConfig.getNodes()));
+    logger.warn("DATALOSS (  {}  ) :: Current Membership List,  {}",
+        callingMethod, printCollection(members));
   }
 
   /**
    * Utility method to print a collection.
    *
-   * @return String
    */
   public static String printCollection(Collection c) {
     if (c != null) {
@@ -889,8 +898,9 @@ public class PartitionedRegionHelper {
     }
     Object[] prms = new Object[] {pr.getName(), bucketId};
     throw new PartitionNotAvailableException(
-        LocalizedStrings.PartitionedRegionHelper_FOR_FIXED_PARTITIONED_REGION_0_FIXED_PARTITION_IS_NOT_AVAILABLE_FOR_BUCKET_1_ON_ANY_DATASTORE
-            .toLocalizedString(prms));
+        String.format(
+            "For FixedPartitionedRegion %s, Fixed partition is not defined for bucket id %s on any datastore",
+            prms));
   }
 
   private static Set<String> getAllAvailablePartitions(PartitionedRegion region) {
@@ -931,19 +941,23 @@ public class PartitionedRegionHelper {
       this.cache = cache;
     }
 
+    @Override
     public void memberJoined(DistributionManager distributionManager,
         InternalDistributedMember id) {
 
     }
 
+    @Override
     public void memberDeparted(DistributionManager distributionManager,
         final InternalDistributedMember id, boolean crashed) {
       PartitionedRegionHelper.cleanUpMetaDataOnNodeFailure(cache, id);
     }
 
+    @Override
     public void memberSuspect(DistributionManager distributionManager, InternalDistributedMember id,
         InternalDistributedMember whoSuspected, String reason) {}
 
+    @Override
     public void quorumLost(DistributionManager distributionManager,
         Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {}
 
@@ -952,6 +966,7 @@ public class PartitionedRegionHelper {
   static class FixedPartitionAttributesListener extends CacheListenerAdapter {
     private static final Logger logger = LogService.getLogger();
 
+    @Override
     public void afterCreate(EntryEvent event) {
       PartitionRegionConfig prConfig = (PartitionRegionConfig) event.getNewValue();
       if (!prConfig.getElderFPAs().isEmpty()) {
@@ -959,6 +974,7 @@ public class PartitionedRegionHelper {
       }
     }
 
+    @Override
     public void afterUpdate(EntryEvent event) {
       PartitionRegionConfig prConfig = (PartitionRegionConfig) event.getNewValue();
       if (!prConfig.getElderFPAs().isEmpty()) {

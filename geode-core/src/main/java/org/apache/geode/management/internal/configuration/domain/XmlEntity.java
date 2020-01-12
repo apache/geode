@@ -12,13 +12,13 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.management.internal.configuration.domain;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.Serializable;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.HashMap;
@@ -31,7 +31,7 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.xpath.XPathExpressionException;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -43,12 +43,12 @@ import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.VersionedDataSerializable;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils.XPathContext;
 
@@ -91,7 +91,8 @@ public class XmlEntity implements VersionedDataSerializable {
   }
 
   private static CacheProvider createDefaultCacheProvider() {
-    return () -> (InternalCache) CacheFactory.getAnyInstance();
+    return () -> ((InternalCache) CacheFactory.getAnyInstance())
+        .getCacheForProcessingClientRequests();
   }
 
   /**
@@ -101,7 +102,7 @@ public class XmlEntity implements VersionedDataSerializable {
    */
   @Deprecated
   public XmlEntity() {
-    this.cacheProvider = createDefaultCacheProvider();
+    cacheProvider = createDefaultCacheProvider();
   }
 
   /**
@@ -114,9 +115,9 @@ public class XmlEntity implements VersionedDataSerializable {
    * @param value Value of the attribute to match.
    */
   public XmlEntity(final String type, final String key, final String value) {
-    this.cacheProvider = createDefaultCacheProvider();
+    cacheProvider = createDefaultCacheProvider();
     this.type = type;
-    this.attributes.put(key, value);
+    attributes.put(key, value);
 
     init();
   }
@@ -137,10 +138,10 @@ public class XmlEntity implements VersionedDataSerializable {
    */
   public XmlEntity(final String parentType, final String parentKey, final String parentValue,
       final String childType, final String childKey, final String childValue) {
-    this.cacheProvider = createDefaultCacheProvider();
+    cacheProvider = createDefaultCacheProvider();
     this.parentType = parentType;
-    this.type = childType;
-    initializeSearchString(parentKey, parentValue, this.prefix, childKey, childValue);
+    type = childType;
+    initializeSearchString(parentKey, parentValue, prefix, childKey, childValue);
   }
 
   /**
@@ -164,9 +165,9 @@ public class XmlEntity implements VersionedDataSerializable {
       final String childPrefix, final String childNamespace, final String childType,
       final String childKey, final String childValue) {
     // Note: Do not invoke init
-    this.cacheProvider = createDefaultCacheProvider();
+    cacheProvider = createDefaultCacheProvider();
     this.parentType = parentType;
-    this.type = childType;
+    type = childType;
     this.childPrefix = childPrefix;
     this.childNamespace = childNamespace;
     initializeSearchString(parentKey, parentValue, childPrefix, childKey, childValue);
@@ -177,18 +178,15 @@ public class XmlEntity implements VersionedDataSerializable {
       final String key, final String value) {
     this.cacheProvider = cacheProvider;
     this.parentType = parentType;
-    this.type = childType;
-    this.prefix = childPrefix;
-    this.namespace = childNamespace;
+    type = childType;
+    prefix = childPrefix;
+    namespace = childNamespace;
     this.childPrefix = childPrefix;
     this.childNamespace = childNamespace;
-    this.attributes.put(key, value);
+    attributes.put(key, value);
 
-    StringBuilder sb = new StringBuilder();
-    sb.append("//").append(this.parentType);
-    sb.append('/').append(childPrefix).append(':').append(this.type);
-    this.searchString = sb.toString();
-    this.xmlDefinition = parseXmlForDefinition();
+    searchString = "//" + this.parentType + '/' + childPrefix + ':' + type;
+    xmlDefinition = parseXmlForDefinition();
   }
 
   private String parseXmlForDefinition() {
@@ -196,7 +194,7 @@ public class XmlEntity implements VersionedDataSerializable {
 
     final StringWriter stringWriter = new StringWriter();
     final PrintWriter printWriter = new PrintWriter(stringWriter);
-    CacheXmlGenerator.generate(cache, printWriter, true, false, false);
+    CacheXmlGenerator.generate(cache, printWriter, false, false);
     printWriter.close();
     InputSource inputSource = new InputSource(new StringReader(stringWriter.toString()));
 
@@ -219,18 +217,18 @@ public class XmlEntity implements VersionedDataSerializable {
   private void initializeSearchString(final String parentKey, final String parentValue,
       final String childPrefix, final String childKey, final String childValue) {
     StringBuilder sb = new StringBuilder();
-    sb.append("//").append(this.prefix).append(':').append(this.parentType);
+    sb.append("//").append(prefix).append(':').append(parentType);
 
     if (StringUtils.isNotBlank(parentKey) && StringUtils.isNotBlank(parentValue)) {
       sb.append("[@").append(parentKey).append("='").append(parentValue).append("']");
     }
 
-    sb.append('/').append(childPrefix).append(':').append(this.type);
+    sb.append('/').append(childPrefix).append(':').append(type);
 
     if (StringUtils.isNotBlank(childKey) && StringUtils.isNotBlank(childValue)) {
       sb.append("[@").append(childKey).append("='").append(childValue).append("']");
     }
-    this.searchString = sb.toString();
+    searchString = sb.toString();
   }
 
   /**
@@ -260,7 +258,7 @@ public class XmlEntity implements VersionedDataSerializable {
 
     final StringWriter stringWriter = new StringWriter();
     final PrintWriter printWriter = new PrintWriter(stringWriter);
-    CacheXmlGenerator.generate(cache, printWriter, true, false, false);
+    CacheXmlGenerator.generate(cache, printWriter, false, false);
     printWriter.close();
 
     return loadXmlDefinition(stringWriter.toString());
@@ -290,10 +288,10 @@ public class XmlEntity implements VersionedDataSerializable {
    * @return XML for XmlEntity if found, otherwise {@code null}.
    * @since GemFire 8.1
    */
-  public String loadXmlDefinition(final Document document)
+  private String loadXmlDefinition(final Document document)
       throws XPathExpressionException, TransformerFactoryConfigurationError, TransformerException {
-    this.searchString = createQueryString(prefix, type, attributes);
-    logger.info("XmlEntity:searchString: {}", this.searchString);
+    searchString = createQueryString(prefix, type, attributes);
+    logger.info("XmlEntity:searchString: {}", searchString);
 
     if (document != null) {
       XPathContext xpathContext = new XPathContext();
@@ -303,7 +301,7 @@ public class XmlEntity implements VersionedDataSerializable {
       xpathContext.addNamespace(childPrefix, childNamespace);
 
       // Create an XPathContext here
-      Node element = XmlUtils.querySingleElement(document, this.searchString, xpathContext);
+      Node element = XmlUtils.querySingleElement(document, searchString, xpathContext);
 
       // Must copy to preserve namespaces.
       if (null != element) {
@@ -349,15 +347,15 @@ public class XmlEntity implements VersionedDataSerializable {
   }
 
   public String getSearchString() {
-    return this.searchString;
+    return searchString;
   }
 
   public String getType() {
-    return this.type;
+    return type;
   }
 
   public Map<String, String> getAttributes() {
-    return this.attributes;
+    return attributes;
   }
 
   /**
@@ -368,7 +366,7 @@ public class XmlEntity implements VersionedDataSerializable {
    * @return The value of the attribute.
    */
   public String getAttribute(String key) {
-    return this.attributes.get(key);
+    return attributes.get(key);
   }
 
   /**
@@ -378,15 +376,15 @@ public class XmlEntity implements VersionedDataSerializable {
    * @return The name or id attribute or null if neither is found.
    */
   public String getNameOrId() {
-    if (this.attributes.containsKey("name")) {
-      return this.attributes.get("name");
+    if (attributes.containsKey("name")) {
+      return attributes.get("name");
     }
 
-    return this.attributes.get("id");
+    return attributes.get("id");
   }
 
   public String getXmlDefinition() {
-    return this.xmlDefinition;
+    return xmlDefinition;
   }
 
   /**
@@ -415,7 +413,7 @@ public class XmlEntity implements VersionedDataSerializable {
    * @return XML element prefix for the child element
    */
   public String getChildPrefix() {
-    return this.childPrefix;
+    return childPrefix;
   }
 
   /**
@@ -424,26 +422,26 @@ public class XmlEntity implements VersionedDataSerializable {
    * @return XML element namespace for the child element
    */
   public String getChildNamespace() {
-    return this.childNamespace;
+    return childNamespace;
   }
 
   @Override
   public Version[] getSerializationVersions() {
-    return new Version[] {Version.GEODE_111};
+    return new Version[] {Version.GEODE_1_1_1};
   }
 
   @Override
   public String toString() {
-    return "XmlEntity [namespace=" + namespace + ", type=" + this.type + ", attributes="
-        + this.attributes + ", xmlDefinition=" + this.xmlDefinition + ']';
+    return "XmlEntity [namespace=" + namespace + ", type=" + type + ", attributes="
+        + attributes + ", xmlDefinition=" + xmlDefinition + ']';
   }
 
   @Override
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((this.attributes == null) ? 0 : this.attributes.hashCode());
-    result = prime * result + ((this.type == null) ? 0 : this.type.hashCode());
+    result = prime * result + ((attributes == null) ? 0 : attributes.hashCode());
+    result = prime * result + ((type == null) ? 0 : type.hashCode());
     return result;
   }
 
@@ -456,55 +454,53 @@ public class XmlEntity implements VersionedDataSerializable {
     if (getClass() != obj.getClass())
       return false;
     XmlEntity other = (XmlEntity) obj;
-    if (this.attributes == null) {
+    if (attributes == null) {
       if (other.attributes != null)
         return false;
-    } else if (!this.attributes.equals(other.attributes))
+    } else if (!attributes.equals(other.attributes))
       return false;
-    if (this.namespace == null) {
+    if (namespace == null) {
       if (other.namespace != null)
         return false;
-    } else if (!this.namespace.equals(other.namespace))
+    } else if (!namespace.equals(other.namespace))
       return false;
-    if (this.type == null) {
-      if (other.type != null)
-        return false;
-    } else if (!this.type.equals(other.type))
-      return false;
-    return true;
+    if (type == null) {
+      return other.type == null;
+    } else
+      return type.equals(other.type);
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
     toDataPre_GEODE_1_1_1_0(out);
-    DataSerializer.writeString(this.childPrefix, out);
-    DataSerializer.writeString(this.childNamespace, out);
+    DataSerializer.writeString(childPrefix, out);
+    DataSerializer.writeString(childNamespace, out);
   }
 
   public void toDataPre_GEODE_1_1_1_0(DataOutput out) throws IOException {
-    DataSerializer.writeString(this.type, out);
-    DataSerializer.writeObject(this.attributes, out);
-    DataSerializer.writeString(this.xmlDefinition, out);
-    DataSerializer.writeString(this.searchString, out);
-    DataSerializer.writeString(this.prefix, out);
-    DataSerializer.writeString(this.namespace, out);
+    DataSerializer.writeString(type, out);
+    DataSerializer.writeObject(attributes, out);
+    DataSerializer.writeString(xmlDefinition, out);
+    DataSerializer.writeString(searchString, out);
+    DataSerializer.writeString(prefix, out);
+    DataSerializer.writeString(namespace, out);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     fromDataPre_GEODE_1_1_1_0(in);
-    this.childPrefix = DataSerializer.readString(in);
-    this.childNamespace = DataSerializer.readString(in);
+    childPrefix = DataSerializer.readString(in);
+    childNamespace = DataSerializer.readString(in);
   }
 
   public void fromDataPre_GEODE_1_1_1_0(DataInput in) throws IOException, ClassNotFoundException {
-    this.type = DataSerializer.readString(in);
-    this.attributes = DataSerializer.readObject(in);
-    this.xmlDefinition = DataSerializer.readString(in);
-    this.searchString = DataSerializer.readString(in);
-    this.prefix = DataSerializer.readString(in);
-    this.namespace = DataSerializer.readString(in);
-    this.cacheProvider = createDefaultCacheProvider();
+    type = DataSerializer.readString(in);
+    attributes = DataSerializer.readObject(in);
+    xmlDefinition = DataSerializer.readString(in);
+    searchString = DataSerializer.readString(in);
+    prefix = DataSerializer.readString(in);
+    namespace = DataSerializer.readString(in);
+    cacheProvider = createDefaultCacheProvider();
   }
 
   /**
@@ -528,6 +524,7 @@ public class XmlEntity implements VersionedDataSerializable {
      *
      * @since GemFire 8.1
      */
+    @SuppressWarnings("deprecation")
     XmlEntityBuilder() {
       xmlEntity = new XmlEntity();
     }
@@ -538,9 +535,9 @@ public class XmlEntity implements VersionedDataSerializable {
      *
      * You are required to at least call {@link #withType(String)}.
      *
-     * @return XmlEntity
      * @since GemFire 8.1
      */
+    @SuppressWarnings("deprecation")
     public XmlEntity build() {
       xmlEntity.init();
 
@@ -604,23 +601,6 @@ public class XmlEntity implements VersionedDataSerializable {
      */
     public XmlEntityBuilder withAttributes(final Map<String, String> attributes) {
       xmlEntity.attributes = attributes;
-
-      return this;
-    }
-
-    /**
-     * Sets a config xml document source to get the entity XML Definition from as returned by
-     * {@link XmlEntity#getXmlDefinition()}. Defaults to current active configuration for
-     * {@link Cache}.
-     *
-     * <b>Should only be used for testing.</b>
-     *
-     * @param xmlDocument Config XML document.
-     * @return this XmlEntityBuilder
-     * @since GemFire 8.1
-     */
-    public XmlEntityBuilder withConfig(final String xmlDocument) {
-      xmlEntity.xmlDefinition = xmlEntity.loadXmlDefinition(xmlDocument);
 
       return this;
     }

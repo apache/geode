@@ -12,6 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.cache.client;
 
 import java.net.InetSocketAddress;
@@ -140,8 +141,13 @@ public interface Pool {
    * Returns <code>true</code> if thread local connections are enabled on this pool.
    *
    * @see PoolFactory#setThreadLocalConnections
+   * @deprecated Since Geode 1.10.0. Thread local connections are ignored. Will be removed in future
+   *             major release. Now always returns false.
    */
-  boolean getThreadLocalConnections();
+  @Deprecated
+  default boolean getThreadLocalConnections() {
+    return false;
+  }
 
   /**
    * Returns the true if a server-to-client subscriptions are enabled on this pool.
@@ -250,8 +256,12 @@ public interface Pool {
    * other threads.
    *
    * If this pool is not using thread local connections, this method will have no effect.
+   *
+   * @deprecated Since Geode 1.10.0. Thread local connections are ignored. Will be removed in future
+   *             major release.
    */
-  void releaseThreadLocalConnection();
+  @Deprecated
+  default void releaseThreadLocalConnection() {}
 
   /**
    * Returns the QueryService for this Pool. The query operations performed using this QueryService

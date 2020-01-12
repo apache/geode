@@ -12,23 +12,22 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- *
- */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.MessageType;
-import org.apache.geode.internal.cache.tier.sockets.*;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
+import org.apache.geode.internal.cache.tier.sockets.Message;
+import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.security.SecurityService;
 
 
 public class Default extends BaseCommand {
 
+  @Immutable
   private static final Default singleton = new Default();
 
   public static Command getCommand() {
@@ -42,12 +41,11 @@ public class Default extends BaseCommand {
       final SecurityService securityService, long start) throws IOException {
     // requiresResponse = true; NOT NEEDED... ALWAYS SEND ERROR RESPONSE
 
-    logger.fatal(
-        LocalizedMessage.create(LocalizedStrings.Default_0_UNKNOWN_MESSAGE_TYPE_1_WITH_TX_2_FROM_3,
-            new Object[] {serverConnection.getName(),
-                MessageType.getString(clientMessage.getMessageType()),
-                Integer.valueOf(clientMessage.getTransactionId()),
-                serverConnection.getSocketString()}));
+    logger.fatal("{}: Unknown message type ({}) with tx: {} from {}",
+        new Object[] {serverConnection.getName(),
+            MessageType.getString(clientMessage.getMessageType()),
+            Integer.valueOf(clientMessage.getTransactionId()),
+            serverConnection.getSocketString()});
     writeErrorResponse(clientMessage, MessageType.UNKNOWN_MESSAGE_TYPE_ERROR, serverConnection);
     // responded = true; NOT NEEDED... ALWAYS SEND ERROR RESPONSE
   }

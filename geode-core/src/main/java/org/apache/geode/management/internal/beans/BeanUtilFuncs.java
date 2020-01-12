@@ -22,16 +22,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
-import java.util.Set;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.GemFireProperties;
-import org.apache.geode.management.internal.cli.CliUtil;
 
 /**
  * Various Utility Functions to be used by MBeans
@@ -117,22 +112,6 @@ public class BeanUtilFuncs {
       logFile = new File(logFile.getAbsolutePath());
     }
     return tailSystemLog(logFile, numLines);
-  }
-
-  public static DistributedMember getDistributedMemberByNameOrId(String memberNameOrId) {
-    DistributedMember memberFound = null;
-
-    if (memberNameOrId != null) {
-      InternalCache cache = (InternalCache) CacheFactory.getAnyInstance();
-      Set<DistributedMember> memberSet = CliUtil.getAllMembers(cache);
-      for (DistributedMember member : memberSet) {
-        if (memberNameOrId.equals(member.getId()) || memberNameOrId.equals(member.getName())) {
-          memberFound = member;
-          break;
-        }
-      }
-    }
-    return memberFound;
   }
 
   public static GemFireProperties initGemfireProperties(DistributionConfig config) {

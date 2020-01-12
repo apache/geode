@@ -12,20 +12,22 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.i18n;
 
 import java.text.MessageFormat;
 import java.util.Locale;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.i18n.AbstractStringIdResourceBundle;
+import org.apache.geode.internal.logging.LogWriterImpl;
 
 /**
  * This class forms the basis of the i18n strategy. Its primary function is to be used as a key to
  * be passed to an instance of StringIdResourceBundle.
  *
- * @since GemFire 6.0
+ * @deprecated localization in Geode is deprecated
  */
+@Deprecated
 public class StringId {
   /** The root name of the ResourceBundle */
   private static final String RESOURCE_CLASS =
@@ -35,50 +37,39 @@ public class StringId {
    * A unique identifier that is written when this StringId is logged to allow for reverse
    * translation.
    *
-   * @see org.apache.geode.internal.logging.LogWriterImpl
+   * @see LogWriterImpl
    */
   public final int id;
   /** the English translation of text */
   private final String text;
   /** ResourceBundle to use for translation, shared amongst all instances */
-  private static volatile AbstractStringIdResourceBundle rb = null;
+  @Immutable
+  private static final AbstractStringIdResourceBundle rb;
   /**
    * The locale of the current ResourceBundle, if this changes we must update the ResourceBundle.
    */
-  private static volatile Locale currentLocale = null;
+  @Immutable
+  private static final Locale currentLocale;
 
+  @Immutable
   private static boolean includeMsgIDs;
 
   /**
    * A StringId to allow users to log a literal String using the
-   * {@link org.apache.geode.i18n.LogWriterI18n}
+   * {@link org.apache.geode.LogWriter}
    */
+  @Immutable
   public static final StringId LITERAL = new StringId(1, "{0}");
 
   static {
-    setLocale(Locale.getDefault());
-  }
+    Locale locale = Locale.getDefault();
 
-  /*
-   * Update {@link #currentlocale} and {@link #rb} This method should be used sparingly as there is
-   * a small window for a race condition.
-   *
-   * @params locale switch to use this locale. if null then {@link Locale#getDefault()} is used.
-   */
-  public static void setLocale(Locale l) {
-    Locale locale = l;
-    if (locale == null) {
-      locale = Locale.getDefault();
-    }
-
-    if (locale != currentLocale) {
-      AbstractStringIdResourceBundle tempResourceBundle = StringId.getBundle(locale);
-      currentLocale = locale;
-      rb = tempResourceBundle;
-      // do we want message ids included in output?
-      // Only if we are using a resource bundle that has localized strings.
-      includeMsgIDs = !rb.usingRawMode();
-    }
+    AbstractStringIdResourceBundle tempResourceBundle = StringId.getBundle(locale);
+    currentLocale = locale;
+    rb = tempResourceBundle;
+    // do we want message ids included in output?
+    // Only if we are using a resource bundle that has localized strings.
+    includeMsgIDs = !rb.usingRawMode();
   }
 
   /*

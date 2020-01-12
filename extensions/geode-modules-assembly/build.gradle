@@ -15,33 +15,29 @@
  * limitations under the License.
  */
 
+evaluationDependsOn(':extensions:geode-modules')
+evaluationDependsOn(':extensions:geode-modules-tomcat7')
+evaluationDependsOn(':extensions:geode-modules-tomcat8')
+evaluationDependsOn(':extensions:geode-modules-tomcat9')
+evaluationDependsOn(':extensions:geode-modules-session')
+evaluationDependsOn(':extensions:geode-modules-session-internal')
+
+apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
+
+import org.apache.geode.gradle.plugins.DependencyConstraints
 import org.apache.tools.ant.filters.ReplaceTokens
+apply plugin: 'maven-publish'
 
 configurations {
   slf4jDeps
-  moduleDistOutputs
 }
 
 dependencies {
-  slf4jDeps 'org.slf4j:slf4j-api:' + project.'slf4j-api.version'
-  slf4jDeps 'org.slf4j:slf4j-jdk14:' + project.'slf4j-api.version'
+  slf4jDeps 'org.slf4j:slf4j-api:' + DependencyConstraints.get('slf4j-api.version')
+  slf4jDeps 'org.slf4j:slf4j-jdk14:' + DependencyConstraints.get('slf4j-api.version')
 }
 
 jar.enabled = true
-extraArchive {
-  sources = false
-  javadoc = false
-  tests = false
-}
-
-disableMavenPublishing()
-disableSigning()
-
-def getJarArtifact(module) {
-  project(module).configurations.archives.artifacts.findAll {
-    it instanceof PublishArtifact && it.type == 'jar' && it.classifier == ''
-  }.collect { it.file }
-}
 
 def moduleBaseName = "Apache_Geode_Modules"
 
@@ -51,16 +47,19 @@ def configureTcServerAssembly = {
 
   // All client-server files
   into('geode-cs/lib') {
-    from getJarArtifact(':extensions/geode-modules')
-    from getJarArtifact(':extensions/geode-modules-tomcat7')
-    from getJarArtifact(':extensions/geode-modules-tomcat8')
+    from project(':extensions:geode-modules').tasks.named('jar')
+    from project(':extensions:geode-modules-tomcat7').tasks.named('jar')
+    from project(':extensions:geode-modules-tomcat8').tasks.named('jar')
+    from project(':extensions:geode-modules-tomcat9').tasks.named('jar')
     from configurations.slf4jDeps
   }
+
   into('geode-cs/bin') {
     from('release/scripts') {
       include '*'
     }
   }
+
   into('geode-cs/conf') {
     from('release/conf') {
       exclude 'cache-peer.xml'
@@ -70,6 +69,7 @@ def configureTcServerAssembly = {
       include 'server-fragment.xml'
     }
   }
+
   into('geode-cs') {
     from('release/tcserver/geode-cs') {
       include 'configuration-prompts.properties'
@@ -82,19 +82,23 @@ def configureTcServerAssembly = {
       include 'context-fragment.xml'
     }
   }
+
   // All peer-to-peer files
   into('geode-p2p/lib') {
-    from getJarArtifact(':extensions/geode-modules')
-    from getJarArtifact(':extensions/geode-modules-tomcat7')
-    from getJarArtifact(':extensions/geode-modules-tomcat8')
+    from project(':extensions:geode-modules').tasks.named('jar')
+    from project(':extensions:geode-modules-tomcat7').tasks.named('jar')
+    from project(':extensions:geode-modules-tomcat8').tasks.named('jar')
+    from project(':extensions:geode-modules-tomcat9').tasks.named('jar')
     from configurations.slf4jDeps
   }
+
   into('geode-p2p/bin') {
     from('release/scripts') {
       include 'gemfire.*'
       include 'setenv.properties'
     }
   }
+
   into('geode-p2p/conf') {
     from('release/conf') {
       include 'cache-peer.xml'
@@ -104,6 +108,7 @@ def configureTcServerAssembly = {
       include 'server-fragment.xml'
     }
   }
+
   into('geode-p2p') {
     from('release/tcserver/geode-p2p') {
       include 'configuration-prompts.properties'
@@ -128,30 +133,57 @@ def configureTcServer30Assembly = {
     }
   }
 
+  into('geode-cs-tomcat-85/conf') {
+    from('release/tcserver/geode-cs-tomcat-85') {
+      include 'context-fragment.xml'
+    }
+  }
+
+  into('geode-cs-tomcat-9/conf') {
+    from('release/tcserver/geode-cs-tomcat-9') {
+      include 'context-fragment.xml'
+    }
+  }
+
   into('geode-p2p-tomcat-8/conf') {
     from('release/tcserver/geode-p2p-tomcat-8') {
       include 'context-fragment.xml'
     }
   }
+
+  into('geode-p2p-tomcat-85/conf') {
+    from('release/tcserver/geode-p2p-tomcat-85') {
+      include 'context-fragment.xml'
+    }
+  }
+
+  into('geode-p2p-tomcat-9/conf') {
+    from('release/tcserver/geode-p2p-tomcat-9') {
+      include 'context-fragment.xml'
+    }
+  }
 }
 
-task distTomcat(type: Zip, dependsOn: ':extensions/geode-modules:assemble') {
+tasks.register('distTomcat', Zip) {
   baseName = moduleBaseName
   classifier = "Tomcat"
 
   // All client-server files
   into('lib') {
-    from getJarArtifact(':extensions/geode-modules')
-    from getJarArtifact(':extensions/geode-modules-tomcat7')
-    from getJarArtifact(':extensions/geode-modules-tomcat8')
+    from project(':extensions:geode-modules').tasks.named('jar')
+    from project(':extensions:geode-modules-tomcat7').tasks.named('jar')
+    from project(':extensions:geode-modules-tomcat8').tasks.named('jar')
+    from project(':extensions:geode-modules-tomcat9').tasks.named('jar')
     from configurations.slf4jDeps
   }
+
   into('bin') {
     from('release/scripts') {
       include '*'
       exclude 'setenv.properties'
     }
   }
+
   into('conf') {
     from('release/conf') {
       include '*'
@@ -159,14 +191,14 @@ task distTomcat(type: Zip, dependsOn: ':extensions/geode-modules:assemble') {
   }
 }
 
-task distAppServer(type: Zip, dependsOn: ':extensions/geode-modules-session:assemble') {
+tasks.register('distAppServer', Zip) {
   baseName = moduleBaseName
   classifier = "AppServer"
 
   into('lib') {
-    from getJarArtifact(':extensions/geode-modules-session')
-    from getJarArtifact(':extensions/geode-modules-session-internal')
-    from getJarArtifact(':extensions/geode-modules')
+    from project(':extensions:geode-modules').tasks.named('jar')
+    from project(':extensions:geode-modules-session').tasks.named('jar')
+    from project(':extensions:geode-modules-session-internal').tasks.named('jar')
     from configurations.slf4jDeps
   }
 
@@ -175,15 +207,18 @@ task distAppServer(type: Zip, dependsOn: ':extensions/geode-modules-session:asse
       include 'modify_war'
 
       filter(ReplaceTokens, tokens:['GEODE_VERSION': version])
-      filter(ReplaceTokens, tokens:['SLF4J_VERSION': project.'slf4j-api.version'])
-      filter(ReplaceTokens, tokens:['LOG4J_VERSION': project.'log4j.version'])
-      filter(ReplaceTokens, tokens:['FASTUTIL_VERSION': project.'fastutil.version'])
-      filter(ReplaceTokens, tokens:['ANTLR_VERSION': project.'antlr.version'])
-      filter(ReplaceTokens, tokens:['TX_VERSION': project.'javax.transaction-api.version'])
-      filter(ReplaceTokens, tokens:['JGROUPS_VERSION': project.'jgroups.version'])
-      filter(ReplaceTokens, tokens:['SHIRO_VERSION': project.'shiro.version'])
-      filter(ReplaceTokens, tokens:['COMMONS_LANG_VERSION': project.'commons-lang.version'])
-      filter(ReplaceTokens, tokens:['COMMONS_VALIDATOR_VERSION': project.'commons-validator.version'])
+      filter(ReplaceTokens, tokens:['SLF4J_VERSION': DependencyConstraints.get('slf4j-api.version')])
+      filter(ReplaceTokens, tokens:['LOG4J_VERSION': DependencyConstraints.get('log4j.version')])
+      filter(ReplaceTokens, tokens:['FASTUTIL_VERSION': DependencyConstraints.get('fastutil.version')])
+      filter(ReplaceTokens, tokens:['ANTLR_VERSION': DependencyConstraints.get('antlr.version')])
+      filter(ReplaceTokens, tokens:['MICROMETER_VERSION': DependencyConstraints.get('micrometer.version')])
+      filter(ReplaceTokens, tokens:['TX_VERSION': DependencyConstraints.get('javax.transaction-api.version')])
+      filter(ReplaceTokens, tokens:['JGROUPS_VERSION': DependencyConstraints.get('jgroups.version')])
+      filter(ReplaceTokens, tokens:['JETTY_VERSION': DependencyConstraints.get('jetty.version')])
+      filter(ReplaceTokens, tokens:['SHIRO_VERSION': DependencyConstraints.get('shiro.version')])
+      filter(ReplaceTokens, tokens:['COMMONS_IO_VERSION': DependencyConstraints.get('commons-io.version')])
+      filter(ReplaceTokens, tokens:['COMMONS_LANG_VERSION': DependencyConstraints.get('commons-lang3.version')])
+      filter(ReplaceTokens, tokens:['COMMONS_VALIDATOR_VERSION': DependencyConstraints.get('commons-validator.version')])
     }
   }
 
@@ -192,33 +227,15 @@ task distAppServer(type: Zip, dependsOn: ':extensions/geode-modules-session:asse
   }
 }
 
-task distTcServer(type: Zip, dependsOn: [':extensions/geode-modules:assemble', ':extensions/geode-modules-tomcat7:assemble', ':extensions/geode-modules-tomcat8:assemble'] ) {
+tasks.register('distTcServer', Zip) {
   configure(configureTcServerAssembly)
 }
 
-task distTcServer30(type: Zip, dependsOn: [':extensions/geode-modules:assemble', ':extensions/geode-modules-tomcat7:assemble', ':extensions/geode-modules-tomcat8:assemble']) {
+tasks.register('distTcServer30', Zip) {
   configure(configureTcServerAssembly)
   configure(configureTcServer30Assembly)
-}
-
-dependencies {
-  moduleDistOutputs distTcServer.outputs.files
-  moduleDistOutputs distTcServer30.outputs.files
-  moduleDistOutputs distAppServer.outputs.files
-  moduleDistOutputs distTomcat.outputs.files
 }
 
 task dist(type: Task, dependsOn: ['distTcServer', 'distTcServer30', 'distTomcat', 'distAppServer'])
 
 build.dependsOn dist
-
-install.dependsOn dist
-uploadArchives.dependsOn dist
-
-artifacts {
-  archives distTcServer
-  archives distTcServer30
-  archives distAppServer
-  archives distTomcat
-}
-

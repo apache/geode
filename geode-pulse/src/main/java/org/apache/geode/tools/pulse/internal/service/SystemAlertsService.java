@@ -23,7 +23,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -47,6 +47,7 @@ public class SystemAlertsService implements PulseService {
 
   private static final ObjectMapper mapper = new ObjectMapper();
 
+  @Override
   public ObjectNode execute(final HttpServletRequest request) throws Exception {
 
     // get cluster object
@@ -79,7 +80,6 @@ public class SystemAlertsService implements PulseService {
    * function used for getting all members details in format of JSON Object array defined under a
    * cluster
    *
-   * @param cluster
    * @return JSONObject Array list
    */
   public static ObjectNode getAlertsJson(Cluster cluster, int pageNumber) {

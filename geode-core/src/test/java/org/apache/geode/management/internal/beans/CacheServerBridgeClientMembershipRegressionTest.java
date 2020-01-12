@@ -15,9 +15,8 @@
 package org.apache.geode.management.internal.beans;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
-import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -29,7 +28,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.query.internal.InternalQueryService;
@@ -38,7 +36,6 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
 import org.apache.geode.management.internal.beans.stats.MBeanStatsMonitor;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * JMX and membership should not deadlock on CacheFactory.getAnyInstance.
@@ -46,7 +43,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * <p>
  * GEODE-3407: JMX and membership may deadlock on CacheFactory.getAnyInstance
  */
-@Category(UnitTest.class)
 public class CacheServerBridgeClientMembershipRegressionTest {
 
   private final AtomicBoolean after = new AtomicBoolean();
@@ -102,10 +98,10 @@ public class CacheServerBridgeClientMembershipRegressionTest {
       }
     });
 
-    await().atMost(10, SECONDS).until(() -> before.get());
+    await().until(() -> before.get());
 
     // if deadlocked, then this line will throw ConditionTimeoutException
-    await().atMost(10, SECONDS).until(() -> assertThat(after.get()).isTrue());
+    await().untilAsserted(() -> assertThat(after.get()).isTrue());
   }
 
   private void givenCacheFactoryIsSynchronized() {

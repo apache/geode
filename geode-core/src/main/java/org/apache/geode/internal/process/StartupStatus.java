@@ -14,54 +14,42 @@
  */
 package org.apache.geode.internal.process;
 
-import static org.apache.commons.lang.Validate.notNull;
+import static org.apache.commons.lang3.Validate.notNull;
+
+import java.util.function.Consumer;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.i18n.StringId;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
-/**
- * Extracted from LogWriterImpl and changed to static.
- */
 public class StartupStatus {
-  private static final Logger logger = LogService.getLogger();
+  private static final Logger LOGGER = LogService.getLogger();
 
-  /** protected by static synchronized */
-  private static StartupStatusListener listener;
+  private final Consumer<String> logger;
 
-  private StartupStatus() {
-    // do nothing
+  public StartupStatus() {
+    this(LOGGER::info);
+  }
+
+  private StartupStatus(Consumer<String> logger) {
+    this.logger = logger;
   }
 
   /**
    * Writes both a message and exception to this writer. If a startup listener is registered, the
    * message will be written to the listener as well to be reported to a user.
-   *
-   * @since GemFire 7.0
    */
-  public static synchronized void startup(final StringId msgId, final Object... params) {
-    notNull(msgId, "Invalid msgId '" + msgId + "' specified");
-    notNull(params, "Invalid params '" + params + "' specified");
+  public void startup(String message, Object... params) {
+    notNull(message, "Invalid message '" + message + "' specified");
+    notNull(params, "Invalid params specified");
 
-    String message = msgId.toLocalizedString(params);
+    String formattedMessage = String.format(message, params);
 
+    StartupStatusListener listener = StartupStatusListenerRegistry.getStartupListener();
     if (listener != null) {
-      listener.setStatus(message);
+      listener.setStatus(formattedMessage);
     }
 
-    logger.info(message);
-  }
-
-  public static synchronized void setListener(final StartupStatusListener listener) {
-    StartupStatus.listener = listener;
-  }
-
-  public static synchronized StartupStatusListener getStartupListener() {
-    return StartupStatus.listener;
-  }
-
-  public static synchronized void clearListener() {
-    StartupStatus.listener = null;
+    logger.accept(formattedMessage);
   }
 }

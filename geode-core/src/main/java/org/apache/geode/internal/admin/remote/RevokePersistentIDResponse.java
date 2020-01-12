@@ -16,9 +16,6 @@ package org.apache.geode.internal.admin.remote;
 
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
-/**
- *
- */
 public class RevokePersistentIDResponse extends AdminResponse {
   public RevokePersistentIDResponse() {}
 
@@ -26,6 +23,7 @@ public class RevokePersistentIDResponse extends AdminResponse {
     this.setRecipient(sender);
   }
 
+  @Override
   public int getDSFID() {
     return REVOKE_PERSISTENT_ID_RESPONSE;
   }

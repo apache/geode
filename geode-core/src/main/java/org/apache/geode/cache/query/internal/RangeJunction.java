@@ -38,7 +38,6 @@ import org.apache.geode.cache.query.internal.types.StructTypeImpl;
 import org.apache.geode.cache.query.internal.types.TypeUtils;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.cache.query.types.StructType;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * This structure contains all the filter evaluatable CompiledComparision conditions which are using
@@ -59,6 +58,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
 
   }
 
+  @Override
   void addUnevaluatedFilterOperands(List unevaluatedFilterOps) {
     throw new UnsupportedOperationException("This method should not have been invoked");
   }
@@ -97,16 +97,19 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
     return this._operands[0].getPlanInfo(context);
   }
 
+  @Override
   public boolean isConditioningNeededForIndex(RuntimeIterator independentIter,
       ExecutionContext context, boolean completeExpnsNeeded)
       throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
     return true;
   }
 
+  @Override
   public int getOperator() {
     return LITERAL_and;
   }
 
+  @Override
   public boolean isBetterFilter(Filter comparedTo, ExecutionContext context, final int thisSize)
       throws FunctionDomainException, TypeMismatchException, NameResolutionException,
       QueryInvocationTargetException {
@@ -157,8 +160,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
       return organizeOperandsForAndJunction(context);
     } else {
       throw new IllegalStateException(
-          LocalizedStrings.RangeJunction_IN_THE_CASE_OF_AN_OR_JUNCTION_A_RANGEJUNCTION_SHOULD_NOT_BE_FORMED_FOR_NOW
-              .toLocalizedString());
+          "In the case of an OR junction a RangeJunction should not be formed for now");
     }
   }
 
@@ -383,11 +385,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
   /**
    * Checks if key1 operator key2 is true or not. The operator could be =, != , <, >,<=,>=
    *
-   * @param key1
-   * @param key2
-   * @param operator
    * @return boolean true if the condition is satisfied else false
-   * @throws TypeMismatchException
    */
   private boolean isConditionSatisfied(Object key1, Object key2, int operator)
       throws TypeMismatchException {
@@ -406,7 +404,6 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
    * @param greaterCondnKey Key of the 'greater' condition operand
    * @param greaterCondnOp Type of 'greater' operator ( > or >=)
    * @return boolean true if the nature is bounded else false ( unbounded )
-   * @throws TypeMismatchException
    */
   private boolean checkForRangeBoundednessAndTrimNotEqualKeyset(Set notEqualKeys,
       Object lessCondnKey, int lessOperator, Object greaterCondnKey, int greaterCondnOp)
@@ -446,7 +443,6 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
    *        inequality
    * @param indxInfo The IndexInfo object for this RangeJunction
    * @return Filter object of type CompiledComparison or RangeJunction.SingleCondnEvaluator object
-   * @throws TypeMismatchException
    */
   private Filter generateSingleCondnEvaluatorIfRequired(Set notEqualKeys, CompiledValue operand,
       int operator, Object condnKey, IndexInfo indxInfo) throws TypeMismatchException {
@@ -470,6 +466,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
     return rangeFilter;
   }
 
+  @Override
   public Object evaluate(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     Object r = _operands[0].evaluate(context); // UNDEFINED, null, or a
@@ -517,6 +514,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
     Support.assertionFailed("Should not have come here");
   }
 
+  @Override
   public int getSizeEstimate(ExecutionContext context) {
     // TODO:Asif:Try to estimate better
     return RANGE_SIZE_ESTIMATE;
@@ -561,8 +559,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
       return Collections.unmodifiableSet(((NotEqualConditionEvaluator) o).notEqualTypeKeys);
     } else {
       throw new IllegalStateException(
-          LocalizedStrings.RangeJunction_THE_OBJECT_IS_NOT_OF_TYPE_NOTEQUALCONDITIONEVALUATOR
-              .toLocalizedString());
+          "The Object is not of type NotEqualConditionEvaluator");
     }
   }
 
@@ -578,8 +575,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
       return ((SingleCondnEvaluator) o).condnOp;
     } else {
       throw new IllegalStateException(
-          LocalizedStrings.RangeJunction_THE_OBJECT_IS_NOT_OF_TYPE_NOTEQUALCONDITIONEVALUATOR
-              .toLocalizedString());
+          "The Object is not of type NotEqualConditionEvaluator");
     }
   }
 
@@ -595,8 +591,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
       return ((SingleCondnEvaluator) o).condnKey;
     } else {
       throw new IllegalStateException(
-          LocalizedStrings.RangeJunction_THE_OBJECT_IS_NOT_OF_TYPE_NOTEQUALCONDITIONEVALUATOR
-              .toLocalizedString());
+          "The Object is not of type NotEqualConditionEvaluator");
     }
   }
 
@@ -611,8 +606,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
       return ((DoubleCondnRangeJunctionEvaluator) o).lessCondnKey;
     } else {
       throw new IllegalStateException(
-          LocalizedStrings.RangeJunction_THE_OBJECT_IS_NOT_OF_TYPE_NOTEQUALCONDITIONEVALUATOR
-              .toLocalizedString());
+          "The Object is not of type NotEqualConditionEvaluator");
     }
   }
 
@@ -628,8 +622,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
       return ((DoubleCondnRangeJunctionEvaluator) o).greaterCondnKey;
     } else {
       throw new IllegalStateException(
-          LocalizedStrings.RangeJunction_THE_OBJECT_IS_NOT_OF_TYPE_NOTEQUALCONDITIONEVALUATOR
-              .toLocalizedString());
+          "The Object is not of type NotEqualConditionEvaluator");
     }
   }
 
@@ -644,8 +637,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
       return ((DoubleCondnRangeJunctionEvaluator) o).lessCondnOp;
     } else {
       throw new IllegalStateException(
-          LocalizedStrings.RangeJunction_THE_OBJECT_IS_NOT_OF_TYPE_NOTEQUALCONDITIONEVALUATOR
-              .toLocalizedString());
+          "The Object is not of type NotEqualConditionEvaluator");
     }
   }
 
@@ -660,8 +652,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
       return ((DoubleCondnRangeJunctionEvaluator) o).greaterCondnOp;
     } else {
       throw new IllegalStateException(
-          LocalizedStrings.RangeJunction_THE_OBJECT_IS_NOT_OF_TYPE_NOTEQUALCONDITIONEVALUATOR
-              .toLocalizedString());
+          "The Object is not of type NotEqualConditionEvaluator");
     }
   }
 
@@ -669,15 +660,13 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
    * Test function which retrieves the underlying Index for a NotEqualConditionEvaluator operator
    *
    * @param o Object of type NotEqualConditionEvaluator from which the index needs to be retrieved
-   * @return Index
    */
   static Index getIndex(Object o) {
     if (o instanceof NotEqualConditionEvaluator) {
       return ((NotEqualConditionEvaluator) o).indxInfo._index;
     } else {
       throw new IllegalStateException(
-          LocalizedStrings.RangeJunction_THE_OBJECT_IS_NOT_OF_TYPE_NOTEQUALCONDITIONEVALUATOR
-              .toLocalizedString());
+          "The Object is not of type NotEqualConditionEvaluator");
     }
   }
 
@@ -785,12 +774,14 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
       throw new UnsupportedOperationException();
     }
 
+    @Override
     public Object evaluate(ExecutionContext context) throws FunctionDomainException,
         TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
       Object evaluatedPath = this.indxInfo._path.evaluate(context);
       return evaluate(context, evaluatedPath);
     }
 
+    @Override
     public boolean isConditioningNeededForIndex(RuntimeIterator independentIter,
         ExecutionContext context, boolean completeExpnsNeeded)
         throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
@@ -817,10 +808,12 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
 
     }
 
+    @Override
     public int getType() {
       return NOTEQUALCONDITIONEVALUATOR;
     }
 
+    @Override
     public int getSizeEstimate(ExecutionContext context) {
       return RANGE_SIZE_ESTIMATE;
     }
@@ -830,10 +823,12 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
       Support.assertionFailed("Should not have come here");
     }
 
+    @Override
     public int getOperator() {
       return LITERAL_and;
     }
 
+    @Override
     public boolean isBetterFilter(Filter comparedTo, ExecutionContext context, int thisSize)
         throws FunctionDomainException, TypeMismatchException, NameResolutionException,
         QueryInvocationTargetException {
@@ -966,6 +961,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
 
     }
 
+    @Override
     public Object evaluate(ExecutionContext context) throws TypeMismatchException,
         FunctionDomainException, NameResolutionException, QueryInvocationTargetException {
       Object evaluatedPath = this.indxInfo._path.evaluate(context);
@@ -1115,6 +1111,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
       throw new UnsupportedOperationException();
     }
 
+    @Override
     public Object evaluate(ExecutionContext context) throws FunctionDomainException,
         TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
       Object evaluatedPath = this.indxInfo._path.evaluate(context);

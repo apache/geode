@@ -15,11 +15,16 @@
 
 package org.apache.geode.internal.cache;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Set;
 
-import org.apache.geode.cache.*;
+import org.apache.geode.annotations.internal.MakeNotStatic;
+import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.cache.locks.*;
+import org.apache.geode.internal.cache.locks.TXLockId;
+import org.apache.geode.internal.cache.locks.TXLockService;
+import org.apache.geode.internal.cache.locks.TXRegionLockRequest;
 
 /**
  * TXLockRequest represents all the locks that need to be made for a single transaction.
@@ -138,6 +143,7 @@ public class TXLockRequest {
     releaseDistributed(system);
   }
 
+  @MakeNotStatic
   private static final TXReservationMgr resMgr = new TXReservationMgr(true);
 
   /**

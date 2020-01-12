@@ -14,29 +14,27 @@
  */
 package org.apache.geode.internal.cache.xmlcache;
 
-import static javax.xml.XMLConstants.*;
-import static org.junit.Assert.*;
+import static javax.xml.XMLConstants.NULL_NS_URI;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.xml.XMLConstants;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit Tests for {@link XmlGeneratorUtils}.
  *
  * @since GemFire 8.1
  */
-@Category(UnitTest.class)
 public class XmlGeneratorUtilsJUnitTest {
 
   /**

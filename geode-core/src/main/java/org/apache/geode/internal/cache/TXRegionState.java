@@ -15,17 +15,24 @@
 
 package org.apache.geode.internal.cache;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.CommitConflictException;
+import org.apache.geode.cache.RegionDestroyedException;
+import org.apache.geode.cache.UnsupportedOperationInTransactionException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.TXEntryState.DistTxThinEntryState;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * TXRegionState is the entity that tracks all the changes a transaction has made to a region.
@@ -44,7 +51,7 @@ public class TXRegionState {
   private HashMap uaMods;
   private Set<InternalDistributedMember> otherMembers = null;
   private TXState txState;
-  private LocalRegion region;
+  private InternalRegion region;
   private final boolean needsRefCounts;
   private boolean cleanedUp;
   /*
@@ -53,21 +60,15 @@ public class TXRegionState {
    */
   private boolean createdDuringCommit;
 
-  public TXRegionState(LocalRegion r, TXState txState) {
+  public TXRegionState(InternalRegion r, TXState txState) {
     if (r.getPersistBackup() && !r.isMetaRegionWithTransactions()
         && !TXManagerImpl.ALLOW_PERSISTENT_TRANSACTIONS) {
       throw new UnsupportedOperationException(
-          LocalizedStrings.TXRegionState_OPERATIONS_ON_PERSISTBACKUP_REGIONS_ARE_NOT_ALLOWED_BECAUSE_THIS_THREAD_HAS_AN_ACTIVE_TRANSACTION
-              .toLocalizedString());
+          "Operations on persist-backup regions are not allowed because this thread has an active transaction");
     }
     if (r.getScope().isGlobal()) {
       throw new UnsupportedOperationException(
-          LocalizedStrings.TXRegionState_OPERATIONS_ON_GLOBAL_REGIONS_ARE_NOT_ALLOWED_BECAUSE_THIS_THREAD_HAS_AN_ACTIVE_TRANSACTION
-              .toLocalizedString());
-    }
-    if (r.hasServerProxy()) {
-      // throw new
-      // UnsupportedOperationException(LocalizedStrings.TXRegionState_OPERATIONS_ON_REGION_WITH_CLIENT_POOL_ARE_NOT_ALLOWED_BECAUSE_THIS_THREAD_HAS_AN_ACTIVE_TRANSACTION.toLocalizedString());
+          "Operations on global regions are not allowed because this thread has an active transaction");
     }
     this.entryMods = new HashMap<Object, TXEntryState>();
     this.uaMods = null;
@@ -77,7 +78,7 @@ public class TXRegionState {
     r.setInUseByTransaction(true);
   }
 
-  public LocalRegion getRegion() {
+  public InternalRegion getRegion() {
     return region;
   }
 
@@ -189,7 +190,7 @@ public class TXRegionState {
   /**
    * Create a lock request on this region state and adds it to req
    */
-  void createLockRequest(LocalRegion r, TXLockRequest req) {
+  void createLockRequest(InternalRegion r, TXLockRequest req) {
     if (this.uaMods == null && this.entryMods.isEmpty()) {
       return;
     }
@@ -224,7 +225,12 @@ public class TXRegionState {
       // need some local locks
       TXRegionLockRequestImpl rlr = new TXRegionLockRequestImpl(r.getCache(), r);
       if (this.uaMods != null) {
-        rlr.addEntryKeys(this.uaMods.keySet());
+        Iterator<Object> it = this.uaMods.keySet().iterator();
+        while (it.hasNext()) {
+          // add key with isEvent set to TRUE, for keep BC
+          rlr.addEntryKey(it.next(), Boolean.TRUE);
+        }
+
       }
       if (!distributedTX && this.entryMods.size() > 0) {
         rlr.addEntryKeys(getLockRequestEntryKeys());
@@ -245,27 +251,27 @@ public class TXRegionState {
   }
 
   /**
-   * Returns a set of entry keys that this tx needs to request a lock for at commit time.
+   * Returns a map of entry keys that this tx needs to request a lock for at commit time.
    *
    * @return <code>null</code> if no entries need to be locked.
    */
-  private Set getLockRequestEntryKeys() {
-    HashSet result = null;
+  private Map getLockRequestEntryKeys() {
+    HashMap<Object, Boolean> result = null;
     Iterator it = this.entryMods.entrySet().iterator();
     while (it.hasNext()) {
       Map.Entry me = (Map.Entry) it.next();
       TXEntryState txes = (TXEntryState) me.getValue();
       if (txes.isDirty() && !txes.isOpSearch()) {
         if (result == null) {
-          result = new HashSet();
+          result = new HashMap();
         }
-        result.add(me.getKey());
+        result.put(me.getKey(), txes.isOpAnyEvent(this.region));
       }
     }
     return result;
   }
 
-  void checkForConflicts(LocalRegion r) throws CommitConflictException {
+  void checkForConflicts(InternalRegion r) throws CommitConflictException {
     if (this.isCreatedDuringCommit()) {
       return;
     }
@@ -295,7 +301,7 @@ public class TXRegionState {
    * evicted as we apply our writes) and remove it from entryMods (so we don't keep iterating over
    * it and se we don't try to clean it up again later).
    */
-  void cleanupNonDirtyEntries(LocalRegion r) {
+  void cleanupNonDirtyEntries(InternalRegion r) {
     if (!this.entryMods.isEmpty()) {
       Iterator it = this.entryMods.entrySet().iterator();
       while (it.hasNext()) {
@@ -309,7 +315,7 @@ public class TXRegionState {
     }
   }
 
-  void buildMessage(LocalRegion r, TXCommitMessage msg) {
+  void buildMessage(InternalRegion r, TXCommitMessage msg) {
     try {
       if (!r.getScope().isLocal() && !this.entryMods.isEmpty()) {
 
@@ -359,7 +365,7 @@ public class TXRegionState {
     }
   }
 
-  void buildMessageForAdjunctReceivers(LocalRegion r, TXCommitMessage msg) {
+  void buildMessageForAdjunctReceivers(InternalRegion r, TXCommitMessage msg) {
     try {
       if (!r.getScope().isLocal() && !this.entryMods.isEmpty()) {
 
@@ -404,7 +410,7 @@ public class TXRegionState {
   }
 
 
-  void buildCompleteMessage(LocalRegion r, TXCommitMessage msg) {
+  void buildCompleteMessage(InternalRegion r, TXCommitMessage msg) {
     try {
       if (!this.entryMods.isEmpty()) {
         msg.startRegion(r, entryMods.size());
@@ -430,7 +436,7 @@ public class TXRegionState {
 
 
 
-  void applyChangesStart(LocalRegion r, TXStateInterface txState) {
+  void applyChangesStart(InternalRegion r, TXStateInterface txState) {
     try {
       r.txLRUStart();
     } catch (RegionDestroyedException ex) {
@@ -444,7 +450,7 @@ public class TXRegionState {
     }
   }
 
-  void applyChangesEnd(LocalRegion r, TXStateInterface txState) {
+  void applyChangesEnd(InternalRegion r, TXStateInterface txState) {
     try {
       try {
         if (this.uaMods != null) {
@@ -470,7 +476,7 @@ public class TXRegionState {
     }
   }
 
-  void getEvents(LocalRegion r, ArrayList events, TXState txs) {
+  void getEvents(InternalRegion r, ArrayList events, TXState txs) {
     {
       Iterator it = this.entryMods.entrySet().iterator();
       while (it.hasNext()) {
@@ -489,7 +495,7 @@ public class TXRegionState {
    * Put all the entries this region knows about into the given "entries" list as instances of
    * TXEntryStateWithRegionAndKey.
    */
-  void getEntries(ArrayList/* <TXEntryStateWithRegionAndKey> */ entries, LocalRegion r) {
+  void getEntries(ArrayList/* <TXEntryStateWithRegionAndKey> */ entries, InternalRegion r) {
     Iterator it = this.entryMods.entrySet().iterator();
     while (it.hasNext()) {
       Map.Entry me = (Map.Entry) it.next();
@@ -499,7 +505,7 @@ public class TXRegionState {
     }
   }
 
-  void cleanup(LocalRegion r) {
+  void cleanup(InternalRegion r) {
     if (this.cleanedUp)
       return;
     this.cleanedUp = true;
@@ -599,8 +605,9 @@ public class TXRegionState {
     int entryModsSize = this.entryMods.size();
     int entryEventListSize = entryEventList.size();
     if (entryModsSize != entryEventListSize) {
-      throw new UnsupportedOperationInTransactionException(LocalizedStrings.DISTTX_TX_EXPECTED
-          .toLocalizedString("entry size of " + entryModsSize + " for region " + regionFullPath,
+      throw new UnsupportedOperationInTransactionException(
+          String.format("Expected %s during a distributed transaction but got %s",
+              "entry size of " + entryModsSize + " for region " + regionFullPath,
               entryEventListSize));
     }
 

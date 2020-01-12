@@ -18,7 +18,8 @@ package org.apache.geode.internal.offheap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.annotations.internal.MakeNotStatic;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * This class provides static methods to help debug off-heap reference count problems. To enable
@@ -28,10 +29,11 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 public class ReferenceCountHelper {
 
   public static final String TRACK_OFFHEAP_REFERENCES =
-      DistributionConfig.GEMFIRE_PREFIX + "trackOffHeapRefCounts";
+      GeodeGlossary.GEMFIRE_PREFIX + "trackOffHeapRefCounts";
   public static final String TRACK_OFFHEAP_FREES =
-      DistributionConfig.GEMFIRE_PREFIX + "trackOffHeapFreedRefCounts";
+      GeodeGlossary.GEMFIRE_PREFIX + "trackOffHeapFreedRefCounts";
 
+  @MakeNotStatic
   private static final ReferenceCountHelperImpl inst = new ReferenceCountHelperImpl(
       Boolean.getBoolean(TRACK_OFFHEAP_REFERENCES), Boolean.getBoolean(TRACK_OFFHEAP_FREES));
 

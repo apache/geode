@@ -33,9 +33,8 @@ import org.apache.geode.GemFireRethrowable;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.SystemFailure;
-import org.apache.geode.cache.Cache;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.CacheClosedException;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.cache.query.internal.PRQueryTraceInfo;
 import org.apache.geode.cache.query.internal.QueryMonitor;
@@ -54,15 +53,15 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegionQueryEvaluator;
 import org.apache.geode.internal.cache.Token;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.util.BlobHelper;
-import org.apache.geode.pdx.internal.TypeRegistry;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * StreamingOperation is an abstraction for sending messages to multiple (or single) recipient
@@ -377,7 +376,7 @@ public abstract class StreamingOperation {
         replyWithException(dm, rex);
       } else if (!sentFinalMessage && !receiverCacheClosed) {
         throw new InternalGemFireError(
-            LocalizedStrings.StreamingOperation_THIS_SHOULDNT_HAPPEN.toLocalizedString());
+            "this should not happen");
         // replyNoData(dm);
       }
     }
@@ -402,14 +401,16 @@ public abstract class StreamingOperation {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.processorId = in.readInt();
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       out.writeInt(this.processorId);
     }
 
@@ -503,9 +504,10 @@ public abstract class StreamingOperation {
 
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
       int n;
-      super.fromData(in);
+      super.fromData(in, context);
       n = in.readInt();
       this.msgNum = in.readInt();
       this.lastMsg = in.readBoolean();
@@ -546,9 +548,11 @@ public abstract class StreamingOperation {
           for (int i = 0; i < n; i++) {
             // TestHook used in ResourceManagerWithQueryMonitorDUnitTest.
             // will simulate an critical memory event after a certain number of calls to
-            // doTestHook(3)
+            // doTestHook(BEFORE_ADD_OR_UPDATE_MAPPING_OR_DESERIALIZING_NTH_STREAMINGOPERATION)
             if (DefaultQuery.testHook != null) {
-              DefaultQuery.testHook.doTestHook(3);
+              DefaultQuery.testHook.doTestHook(
+                  DefaultQuery.TestHook.SPOTS.BEFORE_ADD_OR_UPDATE_MAPPING_OR_DESERIALIZING_NTH_STREAMINGOPERATION,
+                  null, null);
             }
             if (isQueryMessageProcessor && QueryMonitor.isLowMemory()) {
               lowMemoryDetected = true;
@@ -570,7 +574,9 @@ public abstract class StreamingOperation {
             isCanceled = true;
             // TestHook to help verify that objects have been rejected.
             if (DefaultQuery.testHook != null) {
-              DefaultQuery.testHook.doTestHook(2);
+              DefaultQuery.testHook.doTestHook(
+                  DefaultQuery.TestHook.SPOTS.LOW_MEMORY_WHEN_DESERIALIZING_STREAMINGOPERATION,
+                  null, null);
             }
           }
         } finally {
@@ -582,8 +588,9 @@ public abstract class StreamingOperation {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       if (this.chunkStream == null) {
         out.writeInt(-1);
       } else {
@@ -630,5 +637,6 @@ public abstract class StreamingOperation {
 
   }
 
+  @Immutable
   public static final GemFireRethrowable CHUNK_FULL = new GemFireRethrowable();
 }

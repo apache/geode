@@ -16,34 +16,32 @@ package org.apache.geode.connectors.jdbc.internal;
 
 import java.util.Set;
 
+import javax.sql.DataSource;
+
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Cache;
+import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.internal.cache.CacheService;
-import org.apache.geode.internal.cache.extension.Extension;
 
 @Experimental
-public interface JdbcConnectorService extends Extension<Cache>, CacheService {
+public interface JdbcConnectorService extends CacheService {
 
-  void createConnectionConfig(ConnectionConfiguration config)
-      throws ConnectionConfigExistsException;
+  void createRegionMapping(RegionMapping mapping)
+      throws RegionMappingExistsException;
 
-  void replaceConnectionConfig(ConnectionConfiguration config)
-      throws ConnectionConfigNotFoundException;
-
-  void destroyConnectionConfig(String connectionName);
-
-  ConnectionConfiguration getConnectionConfig(String connectionName);
-
-  Set<ConnectionConfiguration> getConnectionConfigs();
-
-  void createRegionMapping(RegionMapping mapping) throws RegionMappingExistsException;
-
-  void replaceRegionMapping(RegionMapping mapping) throws RegionMappingNotFoundException;
+  void replaceRegionMapping(RegionMapping mapping)
+      throws RegionMappingNotFoundException;
 
   void destroyRegionMapping(String regionName);
+
+  boolean isMappingSynchronous(String regionName, Cache cache)
+      throws RegionMappingNotFoundException;
 
   RegionMapping getMappingForRegion(String regionName);
 
   Set<RegionMapping> getRegionMappings();
 
+  void validateMapping(RegionMapping regionMapping, DataSource dataSource);
+
+  void validateMapping(RegionMapping regionMapping);
 }

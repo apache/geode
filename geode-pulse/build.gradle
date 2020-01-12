@@ -1,5 +1,3 @@
-import org.apache.geode.gradle.TestPropertiesWriter
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -16,78 +14,125 @@ import org.apache.geode.gradle.TestPropertiesWriter
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+evaluationDependsOn(':geode-core')
+
+apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 apply plugin: 'war'
 
-sourceSets {
-  main {
-    resources {
-      exclude('**/gemfire*.properties')
-      exclude('**/sqlfire.properties')
-    }
-  }
-}
+apply from: "${project.projectDir}/../gradle/publish-war.gradle"
+
+jar.enabled = true
 
 dependencies {
-  compile 'org.springframework:spring-beans:' + project.'springframework.version'
+  compile(platform(project(':boms:geode-all-bom')))
+  compileOnly(platform(project(':boms:geode-all-bom')))
+  providedCompile(platform(project(':boms:geode-all-bom')))
+
+  compile('org.springframework.security:spring-security-core')
+  compile('javax.servlet:javax.servlet-api')
+  compile('mx4j:mx4j') {
+    ext.optional = true
+  }
+  compile('mx4j:mx4j-remote') {
+    ext.optional = true
+  }
+  integrationTestCompile('junit:junit')
+  uiTestCompile('junit:junit')
+  integrationTestCompile('org.hamcrest:hamcrest-core')
+  integrationTestCompile('org.hamcrest:hamcrest-library')
+  integrationTestCompile('org.hamcrest:hamcrest-all')
+  uiTestCompile('org.apache.httpcomponents:httpcore')
+  uiTestCompile('org.seleniumhq.selenium:selenium-api')
+  uiTestCompile('org.assertj:assertj-core')
+  uiTestCompile('org.apache.httpcomponents:httpclient')
+  uiTestCompile('org.seleniumhq.selenium:selenium-support')
+  compile('org.springframework:spring-beans')
 
   // Needed to fully use log4j instead of commons-logging.
-  compile 'org.apache.logging.log4j:log4j-jcl:' + project.'log4j.version'
-  compile 'org.apache.logging.log4j:log4j-api:' + project.'log4j.version'
-  compile 'org.apache.logging.log4j:log4j-core:' + project.'log4j.version'
+  compile('org.apache.logging.log4j:log4j-jcl')
+  compile('org.apache.logging.log4j:log4j-api')
+//  compile('org.apache.logging.log4j:log4j-core')
 
-  compile 'commons-beanutils:commons-beanutils:' + project.'commons-beanutils.version'
-  compile 'commons-collections:commons-collections:' + project.'commons-collections.version'
-  compile 'commons-digester:commons-digester:' + project.'commons-digester.version'
-  compile 'commons-lang:commons-lang:' + project.'commons-lang.version'
-  compile 'org.springframework.ldap:spring-ldap-core:' + project.'spring-ldap-core.version'
-  runtime 'org.springframework:spring-expression:' + project.'springframework.version'
+  compile('commons-beanutils:commons-beanutils')
+  compile('commons-collections:commons-collections')
+  compile('commons-digester:commons-digester')
+  compile('org.apache.commons:commons-lang3')
+  compile('org.springframework.ldap:spring-ldap-core')
 
-  // added only to ensure common version with other geode modules
-  runtime 'org.slf4j:slf4j-api:' + project.'slf4j-api.version'
-
-  compile ('org.springframework.security:spring-security-config:' + project.'spring-security.version') {
+  compile('org.springframework.security:spring-security-config') {
     exclude module: 'aopalliance'
     exclude module: 'spring-expression'
   }
-  compile ('org.springframework.security:spring-security-ldap:' + project.'spring-security.version') {
+  compile('org.springframework.security:spring-security-ldap') {
     exclude module: 'aopalliance'
     exclude module: 'spring-asm'
     exclude module: 'spring-expression'
     exclude module: 'spring-jdbc'
   }
-  compile ('org.springframework.security:spring-security-web:' + project.'spring-security.version') {
+  compile('org.springframework.security:spring-security-web') {
     exclude module: 'aopalliance'
     exclude module: 'spring-asm'
     exclude module: 'spring-expression'
     exclude module: 'spring-jdbc'
   }
-  runtime ('org.springframework:spring-webmvc:' + project.'springframework.version') {
+  compile('org.springframework:spring-context')
+  compile('org.springframework:spring-web')
+  runtimeOnly('org.springframework:spring-webmvc') {
     exclude module: 'aopalliance'
     exclude module: 'aspectjweaver'
   }
-  compile 'org.springframework:spring-tx:' + project.'spring-tx.version'
-  compile 'com.fasterxml.jackson.core:jackson-annotations:' + project.'jackson.version'
-  compile 'com.fasterxml.jackson.core:jackson-core:' + project.'jackson.version'
-  compile 'com.fasterxml.jackson.core:jackson-databind:' + project.'jackson.version'
+  compile('org.springframework:spring-tx')
+  compile('com.fasterxml.jackson.core:jackson-annotations')
+  compile('com.fasterxml.jackson.core:jackson-core')
+  compile('com.fasterxml.jackson.core:jackson-databind')
 
-  providedCompile 'commons-logging:commons-logging:' + project.'commons-logging.version'
+  compileOnly('org.mortbay.jetty:servlet-api')
 
-  provided 'org.mortbay.jetty:servlet-api:' + project.'mortbay-jetty-servlet-api.version'
-  provided 'com.google.guava:guava:' + project.'guava.version'
+  runtimeOnly('org.springframework:spring-expression')
 
-  testCompile project(':geode-junit')
-  testCompile project(':geode-core')
-  testCompile files(project(':geode-core').sourceSets.test.output)
+  // added only to ensure common version with other geode modules
+  runtimeOnly('org.slf4j:slf4j-api')
 
-  testCompile 'org.seleniumhq.selenium:selenium-api:' + project.'selenium.version'
-  testCompile 'org.seleniumhq.selenium:selenium-chrome-driver:' + project.'selenium.version'
-  testCompile 'org.seleniumhq.selenium:selenium-support:' + project.'selenium.version'
-  testCompile 'org.springframework:spring-test:' + project.'springframework.version'
-  testCompile 'com.tdunning:json:' + project.'open-json.version'
+  providedCompile('commons-logging:commons-logging')
 
-  testRuntime 'com.google.code.gson:gson:' + project.'google-gson.version'
-  testRuntime 'org.apache.commons:commons-exec:' + project.'commons-exec.version'
-  testRuntime 'com.jayway.jsonpath:json-path:' + project.'json-path.version'
+
+  testCompile(project(':geode-core'))
+  testCompile(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
+  testImplementation(project(':geode-log4j')) {
+    exclude module: 'geode-core'
+  }
+  testCompile('org.springframework:spring-test')
+  testCompile('org.powermock:powermock-core')
+  testCompile('org.powermock:powermock-module-junit4')
+  testCompile('org.powermock:powermock-api-mockito2')
+
+
+  integrationTestCompile(project(':geode-core'))
+  integrationTestCompile(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
+  integrationTestImplementation(project(':geode-log4j')) {
+    exclude module: 'geode-core'
+  }
+  integrationTestCompile(project(':geode-pulse:geode-pulse-test'))
+  integrationTestCompile('org.powermock:powermock-core')
+  integrationTestCompile('org.powermock:powermock-module-junit4')
+  integrationTestCompile('org.powermock:powermock-api-mockito2')
+  integrationTestCompile('org.springframework:spring-test')
+
+
+  uiTestRuntime(project(':geode-core'))
+  uiTestCompile(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
+  uiTestImplementation(project(':geode-log4j')) {
+    exclude module: 'geode-core'
+  }
+  uiTestCompile(project(':geode-pulse:geode-pulse-test'))
+  uiTestCompile('org.seleniumhq.selenium:selenium-remote-driver')
 }
 
 def generatedResources = "$buildDir/generated-resources/main"
@@ -97,7 +142,7 @@ sourceSets {
     output.dir(generatedResources, builtBy: 'copyGemFireVersionFile')
   }
 
-  test {
+  integrationTest {
     resources {
       srcDir 'src/main/webapp/WEB-INF'
     }
@@ -125,24 +170,10 @@ artifacts {
 }
 
 war {
+  enabled = true
   duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-  classpath configurations.runtime
-  classpath project(':geode-core').webJar.archivePath
+  classpath configurations.runtimeClasspath
 }
-
-task uiTest(type:Test) {
-  useJUnit {
-    includeCategories 'org.apache.geode.test.junit.categories.UITest'
-    excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
-  }
-
-  forkEvery(1)
-  doFirst {
-    TestPropertiesWriter.writeTestProperties(buildDir, name)
-  }
-}
-
 uiTest.dependsOn war
 uiTest.finalizedBy rootProject.combineReports
 rootProject.combineReports.mustRunAfter uiTest
-

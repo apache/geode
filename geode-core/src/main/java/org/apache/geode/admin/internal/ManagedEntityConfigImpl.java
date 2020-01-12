@@ -14,13 +14,17 @@
  */
 package org.apache.geode.admin.internal;
 
+import static org.apache.geode.internal.net.InetAddressUtilsWithLogging.validateHost;
+
 import java.io.File;
-import java.net.*;
+import java.net.InetAddress;
+import java.net.URL;
+import java.net.UnknownHostException;
 
 import org.apache.geode.admin.ManagedEntityConfig;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.admin.GemFireVM;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.net.SocketCreator;
 
 /**
@@ -58,12 +62,11 @@ public abstract class ManagedEntityConfigImpl implements ManagedEntityConfig {
    */
   protected static String getLocalHostName() {
     try {
-      return SocketCreator.getLocalHost().getCanonicalHostName();
+      return LocalHostUtil.getLocalHost().getCanonicalHostName();
 
     } catch (UnknownHostException ex) {
       IllegalStateException ex2 = new IllegalStateException(
-          LocalizedStrings.ManagedEntityConfigImpl_COULD_NOT_DETERMINE_LOCALHOST
-              .toLocalizedString());
+          "Could not determine localhost?!");
       ex2.initCause(ex);
       throw ex2;
     }
@@ -85,7 +88,7 @@ public abstract class ManagedEntityConfigImpl implements ManagedEntityConfig {
     URL url = GemFireVersion.getJarURL();
     if (url == null) {
       throw new IllegalStateException(
-          LocalizedStrings.ManagedEntityConfigImpl_COULD_NOT_FIND_GEMFIREJAR.toLocalizedString());
+          "Could not find gemfire.jar.");
     }
 
     File gemfireJar = new File(url.getPath());
@@ -140,8 +143,7 @@ public abstract class ManagedEntityConfigImpl implements ManagedEntityConfig {
   public void checkReadOnly() {
     if (this.isReadOnly()) {
       throw new IllegalStateException(
-          LocalizedStrings.ManagedEntityConfigImpl_THIS_CONFIGURATION_CANNOT_BE_MODIFIED_WHILE_ITS_MANAGED_ENTITY_IS_RUNNING
-              .toLocalizedString());
+          "This configuration cannot be modified while its managed entity is running.");
     }
   }
 
@@ -168,41 +170,49 @@ public abstract class ManagedEntityConfigImpl implements ManagedEntityConfig {
    */
   protected abstract void configChanged();
 
+  @Override
   public String getHost() {
     return this.host;
   }
 
+  @Override
   public void setHost(String host) {
     checkReadOnly();
     this.host = host;
     configChanged();
   }
 
+  @Override
   public String getWorkingDirectory() {
     String dir = this.workingDirectory;
     return dir;
   }
 
+  @Override
   public void setWorkingDirectory(String workingDirectory) {
     checkReadOnly();
     this.workingDirectory = workingDirectory;
     configChanged();
   }
 
+  @Override
   public String getProductDirectory() {
     return this.productDirectory;
   }
 
+  @Override
   public void setProductDirectory(String productDirectory) {
     checkReadOnly();
     this.productDirectory = productDirectory;
     configChanged();
   }
 
+  @Override
   public String getRemoteCommand() {
     return this.remoteCommand;
   }
 
+  @Override
   public void setRemoteCommand(String remoteCommand) {
     checkReadOnly();
     this.remoteCommand = remoteCommand;
@@ -214,10 +224,11 @@ public abstract class ManagedEntityConfigImpl implements ManagedEntityConfig {
    *
    * @throws IllegalStateException If this config is not valid
    */
+  @Override
   public void validate() {
-    if (InetAddressUtil.validateHost(this.host) == null) {
+    if (validateHost(this.host) == null) {
       throw new IllegalStateException(
-          LocalizedStrings.ManagedEntityConfigImpl_INVALID_HOST_0.toLocalizedString(this.host));
+          String.format("Invalid host %s", this.host));
     }
   }
 

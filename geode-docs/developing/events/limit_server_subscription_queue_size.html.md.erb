@@ -23,7 +23,7 @@ limitations under the License.
 These are options for limiting the amount of server memory the subscription queues consume.
 
 -   Optional: Conflate the subscription queue messages.
--   Optional: Increase the frequency of queue synchronization. This only applies to configurations where server redundancy is used for high availability. Increase the client’s pool configuration, `subscription-ack-interval`. The client periodically sends a batch acknowledgment of messages to the server, rather than acknowledging each message individually. A lower setting speeds message delivery and generally reduces traffic between the server and client. A higher setting helps contain server queue size. Example:
+-   Optional: Increase the frequency of queue synchronization by decreasing the pool's configuration parameter `subscription-ack-interval`. This applies only to configurations where server redundancy is used for high availability. Example:
 
     ``` pre
     <!-- Set subscription ack interval to 3 seconds -->
@@ -34,7 +34,7 @@ These are options for limiting the amount of server memory the subscription queu
     </pool>
     ```
 
-    You might want to lower the interval if you have a very busy system and want to reduce the space required in the servers for the subscription queues. More frequent acknowledgments means fewer events held in the server queues awaiting acknowledgment.
+    The client periodically sends an acknowledgment (`ack`) message to the server. Each message acknowledges the receipt of many events by the client. Since the server must retain every outbound event in the queue until its receipt is acknowledged, shortening the acknowledgment delay can reduce the average queue size, reducing the amount of server memory used for queueing.
 
 -   Optional: Limit Queue Size. Cap the server queue size using overflow or blocking. These options help avoid out of memory errors on the server in the case of slow clients. A slow client slows the rate that the server can send messages, causing messages to back up in the queue, possibly leading to out of memory on the server. You can use one or the other of these options, but not both:
     -   Optional: Overflow to Disk. Configure subscription queue overflow by setting the server’s `client-subscription` properties. With overflow, the most recently used (MRU) events are written out to disk, keeping the oldest events, the ones that are next in line to be sent to the client, available in memory. Example:

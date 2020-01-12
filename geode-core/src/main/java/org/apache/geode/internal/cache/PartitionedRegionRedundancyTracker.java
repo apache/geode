@@ -17,9 +17,7 @@ package org.apache.geode.internal.cache;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Keeps track redundancy statistics across the buckets of a given {@link PartitionedRegion}
@@ -35,6 +33,7 @@ class PartitionedRegionRedundancyTracker {
   private int lowRedundancyBuckets;
   private int noCopiesBuckets;
   private int lowestBucketCopies;
+  private volatile int actualRedundancy;
 
   /**
    * Creates a new PartitionedRegionRedundancyTracker
@@ -63,6 +62,10 @@ class PartitionedRegionRedundancyTracker {
     return lowestBucketCopies;
   }
 
+  int getLowRedundancyBuckets() {
+    return lowRedundancyBuckets;
+  }
+
   /**
    * Increments the count of buckets that do not meet redundancy
    */
@@ -82,9 +85,8 @@ class PartitionedRegionRedundancyTracker {
   synchronized void reportBucketCount(int bucketCopies) {
     if (bucketCopies < lowestBucketCopies) {
       lowestBucketCopies = bucketCopies;
-      logger.warn(LocalizedMessage.create(
-          LocalizedStrings.BucketAdvisor_REDUNDANCY_HAS_DROPPED_BELOW_0_CONFIGURED_COPIES_TO_1_ACTUAL_COPIES_FOR_2,
-          new Object[] {targetRedundancy + 1, bucketCopies, regionPath}));
+      logger.warn("Redundancy has dropped below {} configured copies to {} actual copies for {}",
+          new Object[] {targetRedundancy + 1, bucketCopies, regionPath});
     }
   }
 
@@ -134,7 +136,13 @@ class PartitionedRegionRedundancyTracker {
     }
   }
 
+  public int getActualRedundancy() {
+    return actualRedundancy;
+  }
+
   void setActualRedundancy(int actualRedundancy) {
-    stats.setActualRedundantCopies(Math.max(actualRedundancy, 0));
+    int nonNegativeRedundancy = Math.max(actualRedundancy, 0);
+    this.actualRedundancy = nonNegativeRedundancy;
+    stats.setActualRedundantCopies(nonNegativeRedundancy);
   }
 }

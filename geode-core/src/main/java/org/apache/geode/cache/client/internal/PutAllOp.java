@@ -31,7 +31,6 @@ import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.distributed.internal.ServerLocation;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.LocalRegion;
@@ -42,7 +41,8 @@ import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Does a region putAll on a server
@@ -111,8 +111,9 @@ public class PutAllOp {
         new HashMap<ServerLocation, RuntimeException>();
     PutAllPartialResult result = new PutAllPartialResult(map.size());
     try {
-      Map<ServerLocation, Object> results = SingleHopClientExecutor.submitBulkOp(callableTasks, cms,
-          (LocalRegion) region, failedServers);
+      Map<ServerLocation, Object> results = SingleHopClientExecutor
+          .submitBulkOp(callableTasks, cms,
+              (LocalRegion) region, failedServers);
       for (Map.Entry<ServerLocation, Object> entry : results.entrySet()) {
         Object value = entry.getValue();
         if (value instanceof PutAllPartialResultException) {
@@ -266,7 +267,7 @@ public class PutAllOp {
           (callbackArg != null ? 6 : 5) + (map.size() * 2));
       this.prSingleHopEnabled = prSingleHopEnabled;
       this.region = (LocalRegion) region;
-      getMessage().addStringPart(region.getFullPath());
+      getMessage().addStringPart(region.getFullPath(), true);
       getMessage().addBytesPart(eventId.calcBytes());
       getMessage().addIntPart(skipCallbacks ? 1 : 0);
       this.map = map;
@@ -331,6 +332,7 @@ public class PutAllOp {
       final Exception[] exceptionRef = new Exception[1];
       try {
         processChunkedResponse((ChunkedMessage) msg, "putAll", new ChunkHandler() {
+          @Override
           public void handle(ChunkedMessage cm) throws Exception {
             int numParts = msg.getNumberOfParts();
             final boolean isDebugEnabled = logger.isDebugEnabled();

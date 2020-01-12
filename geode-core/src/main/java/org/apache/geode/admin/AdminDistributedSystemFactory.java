@@ -16,14 +16,13 @@ package org.apache.geode.admin;
 
 import java.util.Properties;
 
+import org.apache.geode.LogWriter;
 import org.apache.geode.admin.internal.AdminDistributedSystemImpl;
 import org.apache.geode.admin.internal.DistributedSystemConfigImpl;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.i18n.LogWriterI18n;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LocalLogWriter;
 
 /**
@@ -54,8 +53,7 @@ public class AdminDistributedSystemFactory {
   @Deprecated
   public static void bindToAddress(String bindAddress) {
     throw new UnsupportedOperationException(
-        LocalizedStrings.AdminDistributedSystemFactory_PLEASE_USE_DISTRIBUTEDSYSTEMCONFIGSETBINDADDRESS_INSTEAD
-            .toLocalizedString());
+        "Please use DistributedSystemConfig.setBindAddress instead.");
   }
 
   /**
@@ -140,7 +138,7 @@ public class AdminDistributedSystemFactory {
    *
    * @return a GemFire LogWriterI18n for logging
    */
-  public static LogWriterI18n getLogWriter() {
+  public static LogWriter getLogWriter() {
     return new LocalLogWriter(DistributionConfig.DEFAULT_LOG_LEVEL);
   }
 

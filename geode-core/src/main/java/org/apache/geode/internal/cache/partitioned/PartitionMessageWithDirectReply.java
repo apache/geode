@@ -27,6 +27,7 @@ import org.apache.geode.internal.cache.DirectReplyMessage;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.FilterRoutingInfo;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.serialization.DeserializationContext;
 
 /**
  * Used for partitioned region messages which support direct ack responses. Direct ack should be
@@ -70,9 +71,6 @@ public abstract class PartitionMessageWithDirectReply extends PartitionMessage
     this.processor = processor;
   }
 
-  /**
-   * @param original
-   */
   public PartitionMessageWithDirectReply(PartitionMessageWithDirectReply original,
       EntryEventImpl event) {
     super(original);
@@ -84,14 +82,17 @@ public abstract class PartitionMessageWithDirectReply extends PartitionMessage
     }
   }
 
+  @Override
   public boolean supportsDirectAck() {
     return true;
   }
 
+  @Override
   public DirectReplyProcessor getDirectReplyProcessor() {
     return processor;
   }
 
+  @Override
   public void registerProcessor() {
     this.processorId = processor.register();
   }
@@ -106,6 +107,11 @@ public abstract class PartitionMessageWithDirectReply extends PartitionMessage
   }
 
   @Override
+  public boolean dropMessageWhenMembershipIsPlayingDead() {
+    return true;
+  }
+
+  @Override
   protected short computeCompressedShort(short s) {
     s = super.computeCompressedShort(s);
     if (this.posDup) {
@@ -115,8 +121,9 @@ public abstract class PartitionMessageWithDirectReply extends PartitionMessage
   }
 
   @Override
-  protected void setBooleans(short s, DataInput in) throws IOException, ClassNotFoundException {
-    super.setBooleans(s, in);
+  protected void setBooleans(short s, DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.setBooleans(s, in, context);
     if ((s & POS_DUP) != 0) {
       this.posDup = true;
     }

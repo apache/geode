@@ -25,6 +25,7 @@ import java.util.Set;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.CacheCallback;
 import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.CacheLoader;
@@ -49,7 +50,6 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.SubscriptionAttributes;
 import org.apache.geode.compression.Compressor;
 import org.apache.geode.internal.cache.EvictionAttributesImpl;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Provides an implementation of RegionAttributes that can be used from a VM remote from the vm that
@@ -161,55 +161,68 @@ public class RemoteRegionAttributes implements RegionAttributes, DataSerializabl
    */
   public RemoteRegionAttributes() {}
 
+  @Override
   public CacheLoader getCacheLoader() {
     return cacheLoaderDesc.equals("") ? null : new RemoteCacheLoader(cacheLoaderDesc);
   }
 
+  @Override
   public CacheWriter getCacheWriter() {
     return cacheWriterDesc.equals("") ? null : new RemoteCacheWriter(cacheWriterDesc);
   }
 
+  @Override
   public Class getKeyConstraint() {
     return keyConstraint;
   }
 
+  @Override
   public Class getValueConstraint() {
     return valueConstraint;
   }
 
+  @Override
   public ExpirationAttributes getRegionTimeToLive() {
     return rTtl;
   }
 
+  @Override
   public ExpirationAttributes getRegionIdleTimeout() {
     return rIdleTimeout;
   }
 
+  @Override
   public ExpirationAttributes getEntryTimeToLive() {
     return eTtl;
   }
 
+  @Override
   public CustomExpiry getCustomEntryTimeToLive() {
     return customEttlDesc.equals("") ? null : new RemoteCustomExpiry(customEttlDesc);
   }
 
+  @Override
   public ExpirationAttributes getEntryIdleTimeout() {
     return eIdleTimeout;
   }
 
+  @Override
   public CustomExpiry getCustomEntryIdleTimeout() {
     return customEIdleDesc.equals("") ? null : new RemoteCustomExpiry(customEIdleDesc);
   }
 
 
+  @Override
   public String getPoolName() {
     return poolName;
   }
 
+  @Override
   public Scope getScope() {
     return scope;
   }
 
+  @Override
   public CacheListener getCacheListener() {
     CacheListener[] listeners = getCacheListeners();
     if (listeners.length == 0) {
@@ -218,13 +231,14 @@ public class RemoteRegionAttributes implements RegionAttributes, DataSerializabl
       return listeners[0];
     } else {
       throw new IllegalStateException(
-          LocalizedStrings.RemoteRegionAttributes_MORE_THAN_ONE_CACHE_LISTENER_EXISTS
-              .toLocalizedString());
+          "More than one cache listener exists.");
     }
   }
 
+  @Immutable
   private static final CacheListener[] EMPTY_LISTENERS = new CacheListener[0];
 
+  @Override
   public CacheListener[] getCacheListeners() {
     if (this.cacheListenerDescs == null || this.cacheListenerDescs.length == 0) {
       return EMPTY_LISTENERS;
@@ -238,42 +252,52 @@ public class RemoteRegionAttributes implements RegionAttributes, DataSerializabl
   }
 
 
+  @Override
   public int getInitialCapacity() {
     return initialCapacity;
   }
 
+  @Override
   public float getLoadFactor() {
     return loadFactor;
   }
 
+  @Override
   public int getConcurrencyLevel() {
     return concurrencyLevel;
   }
 
+  @Override
   public boolean getConcurrencyChecksEnabled() {
     return this.concurrencyChecksEnabled;
   }
 
+  @Override
   public boolean getStatisticsEnabled() {
     return statsEnabled;
   }
 
+  @Override
   public boolean getIgnoreJTA() {
     return ignoreJTA;
   }
 
+  @Override
   public boolean isLockGrantor() {
     return this.isLockGrantor;
   }
 
+  @Override
   public boolean getPersistBackup() {
     return getDataPolicy().withPersistence();
   }
 
+  @Override
   public boolean getEarlyAck() {
     return this.earlyAck;
   }
 
+  @Override
   public boolean getMulticastEnabled() {
     return this.multicastEnabled;
   }
@@ -293,39 +317,48 @@ public class RemoteRegionAttributes implements RegionAttributes, DataSerializabl
   /*
    * @deprecated as of prPersistSprint1
    */
+  @Override
   @Deprecated
   public boolean getPublisher() {
     return this.publisher;
   }
 
+  @Override
   public boolean getEnableConflation() { // deprecated in 5.0
     return getEnableSubscriptionConflation();
   }
 
+  @Override
   public boolean getEnableBridgeConflation() { // deprecated in 5.7
     return getEnableSubscriptionConflation();
   }
 
+  @Override
   public boolean getEnableSubscriptionConflation() {
     return this.enableSubscriptionConflation;
   }
 
+  @Override
   public boolean getEnableAsyncConflation() {
     return this.enableAsyncConflation;
   }
 
+  @Override
   public DiskWriteAttributes getDiskWriteAttributes() {
     return this.diskWriteAttributes;
   }
 
+  @Override
   public File[] getDiskDirs() {
     return this.diskDirs;
   }
 
+  @Override
   public int[] getDiskDirSizes() {
     return this.diskSizes;
   }
 
+  @Override
   public MirrorType getMirrorType() {
     // checkReadiness();
     if (this.dataPolicy.isNormal() || this.dataPolicy.isPreloaded() || this.dataPolicy.isEmpty()
@@ -335,36 +368,43 @@ public class RemoteRegionAttributes implements RegionAttributes, DataSerializabl
       return MirrorType.KEYS_VALUES;
     } else {
       throw new IllegalStateException(
-          LocalizedStrings.RemoteRegionAttributes_NO_MIRROR_TYPE_CORRESPONDS_TO_DATA_POLICY_0
-              .toLocalizedString(this.dataPolicy));
+          String.format("No mirror type corresponds to data policy %s",
+              this.dataPolicy));
     }
   }
 
+  @Override
   public DataPolicy getDataPolicy() {
     // checkReadiness();
     return this.dataPolicy;
   }
 
+  @Override
   public PartitionAttributes getPartitionAttributes() {
     return this.partitionAttributes;
   }
 
+  @Override
   public MembershipAttributes getMembershipAttributes() {
     return this.membershipAttributes;
   }
 
+  @Override
   public SubscriptionAttributes getSubscriptionAttributes() {
     return this.subscriptionAttributes;
   }
 
+  @Override
   public Compressor getCompressor() {
     return compressorDesc.equals("") ? null : new RemoteCompressor(compressorDesc);
   }
 
+  @Override
   public boolean getOffHeap() {
     return this.offHeap;
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeString(this.cacheLoaderDesc, out);
     DataSerializer.writeString(this.cacheWriterDesc, out);
@@ -411,6 +451,7 @@ public class RemoteRegionAttributes implements RegionAttributes, DataSerializabl
     out.writeBoolean(this.offHeap);
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.cacheLoaderDesc = DataSerializer.readString(in);
     this.cacheWriterDesc = DataSerializer.readString(in);
@@ -478,6 +519,7 @@ public class RemoteRegionAttributes implements RegionAttributes, DataSerializabl
     }
   }
 
+  @Override
   public boolean getIndexMaintenanceSynchronous() {
     return this.indexMaintenanceSynchronous;
   }
@@ -502,6 +544,7 @@ public class RemoteRegionAttributes implements RegionAttributes, DataSerializabl
       return desc;
     }
 
+    @Override
     public void close() {}
   }
 
@@ -511,22 +554,31 @@ public class RemoteRegionAttributes implements RegionAttributes, DataSerializabl
       super(desc);
     }
 
+    @Override
     public void afterCreate(EntryEvent event) {}
 
+    @Override
     public void afterUpdate(EntryEvent event) {}
 
+    @Override
     public void afterInvalidate(EntryEvent event) {}
 
+    @Override
     public void afterDestroy(EntryEvent event) {}
 
+    @Override
     public void afterRegionInvalidate(RegionEvent event) {}
 
+    @Override
     public void afterRegionDestroy(RegionEvent event) {}
 
+    @Override
     public void afterRegionClear(RegionEvent event) {}
 
+    @Override
     public void afterRegionCreate(RegionEvent event) {}
 
+    @Override
     public void afterRegionLive(RegionEvent event) {}
   }
 
@@ -536,14 +588,19 @@ public class RemoteRegionAttributes implements RegionAttributes, DataSerializabl
       super(desc);
     }
 
+    @Override
     public void beforeUpdate(EntryEvent event) throws CacheWriterException {}
 
+    @Override
     public void beforeCreate(EntryEvent event) throws CacheWriterException {}
 
+    @Override
     public void beforeDestroy(EntryEvent event) throws CacheWriterException {}
 
+    @Override
     public void beforeRegionDestroy(RegionEvent event) throws CacheWriterException {}
 
+    @Override
     public void beforeRegionClear(RegionEvent event) throws CacheWriterException {}
   }
 
@@ -559,6 +616,7 @@ public class RemoteRegionAttributes implements RegionAttributes, DataSerializabl
      *
      * @see org.apache.geode.cache.CustomExpiry#getExpiry(org.apache.geode.cache.Region.Entry)
      */
+    @Override
     public ExpirationAttributes getExpiry(Entry entry) {
       return null;
     }
@@ -568,6 +626,7 @@ public class RemoteRegionAttributes implements RegionAttributes, DataSerializabl
      *
      * @see org.apache.geode.cache.Declarable#init(java.util.Properties)
      */
+    @Override
     public void init(Properties props) {}
 
   }
@@ -578,6 +637,7 @@ public class RemoteRegionAttributes implements RegionAttributes, DataSerializabl
       super(desc);
     }
 
+    @Override
     public Object load(LoaderHelper helper) throws CacheLoaderException {
       return null;
     }
@@ -589,28 +649,34 @@ public class RemoteRegionAttributes implements RegionAttributes, DataSerializabl
       super(desc);
     }
 
+    @Override
     public byte[] compress(byte[] input) {
       return null;
     }
 
+    @Override
     public byte[] decompress(byte[] input) {
       return null;
     }
   }
 
+  @Override
   public EvictionAttributes getEvictionAttributes() {
     return this.evictionAttributes;
   }
 
+  @Override
   public boolean getCloningEnabled() {
     // TODO Auto-generated method stub
     return this.cloningEnable;
   }
 
+  @Override
   public String getDiskStoreName() {
     return this.diskStoreName;
   }
 
+  @Override
   public boolean isDiskSynchronous() {
     return this.isDiskSynchronous;
   }
@@ -619,6 +685,7 @@ public class RemoteRegionAttributes implements RegionAttributes, DataSerializabl
     return this.isGatewaySenderEnabled;
   }
 
+  @Override
   public Set<String> getGatewaySenderIds() {
     if (this.gatewaySendersDescs == null || this.gatewaySendersDescs.length == 0) {
       return Collections.EMPTY_SET;
@@ -633,6 +700,7 @@ public class RemoteRegionAttributes implements RegionAttributes, DataSerializabl
     }
   }
 
+  @Override
   public Set<String> getAsyncEventQueueIds() {
     if (this.asyncEventQueueDescs == null || this.asyncEventQueueDescs.length == 0) {
       return Collections.EMPTY_SET;

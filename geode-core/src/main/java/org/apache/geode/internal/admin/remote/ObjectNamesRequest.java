@@ -16,10 +16,13 @@
 
 package org.apache.geode.internal.admin.remote;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-import org.apache.geode.distributed.internal.*;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * A message that is sent to a particular app vm to request all the subregions of a given parent
@@ -39,13 +42,12 @@ public class ObjectNamesRequest extends RegionAdminRequest implements Cancellabl
   }
 
   public ObjectNamesRequest() {
-    friendlyName = LocalizedStrings.ObjectNamesRequest_LIST_CACHED_OBJECTS.toLocalizedString();
+    friendlyName = "List cached objects";
   }
 
   /**
    * Must return a proper response to this request.
    *
-   * @param dm
    */
   @Override
   protected AdminResponse createResponse(DistributionManager dm) {
@@ -62,6 +64,7 @@ public class ObjectNamesRequest extends RegionAdminRequest implements Cancellabl
     return resp;
   }
 
+  @Override
   public synchronized void cancel() {
     cancelled = true;
     if (resp != null) {
@@ -69,18 +72,21 @@ public class ObjectNamesRequest extends RegionAdminRequest implements Cancellabl
     }
   }
 
+  @Override
   public int getDSFID() {
     return OBJECT_NAMES_REQUEST;
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
   }
 
   @Override

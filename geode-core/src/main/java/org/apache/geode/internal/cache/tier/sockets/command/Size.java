@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.internal.cache.LocalRegion;
@@ -27,13 +28,12 @@ import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.GemFireSecurityException;
 
 public class Size extends BaseCommand {
 
+  @Immutable
   private static final Size singleton = new Size();
 
   private Size() {}
@@ -65,14 +65,13 @@ public class Size extends BaseCommand {
     stats.incReadSizeRequestTime(start - oldStart);
     // Retrieve the data from the message parts
     Part regionNamePart = clientMessage.getPart(0);
-    String regionName = regionNamePart.getString();
+    String regionName = regionNamePart.getCachedString();
 
     if (regionName == null) {
-      logger.warn(LocalizedMessage.create(
-          LocalizedStrings.BaseCommand__THE_INPUT_REGION_NAME_FOR_THE_0_REQUEST_IS_NULL, "size"));
+      logger.warn("The input region name for the %s request is null", "size");
       errMessage
-          .append(LocalizedStrings.BaseCommand__THE_INPUT_REGION_NAME_FOR_THE_0_REQUEST_IS_NULL
-              .toLocalizedString("size"));
+          .append(String.format("The input region name for the %s request is null",
+              "size"));
       writeErrorResponse(clientMessage, MessageType.SIZE_ERROR, errMessage.toString(),
           serverConnection);
       serverConnection.setAsTrue(RESPONDED);
@@ -81,8 +80,8 @@ public class Size extends BaseCommand {
 
     LocalRegion region = (LocalRegion) crHelper.getRegion(regionName);
     if (region == null) {
-      String reason = LocalizedStrings.BaseCommand__0_WAS_NOT_FOUND_DURING_1_REQUEST
-          .toLocalizedString(regionName, "size");
+      String reason = String.format("%s was not found during %s request",
+          regionName, "size");
       writeRegionDestroyedEx(clientMessage, regionName, reason, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
       return;
@@ -109,7 +108,7 @@ public class Size extends BaseCommand {
           logger.debug("{}: Unexpected Security exception", serverConnection.getName(), e);
         }
       } else {
-        logger.warn(LocalizedMessage.create(LocalizedStrings.BaseCommand_0_UNEXPECTED_EXCEPTION,
+        logger.warn(String.format("%s: Unexpected Exception",
             serverConnection.getName()), e);
       }
     } finally {

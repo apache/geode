@@ -16,12 +16,15 @@ package org.apache.geode.internal.cache.map;
 
 import java.util.Map;
 
+import org.apache.geode.cache.Operation;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.RegionEntryFactory;
+import org.apache.geode.internal.cache.TXEntryState;
+import org.apache.geode.internal.cache.eviction.EvictableMap;
 
-public interface FocusedRegionMap {
+public interface FocusedRegionMap extends EvictableMap {
 
   RegionEntry getEntry(EntryEventImpl event);
 
@@ -42,4 +45,16 @@ public interface FocusedRegionMap {
 
   void processVersionTag(RegionEntry regionEntry, EntryEventImpl event);
 
+  void lruEntryUpdate(RegionEntry regionEntry);
+
+  void lruEntryCreate(RegionEntry regionEntry);
+
+  void incEntryCount(int delta);
+
+  void runWhileEvictionDisabled(Runnable runnable);
+
+  void txRemoveOldIndexEntry(Operation putOp, RegionEntry regionEntry);
+
+  void processAndGenerateTXVersionTag(EntryEventImpl callbackEvent, RegionEntry regionEntry,
+      TXEntryState txEntryState);
 }

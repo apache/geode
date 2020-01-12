@@ -14,8 +14,11 @@
  */
 package org.apache.geode.cache.asyncqueue.internal;
 
+import static org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl.getSenderIdFromAsyncEventQueueId;
+
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory;
@@ -23,110 +26,117 @@ import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewayEventSubstitutionFilter;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.wan.AsyncEventQueueConfigurationException;
 import org.apache.geode.internal.cache.wan.GatewaySenderAttributes;
+import org.apache.geode.internal.cache.wan.InternalGatewaySender;
 import org.apache.geode.internal.cache.xmlcache.AsyncEventQueueCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.ParallelAsyncEventQueueCreation;
 import org.apache.geode.internal.cache.xmlcache.SerialAsyncEventQueueCreation;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class AsyncEventQueueFactoryImpl implements AsyncEventQueueFactory {
 
   private static final Logger logger = LogService.getLogger();
 
   /**
-   * Used internally to pass the attributes from this factory to the real GatewaySender it is
-   * creating.
-   */
-  private GatewaySenderAttributes attrs = new GatewaySenderAttributes();
-
-  private InternalCache cache;
-
-  /**
    * The default batchTimeInterval for AsyncEventQueue in milliseconds.
    */
   public static final int DEFAULT_BATCH_TIME_INTERVAL = 5;
 
+  private final InternalCache cache;
+
+  private boolean pauseEventsDispatching = false;
+
+  /**
+   * Used internally to pass the attributes from this factory to the real GatewaySender it is
+   * creating.
+   */
+  private final GatewaySenderAttributes gatewaySenderAttributes;
+
   public AsyncEventQueueFactoryImpl(InternalCache cache) {
+    this(cache, new GatewaySenderAttributes(), DEFAULT_BATCH_TIME_INTERVAL);
+  }
+
+  AsyncEventQueueFactoryImpl(InternalCache cache, GatewaySenderAttributes gatewaySenderAttributes,
+      int batchTimeInterval) {
     this.cache = cache;
-    this.attrs = new GatewaySenderAttributes();
+    this.gatewaySenderAttributes = gatewaySenderAttributes;
     // set a different default for batchTimeInterval for AsyncEventQueue
-    this.attrs.batchTimeInterval = DEFAULT_BATCH_TIME_INTERVAL;
+    this.gatewaySenderAttributes.batchTimeInterval = batchTimeInterval;
   }
 
   @Override
   public AsyncEventQueueFactory setBatchSize(int size) {
-    this.attrs.batchSize = size;
+    gatewaySenderAttributes.batchSize = size;
     return this;
   }
 
+  @Override
   public AsyncEventQueueFactory setPersistent(boolean isPersistent) {
-    this.attrs.isPersistenceEnabled = isPersistent;
+    gatewaySenderAttributes.isPersistenceEnabled = isPersistent;
     return this;
   }
 
   @Override
   public AsyncEventQueueFactory setDiskStoreName(String name) {
-    this.attrs.diskStoreName = name;
+    gatewaySenderAttributes.diskStoreName = name;
     return this;
   }
 
   @Override
   public AsyncEventQueueFactory setMaximumQueueMemory(int memory) {
-    this.attrs.maximumQueueMemory = memory;
+    gatewaySenderAttributes.maximumQueueMemory = memory;
     return this;
   }
 
   @Override
   public AsyncEventQueueFactory setDiskSynchronous(boolean isSynchronous) {
-    this.attrs.isDiskSynchronous = isSynchronous;
+    gatewaySenderAttributes.isDiskSynchronous = isSynchronous;
     return this;
   }
 
   @Override
   public AsyncEventQueueFactory setBatchTimeInterval(int batchTimeInterval) {
-    this.attrs.batchTimeInterval = batchTimeInterval;
+    gatewaySenderAttributes.batchTimeInterval = batchTimeInterval;
     return this;
   }
 
   @Override
   public AsyncEventQueueFactory setBatchConflationEnabled(boolean isConflation) {
-    this.attrs.isBatchConflationEnabled = isConflation;
+    gatewaySenderAttributes.isBatchConflationEnabled = isConflation;
     return this;
   }
 
   @Override
   public AsyncEventQueueFactory setDispatcherThreads(int numThreads) {
-    this.attrs.dispatcherThreads = numThreads;
+    gatewaySenderAttributes.dispatcherThreads = numThreads;
     return this;
   }
 
   @Override
   public AsyncEventQueueFactory setOrderPolicy(OrderPolicy policy) {
-    this.attrs.policy = policy;
+    gatewaySenderAttributes.policy = policy;
     return this;
   }
 
   @Override
   public AsyncEventQueueFactory addGatewayEventFilter(GatewayEventFilter filter) {
-    this.attrs.addGatewayEventFilter(filter);
+    gatewaySenderAttributes.addGatewayEventFilter(filter);
     return this;
   }
 
   @Override
   public AsyncEventQueueFactory removeGatewayEventFilter(GatewayEventFilter filter) {
-    this.attrs.eventFilters.remove(filter);
+    gatewaySenderAttributes.eventFilters.remove(filter);
     return this;
   }
 
   @Override
   public AsyncEventQueueFactory setGatewayEventSubstitutionListener(
       GatewayEventSubstitutionFilter filter) {
-    this.attrs.eventSubstitutionFilter = filter;
+    gatewaySenderAttributes.eventSubstitutionFilter = filter;
     return this;
   }
 
@@ -136,35 +146,45 @@ public class AsyncEventQueueFactoryImpl implements AsyncEventQueueFactory {
   }
 
   public AsyncEventQueueFactory addAsyncEventListener(AsyncEventListener listener) {
-    this.attrs.addAsyncEventListener(listener);
+    gatewaySenderAttributes.addAsyncEventListener(listener);
     return this;
   }
 
+  @Override
   public AsyncEventQueue create(String asyncQueueId, AsyncEventListener listener) {
     if (listener == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.AsyncEventQueue_ASYNC_EVENT_LISTENER_CANNOT_BE_NULL.toLocalizedString());
+          "AsyncEventListener cannot be null");
     }
 
-    AsyncEventQueue asyncEventQueue = null;
-    if (this.cache instanceof GemFireCacheImpl) {
+    AsyncEventQueue asyncEventQueue;
+
+    if (cache instanceof CacheCreation) {
+      asyncEventQueue =
+          new AsyncEventQueueCreation(asyncQueueId, gatewaySenderAttributes, listener);
+      if (pauseEventsDispatching) {
+        ((AsyncEventQueueCreation) asyncEventQueue).setPauseEventDispatching(true);
+      }
+      ((CacheCreation) cache).addAsyncEventQueue(asyncEventQueue);
+    } else {
       if (logger.isDebugEnabled()) {
         logger.debug("Creating GatewaySender that underlies the AsyncEventQueue");
       }
 
       addAsyncEventListener(listener);
-      GatewaySender sender =
-          create(AsyncEventQueueImpl.getSenderIdFromAsyncEventQueueId(asyncQueueId));
-      AsyncEventQueueImpl queue = new AsyncEventQueueImpl(sender, listener);
-      asyncEventQueue = queue;
-      this.cache.addAsyncEventQueue(queue);
-      if (!this.attrs.isManualStart()) {
+      InternalGatewaySender sender =
+          (InternalGatewaySender) create(getSenderIdFromAsyncEventQueueId(asyncQueueId));
+      AsyncEventQueueImpl asyncEventQueueImpl = new AsyncEventQueueImpl(sender, listener);
+      asyncEventQueue = asyncEventQueueImpl;
+      cache.addAsyncEventQueue(asyncEventQueueImpl);
+      if (pauseEventsDispatching) {
+        sender.setStartEventProcessorInPausedState();
+      }
+      if (!gatewaySenderAttributes.isManualStart()) {
         sender.start();
       }
-    } else if (this.cache instanceof CacheCreation) {
-      asyncEventQueue = new AsyncEventQueueCreation(asyncQueueId, attrs, listener);
-      ((CacheCreation) cache).addAsyncEventQueue(asyncEventQueue);
     }
+
     if (logger.isDebugEnabled()) {
       logger.debug("Returning AsyncEventQueue" + asyncEventQueue);
     }
@@ -172,81 +192,103 @@ public class AsyncEventQueueFactoryImpl implements AsyncEventQueueFactory {
   }
 
   private GatewaySender create(String id) {
-    this.attrs.id = id;
-    GatewaySender sender = null;
+    gatewaySenderAttributes.id = id;
 
-    if (this.attrs.getDispatcherThreads() <= 0) {
+    if (gatewaySenderAttributes.getDispatcherThreads() <= 0) {
       throw new AsyncEventQueueConfigurationException(
-          LocalizedStrings.AsyncEventQueue_0_CANNOT_HAVE_DISPATCHER_THREADS_LESS_THAN_1
-              .toLocalizedString(id));
+          String.format("AsyncEventQueue %s can not be created with dispatcher threads less than 1",
+              id));
     }
 
-    if (this.attrs.isParallel()) {
-      if ((this.attrs.getOrderPolicy() != null)
-          && this.attrs.getOrderPolicy().equals(OrderPolicy.THREAD)) {
+    GatewaySender sender;
+    if (gatewaySenderAttributes.isParallel()) {
+      if (gatewaySenderAttributes.getOrderPolicy() != null
+          && gatewaySenderAttributes.getOrderPolicy().equals(OrderPolicy.THREAD)) {
         throw new AsyncEventQueueConfigurationException(
-            LocalizedStrings.AsyncEventQueue_0_CANNOT_BE_CREATED_WITH_ORDER_POLICY_1
-                .toLocalizedString(id, this.attrs.getOrderPolicy()));
+            String.format(
+                "AsyncEventQueue %s can not be created with OrderPolicy %s when it is set parallel",
+                id, gatewaySenderAttributes.getOrderPolicy()));
       }
 
-      if (this.cache instanceof GemFireCacheImpl) {
-        sender = new ParallelAsyncEventQueueImpl(this.cache, this.attrs);
-        this.cache.addGatewaySender(sender);
-      } else if (this.cache instanceof CacheCreation) {
-        sender = new ParallelAsyncEventQueueCreation(this.cache, this.attrs);
-        ((CacheCreation) this.cache).addGatewaySender(sender);
+      if (cache instanceof CacheCreation) {
+        sender = new ParallelAsyncEventQueueCreation(cache, gatewaySenderAttributes);
+      } else {
+        sender = new ParallelAsyncEventQueueImpl(cache,
+            cache.getInternalDistributedSystem().getStatisticsManager(), cache.getStatisticsClock(),
+            gatewaySenderAttributes);
       }
+      cache.addGatewaySender(sender);
+
     } else {
-      if (this.attrs.getOrderPolicy() == null && this.attrs.getDispatcherThreads() > 1) {
-        this.attrs.policy = GatewaySender.DEFAULT_ORDER_POLICY;
+      if (gatewaySenderAttributes.getOrderPolicy() == null
+          && gatewaySenderAttributes.getDispatcherThreads() > 1) {
+        gatewaySenderAttributes.policy = GatewaySender.DEFAULT_ORDER_POLICY;
       }
-      if (this.cache instanceof GemFireCacheImpl) {
-        sender = new SerialAsyncEventQueueImpl(this.cache, this.attrs);
-        this.cache.addGatewaySender(sender);
-      } else if (this.cache instanceof CacheCreation) {
-        sender = new SerialAsyncEventQueueCreation(this.cache, this.attrs);
-        ((CacheCreation) this.cache).addGatewaySender(sender);
+
+      if (cache instanceof CacheCreation) {
+        sender = new SerialAsyncEventQueueCreation(cache, gatewaySenderAttributes);
+      } else {
+        sender = new SerialAsyncEventQueueImpl(cache,
+            cache.getInternalDistributedSystem().getStatisticsManager(), cache.getStatisticsClock(),
+            gatewaySenderAttributes);
       }
+      cache.addGatewaySender(sender);
     }
     return sender;
   }
 
   public void configureAsyncEventQueue(AsyncEventQueue asyncQueueCreation) {
-    this.attrs.batchSize = asyncQueueCreation.getBatchSize();
-    this.attrs.batchTimeInterval = asyncQueueCreation.getBatchTimeInterval();
-    this.attrs.isBatchConflationEnabled = asyncQueueCreation.isBatchConflationEnabled();
-    this.attrs.isPersistenceEnabled = asyncQueueCreation.isPersistent();
-    this.attrs.diskStoreName = asyncQueueCreation.getDiskStoreName();
-    this.attrs.isDiskSynchronous = asyncQueueCreation.isDiskSynchronous();
-    this.attrs.maximumQueueMemory = asyncQueueCreation.getMaximumQueueMemory();
-    this.attrs.isParallel = asyncQueueCreation.isParallel();
-    this.attrs.isBucketSorted = ((AsyncEventQueueCreation) asyncQueueCreation).isBucketSorted();
-    this.attrs.dispatcherThreads = asyncQueueCreation.getDispatcherThreads();
-    this.attrs.policy = asyncQueueCreation.getOrderPolicy();
-    this.attrs.eventFilters = asyncQueueCreation.getGatewayEventFilters();
-    this.attrs.eventSubstitutionFilter = asyncQueueCreation.getGatewayEventSubstitutionFilter();
-    this.attrs.isForInternalUse = true;
-    this.attrs.forwardExpirationDestroy = asyncQueueCreation.isForwardExpirationDestroy();
+    gatewaySenderAttributes.batchSize = asyncQueueCreation.getBatchSize();
+    gatewaySenderAttributes.batchTimeInterval = asyncQueueCreation.getBatchTimeInterval();
+    gatewaySenderAttributes.isBatchConflationEnabled =
+        asyncQueueCreation.isBatchConflationEnabled();
+    gatewaySenderAttributes.isPersistenceEnabled = asyncQueueCreation.isPersistent();
+    gatewaySenderAttributes.diskStoreName = asyncQueueCreation.getDiskStoreName();
+    gatewaySenderAttributes.isDiskSynchronous = asyncQueueCreation.isDiskSynchronous();
+    gatewaySenderAttributes.maximumQueueMemory = asyncQueueCreation.getMaximumQueueMemory();
+    gatewaySenderAttributes.isParallel = asyncQueueCreation.isParallel();
+    gatewaySenderAttributes.isBucketSorted =
+        ((AsyncEventQueueCreation) asyncQueueCreation).isBucketSorted();
+    gatewaySenderAttributes.dispatcherThreads = asyncQueueCreation.getDispatcherThreads();
+    gatewaySenderAttributes.policy = asyncQueueCreation.getOrderPolicy();
+    gatewaySenderAttributes.eventFilters = asyncQueueCreation.getGatewayEventFilters();
+    gatewaySenderAttributes.eventSubstitutionFilter =
+        asyncQueueCreation.getGatewayEventSubstitutionFilter();
+    gatewaySenderAttributes.isForInternalUse = true;
+    gatewaySenderAttributes.forwardExpirationDestroy =
+        asyncQueueCreation.isForwardExpirationDestroy();
   }
 
+  @Override
   public AsyncEventQueueFactory setParallel(boolean isParallel) {
-    this.attrs.isParallel = isParallel;
+    gatewaySenderAttributes.isParallel = isParallel;
     return this;
   }
 
   public AsyncEventQueueFactory setBucketSorted(boolean isbucketSorted) {
-    this.attrs.isBucketSorted = isbucketSorted;
+    gatewaySenderAttributes.isBucketSorted = isbucketSorted;
     return this;
   }
 
   public AsyncEventQueueFactory setIsMetaQueue(boolean isMetaQueue) {
-    this.attrs.isMetaQueue = isMetaQueue;
+    gatewaySenderAttributes.isMetaQueue = isMetaQueue;
     return this;
   }
 
   @Override
   public AsyncEventQueueFactory setForwardExpirationDestroy(boolean forward) {
-    this.attrs.forwardExpirationDestroy = forward;
+    gatewaySenderAttributes.forwardExpirationDestroy = forward;
     return this;
+  }
+
+  @Override
+  public AsyncEventQueueFactory pauseEventDispatching() {
+    pauseEventsDispatching = true;
+    return this;
+  }
+
+  @VisibleForTesting
+  protected boolean isPauseEventsDispatching() {
+    return pauseEventsDispatching;
   }
 }

@@ -19,9 +19,10 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 
 /**
@@ -89,19 +90,24 @@ public class CqEntry implements DataSerializableFixedID {
 
   /* DataSerializableFixedID methods ---------------------------------------- */
 
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.key = DataSerializer.readObject(in);
-    this.value = DataSerializer.readObject(in);
+  @Override
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    this.key = context.getDeserializer().readObject(in);
+    this.value = context.getDeserializer().readObject(in);
   }
 
 
+  @Override
   public int getDSFID() {
     return CQ_ENTRY_EVENT;
   }
 
-  public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeObject(this.key, out);
-    DataSerializer.writeObject(this.value, out);
+  @Override
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    context.getSerializer().writeObject(this.key, out);
+    context.getSerializer().writeObject(this.value, out);
   }
 
   @Override

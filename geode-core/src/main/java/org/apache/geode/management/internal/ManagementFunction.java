@@ -18,18 +18,15 @@ import java.io.Serializable;
 
 import javax.management.Attribute;
 import javax.management.InstanceNotFoundException;
-import javax.management.MBeanException;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
-import javax.management.ReflectionException;
 
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.InternalFunction;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * A generic function to act as a conduit between Managing Node and Managed nodes.
@@ -60,7 +57,6 @@ public class ManagementFunction implements InternalFunction {
   /**
    * Public constructor
    *
-   * @param notifHub
    */
   public ManagementFunction(NotificationHub notifHub) {
     this.notificationHub = notifHub;
@@ -71,11 +67,12 @@ public class ManagementFunction implements InternalFunction {
    *
    * If any exception is encountered it will set the result to UNDEFINED
    */
+  @Override
   public void execute(FunctionContext fc) {
 
     boolean executedSuccessfully = false;
 
-    InternalCache cache = GemFireCacheImpl.getInstance();
+    InternalCache cache = ((InternalCache) fc.getCache()).getCacheForProcessingClientRequests();
 
     Object[] functionArguments = (Object[]) fc.getArguments();
 
@@ -122,19 +119,13 @@ public class ManagementFunction implements InternalFunction {
       if (cache != null && !cache.isClosed()) {
         sendException(e, fc);
       }
-    } catch (ReflectionException e) {
-      sendException(e, fc);
-    } catch (MBeanException e) {
-      sendException(e, fc);
-    } catch (NullPointerException e) {
-      sendException(e, fc);
     } catch (Exception e) {
       sendException(e, fc);
     } finally {
       if (!executedSuccessfully) {
-        if (cache == null || (cache != null && cache.isClosed())) {
+        if (cache == null || cache.isClosed()) {
           Exception e =
-              new Exception(ManagementStrings.MEMBER_IS_SHUTTING_DOWN.toLocalizedString());
+              new Exception("Member Is Shutting down");
           sendException(e, fc);
           return; // member is closing or invalid member
         }
@@ -142,14 +133,14 @@ public class ManagementFunction implements InternalFunction {
     }
   }
 
+  @Override
   public String getId() {
     return ManagementConstants.MGMT_FUNCTION_ID;
   }
 
   private void sendException(Exception e, FunctionContext fc) {
     if (logger.isDebugEnabled()) {
-      logger.debug(ManagementStrings.MANAGEMENT_FUNCTION_COULD_NOT_EXECUTE.toLocalizedString());
-      logger.debug(e.getMessage(), e);
+      logger.debug("Management Function Could Not Be Executed", e);
     }
     fc.getResultSender().sendException(e);
   }

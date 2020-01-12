@@ -19,7 +19,6 @@ package org.apache.geode.cache.query.internal.parse;
 import antlr.Token;
 
 import org.apache.geode.cache.query.internal.QCompiler;
-import org.apache.geode.cache.query.internal.parse.GemFireAST;
 
 public class ASTArithmeticOp extends GemFireAST {
   private static final long serialVersionUID = 1L;

@@ -15,10 +15,16 @@
 
 package org.apache.geode.cache.query.internal;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
-import org.apache.geode.cache.query.*;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.cache.query.AmbiguousNameException;
+import org.apache.geode.cache.query.FunctionDomainException;
+import org.apache.geode.cache.query.NameResolutionException;
+import org.apache.geode.cache.query.QueryInvocationTargetException;
+import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.TypeMismatchException;
 
 
 /**
@@ -40,10 +46,12 @@ public class CompiledNegation extends AbstractCompiledValue {
     return Collections.singletonList(this._value);
   }
 
+  @Override
   public int getType() {
     return LITERAL_not;
   }
 
+  @Override
   public Object evaluate(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     return negateObject(_value.evaluate(context));
@@ -61,7 +69,7 @@ public class CompiledNegation extends AbstractCompiledValue {
     if (obj == null || obj == QueryService.UNDEFINED)
       return QueryService.UNDEFINED;
     throw new TypeMismatchException(
-        LocalizedStrings.CompiledNegation_0_CANNOT_BE_NEGATED.toLocalizedString(obj.getClass()));
+        String.format("%s cannot be negated", obj.getClass()));
   }
 
   @Override

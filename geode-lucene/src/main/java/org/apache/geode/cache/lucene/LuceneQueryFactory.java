@@ -44,8 +44,6 @@ public interface LuceneQueryFactory {
   /**
    * Set page size for a query result. The default page size is 0 which means no pagination.
    *
-   * @param pageSize
-   * @return itself
    * @throws IllegalArgumentException if the value is less than 0
    */
   LuceneQueryFactory setPageSize(int pageSize);
@@ -54,8 +52,6 @@ public interface LuceneQueryFactory {
    * Set maximum number of results for a query. By default, the limit is set to
    * {@link #DEFAULT_LIMIT} which is 100.
    *
-   * @param limit
-   * @return itself
    * @throws IllegalArgumentException if the value is less than or equal to zero.
    */
   LuceneQueryFactory setLimit(int limit);

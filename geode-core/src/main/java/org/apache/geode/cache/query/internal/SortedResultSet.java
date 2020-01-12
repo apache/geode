@@ -15,16 +15,26 @@
 
 package org.apache.geode.cache.query.internal;
 
-import java.io.*;
-import java.util.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
-import org.apache.geode.*;
-import org.apache.geode.cache.query.*;
-import org.apache.geode.cache.query.internal.types.*;
-import org.apache.geode.cache.query.types.*;
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.Version;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.cache.query.internal.types.CollectionTypeImpl;
+import org.apache.geode.cache.query.types.CollectionType;
+import org.apache.geode.cache.query.types.ObjectType;
+import org.apache.geode.cache.query.types.StructType;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * Implementation of SelectResults that extends TreeSet This is the sorted version of ResultSet used
@@ -60,6 +70,9 @@ public class SortedResultSet extends TreeSet
 
   @Override
   public boolean equals(Object other) {
+    if (other == this) {
+      return true;
+    }
     if (!(other instanceof SortedResultSet)) {
       return false;
     }
@@ -69,52 +82,67 @@ public class SortedResultSet extends TreeSet
     return super.equals(other);
   }
 
+  @Override
+  public int hashCode() {
+    return this.elementType.hashCode();
+  }
+
+  @Override
   public void setElementType(ObjectType elementType) {
     if (elementType instanceof StructType)
       throw new IllegalArgumentException(
-          LocalizedStrings.SortedResultSet_THIS_COLLECTION_DOES_NOT_SUPPORT_STRUCT_ELEMENTS
-              .toLocalizedString());
+          "This collection does not support struct elements");
     this.elementType = elementType;
   }
 
+  @Override
   public List asList() {
     return new ArrayList(this);
   }
 
+  @Override
   public Set asSet() {
     return this;
   }
 
+  @Override
   public CollectionType getCollectionType() {
     return new CollectionTypeImpl(SortedResultSet.class, this.elementType);
   }
 
+  @Override
   public boolean isModifiable() {
     return true;
   }
 
+  @Override
   public int occurrences(Object element) {
     return contains(element) ? 1 : 0;
   }
 
+  @Override
   public int getDSFID() {
     return SORTED_RESULT_SET;
   }
 
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  @Override
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     int size = in.readInt();
-    this.elementType = (ObjectType) DataSerializer.readObject(in);
+    this.elementType = (ObjectType) context.getDeserializer().readObject(in);
     for (int j = size; j > 0; j--) {
-      this.add(DataSerializer.readObject(in));
+      this.add(context.getDeserializer().readObject(in));
     }
   }
 
-  public void toData(DataOutput out) throws IOException {
+  @Override
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     // how do we serialize the comparator?
     out.writeInt(this.size());
-    DataSerializer.writeObject(this.elementType, out);
+    context.getSerializer().writeObject(this.elementType, out);
     for (Iterator i = this.iterator(); i.hasNext();) {
-      DataSerializer.writeObject(i.next(), out);
+      context.getSerializer().writeObject(i.next(), out);
     }
   }
 

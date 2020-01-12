@@ -15,11 +15,16 @@
 
 package org.apache.geode.cache.query.internal;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.io.Serializable;
 
 import org.apache.geode.cache.query.QueryService;
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * An UNDEFINED value is the result of accessing an attribute of a null-valued attribute. If you
@@ -48,16 +53,21 @@ public class Undefined implements DataSerializableFixedID, Comparable, Serializa
     return "UNDEFINED";
   }
 
+  @Override
   public int getDSFID() {
     return UNDEFINED;
   }
 
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  @Override
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     // Serialized simply as a one-byte class id, as a class well known to
     // DataSerializer
   }
 
-  public void toData(DataOutput out) throws IOException {}
+  @Override
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {}
 
   @Override
   public int compareTo(Object o) {
@@ -73,6 +83,13 @@ public class Undefined implements DataSerializableFixedID, Comparable, Serializa
   public boolean equals(Object o) {
     return (o instanceof Undefined);
   }
+
+  @Override
+  public int hashCode() {
+    return Undefined.class.hashCode();
+  }
+
+
 
   @Override
   public Version[] getSerializationVersions() {

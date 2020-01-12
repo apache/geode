@@ -14,9 +14,6 @@
  */
 package org.apache.geode.internal.cache.persistence;
 
-/**
- *
- */
 public class PRPersistentConfig {
   private final int totalNumBuckets;
   private final String colocatedWith;

@@ -18,21 +18,6 @@ import org.apache.geode.security.PostProcessor;
 import org.apache.geode.security.SecurityManager;
 
 public class SecurityConfig {
-
-  private static final ThreadLocal<SecurityConfig> THREAD_LOCAL = new ThreadLocal<>();
-
-  public static void set(SecurityManager securityManager, PostProcessor postProcessor) {
-    THREAD_LOCAL.set(new SecurityConfig(securityManager, postProcessor));
-  }
-
-  public static SecurityConfig get() {
-    return THREAD_LOCAL.get();
-  }
-
-  public static void remove() {
-    THREAD_LOCAL.remove();
-  }
-
   private final SecurityManager securityManager;
   private final PostProcessor postProcessor;
 

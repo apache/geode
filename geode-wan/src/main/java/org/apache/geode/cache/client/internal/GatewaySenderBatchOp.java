@@ -22,7 +22,6 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.client.ServerOperationException;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
@@ -31,8 +30,7 @@ import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.wan.BatchException70;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventRemoteDispatcher.GatewayAck;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 @SuppressWarnings("unchecked")
 public class GatewaySenderBatchOp {
@@ -52,18 +50,8 @@ public class GatewaySenderBatchOp {
    */
   public static void executeOn(Connection con, ExecutablePool pool, List events, int batchId,
       boolean removeFromQueueOnException, boolean isRetry) {
-    AbstractOp op = null;
-    // System.out.println("Version: "+con.getWanSiteVersion());
-    // Is this check even needed anymore? It looks like we just create the same exact op impl with
-    // the same parameters...
-    if (Version.GFE_651.compareTo(con.getWanSiteVersion()) >= 0) {
-      op = new GatewaySenderGFEBatchOpImpl(events, batchId, removeFromQueueOnException,
-          con.getDistributedSystemId(), isRetry);
-    } else {
-      // Default should create a batch of server version (ACCEPTOR.VERSION)
-      op = new GatewaySenderGFEBatchOpImpl(events, batchId, removeFromQueueOnException,
-          con.getDistributedSystemId(), isRetry);
-    }
+    AbstractOp op = new GatewaySenderGFEBatchOpImpl(events, batchId, removeFromQueueOnException,
+        con.getDistributedSystemId(), isRetry);
     pool.executeOn(con, op, true/* timeoutFatal */);
   }
 
@@ -112,7 +100,7 @@ public class GatewaySenderBatchOp {
           Object callbackArg = event.getSenderCallbackArgument();
 
           // Add region name
-          getMessage().addStringPart(regionName);
+          getMessage().addStringPart(regionName, true);
           // Add event id
           getMessage().addObjPart(eventId);
           // Add key
@@ -182,6 +170,7 @@ public class GatewaySenderBatchOp {
      * @return the result of the operation or <code>null</code> if the operation has no result.
      * @throws Exception if the execute failed
      */
+    @Override
     protected Object attemptReadResponse(Connection cnx) throws Exception {
       Message msg = createResponseMessage();
       if (msg != null) {
@@ -270,8 +259,8 @@ public class GatewaySenderBatchOp {
             }
             break;
           default:
-            throw new InternalGemFireError(LocalizedStrings.Op_UNKNOWN_MESSAGE_TYPE_0
-                .toLocalizedString(Integer.valueOf(msg.getMessageType())));
+            throw new InternalGemFireError(String.format("Unknown message type %s",
+                Integer.valueOf(msg.getMessageType())));
         }
       } finally {
         msg.clear();

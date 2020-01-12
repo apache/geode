@@ -135,7 +135,6 @@ public interface ClientSubscriptionConfig {
   /**
    * Sets the disk store name for overflow
    *
-   * @param diskStoreName
    * @since GemFire 6.5
    */
   void setDiskStoreName(String diskStoreName);

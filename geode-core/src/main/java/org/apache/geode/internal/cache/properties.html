@@ -262,12 +262,12 @@ TBA
 <dd>
 <em>Public:</em> false
 <p>
-<em>Integer</em> (default is 1000)
+<em>Integer</em> (default is 1280)
 <p>
 See <code>org.apache.geode.internal.cache.tier.sockets.AcceptorImpl</code>
 constructor.
 <p>
-This is the TCP accept backlog for the acceptor thread's listening socket.
+This is the TCP/IP "accept" backlog for client/server communications.
 </dd>
 
 <!-- -------------------------------------------------------  -->
@@ -284,18 +284,6 @@ See <code>org.apache.geode.internal.cache.tier.sockets.AcceptorImpl#handshakeTim
 </pre>
 <p>
 Units are in milliseconds.
-<p>
-TBA
-</dd>
-
-<!-- -------------------------------------------------------  -->
-<dt><strong>CacheServerLauncher.PRINT_LAUNCH_COMMAND</strong></dt>
-<dd>
-<em>Public:</em> false
-<p>
-<em>Boolean</em> (default is false)
-<p>
-See <code>org.apache.geode.internal.cache.CacheServerLauncher#PRINT_LAUNCH_COMMAND</code>.
 <p>
 TBA
 </dd>
@@ -917,7 +905,7 @@ TBA
 </dd>
 
 <!-- -------------------------------------------------------  -->
-<dt><strong>org.apache.geode.internal.OSProcess.trace</strong></dt>
+<dt><strong>org.apache.geode.logging.internal.OSProcess.trace</strong></dt>
 <dd>
 <em>Public:</em> false
 <p>
@@ -1191,20 +1179,6 @@ TBA
 </dd>
 
 <!-- -------------------------------------------------------  -->
-<dt><strong>gemfire.CacheServerLauncher.assignBucketsToPartitions</strong></dt>
-<dd>
-<em>Public:</em> false
-<p>
-<em>Boolean</em> (default is false)
-<p>
-See <code>org.apache.geode.internal.cache.CacheServerLauncher.ASSIGN_BUCKETS</code>.
-<p>
-If a cache server is started using that CacheServerLauncher and this property is set to true, the cache
-server will create all of the buckets when it is started.
-<p>
-</dd>
-
-<!-- -------------------------------------------------------  -->
 <dt><strong>gemfire.CacheDistributionAdvisor.rolloverThreshold</strong></dt>
 <dd>
 <em>Public:</em> false
@@ -1466,8 +1440,6 @@ TBA
 <p>
 <em>Boolean</em> (default is false)
 <p>
-See <code>org.apache.geode.internal.cache.CacheServerLauncher.#isDedicatedCacheServer</code>
-<p>
 Tell admin API whether the member is a dedicated cache server
 </dd>
 
@@ -1691,7 +1663,7 @@ Allow query on region with heterogeneous objects
 <p>
 <em>Boolean</em> (defaults to false)
 <p>
-See <code>org.apache.geode.cache.execute.internal.FunctionServiceManager.#RANDOM_onMember</code>
+See <code>org.apache.geode.internal.cache.execute.InternalFunctionExecutionServiceImpl.#RANDOM_onMember</code>
 <p>
 When set, onMember execution will be executed on a random member.
 </dd>
@@ -2357,6 +2329,20 @@ TBA
 </dd>
 
 <!-- -------------------------------------------------------  -->
+    <dt><strong>gemfire.TcpServer.BACKLOG</strong></dt>
+    <dd>
+        <em>Public:</em> false
+        <p>
+            <em>Integer</em> default is 1280 but is limited by the OS somaxconn setting
+        <p>
+        <pre>
+   This property establishes a Locator's TCP/IP "accept" backlog
+   for locator communications.
+</pre>
+        <p>
+            TBA
+    </dd>
+<!-- -------------------------------------------------------  -->
 <dt><strong>gemfire.validateMessageSize</strong></dt>
 <dd>
 <em>Public:</em> false
@@ -2616,13 +2602,13 @@ TBA
 <dd>
 <em>Public:</em> false
 <p>
-<em>Integer</em> (default is 50)
+<em>Integer</em> (default is 1280 but limited by OS somaxconn setting)
 <p>
 See <code>org.apache.geode.internal.tcp.TCPConduit#BACKLOG</code>.
 <p>
 <pre>
-  backlog is the "accept" backlog configuration parameter all
-  conduits server socket */
+  backlog is the TCP/IP "accept" backlog configuration parameter for cluster
+  communications
 </pre>
 <p>
 TBA
@@ -2761,7 +2747,7 @@ See <code>org.apache.geode.internal.tcp</code>.
 <p>
 <em>Long</em> (default is 60000 for a server and 24000 for a locator)
 <p>
-See <code>org.apache.geode.distributed.internal.membership.gms.ServiceConfig</code>.
+    See <code>org.apache.geode.distributed.internal.membership.adapter.ServiceConfig</code>.
 <p>
     Establishes the timeout for waiting for a join response when connecting to
     the cluster
@@ -2905,17 +2891,6 @@ See org.apache.geode.internal.tcp.TCPConduit#startAcceptor(int, int, InetAddress
 TBA 
 </dd>
 
-<!-- -------------------------------------------------------  -->
-<dt><strong>p2p.useSSL</strong></dt>
-<dd>
-<em>Public:</em> false
-<p>
-<em>Boolean</em> (default is false)
-<p>
-See org.apache.geode.internal.tcp.TCPConduit#useSSL.
-<p>
-TBA 
-</dd>
 
 <!-- -------------------------------------------------------  -->
 <dt><strong>query.disableIndexes</strong></dt>

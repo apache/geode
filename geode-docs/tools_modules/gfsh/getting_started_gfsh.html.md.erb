@@ -25,27 +25,34 @@ The `gfsh` utility provides useful features for a shell environment, including c
 
 **To view a list of available gfsh commands, press Tab at an empty prompt.**
 
-The list of commands you see depends on whether you are connected to a <%=vars.product_name%> distributed system. If you are not connected, you see a list of local commands that are available.
+The list of commands you see depends on whether you are connected to a <%=vars.product_name%> cluster. If you are not connected, you see a list of local commands that are available.
 
 **Use the hint command to get information on a particular topic.**
 
 The hint command displays a one-line description and associated commands for a specified topic. For example, **hint data** returns a description of the data topic and all the possible actions available for data:
 
 ``` pre
-gfsh>hint data
-User data as stored in regions of the GemFire distributed system.
+gfsh>hint Data
+User data as stored in regions of the <%=vars.product_name%> distributed system.
 
-create index  : Create an index that can be used when executing queries.
-destroy index : Destroy/Remove the specified index.
-export data   : Export user data from a region to a file.
-get           : Display an entry in a region. If using a region whose key and value classes have been set, then specifying --key-class and --value-class is unnecessary.
-import data   : Import user data from a file to a region.
-list indexes  : Display the list of indexes created for all members.
-locate entry  : Identifies the location, including host, member and region, of entries that have the specified key.
-put           : Add/Update an entry in a region. If using a region whose key and value classes have been set, then specifying --key-class and --value-class is unnecessary.
-query         : Run the specified OQL query as a single quoted string and display the results in one or more pages. Limit will default to the value stored in the "APP_FETCH_SIZE" variable. Page size will default to the value stored in the "APP_COLLECTION_LIMIT" variable.
-rebalance     : Rebalance partitioned regions. The default is for all partitioned regions to be rebalanced.
-remove        : Remove an entry from a region. If using a region whose key class has been set, then specifying --key-class is unnecessary.
+clear defined indexes: Clears all the defined indexes.
+create defined indexes: Creates all the defined indexes.
+create index: Create an index that can be used when executing queries.
+create lucene index: Create a lucene index that can be used to execute queries.
+define index: Define an index that can be used when executing queries.
+describe lucene index: Display the description of lucene indexes created for all members.
+destroy index: Destroy/Remove the specified index.
+destroy lucene index: Destroy the lucene index.
+export data: Export user data from a region to a file.
+get: Display an entry in a region. If using a region whose key and value classes have been set, then specifying --key-class and --value-class is unnecessary.
+import data: Import user data from a file to a region.
+list indexes: Display the list of indexes created for all members.
+list lucene indexes: Display the list of lucene indexes created for all members.
+locate entry: Identifies the location, including host, member and region, of entries that have the specified key.
+put: Add/Update an entry in a region. If using a region whose key and value classes have been set, then specifying --key-class and --value-class is unnecessary.
+rebalance: Rebalance partitioned regions. The default is for all partitioned regions to be rebalanced.
+remove: Remove an entry from a region. If using a region whose key class has been set, then specifying --key-class is unnecessary.
+search lucene: Search lucene index
 ```
 
 To view a list of hint topics, type `hint`.

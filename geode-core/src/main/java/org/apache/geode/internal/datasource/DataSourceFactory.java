@@ -33,24 +33,29 @@ import java.lang.reflect.Method;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.resource.spi.ConnectionManager;
 import javax.resource.spi.ManagedConnectionFactory;
-import javax.sql.ConnectionPoolDataSource;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.internal.MutableForTesting;
+import org.apache.geode.datasource.PooledDataSourceFactory;
 import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.util.PasswordUtil;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class DataSourceFactory {
 
   private static final Logger logger = LogService.getLogger();
+
+  private static final String DEFAULT_CONNECTION_POOL_DS_CLASS =
+      "org.apache.geode.connectors.jdbc.JdbcPooledDataSourceFactory";
+
+  private static final String POOL_PREFIX = "pool.";
 
   /** Creates a new instance of DataSourceFactory */
   public DataSourceFactory() {}
@@ -59,71 +64,59 @@ public class DataSourceFactory {
    * This function returns the Basic datasource without any pooling.
    *
    * @param configMap a map containing configurations required for datasource.
-   * @throws DataSourceCreateException
    * @return ??
    */
-  public static DataSource getSimpleDataSource(Map configMap, List props)
-      throws DataSourceCreateException {
+  public DataSource getSimpleDataSource(Map configMap) throws DataSourceCreateException {
     ConfiguredDataSourceProperties configs = createDataSourceProperties(configMap);
-    if (configs.getJDBCDriver() == null) {
-      logger.error(LocalizedMessage.create(
-          LocalizedStrings.DataSourceFactory_DATASOURCEFACTORYGETSIMPLEDATASOURCEJDBC_DRIVER_IS_NOT_AVAILABLE));
-      throw new DataSourceCreateException(
-          LocalizedStrings.DataSourceFactory_DATASOURCEFACTORYGETSIMPLEDATASOURCEJDBC_DRIVER_IS_NOT_AVAILABLE
-              .toLocalizedString());
-    }
     if (configs.getURL() == null) {
-      logger.error(LocalizedMessage.create(
-          LocalizedStrings.DataSourceFactory_DATASOURCEFACTORYGETSIMPLEDATASOURCEURL_STRING_TO_DATABASE_IS_NULL));
+      logger.error("DataSourceFactory::getSimpleDataSource:URL String to Database is null");
       throw new DataSourceCreateException(
-          LocalizedStrings.DataSourceFactory_DATASOURCEFACTORYGETSIMPLEDATASOURCEURL_STRING_TO_DATABASE_IS_NULL
-              .toLocalizedString());
+          "DataSourceFactory::getSimpleDataSource:URL String to Database is null");
     }
     try {
       return new GemFireBasicDataSource(configs);
     } catch (Exception ex) {
-      logger.error(LocalizedMessage.create(
-          LocalizedStrings.DataSourceFactory_DATASOURCEFACTORY_GETSIMPLEDATASOURCE_EXCEPTION_WHILE_CREATING_GEMFIREBASICDATASOURCE_EXCEPTION_STRING_0,
-          ex.getLocalizedMessage()), ex);
+      logger.error(String.format(
+          "DataSourceFactory::getSimpleDataSource:Exception while creating GemfireBasicDataSource.Exception String=%s",
+          ex.getLocalizedMessage()),
+          ex);
       throw new DataSourceCreateException(
-          LocalizedStrings.DataSourceFactory_DATASOURCEFACTORY_GETSIMPLEDATASOURCE_EXCEPTION_WHILE_CREATING_GEMFIREBASICDATASOURCE_EXCEPTION_STRING_0
-              .toLocalizedString(ex.getLocalizedMessage()),
+          String.format(
+              "DataSourceFactory::getSimpleDataSource:Exception while creating GemfireBasicDataSource.Exception String=%s",
+              ex.getLocalizedMessage()),
           ex);
     }
   }
 
   /**
-   * This function creats a data dource from the ManagedConnectionFactory class using the
+   * This function creates a data source from the ManagedConnectionFactory class using the
    * connectionManager.
    *
-   * @param configMap
-   * @param props
    * @return javax.sql.DataSource
-   * @throws DataSourceCreateException
    */
-  public static ClientConnectionFactoryWrapper getManagedDataSource(Map configMap, List props)
-      throws DataSourceCreateException {
+  public ClientConnectionFactoryWrapper getManagedDataSource(Map configMap,
+      List<ConfigProperty> props) throws DataSourceCreateException {
     Object cf = null;
     ManagedConnectionFactory mcf = null;
     ConfiguredDataSourceProperties configs = createDataSourceProperties(configMap);
     if (configs.getMCFClass() == null) {
-      logger.error(LocalizedMessage.create(
-          LocalizedStrings.DataSourceFactory_DATASOURCEFACTORYGETMANAGEDDATASOURCEMANAGED_CONNECTION_FACTORY_CLASS_IS_NOT_AVAILABLE));
+      logger.error(
+          "DataSourceFactory::getManagedDataSource:Managed Connection factory class is not available");
       throw new DataSourceCreateException(
-          LocalizedStrings.DataSourceFactory_DATASOURCEFACTORYGETMANAGEDDATASOURCEMANAGED_CONNECTION_FACTORY_CLASS_IS_NOT_AVAILABLE
-              .toLocalizedString());
+          "DataSourceFactory::getManagedDataSource:Managed Connection factory class is not available");
     } else {
       try {
         Class cl = ClassPathLoader.getLatest().forName(configs.getMCFClass());
         mcf = (ManagedConnectionFactory) cl.newInstance();
         invokeAllMethods(cl, mcf, props);
       } catch (Exception ex) {
-        logger.error(LocalizedMessage.create(
-            LocalizedStrings.DataSourceFactory_DATASOURCEFACTORYGETMANAGEDDATASOURCE_EXCEPTION_IN_CREATING_MANAGED_CONNECTION_FACTORY_EXCEPTION_STRING_0,
-            ex), null);
+        logger.error(String.format(
+            "DataSourceFactory::getManagedDataSource: Exception in creating managed connection factory. Exception string, %s",
+            ex));
         throw new DataSourceCreateException(
-            LocalizedStrings.DataSourceFactory_DATASOURCEFACTORYGETMANAGEDDATASOURCE_EXCEPTION_IN_CREATING_MANAGED_CONNECTION_FACTORY_EXCEPTION_STRING_0
-                .toLocalizedString(ex));
+            String.format(
+                "DataSourceFactory::getManagedDataSource: Exception in creating managed connection factory. Exception string, %s",
+                ex));
       }
     }
     // Initialize the managed connection factory class
@@ -138,68 +131,119 @@ public class DataSourceFactory {
     try {
       cf = mcf.createConnectionFactory((ConnectionManager) cm);
     } catch (Exception ex) {
-      logger.error(LocalizedMessage.create(
-          LocalizedStrings.DataSourceFactory_DATASOURCEFACTORYGETMANAGEDDATASOURCE_EXCEPTION_IN_CREATING_MANAGED_CONNECTION_FACTORY_EXCEPTION_STRING_0,
-          ex), null);
+      logger.error(
+          "DataSourceFactory::getManagedDataSource: Exception in creating managed connection factory. Exception string, %s",
+          ex.toString());
       throw new DataSourceCreateException(
-          LocalizedStrings.DataSourceFactory_DATASOURCEFACTORYGETMANAGEDDATASOURCE_EXCEPTION_IN_CREATING_MANAGED_CONNECTION_FACTORY_EXCEPTION_STRING_0
-              .toLocalizedString(ex));
+          String.format(
+              "DataSourceFactory::getManagedDataSource: Exception in creating managed connection factory. Exception string, %s",
+              ex));
     }
     return new ClientConnectionFactoryWrapper(cf, cm);
   }
 
   /**
    * This function returns the datasource with connection pooling.
-   *
-   * @param configMap a map containing configurations required for datasource.
-   * @throws DataSourceCreateException
-   * @return ???
    */
-  public static DataSource getPooledDataSource(Map configMap, List props)
+  public DataSource getPooledDataSource(Map configMap, List<ConfigProperty> props)
       throws DataSourceCreateException {
     ConfiguredDataSourceProperties configs = createDataSourceProperties(configMap);
     String connpoolClassName = configs.getConnectionPoolDSClass();
     if (connpoolClassName == null) {
-      logger.error(LocalizedMessage.create(
-          LocalizedStrings.DataSourceFactory_DATASOURCEFACTORYGETPOOLEDDATASOURCECONNECTIONPOOLDATASOURCE_CLASS_NAME_FOR_THE_RESOURCEMANAGER_IS_NOT_AVAILABLE));
-      throw new DataSourceCreateException(
-          LocalizedStrings.DataSourceFactory_DATASOURCEFACTORYGETPOOLEDDATASOURCECONNECTIONPOOLDATASOURCE_CLASS_NAME_FOR_THE_RESOURCEMANAGER_IS_NOT_AVAILABLE
-              .toLocalizedString());
+      connpoolClassName = DEFAULT_CONNECTION_POOL_DS_CLASS;
     }
     try {
-      Class cl = ClassPathLoader.getLatest().forName(connpoolClassName);
-      Object Obj = cl.newInstance();
-      invokeAllMethods(cl, Obj, props);
-      return new GemFireConnPooledDataSource((ConnectionPoolDataSource) Obj, configs);
+      Properties poolProperties = createPoolProperties(configMap, props);
+      Properties dataSourceProperties = createDataSourceProperties(props);
+      Class<?> cl = ClassPathLoader.getLatest().forName(connpoolClassName);
+      PooledDataSourceFactory factory = (PooledDataSourceFactory) cl.newInstance();
+      return factory.createDataSource(poolProperties, dataSourceProperties);
     } catch (Exception ex) {
       String exception =
-          LocalizedStrings.DataSourceFactory_DATASOURCEFACTORY_GETPOOLEDDATASOURCE_EXCEPTION_CREATING_CONNECTIONPOOLDATASOURCE_EXCEPTION_STRING_0
-              .toLocalizedString(new Object[] {ex});
-      logger.error(LocalizedMessage.create(
-          LocalizedStrings.DataSourceFactory_DATASOURCEFACTORY_GETPOOLEDDATASOURCE_EXCEPTION_CREATING_CONNECTIONPOOLDATASOURCE_EXCEPTION_STRING_0,
-          ex), ex);
+          String.format(
+              "DataSourceFactory::getPooledDataSource:Exception creating ConnectionPoolDataSource.Exception string=%s",
+              new Object[] {ex});
+      logger.error(String.format(
+          "DataSourceFactory::getPooledDataSource:Exception creating ConnectionPoolDataSource.Exception string=%s",
+          ex),
+          ex);
       throw new DataSourceCreateException(exception, ex);
     }
   }
+
+  static Properties createPoolProperties(Map<String, String> configMap,
+      List<ConfigProperty> props) {
+    Properties result = new Properties();
+    if (props != null) {
+      for (ConfigProperty prop : props) {
+        if (prop.getName().toLowerCase().startsWith(POOL_PREFIX)) {
+          String poolName = prop.getName().substring(POOL_PREFIX.length());
+          result.setProperty(poolName, prop.getValue());
+        }
+      }
+    }
+    if (configMap != null) {
+      for (Map.Entry<String, String> entry : configMap.entrySet()) {
+        if (entry.getValue() == null || entry.getValue().equals("")) {
+          continue;
+        }
+        if (entry.getKey().equals("type")) {
+          continue;
+        }
+        if (entry.getKey().equals("jdbc-driver-class")) {
+          continue;
+        }
+        if (entry.getKey().equals("jndi-name")) {
+          continue;
+        }
+        if (entry.getKey().equals("transaction-type")) {
+          continue;
+        }
+        if (entry.getKey().equals("conn-pooled-datasource-class")) {
+          continue;
+        }
+        if (entry.getKey().equals("managed-conn-factory-class")) {
+          continue;
+        }
+        if (entry.getKey().equals("xa-datasource-class")) {
+          continue;
+        }
+        result.setProperty(entry.getKey(), entry.getValue());
+      }
+    }
+    return result;
+  }
+
+  static Properties createDataSourceProperties(List<ConfigProperty> props) {
+    Properties result = new Properties();
+    if (props != null) {
+      for (ConfigProperty prop : props) {
+        if (prop.getName().toLowerCase().startsWith(POOL_PREFIX)) {
+          continue;
+        }
+        result.setProperty(prop.getName(), prop.getValue());
+      }
+    }
+    return result;
+  }
+
 
   /**
    * This function returns the datasource with connection pooling and transaction participation
    * capabilities.
    *
    * @param configMap a map containing configurations required for datasource.
-   * @throws DataSourceCreateException
    * @return ???
    */
-  public static DataSource getTranxDataSource(Map configMap, List props)
+  public DataSource getTranxDataSource(Map configMap, List<ConfigProperty> props)
       throws DataSourceCreateException {
     ConfiguredDataSourceProperties configs = createDataSourceProperties(configMap);
     String xaClassName = configs.getXADSClass();
     if (xaClassName == null) {
-      logger.error(LocalizedMessage.create(
-          LocalizedStrings.DataSourceFactory_DATASOURCEFACTORYGETTRANXDATASOURCEXADATASOURCE_CLASS_NAME_FOR_THE_RESOURCEMANAGER_IS_NOT_AVAILABLE));
+      logger.error(
+          "DataSourceFactory::getTranxDataSource:XADataSource class name for the ResourceManager is not available");
       throw new DataSourceCreateException(
-          LocalizedStrings.DataSourceFactory_DATASOURCEFACTORYGETTRANXDATASOURCEXADATASOURCE_CLASS_NAME_FOR_THE_RESOURCEMANAGER_IS_NOT_AVAILABLE
-              .toLocalizedString());
+          "DataSourceFactory::getTranxDataSource:XADataSource class name for the ResourceManager is not available");
     }
     if (TEST_CONNECTION_HOST != null) {
       props.add(new ConfigProperty("serverName", TEST_CONNECTION_HOST, "java.lang.String"));
@@ -214,11 +258,13 @@ public class DataSourceFactory {
       return new GemFireTransactionDataSource((XADataSource) Obj, configs);
     } catch (Exception ex) {
       String exception =
-          LocalizedStrings.DataSourceFactory_DATASOURCEFACTORY_GETTRANXDATASOURCE_EXCEPTION_IN_CREATING_GEMFIRETRANSACTIONDATASOURCE__EXCEPTION_STRING_0
-              .toLocalizedString(new Object[] {ex});
-      logger.error(LocalizedMessage.create(
-          LocalizedStrings.DataSourceFactory_DATASOURCEFACTORY_GETTRANXDATASOURCE_EXCEPTION_IN_CREATING_GEMFIRETRANSACTIONDATASOURCE__EXCEPTION_STRING_0,
-          ex), ex);
+          String.format(
+              "DataSourceFactory::getTranxDataSource:Exception in creating GemFireTransactionDataSource. Exception string=%s",
+              new Object[] {ex});
+      logger.error(String.format(
+          "DataSourceFactory::getTranxDataSource:Exception in creating GemFireTransactionDataSource. Exception string=%s",
+          ex),
+          ex);
       throw new DataSourceCreateException(exception, ex);
     }
   }
@@ -227,9 +273,8 @@ public class DataSourceFactory {
    * Creates ConfiguredDataSourceProperties from map.
    *
    * @param configMap a map containing configurations required for datasource.
-   * @return ConfiguredDataSourceProperties
    */
-  private static ConfiguredDataSourceProperties createDataSourceProperties(Map configMap) {
+  private ConfiguredDataSourceProperties createDataSourceProperties(Map configMap) {
     ConfiguredDataSourceProperties configs = new ConfiguredDataSourceProperties();
     Iterator entries = configMap.entrySet().iterator();
     while (entries.hasNext()) {
@@ -281,8 +326,11 @@ public class DataSourceFactory {
   /*
    * Test hook for replacing URL
    */
+  @MutableForTesting
   private static String TEST_CONNECTION_URL = null;
+  @MutableForTesting
   private static String TEST_CONNECTION_HOST = null;
+  @MutableForTesting
   private static String TEST_CONNECTION_PORT = null;
 
   /*
@@ -322,7 +370,7 @@ public class DataSourceFactory {
    * @param c class of the object
    * @param cpdsObj The object
    */
-  private static void invokeAllMethods(Class c, Object cpdsObj, List props)
+  private void invokeAllMethods(Class c, Object cpdsObj, List props)
       throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
     String key = null;
     String value = null;
@@ -355,22 +403,25 @@ public class DataSourceFactory {
         m.invoke(cpdsObj, new Object[] {ob});
       } catch (ClassNotFoundException ex) {
         String exception =
-            LocalizedStrings.DataSourceFactory_DATASOURCEFACTORY_INVOKEALLMETHODS_EXCEPTION_IN_CREATING_CLASS_WITH_THE_GIVEN_CONFIGPROPERTYTYPE_CLASSNAME_EXCEPTION_STRING_0
-                .toLocalizedString(ex.toString());
+            String.format(
+                "DataSourceFactory::invokeAllMethods: Exception in creating Class with the given config-property-type classname. Exception string=%s",
+                ex.toString());
         if (logger.isDebugEnabled()) {
           logger.debug(exception, ex);
         }
       } catch (NoSuchMethodException ex) {
         String exception =
-            LocalizedStrings.DataSourceFactory_DATASOURCEFACTORY_INVOKEALLMETHODS_EXCEPTION_IN_CREATING_METHOD_USING_CONFIGPROPERTYNAME_PROPERTY_EXCEPTION_STRING_0
-                .toLocalizedString(ex.toString());
+            String.format(
+                "DataSourceFactory::invokeAllMethods: Exception in creating method using config-property-name property. Exception string=%s",
+                ex.toString());
         if (logger.isDebugEnabled()) {
           logger.debug(exception, ex);
         }
       } catch (InstantiationException ex) {
         String exception =
-            LocalizedStrings.DataSourceFactory_DATASOURCEFACTORY_INVOKEALLMETHODS_EXCEPTION_IN_CREATING_INSTANCE_OF_THE_CLASS_USING_THE_CONSTRUCTOR_WITH_A_STRING_PARAMETER_EXCEPTION_STRING_0
-                .toLocalizedString(ex.toString());
+            String.format(
+                "DataSourceFactory::invokeAllMethods: Exception in creating instance of the class using the constructor with a String parameter. Exception string=%s",
+                ex.toString());
         if (logger.isDebugEnabled()) {
           logger.debug(exception, ex);
         }

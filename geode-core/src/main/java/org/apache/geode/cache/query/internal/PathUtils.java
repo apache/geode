@@ -47,7 +47,7 @@ public class PathUtils {
     while (tokenizer.hasMoreTokens()) {
       alist.add(tokenizer.nextToken());
     }
-    return (String[]) alist.toArray(new String[alist.size()]);
+    return (String[]) alist.toArray(new String[0]);
   }
 
   public static String buildPathString(String[] path) {
@@ -71,10 +71,10 @@ public class PathUtils {
         throw new NameNotFoundException(attribute);
       }
     }
+
     try {
-      return new AttributeDescriptor(
-          context.getCache().getQueryService().getMethodInvocationAuthorizer(), attribute)
-              .read(target);
+      return new AttributeDescriptor(context.getCache().getPdxRegistry(), attribute)
+          .read(target, context);
     } catch (NameNotFoundException nfe) {
       if (DefaultQueryService.QUERY_HETEROGENEOUS_OBJECTS
           || DefaultQueryService.TEST_QUERY_HETEROGENEOUS_OBJECTS) {
@@ -112,9 +112,8 @@ public class PathUtils {
 
     for (int i = 1; i < types.length; i++) {
       ObjectType currentType = types[i - 1];
-      Member member = new AttributeDescriptor(
-          context.getCache().getQueryService().getMethodInvocationAuthorizer(), pathArray[i - 1])
-              .getReadMember(currentType.resolveClass());
+      Member member = new AttributeDescriptor(context.getCache().getPdxRegistry(), pathArray[i - 1])
+          .getReadMember(currentType.resolveClass());
 
       if (member instanceof Field)
         types[i] = TypeUtils.getObjectType(((Field) member).getType());
@@ -170,10 +169,10 @@ public class PathUtils {
             stepStr = stepStr.substring(0, stepStr.length() - 2);
             member = clazz.getMethod(stepStr, (Class[]) null);
           } else {
-            member = new AttributeDescriptor(
-                context.getCache().getQueryService().getMethodInvocationAuthorizer(), stepStr)
-                    .getReadMember(clazz);
+            member = new AttributeDescriptor(context.getCache().getPdxRegistry(), stepStr)
+                .getReadMember(clazz);
           }
+
           if (member instanceof Field) {
             clazz = ((Field) member).getType();
           } else if (member instanceof Method) {
@@ -194,10 +193,7 @@ public class PathUtils {
    * Collects all the compiled values in the path , starting from the self at position 0 in the
    * returned List
    *
-   * @param expr
    * @return List of CompiledValues ( includes the RuntimeIterator)
-   * @throws TypeMismatchException
-   * @throws AmbiguousNameException
    */
   public static List<CompiledValue> collectCompiledValuesInThePath(CompiledValue expr,
       ExecutionContext context) throws AmbiguousNameException, TypeMismatchException {

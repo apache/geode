@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheWriterException;
@@ -49,9 +50,7 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InitialImageOperation;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegion;
-import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PoolFactoryImpl;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Represents a {@link ClientCache} that is created declaratively. Notice that it implements the
@@ -79,6 +78,7 @@ public class ClientCacheCreation extends CacheCreation implements ClientCache {
     super(forParsing);
   }
 
+  @Immutable
   private static final RegionAttributes clientDefaults = createClientDefaults();
 
   private static RegionAttributes createClientDefaults() {
@@ -101,17 +101,7 @@ public class ClientCacheCreation extends CacheCreation implements ClientCache {
 
   @Override
   public QueryService getQueryService(String poolName) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
-  }
-
-  @Override
-  public QueryService getLocalQueryService() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
-  }
-
-  @Override
-  public void determineDefaultPool() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   /**
@@ -119,7 +109,7 @@ public class ClientCacheCreation extends CacheCreation implements ClientCache {
    */
   @Override
   public <K, V> ClientRegionFactory<K, V> createClientRegionFactory(ClientRegionShortcut atts) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   /**
@@ -127,52 +117,52 @@ public class ClientCacheCreation extends CacheCreation implements ClientCache {
    */
   @Override
   public <K, V> ClientRegionFactory<K, V> createClientRegionFactory(String regionAttributesId) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public RegionService createAuthenticatedView(Properties userSecurityProperties, String poolName) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public RegionService createAuthenticatedView(Properties userSecurityProperties) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public void setLockTimeout(int seconds) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public void setLockLease(int seconds) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public void setSearchTimeout(int seconds) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public void setMessageSyncInterval(int seconds) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public CacheServer addCacheServer() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public void setIsServer(boolean isServer) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public void addBackup(File backup) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   /**
@@ -233,20 +223,23 @@ public class ClientCacheCreation extends CacheCreation implements ClientCache {
       cache.setCopyOnRead(getCopyOnRead());
     }
 
-    if (this.txMgrCreation != null && this.txMgrCreation.getListeners().length > 0
+    if (this.getCacheTransactionManagerCreation() != null
+        && this.getCacheTransactionManagerCreation().getListeners().length > 0
         && cache.getCacheTransactionManager() != null) {
-      cache.getCacheTransactionManager().initListeners(this.txMgrCreation.getListeners());
+      cache.getCacheTransactionManager()
+          .initListeners(this.getCacheTransactionManagerCreation().getListeners());
     }
 
-    if (this.txMgrCreation != null && cache.getCacheTransactionManager() != null
-        && this.txMgrCreation.getWriter() != null) {
+    if (this.getCacheTransactionManagerCreation() != null
+        && cache.getCacheTransactionManager() != null
+        && this.getCacheTransactionManagerCreation().getWriter() != null) {
       throw new IllegalStateException(
-          LocalizedStrings.TXManager_NO_WRITER_ON_CLIENT.toLocalizedString());
+          "A TransactionWriter cannot be registered on a client");
     }
 
     cache.initializePdxRegistry();
 
-    for (String id : this.regionAttributesNames) {
+    for (String id : this.getRegionAttributesNames()) {
       RegionAttributesCreation creation = (RegionAttributesCreation) getRegionAttributes(id);
       creation.inheritAttributes(cache, false);
 
@@ -297,6 +290,6 @@ public class ClientCacheCreation extends CacheCreation implements ClientCache {
   public void invokeRegionEntrySynchronizationListenersAfterSynchronization(
       InternalDistributedMember sender, InternalRegion region,
       List<InitialImageOperation.Entry> entriesToSynchronize) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 }

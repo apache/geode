@@ -14,8 +14,6 @@
  */
 package org.apache.geode.modules.session.catalina.callback;
 
-import java.util.Properties;
-
 import javax.servlet.http.HttpSession;
 
 import org.apache.geode.cache.CacheWriterException;
@@ -34,14 +32,17 @@ public class LocalSessionCacheWriter extends CacheWriterAdapter<String, HttpSess
     this.backingRegion = backingRegion;
   }
 
+  @Override
   public void beforeCreate(EntryEvent<String, HttpSession> event) throws CacheWriterException {
     this.backingRegion.put(event.getKey(), event.getNewValue(), event.getCallbackArgument());
   }
 
+  @Override
   public void beforeUpdate(EntryEvent<String, HttpSession> event) throws CacheWriterException {
     this.backingRegion.put(event.getKey(), event.getNewValue(), event.getCallbackArgument());
   }
 
+  @Override
   public void beforeDestroy(EntryEvent<String, HttpSession> event) throws CacheWriterException {
     try {
       this.backingRegion.destroy(event.getKey(), event.getCallbackArgument());
@@ -51,7 +52,6 @@ public class LocalSessionCacheWriter extends CacheWriterAdapter<String, HttpSess
     }
   }
 
+  @Override
   public void close() {}
-
-  public void init(Properties p) {}
 }

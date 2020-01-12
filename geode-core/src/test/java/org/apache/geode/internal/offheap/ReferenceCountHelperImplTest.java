@@ -15,8 +15,10 @@
 
 package org.apache.geode.internal.offheap;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,20 +28,17 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.SystemOutRule;
-import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.*;
+import org.powermock.modules.junit4.PowerMockRunner;
 
 import org.apache.geode.internal.cache.RegionEntry;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /*
  * PowerMock used in this test to verify static method MemoryAllocatorImpl.debugLog
  */
-@Category(UnitTest.class)
 @RunWith(PowerMockRunner.class)
 @PowerMockIgnore({"*.UnitTest"})
 @PrepareForTest({MemoryAllocatorImpl.class})
@@ -756,18 +755,18 @@ public class ReferenceCountHelperImplTest {
 
     rchi.refCountChanged(address, decRefCount, rc); // this line should fail. no inc after getInfo
                                                     // allowed
-    PowerMockito.verifyStatic();
+    PowerMockito.verifyStatic(MemoryAllocatorImpl.class);
     MemoryAllocatorImpl.debugLog("refCount inced after orphan detected for @1000", true);
 
     decRefCount = true;
 
     rchi.refCountChanged(address, decRefCount, rc); // this line should fail. no inc after getInfo
                                                     // allowed
-    PowerMockito.verifyStatic();
+    PowerMockito.verifyStatic(MemoryAllocatorImpl.class);
     MemoryAllocatorImpl.debugLog("refCount deced after orphan detected for @1000", true);
 
     rchi.freeRefCountInfo(address); // this line should fail. no free after getInfo allowed
-    PowerMockito.verifyStatic();
+    PowerMockito.verifyStatic(MemoryAllocatorImpl.class);
     MemoryAllocatorImpl.debugLog("freed after orphan detected for @1000", true);
 
   }

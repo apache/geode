@@ -10,6 +10,7 @@ build/
 .project
 .settings/
 .idea/
+.java-version
 build-eclipse/
 /tags
 out/
@@ -27,3 +28,9 @@ out/
 *.orig
 geode-pulse/screenshots/
 /jpf.properties
+
+.git-together
+bin/
+.metadata/
+/ci/pipelines/meta/meta.properties.local
+/dev-tools/docker/docs/build-docs-output.txt

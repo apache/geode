@@ -54,7 +54,7 @@ The *locator* is a <%=vars.product_name%> process that tells new, connecting mem
     Process ID: 3529
     Uptime: 18 seconds
     <%=vars.product_name%> Version: <%=vars.product_version%>
-    Java Version: 1.8.0_<%=vars.min_java_update%>
+    Java Version: 1.<%=vars.min_java_version%>.0_<%=vars.min_java_update%>
     Log File: /home/username/my_geode/locator1/locator1.log
     JVM Arguments: -Dgemfire.enable-cluster-configuration=true -Dgemfire.load-cluster-configuration-from-dir=false
     -Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true
@@ -85,7 +85,7 @@ The Pulse application now displays the locator you just started (locator1):
 
 ## <a id="topic_FE3F28ED18E145F787431EC87B676A76__section_C617BC1C70EB41B8BCA3691D6E3C891A" class="no-quick-link"></a>Step 4: Start a server
 
-A <%=vars.product_name%> server is a process that runs as a long-lived, configurable member of a cluster (also called a *distributed system*). The <%=vars.product_name%> server is used primarily for hosting long-lived data regions and for running standard <%=vars.product_name%> processes such as the server in a client/server configuration. See [Running <%=vars.product_name%> Server Processes](../configuring/running/running_the_cacheserver.html).
+A <%=vars.product_name%> server is a process that runs as a long-lived, configurable member of a cluster. The <%=vars.product_name%> server is used primarily for hosting long-lived data regions and for running standard <%=vars.product_name%> processes such as the server in a client/server configuration. See [Running <%=vars.product_name%> Server Processes](../configuring/running/running_the_cacheserver.html).
 
 Start the cache server:
 
@@ -413,7 +413,7 @@ In this step you restart the cache servers in parallel. Because the data is pers
     Process ID: 3402
     Uptime: 1 minute 46 seconds
     <%=vars.product_name%> Version: <%=vars.product_version%>
-    Java Version: 1.8.0_<%=vars.min_java_update%>
+    Java Version: 1.<%=vars.min_java_version%>.0_<%=vars.min_java_update%>
     Log File: /home/username/my_geode/server1/server1.log
     JVM Arguments: -Dgemfire.default.locators=192.0.2.0[10334] -Dgemfire.use-cluster-configuration=true
     -XX:OnOutOfMemoryError=kill -KILL %p -Dgemfire.launcher.registerSignalHandlers=true

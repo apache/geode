@@ -22,9 +22,9 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.cache.tier.sockets.CacheClientUpdater.CCUStats;
-import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 
-@Category(UnitTest.class)
+@Category({ClientSubscriptionTest.class})
 public class CCUStatsTest {
 
   @Test

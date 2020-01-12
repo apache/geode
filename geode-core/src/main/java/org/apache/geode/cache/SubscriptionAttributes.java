@@ -14,7 +14,12 @@
  */
 package org.apache.geode.cache;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 
 import org.apache.geode.DataSerializable;
 
@@ -99,19 +104,23 @@ public class SubscriptionAttributes implements DataSerializable, Externalizable 
     return sb.toString();
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     out.writeByte(this.interestPolicy.ordinal);
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.interestPolicy = InterestPolicy.fromOrdinal(in.readByte());
   }
 
+  @Override
   public void writeExternal(ObjectOutput out) throws IOException {
     // added to fix bug 36619
     toData(out);
   }
 
+  @Override
   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
     // added to fix bug 36619
     fromData(in);

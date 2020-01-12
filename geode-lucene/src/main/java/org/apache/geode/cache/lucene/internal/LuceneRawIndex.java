@@ -32,8 +32,8 @@ public class LuceneRawIndex extends LuceneIndexImpl {
     if (mapper == null) {
       mapper = new HeterogeneousLuceneSerializer();
     }
-    RawLuceneRepositoryManager rawLuceneRepositoryManager =
-        new RawLuceneRepositoryManager(this, mapper);
+    RawLuceneRepositoryManager rawLuceneRepositoryManager = new RawLuceneRepositoryManager(this,
+        mapper, cache.getDistributionManager().getExecutors().getWaitingThreadPool());
     return rawLuceneRepositoryManager;
   }
 
@@ -50,4 +50,14 @@ public class LuceneRawIndex extends LuceneIndexImpl {
 
   @Override
   public void destroy(boolean initiator) {}
+
+  @Override
+  public boolean isIndexAvailable(int id) {
+    return true;
+  }
+
+  @Override
+  public boolean isIndexingInProgress() {
+    return false;
+  }
 }

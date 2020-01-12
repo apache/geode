@@ -48,9 +48,9 @@ import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
-import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 
-@Category(UnitTest.class)
+@Category({ClientServerTest.class})
 public class GetAll651Test {
 
   private static final String REGION_NAME = "region1";
@@ -92,7 +92,7 @@ public class GetAll651Test {
     when(this.message.getPart(eq(0))).thenReturn(this.regionNamePart);
     when(this.message.getPart(eq(1))).thenReturn(this.keyPart);
 
-    when(this.regionNamePart.getString()).thenReturn(REGION_NAME);
+    when(this.regionNamePart.getCachedString()).thenReturn(REGION_NAME);
 
     when(this.serverConnection.getCache()).thenReturn(this.cache);
     when(this.serverConnection.getCacheServerStats()).thenReturn(mock(CacheServerStats.class));

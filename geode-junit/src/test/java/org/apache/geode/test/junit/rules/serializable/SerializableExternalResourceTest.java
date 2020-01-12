@@ -14,23 +14,20 @@
  */
 package org.apache.geode.test.junit.rules.serializable;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 
-import org.apache.commons.lang.SerializationUtils;
+import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.ExternalResource;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for {@link SerializableExternalResource}.
  */
-@Category(UnitTest.class)
 public class SerializableExternalResourceTest {
 
   @Test

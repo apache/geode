@@ -26,8 +26,8 @@ import org.apache.geode.cache.client.internal.ServerRegionDataAccess;
 import org.apache.geode.internal.cache.DistributedPutAllOperation;
 import org.apache.geode.internal.cache.DistributedRemoveAllOperation;
 import org.apache.geode.internal.cache.EntryEventImpl;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.KeyInfo;
-import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 
@@ -36,22 +36,25 @@ public class ClientTXRegionStub implements TXRegionStub {
   // private final LocalRegion region;
   private final ServerRegionDataAccess proxy;
 
-  public ClientTXRegionStub(LocalRegion region) {
+  public ClientTXRegionStub(InternalRegion region) {
     // this.region = region;
     this.proxy = region.getServerProxy();
   }
 
 
+  @Override
   public boolean containsKey(KeyInfo keyInfo) {
     return proxy.containsKey(keyInfo.getKey());
   }
 
 
+  @Override
   public boolean containsValueForKey(KeyInfo keyInfo) {
     return proxy.containsValueForKey(keyInfo.getKey());
   }
 
 
+  @Override
   public void destroyExistingEntry(EntryEventImpl event, boolean cacheWrite,
       Object expectedOldValue) {
     if (event.getOperation().isLocal()) {
@@ -66,6 +69,7 @@ public class ClientTXRegionStub implements TXRegionStub {
   }
 
 
+  @Override
   public Object findObject(KeyInfo keyInfo, boolean isCreate, boolean generateCallbacks,
       Object value, boolean preferCD, ClientProxyMembershipID requestingClient,
       EntryEventImpl event) {
@@ -73,16 +77,19 @@ public class ClientTXRegionStub implements TXRegionStub {
   }
 
 
+  @Override
   public Entry<?, ?> getEntry(KeyInfo keyInfo, boolean allowTombstones) {
     return proxy.getEntry(keyInfo.getKey());
   }
 
 
+  @Override
   public Object getEntryForIterator(KeyInfo keyInfo, boolean allowTombstones) {
     return getEntry(keyInfo, allowTombstones);
   }
 
 
+  @Override
   public void invalidateExistingEntry(EntryEventImpl event, boolean invokeCallbacks,
       boolean forceNewEntry) {
     if (event.getOperation().isLocal()) {
@@ -93,6 +100,7 @@ public class ClientTXRegionStub implements TXRegionStub {
   }
 
 
+  @Override
   public boolean putEntry(EntryEventImpl event, boolean ifNew, boolean ifOld,
       Object expectedOldValue, boolean requireOldValue, long lastModified,
       boolean overwriteDestroyed) {
@@ -130,17 +138,20 @@ public class ClientTXRegionStub implements TXRegionStub {
   }
 
 
+  @Override
   public int entryCount() {
     return proxy.size();
   }
 
 
+  @Override
   public Set getRegionKeysForIteration() {
     return proxy.keySet();
   }
 
+  @Override
   public void postPutAll(DistributedPutAllOperation putallOp, VersionedObjectList successfulPuts,
-      LocalRegion r) {
+      InternalRegion r) {
     /*
      * Don't do anything here , it's handled in proxy and elsewhere.
      */
@@ -148,7 +159,7 @@ public class ClientTXRegionStub implements TXRegionStub {
 
   @Override
   public void postRemoveAll(DistributedRemoveAllOperation op, VersionedObjectList successfulOps,
-      LocalRegion region) {
+      InternalRegion region) {
     // Don't do anything here , it's handled in proxy and elsewhere.
   }
 

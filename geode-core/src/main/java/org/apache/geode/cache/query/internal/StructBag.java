@@ -31,7 +31,8 @@ import org.apache.geode.cache.query.types.CollectionType;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.cache.query.types.StructType;
 import org.apache.geode.internal.cache.CachePerfStats;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * A Bag constrained to contain Structs of all the same type. To conserve on objects, we store the
@@ -52,11 +53,13 @@ public class StructBag extends ResultsBag implements StructFields {
    */
   protected static class ObjectArrayHashingStrategy implements HashingStrategy {
 
+    @Override
     public int hashCode(Object o) {
       Object[] oa = (Object[]) o;
       return Arrays.deepHashCode(oa);
     }
 
+    @Override
     public boolean equals(Object o1, Object o2) {
       if (o1 == null)
         return o2 == null;
@@ -73,12 +76,13 @@ public class StructBag extends ResultsBag implements StructFields {
   protected static class ObjectArrayFUHashingStrategy implements Hash.Strategy<Object> {
     private static final long serialVersionUID = 8975047264555337042L;
 
+    @Override
     public int hashCode(Object o) {
       // throws ClassCastException if not Object[]
       // compute hash code based on all elements
       if (!(o instanceof Object[])) {
-        throw new ClassCastException(LocalizedStrings.StructBag_EXPECTED_AN_OBJECT_BUT_ACTUAL_IS_0
-            .toLocalizedString(o.getClass().getName()));
+        throw new ClassCastException(String.format("Expected an Object[], but actual is %s",
+            o.getClass().getName()));
       }
       Object[] oa = (Object[]) o;
       int h = 0;
@@ -90,6 +94,7 @@ public class StructBag extends ResultsBag implements StructFields {
       return h;
     }
 
+    @Override
     public boolean equals(Object o1, Object o2) {
       // throws ClassCastException if not Object[]
       if (o1 == null)
@@ -119,7 +124,7 @@ public class StructBag extends ResultsBag implements StructFields {
     super(new ObjectArrayHashingStrategy(), stats);
     if (structType == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.StructBag_STRUCTTYPE_MUST_NOT_BE_NULL.toLocalizedString());
+          "structType must not be null");
     }
     this.elementType = structType;
   }
@@ -132,7 +137,7 @@ public class StructBag extends ResultsBag implements StructFields {
     super(c, new ObjectArrayHashingStrategy(), stats);
     if (structType == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.StructBag_STRUCTTYPE_MUST_NOT_BE_NULL.toLocalizedString());
+          "structType must not be null");
     }
     this.elementType = structType;
   }
@@ -145,7 +150,7 @@ public class StructBag extends ResultsBag implements StructFields {
     super(initialCapacity, new ObjectArrayHashingStrategy(), stats);
     if (structType == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.StructBag_STRUCTTYPE_MUST_NOT_BE_NULL.toLocalizedString());
+          "structType must not be null");
     }
     this.elementType = structType;
   }
@@ -159,7 +164,7 @@ public class StructBag extends ResultsBag implements StructFields {
     super(initialCapacity, loadFactor, new ObjectArrayHashingStrategy(), stats);
     if (structType == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.StructBag_STRUCTTYPE_MUST_NOT_BE_NULL.toLocalizedString());
+          "structType must not be null");
     }
     this.elementType = structType;
   }
@@ -179,13 +184,14 @@ public class StructBag extends ResultsBag implements StructFields {
   public boolean add(Object obj) {
     if (!(obj instanceof StructImpl)) {
       throw new IllegalArgumentException(
-          LocalizedStrings.StructBag_THIS_SET_ONLY_ACCEPTS_STRUCTIMPL.toLocalizedString());
+          "This set only accepts StructImpl");
     }
     StructImpl s = (StructImpl) obj;
     if (!this.elementType.equals(s.getStructType())) {
       throw new IllegalArgumentException(
-          LocalizedStrings.StructBag_OBJ_DOES_NOT_HAVE_THE_SAME_STRUCTTYPE
-              .toLocalizedString(this.elementType, s.getStructType()));
+          String.format(
+              "obj does not have the same StructType.; collection structype,%s; added obj type=%s",
+              this.elementType, s.getStructType()));
     }
     return addFieldValues(s.getFieldValues());
   }
@@ -193,6 +199,7 @@ public class StructBag extends ResultsBag implements StructFields {
   /**
    * For internal use. Just add the Object[] values for a struct with same type
    */
+  @Override
   public boolean addFieldValues(Object[] fieldValues) {
     return super.add(fieldValues);
   }
@@ -213,6 +220,7 @@ public class StructBag extends ResultsBag implements StructFields {
   /**
    * Does this set contain a Struct of the correct type with the specified values?
    */
+  @Override
   public boolean containsFieldValues(Object[] fieldValues) {
     // Asif: The fieldValues can never be null . If the Struc contained
     // null , then the the getFieldValues would have returned
@@ -249,7 +257,7 @@ public class StructBag extends ResultsBag implements StructFields {
           count++;
           encounteredObject = true;
         } else if (encounteredObject) {
-          // Asif: No possibility of its occurence again
+          // Asif: No possibility of its occurrence again
           break;
         }
       }
@@ -278,6 +286,7 @@ public class StructBag extends ResultsBag implements StructFields {
   }
 
   /** Remove the field values from a struct of the correct type */
+  @Override
   public boolean removeFieldValues(Object[] fieldValues) {
     if (this.hasLimitIterator) {
       // Asif : Get the field value Iterator
@@ -294,6 +303,7 @@ public class StructBag extends ResultsBag implements StructFields {
     }
   }
 
+  @Override
   public CollectionType getCollectionType() {
     return new CollectionTypeImpl(StructBag.class, this.elementType);
   }
@@ -327,12 +337,12 @@ public class StructBag extends ResultsBag implements StructFields {
     boolean modified = false;
     if (!this.elementType.equals(sb.getCollectionType().getElementType())) {
       throw new IllegalArgumentException(
-          LocalizedStrings.StructBag_TYPES_DONT_MATCH.toLocalizedString());
+          "types do not match");
     }
 
     for (Iterator itr = sb.fieldValuesIterator(); itr.hasNext();) {
       // Check if query execution on this thread is canceled.
-      QueryMonitor.isQueryExecutionCanceled();
+      QueryMonitor.throwExceptionIfQueryOnCurrentThreadIsCanceled();
 
       Object[] vals = (Object[]) itr.next();
       if (super.add(vals)) {
@@ -381,7 +391,7 @@ public class StructBag extends ResultsBag implements StructFields {
 
   /**
    * Return an iterator over the elements in this collection. Duplicates will show up the number of
-   * times it has occurrances.
+   * times it has occurrences.
    */
   @Override
   public Iterator iterator() {
@@ -389,6 +399,7 @@ public class StructBag extends ResultsBag implements StructFields {
   }
 
   /** Returns an iterator over the fieldValues Object[] instances */
+  @Override
   public Iterator fieldValuesIterator() {
     return super.iterator();
   }
@@ -401,7 +412,7 @@ public class StructBag extends ResultsBag implements StructFields {
   public void setElementType(ObjectType elementType) {
     if (!(elementType instanceof StructTypeImpl)) {
       throw new IllegalArgumentException(
-          LocalizedStrings.StructBag_ELEMENT_TYPE_MUST_BE_STRUCT.toLocalizedString());
+          "element type must be struct");
     }
     this.elementType = elementType;
   }
@@ -441,19 +452,23 @@ public class StructBag extends ResultsBag implements StructFields {
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.modifiable = in.readBoolean();
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     out.writeBoolean(this.modifiable);
   }
 
+  @Override
   void writeNumNulls(DataOutput out) {}
 
+  @Override
   void readNumNulls(DataInput in) {}
 
   void createTObjectIntHashMap() {

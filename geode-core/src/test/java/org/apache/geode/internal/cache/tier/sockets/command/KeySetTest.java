@@ -22,6 +22,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -31,6 +33,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import org.apache.geode.CancelCriterion;
+import org.apache.geode.cache.PartitionAttributes;
+import org.apache.geode.cache.TransactionException;
 import org.apache.geode.cache.operations.KeySetOperationContext;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
@@ -45,9 +49,9 @@ import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
-import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 
-@Category(UnitTest.class)
+@Category({ClientServerTest.class})
 public class KeySetTest {
 
   private static final String REGION_NAME = "region1";
@@ -89,13 +93,68 @@ public class KeySetTest {
 
     when(this.message.getPart(eq(0))).thenReturn(this.regionNamePart);
 
-    when(this.regionNamePart.getString()).thenReturn(REGION_NAME);
+    when(this.regionNamePart.getCachedString()).thenReturn(REGION_NAME);
 
     when(this.serverConnection.getCache()).thenReturn(this.cache);
     when(this.serverConnection.getCacheServerStats()).thenReturn(mock(CacheServerStats.class));
     when(this.serverConnection.getAuthzRequest()).thenReturn(this.authzRequest);
     when(this.serverConnection.getCachedRegionHelper()).thenReturn(mock(CachedRegionHelper.class));
     when(this.serverConnection.getChunkedResponseMessage()).thenReturn(this.chunkedResponseMessage);
+  }
+
+  @Test
+  public void retryKeySet_doesNotWriteTransactionException_ifIsNotInTransaction() throws Exception {
+    long startTime = 0; // arbitrary value
+    TestableKeySet keySet = new TestableKeySet();
+    keySet.setIsInTransaction(false);
+    when(message.isRetry()).thenReturn(true);
+    when(region.getPartitionAttributes()).thenReturn(mock(PartitionAttributes.class));
+
+    keySet.cmdExecute(message, serverConnection, securityService, startTime);
+
+    assertThat(keySet.exceptionSentToClient).isNull();
+  }
+
+  @Test
+  public void nonRetryKeySet_doesNotWriteTransactionException() throws Exception {
+    long startTime = 0; // arbitrary value
+    TestableKeySet keySet = new TestableKeySet();
+    keySet.setIsInTransaction(true);
+    when(message.isRetry()).thenReturn(false);
+    when(region.getPartitionAttributes()).thenReturn(mock(PartitionAttributes.class));
+
+    keySet.cmdExecute(message, serverConnection, securityService, startTime);
+
+    assertThat(keySet.exceptionSentToClient).isNull();
+  }
+
+  @Test
+  public void retryKeySet_doesNotWriteTransactionException_ifIsInTransactionAndIsNotPartitionedRegion()
+      throws Exception {
+    long startTime = 0; // arbitrary value
+    TestableKeySet keySet = new TestableKeySet();
+    keySet.setIsInTransaction(true);
+    when(message.isRetry()).thenReturn(true);
+    when(region.getPartitionAttributes()).thenReturn(null);
+
+    keySet.cmdExecute(message, serverConnection, securityService, startTime);
+
+    assertThat(keySet.exceptionSentToClient).isNull();
+  }
+
+  @Test
+  public void retryKeySet_writesTransactionException_ifIsInTransactionAndIsPartitionedRegion()
+      throws Exception {
+    long startTime = 0; // arbitrary value
+    TestableKeySet keySet = new TestableKeySet();
+    keySet.setIsInTransaction(true);
+    when(message.isRetry()).thenReturn(true);
+    when(region.getPartitionAttributes()).thenReturn(mock(PartitionAttributes.class));
+
+    keySet.cmdExecute(message, serverConnection, securityService, startTime);
+
+    assertThat(keySet.exceptionSentToClient).isInstanceOf(TransactionException.class).hasMessage(
+        "Failover on a set operation of a partitioned region is not allowed in a transaction.");
   }
 
   @Test
@@ -160,4 +219,23 @@ public class KeySetTest {
     verify(this.chunkedResponseMessage).sendChunk(eq(this.serverConnection));
   }
 
+  private class TestableKeySet extends KeySet {
+    private boolean isInTransaction = false;
+    public Throwable exceptionSentToClient;
+
+    public void setIsInTransaction(boolean isInTransaction) {
+      this.isInTransaction = isInTransaction;
+    }
+
+    @Override
+    public boolean isInTransaction() {
+      return isInTransaction;
+    }
+
+    @Override
+    protected void keySetWriteChunkedException(Message clientMessage, Throwable ex,
+        ServerConnection serverConnection) throws IOException {
+      this.exceptionSentToClient = ex;
+    }
+  }
 }

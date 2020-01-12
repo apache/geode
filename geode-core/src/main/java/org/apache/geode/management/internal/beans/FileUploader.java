@@ -20,15 +20,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.attribute.PosixFilePermission;
-import java.nio.file.attribute.PosixFilePermissions;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import com.healthmarketscience.rmiio.RemoteOutputStream;
 import com.healthmarketscience.rmiio.RemoteOutputStreamMonitor;
@@ -38,12 +32,12 @@ import com.healthmarketscience.rmiio.exporter.RemoteStreamExporter;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.security.GemFireSecurityException;
 
 public class FileUploader implements FileUploaderMBean {
-  public static String STAGED_DIR_PREFIX = "uploaded-";
-  private static Logger logger = LogService.getLogger();
+  public static final String STAGED_DIR_PREFIX = "uploaded-";
+  private static final Logger logger = LogService.getLogger();
   private RemoteStreamExporter exporter;
 
   public static class RemoteFile implements Serializable {

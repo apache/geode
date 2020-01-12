@@ -12,9 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- *
- */
 package org.apache.geode.internal.cache.tx;
 
 import java.io.ByteArrayInputStream;
@@ -31,6 +28,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.TransactionDataNodeHasDepartedException;
 import org.apache.geode.cache.TransactionException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
@@ -48,10 +46,11 @@ import org.apache.geode.internal.cache.InitialImageOperation;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RemoteOperationException;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.util.ObjectIntProcedure;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class RemoteFetchKeysMessage extends RemoteOperationMessage {
 
@@ -77,21 +76,19 @@ public class RemoteFetchKeysMessage extends RemoteOperationMessage {
       if (logger.isDebugEnabled()) {
         logger.debug("Caught exception while sending keys: {}", io.getMessage(), io);
         throw new RemoteOperationException(
-            LocalizedStrings.FetchKeysMessage_UNABLE_TO_SEND_RESPONSE_TO_FETCH_KEYS_REQUEST
-                .toLocalizedString(),
+            "Unable to send response to fetch keys request",
             io);
       }
     }
     return false;
   }
 
+  @Override
   public int getDSFID() {
     return R_FETCH_KEYS_MESSAGE;
   }
 
   /**
-   * @param currRegion
-   * @param target
    * @return the response
    */
   public static FetchKeysResponse send(LocalRegion currRegion, DistributedMember target) {
@@ -104,13 +101,15 @@ public class RemoteFetchKeysMessage extends RemoteOperationMessage {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
   }
 
   public static class RemoteFetchKeysReplyMessage extends ReplyMessage {
@@ -174,6 +173,7 @@ public class RemoteFetchKeysMessage extends RemoteOperationMessage {
              * @param b positive if last chunk
              * @return true to continue to next chunk
              */
+            @Override
             public boolean executeWith(Object a, int b) {
               HeapDataOutputStream chunk = (HeapDataOutputStream) a;
               this.last = b > 0;
@@ -269,24 +269,25 @@ public class RemoteFetchKeysMessage extends RemoteOperationMessage {
       FetchKeysResponse processor = (FetchKeysResponse) p;
 
       if (processor == null) {
-        if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.trace(LogMarker.DM, "FetchKeysReplyMessage processor not found");
+        if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+          logger.trace(LogMarker.DM_VERBOSE, "FetchKeysReplyMessage processor not found");
         }
         return;
       }
 
       processor.process(this);
 
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM, "{} Remote-processed {}", processor, this);
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE, "{} Remote-processed {}", processor, this);
       }
 
       dm.getStats().incReplyMessageTime(DistributionStats.getStatTime() - startTime);
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       out.writeInt(this.seriesNum);
       out.writeInt(this.msgNum);
       out.writeInt(this.numSeries);
@@ -300,8 +301,9 @@ public class RemoteFetchKeysMessage extends RemoteOperationMessage {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.seriesNum = in.readInt();
       this.msgNum = in.readInt();
       this.numSeries = in.readInt();
@@ -375,7 +377,6 @@ public class RemoteFetchKeysMessage extends RemoteOperationMessage {
     }
 
     /**
-     * @param msg
      * @return true if done processing
      */
     boolean processChunk(RemoteFetchKeysReplyMessage msg) {
@@ -412,15 +413,15 @@ public class RemoteFetchKeysMessage extends RemoteOperationMessage {
           if (lastChunkReceived && (chunksExpected == chunksProcessed)) {
             doneProcessing = true;
           }
-          if (logger.isTraceEnabled(LogMarker.DM)) {
-            logger.trace(LogMarker.DM,
+          if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+            logger.trace(LogMarker.DM_VERBOSE,
                 "{} chunksProcessed={},lastChunkReceived={},chunksExpected={},done={}", this,
                 chunksProcessed, lastChunkReceived, chunksExpected, doneProcessing);
           }
         }
       } catch (Exception e) {
         processException(new ReplyException(
-            LocalizedStrings.FetchKeysMessage_ERROR_DESERIALIZING_KEYS.toLocalizedString(), e));
+            "Error deserializing keys", e));
       }
       return doneProcessing;
     }
@@ -430,6 +431,11 @@ public class RemoteFetchKeysMessage extends RemoteOperationMessage {
       try {
         waitForRepliesUninterruptibly();
       } catch (ReplyException e) {
+        if (e.getCause() instanceof RemoteOperationException) {
+          if (e.getCause().getCause() instanceof CancelException) {
+            throw new TransactionDataNodeHasDepartedException("Node departed while fetching keys");
+          }
+        }
         e.handleCause();
         if (!this.lastChunkReceived) {
           throw new TransactionException(e);

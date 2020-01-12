@@ -14,46 +14,46 @@
  */
 package org.apache.geode.internal.lang;
 
-import static org.apache.geode.internal.lang.SystemUtils.*;
-import static org.assertj.core.api.Assertions.*;
-import static org.junit.Assert.*;
-import static org.junit.Assume.*;
+import static org.apache.geode.internal.lang.SystemUtils.APPLE_JVM_VENDOR_NAME;
+import static org.apache.geode.internal.lang.SystemUtils.IBM_J9_JVM_NAME;
+import static org.apache.geode.internal.lang.SystemUtils.JAVA_HOTSPOT_JVM_NAME;
+import static org.apache.geode.internal.lang.SystemUtils.LINUX_OS_NAME;
+import static org.apache.geode.internal.lang.SystemUtils.MAC_OSX_NAME;
+import static org.apache.geode.internal.lang.SystemUtils.ORACLE_JROCKIT_JVM_NAME;
+import static org.apache.geode.internal.lang.SystemUtils.ORACLE_JVM_VENDOR_NAME;
+import static org.apache.geode.internal.lang.SystemUtils.WINDOWS_OS_NAME;
+import static org.apache.geode.internal.lang.SystemUtils.getBootClassPath;
+import static org.apache.geode.internal.lang.SystemUtils.getClassPath;
+import static org.apache.geode.internal.lang.SystemUtils.getOsArchitecture;
+import static org.apache.geode.internal.lang.SystemUtils.getOsName;
+import static org.apache.geode.internal.lang.SystemUtils.getOsVersion;
+import static org.apache.geode.internal.lang.SystemUtils.isAppleJVM;
+import static org.apache.geode.internal.lang.SystemUtils.isHotSpotVM;
+import static org.apache.geode.internal.lang.SystemUtils.isJ9VM;
+import static org.apache.geode.internal.lang.SystemUtils.isJRockitVM;
+import static org.apache.geode.internal.lang.SystemUtils.isLinux;
+import static org.apache.geode.internal.lang.SystemUtils.isMacOSX;
+import static org.apache.geode.internal.lang.SystemUtils.isOracleJVM;
+import static org.apache.geode.internal.lang.SystemUtils.isWindows;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assume.assumeNotNull;
 
 import java.lang.management.ManagementFactory;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * The SystemUtilsJUnitTest class is a test suite of test cases for testing the contract and
  * functionality of the SystemUtils class.
  * <p/>
  *
- * @see org.apache.geode.internal.lang.SystemUtils
  * @see org.junit.Assert
  * @see org.junit.Test
  * @since GemFire 6.8
  */
-@Category(UnitTest.class)
 public class SystemUtilsJUnitTest {
-
-  // NOTE this test adds some maintenance overhead but ensure the correct functioning of GemFire
-  // code that relies on
-  // isJavaVersionAtLeast
-  @Test
-  public void testIsJavaVersionAtLeast() {
-    // note, the expected version value should be set to the minimum supported version of the Java
-    // Runtime Environment
-    // (JRE) for GemFire
-    assertTrue(isJavaVersionAtLeast("1.8"));
-    // note, the expected version value should be set to the next version of the Java Runtime
-    // Environment (JRE)
-    // not currently available.
-    assertFalse(isJavaVersionAtLeast("1.9"));
-  }
-
   @Test
   public void testIsAppleJVM() {
     final boolean expected =
@@ -135,10 +135,5 @@ public class SystemUtilsJUnitTest {
     String value = System.getProperty("sun.boot.class.path");
     assumeNotNull(value);
     assertThat(getBootClassPath()).isEqualTo(value);
-  }
-
-  @Test
-  public void getJavaVersionShouldReturnJavaVersionValue() {
-    assertThat(getJavaVersion()).isEqualTo(System.getProperty("java.version"));
   }
 }

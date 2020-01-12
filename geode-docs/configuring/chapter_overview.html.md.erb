@@ -19,7 +19,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-Use the `gfsh` command-line utility to configure your <%=vars.product_name_long%> cluster (also called a "distributed system"). The cluster configuration service persists the cluster configurations and distributes the configurations to members of the cluster. There are also several additional ways to configure a cluster.
+Use the `gfsh` command-line utility to configure your <%=vars.product_name_long%> cluster. The cluster configuration service persists the cluster configurations and distributes the configurations to members of the cluster. There are also several additional ways to configure a cluster.
 
 Use `gfsh` to configure regions, disk stores, members, and other <%=vars.product_name%> objects. 
 You can also use `gfsh` to start and stop locators, servers, and <%=vars.product_name%> monitoring tools. As you execute these commands, the cluster configuration service persists the configuration. When new members join the cluster, the service distributes the configuration to the new members.
@@ -36,11 +36,11 @@ You can also use `gfsh` to start and stop locators, servers, and <%=vars.product
 
 -   **[Deploying Application JARs to <%=vars.product_name_long%> Members](cluster_config/deploying_application_jars.html)**
 
-    You can dynamically deploy your application JAR files to specific members or to all members in your distributed system. <%=vars.product_name%> automatically keeps track of JAR file versions; autoloads the deployed JAR files to the CLASSPATH; and auto-registers any functions that the JAR contains.
+    You can dynamically deploy your application JAR files to specific members or to all members in your cluster. <%=vars.product_name%> automatically keeps track of JAR file versions; autoloads the deployed JAR files to the CLASSPATH; and auto-registers any functions that the JAR contains.
 
 -   **[Using Member Groups](cluster_config/using_member_groups.html)**
 
-    <%=vars.product_name_long%> allows you to organize your distributed system members into logical member groups.
+    <%=vars.product_name_long%> allows you to organize your cluster members into logical member groups.
 
 -   **[Exporting and Importing Cluster Configurations](cluster_config/export-import.html)**
 
@@ -49,10 +49,6 @@ You can also use `gfsh` to start and stop locators, servers, and <%=vars.product
 -   **[Cluster Configuration Files and Troubleshooting](cluster_config/gfsh_config_troubleshooting.html)**
 
     When you use the cluster configuration service in <%=vars.product_name%>, you can examine the generated configuration files in the `cluster_config` directory on the locator. `gfsh` saves configuration files at the cluster-level and at the individual group-level.
-
--   **[Loading Existing Configuration Files into Cluster Configuration](cluster_config/gfsh_load_from_shared_dir.html)**
-
-    To load an existing cache.xml or gemfire.properties configuration file into a new cluster, use the `--load-cluster-configuration-from-dir` parameter when starting up the locator.
 
 -   **[Using gfsh to Manage a Remote Cluster Over HTTP or HTTPS](cluster_config/gfsh_remote.html)**
 

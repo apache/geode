@@ -39,8 +39,6 @@ public interface RegionQueue {
    *
    * @param object The object to put onto the queue
    *
-   * @throws InterruptedException
-   * @throws CacheException
    * @return boolean whether object was successfully put onto the queue
    */
   boolean put(Object object) throws InterruptedException, CacheException;
@@ -56,8 +54,6 @@ public interface RegionQueue {
    *
    * @return The object taken
    *
-   * @throws CacheException
-   * @throws InterruptedException
    */
   Object take() throws CacheException, InterruptedException;
 
@@ -69,8 +65,6 @@ public interface RegionQueue {
    *
    * @return the <code>List</code> of objects taken from the queue
    *
-   * @throws CacheException
-   * @throws InterruptedException
    */
   List take(int batchSize) throws CacheException, InterruptedException;
 
@@ -78,8 +72,6 @@ public interface RegionQueue {
    * Removes a single object from the head of the queue without returning it. This method assumes
    * that the queue contains at least one object.
    *
-   * @throws InterruptedException
-   * @throws CacheException
    */
   void remove() throws InterruptedException, CacheException;
 
@@ -88,8 +80,6 @@ public interface RegionQueue {
    * if there are no objects on the queue.
    *
    * @return The object peeked
-   * @throws InterruptedException
-   * @throws CacheException
    */
   Object peek() throws InterruptedException, CacheException;
 
@@ -100,8 +90,6 @@ public interface RegionQueue {
    * @param batchSize The number of objects to peek from the queue
    *
    * @return The list of objects peeked
-   * @throws InterruptedException
-   * @throws CacheException
    */
   List peek(int batchSize) throws InterruptedException, CacheException;
 
@@ -115,8 +103,6 @@ public interface RegionQueue {
    * @param timeToWait The number of milliseconds to attempt to peek
    *
    * @return The list of objects peeked
-   * @throws InterruptedException
-   * @throws CacheException
    *
    */
   List peek(int batchSize, int timeToWait) throws InterruptedException, CacheException;

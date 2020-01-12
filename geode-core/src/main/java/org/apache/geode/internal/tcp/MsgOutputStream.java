@@ -14,12 +14,15 @@
  */
 package org.apache.geode.internal.tcp;
 
-import java.io.*;
-import java.nio.*;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.UTFDataFormatException;
+import java.nio.ByteBuffer;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.*;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.ObjToByteArraySerializer;
+import org.apache.geode.internal.net.BufferPool;
+import org.apache.geode.internal.serialization.StaticSerialization;
 
 /**
  * MsgOutputStream should no longer be used except in Connection to do the handshake. Otherwise
@@ -35,7 +38,7 @@ public class MsgOutputStream extends OutputStream implements ObjToByteArraySeria
    * The caller of this constructor is responsible for managing the allocated instance.
    */
   public MsgOutputStream(int allocSize) {
-    if (TCPConduit.useDirectBuffers) {
+    if (BufferPool.useDirectBuffers) {
       this.buffer = ByteBuffer.allocateDirect(allocSize);
     } else {
       this.buffer = ByteBuffer.allocate(allocSize);
@@ -46,7 +49,7 @@ public class MsgOutputStream extends OutputStream implements ObjToByteArraySeria
   /** write the low-order 8 bits of the given int */
   @Override
   public void write(int b) {
-    buffer.put((byte) b);
+    buffer.put((byte) (b & 0xff));
   }
 
   /** override OutputStream's write() */
@@ -93,6 +96,7 @@ public class MsgOutputStream extends OutputStream implements ObjToByteArraySeria
    * @param v the boolean to be written.
    * @exception IOException if an I/O error occurs.
    */
+  @Override
   public void writeBoolean(boolean v) throws IOException {
     write(v ? 1 : 0);
   }
@@ -107,6 +111,7 @@ public class MsgOutputStream extends OutputStream implements ObjToByteArraySeria
    * @param v the byte value to be written.
    * @exception IOException if an I/O error occurs.
    */
+  @Override
   public void writeByte(int v) throws IOException {
     write(v);
   }
@@ -130,8 +135,9 @@ public class MsgOutputStream extends OutputStream implements ObjToByteArraySeria
    * @param v the <code>short</code> value to be written.
    * @exception IOException if an I/O error occurs.
    */
+  @Override
   public void writeShort(int v) throws IOException {
-    buffer.putShort((short) v);
+    buffer.putShort((short) (v & 0xffff));
   }
 
   /**
@@ -153,6 +159,7 @@ public class MsgOutputStream extends OutputStream implements ObjToByteArraySeria
    * @param v the <code>char</code> value to be written.
    * @exception IOException if an I/O error occurs.
    */
+  @Override
   public void writeChar(int v) throws IOException {
     buffer.putChar((char) v);
   }
@@ -177,6 +184,7 @@ public class MsgOutputStream extends OutputStream implements ObjToByteArraySeria
    * @param v the <code>int</code> value to be written.
    * @exception IOException if an I/O error occurs.
    */
+  @Override
   public void writeInt(int v) throws IOException {
     buffer.putInt(v);
   }
@@ -205,6 +213,7 @@ public class MsgOutputStream extends OutputStream implements ObjToByteArraySeria
    * @param v the <code>long</code> value to be written.
    * @exception IOException if an I/O error occurs.
    */
+  @Override
   public void writeLong(long v) throws IOException {
     buffer.putLong(v);
   }
@@ -220,6 +229,7 @@ public class MsgOutputStream extends OutputStream implements ObjToByteArraySeria
    * @param v the <code>float</code> value to be written.
    * @exception IOException if an I/O error occurs.
    */
+  @Override
   public void writeFloat(float v) throws IOException {
     buffer.putFloat(v);
   }
@@ -235,6 +245,7 @@ public class MsgOutputStream extends OutputStream implements ObjToByteArraySeria
    * @param v the <code>double</code> value to be written.
    * @exception IOException if an I/O error occurs.
    */
+  @Override
   public void writeDouble(double v) throws IOException {
     buffer.putDouble(v);
   }
@@ -253,6 +264,7 @@ public class MsgOutputStream extends OutputStream implements ObjToByteArraySeria
    * @param str the string of bytes to be written.
    * @exception IOException if an I/O error occurs.
    */
+  @Override
   public void writeBytes(String str) throws IOException {
     int strlen = str.length();
     if (strlen > 0) {
@@ -284,6 +296,7 @@ public class MsgOutputStream extends OutputStream implements ObjToByteArraySeria
    * @param s the string value to be written.
    * @exception IOException if an I/O error occurs.
    */
+  @Override
   public void writeChars(String s) throws IOException {
     int len = s.length();
     if (len > 0) {
@@ -344,6 +357,7 @@ public class MsgOutputStream extends OutputStream implements ObjToByteArraySeria
    * @param str the string value to be written.
    * @exception IOException if an I/O error occurs.
    */
+  @Override
   public void writeUTF(String str) throws IOException {
     writeFullUTF(str);
   }
@@ -352,8 +366,7 @@ public class MsgOutputStream extends OutputStream implements ObjToByteArraySeria
     int strlen = str.length();
     if (strlen > 65535) {
       throw new UTFDataFormatException(
-          LocalizedStrings.MsgOutputStream_STRING_TOO_LONG_FOR_JAVA_SERIALIZATION
-              .toLocalizedString());
+          "String too long for java serialization");
     }
     // make room for worst case space 3 bytes for each char and 2 for len
     int utfSizeIdx = this.buffer.position();
@@ -377,8 +390,7 @@ public class MsgOutputStream extends OutputStream implements ObjToByteArraySeria
       // act as if we wrote nothing to this buffer
       this.buffer.position(utfSizeIdx);
       throw new UTFDataFormatException(
-          LocalizedStrings.MsgOutputStream_STRING_TOO_LONG_FOR_JAVA_SERIALIZATION
-              .toLocalizedString());
+          "String too long for java serialization");
     }
     this.buffer.putShort(utfSizeIdx, (short) utflen);
   }
@@ -387,6 +399,7 @@ public class MsgOutputStream extends OutputStream implements ObjToByteArraySeria
    * Writes the given object to this stream as a byte array. The byte array is produced by
    * serializing v. The serialization is done by calling DataSerializer.writeObject.
    */
+  @Override
   public void writeAsSerializedByteArray(Object v) throws IOException {
     ByteBuffer sizeBuf = this.buffer;
     int sizePos = sizeBuf.position();
@@ -394,7 +407,7 @@ public class MsgOutputStream extends OutputStream implements ObjToByteArraySeria
     final int preArraySize = size();
     DataSerializer.writeObject(v, this);
     int arraySize = size() - preArraySize;
-    sizeBuf.put(sizePos, InternalDataSerializer.INT_ARRAY_LEN);
+    sizeBuf.put(sizePos, StaticSerialization.INT_ARRAY_LEN);
     sizeBuf.putInt(sizePos + 1, arraySize);
   }
 }

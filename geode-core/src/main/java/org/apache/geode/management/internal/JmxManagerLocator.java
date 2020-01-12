@@ -21,30 +21,30 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.ClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
+import org.apache.geode.distributed.internal.RestartHandler;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.internal.cache.execute.InternalFunction;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.AlreadyRunningException;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.internal.JmxManagerAdvisor.JmxManagerProfile;
 
-public class JmxManagerLocator implements TcpHandler {
+public class JmxManagerLocator implements TcpHandler, RestartHandler {
   private static final Logger logger = LogService.getLogger();
 
-  private InternalCache cache;
+  private InternalCacheForClientAccess cache;
 
   public JmxManagerLocator(InternalCache internalCache) {
-    this.cache = internalCache;
+    this.cache = internalCache.getCacheForProcessingClientRequests();
   }
 
   @Override
@@ -70,8 +70,8 @@ public class JmxManagerLocator implements TcpHandler {
 
   @Override
   public void restarting(DistributedSystem ds, GemFireCache cache,
-      ClusterConfigurationService sharedConfig) {
-    this.cache = (InternalCache) cache;
+      InternalConfigurationPersistenceService sharedConfig) {
+    this.cache = ((InternalCache) cache).getCacheForProcessingClientRequests();
   }
 
   @Override
@@ -203,7 +203,8 @@ public class JmxManagerLocator implements TcpHandler {
     @Override
     public void execute(FunctionContext context) {
       try {
-        Cache cache = CacheFactory.getAnyInstance();
+        InternalCache cache =
+            ((InternalCache) context.getCache()).getCacheForProcessingClientRequests();
         if (cache != null) {
           ManagementService ms = ManagementService.getExistingManagementService(cache);
           if (ms != null) {

@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.operations.QueryOperationContext;
 import org.apache.geode.cache.query.QueryExecutionLowMemoryException;
 import org.apache.geode.cache.query.QueryInvalidException;
@@ -35,6 +36,7 @@ import org.apache.geode.internal.security.SecurityService;
 
 public class Query extends BaseCommandQuery {
 
+  @Immutable
   private static final Query singleton = new Query();
 
   public static Command getCommand() {
@@ -98,6 +100,7 @@ public class Query extends BaseCommandQuery {
     }
   }
 
+  @Override
   protected CollectionType getCollectionType(SelectResults selectResults) {
     return new CollectionTypeImpl(List.class, selectResults.getCollectionType().getElementType());
   }

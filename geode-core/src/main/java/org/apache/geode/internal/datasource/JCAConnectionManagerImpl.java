@@ -32,11 +32,9 @@ import javax.transaction.xa.XAResource;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.internal.jta.TransactionManagerImpl;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * This class implements a connection pool manager for managed connections (JCA) for transactional
@@ -69,9 +67,10 @@ public class JCAConnectionManagerImpl implements ConnectionManager, ConnectionEv
       isActive = true;
       mannPoolCache = new ManagedPoolCacheImpl(mcf, null, null, this, configs);
     } catch (Exception ex) {
-      logger.fatal(LocalizedMessage.create(
-          LocalizedStrings.JCAConnectionManagerImpl_EXCEPTION_CAUGHT_WHILE_INITIALIZING,
-          ex.getLocalizedMessage()), ex);
+      logger.fatal(String.format(
+          "JCAConnectionManagerImpl::Constructor: An exception was caught while initialising due to %s",
+          ex.getLocalizedMessage()),
+          ex);
     }
   }
 
@@ -81,14 +80,13 @@ public class JCAConnectionManagerImpl implements ConnectionManager, ConnectionEv
    *
    * @param javax.resource.spi.ConnectionRequestInfo
    *
-   * @throws ResourceException
    */
+  @Override
   public Object allocateConnection(ManagedConnectionFactory mcf, ConnectionRequestInfo reqInfo)
       throws ResourceException {
     if (!isActive) {
       throw new ResourceException(
-          LocalizedStrings.JCAConnectionManagerImpl_JCACONNECTIONMANAGERIMPLALLOCATECONNECTIONNO_VALID_CONNECTION_AVAILABLE
-              .toLocalizedString());
+          "JCAConnectionManagerImpl::allocateConnection::No valid Connection available");
     }
     ManagedConnection conn = null;
     try {
@@ -96,8 +94,9 @@ public class JCAConnectionManagerImpl implements ConnectionManager, ConnectionEv
     } catch (PoolException ex) {
       // ex.printStackTrace();
       throw new ResourceException(
-          LocalizedStrings.JCAConnectionManagerImpl_JCACONNECTIONMANAGERIMPL_ALLOCATECONNECTION_IN_GETTING_CONNECTION_FROM_POOL_DUE_TO_0
-              .toLocalizedString(ex.getMessage()),
+          String.format(
+              "JCAConnectionManagerImpl:: allocateConnection : in getting connection from pool due to %s",
+              ex.getMessage()),
           ex);
     }
     // Check if a connection is having a transactional context
@@ -122,13 +121,14 @@ public class JCAConnectionManagerImpl implements ConnectionManager, ConnectionEv
       }
     } catch (RollbackException ex) {
       throw new ResourceException(
-          LocalizedStrings.JCAConnectionManagerImpl_JCACONNECTIONMANAGERIMPL_ALLOCATECONNECTION_IN_TRANSACTION_DUE_TO_0
-              .toLocalizedString(ex.getMessage()),
+          String.format("JCAConnectionManagerImpl:: allocateConnection : in transaction due to %s",
+              ex.getMessage()),
           ex);
     } catch (SystemException ex) {
       throw new ResourceException(
-          LocalizedStrings.JCAConnectionManagerImpl_JCACONNECTIONMANAGERIMPL_ALLOCATECONNECTION_SYSTEM_EXCEPTION_DUE_TO_0
-              .toLocalizedString(ex.getMessage()),
+          String.format(
+              "JCAConnectionManagerImpl:: allocateConnection :system exception due to %s",
+              ex.getMessage()),
           ex);
     }
     return conn.getConnection(subject, reqInfo);
@@ -139,6 +139,7 @@ public class JCAConnectionManagerImpl implements ConnectionManager, ConnectionEv
    *
    * @param event ConnectionEvent
    */
+  @Override
   public void connectionErrorOccurred(ConnectionEvent event) {
     if (isActive) {
       // If its an XAConnection
@@ -171,6 +172,7 @@ public class JCAConnectionManagerImpl implements ConnectionManager, ConnectionEv
    *
    * @param event ConnectionEvent Object.
    */
+  @Override
   public void connectionClosed(ConnectionEvent event) {
     if (isActive) {
       ManagedConnection conn = (ManagedConnection) event.getSource();
@@ -197,6 +199,7 @@ public class JCAConnectionManagerImpl implements ConnectionManager, ConnectionEv
   /*
    * Local Transactions are not supported by Gemfire cache.
    */
+  @Override
   public void localTransactionCommitted(ConnectionEvent arg0) {
     // do nothing.
   }
@@ -204,6 +207,7 @@ public class JCAConnectionManagerImpl implements ConnectionManager, ConnectionEv
   /*
    * Local Transactions are not supported by Gemfire cache.
    */
+  @Override
   public void localTransactionRolledback(ConnectionEvent arg0) {
     // do nothing.
   }
@@ -211,6 +215,7 @@ public class JCAConnectionManagerImpl implements ConnectionManager, ConnectionEv
   /*
    * Local Transactions are not supported by Gemfire cache.
    */
+  @Override
   public void localTransactionStarted(ConnectionEvent arg0) {
     // do nothing
   }

@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.BucketServerLocation66;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -27,8 +28,6 @@ import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.SecurityService;
 
 /**
@@ -39,6 +38,7 @@ import org.apache.geode.internal.security.SecurityService;
  */
 public class GetClientPRMetadataCommand66 extends BaseCommand {
 
+  @Immutable
   private static final GetClientPRMetadataCommand66 singleton = new GetClientPRMetadataCommand66();
 
   public static Command getCommand() {
@@ -53,23 +53,21 @@ public class GetClientPRMetadataCommand66 extends BaseCommand {
       throws IOException, ClassNotFoundException, InterruptedException {
     String regionFullPath = null;
     CachedRegionHelper crHelper = serverConnection.getCachedRegionHelper();
-    regionFullPath = clientMessage.getPart(0).getString();
+    regionFullPath = clientMessage.getPart(0).getCachedString();
     String errMessage = "";
     if (regionFullPath == null) {
-      logger.warn(LocalizedMessage
-          .create(LocalizedStrings.GetClientPRMetadata_THE_INPUT_REGION_PATH_IS_NULL));
+      logger.warn("The input region path for the GetClientPRMetadata request is null");
       errMessage =
-          LocalizedStrings.GetClientPRMetadata_THE_INPUT_REGION_PATH_IS_NULL.toLocalizedString();
+          "The input region path for the GetClientPRMetadata request is null";
       writeErrorResponse(clientMessage, MessageType.GET_CLIENT_PR_METADATA_ERROR,
           errMessage.toString(), serverConnection);
       serverConnection.setAsTrue(RESPONDED);
     } else {
       Region region = crHelper.getRegion(regionFullPath);
       if (region == null) {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.GetClientPRMetadata_REGION_NOT_FOUND_FOR_SPECIFIED_REGION_PATH,
-            regionFullPath));
-        errMessage = LocalizedStrings.GetClientPRMetadata_REGION_NOT_FOUND.toLocalizedString()
+        logger.warn("Region was not found during GetClientPRMetadata request for region path : {}",
+            regionFullPath);
+        errMessage = "Region was not found during GetClientPRMetadata request for region path : "
             + regionFullPath;
         writeErrorResponse(clientMessage, MessageType.GET_CLIENT_PR_METADATA_ERROR,
             errMessage.toString(), serverConnection);

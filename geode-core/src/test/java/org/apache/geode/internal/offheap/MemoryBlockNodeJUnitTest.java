@@ -15,7 +15,11 @@
 package org.apache.geode.internal.offheap;
 
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -28,17 +32,14 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
 
 import org.apache.geode.cache.CacheClosedException;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.offheap.MemoryBlock.State;
-import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.internal.serialization.DSCODE;
+import org.apache.geode.util.internal.GeodeGlossary;
 
-@Category(UnitTest.class)
 public class MemoryBlockNodeJUnitTest {
 
   private MemoryAllocatorImpl ma;
@@ -50,7 +51,7 @@ public class MemoryBlockNodeJUnitTest {
 
   @Rule
   public final ProvideSystemProperty myPropertyHasMyValue = new ProvideSystemProperty(
-      DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_DO_EXPENSIVE_VALIDATION", "true");
+      GeodeGlossary.GEMFIRE_PREFIX + "OFF_HEAP_DO_EXPENSIVE_VALIDATION", "true");
 
   @Rule
   public final RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
@@ -324,7 +325,7 @@ public class MemoryBlockNodeJUnitTest {
   public void getDataValueWithIllegalDataTypeCatchesIOException() {
     Object obj = getValue();
     storedObject = createValueAsSerializedStoredObject(obj);
-    storedObject.writeDataByte(0, DSCODE.ILLEGAL);
+    storedObject.writeDataByte(0, DSCODE.ILLEGAL.toByte());
     MemoryBlock mb = new MemoryBlockNode(ma, (MemoryBlock) storedObject);
     ByteArrayOutputStream errContent = new ByteArrayOutputStream();
     System.setErr(new PrintStream(errContent));
@@ -337,7 +338,9 @@ public class MemoryBlockNodeJUnitTest {
     storedObject = createValueAsSerializedStoredObject(obj);
     OffHeapStoredObject spyStoredObject = spy((OffHeapStoredObject) storedObject);
     doReturn("java.lang.Long").when(spyStoredObject).getDataType();
-    doThrow(new CacheClosedException("Unit test forced exception")).when(spyStoredObject)
+    doAnswer((m) -> {
+      throw new CacheClosedException("Unit test forced exception");
+    }).when(spyStoredObject)
         .getRawBytes();
     ByteArrayOutputStream errContent = new ByteArrayOutputStream();
     System.setErr(new PrintStream(errContent));
@@ -353,7 +356,9 @@ public class MemoryBlockNodeJUnitTest {
     storedObject = createValueAsSerializedStoredObject(obj);
     OffHeapStoredObject spyStoredObject = spy((OffHeapStoredObject) storedObject);
     doReturn("java.lang.Long").when(spyStoredObject).getDataType();
-    doThrow(ClassNotFoundException.class).when(spyStoredObject).getRawBytes();
+    doAnswer((m) -> {
+      throw new ClassNotFoundException();
+    }).when(spyStoredObject).getRawBytes();
     ByteArrayOutputStream errContent = new ByteArrayOutputStream();
     System.setErr(new PrintStream(errContent));
     MemoryBlock mb = new MemoryBlockNode(ma, (MemoryBlock) spyStoredObject);

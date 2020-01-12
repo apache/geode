@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.distributed.ClientSocketFactory;
@@ -33,6 +32,7 @@ public class TransportFilterSocketFactory implements ClientSocketFactory {
     return this;
   }
 
+  @Override
   public Socket createSocket(InetAddress address, int port) throws IOException {
     return new TransportFilterSocket(gatewayTransportFilters, address, port);
   }

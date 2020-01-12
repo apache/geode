@@ -12,6 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.cache.client.internal;
 
 import java.util.concurrent.RejectedExecutionException;
@@ -26,9 +27,7 @@ import org.apache.geode.cache.client.internal.PoolImpl.PoolTask;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalDataSerializer.SerializerAttributesHolder;
 import org.apache.geode.internal.cache.EventID;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class DataSerializerRecoveryListener extends EndpointManager.EndpointListenerAdapter {
   private static final Logger logger = LogService.getLogger();
@@ -37,13 +36,13 @@ public class DataSerializerRecoveryListener extends EndpointManager.EndpointList
   protected final InternalPool pool;
   protected final ScheduledExecutorService background;
   protected final long pingInterval;
-  protected final Object recoveryScheduledLock = new Object();
-  protected boolean recoveryScheduled;
+  private final Object recoveryScheduledLock = new Object();
+  private boolean recoveryScheduled;
 
   public DataSerializerRecoveryListener(ScheduledExecutorService background, InternalPool pool) {
-    this.pool = pool;
-    this.pingInterval = pool.getPingInterval();
     this.background = background;
+    this.pool = pool;
+    pingInterval = pool.getPingInterval();
   }
 
   @Override
@@ -116,8 +115,7 @@ public class DataSerializerRecoveryListener extends EndpointManager.EndpointList
       } else {
         try {
           RegisterDataSerializersOp.execute(pool, holders, eventId);
-        } catch (CancelException e) {
-          return;
+        } catch (CancelException ignored) {
         } catch (RejectedExecutionException e) {
           // This is probably because we've started to shut down.
           if (!pool.getCancelCriterion().isCancelInProgress()) {
@@ -132,16 +130,13 @@ public class DataSerializerRecoveryListener extends EndpointManager.EndpointList
           Throwable cause = e.getCause();
           boolean cnfException = false;
           if (cause instanceof ClassNotFoundException) {
-            logger.warn(LocalizedMessage.create(
-                LocalizedStrings.DataSerializerRecoveryListener_ERROR_CLASSNOTFOUNDEXCEPTION,
-                cause.getMessage()));
+            logger.warn("DataSerializerRecoveryTask - Error ClassNotFoundException: {}",
+                cause.getMessage());
             cnfException = true;
           }
 
           if (!recoveryScheduled && !cnfException) {
-            logger.warn(
-                LocalizedMessage.create(
-                    LocalizedStrings.DataSerializerRecoveryListener_ERROR_RECOVERING_DATASERIALIZERS),
+            logger.warn("DataSerializerRecoveryTask - Error recovering dataSerializers: ",
                 e);
             try {
               background.schedule(new RecoveryTask(), pingInterval, TimeUnit.MILLISECONDS);
@@ -154,8 +149,6 @@ public class DataSerializerRecoveryListener extends EndpointManager.EndpointList
             }
 
           }
-        } finally {
-          pool.releaseThreadLocalConnection();
         }
       }
     }

@@ -29,11 +29,11 @@ import org.apache.geode.security.ResourcePermission;
  * then it shouldn't be an InternalFunction.
  */
 public interface InternalFunction<T> extends Function<T>, InternalEntity {
-
   /**
    * InternalFunction do require ResourcePermissions.ALL so that it only allows super users to
    * invoke from Clients. So don't override this in implementations.
    */
+  @Override
   default Collection<ResourcePermission> getRequiredPermissions(String regionName) {
     return Collections.singletonList(ResourcePermissions.ALL);
   }

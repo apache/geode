@@ -18,9 +18,7 @@ package org.apache.geode.cache.lucene;
 import java.util.Collection;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
 
-import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Declarable;
 
 /**

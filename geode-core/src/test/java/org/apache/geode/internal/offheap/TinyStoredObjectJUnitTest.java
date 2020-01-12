@@ -14,22 +14,27 @@
  */
 package org.apache.geode.internal.offheap;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.nio.ByteBuffer;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.compression.Compressor;
 import org.apache.geode.internal.cache.BytesAndBitsForCompactor;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.RegionEntryContext;
-import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.internal.serialization.DSCODE;
 
-@Category(UnitTest.class)
 public class TinyStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
 
   @Override
@@ -346,7 +351,7 @@ public class TinyStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
     byte[] serializedValue = EntryEventImpl.serialize(regionEntryValueAsBytes);
 
     // store -127 (DSCODE.ILLEGAL) - in order the deserialize to throw exception
-    serializedValue[0] = -127;
+    serializedValue[0] = DSCODE.ILLEGAL.toByte();
 
     // encode a un serialized entry value to address
     long encodedAddress =

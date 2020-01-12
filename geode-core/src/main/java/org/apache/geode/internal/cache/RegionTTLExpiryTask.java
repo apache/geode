@@ -15,11 +15,9 @@
 
 package org.apache.geode.internal.cache;
 
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.EntryNotFoundException;
+import org.apache.geode.cache.ExpirationAction;
 
-/**
- *
- */
 class RegionTTLExpiryTask extends RegionExpiryTask {
 
   /** Creates a new instance of RegionTTLExpiryTask */
@@ -37,7 +35,7 @@ class RegionTTLExpiryTask extends RegionExpiryTask {
     // then don't expire again until the full timeout from now.
     ExpirationAction action = getAction();
     if (action == ExpirationAction.INVALIDATE || action == ExpirationAction.LOCAL_INVALIDATE) {
-      if (getLocalRegion().regionInvalid) {
+      if (getLocalRegion().isRegionInvalid()) {
         int timeout = getTTLAttributes().getTimeout();
         if (timeout == 0)
           return 0L;

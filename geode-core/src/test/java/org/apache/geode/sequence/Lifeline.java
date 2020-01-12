@@ -14,11 +14,10 @@
  */
 package org.apache.geode.sequence;
 
-import java.awt.*;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Created by IntelliJ IDEA. User: dsmith Date: Oct 29, 2010 Time: 3:59:02 PM To change this

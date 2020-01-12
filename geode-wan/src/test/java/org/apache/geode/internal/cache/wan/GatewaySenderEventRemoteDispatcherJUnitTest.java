@@ -21,13 +21,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import org.apache.geode.test.junit.categories.UnitTest;
-import org.apache.geode.test.junit.categories.WanTest;
 
 
-@Category(UnitTest.class)
+
 public class GatewaySenderEventRemoteDispatcherJUnitTest {
   @Test
   public void getConnectionShouldShutdownTheAckThreadReaderWhenEventProcessorIsShutDown() {
@@ -42,6 +38,20 @@ public class GatewaySenderEventRemoteDispatcherJUnitTest {
     assertFalse(ackReaderThread.isShutdown());
     when(eventProcessor.isStopped()).thenReturn(true);
     assertNull(dispatcher.getConnection(false));
+    assertTrue(ackReaderThread.isShutdown());
+  }
+
+  @Test
+  public void shuttingDownAckThreadReaderConnectionShouldshutdownTheAckThreadReader() {
+    AbstractGatewaySender sender = mock(AbstractGatewaySender.class);
+    AbstractGatewaySenderEventProcessor eventProcessor =
+        mock(AbstractGatewaySenderEventProcessor.class);
+    GatewaySenderEventRemoteDispatcher dispatcher =
+        new GatewaySenderEventRemoteDispatcher(eventProcessor, null);
+    GatewaySenderEventRemoteDispatcher.AckReaderThread ackReaderThread =
+        dispatcher.new AckReaderThread(sender, "AckReaderThread");
+    dispatcher.setAckReaderThread(ackReaderThread);
+    dispatcher.shutDownAckReaderConnection();
     assertTrue(ackReaderThread.isShutdown());
   }
 }

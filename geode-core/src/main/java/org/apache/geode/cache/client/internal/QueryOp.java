@@ -25,12 +25,12 @@ import org.apache.geode.cache.query.internal.types.StructTypeImpl;
 import org.apache.geode.cache.query.internal.types.TypeUtils;
 import org.apache.geode.cache.query.types.CollectionType;
 import org.apache.geode.cache.query.types.ObjectType;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ObjectPartList;
 import org.apache.geode.internal.cache.tier.sockets.Part;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * Does a region query on a server
@@ -66,7 +66,7 @@ public class QueryOp {
   /**
    * Note: this class is extended by CreateCQWithIROpImpl.
    */
-  protected static class QueryOpImpl extends AbstractOp {
+  public static class QueryOpImpl extends AbstractOp {
     /**
      * @throws org.apache.geode.SerializationException if serialization fails
      */
@@ -106,6 +106,7 @@ public class QueryOp {
       final SelectResults[] resultRef = new SelectResults[1];
       final Exception[] exceptionRef = new Exception[1];
       ChunkHandler ch = new ChunkHandler() {
+        @Override
         public void handle(ChunkedMessage cm) throws Exception {
           Part collectionTypePart = cm.getPart(0);
           Object o = collectionTypePart.getObject();

@@ -21,11 +21,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.process.lang.AvailablePid;
 import org.apache.geode.test.junit.Retry;
-import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.rules.RetryRule;
 
 /**
@@ -35,7 +33,6 @@ import org.apache.geode.test.junit.rules.RetryRule;
  * Tests involving fakePid use {@link RetryRule} because the fakePid may become used by a real
  * process before the test executes.
  */
-@Category(UnitTest.class)
 public class AttachProcessUtilsTest {
 
   private static final int PREFERRED_FAKE_PID = 42;

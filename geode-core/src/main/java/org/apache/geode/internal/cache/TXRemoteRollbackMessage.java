@@ -27,8 +27,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ReliableReplyProcessor21;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class TXRemoteRollbackMessage extends TXMessage {
   private static final Logger logger = LogService.getLogger();
@@ -60,7 +59,7 @@ public class TXRemoteRollbackMessage extends TXMessage {
     InternalCache cache = dm.getCache();
     if (cache == null) {
       throw new CacheClosedException(
-          LocalizedStrings.CacheFactory_A_CACHE_HAS_NOT_YET_BEEN_CREATED.toLocalizedString());
+          "A cache has not yet been created.");
     }
     TXManagerImpl txMgr = cache.getTXMgr();
     if (logger.isDebugEnabled()) {
@@ -76,6 +75,7 @@ public class TXRemoteRollbackMessage extends TXMessage {
     return true;
   }
 
+  @Override
   public int getDSFID() {
     return TX_REMOTE_ROLLBACK_MESSAGE;
   }

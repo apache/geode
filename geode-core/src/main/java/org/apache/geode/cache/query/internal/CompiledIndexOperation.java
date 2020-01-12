@@ -15,11 +15,19 @@
 package org.apache.geode.cache.query.internal;
 
 import java.lang.reflect.Array;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import org.apache.geode.cache.*;
-import org.apache.geode.cache.query.*;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.cache.EntryDestroyedException;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.query.AmbiguousNameException;
+import org.apache.geode.cache.query.FunctionDomainException;
+import org.apache.geode.cache.query.NameResolutionException;
+import org.apache.geode.cache.query.QueryInvocationTargetException;
+import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.TypeMismatchException;
 
 /**
  * Class Description
@@ -53,6 +61,7 @@ public class CompiledIndexOperation extends AbstractCompiledValue implements Map
     return list;
   }
 
+  @Override
   public int getType() {
     return TOK_LBRACK;
   }
@@ -64,6 +73,7 @@ public class CompiledIndexOperation extends AbstractCompiledValue implements Map
     return context.addDependencies(this, this.indexExpr.computeDependencies(context));
   }
 
+  @Override
   public Object evaluate(ExecutionContext context) throws TypeMismatchException,
       FunctionDomainException, NameResolutionException, QueryInvocationTargetException {
     Object rcvr = this.receiver.evaluate(context);
@@ -99,8 +109,7 @@ public class CompiledIndexOperation extends AbstractCompiledValue implements Map
     if ((rcvr instanceof List) || rcvr.getClass().isArray() || (rcvr instanceof String)) {
       if (!(index instanceof Integer)) {
         throw new TypeMismatchException(
-            LocalizedStrings.CompiledIndexOperation_INDEX_EXPRESSION_MUST_BE_AN_INTEGER_FOR_LISTS_OR_ARRAYS
-                .toLocalizedString());
+            "index expression must be an integer for lists or arrays");
       }
     }
     if (rcvr instanceof List) {
@@ -135,8 +144,8 @@ public class CompiledIndexOperation extends AbstractCompiledValue implements Map
      * == null) { return null; } return this.evalRegionAsEntry? entry:entry.getValue(); }
      */
     throw new TypeMismatchException(
-        LocalizedStrings.CompiledIndexOperation_INDEX_EXPRESSION_NOT_SUPPORTED_ON_OBJECTS_OF_TYPE_0
-            .toLocalizedString(rcvr.getClass().getName()));
+        String.format("index expression not supported on objects of type %s",
+            rcvr.getClass().getName()));
   }
 
   // Asif :Function for generating canonicalized expression
@@ -151,8 +160,18 @@ public class CompiledIndexOperation extends AbstractCompiledValue implements Map
     receiver.generateCanonicalizedExpression(clauseBuffer, context);
   }
 
+  @Override
   public CompiledValue getReceiver() {
     return receiver;
+  }
+
+  @Override
+  public boolean hasIdentifierAtLeafNode() {
+    if (this.receiver.getType() == Identifier) {
+      return true;
+    } else {
+      return this.receiver.hasIdentifierAtLeafNode();
+    }
   }
 
   public CompiledValue getExpression() {
@@ -160,16 +179,19 @@ public class CompiledIndexOperation extends AbstractCompiledValue implements Map
   }
 
 
+  @Override
   public CompiledValue getMapLookupKey() {
     return this.indexExpr;
   }
 
 
-  public CompiledValue getRecieverSansIndexArgs() {
+  @Override
+  public CompiledValue getReceiverSansIndexArgs() {
     return this.receiver;
   }
 
 
+  @Override
   public List<CompiledValue> getIndexingKeys() {
     List<CompiledValue> list = new ArrayList<CompiledValue>(1);
     list.add(this.indexExpr);

@@ -55,6 +55,7 @@ public class CompositeConverter extends OpenTypeConverter {
   /**
    * Converts to open value
    */
+  @Override
   Object toNonNullOpenValue(Object value) throws OpenDataException {
     CompositeType ct = (CompositeType) getOpenType();
     if (value instanceof CompositeDataView)
@@ -124,10 +125,12 @@ public class CompositeConverter extends OpenTypeConverter {
     compositeBuilder = foundBuilder;
   }
 
+  @Override
   void checkReconstructible() throws InvalidObjectException {
     makeCompositeBuilder();
   }
 
+  @Override
   public Object fromNonNullOpenValue(Object value) throws InvalidObjectException {
     makeCompositeBuilder();
     return compositeBuilder.fromCompositeData((CompositeData) value, itemNames, getterConverters);

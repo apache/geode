@@ -17,7 +17,6 @@ package org.apache.geode.pdx.internal;
 import java.util.Date;
 
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxInstanceFactory;
@@ -34,12 +33,20 @@ import org.apache.geode.pdx.PdxInstanceFactory;
 public class PdxInstanceFactoryImpl implements PdxInstanceFactory {
 
   private final PdxWriterImpl writer;
+  private final PdxType pdxType;
 
   private boolean created = false;
 
   private PdxInstanceFactoryImpl(String name, boolean expectDomainClass, TypeRegistry pdxRegistry) {
+    if (name == null) {
+      throw new IllegalArgumentException(
+          "Class name can not be null when creating a PdxInstanceFactory");
+    }
+    if (name.isEmpty()) {
+      expectDomainClass = false;
+    }
     PdxOutputStream pdxOutputStream = new PdxOutputStream();
-    PdxType pdxType = new PdxType(name, expectDomainClass);
+    this.pdxType = new PdxType(name, expectDomainClass);
     this.writer = new PdxWriterImpl(pdxType, pdxRegistry, pdxOutputStream);
   }
 
@@ -274,6 +281,12 @@ public class PdxInstanceFactoryImpl implements PdxInstanceFactory {
     TypeRegistry tr = internalCache.getPdxRegistry();
     EnumInfo ei = new EnumInfo(className, enumName, enumOrdinal);
     return ei.getPdxInstance(tr.defineEnum(ei));
+  }
+
+  @Override
+  public PdxInstanceFactory neverDeserialize() {
+    this.pdxType.setNoDomainClass(true);
+    return this;
   }
 
 }

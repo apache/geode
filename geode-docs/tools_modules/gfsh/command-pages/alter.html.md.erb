@@ -31,6 +31,10 @@ Modify an existing <%=vars.product_name%> resource.
 
     Modifies or removes a region from an offline disk-store.
 
+-   **[alter query-service](#topic_alter_query_service)**
+
+    Alter configuration details of the query configuration service.
+
 -   **[alter region](#topic_E74ED23CB60342538B2175C326E7D758)**
 
     Alters the configuration of a region.
@@ -50,7 +54,7 @@ settings to take effect on that server.
 
 ``` pre
 alter async-event-queue --id=value [--batch-size=value] [--batch-time-interval=value]
-    [--max-queue-memory=value] [--if-exists(=value)]
+    [--max-queue-memory=value] [--if-exists(=value)] [--pause-event-processing(=value)]
 ```
 
 The required option, `--id`, identifies the async event queue to be altered.
@@ -64,6 +68,7 @@ The required option, `--id`, identifies the async event queue to be altered.
 | &#8209;&#8209;batch&#8209;time&#8209;interval | Maximum amount of time, in ms, that can elapse before a batch is delivered |
 | &#8209;&#8209;max&#8209;queue&#8209;memory | Maximum amount of memory, in megabytes, that the queue can consume before overflowing to disk |
 | &#8209;&#8209;if&#8209;exists | If the specified async event queue does not exist, gfsh responds with a message to that effect. If this parameter is true, the response is prefixed with the label "Skipping: ". Useful for scripted tests. Default (if the parameter is not specified): false. Default (if the parameter is specified without value): true. |
+| &#8209;&#8209;pause&#8209;event&#8209;processing | Specifies whether event dispatching from the queue to the listener(s) will be paused when the AsyncEventQueue is started. Default (if the parameter is not specified): false. Default (if the parameter is specified without value): true.
 
 **Example Commands:**
 
@@ -105,39 +110,39 @@ The three required options, `--name`, `--region`, and `--disk-dirs`, identify th
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-name</span></td>
 <td><em>Required</em>. Name of the disk-store whose contents will be altered.</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-region</span></td>
 <td><em>Required</em>. Name (including path) of the region using the disk store.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-disk-dirs</span></td>
 <td><em>Required</em>. Directories where the data for the disk store was previously written.</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-compressor</span></td>
 <td>The fully-qualified class name of the compressor to use when compressing region entry values. A value of <code class="ph codeph">none</code> removes the compressor.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-concurrency-level</span></td>
 <td>An estimate of the maximum number of application threads that will concurrently access a region entry. Together with <span class="keyword parmname">\-\-initial-capacity</span> and <span class="keyword parmname">\-\-load-factor</span>, sets the parameters on the underlying <code class="ph codeph">java.util.ConcurrentHashMap</code> used for storing region entries. This attribute does not apply to partitioned regions.</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-enable-statistics</span></td>
-<td>Enables statistics for the region. Valid values are true or false. If the parameter is specified without a value, the value of true is used.</td>
+<td>Enables statistics for the region specified by the <code>--region</code> option. Valid values are true or false. If the parameter is specified without a value, the value of true is used.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-initial-capacity</span></td>
 <td>Together with <span class="keyword parmname">\-\-concurrency-level</span> and <span class="keyword parmname">\-\-load-factor</span>, sets the parameters on the underlying <code class="ph codeph">java.util.ConcurrentHashMap</code> used for storing region entries.</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-load-factor</span></td>
 <td>Together with <span class="keyword parmname">\-\-concurrency-level</span> and <span class="keyword parmname">\-\-initial-capacity</span>, sets the parameters on the underlying <code class="ph codeph">java.util.ConcurrentHashMap</code> used for storing region entries. This must be a floating point number between 0 and 1, inclusive.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-lru-action</span></td>
 <td>Action to take when evicting entries from the region. Valid values are:
 <ul>
@@ -146,7 +151,7 @@ The three required options, `--name`, `--region`, and `--disk-dirs`, identify th
 <li><code class="ph codeph">local-destroy</code></li>
 </ul></td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-lru-algorithm</span></td>
 <td>Least recently used eviction algorithm. Valid types are:
 <ul>
@@ -156,15 +161,15 @@ The three required options, `--name`, `--region`, and `--disk-dirs`, identify th
 <li><code class="ph codeph">lru-memory-size</code></li>
 </ul></td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-lru-limit</span></td>
 <td>Number of entries allowed in the region before eviction occurs.</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-off-heap</span></td>
 <td>Specifies whether the region values are in heap memory or off-heap memory. When true, region values are in off-heap memory. If the parameter is specified without a value, the value of true is used.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-remove</span></td>
 <td>Specifies whether to remove the region from the disk-store. If the parameter is specified without a value, the value of true is used. Note: <span class="keyword parmname">\-\-remove</span> deletes all persistent data for the region. Consider copying the disk store files to a backup before using this option if you might want to retrieve the data at a later date.</td>
 </tr>
@@ -176,6 +181,35 @@ The three required options, `--name`, `--region`, and `--disk-dirs`, identify th
 ``` pre
 alter disk-store --name=DiskStore1 --region=region1 --disk-dirs=/Disks/DiskStore1 --off-heap
 alter disk-store --name=DiskStore1 --region=region1 --disk-dirs=/Disks/DiskStore1 --remove
+```
+
+## <a id="topic_alter_query_service" class="no-quick-link"></a>alter query-service
+
+Alter configuration details of the query configuration service.
+
+**Availability:** Online. You must be connected in <span class="keyword parmname">gfsh</span> to a JMX Manager member to use this command.
+
+**Syntax:**
+
+``` pre
+alter query-service --method-authorizer=value
+    [--authorizer-parameters=value(;value)*] [--force-update(=value)]
+```
+
+**Parameters, alter query-service**
+
+| Name | Description |
+|------|-------------|
+| &#8209;&#8209;method-authorizer       | _Required._ Fully qualified class name of the `MethodInvocationAuthorizer` to be used for query authorization. |
+| &#8209;&#8209;authorizer-parameters   | A **semicolon-separated** list of parameters to be used by the specified `MethodInvocationAuthorizer`. This requires that a method-authorizer option has been specified. |
+| &#8209;&#8209;force-update            | Specifies whether to forcibly update the `MethodInvocationAuthorizer`, even when there are continuous queries registered in the member. Default (if the parameter is not specified): `false`. Default (if the parameter is specified without value): `true`. **Note:** when set as `true`, any registered CQ will pick up the new `MethodInvocationAuthorizer` and invalidate its internal cache; consider checking that the new `MethodInvocationAuthorizer` allows the methods invoked by the CQs before using this option. |
+
+**Example Commands:**
+
+``` pre
+alter query-service --method-authorizer=org.apache.geode.cache.query.security.UnrestrictedMethodAuthorizer
+alter query-service --method-authorizer=org.apache.geode.cache.query.security.UnrestrictedMethodAuthorizer --force-update=true
+alter query-service --method-authorizer=org.apache.geode.cache.query.security.JavaBeanAccessorMethodAuthorizer --authorizer-parameters=java.lang;java.util
 ```
 
 ## <a id="topic_E74ED23CB60342538B2175C326E7D758" class="no-quick-link"></a>alter region
@@ -222,56 +256,56 @@ alter region --name=value [--groups=value(,value)*]
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-async-event-queue-id</span></td>
 <td>IDs of the Async Event Queues that will be used for write-behind operations.</td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-cache-listener</span></td>
 <td>Fully qualified class name of a plug-in to be instantiated for receiving after-event notification of changes to the region and its entries. Any number of cache listeners can be configured. A fully qualified class name may be appended with a JSON specification that will be parsed to become the fields of the parameter to the <code>init()</code> method for a class that implements the <code>Declarable</code> interface.</td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-cache-loader</span></td>
-<td>Fully qualified class name of a plug-in to be instantiated for receiving notification of cache misses in the region. At most, one cache loader can be defined in each member for the region. For distributed regions, a cache loader may be invoked remotely from other members that have the region defined. A fully qualified class name may be appended with a JSON specification that will be parsed to become the fields of the parameter to the <code>init()</code> method for a class that implements the <code>Declarable</code> interface.</td>
+<td>Fully qualified class name of a plug-in to be instantiated for receiving notification of cache misses in the region. At most, one cache loader can be defined in each member for the region. For distributed regions, a cache loader may be invoked remotely from other members that have the region defined. A fully qualified class name may be appended with a JSON specification that will be parsed to become the fields of the parameter to the <code>initialize()</code> method for a class that implements the <code>Declarable</code> interface.</td>
 <td></td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-cache-writer</span></td>
 <td>Fully qualified class name of a plug-in to be instantiated for receiving before-event notification of changes to the region and its entries. The plug-in may cancel the event. At most, one cache writer can be defined in each member for the region. A fully qualified class name may be appended with a JSON specification that will be parsed to become the fields of the parameter to the <code>init()</code> method for a class that implements the <code>Declarable</code> interface.</td>
 <td></td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-enable-cloning</span></td>
 <td><p>Determines how <code class="ph codeph">fromDelta</code> applies deltas to the local cache for delta propagation. When true, the updates are applied to a clone of the value and then the clone is saved to the cache. When false, the value is modified in place in the cache.</p></td>
 <td><code class="ph codeph">false</code></td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-entry-idle-time-expiration</span></td>
 <td>Number of seconds before a region or an entry expires. Specify <code class="ph codeph">-1</code> to indicate that there is no expiration of this type</td>
 <td>-1</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-entry-idle-time-expiration-action</span></td>
 <td>Action that should take place when a region or an entry expires.
 <div class="p">
 Select one of the following expiration actions:
 <table>
 <tbody>
-<tr class="odd">
+<tr>
 <td><span class="keyword option">local-destroy</span></td>
 <td>Removes the region or entry from the local cache, but does not distribute the removal operation to remote members. You cannot use this action on partitioned region entries.</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword option">destroy</span></td>
-<td>Removes the region or entry completely from the cache. Destroy actions are distributed according to the region's distribution settings. Use this option when the region or entry is no longer needed for any application in the distributed system.</td>
+<td>Removes the region or entry completely from the cache. Destroy actions are distributed according to the region's distribution settings. Use this option when the region or entry is no longer needed for any application in the cluster.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword option">invalidate</span></td>
-<td>Default expiration action. Marks an entry or all entries in the region as invalid. Distributes the invalidation according to the region's scope. This is the proper choice when the region or the entry is no longer valid for any application in the distributed system.</td>
+<td>Default expiration action. Marks an entry or all entries in the region as invalid. Distributes the invalidation according to the region's scope. This is the proper choice when the region or the entry is no longer valid for any application in the cluster.</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword option">local-invalidate</span></td>
 <td>Marks an entry or all entries in the region as invalid but does not distribute the operation. You cannot use this action on partitioned region entries. Local region invalidation is only supported for regions that are not configured as replicated regions.</td>
 </tr>
@@ -280,31 +314,31 @@ Select one of the following expiration actions:
 </div></td>
 <td><code class="ph codeph">invalidate</code></td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-entry-time-to-live-expiration</span></td>
 <td>Number of seconds before a region or an entry expires. Specify <code class="ph codeph">-1</code> to indicate that there is no expiration of this type.</td>
 <td>-1</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-entry-time-to-live-expiration-action</span></td>
 <td>Action that should take place when a region or an entry expires.
 <div class="p">
 Select one of the following expiration actions:
 <table>
 <tbody>
-<tr class="odd">
+<tr>
 <td><span class="keyword option">local-destroy</span></td>
 <td>Removes the region or entry from the local cache, but does not distribute the removal operation to remote members. You cannot use this action on partitioned region entries.</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword option">destroy</span></td>
-<td>Removes the region or entry completely from the cache. Destroy actions are distributed according to the region's distribution settings. Use this option when the region or entry is no longer needed for any application in the distributed system.</td>
+<td>Removes the region or entry completely from the cache. Destroy actions are distributed according to the region's distribution settings. Use this option when the region or entry is no longer needed for any application in the cluster.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword option">invalidate</span></td>
-<td>Default expiration action. Marks an entry or all entries in the region as invalid. Distributes the invalidation according to the region's scope. This is the proper choice when the region or the entry is no longer valid for any application in the distributed system.</td>
+<td>Default expiration action. Marks an entry or all entries in the region as invalid. Distributes the invalidation according to the region's scope. This is the proper choice when the region or the entry is no longer valid for any application in the cluster.</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword option">local-invalidate</span></td>
 <td>Marks an entry or all entries in the region as invalid but does not distribute the operation. You cannot use this action on partitioned region entries. Local region invalidation is only supported for regions that are not configured as replicated regions.</td>
 </tr>
@@ -313,61 +347,61 @@ Select one of the following expiration actions:
 </div></td>
 <td><code class="ph codeph">invalidate</code></td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-entry-idle-time-custom-expiry</span></td>
 <td>The name of a class implementing CustomExpiry for entry idle time. Append a JSON string for initialization properties.</td>
 <td></td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-entry-time-to-live-custom-expiry</span></td>
 <td>The name of a class implementing CustomExpiry for entry time to live. Append a JSON string for initialization properties.</td>
 <td></td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-eviction-max</span></td>
 <td>Maximum value for the Eviction Attributes that the eviction algorithm uses to determine when to perform its eviction action. The unit of the maximum value is determined by the Eviction Algorithm.</td>
 <td>0</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-gateway-sender-id</span></td>
 <td>IDs of the Gateway Senders where data is routed.</td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-groups</span></td>
 <td>Group(s) of members where the region will be altered.</td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-name</span></td>
 <td>Required. Name (including path) of the region.</td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-region-idle-time-expiration</span></td>
 <td>Number of seconds before a region or an entry expires. If timeout is not specified, it defaults to zero (which means no expiration).</td>
 <td>-1</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-region-idle-time-expiration-action</span></td>
 <td>Action that should take place when a region or an entry expires.
 <div class="p">
 Select one of the following expiration actions:
 <table>
 <tbody>
-<tr class="odd">
+<tr>
 <td><span class="keyword option">local-destroy</span></td>
 <td>Removes the region or entry from the local cache, but does not distribute the removal operation to remote members. You cannot use this action on partitioned region entries.</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword option">destroy</span></td>
-<td>Removes the region or entry completely from the cache. Destroy actions are distributed according to the region's distribution settings. Use this option when the region or entry is no longer needed for any application in the distributed system.</td>
+<td>Removes the region or entry completely from the cache. Destroy actions are distributed according to the region's distribution settings. Use this option when the region or entry is no longer needed for any application in the cluster.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword option">invalidate</span></td>
-<td>Default expiration action. Marks an entry or all entries in the region as invalid. Distributes the invalidation according to the region's scope. This is the proper choice when the region or the entry is no longer valid for any application in the distributed system.</td>
+<td>Default expiration action. Marks an entry or all entries in the region as invalid. Distributes the invalidation according to the region's scope. This is the proper choice when the region or the entry is no longer valid for any application in the cluster.</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword option">local-invalidate</span></td>
 <td>Marks an entry or all entries in the region as invalid but does not distribute the operation. You cannot use this action on partitioned region entries. Local region invalidation is only supported for regions that are not configured as replicated regions.</td>
 </tr>
@@ -376,31 +410,31 @@ Select one of the following expiration actions:
 </div></td>
 <td><code class="ph codeph">invalidate</code></td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-region-time-to-live-expiration </span></td>
 <td>Number of seconds before a region or an entry expires. If timeout is not specified, it defaults to zero (which means no expiration).</td>
 <td>-1</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-region-time-to-live-expiration-action</span></td>
 <td>Action that should take place when a region or an entry expires.
 <div class="p">
 Select one of the following expiration actions:
 <table>
 <tbody>
-<tr class="odd">
+<tr>
 <td><span class="keyword option">local-destroy</span></td>
 <td>Removes the region or entry from the local cache, but does not distribute the removal operation to remote members. You cannot use this action on partitioned region entries.</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword option">destroy</span></td>
-<td>Removes the region or entry completely from the cache. Destroy actions are distributed according to the region's distribution settings. Use this option when the region or entry is no longer needed for any application in the distributed system.</td>
+<td>Removes the region or entry completely from the cache. Destroy actions are distributed according to the region's distribution settings. Use this option when the region or entry is no longer needed for any application in the cluster.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword option">invalidate</span></td>
-<td>Default expiration action. Marks an entry or all entries in the region as invalid. Distributes the invalidation according to the region's scope. This is the proper choice when the region or the entry is no longer valid for any application in the distributed system.</td>
+<td>Default expiration action. Marks an entry or all entries in the region as invalid. Distributes the invalidation according to the region's scope. This is the proper choice when the region or the entry is no longer valid for any application in the cluster.</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword option">local-invalidate</span></td>
 <td>Marks an entry or all entries in the region as invalid but does not distribute the operation. You cannot use this action on partitioned region entries. Local region invalidation is only supported for regions that are not configured as replicated regions.</td>
 </tr>
@@ -462,78 +496,78 @@ alter runtime [--members=value(,value)*] [--groups=value(,value)*]
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-members</span></td>
 <td>Name or ID of the member(s) whose configuration is to be altered at runtime. If you do not specify this parameter, the configuration properties are modified for all cluster members using the cluster configuration service.</td>
 <td>If not specified, all members using the cluster configuration service</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-groups</span></td>
 <td>Name of the group(s) whose members's runtime configuration is to be altered. If you do not specify this parameter, the configuration properties are modified for all cluster members using the cluster configuration service.</td>
 <td>If not specified, all members using the cluster configuration service</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-archive-disk-space-limit</span></td>
 <td>Archive disk space limit. Maximum size (in megabytes) of all inactive statistic archive files combined. If this limit is exceeded, inactive archive files are deleted, oldest first, until the total size is within the limit. If set to zero, disk space use is unlimited. Valid values are (in megabytes): 0 - 1000000.</td>
 <td>0</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-archive-file-size-limit</span></td>
 <td>Archive file size limit. The maximum size (in megabytes) of a single statistic archive file. Once this limit is exceeded, a new statistic archive file is created, and the current archive file becomes inactive. If set to zero, file size is unlimited. Valid values are (in megabytes): 0 - 1000000.</td>
 <td>0</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-log-disk-space-limit </span></td>
 <td>Log disk space limit. Maximum size in megabytes of all inactive log files combined. If this limit is exceeded, inactive log files are deleted, oldest first, until the total size is within the limit. If set to zero, disk space use is unlimited. Valid values are (in megabytes): 0 - 1000000.</td>
 <td>0</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-log-file-size-limit</span></td>
 <td>Log file size limit. Maximum size in megabytes of a log file before it is closed and logging rolls on to a new (child) log file. If set to zero, log rolling is disabled. Valid values are (in megabytes): 0 - 1000000.</td>
 <td>0</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-loglevel </span></td>
 <td>The new log level. This option is required and you must specify a value.
 Valid values are: `ALL`, `TRACE`, `DEBUG`, `INFO`, `WARN`, `ERROR`, `FATAL`, `OFF`. 
 <td>INFO</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-statistic-archive-file </span></td>
-<td>The file to which the running system member writes statistic samples. For example: &quot;StatisticsArchiveFile.gfs&quot;. An empty string disables archiving. Adding .gz suffix to the file name causes it to be compressed. See <a href="../../../managing/statistics/chapter_overview.html">Statistics</a>.</td>
+<td>The file to which the running system member writes statistic samples. For example: &quot;StatisticsArchiveFile.gfs&quot;. Must be defined to store the archiving to a file. Adding the <code>.gz</code> suffix to the file name causes it to be compressed. See <a href="../../../managing/statistics/chapter_overview.html">Statistics</a>.</td>
 <td><em>not set</em></td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-statistic-sample-rate </span></td>
 <td>Statistic sampling rate. Valid values are (in milliseconds): 100 - 60000. See <a href="../../../managing/statistics/chapter_overview.html">Statistics</a>.</td>
 <td>1000</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-enable-statistics</span></td>
-<td>Whether statistic sampling should be enabled. Valid values are: <code class="ph codeph">true</code> and <code class="ph codeph">false</code>. See <a href="../../../managing/statistics/chapter_overview.html">Statistics</a>.</td>
+<td>Whether statistic sampling should be enabled. Specify <code>--statistic-archive-file</code> to store the statistics to a file. Valid values are: <code class="ph codeph">true</code> and <code class="ph codeph">false</code>. See <a href="../../../managing/statistics/chapter_overview.html">Statistics</a>.</td>
 <td>false</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-copy-on-read</span></td>
 <td>True or false. Sets the &quot;copy on read&quot; feature for cache read operations. See <a href="../../../basic_config/data_entries_custom_classes/managing_data_entries.html#managing_data_entries__section_A0E0F889AC344EFA8DF304FD64418809">Safe Entry Modification</a>.</td>
 <td>false</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-lock-lease</span></td>
 <td>Sets the length, in seconds, of distributed lock leases obtained by this cache. See <a href="../../../managing/monitor_tune/performance_controls_setting_cache_timeouts.html#perf">Setting Cache Timeouts</a>.</td>
 <td>120</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-lock-timeout</span></td>
 <td>Sets the number of seconds a cache operation may wait to obtain a distributed lock lease before timing out.  See <a href="../../../managing/monitor_tune/performance_controls_setting_cache_timeouts.html#perf">Setting Cache Timeouts</a>.</td>
 <td>60</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-message-sync-interval</span></td>
 <td>Sets the frequency (in seconds) at which a message will be sent by the primary cache-server node to all the secondary cache-server nodes to remove the events which have already been dispatched from the queue. See <a href="../../../developing/events/ha_event_messaging_whats_next.html#ha_event_messaging_whats_next__section_741052B413F24F47A14F5B7D7955F0AA">Change Server Queue Synchronization Frequency</a>.</td>
 <td>1</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-search-timeout</span></td>
 <td>Sets the number of seconds a cache get operation can spend searching for a value. See <a href="../../../managing/monitor_tune/performance_controls_setting_cache_timeouts.html#perf">Setting Cache Timeouts</a>.</td>
 <td>300</td>

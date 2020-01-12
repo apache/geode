@@ -59,7 +59,6 @@ public class FunctionException extends GemFireException {
   /**
    * Creates new function exception with given error message.
    *
-   * @param msg
    * @since GemFire 6.0
    */
   public FunctionException(String msg) {
@@ -69,8 +68,6 @@ public class FunctionException extends GemFireException {
   /**
    * Creates new function exception with given error message and optional nested exception.
    *
-   * @param msg
-   * @param cause
    * @since GemFire 6.0
    */
   public FunctionException(String msg, Throwable cause) {
@@ -80,7 +77,6 @@ public class FunctionException extends GemFireException {
   /**
    * Creates new function exception given throwable as a cause and source of error message.
    *
-   * @param cause
    * @since GemFire 6.0
    */
   public FunctionException(Throwable cause) {
@@ -90,7 +86,6 @@ public class FunctionException extends GemFireException {
   /**
    * Adds exceptions thrown from different nodes to a ds
    *
-   * @param cause
    * @since GemFire 6.5
    */
   public void addException(Throwable cause) {

@@ -63,5 +63,6 @@ public interface ServerLoadProbe extends CacheCallback {
   /**
    * Signals that a cache server using this load probe has been closed.
    */
+  @Override
   void close();
 }

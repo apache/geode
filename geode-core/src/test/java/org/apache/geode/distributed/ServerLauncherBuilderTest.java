@@ -17,27 +17,28 @@ package org.apache.geode.distributed;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import joptsimple.OptionException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ServerLauncher.Builder;
 import org.apache.geode.distributed.ServerLauncher.Command;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.internal.process.ControllableProcess;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Unit tests for {@link ServerLauncher.Builder}. Extracted from {@link ServerLauncherTest}.
  */
-@Category(UnitTest.class)
 public class ServerLauncherBuilderTest {
 
   private InetAddress localHost;
@@ -47,28 +48,28 @@ public class ServerLauncherBuilderTest {
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
   @Before
-  public void before() throws Exception {
+  public void before() throws UnknownHostException {
     localHost = InetAddress.getLocalHost();
     localHostName = localHost.getCanonicalHostName();
   }
 
   @Test
-  public void defaultCommandIsUnspecified() throws Exception {
+  public void defaultCommandIsUnspecified() {
     assertThat(Builder.DEFAULT_COMMAND).isEqualTo(Command.UNSPECIFIED);
   }
 
   @Test
-  public void getCommandReturnsUnspecifiedByDefault() throws Exception {
+  public void getCommandReturnsUnspecifiedByDefault() {
     assertThat(new Builder().getCommand()).isEqualTo(Builder.DEFAULT_COMMAND);
   }
 
   @Test
-  public void getCriticalHeapPercentageReturnsNullByDefault() throws Exception {
+  public void getCriticalHeapPercentageReturnsNullByDefault() {
     assertThat(new Builder().getCriticalHeapPercentage()).isNull();
   }
 
   @Test
-  public void getEvictionHeapPercentageReturnsNullByDefault() throws Exception {
+  public void getEvictionHeapPercentageReturnsNullByDefault() {
     assertThat(new Builder().getEvictionHeapPercentage()).isNull();
   }
 
@@ -78,169 +79,169 @@ public class ServerLauncherBuilderTest {
   }
 
   @Test
-  public void getHostNameForClientsReturnsNullByDefault() throws Exception {
+  public void getHostNameForClientsReturnsNullByDefault() {
     Builder builder = new Builder();
 
     assertThat(builder.getHostNameForClients()).isNull();
   }
 
   @Test
-  public void getMaxConnectionsReturnsNullByDefault() throws Exception {
+  public void getMaxConnectionsReturnsNullByDefault() {
     assertThat(new Builder().getMaxConnections()).isNull();
   }
 
   @Test
-  public void getMaxMessageCountReturnsNullByDefault() throws Exception {
+  public void getMaxMessageCountReturnsNullByDefault() {
     assertThat(new Builder().getMaxMessageCount()).isNull();
   }
 
   @Test
-  public void getMaxThreadsReturnsNullByDefault() throws Exception {
+  public void getMaxThreadsReturnsNullByDefault() {
     assertThat(new Builder().getMaxThreads()).isNull();
   }
 
   @Test
-  public void getMessageTimeToLiveReturnsNullByDefault() throws Exception {
+  public void getMessageTimeToLiveReturnsNullByDefault() {
     assertThat(new Builder().getMessageTimeToLive()).isNull();
   }
 
   @Test
-  public void getMemberNameReturnsNullByDefault() throws Exception {
+  public void getMemberNameReturnsNullByDefault() {
     assertThat(new Builder().getMemberName()).isNull();
   }
 
   @Test
-  public void getPidReturnsNullByDefault() throws Exception {
+  public void getPidReturnsNullByDefault() {
     assertThat(new Builder().getPid()).isNull();
   }
 
   @Test
-  public void getRedirectOutputReturnsNullByDefault() throws Exception {
+  public void getRedirectOutputReturnsNullByDefault() {
     assertThat(new Builder().getRedirectOutput()).isNull();
   }
 
   @Test
-  public void getServerBindAddressReturnsNullByDefault() throws Exception {
+  public void getServerBindAddressReturnsNullByDefault() {
     assertThat(new Builder().getServerBindAddress()).isNull();
   }
 
   @Test
-  public void getServerPortReturnsDefaultPortByDefault() throws Exception {
+  public void getServerPortReturnsDefaultPortByDefault() {
     assertThat(new Builder().getServerPort()).isEqualTo(Integer.valueOf(CacheServer.DEFAULT_PORT));
   }
 
   @Test
-  public void getSocketBufferSizeReturnsNullByDefault() throws Exception {
+  public void getSocketBufferSizeReturnsNullByDefault() {
     assertThat(new Builder().getSocketBufferSize()).isNull();
   }
 
   @Test
-  public void setCommandReturnsBuilderInstance() throws Exception {
+  public void setCommandReturnsBuilderInstance() {
     Builder builder = new Builder();
 
     assertThat(builder.setCommand(Command.STATUS)).isSameAs(builder);
   }
 
   @Test
-  public void setCriticalHeapPercentageReturnsBuilderInstance() throws Exception {
+  public void setCriticalHeapPercentageReturnsBuilderInstance() {
     Builder builder = new Builder();
 
     assertThat(builder.setCriticalHeapPercentage(55.5f)).isSameAs(builder);
   }
 
   @Test
-  public void setEvictionHeapPercentageReturnsBuilderInstance() throws Exception {
+  public void setEvictionHeapPercentageReturnsBuilderInstance() {
     Builder builder = new Builder();
 
     assertThat(builder.setEvictionHeapPercentage(55.55f)).isSameAs(builder);
   }
 
   @Test
-  public void setForceReturnsBuilderInstance() throws Exception {
+  public void setForceReturnsBuilderInstance() {
     Builder builder = new Builder();
 
     assertThat(builder.setForce(true)).isSameAs(builder);
   }
 
   @Test
-  public void setHostNameForClientsReturnsBuilderInstance() throws Exception {
+  public void setHostNameForClientsReturnsBuilderInstance() {
     Builder builder = new Builder();
 
     assertThat(builder.setHostNameForClients("Pegasus")).isSameAs(builder);
   }
 
   @Test
-  public void setMaxConnectionsReturnsBuilderInstance() throws Exception {
+  public void setMaxConnectionsReturnsBuilderInstance() {
     Builder builder = new Builder();
 
     assertThat(builder.setMaxConnections(1000)).isSameAs(builder);
   }
 
   @Test
-  public void setMaxMessageCountReturnsBuilderInstance() throws Exception {
+  public void setMaxMessageCountReturnsBuilderInstance() {
     Builder builder = new Builder();
 
     assertThat(builder.setMaxMessageCount(50)).isSameAs(builder);
   }
 
   @Test
-  public void setMaxThreadsReturnsBuilderInstance() throws Exception {
+  public void setMaxThreadsReturnsBuilderInstance() {
     Builder builder = new Builder();
 
     assertThat(builder.setMaxThreads(16)).isSameAs(builder);
   }
 
   @Test
-  public void setMemberNameReturnsBuilderInstance() throws Exception {
+  public void setMemberNameReturnsBuilderInstance() {
     Builder builder = new Builder();
 
     assertThat(builder.setMemberName("serverOne")).isSameAs(builder);
   }
 
   @Test
-  public void setPidReturnsBuilderInstance() throws Exception {
+  public void setPidReturnsBuilderInstance() {
     Builder builder = new Builder();
 
     assertThat(builder.setPid(0)).isSameAs(builder);
   }
 
   @Test
-  public void setServerBindAddressReturnsBuilderInstance() throws Exception {
+  public void setServerBindAddressReturnsBuilderInstance() {
     Builder builder = new Builder();
 
     assertThat(builder.setServerBindAddress(null)).isSameAs(builder);
   }
 
   @Test
-  public void setRedirectOutputReturnsBuilderInstance() throws Exception {
+  public void setRedirectOutputReturnsBuilderInstance() {
     Builder builder = new Builder();
 
     assertThat(builder.setRedirectOutput(Boolean.TRUE)).isSameAs(builder);
   }
 
   @Test
-  public void setServerPortReturnsBuilderInstance() throws Exception {
+  public void setServerPortReturnsBuilderInstance() {
     Builder builder = new Builder();
 
     assertThat(builder.setServerPort(null)).isSameAs(builder);
   }
 
   @Test
-  public void setMessageTimeToLiveReturnsBuilderInstance() throws Exception {
+  public void setMessageTimeToLiveReturnsBuilderInstance() {
     Builder builder = new Builder();
 
     assertThat(builder.setMessageTimeToLive(30000)).isSameAs(builder);
   }
 
   @Test
-  public void setSocketBufferSizeReturnsBuilderInstance() throws Exception {
+  public void setSocketBufferSizeReturnsBuilderInstance() {
     Builder builder = new Builder();
 
     assertThat(builder.setSocketBufferSize(32768)).isSameAs(builder);
   }
 
   @Test
-  public void setCommandWithNullResultsInDefaultCommand() throws Exception {
+  public void setCommandWithNullResultsInDefaultCommand() {
     Builder builder = new Builder();
 
     new Builder().setCommand(null);
@@ -249,7 +250,7 @@ public class ServerLauncherBuilderTest {
   }
 
   @Test
-  public void setCommandToStatusResultsInStatus() throws Exception {
+  public void setCommandToStatusResultsInStatus() {
     Builder builder = new Builder();
 
     builder.setCommand(Command.STATUS);
@@ -258,7 +259,7 @@ public class ServerLauncherBuilderTest {
   }
 
   @Test
-  public void setCriticalHeapPercentageToPercentileUsesValue() throws Exception {
+  public void setCriticalHeapPercentageToPercentileUsesValue() {
     Builder builder = new Builder();
 
     builder.setCriticalHeapPercentage(55.5f);
@@ -267,7 +268,7 @@ public class ServerLauncherBuilderTest {
   }
 
   @Test
-  public void setCriticalHeapPercentageToNullResultsInNull() throws Exception {
+  public void setCriticalHeapPercentageToNullResultsInNull() {
     Builder builder = new Builder();
 
     builder.setCriticalHeapPercentage(null);
@@ -276,19 +277,19 @@ public class ServerLauncherBuilderTest {
   }
 
   @Test
-  public void setCriticalHeapPercentageAbove100ThrowsIllegalArgumentException() throws Exception {
+  public void setCriticalHeapPercentageAbove100ThrowsIllegalArgumentException() {
     assertThatThrownBy(() -> new Builder().setCriticalHeapPercentage(100.01f))
         .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
-  public void setCriticalHeapPercentageBelowZeroThrowsIllegalArgumentException() throws Exception {
+  public void setCriticalHeapPercentageBelowZeroThrowsIllegalArgumentException() {
     assertThatThrownBy(() -> new Builder().setCriticalHeapPercentage(-0.01f))
         .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
-  public void setEvictionHeapPercentageToPercentileUsesValue() throws Exception {
+  public void setEvictionHeapPercentageToPercentileUsesValue() {
     Builder builder = new Builder();
 
     builder.setEvictionHeapPercentage(55.55f);
@@ -297,7 +298,7 @@ public class ServerLauncherBuilderTest {
   }
 
   @Test
-  public void setEvictionHeapPercentageToNullResultsInNull() throws Exception {
+  public void setEvictionHeapPercentageToNullResultsInNull() {
     Builder builder = new Builder();
 
     builder.setEvictionHeapPercentage(null);
@@ -306,19 +307,19 @@ public class ServerLauncherBuilderTest {
   }
 
   @Test
-  public void setEvictionHeapPercentageAboveO100ThrowsIllegalArgumentException() throws Exception {
+  public void setEvictionHeapPercentageAboveO100ThrowsIllegalArgumentException() {
     assertThatThrownBy(() -> new Builder().setEvictionHeapPercentage(101.0f))
         .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
-  public void setEvictionHeapPercentageBelowZeroThrowsIllegalArgumentException() throws Exception {
+  public void setEvictionHeapPercentageBelowZeroThrowsIllegalArgumentException() {
     assertThatThrownBy(() -> new Builder().setEvictionHeapPercentage(-10.0f))
         .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
-  public void setForceToTrueUsesValue() throws Exception {
+  public void setForceToTrueUsesValue() {
     Builder builder = new Builder();
 
     builder.setForce(true);
@@ -327,7 +328,7 @@ public class ServerLauncherBuilderTest {
   }
 
   @Test
-  public void setHostNameForClientsToStringUsesValue() throws Exception {
+  public void setHostNameForClientsToStringUsesValue() {
     Builder builder = new Builder();
 
     builder.setHostNameForClients("Pegasus");
@@ -354,7 +355,7 @@ public class ServerLauncherBuilderTest {
   }
 
   @Test
-  public void setMaxConnectionsToPositiveIntegerUsesValue() throws Exception {
+  public void setMaxConnectionsToPositiveIntegerUsesValue() {
     Builder builder = new Builder();
 
     builder.setMaxConnections(1000);
@@ -363,7 +364,7 @@ public class ServerLauncherBuilderTest {
   }
 
   @Test
-  public void setMaxConnectionsToNullResultsInNull() throws Exception {
+  public void setMaxConnectionsToNullResultsInNull() {
     Builder builder = new Builder();
 
     builder.setMaxConnections(null);
@@ -372,13 +373,13 @@ public class ServerLauncherBuilderTest {
   }
 
   @Test
-  public void setMaxConnectionsToNegativeValueThrowsIllegalArgumentException() throws Exception {
+  public void setMaxConnectionsToNegativeValueThrowsIllegalArgumentException() {
     assertThatThrownBy(() -> new Builder().setMaxConnections(-10))
         .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
-  public void setMaxMessageCountToPositiveIntegerUsesValue() throws Exception {
+  public void setMaxMessageCountToPositiveIntegerUsesValue() {
     Builder builder = new Builder();
 
     builder.setMaxMessageCount(50);
@@ -387,7 +388,7 @@ public class ServerLauncherBuilderTest {
   }
 
   @Test
-  public void setMaxMessageCountToNullResultsInNull() throws Exception {
+  public void setMaxMessageCountToNullResultsInNull() {
     Builder builder = new Builder();
 
     builder.setMaxMessageCount(null);
@@ -396,13 +397,13 @@ public class ServerLauncherBuilderTest {
   }
 
   @Test
-  public void setMaxMessageCountToZeroResultsInIllegalArgumentException() throws Exception {
+  public void setMaxMessageCountToZeroResultsInIllegalArgumentException() {
     assertThatThrownBy(() -> new Builder().setMaxMessageCount(0))
         .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
-  public void setMaxThreadsToPositiveIntegerUsesValue() throws Exception {
+  public void setMaxThreadsToPositiveIntegerUsesValue() {
     Builder builder = new Builder();
 
     builder.setMaxThreads(16);
@@ -411,7 +412,7 @@ public class ServerLauncherBuilderTest {
   }
 
   @Test
-  public void setMaxThreadsToNullResultsInNull() throws Exception {
+  public void setMaxThreadsToNullResultsInNull() {
     Builder builder = new Builder();
 
     builder.setMaxThreads(null);
@@ -420,13 +421,13 @@ public class ServerLauncherBuilderTest {
   }
 
   @Test
-  public void setMaxThreadsToNegativeValueThrowsIllegalArgumentException() throws Exception {
+  public void setMaxThreadsToNegativeValueThrowsIllegalArgumentException() {
     assertThatThrownBy(() -> new Builder().setMaxThreads(-4))
         .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
-  public void setMemberNameToStringUsesValue() throws Exception {
+  public void setMemberNameToStringUsesValue() {
     Builder builder = new Builder();
 
     builder.setMemberName("serverOne");
@@ -435,25 +436,25 @@ public class ServerLauncherBuilderTest {
   }
 
   @Test
-  public void setMemberNameToBlankStringThrowsIllegalArgumentException() throws Exception {
+  public void setMemberNameToBlankStringThrowsIllegalArgumentException() {
     assertThatThrownBy(() -> new Builder().setMemberName("  "))
         .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
-  public void setMemberNameToEmptyStringThrowsIllegalArgumentException() throws Exception {
+  public void setMemberNameToEmptyStringThrowsIllegalArgumentException() {
     assertThatThrownBy(() -> new Builder().setMemberName(""))
         .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
-  public void setMemberNameToNullStringThrowsIllegalArgumentException() throws Exception {
+  public void setMemberNameToNullStringThrowsIllegalArgumentException() {
     assertThatThrownBy(() -> new Builder().setMemberName(null))
         .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
-  public void setMessageTimeToLiveToPositiveIntegerUsesValue() throws Exception {
+  public void setMessageTimeToLiveToPositiveIntegerUsesValue() {
     Builder builder = new Builder();
 
     builder.setMessageTimeToLive(30000);
@@ -462,7 +463,7 @@ public class ServerLauncherBuilderTest {
   }
 
   @Test
-  public void setMessageTimeToNullResultsInNull() throws Exception {
+  public void setMessageTimeToNullResultsInNull() {
     Builder builder = new Builder();
 
     builder.setMessageTimeToLive(null);
@@ -471,13 +472,13 @@ public class ServerLauncherBuilderTest {
   }
 
   @Test
-  public void setMessageTimeToLiveToZeroThrowsIllegalArgumentException() throws Exception {
+  public void setMessageTimeToLiveToZeroThrowsIllegalArgumentException() {
     assertThatThrownBy(() -> new Builder().setMessageTimeToLive(0))
         .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
-  public void setPidToZeroOrGreaterUsesValue() throws Exception {
+  public void setPidToZeroOrGreaterUsesValue() {
     Builder builder = new Builder();
 
     builder.setPid(0);
@@ -494,7 +495,7 @@ public class ServerLauncherBuilderTest {
   }
 
   @Test
-  public void setPidToNullResultsInNull() throws Exception {
+  public void setPidToNullResultsInNull() {
     Builder builder = new Builder();
 
     builder.setPid(null);
@@ -503,12 +504,12 @@ public class ServerLauncherBuilderTest {
   }
 
   @Test
-  public void setPidToNegativeValueThrowsIllegalArgumentException() throws Exception {
+  public void setPidToNegativeValueThrowsIllegalArgumentException() {
     assertThatThrownBy(() -> new Builder().setPid(-1)).isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
-  public void setServerBindAddressToNullResultsInNull() throws Exception {
+  public void setServerBindAddressToNullResultsInNull() {
     Builder builder = new Builder();
 
     builder.setServerBindAddress(null);
@@ -517,7 +518,7 @@ public class ServerLauncherBuilderTest {
   }
 
   @Test
-  public void setServerBindAddressToEmptyStringResultsInNull() throws Exception {
+  public void setServerBindAddressToEmptyStringResultsInNull() {
     Builder builder = new Builder();
 
     builder.setServerBindAddress("");
@@ -526,7 +527,7 @@ public class ServerLauncherBuilderTest {
   }
 
   @Test
-  public void setServerBindAddressToBlankStringResultsInNull() throws Exception {
+  public void setServerBindAddressToBlankStringResultsInNull() {
     Builder builder = new Builder();
 
     builder.setServerBindAddress("  ");
@@ -535,7 +536,7 @@ public class ServerLauncherBuilderTest {
   }
 
   @Test
-  public void setServerBindAddressToCanonicalLocalHostUsesValue() throws Exception {
+  public void setServerBindAddressToCanonicalLocalHostUsesValue() {
     Builder builder = new Builder();
 
     builder.setServerBindAddress(localHostName);
@@ -544,7 +545,7 @@ public class ServerLauncherBuilderTest {
   }
 
   @Test
-  public void setServerBindAddressToLocalHostNameUsesValue() throws Exception {
+  public void setServerBindAddressToLocalHostNameUsesValue() throws UnknownHostException {
     String host = InetAddress.getLocalHost().getHostName();
 
     Builder builder = new Builder().setServerBindAddress(host);
@@ -553,20 +554,20 @@ public class ServerLauncherBuilderTest {
   }
 
   @Test
-  public void setServerBindAddressToUnknownHostThrowsIllegalArgumentException() throws Exception {
-    assertThatThrownBy(() -> new Builder().setServerBindAddress("badHostName.badCompany.com"))
+  public void setServerBindAddressToUnknownHostThrowsIllegalArgumentException() {
+    assertThatThrownBy(() -> new Builder().setServerBindAddress("badHostName.example.com"))
         .isInstanceOf(IllegalArgumentException.class)
         .hasCauseInstanceOf(UnknownHostException.class);
   }
 
   @Test
-  public void setServerBindAddressToNonLocalHostThrowsIllegalArgumentException() throws Exception {
+  public void setServerBindAddressToNonLocalHostThrowsIllegalArgumentException() {
     assertThatThrownBy(() -> new Builder().setServerBindAddress("yahoo.com"))
         .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
-  public void setServerPortToNullResultsInDefaultPort() throws Exception {
+  public void setServerPortToNullResultsInDefaultPort() {
     Builder builder = new Builder();
 
     builder.setServerPort(null);
@@ -576,7 +577,7 @@ public class ServerLauncherBuilderTest {
 
 
   @Test
-  public void setServerPortToZeroOrGreaterUsesValue() throws Exception {
+  public void setServerPortToZeroOrGreaterUsesValue() {
     Builder builder = new Builder();
 
     builder.setServerPort(0);
@@ -605,19 +606,19 @@ public class ServerLauncherBuilderTest {
   }
 
   @Test
-  public void setServerPortAboveMaxValueThrowsIllegalArgumentException() throws Exception {
+  public void setServerPortAboveMaxValueThrowsIllegalArgumentException() {
     assertThatThrownBy(() -> new Builder().setServerPort(65536))
         .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
-  public void setServerPortToNegativeValueThrowsIllegalArgumentException() throws Exception {
+  public void setServerPortToNegativeValueThrowsIllegalArgumentException() {
     assertThatThrownBy(() -> new Builder().setServerPort(-1))
         .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
-  public void setSocketBufferSizeToPositiveIntegerUsesValue() throws Exception {
+  public void setSocketBufferSizeToPositiveIntegerUsesValue() {
     Builder builder = new Builder();
 
     builder.setSocketBufferSize(32768);
@@ -626,7 +627,7 @@ public class ServerLauncherBuilderTest {
   }
 
   @Test
-  public void setSocketBufferSizeToNullResultsInNull() throws Exception {
+  public void setSocketBufferSizeToNullResultsInNull() {
     Builder builder = new Builder();
 
     builder.setSocketBufferSize(null);
@@ -635,13 +636,13 @@ public class ServerLauncherBuilderTest {
   }
 
   @Test
-  public void setSocketBufferSizeToNegativeValueThrowsIllegalArgumentException() throws Exception {
+  public void setSocketBufferSizeToNegativeValueThrowsIllegalArgumentException() {
     assertThatThrownBy(() -> new Builder().setSocketBufferSize(-8192))
         .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
-  public void parseArgumentsWithForceSetsForceToTrue() throws Exception {
+  public void parseArgumentsWithForceSetsForceToTrue() {
     Builder builder = new Builder();
 
     builder.parseArguments("start", "--force");
@@ -657,7 +658,7 @@ public class ServerLauncherBuilderTest {
   }
 
   @Test
-  public void parseArgumentsParsesValuesSeparatedWithCommas() throws Exception {
+  public void parseArgumentsParsesValuesSeparatedWithCommas() throws UnknownHostException {
     // given: fresh builder
     Builder builder = new Builder();
 
@@ -665,7 +666,9 @@ public class ServerLauncherBuilderTest {
     builder.parseArguments("start", "serverOne", "--assign-buckets", "--disable-default-server",
         "--debug", "--force", "--rebalance", "--redirect-output", "--pid", "1234",
         "--server-bind-address", InetAddress.getLocalHost().getHostAddress(), "--server-port",
-        "11235", "--hostname-for-clients", "192.168.99.100");
+        "11235", "--hostname-for-clients", "192.168.99.100", "--max-connections", "300",
+        "--max-message-count", "1000", "--message-time-to-live", "10000", "--socket-buffer-size",
+        "1024", "--max-threads", "900");
 
     // then: getters should return parsed values
     assertThat(builder.getCommand()).isEqualTo(Command.START);
@@ -681,10 +684,15 @@ public class ServerLauncherBuilderTest {
     assertThat(builder.getPid().intValue()).isEqualTo(1234);
     assertThat(builder.getServerBindAddress()).isEqualTo(InetAddress.getLocalHost());
     assertThat(builder.getServerPort().intValue()).isEqualTo(11235);
+    assertThat(builder.getMaxConnections()).isEqualTo(300);
+    assertThat(builder.getMaxMessageCount()).isEqualTo(1000);
+    assertThat(builder.getMessageTimeToLive()).isEqualTo(10000);
+    assertThat(builder.getSocketBufferSize()).isEqualTo(1024);
+    assertThat(builder.getMaxThreads()).isEqualTo(900);
   }
 
   @Test
-  public void parseArgumentsParsesValuesSeparatedWithEquals() throws Exception {
+  public void parseArgumentsParsesValuesSeparatedWithEquals() throws UnknownHostException {
     // given: fresh builder
     Builder builder = new Builder();
 
@@ -692,7 +700,9 @@ public class ServerLauncherBuilderTest {
     builder.parseArguments("start", "serverOne", "--assign-buckets", "--disable-default-server",
         "--debug", "--force", "--rebalance", "--redirect-output", "--pid=1234",
         "--server-bind-address=" + InetAddress.getLocalHost().getHostAddress(),
-        "--server-port=11235", "--hostname-for-clients=192.168.99.100");
+        "--server-port=11235", "--hostname-for-clients=192.168.99.100", "--max-connections=300",
+        "--max-message-count=1000", "--message-time-to-live=10000", "--socket-buffer-size=1024",
+        "--max-threads=900");
 
     // then: getters should return parsed values
     assertThat(builder.getCommand()).isEqualTo(Command.START);
@@ -708,10 +718,15 @@ public class ServerLauncherBuilderTest {
     assertThat(builder.getPid().intValue()).isEqualTo(1234);
     assertThat(builder.getServerBindAddress()).isEqualTo(InetAddress.getLocalHost());
     assertThat(builder.getServerPort().intValue()).isEqualTo(11235);
+    assertThat(builder.getMaxConnections()).isEqualTo(300);
+    assertThat(builder.getMaxMessageCount()).isEqualTo(1000);
+    assertThat(builder.getMessageTimeToLive()).isEqualTo(10000);
+    assertThat(builder.getSocketBufferSize()).isEqualTo(1024);
+    assertThat(builder.getMaxThreads()).isEqualTo(900);
   }
 
   @Test
-  public void parseCommandWithNullStringArrayResultsInDefaultCommand() throws Exception {
+  public void parseCommandWithNullStringArrayResultsInDefaultCommand() {
     Builder builder = new Builder();
 
     builder.parseCommand((String[]) null);
@@ -720,7 +735,7 @@ public class ServerLauncherBuilderTest {
   }
 
   @Test
-  public void parseCommandWithEmptyStringArrayResultsInDefaultCommand() throws Exception {
+  public void parseCommandWithEmptyStringArrayResultsInDefaultCommand() {
     Builder builder = new Builder();
 
     builder.parseCommand(); // empty String array
@@ -729,7 +744,7 @@ public class ServerLauncherBuilderTest {
   }
 
   @Test
-  public void parseCommandWithStartResultsInStartCommand() throws Exception {
+  public void parseCommandWithStartResultsInStartCommand() {
     Builder builder = new Builder();
 
     builder.parseCommand(Command.START.getName());
@@ -738,7 +753,7 @@ public class ServerLauncherBuilderTest {
   }
 
   @Test
-  public void parseCommandWithStatusResultsInStatusCommand() throws Exception {
+  public void parseCommandWithStatusResultsInStatusCommand() {
     Builder builder = new Builder();
 
     builder.parseCommand("Status");
@@ -747,7 +762,7 @@ public class ServerLauncherBuilderTest {
   }
 
   @Test
-  public void parseCommandWithMixedCaseResultsInCorrectCase() throws Exception {
+  public void parseCommandWithMixedCaseResultsInCorrectCase() {
     Builder builder = new Builder();
 
     builder.parseCommand("sToP");
@@ -756,7 +771,7 @@ public class ServerLauncherBuilderTest {
   }
 
   @Test
-  public void parseCommandWithTwoCommandsWithSwitchesUsesFirstCommand() throws Exception {
+  public void parseCommandWithTwoCommandsWithSwitchesUsesFirstCommand() {
     Builder builder = new Builder();
 
     builder.parseCommand("--opt", "START", "-o", Command.STATUS.getName());
@@ -765,7 +780,7 @@ public class ServerLauncherBuilderTest {
   }
 
   @Test
-  public void parseCommandWithTwoCommandsWithoutSwitchesUsesFirstCommand() throws Exception {
+  public void parseCommandWithTwoCommandsWithoutSwitchesUsesFirstCommand() {
     Builder builder = new Builder();
 
     builder.parseCommand("START", Command.STATUS.getName());
@@ -774,7 +789,7 @@ public class ServerLauncherBuilderTest {
   }
 
   @Test
-  public void parseCommandWithBadInputResultsInDefaultCommand() throws Exception {
+  public void parseCommandWithBadInputResultsInDefaultCommand() {
     Builder builder = new Builder();
 
     builder.parseCommand("badCommandName", "--start", "stat");
@@ -783,7 +798,7 @@ public class ServerLauncherBuilderTest {
   }
 
   @Test
-  public void parseMemberNameWithNullStringArrayResultsInNull() throws Exception {
+  public void parseMemberNameWithNullStringArrayResultsInNull() {
     Builder builder = new Builder();
 
     builder.parseMemberName((String[]) null);
@@ -792,7 +807,7 @@ public class ServerLauncherBuilderTest {
   }
 
   @Test
-  public void parseMemberNameWithEmptyStringArrayResultsInNull() throws Exception {
+  public void parseMemberNameWithEmptyStringArrayResultsInNull() {
     Builder builder = new Builder();
 
     builder.parseMemberName(); // empty String array
@@ -801,7 +816,7 @@ public class ServerLauncherBuilderTest {
   }
 
   @Test
-  public void parseMemberNameWithCommandAndOptionsResultsInNull() throws Exception {
+  public void parseMemberNameWithCommandAndOptionsResultsInNull() {
     Builder builder = new Builder();
 
     builder.parseMemberName(Command.START.getName(), "--opt", "-o");
@@ -810,7 +825,7 @@ public class ServerLauncherBuilderTest {
   }
 
   @Test
-  public void parseMemberNameWithStringUsesValue() throws Exception {
+  public void parseMemberNameWithStringUsesValue() {
     Builder builder = new Builder();
 
     builder.parseMemberName("memberOne");
@@ -819,7 +834,7 @@ public class ServerLauncherBuilderTest {
   }
 
   @Test
-  public void buildCreatesServerLauncherWithBuilderValues() throws Exception {
+  public void buildCreatesServerLauncherWithBuilderValues() throws UnknownHostException {
     ServerLauncher launcher = new Builder().setCommand(Command.STOP).setAssignBuckets(true)
         .setForce(true).setMemberName("serverOne").setRebalance(true)
         .setServerBindAddress(InetAddress.getLocalHost().getHostAddress()).setServerPort(11235)
@@ -849,7 +864,7 @@ public class ServerLauncherBuilderTest {
   }
 
   @Test
-  public void buildUsesMemberNameSetInApiProperties() throws Exception {
+  public void buildUsesMemberNameSetInApiProperties() {
     ServerLauncher launcher =
         new Builder().setCommand(ServerLauncher.Command.START).set(NAME, "serverABC").build();
 
@@ -858,11 +873,102 @@ public class ServerLauncherBuilderTest {
   }
 
   @Test
-  public void buildUsesMemberNameSetInSystemProperties() throws Exception {
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + NAME, "serverXYZ");
+  public void buildUsesMemberNameSetInSystemProperties() {
+    System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + NAME, "serverXYZ");
 
     ServerLauncher launcher = new Builder().setCommand(ServerLauncher.Command.START).build();
 
     assertThat(launcher.getMemberName()).isNull();
+  }
+
+  @Test
+  public void getStartupCompletionActionReturnsNullByDefault() {
+    assertThat(new Builder().getStartupCompletionAction()).isNull();
+  }
+
+  @Test
+  public void setStartupCompletionActionReturnsBuilderInstance() {
+    Builder builder = new Builder();
+
+    assertThat(builder.setStartupCompletionAction(null)).isSameAs(builder);
+  }
+
+  @Test
+  public void setStartupCompletionActionUsesValue() {
+    Runnable myRunnable = () -> {
+    };
+    Builder builder = new Builder();
+    builder.setStartupCompletionAction(myRunnable);
+    assertThat(builder.getStartupCompletionAction())
+        .isSameAs(myRunnable);
+
+  }
+
+  @Test
+  public void getStartupExceptionActionReturnsNullByDefault() {
+    assertThat(new Builder().getStartupExceptionAction()).isNull();
+  }
+
+  @Test
+  public void setStartupExceptionActionReturnsBuilderInstance() {
+    Builder builder = new Builder();
+
+    assertThat(builder.setStartupExceptionAction(null)).isSameAs(builder);
+  }
+
+  @Test
+  public void setStartupExceptionActionUsesValue() {
+    Consumer<Throwable> myThrowable = (throwable) -> {
+    };
+    Builder builder = new Builder();
+    builder.setStartupExceptionAction(myThrowable);
+    assertThat(builder.getStartupExceptionAction())
+        .isSameAs(myThrowable);
+
+  }
+
+  @Test
+  public void getServerLauncherCacheProviderReturnsNullByDefault() {
+    assertThat(new Builder().getServerLauncherCacheProvider()).isNull();
+  }
+
+  @Test
+  public void setServerLauncherCacheProviderReturnsBuilderInstance() {
+    Builder builder = new Builder();
+
+    assertThat(builder.setServerLauncherCacheProvider(null)).isSameAs(builder);
+  }
+
+  @Test
+  public void setServerLauncherCacheProviderUsesValue() {
+    Builder builder = new Builder();
+
+    ServerLauncherCacheProvider value = mock(ServerLauncherCacheProvider.class);
+    builder.setServerLauncherCacheProvider(value);
+
+    assertThat(builder.getServerLauncherCacheProvider()).isSameAs(value);
+  }
+
+  @Test
+  public void getControllableProcessFactoryReturnsNullByDefault() {
+    assertThat(new Builder().getControllableProcessFactory()).isNull();
+  }
+
+  @Test
+  public void setControllableProcessFactoryReturnsBuilderInstance() {
+    Builder builder = new Builder();
+
+    assertThat(builder.setControllableProcessFactory(null)).isSameAs(builder);
+  }
+
+  @Test
+  public void setControllableProcessFactoryUsesValue() {
+    Builder builder = new Builder();
+
+    Supplier<ControllableProcess> controllableProcessFactory =
+        () -> mock(ControllableProcess.class);
+    builder.setControllableProcessFactory(controllableProcessFactory);
+
+    assertThat(builder.getControllableProcessFactory()).isSameAs(controllableProcessFactory);
   }
 }

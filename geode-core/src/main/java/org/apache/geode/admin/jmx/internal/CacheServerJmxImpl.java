@@ -45,8 +45,7 @@ import org.apache.geode.admin.internal.ConfigurationParameterImpl;
 import org.apache.geode.internal.admin.ClientMembershipMessage;
 import org.apache.geode.internal.admin.GemFireVM;
 import org.apache.geode.internal.admin.StatResource;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * MBean representation of a {@link org.apache.geode.admin.CacheVm}.
@@ -119,22 +118,27 @@ public class CacheServerJmxImpl extends CacheServerImpl
       this.refreshInterval = sysJmx.getRefreshInterval();
   }
 
+  @Override
   public String getMBeanName() {
     return this.mbeanName;
   }
 
+  @Override
   public ModelMBean getModelMBean() {
     return this.modelMBean;
   }
 
+  @Override
   public void setModelMBean(ModelMBean modelMBean) {
     this.modelMBean = modelMBean;
   }
 
+  @Override
   public ObjectName getObjectName() {
     return this.objectName;
   }
 
+  @Override
   public ManagedResourceType getManagedResourceType() {
     return ManagedResourceType.CACHE_VM;
   }
@@ -148,6 +152,7 @@ public class CacheServerJmxImpl extends CacheServerImpl
    * But cleans up only StatisticResourceJmxImpl and SystemMemberCacheJmxImpl which are of type
    * ManagedResource.
    */
+  @Override
   public void cleanupResource() {
     synchronized (this.managedStatisticsResourcesMap) {
       ConfigurationParameter[] names = getConfiguration();
@@ -180,6 +185,7 @@ public class CacheServerJmxImpl extends CacheServerImpl
     return this.getConfig().getHost();
   }
 
+  @Override
   public void setHost(String host) {
     this.getConfig().setHost(host);
   }
@@ -204,35 +210,42 @@ public class CacheServerJmxImpl extends CacheServerImpl
     this.getConfig().setProductDirectory(dir);
   }
 
+  @Override
   public String getRemoteCommand() {
     return this.getConfig().getRemoteCommand();
   }
 
+  @Override
   public void setRemoteCommand(String remoteCommand) {
     this.getConfig().setRemoteCommand(remoteCommand);
   }
 
+  @Override
   public void validate() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public Object clone() throws CloneNotSupportedException {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
+  @Override
   public String getCacheXMLFile() {
     return this.getConfig().getCacheXMLFile();
   }
 
+  @Override
   public void setCacheXMLFile(String cacheXMLFile) {
     this.getConfig().setCacheXMLFile(cacheXMLFile);
   }
 
+  @Override
   public String getClassPath() {
     return this.getConfig().getClassPath();
   }
 
+  @Override
   public void setClassPath(String classpath) {
     this.getConfig().setClassPath(classpath);
   }
@@ -246,6 +259,7 @@ public class CacheServerJmxImpl extends CacheServerImpl
    *
    * @return the current refresh interval in seconds
    */
+  @Override
   public int getRefreshInterval() {
     return this.refreshInterval;
   }
@@ -256,6 +270,7 @@ public class CacheServerJmxImpl extends CacheServerImpl
    *
    * @param refreshInterval the new refresh interval in seconds
    */
+  @Override
   public void _setRefreshInterval(int refreshInterval) {
     boolean isRegistered = MBeanUtil.isRefreshNotificationRegistered(this,
         RefreshNotificationType.SYSTEM_MEMBER_CONFIG);
@@ -275,17 +290,18 @@ public class CacheServerJmxImpl extends CacheServerImpl
    * @param refreshInterval the new refresh interval in seconds
    * @deprecated since 6.0 use DistributedSystemConfig.refreshInterval instead
    */
+  @Override
   @Deprecated
   public void setRefreshInterval(int refreshInterval) throws OperationNotSupportedException {
     throw new OperationNotSupportedException(
-        LocalizedStrings.MANAGED_RESOURCE_REFRESH_INTERVAL_CANT_BE_SET_DIRECTLY
-            .toLocalizedString());
+        "RefreshInterval can not be set directly. Use DistributedSystemConfig.refreshInterval.");
   }
 
   // -------------------------------------------------------------------------
   // MBean Operations
   // -------------------------------------------------------------------------
 
+  @Override
   public void refreshConfig() throws org.apache.geode.admin.AdminException {
     // 1st call to refreshConfig would trigger
     // the auto-refresh if an interval is set
@@ -301,6 +317,7 @@ public class CacheServerJmxImpl extends CacheServerImpl
    *
    * @return array of ObjectName for this member's cache
    */
+  @Override
   public ObjectName manageCache() throws AdminException, MalformedObjectNameException {
     return Helper.manageCache(this);
   }
@@ -310,6 +327,7 @@ public class CacheServerJmxImpl extends CacheServerImpl
    *
    * @return array of ObjectName instances
    */
+  @Override
   public ObjectName[] manageStats() throws AdminException, MalformedObjectNameException {
     return Helper.manageStats(this);
   }
@@ -319,6 +337,7 @@ public class CacheServerJmxImpl extends CacheServerImpl
    *
    * @return ObjectName of StatisticResourceJMX instance
    */
+  @Override
   public ObjectName[] manageStat(String statisticsTypeName)
       throws AdminException, MalformedObjectNameException {
 
@@ -337,6 +356,7 @@ public class CacheServerJmxImpl extends CacheServerImpl
    * @param notification the JMX notification being received
    * @param hb handback object is unused
    */
+  @Override
   public void handleNotification(Notification notification, Object hb) {
     AdminDistributedSystemJmxImpl systemJmx = (AdminDistributedSystemJmxImpl) this.system;
 
@@ -418,6 +438,7 @@ public class CacheServerJmxImpl extends CacheServerImpl
    * @return a new instance of ManagedBean copied from <code>managed</code> but with the new
    *         attributes added
    */
+  @Override
   public ManagedBean addDynamicAttributes(ManagedBean managed)
       throws org.apache.geode.admin.AdminException {
     return Helper.addDynamicAttributes(this, managed);
@@ -462,6 +483,7 @@ public class CacheServerJmxImpl extends CacheServerImpl
    * @param eventType membership change type; one of {@link ClientMembershipMessage#JOINED},
    *        {@link ClientMembershipMessage#LEFT}, {@link ClientMembershipMessage#CRASHED}
    */
+  @Override
   public void handleClientMembership(String clientId, int eventType) {
     String notifType = null;
     List<ManagedResource> cleanedUp = null;
@@ -493,6 +515,7 @@ public class CacheServerJmxImpl extends CacheServerImpl
    *
    * @param event event object corresponding to the creation of the cache
    */
+  @Override
   public void handleCacheCreate(SystemMemberCacheEvent event) {
     Helper.sendNotification(this, new Notification(NOTIF_CACHE_CREATED, this.modelMBean,
         Helper.getNextNotificationSequenceNumber(), Helper.getCacheEventDetails(event)));
@@ -505,6 +528,7 @@ public class CacheServerJmxImpl extends CacheServerImpl
    *
    * @param event event object corresponding to the closure of the cache
    */
+  @Override
   public void handleCacheClose(SystemMemberCacheEvent event) {
     Helper.sendNotification(this, new Notification(NOTIF_CACHE_CLOSED, this.modelMBean,
         Helper.getNextNotificationSequenceNumber(), Helper.getCacheEventDetails(event)));
@@ -517,6 +541,7 @@ public class CacheServerJmxImpl extends CacheServerImpl
    *
    * @param event event object corresponding to the creation of a region
    */
+  @Override
   public void handleRegionCreate(SystemMemberRegionEvent event) {
     Notification notification = new Notification(NOTIF_REGION_CREATED, this.modelMBean,
         Helper.getNextNotificationSequenceNumber(), Helper.getRegionEventDetails(event));
@@ -534,6 +559,7 @@ public class CacheServerJmxImpl extends CacheServerImpl
    *
    * @param event event object corresponding to the loss of a region
    */
+  @Override
   public void handleRegionLoss(SystemMemberRegionEvent event) {
     SystemMemberCacheJmxImpl cacheResource = this.managedSystemMemberCache;
 

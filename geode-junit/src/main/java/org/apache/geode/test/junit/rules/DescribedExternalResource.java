@@ -19,16 +19,19 @@ import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
 /**
- * this class extends the capability of JUnit's ExternalResource in that it provides a Description
- * object in the before and after methods, so that the implementation would have access to the
- * annotation of the test methods
+ * A base class for Rules that require {@code Description} to set up an external resource before
+ * a test and tear it down afterward. {@code DescribedExternalResource} is similar to
+ * {@code ExternalResource} but includes {@code Description} as a parameter to both {@code before}
+ * and {@code after}.
+ *
+ * <p>
+ * {@code Description} allows the implementation to have access to the test class, its annotations
+ * and information about JUnit lifecycle.
  */
 public abstract class DescribedExternalResource implements TestRule {
-  public Statement apply(Statement base, Description description) {
-    return statement(base, description);
-  }
 
-  private Statement statement(final Statement base, final Description description) {
+  @Override
+  public Statement apply(Statement base, Description description) {
     return new Statement() {
       @Override
       public void evaluate() throws Throwable {
@@ -42,18 +45,18 @@ public abstract class DescribedExternalResource implements TestRule {
     };
   }
 
-
   /**
    * Override to set up your specific external resource.
    *
-   * @throws Throwable if setup fails (which will disable {@code after}
+   * @throws Throwable if setup fails (which will prevent the invocation of {@code after})
    */
   protected void before(Description description) throws Throwable {
     // do nothing
   }
 
   /**
-   * Override to tear down your specific external resource.
+   * Override to tear down your specific external resource. Note: ExternalResource after
+   * does not include {@code throws Throwable}.
    */
   protected void after(Description description) throws Throwable {
     // do nothing

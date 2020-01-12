@@ -20,7 +20,8 @@ import java.util.Stack;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 
-import org.apache.geode.i18n.LogWriterI18n;
+import org.apache.geode.LogWriter;
+
 
 /**
  * Abstract for {@link XmlParser} that throws {@link UnsupportedOperationException} on unused
@@ -32,7 +33,7 @@ import org.apache.geode.i18n.LogWriterI18n;
 // UnitTest AbstractXmlParserTest
 public abstract class AbstractXmlParser implements XmlParser {
 
-  protected LogWriterI18n logWriter;
+  protected LogWriter logWriter;
 
   protected Stack<Object> stack;
 

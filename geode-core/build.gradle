@@ -15,145 +15,30 @@
  * limitations under the License.
  */
 
+plugins {
+  id 'me.champeau.gradle.jmh' version '0.4.8'
+}
+
+apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 
 apply plugin: 'antlr'
-apply plugin: 'me.champeau.gradle.jmh'
+apply from: "${project.projectDir}/../gradle/publish-java.gradle"
+apply from: "${project.projectDir}/../gradle/pmd.gradle"
 
 sourceSets {
   jca {
-    compileClasspath += configurations.compile
-    runtimeClasspath += configurations.runtime
+    compileClasspath += configurations.compileClasspath
+    runtimeClasspath += configurations.runtimeClasspath
   }
 }
 
-
-
-configurations {
-  //declaring new configuration that will be used to associate with artifacts
-  archives
-}
-
-dependencies {
-  // Source Dependencies
-  antlr 'antlr:antlr:' + project.'antlr.version'
-
-  // External
-  provided files("${System.getProperty('java.home')}/../lib/tools.jar")
-  compile 'com.github.stephenc.findbugs:findbugs-annotations:' + project.'stephenc-findbugs.version'
-  compile 'org.jgroups:jgroups:' + project.'jgroups.version'
-  compile 'antlr:antlr:' + project.'antlr.version'
-  compile 'com.fasterxml.jackson.core:jackson-annotations:' + project.'jackson.version'
-  compile 'com.fasterxml.jackson.core:jackson-databind:' + project.'jackson.version'
-  compile 'commons-io:commons-io:' + project.'commons-io.version'
-  compile 'commons-validator:commons-validator:' + project.'commons-validator.version'
-  compile 'commons-digester:commons-digester:' + project.'commons-digester.version'
-
-  compile 'commons-lang:commons-lang:' + project.'commons-lang.version'
-  compile ('commons-modeler:commons-modeler:' + project.'commons-modeler.version') {
-    exclude module: 'commons-digester'
-    exclude module: 'commons-logging-api'
-    exclude module: 'mx4j-jmx'
-    exclude module: 'xml-apis'
-    ext.optional = true
+idea {
+  module {
+    testSourceDirs += project.tasks.generateIntegrationTestGrammarSource.outputs.files
+    testSourceDirs += project.tasks.generateDistributedTestGrammarSource.outputs.files
+    testSourceDirs += project.tasks.generatePerformanceTestGrammarSource.outputs.files
+    testSourceDirs += project.tasks.generateUpgradeTestGrammarSource.outputs.files
   }
-  compile ('io.netty:netty-all:' + project.'netty-all.version') {
-    ext.optional = true
-  }
-  compile 'it.unimi.dsi:fastutil:' + project.'fastutil.version'
-  compile ('javax.mail:javax.mail-api:' + project.'javax.mail-api.version') {
-    ext.optional = true;
-  }
-  compile 'javax.resource:javax.resource-api:' + project.'javax.resource-api.version'
-  compile ('mx4j:mx4j:' + project.'mx4j.version') {
-    ext.optional = true;
-  }
-  compile ('mx4j:mx4j-remote:' + project.'mx4j-remote.version') {
-    ext.optional = true;
-  }
-  compile ('mx4j:mx4j-tools:' + project.'mx4j-tools.version') {
-    ext.optional = true;
-  }
-  compile ('net.java.dev.jna:jna:' + project.'jna.version')
-
-  compile ('net.sf.jopt-simple:jopt-simple:' + project.'jopt-simple.version')
-
-  compile 'org.apache.logging.log4j:log4j-api:' + project.'log4j.version'
-  compile 'org.apache.logging.log4j:log4j-core:' + project.'log4j.version'
-  runtime ('org.fusesource.jansi:jansi:' + project.'jansi.version') {
-    ext.optional = true
-  }
-  runtime 'org.slf4j:slf4j-api:' + project.'slf4j-api.version'
-
-  runtime ('org.apache.logging.log4j:log4j-slf4j-impl:' + project.'log4j.version') {
-    exclude module: 'slf4j-api'
-    ext.optional = true
-  }
-  runtime ('org.apache.logging.log4j:log4j-jcl:' + project.'log4j.version') {
-    ext.optional = true
-  }
-  runtime ('org.apache.logging.log4j:log4j-jul:' + project.'log4j.version') {
-    ext.optional = true
-  }
-  compile ('org.eclipse.jetty:jetty-webapp:' + project.'jetty.version') {
-    ext.optional = true
-  }
-  provided ('org.springframework:spring-webmvc:' + project.'springframework.version') {
-    exclude module: 'aopalliance'
-    exclude module: 'spring-aop'
-    ext.optional = true
-  }
-  compile ('org.springframework:spring-core:' + project.'springframework.version') {
-    ext.optional = true
-  }
-  compile ('org.springframework.shell:spring-shell:' + project.'spring-shell.version') {
-    exclude module: 'aopalliance'
-    exclude module: 'asm'
-    exclude module: 'cglib'
-    exclude module: 'guava'
-    exclude module: 'spring-aop'
-    exclude module: 'spring-context-support'
-    ext.optional = true
-  }
-  compile ('org.iq80.snappy:snappy:' + project.'snappy-java.version') {
-    ext.optional = true
-  }
-
-  compile 'org.apache.shiro:shiro-core:' + project.'shiro.version'
-
-  // https://mvnrepository.com/artifact/io.github.lukehutch/fast-classpath-scanner
-  compile 'io.github.lukehutch:fast-classpath-scanner:' + project.'fast-classpath-scanner.version'
-
-  compile 'com.healthmarketscience.rmiio:rmiio:' + project.'rmiio.version'
-
-  compile project(':geode-common')
-  compile project(':geode-json')
-
-  jcaCompile sourceSets.main.output
-
-  testCompile project(':geode-junit')
-  testCompile project(':geode-old-versions')
-
-  // Test Dependencies
-  // External
-  testCompile 'com.jayway.jsonpath:json-path-assert:' + project.'json-path-assert.version'
-  testCompile 'org.apache.bcel:bcel:' + project.'bcel.version'
-  testRuntime 'org.apache.derby:derby:' + project.'derby.version'
-  testCompile 'org.mockito:mockito-core:' + project.'mockito-core.version'
-  testRuntime 'commons-collections:commons-collections:' + project.'commons-collections.version'
-  testRuntime 'commons-configuration:commons-configuration:' + project.'commons-configuration.version'
-  testRuntime 'commons-io:commons-io:' + project.'commons-io.version'
-  testRuntime 'commons-validator:commons-validator:' + project.'commons-validator.version'
-  testCompile 'net.spy:spymemcached:' + project.'spymemcached.version'
-  testCompile 'redis.clients:jedis:' + project.'jedis.version'
-  testCompile 'org.springframework:spring-test:' + project.'springframework.version'
-
-
-  testCompile 'com.pholser:junit-quickcheck-core:' + project.'junit-quickcheck.version'
-  testCompile 'com.pholser:junit-quickcheck-generators:' + project.'junit-quickcheck.version'
-  testCompile 'com.pholser:junit-quickcheck-guava:' + project.'junit-quickcheck.version'
-
-  testRuntime 'xerces:xercesImpl:' + project.'xercesImpl.version'
-  testCompile project(':geode-concurrency-test')
 }
 
 def generatedResources = "$buildDir/generated-resources/main"
@@ -167,60 +52,81 @@ sourceSets {
   }
 }
 
-jmh {
-  include = project.hasProperty('include') ? project.getProperties().get('include') : '.*'
-  duplicateClassesStrategy = 'warn'
+sourceSets {
+// This works around resource-look up between integrationTest and test source-sets.
+// See GEODE-5803 / GEODE-5882
+  test.resources.srcDirs.each { testResourceSrc ->
+    integrationTest.resources.srcDir {
+      testResourceSrc
+    }
+  }
 }
 
+
 // Creates the version properties file and writes it to the classes dir
-task createVersionPropertiesFile {
-  def propertiesFile = file(generatedResources + "/org/apache/geode/internal/GemFireVersion.properties");
-  outputs.file propertiesFile
-  inputs.dir compileJava.destinationDir
+task createVersionPropertiesFile(dependsOn: ':writeBuildInfo') {
+
+  def propertiesFile = file(generatedResources + "/org/apache/geode/internal/GemFireVersion.properties")
+  def scmInfoFile = rootProject.tasks.writeBuildInfo.outputs.files
+
+  inputs.files {
+    scmInfoFile
+  }
+  outputs.files {
+    propertiesFile
+  }
+
 
   doLast {
-    def props = [
-      "Product-Name"      : productName,
-      "Product-Version"   : version,
-      "Build-Id"          : "${System.env.USER} ${buildId}".toString(),
-      "Build-Date"        : new Date().format('yyyy-MM-dd HH:mm:ss Z'),
-      "Build-Platform"    : "${System.properties['os.name']} ${System.properties['os.version']} ${System.properties['os.arch']}".toString(),
-      "Build-Java-Version": System.properties['java.version']
-    ] as Properties
-    props.putAll(readScmInfo())
+    def scmInfo = new Properties()
+    new FileInputStream(scmInfoFile.singleFile).withStream { fis ->
+      scmInfo.load(fis)
+    }
 
-    propertiesFile.getParentFile().mkdirs();
+    def props = [
+        "Product-Name"      : productName,
+        "Product-Version"   : version,
+        "Build-Id"          : "${System.env.USER} ${buildId}".toString(),
+        "Build-Date"        : new Date().format('yyyy-MM-dd HH:mm:ss Z'),
+        "Build-Platform"    : "${System.properties['os.name']} ${System.properties['os.version']} ${System.properties['os.arch']}".toString(),
+        "Build-Java-Version": System.properties['java.version']
+    ] as Properties
+    props.putAll(scmInfo)
+
+    propertiesFile.getParentFile().mkdirs()
     new FileOutputStream(propertiesFile).withStream { fos ->
       props.store(fos, '')
     }
   }
 }
 
+ext.moduleName = group + '.core'
+
 jar {
 
   from sourceSets.main.output
   from sourceSets.jca.output
 
-  exclude 'org/apache/geode/management/internal/web/**'
   exclude 'org/apache/geode/internal/i18n/StringIdResourceBundle_ja.txt'
   exclude 'org/apache/geode/admin/doc-files/ds4_0.dtd'
+
+  inputs.property("moduleName", moduleName)
+  manifest {
+    attributes('Automatic-Module-Name': moduleName)
+  }
+
 }
 
-task webJar (type: Jar, dependsOn: classes) {
-  description 'Assembles the jar archive containing the gemfire management web classes.'
-  from sourceSets.main.output
-  baseName 'geode-web'
-  include 'org/apache/geode/management/internal/web/**'
-}
+jar.dependsOn(createVersionPropertiesFile)
 
-task raJar (type: Jar, dependsOn: classes) {
+task raJar(type: Jar, dependsOn: classes) {
   description 'Assembles the jar archive that contains the JCA classes'
   from sourceSets.jca.output
   exclude 'org/apache/geode/ra/**'
   archiveName 'ra.jar'
 }
 
-task jcaJar (type: Jar, dependsOn: raJar) {
+task jcaJar(type: Jar, dependsOn: raJar) {
   description 'Assembles the jar archive that contains the JCA bundle'
   baseName 'geode-jca'
   extension 'rar'
@@ -229,15 +135,280 @@ task jcaJar (type: Jar, dependsOn: raJar) {
 }
 
 configurations {
+  //declaring new configuration that will be used to associate with artifacts
+  archives
+
   classesOutput {
-    extendsFrom compile
-    description  'a dependency that exposes the compiled classes'
+    extendsFrom api
+    description 'a dependency that exposes the compiled classes'
   }
 }
 
 dependencies {
+
+  //These bom dependencies are used to constrain the versions of the dependencies listed below
+  api(platform(project(':boms:geode-all-bom')))
+  compileOnly(platform(project(':boms:geode-all-bom')))
+  testCompileOnly(platform(project(':boms:geode-all-bom')))
+  // As plugin configurations that do not extend from compile,
+  // we must explicitly impose version constraints on these configurations.
+  antlr platform(project(':boms:geode-all-bom'))
+  jcaAnnotationProcessor(platform(project(':boms:geode-all-bom')))
+
+  //A dependency that contains the compiled output of the source. What is this for?
   classesOutput sourceSets.main.output
+
+
+  // Source Dependencies
+  //------------------------------------------------------------
+
+  //  The antlr configuration is used by the antlr plugin, which compiles grammar
+  // files used by the query engine
+  antlr 'antlr:antlr'
+
+  // External
+  //------------------------------------------------------------
+
+  //Commons IO is used in persistence and management
+  api('commons-io:commons-io')
+
+  //tools.jar seems to be used by gfsh is some cases to control processes using
+  //the sun attach API? But this code path may not even be used?
+  compileOnly files("${System.getProperty('java.home')}/../lib/tools.jar")
+
+  //Find bugs is used in multiple places in the code to suppress findbugs warnings
+  compileOnly('com.github.stephenc.findbugs:findbugs-annotations')
+  testCompileOnly('com.github.stephenc.findbugs:findbugs-annotations')
+
+  //Jgroups is a core component of our membership system.
+  implementation('org.jgroups:jgroups')
+
+  //Antlr is used by the query engine.
+  implementation('antlr:antlr')
+
+  //Jackson annotations is used in gfsh
+  implementation('com.fasterxml.jackson.core:jackson-annotations')
+
+  //Jackson databind is used in gfsh, and also in pdx
+  implementation('com.fasterxml.jackson.core:jackson-databind')
+
+  //Commons validator is used to validate inet addresses in membership
+  implementation('commons-validator:commons-validator')
+
+  //javax.activation is runtime dependency for gfsh with java 11 (used by gfsh-over-http)
+  runtimeOnly('com.sun.activation:javax.activation')
+
+  //jaxb is used by cluster configuration
+  implementation('javax.xml.bind:jaxb-api')
+
+  //jaxb is used by cluster configuration
+  implementation('com.sun.xml.bind:jaxb-impl')
+
+  //istack appears to be used only by jaxb, not in our code. jaxb doesn't
+  //declare this as required dependency though. It's unclear if this is needed
+  //Runtime
+  runtimeOnly('com.sun.istack:istack-commons-runtime') {
+    exclude group: '*'
+  }
+
+  //Commons lang is used in many different places in core
+  implementation('org.apache.commons:commons-lang3')
+
+  //Commons modeler is used by the (deprecated) admin API
+  implementation('commons-modeler:commons-modeler') {
+    exclude module: 'commons-logging-api'
+    exclude module: 'mx4j-jmx'
+    exclude module: 'xml-apis'
+    ext.optional = true
+  }
+
+  //micrometer is used for micrometer based metrics from geode geode
+  api('io.micrometer:micrometer-core')
+
+
+  //FastUtil contains optimized collections that are used in multiple places in core
+  implementation('it.unimi.dsi:fastutil')
+
+  //Mail API is used by the deprecated admin API
+  implementation('javax.mail:javax.mail-api') {
+    ext.optional = true
+  }
+
+  //The resource-API is used by the JCA support.
+  api('javax.resource:javax.resource-api')
+
+
+  //MX4J is used by the old admin API
+  implementation('mx4j:mx4j') {
+    ext.optional = true
+  }
+
+  //MX4J remote is used by the old admin API
+  implementation('mx4j:mx4j-remote') {
+    ext.optional = true
+  }
+
+  //MX4J tools is used by the old admin API
+  implementation('mx4j:mx4j-tools') {
+    ext.optional = true
+  }
+
+  //JNA is used for locking memory and preallocating disk files.
+  implementation('net.java.dev.jna:jna')
+
+  //JOptSimple is used by gfsh. A couple of usages have leaked into DiskStore
+  implementation('net.sf.jopt-simple:jopt-simple')
+
+  //Log4j is used everywhere
+  implementation('org.apache.logging.log4j:log4j-api')
+
+  runtimeOnly(project(':geode-gfsh')) {
+    exclude module: 'geode-core'
+    ext.optional = true
+  }
+
+  runtimeOnly('io.swagger:swagger-annotations') {
+    ext.optional = true
+  }
+
+  runtimeOnly(project(':geode-http-service')) {
+    ext.optional = true
+  }
+
+  //Snappy is used for compressing values, if enabled
+  implementation('org.iq80.snappy:snappy') {
+    ext.optional = true
+  }
+
+  //Shiro is used for security checks throughout geode-core
+  //API - Shiro is exposed in geode's ResourcePermission class
+  api('org.apache.shiro:shiro-core')
+
+  //Classgraph is used by the gfsh cli, and also for function deployment (which happens in a server
+  //in response to a gfsh command)
+  implementation('io.github.classgraph:classgraph')
+
+  //RMIIO is used for uploading jar files and copying them between locator an servers
+  implementation('com.healthmarketscience.rmiio:rmiio')
+
+  //Geode-common has annotations and other pieces used geode-core
+  api(project(':geode-common'))
+  implementation(project(':geode-logging'))
+  implementation(project(':geode-unsafe'))
+  implementation(project(':geode-serialization'))
+  implementation(project(':geode-tcp-server'))
+
+  //geode-management currently has pieces of the public API
+  //copied into it, so it is an API dependency
+  api(project(':geode-management'))
+
+
+  jcaCompile(sourceSets.main.output)
+
+  testCompile(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
+  testCompile(project(':geode-concurrency-test'))
+  testCompile('org.apache.bcel:bcel')
+  testCompile('org.mockito:mockito-core')
+  testCompile('com.pholser:junit-quickcheck-core')
+  testCompile('org.powermock:powermock-core')
+  testCompile('org.powermock:powermock-module-junit4')
+  testCompile('org.powermock:powermock-api-mockito2')
+  testCompile('pl.pragmatists:JUnitParams')
+  testImplementation('com.tngtech.archunit:archunit-junit4')
+
+  testCompile files("${System.getProperty('java.home')}/../lib/tools.jar")
+
+  testRuntime('commons-collections:commons-collections')
+  testRuntime('commons-configuration:commons-configuration')
+  testRuntime('commons-io:commons-io')
+  testRuntime('commons-validator:commons-validator')
+  testRuntime('com.pholser:junit-quickcheck-generators')
+  testRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
+
+
+  integrationTestCompile(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
+  integrationTestCompile(project(':geode-dunit')) {
+    exclude module: 'geode-core'
+  }
+  integrationTestImplementation(project(':geode-log4j')) {
+    exclude module: 'geode-core'
+  }
+  integrationTestCompile(project(':geode-concurrency-test'))
+  integrationTestCompile('org.apache.bcel:bcel')
+  integrationTestCompile('org.powermock:powermock-core')
+  integrationTestCompile('org.powermock:powermock-module-junit4')
+  integrationTestCompile('org.powermock:powermock-api-mockito2')
+  integrationTestCompile('pl.pragmatists:JUnitParams')
+  integrationTestCompile('com.tngtech.archunit:archunit-junit4')
+
+
+  integrationTestRuntime('org.apache.derby:derby')
+  integrationTestRuntime('xerces:xercesImpl')
+
+
+  distributedTestCompile(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
+  distributedTestCompile(project(':geode-dunit')) {
+    exclude module: 'geode-core'
+  }
+  distributedTestImplementation(project(':geode-log4j')) {
+    exclude module: 'geode-core'
+  }
+  distributedTestCompile('pl.pragmatists:JUnitParams')
+  distributedTestCompile('com.jayway.jsonpath:json-path-assert')
+  distributedTestCompile('net.openhft:compiler')
+
+  distributedTestRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
+  distributedTestRuntime('org.apache.derby:derby')
+
+
+  upgradeTestCompile(project(':geode-dunit')) {
+    exclude module: 'geode-core'
+  }
+
+  upgradeTestRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
+  upgradeTestRuntime(project(':geode-log4j'))
+
+
+  performanceTestCompile(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
+  performanceTestImplementation(project(':geode-log4j'))
+}
+
+jmh {
+  duplicateClassesStrategy = 'warn'
+  include = project.hasProperty('jmh.include') ? project.getProperties().get('jmh.include') : '.*'
+  profilers = project.hasProperty('jmh.profilers') ? project.getProperties().get('jmh.profilers').tokenize() : []
+  threads = project.hasProperty('jmh.threads') ? project.getProperties().get('jmh.threads') : null
+}
+
+jmhJar {
+  inputs.files(project.sourceSets.main.output, project.sourceSets.test.output)
+  from {
+    [configurations.jmh, configurations.jmhRuntime, configurations.runtimeClasspath].collect {
+        it.asFileTree.collect {
+          it
+        }
+      }.flatten().unique().collect {
+          it.isDirectory() ? it : zipTree(it)
+      }
+  }
+  exclude(['META-INF/*.SF'])
+  exclude('META-INF/org/apache/logging/log4j/core/config/plugins/Log4j2Plugins.dat')
+  exclude('*.jar')
 }
 
 tasks.eclipse.dependsOn(generateGrammarSource)
 
+distributedTest {
+  // Some tests have inner tests that should be ignored
+  exclude "**/*\$*.class"
+}
+
+rootProject.generate.dependsOn(generateGrammarSource)

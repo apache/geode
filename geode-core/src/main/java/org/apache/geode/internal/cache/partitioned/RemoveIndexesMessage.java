@@ -37,10 +37,10 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionException;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * This class represents a partition message for removing indexes. An instance of this class is send
@@ -105,7 +105,7 @@ public class RemoveIndexesMessage extends PartitionMessage {
 
   /**
    * This message may be sent to nodes before the PartitionedRegion is completely initialized due to
-   * the RegionAdvisor(s) knowing about the existance of a partitioned region at a very early part
+   * the RegionAdvisor(s) knowing about the existence of a partitioned region at a very early part
    * of the initialization
    */
   @Override
@@ -135,8 +135,7 @@ public class RemoveIndexesMessage extends PartitionMessage {
     int bucketIndexRemoved = 0; // invalid
     int numIndexesRemoved = 0;
 
-    logger.info(LocalizedMessage
-        .create(LocalizedStrings.RemoveIndexesMessage_WILL_REMOVE_THE_INDEXES_ON_THIS_PR___0, pr));
+    logger.info("Will remove the indexes on this pr : {}", pr);
     try {
       if (this.removeSingleIndex) {
         bucketIndexRemoved = pr.removeIndex(this.indexName);
@@ -217,21 +216,24 @@ public class RemoveIndexesMessage extends PartitionMessage {
     return new RemoveIndexesResponse(r.getSystem(), recipients);
   }
 
+  @Override
   public int getDSFID() {
     return PR_REMOVE_INDEXES_MESSAGE;
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.removeSingleIndex = in.readBoolean();
     if (this.removeSingleIndex)
       this.indexName = in.readUTF();
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     out.writeBoolean(this.removeSingleIndex);
     if (this.removeSingleIndex)
       out.writeUTF(this.indexName);
@@ -248,16 +250,15 @@ public class RemoveIndexesMessage extends PartitionMessage {
     PartitionedRegion pr = null;
 
     try {
-      logger.info(LocalizedMessage.create(
-          LocalizedStrings.RemoveIndexesMessage_TRYING_TO_GET_PR_WITH_ID___0, this.regionId));
+      logger.info("Trying to get pr with id : {}", this.regionId);
       pr = PartitionedRegion.getPRFromId(this.regionId);
-      logger.info(LocalizedMessage
-          .create(LocalizedStrings.RemoveIndexesMessage_REMOVE_INDEXES_MESSAGE_GOT_THE_PR__0, pr));
+      logger.info("Remove indexes message got the pr {}", pr);
 
       if (pr == null /* && failIfRegionMissing() */ ) {
         throw new PartitionedRegionException(
-            LocalizedStrings.RemoveIndexesMessage_COULD_NOT_GET_PARTITIONED_REGION_FROM_ID_0_FOR_MESSAGE_1_RECEIVED_ON_MEMBER_2_MAP_3
-                .toLocalizedString(new Object[] {Integer.valueOf(this.regionId), this, dm.getId(),
+            String.format(
+                "Could not get Partitioned Region from Id %s for message %s received on member= %s map= %s",
+                new Object[] {Integer.valueOf(this.regionId), this, dm.getId(),
                     PartitionedRegion.dumpPRId()}));
       }
       // remove the indexes on the pr.
@@ -284,17 +285,17 @@ public class RemoveIndexesMessage extends PartitionMessage {
       // log the exception at fine level if there is no reply to the message
       if (this.processorId == 0) {
         logger.debug("{} exception while processing message: {}", this, t.getMessage(), t);
-      } else if (logger.isTraceEnabled(LogMarker.DM) && (t instanceof RuntimeException)) {
-        logger.debug("Exception caught while processing message: {}", t.getMessage(), t);
+      } else if (logger.isTraceEnabled(LogMarker.DM_VERBOSE) && (t instanceof RuntimeException)) {
+        logger.trace(LogMarker.DM_VERBOSE, "Exception caught while processing message: {}",
+            t.getMessage(), t);
       }
       if (t instanceof RegionDestroyedException && pr != null) {
         if (pr.isClosed) {
-          logger.info(LocalizedMessage.create(
-              LocalizedStrings.RemoveIndexesMessage_REGION_IS_LOCALLY_DESTROYED_THROWING_REGIONDESTROYEDEXCEPTION_FOR__0,
-              pr));
+          logger.info("Region is locally destroyed, throwing RegionDestroyedException for {}",
+              pr);
           thr = new RegionDestroyedException(
-              LocalizedStrings.RemoveIndexesMessage_REGION_IS_LOCALLY_DESTROYED_ON_0
-                  .toLocalizedString(dm.getId()),
+              String.format("Region is locally destroyed on %s",
+                  dm.getId()),
               pr.getFullPath());
         }
       } else {
@@ -348,7 +349,6 @@ public class RemoveIndexesMessage extends PartitionMessage {
     /**
      * Waits for the response from the members for remove indexes call on this system.
      *
-     * @throws ForceReattemptException
      */
     public RemoveIndexesResult waitForResults() throws CacheException, ForceReattemptException {
       waitForCacheException();
@@ -462,16 +462,18 @@ public class RemoveIndexesMessage extends PartitionMessage {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.result = in.readBoolean();
       this.numBucketsIndexesRemoved = in.readInt();
       this.numTotalBuckets = in.readInt();
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       out.writeBoolean(this.result);
       out.writeInt(this.numBucketsIndexesRemoved);
       out.writeInt(this.numTotalBuckets);

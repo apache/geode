@@ -14,22 +14,22 @@
  */
 package org.apache.geode.internal.cache.versions;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.net.InetAddress;
+import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.List;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.cache.versions.RVVException.ReceivedVersionsIterator;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class RegionVersionHolderJUnitTest {
 
   private int originalBitSetWidth;
@@ -1482,6 +1482,34 @@ public class RegionVersionHolderJUnitTest {
 
   }
 
+  // Using huge values here to ensure we're efficiently creating canonicalExceptions
+  private static final int NUM_TEST_EXCEPTIONS = 10;
+  private static final int TEST_EXCEPTION_SIZE = 200000;
+
+  @Test
+  public void testCanonicalExceptions() {
+    List<RVVException> exceptionList = new ArrayList<>();
+    for (int i = NUM_TEST_EXCEPTIONS; i > 0; --i) {
+      long start = i * TEST_EXCEPTION_SIZE;
+      long end = start + TEST_EXCEPTION_SIZE;
+      RVVException testException = RVVException.createException(start, end);
+      for (long j = start + 2; j < end; j += 2) {
+        testException.add(j);
+      }
+      exceptionList.add(testException);
+    }
+
+    List<RVVException> canonicalExceptions = RegionVersionHolder.canonicalExceptions(exceptionList);
+
+    long expectedStart = NUM_TEST_EXCEPTIONS * TEST_EXCEPTION_SIZE + TEST_EXCEPTION_SIZE - 2;
+    for (RVVException exception : canonicalExceptions) {
+      assertEquals(expectedStart, exception.previousVersion);
+      assertEquals(expectedStart + 2, exception.nextVersion);
+      assertTrue(exception.isEmpty());
+      expectedStart -= 2;
+    }
+  }
+
   /**
    * Test merging two version holders
    */
@@ -1552,10 +1580,10 @@ public class RegionVersionHolderJUnitTest {
         assertEquals(100, vh4.getVersion());
         compareWithBitSet(bs1, vh4);
 
-        // use vh1 to overwrite vh2
-        vh1.version = 105;
-        vh1.addException(100, 106);
-        assertTrue(vh2.sameAs(vh1));
+        // Make sure vh2 is still valid after the clone() call
+        assertEquals(105, vh2.version);
+        assertEquals(100, vh2.getVersion());
+        compareWithBitSet(bs1, vh2);
         validateExceptions(vh2);
       }
     } finally {
@@ -1854,9 +1882,6 @@ public class RegionVersionHolderJUnitTest {
    * Return true if bs1 dominates bs2 - meaning that at least all of the bits set in bs2 are set in
    * bs1.
    *
-   * @param bs1
-   * @param bs2
-   * @return
    */
   private boolean dominates(BitSet bs1, BitSet bs2) {
     // bs1 dominates bs2 if it has set at least all of the bits in bs1.
@@ -1891,7 +1916,8 @@ public class RegionVersionHolderJUnitTest {
               "bad next and previous next=" + ex.nextVersion + ", previous=" + ex.previousVersion);
         }
 
-        for (ReceivedVersionsIterator it = ex.receivedVersionsIterator(); it.hasNext();) {
+        for (RVVException.ReceivedVersionsReverseIterator it =
+            ex.receivedVersionsReverseIterator(); it.hasNext();) {
           Long received = it.next();
           if (received >= ex.nextVersion) {
             Assert.assertTrue(false, "received greater than next next=" + ex.nextVersion

@@ -17,7 +17,6 @@ package org.apache.geode.cache.lucene.internal;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 public class CreateLuceneCommandParametersValidator {
   public static void validateRegionName(String name) {
@@ -43,11 +42,11 @@ public class CreateLuceneCommandParametersValidator {
   private static void validateNameNotEmptyOrNull(String nameProvided) {
     if (nameProvided == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.LocalRegion_NAME_CANNOT_BE_NULL.toLocalizedString());
+          "name cannot be null");
     }
     if (nameProvided.isEmpty()) {
       throw new IllegalArgumentException(
-          LocalizedStrings.LocalRegion_NAME_CANNOT_BE_EMPTY.toLocalizedString());
+          "name cannot be empty");
     }
   }
 }

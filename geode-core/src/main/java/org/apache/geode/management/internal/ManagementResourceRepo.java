@@ -119,7 +119,7 @@ public class ManagementResourceRepo {
       // containsKey does this.
       return localMonitoringRegion.containsKey(key);
     } else {
-      return true; // so caller will think he does not need to do a putAll
+      return true; // so caller will think it does not need to do a putAll
     }
   }
 
@@ -132,7 +132,7 @@ public class ManagementResourceRepo {
    */
   public Object getEntryFromLocalMonitoringRegion(ObjectName name) {
 
-    return localMonitoringRegion.get(name);
+    return localMonitoringRegion.get(name.toString());
   }
 
   /**

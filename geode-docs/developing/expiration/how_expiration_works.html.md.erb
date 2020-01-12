@@ -64,7 +64,7 @@ In both cases, the expiration mechanism checks the last-accessed dates of all co
 
 ## <a id="how_expiration_works__section_expiration_settings_and_netSearch" class="no-quick-link"></a>Interaction Between Expiration Settings and netSearch
 
-Before `netSearch` retrieves an entry value from a remote cache, it validates the *remote* entry’s statistics against the *local* region’s expiration settings. Entries that would have already expired in the local cache are passed over. Once validated, the entry is brought into the local cache and the local access and update statistics are updated for the local copy. The last-accessed time is reset and the last-modified time is updated to the time in the remote cache, with corrections made for system clock differences. Thus the local entry is assigned the true last time the entry was modified in the distributed system. The `netSearch` operation has no effect on the expiration counters in remote caches.
+Before `netSearch` retrieves an entry value from a remote cache, it validates the *remote* entry’s statistics against the *local* region’s expiration settings. Entries that would have already expired in the local cache are passed over. Once validated, the entry is brought into the local cache and the local access and update statistics are updated for the local copy. The last-accessed time is reset and the last-modified time is updated to the time in the remote cache, with corrections made for system clock differences. Thus the local entry is assigned the true last time the entry was modified in the cluster. The `netSearch` operation has no effect on the expiration counters in remote caches.
 
 The `netSearch` method operates only on distributed regions with a data-policy of empty, normal and preloaded.
 

@@ -14,11 +14,10 @@
  */
 package org.apache.geode.cache.wan;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
 import java.util.Arrays;
 
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.serialization.ByteArrayDataInput;
 
 /**
  * This class wraps 1) DistributedMembershipID 2) ThreadID 3) SequenceID attributes which are used
@@ -48,7 +47,7 @@ public class EventSequenceID {
     Object mbr;
     try {
       mbr = InternalDistributedMember
-          .readEssentialData(new DataInputStream(new ByteArrayInputStream(membershipID)));
+          .readEssentialData(new ByteArrayDataInput(membershipID));
     } catch (Exception e) {
       mbr = Arrays.toString(membershipID); // punt and use the bytes
     }

@@ -23,9 +23,6 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.cache.client.internal.locator.ClientConnectionRequest;
-import org.apache.geode.cache.client.internal.locator.ClientConnectionResponse;
-import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
@@ -36,7 +33,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
-import org.apache.geode.internal.protocol.protobuf.v1.state.ProtobufConnectionTerminatingStateProcessor;
+import org.apache.geode.internal.protocol.protobuf.v1.state.TerminateConnection;
 
 @Experimental
 public class GetServerOperationHandler
@@ -57,22 +54,10 @@ public class GetServerOperationHandler
     // note: an empty string is okay - the ServerLocator code checks for this
     String serverGroup = request.getServerGroup();
 
-    messageExecutionContext
-        .setConnectionStateProcessor(new ProtobufConnectionTerminatingStateProcessor());
-    InternalLocator internalLocator = (InternalLocator) messageExecutionContext.getLocator();
+    messageExecutionContext.setState(new TerminateConnection());
 
-    // In order to ensure that proper checks are performed on the request we will use
-    // the locator's processRequest() API. We assume that all servers have Protobuf
-    // enabled.
-    ClientConnectionRequest clientConnectionRequest =
-        new ClientConnectionRequest(excludedServers, serverGroup);
-    ClientConnectionResponse connectionResponse = (ClientConnectionResponse) internalLocator
-        .getServerLocatorAdvisee().processRequest(clientConnectionRequest);
-
-    ServerLocation serverLocation = null;
-    if (connectionResponse != null && connectionResponse.hasResult()) {
-      serverLocation = connectionResponse.getServer();
-    }
+    ServerLocation serverLocation =
+        messageExecutionContext.getSecureLocator().findServer(excludedServers, serverGroup);
 
     if (serverLocation == null) {
       StringBuilder builder = new StringBuilder("Unable to find a server");

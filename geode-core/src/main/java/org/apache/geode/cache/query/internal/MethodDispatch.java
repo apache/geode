@@ -12,9 +12,9 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.cache.query.internal;
 
+import static org.apache.geode.cache.query.security.RestrictedMethodAuthorizer.UNAUTHORIZED_STRING;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -29,28 +29,22 @@ import org.apache.geode.cache.query.NameNotFoundException;
 import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.internal.types.TypeUtils;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-
+import org.apache.geode.security.NotAuthorizedException;
 
 /**
  * Utility class for mapping operations in the query language to Java methods
- *
- * @version $Revision: 1.1 $
  */
-
 public class MethodDispatch {
-  private Class _targetClass;
-  private String _methodName;
-  private Class[] _argTypes;
-  private Method _method; // remember the right method
-  private MethodInvocationAuthorizer _methodInvocationAuthorizer;
+  private Method _method;
+  private final Class _targetClass;
+  private final String _methodName;
+  private final Class[] _argTypes;
 
-  public MethodDispatch(MethodInvocationAuthorizer methodInvocationAuthorizer, Class targetClass,
-      String methodName, List argTypes) throws NameResolutionException {
+  public MethodDispatch(Class targetClass, String methodName, List argTypes)
+      throws NameResolutionException {
     _targetClass = targetClass;
     _methodName = methodName;
-    _argTypes = (Class[]) argTypes.toArray(new Class[argTypes.size()]);
-    _methodInvocationAuthorizer = methodInvocationAuthorizer;
+    _argTypes = (Class[]) argTypes.toArray(new Class[0]);
 
     resolve();
     // override security in case this is a method on a nonpublic class
@@ -58,17 +52,35 @@ public class MethodDispatch {
     _method.setAccessible(true);
   }
 
-  public Object invoke(Object target, List args)
+  public Object invoke(Object target, List args, ExecutionContext executionContext)
       throws NameNotFoundException, QueryInvocationTargetException {
     Object[] argsArray = args.toArray();
 
     try {
-      _methodInvocationAuthorizer.authorizeMethodInvocation(_method, target);
+      // Try to use cached result so authorizer gets invoked only once per query.
+      boolean authorizationResult;
+      String cacheKey = target.getClass().getCanonicalName() + "." + _method.getName();
+      Boolean cachedResult = (Boolean) executionContext.cacheGet(cacheKey);
+
+      if (cachedResult != null) {
+        // Use cached result.
+        authorizationResult = cachedResult;
+      } else {
+        // First time, evaluate and cache result.
+        authorizationResult =
+            executionContext.getMethodInvocationAuthorizer().authorize(_method, target);
+        executionContext.cachePut(cacheKey, authorizationResult);
+      }
+
+      if (!authorizationResult) {
+        throw new NotAuthorizedException(UNAUTHORIZED_STRING + _method.getName());
+      }
+
       return _method.invoke(target, argsArray);
     } catch (IllegalAccessException e) {
       throw new NameNotFoundException(
-          LocalizedStrings.MethodDispatch_METHOD_0_IN_CLASS_1_IS_NOT_ACCESSIBLE_TO_THE_QUERY_PROCESSOR
-              .toLocalizedString(new Object[] {_method.getName(), target.getClass().getName()}),
+          String.format("Method ' %s ' in class ' %s ' is not accessible to the query processor",
+              _method.getName(), target.getClass().getName()),
           e);
     } catch (InvocationTargetException e) {
       // if targetException is Exception, wrap it, otherwise wrap the InvocationTargetException
@@ -79,7 +91,6 @@ public class MethodDispatch {
       throw new QueryInvocationTargetException(e);
     }
   }
-
 
   private void resolve() throws NameResolutionException {
     // if argTypes contains a null, then go directly to resolveGeneral(),
@@ -97,15 +108,12 @@ public class MethodDispatch {
     } catch (NoSuchMethodException e) {
       resolveGeneral();
     }
-
-
   }
-
 
   private void resolveGeneral() throws NameResolutionException {
     Method[] allMethods = _targetClass.getMethods();
     // keep only ones whose method names match and have the same number of args
-    List candidates = new ArrayList();
+    List<Method> candidates = new ArrayList<>();
     for (int i = 0; i < allMethods.length; i++) {
       Method meth = allMethods[i];
       /*
@@ -121,47 +129,42 @@ public class MethodDispatch {
       candidates.add(meth);
     }
 
-
     if (candidates.isEmpty()) {
       throw new NameNotFoundException(
-          LocalizedStrings.MethodDispatch_NO_APPLICABLE_AND_ACCESSIBLE_METHOD_NAMED_0_WAS_FOUND_IN_CLASS_1_FOR_THE_ARGUMENT_TYPES_2
-              .toLocalizedString(
-                  new Object[] {_methodName, _targetClass.getName(), Arrays.asList(_argTypes)}));
+          String.format(
+              "No applicable and accessible method named ' %s ' was found in class ' %s ' for the argument types %s",
+              _methodName, _targetClass.getName(), Arrays.asList(_argTypes)));
     }
-
 
     // now we have a list of accessible and applicable method,
     // choose the most specific
     if (candidates.size() == 1) {
-      _method = (Method) candidates.get(0);
+      _method = candidates.get(0);
       return;
     }
-
 
     sortByDecreasingSpecificity(candidates);
     // get the first two methods in the sorted list,
     // if they are equally specific, then throw AmbiguousMethodException
-    Method meth1 = (Method) candidates.get(0);
-    Method meth2 = (Method) candidates.get(1);
+    Method meth1 = candidates.get(0);
+    Method meth2 = candidates.get(1);
     // if meth1 cannot be type-converted to meth2, then meth1 is not more
     // specific than meth2 and the invocation is ambiguous.
     // special case a null argument type in this case, since there should
     // be not differentiation for those parameter types regarding specificity
 
-
     if (equalSpecificity(meth1, meth2, _argTypes))
       throw new AmbiguousNameException(
-          LocalizedStrings.MethodDispatch_TWO_OR_MORE_MAXIMALLY_SPECIFIC_METHODS_WERE_FOUND_FOR_THE_METHOD_NAMED_0_IN_CLASS_1_FOR_THE_ARGUMENT_TYPES_2
-              .toLocalizedString(new Object[] {meth1.getName(), _targetClass.getName(),
-                  Arrays.asList(_argTypes)}));
+          String.format(
+              "Two or more maximally specific methods were found for the method named ' %s ' in class ' %s ' for the argument types: %s",
+              meth1.getName(), _targetClass.getName(), Arrays.asList(_argTypes)));
 
     _method = meth1;
   }
 
-
-
   private void sortByDecreasingSpecificity(List methods) {
     Collections.sort(methods, new Comparator() {
+      @Override
       public int compare(Object o1, Object o2) {
         Method m1 = (Method) o1;
         Method m2 = (Method) o2;
@@ -178,7 +181,7 @@ public class MethodDispatch {
     });
   }
 
-  protected boolean methodConvertible(Method m1, Method m2) {
+  private boolean methodConvertible(Method m1, Method m2) {
     boolean declaringClassesConvertible =
         TypeUtils.isTypeConvertible(m1.getDeclaringClass(), m2.getDeclaringClass());
 
@@ -200,24 +203,17 @@ public class MethodDispatch {
     if (!methodConvertible(m1, m2))
       return true;
 
-
     // if there is at least one param type that is more specific
     // ignoring parameters with a null argument, then
     // answer false, otherwise true.
-
     Class[] p1 = m1.getParameterTypes();
     Class[] p2 = m2.getParameterTypes();
     for (int i = 0; i < p1.length; i++) {
-      if (argTypes[i] != null && p1[i] != p2[i] && TypeUtils.isTypeConvertible(p1[i], p2[i])) // assumes
-                                                                                              // m1
-                                                                                              // is
-                                                                                              // <=
-                                                                                              // m2
-                                                                                              // in
-                                                                                              // specificity
+      // assumes m1 is <= m2 in specificity
+      if (argTypes[i] != null && p1[i] != p2[i] && TypeUtils.isTypeConvertible(p1[i], p2[i]))
         return false;
     }
+
     return true;
   }
-
 }

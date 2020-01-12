@@ -21,17 +21,20 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.size.ObjectTraverser.Visitor;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 
 public class ObjectGraphSizer {
   private static final String SIZE_OF_CLASS_NAME =
-      System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "ObjectSizer.SIZE_OF_CLASS",
+      System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + "ObjectSizer.SIZE_OF_CLASS",
           ReflectionSingleObjectSizer.class.getName());
+  @Immutable
   static final SingleObjectSizer SIZE_OF_UTIL;
-  private static ObjectFilter NULL_FILTER = new ObjectFilter() {
+  @Immutable
+  private static final ObjectFilter NULL_FILTER = new ObjectFilter() {
     @Override
     public boolean accept(Object parent, Object object) {
       return true;
@@ -123,6 +126,7 @@ public class ObjectGraphSizer {
       this.filter = filter;
     }
 
+    @Override
     public boolean visit(Object parent, Object object) {
       if (!filter.accept(parent, object)) {
         return false;
@@ -191,6 +195,7 @@ public class ObjectGraphSizer {
 
 
 
+      @Override
       public int compareTo(HistogramEntry o) {
         int diff = size.compareTo(o.size);
         if (diff == 0) {
@@ -214,6 +219,7 @@ public class ObjectGraphSizer {
       this.filter = filter;
     }
 
+    @Override
     public boolean visit(Object parent, Object object) {
       if (!filter.accept(parent, object)) {
         return false;

@@ -16,6 +16,8 @@ package org.apache.geode.management.internal.beans;
 
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.apache.geode.annotations.internal.MakeNotStatic;
+
 /**
  * Class to give a consistent sequence number to notifications
  *
@@ -24,7 +26,8 @@ import java.util.concurrent.atomic.AtomicLong;
 public class SequenceNumber {
 
   /** Sequence number for resource related notifications **/
-  private static AtomicLong sequenceNumber = new AtomicLong(1);
+  @MakeNotStatic
+  private static final AtomicLong sequenceNumber = new AtomicLong(1);
 
   public static long next() {
     long retVal = sequenceNumber.incrementAndGet();

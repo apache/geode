@@ -23,7 +23,7 @@ import org.apache.geode.admin.CacheVm;
 import org.apache.geode.admin.CacheVmConfig;
 import org.apache.geode.admin.ManagedEntityConfig;
 import org.apache.geode.admin.SystemMemberType;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.admin.GemFireVM;
 import org.apache.geode.internal.admin.remote.RemoteApplicationVM;
@@ -36,6 +36,7 @@ import org.apache.geode.internal.admin.remote.RemoteApplicationVM;
 public class CacheServerImpl extends ManagedSystemMemberImpl implements CacheVm, CacheServer {
 
   /** How many new <code>CacheServer</code>s have been created? */
+  @MakeNotStatic
   private static int newCacheServers = 0;
 
   /////////////////////// Instance Fields ///////////////////////
@@ -75,12 +76,14 @@ public class CacheServerImpl extends ManagedSystemMemberImpl implements CacheVm,
     return SystemMemberType.CACHE_VM;
   }
 
+  @Override
   public String getNewId() {
     synchronized (CacheServerImpl.class) {
       return "CacheVm" + (++newCacheServers);
     }
   }
 
+  @Override
   public void start() throws AdminException {
     if (!needToStart()) {
       return;
@@ -91,6 +94,7 @@ public class CacheServerImpl extends ManagedSystemMemberImpl implements CacheVm,
     this.config.setManagedEntity(this);
   }
 
+  @Override
   public void stop() {
     if (!needToStop()) {
       return;
@@ -101,6 +105,7 @@ public class CacheServerImpl extends ManagedSystemMemberImpl implements CacheVm,
     this.config.setManagedEntity(null);
   }
 
+  @Override
   public boolean isRunning() {
     DistributionManager dm =
         ((AdminDistributedSystemImpl) getDistributedSystem()).getDistributionManager();
@@ -111,29 +116,34 @@ public class CacheServerImpl extends ManagedSystemMemberImpl implements CacheVm,
         return false;
       }
     }
-    return ((ClusterDistributionManager) dm).getDistributionManagerIdsIncludingAdmin()
+    return dm.getDistributionManagerIdsIncludingAdmin()
         .contains(getDistributedMember());
   }
 
+  @Override
   public CacheServerConfig getConfig() {
     return this.config;
   }
 
+  @Override
   public CacheVmConfig getVmConfig() {
     return this.config;
   }
 
   //////////////////////// Command execution ////////////////////////
 
+  @Override
   public ManagedEntityConfig getEntityConfig() {
     return this.getConfig();
   }
 
+  @Override
   public String getEntityType() {
     // Fix bug 32564
     return "Cache Vm";
   }
 
+  @Override
   public String getStartCommand() {
     StringBuffer sb = new StringBuffer();
     sb.append(this.controller.getProductExecutable(this, "cacheserver"));
@@ -159,6 +169,7 @@ public class CacheServerImpl extends ManagedSystemMemberImpl implements CacheVm,
     return sb.toString().trim();
   }
 
+  @Override
   public String getStopCommand() {
     StringBuffer sb = new StringBuffer();
     sb.append(this.controller.getProductExecutable(this, "cacheserver"));
@@ -168,6 +179,7 @@ public class CacheServerImpl extends ManagedSystemMemberImpl implements CacheVm,
     return sb.toString().trim();
   }
 
+  @Override
   public String getIsRunningCommand() {
     StringBuffer sb = new StringBuffer();
     sb.append(this.controller.getProductExecutable(this, "cacheserver"));
@@ -185,6 +197,7 @@ public class CacheServerImpl extends ManagedSystemMemberImpl implements CacheVm,
    *
    * @since GemFire 5.6
    */
+  @Override
   public boolean isPrimaryForDurableClient(String durableClientId) {
     RemoteApplicationVM vm = (RemoteApplicationVM) this.getGemFireVM();
     boolean isPrimary = false;

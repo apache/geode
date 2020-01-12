@@ -16,16 +16,20 @@ package org.apache.geode.internal.offheap;
 
 import java.lang.reflect.Method;
 
-import org.apache.geode.*;
+import org.apache.geode.StatisticDescriptor;
+import org.apache.geode.Statistics;
+import org.apache.geode.StatisticsFactory;
+import org.apache.geode.StatisticsType;
+import org.apache.geode.StatisticsTypeFactory;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Enables off-heap storage by creating a MemoryAllocator.
@@ -34,9 +38,10 @@ import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
  */
 public class OffHeapStorage implements OffHeapMemoryStats {
   public static final String STAY_CONNECTED_ON_OUTOFOFFHEAPMEMORY_PROPERTY =
-      DistributionConfig.GEMFIRE_PREFIX + "offheap.stayConnectedOnOutOfOffHeapMemory";
+      GeodeGlossary.GEMFIRE_PREFIX + "offheap.stayConnectedOnOutOfOffHeapMemory";
 
   // statistics type
+  @Immutable
   private static final StatisticsType statsType;
   private static final String statsTypeName = "OffHeapMemoryStats";
   private static final String statsTypeDescription = "Statistics about off-heap memory storage.";
@@ -132,7 +137,7 @@ public class OffHeapStorage implements OffHeapMemoryStats {
 
   public static long calcMaxSlabSize(long offHeapMemorySize) {
     final String offHeapSlabConfig =
-        System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_SLAB_SIZE");
+        System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + "OFF_HEAP_SLAB_SIZE");
     long result = 0;
     if (offHeapSlabConfig != null && !offHeapSlabConfig.equals("")) {
       result = parseLongWithUnits(offHeapSlabConfig, MAX_SLAB_SIZE, 1024 * 1024);
@@ -168,11 +173,15 @@ public class OffHeapStorage implements OffHeapMemoryStats {
           long.class, long.class);
     } catch (ClassNotFoundException e) {
       throw new CacheException(
-          LocalizedStrings.MEMSCALE_JVM_INCOMPATIBLE_WITH_OFF_HEAP.toLocalizedString("product"),
+          String.format(
+              "Your Java virtual machine is incompatible with off-heap memory.  Please refer to %s documentation for suggested JVMs.",
+              "product"),
           e) {};
     } catch (NoSuchMethodException e) {
       throw new CacheException(
-          LocalizedStrings.MEMSCALE_JVM_INCOMPATIBLE_WITH_OFF_HEAP.toLocalizedString("product"),
+          String.format(
+              "Your Java virtual machine is incompatible with off-heap memory.  Please refer to %s documentation for suggested JVMs.",
+              "product"),
           e) {};
     }
   }
@@ -264,34 +273,42 @@ public class OffHeapStorage implements OffHeapMemoryStats {
     this.stats = f.createAtomicStatistics(statsType, statsName);
   }
 
+  @Override
   public void incFreeMemory(long value) {
     this.stats.incLong(freeMemoryId, value);
   }
 
+  @Override
   public void incMaxMemory(long value) {
     this.stats.incLong(maxMemoryId, value);
   }
 
+  @Override
   public void incUsedMemory(long value) {
     this.stats.incLong(usedMemoryId, value);
   }
 
+  @Override
   public void incObjects(int value) {
     this.stats.incInt(objectsId, value);
   }
 
+  @Override
   public long getFreeMemory() {
     return this.stats.getLong(freeMemoryId);
   }
 
+  @Override
   public long getMaxMemory() {
     return this.stats.getLong(maxMemoryId);
   }
 
+  @Override
   public long getUsedMemory() {
     return this.stats.getLong(usedMemoryId);
   }
 
+  @Override
   public int getObjects() {
     return this.stats.getInt(objectsId);
   }
@@ -370,6 +387,7 @@ public class OffHeapStorage implements OffHeapMemoryStats {
     return this.stats.getInt(fragmentationId);
   }
 
+  @Override
   public Statistics getStats() {
     return this.stats;
   }

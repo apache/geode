@@ -19,17 +19,22 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
+
 /**
  * This class is used for the DM's serial executor. The only thing it currently does is increment
  * stats.
  */
 public class SerialQueuedExecutorWithDMStats extends ThreadPoolExecutor {
   final PoolStatHelper stats;
+  private final ThreadsMonitoring threadMonitoring;
 
-  public SerialQueuedExecutorWithDMStats(BlockingQueue q, PoolStatHelper stats, ThreadFactory tf) {
+  public SerialQueuedExecutorWithDMStats(BlockingQueue q, PoolStatHelper stats, ThreadFactory tf,
+      ThreadsMonitoring tMonitoring) {
     super(1, 1, 60, TimeUnit.SECONDS, q, tf, new PooledExecutorWithDMStats.BlockHandler());
     // allowCoreThreadTimeOut(true); // deadcoded for 1.5
     this.stats = stats;
+    this.threadMonitoring = tMonitoring;
   }
 
   @Override
@@ -37,12 +42,18 @@ public class SerialQueuedExecutorWithDMStats extends ThreadPoolExecutor {
     if (this.stats != null) {
       this.stats.startJob();
     }
+    if (this.threadMonitoring != null) {
+      threadMonitoring.startMonitor(ThreadsMonitoring.Mode.SerialQueuedExecutor);
+    }
   }
 
   @Override
   protected void afterExecute(Runnable r, Throwable ex) {
     if (this.stats != null) {
       this.stats.endJob();
+    }
+    if (this.threadMonitoring != null) {
+      threadMonitoring.endMonitor();
     }
   }
 }

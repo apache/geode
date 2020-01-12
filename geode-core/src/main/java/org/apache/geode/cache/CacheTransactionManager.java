@@ -175,7 +175,6 @@ public interface CacheTransactionManager {
    * This method can be used to determine if a transaction with the given transaction identifier is
    * currently suspended locally. This method does not check other members for transaction status.
    *
-   * @param transactionId
    * @return true if the transaction is in suspended state, false otherwise
    * @since GemFire 6.6.2
    * @see #exists(TransactionId)
@@ -317,7 +316,6 @@ public interface CacheTransactionManager {
   /**
    * Set the TransactionWriter for the cache
    *
-   * @param writer
    * @see TransactionWriter
    * @since GemFire 6.5
    */

@@ -1,5 +1,5 @@
 ---
-title:  GET /gemfire-api/v1/{region}
+title:  GET /geode/v1/{region}
 ---
 
 <!--
@@ -24,7 +24,7 @@ Read data for the region. The optional limit URL query parameter specifies the n
 ## Resource URL
 
 ``` pre
-http://<hostname_or_http-service-bind-address>:<http-service-port>/gemfire-api/v1/{region}?[limit={<number>|ALL}]
+http://<hostname_or_http-service-bind-address>:<http-service-port>/geode/v1/{region}?[limit={<number>|ALL}]
 ```
 
 ## Parameters
@@ -56,7 +56,7 @@ http://<hostname_or_http-service-bind-address>:<http-service-port>/gemfire-api/v
 ## Example Request
 
 ``` pre
-GET /gemfire-api/v1/orders/
+GET /geode/v1/orders/
 Accept: application/json
 ```
 
@@ -67,7 +67,7 @@ Response Payload: application/json
 
 200 OK
 Server: Apache-Coyote/1.1
-Content-Location: http://localhost:8080/gemfire-api/v1/orders/3,1
+Content-Location: http://localhost:8080/geode/v1/orders/3,1
 Content-Type: application/json
 Transfer-Encoding: chunked
 Date: Sat, 18 Jan 2014 21:03:08 GMT

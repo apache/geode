@@ -12,78 +12,114 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
-
 package org.apache.geode.internal.admin.remote;
 
-import java.io.*;
-import java.util.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.time.Instant;
+import java.util.Date;
+import java.util.concurrent.atomic.AtomicReference;
 
-import org.apache.geode.*;
+import org.apache.geode.DataSerializer;
 import org.apache.geode.admin.AlertLevel;
-import org.apache.geode.distributed.internal.*;
-import org.apache.geode.distributed.internal.membership.*;
-import org.apache.geode.internal.admin.*;
+import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.annotations.internal.MakeNotStatic;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.AdminMessageType;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.PooledDistributionMessage;
+import org.apache.geode.distributed.internal.ResourceEvent;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.admin.Alert;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.management.internal.AlertDetails;
 
 /**
- * A message that is sent to a particular console distribution manager to notify it of an alert.
+ * A message that is sent to an admin member or manager to notify it of an alert.
+ *
+ * <p>
+ * Alerts are sent from remote members to the manager via {@link AlertListenerMessage} which is
+ * no-ack (asynchronous). This means you cannot log a warning in one VM and immediately verify that
+ * it arrives in the manager VM. You have to use {@code Mockito#timeout(long)} or
+ * {@code Awaitility}.
  */
 public class AlertListenerMessage extends PooledDistributionMessage implements AdminMessageType {
-  // instance variables
-  private int msgLevel;
-  private Date msgDate;
+  @MakeNotStatic
+  private static final AtomicReference<Listener> listenerRef = new AtomicReference<>();
+
+  private int alertLevel;
+  private Date date;
   private String connectionName;
   private String threadName;
-  private long tid;
-  private String msg;
+  private long threadId;
+  private String message;
   private String exceptionText;
 
-  public static AlertListenerMessage create(Object recipient, int msgLevel, Date msgDate,
-      String connectionName, String threadName, long tid, String msg, String exceptionText) {
-    AlertListenerMessage m = new AlertListenerMessage();
-    m.setRecipient((InternalDistributedMember) recipient);
-    m.msgLevel = msgLevel;
-    m.msgDate = msgDate;
-    m.connectionName = connectionName;
-    if (m.connectionName == null) {
-      m.connectionName = "";
+  public static AlertListenerMessage create(DistributedMember recipient, int alertLevel,
+      Instant timestamp,
+      String connectionName, String threadName, long threadId, String message,
+      String exceptionText) {
+    AlertListenerMessage alertListenerMessage = new AlertListenerMessage();
+    alertListenerMessage.setRecipient((InternalDistributedMember) recipient);
+    alertListenerMessage.alertLevel = alertLevel;
+    alertListenerMessage.date = new Date(timestamp.toEpochMilli());
+    alertListenerMessage.connectionName = connectionName;
+    if (alertListenerMessage.connectionName == null) {
+      alertListenerMessage.connectionName = "";
     }
-    m.threadName = threadName;
-    if (m.threadName == null) {
-      m.threadName = "";
+    alertListenerMessage.threadName = threadName;
+    if (alertListenerMessage.threadName == null) {
+      alertListenerMessage.threadName = "";
     }
-    m.tid = tid;
-    m.msg = msg;
-    if (m.msg == null) {
-      m.msg = "";
+    alertListenerMessage.threadId = threadId;
+    alertListenerMessage.message = message;
+    if (alertListenerMessage.message == null) {
+      alertListenerMessage.message = "";
     }
-    m.exceptionText = exceptionText;
-    if (m.exceptionText == null) {
-      m.exceptionText = "";
+    alertListenerMessage.exceptionText = exceptionText;
+    if (alertListenerMessage.exceptionText == null) {
+      alertListenerMessage.exceptionText = "";
     }
-    return m;
+    return alertListenerMessage;
   }
 
   @Override
   public void process(ClusterDistributionManager dm) {
-    RemoteGfManagerAgent agent = dm.getAgent();
-    if (agent != null) {
-      RemoteGemFireVM mgr = agent.getMemberById(this.getSender());
-      if (mgr == null)
-        return;
-      Alert alert = new RemoteAlert(mgr, msgLevel, msgDate, connectionName, threadName, tid, msg,
-          exceptionText, getSender());
-      agent.callAlertListener(alert);
-    } else {
-      /**
-       * Its assumed that its a managing node and it has to emit any alerts emitted to it.
-       */
-      AlertDetails alertDetail = new AlertDetails(msgLevel, msgDate, connectionName, threadName,
-          tid, msg, exceptionText, getSender());
-      dm.getSystem().handleResourceEvent(ResourceEvent.SYSTEM_ALERT, alertDetail);
+    Listener listener = getListener();
+    if (listener != null) {
+      listener.received(this);
     }
 
+    RemoteGfManagerAgent agent = dm.getAgent();
+    if (agent != null) {
+      RemoteGemFireVM manager = agent.getMemberById(getSender());
+      if (manager == null) {
+        return;
+      }
+      Alert alert = new RemoteAlert(manager, alertLevel, date, connectionName, threadName, threadId,
+          message, exceptionText, getSender());
+
+      if (listener != null) {
+        listener.created(alert);
+      }
+
+      agent.callAlertListener(alert);
+    } else {
+      /*
+       * The other recipient type is a JMX Manager which needs AlertDetails so that it can send out
+       * JMX notifications for the alert.
+       */
+      AlertDetails alertDetail = new AlertDetails(alertLevel, date, connectionName, threadName,
+          threadId, message, exceptionText, getSender());
+
+      if (listener != null) {
+        listener.created(alertDetail);
+      }
+
+      dm.getSystem().handleResourceEvent(ResourceEvent.SYSTEM_ALERT, alertDetail);
+    }
   }
 
   @Override
@@ -91,37 +127,74 @@ public class AlertListenerMessage extends PooledDistributionMessage implements A
     return true;
   }
 
+  @Override
+  public boolean isHighPriority() {
+    return true;
+  }
+
+  @Override
   public int getDSFID() {
     return ALERT_LISTENER_MESSAGE;
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
-    out.writeInt(msgLevel);
-    DataSerializer.writeObject(msgDate, out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
+    out.writeInt(alertLevel);
+    DataSerializer.writeObject(date, out);
     DataSerializer.writeString(connectionName, out);
     DataSerializer.writeString(threadName, out);
-    out.writeLong(tid);
-    DataSerializer.writeString(msg, out);
+    out.writeLong(threadId);
+    DataSerializer.writeString(message, out);
     DataSerializer.writeString(exceptionText, out);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
-    this.msgLevel = in.readInt();
-    this.msgDate = (Date) DataSerializer.readObject(in);
-    this.connectionName = DataSerializer.readString(in);
-    this.threadName = DataSerializer.readString(in);
-    this.tid = in.readLong();
-    this.msg = DataSerializer.readString(in);
-    this.exceptionText = DataSerializer.readString(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
+    alertLevel = in.readInt();
+    date = DataSerializer.readObject(in);
+    connectionName = DataSerializer.readString(in);
+    threadName = DataSerializer.readString(in);
+    threadId = in.readLong();
+    message = DataSerializer.readString(in);
+    exceptionText = DataSerializer.readString(in);
   }
 
   @Override
   public String toString() {
-    return "Alert \"" + this.msg + "\" level " + AlertLevel.forSeverity(this.msgLevel);
+    return "Alert \"" + message + "\" level " + AlertLevel.forSeverity(alertLevel);
   }
 
+  @VisibleForTesting
+  public String getMessage() {
+    return message;
+  }
+
+  @VisibleForTesting
+  public static void addListener(Listener listener) {
+    listenerRef.compareAndSet(null, listener);
+  }
+
+  @VisibleForTesting
+  public static void removeListener(Listener listener) {
+    listenerRef.compareAndSet(listener, null);
+  }
+
+  @VisibleForTesting
+  public static Listener getListener() {
+    return listenerRef.get();
+  }
+
+  @VisibleForTesting
+  public interface Listener {
+
+    void received(AlertListenerMessage message);
+
+    void created(Alert alert);
+
+    void created(AlertDetails alertDetails);
+  }
 }

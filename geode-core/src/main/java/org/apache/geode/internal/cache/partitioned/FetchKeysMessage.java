@@ -39,17 +39,19 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.InitialImageOperation;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
+import org.apache.geode.internal.cache.TXManagerImpl;
+import org.apache.geode.internal.cache.TXStateProxy;
 import org.apache.geode.internal.cache.tier.InterestType;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.util.ObjectIntProcedure;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 
 public class FetchKeysMessage extends PartitionMessage {
@@ -57,10 +59,14 @@ public class FetchKeysMessage extends PartitionMessage {
 
   private Integer bucketId;
 
-  /** the interest policy to use in processing the keys */
+  /**
+   * the interest policy to use in processing the keys
+   */
   private int interestType;
 
-  /** the argument for the interest type (regex string, className, list of keys) */
+  /**
+   * the argument for the interest type (regex string, className, list of keys)
+   */
   private Object interestArg;
 
   private boolean allowTombstones;
@@ -93,29 +99,42 @@ public class FetchKeysMessage extends PartitionMessage {
   public static FetchKeysResponse send(InternalDistributedMember recipient, PartitionedRegion r,
       Integer bucketId, boolean allowTombstones) throws ForceReattemptException {
     Assert.assertTrue(recipient != null, "FetchKeysMessage NULL recipient");
-    FetchKeysMessage tmp = new FetchKeysMessage();
-    FetchKeysResponse p =
-        (FetchKeysResponse) tmp.createReplyProcessor(r, Collections.singleton(recipient));
-    FetchKeysMessage m = new FetchKeysMessage(recipient, r.getPRId(), p, bucketId,
-        InterestType.REGULAR_EXPRESSION, ".*", allowTombstones);
-    m.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
-
-    Set failures = r.getDistributionManager().putOutgoing(m);
-    if (failures != null && failures.size() > 0) {
-      throw new ForceReattemptException(
-          LocalizedStrings.FetchKeysMessage_FAILED_SENDING_0.toLocalizedString(m));
+    TXManagerImpl txManager = r.getCache().getTxManager();
+    boolean resetTxState = isTransactionInternalSuspendNeeded(txManager);
+    TXStateProxy txStateProxy = null;
+    if (resetTxState) {
+      txStateProxy = txManager.pauseTransaction();
     }
 
-    return p;
+    try {
+      FetchKeysMessage tmp = new FetchKeysMessage();
+
+      FetchKeysResponse p =
+          (FetchKeysResponse) tmp.createReplyProcessor(r, Collections.singleton(recipient));
+      FetchKeysMessage m = new FetchKeysMessage(recipient, r.getPRId(), p, bucketId,
+          InterestType.REGULAR_EXPRESSION, ".*", allowTombstones);
+      m.setTransactionDistributed(txManager.isDistributed());
+
+      Set failures = r.getDistributionManager().putOutgoing(m);
+      if (failures != null && failures.size() > 0) {
+        throw new ForceReattemptException(
+            String.format("Failed sending < %s >", m));
+      }
+      return p;
+    } finally {
+      if (resetTxState) {
+        txManager.unpauseTransaction(txStateProxy);
+      }
+    }
+  }
+
+  private static boolean isTransactionInternalSuspendNeeded(TXManagerImpl txManager) {
+    TXStateProxy txState = txManager.getTXState();
+    // handle distributed transaction when needed.
+    return txState != null && txState.isRealDealLocal() && !txState.isDistTx();
   }
 
   /**
-   *
-   * @param recipient
-   * @param r
-   * @param bucketId
-   * @param itype
-   * @param arg
    * @return the FetchKeysResponse
    * @throws ForceReattemptException if the peer is no longer available
    */
@@ -132,7 +151,7 @@ public class FetchKeysMessage extends PartitionMessage {
     Set failures = r.getDistributionManager().putOutgoing(m);
     if (failures != null && failures.size() > 0) {
       throw new ForceReattemptException(
-          LocalizedStrings.FetchKeysMessage_FAILED_SENDING_0.toLocalizedString(m));
+          String.format("Failed sending < %s >", m));
     }
 
     return p;
@@ -158,8 +177,9 @@ public class FetchKeysMessage extends PartitionMessage {
       try {
         Set keys =
             ds.handleRemoteGetKeys(this.bucketId, interestType, interestArg, allowTombstones);
-        if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.debug("FetchKeysMessage sending {} keys back using processorId: : {}", keys.size(),
+        if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+          logger.trace(LogMarker.DM_VERBOSE,
+              "FetchKeysMessage sending {} keys back using processorId: : {}", keys.size(),
               getProcessorId(), keys);
         }
         r.getPrStats().endPartitionMessagesProcessing(startTime);
@@ -169,13 +189,11 @@ public class FetchKeysMessage extends PartitionMessage {
           logger.debug("FetchKeysMessage Encountered PRLocallyDestroyedException");
         }
         throw new ForceReattemptException(
-            LocalizedStrings.FetchKeysMessage_ENCOUNTERED_PRLOCALLYDESTROYEDEXCEPTION
-                .toLocalizedString(),
+            "Encountered PRLocallyDestroyedException",
             pde);
       }
     } else {
-      logger.warn(LocalizedMessage.create(
-          LocalizedStrings.FetchKeysMessage_FETCHKEYSMESSAGE_DATA_STORE_NOT_CONFIGURED_FOR_THIS_MEMBER));
+      logger.warn("FetchKeysMessage: data store not configured for this member");
     }
 
     // Unless there was an exception thrown, this message handles sending the response
@@ -188,6 +206,7 @@ public class FetchKeysMessage extends PartitionMessage {
     buff.append("; bucketId=").append(this.bucketId);
   }
 
+  @Override
   public int getDSFID() {
     return PR_FETCH_KEYS_MESSAGE;
   }
@@ -197,13 +216,15 @@ public class FetchKeysMessage extends PartitionMessage {
    */
   public Version[] serializationVersions = null;
 
+  @Override
   public Version[] getSerializationVersions() {
     return serializationVersions;
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.bucketId = Integer.valueOf(in.readInt());
     this.interestType = in.readInt();
     this.interestArg = DataSerializer.readObject(in);
@@ -211,8 +232,9 @@ public class FetchKeysMessage extends PartitionMessage {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     out.writeInt(this.bucketId.intValue());
     out.writeInt(interestType);
     DataSerializer.writeObject(interestArg, out);
@@ -220,17 +242,29 @@ public class FetchKeysMessage extends PartitionMessage {
   }
 
   public static class FetchKeysReplyMessage extends ReplyMessage {
-    /** The number of the series */
+    /**
+     * The number of the series
+     */
     int seriesNum;
-    /** The message number in the series */
+    /**
+     * The message number in the series
+     */
     int msgNum;
-    /** The total number of series */
+    /**
+     * The total number of series
+     */
     int numSeries;
-    /** Whether this is the last of a series */
+    /**
+     * Whether this is the last of a series
+     */
     boolean lastInSeries;
-    /** the stream holding the chunk to send */
+    /**
+     * the stream holding the chunk to send
+     */
     transient HeapDataOutputStream chunkStream;
-    /** the array holding data received */
+    /**
+     * the array holding data received
+     */
     transient byte[] chunk;
 
     /**
@@ -280,10 +314,11 @@ public class FetchKeysMessage extends PartitionMessage {
                * @param b positive if last chunk
                * @return true to continue to next chunk
                */
+              @Override
               public boolean executeWith(Object a, int b) {
                 // if (this.last)
                 // throw new
-                // InternalGemFireError(LocalizedStrings.FetchKeysMessage_ALREADY_PROCESSED_LAST_CHUNK.toLocalizedString());
+                // InternalGemFireError(LocalizedStrings.FetchKeysMessage_ALREADY_PROCESSED_LAST_CHUNK));
                 HeapDataOutputStream chunk = (HeapDataOutputStream) a;
                 this.last = b > 0;
                 try {
@@ -301,8 +336,7 @@ public class FetchKeysMessage extends PartitionMessage {
         }
       } catch (IOException io) {
         throw new ForceReattemptException(
-            LocalizedStrings.FetchKeysMessage_UNABLE_TO_SEND_RESPONSE_TO_FETCH_KEYS_REQUEST
-                .toLocalizedString(),
+            "Unable to send response to fetch keys request",
             io);
       }
       // TODO [bruce] pass a reference to the cache or region down here so we can do this test
@@ -384,24 +418,25 @@ public class FetchKeysMessage extends PartitionMessage {
       FetchKeysResponse processor = (FetchKeysResponse) p;
 
       if (processor == null) {
-        if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.trace(LogMarker.DM, "FetchKeysReplyMessage processor not found");
+        if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+          logger.trace(LogMarker.DM_VERBOSE, "FetchKeysReplyMessage processor not found");
         }
         return;
       }
 
       processor.processChunk(this);
 
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM, "{} processed {}", processor, this);
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE, "{} processed {}", processor, this);
       }
 
       dm.getStats().incReplyMessageTime(DistributionStats.getStatTime() - startTime);
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       out.writeInt(this.seriesNum);
       out.writeInt(this.msgNum);
       out.writeInt(this.numSeries);
@@ -415,8 +450,9 @@ public class FetchKeysMessage extends PartitionMessage {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.seriesNum = in.readInt();
       this.msgNum = in.readInt();
       this.numSeries = in.readInt();
@@ -444,6 +480,7 @@ public class FetchKeysMessage extends PartitionMessage {
       return sb.toString();
     }
   }
+
   /**
    * A processor to capture the value returned by
    * {@link org.apache.geode.internal.cache.partitioned.GetMessage.GetReplyMessage}
@@ -456,16 +493,24 @@ public class FetchKeysMessage extends PartitionMessage {
 
     private final Set returnValue;
 
-    /** lock used to synchronize chunk processing */
+    /**
+     * lock used to synchronize chunk processing
+     */
     private final Object endLock = new Object();
 
-    /** number of chunks processed */
+    /**
+     * number of chunks processed
+     */
     private volatile int chunksProcessed;
 
-    /** chunks expected (set when last chunk has been processed */
+    /**
+     * chunks expected (set when last chunk has been processed
+     */
     private volatile int chunksExpected;
 
-    /** whether the last chunk has been processed */
+    /**
+     * whether the last chunk has been processed
+     */
     private volatile boolean lastChunkReceived;
 
     public FetchKeysResponse(InternalDistributedSystem ds, PartitionedRegion pr, Set recipients) {
@@ -511,14 +556,15 @@ public class FetchKeysMessage extends PartitionMessage {
             if (lastChunkReceived && (chunksExpected == chunksProcessed)) {
               doneProcessing = true;
             }
-            if (logger.isTraceEnabled(LogMarker.DM)) {
-              logger.debug("{} chunksProcessed={},lastChunkReceived={},chunksExpected={},done={}",
-                  this, chunksProcessed, lastChunkReceived, chunksExpected, doneProcessing);
+            if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+              logger.trace(LogMarker.DM_VERBOSE,
+                  "{} chunksProcessed={},lastChunkReceived={},chunksExpected={},done={}", this,
+                  chunksProcessed, lastChunkReceived, chunksExpected, doneProcessing);
             }
           }
         } catch (Exception e) {
           processException(new ReplyException(
-              LocalizedStrings.FetchKeysMessage_ERROR_DESERIALIZING_KEYS.toLocalizedString(), e));
+              "Error deserializing keys", e));
           checkIfDone(); // fix for hang in 41202
         }
 
@@ -542,21 +588,20 @@ public class FetchKeysMessage extends PartitionMessage {
           logger.debug("FetchKeysResponse got remote CacheClosedException; forcing reattempt. {}",
               t.getMessage(), t);
           throw new ForceReattemptException(
-              LocalizedStrings.FetchKeysMessage_FETCHKEYSRESPONSE_GOT_REMOTE_CACHECLOSEDEXCEPTION_FORCING_REATTEMPT
-                  .toLocalizedString(),
+              "FetchKeysResponse got remote CacheClosedException; forcing reattempt.",
               t);
         }
         if (t instanceof ForceReattemptException) {
           logger.debug("FetchKeysResponse got remote ForceReattemptException; rethrowing. {}",
               e.getMessage(), e);
           throw new ForceReattemptException(
-              LocalizedStrings.FetchKeysMessage_PEER_REQUESTS_REATTEMPT.toLocalizedString(), t);
+              "Peer requests reattempt", t);
         }
         e.handleCause();
       }
       if (!this.lastChunkReceived) {
         throw new ForceReattemptException(
-            LocalizedStrings.FetchKeysMessage_NO_REPLIES_RECEIVED.toLocalizedString());
+            "No replies received");
       }
       return this.returnValue;
     }

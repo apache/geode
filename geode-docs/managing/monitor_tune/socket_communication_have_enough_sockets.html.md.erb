@@ -25,7 +25,7 @@ Sockets use file descriptors and the operating system’s view of your applicati
 
 ## <a id="socket_comm__section_31B4EFAD6F384AB1BEBCF148D3DEA514" class="no-quick-link"></a>Socket Sharing
 
-You can configure socket sharing for peer-to-peer and client-to-server connections:
+You can configure socket sharing for peer-to-peer:
 
 - **Peer-to-peer**. You can configure whether your members share sockets both at the application
 level and at the thread level. To enable sharing at the application level, set the
@@ -34,7 +34,6 @@ recommend that you set `conserve-sockets` to `false`.
 
     At the thread level, developers can override this setting by using the DistributedSystem API method `setThreadsSocketPolicy`. You might want to enable socket sharing at the application level and then have threads that do a lot of cache work take sole ownership of their sockets. Make sure to program these threads to release their sockets as soon as possible using the `releaseThreadsSockets` method, rather than waiting for a timeout or thread death.
 
--   **Client**. You can configure whether your clients share their socket connections to servers with the pool setting `thread-local-connections`. There is no thread override for this setting. All threads either have their own socket or they all share.
 
 ## <a id="socket_comm__section_6189D4E5E14F47E7882354603FBCE471" class="no-quick-link"></a>Socket Lease Time
 
@@ -56,17 +55,17 @@ A member’s socket use is governed by a number of factors, including:
 
 The socket requirements described here are worst-case. Generally, it is not practical to calculate exact socket use for your applications. Socket use varies depending on a number of factors including how many members are running, what their threads are doing, and whether threads share sockets.
 
-To calculate any member’s socket requirements, add up the requirements for every category that applies to the member. For example, a cache server running in a distributed system with clients connected to it has both peer-to-peer and server socket requirements.
+To calculate any member’s socket requirements, add up the requirements for every category that applies to the member. For example, a cache server running in a cluster with clients connected to it has both peer-to-peer and server socket requirements.
 
 ## <a id="socket_comm__section_DF64BDE7B6AA47A9B08E0540CAD6DA3A" class="no-quick-link"></a>Peer-to-Peer Socket Requirements Per Member
 
-Every member of a distributed system maintains two outgoing and two incoming connections to every peer. If threads share sockets, these fixed sockets are the sockets they share.
+Every member of a cluster maintains two outgoing and two incoming connections to every peer. If threads share sockets, these fixed sockets are the sockets they share.
 
 For every thread that does not share sockets, additional sockets, one in and one out, are added for each peer. This affects not only the member’s socket count, but the socket count for every member the member thread connects to.
 
 In this table:
 
--   M is the total number of members in the distributed system.
+-   M is the total number of members in the cluster.
 -   T is the number of threads in a member that own their own sockets and do not share.
 
 <table>
@@ -81,24 +80,24 @@ In this table:
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td><p>Membership failure detection</p></td>
 <td>2</td>
 </tr>
-<tr class="even">
+<tr>
 <td><p>Listener for incoming peer connections (server P2P)</p></td>
 <td><p>1</p></td>
 </tr>
-<tr class="odd">
+<tr>
 <td><p>Shared sockets (2 in and 2 out)</p>
 <p>Threads that share sockets use these.</p></td>
 <td><p>4 * (M-1)</p></td>
 </tr>
-<tr class="even">
+<tr>
 <td>This member’s thread-owned sockets (1 in and 1 out for each thread, for each peer member).</td>
 <td><p>(T * 2) * (M-1)</p></td>
 </tr>
-<tr class="odd">
+<tr>
 <td><p>Other member’s thread-owned sockets that connect to this member (1 in and 1 out for each). Note that this might include server threads if any of the other members are servers (see Server).</p></td>
 <td><p>Summation over (M-1) other members of (T*2)</p></td>
 </tr>
@@ -110,7 +109,7 @@ The threads servicing client requests add to the total count of thread-owned soc
 
 ## <a id="socket_comm__section_0497E07414CC4E0B968B4F3A7AFD3690" class="no-quick-link"></a>Server Socket Requirements Per Server
 
-Servers use one connection for each incoming client connection. By default, each connection is serviced by a server thread. These threads that service client requests communicate with the rest of the server distributed system to satisfy the requests and distributed update operations. Each of these threads uses its own thread-owned sockets for peer-to-peer communication. So this adds to the server’s group of thread-owned sockets.
+Servers use one connection for each incoming client connection. By default, each connection is serviced by a server thread. These threads that service client requests communicate with the rest of the servers to satisfy the requests and distributed update operations. Each of these threads uses its own thread-owned sockets for peer-to-peer communication. So this adds to the server’s group of thread-owned sockets.
 
 The thread and connection count in the server may be limited by server configuration settings. These
 are `max-connections` and `max-threads` settings in the &lt;cache-server&gt; element of the
@@ -123,7 +122,7 @@ connection requirements:
 
 The server uses one socket for each incoming client pool connection. If client subscriptions are used, the server creates an additional connection to each client that enables subscriptions.
 
-In this table, M is the total number of members in the distributed system.
+In this table, M is the total number of members in the cluster.
 
 <table>
 <colgroup>
@@ -137,21 +136,21 @@ In this table, M is the total number of members in the distributed system.
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>Listener for incoming client connections</td>
 <td><p>1</p></td>
 </tr>
-<tr class="even">
+<tr>
 <td>Client pool connections to server</td>
 <td>Number of pool connections to this server</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><p>Threads servicing client requests (the lesser of the client pool connection count and the server’s <code>max-threads</code> setting). These connections are to the server’s peers.</p></td>
 <td><p>(2 * number of threads in a server that service client pool connections)</p>
 <p>* (M-1)</p>
 <p>These threads do not share sockets.</p></td>
 </tr>
-<tr class="even">
+<tr>
 <td>Subscription connections</td>
 <td><p>2 * number of client subscription connections to this server</p></td>
 </tr>
@@ -160,7 +159,7 @@ In this table, M is the total number of members in the distributed system.
 
 With client/server installations, the number of client connections to any single server is undetermined, but <%=vars.product_name%>’s server load balancing and conditioning keeps the connections fairly evenly distributed among servers.
 
-Servers are peers in their own distributed system and have the additional socket requirements as noted in the Peer-to-Peer section above.
+Servers are peers in their own cluster and have the additional socket requirements as noted in the Peer-to-Peer section above.
 
 ## <a id="socket_comm__section_0D46E55422D24BA1B0CD888E14FD5182" class="no-quick-link"></a>Client Socket Requirements per Client
 
@@ -178,15 +177,15 @@ Client connection requirements are compounded by how many pools they use. The us
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td><p>Pool connection</p></td>
 <td><p>summation over the client pools of max-connections</p></td>
 </tr>
-<tr class="even">
+<tr>
 <td><p>Subscription connections</p></td>
 <td><p>2 * summation over the client pools of subscription-enabled</p></td>
 </tr>
 </tbody>
 </table>
 
-If your client acts as a peer in its own distributed system, it has the additional socket requirements as noted in the Peer-to-Peer section of this topic.
+If your client acts as a peer in its own cluster, it has the additional socket requirements as noted in the Peer-to-Peer section of this topic.

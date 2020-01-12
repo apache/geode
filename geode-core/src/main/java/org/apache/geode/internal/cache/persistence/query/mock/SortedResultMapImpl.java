@@ -176,6 +176,7 @@ public class SortedResultMapImpl implements ResultMap {
 
   }
 
+  @Override
   public boolean containsKey(Object e) {
     return map.containsKey(e);
   }

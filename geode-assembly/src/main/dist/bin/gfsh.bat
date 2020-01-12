@@ -25,54 +25,51 @@ REM GEODE_HOME - Geode product Directory
 REM
 REM
 
-@setlocal enableextensions
-@set scriptdir=%~dp0
-@set gf=%scriptdir:\bin\=%
+setlocal enableextensions
+set scriptdir=%~dp0
+set gf=%scriptdir:\bin\=%
 REM echo %gf%
 REM echo %scriptdir%
-@if exist "%gf%\lib\geode-dependencies.jar" @goto gfok
-@echo Could not determine GEODE_HOME location
-@verify other 2>nul
-@goto done
+if exist "%gf%\lib\geode-dependencies.jar" goto gfok
+echo Could not determine GEODE_HOME location
+verify other 2>nul
+goto done
 :gfok
-@set GEODE_HOME=%gf%
+set GEODE_HOME=%gf%
 
-@set GFSH_JARS=%GEODE_HOME%\lib\gfsh-dependencies.jar
+set GFSH_JARS=%GEODE_HOME%\lib\gfsh-dependencies.jar
 REM if a system level classpath is set, append it to the classes gfsh will need
-@if defined CLASSPATH (
-    @set DEPENDENCIES=%GFSH_JARS%;%CLASSPATH%
+if defined CLASSPATH (
+    set DEPENDENCIES=%GFSH_JARS%;%CLASSPATH%;%GEODE_HOME%\extensions\*
 ) else (
-    @set DEPENDENCIES=%GFSH_JARS%
+    set DEPENDENCIES=%GFSH_JARS%;%GEODE_HOME%\extensions\*
 )
 
-@if not defined GF_JAVA (
+if not defined GF_JAVA (
 REM %GF_JAVA% is not defined, assume it is on the PATH
-    @if defined JAVA_HOME (
-    @set GF_JAVA=%JAVA_HOME%\bin\java.exe
-) else (
-    @set GF_JAVA=java
-  )
+    if defined JAVA_HOME (
+        set GF_JAVA=%JAVA_HOME%\bin\java.exe
+    ) else (
+        set GF_JAVA=java
+    )
 )
 
 REM
 REM Copy default .gfshrc to the home directory. Uncomment if needed.
 REM
-REM @if not exist "%USERPROFILE%\.gemfire\.gfsh2rc" (
-REM @xcopy /q "%GEODE_HOME%\defaultConfigs\.gfsh2rc" "%USERPROFILE%\.gemfire"
+REM if not exist "%USERPROFILE%\.gemfire\.gfsh2rc" (
+REM     xcopy /q "%GEODE_HOME%\defaultConfigs\.gfsh2rc" "%USERPROFILE%\.gemfire"
 REM )
 
 REM
 REM Make dir if .gemfire does not exist. Uncomment if needed.
 REM
-REM @if not exist "%USERPROFILE%\.gemfire" (
-REM @mkdir "%USERPROFILE%\.gemfire"
+REM if not exist "%USERPROFILE%\.gemfire" (
+REM     mkdir "%USERPROFILE%\.gemfire"
 REM )
 
-@set LAUNCHER=org.apache.geode.management.internal.cli.Launcher
-@if defined JAVA_ARGS (
-    @set JAVA_ARGS="%JAVA_ARGS%"
-)
+set LAUNCHER=org.apache.geode.management.internal.cli.Launcher
 
 REM Call java with our classpath
-@"%GF_JAVA%" -Dgfsh=true -Dlog4j.configurationFile=classpath:log4j2-cli.xml -classpath "%DEPENDENCIES%" %JAVA_ARGS% %LAUNCHER% %*
+"%GF_JAVA%" -Dgfsh=true -Dlog4j.configurationFile=classpath:log4j2-cli.xml -classpath "%DEPENDENCIES%" %JAVA_ARGS% %LAUNCHER% %*
 :done

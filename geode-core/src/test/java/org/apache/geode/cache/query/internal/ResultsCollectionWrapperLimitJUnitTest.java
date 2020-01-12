@@ -12,12 +12,12 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- *
- */
 package org.apache.geode.cache.query.internal;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -29,12 +29,9 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.query.internal.types.ObjectTypeImpl;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class ResultsCollectionWrapperLimitJUnitTest {
 
   @Test
@@ -307,7 +304,7 @@ public class ResultsCollectionWrapperLimitJUnitTest {
   }
 
   @Test
-  public void testOccurences() {
+  public void testOccurrences() {
     Collection ordered = new TreeSet();
     for (int i = 1; i < 11; ++i) {
       ordered.add(new Integer(i));

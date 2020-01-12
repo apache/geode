@@ -14,15 +14,13 @@
  */
 package org.apache.geode.management.internal;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class IdentityConverterTest {
 
   @Test

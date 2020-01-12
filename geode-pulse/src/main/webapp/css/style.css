@@ -77,11 +77,11 @@ body {
 	font-size: 12px;
 }
 
-.headerTopSeperator {
+.headerTopSeparator {
 	color: #4d4d4d;
 	height: 25px;
 	width: 1px;
-	background: url(../images/seperator.png) no-repeat center center
+	background: url(../images/separator.png) no-repeat center center
 }
 
 /*about */
@@ -919,7 +919,7 @@ body {
 	color: #424028;
 }
 
-.linkSeperator {
+.linkSeparator {
 	padding: 0px 5px;
 }
 
@@ -1837,7 +1837,7 @@ body {
 	margin-bottom: 5px;
 }
 
-.dataSeperator {
+.dataSeparator {
 	margin: 0px 5px;
 }
 
@@ -1899,7 +1899,7 @@ body {
 	color: #424028;
 }
 
-.linkSeperator {
+.linkSeparator {
 	padding: 0px 5px;
 }
 

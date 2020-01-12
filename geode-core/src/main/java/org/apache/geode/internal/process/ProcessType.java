@@ -14,9 +14,9 @@
  */
 package org.apache.geode.internal.process;
 
-import static org.apache.commons.lang.StringUtils.EMPTY;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Enumeration of GemFire {@link ControllableProcess} types and the file names associated with
@@ -28,7 +28,7 @@ public enum ProcessType {
   LOCATOR("LOCATOR", "vf.gf.locator"), SERVER("SERVER", "vf.gf.server");
 
   public static final String PROPERTY_TEST_PREFIX =
-      DistributionConfig.GEMFIRE_PREFIX + "test.ProcessType.TEST_PREFIX";
+      GeodeGlossary.GEMFIRE_PREFIX + "test.ProcessType.TEST_PREFIX";
 
   private static final String SUFFIX_PID = "pid";
   private static final String SUFFIX_STOP_REQUEST = "stop.cmd";

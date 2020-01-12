@@ -31,14 +31,10 @@ import java.util.Properties;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for {@link ProcessLauncherContext}.
  */
-@Category(UnitTest.class)
 public class ProcessLauncherContextTest {
 
   private boolean redirectOutput;
@@ -47,7 +43,7 @@ public class ProcessLauncherContextTest {
   private List<String> statusMessageList;
 
   @Before
-  public void before() throws Exception {
+  public void before() {
     redirectOutput = false;
     overriddenDefaults = new Properties();
     startupListener = mock(StartupStatusListener.class);
@@ -55,38 +51,38 @@ public class ProcessLauncherContextTest {
   }
 
   @After
-  public void after() throws Exception {
+  public void after() {
     remove();
   }
 
   @Test
-  public void isRedirectingOutput_defaultsToFalse() throws Exception {
+  public void isRedirectingOutput_defaultsToFalse() {
     assertThat(isRedirectingOutput()).isFalse();
   }
 
   @Test
-  public void getOverriddenDefaults_defaultsToEmpty() throws Exception {
+  public void getOverriddenDefaults_defaultsToEmpty() {
     assertThat(getOverriddenDefaults()).isEmpty();
   }
 
   @Test
-  public void getStartupListener_defaultsToNull() throws Exception {
+  public void getStartupListener_defaultsToNull() {
     assertThat(getStartupListener()).isNull();
   }
 
   @Test
-  public void null_overriddenDefaults_throwsIllegalArgumentException() throws Exception {
+  public void null_overriddenDefaults_throwsIllegalArgumentException() {
     // arrange
     overriddenDefaults = null;
 
     // act/assert
     assertThatThrownBy(() -> set(redirectOutput, overriddenDefaults, startupListener))
-        .isInstanceOf(IllegalArgumentException.class)
+        .isInstanceOf(NullPointerException.class)
         .hasMessage("Invalid overriddenDefaults 'null' specified");
   }
 
   @Test
-  public void null_startupListener_isAllowed() throws Exception {
+  public void null_startupListener_isAllowed() {
     // arrange
     startupListener = null;
 
@@ -98,7 +94,7 @@ public class ProcessLauncherContextTest {
   }
 
   @Test
-  public void empty_overriddenDefaults_isAllowed() throws Exception {
+  public void empty_overriddenDefaults_isAllowed() {
     // act
     set(redirectOutput, overriddenDefaults, startupListener);
 
@@ -107,7 +103,7 @@ public class ProcessLauncherContextTest {
   }
 
   @Test
-  public void isRedirectingOutput_returnsPassedValue() throws Exception {
+  public void isRedirectingOutput_returnsPassedValue() {
     // arrange
     redirectOutput = true;
 
@@ -119,7 +115,7 @@ public class ProcessLauncherContextTest {
   }
 
   @Test
-  public void getOverriddenDefaults_returnsPassedInProps() throws Exception {
+  public void getOverriddenDefaults_returnsPassedInProps() {
     // arrange
     overriddenDefaults.setProperty("key", "value");
 
@@ -131,7 +127,7 @@ public class ProcessLauncherContextTest {
   }
 
   @Test
-  public void getStartupListener_returnsPassedInListener() throws Exception {
+  public void getStartupListener_returnsPassedInListener() {
     // arrange
     overriddenDefaults.setProperty("key", "value");
 
@@ -143,7 +139,7 @@ public class ProcessLauncherContextTest {
   }
 
   @Test
-  public void remove_clearsOverriddenDefaults() throws Exception {
+  public void remove_clearsOverriddenDefaults() {
     // arrange
     overriddenDefaults.setProperty("key", "value");
     set(false, overriddenDefaults, startupListener);
@@ -156,7 +152,7 @@ public class ProcessLauncherContextTest {
   }
 
   @Test
-  public void remove_unsetsRedirectOutput() throws Exception {
+  public void remove_unsetsRedirectOutput() {
     // arrange
     redirectOutput = true;
     set(redirectOutput, overriddenDefaults, startupListener);
@@ -169,7 +165,7 @@ public class ProcessLauncherContextTest {
   }
 
   @Test
-  public void remove_clearsStartupListener() throws Exception {
+  public void remove_clearsStartupListener() {
     // arrange
     startupListener = statusMessage -> statusMessageList.add(statusMessage);
     set(redirectOutput, overriddenDefaults, startupListener);
@@ -182,7 +178,7 @@ public class ProcessLauncherContextTest {
   }
 
   @Test
-  public void startupListener_installsInStartupStatus() throws Exception {
+  public void startupListener_installsInStartupStatus() {
     // arrange
     startupListener = statusMessage -> statusMessageList.add(statusMessage);
 
@@ -190,11 +186,11 @@ public class ProcessLauncherContextTest {
     set(redirectOutput, overriddenDefaults, startupListener);
 
     // assert
-    assertThat(StartupStatus.getStartupListener()).isSameAs(startupListener);
+    assertThat(StartupStatusListenerRegistry.getStartupListener()).isSameAs(startupListener);
   }
 
   @Test
-  public void remove_uninstallsInStartupStatus() throws Exception {
+  public void remove_uninstallsInStartupStatus() {
     // arrange
     startupListener = statusMessage -> statusMessageList.add(statusMessage);
     set(redirectOutput, overriddenDefaults, startupListener);
@@ -203,6 +199,6 @@ public class ProcessLauncherContextTest {
     remove();
 
     // assert
-    assertThat(StartupStatus.getStartupListener()).isNull();
+    assertThat(StartupStatusListenerRegistry.getStartupListener()).isNull();
   }
 }

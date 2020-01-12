@@ -14,23 +14,20 @@
  */
 package org.apache.geode.annotations;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.lang.reflect.AnnotatedElement;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.annotations.experimentalpackage.ClassInExperimentalPackage;
 import org.apache.geode.experimental.nonexperimentalpackage.ClassInNonExperimentalPackage;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for the <tt>Experimental</tt> annotation. Verifies that the annotation can be applied
  * to Interfaces, Classes, Public and Protected Fields, Enums, Enum Constants, Public and Protected
  * Methods, Packages, and Constructors.
  */
-@Category(UnitTest.class)
 public class ExperimentalJUnitTest {
 
   private static final String FIELD_NAME = "field";

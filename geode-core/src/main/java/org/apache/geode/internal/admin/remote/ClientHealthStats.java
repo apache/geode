@@ -24,9 +24,11 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.Version;
-import org.apache.geode.management.internal.beans.CacheServerBridge;
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * Bean class act as container for client stats
@@ -40,7 +42,7 @@ public class ClientHealthStats implements DataSerializableFixedID, Serializable 
    * "numOfGets", IntCounter, "The total number of times a successful get has been done on this
    * cache." Java: CachePerfStats.gets Native: Not yet Defined
    */
-  protected int numOfGets;
+  protected long numOfGets;
 
   /**
    * "numOfPuts", IntCounter, "The total number of times an entry is added or replaced in this cache
@@ -48,13 +50,13 @@ public class ClientHealthStats implements DataSerializableFixedID, Serializable 
    * or netloading a value). Note that this only counts puts done explicitly on this cache. It does
    * not count updates pushed from other caches." Java: CachePerfStats.puts Native: Not yet Defined
    */
-  protected int numOfPuts;
+  protected long numOfPuts;
 
   /**
    * Represents number of cache misses in this client. IntCounter, "Total number of times a get on
    * the cache did not find a value already in local memory." Java: CachePerfStats.misses
    */
-  protected int numOfMisses;
+  protected long numOfMisses;
 
   /**
    * Represents number of cache listners calls completed. IntCounter, "Total number of times a cache
@@ -92,7 +94,9 @@ public class ClientHealthStats implements DataSerializableFixedID, Serializable 
   private HashMap<String, String> poolStats = new HashMap<String, String>();
 
   /** The versions in which this message was modified */
-  private static final Version[] dsfidVersions = new Version[] {Version.GFE_80};
+  @Immutable
+  private static final Version[] dsfidVersions =
+      new Version[] {Version.GFE_80, Version.GEODE_1_9_0};
 
   public ClientHealthStats() {}
 
@@ -101,7 +105,7 @@ public class ClientHealthStats implements DataSerializableFixedID, Serializable 
    *
    * @return total number of get requests completed successfully.
    */
-  public int getNumOfGets() {
+  public long getNumOfGets() {
     return numOfGets;
   }
 
@@ -110,7 +114,7 @@ public class ClientHealthStats implements DataSerializableFixedID, Serializable 
    *
    * @param numOfGets Total number of get requests to be set.
    */
-  public void setNumOfGets(int numOfGets) {
+  public void setNumOfGets(long numOfGets) {
     this.numOfGets = numOfGets;
   }
 
@@ -119,7 +123,7 @@ public class ClientHealthStats implements DataSerializableFixedID, Serializable 
    *
    * @return Total number of put requests completed.
    */
-  public int getNumOfPuts() {
+  public long getNumOfPuts() {
     return numOfPuts;
   }
 
@@ -128,7 +132,7 @@ public class ClientHealthStats implements DataSerializableFixedID, Serializable 
    *
    * @param numOfPuts Total number of put requests to be set.
    */
-  public void setNumOfPuts(int numOfPuts) {
+  public void setNumOfPuts(long numOfPuts) {
     this.numOfPuts = numOfPuts;
   }
 
@@ -137,7 +141,7 @@ public class ClientHealthStats implements DataSerializableFixedID, Serializable 
    *
    * @return total number of cache misses.
    */
-  public int getNumOfMisses() {
+  public long getNumOfMisses() {
     return numOfMisses;
   }
 
@@ -146,7 +150,7 @@ public class ClientHealthStats implements DataSerializableFixedID, Serializable 
    *
    * @param numOfMisses total number of cache misses.
    */
-  public void setNumOfMisses(int numOfMisses) {
+  public void setNumOfMisses(long numOfMisses) {
     this.numOfMisses = numOfMisses;
   }
 
@@ -220,10 +224,12 @@ public class ClientHealthStats implements DataSerializableFixedID, Serializable 
     this.updateTime = updateTime;
   }
 
-  public void toData(DataOutput out) throws IOException {
-    DataSerializer.writePrimitiveInt(numOfGets, out);
-    DataSerializer.writePrimitiveInt(numOfPuts, out);
-    DataSerializer.writePrimitiveInt(numOfMisses, out);
+  @Override
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    DataSerializer.writePrimitiveLong(numOfGets, out);
+    DataSerializer.writePrimitiveLong(numOfPuts, out);
+    DataSerializer.writePrimitiveLong(numOfMisses, out);
     DataSerializer.writePrimitiveInt(numOfCacheListenerCalls, out);
     DataSerializer.writePrimitiveInt(numOfThreads, out);
     DataSerializer.writePrimitiveInt(cpus, out);
@@ -232,10 +238,11 @@ public class ClientHealthStats implements DataSerializableFixedID, Serializable 
     DataSerializer.writeHashMap((poolStats), out);
   }
 
-  public void toDataPre_GFE_8_0_0_0(DataOutput out) throws IOException {
-    DataSerializer.writePrimitiveInt(numOfGets, out);
-    DataSerializer.writePrimitiveInt(numOfPuts, out);
-    DataSerializer.writePrimitiveInt(numOfMisses, out);
+  public void toDataPre_GFE_8_0_0_0(DataOutput out, SerializationContext context)
+      throws IOException {
+    DataSerializer.writePrimitiveInt((int) numOfGets, out);
+    DataSerializer.writePrimitiveInt((int) numOfPuts, out);
+    DataSerializer.writePrimitiveInt((int) numOfMisses, out);
     DataSerializer.writePrimitiveInt(numOfCacheListenerCalls, out);
     DataSerializer.writePrimitiveInt(numOfThreads, out);
     DataSerializer.writePrimitiveInt(cpus, out);
@@ -243,10 +250,18 @@ public class ClientHealthStats implements DataSerializableFixedID, Serializable 
     DataSerializer.writeDate(updateTime, out);
   }
 
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.numOfGets = DataSerializer.readPrimitiveInt(in);
-    this.numOfPuts = DataSerializer.readPrimitiveInt(in);
-    this.numOfMisses = DataSerializer.readPrimitiveInt(in);
+  public void toDataPre_GEODE_1_9_0_0(DataOutput out, SerializationContext context)
+      throws IOException {
+    toDataPre_GFE_8_0_0_0(out, context);
+    DataSerializer.writeHashMap((poolStats), out);
+  }
+
+  @Override
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    this.numOfGets = DataSerializer.readPrimitiveLong(in);
+    this.numOfPuts = DataSerializer.readPrimitiveLong(in);
+    this.numOfMisses = DataSerializer.readPrimitiveLong(in);
     this.numOfCacheListenerCalls = DataSerializer.readPrimitiveInt(in);
     this.numOfThreads = DataSerializer.readPrimitiveInt(in);
     this.cpus = DataSerializer.readPrimitiveInt(in);
@@ -255,7 +270,8 @@ public class ClientHealthStats implements DataSerializableFixedID, Serializable 
     this.poolStats = DataSerializer.readHashMap(in);
   }
 
-  public void fromDataPre_GFE_8_0_0_0(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromDataPre_GFE_8_0_0_0(DataInput in, DeserializationContext context)
+      throws IOException, ClassNotFoundException {
     this.numOfGets = DataSerializer.readPrimitiveInt(in);
     this.numOfPuts = DataSerializer.readPrimitiveInt(in);
     this.numOfMisses = DataSerializer.readPrimitiveInt(in);
@@ -264,6 +280,12 @@ public class ClientHealthStats implements DataSerializableFixedID, Serializable 
     this.cpus = DataSerializer.readPrimitiveInt(in);
     this.processCpuTime = DataSerializer.readPrimitiveLong(in);
     this.updateTime = DataSerializer.readDate(in);
+  }
+
+  public void fromDataPre_GEODE_1_9_0_0(DataInput in, DeserializationContext context)
+      throws IOException, ClassNotFoundException {
+    fromDataPre_GFE_8_0_0_0(in, context);
+    this.poolStats = DataSerializer.readHashMap(in);
   }
 
   @Override
@@ -291,6 +313,7 @@ public class ClientHealthStats implements DataSerializableFixedID, Serializable 
     return buf.toString();
   }
 
+  @Override
   public int getDSFID() {
     return CLIENT_HEALTH_STATS;
   }

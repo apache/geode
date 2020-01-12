@@ -20,13 +20,21 @@ package org.apache.geode.internal.jta;
  * @deprecated as of Geode 1.2.0 user should use a third party JTA transaction manager to manage JTA
  *             transactions.
  */
-import java.util.*;
 
-import javax.transaction.*;
-import javax.transaction.xa.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
-import org.apache.geode.i18n.LogWriterI18n;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import javax.transaction.HeuristicMixedException;
+import javax.transaction.HeuristicRollbackException;
+import javax.transaction.RollbackException;
+import javax.transaction.Status;
+import javax.transaction.Synchronization;
+import javax.transaction.SystemException;
+import javax.transaction.Transaction;
+import javax.transaction.xa.XAResource;
+
+import org.apache.geode.LogWriter;
 
 @Deprecated
 public class TransactionImpl implements Transaction {
@@ -72,6 +80,7 @@ public class TransactionImpl implements Transaction {
    *
    * @see javax.transaction.Transaction#commit()
    */
+  @Override
   public void commit() throws RollbackException, HeuristicMixedException,
       HeuristicRollbackException, SecurityException, SystemException {
     tm.commit();
@@ -89,6 +98,7 @@ public class TransactionImpl implements Transaction {
    *
    * @see javax.transaction.Transaction#rollback()
    */
+  @Override
   public void rollback() throws IllegalStateException, SystemException {
     tm.rollback();
   }
@@ -98,13 +108,13 @@ public class TransactionImpl implements Transaction {
    *
    * @see javax.transaction.Transaction#setRollbackOnly()
    */
+  @Override
   public void setRollbackOnly() throws IllegalStateException, SystemException {
     gtx = tm.getGlobalTransaction();
     if (gtx == null) {
       String exception =
-          LocalizedStrings.TransactionImpl_TRANSACTIONIMPL_SETROLLBACKONLY_NO_GLOBAL_TRANSACTION_EXISTS
-              .toLocalizedString();
-      LogWriterI18n writer = TransactionUtils.getLogWriterI18n();
+          "TransactionImpl::setRollbackOnly: No global transaction exists.";
+      LogWriter writer = TransactionUtils.getLogWriter();
       if (writer.fineEnabled())
         writer.fine(exception);
       throw new SystemException(exception);
@@ -117,6 +127,7 @@ public class TransactionImpl implements Transaction {
    *
    * @see javax.transaction.Transaction#getStatus()
    */
+  @Override
   public int getStatus() throws SystemException {
     gtx = tm.getGlobalTransaction();
     if (gtx == null) {
@@ -130,8 +141,8 @@ public class TransactionImpl implements Transaction {
    */
   public void setTransactionTimeout(int seconds) throws SystemException {
     String exception =
-        LocalizedStrings.TransactionImpl_SETTRANSACTIONTIMEOUT_IS_NOT_SUPPORTED.toLocalizedString();
-    LogWriterI18n writer = TransactionUtils.getLogWriterI18n();
+        "setTransactionTimeout is not supported.";
+    LogWriter writer = TransactionUtils.getLogWriter();
     if (writer.fineEnabled())
       writer.fine(exception);
     throw new SystemException(exception);
@@ -151,14 +162,14 @@ public class TransactionImpl implements Transaction {
    *
    * @see javax.transaction.Transaction#enlistResource(javax.transaction.xa.XAResource)
    */
+  @Override
   public boolean enlistResource(XAResource xaRes)
       throws RollbackException, IllegalStateException, SystemException {
     gtx = tm.getGlobalTransaction();
     if (gtx == null) {
       String exception =
-          LocalizedStrings.TransactionImpl_TRANSACTIONIMPL_ENLISTRESOURCE_NO_GLOBAL_TRANSACTION_EXISTS
-              .toLocalizedString();
-      LogWriterI18n writer = TransactionUtils.getLogWriterI18n();
+          "TransactionImpl::enlistResource: No global transaction exists";
+      LogWriter writer = TransactionUtils.getLogWriter();
       if (writer.fineEnabled())
         writer.fine(exception);
       throw new SystemException(exception);
@@ -179,14 +190,14 @@ public class TransactionImpl implements Transaction {
    *
    * @see javax.transaction.Transaction#delistResource(javax.transaction.xa.XAResource, int)
    */
+  @Override
   public boolean delistResource(XAResource xaRes, int flag)
       throws IllegalStateException, SystemException {
     gtx = tm.getGlobalTransaction();
     if (gtx == null) {
       String exception =
-          LocalizedStrings.TransactionImpl_TRANSACTIONIMPL_DELISTRESOURCE_NO_GLOBAL_TRANSACTION_EXISTS
-              .toLocalizedString();
-      LogWriterI18n writer = TransactionUtils.getLogWriterI18n();
+          "TransactionImpl::delistResource: No global transaction exists";
+      LogWriter writer = TransactionUtils.getLogWriter();
       if (writer.fineEnabled())
         writer.fine(exception);
       throw new SystemException(exception);
@@ -202,38 +213,36 @@ public class TransactionImpl implements Transaction {
    *
    * @see javax.transaction.Transaction#registerSynchronization(javax.transaction.Synchronization)
    */
+  @Override
   public void registerSynchronization(Synchronization synchronisation)
       throws SystemException, IllegalStateException, RollbackException {
     {
-      LogWriterI18n writer = TransactionUtils.getLogWriterI18n();
+      LogWriter writer = TransactionUtils.getLogWriter();
       if (writer.fineEnabled()) {
         writer.fine("registering JTA synchronization: " + synchronisation);
       }
     }
     if (synchronisation == null)
       throw new SystemException(
-          LocalizedStrings.TransactionImpl_TRANSACTIONIMPLREGISTERSYNCHRONIZATIONSYNCHRONIZATION_IS_NULL
-              .toLocalizedString());
+          "TransactionImpl::registerSynchronization:Synchronization is null");
     gtx = tm.getGlobalTransaction();
     if (gtx == null) {
       throw new SystemException(
-          LocalizedStrings.TransactionManagerImpl_NO_TRANSACTION_PRESENT.toLocalizedString());
+          "no transaction present");
     }
     synchronized (gtx) {
       int status = -1;
       if ((status = gtx.getStatus()) == Status.STATUS_MARKED_ROLLBACK) {
         String exception =
-            LocalizedStrings.TransactionImpl_TRANSACTIONIMPL_REGISTERSYNCHRONIZATION_SYNCHRONIZATION_CANNOT_BE_REGISTERED_BECAUSE_THE_TRANSACTION_HAS_BEEN_MARKED_FOR_ROLLBACK
-                .toLocalizedString();
-        LogWriterI18n writer = TransactionUtils.getLogWriterI18n();
+            "TransactionImpl::registerSynchronization: Synchronization cannot be registered because the transaction has been marked for rollback";
+        LogWriter writer = TransactionUtils.getLogWriter();
         if (writer.fineEnabled())
           writer.fine(exception);
         throw new RollbackException(exception);
       } else if (status != Status.STATUS_ACTIVE) {
         String exception =
-            LocalizedStrings.TransactionImpl_TRANSACTIONIMPL_REGISTERSYNCHRONIZATION_SYNCHRONIZATION_CANNOT_BE_REGISTERED_ON_A_TRANSACTION_WHICH_IS_NOT_ACTIVE
-                .toLocalizedString();
-        LogWriterI18n writer = TransactionUtils.getLogWriterI18n();
+            "TransactionImpl::registerSynchronization: Synchronization cannot be registered on a transaction which is not active";
+        LogWriter writer = TransactionUtils.getLogWriter();
         if (writer.fineEnabled())
           writer.fine(exception);
         throw new IllegalStateException(exception);

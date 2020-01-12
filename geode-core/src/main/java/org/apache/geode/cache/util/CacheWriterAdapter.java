@@ -29,16 +29,22 @@ import org.apache.geode.cache.RegionEvent;
  */
 public class CacheWriterAdapter<K, V> implements CacheWriter<K, V> {
 
+  @Override
   public void beforeCreate(EntryEvent<K, V> event) throws CacheWriterException {}
 
+  @Override
   public void beforeDestroy(EntryEvent<K, V> event) throws CacheWriterException {}
 
+  @Override
   public void beforeRegionDestroy(RegionEvent<K, V> event) throws CacheWriterException {}
 
+  @Override
   public void beforeRegionClear(RegionEvent<K, V> event) throws CacheWriterException {}
 
+  @Override
   public void beforeUpdate(EntryEvent<K, V> event) throws CacheWriterException {}
 
+  @Override
   public void close() {}
 
 }

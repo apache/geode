@@ -18,10 +18,14 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 
+import org.apache.geode.InvalidValueException;
+import org.apache.geode.UnmodifiableException;
+
 /**
  * Provides generic configuration features.
  */
 public interface Config {
+
   /**
    * Given the attribute's name return its value as a string. This method is used as a way to get
    * command line arguments that specify the attribute name and fetch them safely from a Config
@@ -29,57 +33,58 @@ public interface Config {
    *
    * @throws IllegalArgumentException if the specified name is illegal
    */
-  String getAttribute(String attName);
+  String getAttribute(String name);
 
   /**
    * Given the attribute's name return its value as an Object.
    *
    * @throws IllegalArgumentException if the specified name is illegal
    */
-  Object getAttributeObject(String attName);
+  Object getAttributeObject(String name);
 
   /**
    * Given the attribute's name set its value. This method is used as a way to get command line
    * arguments that specify the attribute name and value and get them safely into a Config instance.
    *
    * @throws IllegalArgumentException if the specified name or value are illegal
-   * @throws org.apache.geode.UnmodifiableException if the attribute can not be modified.
+   * @throws UnmodifiableException if the attribute can not be modified.
    */
-  void setAttribute(String attName, String attValue, ConfigSource source);
+  void setAttribute(String name, String value, ConfigSource source);
 
   /**
    * Given the attribute's name set its value to the specified Object.
    *
    * @throws IllegalArgumentException if the specified name is unknown
-   * @throws org.apache.geode.InvalidValueException if the specified value is not compatible with
+   * @throws InvalidValueException if the specified value is not compatible with
    *         the attributes type
-   * @throws org.apache.geode.UnmodifiableException if the attribute can not be modified.
+   * @throws UnmodifiableException if the attribute can not be modified.
    */
-  void setAttributeObject(String attName, Object attValue, ConfigSource source);
+  void setAttributeObject(String name, Object value, ConfigSource source);
 
   /**
    * Returns true if the named configuration attribute can be modified.
    *
    * @throws IllegalArgumentException if the specified name is illegal
    */
-  boolean isAttributeModifiable(String attName);
+  boolean isAttributeModifiable(String name);
 
   /**
    * Returns the source of the given attribute. This lets you figure out where an attribute's value
    * came from.
    *
-   * @param attName the name of the attribute whose source is returned
+   * @param name the name of the attribute whose source is returned
+   *
    * @return null if the attribute has not been configured; otherwise returns the source of the
    *         given attribute
    */
-  ConfigSource getAttributeSource(String attName);
+  ConfigSource getAttributeSource(String name);
 
   /**
    * Returns a description of the named configuration attribute.
    *
    * @throws IllegalArgumentException if the specified name is illegal
    */
-  String getAttributeDescription(String attName);
+  String getAttributeDescription(String name);
 
   /**
    * Returns the class that defines the type of this attribute. The attribute's values will be
@@ -87,7 +92,7 @@ public interface Config {
    *
    * @throws IllegalArgumentException if the specified name is illegal
    */
-  Class getAttributeType(String attName);
+  Class getAttributeType(String name);
 
   /**
    * Returns an array containing the names of all the attributes.
@@ -95,28 +100,30 @@ public interface Config {
   String[] getAttributeNames();
 
   /**
-   * Gets the attributes names of just this config; does not include inherited attributes.
-   */
-  String[] getSpecificAttributeNames();
-
-  /**
    * Returns whether or not this configuration is the same as another configuration.
    */
-  boolean sameAs(Config v);
+  boolean sameAs(Config other);
 
   /**
-   * Converts the contents of this config to a property instance.
+   * Converts the non-secure contents of this config to a property instance.
    *
    * @since GemFire 3.5
    */
   Properties toProperties();
 
   /**
+   * Converts the secure contents of this config to a property instance.
+   *
+   * @since Geode 1.6
+   */
+  Properties toSecurityProperties();
+
+  /**
    * Writes this config to the specified file.
    *
    * @since GemFire 3.5
    */
-  void toFile(File f) throws IOException;
+  void toFile(File file) throws IOException;
 
   /**
    * Returns a formatted string suitable for logging.
@@ -124,5 +131,4 @@ public interface Config {
    * @since GemFire 7.0
    */
   String toLoggerString();
-
 }

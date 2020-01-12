@@ -12,12 +12,10 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- *
- */
 package org.apache.geode.internal.cache.ha;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  *
@@ -37,7 +35,7 @@ public class HARegionQueueAttributes {
    * String storing the System Property key representing the blocking queue capacity
    */
   private static final String BLOCKING_QUEUE_CAPACITY =
-      DistributionConfig.GEMFIRE_PREFIX + "Capacity";
+      GeodeGlossary.GEMFIRE_PREFIX + "Capacity";
 
   /**
    * expiry time for region entries in seconds
@@ -45,9 +43,6 @@ public class HARegionQueueAttributes {
 
   private int expiryTime = DEFAULT_EXPIRY_TIME;
 
-  /**
-   *
-   */
   private int blockingQueueCapacity =
       Integer.getInteger(BLOCKING_QUEUE_CAPACITY, DEFAULT_BLOCKING_QUEUE_CAPACITY).intValue();
 
@@ -55,6 +50,7 @@ public class HARegionQueueAttributes {
   // HARegionAttributesFactory instead of directly
   // providing getter/setter in HARegionAttributes. HAregionAttributes should be
   // immutable
+  @Immutable
   static final HARegionQueueAttributes DEFAULT_HARQ_ATTRIBUTES = new HARegionQueueAttributes();
 
   /**

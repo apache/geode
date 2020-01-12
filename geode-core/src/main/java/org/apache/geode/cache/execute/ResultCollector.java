@@ -89,7 +89,6 @@ public interface ResultCollector<T, S> {
    * Method used to feed result to the ResultCollector. It adds a single function execution result
    * to the ResultCollector It is invoked every time a result is sent using ResultSender.
    *
-   * @param resultOfSingleExecution
    * @since GemFire 6.0
    * @param memberID DistributedMember ID to which result belongs
    */

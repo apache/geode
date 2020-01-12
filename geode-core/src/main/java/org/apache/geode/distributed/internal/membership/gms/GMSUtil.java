@@ -14,19 +14,29 @@
  */
 package org.apache.geode.distributed.internal.membership.gms;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.StringTokenizer;
 
-import org.apache.logging.log4j.Logger;
-
-import org.apache.geode.GemFireConfigException;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
+import org.apache.geode.distributed.internal.membership.api.MembershipConfigurationException;
 import org.apache.geode.distributed.internal.membership.gms.membership.HostAddress;
-import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.inet.LocalHostUtil;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.StaticSerialization;
 
+/**
+ * GMSUtil contains a few static utility methods that should probably reside in other classes
+ */
 public class GMSUtil {
 
   /**
@@ -36,12 +46,13 @@ public class GMSUtil {
    * @param bindAddress optional address to check for loopback compatibility
    * @return addresses of locators
    */
-  public static List<HostAddress> parseLocators(String locatorsString, String bindAddress) {
+  public static List<HostAddress> parseLocators(String locatorsString, String bindAddress)
+      throws MembershipConfigurationException {
     InetAddress addr = null;
 
     try {
       if (bindAddress == null || bindAddress.trim().length() == 0) {
-        addr = SocketCreator.getLocalHost();
+        addr = LocalHostUtil.getLocalHost();
       } else {
         addr = InetAddress.getByName(bindAddress);
       }
@@ -51,59 +62,128 @@ public class GMSUtil {
     return parseLocators(locatorsString, addr);
   }
 
+  public static <ID extends MemberIdentifier> Set<ID> readHashSetOfMemberIDs(DataInput in,
+      DeserializationContext context)
+      throws IOException, ClassNotFoundException {
+    int size = StaticSerialization.readArrayLength(in);
+    if (size == -1) {
+      return null;
+    }
+    Set<ID> result = new HashSet<>();
+    for (int i = 0; i < size; i++) {
+      result.add(context.getDeserializer().readObject(in));
+    }
+    return result;
+  }
+
   /**
    * parse locators & check that the resulting address is compatible with the given address
    *
    * @param locatorsString a DistributionConfig "locators" string
    * @param bindAddress optional address to check for loopback compatibility
    * @return addresses of locators
+   *
+   * @see org.apache.geode.distributed.ConfigurationProperties#LOCATORS for format
    */
-  public static List<HostAddress> parseLocators(String locatorsString, InetAddress bindAddress) {
+  public static List<HostAddress> parseLocators(String locatorsString, InetAddress bindAddress)
+      throws MembershipConfigurationException {
     List<HostAddress> result = new ArrayList<>(2);
+    Set<InetSocketAddress> inetAddresses = new HashSet<>();
     String host;
-    int port;
-    boolean checkLoopback = (bindAddress != null);
-    boolean isLoopback = (checkLoopback && bindAddress.isLoopbackAddress());
+    final boolean isLoopback = ((bindAddress != null) && bindAddress.isLoopbackAddress());
 
     StringTokenizer parts = new StringTokenizer(locatorsString, ",");
     while (parts.hasMoreTokens()) {
+      String str = parts.nextToken();
+
+      final int portSpecificationStart = str.indexOf('[');
+
+      if (portSpecificationStart == -1) {
+        throw createBadPortException(str);
+      }
+
+      host = str.substring(0, portSpecificationStart);
+
+      int idx = host.lastIndexOf('@');
+      if (idx < 0) {
+        idx = host.lastIndexOf(':');
+      }
+      String start = host.substring(0, idx > -1 ? idx : host.length());
+      if (start.indexOf(':') >= 0) { // a single numeric ipv6 address
+        idx = host.lastIndexOf('@');
+      }
+      if (idx >= 0) {
+        host = host.substring(idx + 1, host.length());
+      }
+
+      int startIdx = portSpecificationStart + 1;
+      int endIdx = str.indexOf(']');
+
+      if (endIdx == -1) {
+        throw createBadPortException(str);
+      }
+
+      final int port;
+
       try {
-        String str = parts.nextToken();
-        host = str.substring(0, str.indexOf('['));
-        int idx = host.lastIndexOf('@');
-        if (idx < 0) {
-          idx = host.lastIndexOf(':');
-        }
-        String start = host.substring(0, idx > -1 ? idx : host.length());
-        if (start.indexOf(':') >= 0) { // a single numeric ipv6 address
-          idx = host.lastIndexOf('@');
-        }
-        if (idx >= 0) {
-          host = host.substring(idx + 1, host.length());
-        }
-
-        int startIdx = str.indexOf('[') + 1;
-        int endIdx = str.indexOf(']');
         port = Integer.parseInt(str.substring(startIdx, endIdx));
-        InetSocketAddress isa = new InetSocketAddress(host, port);
-
-        if (checkLoopback) {
-          if (isLoopback && !isa.getAddress().isLoopbackAddress()) {
-            throw new GemFireConfigException(
-                "This process is attempting to join with a loopback address (" + bindAddress
-                    + ") using a locator that does not have a local address (" + isa
-                    + ").  On Unix this usually means that /etc/hosts is misconfigured.");
-          }
-        }
-        HostAddress la = new HostAddress(isa, host);
-        result.add(la);
       } catch (NumberFormatException e) {
-        // this shouldn't happen because the config has already been parsed and
-        // validated
+        throw createBadPortException(str);
+      }
+
+      final InetSocketAddress isa = new InetSocketAddress(host, port);
+
+      if (isLoopback) {
+        final InetAddress locatorAddress = isa.getAddress();
+
+        if (locatorAddress == null) {
+          throw new MembershipConfigurationException("This process is attempting to use a locator" +
+              " at an unknown address or FQDN: " + host);
+        }
+
+        if (!locatorAddress.isLoopbackAddress()) {
+          throw new MembershipConfigurationException(
+              "This process is attempting to join with a loopback address (" + bindAddress
+                  + ") using a locator that does not have a local address (" + isa
+                  + ").  On Unix this usually means that /etc/hosts is misconfigured.");
+        }
+      }
+
+      HostAddress la = new HostAddress(isa, host);
+      if (!inetAddresses.contains(isa)) {
+        inetAddresses.add(isa);
+        result.add(la);
       }
     }
 
     return result;
+  }
+
+  private static MembershipConfigurationException createBadPortException(final String str) {
+    return new MembershipConfigurationException("This process is attempting to use a locator" +
+        " with a malformed port specification: " + str);
+  }
+
+  /** Parses comma-separated-roles/groups into array of groups (strings). */
+  public static String[] parseGroups(String csvRoles, String csvGroups) {
+    List<String> groups = new ArrayList<String>();
+    parseCsv(groups, csvRoles);
+    parseCsv(groups, csvGroups);
+    return groups.toArray(new String[groups.size()]);
+  }
+
+
+  private static void parseCsv(List<String> groups, String csv) {
+    if (csv == null || csv.length() == 0) {
+      return;
+    }
+    StringTokenizer st = new StringTokenizer(csv, ",");
+    while (st.hasMoreTokens()) {
+      String groupName = st.nextToken().trim();
+      if (!groups.contains(groupName)) { // only add each group once
+        groups.add(groupName);
+      }
+    }
   }
 
   /**
@@ -124,25 +204,33 @@ public class GMSUtil {
     return sb.toString();
   }
 
-
-  /**
-   * Formats the bytes in a buffer into hex octets, 50 per line
-   */
-  public static String formatBytes(byte[] buf, int startIndex, int length) {
-    StringBuilder w = new StringBuilder(20000);
-    int count = 0;
-    for (int i = startIndex; i < length; i++, count++) {
-      String s = Integer.toHexString(buf[i] & 0xff);
-      if (s.length() == 1) {
-        w.append('0');
-      }
-      w.append(s).append(' ');
-      if ((count % 50) == 49) {
-        w.append("\n");
-      }
+  public static <ID extends MemberIdentifier> List<ID> readArrayOfIDs(DataInput in,
+      DeserializationContext context)
+      throws IOException, ClassNotFoundException {
+    int size = StaticSerialization.readArrayLength(in);
+    if (size == -1) {
+      return null;
     }
-    return w.toString();
+    List<ID> result = new ArrayList<>(size);
+    for (int i = 0; i < size; i++) {
+      result.add(context.getDeserializer().readObject(in));
+    }
+    return result;
   }
 
-
+  public static <ID extends MemberIdentifier> void writeSetOfMemberIDs(Set<ID> set, DataOutput out,
+      SerializationContext context) throws IOException {
+    int size;
+    if (set == null) {
+      size = -1;
+    } else {
+      size = set.size();
+    }
+    StaticSerialization.writeArrayLength(size, out);
+    if (size > 0) {
+      for (ID member : set) {
+        context.getSerializer().writeObject(member, out);
+      }
+    }
+  }
 }

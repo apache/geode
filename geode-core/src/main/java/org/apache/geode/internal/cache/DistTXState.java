@@ -25,6 +25,7 @@ import java.util.TreeMap;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.InvalidDeltaException;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.cache.DiskAccessException;
@@ -42,8 +43,8 @@ import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.cache.tx.DistTxEntryEvent;
 import org.apache.geode.internal.cache.tx.DistTxKeyInfo;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.offheap.annotations.Released;
+import org.apache.geode.internal.statistics.StatisticsClock;
 
 /**
  * TxState on a data node VM
@@ -52,13 +53,16 @@ import org.apache.geode.internal.offheap.annotations.Released;
  */
 public class DistTXState extends TXState {
 
+  @MutableForTesting
   public static Runnable internalBeforeApplyChanges; // TODO: cleanup this test hook
+  @MutableForTesting
   public static Runnable internalBeforeNonTXBasicPut; // TODO: cleanup this test hook
 
   private boolean updatingTxStateDuringPreCommit = false;
 
-  public DistTXState(TXStateProxy proxy, boolean onBehalfOfRemoteStub) {
-    super(proxy, onBehalfOfRemoteStub);
+  public DistTXState(TXStateProxy proxy, boolean onBehalfOfRemoteStub,
+      StatisticsClock statisticsClock) {
+    super(proxy, onBehalfOfRemoteStub, statisticsClock);
   }
 
   @Override
@@ -73,10 +77,10 @@ public class DistTXState extends TXState {
    */
   public void updateRegionVersions() {
 
-    Iterator<Map.Entry<LocalRegion, TXRegionState>> it = this.regions.entrySet().iterator();
+    Iterator<Map.Entry<InternalRegion, TXRegionState>> it = this.regions.entrySet().iterator();
     while (it.hasNext()) {
-      Map.Entry<LocalRegion, TXRegionState> me = it.next();
-      LocalRegion r = me.getKey();
+      Map.Entry<InternalRegion, TXRegionState> me = it.next();
+      InternalRegion r = me.getKey();
       TXRegionState txrs = me.getValue();
 
       // Generate next region version only on the primary
@@ -115,14 +119,14 @@ public class DistTXState extends TXState {
    * should use this tail key to enqueue into parallel queues.
    */
   public void generateTailKeysForParallelDispatcherEvents() {
-    Iterator<Map.Entry<LocalRegion, TXRegionState>> it = this.regions.entrySet().iterator();
+    Iterator<Map.Entry<InternalRegion, TXRegionState>> it = this.regions.entrySet().iterator();
 
     while (it.hasNext()) {
-      Map.Entry<LocalRegion, TXRegionState> me = it.next();
-      LocalRegion r = me.getKey();
+      Map.Entry<InternalRegion, TXRegionState> me = it.next();
+      InternalRegion r = me.getKey();
       TXRegionState txrs = me.getValue();
 
-      LocalRegion region = txrs.getRegion();
+      InternalRegion region = txrs.getRegion();
       // Check if it is a bucket region
       if (region.isUsedForPartitionedRegionBucket()) {
         // Check if it is a primary bucket
@@ -174,7 +178,7 @@ public class DistTXState extends TXState {
 
     if (onBehalfOfRemoteStub && !proxy.isCommitOnBehalfOfRemoteStub()) {
       throw new UnsupportedOperationInTransactionException(
-          LocalizedStrings.TXState_CANNOT_COMMIT_REMOTED_TRANSACTION.toLocalizedString());
+          "Cannot commit a transaction being run on behalf of a remote thread");
     }
 
     cleanupNonDirtyRegions();
@@ -187,8 +191,7 @@ public class DistTXState extends TXState {
     } catch (PrimaryBucketException pbe) {
       // not sure what to do here yet
       RuntimeException re = new TransactionDataRebalancedException(
-          LocalizedStrings.PartitionedRegion_TRANSACTIONAL_DATA_MOVED_DUE_TO_REBALANCING
-              .toLocalizedString());
+          "Transactional data moved, due to rebalancing.");
       re.initCause(pbe);
       throw re;
     }
@@ -320,10 +323,10 @@ public class DistTXState extends TXState {
   protected TXCommitMessage buildMessageForAdjunctReceivers() {
     TXCommitMessage msg =
         new DistTXAdjunctCommitMessage(this.proxy.getTxId(), this.proxy.getTxMgr().getDM(), this);
-    Iterator<Map.Entry<LocalRegion, TXRegionState>> it = this.regions.entrySet().iterator();
+    Iterator<Map.Entry<InternalRegion, TXRegionState>> it = this.regions.entrySet().iterator();
     while (it.hasNext()) {
-      Map.Entry<LocalRegion, TXRegionState> me = it.next();
-      LocalRegion r = me.getKey();
+      Map.Entry<InternalRegion, TXRegionState> me = it.next();
+      InternalRegion r = me.getKey();
       TXRegionState txrs = me.getValue();
 
       // only on the primary
@@ -495,7 +498,7 @@ public class DistTXState extends TXState {
   }
 
   @Override
-  public TXRegionState writeRegion(LocalRegion r) {
+  public TXRegionState writeRegion(InternalRegion r) {
     TXRegionState result = readRegion(r);
     if (result == null) {
       if (r instanceof BucketRegion) {
@@ -532,10 +535,11 @@ public class DistTXState extends TXState {
    * .gemfire.internal.cache.DistributedPutAllOperation, java.util.Map,
    * org.apache.geode.internal.cache.LocalRegion)
    */
+  @Override
   public void postPutAll(final DistributedPutAllOperation putallOp,
-      final VersionedObjectList successfulPuts, LocalRegion reg) {
+      final VersionedObjectList successfulPuts, InternalRegion reg) {
 
-    final LocalRegion theRegion;
+    final InternalRegion theRegion;
     if (reg instanceof BucketRegion) {
       theRegion = ((BucketRegion) reg).getPartitionedRegion();
     } else {
@@ -551,6 +555,7 @@ public class DistTXState extends TXState {
      * We need to put this into the tx state.
      */
     theRegion.syncBulkOp(new Runnable() {
+      @Override
       public void run() {
         // final boolean requiresRegionContext =
         // theRegion.keyRequiresRegionContext();
@@ -598,8 +603,8 @@ public class DistTXState extends TXState {
 
   @Override
   public void postRemoveAll(final DistributedRemoveAllOperation op,
-      final VersionedObjectList successfulOps, LocalRegion reg) {
-    final LocalRegion theRegion;
+      final VersionedObjectList successfulOps, InternalRegion reg) {
+    final InternalRegion theRegion;
     if (reg instanceof BucketRegion) {
       theRegion = ((BucketRegion) reg).getPartitionedRegion();
     } else {
@@ -610,6 +615,7 @@ public class DistTXState extends TXState {
      * will push them out. We need to put this into the tx state.
      */
     theRegion.syncBulkOp(new Runnable() {
+      @Override
       public void run() {
         InternalDistributedMember myId =
             theRegion.getDistributionManager().getDistributionManagerId();
@@ -666,8 +672,8 @@ public class DistTXState extends TXState {
    */
   public boolean populateDistTxEntryStateList(
       TreeMap<String, ArrayList<DistTxThinEntryState>> entryStateSortedMap) {
-    for (Map.Entry<LocalRegion, TXRegionState> me : this.regions.entrySet()) {
-      LocalRegion r = me.getKey();
+    for (Map.Entry<InternalRegion, TXRegionState> me : this.regions.entrySet()) {
+      InternalRegion r = me.getKey();
       TXRegionState txrs = me.getValue();
       String regionFullPath = r.getFullPath();
       if (!txrs.isCreatedDuringCommit()) {

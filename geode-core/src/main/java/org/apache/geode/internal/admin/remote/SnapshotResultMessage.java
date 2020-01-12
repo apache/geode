@@ -16,12 +16,19 @@
 
 package org.apache.geode.internal.admin.remote;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-import org.apache.geode.*;
-import org.apache.geode.cache.*;
-import org.apache.geode.distributed.internal.*;
-import org.apache.geode.internal.admin.*;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.CacheException;
+import org.apache.geode.cache.Region;
+import org.apache.geode.distributed.internal.AdminMessageType;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.PooledDistributionMessage;
+import org.apache.geode.internal.admin.CacheSnapshot;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 public class SnapshotResultMessage extends PooledDistributionMessage implements AdminMessageType {
   private CacheSnapshot results;
@@ -57,20 +64,23 @@ public class SnapshotResultMessage extends PooledDistributionMessage implements 
     return this.snapshotId;
   }
 
+  @Override
   public int getDSFID() {
     return SNAPSHOT_RESULT_MESSAGE;
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     DataSerializer.writeObject(this.results, out);
     out.writeInt(this.snapshotId);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.results = (CacheSnapshot) DataSerializer.readObject(in);
     this.snapshotId = in.readInt();
   }

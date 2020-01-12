@@ -14,128 +14,137 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
-import static org.junit.Assert.assertEquals;
+import static java.net.InetSocketAddress.createUnresolved;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentCaptor.forClass;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.quality.Strictness.STRICT_STUBS;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.net.UnknownHostException;
 
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
 
-import org.apache.geode.cache.IncompatibleVersionException;
-import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.internal.cache.client.protocol.ClientProtocolProcessor;
+import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 
-@Category(UnitTest.class)
+@Category(ClientServerTest.class)
 public class ProtobufServerConnectionTest {
 
-  private ClientHealthMonitor clientHealthMonitorMock;
+  @Rule
+  public MockitoRule mockitoRule = MockitoJUnit.rule().strictness(STRICT_STUBS);
+
+  private Acceptor acceptor;
+  private InternalCacheForClientAccess cache;
+  private CachedRegionHelper cachedRegionHelper;
+  private ClientHealthMonitor clientHealthMonitor;
+  private Socket socket;
+
+  @Before
+  public void setUp() throws IOException {
+    acceptor = mock(Acceptor.class);
+    cache = mock(InternalCacheForClientAccess.class);
+    cachedRegionHelper = mock(CachedRegionHelper.class);
+    clientHealthMonitor = mock(ClientHealthMonitor.class);
+    socket = mock(Socket.class);
+
+    when(acceptor.getClientHealthMonitor()).thenReturn(clientHealthMonitor);
+    when(socket.getInetAddress()).thenReturn(mock(InetAddress.class));
+    when(socket.getOutputStream()).thenReturn(new ByteArrayOutputStream());
+    when(socket.getRemoteSocketAddress()).thenReturn(createUnresolved("localhost", 9071));
+  }
 
   @Test
-  public void testProcessFlag() throws Exception {
-    ServerConnection serverConnection = IOExceptionThrowingServerConnection();
-    Assert.assertTrue(serverConnection.processMessages);
+  public void doOneMessageUnsetsProcessMessagesFlag() throws Exception {
+    ClientProtocolProcessor clientProtocolProcessor = mock(ClientProtocolProcessor.class);
+    doThrow(new IOException("throw me")).when(clientProtocolProcessor).processMessage(any(), any());
+    when(cachedRegionHelper.getCache()).thenReturn(cache);
+    ServerConnection serverConnection = new ProtobufServerConnection(socket, cache,
+        cachedRegionHelper, mock(CacheServerStats.class), 0, 1024, "",
+        CommunicationMode.ProtobufClientServerProtocol.getModeNumber(), acceptor,
+        clientProtocolProcessor, mock(SecurityService.class));
+
+    assertThat(serverConnection.getProcessMessages()).isTrue();
+
     serverConnection.doOneMessage();
-    Assert.assertTrue(!serverConnection.processMessages);
+
+    assertThat(serverConnection.getProcessMessages()).isFalse();
   }
 
   @Test
   public void emergencyCloseClosesSocket() throws IOException {
-    Socket socketMock = mock(Socket.class);
-    when(socketMock.getInetAddress()).thenReturn(InetAddress.getByName("localhost"));
-
-    AcceptorImpl acceptorStub = mock(AcceptorImpl.class);
-    ClientProtocolProcessor clientProtocolProcessorMock = mock(ClientProtocolProcessor.class);
-    ProtobufServerConnection protobufServerConnection =
-        getServerConnection(socketMock, clientProtocolProcessorMock, acceptorStub);
+    when(socket.getInetAddress()).thenReturn(InetAddress.getByName("localhost"));
+    ProtobufServerConnection protobufServerConnection = new ProtobufServerConnection(socket, cache,
+        cachedRegionHelper, mock(CacheServerStats.class), 0, 1024, "",
+        CommunicationMode.ProtobufClientServerProtocol.getModeNumber(), acceptor,
+        mock(ClientProtocolProcessor.class), mock(SecurityService.class));
 
     protobufServerConnection.emergencyClose();
 
-    Mockito.verify(socketMock).close();
+    verify(socket).close();
   }
 
   @Test
-  public void testClientHealthMonitorRegistration() throws UnknownHostException {
-    AcceptorImpl acceptorStub = mock(AcceptorImpl.class);
+  public void addsConnectionToClientHealthMonitorForClient() throws IOException {
+    ServerConnection serverConnection = new ProtobufServerConnection(socket, cache,
+        cachedRegionHelper, mock(CacheServerStats.class), 0, 1024, "",
+        CommunicationMode.ProtobufClientServerProtocol.getModeNumber(), acceptor,
+        mock(ClientProtocolProcessor.class), mock(SecurityService.class));
 
-    ClientProtocolProcessor clientProtocolProcessor = mock(ClientProtocolProcessor.class);
-
-    ServerConnection serverConnection = getServerConnection(clientProtocolProcessor, acceptorStub);
-
-    ArgumentCaptor<ClientProxyMembershipID> registerCpmidArgumentCaptor =
-        ArgumentCaptor.forClass(ClientProxyMembershipID.class);
-
-    ArgumentCaptor<ClientProxyMembershipID> addConnectionCpmidArgumentCaptor =
-        ArgumentCaptor.forClass(ClientProxyMembershipID.class);
-
-    verify(clientHealthMonitorMock).addConnection(addConnectionCpmidArgumentCaptor.capture(),
-        eq(serverConnection));
-    verify(clientHealthMonitorMock).registerClient(registerCpmidArgumentCaptor.capture());
-    assertEquals("identity(localhost<ec>:0,connection=1",
-        registerCpmidArgumentCaptor.getValue().toString());
-    assertEquals("identity(localhost<ec>:0,connection=1",
-        addConnectionCpmidArgumentCaptor.getValue().toString());
+    ArgumentCaptor<ClientProxyMembershipID> clientProxyMembershipIdFromAddConnection =
+        forClass(ClientProxyMembershipID.class);
+    verify(clientHealthMonitor)
+        .addConnection(clientProxyMembershipIdFromAddConnection.capture(), eq(serverConnection));
+    assertThat(clientProxyMembershipIdFromAddConnection.getValue().toString())
+        .isEqualTo("identity(localhost<ec>:0,connection=1");
   }
 
   @Test
-  public void testDoOneMessageNotifiesClientHealthMonitor() throws UnknownHostException {
-    AcceptorImpl acceptorStub = mock(AcceptorImpl.class);
-    ClientProtocolProcessor clientProtocolProcessor = mock(ClientProtocolProcessor.class);
+  public void registersClientWithClientHealthMonitor() throws IOException {
+    new ProtobufServerConnection(socket, cache, cachedRegionHelper, mock(CacheServerStats.class), 0,
+        1024, "", CommunicationMode.ProtobufClientServerProtocol.getModeNumber(), acceptor,
+        mock(ClientProtocolProcessor.class), mock(SecurityService.class));
 
-    ServerConnection serverConnection = getServerConnection(clientProtocolProcessor, acceptorStub);
+    ArgumentCaptor<ClientProxyMembershipID> clientProxyMembershipIdFromRegisterClient =
+        forClass(ClientProxyMembershipID.class);
+    verify(clientHealthMonitor)
+        .registerClient(clientProxyMembershipIdFromRegisterClient.capture());
+    assertThat(clientProxyMembershipIdFromRegisterClient.getValue().toString())
+        .isEqualTo("identity(localhost<ec>:0,connection=1");
+  }
+
+  @Test
+  public void doOneMessageNotifiesClientHealthMonitorOfPing() throws IOException {
+    when(cachedRegionHelper.getCache()).thenReturn(cache);
+    ServerConnection serverConnection = new ProtobufServerConnection(socket, cache,
+        cachedRegionHelper, mock(CacheServerStats.class), 0, 1024, "",
+        CommunicationMode.ProtobufClientServerProtocol.getModeNumber(), acceptor,
+        mock(ClientProtocolProcessor.class), mock(SecurityService.class));
+
     serverConnection.doOneMessage();
 
-    ArgumentCaptor<ClientProxyMembershipID> clientProxyMembershipIDArgumentCaptor =
-        ArgumentCaptor.forClass(ClientProxyMembershipID.class);
-    verify(clientHealthMonitorMock).receivedPing(clientProxyMembershipIDArgumentCaptor.capture());
-    assertEquals("identity(localhost<ec>:0,connection=1",
-        clientProxyMembershipIDArgumentCaptor.getValue().toString());
-  }
-
-  private ProtobufServerConnection IOExceptionThrowingServerConnection()
-      throws IOException, IncompatibleVersionException {
-    ClientProtocolProcessor clientProtocolProcessor = mock(ClientProtocolProcessor.class);
-    doThrow(new IOException()).when(clientProtocolProcessor).processMessage(any(), any());
-    return getServerConnection(clientProtocolProcessor, mock(AcceptorImpl.class));
-  }
-
-  private ProtobufServerConnection getServerConnection(Socket socketMock,
-      ClientProtocolProcessor clientProtocolProcessorMock, AcceptorImpl acceptorStub)
-      throws UnknownHostException {
-    clientHealthMonitorMock = mock(ClientHealthMonitor.class);
-    when(acceptorStub.getClientHealthMonitor()).thenReturn(clientHealthMonitorMock);
-    InetSocketAddress inetSocketAddressStub = InetSocketAddress.createUnresolved("localhost", 9071);
-    InetAddress inetAddressStub = mock(InetAddress.class);
-    when(socketMock.getInetAddress()).thenReturn(InetAddress.getByName("localhost"));
-    when(socketMock.getRemoteSocketAddress()).thenReturn(inetSocketAddressStub);
-    when(socketMock.getInetAddress()).thenReturn(inetAddressStub);
-
-    return new ProtobufServerConnection(socketMock, mock(InternalCache.class),
-        mock(CachedRegionHelper.class), mock(CacheServerStats.class), 0, 0, "",
-        CommunicationMode.ProtobufClientServerProtocol.getModeNumber(), acceptorStub,
-        clientProtocolProcessorMock, mock(SecurityService.class));
-  }
-
-  private ProtobufServerConnection getServerConnection(
-      ClientProtocolProcessor clientProtocolProcessorMock, AcceptorImpl acceptorStub)
-      throws UnknownHostException {
-    Socket socketMock = mock(Socket.class);
-    return getServerConnection(socketMock, clientProtocolProcessorMock, acceptorStub);
+    ArgumentCaptor<ClientProxyMembershipID> clientProxyMembershipIdFromReceivedPing =
+        forClass(ClientProxyMembershipID.class);
+    verify(clientHealthMonitor).receivedPing(clientProxyMembershipIdFromReceivedPing.capture());
+    assertThat(clientProxyMembershipIdFromReceivedPing.getValue().toString())
+        .isEqualTo("identity(localhost<ec>:0,connection=1");
   }
 }

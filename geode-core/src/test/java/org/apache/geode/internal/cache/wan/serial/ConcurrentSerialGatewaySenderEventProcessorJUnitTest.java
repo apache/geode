@@ -14,18 +14,16 @@
  */
 package org.apache.geode.internal.cache.wan.serial;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class ConcurrentSerialGatewaySenderEventProcessorJUnitTest {
 
   private ConcurrentSerialGatewaySenderEventProcessor processor;
@@ -34,7 +32,7 @@ public class ConcurrentSerialGatewaySenderEventProcessorJUnitTest {
   @Before
   public void setUp() throws Exception {
     AbstractGatewaySender sender = mock(AbstractGatewaySender.class);
-    processor = new ConcurrentSerialGatewaySenderEventProcessor(sender);
+    processor = new ConcurrentSerialGatewaySenderEventProcessor(sender, null);
     queue = mock(RegionQueue.class);
     when(queue.size()).thenReturn(3);
   }
@@ -44,5 +42,4 @@ public class ConcurrentSerialGatewaySenderEventProcessorJUnitTest {
     processor.getQueues().add(queue);
     assertEquals(3, processor.eventQueueSize());
   }
-
 }

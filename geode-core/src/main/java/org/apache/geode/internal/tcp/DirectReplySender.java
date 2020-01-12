@@ -23,15 +23,15 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.InternalGemFireException;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.LonerDistributionManager.DummyDMStats;
 import org.apache.geode.distributed.internal.ReplySender;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * A reply sender which replies back directly to a dedicated socket socket.
@@ -40,6 +40,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 class DirectReplySender implements ReplySender {
   private static final Logger logger = LogService.getLogger();
 
+  @Immutable
   private static final DMStats DUMMY_STATS = new DummyDMStats();
 
   private final Connection conn;
@@ -49,7 +50,8 @@ class DirectReplySender implements ReplySender {
     this.conn = connection;
   }
 
-  public Set putOutgoing(DistributionMessage msg) {
+  @Override
+  public Set<InternalDistributedMember> putOutgoing(DistributionMessage msg) {
     Assert.assertTrue(!this.sentReply, "Trying to reply twice to a message");
     // Using an ArrayList, rather than Collections.singletonList here, because the MsgStreamer
     // mutates the list when it has exceptions.
@@ -57,20 +59,21 @@ class DirectReplySender implements ReplySender {
     // fix for bug #42199 - cancellation check
     this.conn.getConduit().getDM().getCancelCriterion().checkCancelInProgress(null);
 
-    if (logger.isTraceEnabled(LogMarker.DM)) {
-      logger.trace(LogMarker.DM, "Sending a direct reply {} to {}", msg, conn.getRemoteAddress());
+    if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+      logger.trace(LogMarker.DM_VERBOSE, "Sending a direct reply {} to {}", msg,
+          conn.getRemoteAddress());
     }
     ArrayList<Connection> conns = new ArrayList<Connection>(1);
     conns.add(conn);
-    MsgStreamer ms = (MsgStreamer) MsgStreamer.create(conns, msg, false, DUMMY_STATS);
+    MsgStreamer ms = (MsgStreamer) MsgStreamer.create(conns, msg, false, DUMMY_STATS,
+        conn.getBufferPool());
     try {
       ms.writeMessage();
       ConnectExceptions ce = ms.getConnectExceptions();
       if (ce != null && !ce.getMembers().isEmpty()) {
         Assert.assertTrue(ce.getMembers().size() == 1);
-        logger.warn(
-            LocalizedMessage.create(LocalizedStrings.DirectChannel_FAILURE_SENDING_DIRECT_REPLY,
-                ce.getMembers().iterator().next()));
+        logger.warn("Failed sending a direct reply to {}",
+            ce.getMembers().iterator().next());
         return Collections.singleton(ce.getMembers().iterator().next());
       }
       sentReply = true;
@@ -79,7 +82,7 @@ class DirectReplySender implements ReplySender {
       throw new InternalGemFireException(e);
     } catch (IOException ex) {
       throw new InternalGemFireException(
-          LocalizedStrings.DirectChannel_UNKNOWN_ERROR_SERIALIZING_MESSAGE.toLocalizedString(), ex);
+          "Unknown error serializing message", ex);
     } finally {
       try {
         ms.close();

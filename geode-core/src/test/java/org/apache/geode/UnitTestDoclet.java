@@ -14,9 +14,17 @@
  */
 package org.apache.geode;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.text.BreakIterator;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.Set;
+import java.util.TreeSet;
 
 import com.sun.javadoc.ClassDoc;
 import com.sun.javadoc.DocErrorReporter;
@@ -106,6 +114,7 @@ public class UnitTestDoclet {
 
       ClassDoc[] classes = root.classes();
       Arrays.sort(classes, new Comparator() {
+        @Override
         public int compare(Object o1, Object o2) {
           ClassDoc c1 = (ClassDoc) o1;
           ClassDoc c2 = (ClassDoc) o2;

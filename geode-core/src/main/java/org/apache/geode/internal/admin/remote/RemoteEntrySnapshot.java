@@ -15,12 +15,15 @@
 
 package org.apache.geode.internal.admin.remote;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
-import org.apache.geode.cache.*;
-import org.apache.geode.internal.admin.*;
+import org.apache.geode.cache.CacheException;
+import org.apache.geode.cache.Region;
+import org.apache.geode.internal.admin.EntrySnapshot;
 
 public class RemoteEntrySnapshot implements EntrySnapshot, DataSerializable {
   private static final long serialVersionUID = 1360498801579593535L;
@@ -61,34 +64,42 @@ public class RemoteEntrySnapshot implements EntrySnapshot, DataSerializable {
    */
   public RemoteEntrySnapshot() {}
 
+  @Override
   public Object getName() {
     return this.name;
   }
 
+  @Override
   public long getLastModifiedTime() {
     return stats.getLastModifiedTime();
   }
 
+  @Override
   public long getLastAccessTime() {
     return stats.getLastAccessedTime();
   }
 
+  @Override
   public long getNumberOfHits() {
     return stats.getHitCount();
   }
 
+  @Override
   public long getNumberOfMisses() {
     return stats.getMissCount();
   }
 
+  @Override
   public float getHitRatio() {
     return stats.getHitRatio();
   }
 
+  @Override
   public Object getValue() {
     return value;
   }
 
+  @Override
   public Object getUserAttribute() {
     return userAttribute;
   }
@@ -114,6 +125,7 @@ public class RemoteEntrySnapshot implements EntrySnapshot, DataSerializable {
     return getName().toString();
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeObject(this.name, out);
     DataSerializer.writeObject(this.value, out);
@@ -121,6 +133,7 @@ public class RemoteEntrySnapshot implements EntrySnapshot, DataSerializable {
     DataSerializer.writeObject(this.userAttribute, out);
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.name = DataSerializer.readObject(in);
     this.value = DataSerializer.readObject(in);

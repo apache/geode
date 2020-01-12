@@ -12,30 +12,36 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache.tier.sockets;
 
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.quality.Strictness.STRICT_STUBS;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 
-import org.assertj.core.api.Assertions;
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
+import junitparams.naming.TestCaseName;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
 
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.client.protocol.exception.ServiceLoadingFailureException;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 
 /**
  * We don't test the path where the service providing protobufProtocolHandler is actually present,
@@ -45,8 +51,12 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * What we are concerned with is making sure that everything stays the same when the feature flag
  * isn't set, and that we at least try to load the service when the feature flag is true.
  */
-@Category(UnitTest.class)
+@Category(ClientServerTest.class)
+@RunWith(JUnitParamsRunner.class)
 public class ServerConnectionFactoryTest {
+
+  @Rule
+  public MockitoRule mockitoRule = MockitoJUnit.rule().strictness(STRICT_STUBS);
 
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
@@ -55,68 +65,67 @@ public class ServerConnectionFactoryTest {
    * Safeguard that we won't create the new client protocol object unless the feature flag is
    * enabled.
    */
-  @Test(expected = IOException.class)
-  public void newClientProtocolFailsWithoutSystemPropertySet() throws IOException {
-    ServerConnection serverConnection = serverConnectionMockedExceptForCommunicationMode(
-        CommunicationMode.ProtobufClientServerProtocol.getModeNumber());
-
-  }
-
-  /**
-   * @throws IOException caused by ServiceLoadingFailureException because the service is implemented
-   *         in a different module, and when this unit test is run, that module won't be present.
-   */
   @Test
-  public void newClientProtocolFailsWithSystemPropertySet() throws IOException {
-    Assertions.assertThatThrownBy(() -> {
-      System.setProperty("geode.feature-protobuf-protocol", "true");
-      ServerConnection serverConnection = serverConnectionMockedExceptForCommunicationMode(
-          CommunicationMode.ProtobufClientServerProtocol.getModeNumber());
-    }).hasRootCauseInstanceOf(ServiceLoadingFailureException.class);
+  public void newClientProtocolFailsWithoutSystemPropertySet() {
+    Throwable thrown = catchThrowable(
+        () -> new ServerConnectionFactory().makeServerConnection(mock(Socket.class),
+            mock(InternalCache.class), mock(CachedRegionHelper.class), mock(CacheServerStats.class),
+            0, 0, "", CommunicationMode.ProtobufClientServerProtocol.getModeNumber(),
+            mock(AcceptorImpl.class), mock(SecurityService.class)));
+
+    assertThat(thrown).isInstanceOf(IOException.class);
   }
 
   @Test
-  public void makeServerConnection() throws Exception {
-    CommunicationMode[] communicationModes = new CommunicationMode[] {
-        CommunicationMode.ClientToServer, CommunicationMode.PrimaryServerToClient,
-        CommunicationMode.SecondaryServerToClient, CommunicationMode.GatewayToGateway,
-        CommunicationMode.MonitorToServer, CommunicationMode.SuccessfulServerToClient,
-        CommunicationMode.UnsuccessfulServerToClient, CommunicationMode.ClientToServer,};
-
-    for (CommunicationMode communicationMode : communicationModes) {
-      ServerConnection serverConnection =
-          serverConnectionMockedExceptForCommunicationMode(communicationMode.getModeNumber());
-      assertTrue(serverConnection instanceof OriginalServerConnection);
-    }
-  }
-
-  @Test
-  public void makeServerConnectionForOldProtocolWithFeatureFlagEnabled() throws IOException {
+  public void newClientProtocolFailsWithSystemPropertySet() {
     System.setProperty("geode.feature-protobuf-protocol", "true");
-    CommunicationMode[] communicationModes = new CommunicationMode[] {
-        CommunicationMode.ClientToServer, CommunicationMode.PrimaryServerToClient,
-        CommunicationMode.SecondaryServerToClient, CommunicationMode.GatewayToGateway,
-        CommunicationMode.MonitorToServer, CommunicationMode.SuccessfulServerToClient,
-        CommunicationMode.UnsuccessfulServerToClient, CommunicationMode.ClientToServer,};
+    Throwable thrown = catchThrowable(
+        () -> new ServerConnectionFactory().makeServerConnection(mock(Socket.class),
+            mock(InternalCache.class), mock(CachedRegionHelper.class), mock(CacheServerStats.class),
+            0, 0, "", CommunicationMode.ProtobufClientServerProtocol.getModeNumber(),
+            mock(AcceptorImpl.class), mock(SecurityService.class)));
 
-    for (CommunicationMode communicationMode : communicationModes) {
-      ServerConnection serverConnection =
-          serverConnectionMockedExceptForCommunicationMode(communicationMode.getModeNumber());
-      assertTrue(serverConnection instanceof OriginalServerConnection);
-    }
+    assertThat(thrown).hasRootCauseInstanceOf(ServiceLoadingFailureException.class);
   }
 
-  private ServerConnection serverConnectionMockedExceptForCommunicationMode(byte communicationMode)
-      throws IOException {
-    Socket socketMock = mock(Socket.class);
-    when(socketMock.getInetAddress()).thenReturn(InetAddress.getByName("localhost"));
-    InputStream streamMock = mock(InputStream.class);
-    when(streamMock.read()).thenReturn(1);
-    when(socketMock.getInputStream()).thenReturn(streamMock);
+  @Test
+  @Parameters({"ClientToServer", "PrimaryServerToClient", "SecondaryServerToClient",
+      "GatewayToGateway", "MonitorToServer", "SuccessfulServerToClient",
+      "UnsuccessfulServerToClient", "ClientToServer"})
+  @TestCaseName("{method}({params})")
+  public void makeServerConnection(CommunicationMode communicationMode) throws Exception {
+    Socket socket = mock(Socket.class);
+    when(socket.getInetAddress()).thenReturn(InetAddress.getByName("localhost"));
+    when(socket.getInputStream()).thenReturn(mock(InputStream.class));
 
-    return new ServerConnectionFactory().makeServerConnection(socketMock, mock(InternalCache.class),
-        mock(CachedRegionHelper.class), mock(CacheServerStats.class), 0, 0, "", communicationMode,
-        mock(AcceptorImpl.class), mock(SecurityService.class));
+    ServerConnection serverConnection =
+        new ServerConnectionFactory().makeServerConnection(socket, mock(InternalCache.class),
+            mock(CachedRegionHelper.class), mock(CacheServerStats.class), 0, 0, "",
+            communicationMode.getModeNumber(),
+            mock(AcceptorImpl.class), mock(SecurityService.class));
+
+    assertThat(serverConnection).isInstanceOf(OriginalServerConnection.class);
+  }
+
+  @Test
+  @Parameters({"ClientToServer", "PrimaryServerToClient", "SecondaryServerToClient",
+      "GatewayToGateway", "MonitorToServer", "SuccessfulServerToClient",
+      "UnsuccessfulServerToClient", "ClientToServer"})
+  @TestCaseName("{method}({params})")
+  public void makeServerConnectionForOldProtocolWithFeatureFlagEnabled(
+      CommunicationMode communicationMode) throws IOException {
+    System.setProperty("geode.feature-protobuf-protocol", "true");
+    Socket socket = mock(Socket.class);
+    when(socket.getInetAddress()).thenReturn(InetAddress.getByName("localhost"));
+    when(socket.getInputStream()).thenReturn(mock(InputStream.class));
+
+    ServerConnection serverConnection =
+        new ServerConnectionFactory().makeServerConnection(socket, mock(InternalCache.class),
+            mock(CachedRegionHelper.class), mock(CacheServerStats.class), 0, 0, "",
+            communicationMode.getModeNumber(),
+            mock(AcceptorImpl.class), mock(SecurityService.class));
+
+    assertThat(serverConnection).isInstanceOf(OriginalServerConnection.class);
   }
 
 }

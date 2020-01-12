@@ -19,7 +19,6 @@ import javax.management.modelmbean.ModelMBean;
 
 import org.apache.geode.admin.DistributionLocatorConfig;
 import org.apache.geode.admin.internal.AdminDistributedSystemImpl;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Provides MBean support for managing a distribution locator.
@@ -55,67 +54,82 @@ public class DistributionLocatorJmxImpl
 
   //////////////////////// Configuration ////////////////////////
 
+  @Override
   public String getHost() {
     return this.getConfig().getHost();
   }
 
+  @Override
   public void setHost(String host) {
     this.getConfig().setHost(host);
   }
 
+  @Override
   public String getWorkingDirectory() {
     return this.getConfig().getWorkingDirectory();
   }
 
+  @Override
   public void setWorkingDirectory(String dir) {
     this.getConfig().setWorkingDirectory(dir);
   }
 
+  @Override
   public String getProductDirectory() {
     return this.getConfig().getProductDirectory();
   }
 
+  @Override
   public void setProductDirectory(String dir) {
     this.getConfig().setProductDirectory(dir);
   }
 
+  @Override
   public String getRemoteCommand() {
     return this.getConfig().getRemoteCommand();
   }
 
+  @Override
   public void setRemoteCommand(String remoteCommand) {
     this.getConfig().setRemoteCommand(remoteCommand);
   }
 
+  @Override
   public java.util.Properties getDistributedSystemProperties() {
     return this.getConfig().getDistributedSystemProperties();
   }
 
+  @Override
   public void setDistributedSystemProperties(java.util.Properties props) {
     this.getConfig().setDistributedSystemProperties(props);
   }
 
+  @Override
   public void validate() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public Object clone() throws CloneNotSupportedException {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
+  @Override
   public int getPort() {
     return this.getConfig().getPort();
   }
 
+  @Override
   public void setPort(int port) {
     this.getConfig().setPort(port);
   }
 
+  @Override
   public String getBindAddress() {
     return this.getConfig().getBindAddress();
   }
 
+  @Override
   public void setBindAddress(String bindAddress) {
     this.getConfig().setBindAddress(bindAddress);
   }
@@ -138,26 +152,32 @@ public class DistributionLocatorJmxImpl
   /** The ModelMBean that is configured to manage this resource */
   private ModelMBean modelMBean;
 
+  @Override
   public String getMBeanName() {
     return this.mbeanName;
   }
 
+  @Override
   public ModelMBean getModelMBean() {
     return this.modelMBean;
   }
 
+  @Override
   public void setModelMBean(ModelMBean modelMBean) {
     this.modelMBean = modelMBean;
   }
 
+  @Override
   public ObjectName getObjectName() {
     return this.objectName;
   }
 
+  @Override
   public ManagedResourceType getManagedResourceType() {
     return ManagedResourceType.DISTRIBUTION_LOCATOR;
   }
 
+  @Override
   public void cleanupResource() {}
 
 }

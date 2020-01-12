@@ -35,9 +35,9 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.locks.DLockGrantor;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.TXCommitMessage;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Sends <code>TXOriginatorRecoveryMessage</code> to all participants of a given transaction when
@@ -139,7 +139,8 @@ public class TXOriginatorRecoveryProcessor extends ReplyProcessor21 {
       final TXOriginatorRecoveryMessage msg = this;
 
       try {
-        dm.getWaitingThreadPool().execute(new Runnable() {
+        dm.getExecutors().getWaitingThreadPool().execute(new Runnable() {
+          @Override
           public void run() {
             processTXOriginatorRecoveryMessage(dm, msg);
           }
@@ -153,8 +154,7 @@ public class TXOriginatorRecoveryProcessor extends ReplyProcessor21 {
         final TXOriginatorRecoveryMessage msg) {
 
       ReplyException replyException = null;
-      logger.info(LocalizedMessage.create(
-          LocalizedStrings.TXOriginatorRecoveryProcessor_PROCESSTXORIGINATORRECOVERYMESSAGE));
+      logger.info("[processTXOriginatorRecoveryMessage]");
       try {
         // Wait for the transaction associated with this lockid to finish processing
         TXCommitMessage.getTracker().waitToProcess(msg.txLockId, dm);
@@ -165,9 +165,7 @@ public class TXOriginatorRecoveryProcessor extends ReplyProcessor21 {
          * org.apache.geode.internal.cache.locks.TXLockServiceTest should be expanded upon also...
          */
       } catch (RuntimeException t) {
-        logger.warn(
-            LocalizedMessage.create(
-                LocalizedStrings.TXOriginatorRecoveryProcessor_PROCESSTXORIGINATORRECOVERYMESSAGE_THROWABLE),
+        logger.warn("[processTXOriginatorRecoveryMessage] throwable:",
             t);
         // if (replyException == null) (can only be null)
         {
@@ -221,32 +219,33 @@ public class TXOriginatorRecoveryProcessor extends ReplyProcessor21 {
 
         if (getSender().equals(dm.getId())) {
           // process in-line in this VM
-          logger.info(LocalizedMessage.create(
-              LocalizedStrings.TXOriginatorRecoveryProcessor_PROCESSTXORIGINATORRECOVERYMESSAGE_LOCALLY_PROCESS_REPLY));
+          logger.info("[processTXOriginatorRecoveryMessage] locally process reply");
           replyMsg.setSender(dm.getId());
           replyMsg.dmProcess(dm);
         } else {
-          logger.info(LocalizedMessage.create(
-              LocalizedStrings.TXOriginatorRecoveryProcessor_PROCESSTXORIGINATORRECOVERYMESSAGE_SEND_REPLY));
+          logger.info("[processTXOriginatorRecoveryMessage] send reply");
           dm.putOutgoing(replyMsg);
         }
       }
     }
 
+    @Override
     public int getDSFID() {
       return TX_ORIGINATOR_RECOVERY_MESSAGE;
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.txLockId = (TXLockId) DataSerializer.readObject(in);
       this.processorId = in.readInt();
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       DataSerializer.writeObject(this.txLockId, out);
       out.writeInt(this.processorId);
     }
@@ -277,13 +276,15 @@ public class TXOriginatorRecoveryProcessor extends ReplyProcessor21 {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
     }
 
     @Override

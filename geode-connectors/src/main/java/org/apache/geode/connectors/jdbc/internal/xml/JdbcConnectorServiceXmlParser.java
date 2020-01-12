@@ -21,19 +21,16 @@ import org.apache.geode.internal.cache.xmlcache.AbstractXmlParser;
 
 public class JdbcConnectorServiceXmlParser extends AbstractXmlParser {
   public static final String NAMESPACE = "http://geode.apache.org/schema/jdbc";
-  public static final String PARAMS_DELIMITER = ":";
-  public static final String NAME = "name";
-  static final String URL = "url";
-  static final String USER = "user";
-  static final String PASSWORD = "password";
-  static final String PARAMETERS = "parameters";
-  static final String REGION = "region";
-  static final String CONNECTION_NAME = "connection-name";
+  static final String DATA_SOURCE = "data-source";
   static final String TABLE = "table";
-  static final String PDX_CLASS = "pdx-class";
-  static final String FIELD_NAME = "field-name";
-  static final String COLUMN_NAME = "column-name";
-  static final String PRIMARY_KEY_IN_VALUE = "primary-key-in-value";
+  static final String IDS = "ids";
+  static final String CATALOG = "catalog";
+  static final String SCHEMA = "schema";
+  static final String PDX_NAME = "pdx-name";
+  static final String PDX_TYPE = "pdx-type";
+  static final String JDBC_NAME = "jdbc-name";
+  static final String JDBC_TYPE = "jdbc-type";
+  static final String JDBC_NULLABLE = "jdbc-nullable";
 
   @Override
   public String getNamespaceUri() {

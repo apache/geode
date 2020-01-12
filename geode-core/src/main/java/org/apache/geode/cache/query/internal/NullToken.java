@@ -20,8 +20,10 @@ import java.io.IOException;
 
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.internal.index.IndexManager;
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * A Token representing null.
@@ -54,17 +56,24 @@ public class NullToken implements DataSerializableFixedID, Comparable {
   }
 
   @Override
+  public int hashCode() {
+    return NullToken.class.hashCode();
+  }
+
+  @Override
   public int getDSFID() {
     return NULL_TOKEN;
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
 
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {}
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {}
 
   @Override
   public Version[] getSerializationVersions() {

@@ -14,9 +14,6 @@
  */
 package org.apache.geode.internal.sequencelog;
 
-/**
- *
- */
 public class Transition {
 
   private final long timestamp;

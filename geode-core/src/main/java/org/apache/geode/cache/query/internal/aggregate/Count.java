@@ -14,16 +14,23 @@
  */
 package org.apache.geode.cache.query.internal.aggregate;
 
+import static org.apache.geode.cache.query.internal.aggregate.AbstractAggregator.downCast;
+
 import org.apache.geode.cache.query.Aggregator;
 import org.apache.geode.cache.query.QueryService;
 
 /**
  * Computes the count of the non distinct rows for replicated & PR based queries.
- *
- *
  */
 public class Count implements Aggregator {
-  private int count = 0;
+  private long count = 0;
+
+  long getCount() {
+    return count;
+  }
+
+  @Override
+  public void init() {}
 
   @Override
   public void accumulate(Object value) {
@@ -33,13 +40,7 @@ public class Count implements Aggregator {
   }
 
   @Override
-  public void init() {
-
-  }
-
-  @Override
   public Object terminate() {
-    return Integer.valueOf(count);
+    return downCast(count);
   }
-
 }

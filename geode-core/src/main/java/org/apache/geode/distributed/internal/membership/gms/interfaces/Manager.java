@@ -14,76 +14,36 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.interfaces;
 
-import java.io.NotSerializableException;
 import java.util.Collection;
-import java.util.Set;
 
-import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DistributionMessage;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.NetView;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
+import org.apache.geode.distributed.internal.membership.api.MemberStartupException;
+import org.apache.geode.distributed.internal.membership.api.Message;
+import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
+import org.apache.geode.distributed.internal.membership.gms.Services;
 
 /**
  * Manager presents the GMS services to the outside world and handles startup/shutdown race
- * conditions. It is also the default MessageHandler
+ * conditions. It is also the default MessageHandler for the Messenger service.
  */
-public interface Manager extends Service, MessageHandler {
+public interface Manager<ID extends MemberIdentifier>
+    extends Service<ID>, MessageHandler<Message<ID>> {
 
   /**
    * After all services have been started this is used to join the distributed system
    */
-  void joinDistributedSystem();
-
-  /**
-   * Sends a message using a selected distribution channel (e.g. Messenger or DirectChannel)
-   *
-   * @return a set of recipients that did not receive the message
-   */
-  Set<InternalDistributedMember> send(DistributionMessage m) throws NotSerializableException;
+  void joinDistributedSystem() throws MemberStartupException;
 
   /**
    * initiates a Forced Disconnect, shutting down the distributed system and closing the cache
    *
-   * @param reason
    */
   void forceDisconnect(String reason);
 
   /**
    * notifies the manager that membership quorum has been lost
    */
-  void quorumLost(Collection<InternalDistributedMember> failures, NetView view);
-
-  /**
-   * Notifies the manager that a member has contacted us who is not in the current membership view
-   *
-   * @param mbr
-   * @param birthTime
-   */
-  void addSurpriseMemberForTesting(DistributedMember mbr, long birthTime);
-
-  /**
-   * Tests to see if the given member has been put into "shunned" state, meaning that it has left
-   * the distributed system and we should no longer process requests from it. Shunned status
-   * eventually times out.
-   *
-   * @param mbr
-   * @return true if the member is shunned
-   */
-  boolean isShunned(DistributedMember mbr);
-
-  /**
-   * returns the lead member from the current membership view. This is typically the oldest member
-   * that is not an Admin or Locator member.
-   *
-   * @return the ID of the lead member
-   */
-  DistributedMember getLeadMember();
-
-  /**
-   * returns the coordinator of the current membership view. This is who created and distributed the
-   * view. See NetView.
-   */
-  DistributedMember getCoordinator();
+  void quorumLost(Collection<ID> failures, GMSMembershipView<ID> view);
 
   /**
    * sometimes we cannot perform multicast messaging, such as during a rolling upgrade.
@@ -93,25 +53,24 @@ public interface Manager extends Service, MessageHandler {
   boolean isMulticastAllowed();
 
   /**
-   * Returns the reason for a shutdown.
-   */
-  Throwable getShutdownCause();
-
-  /**
    * Returns true if a shutdown is in progress or has been completed . When it returns true,
    * shutdown message is already sent.
    */
   boolean shutdownInProgress();
 
   /**
-   * Returns true if a distributed system close is started. And shutdown msg has not sent yet,its in
-   * progress.
-   */
-  boolean isShutdownStarted();
-
-  /**
    * Indicate whether we are attempting a reconnect
    */
   boolean isReconnectingDS();
 
+  /**
+   * Return the Services object owning this Manager service
+   */
+  Services<ID> getServices();
+
+  /**
+   * Returns true if we've been informed that this node has started to close or has
+   * progressed past close (sending ShutdownMessages, etc) to shutting down membership services
+   */
+  boolean isCloseInProgress();
 }

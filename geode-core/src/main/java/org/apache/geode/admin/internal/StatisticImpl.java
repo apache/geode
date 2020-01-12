@@ -38,6 +38,7 @@ public class StatisticImpl implements org.apache.geode.admin.Statistic {
   /**
    * @return the identifying name of this stat
    */
+  @Override
   public String getName() {
     return this.internalStat.getName();
   }
@@ -45,6 +46,7 @@ public class StatisticImpl implements org.apache.geode.admin.Statistic {
   /**
    * @return the value of this stat as a <code>java.lang.Number</code>
    */
+  @Override
   public Number getValue() {
     return this.internalStat.getValue();
   }
@@ -52,6 +54,7 @@ public class StatisticImpl implements org.apache.geode.admin.Statistic {
   /**
    * @return a display string for the unit of measurement (if any) this stat represents
    */
+  @Override
   public String getUnits() {
     return this.internalStat.getUnits();
   }
@@ -59,6 +62,7 @@ public class StatisticImpl implements org.apache.geode.admin.Statistic {
   /**
    * @return true if this stat represents a numeric value which always increases
    */
+  @Override
   public boolean isCounter() {
     return this.internalStat.isCounter();
   }
@@ -66,6 +70,7 @@ public class StatisticImpl implements org.apache.geode.admin.Statistic {
   /**
    * @return the full description of this stat
    */
+  @Override
   public String getDescription() {
     return this.internalStat.getDescription();
   }

@@ -42,6 +42,7 @@ public class TestXACacheLoader implements CacheLoader {
 
   public static String tableName = "";
 
+  @Override
   public Object load(LoaderHelper helper) throws CacheLoaderException {
     System.out.println("In Loader.load for" + helper.getKey());
     return loadFromDatabase(helper.getKey());
@@ -101,6 +102,7 @@ public class TestXACacheLoader implements CacheLoader {
    *
    * @see org.apache.geode.cache.CacheCallback#close()
    */
+  @Override
   public void close() {
     // TODO Auto-generated method stub
 

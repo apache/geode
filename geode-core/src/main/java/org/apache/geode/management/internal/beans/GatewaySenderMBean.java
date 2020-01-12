@@ -209,6 +209,7 @@ public class GatewaySenderMBean extends NotificationBroadcasterSupport
     return bridge.isParallel();
   }
 
+  @Override
   public String getGatewayReceiver() {
     return bridge.getGatewayReceiver();
   }
@@ -228,6 +229,6 @@ public class GatewaySenderMBean extends NotificationBroadcasterSupport
 
   @Override
   public int getEventsExceedingAlertThreshold() {
-    return 0;
+    return bridge.getEventsExceedingAlertThreshold();
   }
 }

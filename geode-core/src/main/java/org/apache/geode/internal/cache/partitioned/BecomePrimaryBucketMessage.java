@@ -26,17 +26,21 @@ import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.OperationExecutors;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.cache.BucketAdvisor;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * This message is sent to a recipient to make it become the primary for a partitioned region
@@ -97,14 +101,14 @@ public class BecomePrimaryBucketMessage extends PartitionMessage {
   }
 
   public BecomePrimaryBucketMessage(DataInput in) throws IOException, ClassNotFoundException {
-    fromData(in);
+    fromData(in, InternalDataSerializer.createDeserializationContext(in));
   }
 
   @Override
   public int getProcessorType() {
     // use the waiting pool because operateOnPartitionedRegion will
     // send out a DeposePrimaryBucketMessage and wait for the reply
-    return ClusterDistributionManager.WAITING_POOL_EXECUTOR;
+    return OperationExecutors.WAITING_POOL_EXECUTOR;
   }
 
   @Override
@@ -141,20 +145,23 @@ public class BecomePrimaryBucketMessage extends PartitionMessage {
     buff.append("; isRebalance=").append(this.isRebalance);
   }
 
+  @Override
   public int getDSFID() {
     return PR_BECOME_PRIMARY_BUCKET_MESSAGE;
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.bucketId = in.readInt();
     this.isRebalance = in.readBoolean();
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     out.writeInt(this.bucketId);
     out.writeBoolean(this.isRebalance);
   }
@@ -173,7 +180,7 @@ public class BecomePrimaryBucketMessage extends PartitionMessage {
 
     public BecomePrimaryBucketReplyMessage(DataInput in)
         throws IOException, ClassNotFoundException {
-      fromData(in);
+      fromData(in, InternalDataSerializer.createDeserializationContext(in));
     }
 
     private BecomePrimaryBucketReplyMessage(int processorId, ReplyException re, byte responseCode) {
@@ -199,29 +206,30 @@ public class BecomePrimaryBucketMessage extends PartitionMessage {
     @Override
     public void process(final DistributionManager dm, final ReplyProcessor21 processor) {
       final long startTime = getTimestamp();
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM,
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE,
             "BecomePrimaryBucketReplyMessage process invoking reply processor with processorId:{}",
             this.processorId);
       }
 
       if (processor == null) {
-        if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.trace(LogMarker.DM, "BecomePrimaryBucketReplyMessage processor not found");
+        if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+          logger.trace(LogMarker.DM_VERBOSE, "BecomePrimaryBucketReplyMessage processor not found");
         }
         return;
       }
       processor.process(this);
 
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM, "processed {}", this);
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE, "processed {}", this);
       }
       dm.getStats().incReplyMessageTime(NanoTimer.getTime() - startTime);
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       out.writeByte(responseCode);
     }
 
@@ -231,8 +239,9 @@ public class BecomePrimaryBucketMessage extends PartitionMessage {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.responseCode = in.readByte();
     }
 
@@ -265,11 +274,11 @@ public class BecomePrimaryBucketMessage extends PartitionMessage {
           BecomePrimaryBucketReplyMessage reply = (BecomePrimaryBucketReplyMessage) msg;
           this.success = reply.isSuccess();
           if (reply.isSuccess()) {
-            if (logger.isTraceEnabled(LogMarker.DM)) {
-              logger.trace(LogMarker.DM, "BecomePrimaryBucketResponse return OK");
+            if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+              logger.trace(LogMarker.DM_VERBOSE, "BecomePrimaryBucketResponse return OK");
             }
-          } else if (logger.isTraceEnabled(LogMarker.DM)) {
-            logger.trace(LogMarker.DM, "BecomePrimaryBucketResponse return NOT_PRIMARY");
+          } else if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+            logger.trace(LogMarker.DM_VERBOSE, "BecomePrimaryBucketResponse return NOT_PRIMARY");
           }
         }
       } finally {

@@ -28,7 +28,7 @@ Slowing is more likely to occur when applications run many threads, send large m
 **Note:**
 If you are experiencing slow performance and are sending large objects (multiple megabytes), before implementing these slow receiver options make sure your socket buffer sizes are large enough for the objects you distribute. The socket buffer size is set using gemfire.socket-buffer-size.
 
-By default, distribution between system members is performed synchronously. With synchronous communication, when one member is slow to receive, it can cause its producer members to slow down as well. This can lead to general performance problems in the distributed system.
+By default, distribution between system members is performed synchronously. With synchronous communication, when one member is slow to receive, it can cause its producer members to slow down as well. This can lead to general performance problems in the cluster.
 
 The specifications for handling slow receipt primarily affect how your members manage distribution for regions with distributed-no-ack scope, but it can affect other distributed scopes as well. If no regions have distributed-no-ack scope, this mechanism is unlikely to kick in at all. When slow receipt handling does kick in, however, it affects all distribution between the producer and consumer, regardless of scope. Partitioned regions ignore the scope attribute, but for the purposes of this discussion you should think of them as having an implicit distributed-ack scope.
 
@@ -38,7 +38,7 @@ The slow receiver options are set in the producer member’s region attribute, e
 
 **Delivery Retries**
 
-If the receiver fails to receive a message, the sender continues to attempt to deliver the message as long as the receiving member is still in the distributed system. During the retry cycle, throws warnings that include this string:
+If the receiver fails to receive a message, the sender continues to attempt to deliver the message as long as the receiving member is still in the cluster. During the retry cycle, throws warnings that include this string:
 
 ``` pre
 will reattempt

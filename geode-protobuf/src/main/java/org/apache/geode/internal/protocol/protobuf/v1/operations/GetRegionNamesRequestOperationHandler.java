@@ -14,10 +14,9 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
-import java.util.Set;
+import java.util.Collection;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.cache.Region;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
@@ -34,13 +33,12 @@ public class GetRegionNamesRequestOperationHandler implements
   public Result<RegionAPI.GetRegionNamesResponse> process(
       ProtobufSerializationService serializationService, RegionAPI.GetRegionNamesRequest request,
       MessageExecutionContext messageExecutionContext) throws InvalidExecutionContextException {
-    Set<Region<?, ?>> regions = messageExecutionContext.getCache().rootRegions();
+
+    Collection<String> regions = messageExecutionContext.getSecureCache().getRegionNames();
 
     RegionAPI.GetRegionNamesResponse.Builder builder =
         RegionAPI.GetRegionNamesResponse.newBuilder();
-    for (Region region : regions) {
-      builder.addRegions(region.getName());
-    }
+    regions.forEach(builder::addRegions);
 
     return Success.of(builder.build());
   }

@@ -17,9 +17,11 @@ package org.apache.geode.cache.lucene.internal;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+
+import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.Region;
@@ -32,8 +34,11 @@ import org.apache.geode.internal.cache.BucketNotFoundException;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.execute.InternalRegionFunctionContext;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class PartitionedRepositoryManager implements RepositoryManager {
+  private final Logger logger = LogService.getLogger();
+
   public static IndexRepositoryFactory indexRepositoryFactory = new IndexRepositoryFactory();
   /**
    * map of the parent bucket region to the index repository
@@ -54,10 +59,14 @@ public class PartitionedRepositoryManager implements RepositoryManager {
   protected volatile boolean closed;
   private final CountDownLatch isDataRegionReady = new CountDownLatch(1);
 
-  public PartitionedRepositoryManager(InternalLuceneIndex index, LuceneSerializer serializer) {
+  private final ExecutorService waitingThreadPoolFromDM;
+
+  public PartitionedRepositoryManager(InternalLuceneIndex index, LuceneSerializer serializer,
+      ExecutorService waitingThreadPool) {
     this.index = index;
     this.serializer = serializer;
     this.closed = false;
+    this.waitingThreadPoolFromDM = waitingThreadPool;
   }
 
   public void setUserRegionForRepositoryManager(PartitionedRegion userRegion) {
@@ -67,16 +76,39 @@ public class PartitionedRepositoryManager implements RepositoryManager {
   @Override
   public Collection<IndexRepository> getRepositories(RegionFunctionContext ctx)
       throws BucketNotFoundException {
+    return getRepositories(ctx, false);
+  }
+
+  @Override
+  public Collection<IndexRepository> getRepositories(RegionFunctionContext ctx,
+      boolean waitForRepository) throws BucketNotFoundException {
     Region<Object, Object> region = ctx.getDataSet();
-    Set<Integer> buckets = ((InternalRegionFunctionContext) ctx).getLocalBucketSet(region);
-    ArrayList<IndexRepository> repos = new ArrayList<IndexRepository>(buckets.size());
-    for (Integer bucketId : buckets) {
+    int[] buckets = ((InternalRegionFunctionContext) ctx).getLocalBucketArray(region);
+    if (buckets == null || buckets[0] == 0) {
+      return null;
+    }
+    ArrayList<IndexRepository> repos = new ArrayList<IndexRepository>(buckets[0]);
+    for (int i = 1; i <= buckets[0]; i++) {
+      int bucketId = buckets[i];
       BucketRegion userBucket = userRegion.getDataStore().getLocalBucketById(bucketId);
       if (userBucket == null) {
         throw new BucketNotFoundException(
             "User bucket was not found for region " + region + "bucket id " + bucketId);
       } else {
-        repos.add(getRepository(userBucket.getId()));
+        if (index.isIndexAvailable(userBucket.getId()) || userBucket.isEmpty()
+            || waitForRepository) {
+          repos.add(getRepository(userBucket.getId()));
+        } else {
+          waitingThreadPoolFromDM.execute(() -> {
+            try {
+              getRepository(userBucket.getId());
+            } catch (Exception e) {
+              logger.debug("Lucene Index creation in progress.", e);
+            }
+          });
+          throw new LuceneIndexCreationInProgressException(
+              "Lucene Index creation in progress for bucket: " + userBucket.getId());
+        }
       }
     }
 
@@ -117,7 +149,7 @@ public class PartitionedRepositoryManager implements RepositoryManager {
       InternalLuceneIndex index, PartitionedRegion userRegion, IndexRepository oldRepository)
       throws IOException {
     return indexRepositoryFactory.computeIndexRepository(bucketId, serializer, index, userRegion,
-        oldRepository);
+        oldRepository, this);
   }
 
 

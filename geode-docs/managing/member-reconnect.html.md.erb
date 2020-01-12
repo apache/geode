@@ -19,23 +19,23 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-A <%=vars.product_name%> member may be forcibly disconnected from a <%=vars.product_name%> distributed system if the member is unresponsive for a period of time, or if a network partition separates one or more members into a group that is too small to act as the distributed system.
+A <%=vars.product_name%> member may be forcibly disconnected from a <%=vars.product_name%> cluster if the member is unresponsive for a period of time, or if a network partition separates one or more members into a group that is too small to act as the cluster.
 
 ## How the Autoreconnection Process Works
 
-After being disconnected from a distributed system,
+After being disconnected from a cluster,
 a <%=vars.product_name%> member shuts down and, by default, automatically restarts into 
 a "reconnecting" state,
-while periodically attempting to rejoin the distributed system 
+while periodically attempting to rejoin the cluster
 by contacting a list of known locators.
-If the member succeeds in reconnecting to a known locator, the member rebuilds its view of the distributed system from existing members and receives a new distributed member ID.
+If the member succeeds in reconnecting to a known locator, the member rebuilds its view of the cluster from existing members and receives a new distributed member ID.
 
-If the member cannot connect to a known locator, the member will then check to see if it itself is a locator (or hosting an embedded locator process). If the member is a locator, then the member does a quorum-based reconnect; it will attempt to contact a quorum of the members that were in the membership view just before it became disconnected. If a quorum of members can be contacted, then startup of the distributed system is allowed to begin. Since the reconnecting member does not know which members survived the network partition event, all members that are in a reconnecting state will keep their UDP unicast ports open and respond to ping requests.
+If the member cannot connect to a known locator, the member will then check to see if it itself is a locator (or hosting an embedded locator process). If the member is a locator, then the member does a quorum-based reconnect; it will attempt to contact a quorum of the members that were in the membership view just before it became disconnected. If a quorum of members can be contacted, then startup of the cluster is allowed to begin. Since the reconnecting member does not know which members survived the network partition event, all members that are in a reconnecting state will keep their UDP unicast ports open and respond to ping requests.
 
 Membership quorum is determined using the same member weighting system used in network partition detection. See [Membership Coordinators, Lead Members and Member Weighting](network_partitioning/membership_coordinators_lead_members_and_weighting.html#concept_23C2606D59754106AFBFE17515DF4330).
 
 Note that when a locator is in the reconnecting state,
-it provides no discovery services for the distributed system.
+it provides no discovery services for the cluster.
 
 The default settings for reconfiguration of the cache once
 reconnected assume that the cluster configuration service has
@@ -65,13 +65,13 @@ By default a <%=vars.product_name%> member will try to reconnect until it is tol
 
 You can use `DistributedSystem` and `Cache` callback methods to perform actions during the reconnect process, or to cancel the reconnect process if necessary.
 
-The `DistributedSystem` and `Cache` API provide several methods you can use to take actions while a member is reconnecting to the distributed system:
+The `DistributedSystem` and `Cache` API provide several methods you can use to take actions while a member is reconnecting to the cluster:
 
 -   `DistributedSystem.isReconnecting()` returns true if the member is in the process of reconnecting and recreating the cache after having been removed from the system by other members.
 -   `DistributedSystem.waitUntilReconnected(long, TimeUnit)` waits for a period of time, and then returns a boolean value to indicate whether the member has reconnected to the DistributedSystem. Use a value of -1 seconds to wait indefinitely until the reconnect completes or the member shuts down. Use a value of 0 seconds as a quick probe to determine if the member has reconnected.
 -   `DistributedSystem.getReconnectedSystem()` returns the reconnected DistributedSystem.
 -   `DistributedSystem.stopReconnecting()` stops the reconnection process and ensures that the DistributedSystem stays in a disconnected state.
--   `Cache.isReconnecting()` returns true if the cache is attempting to reconnect to a distributed system.
+-   `Cache.isReconnecting()` returns true if the cache is attempting to reconnect to a cluster.
 -   `Cache.waitForReconnect(long, TimeUnit)` waits for a period of time, and then returns a boolean value to indicate whether the DistributedSystem has reconnected. Use a value of -1 seconds to wait indefinitely until the reconnect completes or the cache shuts down. Use a value of 0 seconds as a quick probe to determine if the member has reconnected.
 -   `Cache.getReconnectedCache()` returns the reconnected Cache.
 -   `Cache.stopReconnecting()` stops the reconnection process and ensures that the DistributedSystem stays in a disconnected state.

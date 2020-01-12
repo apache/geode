@@ -14,8 +14,9 @@
  */
 package org.apache.geode.cache.lucene.internal.distributed;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
 
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
@@ -30,9 +31,8 @@ import org.mockito.Mockito;
 import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.junit.categories.LuceneTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category({UnitTest.class, LuceneTest.class})
+@Category({LuceneTest.class})
 public class TopEntriesFunctionCollectorJUnitTest {
 
   private EntryScore<String> r1_1;

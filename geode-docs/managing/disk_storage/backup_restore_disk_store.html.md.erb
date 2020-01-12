@@ -19,7 +19,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-A backup is a copy of persisted data from a disk store. A backup is used to restore the disk store to the state it was in when the backup was made. The appropriate back up and restore procedures differ based upon whether the distributed system is online or offline. An online system has currently running members. An offline system does not have any running members.
+A backup is a copy of persisted data from a disk store. A backup is used to restore the disk store to the state it was in when the backup was made. The appropriate back up and restore procedures differ based upon whether the cluster is online or offline. An online system has currently running members. An offline system does not have any running members.
 
 -   [Making a Backup While the System Is Online](backup_restore_disk_store.html#backup_restore_disk_store__section_63AB5917BF24432898A79DBE8E4071FF)
 -   [What a Full Online Backup Saves](backup_restore_disk_store.html#backup_restore_disk_store__section_C08E52E65DAD4CD5AE076BBDCF1DB340)
@@ -30,7 +30,7 @@ A backup is a copy of persisted data from a disk store. A backup is used to rest
 
 ## <a id="backup_restore_disk_store__section_63AB5917BF24432898A79DBE8E4071FF" class="no-quick-link"></a>Making a Backup While the System Is Online
 
-The gfsh command `backup disk-store` creates a backup of the disk stores for all members running in the distributed system. The backup works by passing commands to the running system members; therefore, the members need to be online for this operation to succeed. Each member with persistent data creates a backup of its own configuration and disk stores. The backup does not block any activities within the distributed system, but it does use resources.
+The gfsh command `backup disk-store` creates a backup of the disk stores for all members running in the cluster. The backup works by passing commands to the running system members; therefore, the members need to be online for this operation to succeed. Each member with persistent data creates a backup of its own configuration and disk stores. The backup does not block any activities within the cluster, but it does use resources.
 
 **Note:**
 Do not try to create backup files from a running system by using your operating system's file copy commands. This would create incomplete and unusable copies.
@@ -48,7 +48,7 @@ The associated queue operation also causes a disk operation.
 These two disk operations are not made atomically,
 so if a backup is made between the two disk operations,
 then the backup represents inconsistent data in the region and the queue.
--   Run the backup during a period of low activity in your system. The backup does not block system activities, but it uses file system resources on all hosts in your distributed system, and it can affect performance.
+-   Run the backup during a period of low activity in your system. The backup does not block system activities, but it uses file system resources on all hosts in your cluster, and it can affect performance.
 -   Configure each member with any additional files or directories to be backed up by modifying the member's `cache.xml` file. Additional items that ought to be included in the backup:
 
     -   application jar files

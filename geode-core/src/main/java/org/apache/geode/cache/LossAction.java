@@ -14,10 +14,14 @@
  */
 package org.apache.geode.cache;
 
-import java.io.*;
-import java.util.*;
+import java.io.ObjectStreamException;
+import java.io.Serializable;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.annotations.Immutable;
+
 
 /**
  * Specifies how access to the region is affected when one or more required roles are lost. A role
@@ -27,6 +31,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
  *
  * @deprecated this feature is scheduled to be removed
  */
+@Immutable
 public class LossAction implements Serializable {
   private static final long serialVersionUID = -832035480397447797L;
 
@@ -40,7 +45,8 @@ public class LossAction implements Serializable {
    * region is allowed, including {@linkplain Region#close close} and
    * {@linkplain Region#localDestroyRegion() localDestroyRegion}.
    */
-  public static final LossAction NO_ACCESS = new LossAction("NO_ACCESS");
+  @Immutable
+  public static final LossAction NO_ACCESS = new LossAction("NO_ACCESS", 0);
 
   /**
    * Only local access to the region is allowed when required roles are missing. All distributed
@@ -48,33 +54,36 @@ public class LossAction implements Serializable {
    * roles are absent. Reads which result in a netSearch behave normally, while any attempt to
    * invoke a netLoad is not allowed.
    */
-  public static final LossAction LIMITED_ACCESS = new LossAction("LIMITED_ACCESS");
+  @Immutable
+  public static final LossAction LIMITED_ACCESS = new LossAction("LIMITED_ACCESS", 1);
 
   /**
    * Access to the region is unaffected when required roles are missing.
    */
-  public static final LossAction FULL_ACCESS = new LossAction("FULL_ACCESS");
+  @Immutable
+  public static final LossAction FULL_ACCESS = new LossAction("FULL_ACCESS", 2);
 
   /**
    * Loss of required roles causes the entire cache to be closed. In addition, this process will
    * disconnect from the DistributedSystem and then reconnect. Attempting to use any existing
    * references to the regions or cache will throw a {@link CacheClosedException}.
    */
-  public static final LossAction RECONNECT = new LossAction("RECONNECT");
+  @Immutable
+  public static final LossAction RECONNECT = new LossAction("RECONNECT", 3);
 
   /** The name of this mirror type. */
   private final transient String name;
 
   // The 4 declarations below are necessary for serialization
   /** byte used as ordinal to represent this Scope */
-  public final byte ordinal = nextOrdinal++;
+  public final byte ordinal;
 
-  private static byte nextOrdinal = 0;
-
+  @Immutable
   private static final LossAction[] PRIVATE_VALUES =
       {NO_ACCESS, LIMITED_ACCESS, FULL_ACCESS, RECONNECT};
 
   /** List of all LossAction values */
+  @Immutable
   public static final List VALUES = Collections.unmodifiableList(Arrays.asList(PRIVATE_VALUES));
 
   private Object readResolve() throws ObjectStreamException {
@@ -82,8 +91,9 @@ public class LossAction implements Serializable {
   }
 
   /** Creates a new instance of LossAction. */
-  private LossAction(String name) {
+  private LossAction(String name, int ordinal) {
     this.name = name;
+    this.ordinal = (byte) ordinal;
   }
 
   /** Return the LossAction represented by specified ordinal */
@@ -95,7 +105,7 @@ public class LossAction implements Serializable {
   public static LossAction fromName(String name) {
     if (name == null || name.length() == 0) {
       throw new IllegalArgumentException(
-          LocalizedStrings.LossAction_INVALID_LOSSACTION_NAME_0.toLocalizedString(name));
+          String.format("Invalid LossAction name: %s", name));
     }
     for (int i = 0; i < PRIVATE_VALUES.length; i++) {
       if (name.equals(PRIVATE_VALUES[i].name)) {
@@ -103,7 +113,7 @@ public class LossAction implements Serializable {
       }
     }
     throw new IllegalArgumentException(
-        LocalizedStrings.LossAction_INVALID_LOSSACTION_NAME_0.toLocalizedString(name));
+        String.format("Invalid LossAction name: %s", name));
   }
 
   /** Returns true if this is <code>NO_ACCESS</code>. */

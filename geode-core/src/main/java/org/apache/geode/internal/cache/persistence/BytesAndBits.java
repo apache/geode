@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.cache.persistence;
 
-import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * Used to fetch a record's raw bytes and user bits.

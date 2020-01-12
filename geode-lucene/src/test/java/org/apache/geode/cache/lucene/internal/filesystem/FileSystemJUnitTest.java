@@ -47,9 +47,8 @@ import org.mockito.stubbing.Answer;
 
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.test.junit.categories.LuceneTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category({UnitTest.class, LuceneTest.class})
+@Category({LuceneTest.class})
 public class FileSystemJUnitTest {
 
   private static final int SMALL_CHUNK = 523;

@@ -55,6 +55,10 @@ List existing <%=vars.product_name%> resources such as deployed applications, di
 
     Display the list of indexes created for all members.
 
+-   **[list jndi-binding](#list_jndi-binding)**
+
+    List all JNDI bindings, active and configured.
+
 -   **[list lucene indexes](#list_lucene_indexes)**
 
     List Lucene indexes created for all members.
@@ -65,7 +69,7 @@ List existing <%=vars.product_name%> resources such as deployed applications, di
 
 -   **[list regions](#topic_F0ECEFF26086474498598035DD83C588)**
 
-    Display regions of a member or members. If no parameter is specified, all regions in the <%=vars.product_name%> distributed system are listed.
+    Display regions of a member or members. If no parameter is specified, all regions in the cluster are listed.
 
 ## <a id="topic_j22_kzk_2l" class="no-quick-link"></a>list async-event-queues
 
@@ -397,6 +401,41 @@ gfsh> list indexes
 No Indexes Found
 ```
 
+## <a id="list_jndi-binding" class="no-quick-link"></a>list jndi-binding
+
+List all JNDI bindings, active and configured.
+An active binding is one that is bound to the server's JNDI context
+and is also listed in the cluster configuration.
+A configured binding is one that is listed in the cluster configuration,
+but may not be active on the servers.
+
+**Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
+
+**Syntax:**
+
+``` pre
+list jndi-binding
+```
+
+**Sample Output:**
+
+``` pre
+gfsh>list jndi-binding
+
+Configured JNDI bindings: 
+
+Group Name | JNDI Name | JDBC Driver Class
+---------- | --------- | ------------------------------------
+cluster    | jndi1     | org.apache.derby.jdbc.EmbeddedDriver
+
+Active JNDI bindings found on each member: 
+
+    Member      |        JNDI Name        | JDBC Driver Class
+--------------- | ----------------------- | ----------------------------------------------------
+land-gifted-gun | java:UserTransaction    | org.apache.geode.internal.jta.UserTransactionImpl
+land-gifted-gun | java:TransactionManager | org.apache.geode.internal.jta.TransactionManagerImpl
+```
+
 ## <a id="list_lucene_indexes" class="no-quick-link"></a>list lucene indexes
 
 Display the list of Lucene indexes created for all members. The optional `--with-stats` qualifier shows activity on the indexes.
@@ -487,7 +526,7 @@ server2      | 192.0.2.0(server2:3260)<v8>:16721
 
 ## <a id="topic_F0ECEFF26086474498598035DD83C588" class="no-quick-link"></a>list regions
 
-Display regions of a member or members. If no parameter is specified, all regions in the <%=vars.product_name%> distributed system are listed.
+Display regions of a member or members. If no parameter is specified, all regions in the cluster are listed.
 
 **Syntax:**
 

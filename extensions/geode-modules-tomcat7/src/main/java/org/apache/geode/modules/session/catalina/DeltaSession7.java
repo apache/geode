@@ -23,6 +23,7 @@ public class DeltaSession7 extends DeltaSession {
    * Construct a new <code>Session</code> associated with no <code>Manager</code>. The
    * <code>Manager</code> will be assigned later using {@link #setOwner(Object)}.
    */
+  @SuppressWarnings("unused")
   public DeltaSession7() {
     super();
   }
@@ -32,8 +33,7 @@ public class DeltaSession7 extends DeltaSession {
    *
    * @param manager The manager with which this Session is associated
    */
-  public DeltaSession7(Manager manager) {
+  DeltaSession7(Manager manager) {
     super(manager);
   }
-
 }

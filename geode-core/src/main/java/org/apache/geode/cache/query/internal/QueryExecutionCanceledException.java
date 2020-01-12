@@ -16,11 +16,11 @@
 package org.apache.geode.cache.query.internal;
 
 import org.apache.geode.cache.CacheRuntimeException;
-import org.apache.geode.cache.control.ResourceManager;
 
 /**
  * Internal exception thrown when a query has been canceled and
- * QueryMonitor.isQueryExecutionCanceled() is called Due to various threads using the method, access
+ * QueryMonitor.throwExceptionIfQueryOnCurrentThreadIsCanceled() is called due to various threads
+ * using the method, access
  * to the query object may not be available for certain threads This exception is generically used
  * and caught by DefaultQuery, which will then throw the appropriate exception
  *

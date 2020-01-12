@@ -42,7 +42,9 @@ import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * This class is a bit misnamed. It really has more with pushing a DistributionAdvisee's profile out
@@ -128,7 +130,7 @@ public class UpdateAttributesProcessor {
     if (!exchangeProfiles) {
       if (this.removeProfile) {
         if (!advisor.isInitialized()) {
-          // no need to tell the other guy we are going away since
+          // no need to tell the other advisor we are going away since
           // never got initialized.
           return;
         }
@@ -346,13 +348,15 @@ public class UpdateAttributesProcessor {
       return buff.toString();
     }
 
+    @Override
     public int getDSFID() {
       return UPDATE_ATTRIBUTES_MESSAGE;
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.adviseePath = DataSerializer.readString(in);
       this.processorId = in.readInt();
       // set the processor ID to be able to send reply to sender in case of any
@@ -364,8 +368,9 @@ public class UpdateAttributesProcessor {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       DataSerializer.writeString(this.adviseePath, out);
       out.writeInt(this.processorId);
       DataSerializer.writeObject(this.profile, out);
@@ -401,14 +406,16 @@ public class UpdateAttributesProcessor {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.profile = (Profile) DataSerializer.readObject(in);
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       DataSerializer.writeObject(this.profile, out);
     }
 
@@ -474,8 +481,9 @@ public class UpdateAttributesProcessor {
 
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       int length = in.readInt();
       if (length == -1) {
         this.profiles = null;
@@ -489,8 +497,9 @@ public class UpdateAttributesProcessor {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       if (this.profiles == null) {
         out.writeInt(-1);
       } else {

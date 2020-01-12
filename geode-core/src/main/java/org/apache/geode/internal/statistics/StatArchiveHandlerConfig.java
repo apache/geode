@@ -15,15 +15,22 @@
 package org.apache.geode.internal.statistics;
 
 import java.io.File;
+import java.util.Optional;
+
+import org.apache.geode.logging.internal.spi.LogFile;
 
 /**
  * Defines the contract enabling the {@link StatArchiveHandler} to retrieve configuration details
  * (some of which may change at runtime).
- * <p/>
+ *
+ * <p>
  * Implemented by {@link HostStatSampler}.
  *
+ * <p>
+ * Note: This interface changes the return types of file limit properties from int to long so that
+ * the Stat Sampler tests can change the units from MB to KB.
+ *
  * @since GemFire 7.0
- * @see org.apache.geode.distributed.internal.RuntimeDistributionConfigImpl
  */
 public interface StatArchiveHandlerConfig {
 
@@ -61,4 +68,9 @@ public interface StatArchiveHandlerConfig {
    * Returns a description of the product that the stats are on
    */
   String getProductDescription();
+
+  /**
+   * Returns the log file to provide info about main id and child id.
+   */
+  Optional<LogFile> getLogFile();
 }

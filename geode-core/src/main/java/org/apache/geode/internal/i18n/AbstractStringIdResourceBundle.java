@@ -39,12 +39,6 @@ public class AbstractStringIdResourceBundle {
   private Int2ObjectOpenHashMap data;
 
   /**
-   * The {@link java.util.ResourceBundle} that implements the message lookup English has a special
-   * implementation for speed.
-   */
-  private static AbstractStringIdResourceBundle messageBundle;
-
-  /**
    * Init method to populate the TIntObjectHashMap for Non-english locales
    * <code>data = new TIntObjectHashMap();</code>
    *
@@ -148,8 +142,7 @@ public class AbstractStringIdResourceBundle {
   public static AbstractStringIdResourceBundle getBundle(String baseName, Locale l) {
     AbstractStringIdResourceBundle newMessageBundle = new AbstractStringIdResourceBundle();
     newMessageBundle.initData(baseName, l);
-    messageBundle = newMessageBundle;
-    return messageBundle;
+    return newMessageBundle;
   }
 
 }

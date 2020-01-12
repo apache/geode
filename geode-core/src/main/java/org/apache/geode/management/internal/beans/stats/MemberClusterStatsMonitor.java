@@ -22,10 +22,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.geode.management.internal.FederationComponent;
 
-/**
- *
- *
- */
 public class MemberClusterStatsMonitor {
 
 

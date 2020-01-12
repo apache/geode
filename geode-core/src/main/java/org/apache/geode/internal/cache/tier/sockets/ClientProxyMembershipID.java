@@ -14,24 +14,35 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_ID;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.io.Serializable;
 import java.util.Arrays;
 
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InternalGemFireException;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.DurableClientAttributes;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.*;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.serialization.ByteArrayDataInput;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * This class represents a ConnectionProxy of the CacheClient
@@ -41,10 +52,11 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
  */
 public class ClientProxyMembershipID
     implements DataSerializableFixedID, Serializable, Externalizable {
+  public static final long serialVersionUID = 7144300815346556370L;
 
   private static final Logger logger = LogService.getLogger();
 
-  private static ThreadLocal<String> POOL_NAME = new ThreadLocal<String>();
+  private static final ThreadLocal<String> POOL_NAME = new ThreadLocal<String>();
 
   public static void setPoolName(String poolName) {
     POOL_NAME.set(poolName);
@@ -56,11 +68,13 @@ public class ClientProxyMembershipID
 
   private static final int BYTES_32KB = 32768;
 
+  @MakeNotStatic
   public static volatile DistributedSystem system = null;
 
   /**
    * the membership id of the distributed system in this client (if running in a client)
    */
+  @MakeNotStatic
   public static DistributedMember systemMemberId;
 
   // durable_synch_counter=1 is reserved for durable clients
@@ -68,6 +82,8 @@ public class ClientProxyMembershipID
   // session is selected on the serverside by always using the
   // same uniqueID value which is set via the synch_counter
   private static final int durable_synch_counter = 1;
+
+  @MakeNotStatic
   private static int synch_counter = 0;
 
   protected byte[] identity;
@@ -162,21 +178,25 @@ public class ClientProxyMembershipID
     if (sys == null) {
       // DistributedSystem is required now before handshaking -Kirk
       throw new IllegalStateException(
-          LocalizedStrings.ClientProxyMembershipID_ATTEMPTING_TO_HANDSHAKE_WITH_CACHESERVER_BEFORE_CREATING_DISTRIBUTEDSYSTEM_AND_CACHE
-              .toLocalizedString());
+          "Attempting to handshake with CacheServer before creating DistributedSystem and Cache.");
     }
-    // if (system != sys)
     {
-      // DS already exists... make sure it's for current DS connection
       systemMemberId = sys.getDistributedMember();
       try {
+        if (systemMemberId != null) {
+          // update the durable id of the member identifier before serializing in case
+          // a pool name has been established
+          DurableClientAttributes attributes = systemMemberId.getDurableClientAttributes();
+          if (attributes != null && attributes.getId().length() > 0) {
+            ((InternalDistributedMember) systemMemberId).setDurableId(attributes.getId());
+          }
+        }
         HeapDataOutputStream hdos = new HeapDataOutputStream(256, Version.CURRENT);
         DataSerializer.writeObject(systemMemberId, hdos);
         client_side_identity = hdos.toByteArray();
       } catch (IOException ioe) {
         throw new InternalGemFireException(
-            LocalizedStrings.ClientProxyMembershipID_UNABLE_TO_SERIALIZE_IDENTITY
-                .toLocalizedString(),
+            "Unable to serialize identity",
             ioe);
       }
 
@@ -187,9 +207,9 @@ public class ClientProxyMembershipID
   }
 
   private ClientProxyMembershipID(int id, byte[] clientSideIdentity) {
-    Boolean specialCase = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "SPECIAL_DURABLE");
+    boolean specialCase = Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "SPECIAL_DURABLE");
     String durableID = this.system.getProperties().getProperty(DURABLE_CLIENT_ID);
-    if (specialCase.booleanValue() && durableID != null && (!durableID.equals(""))) {
+    if (specialCase && durableID != null && (!durableID.equals(""))) {
       this.uniqueId = durable_synch_counter;
     } else {
       this.uniqueId = id;
@@ -214,7 +234,7 @@ public class ClientProxyMembershipID
   @Override
   public String toString() {
     if (this.identity != null
-        && ((InternalDistributedMember) getDistributedMember()).getPort() == 0) {
+        && ((InternalDistributedMember) getDistributedMember()).getMembershipPort() == 0) {
       return this.toStringNoCache();
     }
     if (this._toString == null) {
@@ -232,7 +252,7 @@ public class ClientProxyMembershipID
     if (identity != null) {
       DurableClientAttributes dca = getDurableAttributes();
       if (dca.getId().length() > 0) {
-        sb.append(",durableAttributes=").append(getDurableAttributes()).append(')').toString();
+        sb.append(",durableAttributes=").append(dca).append(')').toString();
       }
     }
     return sb.toString();
@@ -243,12 +263,13 @@ public class ClientProxyMembershipID
    *
    * @see Externalizable
    */
+  @Override
   public void writeExternal(ObjectOutput out) throws IOException {
     // if (this.transientPort == 0) {
-    // InternalDistributedSystem.getLoggerI18n().warning(
-    // LocalizedStrings.DEBUG,
+    // InternalDistributedSystem.getLogger().warning(
+    // String.format("%s",
     // "externalizing a client ID with zero port: " + this.toString(),
-    // new Exception("Stack trace"));
+    // new Exception("Stack trace")));
     // }
     Assert.assertTrue(this.identity.length <= BYTES_32KB);
     out.writeShort(this.identity.length);
@@ -267,20 +288,19 @@ public class ClientProxyMembershipID
    *
    * @see Externalizable
    */
+  @Override
   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
     int identityLength = in.readShort();
     if (identityLength > BYTES_32KB) {
       throw new IOException(
-          LocalizedStrings.ClientProxyMembershipID_HANDSHAKE_IDENTITY_LENGTH_IS_TOO_BIG
-              .toLocalizedString());
+          "HandShake identity length is too big");
     }
     this.identity = new byte[identityLength];
     read(in, this.identity);
     this.uniqueId = in.readInt();
     if (this.uniqueId == -1) {
       throw new IOException(
-          LocalizedStrings.ClientProxyMembershipID_UNEXPECTED_EOF_REACHED_UNIQUE_ID_COULD_NOT_BE_READ
-              .toLocalizedString());
+          "Unexpected EOF reached. Unique ID could not be read");
     }
     // {toString(); this.transientPort = ((InternalDistributedMember)this.memberId).getPort();}
   }
@@ -294,29 +314,33 @@ public class ClientProxyMembershipID
       int dataRead = dis.read(toFill, idBytes, (toFillLength - idBytes));
       if (dataRead == -1) {
         throw new IOException(
-            LocalizedStrings.ClientProxyMembershipID_UNEXPECTED_EOF_REACHED_DISTRIBUTED_MEMBERSHIPID_COULD_NOT_BE_READ
-                .toLocalizedString());
+            "Unexpected EOF reached. Distributed MembershipID could not be read");
       }
       idBytes += dataRead;
     }
   }
 
+  @Override
   public int getDSFID() {
     return CLIENT_PROXY_MEMBERSHIPID;
   }
 
-  public void toData(DataOutput out) throws IOException {
+  @Override
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     // if (this.transientPort == 0) {
-    // InternalDistributedSystem.getLoggerI18n().warning(
-    // LocalizedStrings.DEBUG,
+    // InternalDistributedSystem.getLogger().warning(
+    // String.format("%s",
     // "serializing a client ID with zero port: " + this.toString(),
-    // new Exception("Stack trace"));
+    // new Exception("Stack trace")));
     // }
     DataSerializer.writeByteArray(this.identity, out);
     out.writeInt(this.uniqueId);
   }
 
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  @Override
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     this.identity = DataSerializer.readByteArray(in);
     this.uniqueId = in.readInt();
     // {toString(); this.transientPort = ((InternalDistributedMember)this.memberId).getPort();}
@@ -332,7 +356,7 @@ public class ClientProxyMembershipID
       return "null";
     }
     // don't cache if we haven't connected to the server yet
-    if (((InternalDistributedMember) getDistributedMember()).getPort() == 0) {
+    if (((InternalDistributedMember) getDistributedMember()).getMembershipPort() == 0) {
       return getMemberIdAsString();
     }
     if (memberIdString == null) {
@@ -378,13 +402,11 @@ public class ClientProxyMembershipID
 
   public DistributedMember getDistributedMember() {
     if (memberId == null) {
-      ByteArrayInputStream bais = new ByteArrayInputStream(identity);
-      DataInputStream dis = new VersionedDataInputStream(bais, Version.CURRENT);
+      ByteArrayDataInput dataInput = new ByteArrayDataInput(identity);
       try {
-        memberId = (DistributedMember) DataSerializer.readObject(dis);
+        memberId = (DistributedMember) DataSerializer.readObject(dataInput);
       } catch (Exception e) {
-        logger.error(LocalizedMessage.create(
-            LocalizedStrings.ClientProxyMembershipID_UNABLE_TO_DESERIALIZE_MEMBERSHIP_ID), e);
+        logger.error("Unable to deserialize membership id", e);
       }
     }
     return memberId;
@@ -446,10 +468,8 @@ public class ClientProxyMembershipID
    * Used to update the timeout when a durable client comes back to a server
    */
   public void updateDurableTimeout(int newValue) {
-    DurableClientAttributes dca = getDurableAttributes();
-    if (dca != null) {
-      dca.updateTimeout(newValue);
-    }
+    InternalDistributedMember member = (InternalDistributedMember) getDistributedMember();
+    member.setDurableTimeout(newValue);
   }
 
   /**
@@ -461,11 +481,11 @@ public class ClientProxyMembershipID
   public void updateID(DistributedMember idm) {
     // this.transientPort = ((InternalDistributedMember)this.memberId).getPort();
     // if (this.transientPort == 0) {
-    // InternalDistributedSystem.getLoggerI18n().warning(
-    // LocalizedStrings.DEBUG,
+    // InternalDistributedSystem.getLogger().warning(
+    // String.format("%s",
     // "updating client ID when member port is zero: " + this.memberId,
     // new Exception("stack trace")
-    // );
+    // ));
     // }
     HeapDataOutputStream hdos = new HeapDataOutputStream(256, Version.CURRENT);
     try {

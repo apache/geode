@@ -14,7 +14,8 @@
  */
 package org.apache.geode.internal.cache.tier;
 
-import org.apache.geode.internal.Version;
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * Provides the version of the client.
@@ -29,5 +30,6 @@ public interface ConnectionProxy {
    *
    * @since GemFire 5.7
    */
-  Version VERSION = Version.CURRENT.getGemFireVersion();
+  @Immutable
+  Version VERSION = Version.CURRENT;
 }

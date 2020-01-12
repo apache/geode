@@ -81,47 +81,4 @@ public abstract class NumberUtils {
         || Boolean.class.equals(ClassUtils.getClass(value))
         || String.class.equals(ClassUtils.getClass(value));
   }
-
-  @SuppressWarnings({"rawtypes", "unchecked"})
-  public static Object convertToActualType(String stringValue, String type)
-      throws IllegalArgumentException {
-    if (stringValue != null && type == null) {
-      return stringValue;
-    } else {
-      Object o = null;
-
-      if ("string".equalsIgnoreCase(type))
-        return stringValue;
-
-      try {
-        if ("byte".equalsIgnoreCase(type)) {
-          o = Byte.parseByte(stringValue);
-          return o;
-        } else if ("short".equalsIgnoreCase(type)) {
-          o = Short.parseShort(stringValue);
-          return o;
-        } else if ("int".equalsIgnoreCase(type)) {
-          o = Integer.parseInt(stringValue);
-          return o;
-        } else if ("long".equalsIgnoreCase(type)) {
-          o = Long.parseLong(stringValue);
-          return o;
-        } else if ("double".equalsIgnoreCase(type)) {
-          o = Double.parseDouble(stringValue);
-          return o;
-        } else if ("boolean".equalsIgnoreCase(type)) {
-          o = Boolean.parseBoolean(stringValue);
-          return o;
-        } else if ("float".equalsIgnoreCase(type)) {
-          o = Float.parseFloat(stringValue);
-          return o;
-        }
-        return o;
-      } catch (NumberFormatException e) {
-        throw new IllegalArgumentException(
-            "Failed to convert input key to " + type + " Msg : " + e.getMessage());
-      }
-
-    }
-  }
 }

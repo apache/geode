@@ -16,10 +16,13 @@
 
 package org.apache.geode.internal.admin.remote;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-import org.apache.geode.distributed.internal.*;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * A message that is sent to a particular distribution manager to get rid of a previously added
@@ -39,8 +42,7 @@ public class CancelStatListenerRequest extends AdminRequest {
   }
 
   public CancelStatListenerRequest() {
-    friendlyName = LocalizedStrings.CancelStatListenerRequest_REMOVE_STATISTIC_RESOURCE_LISTENER
-        .toLocalizedString();
+    friendlyName = "Remove statistic resource listener";
   }
 
   /**
@@ -51,25 +53,28 @@ public class CancelStatListenerRequest extends AdminRequest {
     return CancelStatListenerResponse.create(dm, this.getSender(), this.listenerId);
   }
 
+  @Override
   public int getDSFID() {
     return CANCEL_STAT_LISTENER_REQUEST;
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     out.writeInt(this.listenerId);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.listenerId = in.readInt();
   }
 
   @Override
   public String toString() {
-    return LocalizedStrings.CancelStatListenerRequest_CANCELSTATLISTENERREQUEST_FROM_0_FOR_1
-        .toLocalizedString(new Object[] {this.getRecipient(), Integer.valueOf(this.listenerId)});
+    return String.format("CancelStatListenerRequest from %s for %s",
+        new Object[] {this.getRecipient(), Integer.valueOf(this.listenerId)});
   }
 }

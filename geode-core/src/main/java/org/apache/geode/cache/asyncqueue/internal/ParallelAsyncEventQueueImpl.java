@@ -16,10 +16,12 @@ package org.apache.geode.cache.asyncqueue.internal;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.StatisticsFactory;
 import org.apache.geode.cache.EntryOperation;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.internal.cache.DistributedRegion;
@@ -35,21 +37,22 @@ import org.apache.geode.internal.cache.wan.GatewaySenderAttributes;
 import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
+import org.apache.geode.internal.statistics.StatisticsClock;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class ParallelAsyncEventQueueImpl extends AbstractGatewaySender {
 
   private static final Logger logger = LogService.getLogger();
 
-  public ParallelAsyncEventQueueImpl(InternalCache cache, GatewaySenderAttributes attrs) {
-    super(cache, attrs);
+  public ParallelAsyncEventQueueImpl(InternalCache cache, StatisticsFactory statisticsFactory,
+      StatisticsClock statisticsClock, GatewaySenderAttributes attrs) {
+    super(cache, statisticsClock, attrs);
     if (!(this.cache instanceof CacheCreation)) {
       // this sender lies underneath the AsyncEventQueue. Need to have
       // AsyncEventQueueStats
-      this.statistics = new AsyncEventQueueStats(cache.getDistributedSystem(),
-          AsyncEventQueueImpl.getAsyncEventQueueIdFromSenderId(id));
+      this.statistics = new AsyncEventQueueStats(statisticsFactory,
+          AsyncEventQueueImpl.getAsyncEventQueueIdFromSenderId(id), statisticsClock);
     }
     this.isForInternalUse = true;
   }
@@ -59,8 +62,7 @@ public class ParallelAsyncEventQueueImpl extends AbstractGatewaySender {
     this.getLifeCycleLock().writeLock().lock();
     try {
       if (isRunning()) {
-        logger.warn(LocalizedMessage
-            .create(LocalizedStrings.GatewaySender_SENDER_0_IS_ALREADY_RUNNING, this.getId()));
+        logger.warn("Gateway Sender {} is already running", this.getId());
         return;
       }
 
@@ -68,8 +70,7 @@ public class ParallelAsyncEventQueueImpl extends AbstractGatewaySender {
         String locators = this.cache.getInternalDistributedSystem().getConfig().getLocators();
         if (locators.length() == 0) {
           throw new IllegalStateException(
-              LocalizedStrings.AbstractGatewaySender_LOCATOR_SHOULD_BE_CONFIGURED_BEFORE_STARTING_GATEWAY_SENDER
-                  .toLocalizedString());
+              "Locators must be configured before starting gateway-sender.");
         }
       }
       /*
@@ -78,7 +79,11 @@ public class ParallelAsyncEventQueueImpl extends AbstractGatewaySender {
        * "ParallelGatewaySenderEventProcessor" and "ParallelGatewaySenderQueue" as a utility classes
        * of Concurrent version of processor and queue.
        */
-      eventProcessor = new ConcurrentParallelGatewaySenderEventProcessor(this);
+      eventProcessor =
+          new ConcurrentParallelGatewaySenderEventProcessor(this, getThreadMonitorObj());
+      if (startEventProcessorInPausedState) {
+        pauseEvenIfProcessorStopped();
+      }
       eventProcessor.start();
       waitForRunningStatus();
 
@@ -92,8 +97,7 @@ public class ParallelAsyncEventQueueImpl extends AbstractGatewaySender {
           (InternalDistributedSystem) this.cache.getDistributedSystem();
       system.handleResourceEvent(ResourceEvent.GATEWAYSENDER_START, this);
 
-      logger.info(
-          LocalizedMessage.create(LocalizedStrings.ParallelGatewaySenderImpl_STARTED__0, this));
+      logger.info("Started  {}", this);
 
       enqueueTempEvents();
     } finally {
@@ -118,7 +122,7 @@ public class ParallelAsyncEventQueueImpl extends AbstractGatewaySender {
       // stop the running threads, open sockets if any
       ((ConcurrentParallelGatewaySenderQueue) this.eventProcessor.getQueue()).cleanUp();
 
-      logger.info(LocalizedMessage.create(LocalizedStrings.GatewayImpl_STOPPED__0, this));
+      logger.info("Stopped  {}", this);
 
       InternalDistributedSystem system =
           (InternalDistributedSystem) this.cache.getDistributedSystem();
@@ -141,6 +145,7 @@ public class ParallelAsyncEventQueueImpl extends AbstractGatewaySender {
     return sb.toString();
   }
 
+  @Override
   public void fillInProfile(Profile profile) {
     assert profile instanceof GatewaySenderProfile;
     GatewaySenderProfile pf = (GatewaySenderProfile) profile;
@@ -168,7 +173,7 @@ public class ParallelAsyncEventQueueImpl extends AbstractGatewaySender {
   }
 
   @Override
-  protected void setModifiedEventId(EntryEventImpl clonedEvent) {
+  public void setModifiedEventId(EntryEventImpl clonedEvent) {
     int bucketId = -1;
     // merged from 42004
     if (clonedEvent.getRegion() instanceof DistributedRegion) {
@@ -196,5 +201,14 @@ public class ParallelAsyncEventQueueImpl extends AbstractGatewaySender {
           newThreadId);
     }
     clonedEvent.setEventId(newEventId);
+  }
+
+  private ThreadsMonitoring getThreadMonitorObj() {
+    DistributionManager distributionManager = this.cache.getDistributionManager();
+    if (distributionManager != null) {
+      return distributionManager.getThreadMonitoring();
+    } else {
+      return null;
+    }
   }
 }

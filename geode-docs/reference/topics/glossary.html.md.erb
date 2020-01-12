@@ -53,7 +53,7 @@ A behavior associated with synchronization functions. Blocking behavior is exhib
 
 ## <a id="glossary__section_938DF854708546878D59694A4C68604C" class="no-quick-link"></a>cache
 
-In-memory <%=vars.product_name%> data storage created by an application or cache server for data storage, distribution, and management. This is the point of access for Java applications for all caching features, and the only view of the cache that is available to the application. Cache creation creates a connection to the distributed system. See also [local](glossary.html#glossary__section_598D82A75D9842438BB934E01E77266E) and [remote](glossary.html#glossary__section_CC864725C0014791805D2549D87DA545).
+In-memory <%=vars.product_name%> data storage created by an application or cache server for data storage, distribution, and management. This is the point of access for Java applications for all caching features, and the only view of the cache that is available to the application. Cache creation creates a connection to the cluster. See also [local](glossary.html#glossary__section_598D82A75D9842438BB934E01E77266E) and [remote](glossary.html#glossary__section_CC864725C0014791805D2549D87DA545).
 
 ## <a id="glossary__section_F63DF98EB5D04EB5BBF9C6AD923341F5" class="no-quick-link"></a>cache-local
 
@@ -73,7 +73,7 @@ User-implemented plug-in for receiving and handling region entry events. A regio
 
 ## <a id="glossary__section_9CAA8CD20DBF4F948E20E384C987D0C8" class="no-quick-link"></a>cache loader
 
-User-implemented plug-in for loading data into a region. A region’s cache loader is used to load data that is requested of the region but is not available in the distributed system. For a distributed region, the loader that is used can be in a different cache from the one where the data-request operation originated. See also [netSearch](glossary.html#glossary__section_B9B118509831405D9AB4069503119DFB) and [netLoad](glossary.html#glossary__section_BFFF4BF9D6414AA392F7AEAC1256C112).cache misses, where a requested key is not present or has a null value in the local cache.
+User-implemented plug-in for loading data into a region. A region’s cache loader is used to load data that is requested of the region but is not available in the cluster. For a distributed region, the loader that is used can be in a different cache from the one where the data-request operation originated. See also [netSearch](glossary.html#glossary__section_B9B118509831405D9AB4069503119DFB) and [netLoad](glossary.html#glossary__section_BFFF4BF9D6414AA392F7AEAC1256C112).cache misses, where a requested key is not present or has a null value in the local cache.
 
 ## <a id="glossary__section_6D9FA50812AC45BCADA7755E4368A5C4" class="no-quick-link"></a>cache miss
 
@@ -81,7 +81,7 @@ The situation where a key’s value is requested from a cache and the requested 
 
 ## <a id="glossary__section_cache_server" class="no-quick-link"></a>cache server
 
-A long-lived, configurable <%=vars.product_name%> distributed system member process that can service client connections.
+A long-lived, configurable <%=vars.product_name%> cluster member process that can service client connections.
 
 ## <a id="glossary__section_cache_transaction" class="no-quick-link"></a>cache transaction
 
@@ -93,11 +93,11 @@ User-implemented plug-in intended for synchronizing the cache with an outside da
 
 ## <a id="glossary__section_109B7961FDFC4EED8C1802E84031B38D" class="no-quick-link"></a>client
 
-A <%=vars.product_name%> application that is configured as a standalone distributed system member, with regions configured as client regions. Client configuration uses the &lt;client-cache&gt; `cache.xml` element and the ClientCache API.
+A <%=vars.product_name%> application that is configured as a standalone cluster member, with regions configured as client regions. Client configuration uses the &lt;client-cache&gt; `cache.xml` element and the ClientCache API.
 
 ## <a id="glossary__section_A586ED6889724255957630F01B2E54F4" class="no-quick-link"></a>client region
 
-A <%=vars.product_name%> cache region that is configured to go to one or more <%=vars.product_name%> servers, in a separate <%=vars.product_name%> distributed system, for all data distribution activities. Among other things, client regions go to servers to satisfy cache misses, distribute data modifications, and to run single queries and continuous queries.
+A <%=vars.product_name%> cache region that is configured to go to one or more <%=vars.product_name%> servers, in a separate <%=vars.product_name%> cluster, for all data distribution activities. Among other things, client regions go to servers to satisfy cache misses, distribute data modifications, and to run single queries and continuous queries.
 
 ## cluster configuration service
 
@@ -117,19 +117,19 @@ Region attribute that specifies an estimate of the number of threads ever expect
 
 ## <a id="glossary__section_3FEC7A097CE247299F47EA209C5F91B8" class="no-quick-link"></a>conflation
 
-Combining entries in a message queue for better performance. When an event is added to queue, if a similar event exists in the queue, there are two ways to conflate the events. One way is to remove the existing entry from wherever it resides in the queue, and add the new entry to the end of the queue. The other way is to replace the existing entry with the new entry, where it resides in the queue, and add nothing to the end of the queue. In <%=vars.product_name%>, region entry update events, server events going to clients, and gateway sender events going to remote distributed systems can all be conflated.
+Combining entries in a message queue for better performance. When an event is added to queue, if a similar event exists in the queue, there are two ways to conflate the events. One way is to remove the existing entry from wherever it resides in the queue, and add the new entry to the end of the queue. The other way is to replace the existing entry with the new entry, where it resides in the queue, and add nothing to the end of the queue. In <%=vars.product_name%>, region entry update events, server events going to clients, and gateway sender events going to remote clusters can all be conflated.
 
 ## <a id="glossary__section_6D18D4A3D0D046E6B3664B4C95065EB3" class="no-quick-link"></a>connection
 
-The connection used by an application to access a <%=vars.product_name%> system. A Java application connects to its <%=vars.product_name%> distributed system when it creates its cache. The application must connect to a distributed system to gain access to the <%=vars.product_name%> functionalities. A client connects to a running <%=vars.product_name%> server to distribute data and events between itself and the server tier. These client connections are managed by server connection pools within the client applications. Gateway senders connect to a remote gateway receiver to distribute data events between sites.
+The connection used by an application to access a <%=vars.product_name%> system. A Java application connects to its <%=vars.product_name%> cluster when it creates its cache. The application must connect to a cluster to gain access to the <%=vars.product_name%> functionalities. A client connects to a running <%=vars.product_name%> server to distribute data and events between itself and the server tier. These client connections are managed by server connection pools within the client applications. Gateway senders connect to a remote gateway receiver to distribute data events between sites.
 
 ## <a id="glossary__section_32D2C413690A4F44BA8F7B0F2AF3CD1A" class="no-quick-link"></a>consumer
 
-<%=vars.product_name%> member process that receives data and/or events from other members. Peer consumers are often configured with replicated regions, so all changes in the distributed system arrive into the local cache. Client consumers can register subscriptions with their servers so that updates are automatically forwarded from the server tier. See [producer](glossary.html#glossary__section_8742E7E064364DED98D4D399B98DBCF3).
+<%=vars.product_name%> member process that receives data and/or events from other members. Peer consumers are often configured with replicated regions, so all changes in the cluster arrive into the local cache. Client consumers can register subscriptions with their servers so that updates are automatically forwarded from the server tier. See [producer](glossary.html#glossary__section_8742E7E064364DED98D4D399B98DBCF3).
 
 ## <a id="glossary__section_E02DBBD928D54E8C82EC59B5CCC528EF" class="no-quick-link"></a>coordinator
 
-The member of the distributed system that sends out membership views. This is typically the locator in <%=vars.product_name%>.
+The member of the cluster that sends out membership views. This is typically the locator in <%=vars.product_name%>.
 
 ## <a id="glossary__section_6049C4E876C24615B245D8E2A92E3D89" class="no-quick-link"></a>data accessor
 
@@ -153,7 +153,7 @@ A logical grouping of data within a cache. Regions usually contain data entries 
 
 ## <a id="glossary__section_CC99958C53D84AD38E15E3BEDEA5F61D" class="no-quick-link"></a>data store
 
-In the context of a region, a member configured to store data for the region. This is used mostly for partitioned regions, where data is spread across the distributed system among the data stores. See also [data accessor](glossary.html#glossary__section_6049C4E876C24615B245D8E2A92E3D89).
+In the context of a region, a member configured to store data for the region. This is used mostly for partitioned regions, where data is spread across the cluster among the data stores. See also [data accessor](glossary.html#glossary__section_6049C4E876C24615B245D8E2A92E3D89).
 
 ## <a id="glossary__section_53D31D86FA12426E8412A2F45BBAE34A" class="no-quick-link"></a>deadlock
 
@@ -179,13 +179,13 @@ A collection of caches spread across multiple machines and multiple locations th
 
 ## <a id="glossary__section_94901F2666594813BAE6761DF4CEF0ED" class="no-quick-link"></a>distributed system
 
-One or more <%=vars.product_name%> system members that have been configured to communicate cache events with each other, forming a single, logical system.
+One or more <%=vars.product_name%> system members or clusters that have been configured to communicate cache events with each other, forming a single, logical system.
 
 ## <a id="glossary__section_FC39A1F63F4D40FC9B3DF00F1A75282E" class="no-quick-link"></a>distributed-ack scope
 
 Data distribution setting that causes synchronous distribution operations, which wait for acknowledgment from other caches before continuing. Operations from multiple caches can arrive out of order. This scope is slower but more reliable than distributed-no-ack.
 
-## <a id="glossary__section_35D0344DB4684FD69EFC01F599F2F349" class="no-quick-link"></a>distributed-no-ack-scope
+## <a id="glossary__section_35D0344DB4684FD69EFC01F599F2F349" class="no-quick-link"></a>distributed-no-ack scope
 
 Data distribution setting that causes asynchronous distribution operations, which return without waiting for a response from other caches. This scope produces the best performance, but is prone to race conditions.
 
@@ -203,7 +203,7 @@ The data contained in an entry.
 
 ## <a id="glossary__section_2AF9B98BC1CA402A9F24E552EE9C9ACF" class="no-quick-link"></a>event
 
-An action recognized by the <%=vars.product_name%> system members, which can respond by executing callback methods. The <%=vars.product_name%> API produces two types of events: cache events for detail-level management of applications with data caches and administrative events for higher-level management of the distributed system and its components. An operation can produce administrative events, cache events, or both.
+An action recognized by the <%=vars.product_name%> system members, which can respond by executing callback methods. The <%=vars.product_name%> API produces two types of events: cache events for detail-level management of applications with data caches and administrative events for higher-level management of the cluster and its components. An operation can produce administrative events, cache events, or both.
 
 ## <a id="glossary__section_1B57CC3632B843AA89CB321489C3B91C" class="no-quick-link"></a>eviction-attributes
 
@@ -215,7 +215,7 @@ A cached object expires when its time-to-live or idle timeout counters are exhau
 
 ## <a id="glossary__section_5ADAA5E628FB421999C286D38A2AA1DD" class="no-quick-link"></a>expiration action
 
-The action to be taken when a cached object expires. The expiration action specifies whether the object is to be invalidated or destroyed and whether the action is to be performed only in the local cache or throughout the distributed system. A destroyed object is completely removed from the cache. A region is invalidated by invalidating all entries contained in the region. An entry is invalidated by having its value marked as invalid. Region.getEntry.getValue returns null for an invalid entry.
+The action to be taken when a cached object expires. The expiration action specifies whether the object is to be invalidated or destroyed and whether the action is to be performed only in the local cache or throughout the cluster. A destroyed object is completely removed from the cache. A region is invalidated by invalidating all entries contained in the region. An entry is invalidated by having its value marked as invalid. Region.getEntry.getValue returns null for an invalid entry.
 
 In <%=vars.product_name%>, expiration attributes are set at the region level for the region and at the entry level for entries. See also idle timeout and time-to-live.
 
@@ -233,15 +233,15 @@ A gateway receiver defines connection information for receiving region events th
 
 ## <a id="glossary__section_1AAED2CD15094B2FBE7B6064176884CD" class="no-quick-link"></a>gateway sender
 
-A gateway sender defines a single remote distributed system site and an associated queue for distributing region events in a multi-site deployment.
+A gateway sender defines a single remote cluster site and an associated queue for distributing region events in a multi-site deployment.
 
 ## <a id="glossary__section_B7B1440197B84F72B1145A44032768C4" class="no-quick-link"></a>gemfire.properties
 
-Common name for the file used for distributed system configuration, including system member connection and communication behavior, logging and statistics files and settings, and security settings. Applications can also configure the distributed system through the <%=vars.product_name%> Java APIs. You can give this file any name.
+Common name for the file used for cluster configuration, including system member connection and communication behavior, logging and statistics files and settings, and security settings. Applications can also configure the cluster through the <%=vars.product_name%> Java APIs. You can give this file any name.
 
 ## <a id="glossary__section_6838A6C252464E94965F05E285A94689" class="no-quick-link"></a>global scope
 
-Data distribution setting that provides locking across the distributed system for load, create, put, invalidate, and destroy operations on the region and its entries. This scope is the slowest, but it guarantees consistency across the distributed system.
+Data distribution setting that provides locking across the cluster for load, create, put, invalidate, and destroy operations on the region and its entries. This scope is the slowest, but it guarantees consistency across the cluster.
 
 ## <a id="glossary__section_CDA3C2530A74433CBE0204D588C237AC" class="no-quick-link"></a>global transaction
 
@@ -305,9 +305,9 @@ Region attribute. The load factor of the map used for storing entries.
 
 ## <a id="glossary__section_598D82A75D9842438BB934E01E77266E" class="no-quick-link"></a>local
 
-Local cache: The part of the distributed cache that is resident in the current member’s memory. This term is used to differentiate the cache where a specific operation is being performed from other caches in the same distributed system or in another distributed system. See also [remote](glossary.html#glossary__section_CC864725C0014791805D2549D87DA545).
+Local cache: The part of the distributed cache that is resident in the current member’s memory. This term is used to differentiate the cache where a specific operation is being performed from other caches in the same cluster or in another cluster. See also [remote](glossary.html#glossary__section_CC864725C0014791805D2549D87DA545).
 
-Region with local scope: A region whose scope is set to local. This type of region does not distribute anything with other members in the distributed system.
+Region with local scope: A region whose scope is set to local. This type of region does not distribute anything with other members in the cluster.
 
 Region shortcuts: In the RegionShortcut and settings, LOCAL means the scope is set to local. All client regions have local scope. In the ClientRegionShortcut settings, LOCAL means the region does not connect to the client’s servers.
 
@@ -329,11 +329,11 @@ Any <%=vars.product_name%>-supported physical machine or Virtual Machine.
 
 ## <a id="glossary__section_51E160ED7FEF40469FD3D6BA80792393" class="no-quick-link"></a>member
 
-A process that has defined a connection to a <%=vars.product_name%> distributed system and created a <%=vars.product_name%> cache. This can be a Java or Native Client application. This can also be a <%=vars.product_name%> process such as a locator or cacheserver. The minimal <%=vars.product_name%> process configuration is a single member that is connected to a distributed system.
+A process that has defined a connection to a <%=vars.product_name%> cluster and created a <%=vars.product_name%> cache. This can be a Java or Native Client application. This can also be a <%=vars.product_name%> process such as a locator or cacheserver. The minimal <%=vars.product_name%> process configuration is a single member that is connected to a cluster.
 
 ## <a id="glossary__section_B43A3D6E64AF487480B32B78567C06E7" class="no-quick-link"></a>message queue
 
-A first-in, first-out data structure in a <%=vars.product_name%> system member that stores messages for distribution in the same order that the original operations happened in the local member. Each thread has its own queue. Depending on the kind of queue, the messages could be going between two members of a distributed system, a client and server, or two members in different distributed systems. See also [conflation](glossary.html#glossary__section_3FEC7A097CE247299F47EA209C5F91B8).
+A first-in, first-out data structure in a <%=vars.product_name%> system member that stores messages for distribution in the same order that the original operations happened in the local member. Each thread has its own queue. Depending on the kind of queue, the messages could be going between two members of a cluster, a client and server, or two members in different clusters. See also [conflation](glossary.html#glossary__section_3FEC7A097CE247299F47EA209C5F91B8).
 
 ## <a id="glossary__section_012843121ADE4BB883151BA8C8425C6C" class="no-quick-link"></a>mirroring
 
@@ -389,7 +389,7 @@ A region that manages large volumes of data by partitioning it into manageable c
 
 ## <a id="glossary__section_B291531710DE4C0FA9D98263C6756AAB" class="no-quick-link"></a>peer
 
-A <%=vars.product_name%> member application that is not configured as a client. Peer configuration uses the &lt;cache&gt; `cache.xml` element and the Cache API. Peers can also be configured as servers to client applications and as gateway-receivers or gateway-senders to remote distributed systems.
+A <%=vars.product_name%> member application that is not configured as a client. Peer configuration uses the &lt;cache&gt; `cache.xml` element and the Cache API. Peers can also be configured as servers to client applications and as gateway-receivers or gateway-senders to remote clusters.
 
 ## <a id="glossary__section_244F67CD366141858D3B3771E3E58889" class="no-quick-link"></a>persistent region
 
@@ -449,7 +449,7 @@ Enums RegionShortcut and ClientRegionShortcut defining the main region types in 
 
 ## <a id="glossary__section_CC864725C0014791805D2549D87DA545" class="no-quick-link"></a>remote
 
-Resident or running in a cache other than the current member’s cache, but connected to the current member’s cache through <%=vars.product_name%>. For example, if a member does not have a data entry in the region in its local cache, it can do a netSearch in an attempt to retrieve the entry from the region in a remote cache within the same distributed system. Or, if the member is a client, it can send a request to a server in an attempt to retrieve the entry from the region in a remote server cache in the server’s distributed system. In multi-site installations, a gateway sends events from the local cache to remote caches in other distributed systems. See also [local](glossary.html#glossary__section_598D82A75D9842438BB934E01E77266E).
+Resident or running in a cache other than the current member’s cache, but connected to the current member’s cache through <%=vars.product_name%>. For example, if a member does not have a data entry in the region in its local cache, it can do a netSearch in an attempt to retrieve the entry from the region in a remote cache within the same cluster. Or, if the member is a client, it can send a request to a server in an attempt to retrieve the entry from the region in a remote server cache in the server’s cluster. In multi-site installations, a gateway sends events from the local cache to remote caches in other clusters. See also [local](glossary.html#glossary__section_598D82A75D9842438BB934E01E77266E).
 
 ## <a id="glossary__section_90D41320BD05471D81382209A4D5F4D8" class="no-quick-link"></a>replicated region
 
@@ -487,7 +487,7 @@ A <%=vars.product_name%> member application that is configured as a peer in its 
 
 ## <a id="glossary__section_3A6AB71E3D844134AB8B51D676F84AEE" class="no-quick-link"></a>server group
 
-An optional logical grouping of servers in a server distributed system. There is always the default server group made up of all available server in the server distributed system. Clients can specify the server group in their server pool configuration. Then the pool only connects to those servers. If no group is specified, the default is used.
+An optional logical grouping of servers in a server clusters. There is always the default server group made up of all available server in the server clusters. Clients can specify the server group in their server pool configuration. Then the pool only connects to those servers. If no group is specified, the default is used.
 
 ## <a id="glossary__section_C344F00B5D234CD8A44DD8814ACBD165" class="no-quick-link"></a>server connection pool
 
@@ -507,7 +507,7 @@ Secure Socket Layer. A protocol for secure communication between Java VMs.
 
 ## <a id="glossary__section_D7E92873D90C4D698E812BA9DCB85392" class="no-quick-link"></a>standalone distributed system
 
-A distributed system configured for no communication with peers. Client applications are generally defined with standalone distributed systems, so there is no peer communication and all event and data communication is done between the client member and the server tier.
+A cluster configured for no communication with peers. Client applications are generally defined with standalone clusters, so there is no peer communication and all event and data communication is done between the client member and the server tier.
 
 ## <a id="glossary__section_6215C25884CB4E68BECEEED11E7F7FA1" class="no-quick-link"></a>statistics enabled
 

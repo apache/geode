@@ -46,7 +46,7 @@ The following guidelines apply to region design:
 
 The following guidelines should provide a rough estimate of the amount of memory consumed by your system.
 
-Memory calculation about keys and entries (objects) and region overhead for them can be divided by the number of members of the distributed system for data placed in partitioned regions only. For other regions, the calculation is for each member that hosts the region. Memory used by sockets, threads, and the small amount of application overhead for <%=vars.product_name%> is per member.
+Memory calculation about keys and entries (objects) and region overhead for them can be divided by the number of members of the cluster for data placed in partitioned regions only. For other regions, the calculation is for each member that hosts the region. Memory used by sockets, threads, and the small amount of application overhead for <%=vars.product_name%> is per member.
 
 For each entry added to a region, the <%=vars.product_name%> cache API consumes a certain amount of memory to store and manage the data. This overhead is required even when an entry is overflowed or persisted to disk. Thus objects on disk take up some JVM memory, even when they are paged to disk. The Java cache overhead introduced by a region, using a 32-bit JVM, can be approximated as listed below.
 
@@ -127,7 +127,7 @@ This table gives estimates for the cache overhead in a 32-bit JVM. The overhead 
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>For each region
 <div class="note note">
 <b>Note:</b>
@@ -135,36 +135,36 @@ This table gives estimates for the cache overhead in a 32-bit JVM. The overhead 
 </div></td>
 <td>add 64 bytes per entry</td>
 </tr>
-<tr class="even">
+<tr>
 <td>And concurrency checking is disabled (it is enabled by default)</td>
 <td>subtract 16 bytes per entry
 <p>(See <a href="../../developing/distributed_regions/how_region_versioning_works.html#topic_0BDACA590B2C4974AC9C450397FE70B2">Overhead for Consistency Checks</a>.)</p></td>
 </tr>
-<tr class="odd">
+<tr>
 <td>And statistics are enabled for the region</td>
 <td>add 16 bytes per entry</td>
 </tr>
-<tr class="even">
+<tr>
 <td>And the region is persisted</td>
 <td>add 52 bytes per entry</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>And the region is overflow only</td>
 <td>add 44 bytes per entry</td>
 </tr>
-<tr class="even">
+<tr>
 <td>And the region has an LRU eviction controller</td>
 <td>add 16 bytes per entry</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>And the region has global scope</td>
 <td>add 110 bytes per entry</td>
 </tr>
-<tr class="even">
+<tr>
 <td>And the region has entry expiration configured</td>
 <td>add 112 bytes per entry</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>For each optional user attribute</td>
 <td>add 40 bytes per entry plus the memory overhead of the user attribute object</td>
 </tr>
@@ -182,7 +182,7 @@ The other index overhead estimates listed here also apply to Lucene indexes.
 
 The <%=vars.product_name%> JMX management and monitoring system contributes to memory overhead and should be accounted for when establishing the memory requirements for your deployment. Specifically, the memory footprint of any processes (such as locators) that are running as JMX managers can increase.
 
-For each resource in the distributed system that is being managed and monitored by the JMX Manager (for example, each MXBean such as MemberMXBean, RegionMXBean, DiskStoreMXBean, LockServiceMXBean and so on), you should add 10 KB of required memory to the JMX Manager node.
+For each resource in the cluster that is being managed and monitored by the JMX Manager (for example, each MXBean such as MemberMXBean, RegionMXBean, DiskStoreMXBean, LockServiceMXBean and so on), you should add 10 KB of required memory to the JMX Manager node.
 
 ## <a id="topic_psn_5tz_j4" class="no-quick-link"></a>Determining Object Serialization Overhead
 
@@ -252,24 +252,24 @@ The following table lists the memory requirements based on connections.
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>Per socket</td>
 <td><p>32,768 /socket (configurable)</p>
 <p>Default value per socket should be set to a number &gt; 100 + sizeof (largest object in region) + sizeof (largest key)</p></td>
 </tr>
-<tr class="even">
+<tr>
 <td>If server (for example if there are clients that connect to it)</td>
 <td>= (lesser of max-threads property on server or max-connections)* (socket buffer size +thread overhead for the JVM )</td>
 </tr>
-<tr class="odd">
-<td>Per member of the distributed system if conserve sockets is set to true</td>
+<tr>
+<td>Per member of the cluster if conserve sockets is set to true</td>
 <td>4* number of peers</td>
 </tr>
-<tr class="even">
+<tr>
 <td>Per member, if conserve sockets is set to false</td>
 <td>4 * number of peers hosting that region* number of threads</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>If member hosts a Partitioned Region, If conserve sockets set to false and it is a Server (this is cumulative with the above)</td>
 <td><p>=&lt; max-threads * 2 * number of peers</p>
 <div class="note note">
@@ -277,23 +277,23 @@ The following table lists the memory requirements based on connections.
 <p>it is = 2* current number of clients connected * number of peers. Each connection spawns a thread.</p>
 </div></td>
 </tr>
-<tr class="even">
+<tr>
 <td><strong>Subscription Queues</strong></td>
 <td></td>
 </tr>
-<tr class="odd">
+<tr>
 <td><p>Per Server, depending on whether you limit the queue size. If you do, you can specify the number of megabytes or the number of entries until the queue overflows to disk. When possible, entries on the queue are references to minimize memory impact. The queue consumes memory not only for the key and the entry but also for the client ID/or thread ID as well as for the operation type. Since you can limit the queue to 1 MB, this number is completely configurable and thus there is no simple formula.</p></td>
 <td>1 MB +</td>
 </tr>
-<tr class="even">
+<tr>
 <td><strong><%=vars.product_name%> classes and JVM overhead</strong></td>
 <td>Roughly 50MB</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><strong>Thread overhead</strong></td>
 <td></td>
 </tr>
-<tr class="even">
+<tr>
 <td><p>Each concurrent client connection into the a server results in a thread being spawned up to max-threads setting. After that a thread services multiple clients up to max-clients setting.</p></td>
 <td>There is a thread stack overhead per connection (at a minimum 256KB to 512 KB, you can set it to smaller to 128KB on many JVMs.)</td>
 </tr>

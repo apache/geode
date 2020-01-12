@@ -22,7 +22,6 @@ public class BucketMovedException extends GemFireException {
   /**
    * Creates new function exception with given error message.
    *
-   * @param msg
    * @since GemFire 6.0
    */
   public BucketMovedException(String msg) {
@@ -32,8 +31,6 @@ public class BucketMovedException extends GemFireException {
   /**
    * Creates new function exception with given error message and optional nested exception.
    *
-   * @param msg
-   * @param cause
    * @since GemFire 6.0
    */
   public BucketMovedException(String msg, Throwable cause) {
@@ -43,7 +40,6 @@ public class BucketMovedException extends GemFireException {
   /**
    * Creates new function exception given throwable as a cause and source of error message.
    *
-   * @param cause
    * @since GemFire 6.0
    */
   public BucketMovedException(Throwable cause) {

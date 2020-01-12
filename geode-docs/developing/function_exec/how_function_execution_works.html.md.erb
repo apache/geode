@@ -25,8 +25,8 @@ You can execute data-independent functions or data-dependent functions in <%=var
 
 **For Data-independent Functions**
 
--   **On a specific member or members—**Execute the function within a peer-to-peer distributed system, specifying the member or members where you want to run the function by using `FunctionService` methods `onMember()` and `onMembers()`.
--   **On a specific server or set of servers—**If you are connected to a distributed system as a client, you can execute the function on a server or servers configured for a specific connection pool, or on a server or servers connected to a given cache using the default connection pool. For data-independent functions on client/server architectures, a client invokes `FunctionService` methods `onServer()` or `onServers()`. (See [How Client/Server Connections Work](../../topologies_and_comm/topology_concepts/how_the_pool_manages_connections.html) for details regarding pool connections.)
+-   **On a specific member or members—**Execute the function within a peer-to-peer cluster, specifying the member or members where you want to run the function by using `FunctionService` methods `onMember()` and `onMembers()`.
+-   **On a specific server or set of servers—**If you are connected to a cluster as a client, you can execute the function on a server or servers configured for a specific connection pool, or on a server or servers connected to a given cache using the default connection pool. For data-independent functions on client/server architectures, a client invokes `FunctionService` methods `onServer()` or `onServers()`. (See [How Client/Server Connections Work](../../topologies_and_comm/topology_concepts/how_the_pool_manages_connections.html) for details regarding pool connections.)
 -   **On member groups or on a single member within each member group—**You can organize members into logical member groups. (See [Configuring and Running a Cluster](../../configuring/chapter_overview.html#concept_lrh_gyq_s4) for more information about using member groups.) You can invoke a data independent function on all members in a specified member group or member groups, or execute the function on only one member of each specified member group.
 
 **For Data-dependent Functions**
@@ -65,29 +65,26 @@ When a failure (such as an execution error or member crash while executing) occu
 
 For client regions, the system retries the execution according to `org.apache.geode.cache.client.Pool` `retryAttempts`. If the function fails to run every time, the final exception is returned to the `getResult` method.
 
-For member calls, the system retries until either it succeeds or no data remains in the system for the function to operate on.
+The default number of retries is the total number of servers present. For member calls, if a function fails then the system will retry on each server only once or until no data remains in the system for the function to operate on. If the function fails on every server, then an exception will be returned to the user.
 
 ## <a id="how_function_execution_works__section_A0FD54B73E9A453AA38FC4A4D5282351" class="no-quick-link"></a>Function Execution Scenarios
 
-[Server-distributed System](#how_function_execution_works__fig_server_distributed_system) shows the sequence of events for a data-independent function invoked from a client on all available servers.
+This figure shows the sequence of events for a data-independent function invoked from a client on all available servers.
 
 <a id="how_function_execution_works__fig_server_distributed_system"></a>
 
-<span class="figtitleprefix">Figure: </span>Server-distributed System
-
 <img src="../../images/FuncExecOnServers.png" alt="A diagram showing the sequence of events for a data-independent function invoked from a client on all available servers" id="how_function_execution_works__image_993D1FD7705E40EA801CF0656C4E91E5" class="image" />
 
-The client contacts a locator to obtain host and port identifiers for each server in the distributed system and issues calls to each server. As the instigator of the calls, the client also receives the call results.
+The client contacts a locator to obtain host and port identifiers for each server in the cluster and issues calls to each server. As the instigator of the calls, the client also receives the call results.
 
-[Peer-to-peer Distributed System](#how_function_execution_works__fig_peer_distributed_system) shows the sequence of events for a data-independent function executed against members in a peer-to-peer distributed system.
+This figure
+shows the sequence of events for a data-independent function executed against members in a peer-to-peer cluster.
 
 <a id="how_function_execution_works__fig_peer_distributed_system"></a>
 
-<span class="figtitleprefix">Figure: </span>Peer-to-peer Distributed System
+<img src="../../images/FuncExecOnMembers.png" alt="The sequence of events for a data-independent function executed against members in a peer-to-peer cluster." id="how_function_execution_works__image_041832B370AA4241980B8C2632DD1DC8" class="image" />
 
-<img src="../../images/FuncExecOnMembers.png" alt="The sequence of events for a data-independent function executed against members in a peer-to-peer distributed system." id="how_function_execution_works__image_041832B370AA4241980B8C2632DD1DC8" class="image" />
-
-You can think of `onMembers()` as the peer-to-peer counterpart of a client-server call to `onServers()`. Because it is called from a peer of other members in the distributed system, an `onMembers()` function invocation has access to detailed metadata and does not require the services of a locator. The caller invokes the function on itself, if appropriate, as well as other members in the distributed system and collects the results of all of the function executions.
+You can think of `onMembers()` as the peer-to-peer counterpart of a client-server call to `onServers()`. Because it is called from a peer of other members in the cluster, an `onMembers()` function invocation has access to detailed metadata and does not require the services of a locator. The caller invokes the function on itself, if appropriate, as well as other members in the cluster and collects the results of all of the function executions.
 
 [Data-dependent Function on a Region](#how_function_execution_works__fig_data_dependent_function_region) shows a data-dependent function run on a region.
 
@@ -99,7 +96,7 @@ You can think of `onMembers()` as the peer-to-peer counterpart of a client-serve
 
 An `onRegion()` call requires more detailed metadata than a locator provides in its host:port identifier. This diagram shows the path followed when the client lacks detailed metadata regarding target locations, as on the first call or when previously obtained metadata is no longer up to date.
 
-The first time a client invokes a function to be executed on a particular region of a distributed system, the client's knowledge of target locations is limited to the host and port information provided by the locator. Given only this limited information, the client sends its execution request to whichever server is next in line to be called according to the pool allocation algorithm. Because it is a participant in the distributed system, that server has access to detailed metadata and can dispatch the function call to the appropriate target locations. When the server returns results to the client, it sets a flag indicating whether a request to a different server would have provided a more direct path to the intended target. To improve efficiency, the client requests a copy of the metadata. With additional details regarding the bucket layout for the region, the client can act as its own dispatcher on subsequent calls and identify multiple targets for itself, eliminating at least one hop.
+The first time a client invokes a function to be executed on a particular region of a cluster, the client's knowledge of target locations is limited to the host and port information provided by the locator. Given only this limited information, the client sends its execution request to whichever server is next in line to be called according to the pool allocation algorithm. Because it is a participant in the cluster, that server has access to detailed metadata and can dispatch the function call to the appropriate target locations. When the server returns results to the client, it sets a flag indicating whether a request to a different server would have provided a more direct path to the intended target. To improve efficiency, the client requests a copy of the metadata. With additional details regarding the bucket layout for the region, the client can act as its own dispatcher on subsequent calls and identify multiple targets for itself, eliminating at least one hop.
 
 After it has obtained current metadata, the client can act as its own dispatcher on subsequent calls, identifying multiple targets for itself and eliminating one hop, as shown in [Data-dependent function after obtaining current metadata](#how_function_execution_works__fig_data_dependent_function_obtaining_current_metadata).
 
@@ -127,7 +124,7 @@ Servers that do not hold any keys are left out of the function execution.
 
 <img src="../../images/FuncExecOnRegionPeersWithFilter.png" alt="A data-dependent function where the caller is not an external client" id="how_function_execution_works__image_9B8E914BA80E4BBA99856E9603A9BDA0" class="image" />
 
-The caller is a member of the distributed system, not an external client, so the function runs in the caller’s distributed system. Note the similarities between this diagram and the preceding figure ([Data-dependent Function on a Region with Keys](#how_function_execution_works__fig_data_dependent_function_region_keys)), which shows a client-server model where the client has up-to-date metadata regarding target locations within the distributed system.
+The caller is a member of the cluster, not an external client, so the function runs in the caller’s cluster. Note the similarities between this diagram and the preceding figure ([Data-dependent Function on a Region with Keys](#how_function_execution_works__fig_data_dependent_function_region_keys)), which shows a client-server model where the client has up-to-date metadata regarding target locations within the cluster.
 
 [Client-server system with Up-to-date Target Metadata](#how_function_execution_works__fig_client_server_system_target_metadata) demonstrates a sequence of steps in a call to a highly available function in a client-server system in which the client has up-to-date metadata regarding target locations.
 

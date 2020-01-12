@@ -40,18 +40,17 @@ public abstract class BaseDecoratorImpl implements StatAlertDefinition {
     super();
   }
 
-  /**
-   * @param definition
-   */
   public BaseDecoratorImpl(StatAlertDefinition definition) {
     super();
     this._def = definition;
   }
 
+  @Override
   public int getId() {
     return _def.getId();
   }
 
+  @Override
   public boolean verify(StatisticsFactory factory) {
     return _def.verify(factory);
   }
@@ -61,6 +60,7 @@ public abstract class BaseDecoratorImpl implements StatAlertDefinition {
    *
    * @return Name of the StatAlertDefinition
    */
+  @Override
   public String getName() {
     return _def.getName();
   }
@@ -70,14 +70,17 @@ public abstract class BaseDecoratorImpl implements StatAlertDefinition {
    *
    * @param name name to be set for this StatAlertDefinition.
    */
+  @Override
   public void setName(String name) {
     _def.setName(name);
   }
 
+  @Override
   public StatisticInfo[] getStatisticInfo() {
     return _def.getStatisticInfo();
   }
 
+  @Override
   public void setStatisticInfo(StatisticInfo[] info) {
     _def.setStatisticInfo(info);
   }
@@ -87,6 +90,7 @@ public abstract class BaseDecoratorImpl implements StatAlertDefinition {
     return _def.toString();
   }
 
+  @Override
   public String getStringRepresentation() {
     StringBuffer buffer = new StringBuffer();
     buffer.append("StatAlertDefinition [\n");
@@ -96,35 +100,43 @@ public abstract class BaseDecoratorImpl implements StatAlertDefinition {
     return buffer.toString();
   }
 
+  @Override
   public boolean evaluate(Number[] params) {
     return _def.evaluate(params);
   }
 
+  @Override
   public boolean evaluate() {
     return _def.evaluate();
   }
 
+  @Override
   public StatAlert evaluateAndAlert(Number[] params) {
     return _def.evaluateAndAlert(params);
   }
 
+  @Override
   public StatAlert evaluateAndAlert() {
     // TODO Auto-generated method stub
     return _def.evaluateAndAlert();
   }
 
+  @Override
   public Number[] getValue() {
     return _def.getValue();
   }
 
+  @Override
   public Number[] getValue(Number[] vals) {
     return _def.getValue(vals);
   }
 
+  @Override
   public boolean hasDecorator(String decoratorID) {
     return _def.hasDecorator(decoratorID);
   }
 
+  @Override
   public StatAlertDefinition getDecorator(String decoratorID) {
     return _def.getDecorator(decoratorID);
   }
@@ -199,10 +211,12 @@ public abstract class BaseDecoratorImpl implements StatAlertDefinition {
   }
 
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeObject(this._def, out);
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this._def = (StatAlertDefinition) DataSerializer.readObject(in);
   }

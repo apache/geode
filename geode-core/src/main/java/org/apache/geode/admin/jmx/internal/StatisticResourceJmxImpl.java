@@ -23,13 +23,11 @@ import org.apache.commons.modeler.ManagedBean;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
-import org.apache.geode.LogWriter;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.admin.AdminException;
 import org.apache.geode.admin.Statistic;
 import org.apache.geode.internal.admin.StatResource;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Provides MBean support for the monitoring of a statistic resource.
@@ -155,8 +153,7 @@ public class StatisticResourceJmxImpl extends org.apache.geode.admin.internal.St
   @Deprecated
   public void setRefreshInterval(int refreshInterval) throws OperationNotSupportedException {
     throw new OperationNotSupportedException(
-        LocalizedStrings.MANAGED_RESOURCE_REFRESH_INTERVAL_CANT_BE_SET_DIRECTLY
-            .toLocalizedString());
+        "RefreshInterval can not be set directly. Use DistributedSystemConfig.refreshInterval.");
   }
 
   // -------------------------------------------------------------------------
@@ -173,6 +170,7 @@ public class StatisticResourceJmxImpl extends org.apache.geode.admin.internal.St
    * @param notification the JMX notification being received
    * @param hb handback object is unused
    */
+  @Override
   public void handleNotification(Notification notification, Object hb) {
     AdminDistributedSystemJmxImpl adminDSJmx =
         (AdminDistributedSystemJmxImpl) this.member.getDistributedSystem();
@@ -229,7 +227,7 @@ public class StatisticResourceJmxImpl extends org.apache.geode.admin.internal.St
       throws org.apache.geode.admin.AdminException {
     if (managed == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.StatisticResourceJmxImpl_MANAGEDBEAN_IS_NULL.toLocalizedString());
+          "ManagedBean is null");
     }
 
     refresh(); // to get the stats...
@@ -255,6 +253,7 @@ public class StatisticResourceJmxImpl extends org.apache.geode.admin.internal.St
     return newManagedBean;
   }
 
+  @Override
   public Statistic[] getStatistics() {
     if (!timerInited) {
       // 1st call to getStatistics would trigger
@@ -285,26 +284,32 @@ public class StatisticResourceJmxImpl extends org.apache.geode.admin.internal.St
   /** The ModelMBean that is configured to manage this resource */
   private ModelMBean modelMBean;
 
+  @Override
   public String getMBeanName() {
     return this.mbeanName;
   }
 
+  @Override
   public ModelMBean getModelMBean() {
     return this.modelMBean;
   }
 
+  @Override
   public void setModelMBean(ModelMBean modelMBean) {
     this.modelMBean = modelMBean;
   }
 
+  @Override
   public ObjectName getObjectName() {
     return this.objectName;
   }
 
+  @Override
   public ManagedResourceType getManagedResourceType() {
     return ManagedResourceType.STATISTIC_RESOURCE;
   }
 
+  @Override
   public void cleanupResource() {
     this.modelMBean = null;
     this.member = null;

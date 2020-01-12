@@ -18,12 +18,11 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
-/**
- *
- */
 public class RemoteLocatorPingResponse implements DataSerializableFixedID {
 
 
@@ -32,12 +31,17 @@ public class RemoteLocatorPingResponse implements DataSerializableFixedID {
     super();
   }
 
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {}
+  @Override
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {}
 
-  public void toData(DataOutput out) throws IOException {}
+  @Override
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {}
 
 
 
+  @Override
   public int getDSFID() {
     return DataSerializableFixedID.REMOTE_LOCATOR_PING_RESPONSE;
   }

@@ -31,7 +31,6 @@ public class PrimaryAckOp {
    * Send the primary server acknowledgement on the events this client has received and processed
    * from it using connections from the given pool to communicate with the server.
    *
-   * @param connection
    * @param pool the pool to use to communicate with the server.
    * @param events list of events to acknowledge
    */

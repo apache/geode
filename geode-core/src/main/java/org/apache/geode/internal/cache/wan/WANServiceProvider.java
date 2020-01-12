@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.wan;
 import java.util.Iterator;
 import java.util.ServiceLoader;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.client.internal.locator.wan.LocatorMembershipListener;
 import org.apache.geode.cache.wan.GatewayReceiverFactory;
 import org.apache.geode.cache.wan.GatewaySenderFactory;
@@ -25,6 +26,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.wan.spi.WANFactory;
 
 public class WANServiceProvider {
+  @Immutable
   private static final WANFactory factory;
 
   static {

@@ -15,7 +15,9 @@
 
 package org.apache.geode.internal.cache.locks;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.util.Set;
 
 import org.apache.geode.DataSerializer;
@@ -27,6 +29,8 @@ import org.apache.geode.distributed.internal.locks.DLockGrantor;
 import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.distributed.internal.locks.LockGrantorDestroyedException;
 import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * A message to update the Grantor with the latest TXLock participants This class was added as part
@@ -115,21 +119,24 @@ public class TXLockUpdateParticipantsMessage extends PooledDistributionMessage
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     out.writeInt(this.processorId);
     InternalDataSerializer.invokeToData(this.txLockId, out);
     DataSerializer.writeString(this.serviceName, out);
     InternalDataSerializer.writeSet(this.updatedParticipants, out);
   }
 
+  @Override
   public int getDSFID() {
     return TX_LOCK_UPDATE_PARTICIPANTS_MESSAGE;
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.processorId = in.readInt();
     this.txLockId = TXLockIdImpl.createFromData(in);
     this.serviceName = DataSerializer.readString(in);
@@ -153,13 +160,15 @@ public class TXLockUpdateParticipantsMessage extends PooledDistributionMessage
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
     }
 
     @Override

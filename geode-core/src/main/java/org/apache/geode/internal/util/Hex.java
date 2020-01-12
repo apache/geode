@@ -14,12 +14,15 @@
  */
 package org.apache.geode.internal.util;
 
+import org.apache.geode.annotations.Immutable;
+
 /**
  * Provides hexadecimal conversion and display utilities.
  *
  */
 public class Hex {
   /** hex chars */
+  @Immutable
   private static final char[] HEX =
       {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
 
@@ -53,5 +56,21 @@ public class Hex {
       hex[2 * i + 1] = HEX[b & 0xf];
     }
     return new String(hex);
+  }
+
+  /**
+   * Converts a hex string to a byte array.
+   *
+   * @param hex the hex string
+   * @return the byte array
+   */
+  public static byte[] toByteArray(String hex) {
+    byte[] bytes = new byte[hex.length() / 2];
+    for (int i = 0; i < bytes.length; i++) {
+      int index = i * 2;
+      int v = Integer.parseInt(hex.substring(index, index + 2), 16);
+      bytes[i] = (byte) v;
+    }
+    return bytes;
   }
 }

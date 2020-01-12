@@ -23,13 +23,16 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.geode.cache.DiskStore;
+import org.apache.geode.internal.lang.JavaWorkarounds;
 
 class BackupDefinition {
+
   private final Map<DiskStore, Set<Path>> oplogFilesByDiskStore = new HashMap<>();
   private final Set<Path> configFiles = new HashSet<>();
   private final Map<Path, Path> userFiles = new HashMap<>();
   private final Map<Path, Path> deployedJars = new HashMap<>();
   private final Map<DiskStore, Path> diskInitFiles = new HashMap<>();
+
   private RestoreScript restoreScript;
 
   void addConfigFileToBackup(Path configFile) {
@@ -77,7 +80,8 @@ class BackupDefinition {
   }
 
   void addOplogFileToBackup(DiskStore diskStore, Path fileLocation) {
-    Set<Path> files = oplogFilesByDiskStore.computeIfAbsent(diskStore, k -> new HashSet<>());
+    Set<Path> files =
+        JavaWorkarounds.computeIfAbsent(oplogFilesByDiskStore, diskStore, k -> new HashSet<>());
     files.add(fileLocation);
   }
 }

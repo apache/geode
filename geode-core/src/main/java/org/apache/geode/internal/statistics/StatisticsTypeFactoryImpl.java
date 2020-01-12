@@ -14,11 +14,14 @@
  */
 package org.apache.geode.internal.statistics;
 
-import java.io.*;
-import java.util.*;
+import java.io.IOException;
+import java.io.Reader;
+import java.util.HashMap;
 
-import org.apache.geode.*;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.StatisticDescriptor;
+import org.apache.geode.StatisticsType;
+import org.apache.geode.StatisticsTypeFactory;
+import org.apache.geode.annotations.Immutable;
 
 /**
  * The implementation of {@link StatisticsTypeFactory}. Each VM can any have a single instance of
@@ -32,6 +35,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
  */
 public class StatisticsTypeFactoryImpl implements StatisticsTypeFactory {
   // static fields
+  @Immutable
   private static final StatisticsTypeFactoryImpl singleton = new StatisticsTypeFactoryImpl();
 
   // static methods
@@ -69,74 +73,89 @@ public class StatisticsTypeFactoryImpl implements StatisticsTypeFactory {
         result = currentValue;
       } else {
         throw new IllegalArgumentException(
-            LocalizedStrings.StatisticsTypeFactoryImpl_STATISTICS_TYPE_NAMED_0_ALREADY_EXISTS
-                .toLocalizedString(result.getName()));
+            String.format("Statistics type named %s already exists.",
+                result.getName()));
       }
     }
     return result;
   }
 
+  @Override
   public StatisticsType createType(String name, String description, StatisticDescriptor[] stats) {
     return addType(new StatisticsTypeImpl(name, description, stats));
   }
 
+  @Override
   public StatisticsType findType(String name) {
     return (StatisticsType) this.statTypes.get(name);
   }
 
+  @Override
   public StatisticsType[] createTypesFromXml(Reader reader) throws IOException {
     return StatisticsTypeImpl.fromXml(reader, this);
   }
 
+  @Override
   public StatisticDescriptor createIntCounter(String name, String description, String units) {
-    return StatisticDescriptorImpl.createIntCounter(name, description, units, true);
+    return createLongCounter(name, description, units);
   }
 
+  @Override
   public StatisticDescriptor createLongCounter(String name, String description, String units) {
     return StatisticDescriptorImpl.createLongCounter(name, description, units, true);
   }
 
+  @Override
   public StatisticDescriptor createDoubleCounter(String name, String description, String units) {
     return StatisticDescriptorImpl.createDoubleCounter(name, description, units, true);
   }
 
+  @Override
   public StatisticDescriptor createIntGauge(String name, String description, String units) {
-    return StatisticDescriptorImpl.createIntGauge(name, description, units, false);
+    return createLongGauge(name, description, units);
   }
 
+  @Override
   public StatisticDescriptor createLongGauge(String name, String description, String units) {
     return StatisticDescriptorImpl.createLongGauge(name, description, units, false);
   }
 
+  @Override
   public StatisticDescriptor createDoubleGauge(String name, String description, String units) {
     return StatisticDescriptorImpl.createDoubleGauge(name, description, units, false);
   }
 
+  @Override
   public StatisticDescriptor createIntCounter(String name, String description, String units,
       boolean largerBetter) {
-    return StatisticDescriptorImpl.createIntCounter(name, description, units, largerBetter);
+    return createLongCounter(name, description, units, largerBetter);
   }
 
+  @Override
   public StatisticDescriptor createLongCounter(String name, String description, String units,
       boolean largerBetter) {
     return StatisticDescriptorImpl.createLongCounter(name, description, units, largerBetter);
   }
 
+  @Override
   public StatisticDescriptor createDoubleCounter(String name, String description, String units,
       boolean largerBetter) {
     return StatisticDescriptorImpl.createDoubleCounter(name, description, units, largerBetter);
   }
 
+  @Override
   public StatisticDescriptor createIntGauge(String name, String description, String units,
       boolean largerBetter) {
-    return StatisticDescriptorImpl.createIntGauge(name, description, units, largerBetter);
+    return createLongGauge(name, description, units, largerBetter);
   }
 
+  @Override
   public StatisticDescriptor createLongGauge(String name, String description, String units,
       boolean largerBetter) {
     return StatisticDescriptorImpl.createLongGauge(name, description, units, largerBetter);
   }
 
+  @Override
   public StatisticDescriptor createDoubleGauge(String name, String description, String units,
       boolean largerBetter) {
     return StatisticDescriptorImpl.createDoubleGauge(name, description, units, largerBetter);

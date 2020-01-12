@@ -14,12 +14,9 @@
  */
 package org.apache.geode.cache.client.internal.locator;
 
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.Version;
 
-/**
- *
- */
 public abstract class ServerLocationResponse implements DataSerializableFixedID {
   public abstract boolean hasResult();
 

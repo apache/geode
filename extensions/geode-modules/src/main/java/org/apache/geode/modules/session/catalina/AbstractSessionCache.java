@@ -32,24 +32,19 @@ public abstract class AbstractSessionCache implements SessionCache {
    * The sessionRegion is the <code>Region</code> that actually stores and replicates the
    * <code>Session</code>s.
    */
-  protected Region<String, HttpSession> sessionRegion;
+  Region<String, HttpSession> sessionRegion;
 
   /**
    * The operatingRegion is the <code>Region</code> used to do HTTP operations. if local cache is
    * enabled, then this will be the local <code>Region</code>; otherwise, it will be the session
    * <code>Region</code>.
    */
-  protected Region<String, HttpSession> operatingRegion;
+  Region<String, HttpSession> operatingRegion;
 
   protected DeltaSessionStatistics statistics;
 
-  public AbstractSessionCache(SessionManager sessionManager) {
+  AbstractSessionCache(SessionManager sessionManager) {
     this.sessionManager = sessionManager;
-  }
-
-  @Override
-  public String getSessionRegionName() {
-    return getSessionRegion().getFullPath();
   }
 
   @Override
@@ -85,21 +80,23 @@ public abstract class AbstractSessionCache implements SessionCache {
     return this.sessionManager;
   }
 
+  @Override
   public Region<String, HttpSession> getSessionRegion() {
     return this.sessionRegion;
   }
 
+  @Override
   public Region<String, HttpSession> getOperatingRegion() {
     return this.operatingRegion;
   }
 
-  protected void createStatistics() {
+  void createStatistics() {
     this.statistics = new DeltaSessionStatistics(getCache().getDistributedSystem(),
         getSessionManager().getStatisticsName());
   }
 
-  protected RegionConfiguration createRegionConfiguration() {
-    RegionConfiguration configuration = new RegionConfiguration();
+  RegionConfiguration createRegionConfiguration() {
+    RegionConfiguration configuration = getNewRegionConfiguration();
     configuration.setRegionName(getSessionManager().getRegionName());
     configuration.setRegionAttributesId(getSessionManager().getRegionAttributesId());
     if (getSessionManager()
@@ -112,5 +109,10 @@ public abstract class AbstractSessionCache implements SessionCache {
     configuration.setEnableGatewayReplication(getSessionManager().getEnableGatewayReplication());
     configuration.setEnableDebugListener(getSessionManager().getEnableDebugListener());
     return configuration;
+  }
+
+  // Helper methods added to improve unit testing of class
+  RegionConfiguration getNewRegionConfiguration() {
+    return new RegionConfiguration();
   }
 }

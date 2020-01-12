@@ -36,13 +36,12 @@ import org.apache.geode.cache.lucene.internal.InternalLuceneService;
 import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.cache.lucene.internal.cli.LuceneDestroyIndexInfo;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
+import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.test.fake.Fakes;
 import org.apache.geode.test.junit.categories.LuceneTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category({UnitTest.class, LuceneTest.class})
+@Category({LuceneTest.class})
 public class LuceneDestroyIndexFunctionJUnitTest {
 
   private LuceneServiceImpl service;
@@ -134,8 +133,8 @@ public class LuceneDestroyIndexFunctionJUnitTest {
     function = spy(function);
     function.execute(this.context);
     verify(this.service).destroyIndexes(eq(regionPath));
+    verify(this.service).destroyDefinedIndexes(eq(regionPath));
     verify(function).getXmlEntity(eq(null), eq(regionPath));
-    verify(this.service, never()).destroyDefinedIndexes(eq(regionPath));
     verify(this.service, never()).destroyIndex(any(), eq(regionPath));
     verifyFunctionResult(true);
   }
@@ -148,6 +147,7 @@ public class LuceneDestroyIndexFunctionJUnitTest {
     when(this.context.getArguments()).thenReturn(indexInfo);
     LuceneDestroyIndexFunction function = new LuceneDestroyIndexFunction();
     doThrow(new IllegalStateException()).when(this.service).destroyIndexes(eq(regionPath));
+    doThrow(new IllegalStateException()).when(this.service).destroyDefinedIndexes(eq(regionPath));
     function.execute(this.context);
     verifyFunctionResult(false);
   }

@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import org.apache.geode.InvalidDeltaException;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.DynamicRegionFactory;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.RegionDestroyedException;
@@ -28,7 +29,6 @@ import org.apache.geode.cache.operations.PutOperationContext;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.EventIDHolder;
@@ -36,7 +36,6 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.Token;
-import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
@@ -45,10 +44,9 @@ import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.util.Breadcrumbs;
 import org.apache.geode.security.GemFireSecurityException;
 import org.apache.geode.security.ResourcePermission;
@@ -59,6 +57,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
  */
 public class Put65 extends BaseCommand {
 
+  @Immutable
   private static final Put65 singleton = new Put65();
 
   public static Command getCommand() {
@@ -70,14 +69,7 @@ public class Put65 extends BaseCommand {
       final SecurityService securityService, long p_start)
       throws IOException, InterruptedException {
     long start = p_start;
-    Part regionNamePart = null, keyPart = null, valuePart = null, callbackArgPart = null;
-    String regionName = null;
-    Object callbackArg = null, key = null;
-    Part eventPart = null;
-    StringBuilder errMessage = new StringBuilder();
-    boolean isDelta = false;
-    CachedRegionHelper crHelper = serverConnection.getCachedRegionHelper();
-    CacheServerStats stats = serverConnection.getCacheServerStats();
+    final CacheServerStats stats = serverConnection.getCacheServerStats();
 
     // requiresResponse = true;
     serverConnection.setAsTrue(REQUIRES_RESPONSE);
@@ -88,22 +80,41 @@ public class Put65 extends BaseCommand {
     }
     // Retrieve the data from the message parts
     int idx = 0;
-    regionNamePart = clientMessage.getPart(idx++);
-    Operation operation;
+
+    final Part regionNamePart = clientMessage.getPart(idx++);
+
+    final Operation operation;
     try {
-      operation = (Operation) clientMessage.getPart(idx++).getObject();
-      if (operation == null) { // native clients send a null since the op is java-serialized
-        operation = Operation.UPDATE;
+      final Part operationPart = clientMessage.getPart(idx++);
+
+      if (operationPart.isBytes()) {
+        final byte[] bytes = operationPart.getSerializedForm();
+        if (null == bytes || 0 == bytes.length) {
+          // older clients can send empty bytes for default operation.
+          operation = Operation.UPDATE;
+        } else {
+          operation = Operation.fromOrdinal(bytes[0]);
+        }
+      } else {
+
+        // Fallback for older clients.
+        if (operationPart.getObject() == null) {
+          // native clients may send a null since the op is java-serialized.
+          operation = Operation.UPDATE;
+        } else {
+          operation = (Operation) operationPart.getObject();
+        }
       }
-    } catch (ClassNotFoundException e) {
+    } catch (Exception e) {
       writeException(clientMessage, e, false, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
       return;
     }
-    int flags = clientMessage.getPart(idx++).getInt();
-    boolean requireOldValue = ((flags & 0x01) == 0x01);
-    boolean haveExpectedOldValue = ((flags & 0x02) == 0x02);
-    Object expectedOldValue = null;
+
+    final int flags = clientMessage.getPart(idx++).getInt();
+    final boolean requireOldValue = ((flags & 0x01) == 0x01);
+    final boolean haveExpectedOldValue = ((flags & 0x02) == 0x02);
+    final Object expectedOldValue;
     if (haveExpectedOldValue) {
       try {
         expectedOldValue = clientMessage.getPart(idx++).getObject();
@@ -112,10 +123,15 @@ public class Put65 extends BaseCommand {
         serverConnection.setAsTrue(RESPONDED);
         return;
       }
+    } else {
+      expectedOldValue = null;
     }
-    keyPart = clientMessage.getPart(idx++);
+
+    final Part keyPart = clientMessage.getPart(idx++);
+
+    final boolean isDelta;
     try {
-      isDelta = ((Boolean) clientMessage.getPart(idx).getObject()).booleanValue();
+      isDelta = ((Boolean) clientMessage.getPart(idx).getObject());
       idx += 1;
     } catch (Exception e) {
       writeException(clientMessage, MessageType.PUT_DELTA_ERROR, e, false, serverConnection);
@@ -123,10 +139,13 @@ public class Put65 extends BaseCommand {
       // CachePerfStats not available here.
       return;
     }
-    valuePart = clientMessage.getPart(idx++);
-    eventPart = clientMessage.getPart(idx++);
+
+    final Part valuePart = clientMessage.getPart(idx++);
+    final Part eventPart = clientMessage.getPart(idx++);
+
+    Object callbackArg = null;
     if (clientMessage.getNumberOfParts() > idx) {
-      callbackArgPart = clientMessage.getPart(idx++);
+      final Part callbackArgPart = clientMessage.getPart(idx++);
       try {
         callbackArg = callbackArgPart.getObject();
       } catch (Exception e) {
@@ -135,8 +154,8 @@ public class Put65 extends BaseCommand {
         return;
       }
     }
-    regionName = regionNamePart.getString();
 
+    final Object key;
     try {
       key = keyPart.getStringOrObject();
     } catch (Exception e) {
@@ -144,6 +163,8 @@ public class Put65 extends BaseCommand {
       serverConnection.setAsTrue(RESPONDED);
       return;
     }
+
+    final String regionName = regionNamePart.getCachedString();
 
     final boolean isDebugEnabled = logger.isDebugEnabled();
     if (isDebugEnabled) {
@@ -156,15 +177,16 @@ public class Put65 extends BaseCommand {
 
     // Process the put request
     if (key == null || regionName == null) {
+      final StringBuilder errMessage = new StringBuilder();
       if (key == null) {
-        String putMsg = " The input key for the put request is null";
+        final String putMsg = " The input key for the put request is null";
         if (isDebugEnabled) {
           logger.debug("{}:{}", serverConnection.getName(), putMsg);
         }
         errMessage.append(putMsg);
       }
       if (regionName == null) {
-        String putMsg = " The input region name for the put request is null";
+        final String putMsg = " The input region name for the put request is null";
         if (isDebugEnabled) {
           logger.debug("{}:{}", serverConnection.getName(), putMsg);
         }
@@ -176,9 +198,9 @@ public class Put65 extends BaseCommand {
       return;
     }
 
-    LocalRegion region = (LocalRegion) serverConnection.getCache().getRegion(regionName);
+    final LocalRegion region = (LocalRegion) serverConnection.getCache().getRegion(regionName);
     if (region == null) {
-      String reason = " was not found during put request";
+      final String reason = " was not found during put request";
       writeRegionDestroyedEx(clientMessage, regionName, reason, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
       return;
@@ -186,22 +208,21 @@ public class Put65 extends BaseCommand {
 
     if (valuePart.isNull() && operation != Operation.PUT_IF_ABSENT && region.containsKey(key)) {
       // Invalid to 'put' a null value in an existing key
-      String putMsg = " Attempted to put a null value for existing key " + key;
+      final String putMsg = " Attempted to put a null value for existing key " + key;
       if (isDebugEnabled) {
         logger.debug("{}:{}", serverConnection.getName(), putMsg);
       }
-      errMessage.append(putMsg);
-      writeErrorResponse(clientMessage, MessageType.PUT_DATA_ERROR, errMessage.toString(),
+      writeErrorResponse(clientMessage, MessageType.PUT_DATA_ERROR, putMsg,
           serverConnection);
       serverConnection.setAsTrue(RESPONDED);
       return;
     }
 
-    ByteBuffer eventIdPartsBuffer = ByteBuffer.wrap(eventPart.getSerializedForm());
-    long threadId = EventID.readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
-    long sequenceId = EventID.readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
+    final ByteBuffer eventIdPartsBuffer = ByteBuffer.wrap(eventPart.getSerializedForm());
+    final long threadId = EventID.readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
+    final long sequenceId = EventID.readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
 
-    EventIDHolder clientEvent = new EventIDHolder(
+    final EventIDHolder clientEvent = new EventIDHolder(
         new EventID(serverConnection.getEventMemberIDByteArray(), threadId, sequenceId));
 
     Breadcrumbs.setEventId(clientEvent.getEventId());
@@ -236,7 +257,7 @@ public class Put65 extends BaseCommand {
       clientMessage.setMetaRegion(isMetaRegion);
 
       securityService.authorize(Resource.DATA, ResourcePermission.Operation.WRITE, regionName,
-          key.toString());
+          key);
 
       AuthorizeRequest authzRequest = null;
       if (!isMetaRegion) {
@@ -418,9 +439,8 @@ public class Put65 extends BaseCommand {
       serverConnection.setAsTrue(RESPONDED);
       return;
     } catch (InvalidDeltaException ide) {
-      logger.info(LocalizedMessage.create(
-          LocalizedStrings.UpdateOperation_ERROR_APPLYING_DELTA_FOR_KEY_0_OF_REGION_1,
-          new Object[] {key, regionName}));
+      logger.info("Error applying delta for key {} of region {}: {}",
+          new Object[] {key, regionName, ide.getMessage()});
       writeException(clientMessage, MessageType.PUT_DELTA_ERROR, ide, false, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
       region.getCachePerfStats().incDeltaFullValuesRequested();

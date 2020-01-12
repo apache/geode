@@ -23,7 +23,7 @@ For easy configuration, you can start with these example client/server configura
 
 ## <a id="client_server_example_configurations__section_556E0D3D72624AD9B27C636BA628ADC0" class="no-quick-link"></a>Examples of Standard Client/Server Configuration
 
-Generally, locators and servers use the same distributed system properties file, which lists locators as the discovery mechanism for peer members and for connecting clients. For example:
+Generally, locators and servers use the same properties file, which lists locators as the discovery mechanism for peer members and for connecting clients. For example:
 
 ``` pre
 mcast-port=0
@@ -44,7 +44,7 @@ prompt# gfsh start locator --name=locator_name --port=41111
 
 Specify a name for the locator that you wish to start on the localhost. If you do not specify the member name, gfsh will automatically pick a random name. This is useful for automation.
 
-The server’s `cache.xml` declares a `cache-server` element, which identifies the JVM as a server in the distributed system.
+The server’s `cache.xml` declares a `cache-server` element, which identifies the JVM as a server in the cluster.
 
 ``` pre
 <cache> 
@@ -52,7 +52,7 @@ The server’s `cache.xml` declares a `cache-server` element, which identifies t
   <region . . . 
 ```
 
-Once the locator and server are started, the locator tracks the server as a peer in its distributed system and as a server listening for client connections at port 40404.
+Once the locator and server are started, the locator tracks the server as a peer in its cluster and as a server listening for client connections at port 40404.
 
 You can also configure a cache server using the `gfsh` command-line utility. For example:
 
@@ -102,7 +102,7 @@ private static void runPublisher() {
     ClientCache cache = ccf.create();
     ClientRegionFactory<String,String> regionFactory = 
         cache.createClientRegionFactory(PROXY);
-    Region<String, Strini> region = regionFactory.create("DATA");
+    Region<String, String> region = regionFactory.create("DATA");
 
     //... do work ...
 

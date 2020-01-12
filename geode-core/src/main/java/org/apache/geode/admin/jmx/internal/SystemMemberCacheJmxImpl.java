@@ -36,8 +36,6 @@ import org.apache.geode.admin.internal.SystemMemberBridgeServerImpl;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.admin.AdminBridgeServer;
 import org.apache.geode.internal.admin.GemFireVM;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.InternalLogWriter;
 
 /**
  * MBean representation of {@link org.apache.geode.admin.SystemMemberCache}.
@@ -161,7 +159,7 @@ public class SystemMemberCacheJmxImpl extends org.apache.geode.admin.internal.Sy
       throws org.apache.geode.admin.AdminException {
     if (managed == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.SystemMemberCacheJmxImpl_MANAGEDBEAN_IS_NULL.toLocalizedString());
+          "ManagedBean is null");
     }
 
     refresh(); // to get the stats...
@@ -211,8 +209,8 @@ public class SystemMemberCacheJmxImpl extends org.apache.geode.admin.internal.Sy
 
       if (region == null) {
         throw new AdminException(
-            LocalizedStrings.SystemMemberCacheJmxImpl_THIS_CACHE_DOES_NOT_CONTAIN_REGION_0
-                .toLocalizedString(path));
+            String.format("This cache does not contain region %s",
+                path));
 
       } else {
         return ObjectName.getInstance(region.getMBeanName());
@@ -311,7 +309,7 @@ public class SystemMemberCacheJmxImpl extends org.apache.geode.admin.internal.Sy
   }
 
   /**
-   * Returns the MBean <code>ObjectName</code>s for all bridge servers that serve this cache.
+   * Returns the MBean <code>ObjectName</code>s for all cache servers that serve this cache.
    *
    * @since GemFire 4.0
    * @deprecated as of 5.7
@@ -331,22 +329,27 @@ public class SystemMemberCacheJmxImpl extends org.apache.geode.admin.internal.Sy
   /** The ModelMBean that is configured to manage this resource */
   private ModelMBean modelMBean;
 
+  @Override
   public String getMBeanName() {
     return this.mbeanName;
   }
 
+  @Override
   public ModelMBean getModelMBean() {
     return this.modelMBean;
   }
 
+  @Override
   public void setModelMBean(ModelMBean modelMBean) {
     this.modelMBean = modelMBean;
   }
 
+  @Override
   public ObjectName getObjectName() {
     return this.objectName;
   }
 
+  @Override
   public ManagedResourceType getManagedResourceType() {
     return ManagedResourceType.SYSTEM_MEMBER_CACHE;
   }
@@ -360,6 +363,7 @@ public class SystemMemberCacheJmxImpl extends org.apache.geode.admin.internal.Sy
    * But cleans up only StatisticResourceJmxImpl and SystemMemberCacheJmxImpl which are of type
    * ManagedResource.
    */
+  @Override
   public void cleanupResource() {
     synchronized (this.managedRegionResourcesMap) {
       Collection<SystemMemberRegionJmxImpl> values = managedRegionResourcesMap.values();

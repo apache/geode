@@ -15,6 +15,8 @@
 
 package org.apache.geode.distributed.internal.unsafe;
 
+import org.apache.geode.unsafe.internal.sun.misc.Signal;
+
 /**
  * The RegisterSignalHandlerSupport class is an ugly hack!
  * </p>
@@ -24,8 +26,7 @@ package org.apache.geode.distributed.internal.unsafe;
 public abstract class RegisterSignalHandlerSupport {
 
   public static void registerSignalHandlers() {
-    sun.misc.Signal.handle(new sun.misc.Signal("INT"), new sun.misc.SignalHandler() {
-      public void handle(final sun.misc.Signal sig) {}
+    Signal.handle(new Signal("INT"), sig -> {
     });
   }
 

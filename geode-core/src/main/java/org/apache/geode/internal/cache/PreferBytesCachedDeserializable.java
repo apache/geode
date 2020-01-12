@@ -21,10 +21,12 @@ import java.io.IOException;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Region;
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.Version;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.lang.StringUtils;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * This cache deserializable always keeps its byte[] in serialized form. You can ask it for its
@@ -61,22 +63,24 @@ public class PreferBytesCachedDeserializable
     this.value = serializedValue;
     if (serializedValue == null)
       throw new NullPointerException(
-          LocalizedStrings.PreferBytesCachedDeserializable_VALUE_MUST_NOT_BE_NULL
-              .toLocalizedString());
+          "value must not be null");
   }
 
   public PreferBytesCachedDeserializable(Object object) {
     this.value = EntryEventImpl.serialize(object);
   }
 
+  @Override
   public Object getDeserializedValue(Region r, RegionEntry re) {
     return EntryEventImpl.deserialize(this.value);
   }
 
+  @Override
   public Object getDeserializedForReading() {
     return getDeserializedValue(null, null);
   }
 
+  @Override
   public Object getDeserializedWritableCopy(Region r, RegionEntry re) {
     return getDeserializedValue(r, re);
   }
@@ -84,10 +88,12 @@ public class PreferBytesCachedDeserializable
   /**
    * Return the serialized value as a byte[]
    */
+  @Override
   public byte[] getSerializedValue() {
     return this.value;
   }
 
+  @Override
   public void fillSerializedValue(BytesAndBitsForCompactor wrapper, byte userBits) {
     wrapper.setData(this.value, userBits, this.value.length,
         false /* Not Reusable as it refers to underlying value */);
@@ -98,27 +104,35 @@ public class PreferBytesCachedDeserializable
    * Return current value regardless of whether it is serialized or deserialized: if it was
    * serialized than it is a byte[], otherwise it is not a byte[].
    */
+  @Override
   public Object getValue() {
     return this.value;
   }
 
+  @Override
   public int getSizeInBytes() {
     return MEM_OVERHEAD + CachedDeserializableFactory.getByteSize(this.value);
   }
 
+  @Override
   public int getValueSizeInBytes() {
     return CachedDeserializableFactory.getByteSize(this.value);
   }
 
+  @Override
   public int getDSFID() {
     return PREFER_BYTES_CACHED_DESERIALIZABLE;
   }
 
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  @Override
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     this.value = DataSerializer.readByteArray(in);
   }
 
-  public void toData(DataOutput out) throws IOException {
+  @Override
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     DataSerializer.writeByteArray(this.value, out);
   }
 
@@ -132,10 +146,12 @@ public class PreferBytesCachedDeserializable
     return getShortClassName() + "@" + this.hashCode();
   }
 
+  @Override
   public void writeValueAsByteArray(DataOutput out) throws IOException {
-    toData(out);
+    toData(out, InternalDataSerializer.createSerializationContext(out));
   }
 
+  @Override
   public String getStringForm() {
     try {
       return StringUtils.forceToString(getDeserializedForReading());

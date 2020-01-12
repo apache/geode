@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.logging;
 
+import static java.lang.System.lineSeparator;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -24,53 +25,45 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.SortedSet;
+import java.util.Collection;
 import java.util.TreeSet;
 
+import org.apache.geode.LogWriter;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.ExitCode;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
- * This program sorts the entries in a GemFire log file (one written using a
- * {@link org.apache.geode.i18n.LogWriterI18n}) by their timestamps. Note that in order to do so, we
- * have to read the entire file into memory.
+ * This program sorts the entries in a GemFire log file (one written using a {@link LogWriter}) by
+ * their timestamps. Note that in order to do so, we have to read the entire file into memory.
  *
  * @see MergeLogFiles
  * @see LogFileParser
- *
- *
  * @since GemFire 3.0
  */
 public class SortLogFile {
 
-  private static PrintStream out = System.out;
-  private static PrintStream err = System.err;
+  @Immutable
+  private static final PrintStream out = System.out;
+  @Immutable
+  private static final PrintStream err = System.err;
 
   /**
    * Parses a log file from a given source and writes the sorted entries to a given destination.
    */
   public static void sortLogFile(InputStream logFile, PrintWriter sortedFile) throws IOException {
 
-    SortedSet sorted = new TreeSet(new Comparator() {
-      public int compare(Object o1, Object o2) {
-        LogFileParser.LogEntry entry1 = (LogFileParser.LogEntry) o1;
-        LogFileParser.LogEntry entry2 = (LogFileParser.LogEntry) o2;
-        String stamp1 = entry1.getTimestamp();
-        String stamp2 = entry2.getTimestamp();
+    Collection<LogFileParser.LogEntry> sorted = new TreeSet<>((entry1, entry2) -> {
+      String stamp1 = entry1.getTimestamp();
+      String stamp2 = entry2.getTimestamp();
 
-        if (stamp1.equals(stamp2)) {
-          if (entry1.getContents().equals(entry2.getContents())) {
-            // Timestamps and contents are both equal - compare hashCode()
-            return Integer.valueOf(entry1.hashCode()).compareTo(Integer.valueOf(entry2.hashCode()));
-          } else {
-            return entry1.getContents().compareTo(entry2.getContents());
-          }
-        } else {
-          return stamp1.compareTo(stamp2);
+      if (stamp1.equals(stamp2)) {
+        if (entry1.getContents().equals(entry2.getContents())) {
+          // Timestamps and contents are both equal - compare hashCode()
+          return Integer.compare(entry1.hashCode(), entry2.hashCode());
         }
+        return entry1.getContents().compareTo(entry2.getContents());
       }
+      return stamp1.compareTo(stamp2);
     });
 
     BufferedReader br = new BufferedReader(new InputStreamReader(logFile));
@@ -79,35 +72,28 @@ public class SortLogFile {
       sorted.add(parser.getNextEntry());
     }
 
-    for (Iterator iter = sorted.iterator(); iter.hasNext();) {
-      LogFileParser.LogEntry entry = (LogFileParser.LogEntry) iter.next();
+    for (LogFileParser.LogEntry entry : sorted) {
       entry.writeTo(sortedFile);
     }
   }
-
-  //////////////////// Main Program ////////////////////
 
   /**
    * Prints usage information about this program
    */
   private static void usage(String s) {
-    err.println("\n** " + s + "\n");
+    err.println(lineSeparator() + "** " + s + lineSeparator());
+    err.println("Usage: java SortLogFile logFile");
+    err.println("-sortedFile file " + "File in which to put sorted log");
+    err.println();
     err.println(
-        LocalizedStrings.SortLogFile_USAGE.toLocalizedString() + ": java SortLogFile logFile");
-    err.println("-sortedFile file "
-        + LocalizedStrings.SortLogFile_FILE_IN_WHICH_TO_PUT_SORTED_LOG.toLocalizedString());
-    err.println("");
-    err.println(
-        LocalizedStrings.SortLogFile_SORTS_A_GEMFIRE_LOG_FILE_BY_TIMESTAMP_THE_MERGED_LOG_FILE_IS_WRITTEN_TO_SYSTEM_OUT_OR_A_FILE
-            .toLocalizedString());
-    err.println("");
+        "Sorts a GemFire log file by timestamp. The merged log file is written to System.out (or a file).");
+    err.println();
     ExitCode.FATAL.doSystemExit();
   }
 
-  public static void main(String[] args) throws IOException {
+  public static void main(String... args) throws IOException {
     File logFile = null;
     File sortedFile = null;
-    // int dirCount = 0;
 
     for (int i = 0; i < args.length; i++) {
       if (args[i].equals("-sortedFile")) {
@@ -120,18 +106,18 @@ public class SortLogFile {
       } else if (logFile == null) {
         File file = new File(args[i]);
         if (!file.exists()) {
-          usage(LocalizedStrings.SortLogFile_FILE_0_DOES_NOT_EXIST.toLocalizedString(file));
+          usage(String.format("File %s does not exist", file));
         }
 
         logFile = file;
 
       } else {
-        usage(LocalizedStrings.SortLogFile_EXTRANEOUS_COMMAND_LINE_0.toLocalizedString(args[i]));
+        usage(String.format("Extraneous command line: %s", args[i]));
       }
     }
 
     if (logFile == null) {
-      usage(LocalizedStrings.SortLogFile_MISSING_FILENAME.toLocalizedString());
+      usage("Missing filename");
     }
 
     InputStream logFileStream = new FileInputStream(logFile);
@@ -144,11 +130,8 @@ public class SortLogFile {
       ps = out;
     }
 
-    PrintWriter pw = new PrintWriter(ps, true);
-
-    sortLogFile(logFileStream, pw);
+    sortLogFile(logFileStream, new PrintWriter(ps, true));
 
     ExitCode.NORMAL.doSystemExit();
   }
-
 }

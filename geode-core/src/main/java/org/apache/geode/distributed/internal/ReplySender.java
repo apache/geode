@@ -16,6 +16,7 @@ package org.apache.geode.distributed.internal;
 
 import java.util.Set;
 
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.DirectReplyMessage;
 
 /**
@@ -30,6 +31,6 @@ import org.apache.geode.internal.cache.DirectReplyMessage;
  */
 public interface ReplySender {
 
-  Set putOutgoing(DistributionMessage msg);
+  Set<InternalDistributedMember> putOutgoing(DistributionMessage msg);
 
 }

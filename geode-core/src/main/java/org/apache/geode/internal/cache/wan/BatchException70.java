@@ -39,7 +39,6 @@ public class BatchException70 extends GemFireCheckedException {
   /**
    * Required for serialization
    *
-   * @param l
    */
   public BatchException70(List<BatchException70> l) {
     super(l.get(0).getMessage());

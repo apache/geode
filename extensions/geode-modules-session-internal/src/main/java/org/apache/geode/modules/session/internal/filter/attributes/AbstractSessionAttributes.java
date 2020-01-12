@@ -27,8 +27,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.modules.session.internal.filter.GemfireHttpSession;
 
@@ -46,7 +44,7 @@ public abstract class AbstractSessionAttributes implements SessionAttributes {
    * Internal attribute store.
    */
   protected Map<String, Object> attributes =
-      Collections.synchronizedMap(new HashMap<String, Object>());
+      Collections.synchronizedMap(new HashMap<>());
 
   /**
    * The session to which these attributes belong
@@ -56,19 +54,19 @@ public abstract class AbstractSessionAttributes implements SessionAttributes {
   /**
    * The last accessed time
    */
-  protected long lastAccessedTime;
+  long lastAccessedTime;
 
   /**
    * The maximum inactive interval. Default is 1800 seconds.
    */
-  protected int maxInactiveInterval = 60 * 30;
+  int maxInactiveInterval = 60 * 30;
 
   /**
    * The JVM Id who last committed these attributes
    */
-  protected String jvmOwnerId;
+  String jvmOwnerId;
 
-  protected long creationTime;
+  private long creationTime;
 
   /**
    * {@inheritDoc}
@@ -161,7 +159,7 @@ public abstract class AbstractSessionAttributes implements SessionAttributes {
     out.writeLong(creationTime);
   }
 
-  public void toDataPre_GEODE_1_3_0_0(DataOutput out) throws IOException {
+  private void toDataPre_GEODE_1_3_0_0(DataOutput out) throws IOException {
     out.writeInt(maxInactiveInterval);
     out.writeLong(lastAccessedTime);
 

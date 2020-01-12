@@ -15,11 +15,13 @@
 
 package org.apache.geode.internal.cache.locks;
 
-import java.util.*;
+import java.util.List;
+import java.util.Set;
 
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.locks.*;
+import org.apache.geode.distributed.internal.locks.DLockService;
 
 /**
  * Provides transaction locking service for coordinating transactions.
@@ -34,6 +36,7 @@ public abstract class TXLockService {
   // -------------------------------------------------------------------------
 
   /** The distributed transaction lock service */
+  @MakeNotStatic
   static TXLockService DTLS = null;
 
   // -------------------------------------------------------------------------

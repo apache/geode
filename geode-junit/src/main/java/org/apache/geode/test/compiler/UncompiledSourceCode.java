@@ -14,31 +14,33 @@
  */
 package org.apache.geode.test.compiler;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.SystemUtils;
+import static java.lang.System.lineSeparator;
+
+import org.apache.commons.lang3.StringUtils;
 
 public class UncompiledSourceCode {
-  public String simpleClassName;
-  public String sourceCode;
+
+  private final String simpleClassName;
+  private final String sourceCode;
 
   private UncompiledSourceCode(String simpleClassName, String sourceCode) {
     this.simpleClassName = simpleClassName;
     this.sourceCode = sourceCode;
   }
 
-  public static UncompiledSourceCode fromSourceCode(String sourceCode) {
+  static UncompiledSourceCode fromSourceCode(String sourceCode) {
     String simpleClassName = new ClassNameExtractor().extractFromSourceCode(sourceCode);
     return new UncompiledSourceCode(simpleClassName, sourceCode);
   }
 
-  public static UncompiledSourceCode fromClassName(String fullyQualifiedClassName) {
+  static UncompiledSourceCode fromClassName(String fullyQualifiedClassName) {
     ClassNameWithPackage classNameWithPackage = ClassNameWithPackage.of(fullyQualifiedClassName);
     boolean isPackageSpecified = StringUtils.isNotBlank(classNameWithPackage.packageName);
 
     StringBuilder sourceCode = new StringBuilder();
     if (isPackageSpecified) {
       sourceCode.append(String.format("package %s;", classNameWithPackage.packageName));
-      sourceCode.append(SystemUtils.LINE_SEPARATOR);
+      sourceCode.append(lineSeparator());
     }
 
     sourceCode.append(String.format("public class %s {}", classNameWithPackage.simpleClassName));
@@ -46,21 +48,30 @@ public class UncompiledSourceCode {
     return new UncompiledSourceCode(classNameWithPackage.simpleClassName, sourceCode.toString());
   }
 
+  public String getSimpleClassName() {
+    return simpleClassName;
+  }
+
+  public String getSourceCode() {
+    return sourceCode;
+  }
+
   private static class ClassNameWithPackage {
-    String packageName;
-    String simpleClassName;
+
+    private final String packageName;
+    private final String simpleClassName;
 
     static ClassNameWithPackage of(String fqClassName) {
-      int indexOfLastDot = fqClassName.lastIndexOf(".");
+      int indexOfLastDot = fqClassName.lastIndexOf('.');
 
       if (indexOfLastDot == -1) {
         return new ClassNameWithPackage("", fqClassName);
-      } else {
-        String specifiedPackage = fqClassName.substring(0, indexOfLastDot);
-        String simpleClassName = fqClassName.substring(indexOfLastDot + 1);
-
-        return new ClassNameWithPackage(specifiedPackage, simpleClassName);
       }
+
+      String specifiedPackage = fqClassName.substring(0, indexOfLastDot);
+      String simpleClassName = fqClassName.substring(indexOfLastDot + 1);
+
+      return new ClassNameWithPackage(specifiedPackage, simpleClassName);
     }
 
     private ClassNameWithPackage(String packageName, String simpleClassName) {

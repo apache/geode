@@ -17,7 +17,6 @@ package org.apache.geode.internal.cache.execute.util;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.management.internal.RestAgent;
@@ -38,6 +37,7 @@ public class FindRestEnabledServersFunction implements InternalFunction {
   public static final String FIND_REST_ENABLED_SERVERS_FUNCTION_ID =
       FindRestEnabledServersFunction.class.getName();
 
+  @Override
   public void execute(FunctionContext context) {
     try {
       InternalCache cache = (InternalCache) context.getCache();
@@ -59,6 +59,7 @@ public class FindRestEnabledServersFunction implements InternalFunction {
     }
   }
 
+  @Override
   public String getId() {
     return FIND_REST_ENABLED_SERVERS_FUNCTION_ID;
   }

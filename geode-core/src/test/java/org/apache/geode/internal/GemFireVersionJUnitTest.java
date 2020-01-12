@@ -21,16 +21,12 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * This test prints out the version information obtained from the {@link GemFireVersion} class. It
  * provides a record of what version of GemFire (and the JDK) was used to run the unit tests.
  */
-@Category(UnitTest.class)
 public class GemFireVersionJUnitTest {
 
   @Test
@@ -60,8 +56,8 @@ public class GemFireVersionJUnitTest {
 
     String noFileOutput = sw.toString();
     assertTrue(noFileOutput.contains(
-        LocalizedStrings.GemFireVersion_COULD_NOT_FIND_RESOURCE_COM_GEMSTONE_GEMFIRE_INTERNAL_0
-            .toLocalizedString(noFile)));
+        String.format("<Could not find resource org/apache/geode/internal/%s>",
+            noFile)));
   }
 
   @Test
@@ -70,8 +66,8 @@ public class GemFireVersionJUnitTest {
     VersionDescription noVersion = new VersionDescription(noFile);
 
     String err =
-        LocalizedStrings.GemFireVersion_COULD_NOT_FIND_RESOURCE_COM_GEMSTONE_GEMFIRE_INTERNAL_0
-            .toLocalizedString(noFile);
+        String.format("<Could not find resource org/apache/geode/internal/%s>",
+            noFile);
     assertEquals(err, noVersion.getProperty(VersionDescription.PRODUCT_VERSION));
   }
 }

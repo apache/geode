@@ -20,5 +20,6 @@ import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
 interface BackupResultCollector {
+
   void addToResults(InternalDistributedMember member, Set<PersistentID> persistentIds);
 }

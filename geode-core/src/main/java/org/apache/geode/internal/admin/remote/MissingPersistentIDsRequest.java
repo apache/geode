@@ -14,30 +14,31 @@
  */
 package org.apache.geode.internal.admin.remote;
 
-import java.io.DataInput;
-import java.io.IOException;
-import java.util.Collections;
+import static java.util.Collections.synchronizedSet;
+
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
+import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.persistence.PersistentID;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.ReplyException;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
 import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
- * A request to all members for any persistent members that they are waiting for. TODO prpersist -
+ * A request to all members for any persistent members that they are waiting for.
  * This extends AdminRequest, but it doesn't work with most of the admin paradigm, which is a
  * request response to a single member. Maybe we need to a new base class.
  */
@@ -68,7 +69,7 @@ public class MissingPersistentIDsRequest extends CliLegacyMessage {
     Set<PersistentID> existing = replyProcessor.existing;
 
     MissingPersistentIDsResponse localResponse =
-        (MissingPersistentIDsResponse) request.createResponse((ClusterDistributionManager) dm);
+        (MissingPersistentIDsResponse) request.createResponse(dm);
     results.addAll(localResponse.getMissingIds());
     existing.addAll(localResponse.getLocalIds());
 
@@ -89,24 +90,14 @@ public class MissingPersistentIDsRequest extends CliLegacyMessage {
           missingIds.add(new PersistentMemberPattern(id));
         }
       }
-      Set<PersistentMemberID> localIds = mm.getPersistentIDs();
-      for (PersistentMemberID id : localIds) {
+
+      for (DiskStore diskStore : cache.listDiskStoresIncludingRegionOwned()) {
+        PersistentMemberID id = ((DiskStoreImpl) diskStore).generatePersistentID();
         localPatterns.add(new PersistentMemberPattern(id));
       }
     }
 
-    return new MissingPersistentIDsResponse(missingIds, localPatterns, this.getSender());
-  }
-
-  @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
-  }
-
-  @Override
-  protected Object clone() throws CloneNotSupportedException {
-    // TODO: delete this clone method?
-    return super.clone();
+    return new MissingPersistentIDsResponse(missingIds, localPatterns, getSender());
   }
 
   @Override
@@ -115,18 +106,20 @@ public class MissingPersistentIDsRequest extends CliLegacyMessage {
   }
 
   private static class MissingPersistentIDProcessor extends AdminMultipleReplyProcessor {
-    Set<PersistentID> missing = Collections.synchronizedSet(new TreeSet<PersistentID>());
-    Set<PersistentID> existing = Collections.synchronizedSet(new TreeSet<PersistentID>());
 
-    MissingPersistentIDProcessor(DistributionManager dm, Set recipients) {
+    private final Set<PersistentID> missing = synchronizedSet(new HashSet<>());
+    private final Set<PersistentID> existing = synchronizedSet(new HashSet<>());
+
+    private MissingPersistentIDProcessor(DistributionManager dm,
+        Collection<InternalDistributedMember> recipients) {
       super(dm, recipients);
     }
 
     @Override
     protected void process(DistributionMessage message, boolean warn) {
       if (message instanceof MissingPersistentIDsResponse) {
-        this.missing.addAll(((MissingPersistentIDsResponse) message).getMissingIds());
-        this.existing.addAll(((MissingPersistentIDsResponse) message).getLocalIds());
+        missing.addAll(((MissingPersistentIDsResponse) message).getMissingIds());
+        existing.addAll(((MissingPersistentIDsResponse) message).getLocalIds());
       }
       super.process(message, warn);
     }

@@ -18,24 +18,20 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.UUID;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.cache.versions.VersionSource;
 
-/**
- *
- */
 public class PersistentMemberID implements DataSerializable {
   private static final long serialVersionUID = 7037022320499508045L;
 
-  public InetAddress host;
-  public String directory;
-  public long timeStamp;
-  public short version;
-  public DiskStoreID diskStoreId;
-  public String name;
+  private InetAddress host;
+  private String directory;
+  private long timeStamp;
+  private short version;
+  private DiskStoreID diskStoreId;
+  private String name;
 
   public PersistentMemberID() {
 
@@ -72,6 +68,7 @@ public class PersistentMemberID implements DataSerializable {
         && (timeStamp <= id.timeStamp && (timeStamp < id.timeStamp || version <= id.version));
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     long diskStoreIdHigh = in.readLong();
     long diskStoreIdLow = in.readLong();
@@ -83,7 +80,7 @@ public class PersistentMemberID implements DataSerializable {
     this.name = DataSerializer.readString(in);
   }
 
-  public void fromData662(DataInput in) throws IOException, ClassNotFoundException {
+  public void _fromData662(DataInput in) throws IOException, ClassNotFoundException {
     long diskStoreIdHigh = in.readLong();
     long diskStoreIdLow = in.readLong();
     this.diskStoreId = new DiskStoreID(diskStoreIdHigh, diskStoreIdLow);
@@ -93,6 +90,7 @@ public class PersistentMemberID implements DataSerializable {
     this.version = in.readShort();
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     out.writeLong(this.diskStoreId.getMostSignificantBits());
     out.writeLong(this.diskStoreId.getLeastSignificantBits());
@@ -165,5 +163,29 @@ public class PersistentMemberID implements DataSerializable {
 
   public VersionSource getVersionMember() {
     return this.diskStoreId;
+  }
+
+  public InetAddress getHost() {
+    return host;
+  }
+
+  public String getDirectory() {
+    return directory;
+  }
+
+  public long getTimeStamp() {
+    return timeStamp;
+  }
+
+  public short getVersion() {
+    return version;
+  }
+
+  public DiskStoreID getDiskStoreId() {
+    return diskStoreId;
+  }
+
+  public String getName() {
+    return name;
   }
 }

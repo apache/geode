@@ -14,23 +14,23 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import org.junit.After;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class MemoryIndexStoreWithInplaceModificationJUnitTest extends MemoryIndexStoreJUnitTest {
 
+  @Override
   public void subclassPreSetup() {
     IndexManager.INPLACE_OBJECT_MODIFICATION_FOR_TEST = true;
   }
 
+  @Override
   protected Region createRegion() {
     Region region = mock(LocalRegion.class);
     RegionAttributes ra = mock(RegionAttributes.class);

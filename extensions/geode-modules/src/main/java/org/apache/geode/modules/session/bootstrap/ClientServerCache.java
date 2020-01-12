@@ -22,8 +22,7 @@ import org.apache.geode.cache.client.ClientCacheFactory;
  * Client-Server cache.
  */
 public class ClientServerCache extends AbstractCache {
-
-  protected static final String DEFAULT_CACHE_XML_FILE_NAME = "cache-client.xml";
+  private static final String DEFAULT_CACHE_XML_FILE_NAME = "cache-client.xml";
 
   static {
     instance = new ClientServerCache();
@@ -46,11 +45,11 @@ public class ClientServerCache extends AbstractCache {
     // Get the existing cache if any
     try {
       this.cache = ClientCacheFactory.getAnyInstance();
-    } catch (CacheClosedException e) {
+    } catch (CacheClosedException ignored) {
     }
 
     // If no cache exists, create one
-    String message = null;
+    String message;
     if (this.cache == null || this.cache.isClosed()) {
       // enable pool subscription so that default cache can be used by hibernate module
       this.cache = new ClientCacheFactory(createDistributedSystemProperties()).create();

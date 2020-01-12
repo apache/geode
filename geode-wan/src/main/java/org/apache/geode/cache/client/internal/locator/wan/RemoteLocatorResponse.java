@@ -19,14 +19,11 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Set;
 
-import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
-/**
- *
- *
- */
 public class RemoteLocatorResponse implements DataSerializableFixedID {
 
   private Set<String> locators;
@@ -40,12 +37,16 @@ public class RemoteLocatorResponse implements DataSerializableFixedID {
     this.locators = locators;
   }
 
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.locators = DataSerializer.readObject(in);
+  @Override
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    this.locators = context.getDeserializer().readObject(in);
   }
 
-  public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeObject(this.locators, out);
+  @Override
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    context.getSerializer().writeObject(this.locators, out);
   }
 
   public Set<String> getLocators() {
@@ -57,6 +58,7 @@ public class RemoteLocatorResponse implements DataSerializableFixedID {
     return "RemoteLocatorResponse{locators=" + locators + "}";
   }
 
+  @Override
   public int getDSFID() {
     return DataSerializableFixedID.REMOTE_LOCATOR_RESPONSE;
   }

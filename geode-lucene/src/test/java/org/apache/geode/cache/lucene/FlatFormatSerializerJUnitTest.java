@@ -14,7 +14,8 @@
  */
 package org.apache.geode.cache.lucene;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -26,15 +27,14 @@ import org.apache.lucene.index.IndexableField;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.lucene.FlatFormatSerializer;
 import org.apache.geode.cache.lucene.internal.repository.serializer.SerializerTestHelper;
 import org.apache.geode.cache.lucene.test.Customer;
+import org.apache.geode.cache.lucene.test.GrandSubCustomer;
 import org.apache.geode.cache.lucene.test.Page;
 import org.apache.geode.cache.lucene.test.Person;
 import org.apache.geode.test.junit.categories.LuceneTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category({UnitTest.class, LuceneTest.class})
+@Category({LuceneTest.class})
 public class FlatFormatSerializerJUnitTest {
 
   private HashSet<Person> createCollectionObjectContacts() {
@@ -83,6 +83,24 @@ public class FlatFormatSerializerJUnitTest {
     IndexableField[] fieldsInDoc = doc1.getFields("myHomePages.content");
     Collection<Object> results = getResultCollection(fieldsInDoc, false);
     assertEquals(2, results.size());
+    assertTrue(results.contains("Hello world no 131"));
+    assertTrue(results.contains("Hello world no 132"));
+  }
+
+  @Test
+  public void shouldIndexOnInheritedFields() {
+    String[] fields = new String[] {"myHomePages.content"};
+
+    FlatFormatSerializer serializer = new FlatFormatSerializer();
+
+    Page[] myHomePages1 = new Page[] {new Page(131), new Page(132)};
+    GrandSubCustomer customer = new GrandSubCustomer("Tommy Jackson", null, null, myHomePages1);
+    Document doc1 = SerializerTestHelper.invokeSerializer(serializer, customer, fields);
+
+    IndexableField[] fieldsInDoc = doc1.getFields("myHomePages.content");
+    Collection<Object> results = getResultCollection(fieldsInDoc, false);
+    assertEquals(2, results.size());
+    Object value = results.iterator().next();
     assertTrue(results.contains("Hello world no 131"));
     assertTrue(results.contains("Hello world no 132"));
   }

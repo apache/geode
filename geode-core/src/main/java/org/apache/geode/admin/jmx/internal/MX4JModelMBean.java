@@ -57,7 +57,6 @@ import mx4j.persist.MBeanPersister;
 import mx4j.persist.PersisterMBean;
 import mx4j.util.Utils;
 
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * @author <a href="mailto:biorn_steedom@users.sourceforge.net">Simone Bordet</a>
@@ -90,16 +89,14 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
       load();
     } catch (Exception x) {
       Logger logger = getLogger();
-      logger.warn(LocalizedStrings.MX4JModelMBean_CANNOT_RESTORE_PREVIOUSLY_SAVED_STATUS
-          .toLocalizedString(), x);
+      logger.warn("Cannot restore previously saved status", x);
     }
   }
 
   public MX4JModelMBean(ModelMBeanInfo info) throws MBeanException, RuntimeOperationsException {
     if (info == null)
       throw new RuntimeOperationsException(new IllegalArgumentException(
-          LocalizedStrings.MX4JModelMBean_MODELMBEANINFO_PARAMETER_CANT_BE_NULL
-              .toLocalizedString()));
+          "ModelMBeanInfo parameter cannot be null."));
     else
       setModelMBeanInfo(info);
   }
@@ -108,24 +105,27 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
     return Log.getLogger(getClass().getName());
   }
 
+  @Override
   public ObjectName preRegister(MBeanServer server, ObjectName name) throws Exception {
     if (m_canBeRegistered) {
       m_mbeanServer = server;
       return name;
     } else {
       throw new MBeanRegistrationException(new IllegalStateException(
-          LocalizedStrings.MX4JModelMBean_MODELMBEAN_CANNOT_BE_REGISTERED_UNTIL_SETMODELMBEANINFO_HAS_BEEN_CALLED
-              .toLocalizedString()));
+          "ModelMBean cannot be registered until setModelMBeanInfo has been called."));
     }
   }
 
+  @Override
   public void postRegister(Boolean registrationDone) {
     if (!registrationDone.booleanValue())
       clear();
   }
 
+  @Override
   public void preDeregister() throws Exception {}
 
+  @Override
   public void postDeregister() {
     clear();
   }
@@ -139,14 +139,15 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
     // PENDING: also remove generic listeners, attribute change listeners, log4j appenders...
   }
 
+  @Override
   public void setModelMBeanInfo(ModelMBeanInfo modelMBeanInfo)
       throws MBeanException, RuntimeOperationsException {
     if (modelMBeanInfo == null)
       throw new RuntimeOperationsException(new IllegalArgumentException(
-          LocalizedStrings.MX4JModelMBean_MODELMBEANINFO_CANNOT_BE_NULL.toLocalizedString()));
+          "ModelMBeanInfo cannot be null."));
     if (!isModelMBeanInfoValid(modelMBeanInfo))
       throw new RuntimeOperationsException(new IllegalArgumentException(
-          LocalizedStrings.MX4JModelMBean_MODELMBEANINFO_IS_INVALID.toLocalizedString()));
+          "ModelMBeanInfo is invalid."));
 
     m_modelMBeanInfo = (ModelMBeanInfo) modelMBeanInfo.clone();
 
@@ -164,11 +165,12 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
     return true;
   }
 
+  @Override
   public void setManagedResource(Object resource, String resourceType) throws MBeanException,
       RuntimeOperationsException, InstanceNotFoundException, InvalidTargetObjectTypeException {
     if (resource == null)
       throw new RuntimeOperationsException(new IllegalArgumentException(
-          LocalizedStrings.MX4JModelMBean_MANAGED_RESOURCE_CANNOT_BE_NULL.toLocalizedString()));
+          "Managed resource cannot be null."));
     if (!isResourceTypeSupported(resourceType))
       throw new InvalidTargetObjectTypeException(resourceType);
 
@@ -187,16 +189,18 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
     return m_managedResource;
   }
 
+  @Override
   public MBeanInfo getMBeanInfo() {
     return m_modelMBeanInfo == null ? null : (MBeanInfo) m_modelMBeanInfo.clone();
   }
 
+  @Override
   public void addAttributeChangeNotificationListener(NotificationListener listener,
       String attributeName, Object handback)
       throws MBeanException, RuntimeOperationsException, IllegalArgumentException {
     if (listener == null)
       throw new RuntimeOperationsException(new IllegalArgumentException(
-          LocalizedStrings.MX4JModelMBean_LISTENER_CANNOT_BE_NULL.toLocalizedString()));
+          "Listener cannot be null."));
     AttributeChangeNotificationFilter filter = new AttributeChangeNotificationFilter();
     if (attributeName != null) {
       filter.enableAttribute(attributeName);
@@ -216,15 +220,18 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
           + " added successfully, handback is " + handback);
   }
 
+  @Override
   public void addNotificationListener(NotificationListener listener, NotificationFilter filter,
       Object handback) throws IllegalArgumentException {
     m_generalBroadcaster.addNotificationListener(listener, filter, handback);
   }
 
+  @Override
   public MBeanNotificationInfo[] getNotificationInfo() {
     return m_modelMBeanInfo.getNotifications();
   }
 
+  @Override
   public void removeAttributeChangeNotificationListener(NotificationListener listener,
       String attributeName) throws RuntimeOperationsException, ListenerNotFoundException {
     try {
@@ -240,7 +247,7 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
       throws MBeanException, RuntimeOperationsException, ListenerNotFoundException {
     if (listener == null)
       throw new RuntimeOperationsException(new IllegalArgumentException(
-          LocalizedStrings.MX4JModelMBean_LISTENER_CANNOT_BE_NULL.toLocalizedString()));
+          "Listener cannot be null."));
     AttributeChangeNotificationFilter filter = new AttributeChangeNotificationFilter();
     if (attributeName != null) {
       filter.enableAttribute(attributeName);
@@ -260,24 +267,27 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
           + " removed successfully, handback is " + handback);
   }
 
+  @Override
   public void removeNotificationListener(NotificationListener listener)
       throws RuntimeOperationsException, ListenerNotFoundException {
     m_generalBroadcaster.removeNotificationListener(listener);
   }
 
+  @Override
   public void removeNotificationListener(NotificationListener listener, NotificationFilter filter,
       Object handback) throws RuntimeOperationsException, ListenerNotFoundException {
     m_generalBroadcaster.removeNotificationListener(listener, filter, handback);
   }
 
+  @Override
   public void sendAttributeChangeNotification(Attribute oldAttribute, Attribute newAttribute)
       throws MBeanException, RuntimeOperationsException {
     if (oldAttribute == null || newAttribute == null)
       throw new RuntimeOperationsException(new IllegalArgumentException(
-          LocalizedStrings.MX4JModelMBean_ATTRIBUTE_CANNOT_BE_NULL.toLocalizedString()));
+          "Attribute cannot be null."));
     if (!oldAttribute.getName().equals(newAttribute.getName()))
       throw new RuntimeOperationsException(new IllegalArgumentException(
-          LocalizedStrings.MX4JModelMBean_ATTRIBUTE_NAMES_CANNOT_BE_DIFFERENT.toLocalizedString()));
+          "Attribute names cannot be different."));
 
     // TODO: the source must be the object name of the MBean if the listener was registered through
     // MBeanServer
@@ -288,11 +298,12 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
     sendAttributeChangeNotification(n);
   }
 
+  @Override
   public void sendAttributeChangeNotification(AttributeChangeNotification notification)
       throws MBeanException, RuntimeOperationsException {
     if (notification == null)
       throw new RuntimeOperationsException(new IllegalArgumentException(
-          LocalizedStrings.MX4JModelMBean_NOTIFICATION_CANNOT_BE_NULL.toLocalizedString()));
+          "Notification cannot be null."));
 
     getAttributeChangeBroadcaster().sendNotification(notification);
 
@@ -306,11 +317,13 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
       logger.debug("Attribute change notification " + notification + " sent");
   }
 
+  @Override
   public void sendNotification(String message) throws MBeanException, RuntimeOperationsException {
     Notification notification = new Notification("jmx.modelmbean.general", this, 1, message);
     sendNotification(notification);
   }
 
+  @Override
   public void sendNotification(Notification notification)
       throws MBeanException, RuntimeOperationsException {
     if (m_generalBroadcaster != null) {
@@ -318,10 +331,11 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
     }
   }
 
+  @Override
   public AttributeList getAttributes(String[] attributes) {
     if (attributes == null)
       throw new RuntimeOperationsException(new IllegalArgumentException(
-          LocalizedStrings.MX4JModelMBean_ATTRIBUTE_NAMES_CANNOT_BE_NULL.toLocalizedString()));
+          "Attribute names cannot be null."));
 
     Logger logger = getLogger();
 
@@ -342,11 +356,12 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
     return list;
   }
 
+  @Override
   public Object getAttribute(String attribute)
       throws AttributeNotFoundException, MBeanException, ReflectionException {
     if (attribute == null)
       throw new RuntimeOperationsException(new IllegalArgumentException(
-          LocalizedStrings.MX4JModelMBean_ATTRIBUTE_NAME_CANNOT_BE_NULL.toLocalizedString()));
+          "Attribute name cannot be null."));
 
     Logger logger = getLogger();
 
@@ -354,7 +369,7 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
     ModelMBeanInfo info = getModelMBeanInfo();
     if (info == null)
       throw new AttributeNotFoundException(
-          LocalizedStrings.MX4JModelMBean_MODELMBEANINFO_IS_NULL.toLocalizedString());
+          "ModelMBeanInfo is null");
     if (logger.isEnabledFor(Logger.DEBUG))
       logger.debug("ModelMBeanInfo is: " + info);
 
@@ -362,19 +377,19 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
     ModelMBeanAttributeInfo attrInfo = info.getAttribute(attribute);
     if (attrInfo == null)
       throw new AttributeNotFoundException(
-          LocalizedStrings.MX4JModelMBean_CANNOT_FIND_MODELMBEANATTRIBUTEINFO_FOR_ATTRIBUTE_0
-              .toLocalizedString(attribute));
+          String.format("Cannot find ModelMBeanAttributeInfo for attribute %s",
+              attribute));
     if (logger.isEnabledFor(Logger.DEBUG))
       logger.debug("Attribute info is: " + attrInfo);
     if (!attrInfo.isReadable())
       throw new AttributeNotFoundException(
-          LocalizedStrings.MX4JModelMBean_ATTRIBUTE_0_IS_NOT_READABLE.toLocalizedString(attribute));
+          String.format("Attribute %s is not readable", attribute));
 
     // This returns a clone of the mbean descriptor, we use it read only
     Descriptor mbeanDescriptor = info.getMBeanDescriptor();
     if (mbeanDescriptor == null)
       throw new AttributeNotFoundException(
-          LocalizedStrings.MX4JModelMBean_MBEAN_DESCRIPTOR_CANNOT_BE_NULL.toLocalizedString());
+          "MBean descriptor cannot be null");
     if (logger.isEnabledFor(Logger.DEBUG))
       logger.debug("MBean descriptor is: " + mbeanDescriptor);
 
@@ -382,8 +397,8 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
     Descriptor attributeDescriptor = attrInfo.getDescriptor();
     if (attributeDescriptor == null)
       throw new AttributeNotFoundException(
-          LocalizedStrings.MX4JModelMBean_ATTRIBUTE_DESCRIPTOR_FOR_ATTRIBUTE_0_CANNOT_BE_NULL
-              .toLocalizedString(attribute));
+          String.format("Attribute descriptor for attribute %s cannot be null",
+              attribute));
     if (logger.isEnabledFor(Logger.DEBUG))
       logger.debug("Attribute descriptor is: " + attributeDescriptor);
 
@@ -471,10 +486,11 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
     return returnValue;
   }
 
+  @Override
   public AttributeList setAttributes(AttributeList attributes) {
     if (attributes == null)
       throw new RuntimeOperationsException(new IllegalArgumentException(
-          LocalizedStrings.MX4JModelMBean_ATTRIBUTE_LIST_CANNOT_BE_NULL.toLocalizedString()));
+          "Attribute list cannot be null."));
 
     Logger logger = getLogger();
 
@@ -494,11 +510,12 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
     return list;
   }
 
+  @Override
   public void setAttribute(Attribute attribute) throws AttributeNotFoundException,
       InvalidAttributeValueException, MBeanException, ReflectionException {
     if (attribute == null)
       throw new RuntimeOperationsException(new IllegalArgumentException(
-          LocalizedStrings.MX4JModelMBean_ATTRIBUTE_CANNOT_BE_NULL.toLocalizedString()));
+          "Attribute cannot be null."));
 
     Logger logger = getLogger();
 
@@ -507,7 +524,7 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
     ModelMBeanInfo info = getModelMBeanInfo();
     if (info == null)
       throw new AttributeNotFoundException(
-          LocalizedStrings.MX4JModelMBean_MODELMBEANINFO_IS_NULL.toLocalizedString());
+          "ModelMBeanInfo is null");
     if (logger.isEnabledFor(Logger.DEBUG))
       logger.debug("ModelMBeanInfo is: " + info);
 
@@ -518,20 +535,20 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
     ModelMBeanAttributeInfo attrInfo = info.getAttribute(attrName);
     if (attrInfo == null)
       throw new AttributeNotFoundException(
-          LocalizedStrings.MX4JModelMBean_CANNOT_FIND_MODELMBEANATTRIBUTEINFO_FOR_ATTRIBUTE_0
-              .toLocalizedString(attrName));
+          String.format("Cannot find ModelMBeanAttributeInfo for attribute %s",
+              attrName));
     if (logger.isEnabledFor(Logger.DEBUG))
       logger.debug("Attribute info is: " + attrInfo);
 
     if (!attrInfo.isWritable())
       throw new AttributeNotFoundException(
-          LocalizedStrings.MX4JModelMBean_ATTRIBUTE_0_IS_NOT_WRITABLE.toLocalizedString(attrName));
+          String.format("Attribute %s is not writable", attrName));
 
     // This returns a clone of the mbean descriptor, we use it read only
     Descriptor mbeanDescriptor = info.getMBeanDescriptor();
     if (mbeanDescriptor == null)
       throw new AttributeNotFoundException(
-          LocalizedStrings.MX4JModelMBean_MBEAN_DESCRIPTOR_CANNOT_BE_NULL.toLocalizedString());
+          "MBean descriptor cannot be null");
     if (logger.isEnabledFor(Logger.DEBUG))
       logger.debug("MBean descriptor is: " + mbeanDescriptor);
 
@@ -539,8 +556,8 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
     Descriptor attributeDescriptor = attrInfo.getDescriptor();
     if (attributeDescriptor == null)
       throw new AttributeNotFoundException(
-          LocalizedStrings.MX4JModelMBean_ATTRIBUTE_DESCRIPTOR_FOR_ATTRIBUTE_0_CANNOT_BE_NULL
-              .toLocalizedString(attrName));
+          String.format("Attribute descriptor for attribute %s cannot be null",
+              attrName));
     if (logger.isEnabledFor(Logger.DEBUG))
       logger.debug("Attribute descriptor is: " + attributeDescriptor);
 
@@ -612,7 +629,7 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
         if (logger.isEnabledFor(Logger.TRACE))
           logger.trace("ModelMBean persisted successfully");
       } catch (Exception x) {
-        logger.error(LocalizedStrings.MX4JModelMBean_CANNOT_STORE_MODELMBEAN_AFTER_SETATTRIBUTE, x);
+        logger.error("Cannot store ModelMBean after setAttribute", x);
         if (x instanceof MBeanException)
           throw (MBeanException) x;
         else
@@ -621,11 +638,12 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
     }
   }
 
+  @Override
   public Object invoke(String method, Object[] arguments, String[] params)
       throws MBeanException, ReflectionException {
     if (method == null)
       throw new RuntimeOperationsException(new IllegalArgumentException(
-          LocalizedStrings.MX4JModelMBean_METHOD_NAME_CANNOT_BE_NULL.toLocalizedString()));
+          "Method name cannot be null."));
     if (arguments == null)
       arguments = new Object[0];
     if (params == null)
@@ -637,7 +655,7 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
     ModelMBeanInfo info = getModelMBeanInfo();
     if (info == null)
       throw new MBeanException(new ServiceNotFoundException(
-          LocalizedStrings.MX4JModelMBean_MODELMBEANINFO_IS_NULL.toLocalizedString()));
+          "ModelMBeanInfo is null"));
     if (logger.isEnabledFor(Logger.DEBUG))
       logger.debug("ModelMBeanInfo is: " + info);
 
@@ -645,8 +663,8 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
     ModelMBeanOperationInfo operInfo = info.getOperation(method);
     if (operInfo == null)
       throw new MBeanException(new ServiceNotFoundException(
-          LocalizedStrings.MX4JModelMBean_CANNOT_FIND_MODELMBEANOPERATIONINFO_FOR_OPERATION_0
-              .toLocalizedString(method)));
+          String.format("Cannot find ModelMBeanOperationInfo for operation %s",
+              method)));
     if (logger.isEnabledFor(Logger.DEBUG))
       logger.debug("Operation info is: " + operInfo);
 
@@ -654,13 +672,13 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
     Descriptor operationDescriptor = operInfo.getDescriptor();
     if (operationDescriptor == null)
       throw new MBeanException(new ServiceNotFoundException(
-          LocalizedStrings.MX4JModelMBean_OPERATION_DESCRIPTOR_FOR_OPERATION_0_CANNOT_BE_NULL
-              .toLocalizedString(method)));
+          String.format("Operation descriptor for operation %s cannot be null",
+              method)));
     String role = (String) operationDescriptor.getFieldValue("role");
     if (role == null || !role.equals("operation"))
       throw new MBeanException(new ServiceNotFoundException(
-          LocalizedStrings.MX4JModelMBean_OPERATION_DESCRIPTOR_FIELD_ROLE_MUST_BE_OPERATION_NOT_0
-              .toLocalizedString(role)));
+          String.format("Operation descriptor field 'role' must be 'operation', not %s",
+              role)));
     if (logger.isEnabledFor(Logger.DEBUG))
       logger.debug("Operation descriptor is: " + operationDescriptor);
 
@@ -668,7 +686,7 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
     Descriptor mbeanDescriptor = info.getMBeanDescriptor();
     if (mbeanDescriptor == null)
       throw new MBeanException(new ServiceNotFoundException(
-          LocalizedStrings.MX4JModelMBean_MBEAN_DESCRIPTOR_CANNOT_BE_NULL.toLocalizedString()));
+          "MBean descriptor cannot be null"));
     if (logger.isEnabledFor(Logger.DEBUG))
       logger.debug("MBean descriptor is: " + mbeanDescriptor);
 
@@ -688,7 +706,7 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
       try {
         parameters = Utils.loadClasses(Thread.currentThread().getContextClassLoader(), params);
       } catch (ClassNotFoundException x) {
-        logger.error(LocalizedStrings.MX4JModelMBean_CANNOT_FIND_OPERATIONS_PARAMETER_CLASSES, x);
+        logger.error("Cannot find operation's parameter classes", x);
         throw new ReflectionException(x);
       }
 
@@ -752,7 +770,7 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
           logger.trace("ModelMBean persisted successfully");
       } catch (Exception x) {
         logger.error(
-            LocalizedStrings.MX4JModelMBean_CANNOT_STORE_MODELMBEAN_AFTER_OPERATION_INVOCATION, x);
+            "Cannot store ModelMBean after operation invocation", x);
         if (x instanceof MBeanException)
           throw (MBeanException) x;
         else
@@ -785,6 +803,7 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
     return target;
   }
 
+  @Override
   public void load() throws MBeanException, RuntimeOperationsException, InstanceNotFoundException {
     PersisterMBean persister = findPersister();
     if (persister != null) {
@@ -793,6 +812,7 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
     }
   }
 
+  @Override
   public void store() throws MBeanException, RuntimeOperationsException, InstanceNotFoundException {
     PersisterMBean persister = findPersister();
     if (persister != null) {
@@ -828,7 +848,7 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
       return true;
     } else {
       throw new ImplementationException(
-          LocalizedStrings.MX4JModelMBean_INVALID_PERSIST_VALUE.toLocalizedString());
+          "Invalid persist value");
     }
   }
 
@@ -970,7 +990,7 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
 
     if (realTarget == null)
       throw new MBeanException(new ServiceNotFoundException(
-          LocalizedStrings.MX4JModelMBean_COULD_NOT_FIND_TARGET.toLocalizedString()));
+          "Could not find target"));
 
     if (method == null) {
       try {
@@ -1060,8 +1080,7 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
         MBeanServer server = getMBeanServer();
         if (server == null)
           throw new MBeanException(new IllegalStateException(
-              LocalizedStrings.MX4JModelMBean_MX4JMODELMBEAN_IS_NOT_REGISTERED
-                  .toLocalizedString()));
+              "MX4JModelMBean is not registered."));
         if (server.isRegistered(objectName)) {
           MBeanLogger l = new MBeanLogger(server, objectName);
           if (logger.isEnabledFor(Logger.DEBUG))
@@ -1140,8 +1159,7 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
         MBeanServer server = getMBeanServer();
         if (server == null)
           throw new MBeanException(new IllegalStateException(
-              LocalizedStrings.MX4JModelMBean_MX4JMODELMBEAN_IS_NOT_REGISTERED
-                  .toLocalizedString()));
+              "MX4JModelMBean is not registered."));
 
         if (server.isRegistered(objectName)
             && server.isInstanceOf(objectName, PersisterMBean.class.getName())) {
@@ -1225,8 +1243,7 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
         logger.trace(
             "Parameter value's class and attribute's declared return class are not assignable");
       throw new MBeanException(new InvalidAttributeValueException(
-          LocalizedStrings.MX4JModelMBean_RETURNED_TYPE_AND_DECLARED_TYPE_ARE_NOT_ASSIGNABLE
-              .toLocalizedString()));
+          "Returned type and declared type are not assignable."));
     }
   }
 }

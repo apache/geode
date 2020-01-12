@@ -28,24 +28,23 @@ import org.jgroups.protocols.pbcast.NAKACK2;
 import org.jgroups.protocols.pbcast.NakAckHeader2;
 import org.jgroups.stack.Protocol;
 
-import org.apache.geode.distributed.internal.DMStats;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
+import org.apache.geode.distributed.internal.membership.api.MembershipStatistics;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 
 /**
- * JGroups doesn't capture quite the stats we want so this protocol is inserted into the stack to
+ * JGroups doesn't capture the stats we want so this protocol is inserted into the stack to
  * gather the missing ones.
- *
- *
  */
-public class StatRecorder extends Protocol {
+public class StatRecorder<ID extends MemberIdentifier> extends Protocol {
 
   private static final Logger logger = Services.getLogger();
 
   private static final int OUTGOING = 0;
   private static final int INCOMING = 1;
 
-  DMStats stats;
-  Services services;
+  MembershipStatistics stats;
+  Services<ID> services;
 
   private final short nakackHeaderId = ClassConfigurator.getProtocolId(NAKACK2.class);
   private final short unicastHeaderId = ClassConfigurator.getProtocolId(UNICAST3.class);
@@ -56,7 +55,7 @@ public class StatRecorder extends Protocol {
    *
    * @param services the Services collective of the GMS
    */
-  public void setServices(Services services) {
+  public void setServices(Services<ID> services) {
     this.services = services;
     this.stats = services.getStatistics();
   }

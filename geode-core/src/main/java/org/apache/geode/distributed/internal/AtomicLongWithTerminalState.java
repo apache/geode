@@ -44,8 +44,6 @@ public class AtomicLongWithTerminalState extends AtomicLong {
   /**
    * Add and the the given delta to the long, unless the long has been set to the terminal state.
    *
-   * @param terminalState
-   * @param delta
    * @return the new value of the field, or the terminalState if the field is already set to the
    *         terminal state.
    */

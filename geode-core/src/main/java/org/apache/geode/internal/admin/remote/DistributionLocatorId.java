@@ -22,14 +22,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.validator.routines.InetAddressValidator;
 
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.admin.SSLConfig;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.net.SocketCreator;
 
 /**
@@ -71,10 +71,10 @@ public class DistributionLocatorId implements java.io.Serializable {
 
   public DistributionLocatorId(int port, String bindAddress, String hostnameForClients) {
     try {
-      this.host = SocketCreator.getLocalHost();
+      this.host = LocalHostUtil.getLocalHost();
     } catch (UnknownHostException ex) {
       throw new InternalGemFireException(
-          LocalizedStrings.DistributionLocatorId_FAILED_GETTING_LOCAL_HOST.toLocalizedString(), ex);
+          "Failed getting local host", ex);
     }
     this.port = port;
     this.bindAddress = validateBindAddress(bindAddress);
@@ -110,8 +110,8 @@ public class DistributionLocatorId implements java.io.Serializable {
 
     if (portStartIdx < 0 || portEndIdx < portStartIdx) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DistributionLocatorId__0_IS_NOT_IN_THE_FORM_HOSTNAMEPORT
-              .toLocalizedString(marshalled));
+          String.format("%s is not in the form hostname[port].",
+              marshalled));
     }
 
     int bindIdx = marshalled.lastIndexOf('@');
@@ -137,8 +137,8 @@ public class DistributionLocatorId implements java.io.Serializable {
       this.port = Integer.parseInt(marshalled.substring(portStartIdx + 1, portEndIdx));
     } catch (NumberFormatException nfe) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DistributionLocatorId_0_DOES_NOT_CONTAIN_A_VALID_PORT_NUMBER
-              .toLocalizedString(marshalled));
+          String.format("%s does not contain a valid port number",
+              marshalled));
     }
 
     if (bindIdx > -1) {
@@ -199,7 +199,7 @@ public class DistributionLocatorId implements java.io.Serializable {
 
   private SSLConfig validateSSLConfig(SSLConfig sslConfig) {
     if (sslConfig == null)
-      return new SSLConfig(); // uses defaults
+      return new SSLConfig.Builder().build(); // uses defaults
     return sslConfig;
   }
 
@@ -357,12 +357,11 @@ public class DistributionLocatorId implements java.io.Serializable {
 
   /**
    * Converts a collection of {@link Locator} instances to a collection of DistributionLocatorId
-   * instances. Note this will use {@link SocketCreator#getLocalHost()} as the host for
+   * instances. Note this will use {@link LocalHostUtil#getLocalHost()} as the host for
    * DistributionLocatorId. This is because all instances of Locator are local only.
    *
    * @param locators collection of Locator instances
    * @return collection of DistributionLocatorId instances
-   * @throws UnknownHostException
    * @see Locator
    */
   public static Collection<DistributionLocatorId> asDistributionLocatorIds(
@@ -373,7 +372,7 @@ public class DistributionLocatorId implements java.io.Serializable {
     Collection<DistributionLocatorId> locatorIds = new ArrayList<DistributionLocatorId>();
     for (Locator locator : locators) {
       DistributionLocatorId locatorId =
-          new DistributionLocatorId(SocketCreator.getLocalHost(), locator);
+          new DistributionLocatorId(LocalHostUtil.getLocalHost(), locator);
       locatorIds.add(locatorId);
     }
     return locatorIds;
@@ -381,7 +380,7 @@ public class DistributionLocatorId implements java.io.Serializable {
 
   /**
    * Marshals a collection of {@link Locator} instances to a collection of DistributionLocatorId
-   * instances. Note this will use {@link SocketCreator#getLocalHost()} as the host for
+   * instances. Note this will use {@link LocalHostUtil#getLocalHost()} as the host for
    * DistributionLocatorId. This is because all instances of Locator are local only.
    *
    * @param locatorIds collection of DistributionLocatorId instances

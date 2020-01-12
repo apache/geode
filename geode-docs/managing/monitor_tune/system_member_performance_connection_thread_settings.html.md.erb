@@ -19,7 +19,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-When many peer processes are started concurrently, you can improve the distributed system connect time can by setting the p2p.HANDSHAKE\_POOL\_SIZE system property value to the expected number of members.
+When many peer processes are started concurrently, you can improve the cluster connect time by setting the p2p.HANDSHAKE\_POOL\_SIZE system property value to the expected number of members.
 
 This property controls the number of threads that can be used to establish new TCP/IP connections between peer caches. The threads are discarded if they are idle for 60 seconds.
 

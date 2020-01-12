@@ -16,9 +16,6 @@ package org.apache.geode.internal.sequencelog;
 
 import java.util.EnumSet;
 
-/**
- *
- */
 public enum GraphType {
   REGION, KEY, MESSAGE, MEMBER;
 

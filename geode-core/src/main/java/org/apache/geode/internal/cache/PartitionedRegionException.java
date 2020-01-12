@@ -29,7 +29,6 @@ public class PartitionedRegionException extends CacheRuntimeException {
   /**
    * Creates a new instance of PartitionedRegionException
    *
-   * @param msg
    */
   public PartitionedRegionException(String msg) {
     super(msg);

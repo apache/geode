@@ -14,7 +14,7 @@
  */
 package org.apache.geode.admin.internal;
 
-import org.apache.geode.admin.*;
+import org.apache.geode.admin.DistributedSystemHealthConfig;
 
 /**
  * The implementation of <code>DistributedSystemHealthConfig</code>. Note that because it never
@@ -43,10 +43,12 @@ public class DistributedSystemHealthConfigImpl implements DistributedSystemHealt
 
   ///////////////////// Instance Methods /////////////////////
 
+  @Override
   public long getMaxDepartedApplications() {
     return this.maxDepartedApplications;
   }
 
+  @Override
   public void setMaxDepartedApplications(long maxDepartedApplications) {
     this.maxDepartedApplications = maxDepartedApplications;
   }

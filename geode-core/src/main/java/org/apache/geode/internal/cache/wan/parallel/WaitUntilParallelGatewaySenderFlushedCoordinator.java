@@ -20,12 +20,22 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.*;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.ReplyMessage;
+import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.cache.*;
+import org.apache.geode.internal.cache.BucketRegion;
+import org.apache.geode.internal.cache.BucketRegionQueue;
+import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.WaitUntilGatewaySenderFlushedCoordinator;
 
@@ -38,6 +48,7 @@ public class WaitUntilParallelGatewaySenderFlushedCoordinator
     super(sender, timeout, unit, initiator);
   }
 
+  @Override
   public boolean waitUntilFlushed() throws Throwable {
     boolean localResult = true;
     Throwable exceptionToThrow = null;
@@ -48,7 +59,8 @@ public class WaitUntilParallelGatewaySenderFlushedCoordinator
       sender.getCancelCriterion().checkCancelInProgress(null);
     }
 
-    ExecutorService service = this.sender.getDistributionManager().getWaitingThreadPool();
+    ExecutorService service =
+        this.sender.getDistributionManager().getExecutors().getWaitingThreadPool();
     List<Future<Boolean>> callableFutures = new ArrayList<>();
     int callableCount = 0;
     long nanosRemaining = unit.toNanos(timeout);

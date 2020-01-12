@@ -24,14 +24,17 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.query.QueryException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.OperationExecutors;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * PRSanityCheckMessage is used to assert correctness of prID assignments across the distributed
@@ -73,19 +76,22 @@ public class PRSanityCheckMessage extends PartitionMessage {
     buff.append(" regionName=").append(this.regionName);
   }
 
+  @Override
   public int getDSFID() {
     return PR_SANITY_CHECK_MESSAGE;
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.regionName = DataSerializer.readString(in);
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     DataSerializer.writeString(this.regionName, out);
   }
 
@@ -95,7 +101,7 @@ public class PRSanityCheckMessage extends PartitionMessage {
    * gemfire.PRSanityCheckEnabled=true.
    */
   public static void schedule(final PartitionedRegion pr) {
-    if (Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "PRSanityCheckEnabled")) {
+    if (!Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "PRSanityCheckDisabled")) {
       final DistributionManager dm = pr.getDistributionManager();
       // RegionAdvisor ra = pr.getRegionAdvisor();
       // final Set recipients = ra.adviseAllPRNodes();
@@ -116,7 +122,7 @@ public class PRSanityCheckMessage extends PartitionMessage {
       instance.setTransactionDistributed(pr.getCache().getTxManager().isDistributed());
       dm.putOutgoing(instance);
       int sanityCheckInterval = Integer
-          .getInteger(DistributionConfig.GEMFIRE_PREFIX + "PRSanityCheckInterval", 5000).intValue();
+          .getInteger(GeodeGlossary.GEMFIRE_PREFIX + "PRSanityCheckInterval", 5000).intValue();
       if (sanityCheckInterval != 0) {
         final SystemTimer tm = new SystemTimer(dm.getSystem(), true);
         SystemTimer.SystemTimerTask st = new SystemTimer.SystemTimerTask() {
@@ -140,7 +146,7 @@ public class PRSanityCheckMessage extends PartitionMessage {
 
   @Override
   public int getProcessorType() {
-    return ClusterDistributionManager.HIGH_PRIORITY_EXECUTOR;
+    return OperationExecutors.HIGH_PRIORITY_EXECUTOR;
   }
 
   /**

@@ -15,7 +15,7 @@
 
 package org.apache.geode.cache.query.internal.types;
 
-import java.util.*;
+import java.util.Comparator;
 
 
 /**
@@ -33,7 +33,14 @@ class TemporalComparator implements Comparator {
     return obj instanceof TemporalComparator;
   }
 
+  @Override
+  public int hashCode() {
+    return TemporalComparator.class.hashCode();
+  }
+
+
   // throws ClassCastExcepton if obj1 or obj2 is not a java.util.Date or subclass
+  @Override
   public int compare(Object obj1, Object obj2) {
     java.util.Date date1 = (java.util.Date) obj1;
     java.util.Date date2 = (java.util.Date) obj2;

@@ -12,9 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- *
- */
 package org.apache.geode.internal.cache;
 
 import static org.mockito.Mockito.mock;
@@ -53,7 +50,7 @@ public class BucketRegionQueueHelper {
   public void initialize(GemFireCacheImpl cache, PartitionedRegion queueRegion) {
     InternalDistributedMember member = cache.getMyId();
     when(queueRegion.getMyId()).thenReturn(member);
-    when(cache.getRegionByPath(this.bucketRegionQueue.getFullPath()))
+    when(cache.getInternalRegionByPath(this.bucketRegionQueue.getFullPath()))
         .thenReturn(this.bucketRegionQueue);
   }
 }

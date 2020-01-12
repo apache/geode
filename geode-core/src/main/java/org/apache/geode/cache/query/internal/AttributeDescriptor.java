@@ -12,8 +12,9 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.cache.query.internal;
+
+import static org.apache.geode.cache.query.security.RestrictedMethodAuthorizer.UNAUTHORIZED_STRING;
 
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Field;
@@ -28,39 +29,34 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.query.NameNotFoundException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.internal.cache.Token;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.lang.JavaWorkarounds;
 import org.apache.geode.pdx.JSONFormatter;
-import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxSerializationException;
-import org.apache.geode.pdx.internal.FieldNotFoundInPdxVersion;
-import org.apache.geode.pdx.internal.PdxInstanceImpl;
+import org.apache.geode.pdx.internal.InternalPdxInstance;
+import org.apache.geode.pdx.internal.PdxType;
+import org.apache.geode.pdx.internal.TypeRegistry;
+import org.apache.geode.security.NotAuthorizedException;
 
 /**
  * Utility for managing an attribute
- *
- * @version $Revision: 1.1 $
  */
-
-
 public class AttributeDescriptor {
   private final String _name;
-  private final MethodInvocationAuthorizer _methodInvocationAuthorizer;
+  private final TypeRegistry _pdxRegistry;
   /** cache for remembering the correct Member for a class and attribute */
-  private static final ConcurrentMap<List, Member> _localCache = new ConcurrentHashMap();
+  @MakeNotStatic
+  static final ConcurrentMap<List, Member> _localCache = new ConcurrentHashMap<>();
 
-
-
-  public AttributeDescriptor(MethodInvocationAuthorizer methodInvocationAuthorizer, String name) {
-    _methodInvocationAuthorizer = methodInvocationAuthorizer;
+  public AttributeDescriptor(TypeRegistry pdxRegistry, String name) {
     _name = name;
+    _pdxRegistry = pdxRegistry;
   }
-
-
 
   /** Validate whether this attribute <i>can</i> be evaluated for target type */
   public boolean validateReadType(Class targetType) {
@@ -72,20 +68,23 @@ public class AttributeDescriptor {
     }
   }
 
-  public Object read(Object target) throws NameNotFoundException, QueryInvocationTargetException {
+  public Object read(Object target, ExecutionContext executionContext)
+      throws NameNotFoundException, QueryInvocationTargetException {
     if (target == null || target == QueryService.UNDEFINED) {
       return QueryService.UNDEFINED;
     }
-    if (target instanceof PdxInstance) {
-      return readPdx((PdxInstance) target);
+
+    if (target instanceof InternalPdxInstance) {
+      return readPdx((InternalPdxInstance) target, executionContext);
     }
+
     // for non pdx objects
-    return readReflection(target);
+    return readReflection(target, executionContext);
   }
 
   // used when the resolution of an attribute must be on a superclass
   // instead of the runtime class
-  private Object readReflection(Object target)
+  Object readReflection(Object target, ExecutionContext executionContext)
       throws NameNotFoundException, QueryInvocationTargetException {
     Support.Assert(target != null);
     Support.Assert(target != QueryService.UNDEFINED);
@@ -98,15 +97,35 @@ public class AttributeDescriptor {
     try {
       if (m instanceof Method) {
         try {
-          _methodInvocationAuthorizer.authorizeMethodInvocation((Method) m, target);
-          return ((Method) m).invoke(target, (Object[]) null);
+          Method method = (Method) m;
+          // Try to use previous result so authorizer gets invoked only once per query.
+          boolean authorizationResult;
+          String cacheKey = target.getClass().getCanonicalName() + "." + method.getName();
+          Boolean cachedResult = (Boolean) executionContext.cacheGet(cacheKey);
+
+          if (cachedResult == null) {
+            // First time, evaluate and cache result.
+            authorizationResult =
+                executionContext.getMethodInvocationAuthorizer().authorize(method, target);
+            executionContext.cachePut(cacheKey, authorizationResult);
+          } else {
+            // Use cached result.
+            authorizationResult = cachedResult;
+          }
+
+          if (!authorizationResult) {
+            throw new NotAuthorizedException(UNAUTHORIZED_STRING + method.getName());
+          }
+
+          return method.invoke(target, (Object[]) null);
         } catch (EntryDestroyedException e) {
           // eat the Exception
           return QueryService.UNDEFINED;
         } catch (IllegalAccessException e) {
           throw new NameNotFoundException(
-              LocalizedStrings.AttributeDescriptor_METHOD_0_IN_CLASS_1_IS_NOT_ACCESSIBLE_TO_THE_QUERY_PROCESSOR
-                  .toLocalizedString(new Object[] {m.getName(), target.getClass().getName()}),
+              String.format(
+                  "Method ' %s ' in class ' %s ' is not accessible to the query processor",
+                  m.getName(), target.getClass().getName()),
               e);
         } catch (InvocationTargetException e) {
           // if the target exception is Exception, wrap that,
@@ -125,8 +144,9 @@ public class AttributeDescriptor {
           return ((Field) m).get(target);
         } catch (IllegalAccessException e) {
           throw new NameNotFoundException(
-              LocalizedStrings.AttributeDescriptor_FIELD_0_IN_CLASS_1_IS_NOT_ACCESSIBLE_TO_THE_QUERY_PROCESSOR
-                  .toLocalizedString(new Object[] {m.getName(), target.getClass().getName()}),
+              String.format(
+                  "Field ' %s ' in class ' %s ' is not accessible to the query processor",
+                  m.getName(), target.getClass().getName()),
               e);
         } catch (EntryDestroyedException e) {
           return QueryService.UNDEFINED;
@@ -138,23 +158,21 @@ public class AttributeDescriptor {
     }
   }
 
+  @SuppressWarnings("unchecked")
   Member getReadMember(Class targetClass) throws NameNotFoundException {
-
-    // mapping: public field (same name), method (getAttribute()),
-    // method (attribute())
+    // mapping: public field (same name), method (getAttribute()), method (attribute())
     List key = new ArrayList();
     key.add(targetClass);
     key.add(_name);
 
-    Member m = _localCache.computeIfAbsent(key, k -> {
+    Member m = JavaWorkarounds.computeIfAbsent(_localCache, key, k -> {
       Member member = getReadField(targetClass);
       return member == null ? getReadMethod(targetClass) : member;
     });
 
     if (m == null) {
-      throw new NameNotFoundException(
-          LocalizedStrings.AttributeDescriptor_NO_PUBLIC_ATTRIBUTE_NAMED_0_WAS_FOUND_IN_CLASS_1
-              .toLocalizedString(new Object[] {_name, targetClass.getName()}));
+      throw new NameNotFoundException(String.format(
+          "No public attribute named ' %s ' was found in class %s", _name, targetClass.getName()));
     }
 
     // override security for nonpublic derived classes with public members
@@ -162,8 +180,7 @@ public class AttributeDescriptor {
     return m;
   }
 
-
-  private Field getReadField(Class targetType) {
+  Field getReadField(Class targetType) {
     try {
       return targetType.getField(_name);
     } catch (NoSuchFieldException e) {
@@ -171,9 +188,7 @@ public class AttributeDescriptor {
     }
   }
 
-
-
-  private Method getReadMethod(Class targetType) {
+  Method getReadMethod(Class targetType) {
     Method m;
     // Check for a getter method for this _name
     String beanMethod = "get" + _name.substring(0, 1).toUpperCase() + _name.substring(1);
@@ -185,9 +200,8 @@ public class AttributeDescriptor {
     return getReadMethod(targetType, _name);
   }
 
-
-
-  private Method getReadMethod(Class targetType, String methodName) {
+  @SuppressWarnings("unchecked")
+  Method getReadMethod(Class targetType, String methodName) {
     try {
       return targetType.getMethod(methodName, (Class[]) null);
     } catch (NoSuchMethodException e) {
@@ -199,84 +213,73 @@ public class AttributeDescriptor {
   /**
    * reads field value from a PdxInstance
    *
-   * @param target
    * @return the value of the field from PdxInstance
-   * @throws NameNotFoundException
-   * @throws QueryInvocationTargetException
    */
-  private Object readPdx(PdxInstance target)
+  private Object readPdx(InternalPdxInstance pdxInstance, ExecutionContext executionContext)
       throws NameNotFoundException, QueryInvocationTargetException {
-    if (target instanceof PdxInstanceImpl) {
-      PdxInstanceImpl pdxInstance = (PdxInstanceImpl) target;
-      // if the field is present in the pdxinstance
-      if (pdxInstance.hasField(_name)) {
-        // return PdxString if field is a String otherwise invoke readField
-        return pdxInstance.getRawField(_name);
-      } else {
-        // field not found in the pdx instance, look for the field in any of the
-        // PdxTypes (versions of the pdxinstance) in the type registry
-        String className = pdxInstance.getClassName();
-
-        // don't look further for field or method or reflect on GemFire JSON data
-        if (className.equals(JSONFormatter.JSON_CLASSNAME)) {
-          return QueryService.UNDEFINED;
-        }
-
-
-        // check if the field was not found previously
-        if (!isFieldAlreadySearchedAndNotFound(className, _name)) {
-          try {
-            return pdxInstance.getDefaultValueIfFieldExistsInAnyPdxVersions(_name, className);
-          } catch (FieldNotFoundInPdxVersion e1) {
-            // remember the field that is not present in any version to avoid
-            // trips to the registry next time
-            updateClassToFieldsMap(className, _name);
-          }
-        }
-        // if the field is not present in any of the versions try to
-        // invoke implicit method call
-        if (!this.isMethodAlreadySearchedAndNotFound(className, _name)) {
-          try {
-            return readFieldFromDeserializedObject(pdxInstance, target);
-          } catch (NameNotFoundException ex) {
-            updateClassToMethodsMap(pdxInstance.getClassName(), _name);
-            throw ex;
-          }
-        } else
-          return QueryService.UNDEFINED;
-      }
+    // if the field is present in the pdxinstance
+    if (pdxInstance.hasField(_name)) {
+      // return PdxString if field is a String otherwise invoke readField
+      return pdxInstance.getRawField(_name);
     } else {
-      // target could be another implementation of PdxInstance like
-      // PdxInstanceEnum, in this case getRawField and getCachedOjects methods are
-      // not available
-      if (((PdxInstance) target).hasField(_name)) {
-        return ((PdxInstance) target).getField(_name);
+      // field not found in the pdx instance, look for the field in any of the
+      // PdxTypes (versions of the pdxinstance) in the type registry
+      String className = pdxInstance.getClassName();
+
+      // don't look further for field or method or reflect on GemFire JSON data
+      if (className.equals(JSONFormatter.JSON_CLASSNAME)) {
+        return QueryService.UNDEFINED;
       }
-      throw new NameNotFoundException(
-          LocalizedStrings.AttributeDescriptor_FIELD_0_IN_CLASS_1_IS_NOT_ACCESSIBLE_TO_THE_QUERY_PROCESSOR
-              .toLocalizedString(new Object[] {_name, target.getClass().getName()}));
+
+      // check if the field was not found previously
+      if (!isFieldAlreadySearchedAndNotFound(className, _name)) {
+        PdxType pdxType = _pdxRegistry.getPdxTypeForField(_name, className);
+        if (pdxType == null) {
+          // remember the field that is not present in any version to avoid
+          // trips to the registry next time
+          updateClassToFieldsMap(className, _name);
+        } else {
+          return pdxType.getPdxField(_name).getFieldType().getDefaultValue();
+        }
+      }
+      // if the field is not present in any of the versions try to
+      // invoke implicit method call
+      if (!this.isMethodAlreadySearchedAndNotFound(className, _name)) {
+        try {
+          return readFieldFromDeserializedObject(pdxInstance, executionContext);
+        } catch (NameNotFoundException ex) {
+          updateClassToMethodsMap(pdxInstance.getClassName(), _name);
+          throw ex;
+        }
+      } else
+        return QueryService.UNDEFINED;
     }
   }
 
-  private Object readFieldFromDeserializedObject(PdxInstanceImpl pdxInstance, Object target)
+  private Object readFieldFromDeserializedObject(InternalPdxInstance pdxInstance,
+      ExecutionContext executionContext)
       throws NameNotFoundException, QueryInvocationTargetException {
+    Object obj;
+
     try {
-      Object obj = pdxInstance.getCachedObject();
-      return readReflection(obj);
+      obj = pdxInstance.getCachedObject();
     } catch (PdxSerializationException e) {
       throw new NameNotFoundException( // the domain object is not available
-          LocalizedStrings.AttributeDescriptor_FIELD_0_IN_CLASS_1_IS_NOT_ACCESSIBLE_TO_THE_QUERY_PROCESSOR
-              .toLocalizedString(new Object[] {_name, target.getClass().getName()}));
+          String.format("Field '%s' is not accessible to the query processor because: %s",
+              _name, e.getMessage()));
     }
+
+    return readReflection(obj, executionContext);
   }
 
   private void updateClassToFieldsMap(String className, String field) {
     Map<String, Set<String>> map = DefaultQuery.getPdxClasstofieldsmap();
     Set<String> fields = map.get(className);
     if (fields == null) {
-      fields = new HashSet<String>();
+      fields = new HashSet<>();
       map.put(className, fields);
     }
+
     fields.add(field);
   }
 
@@ -285,6 +288,7 @@ public class AttributeDescriptor {
     if (fields != null) {
       return fields.contains(field);
     }
+
     return false;
   }
 
@@ -292,9 +296,10 @@ public class AttributeDescriptor {
     Map<String, Set<String>> map = DefaultQuery.getPdxClasstoMethodsmap();
     Set<String> fields = map.get(className);
     if (fields == null) {
-      fields = new HashSet<String>();
+      fields = new HashSet<>();
       map.put(className, fields);
     }
+
     fields.add(field);
   }
 
@@ -303,9 +308,7 @@ public class AttributeDescriptor {
     if (fields != null) {
       return fields.contains(field);
     }
+
     return false;
   }
-
-
-
 }

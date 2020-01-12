@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -25,10 +25,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Test for the new variable length format
@@ -36,7 +34,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * TODO these tests need some work. I don't think they really represent edge cases for this variable
  * length value.
  */
-@Category(UnitTest.class)
 public class VLJUnitTest {
 
   private ByteArrayOutputStream baos;

@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.DynamicRegionFactory;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Operation;
@@ -30,7 +31,6 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.OpType;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.Token;
-import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
@@ -39,8 +39,6 @@ import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.util.Breadcrumbs;
@@ -50,6 +48,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
 
 public class Destroy65 extends BaseCommand {
 
+  @Immutable
   private static final Destroy65 singleton = new Destroy65();
 
   public static Command getCommand() {
@@ -99,19 +98,7 @@ public class Destroy65 extends BaseCommand {
   @Override
   public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
       final SecurityService securityService, long start) throws IOException, InterruptedException {
-    Part regionNamePart;
-    Part keyPart;
-    Part callbackArgPart;
-    Part eventPart;
-    Part expectedOldValuePart;
-
-    Object operation = null;
-    Object expectedOldValue = null;
-
-    String regionName = null;
-    Object callbackArg = null, key = null;
     StringBuilder errMessage = new StringBuilder();
-    CachedRegionHelper crHelper = serverConnection.getCachedRegionHelper();
     CacheServerStats stats = serverConnection.getCacheServerStats();
     serverConnection.setAsTrue(REQUIRES_RESPONSE);
 
@@ -119,18 +106,36 @@ public class Destroy65 extends BaseCommand {
     stats.incReadDestroyRequestTime(now - start);
 
     // Retrieve the data from the message parts
-    regionNamePart = clientMessage.getPart(0);
-    keyPart = clientMessage.getPart(1);
-    expectedOldValuePart = clientMessage.getPart(2);
+    final Part regionNamePart = clientMessage.getPart(0);
+    final Part keyPart = clientMessage.getPart(1);
+    final Part expectedOldValuePart = clientMessage.getPart(2);
+
+    final Operation operation;
     try {
+      final Part operationPart = clientMessage.getPart(3);
 
-      operation = clientMessage.getPart(3).getObject();
-
-      if (((operation instanceof Operation) && ((Operation) operation == Operation.REMOVE))
-          || ((operation instanceof Byte) && (Byte) operation == OpType.DESTROY))
-
-      {
-        expectedOldValue = expectedOldValuePart.getObject();
+      if (operationPart.isBytes()) {
+        final byte[] bytes = operationPart.getSerializedForm();
+        if (null == bytes || 0 == bytes.length) {
+          // older clients can send empty bytes for default operation.
+          operation = Operation.DESTROY;
+        } else {
+          operation = Operation.fromOrdinal(bytes[0]);
+        }
+      } else {
+        // Fallback for older clients.
+        final Object operationObject = operationPart.getObject();
+        if (operationObject == null) {
+          // native clients may send a null since the op is java-serialized.
+          operation = Operation.DESTROY;
+        } else if (operationObject instanceof Byte
+            && (Byte) operationObject == OpType.DESTROY) {
+          // older native clients may send Byte object OpType.DESTROY value treated as
+          // Operation.REMOVE.
+          operation = Operation.REMOVE;
+        } else {
+          operation = (Operation) operationObject;
+        }
       }
     } catch (Exception e) {
       writeException(clientMessage, e, false, serverConnection);
@@ -138,10 +143,22 @@ public class Destroy65 extends BaseCommand {
       return;
     }
 
-    eventPart = clientMessage.getPart(4);
+    Object expectedOldValue = null;
+    if (operation == Operation.REMOVE) {
+      try {
+        expectedOldValue = expectedOldValuePart.getObject();
+      } catch (Exception e) {
+        writeException(clientMessage, e, false, serverConnection);
+        serverConnection.setAsTrue(RESPONDED);
+        return;
+      }
+    }
 
+    final Part eventPart = clientMessage.getPart(4);
+
+    Object callbackArg = null;
     if (clientMessage.getNumberOfParts() > 5) {
-      callbackArgPart = clientMessage.getPart(5);
+      final Part callbackArgPart = clientMessage.getPart(5);
       try {
         callbackArg = callbackArgPart.getObject();
       } catch (Exception e) {
@@ -150,7 +167,8 @@ public class Destroy65 extends BaseCommand {
         return;
       }
     }
-    regionName = regionNamePart.getString();
+
+    final Object key;
     try {
       key = keyPart.getStringOrObject();
     } catch (Exception e) {
@@ -158,6 +176,9 @@ public class Destroy65 extends BaseCommand {
       serverConnection.setAsTrue(RESPONDED);
       return;
     }
+
+    final String regionName = regionNamePart.getCachedString();
+
     if (logger.isDebugEnabled()) {
       logger.debug(
           "{}: Received destroy65 request ({} bytes; op={}) from {} for region {} key {}{} txId {}",
@@ -171,19 +192,15 @@ public class Destroy65 extends BaseCommand {
     // Process the destroy request
     if (key == null || regionName == null) {
       if (key == null) {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.Destroy_0_THE_INPUT_KEY_FOR_THE_DESTROY_REQUEST_IS_NULL,
-            serverConnection.getName()));
-        errMessage.append(LocalizedStrings.Destroy__THE_INPUT_KEY_FOR_THE_DESTROY_REQUEST_IS_NULL
-            .toLocalizedString());
+        logger.warn("{}: The input key for the destroy request is null",
+            serverConnection.getName());
+        errMessage.append("The input key for the destroy request is null");
       }
       if (regionName == null) {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.Destroy_0_THE_INPUT_REGION_NAME_FOR_THE_DESTROY_REQUEST_IS_NULL,
-            serverConnection.getName()));
+        logger.warn("{}: The input region name for the destroy request is null",
+            serverConnection.getName());
         errMessage
-            .append(LocalizedStrings.Destroy__THE_INPUT_REGION_NAME_FOR_THE_DESTROY_REQUEST_IS_NULL
-                .toLocalizedString());
+            .append("The input region name for the destroy request is null");
       }
       writeErrorResponse(clientMessage, MessageType.DESTROY_DATA_ERROR, errMessage.toString(),
           serverConnection);
@@ -191,22 +208,22 @@ public class Destroy65 extends BaseCommand {
       return;
     }
 
-    LocalRegion region = (LocalRegion) serverConnection.getCache().getRegion(regionName);
+    final LocalRegion region = (LocalRegion) serverConnection.getCache().getRegion(regionName);
     if (region == null) {
-      String reason = LocalizedStrings.Destroy__0_WAS_NOT_FOUND_DURING_DESTROY_REQUEST
-          .toLocalizedString(regionName);
+      String reason = String.format("%s was not found during destroy request",
+          regionName);
       writeRegionDestroyedEx(clientMessage, regionName, reason, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
       return;
     }
 
     // Destroy the entry
-    ByteBuffer eventIdPartsBuffer = ByteBuffer.wrap(eventPart.getSerializedForm());
-    long threadId = EventID.readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
-    long sequenceId = EventID.readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
-    EventID eventId =
+    final ByteBuffer eventIdPartsBuffer = ByteBuffer.wrap(eventPart.getSerializedForm());
+    final long threadId = EventID.readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
+    final long sequenceId = EventID.readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
+    final EventID eventId =
         new EventID(serverConnection.getEventMemberIDByteArray(), threadId, sequenceId);
-    EventIDHolder clientEvent = new EventIDHolder(eventId);
+    final EventIDHolder clientEvent = new EventIDHolder(eventId);
 
     Breadcrumbs.setEventId(eventId);
 
@@ -228,7 +245,7 @@ public class Destroy65 extends BaseCommand {
     try {
       // for integrated security
       securityService.authorize(Resource.DATA, ResourcePermission.Operation.WRITE, regionName,
-          key.toString());
+          key);
 
       AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
       if (authzRequest != null) {
@@ -287,9 +304,10 @@ public class Destroy65 extends BaseCommand {
     } catch (EntryNotFoundException e) {
       // Don't send an exception back to the client if this
       // exception happens. Just log it and continue.
-      logger.info(LocalizedMessage.create(
-          LocalizedStrings.Destroy_0_DURING_ENTRY_DESTROY_NO_ENTRY_WAS_FOUND_FOR_KEY_1,
-          new Object[] {serverConnection.getName(), key}));
+      if (logger.isDebugEnabled()) {
+        logger.debug("{}: during entry destroy no entry was found for key {}",
+            serverConnection.getName(), key);
+      }
       entryNotFoundForRemove = true;
     } catch (RegionDestroyedException rde) {
       writeException(clientMessage, rde, false, serverConnection);
@@ -309,7 +327,7 @@ public class Destroy65 extends BaseCommand {
           logger.debug("{}: Unexpected Security exception", serverConnection.getName(), e);
         }
       } else {
-        logger.warn(LocalizedMessage.create(LocalizedStrings.Destroy_0_UNEXPECTED_EXCEPTION,
+        logger.warn(String.format("%s: Unexpected Exception",
             serverConnection.getName()), e);
       }
       return;

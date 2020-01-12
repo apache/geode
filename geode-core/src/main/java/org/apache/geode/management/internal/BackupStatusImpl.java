@@ -24,8 +24,6 @@ import org.apache.geode.management.BackupStatus;
 
 /**
  * Holds the result of a backup operation.
- *
- *
  */
 public class BackupStatusImpl implements BackupStatus, Serializable {
   private static final long serialVersionUID = 3704172840296221840L;
@@ -35,15 +33,22 @@ public class BackupStatusImpl implements BackupStatus, Serializable {
 
   public BackupStatusImpl(Map<DistributedMember, Set<PersistentID>> backedUpDiskStores,
       Set<PersistentID> offlineDiskStores) {
-    super();
+    if (backedUpDiskStores == null) {
+      throw new IllegalArgumentException("backedUpDiskStores must not be null");
+    }
+    if (offlineDiskStores == null) {
+      throw new IllegalArgumentException("offlineDiskStores must not be null");
+    }
     this.backedUpDiskStores = backedUpDiskStores;
     this.offlineDiskStores = offlineDiskStores;
   }
 
+  @Override
   public Map<DistributedMember, Set<PersistentID>> getBackedUpDiskStores() {
     return backedUpDiskStores;
   }
 
+  @Override
   public Set<PersistentID> getOfflineDiskStores() {
     return offlineDiskStores;
   }
@@ -53,7 +58,4 @@ public class BackupStatusImpl implements BackupStatus, Serializable {
     return "BackupStatus[backedUpDiskStores=" + backedUpDiskStores + ", offlineDiskStores="
         + offlineDiskStores + "]";
   }
-
-
-
 }

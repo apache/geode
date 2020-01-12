@@ -18,6 +18,8 @@ package org.apache.geode.cache;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.geode.cache.configuration.DeclarableType;
+import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.partition.PartitionListener;
 
 /**
@@ -96,7 +98,6 @@ public interface PartitionAttributes<K, V> {
    * not also deprecated.
    *
    * @deprecated use {@link #getLocalMaxMemory()} in GemFire 5.1 and later releases
-   * @return localProperties
    */
   @Deprecated
   Properties getLocalProperties();
@@ -107,7 +108,6 @@ public interface PartitionAttributes<K, V> {
    *
    * @deprecated use {@link #getTotalMaxMemory()} and {@link #getTotalNumBuckets()} in GemFire 5.1
    *             and later releases
-   * @return globalProperties
    */
   @Deprecated
   Properties getGlobalProperties();
@@ -155,4 +155,21 @@ public interface PartitionAttributes<K, V> {
    */
   List<FixedPartitionAttributes> getFixedPartitionAttributes();
 
+  default RegionAttributesType.PartitionAttributes convertToConfigPartitionAttributes() {
+    RegionAttributesType.PartitionAttributes configAttributes =
+        new RegionAttributesType.PartitionAttributes();
+    configAttributes.setColocatedWith(getColocatedWith());
+    configAttributes.setLocalMaxMemory(Integer.toString(getLocalMaxMemory()));
+    if (getPartitionResolver() != null) {
+      configAttributes
+          .setPartitionResolver(new DeclarableType(getPartitionResolver().getClass().getName()));
+    }
+    configAttributes.setRecoveryDelay(Long.toString(getRecoveryDelay()));
+    configAttributes.setStartupRecoveryDelay(Long.toString(getStartupRecoveryDelay()));
+    configAttributes.setRedundantCopies(Integer.toString(getRedundantCopies()));
+    configAttributes.setTotalMaxMemory(Long.toString(getTotalMaxMemory()));
+    configAttributes.setTotalNumBuckets(Long.toString(getTotalNumBuckets()));
+
+    return configAttributes;
+  }
 }

@@ -30,14 +30,12 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.cache.eviction.EvictionCounters;
 import org.apache.geode.management.EvictionAttributesData;
 import org.apache.geode.management.FixedPartitionAttributesData;
 import org.apache.geode.management.MembershipAttributesData;
 import org.apache.geode.management.PartitionAttributesData;
 import org.apache.geode.management.RegionAttributesData;
 import org.apache.geode.management.internal.ManagementConstants;
-import org.apache.geode.management.internal.ManagementStrings;
 import org.apache.geode.management.internal.beans.stats.MBeanStatsMonitor;
 import org.apache.geode.management.internal.beans.stats.StatType;
 import org.apache.geode.management.internal.beans.stats.StatsAverageLatency;
@@ -160,7 +158,7 @@ public class RegionMBeanBridge<K, V> {
         RegionMBeanCompositeDataFactory.getEvictionAttributesData(regAttrs);
 
     this.regionMonitor =
-        new MBeanStatsMonitor(ManagementStrings.REGION_MONITOR.toLocalizedString());
+        new MBeanStatsMonitor("RegionMXBeanMonitor");
 
     configureRegionMetrics();
 
@@ -235,14 +233,14 @@ public class RegionMBeanBridge<K, V> {
     for (Region<?, ?> region : subregions) {
       subregionPaths.add(region.getFullPath());
     }
-    return subregionPaths.toArray(new String[subregionPaths.size()]);
+    return subregionPaths.toArray(new String[0]);
   }
 
   public RegionMBeanBridge(CachePerfStats cachePerfStats) {
     this.regionStats = cachePerfStats;
 
     this.regionMonitor =
-        new MBeanStatsMonitor(ManagementStrings.REGION_MONITOR.toLocalizedString());
+        new MBeanStatsMonitor("RegionMXBeanMonitor");
     regionMonitor.addStatisticsToMonitor(cachePerfStats.getStats());
     configureRegionMetrics();
   }
@@ -395,7 +393,6 @@ public class RegionMBeanBridge<K, V> {
   /**
    * Only applicable for PRs
    *
-   * @return float
    */
   public float getPutLocalRate() {
     return ManagementConstants.NOT_AVAILABLE_FLOAT;
@@ -404,7 +401,6 @@ public class RegionMBeanBridge<K, V> {
   /**
    * Only applicable for PRs
    *
-   * @return float
    */
   public float getPutRemoteRate() {
     return ManagementConstants.NOT_AVAILABLE_FLOAT;
@@ -413,7 +409,6 @@ public class RegionMBeanBridge<K, V> {
   /**
    * Only applicable for PRs
    *
-   * @return long
    */
   public long getPutRemoteAvgLatency() {
     return ManagementConstants.NOT_AVAILABLE_LONG;
@@ -422,7 +417,6 @@ public class RegionMBeanBridge<K, V> {
   /**
    * Only applicable for PRs
    *
-   * @return long
    */
   public long getPutRemoteLatency() {
     return ManagementConstants.NOT_AVAILABLE_LONG;
@@ -431,7 +425,6 @@ public class RegionMBeanBridge<K, V> {
   /**
    * Only applicable for PRs
    *
-   * @return int
    */
   public int getActualRedundancy() {
     return ManagementConstants.NOT_AVAILABLE_INT;
@@ -440,7 +433,6 @@ public class RegionMBeanBridge<K, V> {
   /**
    * Only applicable for PRs
    *
-   * @return int
    */
   public int getAvgBucketSize() {
     return ManagementConstants.NOT_AVAILABLE_INT;
@@ -449,7 +441,6 @@ public class RegionMBeanBridge<K, V> {
   /**
    * Only applicable for PRs
    *
-   * @return int
    */
   public int getBucketCount() {
     return ManagementConstants.NOT_AVAILABLE_INT;
@@ -462,7 +453,6 @@ public class RegionMBeanBridge<K, V> {
   /**
    * Only applicable for PRs
    *
-   * @return int
    */
   public int getNumBucketsWithoutRedundancy() {
     return ManagementConstants.NOT_AVAILABLE_INT;
@@ -471,7 +461,6 @@ public class RegionMBeanBridge<K, V> {
   /**
    * Only applicable for PRs
    *
-   * @return int
    */
   public int getPrimaryBucketCount() {
     return ManagementConstants.NOT_AVAILABLE_INT;
@@ -480,7 +469,6 @@ public class RegionMBeanBridge<K, V> {
   /**
    * Only applicable for PRs
    *
-   * @return int
    */
   public int getTotalBucketSize() {
     return ManagementConstants.NOT_AVAILABLE_INT;

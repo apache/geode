@@ -45,8 +45,7 @@ import org.apache.geode.cache.query.internal.types.StructTypeImpl;
 import org.apache.geode.cache.query.internal.types.TypeUtils;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.cache.query.types.StructType;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.pdx.internal.PdxString;
 
 public class CompiledIn extends AbstractCompiledValue implements Indexable {
@@ -68,6 +67,7 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
     return list;
   }
 
+  @Override
   public int getType() {
     return LITERAL_in;
   }
@@ -94,6 +94,7 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
     return evalColln;
   }
 
+  @Override
   public Object evaluate(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     Object evalElm = this.elm.evaluate(context);
@@ -128,14 +129,13 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
 
     if (!evalColln.getClass().isArray()) {
       throw new TypeMismatchException(
-          LocalizedStrings.CompiledIn_OPERAND_OF_IN_CANNOT_BE_INTERPRETED_AS_A_COLLECTION_IS_INSTANCE_OF_0
-              .toLocalizedString(evalColln.getClass().getName()));
+          String.format("Operand of IN cannot be interpreted as a Collection. Is instance of %s",
+              evalColln.getClass().getName()));
     }
     if (evalColln.getClass().getComponentType().isPrimitive()) {
       if (evalElm == null) {
         throw new TypeMismatchException(
-            LocalizedStrings.CompiledIn_IN_OPERATOR_CHECK_FOR_NULL_IN_PRIMITIVE_ARRAY
-                .toLocalizedString());
+            "IN operator, check for null IN primitive array");
       }
     }
 
@@ -155,6 +155,7 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
    * will be null in both the indexes as key is not a meaningful entity. The 0th element will refer
    * to LHS operand and 1th element will refer to RHS operannd
    */
+  @Override
   public IndexInfo[] getIndexInfo(ExecutionContext context)
       throws TypeMismatchException, AmbiguousNameException, NameResolutionException {
     IndexInfo[] indexInfo = privGetIndexInfo(context);
@@ -207,6 +208,7 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
   /**
    * Invariant: the receiver is dependent on the current iterator.
    */
+  @Override
   protected PlanInfo protGetPlanInfo(ExecutionContext context)
       throws TypeMismatchException, AmbiguousNameException, NameResolutionException {
     PlanInfo result = new PlanInfo();
@@ -232,6 +234,7 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
     return result;
   }
 
+  @Override
   public Set computeDependencies(ExecutionContext context)
       throws TypeMismatchException, AmbiguousNameException, NameResolutionException {
     context.addDependencies(this, this.elm.computeDependencies(context));
@@ -362,8 +365,8 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
    * are iter operands. In such cases , the iter operands will be evaluated while expanding/cutting
    * down the index resultset
    *
-   * @return SelectResults
    */
+  @Override
   public SelectResults filterEvaluate(ExecutionContext context, SelectResults intermediateResults,
       boolean completeExpansionNeeded, CompiledValue iterOperands, RuntimeIterator[] indpndntItrs,
       boolean isIntersection, boolean conditioningNeeded, boolean evalProj)
@@ -384,6 +387,7 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
 
   }
 
+  @Override
   public int getOperator() {
     return TOK_EQ;
   }
@@ -589,6 +593,7 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
     }
   }
 
+  @Override
   public boolean isProjectionEvaluationAPossibility(ExecutionContext context) {
     return true;
   }
@@ -605,6 +610,7 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
     return false;
   }
 
+  @Override
   public boolean isConditioningNeededForIndex(RuntimeIterator independentIter,
       ExecutionContext context, boolean completeExpnsNeeded)
       throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
@@ -637,6 +643,7 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
    * @param intermediateResults if this parameter is provided, and we have to iterate, then iterate
    *        over this result set instead of the entire base collection.
    */
+  @Override
   public SelectResults filterEvaluate(ExecutionContext context, SelectResults intermediateResults)
       throws FunctionDomainException, TypeMismatchException, NameResolutionException,
       QueryInvocationTargetException {
@@ -677,6 +684,7 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
    * auxFilterEvalutae. Overriding this function just for ensuring that auxFilterEvaluate is not
    * being called by mistake.
    */
+  @Override
   public SelectResults auxFilterEvaluate(ExecutionContext context,
       SelectResults intermediateResults) throws FunctionDomainException, TypeMismatchException,
       NameResolutionException, QueryInvocationTargetException {
@@ -684,6 +692,7 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
     return null;
   }
 
+  @Override
   public boolean isBetterFilter(Filter comparedTo, ExecutionContext context, final int thisSize)
       throws FunctionDomainException, TypeMismatchException, NameResolutionException,
       QueryInvocationTargetException {
@@ -722,6 +731,7 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
     return isThisBetter;
   }
 
+  @Override
   public int getSizeEstimate(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     IndexInfo[] idxInfo = getIndexInfo(context);
@@ -828,6 +838,7 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
     return size;
   }
 
+  @Override
   public boolean isRangeEvaluatable() {
     return false;
   }

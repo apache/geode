@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.client.internal.DestroyOp;
 import org.apache.geode.cache.client.internal.InvalidateOp;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -25,11 +26,9 @@ import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.cache.versions.VersionTag;
 
-/**
- *
- */
 public class Invalidate70 extends Invalidate {
 
+  @Immutable
   private static final Invalidate70 singleton = new Invalidate70();
 
   public static Command getCommand() {

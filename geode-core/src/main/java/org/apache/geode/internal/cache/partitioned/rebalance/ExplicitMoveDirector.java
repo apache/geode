@@ -20,11 +20,11 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.cache.partitioned.rebalance.PartitionedRegionLoadModel.Bucket;
-import org.apache.geode.internal.cache.partitioned.rebalance.PartitionedRegionLoadModel.Member;
-import org.apache.geode.internal.cache.partitioned.rebalance.PartitionedRegionLoadModel.Move;
-import org.apache.geode.internal.cache.partitioned.rebalance.PartitionedRegionLoadModel.RefusalReason;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.cache.partitioned.rebalance.model.Bucket;
+import org.apache.geode.internal.cache.partitioned.rebalance.model.Member;
+import org.apache.geode.internal.cache.partitioned.rebalance.model.Move;
+import org.apache.geode.internal.cache.partitioned.rebalance.model.PartitionedRegionLoadModel;
+import org.apache.geode.internal.cache.partitioned.rebalance.model.RefusalReason;
 
 public class ExplicitMoveDirector extends RebalanceDirectorAdapter {
 
@@ -62,13 +62,15 @@ public class ExplicitMoveDirector extends RebalanceDirectorAdapter {
     Member targetMember = model.getMember(target);
     if (sourceMember == null) {
       throw new IllegalStateException(
-          LocalizedStrings.PERCENTAGE_MOVE_DIRECTORY_SOURCE_NOT_DATA_STORE
-              .toLocalizedString(model.getName(), source));
+          String.format(
+              "Source member does not exist or is not a data store for the partitioned region %s: %s",
+              model.getName(), source));
     }
     if (targetMember == null) {
       throw new IllegalStateException(
-          LocalizedStrings.PERCENTAGE_MOVE_DIRECTORY_TARGET_NOT_DATA_STORE
-              .toLocalizedString(model.getName(), target));
+          String.format(
+              "Target member does not exist or is not a data store for the partitioned region %s: %s",
+              model.getName(), target));
     }
 
     if (bucket == null) {
@@ -90,20 +92,22 @@ public class ExplicitMoveDirector extends RebalanceDirectorAdapter {
         Set allMembers = ds.getDistributionManager().getDistributionManagerIdsIncludingAdmin();
         if (!allMembers.contains(sourceMember)) {
           throw new IllegalStateException(
-              LocalizedStrings.PERCENTAGE_MOVE_DIRECTORY_SOURCE_NOT_DATA_STORE
-                  .toLocalizedString(model.getName(), source));
+              String.format(
+                  "Source member does not exist or is not a data store for the partitioned region %s: %s",
+                  model.getName(), source));
         }
         if (!allMembers.contains(targetMember)) {
           throw new IllegalStateException(
-              LocalizedStrings.PERCENTAGE_MOVE_DIRECTORY_TARGET_NOT_DATA_STORE
-                  .toLocalizedString(model.getName(), target));
+              String.format(
+                  "Target member does not exist or is not a data store for the partitioned region %s: %s",
+                  model.getName(), target));
         }
         throw new IllegalStateException(
             "Unable to move bucket " + bucket + " from " + sourceMember + " to " + targetMember);
       }
     } else {
       throw new IllegalStateException("Unable to move bucket for " + model.getName() + ". "
-          + reason.formatMessage(sourceMember, targetMember, bucket));
+          + reason.formatMessage(targetMember, bucket));
     }
 
     return false;

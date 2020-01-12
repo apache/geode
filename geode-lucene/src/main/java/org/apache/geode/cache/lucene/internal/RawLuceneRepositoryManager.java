@@ -15,6 +15,7 @@
 package org.apache.geode.cache.lucene.internal;
 
 import java.io.IOException;
+import java.util.concurrent.ExecutorService;
 
 import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
@@ -24,8 +25,9 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 public class RawLuceneRepositoryManager extends PartitionedRepositoryManager {
   public static IndexRepositoryFactory indexRepositoryFactory = new RawIndexRepositoryFactory();
 
-  public RawLuceneRepositoryManager(LuceneIndexImpl index, LuceneSerializer serializer) {
-    super(index, serializer);
+  public RawLuceneRepositoryManager(LuceneIndexImpl index, LuceneSerializer serializer,
+      ExecutorService waitingThreadPool) {
+    super(index, serializer, waitingThreadPool);
   }
 
   @Override
@@ -35,15 +37,8 @@ public class RawLuceneRepositoryManager extends PartitionedRepositoryManager {
       return repo;
     }
 
-    try {
-      repo = computeRepository(bucketId, this.serializer, this.index, this.userRegion, repo);
-      return repo;
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-
-    throw new BucketNotFoundException(
-        "Colocated index buckets not found for bucket id " + bucketId);
+    repo = computeRepository(bucketId);
+    return repo;
   }
 
   @Override
@@ -51,6 +46,6 @@ public class RawLuceneRepositoryManager extends PartitionedRepositoryManager {
       InternalLuceneIndex index, PartitionedRegion userRegion, IndexRepository oldRepository)
       throws IOException {
     return indexRepositoryFactory.computeIndexRepository(bucketId, serializer, index, userRegion,
-        oldRepository);
+        oldRepository, this);
   }
 }

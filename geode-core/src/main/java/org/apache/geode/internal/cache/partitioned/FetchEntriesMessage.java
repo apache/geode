@@ -30,6 +30,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
@@ -42,13 +43,13 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.BucketDump;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.InitialImageOperation;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.NonTXEntry;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.internal.cache.RegionEntry;
@@ -57,12 +58,13 @@ import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.OffHeapHelper;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.util.ObjectIntProcedure;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class FetchEntriesMessage extends PartitionMessage {
   private static final Logger logger = LogService.getLogger();
@@ -96,7 +98,7 @@ public class FetchEntriesMessage extends PartitionMessage {
     Set failures = r.getDistributionManager().putOutgoing(m);
     if (failures != null && failures.size() > 0) {
       throw new ForceReattemptException(
-          LocalizedStrings.FetchEntriesMessage_FAILED_SENDING_0.toLocalizedString(m));
+          String.format("Failed sending < %s >", m));
     }
 
     return p;
@@ -105,21 +107,21 @@ public class FetchEntriesMessage extends PartitionMessage {
   @Override
   protected boolean operateOnPartitionedRegion(ClusterDistributionManager dm, PartitionedRegion pr,
       long startTime) throws CacheException, ForceReattemptException {
-    if (logger.isTraceEnabled(LogMarker.DM)) {
-      logger.trace(LogMarker.DM, "FetchEntriesMessage operateOnRegion: {}", pr.getFullPath());
+    if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+      logger.trace(LogMarker.DM_VERBOSE, "FetchEntriesMessage operateOnRegion: {}",
+          pr.getFullPath());
     }
 
     PartitionedRegionDataStore ds = pr.getDataStore();
     BucketRegion entries = null;
     if (ds != null) {
       entries = ds.handleRemoteGetEntries(this.bucketId);
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM, "FetchKeysMessage send keys back using processorId: {}",
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE, "FetchKeysMessage send keys back using processorId: {}",
             getProcessorId());
       }
     } else {
-      logger.warn(LocalizedMessage.create(
-          LocalizedStrings.FetchEntriesMessage_FETCHKEYSMESSAGE_DATA_STORE_NOT_CONFIGURED_FOR_THIS_MEMBER));
+      logger.warn("FetchKeysMessage: data store not configured for this member");
     }
     pr.getPrStats().endPartitionMessagesProcessing(startTime);
     FetchEntriesReplyMessage.send(getSender(), getProcessorId(), dm, this.bucketId, entries);
@@ -134,19 +136,22 @@ public class FetchEntriesMessage extends PartitionMessage {
     buff.append("; recipient=").append(this.getRecipient());
   }
 
+  @Override
   public int getDSFID() {
     return PR_FETCH_ENTRIES_MESSAGE;
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.bucketId = in.readInt();
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     out.writeInt(this.bucketId);
   }
 
@@ -171,6 +176,7 @@ public class FetchEntriesMessage extends PartitionMessage {
     private boolean hasRVV;
 
     /** The versions in which this message was modified */
+    @Immutable
     private static final Version[] dsfidVersions = null;
 
     @Override
@@ -232,6 +238,7 @@ public class FetchEntriesMessage extends PartitionMessage {
                * @param b positive if last chunk
                * @return true to continue to next chunk
                */
+              @Override
               public boolean executeWith(Object a, int b) {
                 HeapDataOutputStream chunk = (HeapDataOutputStream) a;
                 this.last = b > 0;
@@ -252,8 +259,7 @@ public class FetchEntriesMessage extends PartitionMessage {
         // This is a little odd, since we're trying to send a reply.
         // One does not normally force a reply. Is this correct?
         throw new ForceReattemptException(
-            LocalizedStrings.FetchEntriesMessage_UNABLE_TO_SEND_RESPONSE_TO_FETCHENTRIES_REQUEST
-                .toLocalizedString(),
+            "Unable to send response to fetch-entries request",
             io);
       }
     }
@@ -295,7 +301,7 @@ public class FetchEntriesMessage extends PartitionMessage {
         while ((mos.size() + avgItemSize) < InitialImageOperation.CHUNK_SIZE_IN_BYTES
             && it.hasNext()) {
 
-          LocalRegion.NonTXEntry entry = (LocalRegion.NonTXEntry) it.next();
+          NonTXEntry entry = (NonTXEntry) it.next();
           RegionEntry re = entry.getRegionEntry();
           synchronized (re) {
             Object value = re.getValueRetain(map, true);
@@ -357,24 +363,25 @@ public class FetchEntriesMessage extends PartitionMessage {
       FetchEntriesResponse processor = (FetchEntriesResponse) p;
 
       if (processor == null) {
-        if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.trace(LogMarker.DM, "FetchEntriesReplyMessage processor not found");
+        if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+          logger.trace(LogMarker.DM_VERBOSE, "FetchEntriesReplyMessage processor not found");
         }
         return;
       }
 
       processor.processChunk(this);
 
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM, "{} processed {}", processor, this);
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE, "{} processed {}", processor, this);
       }
 
       dm.getStats().incReplyMessageTime(DistributionStats.getStatTime() - startTime);
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       out.writeInt(this.bucketId);
       out.writeInt(this.seriesNum);
       out.writeInt(this.msgNum);
@@ -390,8 +397,9 @@ public class FetchEntriesMessage extends PartitionMessage {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.bucketId = in.readInt();
       this.seriesNum = in.readInt();
       this.msgNum = in.readInt();
@@ -497,7 +505,7 @@ public class FetchEntriesMessage extends PartitionMessage {
       // of this message, we'll need to handle failover in this processor class and track results
       // differently.
 
-      final boolean isDebugEnabled = logger.isTraceEnabled(LogMarker.DM);
+      final boolean isDebugEnabled = logger.isTraceEnabled(LogMarker.DM_VERBOSE);
 
       boolean doneProcessing = false;
 
@@ -550,7 +558,7 @@ public class FetchEntriesMessage extends PartitionMessage {
               doneProcessing = true;
             }
             if (isDebugEnabled) {
-              logger.trace(LogMarker.DM,
+              logger.trace(LogMarker.DM_VERBOSE,
                   "{} chunksProcessed={},lastChunkReceived={},chunksExpected={},done={}", this,
                   chunksProcessed, lastChunkReceived, chunksExpected, doneProcessing);
             }
@@ -558,11 +566,11 @@ public class FetchEntriesMessage extends PartitionMessage {
         } catch (Exception e) {
           if (deserializingKey) {
             processException(new ReplyException(
-                LocalizedStrings.FetchEntriesMessage_ERROR_DESERIALIZING_KEYS.toLocalizedString(),
+                "Error deserializing keys",
                 e));
           } else {
             processException(new ReplyException(
-                LocalizedStrings.FetchEntriesMessage_ERROR_DESERIALIZING_VALUES.toLocalizedString(),
+                "Error deserializing values",
                 e)); // for bug 41202
           }
           checkIfDone(); // fix for hang in 41202
@@ -595,20 +603,19 @@ public class FetchEntriesMessage extends PartitionMessage {
           logger.debug("FetchKeysResponse got remote cancellation; forcing reattempt. {}",
               t.getMessage(), t);
           throw new ForceReattemptException(
-              LocalizedStrings.FetchEntriesMessage_FETCHKEYSRESPONSE_GOT_REMOTE_CANCELLATION_FORCING_REATTEMPT
-                  .toLocalizedString(),
+              "FetchKeysResponse got remote cancellation; forcing reattempt.",
               t);
         } else if (t instanceof ForceReattemptException) {
           // Not sure this is necessary, but it is possible for
           // FetchEntriesMessage to marshal a ForceReattemptException, so...
           throw new ForceReattemptException(
-              LocalizedStrings.FetchEntriesMessage_PEER_REQUESTS_REATTEMPT.toLocalizedString(), t);
+              "Peer requests reattempt", t);
         }
         e.handleCause();
       }
       if (!this.lastChunkReceived) {
         throw new ForceReattemptException(
-            LocalizedStrings.FetchEntriesMessage_NO_REPLIES_RECEIVED.toLocalizedString());
+            "No replies received");
       }
       // Deserialize all CachedDeserializable here so we have access to applications thread context
       // class loader

@@ -73,10 +73,12 @@ public class CompiledComparison extends AbstractCompiledValue
     return list;
   }
 
+  @Override
   public int getType() {
     return COMPARISON;
   }
 
+  @Override
   public Object evaluate(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     Object left = _left.evaluate(context);
@@ -145,7 +147,6 @@ public class CompiledComparison extends AbstractCompiledValue
    * are iter operands. In such cases , the iter operands will be evaluated while expanding/cutting
    * down the index resultset
    *
-   * @return SelectResults
    */
   @Override
   public SelectResults filterEvaluate(ExecutionContext context, SelectResults intermediateResults,
@@ -238,6 +239,7 @@ public class CompiledComparison extends AbstractCompiledValue
     return null;
   }
 
+  @Override
   public void negate() {
     _operator = inverseOperator(_operator);
   }
@@ -282,6 +284,7 @@ public class CompiledComparison extends AbstractCompiledValue
     return operator;
   }
 
+  @Override
   public boolean isRangeEvaluatable() {
     if (this._left instanceof MapIndexable || this._right instanceof MapIndexable) {
       return false;
@@ -289,6 +292,7 @@ public class CompiledComparison extends AbstractCompiledValue
     return true;
   }
 
+  @Override
   public int getSizeEstimate(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     IndexInfo[] idxInfo = getIndexInfo(context);
@@ -591,6 +595,7 @@ public class CompiledComparison extends AbstractCompiledValue
   // as key is not a meaningful entity. The 0th element will refer to LHS
   // operand
   // and 1th element will refer to RHS operannd
+  @Override
   public IndexInfo[] getIndexInfo(ExecutionContext context)
       throws TypeMismatchException, AmbiguousNameException, NameResolutionException {
     IndexInfo[] indexInfo = privGetIndexInfo(context);
@@ -731,6 +736,7 @@ public class CompiledComparison extends AbstractCompiledValue
     return false;
   }
 
+  @Override
   public boolean isConditioningNeededForIndex(RuntimeIterator independentIter,
       ExecutionContext context, boolean completeExpnsNeeded)
       throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
@@ -758,10 +764,12 @@ public class CompiledComparison extends AbstractCompiledValue
 
   }
 
+  @Override
   public int getOperator() {
     return this._operator;
   }
 
+  @Override
   public boolean isBetterFilter(Filter comparedTo, ExecutionContext context, final int thisSize)
       throws FunctionDomainException, TypeMismatchException, NameResolutionException,
       QueryInvocationTargetException {

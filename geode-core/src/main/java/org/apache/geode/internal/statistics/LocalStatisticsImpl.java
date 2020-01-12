@@ -14,11 +14,8 @@
  */
 package org.apache.geode.internal.statistics;
 
-import org.apache.geode.*;
-import org.apache.geode.internal.OSProcess;
-import org.apache.geode.internal.statistics.StatisticsImpl;
-import org.apache.geode.internal.statistics.StatisticsManager;
-import org.apache.geode.internal.statistics.StatisticsTypeImpl;
+import org.apache.geode.Statistics;
+import org.apache.geode.StatisticsType;
 
 /**
  * An implementation of {@link Statistics} that stores its statistics in local java memory.
@@ -31,20 +28,13 @@ import org.apache.geode.internal.statistics.StatisticsTypeImpl;
  */
 public class LocalStatisticsImpl extends StatisticsImpl {
 
-  /** In JOM Statistics, the values of the int statistics */
-  private final int[] intStorage;
-
   /** In JOM Statistics, the values of the long statistics */
   private final long[] longStorage;
 
   /** In JOM Statistics, the values of the double statistics */
   private final double[] doubleStorage;
 
-  /**
-   * An array containing the JOM object used to lock a int statistic when it is incremented.
-   */
-  private final transient Object[] intLocks;
-
+  private final int longCount;
   /**
    * An array containing the JOM object used to lock a long statistic when it is incremented.
    */
@@ -54,9 +44,6 @@ public class LocalStatisticsImpl extends StatisticsImpl {
    * An array containing the JOM object used to lock a double statistic when it is incremented.
    */
   private final transient Object[] doubleLocks;
-
-  /** The StatisticsFactory that created this instance */
-  private final StatisticsManager dSystem;
 
   /////////////////////// Constructors ///////////////////////
 
@@ -71,35 +58,15 @@ public class LocalStatisticsImpl extends StatisticsImpl {
    *        increments a statistic, then a <code>false</code> value may yield better performance.
    * @param osStatFlags Non-zero if stats require system calls to collect them; for internal use
    *        only
-   * @param system The distributed system that determines whether or not these statistics are stored
-   *        (and collected) in GemFire shared memory or in the local VM
+   * @param statisticsManager The statistics manager that is creating this instance
    */
   public LocalStatisticsImpl(StatisticsType type, String textId, long numericId, long uniqueId,
-      boolean atomicIncrements, int osStatFlags, StatisticsManager system) {
-    super(type, calcTextId(system, textId), calcNumericId(system, numericId), uniqueId,
-        osStatFlags);
-
-    this.dSystem = system;
+      boolean atomicIncrements, int osStatFlags, StatisticsManager statisticsManager) {
+    super(type, textId, numericId, uniqueId, osStatFlags, statisticsManager);
 
     StatisticsTypeImpl realType = (StatisticsTypeImpl) type;
-    int intCount = realType.getIntStatCount();
-    int longCount = realType.getLongStatCount();
+    longCount = realType.getLongStatCount();
     int doubleCount = realType.getDoubleStatCount();
-
-    if (intCount > 0) {
-      this.intStorage = new int[intCount];
-      if (atomicIncrements) {
-        this.intLocks = new Object[intCount];
-        for (int i = 0; i < intLocks.length; i++) {
-          intLocks[i] = new Object();
-        }
-      } else {
-        this.intLocks = null;
-      }
-    } else {
-      this.intStorage = null;
-      this.intLocks = null;
-    }
 
     if (longCount > 0) {
       this.longStorage = new long[longCount];
@@ -132,98 +99,72 @@ public class LocalStatisticsImpl extends StatisticsImpl {
     }
   }
 
-  ////////////////////// Static Methods //////////////////////
-
-  private static long calcNumericId(StatisticsManager system, long userValue) {
-    if (userValue != 0) {
-      return userValue;
-    } else {
-      long result = OSProcess.getId(); // fix for bug 30239
-      if (result == 0) {
-        if (system != null) {
-          result = system.getId();
-        }
-      }
-      return result;
-    }
+  /**
+   * Creates a new non-atomic statistics instance of the given type
+   *
+   * @param type A description of the statistics
+   * @param textId Text that identifies this statistic when it is monitored
+   * @param numericId A number that displayed when this statistic is monitored
+   * @param uniqueId A number that uniquely identifies this instance
+   *        increments a statistic, then a <code>false</code> value may yield better performance.
+   * @param osStatFlags Non-zero if stats require system calls to collect them; for internal use
+   *        only
+   * @param statisticsManager The distributed system that determines whether or not these statistics
+   *        are stored
+   *        (and collected) in GemFire shared memory or in the local VM
+   */
+  public static Statistics createNonAtomic(StatisticsType type, String textId, long numericId,
+      long uniqueId, int osStatFlags, StatisticsManager statisticsManager) {
+    return new LocalStatisticsImpl(type, textId, numericId, uniqueId, false, osStatFlags,
+        statisticsManager);
   }
-
-  private static String calcTextId(StatisticsManager system, String userValue) {
-    if (userValue != null && !userValue.equals("")) {
-      return userValue;
-    } else {
-      if (system != null) {
-        return system.getName();
-      } else {
-        return "";
-      }
-    }
-  }
-
-  ////////////////////// Instance Methods //////////////////////
 
   @Override
   public boolean isAtomic() {
-    return intLocks != null || longLocks != null || doubleLocks != null;
+    return longLocks != null || doubleLocks != null;
   }
 
-  @Override
-  public void close() {
-    super.close();
-    if (this.dSystem != null) {
-      dSystem.destroyStatistics(this);
-    }
+  private int getOffsetFromLongId(int id) {
+    return id;
+  }
+
+  private int getOffsetFromDoubleId(int id) {
+    return id - this.longCount;
   }
 
   //////////////////////// store() Methods ///////////////////////
 
   @Override
-  protected void _setInt(int offset, int value) {
-    this.intStorage[offset] = value;
-  }
-
-  @Override
-  protected void _setLong(int offset, long value) {
+  protected void _setLong(int id, long value) {
+    int offset = getOffsetFromLongId(id);
     this.longStorage[offset] = value;
   }
 
   @Override
-  protected void _setDouble(int offset, double value) {
+  protected void _setDouble(int id, double value) {
+    int offset = getOffsetFromDoubleId(id);
     this.doubleStorage[offset] = value;
   }
 
   /////////////////////// get() Methods ///////////////////////
 
   @Override
-  protected int _getInt(int offset) {
-    return this.intStorage[offset];
-  }
-
-  @Override
-  protected long _getLong(int offset) {
+  protected long _getLong(int id) {
+    int offset = getOffsetFromLongId(id);
     return this.longStorage[offset];
   }
 
   @Override
-  protected double _getDouble(int offset) {
+  protected double _getDouble(int id) {
+    int offset = getOffsetFromDoubleId(id);
     return this.doubleStorage[offset];
   }
 
   //////////////////////// inc() Methods ////////////////////////
 
   @Override
-  protected void _incInt(int offset, int delta) {
-    if (this.intLocks != null) {
-      synchronized (this.intLocks[offset]) {
-        this.intStorage[offset] += delta;
-      }
-    } else {
-      this.intStorage[offset] += delta;
-    }
-  }
-
-  @Override
-  protected void _incLong(int offset, long delta) {
+  protected void _incLong(int id, long delta) {
+    int offset = getOffsetFromLongId(id);
     if (this.longLocks != null) {
       synchronized (this.longLocks[offset]) {
         this.longStorage[offset] += delta;
@@ -234,7 +175,8 @@ public class LocalStatisticsImpl extends StatisticsImpl {
   }
 
   @Override
-  protected void _incDouble(int offset, double delta) {
+  protected void _incDouble(int id, double delta) {
+    int offset = getOffsetFromDoubleId(id);
     if (this.doubleLocks != null) {
       synchronized (this.doubleLocks[offset]) {
         this.doubleStorage[offset] += delta;
@@ -242,19 +184,5 @@ public class LocalStatisticsImpl extends StatisticsImpl {
     } else {
       this.doubleStorage[offset] += delta;
     }
-  }
-
-  /////////////////// internal package methods //////////////////
-
-  int[] _getIntStorage() {
-    return this.intStorage;
-  }
-
-  long[] _getLongStorage() {
-    return this.longStorage;
-  }
-
-  double[] _getDoubleStorage() {
-    return this.doubleStorage;
   }
 }

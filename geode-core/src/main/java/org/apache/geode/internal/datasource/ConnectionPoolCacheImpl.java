@@ -27,10 +27,7 @@ import javax.sql.PooledConnection;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.i18n.LogWriterI18n;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.jta.TransactionUtils;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class ConnectionPoolCacheImpl extends AbstractPoolCache {
   private static final Logger logger = LogService.getLogger();
@@ -73,7 +70,6 @@ public class ConnectionPoolCacheImpl extends AbstractPoolCache {
    * Creates a new connection for the pool.
    *
    * @return the connection from the database as Object.
-   * @throws PoolException
    */
   @Override
   public Object getNewPoolConnection() throws PoolException {
@@ -83,8 +79,7 @@ public class ConnectionPoolCacheImpl extends AbstractPoolCache {
         poolConn = m_cpds.getPooledConnection(configProps.getUser(), configProps.getPassword());
       } catch (SQLException sqx) {
         throw new PoolException(
-            LocalizedStrings.ConnectionPoolCacheImpl_CONNECTIONPOOLCACHEIMPLGENEWCONNECTION_EXCEPTION_IN_CREATING_NEW_POOLEDCONNECTION
-                .toLocalizedString(),
+            "ConnectionPoolCacheImpl::getNewConnection: Exception in creating new PooledConnection",
             sqx);
       }
       poolConn.addConnectionEventListener((javax.sql.ConnectionEventListener) connEventListner);
@@ -95,8 +90,7 @@ public class ConnectionPoolCacheImpl extends AbstractPoolCache {
             "ConnectionPoolCacheImpl::geNewConnection: ConnectionPoolCache not intialized with ConnectionPoolDatasource");
       }
       throw new PoolException(
-          LocalizedStrings.ConnectionPoolCacheImpl_CONNECTIONPOOLCACHEIMPLGENEWCONNECTION_CONNECTIONPOOLCACHE_NOT_INTIALIZED_WITH_CONNECTIONPOOLDATASOURCE
-              .toLocalizedString());
+          "ConnectionPoolCacheImpl::getNewConnection: ConnectionPoolCache not initialized with ConnectionPoolDatasource");
     }
   }
 }

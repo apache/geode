@@ -14,69 +14,35 @@
  */
 package org.apache.geode.connectors.jdbc.internal;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.sql.DataSource;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Cache;
-import org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlGenerator;
+import org.apache.geode.cache.Region;
+import org.apache.geode.connectors.jdbc.JdbcConnectorException;
+import org.apache.geode.connectors.jdbc.JdbcWriter;
+import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
+import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.internal.cache.CacheService;
-import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.extension.Extensible;
-import org.apache.geode.internal.cache.xmlcache.XmlGenerator;
+import org.apache.geode.internal.jndi.JNDIInvoker;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
 
 @Experimental
 public class JdbcConnectorServiceImpl implements JdbcConnectorService {
 
-  private final Map<String, ConnectionConfiguration> connectionsByName = new ConcurrentHashMap<>();
-  private final Map<String, RegionMapping> mappingsByRegion = new ConcurrentHashMap<>();
-  private volatile InternalCache cache;
-  private boolean registered;
-
-  @Override
-  public void createConnectionConfig(ConnectionConfiguration config)
-      throws ConnectionConfigExistsException {
-    registerAsExtension();
-    ConnectionConfiguration existing = connectionsByName.putIfAbsent(config.getName(), config);
-    if (existing != null) {
-      throw new ConnectionConfigExistsException(
-          "ConnectionConfiguration " + config.getName() + " exists");
-    }
-  }
-
-  @Override
-  public void replaceConnectionConfig(ConnectionConfiguration alteredConfig)
-      throws ConnectionConfigNotFoundException {
-    registerAsExtension();
-    ConnectionConfiguration existingConfig = connectionsByName.get(alteredConfig.getName());
-    if (existingConfig == null) {
-      throw new ConnectionConfigNotFoundException(
-          "ConnectionConfiguration " + alteredConfig.getName() + " was not found");
-    }
-
-    connectionsByName.put(existingConfig.getName(), alteredConfig);
-  }
-
-  @Override
-  public void destroyConnectionConfig(String connectionName) {
-    registerAsExtension();
-    connectionsByName.remove(connectionName);
-  }
-
-  @Override
-  public ConnectionConfiguration getConnectionConfig(String connectionName) {
-    return connectionsByName.get(connectionName);
-  }
-
-  @Override
-  public Set<ConnectionConfiguration> getConnectionConfigs() {
-    Set<ConnectionConfiguration> connectionConfigs = new HashSet<>();
-    connectionConfigs.addAll(connectionsByName.values());
-    return connectionConfigs;
-  }
+  private static final Logger logger = LogService.getLogger();
+  private final Map<String, RegionMapping> mappingsByRegion =
+      new ConcurrentHashMap<>();
 
   @Override
   public Set<RegionMapping> getRegionMappings() {
@@ -86,27 +52,121 @@ public class JdbcConnectorServiceImpl implements JdbcConnectorService {
   }
 
   @Override
-  public void createRegionMapping(RegionMapping mapping) throws RegionMappingExistsException {
-    registerAsExtension();
-    RegionMapping existing = mappingsByRegion.putIfAbsent(mapping.getRegionName(), mapping);
+  public void createRegionMapping(RegionMapping mapping)
+      throws RegionMappingExistsException {
+    RegionMapping existing =
+        mappingsByRegion.putIfAbsent(mapping.getRegionName(), mapping);
     if (existing != null) {
       throw new RegionMappingExistsException(
-          "RegionMapping for region " + mapping.getRegionName() + " exists");
+          "JDBC mapping for region " + mapping.getRegionName() + " exists");
     }
   }
 
   @Override
   public void replaceRegionMapping(RegionMapping alteredMapping)
       throws RegionMappingNotFoundException {
-    registerAsExtension();
-    RegionMapping existingMapping = mappingsByRegion.get(alteredMapping.getRegionName());
+    RegionMapping existingMapping =
+        mappingsByRegion.get(alteredMapping.getRegionName());
     if (existingMapping == null) {
       throw new RegionMappingNotFoundException(
-          "RegionMapping for region " + existingMapping.getRegionName() + " was not found");
+          "JDBC mapping for the region " + alteredMapping.getRegionName() + " was not found");
     }
 
     mappingsByRegion.put(existingMapping.getRegionName(), alteredMapping);
   }
+
+  @Override
+  public boolean isMappingSynchronous(String regionName, Cache cache) {
+    Region<?, ?> region = cache.getRegion(regionName);
+    if (region == null) {
+      throw new IllegalStateException("Region for mapping could not be found.");
+    }
+
+    // If our region has a Jdbc Writer set as the cache writer then we know it is syncronous
+    return region.getAttributes().getCacheWriter() != null
+        && region.getAttributes().getCacheWriter() instanceof JdbcWriter;
+  }
+
+  @Override
+  public void validateMapping(RegionMapping regionMapping) {
+
+    DataSource dataSource = getDataSource(regionMapping.getDataSourceName());
+    if (dataSource == null) {
+      throw new JdbcConnectorException("No datasource \"" + regionMapping.getDataSourceName()
+          + "\" found when creating mapping \"" + regionMapping.getRegionName() + "\"");
+    }
+    validateMapping(regionMapping, dataSource);
+  }
+
+  @Override
+  public void validateMapping(RegionMapping regionMapping, DataSource dataSource) {
+    TableMetaDataView metaDataView = getTableMetaDataView(regionMapping, dataSource);
+    boolean foundDifference = false;
+
+    if (regionMapping.getFieldMappings().size() != metaDataView.getColumnNames().size()) {
+      foundDifference = true;
+    } else {
+      for (FieldMapping fieldMapping : regionMapping.getFieldMappings()) {
+        String jdbcName = fieldMapping.getJdbcName();
+        if (!metaDataView.getColumnNames().contains(jdbcName)) {
+          foundDifference = true;
+          break;
+        }
+        if (!metaDataView.getColumnDataType(jdbcName).getName()
+            .equals(fieldMapping.getJdbcType())) {
+          foundDifference = true;
+          break;
+        }
+        if (metaDataView.isColumnNullable(jdbcName) != fieldMapping.isJdbcNullable()) {
+          foundDifference = true;
+          break;
+        }
+      }
+    }
+
+    if (!foundDifference) {
+      if (!regionMapping.getSpecifiedIds()
+          && !regionMapping.getIds().equals(String.join(",", metaDataView.getKeyColumnNames()))) {
+        foundDifference = true;
+      }
+    }
+
+    if (foundDifference) {
+      StringBuilder sb = new StringBuilder();
+      sb.append(
+          "Error detected when comparing mapping for region \"" + regionMapping.getRegionName()
+              + "\" with table definition: \n");
+
+      if (!regionMapping.getSpecifiedIds()) {
+        sb.append("\nId fields in Field Mappings: " + regionMapping.getIds());
+        sb.append(
+            "\nId fields in Table MetaData: " + String.join(",", metaDataView.getKeyColumnNames()));
+      }
+
+      sb.append("\n\nDefinition from Field Mappings (" + regionMapping.getFieldMappings().size()
+          + " field mappings found):");
+
+      for (FieldMapping fieldMapping : regionMapping.getFieldMappings()) {
+        sb.append("\n" + fieldMapping.getJdbcName() + " - " + fieldMapping.getJdbcType());
+      }
+
+      sb.append("\n\nDefinition from Table Metadata (" + metaDataView.getColumnNames().size()
+          + " columns found):");
+
+      for (String name : metaDataView.getColumnNames()) {
+        sb.append("\n" + name + " - " + metaDataView.getColumnDataType(name));
+      }
+
+      sb.append("\n\nDestroy and recreate the JDBC mapping for \"" + regionMapping.getRegionName()
+          + "\" to resolve this error.");
+
+      logger.error(sb.toString());
+
+      throw new JdbcConnectorException("Jdbc mapping for \"" + regionMapping.getRegionName()
+          + "\" does not match table definition, check logs for more details.");
+    }
+  }
+
 
   @Override
   public RegionMapping getMappingForRegion(String regionName) {
@@ -115,20 +175,7 @@ public class JdbcConnectorServiceImpl implements JdbcConnectorService {
 
   @Override
   public void destroyRegionMapping(String regionName) {
-    registerAsExtension();
     mappingsByRegion.remove(regionName);
-  }
-
-  @Override
-  public void init(Cache cache) {
-    this.cache = (InternalCache) cache;
-  }
-
-  private synchronized void registerAsExtension() {
-    if (!registered) {
-      cache.getExtensionPoint().addExtension(this);
-      registered = true;
-    }
   }
 
   @Override
@@ -141,19 +188,26 @@ public class JdbcConnectorServiceImpl implements JdbcConnectorService {
     return null;
   }
 
-  @Override
-  public XmlGenerator<Cache> getXmlGenerator() {
-    return new JdbcConnectorServiceXmlGenerator(connectionsByName.values(),
-        mappingsByRegion.values());
+
+  // The following helper method is to allow for proper mocking in unit tests
+  DataSource getDataSource(String dataSourceName) {
+    return JNDIInvoker.getDataSource(dataSourceName);
   }
 
-  @Override
-  public void beforeCreate(Extensible<Cache> source, Cache cache) {
-    // nothing
+  // The following helper method is to allow for proper mocking in unit tests
+  TableMetaDataManager getTableMetaDataManager() {
+    return new TableMetaDataManager();
   }
 
-  @Override
-  public void onCreate(Extensible<Cache> source, Extensible<Cache> target) {
-    // nothing
+  private TableMetaDataView getTableMetaDataView(RegionMapping regionMapping,
+      DataSource dataSource) {
+    TableMetaDataManager manager = getTableMetaDataManager();
+    try (Connection connection = dataSource.getConnection()) {
+      return manager.getTableMetaDataView(connection, regionMapping);
+    } catch (SQLException ex) {
+      throw JdbcConnectorException
+          .createException("Exception thrown while connecting to datasource \""
+              + regionMapping.getDataSourceName() + "\": ", ex);
+    }
   }
 }

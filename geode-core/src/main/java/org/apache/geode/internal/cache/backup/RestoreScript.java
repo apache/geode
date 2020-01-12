@@ -35,7 +35,7 @@ import org.apache.geode.internal.lang.SystemUtils;
  * <p>
  * It generates either a restore.sh for unix or a restore.bat for windows.
  */
-public class RestoreScript {
+class RestoreScript {
 
   static final String INCREMENTAL_MARKER_COMMENT =
       "Incremental backup.  Restore baseline originals from previous backups.";
@@ -57,7 +57,7 @@ public class RestoreScript {
   private final Map<File, File> backedUpFiles = new LinkedHashMap<>();
   private final List<File> existenceTests = new ArrayList<>();
 
-  public RestoreScript() {
+  RestoreScript() {
     this(SystemUtils.isWindows() ? new WindowsScriptGenerator() : new UnixScriptGenerator());
   }
 
@@ -65,23 +65,23 @@ public class RestoreScript {
     this.generator = generator;
   }
 
-  public void addBaselineFiles(final Map<File, File> baselineFiles) {
+  void addBaselineFiles(final Map<File, File> baselineFiles) {
     this.baselineFiles.putAll(baselineFiles);
   }
 
-  public void addBaselineFile(File baseline, File absoluteFile) {
-    this.baselineFiles.put(baseline, absoluteFile);
+  void addBaselineFile(File baseline, File absoluteFile) {
+    baselineFiles.put(baseline, absoluteFile);
   }
 
   public void addFile(final File originalFile, final File backupFile) {
     backedUpFiles.put(backupFile, originalFile.getAbsoluteFile());
   }
 
-  public void addExistenceTest(final File originalFile) {
+  void addExistenceTest(final File originalFile) {
     existenceTests.add(originalFile.getAbsoluteFile());
   }
 
-  public File generate(final File outputDir) throws IOException {
+  File generate(final File outputDir) throws IOException {
     File outputFile = new File(outputDir, generator.getScriptName());
     try (BufferedWriter writer = Files.newBufferedWriter(outputFile.toPath())) {
 
@@ -137,18 +137,18 @@ public class RestoreScript {
   private void writeIncrementalData(BufferedWriter writer) throws IOException {
     // Write out baseline file copies in restore script (if there are any) if this is a restore
     // for an incremental backup
-    if (this.baselineFiles.isEmpty()) {
+    if (baselineFiles.isEmpty()) {
       return;
     }
 
     writer.newLine();
     generator.writeComment(writer, INCREMENTAL_MARKER_COMMENT);
-    for (Map.Entry<File, File> entry : this.baselineFiles.entrySet()) {
+    for (Map.Entry<File, File> entry : baselineFiles.entrySet()) {
       generator.writeCopyFile(writer, entry.getKey(), entry.getValue());
     }
   }
 
-  public void addUserFile(File original, File dest) {
+  void addUserFile(File original, File dest) {
     addExistenceTest(original);
     addFile(original, dest);
   }

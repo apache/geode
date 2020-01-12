@@ -24,11 +24,6 @@ When you determine buffer size settings, you try to strike a balance between com
 This table lists the settings for gateway relationships and protocols, and tells where to set them.
 
 <table>
-<colgroup>
-<col width="33%" />
-<col width="33%" />
-<col width="33%" />
-</colgroup>
 <thead>
 <tr class="header">
 <th>Protocol / Area Affected</th>
@@ -37,18 +32,18 @@ This table lists the settings for gateway relationships and protocols, and tells
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td><strong>TCP / IP</strong></td>
 <td>---</td>
 <td>---</td>
 </tr>
-<tr class="even">
+<tr>
 <td>Gateway sender</td>
 <td><code class="ph codeph">gfsh create gateway-sender</code> or
 <p>cache.xml &lt;gateway-sender&gt;</p></td>
-<td>socket-buffer-size</td>
+<td>socket&#8209;buffer&#8209;size</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>Gateway receiver</td>
 <td><code class="ph codeph">gfsh create gateway-receiver</code> or cache.xml &lt;gateway-receiver&gt;</td>
 <td>socket-buffer-size</td>
@@ -96,22 +91,22 @@ Each gateway sender and gateway receiver uses a socket to distribute events or t
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td><p>Listener for incoming connections</p></td>
 <td><p>summation of the number of gateway-receivers defined for the member</p></td>
 </tr>
-<tr class="even">
+<tr>
 <td><p>Incoming connection</p></td>
 <td><p>summation of the total number of remote gateway senders configured to connect to the gateway receiver</p></td>
 </tr>
-<tr class="odd">
+<tr>
 <td><p>Outgoing connection</p></td>
 <td><p>summation of the number of gateway senders defined for the member</p></td>
 </tr>
 </tbody>
 </table>
 
-Servers are peers in their own distributed systems and have the additional socket requirements as noted in the Peer-to-Peer section above.
+Servers are peers in their own clusters and have the additional socket requirements as noted in the Peer-to-Peer section above.
 
 ## <a id="socket_comm__section_66D11C8E84F941B58800EDB52194B087" class="no-quick-link"></a>Member produces SocketTimeoutException
 

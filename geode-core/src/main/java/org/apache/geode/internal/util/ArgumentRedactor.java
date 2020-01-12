@@ -15,22 +15,27 @@
 
 package org.apache.geode.internal.util;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.DistributionConfig;
 
 public class ArgumentRedactor {
   public static final String redacted = "********";
 
-  // All taboo words should be entirely lowercase.
-  private static final List<String> tabooToContain = ArrayUtils.asList("password");
+  @Immutable
+  private static final List<String> tabooToContain =
+      Collections.unmodifiableList(ArrayUtils.asList("password"));
+  @Immutable
   private static final List<String> tabooForOptionToStartWith =
-      ArrayUtils.asList(DistributionConfig.SYS_PROP_NAME, DistributionConfig.SSL_SYSTEM_PROPS_NAME,
-          ConfigurationProperties.SECURITY_PREFIX);
+      Collections.unmodifiableList(ArrayUtils.asList(DistributionConfig.SYS_PROP_NAME,
+          DistributionConfig.SSL_SYSTEM_PROPS_NAME,
+          ConfigurationProperties.SECURITY_PREFIX));
 
   private static final Pattern optionWithArgumentPattern = getOptionWithArgumentPattern();
 
@@ -185,7 +190,7 @@ public class ArgumentRedactor {
   /**
    * Determine whether a option's argument should be redacted.
    *
-   * @param option The option option in question.
+   * @param option The option in question.
    *
    * @return true if the value should be redacted, otherwise false.
    */

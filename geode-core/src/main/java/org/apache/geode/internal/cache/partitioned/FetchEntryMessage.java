@@ -46,9 +46,10 @@ import org.apache.geode.internal.cache.KeyInfo;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.internal.cache.PrimaryBucketException;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * This message is used as the request for a
@@ -98,14 +99,14 @@ public class FetchEntryMessage extends PartitionMessage {
     Set failures = r.getDistributionManager().putOutgoing(m);
     if (failures != null && failures.size() > 0) {
       throw new ForceReattemptException(
-          LocalizedStrings.FetchEntryMessage_FAILED_SENDING_0.toLocalizedString(m));
+          String.format("Failed sending < %s >", m));
     }
 
     return p;
   }
 
   public FetchEntryMessage(DataInput in) throws IOException, ClassNotFoundException {
-    fromData(in);
+    fromData(in, InternalDataSerializer.createDeserializationContext(in));
   }
 
   @Override
@@ -134,12 +135,11 @@ public class FetchEntryMessage extends PartitionMessage {
       } catch (PRLocallyDestroyedException pde) {
         FetchEntryReplyMessage.send(getSender(), getProcessorId(), null, dm,
             new ReplyException(new ForceReattemptException(
-                LocalizedStrings.FetchEntryMessage_ENCOUNTERED_PRLOCALLYDESTROYED
-                    .toLocalizedString(),
+                "Encountered PRLocallyDestroyed",
                 pde)));
       } catch (EntryNotFoundException enfe) {
         FetchEntryReplyMessage.send(getSender(), getProcessorId(), null, dm, new ReplyException(
-            LocalizedStrings.FetchEntryMessage_ENTRY_NOT_FOUND.toLocalizedString(), enfe));
+            "entry not found", enfe));
       } catch (PrimaryBucketException pbe) {
         FetchEntryReplyMessage.send(getSender(), getProcessorId(), null, dm,
             new ReplyException(pbe));
@@ -153,8 +153,7 @@ public class FetchEntryMessage extends PartitionMessage {
       }
     } else {
       throw new InternalGemFireError(
-          LocalizedStrings.FetchEntryMessage_FETCHENTRYMESSAGE_MESSAGE_SENT_TO_WRONG_MEMBER
-              .toLocalizedString());
+          "FetchEntryMessage message sent to wrong member");
     }
 
     // Unless there was an exception thrown, this message handles sending the
@@ -173,25 +172,29 @@ public class FetchEntryMessage extends PartitionMessage {
     buff.append("; key=").append(this.key);
   }
 
+  @Override
   public int getDSFID() {
     return PR_FETCH_ENTRY_MESSAGE;
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.key = DataSerializer.readObject(in);
   }
 
   @Override
-  protected void setBooleans(short s, DataInput in) throws IOException, ClassNotFoundException {
-    super.setBooleans(s, in);
+  protected void setBooleans(short s, DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.setBooleans(s, in, context);
     this.access = ((s & HAS_ACCESS) != 0);
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     DataSerializer.writeObject(this.key, out);
   }
 
@@ -222,7 +225,7 @@ public class FetchEntryMessage extends PartitionMessage {
     public FetchEntryReplyMessage() {}
 
     public FetchEntryReplyMessage(DataInput in) throws IOException, ClassNotFoundException {
-      fromData(in);
+      fromData(in, InternalDataSerializer.createDeserializationContext(in));
     }
 
     private FetchEntryReplyMessage(int processorId, EntrySnapshot value, ReplyException re) {
@@ -248,22 +251,22 @@ public class FetchEntryMessage extends PartitionMessage {
     @Override
     public void process(final DistributionManager dm, final ReplyProcessor21 processor) {
       final long startTime = getTimestamp();
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM,
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE,
             "FetchEntryReplyMessage process invoking reply processor with processorId: {}",
             this.processorId);
       }
 
       if (processor == null) {
-        if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.trace(LogMarker.DM, "FetchEntryReplyMessage processor not found");
+        if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+          logger.trace(LogMarker.DM_VERBOSE, "FetchEntryReplyMessage processor not found");
         }
         return;
       }
       processor.process(this);
 
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.debug("{} processed {}", processor, this);
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE, "{} processed {}", processor, this);
       }
       dm.getStats().incReplyMessageTime(NanoTimer.getTime() - startTime);
     }
@@ -273,8 +276,9 @@ public class FetchEntryMessage extends PartitionMessage {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       if (this.value == null) {
         out.writeBoolean(true); // null entry
       } else {
@@ -289,8 +293,9 @@ public class FetchEntryMessage extends PartitionMessage {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       boolean nullEntry = in.readBoolean();
       if (!nullEntry) {
         // since the Entry object shares state with the PartitionedRegion,
@@ -337,8 +342,9 @@ public class FetchEntryMessage extends PartitionMessage {
         if (msg instanceof FetchEntryReplyMessage) {
           FetchEntryReplyMessage reply = (FetchEntryReplyMessage) msg;
           this.returnValue = reply.getValue();
-          if (logger.isTraceEnabled(LogMarker.DM)) {
-            logger.trace(LogMarker.DM, "FetchEntryResponse return value is {}", this.returnValue);
+          if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+            logger.trace(LogMarker.DM_VERBOSE, "FetchEntryResponse return value is {}",
+                this.returnValue);
           }
         }
       } finally {
@@ -358,15 +364,12 @@ public class FetchEntryMessage extends PartitionMessage {
         final String msg = "FetchEntryResponse got remote ForceReattemptException; rethrowing";
         logger.debug(msg, e);
         throw e;
-      } catch (EntryNotFoundException e) {
-        throw e;
-      } catch (TransactionException e) {
+      } catch (EntryNotFoundException | TransactionException e) {
         throw e;
       } catch (CacheException ce) {
         logger.debug("FetchEntryResponse got remote CacheException; forcing reattempt.", ce);
         throw new ForceReattemptException(
-            LocalizedStrings.FetchEntryMessage_FETCHENTRYRESPONSE_GOT_REMOTE_CACHEEXCEPTION_FORCING_REATTEMPT
-                .toLocalizedString(),
+            "FetchEntryResponse got remote CacheException; forcing reattempt.",
             ce);
       }
       return this.returnValue;

@@ -48,14 +48,11 @@ import org.apache.geode.test.junit.rules.serializable.SerializableExternalResour
 @SuppressWarnings({"serial", "unused"})
 public class UseJacksonForJsonPathRule extends SerializableExternalResource {
 
-  private boolean hadDefaults;
+  private boolean restoreDefaults;
   private JsonProvider jsonProvider;
   private MappingProvider mappingProvider;
   private Set<Option> options;
 
-  /**
-   * Override to set up your specific external resource.
-   */
   @Override
   public void before() {
     saveDefaults();
@@ -82,30 +79,26 @@ public class UseJacksonForJsonPathRule extends SerializableExternalResource {
     });
   }
 
-  /**
-   * Override to tear down your specific external resource.
-   */
   @Override
   public void after() {
-    restoreDefaults();
+    if (restoreDefaults) {
+      restoreDefaults();
+    }
   }
 
   private void saveDefaults() {
     try {
       Configuration defaultConfiguration = Configuration.defaultConfiguration();
-      this.jsonProvider = defaultConfiguration.jsonProvider();
-      this.mappingProvider = defaultConfiguration.mappingProvider();
-      this.options = defaultConfiguration.getOptions();
-      this.hadDefaults = true;
+      jsonProvider = defaultConfiguration.jsonProvider();
+      mappingProvider = defaultConfiguration.mappingProvider();
+      options = defaultConfiguration.getOptions();
+      restoreDefaults = true;
     } catch (NoClassDefFoundError ignore) {
-      this.hadDefaults = false;
+      restoreDefaults = false;
     }
   }
 
   private void restoreDefaults() {
-    if (!this.hadDefaults) {
-      return;
-    }
     Configuration.setDefaults(new Defaults() {
 
       @Override

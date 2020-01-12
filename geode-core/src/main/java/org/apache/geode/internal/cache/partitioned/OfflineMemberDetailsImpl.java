@@ -25,9 +25,6 @@ import org.apache.geode.DataSerializable;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 
-/**
- *
- */
 public class OfflineMemberDetailsImpl
     implements OfflineMemberDetails, Serializable, DataSerializable {
   private Set<PersistentMemberID>[] offlineMembers;
@@ -43,12 +40,14 @@ public class OfflineMemberDetailsImpl
 
 
 
+  @Override
   public Set<PersistentMemberID> getOfflineMembers(int bucketId) {
     return offlineMembers[bucketId];
   }
 
 
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     int offlineMembersLength = in.readInt();
     this.offlineMembers = new Set[offlineMembersLength];
@@ -65,6 +64,7 @@ public class OfflineMemberDetailsImpl
   }
 
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     out.writeInt(offlineMembers.length);
     for (Set<PersistentMemberID> set : offlineMembers) {

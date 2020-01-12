@@ -19,7 +19,8 @@
  */
 package org.apache.geode.internal.cache.xmlcache;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 
 /**
  * This class represents the data given for binding a DataSource to JNDI tree. It encapsulates to
@@ -41,7 +42,6 @@ public class BindingCreation {
   /**
    * This function returns the VendorSpecific data Map
    *
-   * @return List
    */
   List getVendorSpecificList() {
     return this.vendorSpecificList;
@@ -50,7 +50,6 @@ public class BindingCreation {
   /**
    * This function returns the Gemfire Specific data Map
    *
-   * @return Map
    */
   Map getGFSpecificMap() {
     return this.gfSpecific;

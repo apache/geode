@@ -154,11 +154,11 @@ function executeDBQuery(){
         if(!isEmpty($('#memberAccordion').html())){
           populateResultGrids();
         }
-        // Update queries list in history panel
-        updateQueryHistory("view","");
         //$('.queryHistoryScroll-pane').jScrollPane();/*Custome scroll*/
         
       }
+      // Update queries list in history panel
+      updateQueryHistory("view","");
     }
     
     // Hide Loading/Busy symbol

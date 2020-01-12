@@ -14,12 +14,16 @@
  */
 package org.apache.geode.sequence;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Rectangle;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import javax.swing.*;
+import javax.swing.JComponent;
 
 /**
  * Created by IntelliJ IDEA. User: dsmith Date: Oct 29, 2010 Time: 5:24:54 PM To change this
@@ -49,6 +53,7 @@ public class TimeAxis extends JComponent {
     setPreferredSize(new Dimension(pw, SIZE));
   }
 
+  @Override
   protected void paintComponent(Graphics g) {
     Rectangle drawHere = g.getClipBounds();
 

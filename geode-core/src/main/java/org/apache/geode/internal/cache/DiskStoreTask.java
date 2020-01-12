@@ -14,9 +14,6 @@
  */
 package org.apache.geode.internal.cache;
 
-/**
- *
- */
 public interface DiskStoreTask extends Runnable {
 
   void taskCancelled();

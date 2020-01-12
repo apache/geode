@@ -21,11 +21,8 @@ import java.io.IOException;
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.Version;
 
-/**
- *
- */
 public class ObjectTraverserPerf {
 
   private static final int ITERATIONS = 1000;
@@ -79,11 +76,13 @@ public class ObjectTraverserPerf {
       this.field4 = field4;
     }
 
+    @Override
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       throw new UnsupportedOperationException("Don't need this method for the test");
 
     }
 
+    @Override
     public void toData(DataOutput out) throws IOException {
       out.write(field1);
       out.write(field2);

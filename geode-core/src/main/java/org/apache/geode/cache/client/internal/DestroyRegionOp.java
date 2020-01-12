@@ -65,7 +65,7 @@ public class DestroyRegionOp {
      */
     public DestroyRegionOpImpl(String region, EventID eventId, Object callbackArg) {
       super(MessageType.DESTROY_REGION, callbackArg != null ? 3 : 2);
-      getMessage().addStringPart(region);
+      getMessage().addStringPart(region, true);
       getMessage().addBytesPart(eventId.calcBytes());
       if (callbackArg != null) {
         getMessage().addObjPart(callbackArg);

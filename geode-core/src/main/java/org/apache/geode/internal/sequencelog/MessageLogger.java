@@ -14,14 +14,13 @@
  */
 package org.apache.geode.internal.sequencelog;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
-/**
- *
- */
 public class MessageLogger {
 
+  @Immutable
   public static final SequenceLogger LOGGER = SequenceLoggerImpl.getInstance();
 
   public static boolean isEnabled() {

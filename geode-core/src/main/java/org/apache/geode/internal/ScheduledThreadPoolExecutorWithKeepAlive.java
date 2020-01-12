@@ -29,6 +29,8 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
+
 /**
  * A ScheduledThreadPoolExecutor which allows threads to time out after the keep alive time. With
  * the normal ScheduledThreadPoolExecutor, there is no way to configure it such that it only add
@@ -45,13 +47,10 @@ public class ScheduledThreadPoolExecutorWithKeepAlive extends ThreadPoolExecutor
     implements ScheduledExecutorService {
 
   private final ScheduledThreadPoolExecutor timer;
+  private final ThreadsMonitoring threadMonitoring;
 
-  /**
-   * @param corePoolSize
-   * @param threadFactory
-   */
   public ScheduledThreadPoolExecutorWithKeepAlive(int corePoolSize, long keepAlive,
-      TimeUnit timeUnit, ThreadFactory threadFactory) {
+      TimeUnit timeUnit, ThreadFactory threadFactory, ThreadsMonitoring tMonitoring) {
     super(0, corePoolSize - 1, keepAlive, timeUnit, new SynchronousQueue(), threadFactory,
         new BlockCallerPolicy());
     timer = new ScheduledThreadPoolExecutor(1, threadFactory) {
@@ -63,11 +62,26 @@ public class ScheduledThreadPoolExecutorWithKeepAlive extends ThreadPoolExecutor
       }
 
     };
+    this.threadMonitoring = tMonitoring;
   }
 
   @Override
   public void execute(Runnable command) {
     timer.execute(new HandOffTask(command));
+  }
+
+  @Override
+  protected void beforeExecute(Thread t, Runnable r) {
+    if (this.threadMonitoring != null) {
+      threadMonitoring.startMonitor(ThreadsMonitoring.Mode.ScheduledThreadExecutor);
+    }
+  }
+
+  @Override
+  protected void afterExecute(Runnable r, Throwable ex) {
+    if (this.threadMonitoring != null) {
+      threadMonitoring.endMonitor();
+    }
   }
 
   @Override
@@ -85,6 +99,7 @@ public class ScheduledThreadPoolExecutorWithKeepAlive extends ThreadPoolExecutor
     return schedule(task, 0, TimeUnit.NANOSECONDS);
   }
 
+  @Override
   public ScheduledFuture schedule(Callable callable, long delay, TimeUnit unit) {
     DelegatingScheduledFuture future = new DelegatingScheduledFuture(callable);
     ScheduledFuture timerFuture = timer.schedule(new HandOffTask(future), delay, unit);
@@ -92,6 +107,7 @@ public class ScheduledThreadPoolExecutorWithKeepAlive extends ThreadPoolExecutor
     return future;
   }
 
+  @Override
   public ScheduledFuture schedule(Runnable command, long delay, TimeUnit unit) {
     return schedule(command, delay, unit, null);
   }
@@ -103,6 +119,7 @@ public class ScheduledThreadPoolExecutorWithKeepAlive extends ThreadPoolExecutor
     return future;
   }
 
+  @Override
   public ScheduledFuture scheduleAtFixedRate(Runnable command, long initialDelay, long period,
       TimeUnit unit) {
     DelegatingScheduledFuture future = new DelegatingScheduledFuture(command, null, true);
@@ -112,6 +129,7 @@ public class ScheduledThreadPoolExecutorWithKeepAlive extends ThreadPoolExecutor
     return future;
   }
 
+  @Override
   public ScheduledFuture scheduleWithFixedDelay(Runnable command, long initialDelay, long delay,
       TimeUnit unit) {
     DelegatingScheduledFuture future = new DelegatingScheduledFuture(command, null, true);
@@ -211,6 +229,7 @@ public class ScheduledThreadPoolExecutorWithKeepAlive extends ThreadPoolExecutor
       this.task = task;
     }
 
+    @Override
     public void run() {
       try {
         ScheduledThreadPoolExecutorWithKeepAlive.super.execute(task);
@@ -270,10 +289,12 @@ public class ScheduledThreadPoolExecutorWithKeepAlive extends ThreadPoolExecutor
       return super.cancel(mayInterruptIfRunning);
     }
 
+    @Override
     public long getDelay(TimeUnit unit) {
       return delegate.getDelay(unit);
     }
 
+    @Override
     public int compareTo(Delayed o) {
       return delegate.compareTo(o);
     }
@@ -294,6 +315,7 @@ public class ScheduledThreadPoolExecutorWithKeepAlive extends ThreadPoolExecutor
    * for the task.
    */
   protected static class BlockCallerPolicy implements RejectedExecutionHandler {
+    @Override
     public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
       if (executor.isShutdown()) {
         throw new RejectedExecutionException("executor has been shutdown");

@@ -12,15 +12,14 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.modules.util;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
 
-import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.ExpirationAction;
@@ -34,21 +33,20 @@ import org.apache.geode.cache.control.RebalanceResults;
 import org.apache.geode.cache.control.ResourceManager;
 import org.apache.geode.cache.partition.PartitionMemberInfo;
 import org.apache.geode.cache.partition.PartitionRebalanceInfo;
-import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
 import org.apache.geode.modules.gatewaydelta.GatewayDeltaForwarderCacheListener;
 import org.apache.geode.modules.session.catalina.callback.SessionExpirationCacheListener;
 
-@SuppressWarnings({"deprecation", "unchecked"})
 public class RegionHelper {
-
   public static final String NAME = "gemfire_modules";
 
   public static Region createRegion(Cache cache, RegionConfiguration configuration) {
     // Use the createRegion method so that the RegionAttributes creation can be reused by validate.
     RegionAttributes requestedRegionAttributes = getRegionAttributes(cache, configuration);
-    Region region = cache.createRegion(configuration.getRegionName(), requestedRegionAttributes);
+    @SuppressWarnings("unchecked")
+    Region region =
+        cache.createRegionFactory(requestedRegionAttributes).create(configuration.getRegionName());
 
     // Log the cache xml if debugging is enabled. I'd like to be able to just
     // log the region, but that API is not available.
@@ -76,28 +74,6 @@ public class RegionHelper {
     existingRACreation.sameAs(requestedRegionAttributes);
   }
 
-  public static RebalanceResults rebalanceRegion(Region region)
-      throws CancellationException, InterruptedException {
-    String regionName = region.getName(); // FilterByName only looks at name and not full path
-    if (!PartitionRegionHelper.isPartitionedRegion(region)) {
-      StringBuilder builder = new StringBuilder();
-      builder.append("Region ").append(regionName).append(" is not partitioned. Instead, it is ")
-          .append(region.getAttributes().getDataPolicy()).append(". It can't be rebalanced.");
-      throw new IllegalArgumentException(builder.toString());
-    }
-
-    // Rebalance the region
-    ResourceManager resourceManager = region.getCache().getResourceManager();
-    RebalanceFactory rebalanceFactory = resourceManager.createRebalanceFactory();
-    Set<String> regionsToRebalance = new HashSet<String>();
-    regionsToRebalance.add(regionName);
-    rebalanceFactory.includeRegions(regionsToRebalance);
-    RebalanceOperation rebalanceOperation = rebalanceFactory.start();
-
-    // Return the results
-    return rebalanceOperation.getResults();
-  }
-
   public static RebalanceResults rebalanceCache(GemFireCache cache)
       throws CancellationException, InterruptedException {
     ResourceManager resourceManager = cache.getResourceManager();
@@ -110,7 +86,7 @@ public class RegionHelper {
     try {
       StringWriter sw = new StringWriter();
       PrintWriter pw = new PrintWriter(sw, true);
-      CacheXmlGenerator.generate(cache, pw);
+      CacheXmlGenerator.generate(cache, pw, false);
       pw.close();
       return sw.toString();
     } catch (Exception ex) {
@@ -118,33 +94,36 @@ public class RegionHelper {
     }
   }
 
-  private static RegionAttributes getRegionAttributes(Cache cache,
-      RegionConfiguration configuration) {
+  static RegionAttributes getRegionAttributes(Cache cache, RegionConfiguration configuration) {
     // Create the requested attributes
     RegionAttributes baseRequestedAttributes =
         cache.getRegionAttributes(configuration.getRegionAttributesId());
+
     if (baseRequestedAttributes == null) {
       throw new IllegalArgumentException(
           "No region attributes named " + configuration.getRegionAttributesId() + " are defined.");
     }
-    AttributesFactory requestedFactory = new AttributesFactory(baseRequestedAttributes);
+
+    RegionAttributesCreation requestedAttributes =
+        new RegionAttributesCreation(baseRequestedAttributes, false);
 
     // Set the expiration time and action if necessary
     int maxInactiveInterval = configuration.getMaxInactiveInterval();
     if (maxInactiveInterval != RegionConfiguration.DEFAULT_MAX_INACTIVE_INTERVAL) {
-      requestedFactory.setStatisticsEnabled(true);
+      requestedAttributes.setStatisticsEnabled(true);
+
       if (configuration.getCustomExpiry() == null) {
-        requestedFactory.setEntryIdleTimeout(
+        requestedAttributes.setEntryIdleTimeout(
             new ExpirationAttributes(maxInactiveInterval, ExpirationAction.DESTROY));
       } else {
-        requestedFactory.setCustomEntryIdleTimeout(configuration.getCustomExpiry());
+        requestedAttributes.setCustomEntryIdleTimeout(configuration.getCustomExpiry());
       }
     }
 
     // Add the gateway delta region cache listener if necessary
     if (configuration.getEnableGatewayDeltaReplication()) {
       // Add the listener that forwards created/destroyed deltas to the gateway
-      requestedFactory.addCacheListener(new GatewayDeltaForwarderCacheListener(cache));
+      requestedAttributes.addCacheListener(new GatewayDeltaForwarderCacheListener(cache));
     }
 
     // Enable gateway replication if necessary
@@ -153,11 +132,11 @@ public class RegionHelper {
 
     // Add the debug cache listener if necessary
     if (configuration.getEnableDebugListener()) {
-      requestedFactory.addCacheListener(new DebugCacheListener());
+      requestedAttributes.addCacheListener(new DebugCacheListener());
     }
 
     if (configuration.getSessionExpirationCacheListener()) {
-      requestedFactory.addCacheListener(new SessionExpirationCacheListener());
+      requestedAttributes.addCacheListener(new SessionExpirationCacheListener());
     }
 
     // Add the cacheWriter if necessary
@@ -165,16 +144,13 @@ public class RegionHelper {
       try {
         CacheWriter writer =
             (CacheWriter) Class.forName(configuration.getCacheWriterName()).newInstance();
-        requestedFactory.setCacheWriter(writer);
-      } catch (InstantiationException e) {
-        throw new RuntimeException("Could not set a cacheWriter for the region", e);
-      } catch (IllegalAccessException e) {
-        throw new RuntimeException("Could not set a cacheWriter for the region", e);
-      } catch (ClassNotFoundException e) {
+        requestedAttributes.setCacheWriter(writer);
+      } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
         throw new RuntimeException("Could not set a cacheWriter for the region", e);
       }
     }
-    return requestedFactory.create();
+
+    return requestedAttributes;
   }
 
   private RegionHelper() {}

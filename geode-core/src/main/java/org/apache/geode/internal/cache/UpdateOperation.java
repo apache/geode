@@ -37,10 +37,11 @@ import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.EntryEventImpl.NewValueImporter;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Handles distribution messaging for updating an entry in a region.
@@ -227,6 +228,7 @@ public class UpdateOperation extends AbstractUpdateOperation {
             updateMsg = new UpdateOperation.UpdateMessage((UpdateMessage) this);
           }
           Runnable sendMessage = new Runnable() {
+            @Override
             public void run() {
               synchronized (updateMsg) { // prevent concurrent update of
                 // recipient list
@@ -252,7 +254,7 @@ public class UpdateOperation extends AbstractUpdateOperation {
           if (processor.isExpectingDirectReply()) {
             sendMessage.run();
           } else {
-            dm.getWaitingThreadPool().execute(sendMessage);
+            dm.getExecutors().getWaitingThreadPool().execute(sendMessage);
           }
           return false;
         }
@@ -287,8 +289,8 @@ public class UpdateOperation extends AbstractUpdateOperation {
           break;
         default:
           throw new InternalGemFireError(
-              LocalizedStrings.UpdateOperation_UNKNOWN_DESERIALIZATION_POLICY_0
-                  .toLocalizedString(Byte.valueOf(deserializationPolicy)));
+              String.format("unknown deserialization policy: %s",
+                  Byte.valueOf(deserializationPolicy)));
       }
     }
 
@@ -339,13 +341,15 @@ public class UpdateOperation extends AbstractUpdateOperation {
       buff.append(deserializationPolicyToString(this.deserializationPolicy));
     }
 
+    @Override
     public int getDSFID() {
       return UPDATE_MESSAGE;
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       final byte extraFlags = in.readByte();
       final boolean hasEventId = (extraFlags & HAS_EVENTID) != 0;
       if (hasEventId) {
@@ -373,10 +377,11 @@ public class UpdateOperation extends AbstractUpdateOperation {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
       DistributedRegion region = (DistributedRegion) this.event.getRegion();
       setDeltaFlag(region);
-      super.toData(out);
+      super.toData(out, context);
 
       byte extraFlags = this.deserializationPolicy;
       if (this.eventId != null)
@@ -432,8 +437,7 @@ public class UpdateOperation extends AbstractUpdateOperation {
         setHasDelta(false);
       } catch (RuntimeException re) {
         throw new InvalidDeltaException(
-            LocalizedStrings.DistributionManager_CAUGHT_EXCEPTION_WHILE_SENDING_DELTA
-                .toLocalizedString(),
+            "Caught exception while sending delta. ",
             re);
       }
     }
@@ -530,14 +534,16 @@ public class UpdateOperation extends AbstractUpdateOperation {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.clientID = ClientProxyMembershipID.readCanonicalized(in);
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       DataSerializer.writeObject(this.clientID, out);
     }
   }

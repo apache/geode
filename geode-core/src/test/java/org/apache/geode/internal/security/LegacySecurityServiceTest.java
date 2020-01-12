@@ -18,11 +18,8 @@ package org.apache.geode.internal.security;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class LegacySecurityServiceTest {
   private LegacySecurityService service;
 

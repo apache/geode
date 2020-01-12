@@ -14,7 +14,17 @@
  */
 package org.apache.geode.cache.client.internal;
 
-import static org.junit.Assert.*;
+import static org.apache.geode.logging.internal.spi.LogWriterLevel.FINE;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,13 +51,13 @@ import org.apache.geode.cache.client.internal.pooling.ConnectionManager;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ServerQueueStatus;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LocalLogWriter;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category({UnitTest.class, ClientServerTest.class})
+@Category({ClientServerTest.class})
 public class OpExecutorImplJUnitTest {
 
   DummyManager manager;
@@ -67,7 +77,7 @@ public class OpExecutorImplJUnitTest {
 
   @Before
   public void setUp() {
-    this.logger = new LocalLogWriter(InternalLogWriter.FINEST_LEVEL, System.out);
+    this.logger = new LocalLogWriter(FINE.intLevel(), System.out);
     this.endpointManager = new DummyEndpointManager();
     this.queueManager = new DummyQueueManager();
     this.manager = new DummyManager();
@@ -89,16 +99,11 @@ public class OpExecutorImplJUnitTest {
   @Test
   public void testExecute() throws Exception {
     OpExecutorImpl exec = new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, 3,
-        10, false, cancelCriterion, null);
+        10, cancelCriterion, null);
     Object result = exec.execute(new Op() {
       @Override
       public Object attempt(Connection cnx) throws Exception {
         return "hello";
-      }
-
-      @Override
-      public boolean useThreadLocalConnection() {
-        return true;
       }
     });
     assertEquals("hello", result);
@@ -114,11 +119,6 @@ public class OpExecutorImplJUnitTest {
         @Override
         public Object attempt(Connection cnx) throws Exception {
           throw new SocketTimeoutException();
-        }
-
-        @Override
-        public boolean useThreadLocalConnection() {
-          return true;
         }
       });
       fail("Should have got an exception");
@@ -139,11 +139,6 @@ public class OpExecutorImplJUnitTest {
         public Object attempt(Connection cnx) throws Exception {
           throw new ServerOperationException("Something didn't work");
         }
-
-        @Override
-        public boolean useThreadLocalConnection() {
-          return true;
-        }
       });
       fail("Should have got an exception");
     } catch (ServerOperationException expected) {
@@ -161,11 +156,6 @@ public class OpExecutorImplJUnitTest {
         @Override
         public Object attempt(Connection cnx) throws Exception {
           throw new IOException("Something didn't work");
-        }
-
-        @Override
-        public boolean useThreadLocalConnection() {
-          return true;
         }
       });
       fail("Should have got an exception");
@@ -192,7 +182,7 @@ public class OpExecutorImplJUnitTest {
   @Test
   public void testExecuteOncePerServer() throws Exception {
     OpExecutorImpl exec = new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, -1,
-        10, false, cancelCriterion, null);
+        10, cancelCriterion, null);
 
     manager.numServers = 5;
     try {
@@ -200,11 +190,6 @@ public class OpExecutorImplJUnitTest {
         @Override
         public Object attempt(Connection cnx) throws Exception {
           throw new IOException("Something didn't work");
-        }
-
-        @Override
-        public boolean useThreadLocalConnection() {
-          return true;
         }
       });
       fail("Should have got an exception");
@@ -221,7 +206,7 @@ public class OpExecutorImplJUnitTest {
   @Test
   public void testRetryFailedServers() throws Exception {
     OpExecutorImpl exec = new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, 10,
-        10, false, cancelCriterion, null);
+        10, cancelCriterion, null);
 
     manager.numServers = 5;
     try {
@@ -229,11 +214,6 @@ public class OpExecutorImplJUnitTest {
         @Override
         public Object attempt(Connection cnx) throws Exception {
           throw new IOException("Something didn't work");
-        }
-
-        @Override
-        public boolean useThreadLocalConnection() {
-          return true;
         }
       });
       fail("Should have got an exception");
@@ -250,17 +230,12 @@ public class OpExecutorImplJUnitTest {
   @Test
   public void testExecuteOn() throws Exception {
     OpExecutorImpl exec = new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, 3,
-        10, false, cancelCriterion, null);
+        10, cancelCriterion, null);
     ServerLocation server = new ServerLocation("localhost", -1);
     Object result = exec.executeOn(server, new Op() {
       @Override
       public Object attempt(Connection cnx) throws Exception {
         return "hello";
-      }
-
-      @Override
-      public boolean useThreadLocalConnection() {
-        return true;
       }
     });
     assertEquals("hello", result);
@@ -276,11 +251,6 @@ public class OpExecutorImplJUnitTest {
         @Override
         public Object attempt(Connection cnx) throws Exception {
           throw new SocketTimeoutException();
-        }
-
-        @Override
-        public boolean useThreadLocalConnection() {
-          return true;
         }
       });
       fail("Should have got an exception");
@@ -299,11 +269,6 @@ public class OpExecutorImplJUnitTest {
         @Override
         public Object attempt(Connection cnx) throws Exception {
           throw new ServerOperationException("Something didn't work");
-        }
-
-        @Override
-        public boolean useThreadLocalConnection() {
-          return true;
         }
       });
       fail("Should have got an exception");
@@ -330,11 +295,6 @@ public class OpExecutorImplJUnitTest {
           public Object attempt(Connection cnx) throws Exception {
             throw new Exception("Something didn't work");
           }
-
-          @Override
-          public boolean useThreadLocalConnection() {
-            return true;
-          }
         });
         fail("Should have got an exception");
       } catch (ServerConnectivityException expected) {
@@ -352,16 +312,11 @@ public class OpExecutorImplJUnitTest {
   @Test
   public void testExecuteOnAllQueueServers() {
     OpExecutorImpl exec = new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, 3,
-        10, false, cancelCriterion, null);
+        10, cancelCriterion, null);
     exec.executeOnAllQueueServers(new Op() {
       @Override
       public Object attempt(Connection cnx) throws Exception {
         return "hello";
-      }
-
-      @Override
-      public boolean useThreadLocalConnection() {
-        return true;
       }
     });
     assertEquals(0, invalidateConnections);
@@ -376,11 +331,6 @@ public class OpExecutorImplJUnitTest {
       @Override
       public Object attempt(Connection cnx) throws Exception {
         throw new SocketTimeoutException();
-      }
-
-      @Override
-      public boolean useThreadLocalConnection() {
-        return true;
       }
     });
 
@@ -403,11 +353,6 @@ public class OpExecutorImplJUnitTest {
         }
         return "hello";
       }
-
-      @Override
-      public boolean useThreadLocalConnection() {
-        return true;
-      }
     });
 
     assertEquals("hello", result);
@@ -419,43 +364,77 @@ public class OpExecutorImplJUnitTest {
   }
 
   @Test
-  public void testThreadLocalConnection() {
-    OpExecutorImpl exec = new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, 3,
-        10, true, cancelCriterion, null);
-    ServerLocation server = new ServerLocation("localhost", -1);
-    Op op = new Op() {
-      @Override
-      public Object attempt(Connection cnx) throws Exception {
-        // do nothing
-        return cnx;
-      }
+  public void executeWithServerAffinityDoesNotChangeInitialRetryCountOfZero() {
+    OpExecutorImpl opExecutor =
+        new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, -1,
+            10, cancelCriterion, mock(PoolImpl.class));
+    Op txSynchronizationOp = mock(TXSynchronizationOp.Impl.class);
+    ServerLocation serverLocation = mock(ServerLocation.class);
+    opExecutor.setAffinityRetryCount(0);
 
-      @Override
-      public boolean useThreadLocalConnection() {
-        return true;
-      }
-    };
+    opExecutor.executeWithServerAffinity(serverLocation, txSynchronizationOp);
 
-    exec.execute(op);
-    assertEquals(1, borrows);
-    assertEquals(0, returns);
-    reset();
-    exec.execute(op);
-    assertEquals(0, borrows);
-    assertEquals(0, returns);
-    reset();
-    exec.executeOn(server, op);
-    assertEquals(1, borrows);
-    assertEquals(0, returns);
-    reset();
-    exec.executeOn(server, op);
-    assertEquals(0, borrows);
-    assertEquals(0, returns);
-    exec.execute(op);
-    reset();
-    assertEquals(0, borrows);
-    assertEquals(0, returns);
+    assertEquals(0, opExecutor.getAffinityRetryCount());
   }
+
+  @Test
+  public void executeWithServerAffinityWithNonZeroAffinityRetryCountWillNotSetToZero() {
+    OpExecutorImpl opExecutor =
+        new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, -1,
+            10, cancelCriterion, mock(PoolImpl.class));
+
+    Op txSynchronizationOp = mock(TXSynchronizationOp.Impl.class);
+    ServerLocation serverLocation = mock(ServerLocation.class);
+    opExecutor.setAffinityRetryCount(1);
+
+    opExecutor.executeWithServerAffinity(serverLocation, txSynchronizationOp);
+
+    assertNotEquals(0, opExecutor.getAffinityRetryCount());
+  }
+
+  @Test
+  public void executeWithServerAffinityWithServerConnectivityExceptionIncrementsRetryCountAndResetsToZero() {
+    OpExecutorImpl opExecutor =
+        spy(new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, -1,
+            10, cancelCriterion, mock(PoolImpl.class)));
+
+    Op txSynchronizationOp = mock(TXSynchronizationOp.Impl.class);
+    ServerLocation serverLocation = mock(ServerLocation.class);
+    ServerConnectivityException serverConnectivityException = new ServerConnectivityException();
+
+    doThrow(serverConnectivityException).when(opExecutor).executeOnServer(serverLocation,
+        txSynchronizationOp, true, false);
+    opExecutor.setupServerAffinity(true);
+    when(((AbstractOp) txSynchronizationOp).getMessage()).thenReturn(mock(Message.class));
+    opExecutor.setAffinityRetryCount(0);
+
+    opExecutor.executeWithServerAffinity(serverLocation, txSynchronizationOp);
+
+    verify(opExecutor, times(1)).setAffinityRetryCount(1);
+    assertEquals(0, opExecutor.getAffinityRetryCount());
+  }
+
+  @Test
+  public void executeWithServerAffinityAndRetryCountGreaterThansTxRetryAttemptThrowsServerConnectivityException() {
+    OpExecutorImpl opExecutor =
+        spy(new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, -1,
+            10, cancelCriterion, mock(PoolImpl.class)));
+
+    Op txSynchronizationOp = mock(TXSynchronizationOp.Impl.class);
+    ServerLocation serverLocation = mock(ServerLocation.class);
+    ServerConnectivityException serverConnectivityException = new ServerConnectivityException();
+
+    doThrow(serverConnectivityException).when(opExecutor).executeOnServer(serverLocation,
+        txSynchronizationOp, true, false);
+    opExecutor.setupServerAffinity(true);
+    when(((AbstractOp) txSynchronizationOp).getMessage()).thenReturn(mock(Message.class));
+    opExecutor.setAffinityRetryCount(opExecutor.TX_RETRY_ATTEMPT + 1);
+
+    assertThatThrownBy(
+        () -> opExecutor.executeWithServerAffinity(serverLocation, txSynchronizationOp))
+            .isSameAs(serverConnectivityException);
+  }
+
 
   private class DummyManager implements ConnectionManager {
 
@@ -473,15 +452,8 @@ public class OpExecutorImplJUnitTest {
       return new DummyConnection(new ServerLocation("localhost", currentServer++ % numServers));
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * org.apache.geode.cache.client.internal.pooling.ConnectionManager#borrowConnection(org.apache.
-     * geode.distributed.internal.ServerLocation, long)
-     */
     @Override
-    public Connection borrowConnection(ServerLocation server, long aquireTimeout,
+    public Connection borrowConnection(ServerLocation server,
         boolean onlyUseExistingCnx) {
       borrows++;
       return new DummyConnection(server);
@@ -506,7 +478,7 @@ public class OpExecutorImplJUnitTest {
     public void start(ScheduledExecutorService backgroundProcessor) {}
 
     @Override
-    public Connection exchangeConnection(Connection conn, Set excludedServers, long aquireTimeout) {
+    public Connection exchangeConnection(Connection conn, Set<ServerLocation> excludedServers) {
       if (excludedServers.size() >= numServers) {
         throw new NoAvailableServersException();
       }
@@ -518,17 +490,6 @@ public class OpExecutorImplJUnitTest {
     public int getConnectionCount() {
       return 0;
     }
-
-    @Override
-    public Connection getConnection(Connection conn) {
-      return conn;
-    }
-
-    @Override
-    public void activate(Connection conn) {}
-
-    @Override
-    public void passivate(Connection conn, boolean accessed) {}
   }
 
   private class DummyConnection implements Connection {
@@ -669,6 +630,7 @@ public class OpExecutorImplJUnitTest {
     int backups = 0;
     int currentServer = 0;
 
+    @Override
     public QueueConnections getAllConnectionsNoWait() {
       return getAllConnections();
     }

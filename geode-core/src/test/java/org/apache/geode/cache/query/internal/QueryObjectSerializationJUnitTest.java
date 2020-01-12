@@ -14,7 +14,7 @@
  */
 package org.apache.geode.cache.query.internal;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -29,20 +29,17 @@ import java.util.Collection;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.internal.cache.CachePerfStats;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Tests the Serialization of the Query related class.
  *
  * @since GemFire 3.0
  */
-@Category(UnitTest.class)
 public class QueryObjectSerializationJUnitTest implements Serializable {
 
   /** A <code>ByteArrayOutputStream</code> that data is serialized to */
@@ -135,28 +132,35 @@ public class QueryObjectSerializationJUnitTest implements Serializable {
   private static class SimpleObjectType implements ObjectType {
     public SimpleObjectType() {}
 
+    @Override
     public boolean isCollectionType() {
       return false;
     }
 
+    @Override
     public boolean isMapType() {
       return false;
     }
 
+    @Override
     public boolean isStructType() {
       return false;
     }
 
+    @Override
     public String getSimpleClassName() {
       return "java.lang.Object";
     }
 
+    @Override
     public Class resolveClass() {
       return Object.class;
     }
 
+    @Override
     public void toData(DataOutput out) {}
 
+    @Override
     public void fromData(DataInput in) {}
 
     public boolean equals(Object o) {

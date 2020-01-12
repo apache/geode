@@ -18,6 +18,8 @@ package org.apache.geode.rest.internal.web.security;
 
 import java.util.Properties;
 
+import javax.servlet.ServletContext;
+
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -25,33 +27,18 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.ServletContextAware;
 
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.cache.internal.HttpService;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.management.internal.security.ResourceConstants;
 import org.apache.geode.security.GemFireSecurityException;
 
 
 @Component
-public class GeodeAuthenticationProvider implements AuthenticationProvider {
+public class GeodeAuthenticationProvider implements AuthenticationProvider, ServletContextAware {
 
-  private final SecurityService securityService;
-
-  public GeodeAuthenticationProvider() {
-    // TODO: can we pass SecurityService in?
-    this.securityService = findSecurityService();
-  }
-
-  private static SecurityService findSecurityService() {
-    InternalCache cache = GemFireCacheImpl.getInstance();
-    if (cache != null) {
-      return cache.getSecurityService();
-    } else {
-      return SecurityServiceFactory.create();
-    }
-  }
+  private SecurityService securityService;
 
   public SecurityService getSecurityService() {
     return this.securityService;
@@ -79,5 +66,11 @@ public class GeodeAuthenticationProvider implements AuthenticationProvider {
   @Override
   public boolean supports(Class<?> authentication) {
     return authentication.isAssignableFrom(UsernamePasswordAuthenticationToken.class);
+  }
+
+  @Override
+  public void setServletContext(ServletContext servletContext) {
+    securityService = (SecurityService) servletContext
+        .getAttribute(HttpService.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM);
   }
 }

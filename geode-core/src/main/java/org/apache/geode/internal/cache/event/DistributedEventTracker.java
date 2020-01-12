@@ -33,9 +33,9 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.util.concurrent.StoppableCountDownLatch;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 
 public class DistributedEventTracker implements EventTracker {
@@ -125,6 +125,13 @@ public class DistributedEventTracker implements EventTracker {
     if (cache.getEventTrackerTask() != null) {
       cache.getEventTrackerTask().removeTracker(this);
     }
+  }
+
+  @Override
+  public void clear() {
+    recordedEvents.clear();
+    recordedBulkOps.clear();
+    recordedBulkOpVersionTags.clear();
   }
 
   @Override
@@ -351,8 +358,8 @@ public class DistributedEventTracker implements EventTracker {
       }
       // log at fine because partitioned regions can send event multiple times
       // during normal operation during bucket region initialization
-      if (logger.isTraceEnabled(LogMarker.DISTRIBUTION_BRIDGE_SERVER)) {
-        logger.trace(LogMarker.DISTRIBUTION_BRIDGE_SERVER,
+      if (logger.isTraceEnabled(LogMarker.DISTRIBUTION_BRIDGE_SERVER_VERBOSE)) {
+        logger.trace(LogMarker.DISTRIBUTION_BRIDGE_SERVER_VERBOSE,
             "Cache encountered replay of event with ID {}.  Highest recorded for this source is {}",
             eventID, evh.getLastSequenceNumber());
       }
@@ -391,9 +398,9 @@ public class DistributedEventTracker implements EventTracker {
       }
       // log at fine because partitioned regions can send event multiple times
       // during normal operation during bucket region initialization
-      if (logger.isTraceEnabled(LogMarker.DISTRIBUTION_BRIDGE_SERVER)
+      if (logger.isTraceEnabled(LogMarker.DISTRIBUTION_BRIDGE_SERVER_VERBOSE)
           && evh.getVersionTag() == null) {
-        logger.trace(LogMarker.DISTRIBUTION_BRIDGE_SERVER,
+        logger.trace(LogMarker.DISTRIBUTION_BRIDGE_SERVER_VERBOSE,
             "Could not recover version tag.  Found event holder with no version tag for {}",
             eventID);
       }
@@ -506,6 +513,7 @@ public class DistributedEventTracker implements EventTracker {
         && this.initialImageProvider.equals(mbr);
   }
 
+  @Override
   public ConcurrentMap<ThreadIdentifier, BulkOperationHolder> getRecordedBulkOpVersionTags() {
     return recordedBulkOpVersionTags;
   }

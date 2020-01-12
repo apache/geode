@@ -53,6 +53,7 @@ public class CopyOnWriteWeakHashMap<K, V> extends AbstractMap<K, V> {
     return result;
   }
 
+  @Override
   public synchronized V putIfAbsent(K key, V value) {
     V oldValue = map.get(key);
     if (oldValue != null) {

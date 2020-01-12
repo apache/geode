@@ -19,8 +19,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 
-import org.apache.geode.internal.SharedLibrary;
-import org.apache.geode.pdx.internal.unsafe.UnsafeWrapper;
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.internal.MakeNotStatic;
+import org.apache.geode.internal.JvmSizeUtils;
+import org.apache.geode.unsafe.internal.sun.misc.Unsafe;
 
 /**
  * This class supports allocating and freeing large amounts of addressable memory (i.e. slabs). It
@@ -28,14 +30,15 @@ import org.apache.geode.pdx.internal.unsafe.UnsafeWrapper;
  * is currently a singleton so all the methods on it are static.
  */
 public class AddressableMemoryManager {
-  private static final UnsafeWrapper unsafe;
+  @Immutable
+  private static final Unsafe unsafe;
   private static final int ARRAY_BYTE_BASE_OFFSET;
   private static final String reason;
   static {
-    UnsafeWrapper tmp = null;
+    Unsafe tmp = null;
     String tmpReason = null;
     try {
-      tmp = new UnsafeWrapper();
+      tmp = new Unsafe();
     } catch (RuntimeException ignore) {
       tmpReason = ignore.toString();
     } catch (Error ignore) {
@@ -57,7 +60,7 @@ public class AddressableMemoryManager {
       if (err.getMessage() != null && !err.getMessage().isEmpty()) {
         msg += " Cause: " + err.getMessage();
       }
-      if (!SharedLibrary.is64Bit() && size >= (1024 * 1024 * 1024)) {
+      if (!JvmSizeUtils.is64Bit() && size >= (1024 * 1024 * 1024)) {
         msg +=
             " The JVM looks like a 32-bit one. For large amounts of off-heap memory a 64-bit JVM is needed.";
       }
@@ -174,11 +177,16 @@ public class AddressableMemoryManager {
   }
 
   @SuppressWarnings("rawtypes")
+  @MakeNotStatic
   private static volatile Class dbbClass = null;
   @SuppressWarnings("rawtypes")
+  @MakeNotStatic
   private static volatile Constructor dbbCtor = null;
+  @MakeNotStatic
   private static volatile boolean dbbCreateFailed = false;
+  @MakeNotStatic
   private static volatile Method dbbAddressMethod = null;
+  @MakeNotStatic
   private static volatile boolean dbbAddressFailed = false;
 
   /**

@@ -30,12 +30,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.Banner;
-import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.internal.logging.Banner;
 
-@Category(UnitTest.class)
 public class ArgumentRedactorJUnitTest {
   private static final String someProperty = "redactorTest.someProperty";
   private static final String somePasswordProperty = "redactorTest.aPassword";
@@ -213,7 +210,7 @@ public class ArgumentRedactorJUnitTest {
 
       List<String> args = ArrayUtils.asList("--user=me", "--password=isRedacted",
           "--another-password-for-some-reason =isRedacted", "--yet-another-password = isRedacted");
-      String banner = Banner.getString(args.toArray(new String[0]));
+      String banner = new Banner().getString(args.toArray(new String[0]));
       assertThat(banner).doesNotContain("isRedacted");
     } finally {
       System.clearProperty(someProperty);

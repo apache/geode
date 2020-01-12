@@ -32,6 +32,7 @@ public class AtomicLong5 extends java.util.concurrent.atomic.AtomicLong implemen
    * Use it only when threads are doing incremental updates. If updates are random then this method
    * may not be optimal.
    */
+  @Override
   public boolean setIfGreater(long update) {
     while (true) {
       long cur = get();

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+  ~ agreements. See the NOTICE file distributed with this work for additional information regarding
+  ~ copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+  ~ "License"); you may not use this file except in compliance with the License. You may obtain a
+  ~ copy of the License at
+  ~
+  ~ http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software distributed under the License
+  ~ is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+  ~ or implied. See the License for the specific language governing permissions and limitations under
+  ~ the License.
+  -->
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        https://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/mvc
+        https://www.springframework.org/schema/mvc/spring-mvc.xsd
+        http://www.springframework.org/schema/util
+        https://www.springframework.org/schema/util/spring-util.xsd
+  ">
+  <context:annotation-config />
+
+  <mvc:annotation-driven content-negotiation-manager="contentNegotiationManager">
+    <mvc:message-converters register-defaults="false">
+      <bean class="org.springframework.http.converter.ByteArrayHttpMessageConverter"/>
+      <bean class="org.springframework.http.converter.ResourceHttpMessageConverter"/>
+      <bean class="org.springframework.http.converter.StringHttpMessageConverter"/>
+      <bean class="org.apache.geode.management.internal.rest.converter.CustomMappingJackson2HttpMessageConverter"
+            p:objectMapper-ref="objectMapper"/>
+    </mvc:message-converters>
+  </mvc:annotation-driven>
+
+  <mvc:default-servlet-handler/>
+
+  <bean id="contentNegotiationManager" class="org.springframework.web.accept.ContentNegotiationManagerFactoryBean"
+        p:favorPathExtension="true"
+        p:favorParameter="false"
+        p:ignoreAcceptHeader="false"
+        p:useJaf="false"
+        p:defaultContentType="application/json">
+    <property name="mediaTypes">
+      <value>
+        json=application/json
+      </value>
+    </property>
+  </bean>
+  
+  <bean id="objectMapper" class="org.springframework.http.converter.json.Jackson2ObjectMapperFactoryBean"
+        p:failOnEmptyBeans="true"
+        p:simpleDateFormat="MM/dd/yyyy"
+    >
+    <property name="featuresToEnable">
+      <array>
+        <util:constant static-field="com.fasterxml.jackson.core.JsonParser.Feature.ALLOW_COMMENTS"/>
+        <util:constant static-field="com.fasterxml.jackson.core.JsonParser.Feature.ALLOW_SINGLE_QUOTES"/>
+        <util:constant static-field="com.fasterxml.jackson.databind.MapperFeature.USE_BASE_TYPE_AS_DEFAULT_IMPL"/>
+        <util:constant static-field="com.fasterxml.jackson.databind.DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT"/>
+        <util:constant static-field="com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES"/>
+      </array>
+    </property>
+    <property name="serializationInclusion" value="NON_EMPTY"/>
+  </bean>
+
+  <bean class="org.apache.geode.management.internal.rest.security.RestSecurityConfiguration"/>
+</beans>

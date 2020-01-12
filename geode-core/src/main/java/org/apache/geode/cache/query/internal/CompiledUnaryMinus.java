@@ -14,7 +14,9 @@
  */
 package org.apache.geode.cache.query.internal;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 import org.apache.geode.cache.query.AmbiguousNameException;
 import org.apache.geode.cache.query.FunctionDomainException;
@@ -22,19 +24,11 @@ import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.TypeMismatchException;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
-/**
- *
- */
 public class CompiledUnaryMinus extends AbstractCompiledValue {
 
   private CompiledValue _value;
 
-  /**
-   *
-   * @param value
-   */
   public CompiledUnaryMinus(CompiledValue value) {
     _value = value;
   }
@@ -45,37 +39,23 @@ public class CompiledUnaryMinus extends AbstractCompiledValue {
     return Collections.singletonList(this._value);
   }
 
-  /**
-   * @return int
-   */
+  @Override
   public int getType() {
     return LITERAL_sum;
   }
 
-  /**
-   * @param context
-   * @return Object
-   */
+  @Override
   public Object evaluate(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     return minus(_value.evaluate(context));
   }
 
-  /**
-   *
-   */
   @Override
   public Set computeDependencies(ExecutionContext context)
       throws TypeMismatchException, AmbiguousNameException, NameResolutionException {
     return context.addDependencies(this, this._value.computeDependencies(context));
   }
 
-  /**
-   *
-   * @param obj
-   * @return Object
-   * @throws TypeMismatchException
-   */
   private Object minus(Object obj) throws TypeMismatchException {
 
     if (obj instanceof Number) {
@@ -93,8 +73,8 @@ public class CompiledUnaryMinus extends AbstractCompiledValue {
         return Short.valueOf((short) (((Short) obj).shortValue() * -1));
     } else if (obj == null || obj == QueryService.UNDEFINED)
       return QueryService.UNDEFINED;
-    throw new TypeMismatchException(LocalizedStrings.CompiledUnaryMinus_0_CANNOT_BE_UNARY_MINUS
-        .toLocalizedString(obj.getClass()));
+    throw new TypeMismatchException(String.format("%s cannot be unary minus",
+        obj.getClass()));
   }
 
 }

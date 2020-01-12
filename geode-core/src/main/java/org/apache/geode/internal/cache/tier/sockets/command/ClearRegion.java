@@ -12,14 +12,12 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- *
- */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.operations.RegionClearOperationContext;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.internal.cache.EventID;
@@ -32,8 +30,6 @@ import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.ResourcePermission.Operation;
@@ -41,6 +37,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
 
 public class ClearRegion extends BaseCommand {
 
+  @Immutable
   private static final ClearRegion singleton = new ClearRegion();
 
   private ClearRegion() {}
@@ -79,7 +76,7 @@ public class ClearRegion extends BaseCommand {
         return;
       }
     }
-    regionName = regionNamePart.getString();
+    regionName = regionNamePart.getCachedString();
     if (logger.isDebugEnabled()) {
       logger.debug(serverConnection.getName() + ": Received clear region request ("
           + clientMessage.getPayloadLength() + " bytes) from " + serverConnection.getSocketString()
@@ -88,12 +85,10 @@ public class ClearRegion extends BaseCommand {
 
     // Process the clear region request
     if (regionName == null) {
-      logger.warn(LocalizedMessage.create(
-          LocalizedStrings.ClearRegion_0_THE_INPUT_REGION_NAME_FOR_THE_CLEAR_REGION_REQUEST_IS_NULL,
-          serverConnection.getName()));
+      logger.warn("{}: The input region name for the clear region request is null",
+          serverConnection.getName());
       String errMessage =
-          LocalizedStrings.ClearRegion_THE_INPUT_REGION_NAME_FOR_THE_CLEAR_REGION_REQUEST_IS_NULL
-              .toLocalizedString();
+          "The input region name for the clear region request is null";
 
       writeErrorResponse(clientMessage, MessageType.CLEAR_REGION_DATA_ERROR, errMessage,
           serverConnection);
@@ -103,8 +98,7 @@ public class ClearRegion extends BaseCommand {
 
     LocalRegion region = (LocalRegion) crHelper.getRegion(regionName);
     if (region == null) {
-      String reason = LocalizedStrings.ClearRegion_WAS_NOT_FOUND_DURING_CLEAR_REGION_REGUEST
-          .toLocalizedString();
+      String reason = "was not found during clear region request";
       writeRegionDestroyedEx(clientMessage, regionName, reason, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
       return;

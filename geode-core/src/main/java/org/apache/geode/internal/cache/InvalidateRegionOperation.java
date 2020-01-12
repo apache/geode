@@ -18,18 +18,17 @@ package org.apache.geode.internal.cache;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.*;
+import java.util.Set;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.CacheEvent;
+import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 
-/**
- *
- *
- */
 public class InvalidateRegionOperation extends DistributedCacheOperation {
 
   /** Creates new instance of InvalidateRegionOperation */
@@ -83,19 +82,22 @@ public class InvalidateRegionOperation extends DistributedCacheOperation {
       return true;
     }
 
+    @Override
     public int getDSFID() {
       return INVALIDATE_REGION_MESSAGE;
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.eventID = (EventID) DataSerializer.readObject(in);
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       DataSerializer.writeObject(this.eventID, out);
     }
   }

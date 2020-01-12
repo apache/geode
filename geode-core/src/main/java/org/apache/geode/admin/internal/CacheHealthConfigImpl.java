@@ -14,7 +14,7 @@
  */
 package org.apache.geode.admin.internal;
 
-import org.apache.geode.admin.*;
+import org.apache.geode.admin.CacheHealthConfig;
 
 /**
  * The implementation of <code>CacheHealthConfig</code>
@@ -56,34 +56,42 @@ public abstract class CacheHealthConfigImpl extends MemberHealthConfigImpl
 
   ////////////////////// Instance Methods /////////////////////
 
+  @Override
   public long getMaxNetSearchTime() {
     return this.maxNetSearchTime;
   }
 
+  @Override
   public void setMaxNetSearchTime(long maxNetSearchTime) {
     this.maxNetSearchTime = maxNetSearchTime;
   }
 
+  @Override
   public long getMaxLoadTime() {
     return this.maxLoadTime;
   }
 
+  @Override
   public void setMaxLoadTime(long maxLoadTime) {
     this.maxLoadTime = maxLoadTime;
   }
 
+  @Override
   public double getMinHitRatio() {
     return this.minHitRatio;
   }
 
+  @Override
   public void setMinHitRatio(double minHitRatio) {
     this.minHitRatio = minHitRatio;
   }
 
+  @Override
   public long getMaxEventQueueSize() {
     return this.maxEventQueueSize;
   }
 
+  @Override
   public void setMaxEventQueueSize(long maxEventQueueSize) {
     this.maxEventQueueSize = maxEventQueueSize;
   }

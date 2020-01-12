@@ -31,7 +31,6 @@ public interface Sendable {
    * called.
    *
    * @param out the data output to send this object to
-   * @throws IOException
    */
   void sendTo(DataOutput out) throws IOException;
 }

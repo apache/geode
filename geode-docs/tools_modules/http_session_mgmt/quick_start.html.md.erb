@@ -29,8 +29,9 @@ In this section you download, install, and set up the HTTP Session Management mo
     |------------------------------|-----------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
     | tc Server                    | 3.2           | [https://network.pivotal.io/products/pivotal-tcserver](https://network.pivotal.io/products/pivotal-tcserver)                                                                     |
     | Tomcat                       | 8.5                    | [http://tomcat.apache.org/download-80.cgi](http://tomcat.apache.org/download-80.cgi)                                                                                             |
+    | Tomcat                       | 9.0                    | [https://tomcat.apache.org/download-90.cgi](https://tomcat.apache.org/download-90.cgi)                                                                                             |
 
-    The generic HTTP Session Management Module for AppServers is implemented as a servlet filter and should work on any application server platform that supports the Java Servlet 2.4 specification.
+    The generic HTTP Session Management Module for AppServers is implemented as a servlet filter and should work on any application server platform that supports the Java Servlet 3.1 specification.
 
 2.  The HTTP Session Management Modules installation .zip files are located in the `tools/Modules` directory of the product installation directory. Locate the .zip file for the HTTP Session Management Module that you wish to install. Unzip the appropriate HTTP Session Management Module into the specified directory for your application server:
 
@@ -38,6 +39,7 @@ In this section you download, install, and set up the HTTP Session Management mo
     |------------------------------|-----------------------------|----------------------------------------------------------|----------------------------------------------------------------------------------|
     | tc Server                    | 3.2           | HTTP Session Management Module for Pivotal tc Server     | `<tc Server root                                                 dir>/templates` |
     | Tomcat                       | 8.5            | HTTP Session Management Module for Tomcat                | `$CATALINA_HOME`                                                                 |
+    | Tomcat                       | 9.0            | HTTP Session Management Module for Tomcat                | `$CATALINA_HOME`                                                                 |
 
 3.  Complete the appropriate set up instructions for your application server described in the following sections:
     -   [Additional Quick Start Instructions for tc Server Module](quick_start.html#quick_start__section_EE60463F524A46B7B83CE74C1C3E8E0E)
@@ -67,7 +69,7 @@ These steps provide a basic starting point for using the Tomcat module. For more
 
 1.  Modify Tomcat's `server.xml` and `context.xml` files. Configuration is slightly different depending on the topology you are setting up and the version of Tomcat you are using.
 
-    For example, in a peer-to-peer configuration using Tomcat 7, you would add the following entry within the `<server>` element of server.xml:
+    For example, in a peer-to-peer configuration using Tomcat 9, you would add the following entry within the `<server>` element of server.xml:
 
     ``` pre
     <Listener className="org.apache.geode.modules.session.catalina.
@@ -79,7 +81,7 @@ These steps provide a basic starting point for using the Tomcat module. For more
 
     ``` pre
     <Manager className="org.apache.geode.modules.session.catalina.
-                             Tomcat7DeltaSessionManager"/> 
+                             Tomcat9DeltaSessionManager"/> 
     ```
 
     See [Setting Up the HTTP Module for Tomcat](tomcat_setting_up_the_module.html) for additional instructions.

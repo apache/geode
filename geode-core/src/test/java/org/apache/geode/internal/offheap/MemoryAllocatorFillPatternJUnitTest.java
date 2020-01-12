@@ -14,23 +14,19 @@
  */
 package org.apache.geode.internal.offheap;
 
-import static com.googlecode.catchexception.CatchException.catchException;
-import static com.googlecode.catchexception.CatchException.caughtException;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Tests fill pattern validation for the {@link MemoryAllocatorImpl}.
  */
-@Category(UnitTest.class)
 public class MemoryAllocatorFillPatternJUnitTest {
 
   /** Size of single test slab. */
@@ -62,7 +58,7 @@ public class MemoryAllocatorFillPatternJUnitTest {
    */
   @Before
   public void setUp() throws Exception {
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "validateOffHeapWithFill", "true");
+    System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "validateOffHeapWithFill", "true");
     this.slab = new SlabImpl(SLAB_SIZE);
     this.allocator = MemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(),
         new NullOffHeapMemoryStats(), new SlabImpl[] {this.slab});
@@ -74,26 +70,24 @@ public class MemoryAllocatorFillPatternJUnitTest {
   @After
   public void tearDown() throws Exception {
     MemoryAllocatorImpl.freeOffHeapMemory();
-    System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "validateOffHeapWithFill");
+    System.clearProperty(GeodeGlossary.GEMFIRE_PREFIX + "validateOffHeapWithFill");
   }
 
   /**
    * This tests the fill pattern for a single tiny Chunk allocation.
    *
-   * @throws Exception
    */
   @Test
-  public void testFillPatternBasicForTinyAllocations() throws Exception {
+  public void testFillPatternBasicForTinyAllocations() {
     doFillPatternBasic(1024);
   }
 
   /**
    * This tests the fill pattern for a single huge Chunk allocation.
    *
-   * @throws Exception
    */
   @Test
-  public void testFillPatternBasicForHugeAllocations() throws Exception {
+  public void testFillPatternBasicForHugeAllocations() {
     doFillPatternBasic(HUGE_CHUNK_SIZE);
   }
 
@@ -101,24 +95,24 @@ public class MemoryAllocatorFillPatternJUnitTest {
     /*
      * Pull a chunk off the fragment. This will have no fill because it is a "fresh" chunk.
      */
-    OffHeapStoredObject chunk = (OffHeapStoredObject) this.allocator.allocate(chunkSize);
+    OffHeapStoredObject chunk1 = (OffHeapStoredObject) this.allocator.allocate(chunkSize);
 
     /*
      * Chunk should have valid fill from initial fragment allocation.
      */
-    chunk.validateFill();
+    chunk1.validateFill();
 
     // "Dirty" the chunk so the release has something to fill over
-    chunk.writeDataBytes(OffHeapStoredObject.MIN_CHUNK_SIZE + 1, WRITE_BYTES);
+    chunk1.writeDataBytes(OffHeapStoredObject.MIN_CHUNK_SIZE + 1, WRITE_BYTES);
 
     // This should free the Chunk (ref count == 1)
-    chunk.release();
+    chunk1.release();
 
     /*
      * This chunk should have a fill because it was reused from the free list (assuming no
      * fragmentation at this point...)
      */
-    chunk = (OffHeapStoredObject) this.allocator.allocate(chunkSize);
+    OffHeapStoredObject chunk = (OffHeapStoredObject) this.allocator.allocate(chunkSize);
 
     // Make sure we have a fill this time
     chunk.validateFill();
@@ -133,11 +127,11 @@ public class MemoryAllocatorFillPatternJUnitTest {
     // "Dirty up" the free chunk
     chunk.writeDataBytes(OffHeapStoredObject.MIN_CHUNK_SIZE + 1, WRITE_BYTES);
 
-    catchException(chunk).validateFill();
-    assertTrue(caughtException() instanceof IllegalStateException);
+    Throwable thrown = catchThrowable(() -> chunk.validateFill());
+    assertTrue(thrown instanceof IllegalStateException);
     assertEquals(
         "Fill pattern violated for chunk " + chunk.getAddress() + " with size " + chunk.getSize(),
-        caughtException().getMessage());
+        thrown.getMessage());
 
   }
 
@@ -145,10 +139,9 @@ public class MemoryAllocatorFillPatternJUnitTest {
    * This tests that fill validation is working properly on newly created fragments after a
    * defragmentation.
    *
-   * @throws Exception
    */
   @Test
-  public void testFillPatternAfterDefragmentation() throws Exception {
+  public void testFillPatternAfterDefragmentation() {
     /*
      * Stores our allocated memory.
      */

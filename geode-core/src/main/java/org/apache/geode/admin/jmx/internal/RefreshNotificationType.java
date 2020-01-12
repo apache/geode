@@ -14,7 +14,9 @@
  */
 package org.apache.geode.admin.jmx.internal;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+
+import org.apache.geode.annotations.Immutable;
 
 /**
  * Type-safe definition for refresh notifications.
@@ -22,16 +24,21 @@ import org.apache.commons.lang.StringUtils;
  * @since GemFire 3.5
  *
  */
+@Immutable
 public class RefreshNotificationType implements java.io.Serializable {
   private static final long serialVersionUID = 4376763592395613794L;
 
+  private static final String REFRESH = "refresh";
   /** Notify StatisticResource to refresh statistics */
+  @Immutable
   public static final RefreshNotificationType STATISTIC_RESOURCE_STATISTICS =
-      new RefreshNotificationType("GemFire.Timer.StatisticResource.statistics.refresh", "refresh");
+      new RefreshNotificationType("GemFire.Timer.StatisticResource.statistics.refresh", REFRESH,
+          0);
 
   /** Notify SystemMember to refresh config */
+  @Immutable
   public static final RefreshNotificationType SYSTEM_MEMBER_CONFIG =
-      new RefreshNotificationType("GemFire.Timer.SystemMember.config.refresh", "refresh");
+      new RefreshNotificationType("GemFire.Timer.SystemMember.config.refresh", REFRESH, 1);
 
   /** Notification type for the javax.management.Notification */
   private final transient String type;
@@ -39,12 +46,9 @@ public class RefreshNotificationType implements java.io.Serializable {
   /** Notification msg for the javax.management.Notification */
   private final transient String msg;
 
-  // The 4 declarations below are necessary for serialization
-  /** int used as ordinal to represent this Scope */
-  public final int ordinal = nextOrdinal++;
+  public final int ordinal;
 
-  private static int nextOrdinal = 0;
-
+  @Immutable
   private static final RefreshNotificationType[] VALUES =
       {STATISTIC_RESOURCE_STATISTICS, SYSTEM_MEMBER_CONFIG};
 
@@ -53,9 +57,10 @@ public class RefreshNotificationType implements java.io.Serializable {
   }
 
   /** Creates a new instance of RefreshNotificationType. */
-  private RefreshNotificationType(String type, String msg) {
+  private RefreshNotificationType(String type, String msg, int ordinal) {
     this.type = type;
     this.msg = msg;
+    this.ordinal = ordinal;
   }
 
   /** Return the RefreshNotificationType represented by specified ordinal */

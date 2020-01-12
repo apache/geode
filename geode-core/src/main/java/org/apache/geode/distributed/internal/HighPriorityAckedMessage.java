@@ -28,10 +28,10 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.OSProcess;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.logging.internal.OSProcess;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * A message that is sent to a given collection of managers and then awaits replies. It is used by
@@ -162,7 +162,8 @@ public class HighPriorityAckedMessage extends HighPriorityDistributionMessage
         Assert.assertTrue(this.id != null);
         // wait 10 seconds for the high priority queue to drain
         long endTime = System.currentTimeMillis() + 10000;
-        ThreadPoolExecutor pool = (ThreadPoolExecutor) dm.getHighPriorityThreadPool();
+        ThreadPoolExecutor pool =
+            (ThreadPoolExecutor) dm.getExecutors().getHighPriorityThreadPool();
         while (pool.getActiveCount() > 1 && System.currentTimeMillis() < endTime) {
           boolean interrupted = Thread.interrupted();
           try {
@@ -179,9 +180,9 @@ public class HighPriorityAckedMessage extends HighPriorityDistributionMessage
         }
         if (pool.getActiveCount() > 1) {
 
-          logger.warn(LocalizedMessage.create(
-              LocalizedStrings.HighPriorityAckedMessage_0_THERE_ARE_STILL_1_OTHER_THREADS_ACTIVE_IN_THE_HIGH_PRIORITY_THREAD_POOL,
-              new Object[] {this, Integer.valueOf(pool.getActiveCount() - 1)}));
+          logger.warn(
+              "{}: There are still {} other threads active in the high priority thread pool.",
+              new Object[] {this, Integer.valueOf(pool.getActiveCount() - 1)});
         }
         ReplyMessage.send(getSender(), processorId, null, dm);
         break;
@@ -199,13 +200,15 @@ public class HighPriorityAckedMessage extends HighPriorityDistributionMessage
     }
   }
 
+  @Override
   public int getDSFID() {
     return HIGH_PRIORITY_ACKED_MESSAGE;
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     out.writeInt(processorId);
     out.writeInt(this.op.ordinal());
     out.writeBoolean(this.useNative);
@@ -213,9 +216,10 @@ public class HighPriorityAckedMessage extends HighPriorityDistributionMessage
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
 
-    super.fromData(in);
+    super.fromData(in, context);
     processorId = in.readInt();
     this.op = operationType.values()[in.readInt()];
     this.useNative = in.readBoolean();

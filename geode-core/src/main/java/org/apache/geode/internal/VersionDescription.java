@@ -20,14 +20,13 @@ import static org.apache.geode.internal.lang.SystemUtils.getOsVersion;
 
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.net.UnknownHostException;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.TreeMap;
 
-import org.apache.geode.SystemFailure;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.inet.LocalHostUtil;
 
 public class VersionDescription {
   public static final String RESOURCE_NAME = "GemFireVersion.properties";
@@ -77,6 +76,10 @@ public class VersionDescription {
    */
   public static final String BUILD_JAVA_VERSION = "Build-Java-Version";
 
+  public static final String NATIVE_VERSION = "Native version";
+
+  public static final String RUNNING_ON = "Running on";
+
   /**
    * the version properties
    */
@@ -91,8 +94,8 @@ public class VersionDescription {
     InputStream is = ClassPathLoader.getLatest().getResourceAsStream(getClass(), name);
     if (is == null) {
       error = Optional
-          .of(LocalizedStrings.GemFireVersion_COULD_NOT_FIND_RESOURCE_COM_GEMSTONE_GEMFIRE_INTERNAL_0
-              .toLocalizedString(name));
+          .of(String.format("<Could not find resource org/apache/geode/internal/%s>",
+              name));
       description = null;
       return;
     }
@@ -102,8 +105,9 @@ public class VersionDescription {
       description.load(is);
     } catch (Exception ex) {
       error = Optional
-          .of(LocalizedStrings.GemFireVersion_COULD_NOT_READ_PROPERTIES_FROM_RESOURCE_COM_GEMSTONE_GEMFIRE_INTERNAL_0_BECAUSE_1
-              .toLocalizedString(name, ex));
+          .of(String.format(
+              "<Could not read properties from resource org/apache/geode/internal/%s because: %s>",
+              name, ex));
       return;
     }
 
@@ -112,10 +116,6 @@ public class VersionDescription {
 
   public String getProperty(String key) {
     return error.orElseGet(() -> description.getProperty(key));
-  }
-
-  private String getNativeCodeVersion() {
-    return SmHelper.getNativeVersion();
   }
 
   void print(PrintWriter pw) {
@@ -127,85 +127,76 @@ public class VersionDescription {
       }
     }
 
-    // not stored in the description map
-    pw.println("Native version: " + getNativeCodeVersion());
-    printHostInfo(pw);
+    pw.println(getRunningOnInfo());
   }
 
-  private void printHostInfo(PrintWriter pw) throws Error {
+  private static String getRunningOnInfo() {
+    String line = getLocalHost() + ", " + Runtime.getRuntime().availableProcessors() + " cpu(s), "
+        + getOsArchitecture() + ' ' + getOsName() + ' ' + getOsVersion() + ' ';
+    return String.format(RUNNING_ON + ": %s", line);
+  }
+
+  private static String getLocalHost() {
     try {
-      String sb = SocketCreator.getLocalHost().toString() + ", "
-          + Runtime.getRuntime().availableProcessors() + " cpu(s), " + getOsArchitecture() + ' '
-          + getOsName() + ' ' + getOsVersion() + ' ';
-      pw.println(LocalizedStrings.GemFireVersion_RUNNING_ON_0.toLocalizedString(sb));
-    } catch (VirtualMachineError err) {
-      SystemFailure.initiateFailure(err);
-      // If this ever returns, rethrow the error. We're poisoned
-      // now, so don't let this thread continue.
-      throw err;
-    } catch (Throwable t) {
-      // Whenever you catch Error or Throwable, you must also
-      // catch VirtualMachineError (see above). However, there is
-      // _still_ a possibility that you are dealing with a cascading
-      // error condition, so you also need to check to see if the JVM
-      // is still usable:
-      SystemFailure.checkFailure();
+      return LocalHostUtil.getLocalHost().toString();
+    } catch (UnknownHostException e) {
+      return e.getMessage();
     }
   }
 
   private Optional<String> validate(Properties props) {
     if (props.get(PRODUCT_NAME) == null) {
       return Optional
-          .of(LocalizedStrings.GemFireVersion_MISSING_PROPERTY_0_FROM_RESOURCE_COM_GEMSTONE_GEMFIRE_INTERNAL_1
-              .toLocalizedString(PRODUCT_NAME, RESOURCE_NAME));
+          .of(String.format("<Missing property %s from resource org/apache/geode/internal/%s>",
+              PRODUCT_NAME, RESOURCE_NAME));
     }
 
     if (props.get(PRODUCT_VERSION) == null) {
       return Optional
-          .of(LocalizedStrings.GemFireVersion_MISSING_PROPERTY_0_FROM_RESOURCE_COM_GEMSTONE_GEMFIRE_INTERNAL_1
-              .toLocalizedString(PRODUCT_VERSION, RESOURCE_NAME));
+          .of(String.format("<Missing property %s from resource org/apache/geode/internal/%s>",
+              PRODUCT_VERSION, RESOURCE_NAME));
     }
 
     if (props.get(SOURCE_DATE) == null) {
       return Optional
-          .of(LocalizedStrings.GemFireVersion_MISSING_PROPERTY_0_FROM_RESOURCE_COM_GEMSTONE_GEMFIRE_INTERNAL_1
-              .toLocalizedString(SOURCE_DATE, RESOURCE_NAME));
+          .of(String.format("<Missing property %s from resource org/apache/geode/internal/%s>",
+              SOURCE_DATE, RESOURCE_NAME));
     }
 
     if (props.get(SOURCE_REVISION) == null) {
       return Optional
-          .of(LocalizedStrings.GemFireVersion_MISSING_PROPERTY_0_FROM_RESOURCE_COM_GEMSTONE_GEMFIRE_INTERNAL_1
-              .toLocalizedString(SOURCE_REVISION, RESOURCE_NAME));
+          .of(String.format("<Missing property %s from resource org/apache/geode/internal/%s>",
+              SOURCE_REVISION, RESOURCE_NAME));
     }
 
     if (props.get(SOURCE_REPOSITORY) == null) {
       return Optional
-          .of(LocalizedStrings.GemFireVersion_MISSING_PROPERTY_0_FROM_RESOURCE_COM_GEMSTONE_GEMFIRE_INTERNAL_1
-              .toLocalizedString(SOURCE_REPOSITORY, RESOURCE_NAME));
+          .of(String.format("<Missing property %s from resource org/apache/geode/internal/%s>",
+              SOURCE_REPOSITORY, RESOURCE_NAME));
     }
 
     if (props.get(BUILD_DATE) == null) {
       return Optional
-          .of(LocalizedStrings.GemFireVersion_MISSING_PROPERTY_0_FROM_RESOURCE_COM_GEMSTONE_GEMFIRE_INTERNAL_1
-              .toLocalizedString(BUILD_DATE, RESOURCE_NAME));
+          .of(String.format("<Missing property %s from resource org/apache/geode/internal/%s>",
+              BUILD_DATE, RESOURCE_NAME));
     }
 
     if (props.get(BUILD_ID) == null) {
       return Optional
-          .of(LocalizedStrings.GemFireVersion_MISSING_PROPERTY_0_FROM_RESOURCE_COM_GEMSTONE_GEMFIRE_INTERNAL_1
-              .toLocalizedString(BUILD_ID, RESOURCE_NAME));
+          .of(String.format("<Missing property %s from resource org/apache/geode/internal/%s>",
+              BUILD_ID, RESOURCE_NAME));
     }
 
     if (props.get(BUILD_PLATFORM) == null) {
       return Optional
-          .of(LocalizedStrings.GemFireVersion_MISSING_PROPERTY_0_FROM_RESOURCE_COM_GEMSTONE_GEMFIRE_INTERNAL_1
-              .toLocalizedString(BUILD_PLATFORM, RESOURCE_NAME));
+          .of(String.format("<Missing property %s from resource org/apache/geode/internal/%s>",
+              BUILD_PLATFORM, RESOURCE_NAME));
     }
 
     if (props.get(BUILD_JAVA_VERSION) == null) {
       return Optional
-          .of(LocalizedStrings.GemFireVersion_MISSING_PROPERTY_0_FROM_RESOURCE_COM_GEMSTONE_GEMFIRE_INTERNAL_1
-              .toLocalizedString(BUILD_JAVA_VERSION, RESOURCE_NAME));
+          .of(String.format("<Missing property %s from resource org/apache/geode/internal/%s>",
+              BUILD_JAVA_VERSION, RESOURCE_NAME));
     }
     return Optional.empty();
   }

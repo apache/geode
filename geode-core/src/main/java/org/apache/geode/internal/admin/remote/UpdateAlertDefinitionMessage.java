@@ -24,6 +24,8 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.PooledDistributionMessage;
 import org.apache.geode.internal.admin.StatAlertDefinition;
 import org.apache.geode.internal.admin.StatAlertsManager;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * distribution message to register alert's definition {@link StatAlertDefinition} to member's alert
@@ -66,15 +68,17 @@ public class UpdateAlertDefinitionMessage extends PooledDistributionMessage {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     out.writeByte(_actionCode);
     DataSerializer.writeObjectArray(this._alertDefinitions, out);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this._actionCode = in.readByte();
     this._alertDefinitions = (StatAlertDefinition[]) DataSerializer.readObjectArray(in);
   }
@@ -82,6 +86,7 @@ public class UpdateAlertDefinitionMessage extends PooledDistributionMessage {
   /**
    * Returns the DataSerializer fixed id for the class that implements this method.
    */
+  @Override
   public int getDSFID() {
     return UPDATE_ALERTS_DEFN_MESSAGE;
   }

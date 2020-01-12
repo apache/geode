@@ -12,15 +12,182 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.distributed.internal;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.ACK_SEVERE_ALERT_THRESHOLD;
+import static org.apache.geode.distributed.ConfigurationProperties.ACK_WAIT_THRESHOLD;
+import static org.apache.geode.distributed.ConfigurationProperties.ARCHIVE_DISK_SPACE_LIMIT;
+import static org.apache.geode.distributed.ConfigurationProperties.ARCHIVE_FILE_SIZE_LIMIT;
+import static org.apache.geode.distributed.ConfigurationProperties.ASYNC_DISTRIBUTION_TIMEOUT;
+import static org.apache.geode.distributed.ConfigurationProperties.ASYNC_MAX_QUEUE_SIZE;
+import static org.apache.geode.distributed.ConfigurationProperties.ASYNC_QUEUE_TIMEOUT;
+import static org.apache.geode.distributed.ConfigurationProperties.BIND_ADDRESS;
+import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_CONFIGURATION_DIR;
+import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_CIPHERS;
+import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_ENABLED;
+import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_KEYSTORE;
+import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_KEYSTORE_PASSWORD;
+import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_KEYSTORE_TYPE;
+import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_PROTOCOLS;
+import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_REQUIRE_AUTHENTICATION;
+import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_TRUSTSTORE;
+import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_TRUSTSTORE_PASSWORD;
+import static org.apache.geode.distributed.ConfigurationProperties.CONFLATE_EVENTS;
+import static org.apache.geode.distributed.ConfigurationProperties.CONSERVE_SOCKETS;
+import static org.apache.geode.distributed.ConfigurationProperties.DELTA_PROPAGATION;
+import static org.apache.geode.distributed.ConfigurationProperties.DEPLOY_WORKING_DIR;
+import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_AUTO_RECONNECT;
+import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_JMX;
+import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_TCP;
+import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_SYSTEM_ID;
+import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_TRANSACTIONS;
+import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_ID;
+import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_TIMEOUT;
+import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_MANAGEMENT_REST_SERVICE;
+import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_NETWORK_PARTITION_DETECTION;
+import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_TIME_STATISTICS;
+import static org.apache.geode.distributed.ConfigurationProperties.ENFORCE_UNIQUE_HOST;
+import static org.apache.geode.distributed.ConfigurationProperties.GATEWAY_SSL_CIPHERS;
+import static org.apache.geode.distributed.ConfigurationProperties.GATEWAY_SSL_ENABLED;
+import static org.apache.geode.distributed.ConfigurationProperties.GATEWAY_SSL_KEYSTORE;
+import static org.apache.geode.distributed.ConfigurationProperties.GATEWAY_SSL_KEYSTORE_PASSWORD;
+import static org.apache.geode.distributed.ConfigurationProperties.GATEWAY_SSL_KEYSTORE_TYPE;
+import static org.apache.geode.distributed.ConfigurationProperties.GATEWAY_SSL_PROTOCOLS;
+import static org.apache.geode.distributed.ConfigurationProperties.GATEWAY_SSL_REQUIRE_AUTHENTICATION;
+import static org.apache.geode.distributed.ConfigurationProperties.GATEWAY_SSL_TRUSTSTORE;
+import static org.apache.geode.distributed.ConfigurationProperties.GATEWAY_SSL_TRUSTSTORE_PASSWORD;
+import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_SSL_CIPHERS;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_SSL_ENABLED;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_SSL_KEYSTORE;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_SSL_KEYSTORE_PASSWORD;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_SSL_KEYSTORE_TYPE;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_SSL_PROTOCOLS;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_SSL_TRUSTSTORE;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_ACCESS_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_BIND_ADDRESS;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_HOSTNAME_FOR_CLIENTS;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_HTTP_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PASSWORD_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_CIPHERS;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_ENABLED;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_KEYSTORE;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_KEYSTORE_PASSWORD;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_KEYSTORE_TYPE;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_PROTOCOLS;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_TRUSTSTORE;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_UPDATE_RATE;
+import static org.apache.geode.distributed.ConfigurationProperties.LOAD_CLUSTER_CONFIGURATION_FROM_DIR;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATOR_WAIT_TIME;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCK_MEMORY;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_DISK_SPACE_LIMIT;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE_SIZE_LIMIT;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.MAX_NUM_RECONNECT_TRIES;
+import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_ADDRESS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_FLOW_CONTROL;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_RECV_BUFFER_SIZE;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_SEND_BUFFER_SIZE;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_TTL;
+import static org.apache.geode.distributed.ConfigurationProperties.MEMBERSHIP_PORT_RANGE;
+import static org.apache.geode.distributed.ConfigurationProperties.MEMBER_TIMEOUT;
+import static org.apache.geode.distributed.ConfigurationProperties.MEMCACHED_BIND_ADDRESS;
+import static org.apache.geode.distributed.ConfigurationProperties.MEMCACHED_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.MEMCACHED_PROTOCOL;
+import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.apache.geode.distributed.ConfigurationProperties.OFF_HEAP_MEMORY_SIZE;
+import static org.apache.geode.distributed.ConfigurationProperties.REDIS_BIND_ADDRESS;
+import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PASSWORD;
+import static org.apache.geode.distributed.ConfigurationProperties.REDIS_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.REDUNDANCY_ZONE;
+import static org.apache.geode.distributed.ConfigurationProperties.REMOTE_LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.REMOVE_UNRESPONSIVE_CLIENT;
+import static org.apache.geode.distributed.ConfigurationProperties.ROLES;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_AUTH_TOKEN_ENABLED_COMPONENTS;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_ACCESSOR;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_ACCESSOR_PP;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTHENTICATOR;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_DHALGO;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_LOG_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_PEER_AUTHENTICATOR;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_PEER_AUTH_INIT;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_PEER_VERIFY_MEMBER_TIMEOUT;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_PREFIX;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_SHIRO_INIT;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_UDP_DHALGO;
+import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
+import static org.apache.geode.distributed.ConfigurationProperties.SERVER_BIND_ADDRESS;
+import static org.apache.geode.distributed.ConfigurationProperties.SERVER_SSL_CIPHERS;
+import static org.apache.geode.distributed.ConfigurationProperties.SERVER_SSL_ENABLED;
+import static org.apache.geode.distributed.ConfigurationProperties.SERVER_SSL_KEYSTORE;
+import static org.apache.geode.distributed.ConfigurationProperties.SERVER_SSL_KEYSTORE_PASSWORD;
+import static org.apache.geode.distributed.ConfigurationProperties.SERVER_SSL_KEYSTORE_TYPE;
+import static org.apache.geode.distributed.ConfigurationProperties.SERVER_SSL_PROTOCOLS;
+import static org.apache.geode.distributed.ConfigurationProperties.SERVER_SSL_REQUIRE_AUTHENTICATION;
+import static org.apache.geode.distributed.ConfigurationProperties.SERVER_SSL_TRUSTSTORE;
+import static org.apache.geode.distributed.ConfigurationProperties.SERVER_SSL_TRUSTSTORE_PASSWORD;
+import static org.apache.geode.distributed.ConfigurationProperties.SOCKET_BUFFER_SIZE;
+import static org.apache.geode.distributed.ConfigurationProperties.SOCKET_LEASE_TIME;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_CIPHERS;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_CLUSTER_ALIAS;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_DEFAULT_ALIAS;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENABLED_COMPONENTS;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENDPOINT_IDENTIFICATION_ENABLED;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_GATEWAY_ALIAS;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_JMX_ALIAS;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_PASSWORD;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_TYPE;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_LOCATOR_ALIAS;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_PROTOCOLS;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_REQUIRE_AUTHENTICATION;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_SERVER_ALIAS;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_TYPE;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_USE_DEFAULT_CONTEXT;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_WEB_ALIAS;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION;
+import static org.apache.geode.distributed.ConfigurationProperties.START_DEV_REST_API;
+import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
+import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_ARCHIVE_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLE_RATE;
+import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLING_ENABLED;
+import static org.apache.geode.distributed.ConfigurationProperties.TCP_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.THREAD_MONITOR_ENABLED;
+import static org.apache.geode.distributed.ConfigurationProperties.THREAD_MONITOR_INTERVAL;
+import static org.apache.geode.distributed.ConfigurationProperties.THREAD_MONITOR_TIME_LIMIT;
+import static org.apache.geode.distributed.ConfigurationProperties.UDP_FRAGMENT_SIZE;
+import static org.apache.geode.distributed.ConfigurationProperties.UDP_RECV_BUFFER_SIZE;
+import static org.apache.geode.distributed.ConfigurationProperties.UDP_SEND_BUFFER_SIZE;
+import static org.apache.geode.distributed.ConfigurationProperties.USER_COMMAND_PACKAGES;
+import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.distributed.ConfigurationProperties.VALIDATE_SERIALIZABLE_OBJECTS;
 
 import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -28,40 +195,40 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.geode.GemFireIOException;
+import org.apache.geode.LogWriter;
+import org.apache.geode.UnmodifiableException;
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.membership.api.MembershipConfig;
 import org.apache.geode.internal.Config;
 import org.apache.geode.internal.ConfigSource;
-import org.apache.geode.internal.logging.InternalLogWriter;
-import org.apache.geode.internal.logging.LogConfig;
+import org.apache.geode.internal.logging.LogWriterImpl;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.internal.statistics.StatisticsConfig;
 import org.apache.geode.internal.tcp.Connection;
-import org.apache.geode.memcached.GemFireMemcachedServer;
+import org.apache.geode.logging.internal.spi.LogConfig;
+import org.apache.geode.logging.internal.spi.LogWriterLevel;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Provides accessor (and in some cases mutator) methods for the various GemFire distribution
  * configuration properties. The interface also provides constants for the names of properties and
  * their default values.
  * <p>
- * <p>
- * <p>
  * Descriptions of these properties can be found {@link ConfigurationProperties}.
  *
- * @see org.apache.geode.internal.Config
+ * @see Config
  * @since GemFire 2.1
  */
-public interface DistributionConfig extends Config, LogConfig {
+public interface DistributionConfig extends Config, LogConfig, StatisticsConfig {
 
-  //////////////////// Instance Methods ////////////////////
   /**
    * The static String definition of the prefix used to defined ssl-* properties
    */
   String SSL_PREFIX = "ssl-";
-
-  /**
-   * The prefix used for Gemfire properties set through java system properties
-   */
-  String GEMFIRE_PREFIX = "gemfire.";
 
   /**
    * Returns the value of the {@link ConfigurationProperties#NAME} property Gets the member's name.
@@ -72,6 +239,7 @@ public interface DistributionConfig extends Config, LogConfig {
    *
    * @return the system's name.
    */
+  @Override
   @ConfigAttributeGetter(name = NAME)
   String getName();
 
@@ -81,8 +249,8 @@ public interface DistributionConfig extends Config, LogConfig {
    * The name can not be changed while the system is running.
    *
    * @throws IllegalArgumentException if the specified value is not acceptable.
-   * @throws org.apache.geode.UnmodifiableException if this attribute can not be modified.
-   * @throws org.apache.geode.GemFireIOException if the set failure is caused by an error when
+   * @throws UnmodifiableException if this attribute can not be modified.
+   * @throws GemFireIOException if the set failure is caused by an error when
    *         writing to the system's configuration file.
    */
   @ConfigAttributeSetter(name = NAME)
@@ -99,7 +267,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * <p>
    * Actual value of this constant is <code>""</code>.
    */
-  String DEFAULT_NAME = "";
+  String DEFAULT_NAME = MembershipConfig.DEFAULT_NAME;
 
   /**
    * Returns the value of the {@link ConfigurationProperties#MCAST_PORT}</a> property
@@ -116,7 +284,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The default value of the {@link ConfigurationProperties#MCAST_PORT} property
    */
-  int DEFAULT_MCAST_PORT = 0;
+  int DEFAULT_MCAST_PORT = MembershipConfig.DEFAULT_MCAST_PORT;
 
   /**
    * The minimum {@link ConfigurationProperties#MCAST_PORT}.
@@ -197,7 +365,22 @@ public interface DistributionConfig extends Config, LogConfig {
    * The default value of the {@link ConfigurationProperties#MCAST_ADDRESS} property. Current value
    * is <code>239.192.81.1</code>
    */
-  InetAddress DEFAULT_MCAST_ADDRESS = AbstractDistributionConfig._getDefaultMcastAddress();
+  InetAddress DEFAULT_MCAST_ADDRESS = _getDefaultMcastAddress();
+
+  static InetAddress _getDefaultMcastAddress() {
+    // Default MCast address can be just IPv4 address.
+    // On IPv6 machines, JGroups converts IPv4 address to equivalent IPv6 address.
+    try {
+      String ipLiteral = MembershipConfig.DEFAULT_MCAST_ADDRESS;
+      return InetAddress.getByName(ipLiteral);
+    } catch (UnknownHostException ex) {
+      // this should never happen
+      throw new Error(
+          String.format("Unexpected problem getting inetAddress: %s",
+              ex),
+          ex);
+    }
+  }
 
   /**
    * Returns the value of the {@link ConfigurationProperties#MCAST_TTL} property
@@ -214,7 +397,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The default value of the {@link ConfigurationProperties#MCAST_TTL} property
    */
-  int DEFAULT_MCAST_TTL = 32;
+  int DEFAULT_MCAST_TTL = MembershipConfig.DEFAULT_MCAST_TTL;
 
   /**
    * The minimum {@link ConfigurationProperties#MCAST_TTL}.
@@ -258,7 +441,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * The default value of the {@link ConfigurationProperties#BIND_ADDRESS} property. Current value
    * is an empty string <code>""</code>
    */
-  String DEFAULT_BIND_ADDRESS = "";
+  String DEFAULT_BIND_ADDRESS = MembershipConfig.DEFAULT_BIND_ADDRESS;
 
   /**
    * Returns the value of the {@link ConfigurationProperties#SERVER_BIND_ADDRESS} property
@@ -295,11 +478,11 @@ public interface DistributionConfig extends Config, LogConfig {
    * the system to locator other system nodes and to publish itself so it can be located by others.
    *
    * @param value must be of the form <code>hostName[portNum]</code>. Multiple elements are allowed
-   *        and must be seperated by a comma.
+   *        and must be separated by a comma.
    *
    * @throws IllegalArgumentException if the specified value is not acceptable.
-   * @throws org.apache.geode.UnmodifiableException if this attribute can not be modified.
-   * @throws org.apache.geode.GemFireIOException if the set failure is caused by an error when
+   * @throws UnmodifiableException if this attribute can not be modified.
+   * @throws GemFireIOException if the set failure is caused by an error when
    *         writing to the system's configuration file.
    */
   @ConfigAttributeSetter(name = LOCATORS)
@@ -314,7 +497,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The default value of the {@link ConfigurationProperties#LOCATORS} property
    */
-  String DEFAULT_LOCATORS = "";
+  String DEFAULT_LOCATORS = MembershipConfig.DEFAULT_LOCATORS;
 
   /**
    * Locator wait time - how long to wait for a locator to start before giving up & throwing a
@@ -323,7 +506,7 @@ public interface DistributionConfig extends Config, LogConfig {
   @ConfigAttribute(type = Integer.class)
   String LOCATOR_WAIT_TIME_NAME = LOCATOR_WAIT_TIME;
 
-  int DEFAULT_LOCATOR_WAIT_TIME = 0;
+  int DEFAULT_LOCATOR_WAIT_TIME = MembershipConfig.DEFAULT_LOCATOR_WAIT_TIME;
 
   @ConfigAttributeGetter(name = LOCATOR_WAIT_TIME)
   int getLocatorWaitTime();
@@ -355,7 +538,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The default value of the {@link ConfigurationProperties#START_LOCATOR} property
    */
-  String DEFAULT_START_LOCATOR = "";
+  String DEFAULT_START_LOCATOR = MembershipConfig.DEFAULT_START_LOCATOR;
 
   /**
    * Returns the value of the {@link ConfigurationProperties#DEPLOY_WORKING_DIR} property
@@ -367,8 +550,8 @@ public interface DistributionConfig extends Config, LogConfig {
    * Sets the system's deploy working directory.
    *
    * @throws IllegalArgumentException if the specified value is not acceptable.
-   * @throws org.apache.geode.UnmodifiableException if this attribute can not be modified.
-   * @throws org.apache.geode.GemFireIOException if the set failure is caused by an error when
+   * @throws UnmodifiableException if this attribute can not be modified.
+   * @throws GemFireIOException if the set failure is caused by an error when
    *         writing to the system's configuration file.
    */
   @ConfigAttributeSetter(name = DEPLOY_WORKING_DIR)
@@ -396,8 +579,8 @@ public interface DistributionConfig extends Config, LogConfig {
    * Sets the system's user command path.
    *
    * @throws IllegalArgumentException if the specified value is not acceptable.
-   * @throws org.apache.geode.UnmodifiableException if this attribute can not be modified.
-   * @throws org.apache.geode.GemFireIOException if the set failure is caused by an error when
+   * @throws UnmodifiableException if this attribute can not be modified.
+   * @throws GemFireIOException if the set failure is caused by an error when
    *         writing to the system's configuration file.
    */
   @ConfigAttributeSetter(name = USER_COMMAND_PACKAGES)
@@ -419,6 +602,7 @@ public interface DistributionConfig extends Config, LogConfig {
    *
    * @return <code>null</code> if logging information goes to standard out
    */
+  @Override
   @ConfigAttributeGetter(name = LOG_FILE)
   File getLogFile();
 
@@ -430,11 +614,10 @@ public interface DistributionConfig extends Config, LogConfig {
    * The system log file can not be changed while the system is running.
    *
    * @throws IllegalArgumentException if the specified value is not acceptable.
-   * @throws org.apache.geode.UnmodifiableException if this attribute can not be modified.
-   * @throws org.apache.geode.GemFireIOException if the set failure is caused by an error when
+   * @throws UnmodifiableException if this attribute can not be modified.
+   * @throws GemFireIOException if the set failure is caused by an error when
    *         writing to the system's configuration file.
    */
-
   @ConfigAttributeSetter(name = LOG_FILE)
   void setLogFile(File value);
 
@@ -454,15 +637,16 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * Returns the value of the {@link ConfigurationProperties#LOG_LEVEL} property
    *
-   * @see org.apache.geode.internal.logging.LogWriterImpl
+   * @see LogWriterImpl
    */
+  @Override
   @ConfigAttributeGetter(name = LOG_LEVEL)
   int getLogLevel();
 
   /**
    * Sets the value of the {@link ConfigurationProperties#LOG_LEVEL} property
    *
-   * @see org.apache.geode.internal.logging.LogWriterImpl
+   * @see LogWriterImpl
    */
   @ConfigAttributeSetter(name = LOG_LEVEL)
   void setLogLevel(int value);
@@ -470,21 +654,21 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The default {@link ConfigurationProperties#LOG_LEVEL}.
    * <p>
-   * Actual value of this constant is {@link InternalLogWriter#CONFIG_LEVEL}.
+   * Actual value of this constant is {@link LogWriterLevel#CONFIG#intLevel()}.
    */
-  int DEFAULT_LOG_LEVEL = InternalLogWriter.CONFIG_LEVEL;
+  int DEFAULT_LOG_LEVEL = LogWriterLevel.CONFIG.intLevel();
   /**
    * The minimum {@link ConfigurationProperties#LOG_LEVEL}.
    * <p>
-   * Actual value of this constant is {@link InternalLogWriter#ALL_LEVEL}.
+   * Actual value of this constant is {@link LogWriterLevel#ALL#intLevel()}.
    */
-  int MIN_LOG_LEVEL = InternalLogWriter.ALL_LEVEL;
+  int MIN_LOG_LEVEL = LogWriterLevel.ALL.intLevel();
   /**
    * The maximum {@link ConfigurationProperties#LOG_LEVEL}.
    * <p>
-   * Actual value of this constant is {@link InternalLogWriter#NONE_LEVEL}.
+   * Actual value of this constant is {@link LogWriterLevel#NONE#intLevel()}.
    */
-  int MAX_LOG_LEVEL = InternalLogWriter.NONE_LEVEL;
+  int MAX_LOG_LEVEL = LogWriterLevel.NONE.intLevel();
 
   /**
    * The name of the {@link ConfigurationProperties#LOG_LEVEL} property
@@ -497,6 +681,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * Returns the value of the {@link ConfigurationProperties#STATISTIC_SAMPLING_ENABLED} property
    */
+  @Override
   @ConfigAttributeGetter(name = STATISTIC_SAMPLING_ENABLED)
   boolean getStatisticSamplingEnabled();
 
@@ -520,6 +705,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * Returns the value of the {@link ConfigurationProperties#STATISTIC_SAMPLE_RATE} property
    */
+  @Override
   @ConfigAttributeGetter(name = STATISTIC_SAMPLE_RATE)
   int getStatisticSampleRate();
 
@@ -560,6 +746,7 @@ public interface DistributionConfig extends Config, LogConfig {
    *
    * @return <code>null</code> if no file was specified
    */
+  @Override
   @ConfigAttributeGetter(name = STATISTIC_ARCHIVE_FILE)
   File getStatisticArchiveFile();
 
@@ -623,7 +810,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * <p>
    * Actual value of this constant is <code>15</code> seconds.
    */
-  int DEFAULT_ACK_WAIT_THRESHOLD = 15;
+  int DEFAULT_ACK_WAIT_THRESHOLD = MembershipConfig.DEFAULT_ACK_WAIT_THRESHOLD;
   /**
    * The minimum {@link ConfigurationProperties#ACK_WAIT_THRESHOLD}.
    * <p>
@@ -660,7 +847,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * <p>
    * Actual value of this constant is <code>0</code> seconds, which turns off shunning.
    */
-  int DEFAULT_ACK_SEVERE_ALERT_THRESHOLD = 0;
+  int DEFAULT_ACK_SEVERE_ALERT_THRESHOLD = MembershipConfig.DEFAULT_ACK_SEVERE_ALERT_THRESHOLD;
   /**
    * The minimum {@link ConfigurationProperties#ACK_SEVERE_ALERT_THRESHOLD}.
    * <p>
@@ -682,6 +869,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * Returns the value of the {@link ConfigurationProperties#ARCHIVE_FILE_SIZE_LIMIT} property
    */
+  @Override
   @ConfigAttributeGetter(name = ARCHIVE_FILE_SIZE_LIMIT)
   int getArchiveFileSizeLimit();
 
@@ -720,6 +908,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * Returns the value of the {@link ConfigurationProperties#ARCHIVE_DISK_SPACE_LIMIT} property
    */
+  @Override
   @ConfigAttributeGetter(name = ARCHIVE_DISK_SPACE_LIMIT)
   int getArchiveDiskSpaceLimit();
 
@@ -758,6 +947,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * Returns the value of the {@link ConfigurationProperties#LOG_FILE_SIZE_LIMIT} property
    */
+  @Override
   @ConfigAttributeGetter(name = LOG_FILE_SIZE_LIMIT)
   int getLogFileSizeLimit();
 
@@ -796,6 +986,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * Returns the value of the {@link ConfigurationProperties#LOG_DISK_SPACE_LIMIT} property
    */
+  @Override
   @ConfigAttributeGetter(name = LOG_DISK_SPACE_LIMIT)
   int getLogDiskSpaceLimit();
 
@@ -1089,7 +1280,7 @@ public interface DistributionConfig extends Config, LogConfig {
   String CLUSTER_SSL_TRUSTSTORE_PASSWORD_NAME = CLUSTER_SSL_TRUSTSTORE_PASSWORD;
 
   /**
-   * The name of an internal property that specifies a {@link org.apache.geode.i18n.LogWriterI18n}
+   * The name of an internal property that specifies a {@link org.apache.geode.LogWriter}
    * instance to log to. Set this property with put(), not with setProperty()
    *
    * @since GemFire 4.0
@@ -1119,7 +1310,7 @@ public interface DistributionConfig extends Config, LogConfig {
   String DS_QUORUM_CHECKER_NAME = "ds-quorum-checker";
 
   /**
-   * The name of an internal property that specifies a {@link org.apache.geode.LogWriter} instance
+   * The name of an internal property that specifies a {@link LogWriter} instance
    * to log security messages to. Set this property with put(), not with setProperty()
    *
    * @since GemFire 5.5
@@ -1208,9 +1399,9 @@ public interface DistributionConfig extends Config, LogConfig {
    */
   int MAX_SOCKET_BUFFER_SIZE = Connection.MAX_MSG_SIZE;
 
-  boolean VALIDATE = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "validateMessageSize");
+  boolean VALIDATE = Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "validateMessageSize");
   int VALIDATE_CEILING = Integer
-      .getInteger(DistributionConfig.GEMFIRE_PREFIX + "validateMessageSizeCeiling", 8 * 1024 * 1024)
+      .getInteger(GeodeGlossary.GEMFIRE_PREFIX + "validateMessageSizeCeiling", 8 * 1024 * 1024)
       .intValue();
 
   /**
@@ -1234,7 +1425,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The default value for {@link ConfigurationProperties#MCAST_SEND_BUFFER_SIZE} property
    */
-  int DEFAULT_MCAST_SEND_BUFFER_SIZE = 65535;
+  int DEFAULT_MCAST_SEND_BUFFER_SIZE = MembershipConfig.DEFAULT_MCAST_SEND_BUFFER_SIZE;
 
   /**
    * The minimum size of the {@link ConfigurationProperties#MCAST_SEND_BUFFER_SIZE}, in bytes.
@@ -1264,7 +1455,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The default value of the {@link ConfigurationProperties#MCAST_RECV_BUFFER_SIZE} property
    */
-  int DEFAULT_MCAST_RECV_BUFFER_SIZE = 1048576;
+  int DEFAULT_MCAST_RECV_BUFFER_SIZE = MembershipConfig.DEFAULT_MCAST_RECV_BUFFER_SIZE;
 
   /**
    * The minimum size of the {@link ConfigurationProperties#MCAST_RECV_BUFFER_SIZE}, in bytes.
@@ -1300,7 +1491,11 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The default value of the {@link ConfigurationProperties#MCAST_FLOW_CONTROL} property
    */
-  FlowControlParams DEFAULT_MCAST_FLOW_CONTROL = new FlowControlParams(1048576, (float) 0.25, 5000);
+  @Immutable
+  FlowControlParams DEFAULT_MCAST_FLOW_CONTROL = new FlowControlParams(
+      MembershipConfig.DEFAULT_MCAST_BYTE_ALLOWANCE,
+      MembershipConfig.DEFAULT_MCAST_RECHARGE_THRESHOLD,
+      MembershipConfig.DEFAULT_MCAST_RECHARGE_BLOCKING_MS);
 
   /**
    * The minimum byteAllowance for the{@link ConfigurationProperties#MCAST_FLOW_CONTROL} setting of
@@ -1347,7 +1542,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The default value of the {@link ConfigurationProperties#UDP_FRAGMENT_SIZE} property
    */
-  int DEFAULT_UDP_FRAGMENT_SIZE = 60000;
+  int DEFAULT_UDP_FRAGMENT_SIZE = MembershipConfig.DEFAULT_UDP_FRAGMENT_SIZE;
 
   /**
    * The minimum allowed {@link ConfigurationProperties#UDP_FRAGMENT_SIZE} setting of 1000
@@ -1380,7 +1575,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The default value of the {@link ConfigurationProperties#UDP_SEND_BUFFER_SIZE} property
    */
-  int DEFAULT_UDP_SEND_BUFFER_SIZE = 65535;
+  int DEFAULT_UDP_SEND_BUFFER_SIZE = MembershipConfig.DEFAULT_UDP_SEND_BUFFER_SIZE;
 
   /**
    * The minimum size of the {@link ConfigurationProperties#UDP_SEND_BUFFER_SIZE}, in bytes.
@@ -1410,7 +1605,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The default value of the {@link ConfigurationProperties#UDP_RECV_BUFFER_SIZE} property
    */
-  int DEFAULT_UDP_RECV_BUFFER_SIZE = 1048576;
+  int DEFAULT_UDP_RECV_BUFFER_SIZE = MembershipConfig.DEFAULT_UDP_RECV_BUFFER_SIZE;
 
   /**
    * The default size of the {@link ConfigurationProperties#UDP_RECV_BUFFER_SIZE} if tcp/ip sockets
@@ -1452,7 +1647,30 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The default value of the {@link ConfigurationProperties#DISABLE_TCP} property
    */
-  boolean DEFAULT_DISABLE_TCP = false;
+  boolean DEFAULT_DISABLE_TCP = MembershipConfig.DEFAULT_DISABLE_TCP;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#DISABLE_JMX} property
+   */
+  @ConfigAttributeGetter(name = DISABLE_JMX)
+  boolean getDisableJmx();
+
+  /**
+   * Sets the value of the {@link ConfigurationProperties#DISABLE_JMX} property.
+   */
+  @ConfigAttributeSetter(name = DISABLE_JMX)
+  void setDisableJmx(boolean newValue);
+
+  /**
+   * The name of the {@link ConfigurationProperties#DISABLE_JMX} property
+   */
+  @ConfigAttribute(type = Boolean.class)
+  String DISABLE_JMX_NAME = DISABLE_JMX;
+
+  /**
+   * The default value of the {@link ConfigurationProperties#DISABLE_JMX} property
+   */
+  boolean DEFAULT_DISABLE_JMX = false;
 
   /**
    * Turns on timing statistics for the distributed system
@@ -1476,6 +1694,29 @@ public interface DistributionConfig extends Config, LogConfig {
    * The default value of the {@link ConfigurationProperties#ENABLE_TIME_STATISTICS} property
    */
   boolean DEFAULT_ENABLE_TIME_STATISTICS = false;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#THREAD_MONITOR_ENABLED} property
+   */
+  @ConfigAttributeGetter(name = THREAD_MONITOR_ENABLED)
+  boolean getThreadMonitorEnabled();
+
+  /**
+   * Sets {@link ConfigurationProperties#THREAD_MONITOR_ENABLED}
+   */
+  @ConfigAttributeSetter(name = THREAD_MONITOR_ENABLED)
+  void setThreadMonitorEnabled(boolean newValue);
+
+  /**
+   * The name of the {@link ConfigurationProperties#THREAD_MONITOR_ENABLED} property
+   */
+  @ConfigAttribute(type = Boolean.class)
+  String THREAD_MONITOR_ENABLED_NAME = THREAD_MONITOR_ENABLED;
+
+  /**
+   * The default value of the {@link ConfigurationProperties#THREAD_MONITOR_ENABLED} property
+   */
+  boolean DEFAULT_THREAD_MONITOR_ENABLED = true;
 
   /**
    * Sets the value for {@link ConfigurationProperties#USE_CLUSTER_CONFIGURATION}
@@ -1523,6 +1764,30 @@ public interface DistributionConfig extends Config, LogConfig {
    */
   boolean DEFAULT_ENABLE_CLUSTER_CONFIGURATION = true;
 
+  /**
+   * Sets the value for {@link ConfigurationProperties#ENABLE_MANAGEMENT_REST_SERVICE}
+   */
+  @ConfigAttributeSetter(name = ENABLE_MANAGEMENT_REST_SERVICE)
+  void setEnableManagementRestService(boolean newValue);
+
+  /**
+   * Returns the value of {@link ConfigurationProperties#ENABLE_MANAGEMENT_REST_SERVICE} property
+   */
+  @ConfigAttributeGetter(name = ENABLE_MANAGEMENT_REST_SERVICE)
+  boolean getEnableManagementRestService();
+
+  /**
+   * the name of the {@link ConfigurationProperties#ENABLE_MANAGEMENT_REST_SERVICE} property
+   */
+  @ConfigAttribute(type = Boolean.class)
+  String ENABLE_MANAGEMENT_REST_SERVICE_NAME = ENABLE_MANAGEMENT_REST_SERVICE;
+
+  /**
+   * The default value of the {@link ConfigurationProperties#ENABLE_MANAGEMENT_REST_SERVICE}
+   * property
+   */
+  boolean DEFAULT_ENABLE_MANAGEMENT_REST_SERVICE = true;
+
   @ConfigAttribute(type = Boolean.class)
   String LOAD_CLUSTER_CONFIG_FROM_DIR_NAME = LOAD_CLUSTER_CONFIGURATION_FROM_DIR;
   boolean DEFAULT_LOAD_CLUSTER_CONFIG_FROM_DIR = false;
@@ -1568,7 +1833,8 @@ public interface DistributionConfig extends Config, LogConfig {
    */
   @ConfigAttribute(type = Boolean.class)
   String ENABLE_NETWORK_PARTITION_DETECTION_NAME = ENABLE_NETWORK_PARTITION_DETECTION;
-  boolean DEFAULT_ENABLE_NETWORK_PARTITION_DETECTION = true;
+  boolean DEFAULT_ENABLE_NETWORK_PARTITION_DETECTION =
+      MembershipConfig.DEFAULT_ENABLE_NETWORK_PARTITION_DETECTION;
 
   /**
    * Get the value of the {@link ConfigurationProperties#MEMBER_TIMEOUT} property
@@ -1585,7 +1851,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The default value of the {@link ConfigurationProperties#MEMBER_TIMEOUT} property
    */
-  int DEFAULT_MEMBER_TIMEOUT = 5000;
+  int DEFAULT_MEMBER_TIMEOUT = MembershipConfig.DEFAULT_MEMBER_TIMEOUT;
 
   /**
    * The minimum {@link ConfigurationProperties#MEMBER_TIMEOUT} setting of 1000 milliseconds
@@ -1608,10 +1874,10 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * set this boolean to restrict membership/communications to use ports in the ephemeral range
    */
-  String RESTRICT_MEMBERSHIP_PORT_RANGE = GEMFIRE_PREFIX + "use-ephemeral-ports";
+  String RESTRICT_MEMBERSHIP_PORT_RANGE = GeodeGlossary.GEMFIRE_PREFIX + "use-ephemeral-ports";
 
-  int[] DEFAULT_MEMBERSHIP_PORT_RANGE = Boolean.getBoolean(RESTRICT_MEMBERSHIP_PORT_RANGE)
-      ? new int[] {32769, 61000} : new int[] {1024, 65535};
+  @MakeImmutable
+  int[] DEFAULT_MEMBERSHIP_PORT_RANGE = MembershipConfig.DEFAULT_MEMBERSHIP_PORT_RANGE;
 
   @ConfigAttributeGetter(name = MEMBERSHIP_PORT_RANGE)
   int[] getMembershipPortRange();
@@ -1663,7 +1929,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The default value of the {@link ConfigurationProperties#ROLES} property
    */
-  String DEFAULT_ROLES = "";
+  String DEFAULT_ROLES = MembershipConfig.DEFAULT_ROLES;
 
   /**
    * The name of the {@link ConfigurationProperties#MAX_WAIT_TIME_RECONNECT} property
@@ -1783,6 +2049,73 @@ public interface DistributionConfig extends Config, LogConfig {
   String ASYNC_QUEUE_TIMEOUT_NAME = ASYNC_QUEUE_TIMEOUT;
 
   /**
+   * Returns the value of the {@link ConfigurationProperties#THREAD_MONITOR_INTERVAL} property.
+   */
+  @ConfigAttributeGetter(name = THREAD_MONITOR_INTERVAL)
+  int getThreadMonitorInterval();
+
+  /**
+   * Sets the value of the {@link ConfigurationProperties#THREAD_MONITOR_INTERVAL} property.
+   */
+  @ConfigAttributeSetter(name = THREAD_MONITOR_INTERVAL)
+  void setThreadMonitorInterval(int newValue);
+
+  /**
+   * The default value of {@link ConfigurationProperties#THREAD_MONITOR_INTERVAL} is
+   * <code>60000</code>.
+   */
+  int DEFAULT_THREAD_MONITOR_INTERVAL = 60000;
+  /**
+   * The minimum value of {@link ConfigurationProperties#THREAD_MONITOR_INTERVAL} is <code>0</code>.
+   */
+  int MIN_THREAD_MONITOR_INTERVAL = 0;
+  /**
+   * The maximum value of {@link ConfigurationProperties#THREAD_MONITOR_INTERVAL} is
+   * <code>86400000</code>.
+   */
+  int MAX_THREAD_MONITOR_INTERVAL = 86400000;
+  /**
+   * The name of the {@link ConfigurationProperties#THREAD_MONITOR_INTERVAL} property
+   */
+  @ConfigAttribute(type = Integer.class, min = MIN_THREAD_MONITOR_INTERVAL,
+      max = MAX_THREAD_MONITOR_INTERVAL)
+  String THREAD_MONITOR_INTERVAL_NAME = THREAD_MONITOR_INTERVAL;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#THREAD_MONITOR_TIME_LIMIT} property.
+   */
+  @ConfigAttributeGetter(name = THREAD_MONITOR_TIME_LIMIT)
+  int getThreadMonitorTimeLimit();
+
+  /**
+   * Sets the value of the {@link ConfigurationProperties#THREAD_MONITOR_TIME_LIMIT} property.
+   */
+  @ConfigAttributeSetter(name = THREAD_MONITOR_TIME_LIMIT)
+  void setThreadMonitorTimeLimit(int newValue);
+
+  /**
+   * The default value of {@link ConfigurationProperties#THREAD_MONITOR_TIME_LIMIT} is
+   * <code>60000</code>.
+   */
+  int DEFAULT_THREAD_MONITOR_TIME_LIMIT = 30000;
+  /**
+   * The minimum value of {@link ConfigurationProperties#THREAD_MONITOR_TIME_LIMIT} is
+   * <code>0</code>.
+   */
+  int MIN_THREAD_MONITOR_TIME_LIMIT = 0;
+  /**
+   * The maximum value of {@link ConfigurationProperties#THREAD_MONITOR_TIME_LIMIT} is
+   * <code>86400000</code>.
+   */
+  int MAX_THREAD_MONITOR_TIME_LIMIT = 86400000;
+  /**
+   * The name of the {@link ConfigurationProperties#THREAD_MONITOR_TIME_LIMIT} property
+   */
+  @ConfigAttribute(type = Integer.class, min = MIN_THREAD_MONITOR_TIME_LIMIT,
+      max = MAX_THREAD_MONITOR_TIME_LIMIT)
+  String THREAD_MONITOR_TIME_LIMIT_NAME = THREAD_MONITOR_TIME_LIMIT;
+
+  /**
    * Returns the value of the {@link ConfigurationProperties#ASYNC_MAX_QUEUE_SIZE} property.
    */
   @ConfigAttributeGetter(name = ASYNC_MAX_QUEUE_SIZE)
@@ -1884,7 +2217,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * <p>
    * Actual value of this constant is <code>""</code>.
    */
-  String DEFAULT_DURABLE_CLIENT_ID = "";
+  String DEFAULT_DURABLE_CLIENT_ID = MembershipConfig.DEFAULT_DURABLE_CLIENT_ID;
 
   /**
    * Returns the value of the {@link ConfigurationProperties#DURABLE_CLIENT_TIMEOUT} property.
@@ -1909,7 +2242,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * <p>
    * Actual value of this constant is <code>"300"</code>.
    */
-  int DEFAULT_DURABLE_CLIENT_TIMEOUT = 300;
+  int DEFAULT_DURABLE_CLIENT_TIMEOUT = MembershipConfig.DEFAULT_DURABLE_CLIENT_TIMEOUT;
 
   /**
    * Returns user module name for client authentication initializer in
@@ -2076,7 +2409,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * Actual value of this is one of the available symmetric algorithm names in JDK like "AES:128" or
    * "Blowfish".
    */
-  String DEFAULT_SECURITY_UDP_DHALGO = "";
+  String DEFAULT_SECURITY_UDP_DHALGO = MembershipConfig.DEFAULT_SECURITY_UDP_DHALGO;
 
   /**
    * Returns user defined method name for peer authentication initializer in
@@ -2102,7 +2435,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * <p>
    * Actual value of this is fully qualified <code>"method name"</code>.
    */
-  String DEFAULT_SECURITY_PEER_AUTH_INIT = "";
+  String DEFAULT_SECURITY_PEER_AUTH_INIT = MembershipConfig.DEFAULT_SECURITY_PEER_AUTH_INIT;
 
   /**
    * Returns user defined method name authenticating peer's credentials in
@@ -2194,6 +2527,7 @@ public interface DistributionConfig extends Config, LogConfig {
    *
    * @return the current security log-level
    */
+  @Override
   @ConfigAttributeGetter(name = SECURITY_LOG_LEVEL)
   int getSecurityLogLevel();
 
@@ -2219,6 +2553,7 @@ public interface DistributionConfig extends Config, LogConfig {
    *
    * @return <code>null</code> if logging information goes to standard out
    */
+  @Override
   @ConfigAttributeGetter(name = SECURITY_LOG_FILE)
   File getSecurityLogFile();
 
@@ -2231,8 +2566,8 @@ public interface DistributionConfig extends Config, LogConfig {
    * The security log file can not be changed while the system is running.
    *
    * @throws IllegalArgumentException if the specified value is not acceptable.
-   * @throws org.apache.geode.UnmodifiableException if this attribute can not be modified.
-   * @throws org.apache.geode.GemFireIOException if the set failure is caused by an error when
+   * @throws UnmodifiableException if this attribute can not be modified.
+   * @throws GemFireIOException if the set failure is caused by an error when
    *         writing to the system's configuration file.
    */
   @ConfigAttributeSetter(name = SECURITY_LOG_FILE)
@@ -2267,7 +2602,6 @@ public interface DistributionConfig extends Config, LogConfig {
    * Set timeout for peer membership check when security is enabled. The timeout must be less than
    * peer handshake timeout.
    *
-   * @param attValue
    */
   @ConfigAttributeSetter(name = SECURITY_PEER_VERIFY_MEMBER_TIMEOUT)
   void setSecurityPeerMembershipTimeout(int attValue);
@@ -2275,7 +2609,9 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The default peer membership check timeout is 1 second.
    */
-  int DEFAULT_SECURITY_PEER_VERIFYMEMBER_TIMEOUT = 1000;
+  int DEFAULT_SECURITY_PEER_VERIFYMEMBER_TIMEOUT =
+      MembershipConfig.DEFAULT_SECURITY_PEER_VERIFYMEMBER_TIMEOUT;
+
 
   /**
    * Max membership timeout must be less than max peer handshake timeout. Currently this is set to
@@ -2307,6 +2643,27 @@ public interface DistributionConfig extends Config, LogConfig {
 
   String SECURITY_PREFIX_NAME = SECURITY_PREFIX;
 
+  /**
+   * Sets the value for
+   * {@link ConfigurationProperties#SECURITY_AUTH_TOKEN_ENABLED_COMPONENTS}
+   */
+  @ConfigAttributeSetter(name = SECURITY_AUTH_TOKEN_ENABLED_COMPONENTS)
+  void setSecurityAuthTokenEnabledComponents(String[] newValue);
+
+  /**
+   * Returns the value of
+   * {@link ConfigurationProperties#SECURITY_AUTH_TOKEN_ENABLED_COMPONENTS} property
+   */
+  @ConfigAttributeGetter(name = SECURITY_AUTH_TOKEN_ENABLED_COMPONENTS)
+  String[] getSecurityAuthTokenEnabledComponents();
+
+  /**
+   * the name of the {@link ConfigurationProperties#SECURITY_AUTH_TOKEN_ENABLED_COMPONENTS}
+   * property
+   */
+  @ConfigAttribute(type = String[].class)
+  String SECURITY_AUTH_TOKEN_ENABLED_COMPONENTS_NAME =
+      SECURITY_AUTH_TOKEN_ENABLED_COMPONENTS;
 
   /**
    * The static String definition of the cluster ssl prefix <i>"cluster-ssl"</i> used in conjunction
@@ -2461,7 +2818,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * customers that are already using this system property.
    */
   boolean DEFAULT_ENFORCE_UNIQUE_HOST =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "EnforceUniqueHostStorageAllocation");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "EnforceUniqueHostStorageAllocation");
 
   @ConfigAttributeSetter(name = ENFORCE_UNIQUE_HOST)
   void setEnforceUniqueHost(boolean enforceUniqueHost);
@@ -2489,8 +2846,8 @@ public interface DistributionConfig extends Config, LogConfig {
    * The groups can not be changed while the system is running.
    *
    * @throws IllegalArgumentException if the specified value is not acceptable.
-   * @throws org.apache.geode.UnmodifiableException if this attribute can not be modified.
-   * @throws org.apache.geode.GemFireIOException if the set failure is caused by an error when
+   * @throws UnmodifiableException if this attribute can not be modified.
+   * @throws GemFireIOException if the set failure is caused by an error when
    *         writing to the system's configuration file.
    * @since GemFire 7.0
    */
@@ -2511,7 +2868,7 @@ public interface DistributionConfig extends Config, LogConfig {
    *
    * @since GemFire 7.0
    */
-  String DEFAULT_GROUPS = "";
+  String DEFAULT_GROUPS = MembershipConfig.DEFAULT_GROUPS;
 
   /**
    * Any cleanup required before closing the distributed system
@@ -2588,7 +2945,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * The name of the {@link ConfigurationProperties#JMX_MANAGER_SSL_ENABLED} property
    *
    * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_ENABLED}
+   *             {@link ConfigurationProperties#CLUSTER_SSL_ENABLED}
    */
   @Deprecated
   @ConfigAttribute(type = Boolean.class)
@@ -2662,11 +3019,11 @@ public interface DistributionConfig extends Config, LogConfig {
   String DEFAULT_JMX_MANAGER_SSL_PROTOCOLS = "any";
   /**
    * The name of the {@link ConfigurationProperties#JMX_MANAGER_SSL_PROTOCOLS} property The name of
-   * the {@link org.apache.geode.distributed.ConfigurationProperties#JMX_MANAGER_SSL_PROTOCOLS}
+   * the {@link ConfigurationProperties#JMX_MANAGER_SSL_PROTOCOLS}
    * property
    *
    * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_PROTOCOLS}
+   *             {@link ConfigurationProperties#CLUSTER_SSL_PROTOCOLS}
    */
   @Deprecated
   @ConfigAttribute(type = String.class)
@@ -2701,11 +3058,11 @@ public interface DistributionConfig extends Config, LogConfig {
   String DEFAULT_JMX_MANAGER_SSL_CIPHERS = "any";
   /**
    * The name of the {@link ConfigurationProperties#JMX_MANAGER_SSL_CIPHERS} property The name of
-   * the {@link org.apache.geode.distributed.ConfigurationProperties#JMX_MANAGER_SSL_CIPHERS}
+   * the {@link ConfigurationProperties#JMX_MANAGER_SSL_CIPHERS}
    * property
    *
    * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_CIPHERS}
+   *             {@link ConfigurationProperties#CLUSTER_SSL_CIPHERS}
    */
   @Deprecated
   @ConfigAttribute(type = String.class)
@@ -2743,11 +3100,11 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The name of the {@link ConfigurationProperties#JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION} property
    * The name of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION}
+   * {@link ConfigurationProperties#JMX_MANAGER_SSL_REQUIRE_AUTHENTICATION}
    * property
    *
    * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_REQUIRE_AUTHENTICATION}
+   *             {@link ConfigurationProperties#CLUSTER_SSL_REQUIRE_AUTHENTICATION}
    */
   @Deprecated
   @ConfigAttribute(type = Boolean.class)
@@ -2783,11 +3140,11 @@ public interface DistributionConfig extends Config, LogConfig {
 
   /**
    * The name of the {@link ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE} property The name of
-   * the {@link org.apache.geode.distributed.ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE}
+   * the {@link ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE}
    * property
    *
    * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE}
+   *             {@link ConfigurationProperties#CLUSTER_SSL_KEYSTORE}
    */
   @Deprecated
   @ConfigAttribute(type = String.class)
@@ -2825,11 +3182,11 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The name of the {@link ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE_TYPE} property The name
    * of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE_TYPE}
+   * {@link ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE_TYPE}
    * property
    *
    * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE_TYPE}
+   *             {@link ConfigurationProperties#CLUSTER_SSL_KEYSTORE_TYPE}
    */
   @ConfigAttribute(type = String.class)
   String JMX_MANAGER_SSL_KEYSTORE_TYPE_NAME = JMX_MANAGER_SSL_KEYSTORE_TYPE;
@@ -2867,7 +3224,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The name of the {@link ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE_PASSWORD} property The
    * name of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE_PASSWORD}
+   * {@link ConfigurationProperties#JMX_MANAGER_SSL_KEYSTORE_PASSWORD}
    * propery
    *
    * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_KEYSTORE_PASSWORD}
@@ -2906,11 +3263,11 @@ public interface DistributionConfig extends Config, LogConfig {
 
   /**
    * The name of the {@link ConfigurationProperties#JMX_MANAGER_SSL_TRUSTSTORE} property The name of
-   * the {@link org.apache.geode.distributed.ConfigurationProperties#JMX_MANAGER_SSL_TRUSTSTORE}
+   * the {@link ConfigurationProperties#JMX_MANAGER_SSL_TRUSTSTORE}
    * property
    *
    * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE}
+   *             {@link ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE}
    */
   @ConfigAttribute(type = String.class)
   String JMX_MANAGER_SSL_TRUSTSTORE_NAME = JMX_MANAGER_SSL_TRUSTSTORE;
@@ -2948,11 +3305,11 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The name of the {@link ConfigurationProperties#JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD} property
    * The name of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD}
+   * {@link ConfigurationProperties#JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD}
    * property
    *
    * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE_PASSWORD}
+   *             {@link ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE_PASSWORD}
    */
   @Deprecated
   @ConfigAttribute(type = String.class)
@@ -3002,7 +3359,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * Returns the value of the {@link ConfigurationProperties#JMX_MANAGER_HTTP_PORT} property
    * <p>
    * Returns the value of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#JMX_MANAGER_HTTP_PORT} property
+   * {@link ConfigurationProperties#JMX_MANAGER_HTTP_PORT} property
    *
    * @deprecated as of 8.0 use {@link #getHttpServicePort()} instead.
    */
@@ -3012,7 +3369,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * Set the {@link ConfigurationProperties#JMX_MANAGER_HTTP_PORT} for jmx-manager.
    * <p>
-   * Set the {@link org.apache.geode.distributed.ConfigurationProperties#JMX_MANAGER_HTTP_PORT} for
+   * Set the {@link ConfigurationProperties#JMX_MANAGER_HTTP_PORT} for
    * jmx-manager.
    *
    * @param value the port number for jmx-manager HTTP service
@@ -3026,7 +3383,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * The name of the {@link ConfigurationProperties#JMX_MANAGER_HTTP_PORT} property.
    * <p>
    * The name of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#JMX_MANAGER_HTTP_PORT} property.
+   * {@link ConfigurationProperties#JMX_MANAGER_HTTP_PORT} property.
    *
    * @deprecated as of 8.0 use {{@link #HTTP_SERVICE_PORT_NAME} instead.
    */
@@ -3058,7 +3415,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * Returns the value of the {@link ConfigurationProperties#MEMCACHED_PORT} property
    * <p>
    * Returns the value of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#MEMCACHED_PORT} property
+   * {@link ConfigurationProperties#MEMCACHED_PORT} property
    *
    * @return the port on which GemFireMemcachedServer should be started
    *
@@ -3078,7 +3435,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * Returns the value of the {@link ConfigurationProperties#MEMCACHED_PROTOCOL} property
    * <p>
    * Returns the value of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#MEMCACHED_PROTOCOL} property
+   * {@link ConfigurationProperties#MEMCACHED_PROTOCOL} property
    *
    * @return the protocol for GemFireMemcachedServer
    *
@@ -3092,13 +3449,13 @@ public interface DistributionConfig extends Config, LogConfig {
 
   @ConfigAttribute(type = String.class)
   String MEMCACHED_PROTOCOL_NAME = MEMCACHED_PROTOCOL;
-  String DEFAULT_MEMCACHED_PROTOCOL = GemFireMemcachedServer.Protocol.ASCII.name();
+  String DEFAULT_MEMCACHED_PROTOCOL = "ASCII";
 
   /**
    * Returns the value of the {@link ConfigurationProperties#MEMCACHED_BIND_ADDRESS} property
    * <p>
    * Returns the value of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#MEMCACHED_BIND_ADDRESS} property
+   * {@link ConfigurationProperties#MEMCACHED_BIND_ADDRESS} property
    *
    * @return the bind address for GemFireMemcachedServer
    *
@@ -3135,7 +3492,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * Returns the value of the {@link ConfigurationProperties#REDIS_BIND_ADDRESS} property
    * <p>
    * Returns the value of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#REDIS_BIND_ADDRESS} property
+   * {@link ConfigurationProperties#REDIS_BIND_ADDRESS} property
    *
    * @return the bind address for GemFireRedisServer
    *
@@ -3155,7 +3512,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * Returns the value of the {@link ConfigurationProperties#REDIS_PASSWORD} property
    * <p>
    * Returns the value of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#REDIS_PASSWORD} property
+   * {@link ConfigurationProperties#REDIS_PASSWORD} property
    *
    * @return the authentication password for GemFireRedisServer
    *
@@ -3177,7 +3534,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * Returns the value of the {@link ConfigurationProperties#HTTP_SERVICE_PORT} property
    * <p>
    * Returns the value of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#HTTP_SERVICE_PORT} property
+   * {@link ConfigurationProperties#HTTP_SERVICE_PORT} property
    *
    * @return the HTTP service port
    *
@@ -3189,7 +3546,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * Set the {@link ConfigurationProperties#HTTP_SERVICE_PORT} for HTTP service.
    * <p>
-   * Set the {@link org.apache.geode.distributed.ConfigurationProperties#HTTP_SERVICE_PORT} for HTTP
+   * Set the {@link ConfigurationProperties#HTTP_SERVICE_PORT} for HTTP
    * service.
    *
    * @param value the port number for HTTP service
@@ -3202,7 +3559,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The name of the {@link ConfigurationProperties#HTTP_SERVICE_PORT} property
    * <p>
-   * The name of the {@link org.apache.geode.distributed.ConfigurationProperties#HTTP_SERVICE_PORT}
+   * The name of the {@link ConfigurationProperties#HTTP_SERVICE_PORT}
    * property
    *
    * @since GemFire 8.0
@@ -3222,7 +3579,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * Returns the value of the {@link ConfigurationProperties#HTTP_SERVICE_BIND_ADDRESS} property
    * <p>
    * Returns the value of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#HTTP_SERVICE_BIND_ADDRESS} property
+   * {@link ConfigurationProperties#HTTP_SERVICE_BIND_ADDRESS} property
    *
    * @return the bind-address for HTTP service
    *
@@ -3234,7 +3591,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * Set the {@link ConfigurationProperties#HTTP_SERVICE_BIND_ADDRESS} for HTTP service.
    * <p>
-   * Set the {@link org.apache.geode.distributed.ConfigurationProperties#HTTP_SERVICE_BIND_ADDRESS}
+   * Set the {@link ConfigurationProperties#HTTP_SERVICE_BIND_ADDRESS}
    * for HTTP service.
    *
    * @param value the bind-address for HTTP service
@@ -3292,11 +3649,11 @@ public interface DistributionConfig extends Config, LogConfig {
 
   /**
    * The name of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_ENABLED} property The name of
-   * the {@link org.apache.geode.distributed.ConfigurationProperties#HTTP_SERVICE_SSL_ENABLED}
+   * the {@link ConfigurationProperties#HTTP_SERVICE_SSL_ENABLED}
    * property
    *
    * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_ENABLED}
+   *             {@link ConfigurationProperties#CLUSTER_SSL_ENABLED}
    */
   @Deprecated
   @ConfigAttribute(type = Boolean.class)
@@ -3335,11 +3692,11 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The name of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION}
    * property The name of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION}
+   * {@link ConfigurationProperties#HTTP_SERVICE_SSL_REQUIRE_AUTHENTICATION}
    * property
    *
    * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_REQUIRE_AUTHENTICATION}
+   *             {@link ConfigurationProperties#CLUSTER_SSL_REQUIRE_AUTHENTICATION}
    */
   @Deprecated
   @ConfigAttribute(type = Boolean.class)
@@ -3375,11 +3732,11 @@ public interface DistributionConfig extends Config, LogConfig {
 
   /**
    * The name of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_PROTOCOLS} property The name of
-   * the {@link org.apache.geode.distributed.ConfigurationProperties#HTTP_SERVICE_SSL_PROTOCOLS}
+   * the {@link ConfigurationProperties#HTTP_SERVICE_SSL_PROTOCOLS}
    * property
    *
    * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_PROTOCOLS}
+   *             {@link ConfigurationProperties#CLUSTER_SSL_PROTOCOLS}
    */
   @Deprecated
   @ConfigAttribute(type = String.class)
@@ -3415,11 +3772,11 @@ public interface DistributionConfig extends Config, LogConfig {
 
   /**
    * The name of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_CIPHERS} property The name of
-   * the {@link org.apache.geode.distributed.ConfigurationProperties#HTTP_SERVICE_SSL_CIPHERS}
+   * the {@link ConfigurationProperties#HTTP_SERVICE_SSL_CIPHERS}
    * property
    *
    * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_CIPHERS}
+   *             {@link ConfigurationProperties#CLUSTER_SSL_CIPHERS}
    */
   @Deprecated
   @ConfigAttribute(type = String.class)
@@ -3455,11 +3812,11 @@ public interface DistributionConfig extends Config, LogConfig {
 
   /**
    * The name of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE} property The name of
-   * the {@link org.apache.geode.distributed.ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE}
+   * the {@link ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE}
    * property
    *
    * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE}
+   *             {@link ConfigurationProperties#CLUSTER_SSL_KEYSTORE}
    */
   @Deprecated
   @ConfigAttribute(type = String.class)
@@ -3498,11 +3855,11 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The name of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE_PASSWORD} property The
    * name of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE_PASSWORD}
+   * {@link ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE_PASSWORD}
    * property
    *
    * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE_PASSWORD}
+   *             {@link ConfigurationProperties#CLUSTER_SSL_KEYSTORE_PASSWORD}
    */
   @Deprecated
   @ConfigAttribute(type = String.class)
@@ -3539,11 +3896,11 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The name of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE_TYPE} property The
    * name of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE_TYPE}
+   * {@link ConfigurationProperties#HTTP_SERVICE_SSL_KEYSTORE_TYPE}
    * property
    *
    * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE_TYPE}
+   *             {@link ConfigurationProperties#CLUSTER_SSL_KEYSTORE_TYPE}
    */
   @Deprecated
   @ConfigAttribute(type = String.class)
@@ -3579,11 +3936,11 @@ public interface DistributionConfig extends Config, LogConfig {
 
   /**
    * The name of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_TRUSTSTORE} property The name
-   * of the {@link org.apache.geode.distributed.ConfigurationProperties#HTTP_SERVICE_SSL_TRUSTSTORE}
+   * of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_TRUSTSTORE}
    * property
    *
    * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE}
+   *             {@link ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE}
    */
   @Deprecated
   @ConfigAttribute(type = String.class)
@@ -3622,11 +3979,11 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The name of the {@link ConfigurationProperties#HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD} property
    * The name of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD}
+   * {@link ConfigurationProperties#HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD}
    * property
    *
    * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE_PASSWORD}
+   *             {@link ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE_PASSWORD}
    */
   @Deprecated
   @ConfigAttribute(type = String.class)
@@ -3644,7 +4001,7 @@ public interface DistributionConfig extends Config, LogConfig {
    * Returns the value of the {@link ConfigurationProperties#START_DEV_REST_API} property
    * <p>
    * Returns the value of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#START_DEV_REST_API} property
+   * {@link ConfigurationProperties#START_DEV_REST_API} property
    *
    * @return the value of the property
    *
@@ -3657,7 +4014,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * Set the {@link ConfigurationProperties#START_DEV_REST_API} for HTTP service.
    * <p>
-   * Set the {@link org.apache.geode.distributed.ConfigurationProperties#START_DEV_REST_API} for
+   * Set the {@link ConfigurationProperties#START_DEV_REST_API} for
    * HTTP service.
    *
    * @param value for the property
@@ -3670,7 +4027,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The name of the {@link ConfigurationProperties#START_DEV_REST_API} property
    * <p>
-   * The name of the {@link org.apache.geode.distributed.ConfigurationProperties#START_DEV_REST_API}
+   * The name of the {@link ConfigurationProperties#START_DEV_REST_API}
    * property
    *
    * @since GemFire 8.0
@@ -3697,7 +4054,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The default value of the {@link ConfigurationProperties#DISABLE_AUTO_RECONNECT} property
    */
-  boolean DEFAULT_DISABLE_AUTO_RECONNECT = false;
+  boolean DEFAULT_DISABLE_AUTO_RECONNECT = MembershipConfig.DEFAULT_DISABLE_AUTO_RECONNECT;
 
   /**
    * Gets the value of {@link ConfigurationProperties#DISABLE_AUTO_RECONNECT}
@@ -3739,10 +4096,10 @@ public interface DistributionConfig extends Config, LogConfig {
   boolean DEFAULT_SERVER_SSL_ENABLED = false;
   /**
    * The name of the {@link ConfigurationProperties#SERVER_SSL_ENABLED} property The name of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#SERVER_SSL_ENABLED} property
+   * {@link ConfigurationProperties#SERVER_SSL_ENABLED} property
    *
    * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#SERVER_SSL_ENABLED}
+   *             {@link ConfigurationProperties#SERVER_SSL_ENABLED}
    */
   @Deprecated
   @ConfigAttribute(type = Boolean.class)
@@ -3783,10 +4140,10 @@ public interface DistributionConfig extends Config, LogConfig {
   String DEFAULT_SERVER_SSL_PROTOCOLS = "any";
   /**
    * The name of the {@link ConfigurationProperties#SERVER_SSL_PROTOCOLS} property The name of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#SERVER_SSL_PROTOCOLS} property
+   * {@link ConfigurationProperties#SERVER_SSL_PROTOCOLS} property
    *
    * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_PROTOCOLS}
+   *             {@link ConfigurationProperties#CLUSTER_SSL_PROTOCOLS}
    */
   @Deprecated
   @ConfigAttribute(type = String.class)
@@ -3821,10 +4178,10 @@ public interface DistributionConfig extends Config, LogConfig {
   String DEFAULT_SERVER_SSL_CIPHERS = "any";
   /**
    * The name of the {@link ConfigurationProperties#SERVER_SSL_CIPHERS} property The name of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#SERVER_SSL_CIPHERS} property
+   * {@link ConfigurationProperties#SERVER_SSL_CIPHERS} property
    *
    * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_CIPHERS} 
+   *             {@link ConfigurationProperties#CLUSTER_SSL_CIPHERS} 
    */
   @Deprecated
   @ConfigAttribute(type = String.class)
@@ -3862,11 +4219,11 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The name of the {@link ConfigurationProperties#SERVER_SSL_REQUIRE_AUTHENTICATION} property The
    * name of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#SERVER_SSL_REQUIRE_AUTHENTICATION}
+   * {@link ConfigurationProperties#SERVER_SSL_REQUIRE_AUTHENTICATION}
    * property
    *
    * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_REQUIRE_AUTHENTICATION}
+   *             {@link ConfigurationProperties#CLUSTER_SSL_REQUIRE_AUTHENTICATION}
    */
   @Deprecated
   @ConfigAttribute(type = Boolean.class)
@@ -3902,10 +4259,10 @@ public interface DistributionConfig extends Config, LogConfig {
 
   /**
    * The name of the {@link ConfigurationProperties#SERVER_SSL_KEYSTORE} property The name of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#SERVER_SSL_KEYSTORE} property
+   * {@link ConfigurationProperties#SERVER_SSL_KEYSTORE} property
    *
    * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE}
+   *             {@link ConfigurationProperties#CLUSTER_SSL_KEYSTORE}
    */
   @Deprecated
   @ConfigAttribute(type = String.class)
@@ -3941,11 +4298,11 @@ public interface DistributionConfig extends Config, LogConfig {
 
   /**
    * The name of the {@link ConfigurationProperties#SERVER_SSL_KEYSTORE_TYPE} property The name of
-   * the {@link org.apache.geode.distributed.ConfigurationProperties#SERVER_SSL_KEYSTORE_TYPE}
+   * the {@link ConfigurationProperties#SERVER_SSL_KEYSTORE_TYPE}
    * property
    *
    * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE_TYPE}
+   *             {@link ConfigurationProperties#CLUSTER_SSL_KEYSTORE_TYPE}
    */
   @Deprecated
   @ConfigAttribute(type = String.class)
@@ -3982,11 +4339,11 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The name of the {@link ConfigurationProperties#SERVER_SSL_KEYSTORE_PASSWORD} property The name
    * of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#SERVER_SSL_KEYSTORE_PASSWORD}
+   * {@link ConfigurationProperties#SERVER_SSL_KEYSTORE_PASSWORD}
    * property
    *
    * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE_PASSWORD}
+   *             {@link ConfigurationProperties#CLUSTER_SSL_KEYSTORE_PASSWORD}
    */
   @Deprecated
   @ConfigAttribute(type = String.class)
@@ -4021,10 +4378,10 @@ public interface DistributionConfig extends Config, LogConfig {
 
   /**
    * The name of the {@link ConfigurationProperties#SERVER_SSL_TRUSTSTORE} property The name of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#SERVER_SSL_TRUSTSTORE} property
+   * {@link ConfigurationProperties#SERVER_SSL_TRUSTSTORE} property
    *
    * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE}
+   *             {@link ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE}
    */
   @Deprecated
   @ConfigAttribute(type = String.class)
@@ -4062,11 +4419,11 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The name of the {@link ConfigurationProperties#SERVER_SSL_TRUSTSTORE_PASSWORD} property The
    * name of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#SERVER_SSL_TRUSTSTORE_PASSWORD}
+   * {@link ConfigurationProperties#SERVER_SSL_TRUSTSTORE_PASSWORD}
    * property
    *
    * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE_PASSWORD}
+   *             {@link ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE_PASSWORD}
    */
   @Deprecated
   @ConfigAttribute(type = String.class)
@@ -4092,10 +4449,10 @@ public interface DistributionConfig extends Config, LogConfig {
   boolean DEFAULT_GATEWAY_SSL_ENABLED = false;
   /**
    * The name of the {@link ConfigurationProperties#GATEWAY_SSL_ENABLED} property The name of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#GATEWAY_SSL_ENABLED} property
+   * {@link ConfigurationProperties#GATEWAY_SSL_ENABLED} property
    *
    * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_ENABLED}
+   *             {@link ConfigurationProperties#CLUSTER_SSL_ENABLED}
    */
   @Deprecated
   @ConfigAttribute(type = Boolean.class)
@@ -4138,10 +4495,10 @@ public interface DistributionConfig extends Config, LogConfig {
   String DEFAULT_GATEWAY_SSL_PROTOCOLS = "any";
   /**
    * The name of the {@link ConfigurationProperties#GATEWAY_SSL_PROTOCOLS} property The name of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#GATEWAY_SSL_PROTOCOLS} property
+   * {@link ConfigurationProperties#GATEWAY_SSL_PROTOCOLS} property
    *
    * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_PROTOCOLS}
+   *             {@link ConfigurationProperties#CLUSTER_SSL_PROTOCOLS}
    */
   @Deprecated
   @ConfigAttribute(type = String.class)
@@ -4175,10 +4532,10 @@ public interface DistributionConfig extends Config, LogConfig {
   String DEFAULT_GATEWAY_SSL_CIPHERS = "any";
   /**
    * The name of the {@link ConfigurationProperties#GATEWAY_SSL_CIPHERS} property The name of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#GATEWAY_SSL_CIPHERS} property
+   * {@link ConfigurationProperties#GATEWAY_SSL_CIPHERS} property
    *
    * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_CIPHERS} 
+   *             {@link ConfigurationProperties#CLUSTER_SSL_CIPHERS} 
    */
   @Deprecated
   @ConfigAttribute(type = String.class)
@@ -4216,11 +4573,11 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The name of the {@link ConfigurationProperties#GATEWAY_SSL_REQUIRE_AUTHENTICATION} property The
    * name of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#GATEWAY_SSL_REQUIRE_AUTHENTICATION}
+   * {@link ConfigurationProperties#GATEWAY_SSL_REQUIRE_AUTHENTICATION}
    * property
    *
    * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_REQUIRE_AUTHENTICATION}
+   *             {@link ConfigurationProperties#CLUSTER_SSL_REQUIRE_AUTHENTICATION}
    */
   @Deprecated
   @ConfigAttribute(type = Boolean.class)
@@ -4256,10 +4613,10 @@ public interface DistributionConfig extends Config, LogConfig {
 
   /**
    * The name of the {@link ConfigurationProperties#GATEWAY_SSL_KEYSTORE} property The name of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#GATEWAY_SSL_KEYSTORE} property
+   * {@link ConfigurationProperties#GATEWAY_SSL_KEYSTORE} property
    *
    * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE}
+   *             {@link ConfigurationProperties#CLUSTER_SSL_KEYSTORE}
    */
   @Deprecated
   @ConfigAttribute(type = String.class)
@@ -4295,11 +4652,11 @@ public interface DistributionConfig extends Config, LogConfig {
 
   /**
    * The name of the {@link ConfigurationProperties#GATEWAY_SSL_KEYSTORE_TYPE} property The name of
-   * the {@link org.apache.geode.distributed.ConfigurationProperties#GATEWAY_SSL_KEYSTORE_TYPE}
+   * the {@link ConfigurationProperties#GATEWAY_SSL_KEYSTORE_TYPE}
    * property
    *
    * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE_TYPE}
+   *             {@link ConfigurationProperties#CLUSTER_SSL_KEYSTORE_TYPE}
    */
   @Deprecated
   @ConfigAttribute(type = String.class)
@@ -4337,11 +4694,11 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The name of the {@link ConfigurationProperties#GATEWAY_SSL_KEYSTORE_PASSWORD} property The name
    * of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#GATEWAY_SSL_KEYSTORE_PASSWORD}
+   * {@link ConfigurationProperties#GATEWAY_SSL_KEYSTORE_PASSWORD}
    * property
    *
    * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_KEYSTORE_PASSWORD}
+   *             {@link ConfigurationProperties#CLUSTER_SSL_KEYSTORE_PASSWORD}
    */
   @Deprecated
   @ConfigAttribute(type = String.class)
@@ -4377,10 +4734,10 @@ public interface DistributionConfig extends Config, LogConfig {
 
   /**
    * The name of the {@link ConfigurationProperties#GATEWAY_SSL_TRUSTSTORE} property The name of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#GATEWAY_SSL_TRUSTSTORE} property
+   * {@link ConfigurationProperties#GATEWAY_SSL_TRUSTSTORE} property
    *
    * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE}
+   *             {@link ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE}
    */
   @Deprecated
   @ConfigAttribute(type = String.class)
@@ -4418,11 +4775,11 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * The name of the {@link ConfigurationProperties#GATEWAY_SSL_TRUSTSTORE_PASSWORD} property The
    * name of the
-   * {@link org.apache.geode.distributed.ConfigurationProperties#GATEWAY_SSL_TRUSTSTORE_PASSWORD}
+   * {@link ConfigurationProperties#GATEWAY_SSL_TRUSTSTORE_PASSWORD}
    * property
    *
    * @deprecated Geode 1.0 use
-   *             {@link org.apache.geode.distributed.ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE_PASSWORD}
+   *             {@link ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE_PASSWORD}
    */
   @Deprecated
   @ConfigAttribute(type = String.class)
@@ -4449,7 +4806,7 @@ public interface DistributionConfig extends Config, LogConfig {
   /**
    * Gets the value of {@link ConfigurationProperties#LOCK_MEMORY}
    * <p>
-   * Gets the value of {@link org.apache.geode.distributed.ConfigurationProperties#LOCK_MEMORY}
+   * Gets the value of {@link ConfigurationProperties#LOCK_MEMORY}
    *
    * @since Geode 1.0
    */
@@ -4628,6 +4985,26 @@ public interface DistributionConfig extends Config, LogConfig {
   String SERVER_SSL_ALIAS_NAME = SSL_SERVER_ALIAS;
 
   /**
+   * Returns the value of the {@link ConfigurationProperties#SSL_ENDPOINT_IDENTIFICATION_ENABLED}
+   * property.
+   */
+  @ConfigAttributeGetter(name = SSL_ENDPOINT_IDENTIFICATION_ENABLED)
+  boolean getSSLEndPointIdentificationEnabled();
+
+  /**
+   * Sets the value of the {@link ConfigurationProperties#SSL_ENDPOINT_IDENTIFICATION_ENABLED}
+   * property.
+   */
+  @ConfigAttributeSetter(name = SSL_ENDPOINT_IDENTIFICATION_ENABLED)
+  void setSSLEndPointIdentificationEnabled(boolean enabled);
+
+  /**
+   * The name of the {@link ConfigurationProperties#SSL_ENDPOINT_IDENTIFICATION_ENABLED} property
+   */
+  @ConfigAttribute(type = Boolean.class)
+  String SSL_ENDPOINT_IDENTIFICATION_ENABLED_NAME = SSL_ENDPOINT_IDENTIFICATION_ENABLED;
+
+  /**
    * Returns the value of the {@link ConfigurationProperties#SSL_ENABLED_COMPONENTS} property.
    *
    * @since Geode 1.0
@@ -4656,8 +5033,29 @@ public interface DistributionConfig extends Config, LogConfig {
    *
    * @since Geode 1.0
    */
+  @Immutable
   SecurableCommunicationChannel[] DEFAULT_SSL_ENABLED_COMPONENTS =
       new SecurableCommunicationChannel[] {};
+
+  @Immutable
+  String[] DEFAULT_SECURITY_AUTH_TOKEN_ENABLED_COMPONENTS = new String[0];
+
+  boolean DEFAULT_SSL_USE_DEFAULT_CONTEXT = false;
+
+  @ConfigAttribute(type = Boolean.class)
+  String SSL_USE_DEFAULT_CONTEXT_NAME = SSL_USE_DEFAULT_CONTEXT;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#SSL_USE_DEFAULT_CONTEXT} property.
+   */
+  @ConfigAttributeGetter(name = SSL_USE_DEFAULT_CONTEXT)
+  boolean getSSLUseDefaultContext();
+
+  /**
+   * Sets the value of the {@link ConfigurationProperties#SSL_USE_DEFAULT_CONTEXT} property.
+   */
+  @ConfigAttributeSetter(name = SSL_USE_DEFAULT_CONTEXT)
+  void setSSLUseDefaultContext(boolean defaultContext);
 
   /**
    * Returns the value of the {@link ConfigurationProperties#SSL_PROTOCOLS} property.
@@ -4913,12 +5311,22 @@ public interface DistributionConfig extends Config, LogConfig {
    */
   String DEFAULT_SERIALIZABLE_OBJECT_FILTER = "!*";
 
+  /**
+   * Returns true if locators and mcast-port are not configured.
+   */
+  @Override
+  boolean isLoner();
+
   // *************** Initializers to gather all the annotations in this class
   // ************************
 
+  @MakeImmutable
   Map<String, ConfigAttribute> attributes = new HashMap<>();
+  @MakeImmutable
   Map<String, Method> setters = new HashMap<>();
+  @MakeImmutable
   Map<String, Method> getters = new HashMap<>();
+  @MakeImmutable
   String[] dcValidAttributeNames = init();
 
   static String[] init() {
@@ -4944,7 +5352,6 @@ public interface DistributionConfig extends Config, LogConfig {
       }
     }
     Collections.sort(atts);
-    return atts.toArray(new String[atts.size()]);
+    return atts.toArray(new String[0]);
   }
-
 }

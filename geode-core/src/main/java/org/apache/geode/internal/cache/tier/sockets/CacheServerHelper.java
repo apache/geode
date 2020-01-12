@@ -21,15 +21,13 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.UTFDataFormatException;
-import java.io.UnsupportedEncodingException;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.CacheServerImpl;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.util.BlobHelper;
 
 /**
@@ -104,7 +102,6 @@ public class CacheServerHelper {
   /**
    * The logic used here is based on java's DataInputStream.writeUTF() from the version 1.6.0_10.
    *
-   * @param s
    * @return byte[]
    */
   public static byte[] toUTF(String s) {
@@ -115,8 +112,6 @@ public class CacheServerHelper {
   /**
    * The logic used here is based on java's DataInputStream.readUTF() from the version 1.6.0_10.
    *
-   * @param bytearr
-   * @return String
    */
   public static String fromUTF(byte[] bytearr) {
     int utflen = bytearr.length;
@@ -155,7 +150,7 @@ public class CacheServerHelper {
           count += 2;
           if (count > utflen) {
             throw new RuntimeException(
-                LocalizedStrings.CacheServerHelper_UTF8_EXCEPTION.toLocalizedString(),
+                "UTF-8 Exception malformed input",
                 new UTFDataFormatException("malformed input: partial character at end"));
           }
           char2 = (int) bytearr[count - 1];
@@ -168,14 +163,14 @@ public class CacheServerHelper {
           count += 3;
           if (count > utflen) {
             throw new RuntimeException(
-                LocalizedStrings.CacheServerHelper_UTF8_EXCEPTION.toLocalizedString(),
+                "UTF-8 Exception malformed input",
                 new UTFDataFormatException("malformed input: partial character at end"));
           }
           char2 = (int) bytearr[count - 2];
           char3 = (int) bytearr[count - 1];
           if (((char2 & 0xC0) != 0x80) || ((char3 & 0xC0) != 0x80)) {
             throw new RuntimeException(
-                LocalizedStrings.CacheServerHelper_UTF8_EXCEPTION.toLocalizedString(),
+                "UTF-8 Exception malformed input",
                 new UTFDataFormatException("malformed input around byte " + (count - 1)));
           }
           chararr[chararr_count++] =
@@ -184,7 +179,7 @@ public class CacheServerHelper {
         default:
           /* 10xx xxxx, 1111 xxxx */
           throw new RuntimeException(
-              LocalizedStrings.CacheServerHelper_UTF8_EXCEPTION.toLocalizedString(),
+              "UTF-8 Exception malformed input",
               new UTFDataFormatException("malformed input around byte " + count));
       }
     }

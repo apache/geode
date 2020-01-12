@@ -21,9 +21,7 @@ import java.io.IOException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.ByteArrayDataInput;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.DistributedPutAllOperation;
 import org.apache.geode.internal.cache.DistributedPutAllOperation.EntryVersionsList;
 import org.apache.geode.internal.cache.DistributedPutAllOperation.PutAllEntryData;
@@ -33,6 +31,10 @@ import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.offheap.annotations.Retained;
+import org.apache.geode.internal.serialization.ByteArrayDataInput;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 public class DistTxEntryEvent extends EntryEventImpl {
 
@@ -69,7 +71,8 @@ public class DistTxEntryEvent extends EntryEventImpl {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     DataSerializer.writeObject(this.eventID, out);
     DataSerializer.writeObject(this.getRegion().getFullPath(), out);
     out.writeByte(this.op.ordinal);
@@ -88,16 +91,17 @@ public class DistTxEntryEvent extends EntryEventImpl {
 
     // handle putAll
     if (this.putAllOp != null) {
-      putAllToData(out);
+      putAllToData(out, context);
     }
     // handle removeAll
     if (this.removeAllOp != null) {
-      removeAllToData(out);
+      removeAllToData(out, context);
     }
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     this.eventID = (EventID) DataSerializer.readObject(in);
     this.regionName = DataSerializer.readString(in);
     this.op = Operation.fromOrdinal(in.readByte());
@@ -113,19 +117,16 @@ public class DistTxEntryEvent extends EntryEventImpl {
     byte flags = DataSerializer.readByte(in);
 
     if ((flags & HAS_PUTALL_OP) != 0) {
-      putAllFromData(in);
+      putAllFromData(in, context);
     }
 
     if ((flags & HAS_REMOVEALL_OP) != 0) {
-      removeAllFromData(in);
+      removeAllFromData(in, context);
     }
   }
 
-  /**
-   * @param out
-   * @throws IOException
-   */
-  private void putAllToData(DataOutput out) throws IOException {
+  private void putAllToData(DataOutput out,
+      SerializationContext context) throws IOException {
     DataSerializer.writeInteger(this.putAllOp.putAllDataSize, out);
     EntryVersionsList versionTags = new EntryVersionsList(this.putAllOp.putAllDataSize);
     boolean hasTags = false;
@@ -137,7 +138,7 @@ public class DistTxEntryEvent extends EntryEventImpl {
       VersionTag<?> tag = putAllData[i].versionTag;
       versionTags.add(tag);
       putAllData[i].versionTag = null;
-      putAllData[i].toData(out);
+      putAllData[i].toData(out, context);
       putAllData[i].versionTag = tag;
     }
     out.writeBoolean(hasTags);
@@ -146,19 +147,15 @@ public class DistTxEntryEvent extends EntryEventImpl {
     }
   }
 
-  /**
-   * @param in
-   * @throws IOException
-   * @throws ClassNotFoundException
-   */
-  private void putAllFromData(DataInput in) throws IOException, ClassNotFoundException {
+  private void putAllFromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     int putAllSize = DataSerializer.readInteger(in);
     PutAllEntryData[] putAllEntries = new PutAllEntryData[putAllSize];
     if (putAllSize > 0) {
       final Version version = InternalDataSerializer.getVersionForDataStreamOrNull(in);
       final ByteArrayDataInput bytesIn = new ByteArrayDataInput();
       for (int i = 0; i < putAllSize; i++) {
-        putAllEntries[i] = new PutAllEntryData(in, this.eventID, i, version, bytesIn);
+        putAllEntries[i] = new PutAllEntryData(in, context, this.eventID, i, version, bytesIn);
       }
 
       boolean hasTags = in.readBoolean();
@@ -177,11 +174,8 @@ public class DistTxEntryEvent extends EntryEventImpl {
     this.putAllOp.setPutAllEntryData(putAllEntries);
   }
 
-  /**
-   * @param out
-   * @throws IOException
-   */
-  private void removeAllToData(DataOutput out) throws IOException {
+  private void removeAllToData(DataOutput out,
+      SerializationContext context) throws IOException {
     DataSerializer.writeInteger(this.removeAllOp.removeAllDataSize, out);
 
     EntryVersionsList versionTags = new EntryVersionsList(this.removeAllOp.removeAllDataSize);
@@ -195,7 +189,7 @@ public class DistTxEntryEvent extends EntryEventImpl {
       VersionTag<?> tag = removeAllData[i].versionTag;
       versionTags.add(tag);
       removeAllData[i].versionTag = null;
-      removeAllData[i].toData(out);
+      removeAllData[i].serializeTo(out, context);
       removeAllData[i].versionTag = tag;
     }
     out.writeBoolean(hasTags);
@@ -204,18 +198,14 @@ public class DistTxEntryEvent extends EntryEventImpl {
     }
   }
 
-  /**
-   * @param in
-   * @throws IOException
-   * @throws ClassNotFoundException
-   */
-  private void removeAllFromData(DataInput in) throws IOException, ClassNotFoundException {
+  private void removeAllFromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     int removeAllSize = DataSerializer.readInteger(in);
     final RemoveAllEntryData[] removeAllData = new RemoveAllEntryData[removeAllSize];
     final Version version = InternalDataSerializer.getVersionForDataStreamOrNull(in);
     final ByteArrayDataInput bytesIn = new ByteArrayDataInput();
     for (int i = 0; i < removeAllSize; i++) {
-      removeAllData[i] = new RemoveAllEntryData(in, this.eventID, i, version, bytesIn);
+      removeAllData[i] = new RemoveAllEntryData(in, this.eventID, i, version, bytesIn, context);
     }
 
     boolean hasTags = in.readBoolean();

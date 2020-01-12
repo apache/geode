@@ -17,9 +17,6 @@
  */
 package org.apache.geode.internal.cache;
 
-/**
- *
- */
 public class TXBucketRegionState extends TXRegionState {
   private final PartitionedRegion pr;
 

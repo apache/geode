@@ -22,15 +22,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.GemFireException;
 import org.apache.geode.InternalGemFireException;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.cache.client.ServerOperationException;
@@ -44,26 +42,18 @@ import org.apache.geode.internal.cache.PutAllPartialResultException;
 import org.apache.geode.internal.cache.execute.BucketMovedException;
 import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetException;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.logging.internal.executors.LoggingExecutors;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class SingleHopClientExecutor {
 
   private static final Logger logger = LogService.getLogger();
 
-  static final ExecutorService execService = Executors.newCachedThreadPool(new ThreadFactory() {
-    AtomicInteger threadNum = new AtomicInteger();
+  private static final int MAX_RETRY_INITIAL_VALUE = -1;
 
-    public Thread newThread(final Runnable r) {
-      Thread result =
-          new Thread(LoggingThreadGroup.createThreadGroup("FunctionExecutionThreadGroup", logger),
-              r, "Function Execution Thread-" + threadNum.incrementAndGet());
-      result.setDaemon(true);
-      return result;
-    }
-  });
+  @MakeNotStatic
+  static final ExecutorService execService =
+      LoggingExecutors.newCachedThreadPool("Function Execution Thread-", true);
 
   static void submitAll(List callableTasks) {
     if (callableTasks != null && !callableTasks.isEmpty()) {
@@ -97,11 +87,13 @@ public class SingleHopClientExecutor {
     }
   }
 
-  static boolean submitAllHA(List callableTasks, LocalRegion region, boolean isHA,
-      ResultCollector rc, Set<String> failedNodes) {
 
-    ClientMetadataService cms = region.getCache().getClientMetadataService();
-    boolean reexecute = false;
+  static int submitAllHA(List callableTasks, LocalRegion region, boolean isHA,
+      ResultCollector rc, Set<String> failedNodes,
+      final PoolImpl pool) {
+
+    ClientMetadataService cms;
+    int maxRetryAttempts = MAX_RETRY_INITIAL_VALUE;
 
     if (callableTasks != null && !callableTasks.isEmpty()) {
       List futures = null;
@@ -127,6 +119,11 @@ public class SingleHopClientExecutor {
           } catch (InterruptedException e) {
             throw new InternalGemFireException(e.getMessage());
           } catch (ExecutionException ee) {
+
+            if (maxRetryAttempts == MAX_RETRY_INITIAL_VALUE) {
+              maxRetryAttempts = pool.calculateRetryAttempts(ee.getCause());
+            }
+
             if (ee.getCause() instanceof InternalFunctionInvocationTargetException) {
               if (isDebugEnabled) {
                 logger.debug(
@@ -136,15 +133,15 @@ public class SingleHopClientExecutor {
               try {
                 cms = region.getCache().getClientMetadataService();
               } catch (CacheClosedException e) {
-                return false;
+                return 0;
               }
               cms.removeBucketServerLocation(server);
               cms.scheduleGetPRMetaData(region, false);
-              reexecute = true;
+
               failedNodes.addAll(
                   ((InternalFunctionInvocationTargetException) ee.getCause()).getFailedNodeSet());
               // Clear the results only if isHA so that partial results can be returned.
-              if (isHA) {
+              if (isHA && maxRetryAttempts != 0) {
                 rc.clearResults();
               } else {
                 if (ee.getCause().getCause() != null) {
@@ -153,8 +150,7 @@ public class SingleHopClientExecutor {
                 } else {
                   functionExecutionException =
                       new FunctionInvocationTargetException(new BucketMovedException(
-                          LocalizedStrings.FunctionService_BUCKET_MIGRATED_TO_ANOTHER_NODE
-                              .toLocalizedString()));
+                          "Bucket migrated to another node. Please retry."));
                 }
               }
             } else if (ee.getCause() instanceof FunctionException) {
@@ -190,13 +186,12 @@ public class SingleHopClientExecutor {
               try {
                 cms = region.getCache().getClientMetadataService();
               } catch (CacheClosedException e) {
-                return false;
+                return 0;
               }
               cms.removeBucketServerLocation(server);
               cms.scheduleGetPRMetaData(region, false);
               // Clear the results only if isHA so that partial results can be returned.
-              if (isHA) {
-                reexecute = true;
+              if (isHA && maxRetryAttempts != 0) {
                 rc.clearResults();
               } else {
                 functionExecutionException = (ServerConnectivityException) ee.getCause();
@@ -211,21 +206,19 @@ public class SingleHopClientExecutor {
         }
       }
     }
-    return reexecute;
+    return maxRetryAttempts;
   }
 
   /**
    * execute bulk op (putAll or removeAll) on multiple PR servers, returning a map of the results.
    * Results are either a VersionedObjectList or a BulkOpPartialResultsException
    *
-   * @param callableTasks
-   * @param cms
-   * @param region
-   * @param failedServers
    * @return the per-server results
    */
-  static Map<ServerLocation, Object> submitBulkOp(List callableTasks, ClientMetadataService cms,
-      LocalRegion region, Map<ServerLocation, RuntimeException> failedServers) {
+  static Map<ServerLocation, Object> submitBulkOp(List callableTasks,
+      ClientMetadataService cms,
+      LocalRegion region,
+      Map<ServerLocation, RuntimeException> failedServers) {
     if (callableTasks != null && !callableTasks.isEmpty()) {
       Map<ServerLocation, Object> resultMap = new HashMap<ServerLocation, Object>();
       boolean anyPartialResults = false;
@@ -239,7 +232,6 @@ public class SingleHopClientExecutor {
         Iterator futureItr = futures.iterator();
         Iterator taskItr = callableTasks.iterator();
         RuntimeException rte = null;
-        final boolean isDebugEnabled = logger.isDebugEnabled();
         while (futureItr.hasNext() && !execService.isShutdown() && !execService.isTerminated()) {
           Future fut = (Future) futureItr.next();
           SingleHopOperationCallable task = (SingleHopOperationCallable) taskItr.next();
@@ -303,8 +295,10 @@ public class SingleHopClientExecutor {
     return null;
   }
 
-  static Map<ServerLocation, Object> submitGetAll(Map<ServerLocation, HashSet> serverToFilterMap,
-      List callableTasks, ClientMetadataService cms, LocalRegion region) {
+  static Map<ServerLocation, Object> submitGetAll(
+      Map<ServerLocation, HashSet> serverToFilterMap,
+      List callableTasks, ClientMetadataService cms,
+      LocalRegion region) {
 
     if (callableTasks != null && !callableTasks.isEmpty()) {
       Map<ServerLocation, Object> resultMap = new HashMap<ServerLocation, Object>();
@@ -333,9 +327,10 @@ public class SingleHopClientExecutor {
               Object value = entry.getValue();
               if (!entry.isKeyNotOnServer()) {
                 if (value instanceof Throwable) {
-                  logger.warn(LocalizedMessage.create(
-                      LocalizedStrings.GetAll_0_CAUGHT_THE_FOLLOWING_EXCEPTION_ATTEMPTING_TO_GET_VALUE_FOR_KEY_1,
-                      new Object[] {value, key}), (Throwable) value);
+                  logger.warn(String.format(
+                      "%s: Caught the following exception attempting to get value for key=%s",
+                      new Object[] {value, key}),
+                      (Throwable) value);
                 }
               }
             }

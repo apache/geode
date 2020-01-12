@@ -21,18 +21,15 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.EnumListenerEvent;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.versions.VersionSource;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
-/**
- *
- *
- */
 public class ClientTombstoneMessage extends ClientUpdateMessageImpl {
 
   enum TOperation {
@@ -99,7 +96,7 @@ public class ClientTombstoneMessage extends ClientUpdateMessageImpl {
     message = new Message(numParts, clientVersion);
     // Set message type
     message.setMessageType(MessageType.TOMBSTONE_OPERATION);
-    message.addStringPart(this.getRegionName());
+    message.addStringPart(this.getRegionName(), true);
     message.addIntPart(this.op.ordinal());
     message.addObjPart(this.removalInformation);
     message.addObjPart(getEventId());
@@ -112,7 +109,8 @@ public class ClientTombstoneMessage extends ClientUpdateMessageImpl {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
 
     out.writeByte(op.ordinal());
     out.writeByte(_operation.getEventCode());
@@ -123,7 +121,8 @@ public class ClientTombstoneMessage extends ClientUpdateMessageImpl {
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     // note: does not call super.fromData() since there are no keys, etc.
     // The message class hierarchy should be revised to have a more abstract
     // top-level class.
@@ -155,7 +154,7 @@ public class ClientTombstoneMessage extends ClientUpdateMessageImpl {
 
   @Override
   public boolean isClientInterested(ClientProxyMembershipID clientId) {
-    return Acceptor.VERSION.compareTo(Version.GFE_70) >= 0;
+    return true;
   }
 
   @Override

@@ -38,9 +38,9 @@ import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxInstanceFactory;
 import org.apache.geode.pdx.WritablePdxInstance;
-import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 
-@Category(UnitTest.class)
+@Category({ClientServerTest.class})
 public class JsonPdxConverterJUnitTest {
 
   private String complexJSONString = "{\n" + "    \"_id\": \"599c7d885df276ac3e0bf10a\",\n"
@@ -92,9 +92,7 @@ public class JsonPdxConverterJUnitTest {
 
     String encodedJSON = new JsonPdxConverter().encode(pdxInstance);
 
-    String lineSeparator = System.lineSeparator();
-    String expectedJsonString = "{" + lineSeparator + "" + "  \"string\" : \"someString\","
-        + lineSeparator + "" + "  \"boolean\" : true" + lineSeparator + "}";
+    String expectedJsonString = "{\"string\":\"someString\",\"boolean\":true}";
     assertEquals(expectedJsonString, encodedJSON);
   }
 

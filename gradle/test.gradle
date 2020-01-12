@@ -1,4 +1,6 @@
 import org.apache.geode.gradle.TestPropertiesWriter
+import org.apache.geode.gradle.RepeatTest
+import org.apache.geode.gradle.plugins.DependencyConstraints
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -17,377 +19,249 @@ import org.apache.geode.gradle.TestPropertiesWriter
  * limitations under the License.
  */
 
-task combineReports(type: TestReport) {
-  description 'Combines the test reports.'
-  destinationDir = file "${rootProject.buildDir}/reports/combined"
+// This configuration might be safely removed once the CategoryWithParameterizedRunnerFactory
+// and associated classes are themselves removed, per GEODE-5606
+configurations {
+  apt
+}
 
-  doLast {
-    println "All test reports at ${rootProject.buildDir}/reports/combined"
+compileTestJava {
+  options.annotationProcessorPath = files(configurations['apt'])
+}
+
+test {
+  doFirst {
+    TestPropertiesWriter.writeTestProperties(buildDir, name)
+  }
+  if (project.hasProperty('testMaxParallelForks')) {
+    maxParallelForks = Integer.parseUnsignedInt(project.testMaxParallelForks)
+  } else {
+    maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
   }
 }
 
-gradle.taskGraph.whenReady({ graph ->
-  tasks.getByName('combineReports').reportOn rootProject.subprojects.collect{ it.tasks.withType(Test) }.flatten()
-})
+apply plugin: 'nebula.facet'
+facets {
+  integrationTest {
+    testTaskName = 'integrationTest'
+    includeInCheckLifecycle = false
+  }
+  distributedTest {
+    testTaskName = 'distributedTest'
+    includeInCheckLifecycle = false
+  }
+  performanceTest {
+    testTaskName = 'performanceTest'
+    includeInCheckLifecycle = false
+  }
+  acceptanceTest {
+    testTaskName = 'acceptanceTest'
+    includeInCheckLifecycle = false
+  }
+  uiTest {
+    testTaskName = 'uiTest'
+    includeInCheckLifecycle = false
+  }
+  upgradeTest {
+    testTaskName = 'upgradeTest'
+    includeInCheckLifecycle = false
+  }
+}
 
+configurations {
+  testAnnotationProcessor.extendsFrom annotationProcessor
+  integrationTestAnnotationProcessor.extendsFrom annotationProcessor
+  distributedTestAnnotationProcessor.extendsFrom annotationProcessor
+  performanceTestAnnotationProcessor.extendsFrom annotationProcessor
+  acceptanceTestAnnotationProcessor.extendsFrom annotationProcessor
+  uiTestAnnotationProcessor.extendsFrom annotationProcessor
+  upgradeTestAnnotationProcessor.extendsFrom annotationProcessor
+  // Facets does not extend the new runtimeOnly configurations
+  integrationTestRuntimeOnly.extendsFrom(runtimeOnly)
+  distributedTestRuntimeOnly.extendsFrom(runtimeOnly)
+  performanceTestRuntimeOnly.extendsFrom(runtimeOnly)
+  acceptanceTestRuntimeOnly.extendsFrom(runtimeOnly)
+  uiTestRuntimeOnly.extendsFrom(runtimeOnly)
+  upgradeTestRuntimeOnly.extendsFrom(runtimeOnly)
+}
 
-subprojects {
-  dependencies {
-    testCompile ('com.github.stefanbirkner:system-rules:' + project.'system-rules.version') {
-      exclude module: 'junit-dep'
-    }
-    testCompile 'com.google.code.tempus-fugit:tempus-fugit:' + project.'tempus-fugit.version'
-    testCompile 'org.awaitility:awaitility:' + project.'awaitility.version'
-    testCompile 'edu.umd.cs.mtc:multithreadedtc:' + project.'multithreadedtc.version'
-    testCompile 'eu.codearte.catch-exception:catch-exception:' + project.'catch-exception.version'
-    testCompile 'eu.codearte.catch-exception:catch-throwable:' + project.'catch-throwable.version'
-    testCompile 'junit:junit:' + project.'junit.version'
-    testCompile 'org.assertj:assertj-core:' + project.'assertj-core.version'
-    testCompile 'org.hamcrest:hamcrest-all:' + project.'hamcrest-all.version'
-    testCompile 'org.jmock:jmock-junit4:' + project.'jmock.version'
-    testCompile 'org.jmock:jmock-legacy:' + project.'jmock.version'
+dependencies {
+  // Do not add dependencies here that are not part of a custom configuration.
+  // Dependencies should be explicit in the relevant build.gradle files to keep our modules
+  //  as decoupled as possible.
 
-    testCompile 'org.mockito:mockito-core:' + project.'mockito-core.version'
-    testCompile 'org.powermock:powermock-core:' + project.'powermock.version'
-    testCompile 'org.powermock:powermock-module-junit4:' + project.'powermock.version'
-    testCompile 'org.powermock:powermock-api-mockito2:' + project.'powermock.version'
-
-    testCompile 'pl.pragmatists:JUnitParams:' + project.'JUnitParams.version'
-
-    testRuntime 'cglib:cglib:' + project.'cglib.version'
+  // This 'apt' configuration to be removed by GEODE-5606.
+  apt files("${rootProject.projectDir}/buildSrc/build/libs/buildSrc.jar")
+  apt('junit:junit:' + DependencyConstraints.get('junit.version')) {
+    transitive = false
   }
 
-  configurations {
-    apt
+  testRuntime('cglib:cglib:' + DependencyConstraints.get('cglib.version')) {
+    exclude module: 'org.apache.ant'
   }
+}
 
-  dependencies {
-    apt files("${rootProject.projectDir}/buildSrc/build/libs/buildSrc.jar")
-    apt(group: 'junit', name: 'junit', version: project.'junit.version') {
-      transitive = false
-    }
-    // Because EnsureCorrectRunsWithProcessor needs access to
-    // CategoryWithParameterizedRunnerFactory. The specific version of geode-junit is not important.
-    apt(group: 'org.apache.geode', name: 'geode-junit', version: '1.3.0') {
-      transitive = false
-    }
+configure([integrationTest, distributedTest, performanceTest, acceptanceTest, uiTest,
+           upgradeTest]) {
+  forkEvery 1
+
+  doFirst {
+    TestPropertiesWriter.writeTestProperties(buildDir, name)
   }
+  outputs.upToDateWhen { false }
+}
 
-  compileTestJava {
-    options.annotationProcessorPath = files(configurations['apt'])
-  }
-
-  //This target does not run any tests. Rather, it validates that there are no
-  //tests that are missing a category annotation
-  task checkMissedTests(type: Test) {
-    include '**/*Test.class'
-    useJUnit {
-      excludeCategories 'org.apache.geode.test.junit.categories.UnitTest'
-      excludeCategories 'org.apache.geode.test.junit.categories.IntegrationTest'
-      excludeCategories 'org.apache.geode.test.junit.categories.DistributedTest'
-      excludeCategories 'org.apache.geode.test.junit.categories.PerformanceTest'
-      excludeCategories 'org.apache.geode.test.junit.categories.HydraTest'
-      excludeCategories 'org.apache.geode.test.junit.categories.ContainerTest'
-      excludeCategories 'org.apache.geode.test.junit.categories.UITest'
-      excludeCategories 'org.apache.geode.test.junit.categories.AcceptanceTest'
-    }
-
-    //Skip launching any DUnit VMs during this run. This will prevent
-    //junit from launching VMs while parsing categories
-    systemProperty 'gemfire.DUnitLauncher.LAUNCHED', 'true'
-
-    beforeTest { descriptor ->
-      throw new GradleException("The test " + descriptor.getClassName() + "." + descriptor.getName() + " does not include a junit category.");
+configure([integrationTest, distributedTest, performanceTest]) {
+  useJUnit {
+    if (project.hasProperty("testCategory")) {
+      includeCategories += project.testCategory
     }
   }
+}
 
+if (project.hasProperty("forceTest")) {
+  // All test facets already force rerun.  Only :test can be upToDate.
   test {
-    useJUnit {
-      includeCategories 'org.apache.geode.test.junit.categories.UnitTest'
-    }
-    
-    doFirst {
-      TestPropertiesWriter.writeTestProperties(buildDir, name)
+    outputs.upToDateWhen { false }
+  }
+}
+
+task repeatDistributedTest(type: RepeatTest) {
+  dependsOn { distributedTest.taskDependencies }
+  classpath = project.sourceSets.distributedTest.runtimeClasspath
+  testClassesDirs = project.sourceSets.distributedTest.output.classesDirs
+}
+
+task repeatIntegrationTest(type: RepeatTest) {
+  dependsOn { integrationTest.taskDependencies }
+  classpath = project.sourceSets.integrationTest.runtimeClasspath
+  testClassesDirs = project.sourceSets.integrationTest.output.classesDirs
+}
+
+task repeatAcceptanceTest(type: RepeatTest) {
+  dependsOn { acceptanceTest.taskDependencies }
+  classpath = project.sourceSets.acceptanceTest.runtimeClasspath
+  testClassesDirs = project.sourceSets.acceptanceTest.output.classesDirs
+}
+
+task repeatUpgradeTest(type: RepeatTest) {
+  dependsOn { upgradeTest.taskDependencies }
+  classpath = project.sourceSets.upgradeTest.runtimeClasspath
+  testClassesDirs = project.sourceSets.upgradeTest.output.classesDirs
+}
+
+task repeatUnitTest(type: RepeatTest) {
+  dependsOn { test.taskDependencies }
+  // default classpath works for this one.
+}
+
+configure([integrationTest, distributedTest, performanceTest, acceptanceTest, uiTest, upgradeTest]) {
+  if (project.hasProperty('excludeTest')) {
+    exclude project.getProperty('excludeTest').split(',')
+  }
+}
+
+configure([repeatDistributedTest, repeatIntegrationTest, repeatUpgradeTest, repeatUnitTest, repeatAcceptanceTest]) {
+  times = Integer.parseInt(repeat)
+  useJUnit {}
+  outputs.upToDateWhen { false }
+
+  if (project.hasProperty("failOnNoMatchingTests")) {
+    filter {
+      setFailOnNoMatchingTests(Boolean.valueOf(project.failOnNoMatchingTests))
     }
   }
+}
 
-  task integrationTest(type:Test) {
-    useJUnit {
-      includeCategories 'org.apache.geode.test.junit.categories.IntegrationTest'
-      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
-    }
+// apply common test configuration
+gradle.taskGraph.whenReady({ graph ->
+  tasks.withType(Test).each { test ->
+    check.dependsOn test
+    test.configure {
+      onlyIf { !Boolean.getBoolean('skip.tests') }
 
-    forkEvery 1
-    doFirst {
-      TestPropertiesWriter.writeTestProperties(buildDir, name)
-    }
-  }
-  
-  task distributedTest(type:Test) {
-    useJUnit {
-      includeCategories 'org.apache.geode.test.junit.categories.DistributedTest'
-      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
-    }
-    forkEvery 1
-  }
-  
-  task flakyTest(type:Test) {
-    useJUnit {
-      includeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
-    }
-    
-    forkEvery 1
-    doFirst {
-      TestPropertiesWriter.writeTestProperties(buildDir, name)
-    }
+      def resultsDir = TestPropertiesWriter.testResultsDir(buildDir, test.name)
+      test.workingDir = resultsDir
 
-    reports.junitXml.destination = file "$buildDir/test-reports-flaky"
-  }
+      reports.html.destination = file "$buildDir/reports/$name"
+      testLogging {
+        exceptionFormat = 'full'
+      }
 
-  task securityTest(type:Test) {
-    useJUnit {
-      includeCategories 'org.apache.geode.test.junit.categories.SecurityTest'
-    }
+      maxHeapSize '768m'
+      jvmArgs = ['-XX:+HeapDumpOnOutOfMemoryError', '-ea']
+      if (project.hasProperty('testJVMVer') && testJVMVer.toInteger() >= 9) {
+        jvmArgs += ["--add-opens", "java.xml/jdk.xml.internal=ALL-UNNAMED"]
+        jvmArgs += ["--add-opens", "java.base/jdk.internal.module=ALL-UNNAMED"]
+        jvmArgs += ["--add-opens", "java.base/java.lang.module=ALL-UNNAMED"]
+      }
+      if (project.hasProperty('testJVM') && !testJVM.trim().isEmpty()) {
+        executable = "${testJVM}/bin/java"
+      }
 
-    forkEvery 1
-    doFirst {
-      TestPropertiesWriter.writeTestProperties(buildDir, name)
-    }
+      def basePort = 'dunit.debug.basePort'
+      if (project.hasProperty(basePort)) {
+        systemProperty basePort, project.getProperties()[basePort]
+      }
 
-    reports.junitXml.destination = file "$buildDir/test-reports-security"
-  }
+      def suspendVM = 'dunit.debug.suspendVM'
+      if (project.hasProperty(suspendVM)) {
+        systemProperty suspendVM, project.getProperties()[suspendVM]
+      }
 
-  task clientServerTest(type:Test) {
-    useJUnit {
-      includeCategories 'org.apache.geode.test.junit.categories.ClientServerTest'
-      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
-    }
-    doFirst {
-      TestPropertiesWriter.writeTestProperties(buildDir, name)
-    }
-    reports.junitXml.destination = file "$buildDir/test-reports-security"
-  }
+      systemProperty 'gemfire.DEFAULT_MAX_OPLOG_SIZE', '10'
+      systemProperty 'gemfire.disallowMcastDefaults', 'true'
+      systemProperty 'jline.terminal', 'jline.UnsupportedTerminal'
+      def logLevel = System.getProperty('log-level')
+      if (logLevel != null) {
+        systemProperty 'log-level', logLevel
+      }
+      def log4jLocation = System.getProperty('log4j.configurationFile')
+      if (log4jLocation != null) {
+        systemProperty 'log4j.configurationFile', log4jLocation
+      }
 
-  task dlockTest(type:Test) {
-    useJUnit {
-      includeCategories 'org.apache.geode.test.junit.categories.DLockTest'
-      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
-    }
-    doFirst {
-      TestPropertiesWriter.writeTestProperties(buildDir, name)
-    }
-    reports.junitXml.destination = file "$buildDir/test-reports-dlock"
-  }
+      // The distributed tests seem to need to use /tmp directly,
+      // so exclude them from using the supplied temp directory.
+      if (!test.name.contains("distributed")) {
+        systemProperty 'java.io.tmpdir', System.getProperty('java.io.tmpdir')
+      }
 
-  task backwardCompatibilityTest(type:Test) {
-    useJUnit {
-      includeCategories 'org.apache.geode.test.junit.categories.BackwardCompatibilityTest'
-      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
-    }
-    doFirst {
-      TestPropertiesWriter.writeTestProperties(buildDir, name)
-    }
-    reports.junitXml.destination = file "$buildDir/test-reports-backwardcompatibility"
-  }
+      def eol = System.getProperty('line.separator')
+      def progress = new File(resultsDir, "$test.name-progress.txt")
+      beforeTest { desc ->
+        def now = new Date().format('yyyy-MM-dd HH:mm:ss.SSS Z')
+        progress << "$now Starting test $desc.className $desc.name$eol"
+      }
+      afterTest { desc, result ->
+        def now = new Date().format('yyyy-MM-dd HH:mm:ss.SSS Z')
+        progress << "$now Completed test $desc.className $desc.name with result: ${result.resultType}$eol"
+      }
 
-  task clientSubscriptionTest(type:Test) {
-    useJUnit {
-      includeCategories 'org.apache.geode.test.junit.categories.ClientSubscriptionTest'
-      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
-    }
-    doFirst {
-      TestPropertiesWriter.writeTestProperties(buildDir, name)
-    }
-    reports.junitXml.destination = file "$buildDir/test-reports-client-subscription"
-  }
-  task queryTest(type:Test) {
-    useJUnit {
-      includeCategories 'org.apache.geode.test.junit.categories.OQLQueryTest'
-      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
-    }
-    doFirst {
-      TestPropertiesWriter.writeTestProperties(buildDir, name)
-    }
-    reports.junitXml.destination = file "$buildDir/test-reports-oql-query"
-  }
-
-  task indexTest(type:Test) {
-    useJUnit {
-      includeCategories 'org.apache.geode.test.junit.categories.OQLIndexTest'
-      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
-    }
-    doFirst {
-      TestPropertiesWriter.writeTestProperties(buildDir, name)
-    }
-    reports.junitXml.destination = file "$buildDir/test-reports-oql-index"
-  }
-
-  task functionServiceTest(type:Test) {
-    useJUnit {
-      includeCategories 'org.apache.geode.test.junit.categories.FunctionServiceTest'
-      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
-    }
-    doFirst {
-      TestPropertiesWriter.writeTestProperties(buildDir, name)
-    }
-    reports.junitXml.destination = file "$buildDir/test-reports-function-service"
-  }
-
-  task membershipTest(type:Test) {
-    useJUnit {
-      includeCategories 'org.apache.geode.test.junit.categories.MembershipTest'
-      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
-    }
-    doFirst {
-      TestPropertiesWriter.writeTestProperties(buildDir, name)
-    }
-    reports.junitXml.destination = file "$buildDir/test-reports-membership"
-  }
-  task luceneTest(type:Test) {
-    useJUnit {
-      includeCategories 'org.apache.geode.test.junit.categories.LuceneTest'
-      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
-    }
-    doFirst {
-      TestPropertiesWriter.writeTestProperties(buildDir, name)
-    }
-    reports.junitXml.destination = file "$buildDir/test-reports-lucene"
-  }
-
-  task aeqTest(type:Test) {
-    useJUnit {
-      includeCategories 'org.apache.geode.test.junit.categories.AEQTest'
-      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
-    }
-    doFirst {
-      TestPropertiesWriter.writeTestProperties(buildDir, name)
-    }
-    reports.junitXml.destination = file "$buildDir/test-reports-aeq"
-  }
-
-
-  task wanTest(type:Test) {
-    useJUnit {
-      includeCategories 'org.apache.geode.test.junit.categories.WanTest'
-      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
-    }
-    doFirst {
-      TestPropertiesWriter.writeTestProperties(buildDir, name)
-    }
-    reports.junitXml.destination = file "$buildDir/test-reports-wan"
-  }
-
-
-  task restAPITest(type:Test) {
-    useJUnit {
-      includeCategories 'org.apache.geode.test.junit.categories.RestAPITest'
-      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
-    }
-    doFirst {
-      TestPropertiesWriter.writeTestProperties(buildDir, name)
-    }
-    forkEvery 1
-    reports.junitXml.destination = file "$buildDir/test-reports-restAPI"
-  }
-
-  task serializationTest(type:Test) {
-    useJUnit {
-      includeCategories 'org.apache.geode.test.junit.categories.SerializationTest'
-      excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
-    }
-    doFirst {
-      TestPropertiesWriter.writeTestProperties(buildDir, name)
-    }
-    reports.junitXml.destination = file "$buildDir/test-reports-serialization"
-  }
-
-  // By proving a file with an arbitrary list of test classes, we can select only those
-  // tests to run. Activated using -Dcustom.tests=<file> customTest
-  def customTestList = []
-  def customTestFile = System.getProperty('custom.tests')
-  if (customTestFile != null) {
-    new File(customTestFile).eachLine { customTestList << it }
-  }
-
-  task customTest(type:Test) {
-    include { x ->
-      (x.isDirectory() || customTestList.any { y -> x.getName().contains(y) } ) ? true : false
-    }
-
-    forkEvery 30
-  }
-
-  task acceptanceTest(type:Test) {
-    useJUnit {
-      includeCategories 'org.apache.geode.test.junit.categories.AcceptanceTest'
-    }
-    forkEvery 1
-  }
-
-  // apply common test configuration
-  gradle.taskGraph.whenReady( { graph ->
-    tasks.withType(Test).each { test ->
-      check.dependsOn test
-      test.configure {
-        onlyIf { ! Boolean.getBoolean('skip.tests') }
-
-        //force tests to be run every time by
-        //saying the results are never up to date
-        outputs.upToDateWhen { false }
-    
-        def resultsDir = TestPropertiesWriter.testResultsDir(buildDir, test.name)
-        workingDir resultsDir.absolutePath
-        
-        reports.html.destination = file "$buildDir/reports/$name"
-        testLogging {
-          exceptionFormat = 'full'
-        }
-        
-        maxHeapSize '768m'
-//        jvmArgs = ['-XX:+HeapDumpOnOutOfMemoryError', '-ea',"-XX:+PrintGC", "-XX:+PrintGCDetails","-XX:+PrintGCTimeStamps"]
-        jvmArgs = ['-XX:+HeapDumpOnOutOfMemoryError', '-ea']
-        if(!testJVM.trim().isEmpty()) {
-          executable="${testJVM}/bin/java"
-        }
-
-        systemProperty 'gemfire.DEFAULT_MAX_OPLOG_SIZE', '10'
-        systemProperty 'gemfire.disallowMcastDefaults', 'true'
-        systemProperty 'jline.terminal', 'jline.UnsupportedTerminal'
-        def logLevel = System.getProperty('logLevel')
-        if (logLevel != null) {
-          systemProperty 'logLevel', logLevel
-        }
-        def log4jLocation = System.getProperty('log4j.configurationFile')
-        if (log4jLocation != null) {
-          systemProperty 'log4j.configurationFile', log4jLocation
-        }
-
-        def eol = System.getProperty('line.separator')
-        def progress = new File(resultsDir, "$test.name-progress.txt")
-        beforeTest { desc ->
-          def now = new Date().format('yyyy-MM-dd HH:mm:ss.SSS Z')
-          progress << "$now Starting test $desc.className $desc.name$eol"
-        }
-        afterTest { desc, result ->
-          def now = new Date().format('yyyy-MM-dd HH:mm:ss.SSS Z')
-          progress << "$now Completed test $desc.className $desc.name with result: ${result.resultType}$eol"
-        }
-
-        doFirst {
-          resultsDir.deleteDir()
-          resultsDir.mkdirs()
-        }
+      doFirst {
+        resultsDir.deleteDir()
+        resultsDir.mkdirs()
       }
     }
-  })
-
-  // Make precheckin task run all validation tests for checking in code.
-  task precheckin (dependsOn: [ build, ":geode-assembly:acceptanceTest", integrationTest, distributedTest, flakyTest ]) {
-    description 'Run this task before checking in code to validate changes. This task combines the following tasks: build, integrationTest, distributedTest, and flakyTest'
   }
+})
 
-  check.dependsOn checkMissedTests
+acceptanceTest {
+  // Acceptance tests may reach out and run a gfsh command from the assembled gfsh.
+  // If the test JVM version is specified, we must have the correct JAVA_HOME set for gfsh to use.
+  // See also environment configuration for parallel testing in docker.gradle
+  if (project.hasProperty('testJVM') && !testJVM.trim().isEmpty()) {
+    environment "JAVA_HOME", "${project.testJVM}"
+  }
+}
 
-  combineReports.mustRunAfter check, test, integrationTest, distributedTest, flakyTest, checkMissedTests, acceptanceTest
-  [build, check, test, integrationTest, distributedTest, flakyTest, checkMissedTests, acceptanceTest].each {it.finalizedBy combineReports}
+
+// Make precheckin task run all validation tests for checking in code.
+task precheckin(dependsOn: [build, acceptanceTest, integrationTest, distributedTest, upgradeTest]) {
+  description 'Run this task before checking in code to validate changes. It runs tests beyond unitTest'
+}
+
+tasks.withType(Test).plus([build, check]).each {
+  it.finalizedBy rootProject.tasks.combineReports
+  rootProject.tasks.combineReports.mustRunAfter it
 }

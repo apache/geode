@@ -31,6 +31,7 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletRequestWrapper;
 import javax.servlet.ServletResponse;
+import javax.servlet.SessionCookieConfig;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
@@ -41,12 +42,12 @@ import javax.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.modules.session.internal.filter.GemfireHttpSession;
 import org.apache.geode.modules.session.internal.filter.GemfireSessionManager;
 import org.apache.geode.modules.session.internal.filter.SessionManager;
 import org.apache.geode.modules.session.internal.filter.attributes.DeltaQueuedSessionAttributes;
 import org.apache.geode.modules.session.internal.filter.attributes.DeltaSessionAttributes;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Primary class which orchestrates everything. This is the class which gets configured in the
@@ -74,17 +75,14 @@ public class SessionCachingFilter implements Filter {
   /**
    * Can be overridden during testing.
    */
-  private static AtomicInteger started = new AtomicInteger(
-      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "override.session.manager.count", 1));
-
-  private static int percentInactiveTimeTriggerRebuild = Integer
-      .getInteger(DistributionConfig.GEMFIRE_PREFIX + "session.inactive.trigger.rebuild", 80);
+  private static final AtomicInteger started = new AtomicInteger(
+      Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "override.session.manager.count", 1));
 
   /**
    * This latch ensures that at least one thread/instance has fired up the session manager before
    * any other threads complete the init method.
    */
-  private static CountDownLatch startingLatch = new CountDownLatch(1);
+  private static final CountDownLatch startingLatch = new CountDownLatch(1);
 
   /**
    * This request wrapper class extends the support class HttpServletRequestWrapper, which
@@ -112,18 +110,12 @@ public class SessionCachingFilter implements Filter {
 
     private final ServletContext context;
 
-    /**
-     * Need to save this in case we need the original {@code RequestDispatcher}
-     */
-    private HttpServletRequest originalRequest;
-
-    public RequestWrapper(SessionManager manager, HttpServletRequest request,
+    RequestWrapper(SessionManager manager, HttpServletRequest request,
         ResponseWrapper response, ServletContext context) {
 
       super(request);
       this.response = response;
       this.manager = manager;
-      this.originalRequest = request;
       this.context = context;
 
       final Cookie[] cookies = request.getCookies();
@@ -212,8 +204,11 @@ public class SessionCachingFilter implements Filter {
         return;
       }
 
+      SessionCookieConfig cookieConfig = context.getSessionCookieConfig();
       Cookie cookie = new Cookie(manager.getSessionCookieName(), session.getId());
       cookie.setPath("".equals(getContextPath()) ? "/" : getContextPath());
+      cookie.setHttpOnly(cookieConfig.isHttpOnly());
+      cookie.setSecure(cookieConfig.isSecure());
       response.addCookie(cookie);
     }
 
@@ -291,13 +286,6 @@ public class SessionCachingFilter implements Filter {
     }
 
     //////////////////////////////////////////////////////////////
-    // Non-API methods
-
-    void setOuterWrapper(HttpServletRequest outer) {
-      this.outerRequest = outer;
-    }
-
-    //////////////////////////////////////////////////////////////
     // Private methods
     private String extractSessionId() {
       final int prefix = getRequestURL().indexOf(URL_SESSION_IDENTIFIER);
@@ -326,13 +314,9 @@ public class SessionCachingFilter implements Filter {
 
     HttpServletResponse originalResponse;
 
-    public ResponseWrapper(HttpServletResponse response) throws IOException {
+    ResponseWrapper(HttpServletResponse response) {
       super(response);
       originalResponse = response;
-    }
-
-    public HttpServletResponse getOriginalResponse() {
-      return originalResponse;
     }
 
     @Override
@@ -363,10 +347,8 @@ public class SessionCachingFilter implements Filter {
     HttpServletRequest httpReq = (HttpServletRequest) request;
     HttpServletResponse httpResp = (HttpServletResponse) response;
 
-    /**
-     * Early out if this isn't the right kind of request. We might see a RequestWrapper instance
-     * during a forward or include request.
-     */
+    // Early out if this isn't the right kind of request. We might see a RequestWrapper instance
+    // during a forward or include request.
     if (alreadyWrapped(httpReq)) {
       LOG.debug("Handling already-wrapped request");
       chain.doFilter(request, response);
@@ -412,10 +394,8 @@ public class SessionCachingFilter implements Filter {
       sendProcessingError(problem, response);
     }
 
-    /**
-     * Commit any updates. What actually happens at that point is dependent on the type of
-     * attributes defined for use by the sessions.
-     */
+    // Commit any updates. What actually happens at that point is dependent on the type of
+    // attributes defined for use by the sessions.
     if (session != null) {
       session.commit();
     }
@@ -444,22 +424,6 @@ public class SessionCachingFilter implements Filter {
   }
 
   /**
-   * Return the filter configuration object for this filter.
-   */
-  public FilterConfig getFilterConfig() {
-    return (this.filterConfig);
-  }
-
-  /**
-   * Set the filter configuration object for this filter.
-   *
-   * @param filterConfig The filter configuration object
-   */
-  public void setFilterConfig(FilterConfig filterConfig) {
-    this.filterConfig = filterConfig;
-  }
-
-  /**
    * Destroy method for this filter
    */
   @Override
@@ -472,8 +436,6 @@ public class SessionCachingFilter implements Filter {
   /**
    * This is where all the initialization happens.
    *
-   * @param config
-   * @throws ServletException
    */
   @Override
   public void init(final FilterConfig config) {
@@ -482,9 +444,7 @@ public class SessionCachingFilter implements Filter {
     this.filterConfig = config;
 
     if (started.getAndDecrement() > 0) {
-      /**
-       * Allow override for testing purposes
-       */
+      // Allow override for testing purposes
       String managerClassStr = config.getInitParameter("session-manager-class");
 
       // Otherwise default
@@ -504,6 +464,7 @@ public class SessionCachingFilter implements Filter {
       try {
         startingLatch.await();
       } catch (InterruptedException iex) {
+        // Ignore.
       }
 
       LOG.debug("SessionManager and listener initialization skipped - " + "already done.");
@@ -527,13 +488,9 @@ public class SessionCachingFilter implements Filter {
     if (filterConfig == null) {
       return ("SessionCachingFilter()");
     }
-    StringBuilder sb = new StringBuilder("SessionCachingFilter(");
-    sb.append(filterConfig);
-    sb.append(")");
-    return (sb.toString());
 
+    return ("SessionCachingFilter(" + filterConfig + ")");
   }
-
 
   private void sendProcessingError(Throwable t, ServletResponse response) {
     String stackTrace = getStackTrace(t);
@@ -552,7 +509,7 @@ public class SessionCachingFilter implements Filter {
         pw.close();
         ps.close();
         response.getOutputStream().close();
-      } catch (Exception ex) {
+      } catch (Exception ignored) {
       }
     } else {
       try {
@@ -560,12 +517,12 @@ public class SessionCachingFilter implements Filter {
         t.printStackTrace(ps);
         ps.close();
         response.getOutputStream().close();
-      } catch (Exception ex) {
+      } catch (Exception ignored) {
       }
     }
   }
 
-  public static String getStackTrace(Throwable t) {
+  private static String getStackTrace(Throwable t) {
     String stackTrace = null;
     try {
       StringWriter sw = new StringWriter();
@@ -574,8 +531,9 @@ public class SessionCachingFilter implements Filter {
       pw.close();
       sw.close();
       stackTrace = sw.getBuffer().toString();
-    } catch (Exception ex) {
+    } catch (Exception ignored) {
     }
+
     return stackTrace;
   }
 

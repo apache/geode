@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.cache.query.internal;
 
 import java.io.StringReader;
@@ -43,8 +42,7 @@ import org.apache.geode.cache.query.types.MapType;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Class Description
@@ -83,7 +81,7 @@ public class QCompiler implements OQLLexerTokenTypes {
     } catch (Exception ex) { // This is to make sure that we are wrapping any antlr exception with
                              // GemFire Exception.
       throw new QueryInvalidException(
-          LocalizedStrings.QCompiler_SYNTAX_ERROR_IN_QUERY_0.toLocalizedString(ex.getMessage()),
+          String.format("Syntax error in query: %s", ex.getMessage()),
           ex);
     }
     Assert.assertTrue(stackSize() == 1, "stack size = " + stackSize());
@@ -104,7 +102,7 @@ public class QCompiler implements OQLLexerTokenTypes {
     } catch (Exception ex) { // This is to make sure that we are wrapping any antlr exception with
                              // GemFire Exception.
       throw new QueryInvalidException(
-          LocalizedStrings.QCompiler_SYNTAX_ERROR_IN_QUERY_0.toLocalizedString(ex.getMessage()),
+          String.format("Syntax error in query: %s", ex.getMessage()),
           ex);
     }
     Assert.assertTrue(stackSize() == 1, "stack size = " + stackSize());
@@ -130,7 +128,7 @@ public class QCompiler implements OQLLexerTokenTypes {
     } catch (Exception ex) { // This is to make sure that we are wrapping any antlr exception with
                              // GemFire Exception.
       throw new QueryInvalidException(
-          LocalizedStrings.QCompiler_SYNTAX_ERROR_IN_QUERY_0.toLocalizedString(ex.getMessage()),
+          String.format("Syntax error in query: %s", ex.getMessage()),
           ex);
     }
     Assert.assertTrue(stackSize() == 1, "stack size = " + stackSize() + ";stack=" + this.stack);
@@ -140,7 +138,6 @@ public class QCompiler implements OQLLexerTokenTypes {
   /**
    * Yogesh: compiles order by clause and push into the stack
    *
-   * @param numOfChildren
    */
   public void compileOrederByClause(int numOfChildren) {
     List list = new ArrayList();
@@ -163,7 +160,6 @@ public class QCompiler implements OQLLexerTokenTypes {
   /**
    * Yogesh: compiles sort criteria present in order by clause and push into the stack
    *
-   * @param sortCriterion
    */
   public void compileSortCriteria(String sortCriterion) {
 
@@ -197,10 +193,26 @@ public class QCompiler implements OQLLexerTokenTypes {
     } catch (Exception ex) { // This is to make sure that we are wrapping any antlr exception with
                              // GemFire Exception.
       throw new QueryInvalidException(
-          LocalizedStrings.QCompiler_SYNTAX_ERROR_IN_QUERY_0.toLocalizedString(ex.getMessage()),
+          String.format("Syntax error in query: %s", ex.getMessage()),
           ex);
     }
     Assert.assertTrue(stackSize() == 0, "stack size = " + stackSize() + ";stack=" + this.stack);
+  }
+
+  private void checkWhereClauseForAggregates(CompiledValue compiledValue) {
+    if (compiledValue instanceof CompiledAggregateFunction) {
+      throw new QueryInvalidException(
+          "Aggregate functions can not be used as part of the WHERE clause.");
+    }
+
+    // Inner queries are supported.
+    if (compiledValue instanceof CompiledSelect) {
+      return;
+    }
+
+    for (Object compiledChildren : compiledValue.getChildren()) {
+      checkWhereClauseForAggregates((CompiledValue) compiledChildren);
+    }
   }
 
   public void select(Map<Integer, Object> queryComponents) {
@@ -244,6 +256,8 @@ public class QCompiler implements OQLLexerTokenTypes {
 
     if (queryComponents.size() == 1) {
       where = (CompiledValue) queryComponents.values().iterator().next();
+      // Where clause can not contain aggregate functions.
+      checkWhereClauseForAggregates(where);
     } else if (queryComponents.size() > 1) {
       throw new QueryInvalidException("Unexpected/unsupported query clauses found");
     }
@@ -417,15 +431,14 @@ public class QCompiler implements OQLLexerTokenTypes {
       final List indexList = (List) TypeUtils.checkCast(indexParams, List.class);
       if (!isForIndexCompilation && indexList.size() != 1) {
         throw new UnsupportedOperationException(
-            LocalizedStrings.QCompiler_ONLY_ONE_INDEX_EXPRESSION_SUPPORTED.toLocalizedString());
+            "Only one index expression supported");
       }
       if (indexList.size() == 1) {
         indexExpr = (CompiledValue) TypeUtils.checkCast(indexList.get(0), CompiledValue.class);
 
         if (indexExpr.getType() == TOK_COLON) {
           throw new UnsupportedOperationException(
-              LocalizedStrings.QCompiler_RANGES_NOT_SUPPORTED_IN_INDEX_OPERATORS
-                  .toLocalizedString());
+              "Ranges not supported in index operators");
         }
         indexExpr = (CompiledValue) TypeUtils.checkCast(indexList.get(0), CompiledValue.class);
         push(new CompiledIndexOperation(rcvr, indexExpr));
@@ -437,8 +450,8 @@ public class QCompiler implements OQLLexerTokenTypes {
       }
     } else {
       if (!this.isForIndexCompilation) {
-        throw new QueryInvalidException(LocalizedStrings.QCompiler_SYNTAX_ERROR_IN_QUERY_0
-            .toLocalizedString("* use incorrect"));
+        throw new QueryInvalidException(String.format("Syntax error in query: %s",
+            "* use incorrect"));
       }
       push(new CompiledIndexOperation(rcvr, indexExpr));
     }
@@ -567,7 +580,7 @@ public class QCompiler implements OQLLexerTokenTypes {
     }
 
     push(new CompiledJunction(
-        (CompiledValue[]) operands.toArray(new CompiledValue[operands.size()]), operator));
+        (CompiledValue[]) operands.toArray(new CompiledValue[0]), operator));
   }
 
 
@@ -695,7 +708,7 @@ public class QCompiler implements OQLLexerTokenTypes {
       resultClass = InternalDataSerializer.getCachedClass(typeName);
     } catch (ClassNotFoundException e) {
       throw new QueryInvalidException(
-          LocalizedStrings.QCompiler_TYPE_NOT_FOUND_0.toLocalizedString(typeName), e);
+          String.format("Type not found: %s", typeName), e);
     }
     if (logger.isTraceEnabled()) {
       logger.trace("QCompiler.resolveType= {}", resultClass.getName());
@@ -712,23 +725,28 @@ public class QCompiler implements OQLLexerTokenTypes {
       this.indexList = indexList;
     }
 
-    public CompiledValue getRecieverSansIndexArgs() {
+    @Override
+    public CompiledValue getReceiverSansIndexArgs() {
       return rcvr;
     }
 
+    @Override
     public CompiledValue getMapLookupKey() {
       throw new UnsupportedOperationException("Function invocation not expected");
     }
 
+    @Override
     public List<CompiledValue> getIndexingKeys() {
       return (List<CompiledValue>) indexList;
     }
 
+    @Override
     public Object evaluate(ExecutionContext context) throws FunctionDomainException,
         TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
       throw new UnsupportedOperationException("Method execution not expected");
     }
 
+    @Override
     public int getType() {
       throw new UnsupportedOperationException("Method execution not expected");
     }

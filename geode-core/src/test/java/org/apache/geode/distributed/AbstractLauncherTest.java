@@ -30,18 +30,15 @@ import static org.mockito.Mockito.verify;
 import java.net.URL;
 import java.util.Properties;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for {@link AbstractLauncher}.
  *
  * @since GemFire 7.0
  */
-@Category(UnitTest.class)
 public class AbstractLauncherTest {
 
   @Test

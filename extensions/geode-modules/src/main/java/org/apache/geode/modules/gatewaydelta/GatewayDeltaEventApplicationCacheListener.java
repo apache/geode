@@ -14,8 +14,6 @@
  */
 package org.apache.geode.modules.gatewaydelta;
 
-import java.util.Properties;
-
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Declarable;
@@ -29,18 +27,18 @@ public class GatewayDeltaEventApplicationCacheListener
 
   private final Cache cache;
 
-  public GatewayDeltaEventApplicationCacheListener() {
+  GatewayDeltaEventApplicationCacheListener() {
     this.cache = CacheFactory.getAnyInstance();
   }
 
+  @Override
   public void afterCreate(EntryEvent<String, GatewayDeltaEvent> event) {
     System.out.println("GatewayDeltaApplierCacheListener event: " + event);
     EntryEventImpl eventImpl = (EntryEventImpl) event;
     if (this.cache.getLogger().fineEnabled()) {
-      StringBuilder builder = new StringBuilder();
-      builder.append("GatewayDeltaApplierCacheListener: Received event for ").append(event.getKey())
-          .append("->").append(event.getNewValue()).append(".");
-      this.cache.getLogger().fine(builder.toString());
+      String builder = "GatewayDeltaApplierCacheListener: Received event for " + event.getKey()
+          + "->" + event.getNewValue() + ".";
+      this.cache.getLogger().fine(builder);
     }
 
     // If the event is from a remote site, apply it to the session
@@ -50,13 +48,10 @@ public class GatewayDeltaEventApplicationCacheListener
       GatewayDeltaEvent delta = event.getNewValue();
       delta.apply(this.cache);
       System.out.println("Applied " + delta);
+
       if (this.cache.getLogger().fineEnabled()) {
-        StringBuilder builder = new StringBuilder();
-        builder.append("GatewayDeltaApplierCacheListener: Applied ").append(delta);
-        this.cache.getLogger().fine(builder.toString());
+        this.cache.getLogger().fine("GatewayDeltaApplierCacheListener: Applied " + delta);
       }
     }
   }
-
-  public void init(Properties p) {}
 }

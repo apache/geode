@@ -34,7 +34,6 @@ import org.apache.geode.internal.admin.GemFireVM;
 import org.apache.geode.internal.admin.GfManagerAgent;
 import org.apache.geode.internal.admin.HealthListener;
 import org.apache.geode.internal.admin.JoinLeaveListener;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Provides the implementation of the <code>GemFireHealth</code> administration API. This class is
@@ -166,8 +165,7 @@ public class GemFireHealthImpl implements GemFireHealth, JoinLeaveListener, Heal
   private void checkClosed() {
     if (this.isClosed) {
       throw new IllegalStateException(
-          LocalizedStrings.GemFireHealthImpl_CANNOT_ACCESS_A_CLOSED_GEMFIREHEALTH_INSTANCE
-              .toLocalizedString());
+          "Cannot access a closed GemFireHealth instance.");
     }
   }
 
@@ -176,6 +174,7 @@ public class GemFireHealthImpl implements GemFireHealth, JoinLeaveListener, Heal
    * VMs. Instead, it relies on the members to alert it of changes in its health via a
    * {@link HealthListener}.
    */
+  @Override
   public GemFireHealth.Health getHealth() {
     checkClosed();
     return this.overallHealth;
@@ -187,6 +186,7 @@ public class GemFireHealthImpl implements GemFireHealth, JoinLeaveListener, Heal
    *
    * @see GemFireVM#resetHealthStatus
    */
+  @Override
   public void resetHealth() {
     checkClosed();
 
@@ -208,6 +208,7 @@ public class GemFireHealthImpl implements GemFireHealth, JoinLeaveListener, Heal
   /**
    * Aggregates the diagnoses from all members of the distributed system.
    */
+  @Override
   public String getDiagnosis() {
     checkClosed();
 
@@ -232,6 +233,7 @@ public class GemFireHealthImpl implements GemFireHealth, JoinLeaveListener, Heal
   /**
    * Starts a new {@link DistributedSystemHealthMonitor}
    */
+  @Override
   public void setDistributedSystemHealthConfig(DistributedSystemHealthConfig config) {
     synchronized (this.hostConfigs) {
       // If too many threads are changing the health config, then we
@@ -252,24 +254,27 @@ public class GemFireHealthImpl implements GemFireHealth, JoinLeaveListener, Heal
     }
   }
 
+  @Override
   public DistributedSystemHealthConfig getDistributedSystemHealthConfig() {
 
     checkClosed();
     return this.dsHealthConfig;
   }
 
+  @Override
   public GemFireHealthConfig getDefaultGemFireHealthConfig() {
     checkClosed();
     return this.defaultConfig;
   }
 
+  @Override
   public void setDefaultGemFireHealthConfig(GemFireHealthConfig config) {
     checkClosed();
 
     if (config.getHostName() != null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.GemFireHealthImpl_THE_GEMFIREHEALTHCONFIG_FOR_FOR_0_CANNOT_SERVE_AS_THE_DEFAULT_HEALTH_CONFIG
-              .toLocalizedString(config.getHostName()));
+          String.format("The GemFireHealthConfig for %s cannot serve as the default health config.",
+              config.getHostName()));
     }
 
     this.defaultConfig = config;
@@ -308,6 +313,7 @@ public class GemFireHealthImpl implements GemFireHealth, JoinLeaveListener, Heal
    *
    * @throws IllegalArgumentException if host with given name could not be found
    */
+  @Override
   public synchronized GemFireHealthConfig getGemFireHealthConfig(String hostName) {
 
     checkClosed();
@@ -317,8 +323,8 @@ public class GemFireHealthImpl implements GemFireHealth, JoinLeaveListener, Heal
       hostIpAddress = InetAddress.getByName(hostName);
     } catch (UnknownHostException e) {
       throw new IllegalArgumentException(
-          LocalizedStrings.GemFireHealthImpl_COULD_NOT_FIND_A_HOST_WITH_NAME_0
-              .toLocalizedString(hostName),
+          String.format("Could not find a host with name %s.",
+              hostName),
           e);
     }
 
@@ -341,6 +347,7 @@ public class GemFireHealthImpl implements GemFireHealth, JoinLeaveListener, Heal
    *         not match OR (2) host with given name could not be found OR (3) there are no GemFire
    *         components running on the given host
    */
+  @Override
   public void setGemFireHealthConfig(String hostName, GemFireHealthConfig config) {
     checkClosed();
 
@@ -365,16 +372,16 @@ public class GemFireHealthImpl implements GemFireHealth, JoinLeaveListener, Heal
         hostIpAddress = InetAddress.getByName(hostName);
       } catch (UnknownHostException e) {
         throw new IllegalArgumentException(
-            LocalizedStrings.GemFireHealthImpl_COULD_NOT_FIND_A_HOST_WITH_NAME_0
-                .toLocalizedString(hostName),
+            String.format("Could not find a host with name %s.",
+                hostName),
             e);
       }
 
       List members = (List) this.hostMembers.get(hostIpAddress);
       if (members == null || members.isEmpty()) {
         throw new IllegalArgumentException(
-            LocalizedStrings.GemFireHealthImpl_THERE_ARE_NO_GEMFIRE_COMPONENTS_ON_HOST_0
-                .toLocalizedString(hostName));
+            String.format("There are no GemFire components on host %s.",
+                hostName));
       }
 
       for (Iterator iter = members.iterator(); iter.hasNext();) {
@@ -390,6 +397,7 @@ public class GemFireHealthImpl implements GemFireHealth, JoinLeaveListener, Heal
    *
    * @see GemFireVM#removeHealthListener
    */
+  @Override
   public void close() {
     this.agent.removeJoinLeaveListener(this);
 
@@ -424,6 +432,7 @@ public class GemFireHealthImpl implements GemFireHealth, JoinLeaveListener, Heal
     }
   }
 
+  @Override
   public boolean isClosed() {
     return this.isClosed;
   }
@@ -442,6 +451,7 @@ public class GemFireHealthImpl implements GemFireHealth, JoinLeaveListener, Heal
 
   }
 
+  @Override
   public synchronized void nodeJoined(GfManagerAgent source, GemFireVM joined) {
     noteNewMember(joined);
 
@@ -457,6 +467,7 @@ public class GemFireHealthImpl implements GemFireHealth, JoinLeaveListener, Heal
   /**
    * Makes note of the newly-left member
    */
+  @Override
   public synchronized void nodeLeft(GfManagerAgent source, GemFireVM left) {
     InetAddress hostIpAddress = left.getHost();
     List members = (List) this.hostMembers.get(hostIpAddress);
@@ -478,6 +489,7 @@ public class GemFireHealthImpl implements GemFireHealth, JoinLeaveListener, Heal
   /**
    * Does the same thing as {@link #nodeLeft}
    */
+  @Override
   public void nodeCrashed(GfManagerAgent source, GemFireVM crashed) {
     nodeLeft(source, crashed);
   }
@@ -497,6 +509,7 @@ public class GemFireHealthImpl implements GemFireHealth, JoinLeaveListener, Heal
     }
   }
 
+  @Override
   public void healthChanged(GemFireVM member, GemFireHealth.Health status) {
     if (status == GOOD_HEALTH) {
       this.okayHealth.remove(member);

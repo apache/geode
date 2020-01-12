@@ -14,8 +14,10 @@
  */
 package org.apache.geode.test.junit.rules.serializable;
 
-import static org.apache.geode.test.junit.rules.serializable.FieldSerializationUtils.*;
-import static org.apache.geode.test.junit.rules.serializable.FieldsOfTemporaryFolder.*;
+import static org.apache.geode.test.junit.rules.serializable.FieldSerializationUtils.readField;
+import static org.apache.geode.test.junit.rules.serializable.FieldSerializationUtils.writeField;
+import static org.apache.geode.test.junit.rules.serializable.FieldsOfTemporaryFolder.FIELD_FOLDER;
+import static org.apache.geode.test.junit.rules.serializable.FieldsOfTemporaryFolder.FIELD_PARENT_FOLDER;
 
 import java.io.File;
 import java.io.InvalidObjectException;
@@ -25,7 +27,7 @@ import java.io.Serializable;
 import org.junit.rules.TemporaryFolder;
 
 /**
- * Serializable subclass of {@link org.junit.rules.TemporaryFolder TemporaryFolder}. Instance
+ * Serializable subclass of {@link TemporaryFolder TemporaryFolder}. Instance
  * variables of TemporaryFolder are serialized by reflection.
  */
 public class SerializableTemporaryFolder extends TemporaryFolder implements SerializableTestRule {

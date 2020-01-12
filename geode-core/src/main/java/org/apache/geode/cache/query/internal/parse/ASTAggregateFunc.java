@@ -20,10 +20,6 @@ import org.apache.geode.cache.query.QueryInvalidException;
 import org.apache.geode.cache.query.internal.CompiledValue;
 import org.apache.geode.cache.query.internal.QCompiler;
 
-/**
- *
- *
- */
 public class ASTAggregateFunc extends GemFireAST {
   private static final long serialVersionUID = 8713004765228379685L;
   private int aggFunctionType;

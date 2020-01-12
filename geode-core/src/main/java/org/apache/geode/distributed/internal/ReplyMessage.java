@@ -21,13 +21,16 @@ import java.io.IOException;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InvalidDeltaException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * A message that acknowledges that an operation completed successfully, or threw a CacheException.
@@ -97,12 +100,13 @@ public class ReplyMessage extends HighPriorityDistributionMessage {
       m.returnValueIsException = true;
     }
     if (exception != null && logger.isDebugEnabled()) {
-      if (exception.getCause() != null
-          && (exception.getCause() instanceof EntryNotFoundException)) {
+      Throwable cause = exception.getCause();
+      if (cause instanceof EntryNotFoundException) {
         logger.debug("Replying with entry-not-found: {}", exception.getCause().getMessage());
-      } else if (exception.getCause() != null
-          && (exception.getCause() instanceof ConcurrentCacheModificationException)) {
+      } else if (cause instanceof ConcurrentCacheModificationException) {
         logger.debug("Replying with concurrent-modification-exception");
+      } else if (cause instanceof CancelException) {
+        // no need to log this - it will show up in normal debug-level logs when the reply is sent
       } else {
         logger.debug("Replying with exception: " + m, exception);
       }
@@ -203,10 +207,6 @@ public class ReplyMessage extends HighPriorityDistributionMessage {
     }
   }
 
-  /**
-   * @param dm
-   * @param processor
-   */
   public void process(final DistributionManager dm, ReplyProcessor21 processor) {
     if (processor == null)
       return;
@@ -246,6 +246,7 @@ public class ReplyMessage extends HighPriorityDistributionMessage {
 
   ////////////////////// Utility Methods //////////////////////
 
+  @Override
   public int getDSFID() {
     return REPLY_MESSAGE;
   }
@@ -267,8 +268,9 @@ public class ReplyMessage extends HighPriorityDistributionMessage {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
 
     byte status = 0;
     if (this.ignored) {
@@ -298,8 +300,9 @@ public class ReplyMessage extends HighPriorityDistributionMessage {
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     byte status = in.readByte();
     this.ignored = testFlag(status, IGNORED_FLAG);
     this.closed = testFlag(status, CLOSED_FLAG);
@@ -334,6 +337,7 @@ public class ReplyMessage extends HighPriorityDistributionMessage {
     return sb;
   }
 
+  @Override
   public boolean isInternal() {
     return this.internal;
   }

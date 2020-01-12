@@ -32,13 +32,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.util.AbortableTaskService.AbortableTask;
-import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
-@Category(UnitTest.class)
 public class AbortableTaskServiceJUnitTest {
 
   private static final long TIMEOUT_SECONDS = 10;
@@ -182,6 +179,7 @@ public class AbortableTaskServiceJUnitTest {
     public Object invoke(final Object proxy, final Method method, final Object[] args)
         throws Throwable {
       this.async.execute(new Runnable() {
+        @Override
         public void run() {
           try {
             if (method.getName().equals(methodName)) {

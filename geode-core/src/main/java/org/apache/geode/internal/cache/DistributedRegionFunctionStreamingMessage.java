@@ -26,6 +26,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.RegionDestroyedException;
@@ -36,13 +37,15 @@ import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.OperationExecutors;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class DistributedRegionFunctionStreamingMessage extends DistributionMessage
     implements TransactionMessage {
@@ -80,6 +83,7 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
   private static final short IS_REEXECUTE = UNRESERVED_FLAGS_START;
 
   /** default exception to ensure a false-positive response is never returned */
+  @Immutable
   static final ForceReattemptException UNHANDLED_EXCEPTION =
       (ForceReattemptException) new ForceReattemptException("Unknown exception").fillInStackTrace();
 
@@ -141,11 +145,11 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
         InternalCache cache = dm.getCache();
         if (cache != null) {
           thr = cache
-              .getCacheClosedException(LocalizedStrings.PartitionMessage_REMOTE_CACHE_IS_CLOSED_0
-                  .toLocalizedString(dm.getId()));
+              .getCacheClosedException(String.format("Remote cache is closed: %s",
+                  dm.getId()));
         } else {
-          thr = new CacheClosedException(LocalizedStrings.PartitionMessage_REMOTE_CACHE_IS_CLOSED_0
-              .toLocalizedString(dm.getId()));
+          thr = new CacheClosedException(String.format("Remote cache is closed: %s",
+              dm.getId()));
         }
         return;
       }
@@ -205,8 +209,8 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
       }
       if (this.processorId == 0) {
         logger.debug("{} exception while processing message: {}", this, t.getMessage(), t);
-      } else if (logger.isTraceEnabled(LogMarker.DM) && (t instanceof RuntimeException)) {
-        logger.trace(LogMarker.DM, "Exception caught while processing message", t);
+      } else if (logger.isTraceEnabled(LogMarker.DM_VERBOSE) && (t instanceof RuntimeException)) {
+        logger.trace(LogMarker.DM_VERBOSE, "Exception caught while processing message", t);
       }
     } finally {
       cleanupTransaction(tx);
@@ -237,16 +241,16 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
     if (this.functionObject == null) {
       ReplyMessage.send(getSender(), this.processorId,
           new ReplyException(new FunctionException(
-              LocalizedStrings.ExecuteFunction_FUNCTION_NAMED_0_IS_NOT_REGISTERED
-                  .toLocalizedString(this.functionName))),
+              String.format("Function named %s is not registered to FunctionService",
+                  this.functionName))),
           dm, r.isInternalRegion());
 
       return false;
     }
 
 
-    if (logger.isTraceEnabled(LogMarker.DM)) {
-      logger.trace(LogMarker.DM, "FunctionMessage operateOnRegion: {}", r.getFullPath());
+    if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+      logger.trace(LogMarker.DM_VERBOSE, "FunctionMessage operateOnRegion: {}", r.getFullPath());
     }
     try {
       r.executeOnRegion(this, this.functionObject, this.args, this.processorId, this.filter,
@@ -254,8 +258,8 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
       if (!this.replyLastMsg && this.functionObject.hasResult()) {
         ReplyMessage.send(getSender(), this.processorId,
             new ReplyException(new FunctionException(
-                LocalizedStrings.ExecuteFunction_THE_FUNCTION_0_DID_NOT_SENT_LAST_RESULT
-                    .toString(functionObject.getId()))),
+                String.format("The function, %s, did not send last result",
+                    functionObject.getId()))),
             dm, r.isInternalRegion());
         return false;
       }
@@ -302,13 +306,15 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
     return this.processorId;
   }
 
+  @Override
   public int getDSFID() {
     return DR_FUNCTION_STREAMING_MESSAGE;
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
 
     short flags = in.readShort();
     if ((flags & HAS_PROCESSOR_ID) != 0) {
@@ -339,8 +345,9 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
 
     short flags = 0;
     if (this.processorId != 0)
@@ -409,7 +416,7 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
 
   @Override
   public int getProcessorType() {
-    return ClusterDistributionManager.REGION_FUNCTION_EXECUTION_EXECUTOR;
+    return OperationExecutors.REGION_FUNCTION_EXECUTION_EXECUTOR;
   }
 
   /*
@@ -417,6 +424,7 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
    *
    * @see org.apache.geode.internal.cache.TransactionMessage#canStartRemoteTransaction()
    */
+  @Override
   public boolean canStartRemoteTransaction() {
     return true;
   }
@@ -426,10 +434,12 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
    *
    * @see org.apache.geode.internal.cache.TransactionMessage#getTXUniqId()
    */
+  @Override
   public int getTXUniqId() {
     return txUniqId;
   }
 
+  @Override
   public InternalDistributedMember getMemberToMasqueradeAs() {
     if (txMemberId == null) {
       return getSender();
@@ -438,6 +448,7 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
     }
   }
 
+  @Override
   public InternalDistributedMember getTXOriginatorClient() {
     // TODO Auto-generated method stub
     return null;

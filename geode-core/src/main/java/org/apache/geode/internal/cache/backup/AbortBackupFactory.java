@@ -42,4 +42,10 @@ class AbortBackupFactory {
       HashSet<PersistentID> persistentIds) {
     return new BackupResponse(sender, persistentIds);
   }
+
+  AbortBackupStep createAbortBackupStep(DistributionManager dm, InternalDistributedMember member,
+      InternalCache cache, Set<InternalDistributedMember> recipients,
+      AbortBackupFactory abortBackupFactory) {
+    return new AbortBackupStep(dm, member, cache, recipients, abortBackupFactory);
+  }
 }

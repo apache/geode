@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.entries;
 
 import java.util.UUID;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.cache.InlineKeyHelper;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.RegionEntryContext;
@@ -27,6 +28,7 @@ public abstract class VMStatsLRURegionEntryHeap extends VMStatsLRURegionEntry {
     super(context, value);
   }
 
+  @Immutable
   private static final VMStatsLRURegionEntryHeapFactory factory =
       new VMStatsLRURegionEntryHeapFactory();
 
@@ -35,6 +37,7 @@ public abstract class VMStatsLRURegionEntryHeap extends VMStatsLRURegionEntry {
   }
 
   private static class VMStatsLRURegionEntryHeapFactory implements RegionEntryFactory {
+    @Override
     public RegionEntry createEntry(RegionEntryContext context, Object key, Object value) {
       if (InlineKeyHelper.INLINE_REGION_KEYS) {
         Class<?> keyClass = key.getClass();
@@ -60,12 +63,14 @@ public abstract class VMStatsLRURegionEntryHeap extends VMStatsLRURegionEntry {
       return new VMStatsLRURegionEntryHeapObjectKey(context, key, value);
     }
 
+    @Override
     public Class getEntryClass() {
       // The class returned from this method is used to estimate the memory size.
       // This estimate will not take into account the memory saved by inlining the keys.
       return VMStatsLRURegionEntryHeapObjectKey.class;
     }
 
+    @Override
     public RegionEntryFactory makeVersioned() {
       return VersionedStatsLRURegionEntryHeap.getEntryFactory();
     }

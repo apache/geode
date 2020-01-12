@@ -28,17 +28,17 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
-import javax.annotation.PostConstruct;
-
+import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.json.JSONTokener;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -63,7 +63,8 @@ import org.apache.geode.distributed.LeaseExpiredException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.cache.InternalCacheForClientAccess;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.JSONFormatterException;
 import org.apache.geode.pdx.PdxInstance;
@@ -81,6 +82,7 @@ import org.apache.geode.rest.internal.web.util.IdentifiableUtils;
 import org.apache.geode.rest.internal.web.util.JSONUtils;
 import org.apache.geode.rest.internal.web.util.NumberUtils;
 import org.apache.geode.rest.internal.web.util.ValidationUtils;
+import org.apache.geode.util.internal.GeodeConverter;
 
 /**
  * AbstractBaseController class contains common functionalities required for other controllers.
@@ -88,7 +90,7 @@ import org.apache.geode.rest.internal.web.util.ValidationUtils;
  * @since GemFire 8.0
  */
 @SuppressWarnings("unused")
-public abstract class AbstractBaseController {
+public abstract class AbstractBaseController implements InitializingBean {
 
   private static final String NEW_META_DATA_PROPERTY = "@new";
   private static final String OLD_META_DATA_PROPERTY = "@old";
@@ -105,13 +107,13 @@ public abstract class AbstractBaseController {
   @Autowired
   private CacheProvider cacheProvider;
 
-  @PostConstruct
-  private void init() {
+  @Override
+  public void afterPropertiesSet() {
     JSONUtils.setObjectMapper(objectMapper);
   }
 
-  protected InternalCache getCache() {
-    InternalCache cache = cacheProvider.getInternalCache();
+  protected InternalCacheForClientAccess getCache() {
+    InternalCacheForClientAccess cache = cacheProvider.getCache();
     Assert.state(cache != null, "The Gemfire Cache reference was not properly initialized");
     return cache;
   }
@@ -176,21 +178,24 @@ public abstract class AbstractBaseController {
 
   @SuppressWarnings("unchecked")
   private <T> T casValue(String regionNamePath, String key, String jsonData) {
-    JSONObject jsonObject;
     try {
-      jsonObject = new JSONObject(jsonData);
-      String oldValue = jsonObject.get("@old").toString();
-      String newValue = jsonObject.get("@new").toString();
+      JsonNode jsonObject = objectMapper.readTree(jsonData);
+      JsonNode oldValue = jsonObject.get("@old");
+      JsonNode newValue = jsonObject.get("@new");
 
-      return (T) casValue(regionNamePath, key, convert(oldValue), convert(newValue));
+      if (oldValue == null || newValue == null) {
+        throw new MalformedJsonException("Json doc specified in request body is invalid!");
+      }
 
-    } catch (JSONException je) {
+      return (T) casValue(regionNamePath, key, convert(oldValue.toString()),
+          convert(newValue.toString()));
+
+    } catch (IOException je) {
       throw new MalformedJsonException("Json doc specified in request body is invalid!", je);
     }
   }
 
-  ResponseEntity<String> processQueryResponse(Query query, Object args[], Object queryResult)
-      throws JSONException {
+  ResponseEntity<String> processQueryResponse(Query query, Object args[], Object queryResult) {
     if (queryResult instanceof Collection<?>) {
       Collection processedResults = new ArrayList(((Collection) queryResult).size());
       for (Object result : (Collection) queryResult) {
@@ -208,23 +213,25 @@ public abstract class AbstractBaseController {
   }
 
   Collection<PdxInstance> convertJsonArrayIntoPdxCollection(final String jsonArray) {
-    JSONArray jsonArr = null;
     try {
-      jsonArr = new JSONArray(jsonArray);
-      Collection<PdxInstance> pdxInstances = new ArrayList<PdxInstance>();
+      JsonNode array = objectMapper.readTree(jsonArray);
+      if (!array.isArray()) {
+        throw new MalformedJsonException(
+            "Json document specified in request body is not an array!");
+      }
 
-      for (int index = 0; index < jsonArr.length(); index++) {
-        // String element = jsonArr.getJSONObject(i).toString();
-        // String element = jsonArr.getString(i);
-        Object object = jsonArr.get(index);
-        String element = object.toString();
+      Collection<PdxInstance> pdxInstances = new ArrayList<>();
+
+      for (int index = 0; index < array.size(); index++) {
+        JsonNode object = array.get(index);
+        String element = objectMapper.writeValueAsString(object);
 
         PdxInstance pi = convert(element);
         pdxInstances.add(pi);
       }
       return pdxInstances;
 
-    } catch (JSONException je) {
+    } catch (IOException je) {
       throw new MalformedJsonException("Json document specified in request body is not valid!", je);
     }
   }
@@ -403,8 +410,8 @@ public abstract class AbstractBaseController {
   }
 
   Region<String, String> getQueryStore(final String namePath) {
-    return ValidationUtils.returnValueThrowOnNull(getCache().<String, String>getRegion(namePath),
-        new GemfireRestException(String.format("Query store does not exist!", namePath)));
+    return ValidationUtils.returnValueThrowOnNull(getCache().getInternalRegion(namePath),
+        new GemfireRestException(String.format("Query store (%1$s) does not exist!", namePath)));
   }
 
   protected String getQueryIdValue(final String regionNamePath, final String key) {
@@ -540,7 +547,7 @@ public abstract class AbstractBaseController {
     Object actualValue = value;
     if (valueType != null) {
       try {
-        actualValue = NumberUtils.convertToActualType(value, valueType);
+        actualValue = GeodeConverter.convertToActualType(value, valueType);
       } catch (IllegalArgumentException ie) {
         throw new GemfireRestException(ie.getMessage(), ie);
       }
@@ -692,28 +699,26 @@ public abstract class AbstractBaseController {
         return (T) rawDataBinding;
       } else {
         final String typeValue = (String) rawDataBinding.get(TYPE_META_DATA_PROPERTY);
-        if (typeValue == null)
-          return (T) new JSONObject();
+        if (typeValue == null) {
+          return (T) new Object();
+        }
         // Added for the primitive types put. Not supporting primitive types
         if (NumberUtils.isPrimitiveOrObject(typeValue)) {
           final Object primitiveValue = rawDataBinding.get("@value");
           try {
-            return (T) NumberUtils.convertToActualType(primitiveValue.toString(), typeValue);
+            return (T) GeodeConverter.convertToActualType(primitiveValue.toString(), typeValue);
           } catch (IllegalArgumentException e) {
             throw new GemfireRestException(
                 "Server has encountered error (illegal or inappropriate arguments).", e);
           }
         } else {
-
-          Assert.state(typeValue != null,
-              "The class type of the object to persist in GemFire must be specified in JSON content using the '@type' property!");
           Assert.state(
-              ClassUtils.isPresent(String.valueOf(typeValue),
+              ClassUtils.isPresent(typeValue,
                   Thread.currentThread().getContextClassLoader()),
               String.format("Class (%1$s) could not be found!", typeValue));
 
           return (T) objectMapper.convertValue(rawDataBinding, ClassUtils.resolveClassName(
-              String.valueOf(typeValue), Thread.currentThread().getContextClassLoader()));
+              typeValue, Thread.currentThread().getContextClassLoader()));
         }
       }
     }
@@ -752,20 +757,25 @@ public abstract class AbstractBaseController {
   }
 
   Object[] jsonToObjectArray(final String arguments) {
-    final JSONTypes jsonType = validateJsonAndFindType(arguments);
-    if (JSONTypes.JSON_ARRAY.equals(jsonType)) {
+    JsonNode node;
+    try {
+      node = objectMapper.readTree(arguments);
+    } catch (IOException e) {
+      throw new MalformedJsonException("Json document specified in request body is not valid!");
+    }
+
+    if (node.isArray()) {
       try {
-        JSONArray jsonArray = new JSONArray(arguments);
-        Object[] args = new Object[jsonArray.length()];
-        for (int index = 0; index < jsonArray.length(); index++) {
-          args[index] = jsonToObject(jsonArray.get(index).toString());
+        Object[] args = new Object[node.size()];
+        for (int index = 0; index < node.size(); index++) {
+          args[index] = jsonToObject(objectMapper.writeValueAsString(node.get(index)));
         }
         return args;
-      } catch (JSONException je) {
+      } catch (JsonProcessingException je) {
         throw new MalformedJsonException("Json document specified in request body is not valid!",
             je);
       }
-    } else if (JSONTypes.JSON_OBJECT.equals(jsonType)) {
+    } else if (node.isObject()) {
       return new Object[] {jsonToObject(arguments)};
     } else {
       throw new MalformedJsonException("Json document specified in request body is not valid!");
@@ -810,14 +820,14 @@ public abstract class AbstractBaseController {
   ResponseEntity<String> updateMultipleKeys(final String region, final String[] keys,
       final String json) {
 
-    JSONArray jsonArr = null;
+    JsonNode jsonArr;
     try {
-      jsonArr = new JSONArray(json);
-    } catch (JSONException e) {
+      jsonArr = objectMapper.readTree(json);
+    } catch (IOException e) {
       throw new MalformedJsonException("JSON document specified in the request is incorrect", e);
     }
 
-    if (jsonArr.length() != keys.length) {
+    if (!jsonArr.isArray() || jsonArr.size() != keys.length) {
       throw new MalformedJsonException(
           "Each key must have corresponding value (JSON document) specified in the request");
     }
@@ -830,9 +840,9 @@ public abstract class AbstractBaseController {
       }
 
       try {
-        PdxInstance pdxObj = convert(jsonArr.getJSONObject(i).toString());
+        PdxInstance pdxObj = convert(objectMapper.writeValueAsString(jsonArr.get(i)));
         map.put(keys[i], pdxObj);
-      } catch (JSONException e) {
+      } catch (JsonProcessingException e) {
         throw new MalformedJsonException(
             String.format("JSON document at index (%1$s) in the request body is incorrect", i), e);
       }
@@ -844,21 +854,22 @@ public abstract class AbstractBaseController {
 
     HttpHeaders headers = new HttpHeaders();
     headers.setLocation(toUri(region, StringUtils.arrayToCommaDelimitedString(keys)));
-    return new ResponseEntity<String>(headers, HttpStatus.OK);
+    return new ResponseEntity<>(headers, HttpStatus.OK);
   }
 
   JSONTypes validateJsonAndFindType(String json) {
     try {
-      Object jsonObj = new JSONTokener(json).nextValue();
+      JsonParser jp = new JsonFactory().createParser(json);
+      JsonToken token = jp.nextToken();
 
-      if (jsonObj instanceof JSONObject) {
+      if (token == JsonToken.START_OBJECT) {
         return JSONTypes.JSON_OBJECT;
-      } else if (jsonObj instanceof JSONArray) {
+      } else if (token == JsonToken.START_ARRAY) {
         return JSONTypes.JSON_ARRAY;
       } else {
         return JSONTypes.UNRECOGNIZED_JSON;
       }
-    } catch (JSONException je) {
+    } catch (IOException je) {
       throw new MalformedJsonException("JSON document specified in the request is incorrect", je);
     }
   }

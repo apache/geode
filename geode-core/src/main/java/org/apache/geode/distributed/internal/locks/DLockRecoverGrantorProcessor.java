@@ -25,6 +25,7 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
@@ -35,10 +36,10 @@ import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Handles messaging to all members of a lock service for the purposes of recoverying from the loss
@@ -49,6 +50,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
   private static final Logger logger = LogService.getLogger();
 
+  @Immutable
   protected static final DefaultMessageProcessor nullServiceProcessor =
       new DefaultMessageProcessor();
 
@@ -140,15 +142,17 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
       // build grantTokens from each reply...
       switch (reply.replyCode) {
         case DLockRecoverGrantorReplyMessage.GRANTOR_DISPUTE:
-          if (logger.isTraceEnabled(LogMarker.DLS)) {
-            logger.trace(LogMarker.DLS, "Failed DLockRecoverGrantorReplyMessage: '{}'", reply);
+          if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
+            logger.trace(LogMarker.DLS_VERBOSE, "Failed DLockRecoverGrantorReplyMessage: '{}'",
+                reply);
           }
           this.error = true;
           break;
         case DLockRecoverGrantorReplyMessage.OK:
           // collect results...
-          if (logger.isTraceEnabled(LogMarker.DLS)) {
-            logger.trace(LogMarker.DLS, "Processing DLockRecoverGrantorReplyMessage: '{}'", reply);
+          if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
+            logger.trace(LogMarker.DLS_VERBOSE, "Processing DLockRecoverGrantorReplyMessage: '{}'",
+                reply);
           }
 
           Set lockSet = new HashSet();
@@ -170,8 +174,8 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
       }
       // maybe build up another reply to indicate lock recovery status?
     } catch (IllegalStateException e) {
-      if (logger.isTraceEnabled(LogMarker.DLS)) {
-        logger.trace(LogMarker.DLS,
+      if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
+        logger.trace(LogMarker.DLS_VERBOSE,
             "Processing of DLockRecoverGrantorReplyMessage {} resulted in {}", msg, e.getMessage(),
             e);
       }
@@ -268,13 +272,15 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
       processor.process(dm, this);
     }
 
+    @Override
     public int getDSFID() {
       return DLOCK_RECOVER_GRANTOR_MESSAGE;
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.serviceName = DataSerializer.readString(in);
       this.processorId = in.readInt();
       this.grantorSerialNumber = in.readInt();
@@ -283,8 +289,9 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       DataSerializer.writeString(this.serviceName, out);
       out.writeInt(this.processorId);
       out.writeInt(this.grantorSerialNumber);
@@ -350,15 +357,17 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.replyCode = in.readByte();
       this.heldLocks = (DLockRemoteToken[]) DataSerializer.readObjectArray(in);
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       out.writeByte(this.replyCode);
       DataSerializer.writeObjectArray(this.heldLocks, out);
     }
@@ -388,6 +397,7 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
   }
 
   static class DefaultMessageProcessor implements MessageProcessor {
+    @Override
     public void process(DistributionManager dm, DLockRecoverGrantorMessage msg) {
       ReplyException replyException = null;
       int replyCode = DLockRecoverGrantorReplyMessage.OK;
@@ -409,34 +419,14 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
             replyCode = DLockRecoverGrantorReplyMessage.GRANTOR_DISPUTE;
           } else {
             heldLocks =
-                (DLockRemoteToken[]) heldLockSet.toArray(new DLockRemoteToken[heldLockSet.size()]);
+                (DLockRemoteToken[]) heldLockSet.toArray(new DLockRemoteToken[0]);
           }
         }
       } catch (RuntimeException e) {
-        logger.warn(
-            LocalizedMessage.create(
-                LocalizedStrings.DLOCKRECOVERGRANTORPROCESSOR_DLOCKRECOVERGRANTORMESSAGE_PROCESS_THROWABLE),
+        logger.warn("[DLockRecoverGrantorMessage.process] throwable: ",
             e);
         replyException = new ReplyException(e);
-      }
-      // catch (VirtualMachineError err) {
-      // SystemFailure.initiateFailure(err);
-      // // If this ever returns, rethrow the error. We're poisoned
-      // // now, so don't let this thread continue.
-      // throw err;
-      // }
-      // catch (Throwable t) {
-      // // Whenever you catch Error or Throwable, you must also
-      // // catch VirtualMachineError (see above). However, there is
-      // // _still_ a possibility that you are dealing with a cascading
-      // // error condition, so you also need to check to see if the JVM
-      // // is still usable:
-      // SystemFailure.checkFailure();
-      // log.warning(LocalizedStrings.DLockRecoverGrantorProcessor_DLOCKRECOVERGRANTORMESSAGEPROCESS_THROWABLE,
-      // t);
-      // replyException = new ReplyException(t);
-      // }
-      finally {
+      } finally {
         DLockRecoverGrantorReplyMessage replyMsg = new DLockRecoverGrantorReplyMessage();
         replyMsg.replyCode = replyCode;
         replyMsg.heldLocks = heldLocks;
@@ -445,15 +435,15 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
         replyMsg.setException(replyException);
         if (msg.getSender().equals(dm.getId())) {
           // process in-line in this VM
-          if (logger.isTraceEnabled(LogMarker.DLS)) {
-            logger.trace(LogMarker.DLS,
+          if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
+            logger.trace(LogMarker.DLS_VERBOSE,
                 "[DLockRecoverGrantorMessage.process] locally process reply");
           }
           replyMsg.setSender(dm.getId());
           replyMsg.dmProcess(dm);
         } else {
-          if (logger.isTraceEnabled(LogMarker.DLS)) {
-            logger.trace(LogMarker.DLS, "[DLockRecoverGrantorMessage.process] send reply");
+          if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
+            logger.trace(LogMarker.DLS_VERBOSE, "[DLockRecoverGrantorMessage.process] send reply");
           }
           dm.putOutgoing(replyMsg);
         }

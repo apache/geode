@@ -17,17 +17,14 @@ package org.apache.geode.internal.protocol.protobuf.v1.operations;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.cache.Region;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
-import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
-import org.apache.geode.internal.protocol.protobuf.v1.Failure;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 @Experimental
 public class GetSizeRequestOperationHandler
@@ -40,13 +37,8 @@ public class GetSizeRequestOperationHandler
       MessageExecutionContext messageExecutionContext) throws InvalidExecutionContextException {
     String regionName = request.getRegionName();
 
-    Region region = messageExecutionContext.getCache().getRegion(regionName);
-    if (region == null) {
-      logger.error("Received GetRegion request for non-existing region {}", regionName);
-      return Failure.of(BasicTypes.ErrorCode.SERVER_ERROR,
-          "No region exists for name: " + regionName);
-    }
+    int size = messageExecutionContext.getSecureCache().getSize(regionName);
 
-    return Success.of(RegionAPI.GetSizeResponse.newBuilder().setSize(region.size()).build());
+    return Success.of(RegionAPI.GetSizeResponse.newBuilder().setSize(size).build());
   }
 }

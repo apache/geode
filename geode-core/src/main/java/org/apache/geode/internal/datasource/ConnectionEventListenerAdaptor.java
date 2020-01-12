@@ -25,26 +25,31 @@ public class ConnectionEventListenerAdaptor
   /**
    * @see javax.resource.spi.ConnectionEventListener#connectionClosed(javax.resource.spi.ConnectionEvent)
    */
+  @Override
   public void connectionClosed(javax.resource.spi.ConnectionEvent arg0) {}
 
   /**
    * @see javax.resource.spi.ConnectionEventListener#localTransactionStarted(javax.resource.spi.ConnectionEvent)
    */
+  @Override
   public void localTransactionStarted(javax.resource.spi.ConnectionEvent arg0) {}
 
   /**
    * @see javax.resource.spi.ConnectionEventListener#localTransactionCommitted(javax.resource.spi.ConnectionEvent)
    */
+  @Override
   public void localTransactionCommitted(javax.resource.spi.ConnectionEvent arg0) {}
 
   /**
    * @see javax.resource.spi.ConnectionEventListener#localTransactionRolledback(javax.resource.spi.ConnectionEvent)
    */
+  @Override
   public void localTransactionRolledback(javax.resource.spi.ConnectionEvent arg0) {}
 
   /**
    * @see javax.resource.spi.ConnectionEventListener#connectionErrorOccurred(javax.resource.spi.ConnectionEvent)
    */
+  @Override
   public void connectionErrorOccurred(javax.resource.spi.ConnectionEvent arg0) {}
 
   /**
@@ -53,6 +58,7 @@ public class ConnectionEventListenerAdaptor
    *
    * @param event Connection event object
    */
+  @Override
   public void connectionClosed(javax.sql.ConnectionEvent event) {}
 
   /**
@@ -61,5 +67,6 @@ public class ConnectionEventListenerAdaptor
    *
    * @param event Connection event object
    */
+  @Override
   public void connectionErrorOccurred(javax.sql.ConnectionEvent event) {}
 }

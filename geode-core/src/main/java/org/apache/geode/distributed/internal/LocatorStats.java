@@ -19,7 +19,13 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.apache.geode.*;
+import org.apache.geode.StatisticDescriptor;
+import org.apache.geode.Statistics;
+import org.apache.geode.StatisticsFactory;
+import org.apache.geode.StatisticsType;
+import org.apache.geode.StatisticsTypeFactory;
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.distributed.internal.membership.api.MembershipLocatorStatistics;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 
 /**
@@ -27,8 +33,9 @@ import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
  *
  * @since GemFire 5.7
  */
-public class LocatorStats {
-  private static StatisticsType type;
+public class LocatorStats implements MembershipLocatorStatistics {
+  @Immutable
+  private static final StatisticsType type;
 
   private static final String KNOWN_LOCATORS = LOCATORS; // gauge
   private static final String REQUESTS_TO_LOCATOR = "locatorRequests"; // counter
@@ -111,6 +118,11 @@ public class LocatorStats {
     }
   }
 
+  @Override
+  public long getStatTime() {
+    return DistributionStats.getStatTime();
+  }
+
 
   public void setServerCount(int sc) {
     if (this._stats == null) {
@@ -128,6 +140,7 @@ public class LocatorStats {
     }
   }
 
+  @Override
   public void endLocatorRequest(long startTime) {
     long took = DistributionStats.getStatTime() - startTime;
     if (this._stats == null) {
@@ -143,6 +156,7 @@ public class LocatorStats {
     }
   }
 
+  @Override
   public void endLocatorResponse(long startTime) {
     long took = DistributionStats.getStatTime() - startTime;
     if (this._stats == null) {

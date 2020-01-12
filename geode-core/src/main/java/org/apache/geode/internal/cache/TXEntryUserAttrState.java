@@ -15,8 +15,9 @@
 
 package org.apache.geode.internal.cache;
 
-import org.apache.geode.cache.*;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.cache.CacheRuntimeException;
+import org.apache.geode.cache.CommitConflictException;
+import org.apache.geode.cache.Region;
 
 /**
  * TXEntryUserAttrState is the entity that tracks transactional changes to an entry user attribute.
@@ -48,16 +49,17 @@ public class TXEntryUserAttrState {
     return result;
   }
 
-  void checkForConflict(LocalRegion r, Object key) throws CommitConflictException {
+  void checkForConflict(InternalRegion r, Object key) throws CommitConflictException {
     Object curCmtValue = r.basicGetEntryUserAttribute(key);
     if (this.originalValue != curCmtValue) {
       throw new CommitConflictException(
-          LocalizedStrings.TXEntryUserAttrState_ENTRY_USER_ATTRIBUTE_FOR_KEY_0_ON_REGION_1_HAD_ALREADY_BEEN_CHANGED_TO_2
-              .toLocalizedString(new Object[] {key, r.getFullPath(), curCmtValue}));
+          String.format(
+              "Entry user attribute for key %s on region %s had already been changed to %s",
+              new Object[] {key, r.getFullPath(), curCmtValue}));
     }
   }
 
-  void applyChanges(LocalRegion r, Object key) {
+  void applyChanges(InternalRegion r, Object key) {
     try {
       Region.Entry re = r.getEntry(key);
       re.setUserAttribute(this.pendingValue);

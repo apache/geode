@@ -46,14 +46,10 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.FunctionStreamingReplyMessage;
 import org.apache.geode.internal.cache.PrimaryBucketException;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
-/**
- *
- *
- */
-public class FunctionStreamingResultCollector extends ReplyProcessor21 implements ResultCollector {
+public class FunctionStreamingResultCollector extends ReplyProcessor21
+    implements CachedResultCollector {
 
   private static final Logger logger = LogService.getLogger();
 
@@ -80,9 +76,11 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21 implement
 
   protected AbstractExecution execution;
 
-  protected volatile boolean endResultRecieved = false;
+  protected volatile boolean endResultReceived = false;
 
   protected volatile List<FunctionInvocationTargetException> fites;
+
+  private final ResultCollectorHolder rcHolder;
 
   public FunctionStreamingResultCollector(StreamingFunctionOperation streamingFunctionOperation,
       InternalDistributedSystem system, Set members, ResultCollector rc, Function function,
@@ -98,10 +96,12 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21 implement
     if (rc instanceof LocalResultCollector<?, ?>) {
       ((LocalResultCollector<?, ?>) rc).setProcessor(this);
     }
+    rcHolder = new ResultCollectorHolder(this);
   }
 
+  @Override
   public void addResult(DistributedMember memId, Object resultOfSingleExecution) {
-    if (this.userRC != null && !this.endResultRecieved) {
+    if (this.userRC != null && !this.endResultReceived) {
       try {
         this.userRC.addResult(memId, resultOfSingleExecution);
       } catch (RuntimeException badre) {
@@ -112,25 +112,33 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21 implement
     }
   }
 
+  @Override
   public void endResults() {
     if (this.userRC != null) {
       this.userRC.endResults();
-      this.endResultRecieved = true;
+      this.endResultReceived = true;
     }
   }
 
+  @Override
   public void clearResults() {
     if (userRC != null) {
-      this.endResultRecieved = false;
+      this.endResultReceived = false;
       this.userRC.clearResults();
     }
     this.fites.clear();
   }
 
-  public Object getResult() throws FunctionException {
+  @Override
+  public Object getResult()
+      throws FunctionException {
+    return rcHolder.getResult();
+  }
+
+  public Object getResultInternal() throws FunctionException {
     if (this.resultCollected) {
       throw new FunctionException(
-          LocalizedStrings.ExecuteFunction_RESULTS_ALREADY_COLLECTED.toLocalizedString());
+          "Function results already collected");
     }
 
     this.resultCollected = true;
@@ -238,12 +246,18 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21 implement
     return null;
   }
 
+  @Override
   public Object getResult(long timeout, TimeUnit unit)
+      throws FunctionException, InterruptedException {
+    return rcHolder.getResult(timeout, unit);
+  }
+
+  public Object getResultInternal(long timeout, TimeUnit unit)
       throws FunctionException, InterruptedException {
     long timeoutInMillis = unit.toMillis(timeout);
     if (this.resultCollected) {
       throw new FunctionException(
-          LocalizedStrings.ExecuteFunction_RESULTS_ALREADY_COLLECTED.toLocalizedString());
+          "Function results already collected");
     }
 
     this.resultCollected = true;
@@ -260,8 +274,7 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21 implement
         }
         if (!isNotTimedOut) {
           throw new FunctionException(
-              LocalizedStrings.ExecuteFunction_RESULTS_NOT_COLLECTED_IN_TIME_PROVIDED
-                  .toLocalizedString());
+              "All results not received in time provided");
         }
         long timeAfter = System.currentTimeMillis();
         timeoutInMillis = timeoutInMillis - (timeAfter - timeBefore);
@@ -386,19 +399,19 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21 implement
           if (execution instanceof DistributedRegionFunctionExecutor
               || execution instanceof MultiRegionFunctionExecutor) {
             if (!this.fn.isHA()) {
-              // need to add LocalizedStrings messages
               fe = new FunctionInvocationTargetException(
-                  LocalizedStrings.MemberMessage_MEMBERRESPONSE_GOT_MEMBERDEPARTED_EVENT_FOR_0_CRASHED_1
-                      .toLocalizedString(new Object[] {id, Boolean.valueOf(crashed)}),
+                  String.format("MemberResponse got memberDeparted event for < %s > crashed, %s",
+                      new Object[] {id, Boolean.valueOf(crashed)}),
                   id);
             } else {
               fe = new InternalFunctionInvocationTargetException(
-                  LocalizedStrings.DistributionMessage_DISTRIBUTIONRESPONSE_GOT_MEMBERDEPARTED_EVENT_FOR_0_CRASHED_1
-                      .toLocalizedString(new Object[] {id, Boolean.valueOf(crashed)}),
+                  String.format(
+                      "DistributionResponse got memberDeparted event for < %s > crashed, %s",
+                      new Object[] {id, Boolean.valueOf(crashed)}),
                   id);
               if (execution.isClientServerMode()) {
                 if (this.userRC != null) {
-                  this.endResultRecieved = false;
+                  this.endResultReceived = false;
                   this.userRC.endResults();
                   this.userRC.clearResults();
                 }
@@ -412,8 +425,8 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21 implement
             this.fites.add(fe);
           } else {
             fe = new FunctionInvocationTargetException(
-                LocalizedStrings.MemberMessage_MEMBERRESPONSE_GOT_MEMBERDEPARTED_EVENT_FOR_0_CRASHED_1
-                    .toLocalizedString(new Object[] {id, Boolean.valueOf(crashed)}),
+                String.format("MemberResponse got memberDeparted event for < %s > crashed, %s",
+                    new Object[] {id, Boolean.valueOf(crashed)}),
                 id);
           }
           this.fites.add(fe);
@@ -450,7 +463,8 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21 implement
       } else if (t instanceof RegionDestroyedException) {
         throw (RegionDestroyedException) t;
       } else if (t instanceof ForceReattemptException) {
-        throw new ForceReattemptException("Peer requests reattempt", t);
+        logger.info("Peer requests reattempt");
+        throw (ForceReattemptException) t;
       } else if (t instanceof PrimaryBucketException) {
         throw new PrimaryBucketException("Peer failed primary test", t);
       }
@@ -558,7 +572,7 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21 implement
       // failed computation. If you set the exception in onShutdown,
       // the resulting stack is not of interest.
       ReplyException re = new ReplyException(new DistributedSystemDisconnectedException(
-          LocalizedStrings.ReplyProcessor21_ABORTED_DUE_TO_SHUTDOWN.toLocalizedString()));
+          "aborted due to shutdown"));
       this.exception = re;
       return false;
     }

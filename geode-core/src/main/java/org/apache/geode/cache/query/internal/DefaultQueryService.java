@@ -14,12 +14,22 @@
  */
 package org.apache.geode.cache.query.internal;
 
-import java.lang.reflect.Method;
-import java.util.*;
+import static org.apache.geode.util.internal.GeodeGlossary.GEMFIRE_PREFIX;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.LowMemoryException;
 import org.apache.geode.cache.Region;
@@ -28,21 +38,44 @@ import org.apache.geode.cache.client.internal.InternalPool;
 import org.apache.geode.cache.client.internal.ProxyCache;
 import org.apache.geode.cache.client.internal.ServerProxy;
 import org.apache.geode.cache.client.internal.UserAttributes;
-import org.apache.geode.cache.query.*;
+import org.apache.geode.cache.query.AmbiguousNameException;
+import org.apache.geode.cache.query.CqAttributes;
+import org.apache.geode.cache.query.CqException;
+import org.apache.geode.cache.query.CqExistsException;
+import org.apache.geode.cache.query.CqQuery;
+import org.apache.geode.cache.query.CqServiceStatistics;
+import org.apache.geode.cache.query.Index;
+import org.apache.geode.cache.query.IndexCreationException;
+import org.apache.geode.cache.query.IndexExistsException;
+import org.apache.geode.cache.query.IndexNameConflictException;
+import org.apache.geode.cache.query.IndexType;
+import org.apache.geode.cache.query.MultiIndexCreationException;
+import org.apache.geode.cache.query.NameResolutionException;
+import org.apache.geode.cache.query.Query;
+import org.apache.geode.cache.query.QueryExecutionLowMemoryException;
+import org.apache.geode.cache.query.QueryInvalidException;
+import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.RegionNotFoundException;
+import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.cache.query.internal.cq.ClientCQ;
 import org.apache.geode.cache.query.internal.cq.CqService;
 import org.apache.geode.cache.query.internal.cq.InternalCqQuery;
-import org.apache.geode.cache.query.internal.index.*;
+import org.apache.geode.cache.query.internal.index.AbstractIndex;
+import org.apache.geode.cache.query.internal.index.IndexCreationData;
+import org.apache.geode.cache.query.internal.index.IndexData;
+import org.apache.geode.cache.query.internal.index.IndexManager;
+import org.apache.geode.cache.query.internal.index.IndexUtils;
+import org.apache.geode.cache.query.internal.index.PartitionedIndex;
 import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
-import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.cache.query.security.MethodInvocationAuthorizer;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.MemoryThresholdInfo;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.control.MemoryThresholds;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * @version $Revision: 1.2 $
@@ -55,20 +88,15 @@ public class DefaultQueryService implements InternalQueryService {
    * false.
    */
   public static final boolean QUERY_HETEROGENEOUS_OBJECTS = Boolean
-      .valueOf(System.getProperty(
-          DistributionConfig.GEMFIRE_PREFIX + "QueryService.QueryHeterogeneousObjects", "true"))
-      .booleanValue();
+      .parseBoolean(System.getProperty(
+          GEMFIRE_PREFIX + "QueryService.QueryHeterogeneousObjects", "true"));
 
-  public static boolean COPY_ON_READ_AT_ENTRY_LEVEL = Boolean
-      .valueOf(System.getProperty(
-          DistributionConfig.GEMFIRE_PREFIX + "QueryService.CopyOnReadAtEntryLevel", "false"))
-      .booleanValue();
-
-  public static boolean ALLOW_UNTRUSTED_METHOD_INVOCATION = Boolean.getBoolean(
-      DistributionConfig.GEMFIRE_PREFIX + "QueryService.allowUntrustedMethodInvocation");
-
+  public static final boolean COPY_ON_READ_AT_ENTRY_LEVEL = Boolean
+      .parseBoolean(System.getProperty(
+          GEMFIRE_PREFIX + "QueryService.CopyOnReadAtEntryLevel", "false"));
 
   /** Test purpose only */
+  @MutableForTesting
   public static boolean TEST_QUERY_HETEROGENEOUS_OBJECTS = false;
 
   private final InternalCache cache;
@@ -78,22 +106,21 @@ public class DefaultQueryService implements InternalQueryService {
   private InternalPool pool;
 
   private Map<Region, HashSet<IndexCreationData>> indexDefinitions =
-      Collections.synchronizedMap(new HashMap<Region, HashSet<IndexCreationData>>());
-
+      Collections.synchronizedMap(new HashMap<>());
 
   public DefaultQueryService(InternalCache cache) {
     if (cache == null)
-      throw new IllegalArgumentException(
-          LocalizedStrings.DefaultQueryService_CACHE_MUST_NOT_BE_NULL.toLocalizedString());
-    this.cache = cache;
-    if (!cache.getSecurityService().isIntegratedSecurity() || ALLOW_UNTRUSTED_METHOD_INVOCATION) {
-      // A no-op authorizer, allow method invocation
-      this.methodInvocationAuthorizer = ((Method m, Object t) -> {
-      });
-    } else {
-      this.methodInvocationAuthorizer =
-          new RestrictedMethodInvocationAuthorizer(cache.getSecurityService());
+      throw new IllegalArgumentException("Cache must not be null");
+    QueryConfigurationService queryConfigurationService =
+        cache.getService(QueryConfigurationService.class);
 
+    this.cache = cache;
+    this.methodInvocationAuthorizer = queryConfigurationService.getMethodAuthorizer();
+
+    // Should never happen, adding the check as a safeguard.
+    if (this.methodInvocationAuthorizer == null) {
+      logger.warn(
+          "MethodInvocationAuthorizer returned by the QueryConfigurationService is null, problems might arise if there are queries using method invocations.");
     }
   }
 
@@ -105,20 +132,20 @@ public class DefaultQueryService implements InternalQueryService {
    * @throws IllegalArgumentException if the query syntax is invalid.
    * @see org.apache.geode.cache.query.Query
    */
+  @Override
   public Query newQuery(String queryString) {
     if (QueryMonitor.isLowMemory()) {
-      String reason = LocalizedStrings.QueryMonitor_LOW_MEMORY_CANCELED_QUERY
-          .toLocalizedString(QueryMonitor.getMemoryUsedDuringLowMemory());
+      String reason = String.format(
+          "Query execution canceled due to memory threshold crossed in system, memory used: %s bytes.",
+          QueryMonitor.getMemoryUsedBytes());
       throw new QueryExecutionLowMemoryException(reason);
     }
     if (queryString == null)
       throw new QueryInvalidException(
-          LocalizedStrings.DefaultQueryService_THE_QUERY_STRING_MUST_NOT_BE_NULL
-              .toLocalizedString());
+          "The query string must not be null");
     if (queryString.length() == 0)
       throw new QueryInvalidException(
-          LocalizedStrings.DefaultQueryService_THE_QUERY_STRING_MUST_NOT_BE_EMPTY
-              .toLocalizedString());
+          "The query string must not be empty");
     ServerProxy serverProxy = pool == null ? null : new ServerProxy(pool);
     DefaultQuery query = new DefaultQuery(queryString, this.cache, serverProxy != null);
     query.setServerProxy(serverProxy);
@@ -131,33 +158,39 @@ public class DefaultQueryService implements InternalQueryService {
     return query;
   }
 
+  @Override
   public Index createHashIndex(String indexName, String indexedExpression, String fromClause)
       throws IndexNameConflictException, IndexExistsException, RegionNotFoundException {
     return createHashIndex(indexName, indexedExpression, fromClause, null);
   }
 
+  @Override
   public Index createHashIndex(String indexName, String indexedExpression, String fromClause,
       String imports)
       throws IndexNameConflictException, IndexExistsException, RegionNotFoundException {
     return createIndex(indexName, IndexType.HASH, indexedExpression, fromClause, imports);
   }
 
+  @Override
   public Index createIndex(String indexName, String indexedExpression, String fromClause)
       throws IndexNameConflictException, IndexExistsException, RegionNotFoundException {
     return createIndex(indexName, IndexType.FUNCTIONAL, indexedExpression, fromClause, null);
   }
 
+  @Override
   public Index createIndex(String indexName, String indexedExpression, String fromClause,
       String imports)
       throws IndexNameConflictException, IndexExistsException, RegionNotFoundException {
     return createIndex(indexName, IndexType.FUNCTIONAL, indexedExpression, fromClause, imports);
   }
 
+  @Override
   public Index createKeyIndex(String indexName, String indexedExpression, String fromClause)
       throws IndexNameConflictException, IndexExistsException, RegionNotFoundException {
     return createIndex(indexName, IndexType.PRIMARY_KEY, indexedExpression, fromClause, null);
   }
 
+  @Override
   public Index createIndex(String indexName, IndexType indexType, String indexedExpression,
       String fromClause)
       throws IndexNameConflictException, IndexExistsException, RegionNotFoundException {
@@ -192,27 +225,32 @@ public class DefaultQueryService implements InternalQueryService {
     // exist in memory
     // if(ra.getEvictionAttributes().getAction().isOverflowToDisk() ) {
     // throw new
-    // UnsupportedOperationException(LocalizedStrings.DefaultQueryService_INDEX_CREATION_IS_NOT_SUPPORTED_FOR_REGIONS_WHICH_OVERFLOW_TO_DISK_THE_REGION_INVOLVED_IS_0.toLocalizedString(regionPath));
+    // UnsupportedOperationException(String.format("The specified index conditions are not supported
+    // for regions which overflow to disk. The region involved is %s",regionPath));
     // }
     // if its a pr the create index on all of the local buckets.
-    if (((LocalRegion) region).memoryThresholdReached.get()
-        && !MemoryThresholds.isLowMemoryExceptionDisabled()) {
-      LocalRegion lr = (LocalRegion) region;
-      throw new LowMemoryException(
-          LocalizedStrings.ResourceManager_LOW_MEMORY_FOR_INDEX.toLocalizedString(region.getName()),
-          lr.getMemoryThresholdReachedMembers());
+    if (!MemoryThresholds.isLowMemoryExceptionDisabled()) {
+      InternalRegion internalRegion = (InternalRegion) region;
+      MemoryThresholdInfo info = internalRegion.getAtomicThresholdInfo();
+      if (info.isMemoryThresholdReached()) {
+        throw new LowMemoryException(
+            String.format(
+                "Cannot create index on region %s because the target member is running low on memory",
+                region.getName()),
+            info.getMembersThatReachedThreshold());
+      }
     }
     if (region instanceof PartitionedRegion) {
       try {
         parIndex = (PartitionedIndex) ((PartitionedRegion) region).createIndex(false, indexType,
             indexName, indexedExpression, fromClause, imports, loadEntries);
       } catch (ForceReattemptException ex) {
-        region.getCache().getLoggerI18n().info(
-            LocalizedStrings.DefaultQueryService_EXCEPTION_WHILE_CREATING_INDEX_ON_PR_DEFAULT_QUERY_PROCESSOR,
+        region.getCache().getLogger().info(
+            "Exception while creating index on pr default query processor.",
             ex);
       } catch (IndexCreationException exx) {
-        region.getCache().getLoggerI18n().info(
-            LocalizedStrings.DefaultQueryService_EXCEPTION_WHILE_CREATING_INDEX_ON_PR_DEFAULT_QUERY_PROCESSOR,
+        region.getCache().getLogger().info(
+            "Exception while creating index on pr default query processor.",
             exx);
       }
       return parIndex;
@@ -228,6 +266,7 @@ public class DefaultQueryService implements InternalQueryService {
   }
 
 
+  @Override
   public Index createIndex(String indexName, IndexType indexType, String indexedExpression,
       String fromClause, String imports)
       throws IndexNameConflictException, IndexExistsException, RegionNotFoundException {
@@ -249,14 +288,15 @@ public class DefaultQueryService implements InternalQueryService {
       regionPath = ((CompiledRegion) cv).getRegionPath();
     } else {
       throw new RegionNotFoundException(
-          LocalizedStrings.DefaultQueryService_DEFAULTQUERYSERVICECREATEINDEXFIRST_ITERATOR_OF_INDEX_FROM_CLAUSE_DOES_NOT_EVALUATE_TO_A_REGION_PATH_THE_FROM_CLAUSE_USED_FOR_INDEX_CREATION_IS_0
-              .toLocalizedString(fromClause));
+          String.format(
+              "DefaultQueryService::createIndex:First Iterator of Index >From Clause does not evaluate to a Region Path. The from clause used for Index creation is %s",
+              fromClause));
     }
     Region region = cache.getRegion(regionPath);
     if (region == null) {
       throw new RegionNotFoundException(
-          LocalizedStrings.DefaultQueryService_REGION_0_NOT_FOUND_FROM_1
-              .toLocalizedString(new Object[] {regionPath, fromClause}));
+          String.format("Region ' %s ' not found: from %s",
+              new Object[] {regionPath, fromClause}));
     }
     return region;
   }
@@ -273,9 +313,6 @@ public class DefaultQueryService implements InternalQueryService {
    *        be created
    * @param context ExecutionContext
    * @return IndexData object
-   * @throws NameResolutionException
-   * @throws TypeMismatchException
-   * @throws AmbiguousNameException
    */
   public IndexData getIndex(String regionPath, String[] definitions, IndexType indexType,
       CompiledValue indexedExpression, ExecutionContext context)
@@ -289,6 +326,7 @@ public class DefaultQueryService implements InternalQueryService {
     return indexData;
   }
 
+  @Override
   public Index getIndex(Region region, String indexName) {
 
     if (pool != null) {
@@ -330,9 +368,6 @@ public class DefaultQueryService implements InternalQueryService {
    *        be created
    * @param context ExecutionContext object
    * @return IndexData object
-   * @throws NameResolutionException
-   * @throws TypeMismatchException
-   * @throws AmbiguousNameException
    */
   public IndexData getBestMatchIndex(String regionPath, String definitions[], IndexType indexType,
       CompiledValue indexedExpression, ExecutionContext context)
@@ -350,24 +385,24 @@ public class DefaultQueryService implements InternalQueryService {
     return indexManager.getBestMatchIndex(indexType, definitions, indexedExpression, context);
   }
 
+  @Override
   public Collection getIndexes() {
     ArrayList allIndexes = new ArrayList();
     Iterator rootRegions = cache.rootRegions().iterator();
     while (rootRegions.hasNext()) {
       Region region = (Region) rootRegions.next();
-      Collection indexes = getIndexes(region);
-      if (indexes != null)
-        allIndexes.addAll(indexes);
+      allIndexes.addAll(getIndexes(region));
+
       Iterator subRegions = region.subregions(true).iterator();
       while (subRegions.hasNext()) {
-        indexes = getIndexes((Region) subRegions.next());
-        if (indexes != null)
-          allIndexes.addAll(indexes);
+        allIndexes.addAll(getIndexes((Region) subRegions.next()));
       }
     }
+
     return allIndexes;
   }
 
+  @Override
   public Collection getIndexes(Region region) {
 
     if (pool != null) {
@@ -378,12 +413,16 @@ public class DefaultQueryService implements InternalQueryService {
     if (region instanceof PartitionedRegion) {
       return ((PartitionedRegion) region).getIndexes();
     }
+
     IndexManager indexManager = IndexUtils.getIndexManager(cache, region, false);
-    if (indexManager == null)
-      return null;
+    if (indexManager == null) {
+      return Collections.emptyList();
+    }
+
     return indexManager.getIndexes();
   }
 
+  @Override
   public Collection getIndexes(Region region, IndexType indexType) {
 
     if (pool != null) {
@@ -392,11 +431,14 @@ public class DefaultQueryService implements InternalQueryService {
     }
 
     IndexManager indexManager = IndexUtils.getIndexManager(cache, region, false);
-    if (indexManager == null)
-      return null;
+    if (indexManager == null) {
+      return Collections.emptyList();
+    }
+
     return indexManager.getIndexes(indexType);
   }
 
+  @Override
   public void removeIndex(Index index) {
 
     if (pool != null) {
@@ -409,8 +451,7 @@ public class DefaultQueryService implements InternalQueryService {
       try {
         ((PartitionedRegion) region).removeIndex(index, false);
       } catch (ForceReattemptException ex) {
-        logger.info(LocalizedMessage
-            .create(LocalizedStrings.DefaultQueryService_EXCEPTION_REMOVING_INDEX___0), ex);
+        logger.info(String.format("Exception removing index : %s", ex));
       }
       return;
     }
@@ -425,6 +466,7 @@ public class DefaultQueryService implements InternalQueryService {
     }
   }
 
+  @Override
   public void removeIndexes() {
     if (pool != null) {
       throw new UnsupportedOperationException(
@@ -442,6 +484,7 @@ public class DefaultQueryService implements InternalQueryService {
     }
   }
 
+  @Override
   public void removeIndexes(Region region) {
 
     if (pool != null) {
@@ -457,8 +500,7 @@ public class DefaultQueryService implements InternalQueryService {
         ((PartitionedRegion) region).removeIndexes(false);
       } catch (ForceReattemptException ex) {
         // will have to throw a proper exception relating to remove index.
-        logger.info(LocalizedMessage
-            .create(LocalizedStrings.DefaultQueryService_EXCEPTION_REMOVING_INDEX___0), ex);
+        logger.info(String.format("Exception removing index : %s", ex));
       }
     }
     IndexManager indexManager = IndexUtils.getIndexManager(cache, region, false);
@@ -487,6 +529,7 @@ public class DefaultQueryService implements InternalQueryService {
    *         Only one iterator in the FROM clause is supported, and it must be a region path. Bind
    *         parameters in the query are not yet supported.
    */
+  @Override
   public CqQuery newCq(String queryString, CqAttributes cqAttributes)
       throws QueryInvalidException, CqException {
     ClientCQ cq = null;
@@ -518,6 +561,7 @@ public class DefaultQueryService implements InternalQueryService {
    *         Only one iterator in the FROM clause is supported, and it must be a region path. Bind
    *         parameters in the query are not yet supported.
    */
+  @Override
   public CqQuery newCq(String queryString, CqAttributes cqAttributes, boolean isDurable)
       throws QueryInvalidException, CqException {
     ClientCQ cq = null;
@@ -552,11 +596,12 @@ public class DefaultQueryService implements InternalQueryService {
    *         Only one iterator in the FROM clause is supported, and it must be a region path. Bind
    *         parameters in the query are not yet supported.
    */
+  @Override
   public CqQuery newCq(String cqName, String queryString, CqAttributes cqAttributes)
       throws QueryInvalidException, CqExistsException, CqException {
     if (cqName == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DefaultQueryService_CQNAME_MUST_NOT_BE_NULL.toLocalizedString());
+          "cqName must not be null");
     }
     ClientCQ cq =
         (ClientCQ) getCqService().newCq(cqName, queryString, cqAttributes, this.pool, false);
@@ -583,11 +628,12 @@ public class DefaultQueryService implements InternalQueryService {
    *         Only one iterator in the FROM clause is supported, and it must be a region path. Bind
    *         parameters in the query are not yet supported.
    */
+  @Override
   public CqQuery newCq(String cqName, String queryString, CqAttributes cqAttributes,
       boolean isDurable) throws QueryInvalidException, CqExistsException, CqException {
     if (cqName == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DefaultQueryService_CQNAME_MUST_NOT_BE_NULL.toLocalizedString());
+          "cqName must not be null");
     }
     ClientCQ cq =
         (ClientCQ) getCqService().newCq(cqName, queryString, cqAttributes, this.pool, isDurable);
@@ -599,6 +645,7 @@ public class DefaultQueryService implements InternalQueryService {
    * CqQuerys created by other VMs are unaffected.
    *
    */
+  @Override
   public void closeCqs() {
     try {
       getCqService().closeAllCqs(true);
@@ -614,6 +661,7 @@ public class DefaultQueryService implements InternalQueryService {
    *
    * @return the CqQuery or null if not found
    */
+  @Override
   public CqQuery getCq(String cqName) {
     CqQuery cq = null;
     try {
@@ -631,6 +679,7 @@ public class DefaultQueryService implements InternalQueryService {
    *
    * @return null if there are no cqs.
    */
+  @Override
   public CqQuery[] getCqs() {
     CqQuery[] cqs = null;
     try {
@@ -652,6 +701,7 @@ public class DefaultQueryService implements InternalQueryService {
   /**
    * Returns all the cq on a given region.
    */
+  @Override
   public CqQuery[] getCqs(final String regionName) throws CqException {
     return toArray(getCqService().getAllCqs(regionName));
   }
@@ -664,6 +714,7 @@ public class DefaultQueryService implements InternalQueryService {
    *
    * @throws CqException if failure to execute CQ.
    */
+  @Override
   public void executeCqs() throws CqException {
     try {
       getCqService().executeAllClientCqs();
@@ -683,6 +734,7 @@ public class DefaultQueryService implements InternalQueryService {
    *
    * @throws CqException if failure to execute CQ.
    */
+  @Override
   public void stopCqs() throws CqException {
     try {
       getCqService().stopAllClientCqs();
@@ -701,6 +753,7 @@ public class DefaultQueryService implements InternalQueryService {
    *
    * @throws CqException if failure to stop CQs.
    */
+  @Override
   public void executeCqs(String regionName) throws CqException {
     try {
       getCqService().executeAllRegionCqs(regionName);
@@ -721,6 +774,7 @@ public class DefaultQueryService implements InternalQueryService {
    *
    * @throws CqException if failure to execute CQs.
    */
+  @Override
   public void stopCqs(String regionName) throws CqException {
     try {
       getCqService().stopAllRegionCqs(regionName);
@@ -737,6 +791,7 @@ public class DefaultQueryService implements InternalQueryService {
    *
    * @return CQ statistics null if the continuous query object not found for the given cqName.
    */
+  @Override
   public CqServiceStatistics getCqStatistics() {
     CqServiceStatistics stats = null;
     try {
@@ -769,9 +824,6 @@ public class DefaultQueryService implements InternalQueryService {
     cache.getCqService().close();
   }
 
-  /**
-   * @return CqService
-   */
   public CqService getCqService() throws CqException {
     CqService service = cache.getCqService();
     service.start();
@@ -786,6 +838,7 @@ public class DefaultQueryService implements InternalQueryService {
     }
   }
 
+  @Override
   public List<String> getAllDurableCqsFromServer() throws CqException {
     if (!isServer()) {
       if (pool != null) {
@@ -886,20 +939,15 @@ public class DefaultQueryService implements InternalQueryService {
     try {
       indexes.addAll(((PartitionedRegion) region).createIndexes(false, icds));
     } catch (IndexCreationException e1) {
-      logger.info(
-          LocalizedMessage.create(
-              LocalizedStrings.DefaultQueryService_EXCEPTION_WHILE_CREATING_INDEX_ON_PR_DEFAULT_QUERY_PROCESSOR),
+      logger.info("Exception while creating index on pr default query processor.",
           e1);
     } catch (CacheException e1) {
       logger.info(
-          LocalizedMessage.create(
-              LocalizedStrings.DefaultQueryService_EXCEPTION_WHILE_CREATING_INDEX_ON_PR_DEFAULT_QUERY_PROCESSOR),
+          "Exception while creating index on pr default query processor.",
           e1);
       return true;
     } catch (ForceReattemptException e1) {
-      logger.info(
-          LocalizedMessage.create(
-              LocalizedStrings.DefaultQueryService_EXCEPTION_WHILE_CREATING_INDEX_ON_PR_DEFAULT_QUERY_PROCESSOR),
+      logger.info("Exception while creating index on pr default query processor.",
           e1);
       return true;
     } catch (MultiIndexCreationException e) {
@@ -958,6 +1006,7 @@ public class DefaultQueryService implements InternalQueryService {
 
   }
 
+  @Override
   public boolean clearDefinedIndexes() {
     this.indexDefinitions.clear();
     return true;
@@ -967,6 +1016,7 @@ public class DefaultQueryService implements InternalQueryService {
     return pool;
   }
 
+  @Override
   public MethodInvocationAuthorizer getMethodInvocationAuthorizer() {
     return methodInvocationAuthorizer;
   }

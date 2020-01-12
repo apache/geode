@@ -33,8 +33,8 @@ You generally configure caches using the `gfsh` command-line utility or a combin
 <%=vars.product_name%>'s caching APIs provide specialized behavior for different system member types and security settings.
 
 -   **`org.apache.geode.cache.RegionService`**. Generally, you use the `RegionService` functionality through instances of `Cache` and `ClientCache`. You only specifically use instances of `RegionService` for limited-access users in secure client applications that service many users. The `RegionService` API provides access to existing cache data regions and to the standard query service for the cache. For client caches, queries are sent to the server tier. For server and peer caches, queries are run in the current cache and any available peers. `RegionService` is implemented by `GemFireCache`.
--   **`org.apache.geode.cache.GemFireCache`**. You do not specifically use instances of `GemFireCache`, but you use `GemFireCache` functionality in your instances of `Cache` and `ClientCache`. `GemFireCache` extends `RegionService` and adds general caching features like region attributes, disk stores for region persistence and overflow, and access to the underlying distributed system. `GemFireCache` is implemented by `Cache` and `ClientCache`.
--   **`org.apache.geode.cache.Cache`**. Use the `Cache` interface to manage server and peer caches. You have one `Cache` per server or peer process. The `Cache` extends `GemFireCache` and adds server/peer caching features like communication within the distributed system, region creation, transactions and querying, and cache server functionality.
+-   **`org.apache.geode.cache.GemFireCache`**. You do not specifically use instances of `GemFireCache`, but you use `GemFireCache` functionality in your instances of `Cache` and `ClientCache`. `GemFireCache` extends `RegionService` and adds general caching features like region attributes, disk stores for region persistence and overflow, and access to the underlying cluster. `GemFireCache` is implemented by `Cache` and `ClientCache`.
+-   **`org.apache.geode.cache.Cache`**. Use the `Cache` interface to manage server and peer caches. You have one `Cache` per server or peer process. The `Cache` extends `GemFireCache` and adds server/peer caching features like communication within the cluster, region creation, transactions and querying, and cache server functionality.
 -   **`org.apache.geode≈setting_cache_initializer.cache.ClientCache`**. Use the `ClientCache` interface to manage the cache in your clients. You have one `ClientCache` per client process. The `ClientCache` extends `GemFireCache` and adds client-specific caching features like client region creation, subscription keep-alive management for durable clients, querying on server and client tiers, and RegionService creation for secure access by multiple users within the client.
 
 ## <a id="concept_F8BA7F2D3B5A40D78461E78BC5FB31FA__section_6486BDAF06EC4B91A548872066F3EC8C" class="no-quick-link"></a>The Cache XML
@@ -75,7 +75,7 @@ For more information on the `cache.xml` file, see [cache.xml](../../reference/to
 
 Your system configuration and cache configuration are initialized when you start your member processes and create each member’s <%=vars.product_name%> cache. If you are using the cluster configuration service, member processes can pick up its cache configuration from the cluster or group's current configuration. See [Overview of the Cluster Configuration Service](../../configuring/cluster_config/gfsh_persist.html).
 
-The steps in this section use `gemfire.properties` and `cache.xml` file examples, except where API is required. You can configure your distributed system properties and cache through the API as well, and you can use a combination of file configuration and API configuration.
+The steps in this section use `gemfire.properties` and `cache.xml` file examples, except where API is required. You can configure your cluster properties and cache through the API as well, and you can use a combination of file configuration and API configuration.
 
 The XML examples may not include the full `cache.xml` file listing. All of your declarative cache configuration must conform to the cache XSD at
 [http://geode.apache.org/schema/cache/cache-1.0.xsd](http://geode.apache.org/schema/cache/cache-1.0.xsd).
@@ -83,7 +83,7 @@ The XML examples may not include the full `cache.xml` file listing. All of your 
 For all of your <%=vars.product_name%> applications:
 
 1.  Create your `Cache`, for peer/server applications, or `ClientCache`, for client applications. This connects to the <%=vars.product_name%> system you have configured and initializes any configured data regions. Use your cache instance to access your regions and perform your application work.
-2.  Close your cache when you are done. This frees up resources and disconnects your application from the distributed system in an orderly manner.
+2.  Close your cache when you are done. This frees up resources and disconnects your application from the cluster in an orderly manner.
 
 Follow the instructions in the subtopics under [Cache Management](chapter_overview.html#the_cache) to customize your cache creation and closure for your application needs. You may need to combine more than one of the sets of instructions. For example, to create a client cache in a system with security, you would follow the instructions for creating and closing a client cache and for creating and closing a cache in a secure system.
 

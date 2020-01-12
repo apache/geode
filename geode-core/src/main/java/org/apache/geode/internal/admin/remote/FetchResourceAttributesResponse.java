@@ -25,6 +25,8 @@ import org.apache.geode.StatisticsType;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 public class FetchResourceAttributesResponse extends AdminResponse {
 
@@ -36,7 +38,7 @@ public class FetchResourceAttributesResponse extends AdminResponse {
     m.setRecipient(recipient);
     Statistics s = null;
     InternalDistributedSystem ds = dm.getSystem();
-    s = ds.findStatisticsByUniqueId(rsrcUniqueId);
+    s = ds.getStatisticsManager().findStatisticsByUniqueId(rsrcUniqueId);
     if (s != null) {
       StatisticsType type = s.getType();
       StatisticDescriptor[] tmp = type.getStatistics();
@@ -62,19 +64,22 @@ public class FetchResourceAttributesResponse extends AdminResponse {
     // nothing
   }
 
+  @Override
   public int getDSFID() {
     return FETCH_RESOURCE_ATTRIBUTES_RESPONSE;
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     DataSerializer.writeObject(stats, out);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     stats = (RemoteStat[]) DataSerializer.readObject(in);
   }
 

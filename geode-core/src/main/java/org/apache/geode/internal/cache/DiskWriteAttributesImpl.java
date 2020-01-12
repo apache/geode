@@ -14,14 +14,16 @@
  */
 package org.apache.geode.internal.cache;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.Properties;
 
-import org.apache.geode.cache.*;
-import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.DiskStoreFactory;
+import org.apache.geode.cache.DiskWriteAttributes;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Implementation of DiskWriteAttributes
@@ -58,7 +60,7 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
 
   /** default max in bytes **/
   private static final long DEFAULT_MAX_OPLOG_SIZE =
-      Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "DEFAULT_MAX_OPLOG_SIZE", 1024L).longValue()
+      Long.getLong(GeodeGlossary.GEMFIRE_PREFIX + "DEFAULT_MAX_OPLOG_SIZE", 1024L).longValue()
           * (1024 * 1024); // 1 GB
 
   /** default max limit in bytes **/
@@ -85,6 +87,7 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
    */
   public static final int DEFAULT_DISK_DIR_SIZE = DiskStoreFactory.DEFAULT_DISK_DIR_SIZE;
 
+  @Immutable
   private static final DiskWriteAttributes DEFAULT_ASYNC_DWA;
   static {
     Properties props = new Properties();
@@ -92,6 +95,7 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
     DEFAULT_ASYNC_DWA = new DiskWriteAttributesImpl(props);
   }
 
+  @Immutable
   private static final DiskWriteAttributes DEFAULT_SYNC_DWA;
   static {
     Properties props = new Properties();
@@ -134,7 +138,6 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
    * <li>byte-threshold = 0 bytes
    * </ul>
    *
-   * @param properties
    *
    * @throws IllegalArgumentException If any of the properties specified are not in the expected
    *         format.
@@ -192,15 +195,13 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
       long opSize = verifyLongInString(maxOplogSizeString, CacheXml.MAX_OPLOG_SIZE);
       if (opSize == 0 && this.compactOplogs == true) {
         throw new IllegalStateException(
-            LocalizedStrings.DiskWriteAttributesImpl_COMPACTION_CANNOT_BE_SET_TO_TRUE_IF_MAXOPLOGSIZE_IS_SET_TO_INFINITE_INFINITE_IS_REPRESENTED_BY_SIZE_ZERO_0
-                .toLocalizedString());
+            "Compaction cannot be set to true if max-oplog-size is set to infinite (infinite is represented by size zero : 0)");
 
       }
       if (opSize == 0 || opSize == DEFAULT_MAX_OPLOG_SIZE_LIMIT) {
         if (this.compactOplogs) {
           throw new IllegalArgumentException(
-              LocalizedStrings.DiskWriteAttributesImpl_CANNOT_SET_MAXOPLOGS_SIZE_TO_INFINITY_0_IF_COMPACTION_IS_SET_TO_TRUE
-                  .toLocalizedString());
+              "Cannot set maxOplogs size to infinity (0) if compaction is set to true");
         } else {
           this.maxOplogSize = DEFAULT_MAX_OPLOG_SIZE_LIMIT; // infinity
         }
@@ -216,8 +217,6 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
    * Verifys if the propertyString passed is a valid boolean value or null else throws an
    * IllegalArgument exception
    *
-   * @param propertyString
-   * @param property
    * @throws IllegalArgumentException if the property string passed does not represent a boolean or
    *         null
    *
@@ -225,8 +224,8 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
   private void verifyBooleanString(String propertyString, String property) {
     if (!(propertyString.equalsIgnoreCase("true") || propertyString.equalsIgnoreCase("false"))) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DiskWriteAttributesImpl_0_PROPERTY_HAS_TO_BE_TRUE_OR_FALSE_OR_NULL_AND_CANNOT_BE_1
-              .toLocalizedString(new Object[] {property, propertyString}));
+          String.format("%s property has to be true or false or null and cannot be %s",
+              new Object[] {property, propertyString}));
     }
   }
 
@@ -234,8 +233,6 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
    * Verifys if the string passed, is in a number format which is acceptable and returns the long
    * value of the string.
    *
-   * @param propertyString
-   * @param property
    * @return the long value of the string
    */
   private long verifyLongInString(String propertyString, String property) {
@@ -244,14 +241,14 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
       returnValue = Long.valueOf(propertyString).longValue();
     } catch (NumberFormatException e) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DiskWriteAttributesImpl_0_HAS_TO_BE_A_VALID_NUMBER_AND_NOT_1
-              .toLocalizedString(new Object[] {property, propertyString}));
+          String.format("%s has to be a valid number and not %s",
+              new Object[] {property, propertyString}));
     }
 
     if (returnValue < 0) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DiskWriteAttributesImpl_0_HAS_TO_BE_POSITIVE_NUMBER_AND_THE_VALUE_GIVEN_1_IS_NOT_ACCEPTABLE
-              .toLocalizedString(new Object[] {property, Long.valueOf(returnValue)}));
+          String.format("%s has to be positive number and the value given %s is not acceptable",
+              new Object[] {property, Long.valueOf(returnValue)}));
     }
 
     return returnValue;
@@ -261,8 +258,6 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
    * Verifys if the string passed, is in a number format which is acceptable and returns the int
    * value of the string.
    *
-   * @param propertyString
-   * @param property
    * @return the int value of the string
    */
   private int verifyPercentInString(String propertyString, String property) {
@@ -271,19 +266,20 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
       returnValue = Integer.valueOf(propertyString).intValue();
     } catch (NumberFormatException e) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DiskWriteAttributesImpl_0_HAS_TO_BE_A_VALID_NUMBER_AND_NOT_1
-              .toLocalizedString(new Object[] {property, propertyString}));
+          String.format("%s has to be a valid number and not %s",
+              new Object[] {property, propertyString}));
     }
 
     if (returnValue < 0) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DiskWriteAttributesImpl_0_HAS_TO_BE_POSITIVE_NUMBER_AND_THE_VALUE_GIVEN_1_IS_NOT_ACCEPTABLE
-              .toLocalizedString(new Object[] {property, Integer.valueOf(returnValue)}));
+          String.format("%s has to be positive number and the value given %s is not acceptable",
+              new Object[] {property, Integer.valueOf(returnValue)}));
     } else if (returnValue > 100) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DiskWriteAttributesImpl_0_HAS_TO_BE_LESS_THAN_2_BUT_WAS_1
-              .toLocalizedString(
-                  new Object[] {property, Integer.valueOf(returnValue), Integer.valueOf(100)}));
+          String.format(
+              "%s has to be a number that does not exceed %s so the value given %s is not acceptable",
+
+              new Object[] {property, Integer.valueOf(returnValue), Integer.valueOf(100)}));
     }
 
     return returnValue;
@@ -294,6 +290,7 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
   /**
    * Returns whether or not this <code>DiskWriteAttributes</code> configures synchronous writes.
    */
+  @Override
   public boolean isSynchronous() {
     return this.isSynchronous;
   }
@@ -301,11 +298,13 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
   /**
    * Returns true if the oplogs is to be rolled
    */
+  @Override
   public boolean isRollOplogs() {
     return this.compactOplogs;
   }
 
   /** Get the max Oplog Size in megabytes. The value is stored in bytes so division is necessary **/
+  @Override
   public int getMaxOplogSize() {
     return (int) (maxOplogSize / (1024 * 1024));
   }
@@ -321,6 +320,7 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
    * this <code>DiskWriteAttributes</code> configures synchronous writing, then
    * <code>timeInterval</code> has no meaning.
    */
+  @Override
   public long getTimeInterval() {
     return this.timeInterval;
   }
@@ -330,6 +330,7 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
    * disk. If this <code>DiskWriteAttributes</code> configures synchronous writing, then
    * <code>bytesThreshold</code> has no meaning.
    */
+  @Override
   public long getBytesThreshold() {
     return this.bytesThreshold;
   }
@@ -368,7 +369,7 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
    */
   @Override
   public int hashCode() {
-    int result = 0;
+    long result = 0;
 
     if (this.isSynchronous()) {
       if (this.isRollOplogs()) {
@@ -380,7 +381,7 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
       result += this.getBytesThreshold();
     }
     result += this.getMaxOplogSize();
-    return result;
+    return (int) (result & 0xFFFFFFFF);
   }
 
   @Override

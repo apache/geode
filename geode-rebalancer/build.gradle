@@ -15,14 +15,34 @@
  * limitations under the License.
  */
 
-dependencies {
-  provided project(':geode-common')
-  provided project(':geode-core')
+apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 
-  compile ('org.springframework:spring-context:' + project.'springframework.version') {
+apply from: "${project.projectDir}/../gradle/publish-java.gradle"
+
+
+dependencies {
+  compile(platform(project(':boms:geode-all-bom')))
+  compile(project(':geode-core'))
+  implementation(project(':geode-serialization'))
+  implementation(project(':geode-logging'))
+  integrationTestCompile(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
+
+  compile('org.apache.logging.log4j:log4j-api')
+  compile('org.springframework:spring-context') {
     exclude module: 'spring-beans'
     exclude module: 'spring-expression'
     exclude module: 'spring-aop'
   }
-  testCompile project(':geode-junit')
+
+  testCompile('junit:junit')
+  testCompile('org.assertj:assertj-core')
+  testCompile('org.mockito:mockito-core')
+
+  integrationTestCompile('junit:junit')
+  integrationTestCompile('org.awaitility:awaitility')
+  integrationTestCompile('org.hamcrest:hamcrest-all')
+  integrationTestCompile('org.hamcrest:hamcrest-core')
+  integrationTestCompile('org.hamcrest:hamcrest-library')
 }

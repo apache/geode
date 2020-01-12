@@ -44,10 +44,8 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.ReplySender;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.ByteArrayDataInput;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.NanoTimer;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.DataLocationException;
 import org.apache.geode.internal.cache.DistributedPutAllOperation.EntryVersionsList;
@@ -57,7 +55,7 @@ import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EnumListenerEvent;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.ForceReattemptException;
-import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.internal.cache.PutAllPartialResultException;
@@ -67,10 +65,14 @@ import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
+import org.apache.geode.internal.serialization.ByteArrayDataInput;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * PR removeAll
@@ -204,13 +206,15 @@ public class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
     this.bridgeContext = contx;
   }
 
+  @Override
   public int getDSFID() {
     return PR_REMOVE_ALL_MESSAGE;
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.bucketId = Integer.valueOf((int) InternalDataSerializer.readSignedVL(in));
     if ((flags & HAS_BRIDGE_CONTEXT) != 0) {
       this.bridgeContext = DataSerializer.readObject(in);
@@ -223,7 +227,7 @@ public class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
       final Version version = InternalDataSerializer.getVersionForDataStreamOrNull(in);
       final ByteArrayDataInput bytesIn = new ByteArrayDataInput();
       for (int i = 0; i < this.removeAllPRDataSize; i++) {
-        this.removeAllPRData[i] = new RemoveAllEntryData(in, null, i, version, bytesIn);
+        this.removeAllPRData[i] = new RemoveAllEntryData(in, null, i, version, bytesIn, context);
       }
 
       boolean hasTags = in.readBoolean();
@@ -237,9 +241,10 @@ public class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
 
-    super.toData(out);
+    super.toData(out, context);
     if (bucketId == null) {
       InternalDataSerializer.writeSignedVL(-1, out);
     } else {
@@ -263,7 +268,7 @@ public class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
         VersionTag<?> tag = removeAllPRData[i].versionTag;
         versionTags.add(tag);
         removeAllPRData[i].versionTag = null;
-        removeAllPRData[i].toData(out);
+        removeAllPRData[i].serializeTo(out, context);
         removeAllPRData[i].versionTag = tag;
         // RemoveAllEntryData's toData did not serialize eventID to save
         // performance for DR, but in PR,
@@ -288,8 +293,9 @@ public class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
   }
 
   @Override
-  protected void setBooleans(short s, DataInput in) throws IOException, ClassNotFoundException {
-    super.setBooleans(s, in);
+  protected void setBooleans(short s, DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.setBooleans(s, in, context);
     this.skipCallbacks = ((s & SKIP_CALLBACKS) != 0);
   }
 
@@ -382,7 +388,7 @@ public class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
         // bucketRegion is not null only when !notificationOnly
         bucketRegion = ds.getInitializedBucketForId(null, bucketId);
 
-        this.versions = new VersionedObjectList(this.removeAllPRDataSize, true,
+        versions = new VersionedObjectList(this.removeAllPRDataSize, true,
             bucketRegion.getAttributes().getConcurrencyChecksEnabled());
 
         // create a base event and a DPAO for RemoveAllMessage distributed btw redundant buckets
@@ -401,15 +407,10 @@ public class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
         }
         op = new DistributedRemoveAllOperation(baseEvent, removeAllPRDataSize, false);
       }
-
-      // Fix the updateMsg misorder issue
-      // Lock the keys when doing postRemoveAll
-      Object keys[] = new Object[removeAllPRDataSize];
-      for (int i = 0; i < removeAllPRDataSize; ++i) {
-        keys[i] = removeAllPRData[i].getKey();
-      }
+      Object[] keys = getKeysToBeLocked();
 
       if (!notificationOnly) {
+        boolean locked = false;
         try {
           if (removeAllPRData.length > 0) {
             if (this.posDup && bucketRegion.getConcurrencyChecksEnabled()) {
@@ -434,7 +435,7 @@ public class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
                 new ThreadIdentifier(eventID.getMembershipID(), eventID.getThreadID());
             bucketRegion.recordBulkOpStart(membershipID, eventID);
           }
-          bucketRegion.waitUntilLocked(keys);
+          locked = bucketRegion.waitUntilLocked(keys);
           boolean lockedForPrimary = false;
           final ArrayList<Object> succeeded = new ArrayList<Object>();
           PutAllPartialResult partialKeys = new PutAllPartialResult(removeAllPRDataSize);
@@ -516,17 +517,7 @@ public class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
             // encounter cacheWriter exception
             partialKeys.saveFailedKey(key, cwe);
           } finally {
-            try {
-              // Only RemoveAllPRMessage knows if the thread id is fake. Event has no idea.
-              // So we have to manually set useFakeEventId for this op
-              op.setUseFakeEventId(true);
-              r.checkReadiness();
-              bucketRegion.getDataView().postRemoveAll(op, this.versions, bucketRegion);
-            } finally {
-              if (lockedForPrimary) {
-                bucketRegion.doUnlockForPrimary();
-              }
-            }
+            doPostRemoveAll(r, op, bucketRegion, lockedForPrimary);
           }
           if (partialKeys.hasFailure()) {
             partialKeys.addKeysAndVersions(this.versions);
@@ -540,7 +531,9 @@ public class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
         } catch (RegionDestroyedException e) {
           ds.checkRegionDestroyedOnBucket(bucketRegion, true, e);
         } finally {
-          bucketRegion.removeAndNotifyKeys(keys);
+          if (locked) {
+            bucketRegion.removeAndNotifyKeys(keys);
+          }
         }
       } else {
         for (int i = 0; i < removeAllPRDataSize; i++) {
@@ -567,6 +560,32 @@ public class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
     return true;
   }
 
+  Object[] getKeysToBeLocked() {
+    // Fix the updateMsg misorder issue
+    // Lock the keys when doing postRemoveAll
+    Object keys[] = new Object[removeAllPRDataSize];
+    for (int i = 0; i < removeAllPRDataSize; ++i) {
+      keys[i] = removeAllPRData[i].getKey();
+    }
+    return keys;
+  }
+
+  void doPostRemoveAll(PartitionedRegion r, DistributedRemoveAllOperation op,
+      BucketRegion bucketRegion, boolean lockedForPrimary) {
+    try {
+      // Only RemoveAllPRMessage knows if the thread id is fake. Event has no idea.
+      // So we have to manually set useFakeEventId for this op
+      op.setUseFakeEventId(true);
+      r.checkReadiness();
+      bucketRegion.getDataView().postRemoveAll(op, this.versions, bucketRegion);
+      r.checkReadiness();
+    } finally {
+      if (lockedForPrimary) {
+        bucketRegion.doUnlockForPrimary();
+      }
+    }
+  }
+
   public VersionedObjectList getVersions() {
     return this.versions;
   }
@@ -578,10 +597,10 @@ public class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
   }
 
   @Retained
-  public static EntryEventImpl getEventFromEntry(LocalRegion r, InternalDistributedMember myId,
-      InternalDistributedMember eventSender, int idx,
-      DistributedRemoveAllOperation.RemoveAllEntryData[] data, boolean notificationOnly,
-      ClientProxyMembershipID bridgeContext, boolean posDup, boolean skipCallbacks) {
+  public static EntryEventImpl getEventFromEntry(InternalRegion r, InternalDistributedMember myId,
+      InternalDistributedMember eventSender, int idx, RemoveAllEntryData[] data,
+      boolean notificationOnly, ClientProxyMembershipID bridgeContext, boolean posDup,
+      boolean skipCallbacks) {
     RemoveAllEntryData dataItem = data[idx];
     @Retained
     EntryEventImpl ev = EntryEventImpl.create(r, dataItem.getOp(), dataItem.getKey(), null, null,
@@ -666,8 +685,8 @@ public class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
   }
 
   @Override
-  protected boolean mayAddToMultipleSerialGateways(ClusterDistributionManager dm) {
-    return _mayAddToMultipleSerialGateways(dm);
+  protected boolean mayNotifySerialGatewaySender(ClusterDistributionManager dm) {
+    return notifiesSerialGatewaySender(dm);
   }
 
   public static class RemoveAllReplyMessage extends ReplyMessage {
@@ -713,8 +732,8 @@ public class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
       final long startTime = getTimestamp();
 
       if (rp == null) {
-        if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.trace(LogMarker.DM, "{}: processor not found", this);
+        if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+          logger.trace(LogMarker.DM_VERBOSE, "{}: processor not found", this);
         }
         return;
       }
@@ -724,8 +743,8 @@ public class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
       }
       rp.process(this);
 
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM, "{} Processed {}", rp, this);
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE, "{} Processed {}", rp, this);
       }
       dm.getStats().incReplyMessageTime(NanoTimer.getTime() - startTime);
     }
@@ -736,15 +755,17 @@ public class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.result = in.readBoolean();
       this.versions = (VersionedObjectList) DataSerializer.readObject(in);
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       out.writeBoolean(this.result);
       DataSerializer.writeObject(this.versions, out);
     }

@@ -14,7 +14,11 @@
  */
 package org.apache.persistence.logging;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * A logger is used to record messages and events. Each entry has a given level associated with it.

@@ -48,44 +48,54 @@ public class PartitionRegionInfoImpl implements InternalPRInfo, Serializable {
     this.offlineMembers = offlineMembers;
   }
 
+  @Override
   public int getActualRedundantCopies() {
     return this.actualRedundantCopies;
   }
 
+  @Override
   public String getColocatedWith() {
     return this.colocatedWith;
   }
 
+  @Override
   public int getConfiguredBucketCount() {
     return this.configuredBucketCount;
   }
 
+  @Override
   public int getConfiguredRedundantCopies() {
     return this.configuredRedundantCopies;
   }
 
+  @Override
   public int getCreatedBucketCount() {
     return this.createdBucketCount;
   }
 
+  @Override
   public int getLowRedundancyBucketCount() {
     return this.lowRedundancyBucketCount;
   }
 
+  @Override
   public Set<PartitionMemberInfo> getPartitionMemberInfo() {
     return Collections.unmodifiableSet((Set<? extends PartitionMemberInfo>) this.memberDetails);
   }
 
+  @Override
   public Set<InternalPartitionDetails> getInternalPartitionDetails() {
     return Collections
         .unmodifiableSet((Set<? extends InternalPartitionDetails>) this.memberDetails);
   }
 
 
+  @Override
   public String getRegionPath() {
     return this.regionPath;
   }
 
+  @Override
   public OfflineMemberDetails getOfflineMembers() {
     return offlineMembers;
   }
@@ -125,6 +135,7 @@ public class PartitionRegionInfoImpl implements InternalPRInfo, Serializable {
     return this.regionPath.equals(o.regionPath);
   }
 
+  @Override
   public int compareTo(InternalPRInfo other) {
     return this.regionPath.compareTo(other.getRegionPath());
   }

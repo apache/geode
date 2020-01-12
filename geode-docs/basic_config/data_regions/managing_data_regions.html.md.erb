@@ -55,7 +55,7 @@ gfsh>create region --name=region1 --type=REPLICATE
 Export the configuration files of your server so that you can save your region's configuration and recreate the region with the same attributes the next time you start up your cache server. See [export config](../../tools_modules/gfsh/command-pages/export.html#topic_C7C69306F93743459E65D46537F4A1EE) for details. 
 
 **Note:**
-The cluster configuration service, which is enabled by default, automatically saves the configuration on the locators in the distributed system. After you use the gfsh create region command, any new servers that you start that attach to the same locator receive the same configuration. You can also create alternate configurations within a distributed system by specifying a group when creating the region and starting servers. See [Overview of the Cluster Configuration Service](../../configuring/cluster_config/gfsh_persist.html).
+The cluster configuration service, which is enabled by default, automatically saves the configuration on the locators in the cluster. After you use the gfsh create region command, any new servers that you start that attach to the same locator receive the same configuration. You can also create alternate configurations within a cluster by specifying a group when creating the region and starting servers. See [Overview of the Cluster Configuration Service](../../configuring/cluster_config/gfsh_persist.html).
 
 
 ###  Creating a Region Through the cache.xml File
@@ -155,22 +155,12 @@ For run-time region creation, you need to use the API.
 
 Region creation is subject to attribute consistency checks, both internal to the cache and, if the region is not local, between all caches where the region is defined.
 
-1.  
+1.  Use a region shortcut to create your region factory. 
+  - In peers and servers, use `org.apache.geode.cache.RegionFactory`.
+  - In clients, use `org.apache.geode.cache.client.ClientRegionFactory`.
 
-    Use a region shortcut to create your region factory. 
-    -   
-
-        In peers and servers, use `org.apache.geode.cache.RegionFactory`.
-    -   
-
-        In clients, use `org.apache.geode.cache.client.ClientRegionFactory`.
-
-2.  
-
-    (Optional) Use the region factory to further configure your region. 
-3.  
-
-    Create your region from the configured region factory. 
+2.  (Optional) Use the region factory to further configure your region. 
+3.  Create your region from the configured region factory. 
 
 
 ### API Examples

@@ -19,7 +19,6 @@ import java.util.Properties;
 
 import org.apache.geode.cache.partition.PartitionListener;
 import org.apache.geode.internal.cache.PartitionAttributesImpl;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * <p>
@@ -163,21 +162,11 @@ public class PartitionAttributesFactory<K, V> {
    *
    * @param redundantCopies the number of redundant bucket copies, limited to values 0, 1, 2 and 3.
    *
-   * @return this
    */
   public PartitionAttributesFactory<K, V> setRedundantCopies(int redundantCopies) {
     this.partitionAttributes.setRedundantCopies(redundantCopies);
     return this;
   }
-
-  /**
-   * Sets the cache writer for the next <code>PartitionAttributes</code> created. <i>Currently
-   * unsupported for the early access release.</i>
-   *
-   * @param cacheWriter the cache writer or null if no cache writer
-   * @return this public PartitionAttributesFactory<K,V> setCacheWriter(CacheWriter cacheWriter) {
-   *         this.partitionAttributes.setCacheWriter(cacheWriter); return this; }
-   */
 
   /**
    * Sets the maximum amount of memory, in megabytes, to be used by the region in this process. If
@@ -269,15 +258,12 @@ public class PartitionAttributesFactory<K, V> {
   /**
    * adds a PartitionListener for the partitioned region.
    *
-   * @param listener
-   * @return PartitionAttributeFactory
    * @since GemFire 6.5
    */
   public PartitionAttributesFactory<K, V> addPartitionListener(PartitionListener listener) {
     if (listener == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.PartitionAttributesFactory_PARTITION_LISTENER_PARAMETER_WAS_NULL
-              .toLocalizedString());
+          "PartitionListner parameter was null");
     }
     synchronized (this.partitionAttributes) {
       this.partitionAttributes.addPartitionListener(listener);
@@ -291,7 +277,6 @@ public class PartitionAttributesFactory<K, V> {
    * provide, behaves. There are currently no non-deprecated local properties.
    *
    * @deprecated use {@link #setLocalMaxMemory(int)} in GemFire 5.1 and later releases
-   * @param localProps
    * @return PartitionAttributeFactory.
    *
    */
@@ -313,7 +298,6 @@ public class PartitionAttributesFactory<K, V> {
    *
    * @deprecated use {@link #setTotalMaxMemory(long)} and {@link #setTotalNumBuckets(int)} in
    *             GemFire 5.1 and later releases
-   * @param globalProps
    * @return PartitionAttributeFactory.
    *
    * @see #GLOBAL_MAX_MEMORY_PROPERTY

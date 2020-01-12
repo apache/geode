@@ -1,0 +1,170 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+{% from 'shared_jinja.yml' import github_access with context %}
+{% from 'shared_jinja.yml' import init_retry with context %}
+
+{% macro common_instance_params(test) -%}
+GCP_PROJECT: ((gcp-project))
+CPUS: {{ test.CPUS }}
+RAM: {{ test.RAM }}
+{%- endmacro %}
+
+{% macro common_test_params(test) -%}
+  {%- if test.GRADLE_TASK_OPTIONS -%}
+GRADLE_TASK_OPTIONS: {{ test.GRADLE_TASK_OPTIONS }}
+  {%- endif %}
+MAINTENANCE_VERSION: ((geode-build-branch ))
+SERVICE_ACCOUNT: ((!concourse-gcp-account))
+{%- endmacro %}
+
+---
+
+resource_types:
+- name: gci
+  type: registry-image
+  source:
+    repository: smgoller/gci-resource
+- name: maven-resource
+  type: docker-image
+  source:
+    repository: nulldriver/maven-resource
+    tag: latest
+- name: concourse-metadata-resource
+  type: docker-image
+  source:
+    password: ((!docker-password))
+    repository: gcr.io/((gcp-project))/((pipeline-prefix))concourse-metadata-resource
+    tag: latest
+    username: ((!docker-username))
+
+resources:
+- name: geode-examples
+  type: git
+  source:
+    uri: https://github.com/{{repository.fork}}/geode-examples.git
+    branch: {{ repository.branch }}
+    depth: 10
+- name: geode-ci
+  type: git
+  source:
+    depth: 1
+    uri: https://github.com/{{repository.fork}}/geode.git
+    branch: {{ repository.branch }}
+    paths:
+    - ci/*
+- name: concourse-metadata-resource
+  type: concourse-metadata-resource
+  source: {}
+- name: 24h
+  type: time
+  source: {interval: 24h}
+- name: alpine-tools-image
+  type: docker-image
+  source:
+    username: ((docker-username))
+    password: ((docker-password))
+    repository: gcr.io/((gcp-project))/((pipeline-prefix))alpine-tools
+    tag: latest
+- name: linux-builder-image-family
+  type: gci
+  source:
+    key: ((concourse-gcp-key))
+    family_project: ((gcp-project))
+    family: ((pipeline-prefix))linux-geode-builder
+
+
+jobs:
+- name: {{examples_test.name}}
+  public: true
+  serial: true
+  plan:
+  - aggregate:
+    - get: geode-ci
+    - get: alpine-tools-image
+    - get: linux-builder-image-family
+  - aggregate:
+    - get: geode-examples
+      trigger: true
+    - get: 24h
+      trigger: true
+    - do:
+      - put: concourse-metadata-resource
+      {{ init_retry()|indent(6) }}
+      - task: create_instance
+        image: alpine-tools-image
+        config:
+          platform: linux
+          params:
+            {{ common_instance_params(examples_test) | indent(12) }}
+            GEODE_BRANCH: {{repository.branch}}
+            GEODE_FORK: {{repository.fork}}
+            IMAGE_FAMILY_NAME: ((pipeline-prefix))linux-geode-builder
+          run:
+            path: geode-ci/ci/scripts/create_instance.sh
+          inputs:
+          - name: concourse-metadata-resource
+          - name: geode-ci
+          - name: attempts-log
+            path: old
+          outputs:
+          - name: instance-data
+          - name: attempts-log
+            path: new
+        timeout: 15m
+        attempts: 2
+      - task: rsync_code_up
+        image: alpine-tools-image
+        config:
+          platform: linux
+          run:
+            path: geode-ci/ci/scripts/rsync_code_up.sh
+          inputs:
+          - name: geode-ci
+          - name: geode-examples
+            path: geode
+          - name: instance-data
+        timeout: 5m
+      - task: build
+        image: alpine-tools-image
+        config:
+          platform: linux
+          params:
+            JAVA_BUILD_VERSION: {{ java_build_version.version }}
+            GRADLE_TASK: {{ examples_test.GRADLE_TASK }}
+            {{ common_test_params(examples_test) | indent(12) }}
+          run:
+            path: geode-ci/ci/scripts/execute_build_examples.sh
+          inputs:
+          - name: geode-ci
+          - name: geode-examples
+            path: geode
+          - name: instance-data
+          outputs:
+          - name: results
+    ensure:
+      do:
+      - task: delete_instance
+        image: alpine-tools-image
+        config:
+          platform: linux
+          run:
+            path: geode-ci/ci/scripts/delete_instance.sh
+          inputs:
+          - name: geode-ci
+          - name: instance-data
+        timeout: 1h

@@ -19,18 +19,25 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.List;
 
-import org.apache.geode.DataSerializer;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.Version;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.StaticSerialization;
+import org.apache.geode.internal.serialization.Version;
 
-public class RemoveMemberMessage extends HighPriorityDistributionMessage implements HasMemberID {
-  private InternalDistributedMember memberID;
+/**
+ * A member of the cluster can request that another member be removed. This message is
+ * sent to the cluster's membership coordinator. This message is also sent to non-members
+ * that attempt to communicate with the cluster. They should respond by shutting down.
+ * No response message is required.
+ */
+public class RemoveMemberMessage<ID extends MemberIdentifier> extends AbstractGMSMessage<ID>
+    implements HasMemberID<ID> {
+  private ID memberID;
   private String reason;
 
 
-  public RemoveMemberMessage(InternalDistributedMember recipient, InternalDistributedMember id,
+  public RemoveMemberMessage(ID recipient, ID id,
       String reason) {
     super();
     setRecipient(recipient);
@@ -38,8 +45,8 @@ public class RemoveMemberMessage extends HighPriorityDistributionMessage impleme
     this.reason = reason;
   }
 
-  public RemoveMemberMessage(List<InternalDistributedMember> recipients,
-      InternalDistributedMember id, String reason) {
+  public RemoveMemberMessage(List<ID> recipients,
+      ID id, String reason) {
     super();
     setRecipients(recipients);
     this.memberID = id;
@@ -56,11 +63,7 @@ public class RemoveMemberMessage extends HighPriorityDistributionMessage impleme
   }
 
   @Override
-  public void process(ClusterDistributionManager dm) {
-    throw new IllegalStateException("this message is not intended to execute in a thread pool");
-  }
-
-  public InternalDistributedMember getMemberID() {
+  public ID getMemberID() {
     return memberID;
   }
 
@@ -79,15 +82,17 @@ public class RemoveMemberMessage extends HighPriorityDistributionMessage impleme
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeObject(memberID, out);
-    DataSerializer.writeString(reason, out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    context.getSerializer().writeObject(memberID, out);
+    StaticSerialization.writeString(reason, out);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    memberID = DataSerializer.readObject(in);
-    reason = DataSerializer.readString(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    memberID = context.getDeserializer().readObject(in);
+    reason = StaticSerialization.readString(in);
   }
 
 }

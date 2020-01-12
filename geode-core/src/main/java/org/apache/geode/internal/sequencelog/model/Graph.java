@@ -45,11 +45,6 @@ public class Graph {
   /**
    * Add an edge to this graph.
    *
-   * @param timestamp
-   * @param edgeName
-   * @param source
-   * @param dest
-   * @param isFromPattern
    */
   public void addEdge(long timestamp, String edgeName, String state, String source, String dest,
       boolean isFromPattern) {

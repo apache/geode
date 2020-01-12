@@ -41,7 +41,7 @@ import org.apache.geode.cache.lucene.internal.distributed.TopEntries;
 import org.apache.geode.cache.lucene.internal.distributed.TopEntriesCollector;
 import org.apache.geode.cache.lucene.internal.distributed.TopEntriesCollectorManager;
 import org.apache.geode.cache.lucene.internal.distributed.TopEntriesFunctionCollector;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class LuceneQueryImpl<K, V> implements LuceneQuery<K, V> {
   public static final String LUCENE_QUERY_CANNOT_BE_EXECUTED_WITHIN_A_TRANSACTION =
@@ -122,7 +122,7 @@ public class LuceneQueryImpl<K, V> implements LuceneQuery<K, V> {
       entries = rc.getResult();
     } catch (FunctionException e) {
       if (e.getCause() instanceof LuceneQueryException) {
-        throw new LuceneQueryException(e);
+        throw (LuceneQueryException) e.getCause();
       } else if (e.getCause() instanceof TransactionException) {
         // When run from client with single hop disabled
         throw new LuceneQueryException(LUCENE_QUERY_CANNOT_BE_EXECUTED_WITHIN_A_TRANSACTION);

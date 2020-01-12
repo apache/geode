@@ -19,7 +19,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * This reply processor collects all of the exceptions/results from the ReplyMessages it receives
@@ -37,8 +36,8 @@ public class CollectingReplyProcessor<T> extends ReplyProcessor21 {
   @Override
   protected void process(DistributionMessage msg, boolean warn) {
     if (msg instanceof ReplyMessage) {
-      InternalDistributedSystem.getLoggerI18n().info(LocalizedStrings.DEBUG,
-          "processing message with return value " + ((ReplyMessage) msg).getReturnValue());
+      InternalDistributedSystem.getLogger().info(String.format("%s",
+          "processing message with return value " + ((ReplyMessage) msg).getReturnValue()));
       results.put(msg.getSender(), (T) ((ReplyMessage) msg).getReturnValue());
     }
     super.process(msg, warn);

@@ -17,19 +17,17 @@ package org.apache.geode.management.internal.configuration.callbacks;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.ClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 
 /****
@@ -39,10 +37,13 @@ import org.apache.geode.management.internal.configuration.domain.Configuration;
 public class ConfigurationChangeListener extends CacheListenerAdapter<String, Configuration> {
   private static final Logger logger = LogService.getLogger();
 
-  private final ClusterConfigurationService sharedConfig;
+  private final InternalConfigurationPersistenceService sharedConfig;
+  private final InternalCache cache;
 
-  public ConfigurationChangeListener(ClusterConfigurationService sharedConfig) {
+  public ConfigurationChangeListener(InternalConfigurationPersistenceService sharedConfig,
+      InternalCache cache) {
     this.sharedConfig = sharedConfig;
+    this.cache = cache;
   }
 
   // Don't process the event locally. The action of adding or removing a jar should already have
@@ -90,6 +91,10 @@ public class ConfigurationChangeListener extends CacheListenerAdapter<String, Co
     }
 
     String triggerMemberId = (String) event.getCallbackArgument();
+    if (triggerMemberId == null || newJars.isEmpty()) {
+      return;
+    }
+
     DistributedMember locator = getDistributedMember(triggerMemberId);
     for (String jarAdded : newJars) {
       try {
@@ -101,12 +106,11 @@ public class ConfigurationChangeListener extends CacheListenerAdapter<String, Co
   }
 
   private DistributedMember getDistributedMember(String memberName) {
-    InternalCache cache = (InternalCache) CacheFactory.getAnyInstance();
     Set<DistributedMember> locators = new HashSet<>(
         cache.getDistributionManager().getAllHostedLocatorsWithSharedConfiguration().keySet());
-
-    Optional<DistributedMember> locator =
-        locators.stream().filter(x -> x.getId().equals(memberName)).findFirst();
-    return locator.get();
+    return locators.stream()
+        .filter(x -> x.getId().equals(memberName))
+        .findFirst()
+        .orElse(null);
   }
 }

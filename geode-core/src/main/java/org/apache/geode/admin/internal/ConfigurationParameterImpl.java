@@ -15,6 +15,9 @@
 
 package org.apache.geode.admin.internal;
 
+import static org.apache.geode.internal.net.InetAddressUtils.toHostString;
+import static org.apache.geode.internal.net.InetAddressUtilsWithLogging.toInetAddress;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,7 +25,6 @@ import java.util.List;
 
 import org.apache.geode.admin.ConfigurationParameter;
 import org.apache.geode.admin.UnmodifiableConfigurationException;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * A single configuration parameter of a system member.
@@ -62,8 +64,7 @@ public class ConfigurationParameterImpl implements org.apache.geode.admin.Config
       boolean userModifiable) {
     if (name == null || name.length() == 0) {
       throw new IllegalArgumentException(
-          LocalizedStrings.ConfigurationParameterImpl_CONFIGURATIONPARAMETER_NAME_MUST_BE_SPECIFIED
-              .toLocalizedString());
+          "ConfigurationParameter name must be specified");
     }
 
     this.name = name;
@@ -79,8 +80,7 @@ public class ConfigurationParameterImpl implements org.apache.geode.admin.Config
   protected ConfigurationParameterImpl(String name, Object value) {
     if (name == null || name.length() == 0) {
       throw new IllegalArgumentException(
-          LocalizedStrings.ConfigurationParameterImpl_CONFIGURATIONPARAMETER_NAME_MUST_BE_SPECIFIED
-              .toLocalizedString());
+          "ConfigurationParameter name must be specified");
     }
 
     this.name = name;
@@ -94,23 +94,27 @@ public class ConfigurationParameterImpl implements org.apache.geode.admin.Config
   // Attribute accessors and mutators
   // -------------------------------------------------------------------------
 
+  @Override
   public String getName() {
     return this.name;
   }
 
+  @Override
   public String getDescription() {
     return this.description;
   }
 
+  @Override
   public Object getValue() {
     return this.value;
   }
 
+  @Override
   public String getValueAsString() {
     if (isString()) {
       return (String) this.value;
     } else if (isInetAddress()) {
-      return InetAddressUtil.toString(this.value);
+      return toHostString(this.value);
     } else if (isFile()) {
       return this.value.toString();
     } else if (isOctal()) {
@@ -127,50 +131,58 @@ public class ConfigurationParameterImpl implements org.apache.geode.admin.Config
     }
   }
 
+  @Override
   public Class getValueType() {
     return this.type;
   }
 
+  @Override
   public boolean isModifiable() {
     return this.userModifiable;
   }
 
+  @Override
   public boolean isArray() {
     return "manager-parameters".equals(this.name) || "manager-classpaths".equals(this.name);
   }
 
+  @Override
   public boolean isInetAddress() {
     return java.net.InetAddress.class.isAssignableFrom(this.type);
   }
 
+  @Override
   public boolean isFile() {
     return java.io.File.class.equals(this.type);
   }
 
+  @Override
   public boolean isOctal() {
     return "shared-memory-permissions".equals(this.name);
   }
 
+  @Override
   public boolean isString() {
     return java.lang.String.class.equals(this.type);
   }
 
+  @Override
   public void setValue(Object value) throws UnmodifiableConfigurationException {
     if (!isModifiable()) {
       throw new UnmodifiableConfigurationException(
-          LocalizedStrings.ConfigurationParameterImpl_0_IS_NOT_A_MODIFIABLE_CONFIGURATION_PARAMETER
-              .toLocalizedString(getName()));
+          String.format("%s is not a modifiable configuration parameter",
+              getName()));
     }
     if (value == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.ConfigurationParameterImpl_UNABLE_TO_SET_0_TO_NULL_VALUE
-              .toLocalizedString(getName()));
+          String.format("Unable to set %s to null value",
+              getName()));
     }
     if (!getValueType().equals(value.getClass())) {
       throw new IllegalArgumentException(
-          LocalizedStrings.ConfigurationParameterImpl_UNABLE_TO_SET_TYPE_0_WITH_TYPE_1
-              .toLocalizedString(
-                  new Object[] {getValueType().getName(), value.getClass().getName()}));
+          String.format("Unable to set type %s with type %s",
+
+              new Object[] {getValueType().getName(), value.getClass().getName()}));
     }
 
     if (value instanceof String && !isString()) {
@@ -208,12 +220,12 @@ public class ConfigurationParameterImpl implements org.apache.geode.admin.Config
   protected void setValueFromString(String newValue) {
     if (newValue == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.ConfigurationParameterImpl_UNABLE_TO_SET_0_TO_NULL_VALUE
-              .toLocalizedString(getName()));
+          String.format("Unable to set %s to null value",
+              getName()));
     }
 
     if (isInetAddress()) {
-      this.value = InetAddressUtil.toInetAddress(newValue);
+      this.value = toInetAddress(newValue);
     } else if (isFile()) {
       this.value = new File(newValue);
     } else if (isOctal()) {
@@ -224,8 +236,7 @@ public class ConfigurationParameterImpl implements org.apache.geode.admin.Config
     } else if (isArray()) {
       // parse it TODO
       throw new IllegalArgumentException(
-          LocalizedStrings.ConfigurationParameterImpl_SETTING_ARRAY_VALUE_FROM_DELIMITED_STRING_IS_NOT_SUPPORTED
-              .toLocalizedString());
+          "Setting array value from delimited string is not supported");
     } else {
       this.value = newValue;
     }

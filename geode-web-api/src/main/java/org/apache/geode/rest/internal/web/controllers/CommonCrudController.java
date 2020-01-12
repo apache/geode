@@ -15,6 +15,7 @@
 package org.apache.geode.rest.internal.web.controllers;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -22,7 +23,6 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.apache.logging.log4j.Logger;
-import org.json.JSONException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -38,8 +38,9 @@ import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.execute.util.FindRestEnabledServersFunction;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.rest.internal.web.controllers.support.RestServersResultCollector;
 import org.apache.geode.rest.internal.web.exception.GemfireRestException;
 import org.apache.geode.rest.internal.web.util.ArrayUtils;
@@ -73,7 +74,10 @@ public abstract class CommonCrudController extends AbstractBaseController {
     logger.debug("Listing all resources (Regions) in Geode...");
     final HttpHeaders headers = new HttpHeaders();
     headers.setLocation(toUri());
-    final Set<Region<?, ?>> regions = getCache().rootRegions();
+    final Set<Region<?, ?>> regions = new HashSet<>();
+    for (InternalRegion region : getCache().getApplicationRegions()) {
+      regions.add(region);
+    }
     String listRegionsAsJson = JSONUtils.formulateJsonForListRegions(regions, "regions");
     return new ResponseEntity<>(listRegionsAsJson, headers, HttpStatus.OK);
   }
@@ -186,7 +190,8 @@ public abstract class CommonCrudController extends AbstractBaseController {
       function = FunctionService.onMembers(getAllMembersInDS());
     } catch (FunctionException fe) {
       throw new GemfireRestException(
-          "Disributed system does not contain any valid data node that can host REST service!", fe);
+          "Distributed system does not contain any valid data node that can host REST service!",
+          fe);
     }
 
     try {
@@ -197,14 +202,9 @@ public abstract class CommonCrudController extends AbstractBaseController {
       if (functionResult instanceof List<?>) {
         final HttpHeaders headers = new HttpHeaders();
         headers.setLocation(toUri("servers"));
-        try {
-          String functionResultAsJson =
-              JSONUtils.convertCollectionToJson((ArrayList<Object>) functionResult);
-          return new ResponseEntity<>(functionResultAsJson, headers, HttpStatus.OK);
-        } catch (JSONException e) {
-          throw new GemfireRestException(
-              "Could not convert function results into Restful (JSON) format!", e);
-        }
+        String functionResultAsJson =
+            JSONUtils.convertCollectionToJson((ArrayList<Object>) functionResult);
+        return new ResponseEntity<>(functionResultAsJson, headers, HttpStatus.OK);
       } else {
         throw new GemfireRestException(
             "Function has returned results that could not be converted into Restful (JSON) format!");

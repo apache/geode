@@ -22,8 +22,10 @@ import java.io.IOException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * Represents a held lock in a member for use when initializing a new grantor. All currently held
@@ -81,7 +83,7 @@ public class DLockRemoteToken implements DataSerializableFixedID {
       throws IOException, ClassNotFoundException {
     Object name = DataSerializer.readObject(in);
     RemoteThread lesseeThread = null;
-    InternalDistributedMember lessee = (InternalDistributedMember) DataSerializer.readObject(in);
+    InternalDistributedMember lessee = DataSerializer.readObject(in);
     lesseeThread = new RemoteThread(lessee, in.readInt());
     int leaseId = in.readInt();
     long leaseExpireTime = in.readLong();
@@ -186,6 +188,7 @@ public class DLockRemoteToken implements DataSerializableFixedID {
   /**
    * return the ID for serialization of instances of DLockRemoteToken
    */
+  @Override
   public int getDSFID() {
     return DataSerializableFixedID.DLOCK_REMOTE_TOKEN;
   }
@@ -193,9 +196,11 @@ public class DLockRemoteToken implements DataSerializableFixedID {
   /**
    * Writes the contents of this object to the given output.
    */
-  public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeObject(this.name, out);
-    DataSerializer.writeObject(this.lesseeThread.getDistributedMember(), out);
+  @Override
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    context.getSerializer().writeObject(this.name, out);
+    context.getSerializer().writeObject(this.lesseeThread.getDistributedMember(), out);
     out.writeInt(this.lesseeThread.getThreadId());
     out.writeInt(this.leaseId);
     out.writeLong(this.leaseExpireTime);
@@ -204,7 +209,9 @@ public class DLockRemoteToken implements DataSerializableFixedID {
   /**
    * Unsupported. Use {@link DLockRemoteToken#createFromDataInput(DataInput)} instead.
    */
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  @Override
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     throw new UnsupportedOperationException(
         "Use DLockRemoteToken#createFromDataInput(DataInput) instead.");
   }

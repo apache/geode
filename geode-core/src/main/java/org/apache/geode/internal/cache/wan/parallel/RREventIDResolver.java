@@ -33,15 +33,18 @@ import org.apache.geode.internal.cache.EventID;
  */
 public class RREventIDResolver implements PartitionResolver {
 
+  @Override
   public void close() {
 
   }
 
+  @Override
   public Object getRoutingObject(EntryOperation opDetails) {
     EventID eventID = (EventID) opDetails.getKey();
     return eventID.getBucketID();
   }
 
+  @Override
   public String getName() {
     return getClass().getName();
   }

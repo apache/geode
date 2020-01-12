@@ -27,11 +27,11 @@ public abstract class SeekableInputStream extends InputStream {
    * Seek to a position in the stream. The position is relative to the beginning of the stream (in
    * other words, just before the first byte that was ever read).
    *
-   * @param position
    * @throws IOException if the seek goes past the end of the stream
    */
   public abstract void seek(long position) throws IOException;
 
+  @Override
   public abstract SeekableInputStream clone();
 
 

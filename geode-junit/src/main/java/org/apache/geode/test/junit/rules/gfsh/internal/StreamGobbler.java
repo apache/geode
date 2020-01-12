@@ -14,31 +14,64 @@
  */
 package org.apache.geode.test.junit.rules.gfsh.internal;
 
+import static java.util.concurrent.Executors.newSingleThreadExecutor;
+
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 
-class StreamGobbler implements Runnable {
-  private InputStream inputStream;
-  private Consumer<String> consumeInputLine;
+class StreamGobbler implements AutoCloseable {
+  private final InputStream inputStream;
+  private final Consumer<String> consumeInputLine;
+  private final ExecutorService executorService;
 
-  public StreamGobbler(InputStream inputStream, Consumer<String> consumeInputLine) {
+  private Future<?> processInputTask;
+
+  StreamGobbler(InputStream inputStream, Consumer<String> consumeInputLine) {
     this.inputStream = inputStream;
     this.consumeInputLine = consumeInputLine;
+
+    executorService = newSingleThreadExecutor();
   }
 
-  public void run() {
-    try {
-      new BufferedReader(new InputStreamReader(inputStream)).lines().forEach(consumeInputLine);
-    } catch (UncheckedIOException ignored) {
-      // If this gobbler is reading the System.out stream from a process that gets killed,
-      // we will occasionally see an exception here than can be ignored.
+  public void start() {
+    processInputTask = executorService.submit(this::processInputStream);
+  }
+
+  @Override
+  public void close() {
+    executorService.shutdown();
+  }
+
+  /**
+   * Blocks until the StreamGobbler finishes processing the input stream
+   *
+   * @throws InterruptedException if the StreamGobbler thread was interrupted
+   * @throws ExecutionException if the StreamGobbler thread threw an exception
+   * @throws TimeoutException if the StreamGobbler does not finish processing input before the
+   *         timeout
+   */
+  public void awaitTermination(long timeout, TimeUnit unit)
+      throws InterruptedException, ExecutionException, TimeoutException {
+    if (processInputTask != null) {
+      processInputTask.get(timeout, unit);
     }
   }
 
-  public void startInNewThread() {
-    new Thread(this).start();
+  private void processInputStream() {
+    try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream))) {
+      bufferedReader.lines().forEach(consumeInputLine);
+    } catch (UncheckedIOException | IOException ignored) {
+      // If this gobbler is reading the System.out stream from a process that gets killed,
+      // we will occasionally see an exception here than can be ignored.
+    }
   }
 }

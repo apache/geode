@@ -19,10 +19,6 @@ import java.util.Map;
 
 import org.apache.geode.management.internal.FederationComponent;
 
-/**
- *
- *
- */
 public class GatewaySenderClusterStatsMonitor {
 
   private static final String AVERAGE_DISTRIBUTION_TIME_PER_BATCH =

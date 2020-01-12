@@ -58,30 +58,37 @@ public class PartitionMemberInfoImpl implements InternalPartitionDetails, Serial
     this.bucketSizes = bucketSizes;
   }
 
+  @Override
   public int getBucketCount() {
     return this.bucketCount;
   }
 
+  @Override
   public long getConfiguredMaxMemory() {
     return this.configuredMaxMemory;
   }
 
+  @Override
   public DistributedMember getDistributedMember() {
     return this.distributedMember;
   }
 
+  @Override
   public int getPrimaryCount() {
     return this.primaryCount;
   }
 
+  @Override
   public long getSize() {
     return this.size; // bytes
   }
 
+  @Override
   public PRLoad getPRLoad() {
     return this.prLoad;
   }
 
+  @Override
   public long getBucketSize(int bucketId) { // bytes
     if (this.bucketSizes == null) {
       throw new IllegalStateException(this + " has no bucketSizes");
@@ -146,6 +153,7 @@ public class PartitionMemberInfoImpl implements InternalPartitionDetails, Serial
     return this.distributedMember.equals(o.distributedMember);
   }
 
+  @Override
   public int compareTo(InternalPartitionDetails other) {
     // memberId is InternalDistributedMember which implements Comparable
     return this.distributedMember.compareTo(other.getDistributedMember());

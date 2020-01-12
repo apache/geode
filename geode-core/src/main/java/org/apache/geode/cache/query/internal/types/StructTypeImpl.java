@@ -18,13 +18,15 @@ package org.apache.geode.cache.query.internal.types;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.cache.query.*;
-import org.apache.geode.cache.query.internal.*;
-import org.apache.geode.cache.query.types.*;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.cache.query.Struct;
+import org.apache.geode.cache.query.internal.StructImpl;
+import org.apache.geode.cache.query.types.ObjectType;
+import org.apache.geode.cache.query.types.StructType;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * Implementation of StructType
@@ -65,7 +67,7 @@ public class StructTypeImpl extends ObjectTypeImpl implements StructType {
     super(clazz);
     if (fieldNames == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.StructTypeImpl_FIELDNAMES_MUST_NOT_BE_NULL.toLocalizedString());
+          "fieldNames must not be null");
     }
     this.fieldNames = fieldNames;
     this.fieldTypes = fieldTypes == null ? new ObjectType[this.fieldNames.length] : fieldTypes;
@@ -77,14 +79,17 @@ public class StructTypeImpl extends ObjectTypeImpl implements StructType {
   }
 
 
+  @Override
   public ObjectType[] getFieldTypes() {
     return this.fieldTypes;
   }
 
+  @Override
   public String[] getFieldNames() {
     return this.fieldNames;
   }
 
+  @Override
   public int getFieldIndex(String fieldName) {
     for (int i = 0; i < this.fieldNames.length; i++) {
       if (this.fieldNames[i].equals(fieldName)) {
@@ -92,7 +97,7 @@ public class StructTypeImpl extends ObjectTypeImpl implements StructType {
       }
     }
     throw new IllegalArgumentException(
-        LocalizedStrings.StructTypeImpl_FIELDNAME_0_NOT_FOUND.toLocalizedString(fieldName));
+        String.format("fieldName %s not found", fieldName));
   }
 
   @Override
@@ -153,15 +158,17 @@ public class StructTypeImpl extends ObjectTypeImpl implements StructType {
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.fieldNames = DataSerializer.readStringArray(in);
     this.fieldTypes = (ObjectType[]) DataSerializer.readObjectArray(in);
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     DataSerializer.writeStringArray(this.fieldNames, out);
     DataSerializer.writeObjectArray(fieldTypes, out);
   }

@@ -23,10 +23,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
-import org.apache.geode.i18n.StringId;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Class <code>SerialGatewayEventCallbackDispatcher</code> dispatches batches of
@@ -68,6 +65,7 @@ public class GatewaySenderEventCallbackDispatcher implements GatewaySenderEventD
    * @param removeFromQueueOnException Unused.
    * @return whether the batch of messages was successfully processed
    */
+  @Override
   public boolean dispatchBatch(List events, boolean removeFromQueueOnException, boolean isRetry) {
     GatewaySenderStats statistics = this.eventProcessor.sender.getStatistics();
     boolean success = false;
@@ -89,8 +87,7 @@ public class GatewaySenderEventCallbackDispatcher implements GatewaySenderEventD
       throw e;
     } catch (Exception e) {
       logger.fatal(
-          LocalizedMessage.create(
-              LocalizedStrings.SerialGatewayEventCallbackDispatcher_STOPPING_THE_PROCESSOR_BECAUSE_THE_FOLLOWING_EXCEPTION_OCCURRED_WHILE_PROCESSING_A_BATCH),
+          "Stopping the processor because the following exception occurred while processing a batch:",
           e);
       this.eventProcessor.setIsStopped(true);
     }
@@ -141,7 +138,6 @@ public class GatewaySenderEventCallbackDispatcher implements GatewaySenderEventD
    *
    * @param events The <code>List</code> of events to send
    *
-   * @throws GatewaySenderException
    */
   protected boolean dispatchBatch(List events) throws GatewaySenderException {
     if (events.isEmpty()) {
@@ -157,12 +153,12 @@ public class GatewaySenderEventCallbackDispatcher implements GatewaySenderEventD
         }
       }
     } catch (Exception e) {
-      final StringId alias =
-          LocalizedStrings.SerialGatewayEventCallbackDispatcher__0___EXCEPTION_DURING_PROCESSING_BATCH__1_;
+      final String alias =
+          "%s: Exception during processing batch %s";
       final Object[] aliasArgs = new Object[] {this, Integer.valueOf(batchId)};
-      String exMsg = alias.toLocalizedString(aliasArgs);
+      String exMsg = String.format(alias, aliasArgs);
       GatewaySenderException ge = new GatewaySenderException(exMsg, e);
-      logger.warn(LocalizedMessage.create(alias, aliasArgs), ge);
+      logger.warn(exMsg, ge);
       throw ge;
     }
     return successAll;

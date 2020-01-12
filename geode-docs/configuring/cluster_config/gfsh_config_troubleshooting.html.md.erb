@@ -19,33 +19,29 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-When you use the cluster configuration service in <%=vars.product_name%>, you can examine the generated configuration files in the `cluster_config` directory on the locator. `gfsh` saves configuration files at the cluster-level and at the individual group-level.
+When you use the cluster configuration service in <%=vars.product_name%>,
+you can examine the generated configuration.
+The gfsh [export cluster-configuration](../../tools_modules/gfsh/command-pages/export.html#topic_mdv_jgz_ck)
+command outputs configured properties,
+the configuration on a per-group basis or for the
+entire cluster, and the list of deployed JAR files.
 
-The following directories and configuration files are available on the locator running the cluster configuration service:
+If the output is written to either a ZIP file or an XML file,
+you can import this configuration to a new cluster.
+See [Exporting and Importing Cluster Configurations](export-import.html#concept_wft_dkq_34).
 
-**Cluster-level configuration**  
-For configurations that apply to all members of a cluster, the locator creates a `cluster` subdirectory within the `cluster_config` directory (or in the cluster configuration directory when starting up the locator with the `--cluster-config-dir=value` parameter) specified. All servers receive this configuration when they are started using `gfsh`. This directory contains:
+Upon the deploy of a JAR file,
+the JAR file is added to a created directory called `cluster_config` within
+the locator's directory of files.
+Within `cluster_config` will be another directory named for the member group
+that has the configuration.
+For configurations that apply to all members of a cluster,
+the directory is named either `cluster`
+or the name specified when starting up the locator with
+the `--cluster-config-dir` option.
 
--   `cluster.xml` -- A <%=vars.product_name%> `cache.xml` file containing configuration common to all members
--   `cluster.properties` -- a <%=vars.product_name%> ` gemfire.properties` file containing properties common to all members
--   Jar files that are intended for deployment to all members
 
 <!-- -->
-
-**Group-level configuration**  
-When you specify the `--groups` parameter in a `gfsh` command, (for example, `start server` or `create region`) the locator writes the configurations for each group in a subdirectory with the same name as the group. When you start a server that specifies one or more group names, the server receives both the cluster-level configurations and the configurations from all groups specified. This subdirectory contains:
-
--   `<group-name>.xml` -- A <%=vars.product_name%> `cache.xml` file containing configurations common to all members of the group
--   `<group-name>.properties` -- A <%=vars.product_name%> `gemfire.properties` file containing properties common to all members of the group
--   Jar files that are intended for deployment to all members of the group
-
-<img src="../../images_svg/cluster-group-config.svg" id="concept_ylt_2cb_y4__image_bs1_mcb_y4" class="image" />
-
-You can export a zip file that contains all artifacts of a cluster configuration. The zip file contains all of the files in the `cluster_config` (or otherwise specified) subdirectory of a locator. You can import this configuration to a new cluster. See [Exporting and Importing Cluster Configurations](export-import.html#concept_wft_dkq_34).
-
-## Individual Configuration Files and Cluster Configuration Files
-
-<%=vars.product_name%> applies the cluster-wide configuration files first and then group-level configurations next. If a member has its own configuration files defined (cache.xml and gemfire.properties files), those configurations are applied last. Whenever possible, use the member group-level configuration files in the cluster configuration service to apply non-cluster-wide configurations on individual members.
 
 ## Troubleshooting Tips
 
@@ -59,6 +55,13 @@ You can export a zip file that contains all artifacts of a cluster configuration
 
     -   If the command returns RUNNING, the cluster configuration is running normally.
     -   If the command returns WAITING, run the `status locator` command. The output of this command returns the cause of the WAITING status.
+-  When using a `cache.xml` file for configuration,
+there is a specific order to the application of the configuration
+in these files.
+<%=vars.product_name%> applies the cluster-wide configuration files first.
+Group-level configurations follow.
+Last will be the configuration in a member's own configuration files
+(`cache.xml` and `gemfire.properties` files).
 -   If a server start fails with the following exception: `ClusterConfigurationNotAvailableException`, the cluster configuration service may not be in the RUNNING state. Because the server requests the cluster configuration from the locator, which is not available, the `start server` command fails.
 -   You can determine what configurations a server received from a locator by examining the server's log file. See [Logging](../../managing/logging/logging.html#concept_30DB86B12B454E168B80BB5A71268865).
 -   If a `start server` command specifies a cache.xml file that conflicts with the existing cluster configuration, the server startup may fail.

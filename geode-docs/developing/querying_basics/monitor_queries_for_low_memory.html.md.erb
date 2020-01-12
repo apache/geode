@@ -1,5 +1,5 @@
 ---
-title: Monitoring Queries for Low Memory
+title: Monitoring Low Memory When Querying
 ---
 
 <!--
@@ -24,13 +24,24 @@ limitations under the License.
 
 The query monitoring feature prevents out-of-memory exceptions from occurring when you execute queries or create indexes.
 
-This feature is automatically enabled when you set a `critical-heap-percentage` attribute for the resource-manager element in cache.xml or by using the `cache.getResourceManager().setCriticalHeapPercentage(float heapPercentage)` API. Use this feature to cancel out queries that are taking too long and to warn the user that there are low memory conditions when they are running queries or creating indexes.
+You enable this feature when you set 
+a `critical-heap-percentage` attribute for the resource-manager element
+in the `cache.xml` file or by using the
+`cache.getResourceManager().setCriticalHeapPercentage(float heapPercentage)`
+API. When this feature is enabled and
+heap memory usage exceeds
+the threshold due to running a query or creating an index,
+the resource manager throws an exception
+and cancels the running query or index creation.
 
-You can override this feature by setting the system property `gemfire.cache.DISABLE_QUERY_MONITOR_FOR_LOW_MEMORY` to true.
+You can explicitly disable this feature by setting the system property `gemfire.cache.DISABLE_QUERY_MONITOR_FOR_LOW_MEMORY` to true.
 
-When the query memory monitoring feature is on, the default query time out is set to five hours. You can override this value by setting a larger or smaller, non -1 value to the existing query time out system variable `gemfire.cache.MAX_QUERY_EXECUTION_TIME`.
-
-When system memory is low (as determined by the critical heap percentage threshold that you defined in cache.xml or in the getResourceManager API ), queries will throw a `QueryExecutionLowMemoryException`. Any indexes that are in the process of being created will throw an `InvalidIndexException` with the message indicating the reason.
+When system memory is low,
+as determined by the critical heap percentage threshold defined in 
+the `cache.xml` file or in the getResourceManager API,
+queries will throw a `QueryExecutionLowMemoryException`.
+Any indexes that are in the process of being created will throw
+an `InvalidIndexException` with the message indicating the reason.
 
 ## <a id="topic_685CED6DE7D0449DB8816E8ABC1A6E6F__section_2E9DEEC9D9C94D038543DDE03BC60B20" class="no-quick-link"></a>Partitioned Region Queries and Low Memory
 

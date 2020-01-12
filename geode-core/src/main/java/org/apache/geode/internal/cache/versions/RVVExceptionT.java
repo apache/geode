@@ -21,7 +21,6 @@ import java.util.NoSuchElementException;
 import java.util.TreeSet;
 
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.cache.versions.RVVException.ReceivedVersionsIterator;
 
 /**
  * This subclass of RVVException is the original class that uses TreeSets to hold received versions.
@@ -110,6 +109,7 @@ public class RVVExceptionT extends RVVException {
   }
 
 
+  @Override
   public void writeReceived(DataOutput out) throws IOException {
 
     int size = this.received == null ? 0 : this.received.size();
@@ -175,12 +175,12 @@ public class RVVExceptionT extends RVVException {
     if (!super.sameAs(ex)) {
       return false;
     }
-    for (ReceivedVersionsIterator it = receivedVersionsIterator(); it.hasNext();) {
+    for (ReceivedVersionsReverseIterator it = receivedVersionsReverseIterator(); it.hasNext();) {
       if (!ex.contains(it.next())) {
         return false;
       }
     }
-    for (ReceivedVersionsIterator it = ex.receivedVersionsIterator(); it.hasNext();) {
+    for (ReceivedVersionsReverseIterator it = ex.receivedVersionsReverseIterator(); it.hasNext();) {
       if (!contains(it.next())) {
         return false;
       }
@@ -189,6 +189,7 @@ public class RVVExceptionT extends RVVException {
   }
 
   /** has the given version been recorded as having been received? */
+  @Override
   public boolean contains(long version) {
     if (version <= this.previousVersion) {
       return false;
@@ -197,18 +198,17 @@ public class RVVExceptionT extends RVVException {
   }
 
   /** return false if any revisions have been recorded in the range of this exception */
+  @Override
   public boolean isEmpty() {
     return (this.received == null || this.received.isEmpty());
   }
 
-  public ReceivedVersionsIterator receivedVersionsIterator() {
-    ReceivedVersionsIteratorT result = new ReceivedVersionsIteratorT();
-    result.initForForwardIteration();
-    return result;
+  @Override
+  public ReceivedVersionsReverseIterator receivedVersionsReverseIterator() {
+    return new ReceivedVersionsReverseIteratorT();
   }
 
-
-
+  @Override
   public long getHighestReceivedVersion() {
     if (received == null || received.isEmpty()) {
       return previousVersion;
@@ -231,32 +231,32 @@ public class RVVExceptionT extends RVVException {
   public RVVException changeForm() {
     // Convert the exception to a bitset exception
     RVVExceptionB ex = new RVVExceptionB(previousVersion, nextVersion);
-    for (ReceivedVersionsIterator it = this.receivedVersionsIterator(); it.hasNext();) {
+    for (ReceivedVersionsReverseIterator it = this.receivedVersionsReverseIterator(); it
+        .hasNext();) {
       long next = it.next();
       ex.add(next);
     }
     return ex;
   }
 
-
-
-  /** it's a shame that BitSet has no iterator */
-  protected class ReceivedVersionsIteratorT extends ReceivedVersionsIterator {
+  protected class ReceivedVersionsReverseIteratorT extends ReceivedVersionsReverseIterator {
     boolean noIterator;
     Iterator<Long> treeSetIterator;
 
-    void initForForwardIteration() {
+    ReceivedVersionsReverseIteratorT() {
       if (received == null) {
         this.noIterator = true;
       } else {
-        this.treeSetIterator = received.iterator();
+        this.treeSetIterator = received.descendingIterator();
       }
     }
 
+    @Override
     boolean hasNext() {
       return !noIterator && this.treeSetIterator.hasNext();
     }
 
+    @Override
     long next() {
       if (!noIterator) {
         return this.treeSetIterator.next().longValue();
@@ -264,11 +264,11 @@ public class RVVExceptionT extends RVVException {
       throw new NoSuchElementException("no more elements");
     }
 
+    @Override
     void remove() {
       if (!noIterator) {
         this.treeSetIterator.remove();
       }
     }
-
   }
 }

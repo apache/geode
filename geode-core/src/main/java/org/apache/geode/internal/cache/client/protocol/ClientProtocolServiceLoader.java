@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.ServiceLoader;
 
 import org.apache.geode.internal.cache.client.protocol.exception.ServiceLoadingFailureException;
-import org.apache.geode.internal.cache.client.protocol.exception.ServiceVersionNotFoundException;
 
 public class ClientProtocolServiceLoader {
   private final List<ClientProtocolService> clientProtocolServices;

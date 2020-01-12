@@ -16,27 +16,26 @@ package org.apache.geode.internal.logging;
 
 /**
  * Prints messages formatted like GemFire log messages to stderr.
- *
  */
-public class StandardErrorPrinter extends LocalLogWriter {
+class StandardErrorPrinter extends LocalLogWriter {
 
   /**
-   * Creates a writer that logs to <code>System.err</code>. All messages will be logged.
+   * Creates a writer that logs to {@code System.err}. All messages will be logged.
    *
    * @throws IllegalArgumentException if level is not in legal range
    */
-  public StandardErrorPrinter() {
-    this(InternalLogWriter.ALL_LEVEL);
+  StandardErrorPrinter() {
+    this(ALL_LEVEL);
   }
 
   /**
-   * Creates a writer that logs to <code>System.err</code>.
+   * Creates a writer that logs to {@code System.err}.
    *
    * @param level only messages greater than or equal to this value will be logged.
+   *
    * @throws IllegalArgumentException if level is not in legal range
    */
-  public StandardErrorPrinter(final int level) {
+  StandardErrorPrinter(final int level) {
     super(level, System.err);
   }
-
 }

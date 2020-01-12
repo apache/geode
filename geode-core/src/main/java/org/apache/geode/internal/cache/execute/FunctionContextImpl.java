@@ -65,6 +65,7 @@ public class FunctionContextImpl implements FunctionContext {
    *
    * @return the arguments or null if there are no arguments
    */
+  @Override
   public Object getArguments() {
     return this.args;
   }
@@ -75,6 +76,7 @@ public class FunctionContextImpl implements FunctionContext {
    * @return String uniquely identifying this running instance
    * @see Function#getId()
    */
+  @Override
   public String getFunctionId() {
     return this.functionId;
   }
@@ -91,10 +93,12 @@ public class FunctionContextImpl implements FunctionContext {
     return buf.toString();
   }
 
+  @Override
   public ResultSender getResultSender() {
     return this.resultSender;
   }
 
+  @Override
   public boolean isPossibleDuplicate() {
     return this.isPossDup;
   }

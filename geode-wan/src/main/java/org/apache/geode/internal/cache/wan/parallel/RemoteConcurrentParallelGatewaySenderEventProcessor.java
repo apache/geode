@@ -18,10 +18,11 @@ package org.apache.geode.internal.cache.wan.parallel;
 import java.util.Set;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventRemoteDispatcher;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
-import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderEventProcessor;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 
 /**
  * Remote version of GatewaySenderEvent Processor
@@ -30,8 +31,9 @@ import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderEventPr
 public class RemoteConcurrentParallelGatewaySenderEventProcessor
     extends ConcurrentParallelGatewaySenderEventProcessor {
 
-  public RemoteConcurrentParallelGatewaySenderEventProcessor(AbstractGatewaySender sender) {
-    super(sender);
+  public RemoteConcurrentParallelGatewaySenderEventProcessor(AbstractGatewaySender sender,
+      ThreadsMonitoring tMonitoring) {
+    super(sender, tMonitoring);
   }
 
   @Override
@@ -42,7 +44,7 @@ public class RemoteConcurrentParallelGatewaySenderEventProcessor
     }
     for (int i = 0; i < sender.getDispatcherThreads(); i++) {
       processors[i] = new RemoteParallelGatewaySenderEventProcessor(sender, targetRs, i,
-          sender.getDispatcherThreads());
+          sender.getDispatcherThreads(), getThreadMonitorObj());
     }
   }
 
@@ -61,6 +63,15 @@ public class RemoteConcurrentParallelGatewaySenderEventProcessor
       }
     } finally {
       statistics.endLoadBalance(startTime);
+    }
+  }
+
+  private ThreadsMonitoring getThreadMonitorObj() {
+    DistributionManager distributionManager = sender.getDistributionManager();
+    if (distributionManager != null) {
+      return distributionManager.getThreadMonitoring();
+    } else {
+      return null;
     }
   }
 }

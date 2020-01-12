@@ -12,6 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.cache.client.internal;
 
 import java.io.InputStream;
@@ -24,11 +25,11 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.cache.client.internal.ServerBlackList.FailureTracker;
+import org.apache.geode.cache.client.internal.ServerDenyList.FailureTracker;
 import org.apache.geode.cache.client.internal.pooling.ConnectionDestroyedException;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.cache.tier.sockets.ServerQueueStatus;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 
 /**
@@ -40,10 +41,9 @@ import org.apache.geode.internal.logging.LogService;
 public class QueueConnectionImpl implements Connection {
   private static final Logger logger = LogService.getLogger();
 
-  private final AtomicReference/* <Connection> */ clientToServerConn = new AtomicReference();
+  private final AtomicReference<Connection> clientToServerConn = new AtomicReference<>();
   private final Endpoint endpoint;
   private volatile ClientUpdater updater;
-  private boolean shouldDestroy;
   private QueueManagerImpl manager;
   private final AtomicBoolean sentClientReady = new AtomicBoolean();
   private FailureTracker failureTracker;
@@ -57,13 +57,15 @@ public class QueueConnectionImpl implements Connection {
     this.failureTracker = failureTracker;
   }
 
+  @Override
   public void close(boolean keepAlive) throws Exception {
     throw new UnsupportedOperationException(
         "Subscription connections should only be closed by subscription manager");
   }
 
+  @Override
   public void emergencyClose() {
-    Connection conn = (Connection) clientToServerConn.getAndSet(null);
+    Connection conn = clientToServerConn.getAndSet(null);
     if (conn != null) {
       conn.emergencyClose();
     }
@@ -79,15 +81,16 @@ public class QueueConnectionImpl implements Connection {
     }
   }
 
+  @Override
   public void destroy() {
-    Connection conn = (Connection) this.clientToServerConn.get();
+    Connection conn = this.clientToServerConn.get();
     if (conn != null) {
       manager.connectionCrashed(conn);
     } // else someone else destroyed it
   }
 
   public void internalDestroy() {
-    Connection currentConn = (Connection) this.clientToServerConn.get();
+    Connection currentConn = this.clientToServerConn.get();
     if (currentConn != null) {
       if (!this.clientToServerConn.compareAndSet(currentConn, null)) {
         // someone else did (or is doing) the internalDestroy so return
@@ -123,59 +126,70 @@ public class QueueConnectionImpl implements Connection {
     return this.updater;
   }
 
+  @Override
   public boolean isDestroyed() {
     return clientToServerConn.get() == null;
   }
 
-  public boolean getShouldDestroy() {
-    return shouldDestroy;
-  }
-
+  @Override
   public ByteBuffer getCommBuffer() throws SocketException {
     return getConnection().getCommBuffer();
   }
 
+  @Override
   public Endpoint getEndpoint() {
     return this.endpoint;
   }
 
+  @Override
   public ServerQueueStatus getQueueStatus() {
     return getConnection().getQueueStatus();
   }
 
+  @Override
   public ServerLocation getServer() {
     return getEndpoint().getLocation();
   }
 
+  @Override
   public Socket getSocket() {
     return getConnection().getSocket();
   }
 
+  @Override
   public OutputStream getOutputStream() {
     return getConnection().getOutputStream();
   }
 
+  @Override
   public InputStream getInputStream() {
     return getConnection().getInputStream();
   }
 
+  @Override
   public ConnectionStats getStats() {
     return getEndpoint().getStats();
   }
 
+  @Override
   public Object execute(Op op) throws Exception {
     return getConnection().execute(op);
   }
 
   public Connection getConnection() {
-    Connection result = (Connection) this.clientToServerConn.get();
+    Connection result = this.clientToServerConn.get();
     if (result == null) {
       throw new ConnectionDestroyedException();
     }
     return result;
   }
 
-  public FailureTracker getFailureTracker() {
+  @Override
+  public Connection getWrappedConnection() {
+    return getConnection();
+  }
+
+  FailureTracker getFailureTracker() {
     return failureTracker;
   }
 
@@ -184,13 +198,13 @@ public class QueueConnectionImpl implements Connection {
    *
    * @return true if we have not yet sent client ready.
    */
-  public boolean sendClientReady() {
+  boolean sendClientReady() {
     return sentClientReady.compareAndSet(false, true);
   }
 
   @Override
   public String toString() {
-    Connection result = (Connection) this.clientToServerConn.get();
+    Connection result = this.clientToServerConn.get();
     if (result != null) {
       return result.toString();
     } else {
@@ -198,27 +212,28 @@ public class QueueConnectionImpl implements Connection {
     }
   }
 
-  public static void loadEmergencyClasses() {
-    ConnectionImpl.loadEmergencyClasses();
-  }
-
+  @Override
   public short getWanSiteVersion() {
     throw new UnsupportedOperationException();
   }
 
+  @Override
   public int getDistributedSystemId() {
     throw new UnsupportedOperationException();
   }
 
+  @Override
   public void setWanSiteVersion(short wanSiteVersion) {
     throw new UnsupportedOperationException();
   }
 
+  @Override
   public void setConnectionID(long id) {
-    ((Connection) this.clientToServerConn.get()).setConnectionID(id);
+    this.clientToServerConn.get().setConnectionID(id);
   }
 
+  @Override
   public long getConnectionID() {
-    return ((Connection) this.clientToServerConn.get()).getConnectionID();
+    return this.clientToServerConn.get().getConnectionID();
   }
 }

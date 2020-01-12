@@ -14,8 +14,8 @@
  */
 package org.apache.geode.admin;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Provides information about the aggregate health of the members of a GemFire distributed system
@@ -46,6 +46,7 @@ public interface GemFireHealth {
    *
    * @see #getHealth
    */
+  @Immutable
   Health GOOD_HEALTH = new Health(Health.GOOD_STRING);
 
   /**
@@ -54,6 +55,7 @@ public interface GemFireHealth {
    *
    * @see #getHealth
    */
+  @Immutable
   Health OKAY_HEALTH = new Health(Health.OKAY_STRING);
 
   /**
@@ -62,6 +64,7 @@ public interface GemFireHealth {
    *
    * @see #getHealth
    */
+  @Immutable
   Health POOR_HEALTH = new Health(Health.POOR_STRING);
 
   /////////////////////// Instance Methods ///////////////////////
@@ -153,21 +156,22 @@ public interface GemFireHealth {
   /**
    * An enumerated type for the health of GemFire.
    */
+  @Immutable
   class Health implements java.io.Serializable {
     private static final long serialVersionUID = 3039539430412151801L;
     /** The string for good health */
-    static final String GOOD_STRING = LocalizedStrings.GemFireHealth_GOOD.toLocalizedString();
+    static final String GOOD_STRING = "Good";
 
     /** The string for okay health */
-    static final String OKAY_STRING = LocalizedStrings.GemFireHealth_OKAY.toLocalizedString();
+    static final String OKAY_STRING = "Okay";
 
     /** The string for poor health */
-    static final String POOR_STRING = LocalizedStrings.GemFireHealth_POOR.toLocalizedString();
+    static final String POOR_STRING = "Poor";
 
     //////////////////// Instance Fields ////////////////////
 
     /** The string for this health */
-    private String healthString = OKAY_STRING;
+    private final String healthString;
 
     ///////////////////// Constructors //////////////////////
 

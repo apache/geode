@@ -39,10 +39,10 @@ import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.internal.cache.PrimaryBucketException;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class ContainsKeyValueMessage extends PartitionMessageWithDirectReply {
   private static final Logger logger = LogService.getLogger();
@@ -94,7 +94,7 @@ public class ContainsKeyValueMessage extends PartitionMessageWithDirectReply {
     Set failures = r.getDistributionManager().putOutgoing(m);
     if (failures != null && failures.size() > 0) {
       throw new ForceReattemptException(
-          LocalizedStrings.ContainsKeyValueMessage_FAILED_SENDING_0.toLocalizedString(m));
+          String.format("Failed sending < %s >", m));
     }
     return p;
   }
@@ -119,8 +119,7 @@ public class ContainsKeyValueMessage extends PartitionMessageWithDirectReply {
         }
       } catch (PRLocallyDestroyedException pde) {
         throw new ForceReattemptException(
-            LocalizedStrings.ContainsKeyValueMessage_ENOUNTERED_PRLOCALLYDESTROYEDEXCEPTION
-                .toLocalizedString(),
+            "Enountered PRLocallyDestroyedException",
             pde);
       }
 
@@ -128,12 +127,11 @@ public class ContainsKeyValueMessage extends PartitionMessageWithDirectReply {
       ContainsKeyValueReplyMessage.send(getSender(), getProcessorId(), getReplySender(dm),
           replyVal);
     } else {
-      logger.fatal(LocalizedMessage.create(
-          LocalizedStrings.ContainsKeyValueMess_PARTITIONED_REGION_0_IS_NOT_CONFIGURED_TO_STORE_DATA,
-          r.getFullPath()));
+      logger.fatal("Partitioned Region <> is not configured to store data",
+          r.getFullPath());
       ForceReattemptException fre = new ForceReattemptException(
-          LocalizedStrings.ContainsKeyValueMessage_PARTITIONED_REGION_0_ON_1_IS_NOT_CONFIGURED_TO_STORE_DATA
-              .toLocalizedString(new Object[] {r.getFullPath(), dm.getId()}));
+          String.format("Partitioned Region %s on %s is not configured to store data",
+              new Object[] {r.getFullPath(), dm.getId()}));
       fre.setHash(key.hashCode());
       throw fre;
     }
@@ -150,21 +148,24 @@ public class ContainsKeyValueMessage extends PartitionMessageWithDirectReply {
         .append("; bucketId=").append(this.bucketId);
   }
 
+  @Override
   public int getDSFID() {
     return PR_CONTAINS_KEY_VALUE_MESSAGE;
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.key = DataSerializer.readObject(in);
     this.valueCheck = in.readBoolean();
     this.bucketId = Integer.valueOf(in.readInt());
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     DataSerializer.writeObject(this.key, out);
     out.writeBoolean(this.valueCheck);
     out.writeInt(this.bucketId.intValue());
@@ -205,15 +206,15 @@ public class ContainsKeyValueMessage extends PartitionMessageWithDirectReply {
       final long startTime = getTimestamp();
 
       if (processor == null) {
-        if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.trace(LogMarker.DM, "ContainsKeyValueReplyMessage processor not found");
+        if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+          logger.trace(LogMarker.DM_VERBOSE, "ContainsKeyValueReplyMessage processor not found");
         }
         return;
       }
       processor.process(this);
 
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM, "{} Processed {}", processor, this);
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE, "{} Processed {}", processor, this);
       }
       dm.getStats().incReplyMessageTime(DistributionStats.getStatTime() - startTime);
     }
@@ -224,14 +225,16 @@ public class ContainsKeyValueMessage extends PartitionMessageWithDirectReply {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.containsKeyValue = in.readBoolean();
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       out.writeBoolean(this.containsKeyValue);
     }
 
@@ -271,8 +274,8 @@ public class ContainsKeyValueMessage extends PartitionMessageWithDirectReply {
           ContainsKeyValueReplyMessage reply = (ContainsKeyValueReplyMessage) msg;
           this.returnValue = reply.doesItContainKeyValue();
           this.returnValueReceived = true;
-          if (logger.isTraceEnabled(LogMarker.DM)) {
-            logger.trace(LogMarker.DM, "ContainsKeyValueResponse return value is {}",
+          if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+            logger.trace(LogMarker.DM_VERBOSE, "ContainsKeyValueResponse return value is {}",
                 this.returnValue);
           }
         }
@@ -297,13 +300,12 @@ public class ContainsKeyValueMessage extends PartitionMessageWithDirectReply {
         logger.debug("ContainsKeyValueResponse got remote CacheException; forcing reattempt. {}",
             ce.getMessage(), ce);
         throw new ForceReattemptException(
-            LocalizedStrings.ContainsKeyValueMessage_CONTAINSKEYVALUERESPONSE_GOT_REMOTE_CACHEEXCEPTION_FORCING_REATTEMPT
-                .toLocalizedString(),
+            "ContainsKeyValueResponse got remote CacheException; forcing reattempt.",
             ce);
       }
       if (!this.returnValueReceived) {
         throw new ForceReattemptException(
-            LocalizedStrings.ContainsKeyValueMessage_NO_RETURN_VALUE_RECEIVED.toLocalizedString());
+            "no return value received");
       }
       return this.returnValue;
     }

@@ -14,93 +14,112 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
+import java.util.ArrayList;
+
+import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.cache.execute.ResultCollector;
-import org.apache.geode.connectors.jdbc.internal.RegionMapping;
-import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
+import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.commands.GfshCommand;
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.management.cli.ConverterHint;
+import org.apache.geode.management.cli.GfshCommand;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
+import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 @Experimental
 public class ListMappingCommand extends GfshCommand {
+  public static final String JDBC_MAPPINGS_SECTION = "jdbc-mappings";
   static final String LIST_MAPPING = "list jdbc-mappings";
-  static final String LIST_MAPPING__HELP = EXPERIMENTAL + "Display jdbc mappings for all members.";
+  static final String LIST_MAPPING__HELP = EXPERIMENTAL + "Display JDBC mappings for all members.";
+  static final String LIST_OF_MAPPINGS = "List of JDBC mappings";
+  static final String NO_MAPPINGS_FOUND = "No JDBC mappings found";
 
-  static final String LIST_OF_MAPPINGS = "List of mappings";
-  static final String NO_MAPPINGS_FOUND = "No mappings found";
+  private static final String LIST_MAPPING__GROUPS_NAME__HELP =
+      "Server Group(s) of the JDBC mappings to list.";
 
   @CliCommand(value = LIST_MAPPING, help = LIST_MAPPING__HELP)
   @CliMetaData(relatedTopic = CliStrings.DEFAULT_TOPIC_GEODE)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE)
-  public Result listMapping() {
+  public ResultModel listMapping(@CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
+      optionContext = ConverterHint.MEMBERGROUP,
+      help = LIST_MAPPING__GROUPS_NAME__HELP) String[] groups) {
+    ArrayList<RegionMapping> mappings = new ArrayList<>();
 
-    // input
-    Set<DistributedMember> targetMembers = getMembers(null, null);
-    if (targetMembers.isEmpty()) {
-      return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
+    try {
+      ConfigurationPersistenceService configService = checkForClusterConfiguration();
+      if (groups == null) {
+        groups = new String[] {ConfigurationPersistenceService.CLUSTER_CONFIG};
+      }
+      for (String group : groups) {
+        CacheConfig cacheConfig = getCacheConfig(configService, group);
+        for (RegionConfig regionConfig : cacheConfig.getRegions()) {
+          mappings.addAll(
+              MappingCommandUtils.getMappingsFromRegionConfig(cacheConfig, regionConfig, group));
+        }
+      }
+    } catch (PreconditionException ex) {
+      return ResultModel.createError(ex.getMessage());
     }
 
-    // action
-    ResultCollector<RegionMapping, List<RegionMapping[]>> resultCollector =
-        execute(new ListMappingFunction(), targetMembers.iterator().next());
-
     // output
-    TabularResultData tabularResultData = ResultBuilder.createTabularResultData();
-    boolean mappingsExist = fillTabularResultData(resultCollector, tabularResultData);
-    return createResult(tabularResultData, mappingsExist);
-  }
-
-  ResultCollector<RegionMapping, List<RegionMapping[]>> execute(ListMappingFunction function,
-      DistributedMember targetMember) {
-    return (ResultCollector<RegionMapping, List<RegionMapping[]>>) executeFunction(function, null,
-        targetMember);
-  }
-
-  private Result createResult(TabularResultData tabularResultData, boolean mappingsExist) {
+    ResultModel resultModel = new ResultModel();
+    boolean mappingsExist =
+        fillTabularResultData(mappings, resultModel.addTable(JDBC_MAPPINGS_SECTION));
     if (mappingsExist) {
-      tabularResultData.setHeader(EXPERIMENTAL);
-      return ResultBuilder.buildResult(tabularResultData);
+      resultModel.setHeader(EXPERIMENTAL);
+      return resultModel;
     } else {
-      return ResultBuilder.createInfoResult(EXPERIMENTAL + "\n" + NO_MAPPINGS_FOUND);
+      return ResultModel.createInfo(EXPERIMENTAL + "\n" + NO_MAPPINGS_FOUND);
     }
   }
 
   /**
    * Returns true if any connections exist
    */
-  private boolean fillTabularResultData(
-      ResultCollector<RegionMapping, List<RegionMapping[]>> resultCollector,
-      TabularResultData tabularResultData) {
-    Set<RegionMapping> regionMappings = new HashSet<>();
-
-    for (Object resultObject : resultCollector.getResult()) {
-      if (resultObject instanceof RegionMapping[]) {
-        regionMappings.addAll(Arrays.asList((RegionMapping[]) resultObject));
-      } else if (resultObject instanceof Throwable) {
-        throw new IllegalStateException((Throwable) resultObject);
-      } else {
-        throw new IllegalStateException(resultObject.getClass().getName());
-      }
+  private boolean fillTabularResultData(ArrayList<RegionMapping> mappings,
+      TabularResultModel tableModel) {
+    if (mappings == null) {
+      return false;
     }
-
-    for (RegionMapping mapping : regionMappings) {
-      tabularResultData.accumulate(LIST_OF_MAPPINGS, mapping.getRegionName());
+    for (RegionMapping mapping : mappings) {
+      tableModel.accumulate(LIST_OF_MAPPINGS, mapping.getRegionName());
     }
+    return !mappings.isEmpty();
+  }
 
-    return !regionMappings.isEmpty();
+  private CacheConfig getCacheConfig(ConfigurationPersistenceService configService, String group)
+      throws PreconditionException {
+    CacheConfig result = configService.getCacheConfig(group);
+    if (result == null) {
+      throw new PreconditionException(
+          "Cache Configuration not found"
+              + ((group.equals(ConfigurationPersistenceService.CLUSTER_CONFIG)) ? "."
+                  : " for group " + group + "."));
+    }
+    return result;
+  }
+
+  private ConfigurationPersistenceService checkForClusterConfiguration()
+      throws PreconditionException {
+    ConfigurationPersistenceService result = getConfigurationPersistenceService();
+    if (result == null) {
+      throw new PreconditionException("Cluster Configuration must be enabled.");
+    }
+    return result;
+  }
+
+  @CliAvailabilityIndicator({LIST_MAPPING})
+  public boolean commandAvailable() {
+    return isOnlineCommandAvailable();
   }
 }

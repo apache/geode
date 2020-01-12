@@ -24,7 +24,7 @@ package org.apache.geode.internal.cache;
  */
 
 import java.io.IOException;
-import java.net.*;
+import java.net.InetSocketAddress;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.ServerSocketChannel;
 import java.util.Set;

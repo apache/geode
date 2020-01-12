@@ -14,18 +14,32 @@
  */
 package org.apache.geode.internal.statistics;
 
-import java.io.*;
-import java.util.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.util.ArrayList;
 
-import javax.xml.parsers.*;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
-import org.w3c.dom.*;
-import org.xml.sax.*;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXParseException;
 
-import org.apache.geode.*;
+import org.apache.geode.GemFireConfigException;
+import org.apache.geode.StatisticDescriptor;
+import org.apache.geode.StatisticsType;
+import org.apache.geode.StatisticsTypeFactory;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 // @todo davidw Use a SAX parser instead of DOM
 /**
@@ -45,6 +59,7 @@ public class StatisticsTypeXml implements EntityResolver, ErrorHandler {
    * Given a publicId, attempts to resolve it to a DTD. Returns an <code>InputSource</code> for the
    * DTD.
    */
+  @Override
   public InputSource resolveEntity(String publicId, String systemId) throws SAXException {
 
     // Figure out the location for the publicId. Be tolerant of other
@@ -60,31 +75,33 @@ public class StatisticsTypeXml implements EntityResolver, ErrorHandler {
 
       } else {
         throw new SAXNotRecognizedException(
-            LocalizedStrings.StatisticsTypeXml_DTD_NOT_FOUND_0.toLocalizedString(location));
+            String.format("DTD not found: %s", location));
       }
 
     } else {
       throw new SAXNotRecognizedException(
-          LocalizedStrings.StatisticsTypeXml_INVALID_PUBLIC_ID_0.toLocalizedString(publicId));
+          String.format("Invalid public ID: ' %s '", publicId));
     }
   }
 
+  @Override
   public void warning(SAXParseException exception) throws SAXException {
     // We don't want to thrown an exception. We want to log it!!
     // FIXME
     // String s = "SAX warning while working with XML";
   }
 
+  @Override
   public void error(SAXParseException exception) throws SAXException {
     throw new GemFireConfigException(
-        LocalizedStrings.StatisticsTypeXml_SAX_ERROR_WHILE_WORKING_WITH_XML.toLocalizedString(),
+        "SAX error while working with XML",
         exception);
   }
 
+  @Override
   public void fatalError(SAXParseException exception) throws SAXException {
     throw new GemFireConfigException(
-        LocalizedStrings.StatisticsTypeXml_SAX_FATAL_ERROR_WHILE_WORKING_WITH_XML
-            .toLocalizedString(),
+        "SAX fatal error while working with XML",
         exception);
   }
 
@@ -104,7 +121,7 @@ public class StatisticsTypeXml implements EntityResolver, ErrorHandler {
 
     } catch (ParserConfigurationException ex) {
       throw new GemFireConfigException(
-          LocalizedStrings.StatisticsTypeXml_FAILED_PARSING_XML.toLocalizedString(), ex);
+          "Failed parsing XML", ex);
     }
 
     parser.setErrorHandler(this);
@@ -114,22 +131,20 @@ public class StatisticsTypeXml implements EntityResolver, ErrorHandler {
       doc = parser.parse(new InputSource(reader));
     } catch (SAXException se) {
       throw new GemFireConfigException(
-          LocalizedStrings.StatisticsTypeXml_FAILED_PARSING_XML.toLocalizedString(), se);
+          "Failed parsing XML", se);
     } catch (IOException io) {
       throw new GemFireConfigException(
-          LocalizedStrings.StatisticsTypeXml_FAILED_READING_XML_DATA.toLocalizedString(), io);
+          "Failed reading XML data", io);
     }
 
     if (doc == null) {
       throw new GemFireConfigException(
-          LocalizedStrings.StatisticsTypeXml_FAILED_READING_XML_DATA_NO_DOCUMENT
-              .toLocalizedString());
+          "Failed reading XML data; no document");
     }
     Element root = doc.getDocumentElement();
     if (root == null) {
       throw new GemFireConfigException(
-          LocalizedStrings.StatisticsTypeXml_FAILED_READING_XML_DATA_NO_ROOT_ELEMENT
-              .toLocalizedString());
+          "Failed reading XML data; no root element");
     }
     return extractStatistics(root, statFactory);
   }
@@ -146,7 +161,7 @@ public class StatisticsTypeXml implements EntityResolver, ErrorHandler {
       Element typeNode = (Element) typeNodes.item(i);
       types.add(extractType(typeNode, statFactory));
     }
-    return (StatisticsType[]) types.toArray(new StatisticsType[types.size()]);
+    return (StatisticsType[]) types.toArray(new StatisticsType[0]);
   }
 
   /**
@@ -164,7 +179,7 @@ public class StatisticsTypeXml implements EntityResolver, ErrorHandler {
       stats.add(extractStat(statNode, statFactory));
     }
     StatisticDescriptor[] descriptors =
-        (StatisticDescriptor[]) stats.toArray(new StatisticDescriptor[stats.size()]);
+        (StatisticDescriptor[]) stats.toArray(new StatisticDescriptor[0]);
     String description = "";
     {
       NodeList descriptionNodes = typeNode.getElementsByTagName("description");
@@ -249,8 +264,8 @@ public class StatisticsTypeXml implements EntityResolver, ErrorHandler {
         case DOUBLE_STORAGE:
           return statFactory.createDoubleCounter(statName, description, unit, largerBetter);
         default:
-          throw new RuntimeException(LocalizedStrings.StatisticsTypeXml_UNEXPECTED_STORAGE_TYPE_0
-              .toLocalizedString(Integer.valueOf(storage)));
+          throw new RuntimeException(String.format("unexpected storage type %s",
+              Integer.valueOf(storage)));
       }
     } else {
       switch (storage) {
@@ -261,8 +276,8 @@ public class StatisticsTypeXml implements EntityResolver, ErrorHandler {
         case DOUBLE_STORAGE:
           return statFactory.createDoubleGauge(statName, description, unit, largerBetter);
         default:
-          throw new RuntimeException(LocalizedStrings.StatisticsTypeXml_UNEXPECTED_STORAGE_TYPE_0
-              .toLocalizedString(Integer.valueOf(storage)));
+          throw new RuntimeException(String.format("unexpected storage type %s",
+              Integer.valueOf(storage)));
       }
     }
   }

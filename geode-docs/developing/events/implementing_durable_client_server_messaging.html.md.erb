@@ -20,7 +20,7 @@ limitations under the License.
 -->
 
 <a id="implementing_durable_client_server_messaging__section_7A0D0B7D1F2748C7BA7479E0FD5C6BFA"></a>
-Use durable messaging for subscriptions that you need maintained for your clients even when your clients are down or disconnected. You can configure any of your event subscriptions as durable. Events for durable queries and subscriptions are saved in queue when the client is disconnected and played back when the client reconnects. Other queries and subscriptions are removed from the queue.
+Use durable messaging for subscriptions that you need maintained for your clients even when your clients are down or disconnected. You can configure any of your event subscriptions as durable. Events for durable queries and subscriptions are saved in a queue when the client is disconnected and played back when the client reconnects. Other queries and subscriptions are removed from the queue.
 
 Use durable messaging for client/server installations that use event subscriptions.
 
@@ -52,7 +52,7 @@ Use one of the following methods:
 
 <a id="implementing_durable_client_server_messaging__section_B8E01FE4B5A347EB96085DA3194F6AE8"></a>
 
-The `durable-client-id` indicates that the client is durable and gives the server an identifier to correlate the client to its durable messages. For a non-durable client, this id is an empty string. The ID can be any number that is unique among the clients attached to servers in the same distributed system.
+The `durable-client-id` indicates that the client is durable and gives the server an identifier to correlate the client to its durable messages. For a non-durable client, this id is an empty string. The ID can be any number that is unique among the clients attached to servers in the same cluster.
 
 The `durable-client-timeout` tells the server how long to wait for client reconnect. When this timeout is reached, the server stops storing to the client's message queue and discards any stored messages. The default is 300 seconds. This is a tuning parameter. If you change it, take into account the normal activity of your application, the average size of your messages, and the level of risk you can handle, both in lost messages and in the servers' capacity to store enqueued messages. Assuming that no messages are being removed from the queue, how long can the server run before the queue reaches the maximum capacity? How many durable clients can the server handle? To assist with tuning, use the <%=vars.product_name%> message queue statistics for durable clients through the disconnect and reconnect cycles.
 

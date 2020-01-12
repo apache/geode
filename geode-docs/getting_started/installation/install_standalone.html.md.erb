@@ -17,14 +17,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-Build from source or use the ZIP or TAR distribution to install <%=vars.product_name_long%> on every physical and virtual machine that will run <%=vars.product_name_long%>.
+Build from source or use the TAR distribution to install <%=vars.product_name_long%> on every physical and virtual machine that will run <%=vars.product_name_long%>.
 
 ## Build from Source on Unix
 
 1.  Set the JAVA\_HOME environment variable.
 
     ``` pre
-    JAVA_HOME=/usr/java/jdk1.8.0_60
+    JAVA_HOME=/usr/java/jdk1.<%=vars.min_java_version%>.0_<%=vars.min_java_update%>
     export JAVA_HOME
     ```
 
@@ -54,7 +54,7 @@ Build from source or use the ZIP or TAR distribution to install <%=vars.product_
 1.  Set the JAVA\_HOME environment variable. For example:
 
     ``` pre
-    $ set JAVA_HOME="C:\Program Files\Java\jdk1.8.0_60" 
+    $ set JAVA_HOME="C:\Program Files\Java\jdk1.<%=vars.min_java_version%>.0_<%=vars.min_java_update%>" 
     ```
 
 2.  Install Gradle, version 2.3 or a more recent version.
@@ -79,32 +79,26 @@ Build from source or use the ZIP or TAR distribution to install <%=vars.product_
     v1.1.0
     ```
 
-## <a id="concept_0129F6A1D0EB42C4A3D24861AF2C5425__section_D3326496B2BB47A7AB0CFC1A5E266842" class="no-quick-link"></a>Install Binaries from .zip or .tar File
+## <a id="concept_0129F6A1D0EB42C4A3D24861AF2C5425__section_D3326496B2BB47A7AB0CFC1A5E266842" class="no-quick-link"></a>Install Binaries from .tgz File
 
-1.  Download the .zip or .tar file from the Releases page found at [http://geode.apache.org](http://geode.apache.org/).
-2.  Unzip the .zip file or expand the .tar file, where `path_to_product` is an absolute path, and the file name will vary due to the version number. For the .zip format:
-
-    ``` pre
-    $ unzip apache-geode-1.1.0.zip -d path_to_product
-    ```
-
-    For the .tar format:
+1.  Download the .tgz file from the Releases page found at [http://geode.apache.org](http://geode.apache.org/).
+2.  Expand the .tgz file, where `path_to_product` is an absolute path, and the file name will vary due to the version number:
 
     ``` pre
-    $ tar -xvf apache-geode-1.1.0.tar -C path_to_product
+    $ tar -zxvf apache-geode-1.1.0.tgz -C path_to_product
     ```
 
 3.  Set the JAVA\_HOME environment variable. On Linux/Unix platforms:
 
     ``` pre
-    JAVA_HOME=/usr/java/jdk1.8.0_60
+    JAVA_HOME=/usr/java/jdk1.<%=vars.min_java_version%>.0_<%=vars.min_java_update%>
     export JAVA_HOME
     ```
 
     On Windows platforms:
 
     ``` pre
-    set JAVA_HOME=c:\Program Files\Java\jdk1.8.0_60 
+    set JAVA_HOME="C:\Program Files\Java\jdk1.<%=vars.min_java_version%>.0_<%=vars.min_java_update%>"
     ```
 
 4.  Add the <%=vars.product_name%> scripts to your PATH environment variable. On Linux/Unix platforms:

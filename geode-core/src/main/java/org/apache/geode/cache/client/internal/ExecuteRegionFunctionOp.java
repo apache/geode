@@ -15,7 +15,10 @@
 
 package org.apache.geode.cache.client.internal;
 
+import static org.apache.geode.internal.cache.execute.AbstractExecution.DEFAULT_CLIENT_FUNCTION_TIMEOUT;
+
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -23,6 +26,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.client.NoAvailableServersException;
 import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.cache.client.internal.ExecuteRegionFunctionSingleHopOp.ExecuteRegionFunctionSingleHopOpImpl;
@@ -31,19 +35,19 @@ import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionInvocationTargetException;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.internal.cache.execute.BucketMovedException;
-import org.apache.geode.internal.cache.execute.FunctionStats;
 import org.apache.geode.internal.cache.execute.InternalFunctionException;
 import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetException;
 import org.apache.geode.internal.cache.execute.MemberMappedArgument;
 import org.apache.geode.internal.cache.execute.ServerRegionFunctionExecutor;
+import org.apache.geode.internal.cache.execute.metrics.FunctionStatsManager;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Does a Execution of function on server region.<br>
@@ -55,6 +59,8 @@ public class ExecuteRegionFunctionOp {
 
   private static final Logger logger = LogService.getLogger();
 
+  private static final int MAX_RETRY_INITIAL_VALUE = -1;
+
   private ExecuteRegionFunctionOp() {
     // no instances allowed
   }
@@ -62,254 +68,68 @@ public class ExecuteRegionFunctionOp {
   /**
    * Does a execute Function on a server using connections from the given pool to communicate with
    * the server.
-   *
-   * @param pool the pool to use to communicate with the server.
-   * @param region the name of the region to do the put on
-   * @param function to be executed
-   * @param serverRegionExecutor which will return argument and filter
-   * @param resultCollector is used to collect the results from the Server
    */
-  public static void execute(ExecutablePool pool, String region, Function function,
-      ServerRegionFunctionExecutor serverRegionExecutor, ResultCollector resultCollector,
-      byte hasResult, int mRetryAttempts) {
-    AbstractOp op = new ExecuteRegionFunctionOpImpl(region, function, serverRegionExecutor,
-        resultCollector, hasResult, new HashSet<String>());
+  static void execute(ExecutablePool pool,
+      ResultCollector resultCollector,
+      int retryAttempts, boolean isHA,
+      ExecuteRegionFunctionOpImpl op, boolean isReexecute,
+      Set<String> failedNodes) {
 
-    int retryAttempts = 0;
-    boolean reexecute = false;
-    boolean reexecuteForServ = false;
-    Set<String> failedNodes = new HashSet<String>();
-    AbstractOp reexecOp = null;
-    int maxRetryAttempts = 0;
-    if (function.isHA()) {
-      maxRetryAttempts = mRetryAttempts;
+    int maxRetryAttempts = retryAttempts > 0 ? retryAttempts : MAX_RETRY_INITIAL_VALUE;
+    if (!isHA) {
+      maxRetryAttempts = 0;
     }
 
-    final boolean isDebugEnabled = logger.isDebugEnabled();
     do {
-
       try {
-        if (reexecuteForServ) {
-          reexecOp = new ExecuteRegionFunctionOpImpl((ExecuteRegionFunctionOpImpl) op,
+        if (isReexecute) {
+          failedNodes = ensureMutability(failedNodes);
+          op = new ExecuteRegionFunctionOpImpl(op,
               (byte) 1/* isReExecute */, failedNodes);
-          pool.execute(reexecOp, 0);
-        } else {
-          pool.execute(op, 0);
         }
-        reexecute = false;
-        reexecuteForServ = false;
+        pool.execute(op, 0);
+        return;
       } catch (InternalFunctionInvocationTargetException e) {
-        if (isDebugEnabled) {
-          logger.debug(
-              "ExecuteRegionFunctionOp#execute : Received InternalFunctionInvocationTargetException. The failed nodes are {}",
-              e.getFailedNodeSet());
-        }
-        reexecute = true;
         resultCollector.clearResults();
+        if (!isHA) {
+          return;
+        }
+        isReexecute = true;
         Set<String> failedNodesIds = e.getFailedNodeSet();
+        failedNodes = ensureMutability(failedNodes);
         failedNodes.clear();
         if (failedNodesIds != null) {
           failedNodes.addAll(failedNodesIds);
         }
+      } catch (ServerOperationException | NoAvailableServersException failedException) {
+        throw failedException;
       } catch (ServerConnectivityException se) {
-        retryAttempts++;
-        if (isDebugEnabled) {
-          logger.debug(
-              "ExecuteRegionFunctionOp#execute : Received ServerConnectivityException. The exception is {} The retryattempt is : {} maxRetryAttempts {}",
-              se, retryAttempts, maxRetryAttempts);
-        }
-        if (se instanceof ServerOperationException) {
-          throw se;
-        }
-        if ((retryAttempts > maxRetryAttempts && maxRetryAttempts != -1) /* || !function.isHA() */)
-          throw se;
 
-        reexecuteForServ = true;
+        if (maxRetryAttempts == MAX_RETRY_INITIAL_VALUE) {
+          maxRetryAttempts = ((PoolImpl) pool).calculateRetryAttempts(se);
+        }
+
+        if ((maxRetryAttempts--) < 1) {
+          throw se;
+        }
+
+        isReexecute = true;
         resultCollector.clearResults();
+        failedNodes = ensureMutability(failedNodes);
         failedNodes.clear();
       }
-    } while (reexecuteForServ);
+    } while (true);
+  }
 
-    if (reexecute && function.isHA()) {
-      ExecuteRegionFunctionOp.reexecute(pool, region, function, serverRegionExecutor,
-          resultCollector, hasResult, failedNodes, maxRetryAttempts - 1);
+  private static Set<String> ensureMutability(final Set<String> failedNodes) {
+    if (failedNodes == Collections.EMPTY_SET) {
+      return new HashSet<>();
     }
+    return failedNodes;
   }
 
-  public static void execute(ExecutablePool pool, String region, String function,
-      ServerRegionFunctionExecutor serverRegionExecutor, ResultCollector resultCollector,
-      byte hasResult, int mRetryAttempts, boolean isHA, boolean optimizeForWrite) {
-    AbstractOp op = new ExecuteRegionFunctionOpImpl(region, function, serverRegionExecutor,
-        resultCollector, hasResult, new HashSet<String>(), isHA, optimizeForWrite, true);
 
-    int retryAttempts = 0;
-    boolean reexecute = false;
-    boolean reexecuteForServ = false;
-    Set<String> failedNodes = new HashSet<String>();
-    AbstractOp reexecOp = null;
-    int maxRetryAttempts = 0;
-    if (isHA) {
-      maxRetryAttempts = mRetryAttempts;
-    }
-    final boolean isDebugEnabled = logger.isDebugEnabled();
-    do {
-      try {
-        if (reexecuteForServ) {
-          reexecOp = new ExecuteRegionFunctionOpImpl((ExecuteRegionFunctionOpImpl) op,
-              (byte) 1/* isReExecute */, failedNodes);
-          pool.execute(reexecOp, 0);
-        } else {
-          pool.execute(op, 0);
-        }
-        reexecute = false;
-        reexecuteForServ = false;
-      } catch (InternalFunctionInvocationTargetException e) {
-        if (isDebugEnabled) {
-          logger.debug(
-              "ExecuteRegionFunctionOp#execute : Received InternalFunctionInvocationTargetException. The failed nodes are {}",
-              e.getFailedNodeSet());
-        }
-        reexecute = true;
-        resultCollector.clearResults();
-        Set<String> failedNodesIds = e.getFailedNodeSet();
-        failedNodes.clear();
-        if (failedNodesIds != null) {
-          failedNodes.addAll(failedNodesIds);
-        }
-      } catch (ServerConnectivityException se) {
-        if (isDebugEnabled) {
-          logger.debug(
-              "ExecuteRegionFunctionOp#execute : Received ServerConnectivityException. The exception is {} The retryattempt is : {} maxRetryAttempts {}",
-              se, retryAttempts, maxRetryAttempts);
-        }
-        if (se instanceof ServerOperationException) {
-          throw se;
-        }
-        retryAttempts++;
-        if ((retryAttempts > maxRetryAttempts && maxRetryAttempts != -1) /* || !isHA */)
-          throw se;
-
-        reexecute = true;
-        resultCollector.clearResults();
-        failedNodes.clear();
-      }
-    } while (reexecuteForServ);
-
-    if (reexecute && isHA) {
-      ExecuteRegionFunctionOp.reexecute(pool, region, function, serverRegionExecutor,
-          resultCollector, hasResult, failedNodes, maxRetryAttempts - 1, isHA, optimizeForWrite);
-    }
-  }
-
-  public static void reexecute(ExecutablePool pool, String region, Function function,
-      ServerRegionFunctionExecutor serverRegionExecutor, ResultCollector resultCollector,
-      byte hasResult, Set<String> failedNodes, int maxRetryAttempts) {
-    AbstractOp op = new ExecuteRegionFunctionOpImpl(region, function, serverRegionExecutor,
-        resultCollector, hasResult, new HashSet<String>());
-
-    boolean reexecute = true;
-    int retryAttempts = 0;
-    final boolean isDebugEnabled = logger.isDebugEnabled();
-    do {
-      reexecute = false;
-      AbstractOp reExecuteOp = new ExecuteRegionFunctionOpImpl((ExecuteRegionFunctionOpImpl) op,
-          (byte) 1/* isReExecute */, failedNodes);
-      if (isDebugEnabled) {
-        logger.debug(
-            "ExecuteRegionFunction#reexecute: Sending Function Execution Message: {} to Server using pool: {} with failed nodes: {}",
-            reExecuteOp.getMessage(), pool, failedNodes);
-      }
-      try {
-        pool.execute(reExecuteOp, 0);
-      } catch (InternalFunctionInvocationTargetException e) {
-        if (isDebugEnabled) {
-          logger.debug(
-              "ExecuteRegionFunctionOp#reexecute : Received InternalFunctionInvocationTargetException. The failed nodes are {}",
-              e.getFailedNodeSet());
-        }
-        reexecute = true;
-        resultCollector.clearResults();
-        Set<String> failedNodesIds = e.getFailedNodeSet();
-        failedNodes.clear();
-        if (failedNodesIds != null) {
-          failedNodes.addAll(failedNodesIds);
-        }
-      } catch (ServerConnectivityException se) {
-        if (isDebugEnabled) {
-          logger
-              .debug("ExecuteRegionFunctionOp#reexecute : Received ServerConnectivity Exception.");
-        }
-
-        if (se instanceof ServerOperationException) {
-          throw se;
-        }
-        retryAttempts++;
-        if (retryAttempts > maxRetryAttempts && maxRetryAttempts != -2)
-          throw se;
-
-        reexecute = true;
-        resultCollector.clearResults();
-        failedNodes.clear();
-      }
-    } while (reexecute);
-  }
-
-  public static void reexecute(ExecutablePool pool, String region, String function,
-      ServerRegionFunctionExecutor serverRegionExecutor, ResultCollector resultCollector,
-      byte hasResult, Set<String> failedNodes, int maxRetryAttempts, boolean isHA,
-      boolean optimizeForWrite) {
-    AbstractOp op = new ExecuteRegionFunctionOpImpl(region, function, serverRegionExecutor,
-        resultCollector, hasResult, new HashSet<String>(), isHA, optimizeForWrite, true);
-
-    boolean reexecute = true;
-    int retryAttempts = 0;
-    final boolean isDebugEnabled = logger.isDebugEnabled();
-    do {
-      reexecute = false;
-
-      AbstractOp reExecuteOp = new ExecuteRegionFunctionOpImpl((ExecuteRegionFunctionOpImpl) op,
-          (byte) 1/* isReExecute */, failedNodes);
-      if (isDebugEnabled) {
-        logger.debug(
-            "ExecuteRegionFunction#reexecute : Sending Function Execution Message: {} to Server using pool: {}",
-            reExecuteOp.getMessage(), pool);
-      }
-      try {
-        pool.execute(reExecuteOp, 0);
-      } catch (InternalFunctionInvocationTargetException e) {
-        if (isDebugEnabled) {
-          logger.debug(
-              "ExecuteRegionFunctionOp#reexecute : Received InternalFunctionInvocationTargetException. The failed nodes are {}",
-              e.getFailedNodeSet());
-        }
-        reexecute = true;
-        resultCollector.clearResults();
-        Set<String> failedNodesIds = e.getFailedNodeSet();
-        failedNodes.clear();
-        if (failedNodesIds != null) {
-          failedNodes.addAll(failedNodesIds);
-        }
-      } catch (ServerConnectivityException se) {
-        if (isDebugEnabled) {
-          logger.debug(
-              "ExecuteRegionFunctionOp#reexecute : Received ServerConnectivityException. The exception is {} The retryattempt is : {} maxRetryAttempts {}",
-              se, retryAttempts, maxRetryAttempts);
-        }
-        if (se instanceof ServerOperationException) {
-          throw se;
-        }
-        retryAttempts++;
-        if (retryAttempts > maxRetryAttempts && maxRetryAttempts != -2)
-          throw se;
-
-        reexecute = true;
-        resultCollector.clearResults();
-        failedNodes.clear();
-      }
-    } while (reexecute);
-  }
-
-  static class ExecuteRegionFunctionOpImpl extends AbstractOp {
+  static class ExecuteRegionFunctionOpImpl extends AbstractOpWithTimeout {
 
     // To collect the results from the server
     private final ResultCollector resultCollector;
@@ -325,7 +145,7 @@ public class ExecuteRegionFunctionOp {
 
     private final byte hasResult;
 
-    private Set<String> failedNodes = new HashSet<String>();
+    private Set<String> failedNodes;
 
     private final String functionId;
 
@@ -335,130 +155,28 @@ public class ExecuteRegionFunctionOp {
 
     private FunctionException functionException;
 
-    public ExecuteRegionFunctionOpImpl(String region, Function function,
-        ServerRegionFunctionExecutor serverRegionExecutor, ResultCollector rc, byte hasResult,
-        Set<String> removedNodes) {
-      super(MessageType.EXECUTE_REGION_FUNCTION,
-          8 + serverRegionExecutor.getFilter().size() + removedNodes.size());
-      Set routingObjects = serverRegionExecutor.getFilter();
-      Object args = serverRegionExecutor.getArguments();
-      byte functionState = AbstractExecution.getFunctionState(function.isHA(), function.hasResult(),
-          function.optimizeForWrite());
-      MemberMappedArgument memberMappedArg = serverRegionExecutor.getMemberMappedArgument();
+    private static final int PART_COUNT = 8;
 
-      addBytes(functionState);
-      getMessage().addStringPart(region);
-      if (serverRegionExecutor.isFnSerializationReqd()) {
-        getMessage().addStringOrObjPart(function);
-      } else {
-        getMessage().addStringOrObjPart(function.getId());
-      }
-      getMessage().addObjPart(args);
-      getMessage().addObjPart(memberMappedArg);
-      this.executeOnBucketSet = serverRegionExecutor.getExecuteOnBucketSetFlag();
-      byte flags = ExecuteFunctionHelper.createFlags(executeOnBucketSet, isReExecute);
-
-      getMessage().addBytesPart(new byte[] {flags});
-      getMessage().addIntPart(routingObjects.size());
-      for (Object key : routingObjects) {
-        getMessage().addStringOrObjPart(key);
-      }
-      getMessage().addIntPart(removedNodes.size());
-      for (Object nodes : removedNodes) {
-        getMessage().addStringOrObjPart(nodes);
-      }
-
-      this.resultCollector = rc;
-      this.regionName = region;
-      this.function = function;
-      this.functionId = function.getId();
-      this.executor = serverRegionExecutor;
-      this.hasResult = functionState;
-      this.failedNodes = removedNodes;
-      this.isHA = function.isHA();
+    private static int getMessagePartCount(int filterSize, int removedNodesSize) {
+      return PART_COUNT + filterSize + removedNodesSize;
     }
 
-    public ExecuteRegionFunctionOpImpl(String region, String function,
-        ServerRegionFunctionExecutor serverRegionExecutor, ResultCollector rc, byte hasResult,
-        Set<String> removedNodes, boolean isHA, boolean optimizeForWrite,
-        boolean calculateFnState) {
-      super(MessageType.EXECUTE_REGION_FUNCTION,
-          8 + serverRegionExecutor.getFilter().size() + removedNodes.size());
+    private void fillMessage(String region, Function function, String functionId,
+        ServerRegionFunctionExecutor serverRegionExecutor,
+        Set<String> removedNodes, byte functionState, byte flags) {
       Set routingObjects = serverRegionExecutor.getFilter();
-      byte functionState = hasResult;
-      if (calculateFnState) {
-        functionState = AbstractExecution.getFunctionState(isHA,
-            hasResult == (byte) 1 ? true : false, optimizeForWrite);
-      }
       Object args = serverRegionExecutor.getArguments();
       MemberMappedArgument memberMappedArg = serverRegionExecutor.getMemberMappedArgument();
       addBytes(functionState);
-      getMessage().addStringPart(region);
-      getMessage().addStringOrObjPart(function);
-      getMessage().addObjPart(args);
-      getMessage().addObjPart(memberMappedArg);
-
-      this.executeOnBucketSet = serverRegionExecutor.getExecuteOnBucketSetFlag();
-      byte flags = ExecuteFunctionHelper.createFlags(executeOnBucketSet, isReExecute);
-
-      getMessage().addBytesPart(new byte[] {flags});
-      getMessage().addIntPart(routingObjects.size());
-      for (Object key : routingObjects) {
-        getMessage().addStringOrObjPart(key);
-      }
-      getMessage().addIntPart(removedNodes.size());
-      for (Object nodes : removedNodes) {
-        getMessage().addStringOrObjPart(nodes);
-      }
-
-      this.resultCollector = rc;
-      this.regionName = region;
-      this.functionId = function;
-      this.executor = serverRegionExecutor;
-      this.hasResult = functionState;
-      this.failedNodes = removedNodes;
-      this.isHA = isHA;
-    }
-
-    public ExecuteRegionFunctionOpImpl(ExecuteRegionFunctionSingleHopOpImpl newop) {
-      this(newop.getRegionName(), newop.getFunctionId(), newop.getExecutor(),
-          newop.getResultCollector(), newop.getHasResult(), new HashSet<String>(), newop.isHA(),
-          newop.optimizeForWrite(), false);
-    }
-
-    public ExecuteRegionFunctionOpImpl(ExecuteRegionFunctionOpImpl op, byte isReExecute,
-        Set<String> removedNodes) {
-      super(MessageType.EXECUTE_REGION_FUNCTION,
-          8 + op.executor.getFilter().size() + removedNodes.size());
-      this.isReExecute = isReExecute;
-      this.resultCollector = op.resultCollector;
-      this.function = op.function;
-      this.functionId = op.functionId;
-      this.regionName = op.regionName;
-      this.executor = op.executor;
-      this.hasResult = op.hasResult;
-      this.failedNodes = op.failedNodes;
-      this.executeOnBucketSet = op.executeOnBucketSet;
-      this.isHA = op.isHA;
-      if (isReExecute == 1) {
-        this.resultCollector.endResults();
-        this.resultCollector.clearResults();
-      }
-
-      Set routingObjects = executor.getFilter();
-      Object args = executor.getArguments();
-      MemberMappedArgument memberMappedArg = executor.getMemberMappedArgument();
-      getMessage().clear();
-      addBytes(this.hasResult);
-      getMessage().addStringPart(this.regionName);
-      if (executor.isFnSerializationReqd()) {
+      getMessage().addStringPart(region, true);
+      if (function != null && serverRegionExecutor.isFnSerializationReqd()) {
         getMessage().addStringOrObjPart(function);
       } else {
         getMessage().addStringOrObjPart(functionId);
       }
+
       getMessage().addObjPart(args);
       getMessage().addObjPart(memberMappedArg);
-      byte flags = ExecuteFunctionHelper.createFlags(executeOnBucketSet, isReExecute);
 
       getMessage().addBytesPart(new byte[] {flags});
       getMessage().addIntPart(routingObjects.size());
@@ -471,14 +189,110 @@ public class ExecuteRegionFunctionOp {
       }
     }
 
+    ExecuteRegionFunctionOpImpl(String region, Function function,
+        ServerRegionFunctionExecutor serverRegionExecutor, ResultCollector rc,
+        final int timeoutMs) {
+      super(MessageType.EXECUTE_REGION_FUNCTION,
+          getMessagePartCount(serverRegionExecutor.getFilter().size(), 0), timeoutMs);
+      executeOnBucketSet = serverRegionExecutor.getExecuteOnBucketSetFlag();
+      byte flags = ExecuteFunctionHelper.createFlags(executeOnBucketSet, isReExecute);
+      byte functionState = AbstractExecution.getFunctionState(function.isHA(), function.hasResult(),
+          function.optimizeForWrite());
+      failedNodes = Collections.emptySet();
+      fillMessage(region,
+          function, function.getId(),
+          serverRegionExecutor, failedNodes, functionState, flags);
+      resultCollector = rc;
+      regionName = region;
+      this.function = function;
+      functionId = function.getId();
+      executor = serverRegionExecutor;
+      hasResult = functionState;
+      isHA = function.isHA();
+    }
+
+    // For testing only
+    ExecuteRegionFunctionOpImpl() {
+      super(MessageType.EXECUTE_REGION_FUNCTION, 0, DEFAULT_CLIENT_FUNCTION_TIMEOUT);
+      resultCollector = null;
+      function = null;
+      isReExecute = (byte) 0;
+      regionName = "";
+      executor = null;
+      hasResult = (byte) 0;
+      failedNodes = null;
+      functionId = null;
+      executeOnBucketSet = true;
+      isHA = true;
+    }
+
+    ExecuteRegionFunctionOpImpl(String region, String functionId,
+        ServerRegionFunctionExecutor serverRegionExecutor, ResultCollector rc, byte hasResult,
+        boolean isHA, boolean optimizeForWrite,
+        boolean calculateFnState, final int timeoutMs) {
+      super(MessageType.EXECUTE_REGION_FUNCTION,
+          getMessagePartCount(serverRegionExecutor.getFilter().size(), 0), timeoutMs);
+
+      byte functionState = hasResult;
+      if (calculateFnState) {
+        functionState = AbstractExecution.getFunctionState(isHA,
+            hasResult == (byte) 1, optimizeForWrite);
+      }
+
+      executeOnBucketSet = serverRegionExecutor.getExecuteOnBucketSetFlag();
+      byte flags = ExecuteFunctionHelper.createFlags(executeOnBucketSet, isReExecute);
+
+      failedNodes = Collections.emptySet();
+      fillMessage(region, null, functionId, serverRegionExecutor, failedNodes, functionState,
+          flags);
+
+      resultCollector = rc;
+      regionName = region;
+      this.functionId = functionId;
+      executor = serverRegionExecutor;
+      this.hasResult = functionState;
+      this.isHA = isHA;
+    }
+
+    ExecuteRegionFunctionOpImpl(ExecuteRegionFunctionSingleHopOpImpl newop) {
+      this(newop.getRegionName(), newop.getFunctionId(), newop.getExecutor(),
+          newop.getResultCollector(), newop.getHasResult(), newop.isHA(),
+          newop.optimizeForWrite(), false, newop.getTimeoutMs());
+    }
+
+    ExecuteRegionFunctionOpImpl(ExecuteRegionFunctionOpImpl op, byte isReExecute,
+        Set<String> removedNodes) {
+      super(MessageType.EXECUTE_REGION_FUNCTION,
+          getMessagePartCount(op.executor.getFilter().size(), removedNodes.size()),
+          op.getTimeoutMs());
+      this.isReExecute = isReExecute;
+      resultCollector = op.resultCollector;
+      function = op.function;
+      functionId = op.functionId;
+      regionName = op.regionName;
+      executor = op.executor;
+      hasResult = op.hasResult;
+      failedNodes = op.failedNodes;
+      executeOnBucketSet = op.executeOnBucketSet;
+      isHA = op.isHA;
+      if (isReExecute == 1) {
+        resultCollector.endResults();
+        resultCollector.clearResults();
+      }
+
+      byte flags = ExecuteFunctionHelper.createFlags(executeOnBucketSet, isReExecute);
+
+      fillMessage(regionName, function, functionId,
+          executor, removedNodes, hasResult, flags);
+    }
+
     private void addBytes(byte functionStateOrHasResult) {
-      if (ConnectionImpl
-          .getClientFunctionTimeout() == ConnectionImpl.DEFAULT_CLIENT_FUNCTION_TIMEOUT) {
+      if (getTimeoutMs() == DEFAULT_CLIENT_FUNCTION_TIMEOUT) {
         getMessage().addBytesPart(new byte[] {functionStateOrHasResult});
       } else {
         byte[] bytes = new byte[5];
         bytes[0] = functionStateOrHasResult;
-        Part.encodeInt(ConnectionImpl.getClientFunctionTimeout(), bytes, 1);
+        Part.encodeInt(getTimeoutMs(), bytes, 1);
         getMessage().addBytesPart(bytes);
       }
     }
@@ -517,23 +331,23 @@ public class ExecuteRegionFunctionOp {
                   Throwable cause = ex.getCause();
                   DistributedMember memberID =
                       (DistributedMember) ((ArrayList) resultResponse).get(1);
-                  this.resultCollector.addResult(memberID, cause);
-                  FunctionStats
-                      .getFunctionStats(this.functionId, this.executor.getRegion().getSystem())
+                  resultCollector.addResult(memberID, cause);
+                  FunctionStatsManager
+                      .getFunctionStats(functionId, executor.getRegion().getSystem())
                       .incResultsReceived();
-                  continue;
                 } else if (((FunctionException) result)
                     .getCause() instanceof InternalFunctionInvocationTargetException) {
                   InternalFunctionInvocationTargetException ifite =
                       (InternalFunctionInvocationTargetException) ex.getCause();
-                  this.failedNodes.addAll(ifite.getFailedNodeSet());
+                  failedNodes = ensureMutability(failedNodes);
+                  failedNodes.addAll(ifite.getFailedNodeSet());
                   addFunctionException((FunctionException) result);
                 } else {
                   addFunctionException((FunctionException) result);
                 }
               } else if (result instanceof Throwable) {
                 Throwable t = (Throwable) result;
-                if (this.functionException == null) {
+                if (functionException == null) {
                   if (result instanceof BucketMovedException) {
                     FunctionInvocationTargetException fite;
                     if (isHA) {
@@ -543,8 +357,8 @@ public class ExecuteRegionFunctionOp {
                       fite = new FunctionInvocationTargetException(
                           ((BucketMovedException) result).getMessage());
                     }
-                    this.functionException = new FunctionException(fite);
-                    this.functionException.addException(fite);
+                    functionException = new FunctionException(fite);
+                    functionException.addException(fite);
                   } else if (result instanceof CacheClosedException) {
                     FunctionInvocationTargetException fite;
                     if (isHA) {
@@ -557,24 +371,25 @@ public class ExecuteRegionFunctionOp {
                     if (resultResponse instanceof ArrayList) {
                       DistributedMember memberID =
                           (DistributedMember) ((ArrayList) resultResponse).get(1);
-                      this.failedNodes.add(memberID.getId());
+                      failedNodes = ensureMutability(failedNodes);
+                      failedNodes.add(memberID.getId());
                     }
-                    this.functionException = new FunctionException(fite);
-                    this.functionException.addException(fite);
+                    functionException = new FunctionException(fite);
+                    functionException.addException(fite);
                   } else {
                     throwServerOp = true;
-                    this.functionException = new FunctionException(t);
-                    this.functionException.addException(t);
+                    functionException = new FunctionException(t);
+                    functionException.addException(t);
                   }
                 } else {
-                  this.functionException.addException(t);
+                  functionException.addException(t);
                 }
               } else {
                 DistributedMember memberID =
                     (DistributedMember) ((ArrayList) resultResponse).get(1);
-                this.resultCollector.addResult(memberID, result);
-                FunctionStats
-                    .getFunctionStats(this.functionId, this.executor.getRegion().getSystem())
+                resultCollector.addResult(memberID, result);
+                FunctionStatsManager
+                    .getFunctionStats(functionId, executor.getRegion().getSystem())
                     .incResultsReceived();
               }
             } while (!executeFunctionResponseMsg.isLastChunk());
@@ -586,14 +401,14 @@ public class ExecuteRegionFunctionOp {
 
             if (isHA && throwServerOp) {
               String s = "While performing a remote " + getOpName();
-              throw new ServerOperationException(s, this.functionException);
+              throw new ServerOperationException(s, functionException);
             }
 
             // add all the exceptions here.
-            if (this.functionException != null) {
-              throw this.functionException;
+            if (functionException != null) {
+              throw functionException;
             }
-            this.resultCollector.endResults();
+            resultCollector.endResults();
             return null;
 
           case MessageType.EXCEPTION:
@@ -613,7 +428,8 @@ public class ExecuteRegionFunctionOp {
                   .getCause() instanceof InternalFunctionInvocationTargetException) {
                 InternalFunctionInvocationTargetException ifite =
                     (InternalFunctionInvocationTargetException) ex.getCause();
-                this.failedNodes.addAll(ifite.getFailedNodeSet());
+                failedNodes = ensureMutability(failedNodes);
+                failedNodes.addAll(ifite.getFailedNodeSet());
               }
               throw ex;
             } else if (obj instanceof Throwable) {
@@ -640,11 +456,27 @@ public class ExecuteRegionFunctionOp {
       return null;
     }
 
-    private void addFunctionException(final FunctionException result) {
-      if (this.functionException == null) {
-        this.functionException = result;
+    void addFunctionException(final FunctionException result) {
+      if (result.getCause() instanceof FunctionInvocationTargetException) {
+        if (functionException == null) {
+          functionException = result;
+        }
+        functionException.addException(result.getCause());
+      } else if (result instanceof FunctionInvocationTargetException) {
+        if (functionException == null) {
+          functionException = new FunctionException(result);
+        }
+        functionException.addException(result);
+      } else {
+        if (functionException == null) {
+          functionException = result;
+        }
+        functionException.addException(result);
       }
-      this.functionException.addException(result);
+    }
+
+    FunctionException getFunctionException() {
+      return functionException;
     }
 
     @Override

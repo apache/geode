@@ -16,10 +16,13 @@
 
 package org.apache.geode.internal.admin.remote;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-import org.apache.geode.distributed.internal.*;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 public class FetchResourceAttributesRequest extends AdminRequest {
 
@@ -33,8 +36,7 @@ public class FetchResourceAttributesRequest extends AdminRequest {
   }
 
   public FetchResourceAttributesRequest() {
-    friendlyName = LocalizedStrings.FetchResourceAttributesRequest_FETCH_STATISTICS_FOR_RESOURCE
-        .toLocalizedString();
+    friendlyName = "Fetch statistics for resource";
   }
 
   @Override
@@ -42,26 +44,29 @@ public class FetchResourceAttributesRequest extends AdminRequest {
     return FetchResourceAttributesResponse.create(dm, this.getSender(), resourceUniqueId);
   }
 
+  @Override
   public int getDSFID() {
     return FETCH_RESOURCE_ATTRIBUTES_REQUEST;
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     out.writeLong(resourceUniqueId);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     resourceUniqueId = in.readLong();
   }
 
   @Override
   public String toString() {
-    return LocalizedStrings.FetchResourceAttributesRequest_FETCHRESOURCEATTRIBUTESREQUEST_FOR_0
-        .toLocalizedString(this.getRecipient());
+    return String.format("Fetch statistics for %s",
+        this.getRecipient());
   }
 
 }

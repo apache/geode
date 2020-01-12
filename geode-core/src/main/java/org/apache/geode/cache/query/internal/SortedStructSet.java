@@ -14,16 +14,28 @@
  */
 package org.apache.geode.cache.query.internal;
 
-import java.io.*;
-import java.util.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
-import org.apache.geode.*;
-import org.apache.geode.cache.query.*;
-import org.apache.geode.cache.query.internal.types.*;
-import org.apache.geode.cache.query.types.*;
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.Version;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.cache.query.Struct;
+import org.apache.geode.cache.query.internal.types.CollectionTypeImpl;
+import org.apache.geode.cache.query.internal.types.StructTypeImpl;
+import org.apache.geode.cache.query.types.CollectionType;
+import org.apache.geode.cache.query.types.ObjectType;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * A TreeSet constrained to contain Structs of all the same type. To conserve on objects, we store
@@ -56,7 +68,7 @@ public class SortedStructSet extends TreeSet
     this(c);
     if (structType == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.SortedStructSet_STRUCTTYPE_MUST_NOT_BE_NULL.toLocalizedString());
+          "structType must not be null");
     }
     this.structType = structType;
   }
@@ -65,7 +77,7 @@ public class SortedStructSet extends TreeSet
   public SortedStructSet(StructTypeImpl structType) {
     if (structType == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.SortedStructSet_STRUCTTYPE_MUST_NOT_BE_NULL.toLocalizedString());
+          "structType must not be null");
     }
     this.structType = structType;
   }
@@ -81,18 +93,22 @@ public class SortedStructSet extends TreeSet
     return super.equals(other);
   }
 
+  @Override
+  public int hashCode() {
+    return super.hashCode();
+  }
+
   /** Add a Struct */
   @Override
   public boolean add(Object obj) {
     if (!(obj instanceof StructImpl)) {
       throw new IllegalArgumentException(
-          LocalizedStrings.SortedStructSet_THIS_SET_ONLY_ACCEPTS_STRUCTIMPL.toLocalizedString());
+          "This set only accepts StructImpl");
     }
     StructImpl s = (StructImpl) obj;
     if (!s.getStructType().equals(this.structType)) {
       throw new IllegalArgumentException(
-          LocalizedStrings.SortedStructSet_OBJ_DOES_NOT_HAVE_THE_SAME_STRUCTTYPE
-              .toLocalizedString());
+          "obj does not have the same StructType");
     }
     // return addFieldValues(s.getFieldValues());
     return this.addFieldValues(s.getFieldValues());
@@ -101,6 +117,7 @@ public class SortedStructSet extends TreeSet
   /**
    * For internal use. Just add the Object[] values for a struct with same type
    */
+  @Override
   public boolean addFieldValues(Object[] fieldValues) {
     return super.add(fieldValues);
   }
@@ -128,6 +145,7 @@ public class SortedStructSet extends TreeSet
   /**
    * Does this set contain a Struct of the correct type with the specified values?
    */
+  @Override
   public boolean containsFieldValues(Object[] fieldValues) {
     return super.contains(fieldValues);
   }
@@ -153,6 +171,7 @@ public class SortedStructSet extends TreeSet
   }
 
   /** Remove the field values from a struct of the correct type */
+  @Override
   public boolean removeFieldValues(Object[] fieldValues) {
     return super.remove(fieldValues);
 
@@ -187,7 +206,7 @@ public class SortedStructSet extends TreeSet
     boolean modified = false;
     if (!this.structType.equals(ss.structType)) {
       throw new IllegalArgumentException(
-          LocalizedStrings.SortedStructSet_TYPES_DONT_MATCH.toLocalizedString());
+          "types do not match");
     }
     for (Iterator itr = ss.fieldValuesIterator(); itr.hasNext();) {
       if (this.addFieldValues((Object[]) itr.next())) {
@@ -243,10 +262,12 @@ public class SortedStructSet extends TreeSet
   }
 
   /** Returns an iterator over the fieldValues Object[] instances */
+  @Override
   public Iterator fieldValuesIterator() {
     return super.iterator();
   }
 
+  @Override
   public CollectionType getCollectionType() {
     return new CollectionTypeImpl(SortedStructSet.class, this.structType);
   }
@@ -255,18 +276,21 @@ public class SortedStructSet extends TreeSet
   // behavior if the new struct type is not compatible with the data.
   // For now just trust that the application knows what it is doing if it
   // is overriding the element type in a set of structs
+  @Override
   public void setElementType(ObjectType elementType) {
     if (!(elementType instanceof StructTypeImpl)) {
       throw new IllegalArgumentException(
-          LocalizedStrings.SortedStructSet_ELEMENT_TYPE_MUST_BE_STRUCT.toLocalizedString());
+          "element type must be struct");
     }
     this.structType = (StructTypeImpl) elementType;
   }
 
+  @Override
   public List asList() {
     return new ArrayList(this);
   }
 
+  @Override
   public Set asSet() {
     return this;
   }
@@ -276,10 +300,12 @@ public class SortedStructSet extends TreeSet
    *
    * @return Value of property modifiable.
    */
+  @Override
   public boolean isModifiable() {
     return this.modifiable;
   }
 
+  @Override
   public int occurrences(Object element) {
     return contains(element) ? 1 : 0;
   }
@@ -321,39 +347,47 @@ public class SortedStructSet extends TreeSet
       this.itr = itr;
     }
 
+    @Override
     public boolean hasNext() {
       return this.itr.hasNext();
     }
 
+    @Override
     public Object next() {
       return new StructImpl((StructTypeImpl) SortedStructSet.this.structType,
           (Object[]) this.itr.next());
     }
 
+    @Override
     public void remove() {
       this.itr.remove();
     }
   }
 
+  @Override
   public int getDSFID() {
     return SORTED_STRUCT_SET;
   }
 
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  @Override
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     this.modifiable = in.readBoolean();
     int size = in.readInt();
-    this.structType = (StructTypeImpl) DataSerializer.readObject(in);
+    this.structType = (StructTypeImpl) context.getDeserializer().readObject(in);
     for (int j = size; j > 0; j--) {
-      Object[] fieldValues = DataSerializer.readObject(in);
+      Object[] fieldValues = context.getDeserializer().readObject(in);
       this.addFieldValues(fieldValues);
     }
   }
 
-  public void toData(DataOutput out) throws IOException {
+  @Override
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     // how do we serialize the comparator?
     out.writeBoolean(this.modifiable);
     out.writeInt(this.size());
-    DataSerializer.writeObject(this.structType, out);
+    context.getSerializer().writeObject(this.structType, out);
     for (Iterator i = this.fieldValuesIterator(); i.hasNext();) {
       Object[] fieldValues = (Object[]) i.next();
       DataSerializer.writeObjectArray(fieldValues, out);

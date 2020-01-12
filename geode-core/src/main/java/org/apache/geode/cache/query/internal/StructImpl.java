@@ -26,9 +26,10 @@ import org.apache.geode.cache.query.Struct;
 import org.apache.geode.cache.query.internal.types.StructTypeImpl;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.cache.query.types.StructType;
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.Version;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.internal.PdxString;
 
@@ -51,7 +52,7 @@ public class StructImpl implements Struct, DataSerializableFixedID, Serializable
   public StructImpl(StructTypeImpl type, Object[] values) {
     if (type == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.StructImpl_TYPE_MUST_NOT_BE_NULL.toLocalizedString());
+          "type must not be null");
     }
     this.type = type;
     this.values = values;
@@ -68,6 +69,7 @@ public class StructImpl implements Struct, DataSerializableFixedID, Serializable
   /**
    * @throws IllegalArgumentException if fieldName not found
    */
+  @Override
   public Object get(String fieldName) {
     return this.values[this.type.getFieldIndex(fieldName)];
   }
@@ -81,6 +83,7 @@ public class StructImpl implements Struct, DataSerializableFixedID, Serializable
     return this.type.getFieldNames();
   }
 
+  @Override
   public Object[] getFieldValues() {
     if (this.values == null) {
       return new Object[0];
@@ -109,6 +112,7 @@ public class StructImpl implements Struct, DataSerializableFixedID, Serializable
     return fValues;
   }
 
+  @Override
   public StructType getStructType() {
     return this.type;
   }
@@ -159,12 +163,15 @@ public class StructImpl implements Struct, DataSerializableFixedID, Serializable
     return buf.toString();
   }
 
+  @Override
   public int getDSFID() {
     return STRUCT_IMPL;
   }
 
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.type = (StructTypeImpl) DataSerializer.readObject(in);
+  @Override
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    this.type = context.getDeserializer().readObject(in);
     this.values = DataSerializer.readObjectArray(in);
     if (this.values != null) {
       for (Object o : values) {
@@ -176,8 +183,10 @@ public class StructImpl implements Struct, DataSerializableFixedID, Serializable
     }
   }
 
-  public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeObject(this.type, out);
+  @Override
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    context.getSerializer().writeObject(this.type, out);
     DataSerializer.writeObjectArray(this.values, out);
   }
 

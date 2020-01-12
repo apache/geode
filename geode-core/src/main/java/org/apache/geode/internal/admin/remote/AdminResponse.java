@@ -16,11 +16,16 @@
 
 package org.apache.geode.internal.admin.remote;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-import org.apache.geode.distributed.internal.*;
-import org.apache.geode.distributed.internal.membership.*;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.distributed.internal.AdminMessageType;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * A message that is sent as a reply to a {@link AdminRequest}.
@@ -56,28 +61,30 @@ public abstract class AdminResponse extends HighPriorityDistributionMessage
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     // System.out.println("BEGIN AdminResponse toData");
-    super.toData(out);
+    super.toData(out, context);
     out.writeInt(this.msgId);
     // System.out.println("END AdminResponse toData");
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.msgId = in.readInt();
   }
 
   public InternalDistributedMember getRecipient() {
-    InternalDistributedMember[] recipients = getRecipients();
+    InternalDistributedMember[] recipients = getRecipientsArray();
     int size = recipients.length;
     if (size == 0) {
       return null;
     } else if (size > 1) {
       throw new IllegalStateException(
-          LocalizedStrings.AdminResponse_COULD_NOT_RETURN_ONE_RECIPIENT_BECAUSE_THIS_MESSAGE_HAS_0_RECIPIENTS
-              .toLocalizedString(Integer.valueOf(size)));
+          String.format("Could not return one recipient because this message has %s recipients",
+              Integer.valueOf(size)));
     } else {
       return recipients[0];
     }

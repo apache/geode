@@ -36,14 +36,12 @@ public interface AsyncEventQueue {
   /**
    * The Disk store that is required for overflow and persistence
    *
-   * @return String
    */
   String getDiskStoreName();// for overflow and persistence
 
   /**
    * The maximum memory after which the data needs to be overflowed to disk. Default is 100 MB.
    *
-   * @return int
    */
   int getMaximumQueueMemory();// for overflow
 
@@ -51,7 +49,6 @@ public interface AsyncEventQueue {
    * Represents the size of a batch that gets delivered over the AsyncEventQueue. Default batchSize
    * is 100.
    *
-   * @return int
    */
   int getBatchSize();
 
@@ -59,7 +56,6 @@ public interface AsyncEventQueue {
    * Represents the maximum time interval that can elapse before a batch is sent from
    * <code>AsyncEventQueue</code>. Default batchTimeInterval is 5 ms.
    *
-   * @return int
    */
   int getBatchTimeInterval();
 
@@ -67,7 +63,6 @@ public interface AsyncEventQueue {
    * Represents whether batch conflation is enabled for batches sent from
    * <code>AsyncEventQueue</code>. Default is false.
    *
-   * @return boolean
    */
   boolean isBatchConflationEnabled();
 
@@ -75,14 +70,12 @@ public interface AsyncEventQueue {
    * Represents whether the AsyncEventQueue is configured to be persistent or non-persistent.
    * Default is false.
    *
-   * @return boolean
    */
   boolean isPersistent();
 
   /**
    * Represents whether writing to disk is synchronous or not. Default is true.
    *
-   * @return boolean
    */
   boolean isDiskSynchronous();
 
@@ -91,7 +84,6 @@ public interface AsyncEventQueue {
    * queue. If the primary queue goes down then the secondary queue first becomes primary and then
    * starts delivering the events.
    *
-   * @return boolean
    */
   boolean isPrimary();
 
@@ -154,5 +146,15 @@ public interface AsyncEventQueue {
    * @return boolean True if expiration destroy operations are forwarded.
    */
   boolean isForwardExpirationDestroy();
+
+  /**
+   * Resumes the dispatching of then events queued to the listener.
+   */
+  void resumeEventDispatching();
+
+  /**
+   * Returns whether the queue is processing queued events or is paused
+   */
+  boolean isDispatchingPaused();
 
 }

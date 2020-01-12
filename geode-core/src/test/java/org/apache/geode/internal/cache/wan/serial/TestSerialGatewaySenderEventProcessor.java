@@ -15,13 +15,16 @@
 package org.apache.geode.internal.cache.wan.serial;
 
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 
 public class TestSerialGatewaySenderEventProcessor extends SerialGatewaySenderEventProcessor {
 
-  public TestSerialGatewaySenderEventProcessor(AbstractGatewaySender sender, String id) {
-    super(sender, id);
+  public TestSerialGatewaySenderEventProcessor(AbstractGatewaySender sender, String id,
+      ThreadsMonitoring tMonitoring) {
+    super(sender, id, tMonitoring);
   }
 
+  @Override
   protected void initializeMessageQueue(String id) {
     // Overridden to not create the RegionQueue in the constructor.
   }

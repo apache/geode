@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.process;
 
-import static org.apache.commons.lang.SystemUtils.LINE_SEPARATOR;
+import static java.lang.System.lineSeparator;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -22,7 +22,7 @@ import java.io.UncheckedIOException;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Reads the output stream of a Process. Default implementation performs blocking per-line reading
@@ -43,7 +43,7 @@ public class BlockingProcessStreamReader extends ProcessStreamReader {
   public void run() {
     try {
       new BufferedReader(new InputStreamReader(inputStream)).lines()
-          .map(line -> line + LINE_SEPARATOR).forEach(this.inputListener::notifyInputLine);
+          .map(line -> line + lineSeparator()).forEach(inputListener::notifyInputLine);
     } catch (UncheckedIOException e) {
       logger.debug(e);
     }

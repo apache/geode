@@ -1,0 +1,1 @@
+org/apache/geode/cache/query/cq/internal/CqConflatable,true,-7215022132135862557,conflate:boolean,id:org/apache/geode/internal/cache/EventID,key:java/lang/Object,regionname:java/lang/String,value:java/lang/Object

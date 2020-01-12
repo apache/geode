@@ -16,12 +16,15 @@
 
 package org.apache.geode.internal.admin.remote;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-import org.apache.geode.*;
+import org.apache.geode.DataSerializer;
 import org.apache.geode.admin.GemFireHealth;
-import org.apache.geode.distributed.internal.*;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * A message that is sent to a particular distribution manager to fetch its health diagnosis
@@ -55,20 +58,23 @@ public class FetchHealthDiagnosisRequest extends AdminRequest {
     return FetchHealthDiagnosisResponse.create(dm, this.getSender(), this.id, this.healthCode);
   }
 
+  @Override
   public int getDSFID() {
     return FETCH_HEALTH_DIAGNOSIS_REQUEST;
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     out.writeInt(this.id);
     DataSerializer.writeObject(this.healthCode, out);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     int i = in.readInt();
     GemFireHealth.Health oHC = (GemFireHealth.Health) DataSerializer.readObject(in);
     init_(i, oHC);
@@ -76,9 +82,8 @@ public class FetchHealthDiagnosisRequest extends AdminRequest {
 
   @Override
   public String toString() {
-    return LocalizedStrings.FetchHealthDiagnosisRequest_FETCHHEALTHDIAGNOSISREQUEST_FROM_ID_1_HEALTHCODE_2
-        .toLocalizedString(
-            new Object[] {this.getRecipient(), Integer.valueOf(this.id), this.healthCode});
+    return String.format("FetchHealthDiagnosisRequest from %s id=%s healthCode=%s",
+        this.getRecipient(), Integer.valueOf(this.id), this.healthCode);
   }
 
 
@@ -86,7 +91,7 @@ public class FetchHealthDiagnosisRequest extends AdminRequest {
     this.id = i;
     this.healthCode = oHC;
     this.friendlyName =
-        LocalizedStrings.FetchHealthDiagnosisRequest_FETCH_HEALTH_DIAGNOSIS_FOR_HEALTH_CODE_0
-            .toLocalizedString(this.healthCode);
+        String.format("fetch health diagnosis for health code %s",
+            this.healthCode);
   }
 }

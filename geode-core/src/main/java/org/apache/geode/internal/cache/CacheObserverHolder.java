@@ -19,6 +19,9 @@
  */
 package org.apache.geode.internal.cache;
 
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.internal.MakeNotStatic;
+
 /**
  * This class is intended to hold a single 'observer' which will receive callbacks from the
  * Distributed/Local Region when events like clear take place. There can be only one such observer
@@ -47,10 +50,12 @@ public class CacheObserverHolder {
   /**
    * The default 'do-nothing' query observer *
    */
+  @Immutable
   private static final CacheObserver NO_OBSERVER = new CacheObserverAdapter();
   /**
    * The current observer which will be notified of all query events.
    */
+  @MakeNotStatic
   private static CacheObserver _instance = NO_OBSERVER;
 
   /**

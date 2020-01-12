@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.util.concurrent;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -23,12 +23,9 @@ import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.concurrent.CompactConcurrentHashSet2;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class CompactConcurrentHashSetJUnitTest {
 
   private static final int RANGE = 100000;

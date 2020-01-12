@@ -14,8 +14,15 @@
  */
 package org.apache.geode.internal.cache.event;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.Collections;
 import java.util.Map;
@@ -23,13 +30,13 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EventID;
@@ -39,25 +46,29 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
+
 public class DistributedEventTrackerTest {
-  LocalRegion region;
-  RegionAttributes<?, ?> regionAttributes;
-  DistributedEventTracker eventTracker;
-  ClientProxyMembershipID memberId;
-  DistributedMember member;
+
+  private LocalRegion region;
+  private DistributedEventTracker eventTracker;
+  private ClientProxyMembershipID memberId;
+  private DistributedMember member;
 
   @Before
   public void setup() {
     region = mock(LocalRegion.class);
-    regionAttributes = mock(RegionAttributes.class);
-    when(region.createStopper()).thenCallRealMethod();
+    RegionAttributes<?, ?> regionAttributes = mock(RegionAttributes.class);
     memberId = mock(ClientProxyMembershipID.class);
     when(region.getAttributes()).thenReturn(regionAttributes);
     when(regionAttributes.getDataPolicy()).thenReturn(mock(DataPolicy.class));
     when(region.getConcurrencyChecksEnabled()).thenReturn(true);
+
+    InternalCache cache = mock(InternalCache.class);
+    InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
+    when(region.getCache()).thenReturn(cache);
+    when(cache.getDistributedSystem()).thenReturn(ids);
+    when(ids.getOffHeapStore()).thenReturn(null);
 
     member = mock(DistributedMember.class);
     eventTracker = new DistributedEventTracker(region.getCache(), mock(CancelCriterion.class),

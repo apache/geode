@@ -19,7 +19,9 @@ import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
-import org.apache.geode.internal.cache.CachePerfStats;
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.internal.statistics.StatisticsClock;
+import org.apache.geode.internal.statistics.StatisticsClockFactory;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 
 /**
@@ -27,6 +29,7 @@ import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
  */
 public class IndexStats {
 
+  @Immutable
   private static final StatisticsType type;
 
   private static final int numKeysId;
@@ -43,6 +46,8 @@ public class IndexStats {
 
   /** The Statistics object that we delegate most behavior to */
   private final Statistics stats;
+
+  private final StatisticsClock clock;
 
   static {
     StatisticsTypeFactory f = StatisticsTypeFactoryImpl.singleton();
@@ -83,11 +88,16 @@ public class IndexStats {
   }
 
   /**
-   * Creates a new <code>CachePerfStats</code> and registers itself with the given statistics
+   * Creates a new <code>IndexStats</code> and registers itself with the given statistics
    * factory.
    */
   public IndexStats(StatisticsFactory factory, String indexName) {
+    this(factory, indexName, StatisticsClockFactory.clock());
+  }
+
+  private IndexStats(StatisticsFactory factory, String indexName, StatisticsClock clock) {
     stats = factory.createAtomicStatistics(type, indexName);
+    this.clock = clock;
   }
 
   public long getNumberOfKeys() {
@@ -107,11 +117,11 @@ public class IndexStats {
   }
 
   public long getTotalUpdateTime() {
-    return CachePerfStats.enableClockStats ? stats.getLong(updateTimeId) : 0;
+    return clock.isEnabled() ? stats.getLong(updateTimeId) : 0;
   }
 
   public long getUseTime() {
-    return CachePerfStats.enableClockStats ? stats.getLong(useTimeId) : 0;
+    return clock.isEnabled() ? stats.getLong(useTimeId) : 0;
   }
 
   public int getReadLockCount() {
@@ -147,7 +157,7 @@ public class IndexStats {
   }
 
   public void incUpdateTime(long delta) {
-    if (CachePerfStats.enableClockStats) {
+    if (clock.isEnabled()) {
       this.stats.incLong(updateTimeId, delta);
     }
   }
@@ -165,7 +175,7 @@ public class IndexStats {
   }
 
   public void incUseTime(long delta) {
-    if (CachePerfStats.enableClockStats) {
+    if (clock.isEnabled()) {
       this.stats.incLong(useTimeId, delta);
     }
   }

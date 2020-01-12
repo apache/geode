@@ -14,7 +14,8 @@
  */
 package org.apache.geode.admin.internal;
 
-import org.apache.geode.admin.*;
+import org.apache.geode.admin.SystemMemberCacheEvent;
+import org.apache.geode.admin.SystemMemberCacheListener;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.distributed.DistributedMember;
 
@@ -42,6 +43,7 @@ public class SystemMemberCacheEventImpl extends SystemMembershipEventImpl
 
   ///////////////////// Instance Methods /////////////////////
 
+  @Override
   public Operation getOperation() {
     return this.op;
   }

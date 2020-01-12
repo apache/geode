@@ -20,7 +20,6 @@ package org.apache.geode.tools.pulse.internal.data;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
@@ -35,6 +34,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -61,7 +61,7 @@ import javax.rmi.ssl.SslRMIClientSocketFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -172,6 +172,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
   /**
    * Get the jmx connection
    */
+  @Override
   public JMXConnector connect(String username, String password) {
     // Reference to repository
     Repository repository = Repository.get();
@@ -210,14 +211,25 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
         Map<String, Object> env = new HashMap<String, Object>();
         env.put(JMXConnector.CREDENTIALS, creds);
 
-        if (repository.isUseSSLManager()) {
-          // use ssl to connect
-          env.put("com.sun.jndi.rmi.factory.socket", new SslRMIClientSocketFactory());
+        Properties originalProperties = System.getProperties();
+        try {
+          Properties updatedProperties = new Properties(originalProperties);
+          if (repository.isUseSSLManager()) {
+            for (String sslProperty : repository.getJavaSslProperties().stringPropertyNames()) {
+              updatedProperties.setProperty(sslProperty,
+                  repository.getJavaSslProperties().getProperty(sslProperty));
+            }
+
+            System.setProperties(updatedProperties);
+            env.put("com.sun.jndi.rmi.factory.socket", new SslRMIClientSocketFactory());
+          }
+          logger.info("Connecting to jmxURL : {}", jmxSerURL);
+          this.conn = JMXConnectorFactory.connect(url, env);
+          this.mbs = this.conn.getMBeanServerConnection();
+          cluster.setConnectedFlag(true);
+        } finally {
+          System.setProperties(originalProperties);
         }
-        logger.info("Connecting to jmxURL : {}", jmxSerURL);
-        this.conn = JMXConnectorFactory.connect(url, env);
-        this.mbs = this.conn.getMBeanServerConnection();
-        cluster.setConnectedFlag(true);
       }
     } catch (Exception e) {
       cluster.setConnectedFlag(false);
@@ -300,34 +312,48 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
         cluster.removeClusterRegion(it.next());
       }
 
-      // Cluster Members
+      List<ObjectName> serviceMBeans = new ArrayList<>();
+      List<ObjectName> nonServiceMBeans = new ArrayList<>();
+
       Set<ObjectName> memberMBeans = this.mbs.queryNames(this.MBEAN_OBJECT_NAME_MEMBER, null);
-      for (ObjectName memMBean : memberMBeans) {
-        String service = memMBean.getKeyProperty(PulseConstants.MBEAN_KEY_PROPERTY_SERVICE);
+      for (ObjectName mBean : memberMBeans) {
+        String service = mBean.getKeyProperty(PulseConstants.MBEAN_KEY_PROPERTY_SERVICE);
         if (service == null) {
-          // Cluster Member
-          updateClusterMember(memMBean);
+          nonServiceMBeans.add(mBean);
         } else {
-          switch (service) {
-            case PulseConstants.MBEAN_KEY_PROPERTY_SERVICE_VALUE_REGION:
-              updateMemberRegion(memMBean);
-              break;
-            case PulseConstants.MBEAN_KEY_PROPERTY_SERVICE_VALUE_CACHESERVER:
-              updateMemberClient(memMBean);
-              break;
-            case PulseConstants.MBEAN_KEY_PROPERTY_SERVICE_VALUE_GATEWAYRECEIVER:
-              updateGatewayReceiver(memMBean);
-              break;
-            case PulseConstants.MBEAN_KEY_PROPERTY_SERVICE_VALUE_GATEWAYSENDER:
-              updateGatewaySender(memMBean);
-              break;
-            case PulseConstants.MBEAN_KEY_PROPERTY_SERVICE_VALUE_ASYNCEVENTQUEUE:
-              updateAsyncEventQueue(memMBean);
-              break;
-            case PulseConstants.MBEAN_KEY_PROPERTY_SERVICE_VALUE_LOCATOR:
-              updateClusterMember(memMBean);
-              break;
-          }
+          serviceMBeans.add(mBean);
+        }
+      }
+
+      // Make sure that we process 'pure' members first. This ensures that various structures in
+      // Cluster are set up correctly since they are keyed on the 'host' attribute which does not
+      // necessarily appear in other MBeans. This avoids the possibility of having a 'null' host
+      // icon appear in the Pulse UI.
+      for (ObjectName mBean : nonServiceMBeans) {
+        updateClusterMember(mBean);
+      }
+
+      for (ObjectName serviceMBean : serviceMBeans) {
+        String service = serviceMBean.getKeyProperty(PulseConstants.MBEAN_KEY_PROPERTY_SERVICE);
+        switch (service) {
+          case PulseConstants.MBEAN_KEY_PROPERTY_SERVICE_VALUE_REGION:
+            updateMemberRegion(serviceMBean);
+            break;
+          case PulseConstants.MBEAN_KEY_PROPERTY_SERVICE_VALUE_CACHESERVER:
+            updateMemberClient(serviceMBean);
+            break;
+          case PulseConstants.MBEAN_KEY_PROPERTY_SERVICE_VALUE_GATEWAYRECEIVER:
+            updateGatewayReceiver(serviceMBean);
+            break;
+          case PulseConstants.MBEAN_KEY_PROPERTY_SERVICE_VALUE_GATEWAYSENDER:
+            updateGatewaySender(serviceMBean);
+            break;
+          case PulseConstants.MBEAN_KEY_PROPERTY_SERVICE_VALUE_ASYNCEVENTQUEUE:
+            updateAsyncEventQueue(serviceMBean);
+            break;
+          case PulseConstants.MBEAN_KEY_PROPERTY_SERVICE_VALUE_LOCATOR:
+            updateClusterMember(serviceMBean);
+            break;
         }
       }
 
@@ -862,7 +888,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
   /**
    * Add member specific region information on the region
    *
-   * @param regionObjectName: used to construct the jmx objectname. For region name that has special
+   * @param regionObjectName used to construct the jmx objectname. For region name that has special
    *        characters in, it will have double quotes around it.
    */
   private void updateRegionOnMembers(String regionObjectName, String regionFullPath,
@@ -1724,7 +1750,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
 
     if (PulseConstants.NOTIFICATION_TYPE_SYSTEM_ALERT.equals(type)) {
       Cluster.Alert alert = new Cluster.Alert();
-      Long timeStamp = notification.getTimeStamp();
+      long timeStamp = notification.getTimeStamp();
       Date date = new Date(timeStamp);
       alert.setTimestamp(date);
       String notificationSource = (String) notification.getUserData();
@@ -1745,7 +1771,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
       cluster.addAlert(alert);
     } else {
       Cluster.Alert alert = new Cluster.Alert();
-      Long timeStamp = notification.getTimeStamp();
+      long timeStamp = notification.getTimeStamp();
       Date date = new Date(timeStamp);
       alert.setTimestamp(date);
       String notificationSource = (String) notification.getSource();

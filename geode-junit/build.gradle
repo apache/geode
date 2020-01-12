@@ -15,21 +15,52 @@
  * limitations under the License.
  */
 
-dependencies {
-  compile 'com.jayway.jsonpath:json-path:' + project.'json-path.version'
-  testCompile 'commons-lang:commons-lang:' + project.'commons-lang.version'
-  testCompile 'com.google.guava:guava:' + project.'guava.version'
-  compile 'org.assertj:assertj-core:' + project.'assertj-core.version'
-  compile 'commons-io:commons-io:' + project.'commons-io.version'
-  compile 'commons-lang:commons-lang:' + project.'commons-lang.version'
-  compile 'com.google.guava:guava:' + project.'guava.version'
-  compile 'org.mockito:mockito-core:' + project.'mockito-core.version'
-  compile 'org.awaitility:awaitility:' + project.'awaitility.version'
-  compile 'org.apache.logging.log4j:log4j-api:' + project.'log4j.version'
-  compile 'org.apache.logging.log4j:log4j-core:' + project.'log4j.version'
+apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 
-  compile('junit:junit:' + project.'junit.version') {
+apply from: "${project.projectDir}/../gradle/publish-java.gradle"
+
+
+dependencies {
+  compile(platform(project(':boms:geode-all-bom')))
+
+  compileOnly(project(':geode-core'))
+  compileOnly(project(':geode-logging'))
+  compileOnly(project(':geode-serialization'))
+  compileOnly(project(':geode-unsafe'))
+  compileOnly(project(':geode-gfsh'))
+
+  compile('com.fasterxml.jackson.core:jackson-annotations')
+  compile('com.fasterxml.jackson.core:jackson-databind')
+  compile('com.github.stefanbirkner:system-rules') {
+    exclude module: 'junit-dep'
+  }
+  compile('com.google.guava:guava')
+  compile('com.jayway.jsonpath:json-path')
+  compile('commons-io:commons-io')
+  compile('junit:junit') {
     exclude module: 'hamcrest-core'
   }
-  compile 'org.hamcrest:hamcrest-all:' + project.'hamcrest-all.version'
+  compile('org.apache.commons:commons-lang3')
+  compile('org.apache.logging.log4j:log4j-api')
+  compile('org.assertj:assertj-core')
+  compile('org.awaitility:awaitility')
+  compile('org.bouncycastle:bcpkix-jdk15on')
+  compile('org.hamcrest:hamcrest-all')
+  compile('io.micrometer:micrometer-core')
+  compile('org.mockito:mockito-core')
+  compile('org.skyscreamer:jsonassert')
+
+  testCompile('pl.pragmatists:JUnitParams')
+
+  testRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
+}
+
+test {
+  // Some tests have inner tests that should be ignored
+  exclude "**/*\$*.class"
+}
+
+integrationTest {
+  // Some tests have inner tests that should be ignored
+  exclude "**/*\$*.class"
 }

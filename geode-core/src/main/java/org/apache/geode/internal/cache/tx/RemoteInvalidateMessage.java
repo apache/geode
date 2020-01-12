@@ -45,14 +45,16 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.EntryEventImpl;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RemoteOperationException;
 import org.apache.geode.internal.cache.versions.DiskVersionTag;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.annotations.Released;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * This message is used by transactions to invalidate an entry on a transaction hosted on a remote
@@ -123,8 +125,8 @@ public class RemoteInvalidateMessage extends RemoteDestroyMessage {
         successful = true; // not a cancel-exception, so don't complain any more about it
 
       } catch (RegionDestroyedException | RemoteOperationException e) {
-        if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.trace(LogMarker.DM,
+        if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+          logger.trace(LogMarker.DM_VERBOSE,
               "RemoteInvalidateMessage caught an exception during distribution; retrying to another member",
               e);
         }
@@ -144,7 +146,7 @@ public class RemoteInvalidateMessage extends RemoteDestroyMessage {
    * @return the InvalidateResponse processor used to await the potential
    *         {@link org.apache.geode.cache.CacheException}
    */
-  public static InvalidateResponse send(DistributedMember recipient, LocalRegion r,
+  public static InvalidateResponse send(DistributedMember recipient, InternalRegion r,
       EntryEventImpl event, boolean useOriginRemote, boolean possibleDuplicate)
       throws RemoteOperationException {
     InvalidateResponse p = new InvalidateResponse(r.getSystem(), recipient, event.getKey());
@@ -153,7 +155,7 @@ public class RemoteInvalidateMessage extends RemoteDestroyMessage {
     Set<?> failures = r.getDistributionManager().putOutgoing(m);
     if (failures != null && failures.size() > 0) {
       throw new RemoteOperationException(
-          LocalizedStrings.InvalidateMessage_FAILED_SENDING_0.toLocalizedString(m));
+          String.format("Failed sending < %s >", m));
     }
     return p;
   }
@@ -207,8 +209,8 @@ public class RemoteInvalidateMessage extends RemoteDestroyMessage {
         r.checkReadiness();
         r.checkForLimitedOrNoAccess();
         r.basicInvalidate(event);
-        if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.trace(LogMarker.DM, "remoteInvalidated key: {}", key);
+        if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+          logger.trace(LogMarker.DM_VERBOSE, "remoteInvalidated key: {}", key);
         }
         sendReply(getSender(), this.processorId, dm, /* ex */null, event.getRegion(),
             event.getVersionTag(), startTime);
@@ -230,12 +232,12 @@ public class RemoteInvalidateMessage extends RemoteDestroyMessage {
 
   @Override
   protected void sendReply(InternalDistributedMember member, int procId, DistributionManager dm,
-      ReplyException ex, LocalRegion r, long startTime) {
+      ReplyException ex, InternalRegion r, long startTime) {
     sendReply(member, procId, dm, ex, r, null, startTime);
   }
 
   protected void sendReply(InternalDistributedMember member, int procId, DistributionManager dm,
-      ReplyException ex, LocalRegion r, VersionTag<?> versionTag, long startTime) {
+      ReplyException ex, InternalRegion r, VersionTag<?> versionTag, long startTime) {
     InvalidateReplyMessage.send(member, procId, getReplySender(dm), versionTag, ex);
   }
 
@@ -280,15 +282,15 @@ public class RemoteInvalidateMessage extends RemoteDestroyMessage {
     @Override
     public void process(final DistributionManager dm, final ReplyProcessor21 rp) {
       final long startTime = getTimestamp();
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM,
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE,
             "InvalidateReplyMessage process invoking reply processor with processorId:{}",
             this.processorId);
       }
 
       if (rp == null) {
-        if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.trace(LogMarker.DM, "InvalidateReplyMessage processor not found");
+        if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+          logger.trace(LogMarker.DM_VERBOSE, "InvalidateReplyMessage processor not found");
         }
         return;
       }
@@ -301,8 +303,8 @@ public class RemoteInvalidateMessage extends RemoteDestroyMessage {
       }
       rp.process(this);
 
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM, "{} processed {}", rp, this);
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE, "{} processed {}", rp, this);
       }
 
       dm.getStats().incReplyMessageTime(NanoTimer.getTime() - startTime);
@@ -314,8 +316,9 @@ public class RemoteInvalidateMessage extends RemoteDestroyMessage {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       byte b = 0;
       if (this.versionTag != null) {
         b |= HAS_VERSION;
@@ -330,8 +333,9 @@ public class RemoteInvalidateMessage extends RemoteDestroyMessage {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       byte b = in.readByte();
       boolean hasTag = (b & HAS_VERSION) != 0;
       boolean persistentTag = (b & PERSISTENT) != 0;
@@ -380,7 +384,7 @@ public class RemoteInvalidateMessage extends RemoteDestroyMessage {
       waitForRemoteResponse();
       if (!this.returnValueReceived) {
         throw new RemoteOperationException(
-            LocalizedStrings.InvalidateMessage_NO_RESPONSE_CODE_RECEIVED.toLocalizedString());
+            "no response code received");
       }
       return;
     }

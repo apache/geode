@@ -19,12 +19,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.EntryNotFoundException;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.SystemTimer;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * ExpirationScheduler uses a single instance of java.util.Timer (and therefore a single thread) per
@@ -37,7 +35,7 @@ public class ExpirationScheduler {
   private final SystemTimer timer;
   private final AtomicInteger pendingCancels = new AtomicInteger();
   private static final int MAX_PENDING_CANCELS = Integer
-      .getInteger(DistributionConfig.GEMFIRE_PREFIX + "MAX_PENDING_CANCELS", 10000).intValue();
+      .getInteger(GeodeGlossary.GEMFIRE_PREFIX + "MAX_PENDING_CANCELS", 10000).intValue();
 
   public ExpirationScheduler(InternalDistributedSystem ds) {
     this.timer = new SystemTimer(ds, true);
@@ -75,9 +73,8 @@ public class ExpirationScheduler {
   public ExpiryTask addExpiryTask(ExpiryTask task) {
     try {
       if (logger.isTraceEnabled()) {
-        logger.trace(LocalizedMessage.create(
-            LocalizedStrings.ExpirationScheduler_SCHEDULING__0__TO_FIRE_IN__1__MS,
-            new Object[] {task, Long.valueOf(task.getExpiryMillis())}));
+        logger.trace("Scheduling  {}  to fire in  {}  ms",
+            new Object[] {task, task.getExpiryMillis()});
       }
       // To fix bug 52267 do not create a Date here; instead calculate the relative duration.
       timer.schedule(task, task.getExpiryMillis());

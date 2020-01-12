@@ -33,51 +33,61 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTOR
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_WEB_ALIAS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.security.KeyStore;
 import java.util.Properties;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.GemFireConfigException;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.test.junit.categories.MembershipTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category({UnitTest.class, MembershipTest.class})
+@Category(MembershipTest.class)
 public class SSLConfigurationFactoryJUnitTest {
 
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
   @After
-  public void tearDownTest() {
-    SSLConfigurationFactory.close();
-  }
+  public void tearDownTest() {}
 
   @Test
-  public void getNonSSLConfiguration() throws Exception {
+  public void getNonSSLConfiguration() {
     Properties properties = new Properties();
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
-    SSLConfigurationFactory.setDistributionConfig(distributionConfig);
+
     for (SecurableCommunicationChannel securableComponent : SecurableCommunicationChannel
         .values()) {
       assertSSLConfig(properties,
-          SSLConfigurationFactory.getSSLConfigForComponent(securableComponent), securableComponent,
+          SSLConfigurationFactory.getSSLConfigForComponent(distributionConfig, securableComponent),
+          securableComponent,
           distributionConfig);
     }
   }
 
   @Test
-  public void getSSLConfigWithCommaDelimitedProtocols() throws Exception {
+  public void getSSLConfigForComponentShouldThrowExceptionForUnknownComponents() {
+    Properties properties = new Properties();
+    properties.setProperty(SSL_ENABLED_COMPONENTS, "none");
+
+    assertThatThrownBy(() -> new DistributionConfigImpl(properties))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasCauseInstanceOf(GemFireConfigException.class)
+        .hasMessageContaining("There is no registered component for the name: none");
+  }
+
+  @Test
+  public void getSSLConfigWithCommaDelimitedProtocols() {
     Properties properties = new Properties();
     properties.setProperty(SSL_ENABLED_COMPONENTS, "all");
     properties.setProperty(SSL_KEYSTORE, "someKeyStore");
@@ -89,17 +99,12 @@ public class SSLConfigurationFactoryJUnitTest {
     properties.setProperty(SSL_CIPHERS, "Cipher1,Cipher2");
     properties.setProperty(SSL_PROTOCOLS, "Protocol1,Protocol2");
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
-    SSLConfigurationFactory.setDistributionConfig(distributionConfig);
-    for (SecurableCommunicationChannel securableComponent : SecurableCommunicationChannel
-        .values()) {
-      assertSSLConfig(properties,
-          SSLConfigurationFactory.getSSLConfigForComponent(securableComponent), securableComponent,
-          distributionConfig);
-    }
+
+    assertSSLConfigForChannels(properties, distributionConfig);
   }
 
   @Test
-  public void getSSLConfigWithCommaDelimitedCiphers() throws Exception {
+  public void getSSLConfigWithCommaDelimitedCiphers() {
     Properties properties = new Properties();
     properties.setProperty(SSL_ENABLED_COMPONENTS, "all");
     properties.setProperty(SSL_KEYSTORE, "someKeyStore");
@@ -111,17 +116,12 @@ public class SSLConfigurationFactoryJUnitTest {
     properties.setProperty(SSL_CIPHERS, "Cipher1,Cipher2");
     properties.setProperty(SSL_PROTOCOLS, "any");
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
-    SSLConfigurationFactory.setDistributionConfig(distributionConfig);
-    for (SecurableCommunicationChannel securableCommunicationChannel : SecurableCommunicationChannel
-        .values()) {
-      assertSSLConfig(properties,
-          SSLConfigurationFactory.getSSLConfigForComponent(securableCommunicationChannel),
-          securableCommunicationChannel, distributionConfig);
-    }
+
+    assertSSLConfigForChannels(properties, distributionConfig);
   }
 
   @Test
-  public void getSSLConfigForComponentALL() throws Exception {
+  public void getSSLConfigForComponentALL() {
     Properties properties = new Properties();
     properties.setProperty(SSL_ENABLED_COMPONENTS, "all");
     properties.setProperty(SSL_KEYSTORE, "someKeyStore");
@@ -133,17 +133,12 @@ public class SSLConfigurationFactoryJUnitTest {
     properties.setProperty(SSL_CIPHERS, "any");
     properties.setProperty(SSL_PROTOCOLS, "any");
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
-    SSLConfigurationFactory.setDistributionConfig(distributionConfig);
-    for (SecurableCommunicationChannel securableCommunicationChannel : SecurableCommunicationChannel
-        .values()) {
-      assertSSLConfig(properties,
-          SSLConfigurationFactory.getSSLConfigForComponent(securableCommunicationChannel),
-          securableCommunicationChannel, distributionConfig);
-    }
+
+    assertSSLConfigForChannels(properties, distributionConfig);
   }
 
   @Test
-  public void getSSLConfigForComponentHTTPService() throws Exception {
+  public void getSSLConfigForComponentHTTPService() {
     Properties properties = new Properties();
     properties.setProperty(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannel.WEB.getConstant());
     properties.setProperty(SSL_KEYSTORE, "someKeyStore");
@@ -155,17 +150,12 @@ public class SSLConfigurationFactoryJUnitTest {
     properties.setProperty(SSL_CIPHERS, "any");
     properties.setProperty(SSL_PROTOCOLS, "any");
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
-    SSLConfigurationFactory.setDistributionConfig(distributionConfig);
-    for (SecurableCommunicationChannel securableCommunicationChannel : SecurableCommunicationChannel
-        .values()) {
-      assertSSLConfig(properties,
-          SSLConfigurationFactory.getSSLConfigForComponent(securableCommunicationChannel),
-          securableCommunicationChannel, distributionConfig);
-    }
+
+    assertSSLConfigForChannels(properties, distributionConfig);
   }
 
   @Test
-  public void getSSLConfigForComponentHTTPServiceWithAlias() throws Exception {
+  public void getSSLConfigForComponentHTTPServiceWithAlias() {
     Properties properties = new Properties();
     properties.setProperty(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannel.WEB.getConstant());
     properties.setProperty(SSL_KEYSTORE, "someKeyStore");
@@ -178,17 +168,12 @@ public class SSLConfigurationFactoryJUnitTest {
     properties.setProperty(SSL_CIPHERS, "any");
     properties.setProperty(SSL_PROTOCOLS, "any");
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
-    SSLConfigurationFactory.setDistributionConfig(distributionConfig);
-    for (SecurableCommunicationChannel securableCommunicationChannel : SecurableCommunicationChannel
-        .values()) {
-      assertSSLConfig(properties,
-          SSLConfigurationFactory.getSSLConfigForComponent(securableCommunicationChannel),
-          securableCommunicationChannel, distributionConfig);
-    }
+
+    assertSSLConfigForChannels(properties, distributionConfig);
   }
 
   @Test
-  public void getSSLConfigForComponentHTTPServiceWithMutualAuth() throws Exception {
+  public void getSSLConfigForComponentHTTPServiceWithMutualAuth() {
     Properties properties = new Properties();
     properties.setProperty(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannel.WEB.getConstant());
     properties.setProperty(SSL_KEYSTORE, "someKeyStore");
@@ -202,13 +187,8 @@ public class SSLConfigurationFactoryJUnitTest {
     properties.setProperty(SSL_CIPHERS, "any");
     properties.setProperty(SSL_PROTOCOLS, "any");
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
-    SSLConfigurationFactory.setDistributionConfig(distributionConfig);
-    for (SecurableCommunicationChannel securableCommunicationChannel : SecurableCommunicationChannel
-        .values()) {
-      assertSSLConfig(properties,
-          SSLConfigurationFactory.getSSLConfigForComponent(securableCommunicationChannel),
-          securableCommunicationChannel, distributionConfig);
-    }
+
+    assertSSLConfigForChannels(properties, distributionConfig);
   }
 
   @Test
@@ -223,36 +203,36 @@ public class SSLConfigurationFactoryJUnitTest {
     System.setProperty(SSLConfigurationFactory.JAVAX_TRUSTSTORE_PASSWORD, "truststorePassword");
     System.setProperty(SSLConfigurationFactory.JAVAX_TRUSTSTORE_TYPE, KeyStore.getDefaultType());
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
-    SSLConfigurationFactory.setDistributionConfig(distributionConfig);
     SSLConfig sslConfig =
-        SSLConfigurationFactory.getSSLConfigForComponent(SecurableCommunicationChannel.CLUSTER);
+        SSLConfigurationFactory.getSSLConfigForComponent(distributionConfig,
+            SecurableCommunicationChannel.CLUSTER);
 
-    assertEquals(true, sslConfig.isEnabled());
-    assertEquals(System.getProperty(SSLConfigurationFactory.JAVAX_KEYSTORE),
-        sslConfig.getKeystore());
-    assertEquals(System.getProperty(SSLConfigurationFactory.JAVAX_KEYSTORE_PASSWORD),
-        sslConfig.getKeystorePassword());
-    assertEquals(System.getProperty(SSLConfigurationFactory.JAVAX_KEYSTORE_TYPE),
-        sslConfig.getKeystoreType());
-    assertEquals(System.getProperty(SSLConfigurationFactory.JAVAX_TRUSTSTORE),
-        sslConfig.getTruststore());
-    assertEquals(System.getProperty(SSLConfigurationFactory.JAVAX_TRUSTSTORE_PASSWORD),
-        sslConfig.getTruststorePassword());
-    assertEquals(System.getProperty(SSLConfigurationFactory.JAVAX_TRUSTSTORE_TYPE),
-        sslConfig.getTruststoreType());
-    assertEquals(true, sslConfig.isEnabled());
-    assertEquals(System.getProperty(SSLConfigurationFactory.JAVAX_KEYSTORE),
-        sslConfig.getKeystore());
-    assertEquals(System.getProperty(SSLConfigurationFactory.JAVAX_KEYSTORE_PASSWORD),
-        sslConfig.getKeystorePassword());
-    assertEquals(System.getProperty(SSLConfigurationFactory.JAVAX_KEYSTORE_TYPE),
-        sslConfig.getKeystoreType());
-    assertEquals(System.getProperty(SSLConfigurationFactory.JAVAX_TRUSTSTORE),
-        sslConfig.getTruststore());
-    assertEquals(System.getProperty(SSLConfigurationFactory.JAVAX_TRUSTSTORE_PASSWORD),
-        sslConfig.getTruststorePassword());
-    assertEquals(System.getProperty(SSLConfigurationFactory.JAVAX_TRUSTSTORE_TYPE),
-        sslConfig.getTruststoreType());
+    assertThat(sslConfig.isEnabled()).isTrue();
+    assertThat(sslConfig.getKeystore())
+        .isEqualTo(System.getProperty(SSLConfigurationFactory.JAVAX_KEYSTORE));
+    assertThat(sslConfig.getKeystorePassword())
+        .isEqualTo(System.getProperty(SSLConfigurationFactory.JAVAX_KEYSTORE_PASSWORD));
+    assertThat(sslConfig.getKeystoreType())
+        .isEqualTo(System.getProperty(SSLConfigurationFactory.JAVAX_KEYSTORE_TYPE));
+    assertThat(sslConfig.getTruststore())
+        .isEqualTo(System.getProperty(SSLConfigurationFactory.JAVAX_TRUSTSTORE));
+    assertThat(sslConfig.getTruststorePassword())
+        .isEqualTo(System.getProperty(SSLConfigurationFactory.JAVAX_TRUSTSTORE_PASSWORD));
+    assertThat(sslConfig.getTruststoreType())
+        .isEqualTo(System.getProperty(SSLConfigurationFactory.JAVAX_TRUSTSTORE_TYPE));
+    assertThat(sslConfig.isEnabled()).isTrue();
+    assertThat(sslConfig.getKeystore())
+        .isEqualTo(System.getProperty(SSLConfigurationFactory.JAVAX_KEYSTORE));
+    assertThat(sslConfig.getKeystorePassword())
+        .isEqualTo(System.getProperty(SSLConfigurationFactory.JAVAX_KEYSTORE_PASSWORD));
+    assertThat(sslConfig.getKeystoreType())
+        .isEqualTo(System.getProperty(SSLConfigurationFactory.JAVAX_KEYSTORE_TYPE));
+    assertThat(sslConfig.getTruststore())
+        .isEqualTo(System.getProperty(SSLConfigurationFactory.JAVAX_TRUSTSTORE));
+    assertThat(sslConfig.getTruststorePassword())
+        .isEqualTo(System.getProperty(SSLConfigurationFactory.JAVAX_TRUSTSTORE_PASSWORD));
+    assertThat(sslConfig.getTruststoreType())
+        .isEqualTo(System.getProperty(SSLConfigurationFactory.JAVAX_TRUSTSTORE_TYPE));
   }
 
   @Test
@@ -261,38 +241,42 @@ public class SSLConfigurationFactoryJUnitTest {
     properties.setProperty(CLUSTER_SSL_ENABLED, "true");
     properties.setProperty(MCAST_PORT, "0");
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
-    SSLConfigurationFactory.setDistributionConfig(distributionConfig);
     SSLConfig sslConfig =
-        SSLConfigurationFactory.getSSLConfigForComponent(SecurableCommunicationChannel.WEB);
-    assertEquals(false, sslConfig.isRequireAuth());
-    assertEquals(true, sslConfig.isEnabled());
+        SSLConfigurationFactory.getSSLConfigForComponent(distributionConfig,
+            SecurableCommunicationChannel.WEB);
+    assertThat(sslConfig.isRequireAuth()).isFalse();
+    assertThat(sslConfig.isEnabled()).isTrue();
     sslConfig =
-        SSLConfigurationFactory.getSSLConfigForComponent(SecurableCommunicationChannel.CLUSTER);
-    assertEquals(true, sslConfig.isRequireAuth());
-    assertEquals(true, sslConfig.isEnabled());
+        SSLConfigurationFactory.getSSLConfigForComponent(distributionConfig,
+            SecurableCommunicationChannel.CLUSTER);
+    assertThat(sslConfig.isRequireAuth()).isTrue();
+    assertThat(sslConfig.isEnabled()).isTrue();
     sslConfig =
-        SSLConfigurationFactory.getSSLConfigForComponent(SecurableCommunicationChannel.GATEWAY);
-    assertEquals(true, sslConfig.isRequireAuth());
-    assertEquals(true, sslConfig.isEnabled());
+        SSLConfigurationFactory.getSSLConfigForComponent(distributionConfig,
+            SecurableCommunicationChannel.GATEWAY);
+    assertThat(sslConfig.isRequireAuth()).isTrue();
+    assertThat(sslConfig.isEnabled()).isTrue();
     sslConfig =
-        SSLConfigurationFactory.getSSLConfigForComponent(SecurableCommunicationChannel.SERVER);
-    assertEquals(true, sslConfig.isRequireAuth());
-    assertEquals(true, sslConfig.isEnabled());
-    sslConfig = SSLConfigurationFactory.getSSLConfigForComponent(SecurableCommunicationChannel.JMX);
-    assertEquals(true, sslConfig.isRequireAuth());
-    assertEquals(true, sslConfig.isEnabled());
+        SSLConfigurationFactory.getSSLConfigForComponent(distributionConfig,
+            SecurableCommunicationChannel.SERVER);
+    assertThat(sslConfig.isRequireAuth()).isTrue();
+    assertThat(sslConfig.isEnabled()).isTrue();
+    sslConfig = SSLConfigurationFactory.getSSLConfigForComponent(distributionConfig,
+        SecurableCommunicationChannel.JMX);
+    assertThat(sslConfig.isRequireAuth()).isTrue();
+    assertThat(sslConfig.isEnabled()).isTrue();
   }
 
   @Test
-  public void setDistributionConfig() throws Exception {
+  public void setDistributionConfig() {
     Properties properties = new Properties();
     properties.setProperty(SSL_ENABLED_COMPONENTS, "all");
     properties.setProperty(SSL_KEYSTORE, "someKeyStore");
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
-    SSLConfigurationFactory.setDistributionConfig(distributionConfig);
 
     SSLConfig sslConfig =
-        SSLConfigurationFactory.getSSLConfigForComponent(SecurableCommunicationChannel.LOCATOR);
+        SSLConfigurationFactory.getSSLConfigForComponent(distributionConfig,
+            SecurableCommunicationChannel.LOCATOR);
     assertThat(sslConfig.isEnabled()).isTrue();
     assertThat(sslConfig.getKeystore()).isEqualTo("someKeyStore");
 
@@ -307,22 +291,37 @@ public class SSLConfigurationFactoryJUnitTest {
   private void assertSSLConfig(final Properties properties, final SSLConfig sslConfig,
       final SecurableCommunicationChannel expectedSecurableComponent,
       final DistributionConfigImpl distributionConfig) {
-    assertEquals(isSSLComponentEnabled(expectedSecurableComponent,
-        distributionConfig.getSecurableCommunicationChannels()), sslConfig.isEnabled());
+    assertThat(sslConfig.isEnabled()).isEqualTo(isSSLComponentEnabled(expectedSecurableComponent,
+        distributionConfig.getSecurableCommunicationChannels()));
+
     if (sslConfig.isEnabled()) {
-      assertEquals(properties.getProperty(SSL_KEYSTORE), sslConfig.getKeystore());
-      assertEquals(properties.getProperty(SSL_KEYSTORE_PASSWORD), sslConfig.getKeystorePassword());
-      assertEquals(properties.getProperty(SSL_KEYSTORE_TYPE), sslConfig.getKeystoreType());
-      assertEquals(properties.getProperty(SSL_TRUSTSTORE), sslConfig.getTruststore());
-      assertEquals(properties.getProperty(SSL_TRUSTSTORE_PASSWORD),
-          sslConfig.getTruststorePassword());
-      assertEquals(properties.getProperty(SSL_CIPHERS).replace(",", " "), sslConfig.getCiphers());
-      assertEquals(properties.getProperty(SSL_PROTOCOLS).replace(",", " "),
-          sslConfig.getProtocols());
-      assertEquals(getCorrectAlias(expectedSecurableComponent, properties), sslConfig.getAlias());
-      assertEquals(requiresAuthentication(properties, expectedSecurableComponent),
-          sslConfig.isRequireAuth());
-      assertEquals(expectedSecurableComponent, sslConfig.getSecuredCommunicationChannel());
+      assertThat(sslConfig.getKeystore()).isEqualTo(properties.getProperty(SSL_KEYSTORE));
+      assertThat(sslConfig.getKeystorePassword())
+          .isEqualTo(properties.getProperty(SSL_KEYSTORE_PASSWORD));
+      assertThat(sslConfig.getKeystoreType()).isEqualTo(properties.getProperty(SSL_KEYSTORE_TYPE));
+      assertThat(sslConfig.getTruststore()).isEqualTo(properties.getProperty(SSL_TRUSTSTORE));
+      assertThat(sslConfig.getTruststorePassword())
+          .isEqualTo(properties.getProperty(SSL_TRUSTSTORE_PASSWORD));
+      assertThat(sslConfig.getCiphers())
+          .isEqualTo(properties.getProperty(SSL_CIPHERS).replace(",", " "));
+      assertThat(sslConfig.getProtocols())
+          .isEqualTo(properties.getProperty(SSL_PROTOCOLS).replace(",", " "));
+      assertThat(sslConfig.getAlias())
+          .isEqualTo(getCorrectAlias(expectedSecurableComponent, properties));
+      assertThat(sslConfig.isRequireAuth())
+          .isEqualTo(requiresAuthentication(properties, expectedSecurableComponent));
+      assertThat(sslConfig.getSecuredCommunicationChannel()).isEqualTo(expectedSecurableComponent);
+    }
+  }
+
+  private void assertSSLConfigForChannels(final Properties distributionConfigProperties,
+      final DistributionConfigImpl distributionConfig) {
+    for (SecurableCommunicationChannel securableComponent : SecurableCommunicationChannel
+        .values()) {
+      assertSSLConfig(distributionConfigProperties,
+          SSLConfigurationFactory.getSSLConfigForComponent(distributionConfig, securableComponent),
+          securableComponent,
+          distributionConfig);
     }
   }
 
@@ -377,7 +376,7 @@ public class SSLConfigurationFactoryJUnitTest {
         return true;
       }
     }
+
     return false;
   }
-
 }

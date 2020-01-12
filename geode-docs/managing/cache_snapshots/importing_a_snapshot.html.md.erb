@@ -19,7 +19,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-To import a <%=vars.product_name%> cache or region data snapshot that you previously exported into another distributed system or region, use the `cache.getSnapshotService.load` API, `region.getSnapshotService.load` API, or the `gfsh` command-line interface (`import data`).
+To import a <%=vars.product_name%> cache or region data snapshot that you previously exported into another cluster or region, use the `cache.getSnapshotService.load` API, `region.getSnapshotService.load` API, or the `gfsh` command-line interface (`import data`).
 
 ## <a id="concept_62B1E24DA7F342E9BB16C0818F7A7B70__section_4B2C73CA1A734D9D96693A52BF99D75A" class="no-quick-link"></a>Import Requirements
 
@@ -62,7 +62,7 @@ region.getSnapshotService().load(mySnapshot, SnapshotFormat.GEMFIRE);
 
 **gfsh:**
 
-Open a gfsh prompt. After connecting to a <%=vars.product_name%> distributed system, at the prompt type:
+Open a gfsh prompt. After connecting to a <%=vars.product_name%> cluster, at the prompt type:
 
 ``` pre
 gfsh>import data --region=Region --file=FileName.gfd --member=MemberName

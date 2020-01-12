@@ -16,9 +16,9 @@ package org.apache.geode.internal.cache;
 
 import java.util.List;
 
-import org.apache.geode.cache.client.internal.InternalClientCache;
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.internal.cache.xmlcache.CacheServerCreation;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.pdx.PdxSerializer;
 import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
 import org.apache.geode.security.PostProcessor;
@@ -32,6 +32,7 @@ import org.apache.geode.security.SecurityManager;
  */
 public class CacheConfig {
   public static final boolean DEFAULT_PDX_READ_SERIALIZED = false;
+  @Immutable
   public static final PdxSerializer DEFAULT_PDX_SERIALIZER = null;
   public static final String DEFAULT_PDX_DISK_STORE = null;
   public static final boolean DEFAULT_PDX_PERSISTENT = false;
@@ -168,7 +169,7 @@ public class CacheConfig {
     this.cacheServerCreation = servers;
   }
 
-  public void validateCacheConfig(InternalClientCache cacheInstance) {
+  public void validateCacheConfig(GemFireCache cacheInstance) {
     // To fix bug 44961 only validate our attributes against the existing cache
     // if they have been explicitly set by the set.
     // So all the following "ifs" check that "*UserSet" is true.
@@ -178,31 +179,31 @@ public class CacheConfig {
     if (this.pdxReadSerializedUserSet
         && this.pdxReadSerialized != cacheInstance.getPdxReadSerialized()) {
       throw new IllegalStateException(
-          LocalizedStrings.CacheFactory_0_EXISTING_CACHE_WITH_DIFFERENT_CACHE_CONFIG
-              .toLocalizedString("pdxReadSerialized: " + cacheInstance.getPdxReadSerialized()));
+          String.format("Existing cache has different cache configuration, it has:%s",
+              "pdxReadSerialized: " + cacheInstance.getPdxReadSerialized()));
     }
     if (this.pdxDiskStoreUserSet && !equals(this.pdxDiskStore, cacheInstance.getPdxDiskStore())) {
       throw new IllegalStateException(
-          LocalizedStrings.CacheFactory_0_EXISTING_CACHE_WITH_DIFFERENT_CACHE_CONFIG
-              .toLocalizedString("pdxDiskStore: " + cacheInstance.getPdxDiskStore()));
+          String.format("Existing cache has different cache configuration, it has:%s",
+              "pdxDiskStore: " + cacheInstance.getPdxDiskStore()));
     }
     if (this.pdxPersistentUserSet && this.pdxPersistent != cacheInstance.getPdxPersistent()) {
       throw new IllegalStateException(
-          LocalizedStrings.CacheFactory_0_EXISTING_CACHE_WITH_DIFFERENT_CACHE_CONFIG
-              .toLocalizedString("pdxPersistent: " + cacheInstance.getPdxPersistent()));
+          String.format("Existing cache has different cache configuration, it has:%s",
+              "pdxPersistent: " + cacheInstance.getPdxPersistent()));
     }
     if (this.pdxIgnoreUnreadFieldsUserSet
         && this.pdxIgnoreUnreadFields != cacheInstance.getPdxIgnoreUnreadFields()) {
       throw new IllegalStateException(
-          LocalizedStrings.CacheFactory_0_EXISTING_CACHE_WITH_DIFFERENT_CACHE_CONFIG
-              .toLocalizedString(
-                  "pdxIgnoreUnreadFields: " + cacheInstance.getPdxIgnoreUnreadFields()));
+          String.format("Existing cache has different cache configuration, it has:%s",
+
+              "pdxIgnoreUnreadFields: " + cacheInstance.getPdxIgnoreUnreadFields()));
     }
     if (this.pdxSerializerUserSet
         && !samePdxSerializer(this.pdxSerializer, cacheInstance.getPdxSerializer())) {
       throw new IllegalStateException(
-          LocalizedStrings.CacheFactory_0_EXISTING_CACHE_WITH_DIFFERENT_CACHE_CONFIG
-              .toLocalizedString("pdxSerializer: " + cacheInstance.getPdxSerializer()));
+          String.format("Existing cache has different cache configuration, it has:%s",
+              "pdxSerializer: " + cacheInstance.getPdxSerializer()));
     }
   }
 

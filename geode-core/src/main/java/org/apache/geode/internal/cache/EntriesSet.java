@@ -25,12 +25,11 @@ import java.util.NoSuchElementException;
 import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.LocalRegion.IteratorType;
-import org.apache.geode.internal.cache.LocalRegion.NonTXEntry;
 import org.apache.geode.internal.cache.entries.AbstractRegionEntry;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.logging.internal.log4j.api.LogWithToString;
 
 /** Set view of entries */
-public class EntriesSet extends AbstractSet {
+public class EntriesSet extends AbstractSet implements LogWithToString {
 
   final LocalRegion topRegion;
 
@@ -65,14 +64,16 @@ public class EntriesSet extends AbstractSet {
     if (this.myTX != null) {
       if (!myTX.isInProgress()) {
         throw new IllegalStateException(
-            LocalizedStrings.LocalRegion_REGION_COLLECTION_WAS_CREATED_WITH_TRANSACTION_0_THAT_IS_NO_LONGER_ACTIVE
-                .toLocalizedString(myTX.getTransactionId()));
+            String.format(
+                "Region collection was created with transaction %s that is no longer active.",
+                myTX.getTransactionId()));
       }
     } else {
       if (this.topRegion.isTX()) {
         throw new IllegalStateException(
-            LocalizedStrings.LocalRegion_NON_TRANSACTIONAL_REGION_COLLECTION_IS_BEING_USED_IN_A_TRANSACTION
-                .toLocalizedString(this.topRegion.getTXState().getTransactionId()));
+            String.format(
+                "The Region collection is not transactional but is being used in a transaction %s.",
+                this.topRegion.getTXState().getTransactionId()));
       }
     }
   }
@@ -118,16 +119,18 @@ public class EntriesSet extends AbstractSet {
       this.nextElem = moveNext();
     }
 
+    @Override
     public void remove() {
       throw new UnsupportedOperationException(
-          LocalizedStrings.LocalRegion_THIS_ITERATOR_DOES_NOT_SUPPORT_MODIFICATION
-              .toLocalizedString());
+          "This iterator does not support modification");
     }
 
+    @Override
     public boolean hasNext() {
       return (this.nextElem != null);
     }
 
+    @Override
     public Object next() {
       final Object result = this.nextElem;
       if (result != null) {
@@ -178,7 +181,11 @@ public class EntriesSet extends AbstractSet {
                 } else if (ignoreCopyOnReadForQuery) {
                   result = ((NonTXEntry) re).getValue(true);
                 } else {
-                  result = re.getValue();
+                  if ((re instanceof TXEntry)) {
+                    result = ((TXEntry) re).getValue(allowTombstones);
+                  } else {
+                    result = re.getValue();
+                  }
                 }
                 if (result != null && !Token.isInvalidOrRemoved(result)) { // fix for bug 34583
                   return result;
@@ -235,7 +242,7 @@ public class EntriesSet extends AbstractSet {
 
   @Override
   public Object[] toArray() {
-    return toArray(null);
+    return toArray((Object[]) null);
   }
 
   @Override

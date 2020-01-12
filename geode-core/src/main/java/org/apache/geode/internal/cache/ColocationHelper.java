@@ -15,6 +15,8 @@
 
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.ANY_INIT;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -29,21 +31,22 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.cache.LocalRegion.InitializationLevel;
 import org.apache.geode.internal.cache.execute.InternalRegionFunctionContext;
 import org.apache.geode.internal.cache.partitioned.PRLocallyDestroyedException;
 import org.apache.geode.internal.cache.persistence.PRPersistentConfig;
 import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * An utility class to retrieve colocated regions in a colocation hierarchy in various scenarios
@@ -57,8 +60,9 @@ public class ColocationHelper {
    * Whether to ignore missing parallel queues on restart if they are not attached to the region.
    * See bug 50120. Mutable for tests.
    */
+  @MutableForTesting
   public static boolean IGNORE_UNRECOVERED_QUEUE =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "IGNORE_UNRECOVERED_QUEUE");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "IGNORE_UNRECOVERED_QUEUE");
 
   /**
    * An utility method to retrieve colocated region of a given partitioned region
@@ -78,9 +82,11 @@ public class ColocationHelper {
     PartitionRegionConfig prConf =
         (PartitionRegionConfig) prRoot.get(getRegionIdentifier(colocatedWith));
     if (prConf == null) {
+      partitionedRegion.getCache().getCancelCriterion().checkCancelInProgress(null);
       throw new IllegalStateException(
-          LocalizedStrings.ColocationHelper_REGION_SPECIFIED_IN_COLOCATEDWITH_DOES_NOT_EXIST
-              .toLocalizedString(new Object[] {colocatedWith, partitionedRegion.getFullPath()}));
+          String.format(
+              "Region specified in 'colocated-with' (%s) for region %s does not exist. It should be created before setting 'colocated-with' attribute for this region.",
+              new Object[] {colocatedWith, partitionedRegion.getFullPath()}));
     }
     int prID = prConf.getPRId();
     PartitionedRegion colocatedPR = null;
@@ -89,9 +95,11 @@ public class ColocationHelper {
       if (colocatedPR != null) {
         colocatedPR.waitOnBucketMetadataInitialization();
       } else {
+        partitionedRegion.getCache().getCancelCriterion().checkCancelInProgress(null);
         throw new IllegalStateException(
-            LocalizedStrings.ColocationHelper_REGION_SPECIFIED_IN_COLOCATEDWITH_DOES_NOT_EXIST
-                .toLocalizedString(new Object[] {colocatedWith, partitionedRegion.getFullPath()}));
+            String.format(
+                "Region specified in 'colocated-with' (%s) for region %s does not exist. It should be created before setting 'colocated-with' attribute for this region.",
+                new Object[] {colocatedWith, partitionedRegion.getFullPath()}));
       }
     } catch (PRLocallyDestroyedException e) {
       if (logger.isDebugEnabled()) {
@@ -110,7 +118,6 @@ public class ColocationHelper {
    */
   public static boolean checkMembersColocation(PartitionedRegion partitionedRegion,
       InternalDistributedMember member) {
-    List<PartitionRegionConfig> colocatedRegions = new ArrayList<PartitionRegionConfig>();
     List<PartitionRegionConfig> tempcolocatedRegions = new ArrayList<PartitionRegionConfig>();
     Region prRoot = PartitionedRegionHelper.getPRRoot(partitionedRegion.getCache());
     PartitionRegionConfig regionConfig =
@@ -120,7 +127,8 @@ public class ColocationHelper {
       return false;
     }
     tempcolocatedRegions.add(regionConfig);
-    colocatedRegions.addAll(tempcolocatedRegions);
+    List<PartitionRegionConfig> colocatedRegions =
+        new ArrayList<PartitionRegionConfig>(tempcolocatedRegions);
     PartitionRegionConfig prConf = null;
     do {
       PartitionRegionConfig tempToBeColocatedWith = tempcolocatedRegions.remove(0);
@@ -192,7 +200,7 @@ public class ColocationHelper {
    */
   private static boolean hasOfflineColocatedChildRegions(PartitionedRegion region) {
     boolean hasOfflineChildren = false;
-    int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.ANY_INIT);
+    final InitializationLevel oldLevel = LocalRegion.setThreadInitLevelRequirement(ANY_INIT);
     try {
       InternalCache cache = region.getCache();
       Collection<DiskStore> stores = cache.listDiskStores();
@@ -285,8 +293,8 @@ public class ColocationHelper {
     Map<String, PartitionedRegion> colocatedRegions = new HashMap<String, PartitionedRegion>();
     List<PartitionedRegion> colocatedByRegion = partitionedRegion.getColocatedByList();
     if (colocatedByRegion.size() != 0) {
-      List<PartitionedRegion> tempcolocatedRegions = new ArrayList<PartitionedRegion>();
-      tempcolocatedRegions.addAll(colocatedByRegion);
+      List<PartitionedRegion> tempcolocatedRegions =
+          new ArrayList<PartitionedRegion>(colocatedByRegion);
       do {
         PartitionedRegion pRegion = tempcolocatedRegions.remove(0);
         pRegion.waitOnBucketMetadataInitialization();
@@ -326,19 +334,21 @@ public class ColocationHelper {
   }
 
   public static Map<String, LocalDataSet> constructAndGetAllColocatedLocalDataSet(
-      PartitionedRegion region, Set<Integer> bucketSet) {
+      PartitionedRegion region, int[] bucketArray) {
     Map<String, LocalDataSet> colocatedLocalDataSets = new HashMap<String, LocalDataSet>();
     if (region.getColocatedWith() == null && (!region.isColocatedBy())) {
-      colocatedLocalDataSets.put(region.getFullPath(), new LocalDataSet(region, bucketSet));
+      colocatedLocalDataSets.put(region.getFullPath(),
+          new LocalDataSet(region, bucketArray));
       return colocatedLocalDataSets;
     }
     Map<String, PartitionedRegion> colocatedRegions =
         ColocationHelper.getAllColocationRegions(region);
     for (Region colocatedRegion : colocatedRegions.values()) {
       colocatedLocalDataSets.put(colocatedRegion.getFullPath(),
-          new LocalDataSet((PartitionedRegion) colocatedRegion, bucketSet));
+          new LocalDataSet((PartitionedRegion) colocatedRegion, bucketArray));
     }
-    colocatedLocalDataSets.put(region.getFullPath(), new LocalDataSet(region, bucketSet));
+    colocatedLocalDataSets.put(region.getFullPath(),
+        new LocalDataSet(region, bucketArray));
     return colocatedLocalDataSets;
   }
 

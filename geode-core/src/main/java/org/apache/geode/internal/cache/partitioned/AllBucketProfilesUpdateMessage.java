@@ -30,11 +30,14 @@ import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.MessageWithReply;
+import org.apache.geode.distributed.internal.OperationExecutors;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.internal.cache.BucketAdvisor;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * A Partitioned Region meta-data update message. This is used to send all local bucket's meta-data
@@ -55,7 +58,7 @@ public class AllBucketProfilesUpdateMessage extends DistributionMessage
 
   @Override
   public int getProcessorType() {
-    return ClusterDistributionManager.WAITING_POOL_EXECUTOR;
+    return OperationExecutors.WAITING_POOL_EXECUTOR;
   }
 
   private AllBucketProfilesUpdateMessage(Set recipients, int partitionedRegionId, int processorId,
@@ -113,42 +116,42 @@ public class AllBucketProfilesUpdateMessage extends DistributionMessage
    * @param dm the distribution manager used to send the message
    * @param prId the unique partitioned region identifier
    * @param profiles bucked id to profile map
-   * @param requireAck whether or not to expect a reply
    * @return an instance of reply processor if requireAck is true on which the caller can wait until
    *         the event has finished.
    */
   public static ReplyProcessor21 send(Set recipients, DistributionManager dm, int prId,
-      Map<Integer, BucketAdvisor.BucketProfile> profiles, boolean requireAck) {
+      Map<Integer, BucketAdvisor.BucketProfile> profiles) {
     if (recipients.isEmpty()) {
       return null;
     }
     ReplyProcessor21 rp = null;
     int procId = 0;
-    if (requireAck) {
-      rp = new ReplyProcessor21(dm, recipients);
-      procId = rp.getProcessorId();
-    }
+    rp = new ReplyProcessor21(dm, recipients);
+    procId = rp.getProcessorId();
     AllBucketProfilesUpdateMessage m =
         new AllBucketProfilesUpdateMessage(recipients, prId, procId, profiles);
     dm.putOutgoing(m);
     return rp;
   }
 
+  @Override
   public int getDSFID() {
     return PR_ALL_BUCKET_PROFILES_UPDATE_MESSAGE;
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.prId = in.readInt();
     this.processorId = in.readInt();
     this.profiles = DataSerializer.readObject(in);
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     out.writeInt(this.prId);
     out.writeInt(this.processorId);
     DataSerializer.writeObject(this.profiles, out);

@@ -29,16 +29,19 @@ public class VMotionObserverAdapter implements VMotionObserver {
    * This callback is called just before CQ registration on the server
    */
 
+  @Override
   public void vMotionBeforeCQRegistration() {}
 
   /**
    * This callback is called just before register Interset on the server
    */
 
+  @Override
   public void vMotionBeforeRegisterInterest() {}
 
   /**
    * This callback is called before a request for GII is sent.
    */
+  @Override
   public void vMotionDuringGII(Set recipientSet, LocalRegion region) {}
 }

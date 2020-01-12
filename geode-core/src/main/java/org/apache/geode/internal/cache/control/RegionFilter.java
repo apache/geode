@@ -16,9 +16,6 @@ package org.apache.geode.internal.cache.control;
 
 import org.apache.geode.cache.Region;
 
-/**
- *
- */
 public interface RegionFilter {
   boolean include(Region<?, ?> region);
 }

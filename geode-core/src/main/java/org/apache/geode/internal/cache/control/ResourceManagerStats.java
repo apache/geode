@@ -19,6 +19,7 @@ import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.PoolStatHelper;
 import org.apache.geode.distributed.internal.QueueStatHelper;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
@@ -29,6 +30,7 @@ import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
  */
 public class ResourceManagerStats {
   // static fields
+  @Immutable
   private static final StatisticsType type;
 
   private static final int rebalancesInProgressId;
@@ -71,6 +73,7 @@ public class ResourceManagerStats {
   private static final int resourceEventsDeliveredId;
   private static final int resourceEventQueueSizeId;
   private static final int thresholdEventProcessorThreadJobsId;
+  private static final int numThreadsStuckId;
 
 
 
@@ -183,7 +186,10 @@ public class ResourceManagerStats {
                 "Pending events for thresholdEventProcessor thread", "events"),
             f.createIntGauge("thresholdEventProcessorThreadJobs",
                 "Number of jobs currently being processed by the thresholdEventProcessorThread",
-                "jobs")});
+                "jobs"),
+            f.createIntGauge("numThreadsStuck",
+                "Number of running threads that have not changed state within the thread-monitor-time-limit-ms interval.",
+                "stuck Threads")});
 
     rebalancesInProgressId = type.nameToId("rebalancesInProgress");
     rebalancesCompletedId = type.nameToId("rebalancesCompleted");
@@ -225,6 +231,7 @@ public class ResourceManagerStats {
     resourceEventsDeliveredId = type.nameToId("resourceEventsDelivered");
     resourceEventQueueSizeId = type.nameToId("resourceEventQueueSize");
     thresholdEventProcessorThreadJobsId = type.nameToId("thresholdEventProcessorThreadJobs");
+    numThreadsStuckId = type.nameToId("numThreadsStuck");
   }
 
   private final Statistics stats;
@@ -555,5 +562,19 @@ public class ResourceManagerStats {
         incThresholdEventProcessorThreadJobs(1);
       }
     };
+  }
+
+  /**
+   * Returns the value of ThreadStuck (how many (if at all) stuck threads are in the system)
+   */
+  public int getNumThreadStuck() {
+    return this.stats.getInt(numThreadsStuckId);
+  }
+
+  /**
+   * Sets the value of Thread Stuck
+   */
+  public void setNumThreadStuck(int value) {
+    this.stats.setInt(numThreadsStuckId, value);
   }
 }

@@ -14,15 +14,22 @@
  */
 package org.apache.geode.test.junit.rules;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
+import java.lang.ref.WeakReference;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
 import org.apache.geode.test.junit.rules.serializable.SerializableExternalResource;
@@ -32,22 +39,15 @@ import org.apache.geode.test.junit.rules.serializable.SerializableExternalResour
  * creates an {@code ExecutorService} which is terminated after the scope of the {@code Rule}. This
  * {@code Rule} can be used in tests for hangs, deadlocks, and infinite loops.
  *
- * <p>
- * By default, the {@code ExecutorService} is single-threaded. You can specify the thread count by
- * using {@link Builder#threadCount(int)} or {@link ExecutorServiceRule(int)}.
- *
- * <p>
- * Example with default configuration (single-threaded and does not assert that tasks are done):
- *
  * <pre>
  * private CountDownLatch hangLatch = new CountDownLatch(1);
  *
  * {@literal @}Rule
- * public AsynchronousRule asynchronousRule = new AsynchronousRule();
+ * public ExecutorServiceRule executorServiceRule = new ExecutorServiceRule();
  *
  * {@literal @}Test
  * public void doTest() throws Exception {
- *   Future<Void> result = asynchronousRule.runAsync(() -> {
+ *   Future&lt;Void&gt; result = executorServiceRule.runAsync(() -> {
  *     try {
  *       hangLatch.await();
  *     } catch (InterruptedException e) {
@@ -73,17 +73,13 @@ import org.apache.geode.test.junit.rules.serializable.SerializableExternalResour
  * private CountDownLatch hangLatch = new CountDownLatch(1);
  *
  * {@literal @}Rule
- * public AsynchronousRule asynchronousRule = AsynchronousRule.builder().threadCount(10).awaitTermination(10, MILLISECONDS).build();
+ * public ExecutorServiceRule executorServiceRule = ExecutorServiceRule.builder().awaitTermination(10, SECONDS).build();
  *
  * {@literal @}Test
  * public void doTest() throws Exception {
  *   for (int i = 0; i < 10; i++) {
- *     asynchronousRule.runAsync(() -> {
- *       try {
- *         hangLatch.await();
- *       } catch (InterruptedException e) {
- *         // do nothing
- *       }
+ *     executorServiceRule.runAsync(() -> {
+ *       hangLatch.await();
  *     });
  *   }
  * }
@@ -92,7 +88,6 @@ import org.apache.geode.test.junit.rules.serializable.SerializableExternalResour
 @SuppressWarnings("unused")
 public class ExecutorServiceRule extends SerializableExternalResource {
 
-  protected final int threadCount;
   protected final boolean enableAwaitTermination;
   protected final long awaitTerminationTimeout;
   protected final TimeUnit awaitTerminationTimeUnit;
@@ -100,6 +95,7 @@ public class ExecutorServiceRule extends SerializableExternalResource {
   protected final boolean useShutdown;
   protected final boolean useShutdownNow;
 
+  protected transient volatile DedicatedThreadFactory threadFactory;
   protected transient volatile ExecutorService executor;
 
   /**
@@ -110,50 +106,31 @@ public class ExecutorServiceRule extends SerializableExternalResource {
   }
 
   protected ExecutorServiceRule(Builder builder) {
-    this.threadCount = builder.threadCount;
-    this.enableAwaitTermination = builder.enableAwaitTermination;
-    this.awaitTerminationTimeout = builder.awaitTerminationTimeout;
-    this.awaitTerminationTimeUnit = builder.awaitTerminationTimeUnit;
-    this.awaitTerminationBeforeShutdown = builder.awaitTerminationBeforeShutdown;
-    this.useShutdown = builder.useShutdown;
-    this.useShutdownNow = builder.useShutdownNow;
+    enableAwaitTermination = builder.enableAwaitTermination;
+    awaitTerminationTimeout = builder.awaitTerminationTimeout;
+    awaitTerminationTimeUnit = builder.awaitTerminationTimeUnit;
+    awaitTerminationBeforeShutdown = builder.awaitTerminationBeforeShutdown;
+    useShutdown = builder.useShutdown;
+    useShutdownNow = builder.useShutdownNow;
   }
 
   /**
-   * Constructs a new single-threaded {@code ExecutorServiceRule} which invokes
-   * {@code ExecutorService.shutdownNow()} during {@code tearDown}.
+   * Constructs a {@code ExecutorServiceRule} which invokes {@code ExecutorService.shutdownNow()}
+   * during {@code tearDown}.
    */
   public ExecutorServiceRule() {
-    this.threadCount = 1;
-    this.enableAwaitTermination = false;
-    this.awaitTerminationTimeout = 0;
-    this.awaitTerminationTimeUnit = TimeUnit.NANOSECONDS;
-    this.awaitTerminationBeforeShutdown = false;
-    this.useShutdown = false;
-    this.useShutdownNow = true;
-  }
-
-  /**
-   * Constructs a new multi-threaded {@code ExecutorServiceRule} which invokes
-   * {@code ExecutorService.shutdownNow()} during {@code tearDown}.
-   */
-  public ExecutorServiceRule(int threadCount) {
-    this.threadCount = threadCount;
-    this.enableAwaitTermination = false;
-    this.awaitTerminationTimeout = 0;
-    this.awaitTerminationTimeUnit = TimeUnit.NANOSECONDS;
-    this.awaitTerminationBeforeShutdown = false;
-    this.useShutdown = false;
-    this.useShutdownNow = true;
+    enableAwaitTermination = false;
+    awaitTerminationTimeout = 0;
+    awaitTerminationTimeUnit = TimeUnit.NANOSECONDS;
+    awaitTerminationBeforeShutdown = false;
+    useShutdown = false;
+    useShutdownNow = true;
   }
 
   @Override
   public void before() {
-    if (threadCount > 1) {
-      executor = Executors.newFixedThreadPool(threadCount);
-    } else {
-      executor = Executors.newSingleThreadExecutor();
-    }
+    threadFactory = new DedicatedThreadFactory();
+    executor = Executors.newCachedThreadPool(threadFactory);
   }
 
   @Override
@@ -195,8 +172,11 @@ public class ExecutorServiceRule extends SerializableExternalResource {
    * @throws RejectedExecutionException if this task cannot be accepted for execution
    * @throws NullPointerException if command is null
    */
-  public void execute(Runnable command) {
-    executor.execute(command);
+  public void execute(ThrowingRunnable command) {
+    executor.submit((Callable<Void>) () -> {
+      command.run();
+      return null;
+    });
   }
 
   /**
@@ -229,8 +209,13 @@ public class ExecutorServiceRule extends SerializableExternalResource {
    * @throws RejectedExecutionException if the task cannot be scheduled for execution
    * @throws NullPointerException if the task is null
    */
-  public <T> Future<T> submit(Runnable task, T result) {
-    return executor.submit(task, result);
+  public <T> Future<T> submit(ThrowingRunnable task, T result) {
+    FutureTask<T> futureTask = new FutureTask<>(() -> {
+      task.run();
+      return result;
+    });
+    executor.submit(futureTask);
+    return futureTask;
   }
 
   /**
@@ -242,8 +227,13 @@ public class ExecutorServiceRule extends SerializableExternalResource {
    * @throws RejectedExecutionException if the task cannot be scheduled for execution
    * @throws NullPointerException if the task is null
    */
-  public Future<?> submit(Runnable task) {
-    return executor.submit(task);
+  public Future<Void> submit(ThrowingRunnable task) {
+    FutureTask<Void> futureTask = new FutureTask<>(() -> {
+      task.run();
+      return null;
+    });
+    executor.submit(futureTask);
+    return futureTask;
   }
 
   /**
@@ -270,28 +260,124 @@ public class ExecutorServiceRule extends SerializableExternalResource {
     return CompletableFuture.supplyAsync(supplier, executor);
   }
 
+  /**
+   * Returns the {@code Thread}s that are directly in the {@code ExecutorService}'s
+   * {@code ThreadGroup} excluding subgroups.
+   */
+  public Set<Thread> getThreads() {
+    return threadFactory.getThreads();
+  }
+
+  /**
+   * Returns an array of {@code Thread Ids} that are directly in the {@code ExecutorService}'s
+   * {@code ThreadGroup} excluding subgroups. {@code long[]} is returned to facilitate using JDK
+   * APIs such as {@code ThreadMXBean#getThreadInfo(long[], int)}.
+   */
+  public long[] getThreadIds() {
+    Set<Thread> threads = getThreads();
+    long[] threadIds = new long[threads.size()];
+
+    int i = 0;
+    for (Thread thread : threads) {
+      threadIds[i++] = thread.getId();
+    }
+
+    return threadIds;
+  }
+
+  /**
+   * Returns thread dumps for the {@code Thread}s that are in the {@code ExecutorService}'s
+   * {@code ThreadGroup} excluding subgroups.
+   */
+  public String dumpThreads() {
+    StringBuilder dumpWriter = new StringBuilder();
+
+    ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
+    ThreadInfo[] threadInfos = threadMXBean.getThreadInfo(getThreadIds(), true, true);
+
+    for (ThreadInfo threadInfo : threadInfos) {
+      if (threadInfo == null) {
+        // sometimes ThreadMXBean.getThreadInfo returns array with one or more null elements
+        continue;
+      }
+      // ThreadInfo toString includes monitor and synchronizer details
+      dumpWriter.append(threadInfo);
+    }
+
+    return dumpWriter.toString();
+  }
+
+  /**
+   * This interface replaces {@link Runnable} in cases when execution of {@link #run()} method may
+   * throw exception.
+   *
+   * <p>
+   * Useful for capturing lambdas that throw exceptions.
+   */
+  @FunctionalInterface
+  public interface ThrowingRunnable {
+    /**
+     * @throws Exception The exception that may be thrown
+     * @see Runnable#run()
+     */
+    void run() throws Exception;
+  }
+
+  /**
+   * Modified version of {@code java.util.concurrent.Executors$DefaultThreadFactory} that uses
+   * a {@code Set<WeakReference<Thread>>} to track the {@code Thread}s in the factory's
+   * {@code ThreadGroup} excluding subgroups.
+   */
+  protected static class DedicatedThreadFactory implements ThreadFactory {
+
+    private static final AtomicInteger POOL_NUMBER = new AtomicInteger(1);
+
+    private final ThreadGroup group;
+    private final AtomicInteger threadNumber = new AtomicInteger(1);
+    private final String namePrefix;
+    private final Set<WeakReference<Thread>> directThreads = new HashSet<>();
+
+    protected DedicatedThreadFactory() {
+      group = new ThreadGroup(ExecutorServiceRule.class.getSimpleName() + "-ThreadGroup");
+      namePrefix = "pool-" + POOL_NUMBER.getAndIncrement() + "-thread-";
+    }
+
+    @Override
+    public Thread newThread(Runnable r) {
+      Thread t = new Thread(group, r, namePrefix + threadNumber.getAndIncrement(), 0);
+      if (t.isDaemon()) {
+        t.setDaemon(false);
+      }
+      if (t.getPriority() != Thread.NORM_PRIORITY) {
+        t.setPriority(Thread.NORM_PRIORITY);
+      }
+      directThreads.add(new WeakReference<>(t));
+      return t;
+    }
+
+    protected Set<Thread> getThreads() {
+      Set<Thread> value = new HashSet<>();
+      for (WeakReference<Thread> reference : directThreads) {
+        Thread thread = reference.get();
+        if (thread != null) {
+          value.add(thread);
+        }
+      }
+      return value;
+    }
+  }
+
   public static class Builder {
 
-    protected int threadCount = 1;
-    protected boolean enableAwaitTermination = false;
-    protected long awaitTerminationTimeout = 0;
+    protected boolean enableAwaitTermination;
+    protected long awaitTerminationTimeout;
     protected TimeUnit awaitTerminationTimeUnit = TimeUnit.NANOSECONDS;
     protected boolean awaitTerminationBeforeShutdown = true;
-    protected boolean useShutdown = false;
+    protected boolean useShutdown;
     protected boolean useShutdownNow = true;
 
     protected Builder() {
       // nothing
-    }
-
-    /**
-     * Configures the number of threads. Default is one thread.
-     *
-     * @param threadCount the number of threads in the pool
-     */
-    public Builder threadCount(int threadCount) {
-      this.threadCount = threadCount;
-      return this;
     }
 
     /**
@@ -301,9 +387,9 @@ public class ExecutorServiceRule extends SerializableExternalResource {
      * @param unit the time unit of the timeout argument
      */
     public Builder awaitTermination(long timeout, TimeUnit unit) {
-      this.enableAwaitTermination = true;
-      this.awaitTerminationTimeout = timeout;
-      this.awaitTerminationTimeUnit = unit;
+      enableAwaitTermination = true;
+      awaitTerminationTimeout = timeout;
+      awaitTerminationTimeUnit = unit;
       return this;
     }
 
@@ -311,18 +397,17 @@ public class ExecutorServiceRule extends SerializableExternalResource {
      * Enables invocation of {@code shutdown} during {@code tearDown}. Default is disabled.
      */
     public Builder useShutdown() {
-      this.useShutdown = true;
-      this.useShutdownNow = false;
+      useShutdown = true;
+      useShutdownNow = false;
       return this;
     }
 
     /**
      * Enables invocation of {@code shutdownNow} during {@code tearDown}. Default is enabled.
-     *
      */
     public Builder useShutdownNow() {
-      this.useShutdown = false;
-      this.useShutdownNow = true;
+      useShutdown = false;
+      useShutdownNow = true;
       return this;
     }
 
@@ -331,7 +416,7 @@ public class ExecutorServiceRule extends SerializableExternalResource {
      * {@code shutdownNow}.
      */
     public Builder awaitTerminationBeforeShutdown() {
-      this.awaitTerminationBeforeShutdown = true;
+      awaitTerminationBeforeShutdown = true;
       return this;
     }
 
@@ -340,7 +425,7 @@ public class ExecutorServiceRule extends SerializableExternalResource {
      * {@code shutdownNow}.
      */
     public Builder awaitTerminationAfterShutdown() {
-      this.awaitTerminationBeforeShutdown = false;
+      awaitTerminationBeforeShutdown = false;
       return this;
     }
 
@@ -348,7 +433,6 @@ public class ExecutorServiceRule extends SerializableExternalResource {
      * Builds the instance of {@code ExecutorServiceRule}.
      */
     public ExecutorServiceRule build() {
-      assertThat(threadCount).isGreaterThan(0);
       return new ExecutorServiceRule(this);
     }
   }

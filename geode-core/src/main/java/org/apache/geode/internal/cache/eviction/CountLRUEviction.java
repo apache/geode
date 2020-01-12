@@ -20,7 +20,6 @@ import org.apache.geode.cache.EvictionAlgorithm;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.persistence.DiskRegionView;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * A {@code CapacityController} that will evict an entry from a region once the region entry count
@@ -36,7 +35,6 @@ public class CountLRUEviction extends AbstractEvictionController {
   /**
    * Creates an LRU capacity controller that allows the given number of maximum entries.
    *
-   * @param evictionCounters
    *
    * @param maximumEntries The maximum number of entries allowed in the region whose capacity this
    *        controller controls. Once there are {@code capacity} entries in a region, this
@@ -62,8 +60,7 @@ public class CountLRUEviction extends AbstractEvictionController {
   private void setMaximumEntries(int maximumEntries) {
     if (maximumEntries <= 0) {
       throw new IllegalArgumentException(
-          LocalizedStrings.LRUCapacityController_MAXIMUM_ENTRIES_MUST_BE_POSITIVE
-              .toLocalizedString());
+          "Maximum entries must be positive");
     }
     this.maximumEntries = maximumEntries;
     getCounters().setLimit(maximumEntries);
@@ -87,15 +84,14 @@ public class CountLRUEviction extends AbstractEvictionController {
   @Override
   public int entrySize(Object key, Object value) {
 
-    if (Token.isRemoved(value) /* && (value != Token.TOMBSTONE) */) { // un-comment to make
-                                                                      // tombstones visible
+    if (Token.isRemoved(value)) {
       // bug #42228 - lruEntryDestroy removes an entry from the LRU, but if
       // it is subsequently resurrected we want the new entry to generate a delta
       return 0;
     }
     if ((value == null /* overflow to disk */ || value == Token.INVALID
         || value == Token.LOCAL_INVALID) && getEvictionAction().isOverflowToDisk()) {
-      // Don't count this guys toward LRU
+      // Don't count this entry toward LRU
       return 0;
 
     } else {
@@ -121,7 +117,8 @@ public class CountLRUEviction extends AbstractEvictionController {
    */
   @Override
   public String toString() {
-    return LocalizedStrings.LRUCapacityController_LRUCAPACITYCONTROLLER_WITH_A_CAPACITY_OF_0_ENTRIES_AND_EVICTION_ACTION_1
-        .toLocalizedString(getLimit(), getEvictionAction());
+    return String.format(
+        "LRUCapacityController with a capacity of %s entries and eviction action %s",
+        getLimit(), getEvictionAction());
   }
 }

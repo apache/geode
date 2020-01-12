@@ -12,9 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- *
- */
 package org.apache.geode.distributed.internal;
 
 import java.io.DataInput;
@@ -24,18 +21,17 @@ import java.io.IOException;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
-/**
- *
- */
 public class WaitForViewInstallation extends HighPriorityDistributionMessage
     implements MessageWithReply {
 
   private static final Logger logger = LogService.getLogger();
 
   public static void send(ClusterDistributionManager dm) throws InterruptedException {
-    long viewId = dm.getMembershipManager().getView().getViewId();
+    long viewId = dm.getDistribution().getView().getViewId();
     ReplyProcessor21 rp = new ReplyProcessor21(dm, dm.getOtherDistributionManagerIds());
     rp.enableSevereAlertProcessing();
     dm.putOutgoing(new WaitForViewInstallation(viewId, rp.getProcessorId()));
@@ -57,7 +53,7 @@ public class WaitForViewInstallation extends HighPriorityDistributionMessage
 
   @Override
   public int getProcessorType() {
-    return ClusterDistributionManager.WAITING_POOL_EXECUTOR;
+    return OperationExecutors.WAITING_POOL_EXECUTOR;
   }
 
   @Override
@@ -84,22 +80,25 @@ public class WaitForViewInstallation extends HighPriorityDistributionMessage
   /*
    * (non-Javadoc)
    *
-   * @see org.apache.geode.internal.DataSerializableFixedID#getDSFID()
+   * @see org.apache.geode.internal.serialization.DataSerializableFixedID#getDSFID()
    */
+  @Override
   public int getDSFID() {
     return WAIT_FOR_VIEW_INSTALLATION;
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     out.writeLong(this.viewId);
     out.writeInt(this.processorId);
   }
 
   @Override
-  public void fromData(DataInput in) throws ClassNotFoundException, IOException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws ClassNotFoundException, IOException {
+    super.fromData(in, context);
     this.viewId = in.readLong();
     this.processorId = in.readInt();
   }

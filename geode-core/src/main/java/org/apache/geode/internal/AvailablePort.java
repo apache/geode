@@ -31,9 +31,10 @@ import java.net.UnknownHostException;
 import java.util.Enumeration;
 import java.util.Random;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.inet.LocalHostUtil;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * This class determines whether or not a given port is available and can also provide a randomly
@@ -58,9 +59,9 @@ public class AvailablePort {
     String name = null;
     try {
       if (protocol == SOCKET) {
-        name = System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "bind-address");
+        name = System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + "bind-address");
       } else if (protocol == MULTICAST) {
-        name = System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "mcast-address");
+        name = System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + "mcast-address");
       }
       if (name != null) {
         return InetAddress.getByName(name);
@@ -108,9 +109,10 @@ public class AvailablePort {
       MulticastSocket socket = null;
       try {
         socket = new MulticastSocket();
-        InetAddress localHost = SocketCreator.getLocalHost();
+        InetAddress localHost = LocalHostUtil.getLocalHost();
         socket.setInterface(localHost);
         socket.setSoTimeout(Integer.getInteger("AvailablePort.timeout", 2000).intValue());
+        socket.setReuseAddress(true);
         byte[] buffer = new byte[4];
         buffer[0] = (byte) 'p';
         buffer[1] = (byte) 'i';
@@ -135,7 +137,7 @@ public class AvailablePort {
       } catch (java.io.IOException ioe) {
         if (ioe.getMessage().equals("Network is unreachable")) {
           throw new RuntimeException(
-              LocalizedStrings.AvailablePort_NETWORK_IS_UNREACHABLE.toLocalizedString(), ioe);
+              "Network is unreachable", ioe);
         }
         ioe.printStackTrace();
         return false;
@@ -154,8 +156,8 @@ public class AvailablePort {
     }
 
     else {
-      throw new IllegalArgumentException(LocalizedStrings.AvailablePort_UNKNOWN_PROTOCOL_0
-          .toLocalizedString(Integer.valueOf(protocol)));
+      throw new IllegalArgumentException(String.format("Unknown protocol: %s",
+          Integer.valueOf(protocol)));
     }
   }
 
@@ -170,8 +172,8 @@ public class AvailablePort {
     } else if (protocol == MULTICAST) {
       throw new IllegalArgumentException("You can not keep the JGROUPS protocol");
     } else {
-      throw new IllegalArgumentException(LocalizedStrings.AvailablePort_UNKNOWN_PROTOCOL_0
-          .toLocalizedString(Integer.valueOf(protocol)));
+      throw new IllegalArgumentException(String.format("Unknown protocol: %s",
+          Integer.valueOf(protocol)));
     }
   }
 
@@ -233,7 +235,6 @@ public class AvailablePort {
   /**
    * Test to see if a given port is available port on all interfaces on this host.
    *
-   * @param port
    * @return true of if the port is free on all interfaces
    */
   private static boolean testAllInterfaces(int port) {
@@ -407,7 +408,8 @@ public class AvailablePort {
   }
 
 
-  public static java.util.Random rand;
+  @Immutable
+  public static final Random rand;
 
   static {
     boolean fast = Boolean.getBoolean("AvailablePort.fastRandom");
@@ -492,7 +494,9 @@ public class AvailablePort {
 
   /////////////////////// Main Program ///////////////////////
 
+  @Immutable
   private static final PrintStream out = System.out;
+  @Immutable
   private static final PrintStream err = System.err;
 
   private static void usage(String s) {
@@ -500,8 +504,7 @@ public class AvailablePort {
     err.println("usage: java AvailablePort socket|jgroups [\"addr\" network-address] [port]");
     err.println("");
     err.println(
-        LocalizedStrings.AvailablePort_THIS_PROGRAM_EITHER_PRINTS_WHETHER_OR_NOT_A_PORT_IS_AVAILABLE_FOR_A_GIVEN_PROTOCOL_OR_IT_PRINTS_OUT_AN_AVAILABLE_PORT_FOR_A_GIVEN_PROTOCOL
-            .toLocalizedString());
+        "This program either prints whether or not a port is available for a given protocol, or it prints out an available port for a given protocol.");
     err.println("");
     ExitCode.FATAL.doSystemExit();
   }

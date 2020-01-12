@@ -16,7 +16,7 @@ package org.apache.geode.internal.cache.backup;
 
 import java.util.Properties;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 abstract class AbstractBackupWriterConfig {
 

@@ -21,11 +21,8 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class ClassNameExtractorTest {
   private static final String SPACE = " ";
   private static final String CLASS_NAME_TO_FIND = "MyClassNameToFind";

@@ -12,13 +12,13 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.cache.client.internal;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -32,18 +32,13 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.cache.PoolStats;
 import org.apache.geode.internal.cache.tier.InternalClientMembership;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.statistics.DummyStatisticsFactory;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
-/**
- *
- */
 public class EndpointManagerImpl implements EndpointManager {
   private static final Logger logger = LogService.getLogger();
 
   private volatile Map<ServerLocation, Endpoint> endpointMap = Collections.emptyMap();
-  private final Map/* <ServerLocation, ConnectionStats> */<ServerLocation, ConnectionStats> statMap =
-      new HashMap<ServerLocation, ConnectionStats>();
+  private final Map<ServerLocation, ConnectionStats> statMap = new HashMap<>();
   private final DistributedSystem ds;
   private final String poolName;
   private final EndpointListenerBroadcaster listener = new EndpointListenerBroadcaster();
@@ -59,12 +54,7 @@ public class EndpointManagerImpl implements EndpointManager {
     listener.addListener(new EndpointListenerForBridgeMembership());
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.apache.geode.cache.client.internal.EndpointManager#referenceEndpoint(org.apache.geode.
-   * distributed.internal.ServerLocation)
-   */
+  @Override
   public Endpoint referenceEndpoint(ServerLocation server, DistributedMember memberId) {
     Endpoint endpoint = endpointMap.get(server);
     boolean addedEndpoint = false;
@@ -73,8 +63,7 @@ public class EndpointManagerImpl implements EndpointManager {
         endpoint = endpointMap.get(server);
         if (endpoint == null || endpoint.isClosed()) {
           ConnectionStats stats = getStats(server);
-          Map<ServerLocation, Endpoint> endpointMapTemp =
-              new HashMap<ServerLocation, Endpoint>(endpointMap);
+          Map<ServerLocation, Endpoint> endpointMapTemp = new HashMap<>(endpointMap);
           endpoint = new Endpoint(this, ds, server, stats, memberId);
           listener.clearPdxRegistry(endpoint);
           endpointMapTemp.put(server, endpoint);
@@ -94,13 +83,7 @@ public class EndpointManagerImpl implements EndpointManager {
     return endpoint;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * org.apache.geode.cache.client.internal.EndpointManager#serverCrashed(org.apache.geode.cache.
-   * client.internal.Endpoint)
-   */
+  @Override
   public void serverCrashed(Endpoint endpoint) {
     removeEndpoint(endpoint, true);
   }
@@ -114,8 +97,7 @@ public class EndpointManagerImpl implements EndpointManager {
     endpoint.close();
     boolean removedEndpoint = false;
     synchronized (this) {
-      Map<ServerLocation, Endpoint> endpointMapTemp =
-          new HashMap<ServerLocation, Endpoint>(endpointMap);
+      Map<ServerLocation, Endpoint> endpointMapTemp = new HashMap<>(endpointMap);
       endpoint = endpointMapTemp.remove(endpoint.getLocation());
       if (endpoint != null) {
         endpointMap = Collections.unmodifiableMap(endpointMapTemp);
@@ -124,7 +106,7 @@ public class EndpointManagerImpl implements EndpointManager {
       poolStats.setServerCount(endpointMap.size());
     }
     if (removedEndpoint) {
-      PoolImpl pool = (PoolImpl) PoolManager.find(this.poolName);
+      PoolImpl pool = (PoolImpl) PoolManager.find(poolName);
       if (pool != null && pool.getMultiuserAuthentication()) {
         int size = 0;
         ArrayList<ProxyCache> proxyCaches = pool.getProxyCacheList();
@@ -169,23 +151,14 @@ public class EndpointManagerImpl implements EndpointManager {
 
 
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.apache.geode.cache.client.internal.EndpointManager#getEndpointMap()
-   */
+  @Override
   public Map<ServerLocation, Endpoint> getEndpointMap() {
     return endpointMap;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.apache.geode.cache.client.internal.EndpointManager#close()
-   */
+  @Override
   public synchronized void close() {
-    for (Iterator<ConnectionStats> itr = statMap.values().iterator(); itr.hasNext();) {
-      ConnectionStats stats = itr.next();
+    for (ConnectionStats stats : statMap.values()) {
       stats.close();
     }
 
@@ -194,23 +167,12 @@ public class EndpointManagerImpl implements EndpointManager {
     listener.clear();
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.apache.geode.cache.client.internal.EndpointManager#addListener(org.apache.geode.cache.
-   * client.internal.EndpointManagerImpl.EndpointListener)
-   */
+  @Override
   public void addListener(EndpointManager.EndpointListener listener) {
     this.listener.addListener(listener);
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * org.apache.geode.cache.client.internal.EndpointManager#removeListener(org.apache.geode.cache.
-   * client.internal.EndpointManagerImpl.EndpointListener)
-   */
+  @Override
   public void removeListener(EndpointManager.EndpointListener listener) {
     this.listener.removeListener(listener);
   }
@@ -218,18 +180,16 @@ public class EndpointManagerImpl implements EndpointManager {
   private synchronized ConnectionStats getStats(ServerLocation location) {
     ConnectionStats stats = statMap.get(location);
     if (stats == null) {
-      String statName = poolName + "-" + location.toString();
-      PoolImpl pool = (PoolImpl) PoolManager.find(this.poolName);
+      PoolImpl pool = (PoolImpl) PoolManager.find(poolName);
       if (pool != null) {
         if (pool.getGatewaySender() != null) {
-          stats = new ConnectionStats(new DummyStatisticsFactory(), statName,
-              this.poolStats/* , this.gatewayStats */);
+          String statName = pool.getGatewaySender().getId() + "-" + location.toString();
+          stats = new ConnectionStats(ds, "GatewaySender", statName, this.poolStats);
         }
       }
       if (stats == null) {
-        stats = new ConnectionStats(ds, statName, this.poolStats/*
-                                                                 * , this.gatewayStats
-                                                                 */);
+        String statName = poolName + "-" + location.toString();
+        stats = new ConnectionStats(ds, "Client", statName, poolStats);
       }
       statMap.put(location, stats);
     }
@@ -237,25 +197,22 @@ public class EndpointManagerImpl implements EndpointManager {
     return stats;
   }
 
+  @Override
   public synchronized Map<ServerLocation, ConnectionStats> getAllStats() {
-    return new HashMap<ServerLocation, ConnectionStats>(statMap);
+    return new HashMap<>(statMap);
   }
 
+  @Override
   public int getConnectedServerCount() {
     return getEndpointMap().size();
   }
 
-  public static void loadEmergencyClasses() {
-    // do nothing
-  }
-
   protected static class EndpointListenerBroadcaster implements EndpointManager.EndpointListener {
 
-    private volatile Set/* <EndpointListener> */<EndpointListener> endpointListeners =
-        Collections.emptySet();
+    private volatile Set<EndpointListener> endpointListeners = Collections.emptySet();
 
     public synchronized void addListener(EndpointManager.EndpointListener listener) {
-      HashSet<EndpointListener> tmpListeners = new HashSet<EndpointListener>(endpointListeners);
+      HashSet<EndpointListener> tmpListeners = new HashSet<>(endpointListeners);
       tmpListeners.add(listener);
       endpointListeners = Collections.unmodifiableSet(tmpListeners);
     }
@@ -265,37 +222,36 @@ public class EndpointManagerImpl implements EndpointManager {
     }
 
     public void removeListener(EndpointManager.EndpointListener listener) {
-      HashSet<EndpointListener> tmpListeners = new HashSet<EndpointListener>(endpointListeners);
+      HashSet<EndpointListener> tmpListeners = new HashSet<>(endpointListeners);
       tmpListeners.remove(listener);
       endpointListeners = Collections.unmodifiableSet(tmpListeners);
     }
 
+    @Override
     public void endpointCrashed(Endpoint endpoint) {
-      for (Iterator<EndpointListener> itr = endpointListeners.iterator(); itr.hasNext();) {
-        EndpointManager.EndpointListener listener = itr.next();
+      for (EndpointListener listener : endpointListeners) {
         listener.endpointCrashed(endpoint);
       }
     }
 
+    @Override
     public void endpointNoLongerInUse(Endpoint endpoint) {
-      for (Iterator<EndpointListener> itr = endpointListeners.iterator(); itr.hasNext();) {
-        EndpointManager.EndpointListener listener = itr.next();
+      for (EndpointListener listener : endpointListeners) {
         listener.endpointNoLongerInUse(endpoint);
       }
     }
 
+    @Override
     public void endpointNowInUse(Endpoint endpoint) {
-      for (Iterator<EndpointListener> itr = endpointListeners.iterator(); itr.hasNext();) {
-        EndpointManager.EndpointListener listener = itr.next();
+      for (EndpointListener listener : endpointListeners) {
         if (!(listener instanceof PdxRegistryRecoveryListener)) {
           listener.endpointNowInUse(endpoint);
         }
       }
     }
 
-    public void clearPdxRegistry(Endpoint endpoint) {
-      for (Iterator<EndpointListener> itr = endpointListeners.iterator(); itr.hasNext();) {
-        EndpointManager.EndpointListener listener = itr.next();
+    void clearPdxRegistry(Endpoint endpoint) {
+      for (EndpointListener listener : endpointListeners) {
         if (listener instanceof PdxRegistryRecoveryListener) {
           listener.endpointNowInUse(endpoint);
         }
@@ -308,6 +264,7 @@ public class EndpointManagerImpl implements EndpointManager {
 
   public class EndpointListenerForBridgeMembership implements EndpointManager.EndpointListener {
 
+    @Override
     public void endpointCrashed(Endpoint endpoint) {
       if (cancelCriterion.isCancelInProgress()) {
         return;
@@ -315,6 +272,7 @@ public class EndpointManagerImpl implements EndpointManager {
       InternalClientMembership.notifyServerCrashed(endpoint.getLocation());
     }
 
+    @Override
     public void endpointNoLongerInUse(Endpoint endpoint) {
       if (cancelCriterion.isCancelInProgress()) {
         return;
@@ -322,6 +280,7 @@ public class EndpointManagerImpl implements EndpointManager {
       InternalClientMembership.notifyServerLeft(endpoint.getLocation());
     }
 
+    @Override
     public void endpointNowInUse(Endpoint endpoint) {
       if (cancelCriterion.isCancelInProgress()) {
         return;
@@ -330,6 +289,7 @@ public class EndpointManagerImpl implements EndpointManager {
     }
   }
 
+  @Override
   public String getPoolName() {
     return poolName;
   }

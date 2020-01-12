@@ -14,30 +14,28 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
+import static org.apache.geode.internal.protocol.protobuf.v1.BasicTypes.ErrorCode.AUTHORIZATION_FAILED;
 import static org.apache.geode.internal.protocol.protobuf.v1.BasicTypes.ErrorCode.INVALID_REQUEST;
 import static org.apache.geode.internal.protocol.protobuf.v1.BasicTypes.ErrorCode.SERVER_ERROR;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.shiro.util.ThreadState;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.cache.Region;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
+import org.apache.geode.internal.protocol.protobuf.security.SecureCache;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
-import org.apache.geode.internal.protocol.protobuf.v1.Failure;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
-import org.apache.geode.internal.protocol.protobuf.v1.serialization.SerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
-import org.apache.geode.internal.protocol.protobuf.v1.state.ProtobufConnectionAuthorizingStateProcessor;
-import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.NotAuthorizedException;
-import org.apache.geode.security.ResourcePermission;
 
 @Experimental
 public class PutAllRequestOperationHandler
@@ -49,88 +47,34 @@ public class PutAllRequestOperationHandler
       RegionAPI.PutAllRequest putAllRequest, MessageExecutionContext messageExecutionContext)
       throws InvalidExecutionContextException, DecodingException {
     String regionName = putAllRequest.getRegionName();
-    Region region = messageExecutionContext.getCache().getRegion(regionName);
 
-    if (region == null) {
-      logger.error("Received put-all request for nonexistent region: {}", regionName);
-      return Failure.of(BasicTypes.ErrorCode.SERVER_ERROR,
-          "Region \"" + regionName + "\" not found");
-    }
-
-    ThreadState threadState = null;
-    SecurityService securityService = messageExecutionContext.getCache().getSecurityService();
-    boolean perKeyAuthorization = false;
-    if (messageExecutionContext
-        .getConnectionStateProcessor() instanceof ProtobufConnectionAuthorizingStateProcessor) {
-      threadState = ((ProtobufConnectionAuthorizingStateProcessor) messageExecutionContext
-          .getConnectionStateProcessor()).prepareThreadForAuthorization();
-      // Check if authorized for entire region
-      try {
-        securityService.authorize(new ResourcePermission(ResourcePermission.Resource.DATA,
-            ResourcePermission.Operation.WRITE, regionName));
-        ((ProtobufConnectionAuthorizingStateProcessor) messageExecutionContext
-            .getConnectionStateProcessor()).restoreThreadState(threadState);
-        threadState = null;
-      } catch (NotAuthorizedException ex) {
-        // Not authorized for the region, have to check keys individually
-        perKeyAuthorization = true;
-      }
-    }
-    final boolean authorizeKeys = perKeyAuthorization; // Required for use in lambda
-
-    long startTime = messageExecutionContext.getStatistics().startOperation();
     RegionAPI.PutAllResponse.Builder builder = RegionAPI.PutAllResponse.newBuilder();
-    try {
-      messageExecutionContext.getCache().setReadSerializedForCurrentThread(true);
+    SecureCache cache = messageExecutionContext.getSecureCache();
+    Map<Object, Object> entries = new HashMap<>(putAllRequest.getEntryList().size());
 
-      putAllRequest.getEntryList().stream().forEach((entry) -> processSinglePut(builder,
-          serializationService, region, entry, securityService, authorizeKeys));
+    putAllRequest.getEntryList()
+        .forEach(entry -> entries.put(serializationService.decode(entry.getKey()),
+            serializationService.decode(entry.getValue())));
+    cache.putAll(regionName, entries,
+        (key, exception) -> addError(builder, serializationService.encode(key), exception));
 
-    } finally {
-      messageExecutionContext.getCache().setReadSerializedForCurrentThread(false);
-      if (threadState != null) {
-        ((ProtobufConnectionAuthorizingStateProcessor) messageExecutionContext
-            .getConnectionStateProcessor()).restoreThreadState(threadState);
-      }
-    }
+
     return Success.of(builder.build());
   }
 
-  private void processSinglePut(RegionAPI.PutAllResponse.Builder builder,
-      SerializationService serializationService, Region region, BasicTypes.Entry entry,
-      SecurityService securityService, boolean authorizeKeys) {
-    try {
+  private void addError(RegionAPI.PutAllResponse.Builder builder, BasicTypes.EncodedValue key,
+      Exception exception) {
 
-      Object decodedKey = serializationService.decode(entry.getKey());
-      Object decodedValue = serializationService.decode(entry.getValue());
-      if (decodedKey == null || decodedValue == null) {
-        builder.addFailedKeys(
-            buildKeyedError(entry, INVALID_REQUEST, "Key and value must both be non-NULL"));
-      }
-      if (authorizeKeys) {
-        securityService.authorize(new ResourcePermission(ResourcePermission.Resource.DATA,
-            ResourcePermission.Operation.WRITE, region.getName(), decodedKey.toString()));
-      }
-      region.put(decodedKey, decodedValue);
-
-    } catch (NotAuthorizedException ex) {
-      builder.addFailedKeys(
-          buildKeyedError(entry, BasicTypes.ErrorCode.AUTHORIZATION_FAILED, "Unauthorized access"));
-    } catch (DecodingException ex) {
-      logger.info("Encoding not supported: " + ex);
-      builder.addFailedKeys(this.buildKeyedError(entry, INVALID_REQUEST, "Encoding not supported"));
-    } catch (ClassCastException ex) {
-      builder.addFailedKeys(buildKeyedError(entry, SERVER_ERROR, ex.toString()));
-    } catch (Exception ex) {
-      logger.warn("Error processing putAll entry", ex);
-      builder.addFailedKeys(buildKeyedError(entry, SERVER_ERROR, ex.toString()));
+    BasicTypes.ErrorCode errorCode;
+    if (exception instanceof NotAuthorizedException) {
+      errorCode = AUTHORIZATION_FAILED;
+    } else if (exception instanceof DecodingException) {
+      errorCode = INVALID_REQUEST;
+    } else {
+      errorCode = SERVER_ERROR;
     }
-  }
 
-  private BasicTypes.KeyedError buildKeyedError(BasicTypes.Entry entry,
-      BasicTypes.ErrorCode errorCode, String message) {
-    return BasicTypes.KeyedError.newBuilder().setKey(entry.getKey())
-        .setError(BasicTypes.Error.newBuilder().setErrorCode(errorCode).setMessage(message))
-        .build();
+    builder.addFailedKeys(BasicTypes.KeyedError.newBuilder().setKey(key).setError(
+        BasicTypes.Error.newBuilder().setErrorCode(errorCode).setMessage(exception.toString())));
   }
 }

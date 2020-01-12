@@ -36,8 +36,10 @@ import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.util.ArrayUtils;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * An instruction to all members with cache that they should compact their disk stores.
@@ -100,18 +102,20 @@ public class CompactRequest extends CliLegacyMessage {
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
   }
 
   @Override
   public String toString() {
-    return "Compact request sent to " + ArrayUtils.toString((Object[]) this.getRecipients())
+    return "Compact request sent to " + ArrayUtils.toString((Object[]) this.getRecipientsArray())
         + " from " + this.getSender();
   }
 

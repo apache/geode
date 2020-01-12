@@ -29,7 +29,6 @@ public interface GatewayEventFilter extends CacheCallback {
    * This callback is synchronous with the thread which is enqueuing the event into GatewaySender's
    * queue.
    *
-   * @param event
    * @return true if event should be enqueued otherwise return false.
    */
   boolean beforeEnqueue(GatewayQueueEvent event);
@@ -41,7 +40,6 @@ public interface GatewayEventFilter extends CacheCallback {
    * This callback will always be called from the thread which is dispatching events to remote
    * distributed systems
    *
-   * @param event
    * @return true if event should be dispatched otherwise return false.
    */
   boolean beforeTransmit(GatewayQueueEvent event);
@@ -51,7 +49,6 @@ public interface GatewayEventFilter extends CacheCallback {
    * This callback will always be called from the thread which is dispatching events to remote
    * distributed systems
    *
-   * @param event
    */
   void afterAcknowledgement(GatewayQueueEvent event);
 

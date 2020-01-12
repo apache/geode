@@ -24,14 +24,17 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.modules.gatewaydelta.AbstractGatewayDeltaEvent;
-import org.apache.geode.modules.session.catalina.DeltaSession;
 import org.apache.geode.modules.session.catalina.DeltaSessionInterface;
 
 @SuppressWarnings("serial")
 public class DeltaSessionAttributeEventBatch extends AbstractGatewayDeltaEvent {
-
   private List<DeltaSessionAttributeEvent> eventQueue;
 
+  List<DeltaSessionAttributeEvent> getEventQueue() {
+    return eventQueue;
+  }
+
+  @SuppressWarnings("unused")
   public DeltaSessionAttributeEventBatch() {}
 
   public DeltaSessionAttributeEventBatch(String regionName, String sessionId,
@@ -40,41 +43,38 @@ public class DeltaSessionAttributeEventBatch extends AbstractGatewayDeltaEvent {
     this.eventQueue = eventQueue;
   }
 
-  public List<DeltaSessionAttributeEvent> getEventQueue() {
-    return this.eventQueue;
-  }
-
+  @Override
   public void apply(Cache cache) {
+    @SuppressWarnings("unchecked")
     Region<String, DeltaSessionInterface> region = getRegion(cache);
     DeltaSessionInterface session = region.get(this.key);
     if (session == null) {
-      StringBuilder builder = new StringBuilder();
-      builder.append("Session ").append(this.key)
-          .append(" was not found while attempting to apply ").append(this);
-      cache.getLogger().warning(builder.toString());
+      String builder = "Session " + this.key
+          + " was not found while attempting to apply " + this;
+      cache.getLogger().warning(builder);
     } else {
       session.applyAttributeEvents(region, this.eventQueue);
       if (cache.getLogger().fineEnabled()) {
-        StringBuilder builder = new StringBuilder();
-        builder.append("Applied ").append(this);
-        cache.getLogger().fine(builder.toString());
+        cache.getLogger().fine("Applied " + this);
       }
     }
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
     this.eventQueue = DataSerializer.readArrayList(in);
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     super.toData(out);
     DataSerializer.writeArrayList((ArrayList) this.eventQueue, out);
   }
 
   public String toString() {
-    return new StringBuilder().append("DeltaSessionAttributeEventBatch[").append("regionName=")
-        .append(this.regionName).append("; sessionId=").append(this.key).append("; numberOfEvents=")
-        .append(this.eventQueue.size()).append("]").toString();
+    return "DeltaSessionAttributeEventBatch[" + "regionName="
+        + this.regionName + "; sessionId=" + this.key + "; numberOfEvents="
+        + this.eventQueue.size() + "]";
   }
 }

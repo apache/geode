@@ -16,95 +16,12 @@ package org.apache.geode.distributed.internal.membership.gms.membership;
 
 import java.net.InetSocketAddress;
 
-import org.apache.commons.validator.routines.InetAddressValidator;
+import org.apache.geode.distributed.internal.tcpserver.LocatorAddress;
 
-public class HostAddress {
-
-  private final InetSocketAddress socketInetAddress;
-  private final String hostname;
-  private final int port;
-  private final boolean isIpString;
+public class HostAddress extends LocatorAddress {
 
   public HostAddress(InetSocketAddress loc, String locStr) {
-    this.socketInetAddress = loc;
-    this.hostname = locStr;
-    this.port = loc.getPort();
-    this.isIpString = InetAddressValidator.getInstance().isValid(locStr);
-  }
-
-  public boolean isIpString() {
-    return isIpString;
-  }
-
-  /**
-   * if host is ipString then it will return the cached InetSocketAddress Otherwise it will create
-   * the new instance of InetSocketAddress
-   */
-  public InetSocketAddress getSocketInetAddress() {
-    if (this.isIpString) {
-      return this.socketInetAddress;
-    } else {
-      return new InetSocketAddress(hostname, this.socketInetAddress.getPort());
-    }
-  }
-
-  public String getHostName() {
-    return hostname;
-  }
-
-  public int getPort() {
-    return port;
-  }
-
-  /**
-   * If component has retry logic then use this method to get the InetSocketAddress address
-   * AutoConnectionSourceImpl for client has retry logic; This way client will not make DNS query
-   * each time
-   *
-   * @return InetSocketAddress
-   */
-  public InetSocketAddress getSocketInetAddressNoLookup() {
-    return this.socketInetAddress;
-  }
-
-  @Override
-  public int hashCode() {
-    int prime = 31;
-    int result = 1;
-    result = prime * result + (isIpString ? 1231 : 1237);
-    result = prime * result + (socketInetAddress == null ? 0 : socketInetAddress.hashCode());
-    result = prime * result + (hostname == null ? 0 : hostname.hashCode());
-    return result;
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj)
-      return true;
-    if (obj == null)
-      return false;
-    if (getClass() != obj.getClass())
-      return false;
-    HostAddress other = (HostAddress) obj;
-    if (isIpString != other.isIpString)
-      return false;
-    if (socketInetAddress == null) {
-      if (other.socketInetAddress != null)
-        return false;
-    } else if (!socketInetAddress.equals(other.socketInetAddress))
-      return false;
-    if (hostname == null) {
-      if (other.hostname != null)
-        return false;
-    } else if (!hostname.equals(other.hostname))
-      return false;
-    return true;
-  }
-
-  @Override
-  public String toString() {
-    return "LocatorAddress [socketInetAddress=" + socketInetAddress + ", hostname=" + hostname
-        + ", isIpString=" + isIpString + "]";
+    super(loc, locStr);
   }
 
 }

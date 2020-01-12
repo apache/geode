@@ -36,7 +36,7 @@ The `gfsh` utility uses a working directory for its configuration files and log 
 -   If you are using the Spring Framework, you can specify a Spring ApplicationContext XML file when starting up your server in `gfsh` by using the `--spring-xml-location` command-line option. This option allows you to bootstrap your <%=vars.product_name%> server process with your Spring application's configuration. See [Spring documentation](http://docs.spring.io/spring/docs/current/spring-framework-reference/html/resources.html#resources-app-ctx) for more information on this file.
 -   For logging output, log file output defaults to `<server-name>.log` in the cache server's working directory. If you restart a server with the same server name, the existing log file is automatically renamed, for example, `server1-01-01.log` and `server1-02-01.log`. You can modify the level of logging details in this file by specifying a level in the `--log-level` argument when starting up the server.
 -   By default, the server will start in a subdirectory, named after the server's specified name, under the directory where `gfsh` is executed. This subdirectory is considered the current working directory. You can also specify a different working directory when starting the cache server in `gfsh`.
--   By default, a server process that has been shutdown and disconnected due to a network partition event or member unresponsiveness will restart itself and automatically try to reconnect to the existing distributed system. See [Handling Forced Cache Disconnection Using Autoreconnect](../../managing/member-reconnect.html#concept_22EE6DDE677F4E8CAF5786E17B4183A9) for more details.
+-   By default, a server process that has been shutdown and disconnected due to a network partition event or member unresponsiveness will restart itself and automatically try to reconnect to the existing cluster. See [Handling Forced Cache Disconnection Using Autoreconnect](../../managing/member-reconnect.html#concept_22EE6DDE677F4E8CAF5786E17B4183A9) for more details.
 -   You can pass JVM parameters to the server's JVM by using the `--J=-Dproperty.name=value` upon server startup. These parameters can be Java properties or <%=vars.product_name%> properties such as `gemfire.jmx-manager`. For example:
 
     ``` pre
@@ -122,14 +122,14 @@ import org.apache.geode.distributed.ServerLauncher;
 
 ## <a id="running_the_cacheserver__section_F58F229D5C7048E9915E0EC470F9A923" class="no-quick-link"></a>Check Server Status
 
-Once connected to the distributed system in `gfsh`,
+Once connected to the cluster in `gfsh`,
 check the status of a running cache server by providing the server name:
 
 ``` pre
 gfsh>status server --name=server1
 ```
 
-If you are not connected to a distributed system, you can check the status of a local cache server by providing the process ID or the server's current working directory. For example:
+If you are not connected to a cluster, you can check the status of a local cache server by providing the process ID or the server's current working directory. For example:
 
 ``` pre
 gfsh>status server --pid=2484
@@ -149,7 +149,7 @@ Server in /home/username/server4 on 192.0.2.0[40404] as server4 is currently onl
 Process ID: 49008
 Uptime: 2 minutes 4 seconds
 <%=vars.product_name %> Version: <%=vars.product_version %>
-Java Version: 1.8.0_144
+Java Version: 1.<%=vars.min_java_version%>.0_<%=vars.min_java_update%>
 Log File: /home/username/server4/server4.log
 JVM Arguments: 
 ...
@@ -157,7 +157,7 @@ JVM Arguments:
 
 ## <a id="running_the_cacheserver__section_0E4DDED6AB784B0CAFBAD538B227F487" class="no-quick-link"></a>Stop Server
 
-When connected to the distributed system in `gfsh`, stop a running cache server by providing the server name:
+When connected to the cluster in `gfsh`, stop a running cache server by providing the server name:
 
 ``` pre
 gfsh>stop server --name=server1

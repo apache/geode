@@ -14,9 +14,12 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -27,7 +30,6 @@ import java.util.Properties;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.EntryOperation;
@@ -37,12 +39,10 @@ import org.apache.geode.cache.PartitionResolver;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.partition.PartitionListener;
 import org.apache.geode.test.fake.Fakes;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit test suite for PartitionAttributesImpl.
  */
-@Category(UnitTest.class)
 public class PartitionAttributesImplJUnitTest {
 
   private String colocatedRegionFullPath;

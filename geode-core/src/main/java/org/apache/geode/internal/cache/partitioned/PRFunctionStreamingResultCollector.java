@@ -36,24 +36,26 @@ import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.internal.cache.execute.BucketMovedException;
+import org.apache.geode.internal.cache.execute.CachedResultCollector;
 import org.apache.geode.internal.cache.execute.FunctionStreamingResultCollector;
 import org.apache.geode.internal.cache.execute.InternalFunctionException;
 import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetException;
 import org.apache.geode.internal.cache.execute.LocalResultCollectorImpl;
 import org.apache.geode.internal.cache.execute.PartitionedRegionFunctionExecutor;
 import org.apache.geode.internal.cache.execute.PartitionedRegionFunctionResultWaiter;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.cache.execute.ResultCollectorHolder;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class PRFunctionStreamingResultCollector extends FunctionStreamingResultCollector
-    implements ResultCollector {
+    implements CachedResultCollector {
 
   private static final Logger logger = LogService.getLogger();
 
   private boolean hasResult = false;
 
   private final PartitionedRegionFunctionResultWaiter waiter;
+
+  private final ResultCollectorHolder rcHolder;
 
   /**
    * Contract of {@link ReplyProcessor21#stillWaiting()} is that it never returns true after
@@ -67,11 +69,12 @@ public class PRFunctionStreamingResultCollector extends FunctionStreamingResultC
     super(partitionedRegionFunctionResultWaiter, system, members, rc, functionObject, execution);
     this.waiter = partitionedRegionFunctionResultWaiter;
     this.hasResult = functionObject.hasResult();
+    rcHolder = new ResultCollectorHolder(this);
   }
 
   @Override
   public void addResult(DistributedMember memId, Object resultOfSingleExecution) {
-    if (!this.endResultRecieved) {
+    if (!this.endResultReceived) {
       if (!(this.userRC instanceof LocalResultCollectorImpl)
           && resultOfSingleExecution instanceof InternalFunctionException) {
         resultOfSingleExecution = ((InternalFunctionException) resultOfSingleExecution).getCause();
@@ -82,6 +85,11 @@ public class PRFunctionStreamingResultCollector extends FunctionStreamingResultC
 
   @Override
   public Object getResult() throws FunctionException {
+    return rcHolder.getResult();
+  }
+
+  @Override
+  public Object getResultInternal() throws FunctionException {
     if (this.resultCollected) {
       throw new FunctionException("Result already collected");
     }
@@ -214,6 +222,12 @@ public class PRFunctionStreamingResultCollector extends FunctionStreamingResultC
   @Override
   public Object getResult(long timeout, TimeUnit unit)
       throws FunctionException, InterruptedException {
+    return rcHolder.getResult(timeout, unit);
+  }
+
+  @Override
+  public Object getResultInternal(long timeout, TimeUnit unit)
+      throws FunctionException, InterruptedException {
     long timeoutInMillis = unit.toMillis(timeout);
     if (this.resultCollected) {
       throw new FunctionException("Result already collected");
@@ -223,7 +237,7 @@ public class PRFunctionStreamingResultCollector extends FunctionStreamingResultC
       try {
         long timeBefore = System.currentTimeMillis();
         if (!this.waitForCacheOrFunctionException(timeoutInMillis)) {
-          throw new FunctionException("All results not recieved in time provided.");
+          throw new FunctionException("All results not received in time provided.");
         }
         long timeAfter = System.currentTimeMillis();
         timeoutInMillis = timeoutInMillis - (timeAfter - timeBefore);
@@ -353,13 +367,13 @@ public class PRFunctionStreamingResultCollector extends FunctionStreamingResultC
         if (removeMember(id, true)) {
           if (!this.fn.isHA()) {
             fite = new FunctionInvocationTargetException(
-                LocalizedStrings.PartitionMessage_PARTITIONRESPONSE_GOT_MEMBERDEPARTED_EVENT_FOR_0_CRASHED_1
-                    .toLocalizedString(new Object[] {id, Boolean.valueOf(crashed)}),
+                String.format("memberDeparted event for < %s > crashed, %s",
+                    new Object[] {id, Boolean.valueOf(crashed)}),
                 id);
           } else {
             fite = new InternalFunctionInvocationTargetException(
-                LocalizedStrings.PartitionMessage_PARTITIONRESPONSE_GOT_MEMBERDEPARTED_EVENT_FOR_0_CRASHED_1
-                    .toLocalizedString(new Object[] {id, Boolean.valueOf(crashed)}),
+                String.format("memberDeparted event for < %s > crashed, %s",
+                    new Object[] {id, Boolean.valueOf(crashed)}),
                 id);
             this.execution.addFailedNode(id.getId());
           }
@@ -369,10 +383,10 @@ public class PRFunctionStreamingResultCollector extends FunctionStreamingResultC
       }
     } else {
       Exception e = new Exception(
-          LocalizedStrings.PartitionMessage_MEMBERDEPARTED_GOT_NULL_MEMBERID.toLocalizedString());
-      logger.info(LocalizedMessage.create(
-          LocalizedStrings.PartitionMessage_MEMBERDEPARTED_GOT_NULL_MEMBERID_CRASHED_0,
-          Boolean.valueOf(crashed)), e);
+          "memberDeparted got null memberId");
+      logger.info(String.format("memberDeparted got null memberId crashed=%s",
+          Boolean.valueOf(crashed)),
+          e);
     }
   }
 

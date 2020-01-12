@@ -15,7 +15,10 @@
 
 package org.apache.geode.internal.cache.tier.sockets;
 
-import java.io.*;
+import java.io.ObjectStreamException;
+import java.io.Serializable;
+
+import org.apache.geode.annotations.Immutable;
 
 /**
  * Singleton token indicating that all interest registrations should be removed.
@@ -24,6 +27,7 @@ import java.io.*;
  */
 public class UnregisterAllInterest implements Serializable {
   private static final long serialVersionUID = 5026160621257178459L;
+  @Immutable
   private static final UnregisterAllInterest SINGLETON = new UnregisterAllInterest();
 
   /**

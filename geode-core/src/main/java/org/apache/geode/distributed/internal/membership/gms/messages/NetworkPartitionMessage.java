@@ -14,17 +14,28 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.messages;
 
-import java.util.Collection;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.List;
 
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
-public class NetworkPartitionMessage extends HighPriorityDistributionMessage {
+/**
+ * A member that has detected loss of quorum will elect itself to be the membership
+ * coordinator and will send a NetworkPartitionMessage to the rest of the cluster
+ * No response is required.
+ *
+ * @param <ID>
+ */
+public class NetworkPartitionMessage<ID extends MemberIdentifier> extends AbstractGMSMessage<ID> {
 
   public NetworkPartitionMessage() {}
 
-  public NetworkPartitionMessage(Collection<InternalDistributedMember> recipients) {
+  public NetworkPartitionMessage(List<ID> recipients) {
     setRecipients(recipients);
   }
 
@@ -34,8 +45,19 @@ public class NetworkPartitionMessage extends HighPriorityDistributionMessage {
   }
 
   @Override
-  protected void process(ClusterDistributionManager dm) {
-    throw new IllegalStateException("this message is not intended to be executed");
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+
   }
 
+  @Override
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+
+  }
+
+  @Override
+  public Version[] getSerializationVersions() {
+    return null;
+  }
 }

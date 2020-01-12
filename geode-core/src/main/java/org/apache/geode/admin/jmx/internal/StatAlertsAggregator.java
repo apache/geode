@@ -36,7 +36,6 @@ public interface StatAlertsAggregator {
    * This method can be used to get an alert definition.
    *
    * @param alertDefinition StatAlertDefinition to retrieve
-   * @return StatAlertDefinition
    */
   StatAlertDefinition getAlertDefinition(StatAlertDefinition alertDefinition);
 
@@ -103,7 +102,6 @@ public interface StatAlertsAggregator {
    * AlertHelper class can be used to retrieve the corresponding alert definition.
    *
    * @param alerts array of Alert class(contains alert def. ID & value)
-   * @param remoteVM
    */
   void processNotifications(StatAlert[] alerts, GemFireVM remoteVM);
 

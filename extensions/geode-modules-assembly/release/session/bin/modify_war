@@ -87,7 +87,8 @@ WHERE <args>:
                         geode-modules.jar
                         geode-modules-session-internal.jar
                         geode-core.jar
-                        geode-json.jar
+                        geode-common.jar
+                        geode-management.jar
                         antlr.jar
                         log4j-core.jar
                         log4j-api.jar
@@ -95,6 +96,7 @@ WHERE <args>:
                         fastutil.jar
                         javax.transactions-api.jar
                         jgroups.jar
+                        micrometer-core.jar
                         slf4j-api.jar
                         slf4j-jdk14.jar (not for WebLogic)
                         geode-modules-slf4j-weblogic.jar (WebLogic only)
@@ -193,15 +195,15 @@ function process_web_xml() {
     
     WEB_XML=$(find $WORK_DIR -name web.xml)
     TMP_WEB_XML="${WORK_DIR}/web.xml.$$"
-    JAVA_CMD="java $JVM_OPTS -jar $SESSION_JAR $ARG_P -t $ARG_CACHE_TYPE -w $WEB_XML"
-    log "Executing java cmd: $JAVA_CMD" D
+    CMD="${JAVACMD} $JVM_OPTS -jar $SESSION_JAR $ARG_P -t $ARG_CACHE_TYPE -w $WEB_XML"
+    log "Executing java cmd: ${CMD}" D
 
     if [ $ARG_TEST_RUN -eq 0 ]; then
-        eval $JAVA_CMD > $TMP_WEB_XML || exiting "Error updating web.xml" 1
+        eval ${CMD} > $TMP_WEB_XML || exiting "Error updating web.xml" 1
         cp $TMP_WEB_XML $WEB_XML
         rm -f $TMP_WEB_XML
     else
-        eval $JAVA_CMD || exiting "Error updating web.xml" 1
+        eval ${CMD} || exiting "Error updating web.xml" 1
     fi
 }
 
@@ -235,9 +237,9 @@ function process_input_file() {
 
             log "Creating new war $WAR" D
             if [ -n "$MANIFEST" ]; then
-                jar cmf $MANIFEST $WAR -C $TMP_WAR_DIR .
+                $JARCMD cmf $MANIFEST $WAR -C $TMP_WAR_DIR .
             else
-                jar cf $WAR -C $TMP_WAR_DIR .
+                $JARCMD cf $WAR -C $TMP_WAR_DIR .
             fi
         fi
 
@@ -260,23 +262,49 @@ SESSION_JAR="${LIB_DIR}/geode-modules-session-${VERSION}.jar"
 
 declare -a OTHER_JARS
 OTHER_JARS=(${GEODE}/lib/geode-core-${VERSION}.jar \
-    ${GEODE}/lib/geode-json-${VERSION}.jar \
+    ${GEODE}/lib/geode-logging-${VERSION}.jar \
+    ${GEODE}/lib/geode-serialization-${VERSION}.jar \
+    ${GEODE}/lib/geode-tcp-server-${VERSION}.jar \
+    ${GEODE}/lib/geode-common-${VERSION}.jar \
+    ${GEODE}/lib/geode-log4j-${VERSION}.jar \
+    ${GEODE}/lib/geode-management-${VERSION}.jar \
     ${GEODE}/lib/antlr-@ANTLR_VERSION@.jar \
     ${GEODE}/lib/log4j-core-@LOG4J_VERSION@.jar \
     ${GEODE}/lib/log4j-api-@LOG4J_VERSION@.jar \
     ${GEODE}/lib/log4j-jul-@LOG4J_VERSION@.jar \
     ${GEODE}/lib/fastutil-@FASTUTIL_VERSION@.jar \
     ${GEODE}/lib/javax.transaction-api-@TX_VERSION@.jar \
+    ${GEODE}/lib/jetty-http-@JETTY_VERSION@.jar \
+    ${GEODE}/lib/jetty-io-@JETTY_VERSION@.jar \
+    ${GEODE}/lib/jetty-server-@JETTY_VERSION@.jar \
+    ${GEODE}/lib/jetty-util-@JETTY_VERSION@.jar \
     ${GEODE}/lib/jgroups-@JGROUPS_VERSION@.jar \
-    ${GEODE}/lib/commons-lang-@COMMONS_LANG_VERSION@.jar \
+    ${GEODE}/lib/commons-io-@COMMONS_IO_VERSION@.jar \
+    ${GEODE}/lib/commons-lang3-@COMMONS_LANG_VERSION@.jar \
     ${GEODE}/lib/shiro-core-@SHIRO_VERSION@.jar \
     ${GEODE}/lib/commons-validator-@COMMONS_VALIDATOR_VERSION@.jar \
+    ${GEODE}/lib/micrometer-core-@MICROMETER_VERSION@.jar \
     ${LIB_DIR}/geode-modules-${VERSION}.jar \
     ${LIB_DIR}/geode-modules-session-internal-${VERSION}.jar \
     ${LIB_DIR}/slf4j-api-@SLF4J_VERSION@.jar \
     ${LIB_DIR}/slf4j-jdk14-@SLF4J_VERSION@.jar)
 
 TMP_DIR="/tmp/modify_war.$$"
+
+# Determine the Java command to use to start the JVM.
+if [ -n "$JAVA_HOME" ] ; then
+    JAVACMD="$JAVA_HOME/bin/java"
+    JARCMD="$JAVA_HOME/bin/jar"
+    if [[ ! -x "$JAVACMD" || ! -x "$JARCMD" ]] ; then
+        echo "ERROR: JAVA_HOME is set to an invalid directory: $JAVA_HOME Please set the JAVA_HOME variable in your environment to match the location of your Java installation."
+        exit 1;
+    fi
+else
+    hash java >/dev/null 2>&1 || { echo "ERROR: JAVA_HOME is not set and no 'java' command could be found in your PATH. Please set the JAVA_HOME variable in your environment to match the location of your Java installation."; exit 1;}
+    hash jar >/dev/null 2>&1 || { echo "ERROR: JAVA_HOME is not set and no 'jar' command could be found in your PATH. Please set the JAVA_HOME variable in your environment to match the location of your Java installation."; exit 1;}
+    JAVACMD="java"
+    JARCMD="jar"
+fi
 
 ARG_INPUT_FILE=""
 ARG_WAR_LIB_DIR="WEB-INF/lib"
@@ -403,7 +431,7 @@ fi
 if [ $ARG_TEST_RUN -eq 0 ]; then
     mkdir -p $TMP_DIR/META-INF
     touch $TMP_DIR/META-INF/MANIFEST.MF
-    jar cmf $TMP_DIR/META-INF/MANIFEST.MF $ARG_OUTPUT_FILE -C $TMP_DIR .
+    $JARCMD cmf $TMP_DIR/META-INF/MANIFEST.MF $ARG_OUTPUT_FILE -C $TMP_DIR .
     log "Created file: $ARG_OUTPUT_FILE" I
 fi
 

@@ -45,7 +45,7 @@ public class SizeOp {
      */
     public SizeOpImpl(String region) {
       super(MessageType.SIZE, 1);
-      getMessage().addStringPart(region);
+      getMessage().addStringPart(region, true);
     }
 
     @Override

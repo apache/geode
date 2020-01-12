@@ -14,45 +14,25 @@
  */
 package org.apache.geode.internal.util;
 
-import static org.apache.geode.internal.Assert.assertTrue;
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.fail;
 
-import java.io.File;
 import java.io.FileReader;
 import java.io.LineNumberReader;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.execute.ResultCollector;
-import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.management.internal.cli.CliUtil;
-import org.apache.geode.management.internal.cli.commands.ExportStackTraceCommand;
-import org.apache.geode.management.internal.cli.domain.StackTracesPerMember;
-import org.apache.geode.management.internal.cli.functions.GetStackTracesFunction;
-import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.UnitTest;
-import org.apache.geode.util.test.TestUtil;
-
-@Category(UnitTest.class)
 public class PluckStacksUnitTest {
 
 
   @Test
   public void testPluckingStacksFromJVMGeneratedDump() throws Exception {
     LineNumberReader reader = new LineNumberReader(
-        new FileReader(TestUtil.getResourcePath(getClass(), "PluckStacksJstackGeneratedDump.txt")));
+        new FileReader(createTempFileFromResource(getClass(), "PluckStacksJstackGeneratedDump.txt")
+            .getAbsolutePath()));
 
     Map<String, List<PluckStacks.ThreadStack>> dumps =
         new PluckStacks().getThreadDumps(reader, "PluckStacksSystemGeneratedDump.txt");

@@ -19,11 +19,8 @@ import java.util.HashMap;
 
 import org.apache.geode.modules.session.internal.common.CacheProperty;
 
-/**
- *
- */
 public class TypeAwareMap<K extends CacheProperty, Object> extends HashMap {
-
+  @SuppressWarnings("unused")
   private Class<K> keyType;
 
   public TypeAwareMap(Class<K> keyType) {
@@ -31,6 +28,7 @@ public class TypeAwareMap<K extends CacheProperty, Object> extends HashMap {
     this.keyType = keyType;
   }
 
+  @SuppressWarnings("unchecked")
   public Object put(K key, Object value) {
     if (!key.getClazz().isAssignableFrom(value.getClass())) {
       if (key.getClazz() == Boolean.class) {

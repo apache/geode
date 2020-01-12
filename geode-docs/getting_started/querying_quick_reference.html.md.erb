@@ -1,4 +1,6 @@
-<% set_title(product_name, "Querying FAQ and Examples")%>
+---
+title: Querying FAQ and Examples
+---
 
 <!--
 Licensed to the Apache Software Foundation (ASF) under one or more
@@ -186,34 +188,229 @@ SELECT p, pos FROM /exampleRegion p, p.positions.values pos WHERE pos.secId = 'V
 SELECT * FROM /exampleRegion p WHERE p.ID > 0 LIMIT 2
 ```
 
+
+**Using MIN and MAX**
+
+See [MIN](../developing/query_select/aggregates.html#min) and [MAX](../developing/query_select/aggregates.html#max)for more information.
+
+``` pre
+SELECT MIN(ID)
+FROM /exampleRegion
+WHERE ID > 0
+```
+
+``` pre
+SELECT MAX(ID)
+FROM /exampleRegion
+WHERE ID > 0 AND status LIKE 'act%'
+```
+
+```pre
+SELECT MIN(pos.mktValue)
+FROM /exampleRegion p, p.positions.values pos
+WHERE p.ID = 10
+```
+
+```pre
+SELECT MAX(p.ID)
+FROM /exampleRegion p, p.positions.values pos
+WHERE p.ID > 0 OR p.status = 'active' OR pos.secId = 'IBM'
+```
+
+**Using AVG**
+
+See [AVG](../developing/query_select/aggregates.html#avg) for more information.
+
+``` pre
+SELECT AVG(ID)
+FROM /exampleRegion
+WHERE ID > 0
+```
+
+``` pre
+SELECT AVG(ID)
+FROM /exampleRegion
+WHERE ID > 0 AND status LIKE 'act%'
+```
+
+``` pre
+SELECT AVG(pos.mktValue)
+FROM /exampleRegion p, p.positions.values pos
+WHERE p.isActive()
+```
+
+```pre
+SELECT AVG(DISTINCT p.ID)
+FROM /exampleRegion p, p.positions.values pos
+WHERE p.ID > 0 OR p.status = 'active' OR pos.secId = 'IBM'
+```
+
 **Using COUNT**
 
-See [COUNT](../developing/query_select/the_select_statement.html#concept_85AE7D6B1E2941ED8BD2A8310A81753E__section_B2CBA00EB83F463DAF4769D7859C64C8) for more information.
+See [COUNT](../developing/query_select/aggregates.html#count) for more information.
 
 ``` pre
-SELECT COUNT(*) FROM /exampleRegion WHERE ID > 0
+SELECT COUNT(*)
+FROM /exampleRegion
+WHERE ID > 0
 ```
 
 ``` pre
-SELECT COUNT(*) FROM /exampleRegion WHERE ID > 0 LIMIT 50
+SELECT COUNT(*)
+FROM /exampleRegion
+WHERE ID > 0 LIMIT 50
 ```
 
 ``` pre
-SELECT COUNT(*) FROM /exampleRegion WHERE ID > 0 AND status LIKE 'act%'
+SELECT COUNT(*)
+FROM /exampleRegion
+WHERE ID > 0 AND status LIKE 'act%'
 ```
 
 ``` pre
-SELECT COUNT(*) FROM /exampleRegion WHERE ID IN SET(1,2,3,4,5)
+SELECT COUNT(*)
+FROM /exampleRegion
+WHERE ID IN SET(1,2,3,4,5)
+```
+
+```pre
+SELECT COUNT(DISTINCT p.status)
+FROM /exampleRegion p
+WHERE p.ID > 0
 ```
 
 ``` pre
-SELECT COUNT(*) FROM /exampleRegion p, p.positions.values pos 
+SELECT COUNT(*)
+FROM /exampleRegion p, p.positions.values pos 
 WHERE p.ID > 0 AND pos.secId 'IBM'
 ```
 
 ``` pre
-SELECT DISTINCT COUNT(*) FROM /exampleRegion p, p.positions.values pos
-WHERE p.ID > 0 OR p.status = 'active' OR pos.secId OR pos.secId = 'IBM'
+SELECT DISTINCT COUNT(*)
+FROM /exampleRegion p, p.positions.values pos
+WHERE p.ID > 0 OR p.status = 'active' OR pos.secId = 'IBM'
+```
+
+**Using SUM**
+
+See [SUM](../developing/query_select/aggregates.html#sum) for more information.
+
+``` pre
+SELECT SUM(ID)
+FROM /exampleRegion
+WHERE ID > 0
+```
+
+``` pre
+SELECT SUM(ID)
+FROM /exampleRegion
+WHERE ID > 0 AND status LIKE 'act%'
+```
+
+``` pre
+SELECT SUM(pos.mktValue)
+FROM /exampleRegion p, p.positions.values pos
+WHERE p.status = 'active'
+```
+
+```pre
+SELECT SUM(DISTINCT p.ID)
+FROM /exampleRegion p, p.positions.values pos
+WHERE p.ID > 0 OR p.status = 'active' OR pos.secId = 'IBM'
+```
+
+**Using GROUP BY**
+
+See [GROUP BY](../developing/query_select/aggregates.html#groupBy) for more information.
+
+``` pre
+SELECT p.status, MAX(p.ID) 
+FROM /exampleRegion p
+WHERE p.ID > 0
+GROUP BY p.status
+```
+
+```pre
+SELECT p.ID, MIN(pos.qty) AS lessQty
+FROM /exampleRegion p, p.positions.values pos
+WHERE p.ID > 0 AND p.status = 'active'
+GROUP BY p.ID
+ORDER BY lessQty ASC
+```
+
+```pre
+SELECT p.ID, MAX(pos.mktValue) AS maxValue
+FROM /exampleRegion p, p.positions.values pos
+WHERE p.ID > 0 AND p.status = 'active'
+GROUP BY p.ID
+ORDER BY maxValue DESC
+```
+
+``` pre
+SELECT p.status, AVG(p.ID) 
+FROM /exampleRegion p
+WHERE p.ID > 0
+GROUP BY p.status
+```
+
+```pre
+SELECT p.ID, pos.secId, AVG(pos.mktValue)
+FROM /exampleRegion p, p.positions.values pos
+WHERE p.ID > 0 OR p.status = 'active'
+GROUP BY p.ID, pos.secId
+```
+
+``` pre
+SELECT p.status, AVG(p.ID) as sm 
+FROM /exampleRegion p
+WHERE p.ID > 0
+GROUP BY p.status
+ORDER BY sm DESC
+```
+
+``` pre
+SELECT p.status, COUNT(*) 
+FROM /exampleRegion p
+WHERE p.ID > 0
+GROUP BY p.status
+```
+
+```pre
+SELECT p.ID, COUNT(pos) AS positionsAmount
+FROM /exampleRegion p, p.positions.values pos
+WHERE p.ID > 0 OR p.status = 'active'
+GROUP BY p.ID
+ORDER BY positionsAmount
+```
+
+``` pre
+SELECT p.status, SUM(p.ID) 
+FROM /exampleRegion p
+WHERE p.ID > 0
+GROUP BY p.status
+```
+
+```pre
+SELECT p.ID, pos.secId, SUM(pos.mktValue)
+FROM /exampleRegion p, p.positions.values pos
+WHERE p.ID > 0 OR p.status = 'active'
+GROUP BY p.ID, pos.secId
+```
+
+``` pre
+SELECT p.status, SUM(p.ID) as sm 
+FROM /exampleRegion p
+WHERE p.ID > 0
+GROUP BY p.status
+ORDER BY sm DESC
+```
+
+```pre
+SELECT p.ID, SUM(pos.mktValue) AS marketValue
+FROM /exampleRegion p, p.positions.values pos
+WHERE p.isActive()
+GROUP BY p.ID
+ORDER BY marketValue DESC
 ```
 
 **Using LIKE**

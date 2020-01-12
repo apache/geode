@@ -19,7 +19,6 @@ import org.apache.geode.internal.cache.entries.DiskEntry.Helper.ValueWrapper;
 
 public interface OplogSet {
 
-
   void create(InternalRegion region, DiskEntry entry, ValueWrapper value, boolean async);
 
   void modify(InternalRegion region, DiskEntry entry, ValueWrapper value, boolean async);

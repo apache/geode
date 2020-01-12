@@ -17,6 +17,7 @@ package org.apache.geode.distributed.internal;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.util.internal.GeodeGlossary.GEMFIRE_PREFIX;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,18 +32,19 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
@@ -54,14 +56,19 @@ import org.apache.geode.LogWriter;
 import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsType;
-import org.apache.geode.StatisticsTypeFactory;
 import org.apache.geode.SystemConnectException;
 import org.apache.geode.SystemFailure;
-import org.apache.geode.admin.AlertLevel;
+import org.apache.geode.alerting.internal.AlertingSession;
+import org.apache.geode.alerting.internal.ClusterAlertMessaging;
+import org.apache.geode.alerting.internal.InternalAlertingService;
+import org.apache.geode.alerting.internal.InternalAlertingServiceFactory;
+import org.apache.geode.alerting.internal.NullAlertMessaging;
+import org.apache.geode.alerting.internal.spi.AlertLevel;
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.annotations.internal.MakeNotStatic;
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.CacheClosedException;
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.CacheXmlException;
-import org.apache.geode.cache.execute.internal.FunctionServiceManager;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
@@ -69,51 +76,51 @@ import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.DurableClientAttributes;
 import org.apache.geode.distributed.internal.locks.GrantorRequestProcessor;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.MembershipManager;
-import org.apache.geode.distributed.internal.membership.QuorumChecker;
-import org.apache.geode.distributed.internal.membership.gms.Services;
-import org.apache.geode.distributed.internal.membership.gms.mgr.GMSMembershipManager;
-import org.apache.geode.i18n.LogWriterI18n;
+import org.apache.geode.distributed.internal.membership.api.MembershipInformation;
+import org.apache.geode.distributed.internal.membership.api.QuorumChecker;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.DSFIDFactory;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalInstantiator;
 import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
-import org.apache.geode.internal.cache.CacheConfig;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.execute.FunctionServiceStats;
-import org.apache.geode.internal.cache.execute.FunctionStats;
+import org.apache.geode.internal.cache.InternalCacheBuilder;
+import org.apache.geode.internal.cache.execute.InternalFunctionService;
+import org.apache.geode.internal.cache.execute.metrics.FunctionStatsManager;
 import org.apache.geode.internal.cache.tier.sockets.EncryptorImpl;
-import org.apache.geode.internal.cache.tier.sockets.Handshake;
 import org.apache.geode.internal.cache.xmlcache.CacheServerCreation;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.config.ClusterConfigurationNotAvailableException;
 import org.apache.geode.internal.logging.InternalLogWriter;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LogWriterFactory;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
-import org.apache.geode.internal.logging.log4j.AlertAppender;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
-import org.apache.geode.internal.logging.log4j.LogWriterAppender;
-import org.apache.geode.internal.logging.log4j.LogWriterAppenders;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.offheap.MemoryAllocator;
 import org.apache.geode.internal.offheap.OffHeapStorage;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.security.SecurityServiceFactory;
-import org.apache.geode.internal.statistics.DummyStatisticsImpl;
+import org.apache.geode.internal.statistics.DummyStatisticsRegistry;
 import org.apache.geode.internal.statistics.GemFireStatSampler;
-import org.apache.geode.internal.statistics.LocalStatisticsImpl;
-import org.apache.geode.internal.statistics.StatisticsImpl;
+import org.apache.geode.internal.statistics.StatisticsConfig;
 import org.apache.geode.internal.statistics.StatisticsManager;
-import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
+import org.apache.geode.internal.statistics.StatisticsManagerFactory;
+import org.apache.geode.internal.statistics.StatisticsRegistry;
 import org.apache.geode.internal.statistics.platform.LinuxProcFsStatistics;
-import org.apache.geode.internal.statistics.platform.OsStatisticsFactory;
 import org.apache.geode.internal.tcp.ConnectionTable;
+import org.apache.geode.logging.internal.LoggingSession;
+import org.apache.geode.logging.internal.NullLoggingSession;
+import org.apache.geode.logging.internal.executors.LoggingThread;
+import org.apache.geode.logging.internal.executors.LoggingUncaughtExceptionHandler;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.logging.internal.spi.LogConfig;
+import org.apache.geode.logging.internal.spi.LogConfigListener;
+import org.apache.geode.logging.internal.spi.LogConfigSupplier;
+import org.apache.geode.logging.internal.spi.LogFile;
 import org.apache.geode.management.ManagementException;
+import org.apache.geode.metrics.internal.MeterRegistrySupplier;
+import org.apache.geode.metrics.internal.MetricsService;
+import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.security.GemFireSecurityException;
 import org.apache.geode.security.PostProcessor;
 import org.apache.geode.security.SecurityManager;
@@ -125,40 +132,56 @@ import org.apache.geode.security.SecurityManager;
  * @since GemFire 3.0
  */
 public class InternalDistributedSystem extends DistributedSystem
-    implements OsStatisticsFactory, StatisticsManager {
+    implements LogConfigSupplier {
 
-  /**
-   * True if the user is allowed lock when memory resources appear to be overcommitted.
-   */
-  private static final boolean ALLOW_MEMORY_LOCK_WHEN_OVERCOMMITTED =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "Cache.ALLOW_MEMORY_OVERCOMMIT");
   private static final Logger logger = LogService.getLogger();
 
-  public static final String DISABLE_MANAGEMENT_PROPERTY =
-      DistributionConfig.GEMFIRE_PREFIX + "disableManagement";
+  private static final String DISABLE_MANAGEMENT_PROPERTY =
+      GEMFIRE_PREFIX + "disableManagement";
 
-  /**
-   * Feature flag to enable multiple caches within a JVM.
-   */
-  public static boolean ALLOW_MULTIPLE_SYSTEMS =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "ALLOW_MULTIPLE_SYSTEMS");
+  public static final String ALLOW_MULTIPLE_SYSTEMS_PROPERTY =
+      GEMFIRE_PREFIX + "ALLOW_MULTIPLE_SYSTEMS";
+
+  public static final String ALLOW_MEMORY_OVERCOMMIT =
+      GEMFIRE_PREFIX + "Cache.ALLOW_MEMORY_OVERCOMMIT";
+  public static final String AVOID_MEMORY_LOCK_WHEN_OVERCOMMIT =
+      GEMFIRE_PREFIX + "Cache.AVOID_MEMORY_LOCK_WHEN_OVERCOMMIT";
 
   /**
    * If auto-reconnect is going on this will hold a reference to it
    */
+  @MakeNotStatic
   public static volatile DistributedSystem systemAttemptingReconnect;
 
-  public static final CreationStackGenerator DEFAULT_CREATION_STACK_GENERATOR =
-      new CreationStackGenerator() {
-        @Override
-        public Throwable generateCreationStack(final DistributionConfig config) {
-          return null;
-        }
-      };
+  @Immutable
+  public static final CreationStackGenerator DEFAULT_CREATION_STACK_GENERATOR = config -> null;
 
   // the following is overridden from DistributedTestCase to fix #51058
+  @MutableForTesting
   public static final AtomicReference<CreationStackGenerator> TEST_CREATION_STACK_GENERATOR =
-      new AtomicReference<CreationStackGenerator>(DEFAULT_CREATION_STACK_GENERATOR);
+      new AtomicReference<>(DEFAULT_CREATION_STACK_GENERATOR);
+
+  /**
+   * A value of Boolean.TRUE will identify a thread being used to execute
+   * disconnectListeners. {@link #addDisconnectListener} will not throw ShutdownException if the
+   * value is Boolean.TRUE.
+   */
+  private final ThreadLocal<Boolean> isDisconnectThread =
+      ThreadLocal.withInitial(() -> Boolean.FALSE);
+
+  private final StatisticsManager statisticsManager;
+  private MetricsService metricsService;
+  private final FunctionStatsManager functionStatsManager;
+  /**
+   * True if the user is allowed lock when memory resources appear to be overcommitted.
+   */
+  private final boolean allowMemoryLockWhenOvercommitted =
+      Boolean.getBoolean(ALLOW_MEMORY_OVERCOMMIT);
+  /**
+   * True if memory lock is avoided when memory resources appear to be overcommitted.
+   */
+  private final boolean avoidMemoryLockWhenOvercommitted =
+      Boolean.getBoolean(AVOID_MEMORY_LOCK_WHEN_OVERCOMMIT);
 
   /**
    * The distribution manager that is used to communicate with the distributed system.
@@ -167,8 +190,85 @@ public class InternalDistributedSystem extends DistributedSystem
 
   private final GrantorRequestProcessor.GrantorRequestContext grc;
 
-  /** services provided by other modules */
+  /**
+   * services provided by other modules
+   */
   private Map<Class, DistributedSystemService> services = new HashMap<>();
+
+  private final AtomicReference<ClusterAlertMessaging> clusterAlertMessaging =
+      new AtomicReference<>();
+
+  /**
+   * If the experimental multiple-system feature is enabled, always create a new system.
+   *
+   * <p>
+   * Otherwise, create a new InternalDistributedSystem with the given properties, or connect to an
+   * existing one with the same properties.
+   */
+  public static InternalDistributedSystem connectInternal(Properties config,
+      SecurityConfig securityConfig, MetricsService.Builder metricsSessionBuilder) {
+    if (config == null) {
+      config = new Properties();
+    }
+
+    if (Boolean.getBoolean(ALLOW_MULTIPLE_SYSTEMS_PROPERTY)) {
+      return new Builder(config, metricsSessionBuilder)
+          .setSecurityConfig(securityConfig)
+          .build();
+    }
+
+    synchronized (existingSystemsLock) {
+      if (ClusterDistributionManager.isDedicatedAdminVM()) {
+        // For a dedicated admin VM, check to see if there is already
+        // a connect that will suit our purposes.
+        InternalDistributedSystem existingSystem =
+            (InternalDistributedSystem) getConnection(config);
+        if (existingSystem != null) {
+          return existingSystem;
+        }
+
+      } else {
+        boolean existingSystemDisconnecting = true;
+        boolean isReconnecting = false;
+        while (!existingSystems.isEmpty() && existingSystemDisconnecting && !isReconnecting) {
+          Assert.assertTrue(existingSystems.size() == 1);
+
+          InternalDistributedSystem existingSystem = existingSystems.get(0);
+          existingSystemDisconnecting = existingSystem.isDisconnecting();
+          // a reconnecting DS will block on GemFireCache.class and a ReconnectThread
+          // holds that lock and invokes this method, so we break out of the loop
+          // if we detect this condition
+          isReconnecting = existingSystem.isReconnectingDS();
+          if (existingSystemDisconnecting) {
+            boolean interrupted = Thread.interrupted();
+            try {
+              // no notify for existingSystemsLock, just to release the sync
+              existingSystemsLock.wait(50);
+            } catch (InterruptedException ex) {
+              interrupted = true;
+            } finally {
+              if (interrupted) {
+                Thread.currentThread().interrupt();
+              }
+            }
+          } else if (existingSystem.isConnected()) {
+            existingSystem.validateSameProperties(config, existingSystem.isConnected());
+            return existingSystem;
+          } else {
+            throw new AssertionError(
+                "system should not have both disconnecting==false and isConnected==false");
+          }
+        }
+      }
+
+      // Make a new connection to the distributed system
+      InternalDistributedSystem newSystem = new Builder(config, metricsSessionBuilder)
+          .setSecurityConfig(securityConfig)
+          .build();
+      addSystem(newSystem);
+      return newSystem;
+    }
+  }
 
   public GrantorRequestProcessor.GrantorRequestContext getGrantorRequestContext() {
     return grc;
@@ -182,24 +282,19 @@ public class InternalDistributedSystem extends DistributedSystem
   /**
    * The log writer used to log information messages
    */
+  @Deprecated
   protected InternalLogWriter logWriter = null;
 
   /**
    * The log writer used to log security related messages
    */
+  @Deprecated
   protected InternalLogWriter securityLogWriter = null;
 
   /**
    * Distributed System clock
    */
   private DSClock clock;
-
-  // /** The log writer was provided by an external entity */
-  // private boolean externalLogWriterProvided = false;
-  //
-  private LogWriterAppender logWriterAppender = null;
-
-  private LogWriterAppender securityLogWriterAppender = null;
 
   /**
    * Time this system was created
@@ -209,7 +304,7 @@ public class InternalDistributedSystem extends DistributedSystem
   /**
    * Guards access to {@link #isConnected}
    */
-  protected final Object isConnectedMutex = new Object();
+  private final Object isConnectedMutex = new Object();
 
   /**
    * Is this <code>DistributedSystem</code> connected to a distributed system?
@@ -234,17 +329,19 @@ public class InternalDistributedSystem extends DistributedSystem
    * A set of listeners that are invoked when this connection to the distributed system is
    * disconnected
    */
-  private final Set listeners = new LinkedHashSet(); // needs to be ordered
+  private final Set<DisconnectListener> disconnectListeners = new LinkedHashSet<>();
 
   /**
    * Set of listeners that are invoked whenever a connection is created to the distributed system
    */
-  private static Set connectListeners = new LinkedHashSet(); // needs to be ordered
+  @MakeNotStatic
+  private static final Set<ConnectListener> connectListeners = new LinkedHashSet<>();
 
   /**
    * auto-reconnect listeners
    */
-  private static List<ReconnectListener> reconnectListeners = new ArrayList<ReconnectListener>();
+  @MakeNotStatic
+  private static final List<ReconnectListener> reconnectListeners = new ArrayList<>();
 
   /**
    * whether this DS is one created to reconnect to the distributed system after a
@@ -261,9 +358,7 @@ public class InternalDistributedSystem extends DistributedSystem
 
 
   /**
-   * A Constant that matches the ThreadGroup name of the shutdown hook. This constant is used to
-   * insure consistency with LoggingThreadGroup. Due to Bug 38407, be careful about moving this to
-   * another class.
+   * Due to Bug 38407, be careful about moving this to another class.
    */
   public static final String SHUTDOWN_HOOK_NAME = "Distributed system shutdown hook";
   /**
@@ -271,12 +366,12 @@ public class InternalDistributedSystem extends DistributedSystem
    * 38407
    */
   public static final String DISABLE_SHUTDOWN_HOOK_PROPERTY =
-      DistributionConfig.GEMFIRE_PREFIX + "disableShutdownHook";
+      GEMFIRE_PREFIX + "disableShutdownHook";
 
   /**
    * A property to append to existing log-file instead of truncating it.
    */
-  public static final String APPEND_TO_LOG_FILE = DistributionConfig.GEMFIRE_PREFIX + "append-log";
+  private static final String APPEND_TO_LOG_FILE = GEMFIRE_PREFIX + "append-log";
 
   //////////////////// Configuration Fields ////////////////////
 
@@ -285,22 +380,22 @@ public class InternalDistributedSystem extends DistributedSystem
    */
   private final DistributionConfig originalConfig;
 
+  private final boolean statsDisabled =
+      Boolean.getBoolean(GEMFIRE_PREFIX + "statsDisabled");
+
   /**
    * The config object to which most configuration work is delegated
    */
   private DistributionConfig config;
 
-  private final boolean statsDisabled =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "statsDisabled");
-
-  private volatile boolean shareSockets = DistributionConfig.DEFAULT_CONSERVE_SOCKETS;
+  private volatile boolean shareSockets;
 
   /**
    * if this distributed system starts a locator, it is stored here
    */
   private InternalLocator startedLocator;
 
-  private List<ResourceEventsListener> resourceListeners;
+  private final List<ResourceEventsListener> resourceListeners = new CopyOnWriteArrayList<>();
 
   private final boolean disableManagement = Boolean.getBoolean(DISABLE_MANAGEMENT_PROPERTY);
 
@@ -311,62 +406,29 @@ public class InternalDistributedSystem extends DistributedSystem
 
   private volatile SecurityService securityService;
 
-  ///////////////////// Static Methods /////////////////////
-
   /**
-   * Creates a new instance of <code>InternalDistributedSystem</code> with the given configuration.
+   * Used at client side, indicates whether the 'delta-propagation' property is enabled on the DS
+   * this client is connected to. This variable is used to decide whether to send delta bytes or
+   * full value to the server for a delta-update operation.
    */
-  public static InternalDistributedSystem newInstance(Properties config) {
-    return newInstance(config, SecurityConfig.get());
+  private boolean deltaEnabledOnServer = true;
+
+  private final AlertingSession alertingSession;
+  private final InternalAlertingService alertingService;
+
+  private final LoggingSession loggingSession;
+  private final Set<LogConfigListener> logConfigListeners = new HashSet<>();
+
+  public boolean isDeltaEnabledOnServer() {
+    return deltaEnabledOnServer;
   }
 
-  public static InternalDistributedSystem newInstance(Properties config,
-      SecurityConfig securityConfig) {
-    if (securityConfig == null) {
-      return newInstance(config, null, null);
-    } else {
-      return newInstance(config, securityConfig.getSecurityManager(),
-          securityConfig.getPostProcessor());
-    }
+  public void setDeltaEnabledOnServer(boolean deltaEnabledOnServer) {
+    this.deltaEnabledOnServer = deltaEnabledOnServer;
   }
 
-  public static InternalDistributedSystem newInstance(Properties config,
-      SecurityManager securityManager, PostProcessor postProcessor) {
-    boolean success = false;
-    InternalDataSerializer.checkSerializationVersion();
-    try {
-      SystemFailure.startThreads();
-      InternalDistributedSystem newSystem = new InternalDistributedSystem(config);
-      newSystem.initialize(securityManager, postProcessor);
-      reconnectAttemptCounter = 0; // reset reconnect count since we just got a new connection
-      notifyConnectListeners(newSystem);
-      success = true;
-      return newSystem;
-    } finally {
-      if (!success) {
-        // bug44365 - logwriters accumulate, causing mem leak
-        LoggingThreadGroup.cleanUpThreadGroups();
-        SystemFailure.stopThreads();
-      }
-    }
-  }
-
-  /**
-   * creates a non-functional instance for testing
-   *
-   * @param nonDefault - non-default distributed system properties
-   */
-  public static InternalDistributedSystem newInstanceForTesting(DistributionManager dm,
-      Properties nonDefault) {
-    InternalDistributedSystem sys = new InternalDistributedSystem(nonDefault);
-    sys.config = new RuntimeDistributionConfigImpl(sys);
-    sys.dm = dm;
-    sys.isConnected = true;
-    return sys;
-  }
-
-  public static boolean removeSystem(InternalDistributedSystem oldSystem) {
-    return DistributedSystem.removeSystem(oldSystem);
+  public static void removeSystem(InternalDistributedSystem oldSystem) {
+    DistributedSystem.removeSystem(oldSystem);
   }
 
   /**
@@ -392,8 +454,7 @@ public class InternalDistributedSystem extends DistributedSystem
     InternalDistributedSystem result = null;
     synchronized (existingSystemsLock) {
       if (!existingSystems.isEmpty()) {
-        InternalDistributedSystem existingSystem =
-            (InternalDistributedSystem) existingSystems.get(0);
+        InternalDistributedSystem existingSystem = existingSystems.get(0);
         if (existingSystem.isConnected()) {
           result = existingSystem;
         }
@@ -434,14 +495,16 @@ public class InternalDistributedSystem extends DistributedSystem
   /**
    * @return a log writer, or null if there is no distributed system available
    */
-  public static LogWriterI18n getLoggerI18n() {
+  @Deprecated
+  public static LogWriter getLogger() {
     InternalDistributedSystem sys = getAnyInstance();
     if (sys != null && sys.logWriter != null) {
-      return sys.logWriter.convertToLogWriterI18n();
+      return sys.logWriter;
     }
     return null;
   }
 
+  @Deprecated
   public static InternalLogWriter getStaticInternalLogWriter() {
     InternalDistributedSystem sys = getAnyInstance();
     if (sys != null) {
@@ -450,18 +513,12 @@ public class InternalDistributedSystem extends DistributedSystem
     return null;
   }
 
+  @Deprecated
   public InternalLogWriter getInternalLogWriter() {
-    return this.logWriter;
+    return logWriter;
   }
 
-  public static InternalLogWriter getStaticSecurityInternalLogWriter() {
-    InternalDistributedSystem sys = getAnyInstance();
-    if (sys != null) {
-      return sys.securityLogWriter;
-    }
-    return null;
-  }
-
+  @Deprecated
   public InternalLogWriter getSecurityInternalLogWriter() {
     InternalDistributedSystem sys = getAnyInstance();
     if (sys != null) {
@@ -474,61 +531,48 @@ public class InternalDistributedSystem extends DistributedSystem
    * reset the reconnectAttempt counter for a new go at reconnecting
    */
   private static void resetReconnectAttemptCounter() {
-    reconnectAttemptCounter = 0;
+    reconnectAttemptCounter.set(0);
   }
-
-
-  ////////////////////// Constructors //////////////////////
 
   /**
-   * Creates a new <code>InternalDistributedSystem</code> with the given configuration properties.
-   * Does all of the magic of finding the "default" values of properties. See
-   * {@link DistributedSystem#connect} for a list of exceptions that may be thrown.
+   * Creates a new {@code InternalDistributedSystem} with the given configuration.
    *
-   * @param nonDefault The non-default configuration properties specified by the caller
+   * <p>
+   * See {@link #connect} for a list of exceptions that may be thrown.
    *
-   * @see DistributedSystem#connect
+   * @param config the configuration for the connection
+   * @param statisticsManagerFactory creates the statistics manager for this member
    */
-  private InternalDistributedSystem(Properties nonDefault) {
+  private InternalDistributedSystem(ConnectionConfig config,
+      StatisticsManagerFactory statisticsManagerFactory,
+      FunctionStatsManager.Factory functionStatsManagerFactory) {
+    alertingSession = AlertingSession.create();
+    alertingService = new InternalAlertingServiceFactory().create();
+    LoggingUncaughtExceptionHandler
+        .setFailureSetter(error -> SystemFailure.setFailure((VirtualMachineError) error));
+    loggingSession = LoggingSession.create();
+    originalConfig = config.distributionConfig();
+    isReconnectingDS = config.isReconnecting();
+    quorumChecker = config.quorumChecker();
 
-    // register DSFID types first; invoked explicitly so that all message type
-    // initializations do not happen in first deserialization on a possibly
-    // "precious" thread
-    DSFIDFactory.registerTypes();
+    // throws IllegalStateEx
+    ((DistributionConfigImpl) originalConfig).checkForDisallowedDefaults();
+    shareSockets = originalConfig.getConserveSockets();
+    startTime = System.currentTimeMillis();
+    grc = new GrantorRequestProcessor.GrantorRequestContext(stopper);
 
-    Object o = nonDefault.remove(DistributionConfig.DS_RECONNECTING_NAME);
-    if (o instanceof Boolean) {
-      this.isReconnectingDS = ((Boolean) o).booleanValue();
-    } else {
-      this.isReconnectingDS = false;
-    }
+    creationStack =
+        TEST_CREATION_STACK_GENERATOR.get().generateCreationStack(originalConfig);
 
-    o = nonDefault.remove(DistributionConfig.DS_QUORUM_CHECKER_NAME);
-    if (o instanceof QuorumChecker) {
-      this.quorumChecker = (QuorumChecker) o;
-    }
+    statisticsManager =
+        statisticsManagerFactory.create(originalConfig.getName(), startTime, statsDisabled);
 
-    o = nonDefault.remove(DistributionConfig.DS_CONFIG_NAME);
-    if (o instanceof DistributionConfigImpl) {
-      this.originalConfig = (DistributionConfigImpl) o;
-    } else {
-      this.originalConfig = new DistributionConfigImpl(nonDefault);
-    }
-
-    ((DistributionConfigImpl) this.originalConfig).checkForDisallowedDefaults(); // throws
-                                                                                 // IllegalStateEx
-    this.shareSockets = this.originalConfig.getConserveSockets();
-    this.startTime = System.currentTimeMillis();
-    this.grc = new GrantorRequestProcessor.GrantorRequestContext(stopper);
-
-    this.creationStack =
-        TEST_CREATION_STACK_GENERATOR.get().generateCreationStack(this.originalConfig);
+    this.functionStatsManager = functionStatsManagerFactory.create(statsDisabled, statisticsManager,
+        new MeterRegistrySupplier(() -> this));
   }
 
-  //////////////////// Instance Methods ////////////////////
-
   public SecurityService getSecurityService() {
-    return this.securityService;
+    return securityService;
   }
 
   public void setSecurityService(SecurityService securityService) {
@@ -580,13 +624,13 @@ public class InternalDistributedSystem extends DistributedSystem
    * Returns true if system is a loner (for testing)
    */
   public boolean isLoner() {
-    return this.isLoner;
+    return isLoner;
   }
 
   private MemoryAllocator offHeapStore = null;
 
   public MemoryAllocator getOffHeapStore() {
-    return this.offHeapStore;
+    return offHeapStore;
   }
 
   /**
@@ -606,85 +650,64 @@ public class InternalDistributedSystem extends DistributedSystem
   /**
    * Initializes this connection to a distributed system with the current configuration state.
    */
-  private void initialize(SecurityManager securityManager, PostProcessor postProcessor) {
-    if (this.originalConfig.getLocators().equals("")) {
-      if (this.originalConfig.getMcastPort() != 0) {
+  private void initialize(SecurityManager securityManager, PostProcessor postProcessor,
+      MetricsService.Builder metricsServiceBuilder) {
+    if (originalConfig.getLocators().equals("")) {
+      if (originalConfig.getMcastPort() != 0) {
         throw new GemFireConfigException("The " + LOCATORS + " attribute can not be empty when the "
             + MCAST_PORT + " attribute is non-zero.");
       } else {
         // no distribution
-        this.isLoner = true;
+        isLoner = true;
       }
     }
 
-    this.config = new RuntimeDistributionConfigImpl(this);
+    config = new RuntimeDistributionConfigImpl(this);
 
-    this.securityService = SecurityServiceFactory.create(this.config.getSecurityProps(),
+    securityService = SecurityServiceFactory.create(
+        config.getSecurityProps(),
         securityManager, postProcessor);
 
-    if (!this.isLoner) {
-      this.attemptingToReconnect = (reconnectAttemptCounter > 0);
+    if (!isLoner) {
+      attemptingToReconnect = (reconnectAttemptCounter.get() > 0);
     }
     try {
       SocketCreatorFactory.setDistributionConfig(config);
 
-      AlertAppender.getInstance().onConnect(this);
-
-      // LOG: create LogWriterAppender(s) if log-file or security-log-file is specified
-      final boolean hasLogFile =
-          this.config.getLogFile() != null && !this.config.getLogFile().equals(new File(""));
-      final boolean hasSecurityLogFile = this.config.getSecurityLogFile() != null
-          && !this.config.getSecurityLogFile().equals(new File(""));
-      LogService.configureLoggers(hasLogFile, hasSecurityLogFile);
-      if (hasLogFile || hasSecurityLogFile) {
-
-        // main log file
-        if (hasLogFile) {
-          // if log-file then create logWriterAppender
-          this.logWriterAppender = LogWriterAppenders.getOrCreateAppender(
-              LogWriterAppenders.Identifier.MAIN, this.isLoner, this.config, true);
-        }
-
-        // security log file
-        if (hasSecurityLogFile) {
-          // if security-log-file then create securityLogWriterAppender
-          this.securityLogWriterAppender = LogWriterAppenders.getOrCreateAppender(
-              LogWriterAppenders.Identifier.SECURITY, this.isLoner, this.config, false);
-        } else {
-          // let security route to regular log-file or stdout
-        }
-      }
+      boolean logBanner = !attemptingToReconnect;
+      boolean logConfiguration = !attemptingToReconnect;
+      loggingSession.createSession(this, logBanner, logConfiguration);
 
       // LOG: create LogWriterLogger(s) for backwards compatibility of getLogWriter and
       // getSecurityLogWriter
-      if (this.logWriter == null) {
-        this.logWriter =
-            LogWriterFactory.createLogWriterLogger(this.isLoner, false, this.config, true);
-        this.logWriter.fine("LogWriter is created.");
+      if (logWriter == null) {
+        logWriter =
+            LogWriterFactory.createLogWriterLogger(config, false);
+        logWriter.fine("LogWriter is created.");
       }
 
       // logWriter.info("Created log writer for IDS@"+System.identityHashCode(this));
 
-      if (this.securityLogWriter == null) {
+      if (securityLogWriter == null) {
         // LOG: whole new LogWriterLogger instance for security
-        this.securityLogWriter =
-            LogWriterFactory.createLogWriterLogger(this.isLoner, true, this.config, false);
-        this.securityLogWriter.fine("SecurityLogWriter is created.");
+        securityLogWriter =
+            LogWriterFactory.createLogWriterLogger(config, true);
+        securityLogWriter.fine("SecurityLogWriter is created.");
       }
 
-      Services.setLogWriter(this.logWriter);
-      Services.setSecurityLogWriter(this.securityLogWriter);
+      loggingSession.startSession();
 
-      this.clock = new DSClock(this.isLoner);
+      clock = new DSClock(isLoner);
 
-      if (this.attemptingToReconnect && logger.isDebugEnabled()) {
+      if (attemptingToReconnect && logger.isDebugEnabled()) {
         logger.debug(
-            "This thread is initializing a new DistributedSystem in order to reconnect to other members");
+            "This thread is initializing a new DistributedSystem in order to reconnect to other "
+                + "members");
       }
       // Note we need loners to load the license in case they are a
-      // bridge server and will need to enforce the member limit
+      // cache server and will need to enforce the member limit
       if (Boolean.getBoolean(InternalLocator.FORCE_LOCATOR_DM_TYPE)) {
-        this.locatorDMTypeForced = true;
+        locatorDMTypeForced = true;
       }
 
       initializeServices();
@@ -692,20 +715,19 @@ public class InternalDistributedSystem extends DistributedSystem
 
       // Initialize the Diffie-Hellman and public/private keys
       try {
-        EncryptorImpl.initCertsMap(this.config.getSecurityProps());
-        EncryptorImpl.initPrivateKey(this.config.getSecurityProps());
-        EncryptorImpl.initDHKeys(this.config);
+        EncryptorImpl.initCertsMap(config.getSecurityProps());
+        EncryptorImpl.initPrivateKey(config.getSecurityProps());
+        EncryptorImpl.initDHKeys(config);
       } catch (Exception ex) {
         throw new GemFireSecurityException(
-            LocalizedStrings.InternalDistributedSystem_PROBLEM_IN_INITIALIZING_KEYS_FOR_CLIENT_AUTHENTICATION
-                .toLocalizedString(),
+            "Problem in initializing keys for client authentication",
             ex);
       }
 
       final long offHeapMemorySize =
           OffHeapStorage.parseOffHeapMemorySize(getConfig().getOffHeapMemorySize());
 
-      this.offHeapStore = OffHeapStorage.createOffHeapStorage(this, offHeapMemorySize, this);
+      offHeapStore = OffHeapStorage.createOffHeapStorage(this, offHeapMemorySize, this);
 
       // Note: this can only happen on a linux system
       if (getConfig().getLockMemory()) {
@@ -714,20 +736,7 @@ public class InternalDistributedSystem extends DistributedSystem
         // included the available memory calculation.
         long avail = LinuxProcFsStatistics.getAvailableMemory(logger);
         long size = offHeapMemorySize + Runtime.getRuntime().totalMemory();
-        if (avail < size) {
-          if (ALLOW_MEMORY_LOCK_WHEN_OVERCOMMITTED) {
-            logger.warn(LocalizedMessage.create(
-                LocalizedStrings.InternalDistributedSystem_MEMORY_OVERCOMMIT_WARN, size - avail));
-          } else {
-            throw new IllegalStateException(
-                LocalizedStrings.InternalDistributedSystem_MEMORY_OVERCOMMIT
-                    .toLocalizedString(avail, size));
-          }
-        }
-
-        logger.info("Locking memory. This may take a while...");
-        GemFireCacheImpl.lockMemory();
-        logger.info("Finished locking memory.");
+        lockMemory(avail, size);
       }
 
       try {
@@ -736,16 +745,13 @@ public class InternalDistributedSystem extends DistributedSystem
         throw new SystemConnectException("Startup has been interrupted", e);
       }
 
-      synchronized (this.isConnectedMutex) {
-        this.isConnected = true;
+      synchronized (isConnectedMutex) {
+        isConnected = true;
       }
 
-      if (!this.isLoner) {
+      if (!isLoner) {
         try {
-          if (this.quorumChecker != null) {
-            this.quorumChecker.suspend();
-          }
-          this.dm = ClusterDistributionManager.create(this);
+          dm = ClusterDistributionManager.create(this);
           // fix bug #46324
           if (InternalLocator.hasLocator()) {
             InternalLocator locator = InternalLocator.getLocator();
@@ -753,33 +759,26 @@ public class InternalDistributedSystem extends DistributedSystem
                 InternalLocator.getLocatorStrings(), locator.isSharedConfigurationEnabled());
           }
         } finally {
-          if (this.dm == null && this.quorumChecker != null) {
-            this.quorumChecker.resume();
+          if (dm == null && quorumChecker != null) {
+            quorumChecker.resume();
           }
           setDisconnected();
         }
       } else {
-        this.dm = new LonerDistributionManager(this, this.logWriter);
+        dm = new LonerDistributionManager(this, logWriter);
       }
 
-      Assert.assertTrue(this.dm != null);
-      Assert.assertTrue(this.dm.getSystem() == this);
+      Assert.assertTrue(dm != null);
+      Assert.assertTrue(dm.getSystem() == this);
 
-      try {
-        this.id = this.dm.getMembershipPort();
-      } catch (DistributedSystemDisconnectedException e) {
-        // bug #48144 - The dm's channel threw an NPE. It now throws this exception
-        // but during startup we should instead throw a SystemConnectException
-        throw new SystemConnectException(
-            LocalizedStrings.InternalDistributedSystem_DISTRIBUTED_SYSTEM_HAS_DISCONNECTED
-                .toLocalizedString(),
-            e);
+      if (dm != null && dm.getDistribution() != null) {
+        id = dm.getDistribution().getLocalMember().getMembershipPort();
       }
 
-      synchronized (this.isConnectedMutex) {
-        this.isConnected = true;
+      synchronized (isConnectedMutex) {
+        isConnected = true;
       }
-      if (attemptingToReconnect && (this.startedLocator == null)) {
+      if (attemptingToReconnect && (startedLocator == null)) {
         try {
           startInitLocator();
         } catch (InterruptedException e) {
@@ -792,46 +791,82 @@ public class InternalDistributedSystem extends DistributedSystem
         throw new GemFireIOException("Problem finishing a locator service start", e);
       }
 
-      if (!statsDisabled) {
-        this.sampler = new GemFireStatSampler(this);
-        this.sampler.start();
-      }
+      startSampler();
 
-      if (this.logWriterAppender != null) {
-        LogWriterAppenders.startupComplete(LogWriterAppenders.Identifier.MAIN);
-      }
-      if (this.securityLogWriterAppender != null) {
-        LogWriterAppenders.startupComplete(LogWriterAppenders.Identifier.SECURITY);
-      }
+      clusterAlertMessaging.set(new ClusterAlertMessaging(this));
+      alertingService.useAlertMessaging(clusterAlertMessaging.get());
+      alertingSession.createSession(alertingService);
+      alertingSession.startSession();
+
+      metricsService = metricsServiceBuilder.build(this);
+      metricsService.start();
 
       // Log any instantiators that were registered before the log writer
       // was created
       InternalInstantiator.logInstantiators();
     } catch (RuntimeException ex) {
-      this.config.close();
+      config.close();
       throw ex;
     }
 
-    resourceListeners = new CopyOnWriteArrayList<>();
-    this.reconnected = this.attemptingToReconnect;
-    this.attemptingToReconnect = false;
+    reconnected = attemptingToReconnect;
+    attemptingToReconnect = false;
+    reconnectAttemptCounter.set(0);
+  }
+
+  void lockMemory(long avail, long size) {
+    if (avail < size) {
+      if (avoidMemoryLockWhenOvercommitted) {
+        logger.warn(
+            "System memory appears to be over committed by {} bytes. Memory will not be locked because -D{} is set to true.",
+            size - avail, AVOID_MEMORY_LOCK_WHEN_OVERCOMMIT);
+      } else if (allowMemoryLockWhenOvercommitted) {
+        logger.warn(
+            "System memory appears to be over committed by {} bytes. Memory is locked anyway because -D{} is set to true. You may experience instability, performance issues, or terminated processes due to the Linux OOM killer.",
+            size - avail, ALLOW_MEMORY_OVERCOMMIT);
+        lockMemory();
+      } else {
+        throw new IllegalStateException(
+            String.format(
+                "Insufficient free memory (%s) when attempting to lock %s bytes.  Either reduce the amount of heap or off-heap memory requested or free up additional system memory.  You may also specify -D%s=true on the command-line to override the constraint check.",
+                avail, size, ALLOW_MEMORY_OVERCOMMIT));
+      }
+    } else {
+      lockMemory();
+    }
+  }
+
+  void lockMemory() {
+    logger.info("Locking memory. This may take a while...");
+    GemFireCacheImpl.lockMemory();
+    logger.info("Finished locking memory.");
+  }
+
+  private void startSampler() {
+    if (statsDisabled) {
+      return;
+    }
+    sampler = loggingSession.getLogFile()
+        .map(logFile -> new GemFireStatSampler(this, logFile))
+        .orElseGet(() -> new GemFireStatSampler(this));
+    sampler.start();
   }
 
   /**
    * @since GemFire 5.7
    */
   private void startInitLocator() throws InterruptedException {
-    String locatorString = this.originalConfig.getStartLocator();
+    String locatorString = originalConfig.getStartLocator();
     if (locatorString.length() == 0) {
       return;
     }
 
     // when reconnecting we don't want to join with a colocated locator unless
     // there is a quorum of the old members available
-    if (attemptingToReconnect && !this.isConnected) {
-      if (this.quorumChecker != null) {
+    if (attemptingToReconnect && !isConnected) {
+      if (quorumChecker != null) {
         logger.info("performing a quorum check to see if location services can be started early");
-        if (!quorumChecker.checkForQuorum(3 * this.config.getMemberTimeout())) {
+        if (!quorumChecker.checkForQuorum(3L * config.getMemberTimeout())) {
           logger.info("quorum check failed - not allowing location services to start early");
           return;
         }
@@ -840,26 +875,26 @@ public class InternalDistributedSystem extends DistributedSystem
     }
     DistributionLocatorId locId = new DistributionLocatorId(locatorString);
     try {
-      this.startedLocator = InternalLocator.createLocator(locId.getPort(), null, this.logWriter,
-          this.securityLogWriter, locId.getHost().getAddress(), locId.getHostnameForClients(),
-          this.originalConfig.toProperties(), false);
+      startedLocator =
+          InternalLocator.createLocator(locId.getPort(), NullLoggingSession.create(), null,
+              logWriter, securityLogWriter, locId.getHost().getAddress(),
+              locId.getHostnameForClients(), originalConfig.toProperties(), false);
 
       // if locator is started this way, cluster config is not enabled, set the flag correctly
-      this.startedLocator.getConfig().setEnableClusterConfiguration(false);
+      startedLocator.getConfig().setEnableClusterConfiguration(false);
 
       boolean startedPeerLocation = false;
       try {
-        this.startedLocator.startPeerLocation();
+        startedLocator.startPeerLocation();
         startedPeerLocation = true;
       } finally {
         if (!startedPeerLocation) {
-          this.startedLocator.stop();
+          startedLocator.stop();
         }
       }
     } catch (IOException e) {
       throw new GemFireIOException(
-          LocalizedStrings.InternalDistributedSystem_PROBLEM_STARTING_A_LOCATOR_SERVICE
-              .toLocalizedString(),
+          "Problem starting a locator service",
           e);
     }
   }
@@ -868,7 +903,7 @@ public class InternalDistributedSystem extends DistributedSystem
    * @since GemFire 5.7
    */
   private void endInitLocator() throws IOException {
-    InternalLocator loc = this.startedLocator;
+    InternalLocator loc = startedLocator;
     if (loc != null) {
       boolean finished = false;
       try {
@@ -886,8 +921,8 @@ public class InternalDistributedSystem extends DistributedSystem
   /**
    * record a locator as a dependent of this distributed system
    */
-  public void setDependentLocator(InternalLocator theLocator) {
-    this.startedLocator = theLocator;
+  void setDependentLocator(InternalLocator theLocator) {
+    startedLocator = theLocator;
   }
 
   /**
@@ -906,24 +941,206 @@ public class InternalDistributedSystem extends DistributedSystem
   private void checkConnected() {
     if (!isConnected()) {
       throw new DistributedSystemDisconnectedException(
-          LocalizedStrings.InternalDistributedSystem_THIS_CONNECTION_TO_A_DISTRIBUTED_SYSTEM_HAS_BEEN_DISCONNECTED
-              .toLocalizedString(),
+          "This connection to a distributed system has been disconnected.",
           dm.getRootCause());
     }
   }
 
   @Override
   public boolean isConnected() {
-    if (this.dm == null) {
+    if (dm == null) {
       return false;
     }
-    if (this.dm.getCancelCriterion().isCancelInProgress()) {
+    if (dm.getCancelCriterion().isCancelInProgress()) {
       return false;
     }
-    if (this.isDisconnecting) {
+    if (isDisconnecting) {
       return false;
     }
-    return this.isConnected;
+    return isConnected;
+  }
+
+  /*
+   * This method was introduced so we can deterministically query whether the distributed
+   * system has fully disconnected or not. The isConnected() method will return false if a
+   * disconnection/cancellation is in progress, so it does not provide a reliable way to
+   * query if the distributed system is fully disconnected or not.
+   */
+  public boolean isDisconnected() {
+    return !isConnected;
+  }
+
+  public StatisticsManager getStatisticsManager() {
+    return statisticsManager;
+  }
+
+  @Override
+  public StatisticDescriptor createIntCounter(String name,
+      String description,
+      String units) {
+    return createLongCounter(name, description, units);
+  }
+
+  @Override
+  public StatisticDescriptor createLongCounter(String name,
+      String description,
+      String units) {
+    return statisticsManager.createLongCounter(name, description, units);
+  }
+
+  @Override
+  public StatisticDescriptor createDoubleCounter(String name,
+      String description,
+      String units) {
+    return statisticsManager.createDoubleCounter(name, description, units);
+  }
+
+  @Override
+  public StatisticDescriptor createIntGauge(String name,
+      String description,
+      String units) {
+    return createLongGauge(name, description, units);
+  }
+
+  @Override
+  public StatisticDescriptor createLongGauge(String name,
+      String description,
+      String units) {
+    return statisticsManager.createLongGauge(name, description, units);
+  }
+
+  @Override
+  public StatisticDescriptor createDoubleGauge(String name,
+      String description,
+      String units) {
+    return statisticsManager.createDoubleGauge(name, description, units);
+  }
+
+  @Override
+  public StatisticDescriptor createIntCounter(String name,
+      String description,
+      String units, boolean largerBetter) {
+    return createLongCounter(name, description, units, largerBetter);
+  }
+
+  @Override
+  public StatisticDescriptor createLongCounter(String name,
+      String description,
+      String units, boolean largerBetter) {
+    return statisticsManager.createLongCounter(name, description, units, largerBetter);
+  }
+
+  @Override
+  public StatisticDescriptor createDoubleCounter(String name,
+      String description,
+      String units,
+      boolean largerBetter) {
+    return statisticsManager.createDoubleCounter(name, description, units, largerBetter);
+  }
+
+  @Override
+  public StatisticDescriptor createIntGauge(String name,
+      String description,
+      String units, boolean largerBetter) {
+    return createLongGauge(name, description, units, largerBetter);
+  }
+
+  @Override
+  public StatisticDescriptor createLongGauge(String name,
+      String description,
+      String units, boolean largerBetter) {
+    return statisticsManager.createLongGauge(name, description, units, largerBetter);
+  }
+
+  @Override
+  public StatisticDescriptor createDoubleGauge(String name,
+      String description,
+      String units, boolean largerBetter) {
+    return statisticsManager.createDoubleGauge(name, description, units, largerBetter);
+  }
+
+  @Override
+  public StatisticsType createType(String name, String description,
+      StatisticDescriptor[] stats) {
+    return statisticsManager.createType(name, description, stats);
+  }
+
+  @Override
+  public StatisticsType findType(String name) {
+    return statisticsManager.findType(name);
+  }
+
+  @Override
+  public StatisticsType[] createTypesFromXml(Reader reader)
+      throws IOException {
+    return statisticsManager.createTypesFromXml(reader);
+  }
+
+  @Override
+  public Statistics createStatistics(StatisticsType type) {
+    return statisticsManager.createStatistics(type);
+  }
+
+  @Override
+  public Statistics createStatistics(StatisticsType type,
+      String textId) {
+    return statisticsManager.createStatistics(type, textId);
+  }
+
+  @Override
+  public Statistics createStatistics(StatisticsType type,
+      String textId, long numericId) {
+    return statisticsManager.createStatistics(type, textId, numericId);
+  }
+
+  @Override
+  public Statistics createAtomicStatistics(StatisticsType type) {
+    return statisticsManager.createAtomicStatistics(type);
+  }
+
+  @Override
+  public Statistics createAtomicStatistics(StatisticsType type,
+      String textId) {
+    return statisticsManager.createAtomicStatistics(type, textId);
+  }
+
+  @Override
+  public Statistics createAtomicStatistics(StatisticsType type,
+      String textId, long numericId) {
+    return statisticsManager.createAtomicStatistics(type, textId, numericId);
+  }
+
+  @Override
+  public Statistics[] findStatisticsByType(StatisticsType type) {
+    return statisticsManager.findStatisticsByType(type);
+  }
+
+  @Override
+  public Statistics[] findStatisticsByTextId(String textId) {
+    return statisticsManager.findStatisticsByTextId(textId);
+  }
+
+  @Override
+  public Statistics[] findStatisticsByNumericId(long numericId) {
+    return statisticsManager.findStatisticsByNumericId(numericId);
+  }
+
+  @Override
+  public String getName() {
+    return getOriginalConfig().getName();
+  }
+
+  @Override
+  public long getId() {
+    return id;
+  }
+
+  public long getStartTime() {
+    return startTime;
+  }
+
+  public MeterRegistry getMeterRegistry() {
+    return metricsService.getMeterRegistry();
   }
 
   /**
@@ -960,37 +1177,37 @@ public class InternalDistributedSystem extends DistributedSystem
   }
 
   public boolean isDisconnecting() {
-    if (this.dm == null) {
+    if (dm == null) {
       return true;
     }
-    if (this.dm.getCancelCriterion().isCancelInProgress()) {
+    if (dm.getCancelCriterion().isCancelInProgress()) {
       return true;
     }
-    if (!this.isConnected) {
+    if (!isConnected) {
       return true;
     }
-    return this.isDisconnecting;
+    return isDisconnecting;
   }
 
   @Override
   public LogWriter getLogWriter() {
-    return this.logWriter;
+    return logWriter;
   }
 
   public DSClock getClock() {
-    return this.clock;
+    return clock;
   }
 
   @Override
   public LogWriter getSecurityLogWriter() {
-    return this.securityLogWriter;
+    return securityLogWriter;
   }
 
   /**
    * Returns the stat sampler
    */
   public GemFireStatSampler getStatSampler() {
-    return this.sampler;
+    return sampler;
   }
 
   /**
@@ -1005,7 +1222,7 @@ public class InternalDistributedSystem extends DistributedSystem
   @Override
   public void disconnect() {
     disconnect(false,
-        LocalizedStrings.InternalDistributedSystem_NORMAL_DISCONNECT.toLocalizedString(), false);
+        "normal disconnect", false);
   }
 
   /**
@@ -1013,15 +1230,14 @@ public class InternalDistributedSystem extends DistributedSystem
    * distribution to fail (e.g., this member was shunned)
    *
    * @param reason a string describing why the disconnect is occurring
-   * @param cause an optional exception showing the reason for abnormal disconnect
    * @param shunned whether this member was shunned by the membership coordinator
    */
-  public void disconnect(String reason, Throwable cause, boolean shunned) {
+  public void disconnect(String reason, boolean shunned) {
     boolean isForcedDisconnect = dm.getRootCause() instanceof ForcedDisconnectException;
     boolean rejoined = false;
-    this.reconnected = false;
-    if (isForcedDisconnect) {
-      this.forcedDisconnect = true;
+    reconnected = false;
+    if (isForcedDisconnect && !isReconnectingDS) {
+      forcedDisconnect = true;
       resetReconnectAttemptCounter();
       rejoined = tryReconnect(true, reason, GemFireCacheImpl.getInstance());
     }
@@ -1035,7 +1251,7 @@ public class InternalDistributedSystem extends DistributedSystem
    * interrupt it.
    */
   private static final long MAX_DISCONNECT_WAIT =
-      Long.getLong("DistributionManager.DISCONNECT_WAIT", 10 * 1000).longValue();
+      Long.getLong("DistributionManager.DISCONNECT_WAIT", 10 * 1000);
 
   /**
    * Run a disconnect listener, checking for errors and honoring the timeout
@@ -1043,39 +1259,32 @@ public class InternalDistributedSystem extends DistributedSystem
    *
    * @param dc the listener to run
    */
-  private void runDisconnect(final DisconnectListener dc, ThreadGroup tg) {
+  private void runDisconnect(final DisconnectListener dc) {
     // Create a general handler for running the disconnect
-    Runnable r = new Runnable() {
-      public void run() {
-        try {
-          disconnectListenerThread.set(Boolean.TRUE);
-          dc.onDisconnect(InternalDistributedSystem.this);
-        } catch (CancelException e) {
-          if (logger.isDebugEnabled()) {
-            logger.debug("Disconnect listener <{}> thwarted by cancellation: {}", dc, e,
-                logger.isTraceEnabled() ? e : null);
-          }
+    // Launch it and wait a little bit
+    Thread t = new LoggingThread(dc.toString(), false, () -> {
+      try {
+        isDisconnectThread.set(Boolean.TRUE);
+        dc.onDisconnect(InternalDistributedSystem.this);
+      } catch (CancelException e) {
+        if (logger.isDebugEnabled()) {
+          logger.debug("Disconnect listener <{}> thwarted by cancellation: {}", dc, e,
+              traceException(e));
         }
       }
-    };
-
-    // Launch it and wait a little bit
-    Thread t = new Thread(tg, r, dc.toString());
+    });
     try {
       t.start();
       t.join(MAX_DISCONNECT_WAIT);
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
-      logger.warn(
-          LocalizedMessage.create(
-              LocalizedStrings.InternalDistributedSystem_INTERRUPTED_WHILE_PROCESSING_DISCONNECT_LISTENER),
+      logger.warn("Interrupted while processing disconnect listener",
           e);
     }
 
     // Make sure the listener gets the cue to die
     if (t.isAlive()) {
-      logger.warn(LocalizedMessage.create(
-          LocalizedStrings.InternalDistributedSystem_DISCONNECT_LISTENER_STILL_RUNNING__0, dc));
+      logger.warn("Disconnect listener still running: {}", dc);
       t.interrupt();
 
       try {
@@ -1085,78 +1294,71 @@ public class InternalDistributedSystem extends DistributedSystem
       }
 
       if (t.isAlive()) {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.InternalDistributedSystem_DISCONNECT_LISTENER_IGNORED_ITS_INTERRUPT__0,
-            dc));
+        logger.warn("Disconnect listener ignored its interrupt: {}",
+            dc);
       }
     }
 
   }
 
-  public boolean isDisconnectListenerThread() {
-    Boolean disconnectListenerThreadBoolean = (Boolean) this.disconnectListenerThread.get();
+  private Exception traceException(CancelException e) {
+    return logger.isTraceEnabled() ? e : null;
+  }
 
-    return disconnectListenerThreadBoolean != null
-        && disconnectListenerThreadBoolean.booleanValue();
+  public boolean isDisconnectThread() {
+    return isDisconnectThread.get();
+  }
+
+  public void setIsDisconnectThread() {
+    isDisconnectThread.set(Boolean.TRUE);
   }
 
   /**
    * Run a disconnect listener in the same thread sequence as the reconnect.
    *
    * @param dc the listener to run
-   * @param tg the thread group to run the listener in
    */
 
-  private void runDisconnectForReconnect(final DisconnectListener dc, ThreadGroup tg) {
+  private void runDisconnectForReconnect(final DisconnectListener dc) {
     try {
-      dc.onDisconnect(InternalDistributedSystem.this);
+      dc.onDisconnect(this);
     } catch (DistributedSystemDisconnectedException e) {
       if (logger.isDebugEnabled()) {
-        logger.debug("Disconnect listener <{}> thwarted by shutdown: {}", dc, e,
-            logger.isTraceEnabled() ? e : null);
+        logger.debug("Disconnect listener <{}> thwarted by shutdown: {}", dc, e, traceException(e));
       }
     }
   }
 
   /**
-   * A logging thread group for the disconnect and shutdown listeners
-   */
-  private final ThreadGroup disconnectListenerThreadGroup =
-      LoggingThreadGroup.createThreadGroup("Disconnect Listeners");
-
-  /**
    * Disconnect cache, run disconnect listeners.
    *
    * @param doReconnect whether a reconnect will be done
-   * @param reason the reason that the system is disconnecting
-   *
    * @return a collection of shutdownListeners
    */
-  private HashSet doDisconnects(boolean doReconnect, String reason) {
+  private HashSet<ShutdownListener> doDisconnects(boolean doReconnect) {
     // Make a pass over the disconnect listeners, asking them _politely_
     // to clean up.
-    HashSet shutdownListeners = new HashSet();
+    HashSet<ShutdownListener> shutdownListeners = new HashSet<>();
     for (;;) {
-      DisconnectListener listener = null;
-      synchronized (this.listeners) {
-        Iterator itr = listeners.iterator();
+      DisconnectListener listener;
+      synchronized (disconnectListeners) {
+        Iterator<DisconnectListener> itr = disconnectListeners.iterator();
         if (!itr.hasNext()) {
-          break;
+          return shutdownListeners;
         }
-        listener = (DisconnectListener) itr.next();
+        listener = itr.next();
         if (listener instanceof ShutdownListener) {
-          shutdownListeners.add(listener);
+          shutdownListeners.add((ShutdownListener) listener);
         }
         itr.remove();
       } // synchronized
 
       if (doReconnect) {
-        runDisconnectForReconnect(listener, disconnectListenerThreadGroup);
+        runDisconnectForReconnect(listener);
       } else {
-        runDisconnect(listener, disconnectListenerThreadGroup);
+        runDisconnect(listener);
       }
     } // for
-    return shutdownListeners;
   }
 
   /**
@@ -1165,17 +1367,15 @@ public class InternalDistributedSystem extends DistributedSystem
    *
    * @param shutdownListeners shutdown listeners initially registered with us
    */
-  private void doShutdownListeners(HashSet shutdownListeners) {
+  private void doShutdownListeners(HashSet<ShutdownListener> shutdownListeners) {
     if (shutdownListeners == null) {
       return;
     }
 
     // Process any shutdown listeners we reaped during first pass
-    Iterator it = shutdownListeners.iterator();
-    while (it.hasNext()) {
-      ShutdownListener s = (ShutdownListener) it.next();
+    for (ShutdownListener shutdownListener : shutdownListeners) {
       try {
-        s.onShutdown(this);
+        shutdownListener.onShutdown(this);
       } catch (VirtualMachineError err) {
         SystemFailure.initiateFailure(err);
         // If this ever returns, rethrow the error. We're poisoned
@@ -1189,8 +1389,7 @@ public class InternalDistributedSystem extends DistributedSystem
         // is still usable:
         SystemFailure.checkFailure();
         // things could break since we continue, but we want to disconnect!
-        logger.fatal(LocalizedMessage
-            .create(LocalizedStrings.InternalDistributedSystem_SHUTDOWNLISTENER__0__THREW, s), t);
+        logger.fatal(String.format("ShutdownListener < %s > threw...", shutdownListener), t);
       }
     }
 
@@ -1200,22 +1399,21 @@ public class InternalDistributedSystem extends DistributedSystem
     // that appeared in the interim.
     for (;;) {
       // Pluck next listener from the list
-      DisconnectListener dcListener = null;
+      DisconnectListener dcListener;
       ShutdownListener sdListener = null;
-      synchronized (this.listeners) {
-        Iterator itr = listeners.iterator();
+      synchronized (disconnectListeners) {
+        Iterator<DisconnectListener> itr = disconnectListeners.iterator();
         if (!itr.hasNext()) {
           break;
         }
-        dcListener = (DisconnectListener) itr.next();
+        dcListener = itr.next();
         itr.remove();
         if (dcListener instanceof ShutdownListener) {
           sdListener = (ShutdownListener) dcListener;
         }
       }
 
-      // Run the disconnect
-      runDisconnect(dcListener, disconnectListenerThreadGroup);
+      runDisconnect(dcListener);
 
       // Run the shutdown, if any
       if (sdListener != null) {
@@ -1234,29 +1432,10 @@ public class InternalDistributedSystem extends DistributedSystem
           // is still usable:
           SystemFailure.checkFailure();
           // things could break since we continue, but we want to disconnect!
-          logger.fatal(LocalizedMessage.create(
-              LocalizedStrings.InternalDistributedSystem_DISCONNECTLISTENERSHUTDOWN_THREW), t);
+          logger.fatal("DisconnectListener/Shutdown threw...", t);
         }
       }
     } // for
-  }
-
-  /**
-   * break any potential circularity in {@link #loadEmergencyClasses()}
-   */
-  private static volatile boolean emergencyClassesLoaded = false;
-
-  /**
-   * Ensure that the MembershipManager class gets loaded.
-   *
-   * @see SystemFailure#loadEmergencyClasses()
-   */
-  public static void loadEmergencyClasses() {
-    if (emergencyClassesLoaded) {
-      return;
-    }
-    emergencyClassesLoaded = true;
-    GMSMembershipManager.loadEmergencyClasses();
   }
 
   /**
@@ -1265,50 +1444,40 @@ public class InternalDistributedSystem extends DistributedSystem
    * @see SystemFailure#emergencyClose()
    */
   public void emergencyClose() {
-    final boolean DEBUG = SystemFailure.TRACE_CLOSE;
     if (dm != null) {
-      MembershipManager mm = dm.getMembershipManager();
+      Distribution mm = dm.getDistribution();
       if (mm != null) {
-        if (DEBUG) {
-          System.err.println("DEBUG: closing membership manager");
-        }
         mm.emergencyClose();
-        if (DEBUG) {
-          System.err.println("DEBUG: back from closing membership manager");
-        }
       }
     }
 
     // Garbage collection
     // Leave dm alone; its CancelCriterion will help people die
-    this.isConnected = false;
+    isConnected = false;
     if (dm != null) {
       dm.setRootCause(SystemFailure.getFailure());
     }
-    this.isDisconnecting = true;
-    this.listeners.clear();
-    if (DEBUG) {
-      System.err.println("DEBUG: done with InternalDistributedSystem#emergencyClose");
-    }
+    isDisconnecting = true;
+    disconnectListeners.clear();
   }
 
   private void setDisconnected() {
-    synchronized (this.isConnectedMutex) {
-      this.isConnected = false;
+    synchronized (isConnectedMutex) {
+      isConnected = false;
       isConnectedMutex.notifyAll();
     }
   }
 
   private void waitDisconnected() {
-    synchronized (this.isConnectedMutex) {
-      while (this.isConnected) {
+    synchronized (isConnectedMutex) {
+      while (isConnected) {
         boolean interrupted = Thread.interrupted();
         try {
-          this.isConnectedMutex.wait();
+          isConnectedMutex.wait();
         } catch (InterruptedException e) {
           interrupted = true;
-          getLogWriter().convertToLogWriterI18n()
-              .warning(LocalizedStrings.InternalDistributedSystem_DISCONNECT_WAIT_INTERRUPTED, e);
+          getLogWriter()
+              .warning("Disconnect wait interrupted", e);
         } finally {
           if (interrupted) {
             Thread.currentThread().interrupt();
@@ -1338,7 +1507,7 @@ public class InternalDistributedSystem extends DistributedSystem
 
     final boolean isDebugEnabled = logger.isDebugEnabled();
     try {
-      HashSet shutdownListeners = null;
+      HashSet<ShutdownListener> shutdownListeners = null;
       try {
         if (isDebugEnabled) {
           logger.debug("DistributedSystem.disconnect invoked on {}", this);
@@ -1351,8 +1520,8 @@ public class InternalDistributedSystem extends DistributedSystem
           // the distributed system close.
           InternalCache currentCache = getCache();
           if (currentCache != null && !currentCache.isClosed()) {
-            disconnectListenerThread.set(Boolean.TRUE); // bug #42663 - this must be set while
-                                                        // closing the cache
+            isDisconnectThread.set(Boolean.TRUE); // bug #42663 - this must be set while
+            // closing the cache
             try {
               currentCache.close(reason, dm.getRootCause(), keepAlive, true); // fix for 42150
             } catch (VirtualMachineError e) {
@@ -1363,65 +1532,58 @@ public class InternalDistributedSystem extends DistributedSystem
               // Whenever you catch Error or Throwable, you must also
               // check for fatal JVM error (see above). However, there is
               logger.warn(
-                  LocalizedMessage.create(
-                      LocalizedStrings.InternalDistributedSystem_EXCEPTION_TRYING_TO_CLOSE_CACHE),
+                  "Exception trying to close cache",
                   e);
             } finally {
-              disconnectListenerThread.set(Boolean.FALSE);
+              isDisconnectThread.set(Boolean.FALSE);
             }
           }
 
           // While still holding the lock, make sure this instance is
           // marked as shutting down
           synchronized (this) {
-            if (this.isDisconnecting) {
+            if (isDisconnecting) {
               // It's already started, but don't return
               // to the caller until it has completed.
               waitDisconnected();
               return;
             } // isDisconnecting
-            this.isDisconnecting = true;
+            isDisconnecting = true;
 
             if (!preparingForReconnect) {
               // move cancelReconnect above this synchronized block fix for bug 35202
-              if (this.reconnectDS != null) {
+              if (reconnectDS != null) {
                 // break recursion
                 if (isDebugEnabled) {
-                  logger.debug("disconnecting reconnected DS: {}", this.reconnectDS);
+                  logger.debug("disconnecting reconnected DS: {}", reconnectDS);
                 }
-                InternalDistributedSystem r = this.reconnectDS;
-                this.reconnectDS = null;
+                InternalDistributedSystem r = reconnectDS;
+                reconnectDS = null;
                 r.disconnect(false, null, false);
               }
             } // !reconnect
           } // synchronized (this)
         } // synchronized (GemFireCache.class)
 
+        securityService.close();
+
         if (!isShutdownHook) {
-          shutdownListeners = doDisconnects(attemptingToReconnect, reason);
+          shutdownListeners = doDisconnects(attemptingToReconnect);
         }
 
-        if (!this.attemptingToReconnect) {
-          if (this.logWriterAppender != null) {
-            LogWriterAppenders.stop(LogWriterAppenders.Identifier.MAIN);
-          }
-          if (this.securityLogWriterAppender != null) {
-            // LOG:SECURITY: old code did NOT invoke this
-            LogWriterAppenders.stop(LogWriterAppenders.Identifier.SECURITY);
-          }
+        if (!attemptingToReconnect) {
+          alertingSession.stopSession();
         }
-
-        AlertAppender.getInstance().shuttingDown();
 
       } finally { // be ABSOLUTELY CERTAIN that dm closed
         try {
           // Do the bulk of the close...
-          this.dm.close();
+          dm.close();
           // we close the locator after the DM so that when split-brain detection
           // is enabled, loss of the locator doesn't cause the DM to croak
-          if (this.startedLocator != null) {
-            this.startedLocator.stop(forcedDisconnect, preparingForReconnect, false);
-            this.startedLocator = null;
+          if (startedLocator != null) {
+            startedLocator.stop(forcedDisconnect, preparingForReconnect, false);
+            startedLocator = null;
           }
         } finally { // timer canceled
           // bug 38501: this has to happen *after*
@@ -1436,35 +1598,20 @@ public class InternalDistributedSystem extends DistributedSystem
         doShutdownListeners(shutdownListeners);
       }
 
-      // closing the Aggregate stats
-      if (functionServiceStats != null) {
-        functionServiceStats.close();
-      }
-      // closing individual function stats
-      for (FunctionStats functionstats : functionExecutionStatsMap.values()) {
-        functionstats.close();
-      }
+      functionStatsManager.close();
+      metricsService.stop();
 
-      (new FunctionServiceManager()).unregisterAllFunctions();
+      InternalFunctionService.unregisterAllFunctions();
 
-      if (this.sampler != null) {
-        this.sampler.stop();
-        this.sampler = null;
+      if (sampler != null) {
+        sampler.stop();
+        sampler = null;
       }
 
-      if (!this.attemptingToReconnect) {
-        if (this.logWriterAppender != null) {
-          LogWriterAppenders.destroy(LogWriterAppenders.Identifier.MAIN);
-        }
-        if (this.securityLogWriterAppender != null) {
-          LogWriterAppenders.destroy(LogWriterAppenders.Identifier.SECURITY);
-        }
+      if (!attemptingToReconnect) {
+        loggingSession.stopSession();
       }
 
-      // NOTE: no logging after this point :-)
-
-      LoggingThreadGroup.cleanUpThreadGroups(); // bug35388 - logwriters accumulate, causing mem
-                                                // leak
       EventID.unsetDS();
 
     } finally {
@@ -1475,8 +1622,14 @@ public class InternalDistributedSystem extends DistributedSystem
       } finally {
         try {
           removeSystem(this);
+          if (!attemptingToReconnect) {
+            loggingSession.shutdown();
+          }
+          alertingService.useAlertMessaging(new NullAlertMessaging());
+          clusterAlertMessaging.get().close();
+          alertingSession.shutdown();
           // Close the config object
-          this.config.close();
+          config.close();
         } finally {
           // Finally, mark ourselves as disconnected
           setDisconnected();
@@ -1491,25 +1644,26 @@ public class InternalDistributedSystem extends DistributedSystem
    */
   public DistributionManager getDistributionManager() {
     checkConnected();
-    return this.dm;
+    return dm;
   }
 
   /**
    * Returns the distribution manager without checking for connected or not so can also return null.
    */
   public DistributionManager getDM() {
-    return this.dm;
+    return dm;
   }
 
   /**
    * If this DistributedSystem is attempting to reconnect to the distributed system this will return
-   * the quorum checker created by the old MembershipManager for checking to see if a quorum of old
+   * the quorum checker created by the old {@link Distribution} for checking to see if a quorum of
+   * old
    * members can be reached.
    *
    * @return the quorum checking service
    */
-  public QuorumChecker getQuorumChecker() {
-    return this.quorumChecker;
+  QuorumChecker getQuorumChecker() {
+    return quorumChecker;
   }
 
   /**
@@ -1533,9 +1687,9 @@ public class InternalDistributedSystem extends DistributedSystem
     Boolean b = ConnectionTable.getThreadOwnsResourcesRegistration();
     if (b == null) {
       // thread does not have a preference so return default
-      return !this.shareSockets;
+      return !shareSockets;
     } else {
-      return b.booleanValue();
+      return b;
     }
   }
 
@@ -1547,7 +1701,7 @@ public class InternalDistributedSystem extends DistributedSystem
    */
   public boolean sameSystemAs(Properties props) {
     DistributionConfig other = DistributionConfigImpl.produce(props);
-    DistributionConfig me = this.getConfig();
+    DistributionConfig me = getConfig();
 
     if (!me.getBindAddress().equals(other.getBindAddress())) {
       return false;
@@ -1575,7 +1729,7 @@ public class InternalDistributedSystem extends DistributedSystem
    * @since GemFire 4.0
    */
   private static String canonicalizeLocators(String locators) {
-    SortedSet sorted = new TreeSet();
+    SortedSet<String> sorted = new TreeSet<>();
     StringTokenizer st = new StringTokenizer(locators, ",");
     while (st.hasMoreTokens()) {
       String l = st.nextToken();
@@ -1588,7 +1742,7 @@ public class InternalDistributedSystem extends DistributedSystem
         canonical.append(locId.getHostName());
       }
       canonical.append("[");
-      canonical.append(String.valueOf(locId.getPort()));
+      canonical.append(locId.getPort());
       canonical.append("]");
       sorted.add(canonical.toString());
     }
@@ -1607,17 +1761,41 @@ public class InternalDistributedSystem extends DistributedSystem
    * Returns the current configuration of this distributed system.
    */
   public DistributionConfig getConfig() {
-    return this.config;
+    return config;
   }
 
-  /**
-   * Returns the id of this connection to the distributed system. This is actually the port of the
-   * distribution manager's distribution channel.
-   *
-   */
+  public InternalAlertingService getAlertingService() {
+    return alertingService;
+  }
+
   @Override
-  public long getId() {
-    return this.id;
+  public LogConfig getLogConfig() {
+    return config;
+  }
+
+  @Override
+  public StatisticsConfig getStatisticsConfig() {
+    return config;
+  }
+
+  @Override
+  public void addLogConfigListener(LogConfigListener logConfigListener) {
+    logConfigListeners.add(logConfigListener);
+  }
+
+  @Override
+  public void removeLogConfigListener(LogConfigListener logConfigListener) {
+    logConfigListeners.remove(logConfigListener);
+  }
+
+  public Optional<LogFile> getLogFile() {
+    return loggingSession.getLogFile();
+  }
+
+  void logConfigChanged() {
+    for (LogConfigListener listener : logConfigListeners) {
+      listener.configChanged();
+    }
   }
 
   /**
@@ -1625,17 +1803,18 @@ public class InternalDistributedSystem extends DistributedSystem
    */
   @Override
   public String getMemberId() {
-    return String.valueOf(this.dm.getId());
+    return String.valueOf(dm.getId());
   }
 
   @Override
   public InternalDistributedMember getDistributedMember() {
-    return this.dm.getId();
+    return dm.getId();
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public Set<DistributedMember> getAllOtherMembers() {
-    return dm.getAllOtherMembers();
+    return (Set) dm.getAllOtherMembers();
   }
 
   @Override
@@ -1647,7 +1826,7 @@ public class InternalDistributedSystem extends DistributedSystem
   @Override
   public Set<DistributedMember> findDistributedMembers(InetAddress address) {
     Set<InternalDistributedMember> allMembers = dm.getDistributionManagerIdsIncludingAdmin();
-    Set<DistributedMember> results = new HashSet<DistributedMember>(2);
+    Set<DistributedMember> results = new HashSet<>(2);
 
     // Search through the set of all members
     for (InternalDistributedMember member : allMembers) {
@@ -1665,8 +1844,7 @@ public class InternalDistributedSystem extends DistributedSystem
 
   @Override
   public DistributedMember findDistributedMember(String name) {
-    Set<DistributedMember> allMembers = dm.getDistributionManagerIdsIncludingAdmin();
-    for (DistributedMember member : allMembers) {
+    for (DistributedMember member : dm.getDistributionManagerIdsIncludingAdmin()) {
       if (member.getName().equals(name)) {
         return member;
       }
@@ -1678,12 +1856,7 @@ public class InternalDistributedSystem extends DistributedSystem
    * Returns the configuration this distributed system was created with.
    */
   public DistributionConfig getOriginalConfig() {
-    return this.originalConfig;
-  }
-
-  @Override
-  public String getName() {
-    return getOriginalConfig().getName();
+    return originalConfig;
   }
 
   /////////////////////// Utility Methods ///////////////////////
@@ -1717,7 +1890,7 @@ public class InternalDistributedSystem extends DistributedSystem
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("Connected ");
-    String name = this.getName();
+    String name = getName();
     if (name != null && !name.equals("")) {
       sb.append("\"");
       sb.append(name);
@@ -1728,7 +1901,7 @@ public class InternalDistributedSystem extends DistributedSystem
     sb.append(") ");
 
     sb.append("to distributed system using ");
-    int port = this.config.getMcastPort();
+    int port = config.getMcastPort();
     if (port != 0) {
       sb.append("multicast port ");
       sb.append(port);
@@ -1736,11 +1909,11 @@ public class InternalDistributedSystem extends DistributedSystem
 
     } else {
       sb.append("locators \"");
-      sb.append(this.config.getLocators());
+      sb.append(config.getLocators());
       sb.append("\" ");
     }
 
-    File logFile = this.config.getLogFile();
+    File logFile = config.getLogFile();
     sb.append("logging to ");
     if (logFile == null || logFile.equals(new File(""))) {
       sb.append("standard out ");
@@ -1751,306 +1924,17 @@ public class InternalDistributedSystem extends DistributedSystem
     }
 
     sb.append(" started at ");
-    sb.append((new Date(this.startTime)).toString());
+    sb.append((new Date(startTime)).toString());
 
-    if (!this.isConnected()) {
+    if (!isConnected()) {
       sb.append(" (closed)");
     }
 
     return sb.toString().trim();
   }
 
-  private final CopyOnWriteArrayList<Statistics> statsList = new CopyOnWriteArrayList<Statistics>();
-  private int statsListModCount = 0;
-  private AtomicLong statsListUniqueId = new AtomicLong(1);
-
-  // As the function execution stats can be lot in number, its better to put
-  // them in a map so that it will be accessible immediately
-  private final ConcurrentHashMap<String, FunctionStats> functionExecutionStatsMap =
-      new ConcurrentHashMap<String, FunctionStats>();
-  private FunctionServiceStats functionServiceStats = null;
-
-  public int getStatListModCount() {
-    return this.statsListModCount;
-  }
-
-  public List<Statistics> getStatsList() {
-    return this.statsList;
-  }
-
-  @Override
-  public int getStatisticsCount() {
-    int result = 0;
-    List<Statistics> statsList = this.statsList;
-    if (statsList != null) {
-      result = statsList.size();
-    }
-    return result;
-  }
-
-  @Override
-  public Statistics findStatistics(long id) {
-    List<Statistics> statsList = this.statsList;
-    for (Statistics s : statsList) {
-      if (s.getUniqueId() == id) {
-        return s;
-      }
-    }
-    throw new RuntimeException(
-        LocalizedStrings.PureStatSampler_COULD_NOT_FIND_STATISTICS_INSTANCE.toLocalizedString());
-  }
-
-  @Override
-  public boolean statisticsExists(long id) {
-    List<Statistics> statsList = this.statsList;
-    for (Statistics s : statsList) {
-      if (s.getUniqueId() == id) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  @Override
-  public Statistics[] getStatistics() {
-    List<Statistics> statsList = this.statsList;
-    return statsList.toArray(new Statistics[0]);
-  }
-
-  // StatisticsFactory methods
-  public Statistics createStatistics(StatisticsType type) {
-    return createOsStatistics(type, null, 0, 0);
-  }
-
-  public Statistics createStatistics(StatisticsType type, String textId) {
-    return createOsStatistics(type, textId, 0, 0);
-  }
-
-  public Statistics createStatistics(StatisticsType type, String textId, long numericId) {
-    return createOsStatistics(type, textId, numericId, 0);
-  }
-
-  public Statistics createOsStatistics(StatisticsType type, String textId, long numericId,
-      int osStatFlags) {
-    if (this.statsDisabled) {
-      return new DummyStatisticsImpl(type, textId, numericId);
-    }
-    long myUniqueId = statsListUniqueId.getAndIncrement();
-    Statistics result =
-        new LocalStatisticsImpl(type, textId, numericId, myUniqueId, false, osStatFlags, this);
-    synchronized (statsList) {
-      statsList.add(result);
-      statsListModCount++;
-    }
-    return result;
-  }
-
-  public FunctionStats getFunctionStats(String textId) {
-    FunctionStats stats = functionExecutionStatsMap.get(textId);
-    if (stats == null) {
-      stats = new FunctionStats(this, textId);
-      FunctionStats oldStats = functionExecutionStatsMap.putIfAbsent(textId, stats);
-      if (oldStats != null) {
-        stats.close();
-        stats = oldStats;
-      }
-    }
-    return stats;
-  }
-
-
-  public FunctionServiceStats getFunctionServiceStats() {
-    if (functionServiceStats == null) {
-      synchronized (this) {
-        if (functionServiceStats == null) {
-          functionServiceStats = new FunctionServiceStats(this, "FunctionExecution");
-        }
-      }
-    }
-    return functionServiceStats;
-  }
-
-  /**
-   * For every registered statistic instance call the specified visitor. This method was added to
-   * fix bug 40358
-   */
-  public void visitStatistics(StatisticsVisitor visitor) {
-    for (Statistics s : this.statsList) {
-      visitor.visit(s);
-    }
-  }
-
-  /**
-   * Used to "visit" each instance of Statistics registered with
-   *
-   * @see #visitStatistics
-   */
-  public interface StatisticsVisitor {
-
-    void visit(Statistics stat);
-  }
-
-  public Set<String> getAllFunctionExecutionIds() {
-    return functionExecutionStatsMap.keySet();
-  }
-
-
-  public Statistics[] findStatisticsByType(final StatisticsType type) {
-    final ArrayList hits = new ArrayList();
-    visitStatistics(new StatisticsVisitor() {
-      public void visit(Statistics s) {
-        if (type == s.getType()) {
-          hits.add(s);
-        }
-      }
-    });
-    Statistics[] result = new Statistics[hits.size()];
-    return (Statistics[]) hits.toArray(result);
-  }
-
-  public Statistics[] findStatisticsByTextId(final String textId) {
-    final ArrayList hits = new ArrayList();
-    visitStatistics(new StatisticsVisitor() {
-      public void visit(Statistics s) {
-        if (s.getTextId().equals(textId)) {
-          hits.add(s);
-        }
-      }
-    });
-    Statistics[] result = new Statistics[hits.size()];
-    return (Statistics[]) hits.toArray(result);
-  }
-
-  public Statistics[] findStatisticsByNumericId(final long numericId) {
-    final ArrayList hits = new ArrayList();
-    visitStatistics(new StatisticsVisitor() {
-      public void visit(Statistics s) {
-        if (numericId == s.getNumericId()) {
-          hits.add(s);
-        }
-      }
-    });
-    Statistics[] result = new Statistics[hits.size()];
-    return (Statistics[]) hits.toArray(result);
-  }
-
-  public Statistics findStatisticsByUniqueId(final long uniqueId) {
-    for (Statistics s : this.statsList) {
-      if (uniqueId == s.getUniqueId()) {
-        return s;
-      }
-    }
-    return null;
-  }
-
-  /**
-   * for internal use only. Its called by {@link LocalStatisticsImpl#close}.
-   */
-  public void destroyStatistics(Statistics stats) {
-    synchronized (statsList) {
-      if (statsList.remove(stats)) {
-        statsListModCount++;
-      }
-    }
-  }
-
-  public Statistics createAtomicStatistics(StatisticsType type) {
-    return createAtomicStatistics(type, null, 0);
-  }
-
-  public Statistics createAtomicStatistics(StatisticsType type, String textId) {
-    return createAtomicStatistics(type, textId, 0);
-  }
-
-  public Statistics createAtomicStatistics(StatisticsType type, String textId, long numericId) {
-    if (this.statsDisabled) {
-      return new DummyStatisticsImpl(type, textId, numericId);
-    }
-
-    long myUniqueId = statsListUniqueId.getAndIncrement();
-    Statistics result = StatisticsImpl.createAtomicNoOS(type, textId, numericId, myUniqueId, this);
-    synchronized (statsList) {
-      statsList.add(result);
-      statsListModCount++;
-    }
-    return result;
-  }
-
-
-  // StatisticsTypeFactory methods
-  private static final StatisticsTypeFactory tf = StatisticsTypeFactoryImpl.singleton();
-
-  /**
-   * Creates or finds a StatisticType for the given shared class.
-   */
-  public StatisticsType createType(String name, String description, StatisticDescriptor[] stats) {
-    return tf.createType(name, description, stats);
-  }
-
-  public StatisticsType findType(String name) {
-    return tf.findType(name);
-  }
-
-  public StatisticsType[] createTypesFromXml(Reader reader) throws IOException {
-    return tf.createTypesFromXml(reader);
-  }
-
-  public StatisticDescriptor createIntCounter(String name, String description, String units) {
-    return tf.createIntCounter(name, description, units);
-  }
-
-  public StatisticDescriptor createLongCounter(String name, String description, String units) {
-    return tf.createLongCounter(name, description, units);
-  }
-
-  public StatisticDescriptor createDoubleCounter(String name, String description, String units) {
-    return tf.createDoubleCounter(name, description, units);
-  }
-
-  public StatisticDescriptor createIntGauge(String name, String description, String units) {
-    return tf.createIntGauge(name, description, units);
-  }
-
-  public StatisticDescriptor createLongGauge(String name, String description, String units) {
-    return tf.createLongGauge(name, description, units);
-  }
-
-  public StatisticDescriptor createDoubleGauge(String name, String description, String units) {
-    return tf.createDoubleGauge(name, description, units);
-  }
-
-  public StatisticDescriptor createIntCounter(String name, String description, String units,
-      boolean largerBetter) {
-    return tf.createIntCounter(name, description, units, largerBetter);
-  }
-
-  public StatisticDescriptor createLongCounter(String name, String description, String units,
-      boolean largerBetter) {
-    return tf.createLongCounter(name, description, units, largerBetter);
-  }
-
-  public StatisticDescriptor createDoubleCounter(String name, String description, String units,
-      boolean largerBetter) {
-    return tf.createDoubleCounter(name, description, units, largerBetter);
-  }
-
-  public StatisticDescriptor createIntGauge(String name, String description, String units,
-      boolean largerBetter) {
-    return tf.createIntGauge(name, description, units, largerBetter);
-  }
-
-  public StatisticDescriptor createLongGauge(String name, String description, String units,
-      boolean largerBetter) {
-    return tf.createLongGauge(name, description, units, largerBetter);
-  }
-
-  public StatisticDescriptor createDoubleGauge(String name, String description, String units,
-      boolean largerBetter) {
-    return tf.createDoubleGauge(name, description, units, largerBetter);
-  }
-
-  public long getStartTime() {
-    return this.startTime;
+  public FunctionStatsManager getFunctionStatsManager() {
+    return functionStatsManager;
   }
 
   /**
@@ -2068,6 +1952,14 @@ public class InternalDistributedSystem extends DistributedSystem
     }
   }
 
+  public static void removeConnectListener(ConnectListener listener) {
+    synchronized (existingSystemsLock) {
+      synchronized (connectListeners) {
+        connectListeners.remove(listener);
+      }
+    }
+  }
+
   /**
    * Makes note of a <code>ReconnectListener</code> whose <code>onReconnect</code> method will be
    * invoked when a connection is recreated to a distributed system during auto-reconnect.
@@ -2076,24 +1968,10 @@ public class InternalDistributedSystem extends DistributedSystem
    * The ReconnectListener set is cleared after a disconnect.
    */
   public static void addReconnectListener(ReconnectListener listener) {
-    // (new ManagerLogWriter(LogWriterImpl.FINE_LEVEL, System.out)).fine("registering reconnect
-    // listener: " + listener);
     synchronized (existingSystemsLock) {
       synchronized (reconnectListeners) {
         reconnectListeners.add(listener);
       }
-    }
-  }
-
-  /**
-   * Removes a <code>ConnectListener</code> from the list of listeners that will be notified when a
-   * connection is created to a distributed system.
-   *
-   * @return true if listener was in the list
-   */
-  public static boolean removeConnectListener(ConnectListener listener) {
-    synchronized (connectListeners) {
-      return connectListeners.remove(listener);
     }
   }
 
@@ -2103,9 +1981,8 @@ public class InternalDistributedSystem extends DistributedSystem
    */
   private static void notifyConnectListeners(InternalDistributedSystem sys) {
     synchronized (connectListeners) {
-      for (Iterator iter = connectListeners.iterator(); iter.hasNext();) {
+      for (ConnectListener listener : connectListeners) {
         try {
-          ConnectListener listener = (ConnectListener) iter.next();
           listener.onConnect(sys);
         } catch (VirtualMachineError err) {
           SystemFailure.initiateFailure(err);
@@ -2119,20 +1996,10 @@ public class InternalDistributedSystem extends DistributedSystem
           // error condition, so you also need to check to see if the JVM
           // is still usable:
           SystemFailure.checkFailure();
-          sys.getLogWriter().convertToLogWriterI18n()
-              .severe(LocalizedStrings.InternalDistributedSystem_CONNECTLISTENER_THREW, t);
+          sys.getLogWriter()
+              .severe("ConnectListener threw...", t);
         }
       }
-    }
-  }
-
-  /**
-   * Removes a <code>ReconnectListener</code> from the list of listeners that will be notified when
-   * a connection is recreated to a distributed system.
-   */
-  public static void removeReconnectListener(ReconnectListener listener) {
-    synchronized (reconnectListeners) {
-      reconnectListeners.remove(listener);
     }
   }
 
@@ -2144,7 +2011,7 @@ public class InternalDistributedSystem extends DistributedSystem
       InternalDistributedSystem newsys, boolean starting) {
     List<ReconnectListener> listeners;
     synchronized (reconnectListeners) {
-      listeners = new ArrayList<ReconnectListener>(reconnectListeners);
+      listeners = new ArrayList<>(reconnectListeners);
     }
     for (ReconnectListener listener : listeners) {
       try {
@@ -2168,8 +2035,7 @@ public class InternalDistributedSystem extends DistributedSystem
         // error condition, so you also need to check to see if the JVM
         // is still usable:
         SystemFailure.checkFailure();
-        logger.fatal(LocalizedMessage
-            .create(LocalizedStrings.InternalDistributedSystem_CONNECTLISTENER_THREW), t);
+        logger.fatal("ConnectListener threw...", t);
       }
     }
   }
@@ -2187,6 +2053,7 @@ public class InternalDistributedSystem extends DistributedSystem
         listener.handleEvent(event, resource);
       } catch (CancelException e) {
         // ignore
+        logger.info("Skipping notifyResourceEventListeners for {} due to cancellation", event);
       } catch (GemFireSecurityException | ManagementException ex) {
         if (event == ResourceEvent.CACHE_CREATE) {
           throw ex;
@@ -2210,23 +2077,22 @@ public class InternalDistributedSystem extends DistributedSystem
    * invoked when this connection to the distributed system is disconnected.
    */
   public void addDisconnectListener(DisconnectListener listener) {
-    synchronized (this.listeners) {
-      this.listeners.add(listener);
+    synchronized (disconnectListeners) {
+      disconnectListeners.add(listener);
 
-      Boolean disconnectListenerThreadBoolean = (Boolean) disconnectListenerThread.get();
+      boolean disconnectThreadBoolean = isDisconnectThread.get();
 
-      if (disconnectListenerThreadBoolean == null
-          || !disconnectListenerThreadBoolean.booleanValue()) {
+      if (!disconnectThreadBoolean) {
         // Don't add disconnect listener after messaging has been disabled.
         // Do this test _after_ adding the listener to narrow the window.
         // It's possible to miss it still and never invoke the listener, but
         // other shutdown conditions will presumably get flagged.
-        String reason = this.stopper.cancelInProgress();
+        String reason = stopper.cancelInProgress();
         if (reason != null) {
-          this.listeners.remove(listener); // don't leave in the list!
+          disconnectListeners.remove(listener); // don't leave in the list!
           throw new DistributedSystemDisconnectedException(
-              LocalizedStrings.InternalDistributedSystem_NO_LISTENERS_PERMITTED_AFTER_SHUTDOWN_0
-                  .toLocalizedString(reason),
+              String.format("No listeners permitted after shutdown: %s",
+                  reason),
               dm.getRootCause());
         }
       }
@@ -2234,21 +2100,12 @@ public class InternalDistributedSystem extends DistributedSystem
   }
 
   /**
-   * A non-null value of Boolean.TRUE will identify a thread being used to execute
-   * disconnectListeners. {@link #addDisconnectListener} will not throw ShutdownException if the
-   * value is Boolean.TRUE.
-   */
-  final ThreadLocal disconnectListenerThread = new ThreadLocal();
-
-  /**
    * Removes a <code>DisconnectListener</code> from the list of listeners that will be notified when
    * this connection to the distributed system is disconnected.
-   *
-   * @return true if listener was in the list
    */
-  public boolean removeDisconnectListener(DisconnectListener listener) {
-    synchronized (this.listeners) {
-      return this.listeners.remove(listener);
+  public void removeDisconnectListener(DisconnectListener listener) {
+    synchronized (disconnectListeners) {
+      disconnectListeners.remove(listener);
     }
   }
 
@@ -2274,67 +2131,54 @@ public class InternalDistributedSystem extends DistributedSystem
 
   @Override
   public Properties getProperties() {
-    return this.config.toProperties();
+    return config.toProperties();
   }
 
   @Override
   public Properties getSecurityProperties() {
-    return this.config.getSecurityProps();
-  }
-
-  /**
-   * Fires an "informational" <code>SystemMembershipEvent</code> in admin VMs.
-   *
-   * @since GemFire 4.0
-   */
-  public void fireInfoEvent(Object callback) {
-    throw new UnsupportedOperationException(
-        LocalizedStrings.InternalDistributedSystem_NOT_IMPLEMENTED_YET.toLocalizedString());
+    return config.getSecurityProps();
   }
 
   /**
    * Installs a shutdown hook to ensure that we are disconnected if an application VM shuts down
    * without first calling disconnect itself.
    */
+  @Immutable
   public static final Thread shutdownHook;
 
   static {
     // Create a shutdown hook to cleanly close connection if
     // VM shuts down with an open connection.
-    ThreadGroup tg = LoggingThreadGroup.createThreadGroup(SHUTDOWN_HOOK_NAME);
     Thread tmp_shutdownHook = null;
     try {
       // Added for bug 38407
       if (!Boolean.getBoolean(DISABLE_SHUTDOWN_HOOK_PROPERTY)) {
-        tmp_shutdownHook = new Thread(tg, new Runnable() {
-          public void run() {
-            DistributedSystem ds = InternalDistributedSystem.getAnyInstance();
-            setThreadsSocketPolicy(true /* conserve sockets */);
-            if (ds != null && ds.isConnected()) {
-              LogWriterI18n log = ((InternalDistributedSystem) ds).getInternalLogWriter();
-              log.info(LocalizedStrings.InternalDistributedSystem_shutdownHook_shuttingdown);
-              DurableClientAttributes dca = ((InternalDistributedSystem) ds).getDistributedMember()
-                  .getDurableClientAttributes();
-              boolean isDurableClient = false;
+        tmp_shutdownHook = new LoggingThread(SHUTDOWN_HOOK_NAME, false, () -> {
+          InternalDistributedSystem ds = InternalDistributedSystem.getAnyInstance();
+          setThreadsSocketPolicy(true /* conserve sockets */);
+          if (ds != null && ds.isConnected()) {
+            logger.info("VM is exiting - shutting down distributed system");
+            DurableClientAttributes dca = ds.getDistributedMember()
+                .getDurableClientAttributes();
+            boolean isDurableClient = false;
 
-              if (dca != null) {
-                isDurableClient = (!(dca.getId() == null || dca.getId().isEmpty()));
-              }
-
-              ((InternalDistributedSystem) ds).disconnect(false,
-                  LocalizedStrings.InternalDistributedSystem_NORMAL_DISCONNECT.toLocalizedString(),
-                  isDurableClient/* keep alive drive from this */);
-              // this was how we wanted to do it for 5.7, but there were shutdown
-              // issues in PR/dlock (see bug 39287)
-              // InternalDistributedSystem ids = (InternalDistributedSystem)ds;
-              // if (ids.getDistributionManager() != null &&
-              // ids.getDistributionManager().getMembershipManager() != null) {
-              // ids.getDistributionManager().getMembershipManager()
-              // .uncleanShutdown("VM is exiting", null);
-              // }
+            if (dca != null) {
+              isDurableClient = (!(dca.getId() == null || dca.getId().isEmpty()));
             }
+
+            ds.disconnect(false,
+                "normal disconnect",
+                isDurableClient/* keep alive drive from this */);
+            // this was how we wanted to do it for 5.7, but there were shutdown
+            // issues in PR/dlock (see bug 39287)
+            // InternalDistributedSystem ids = (InternalDistributedSystem)ds;
+            // if (ids.getDistributionManager() != null &&
+            // ids.getDistributionManager().getMembershipManager() != null) {
+            // ids.getDistributionManager().getMembershipManager()
+            // .uncleanShutdown("VM is exiting", null);
+            // }
           }
-        }, SHUTDOWN_HOOK_NAME);
+        }, false);
         Runtime.getRuntime().addShutdownHook(tmp_shutdownHook);
       }
     } finally {
@@ -2386,8 +2230,6 @@ public class InternalDistributedSystem extends DistributedSystem
 
     /**
      * Invoked after the connection to the distributed system has been disconnected
-     *
-     * @param sys
      */
     void onShutdown(InternalDistributedSystem sys);
   }
@@ -2395,12 +2237,8 @@ public class InternalDistributedSystem extends DistributedSystem
   /**
    * Integer representing number of tries already made to reconnect and that failed.
    */
-  private static volatile int reconnectAttemptCounter = 0;
-
-  /**
-   * The time at which reconnect attempts last began
-   */
-  private static long reconnectAttemptTime;
+  @MakeNotStatic
+  private static final AtomicInteger reconnectAttemptCounter = new AtomicInteger();
 
   /**
    * Boolean indicating if DS needs to reconnect and reconnect is in progress.
@@ -2411,6 +2249,11 @@ public class InternalDistributedSystem extends DistributedSystem
    * Boolean indicating this DS joined through a reconnect attempt
    */
   private volatile boolean reconnected = false;
+
+  /**
+   * If reconnect fails due to an exception it will be in this field
+   */
+  private Exception reconnectException;
 
   /**
    * Boolean indicating that this member has been shunned by other members or a network partition
@@ -2433,16 +2276,16 @@ public class InternalDistributedSystem extends DistributedSystem
    * Returns true if we are reconnecting the distributed system or reconnect has completed. If this
    * returns true it means that this instance of the DS is now disconnected and unusable.
    */
+  @Override
   public boolean isReconnecting() {
-    InternalDistributedSystem rds = this.reconnectDS;
+    InternalDistributedSystem rds = reconnectDS;
     if (!attemptingToReconnect) {
       return false;
     }
     if (reconnectCancelled) {
       return false;
     }
-    boolean newDsConnected = (rds == null || !rds.isConnected());
-    return newDsConnected;
+    return (rds == null || !rds.isConnected());
   }
 
 
@@ -2451,8 +2294,8 @@ public class InternalDistributedSystem extends DistributedSystem
    * one of the connection attempts. If the connection succeeds this state is cleared and this
    * method will commence to return false.
    */
-  public boolean isReconnectingDS() {
-    return this.isReconnectingDS;
+  boolean isReconnectingDS() {
+    return isReconnectingDS;
   }
 
   /**
@@ -2460,9 +2303,9 @@ public class InternalDistributedSystem extends DistributedSystem
    * isReconnectingDS returns true. This is used to connect the new DM to the distributed system
    * through RemoteTransportConfig.
    */
-  public Object oldDSMembershipInfo() {
-    if (this.quorumChecker != null) {
-      return this.quorumChecker.getMembershipInfo();
+  MembershipInformation oldDSMembershipInfo() {
+    if (quorumChecker != null) {
+      return quorumChecker.getMembershipInfo();
     }
     return null;
   }
@@ -2472,14 +2315,14 @@ public class InternalDistributedSystem extends DistributedSystem
    * of required-roles
    */
   public boolean reconnected() {
-    return this.reconnected;
+    return reconnected;
   }
 
   /**
    * Returns true if this DS has been kicked out of the distributed system
    */
   public boolean forcedDisconnect() {
-    return this.forcedDisconnect;
+    return forcedDisconnect;
   }
 
   /**
@@ -2491,14 +2334,12 @@ public class InternalDistributedSystem extends DistributedSystem
    * Make sure this instance of DS never does a reconnect. Also if reconnect is in progress cancel
    * it.
    */
-  public void cancelReconnect() {
-    // (new ManagerLogWriter(LogWriterImpl.FINE_LEVEL, System.out)).fine("cancelReconnect invoked",
-    // new Exception("stack trace"));
-    this.reconnectCancelled = true;
+  private void cancelReconnect() {
+    reconnectCancelled = true;
     if (isReconnecting()) {
-      synchronized (this.reconnectLock) { // should the synchronized be first on this and
+      synchronized (reconnectLock) { // should the synchronized be first on this and
         // then on this.reconnectLock.
-        this.reconnectLock.notifyAll();
+        reconnectLock.notifyAll();
       }
     }
   }
@@ -2515,14 +2356,13 @@ public class InternalDistributedSystem extends DistributedSystem
    */
   public boolean tryReconnect(boolean forcedDisconnect, String reason, InternalCache oldCache) {
     final boolean isDebugEnabled = logger.isDebugEnabled();
-    if (this.isReconnectingDS && forcedDisconnect) {
+    if (isReconnectingDS && forcedDisconnect) {
       return false;
     }
-    synchronized (CacheFactory.class) { // bug #51335 - deadlock with app thread trying to create a
-                                        // cache
+    synchronized (InternalCacheBuilder.class) {
       synchronized (GemFireCacheImpl.class) {
         // bug 39329: must lock reconnectLock *after* the cache
-        synchronized (this.reconnectLock) {
+        synchronized (reconnectLock) {
           if (!forcedDisconnect && !oldCache.isClosed()
               && oldCache.getCachePerfStats().getReliableRegionsMissing() == 0) {
             if (isDebugEnabled) {
@@ -2535,7 +2375,7 @@ public class InternalDistributedSystem extends DistributedSystem
             logger.debug("tryReconnect: forcedDisconnect={}", forcedDisconnect);
           }
           if (forcedDisconnect) {
-            if (this.config.getDisableAutoReconnect()) {
+            if (config.getDisableAutoReconnect()) {
               if (isDebugEnabled) {
                 logger.debug("tryReconnect: auto reconnect after forced disconnect is disabled");
               }
@@ -2543,7 +2383,7 @@ public class InternalDistributedSystem extends DistributedSystem
             }
           }
           reconnect(forcedDisconnect, reason);
-          return this.reconnectDS != null && this.reconnectDS.isConnected();
+          return reconnectDS != null && reconnectDS.isConnected();
         } // synchronized reconnectLock
       } // synchronized cache
     } // synchronized CacheFactory.class
@@ -2554,7 +2394,7 @@ public class InternalDistributedSystem extends DistributedSystem
    * Returns the value for the number of time reconnect has been tried. Test method used by DUnit.
    */
   public static int getReconnectAttemptCounter() {
-    return reconnectAttemptCounter;
+    return reconnectAttemptCounter.get();
   }
 
   /**
@@ -2577,7 +2417,7 @@ public class InternalDistributedSystem extends DistributedSystem
     // If reconnecting for forced-disconnect we ignore max-tries and keep attempting
     // to join the distributed system until successful
 
-    this.attemptingToReconnect = true;
+    attemptingToReconnect = true;
     InternalDistributedSystem ids = InternalDistributedSystem.getAnyInstance();
     if (ids == null) {
       ids = this;
@@ -2596,8 +2436,18 @@ public class InternalDistributedSystem extends DistributedSystem
     }
 
     DistributionConfig oldConfig = ids.getConfig();
-    Properties configProps = getProperties();
+    Properties configProps = config.toProperties();
+    configProps.putAll(config.toSecurityProperties());
+
     int timeOut = oldConfig.getMaxWaitTimeForReconnect();
+    int memberTimeout = oldConfig.getMemberTimeout();
+    // we need to make sure that a surviving member is able
+    // to take over coordination before trying to auto-reconnect.
+    // failure detection can take 4 member-timeout intervals
+    // so we set that as a minimum. (suspect, check suspect, final check, send new view)
+    final int intervalsAllowedForFailureDetection = 4;
+    timeOut = Math.max(timeOut, memberTimeout * intervalsAllowedForFailureDetection);
+
     int maxTries = oldConfig.getMaxNumReconnectTries();
 
     final boolean isDebugEnabled = logger.isDebugEnabled();
@@ -2610,8 +2460,8 @@ public class InternalDistributedSystem extends DistributedSystem
     }
 
     // get the membership manager for quorum checks
-    MembershipManager mbrMgr = this.dm.getMembershipManager();
-    this.quorumChecker = mbrMgr.getQuorumChecker();
+    Distribution mbrMgr = dm.getDistribution();
+    quorumChecker = mbrMgr.getQuorumChecker();
     if (logger.isDebugEnabled()) {
       if (quorumChecker == null) {
         logger.debug("No quorum checks will be performed during reconnect attempts");
@@ -2633,7 +2483,7 @@ public class InternalDistributedSystem extends DistributedSystem
       systemAttemptingReconnect = this;
     }
     try {
-      while (this.reconnectDS == null || !this.reconnectDS.isConnected()) {
+      while (reconnectDS == null || !reconnectDS.isConnected()) {
         if (isReconnectCancelled()) {
           break;
         }
@@ -2642,29 +2492,25 @@ public class InternalDistributedSystem extends DistributedSystem
           if (isDebugEnabled) {
             logger.debug("Max number of tries : {} and max time out : {}", maxTries, timeOut);
           }
-          if (reconnectAttemptCounter >= maxTries) {
+          if (reconnectAttemptCounter.get() >= maxTries) {
             if (isDebugEnabled) {
               logger.debug(
-                  "Stopping the checkrequiredrole thread because reconnect : {} reached the max number of reconnect tries : {}",
+                  "Stopping the checkrequiredrole thread because reconnect : {} reached the max "
+                      + "number of reconnect tries : {}",
                   reconnectAttemptCounter, maxTries);
             }
             InternalCache internalCache = dm.getCache();
             if (internalCache == null) {
               throw new CacheClosedException(
-                  LocalizedStrings.InternalDistributedSystem_SOME_REQUIRED_ROLES_MISSING
-                      .toLocalizedString());
+                  "Some required roles missing");
             } else {
               throw internalCache.getCacheClosedException(
-                  LocalizedStrings.InternalDistributedSystem_SOME_REQUIRED_ROLES_MISSING
-                      .toLocalizedString());
+                  "Some required roles missing");
             }
           }
         }
 
-        if (reconnectAttemptCounter == 0) {
-          reconnectAttemptTime = System.currentTimeMillis();
-        }
-        reconnectAttemptCounter++;
+        reconnectAttemptCounter.getAndIncrement();
 
         if (isReconnectCancelled()) {
           return;
@@ -2678,11 +2524,12 @@ public class InternalDistributedSystem extends DistributedSystem
           logger.warn("Exception disconnecting for reconnect", ee);
         }
 
+        TypeRegistry.init();
+
         try {
           reconnectLock.wait(timeOut);
         } catch (InterruptedException e) {
-          logger.warn(LocalizedMessage.create(
-              LocalizedStrings.InternalDistributedSystem_WAITING_THREAD_FOR_RECONNECT_GOT_INTERRUPTED));
+          logger.warn("Waiting thread for reconnect got interrupted.");
           Thread.currentThread().interrupt();
           return;
         }
@@ -2691,16 +2538,16 @@ public class InternalDistributedSystem extends DistributedSystem
           return;
         }
 
+        logger.info(
+            "Attempting to reconnect to the distributed system.  This is attempt #{}.",
+            reconnectAttemptCounter);
 
-        logger.info(LocalizedMessage.create(LocalizedStrings.DISTRIBUTED_SYSTEM_RECONNECTING,
-            new Object[] {reconnectAttemptCounter}));
-
-        int savNumOfTries = reconnectAttemptCounter;
+        int saveNumberOfTries = reconnectAttemptCounter.get();
         try {
           // notify listeners of each attempt and then again after successful
-          notifyReconnectListeners(this, this.reconnectDS, true);
+          notifyReconnectListeners(this, reconnectDS, true);
 
-          if (this.locatorDMTypeForced) {
+          if (locatorDMTypeForced) {
             System.setProperty(InternalLocator.FORCE_LOCATOR_DM_TYPE, "true");
           }
 
@@ -2716,7 +2563,7 @@ public class InternalDistributedSystem extends DistributedSystem
 
           try {
 
-            newDS = (InternalDistributedSystem) connect(configProps);
+            newDS = connectInternal(configProps, null, metricsService.getRebuilder());
 
           } catch (CancelException e) {
             if (isReconnectCancelled()) {
@@ -2731,104 +2578,111 @@ public class InternalDistributedSystem extends DistributedSystem
             }
           }
 
-          if (this.reconnectCancelled) {
+          if (reconnectCancelled) {
             newDS.disconnect();
             continue;
           }
 
-          this.reconnectDS = newDS;
+          reconnectDS = newDS;
         } catch (SystemConnectException e) {
           logger.debug("Attempt to reconnect failed with SystemConnectException");
 
           if (e.getMessage().contains("Rejecting the attempt of a member using an older version")) {
-            logger.warn(
-                LocalizedMessage.create(
-                    LocalizedStrings.InternalDistributedSystem_EXCEPTION_OCCURRED_WHILE_TRYING_TO_CONNECT_THE_SYSTEM_DURING_RECONNECT),
+            logger.warn("Exception occurred while trying to connect the system during reconnect",
                 e);
             attemptingToReconnect = false;
+            reconnectException = e;
             return;
           }
           logger.warn("Caught SystemConnectException in reconnect", e);
           continue;
         } catch (GemFireConfigException e) {
-          if (isDebugEnabled) {
-            logger.debug("Attempt to reconnect failed with GemFireConfigException");
-          }
           logger.warn("Caught GemFireConfigException in reconnect", e);
           continue;
-        } catch (Exception ee) {
-          logger.warn(
-              LocalizedMessage.create(
-                  LocalizedStrings.InternalDistributedSystem_EXCEPTION_OCCURRED_WHILE_TRYING_TO_CONNECT_THE_SYSTEM_DURING_RECONNECT),
-              ee);
+        } catch (Exception e) {
+          logger.warn("Exception occurred while trying to connect the system during reconnect",
+              e);
           attemptingToReconnect = false;
+          reconnectException = e;
           return;
         } finally {
-          if (this.locatorDMTypeForced) {
+          if (locatorDMTypeForced) {
             System.getProperties().remove(InternalLocator.FORCE_LOCATOR_DM_TYPE);
           }
-          reconnectAttemptCounter = savNumOfTries;
+          reconnectAttemptCounter.set(saveNumberOfTries);
         }
 
-
-        DistributionManager newDM = this.reconnectDS.getDistributionManager();
+        DistributionManager newDM = reconnectDS.getDistributionManager();
         if (newDM instanceof ClusterDistributionManager) {
           // Admin systems don't carry a cache, but for others we can now create
           // a cache
           if (newDM.getDMType() != ClusterDistributionManager.ADMIN_ONLY_DM_TYPE) {
-            try {
-              CacheConfig config = new CacheConfig();
-              if (cacheXML != null) {
-                config.setCacheXMLDescription(cacheXML);
-              }
-              cache = GemFireCacheImpl.create(this.reconnectDS, config);
+            boolean retry;
+            do {
+              retry = false;
+              try {
+                cache = new InternalCacheBuilder()
+                    .setCacheXMLDescription(cacheXML)
+                    .create(reconnectDS);
 
-              createAndStartCacheServers(cacheServerCreation, cache);
+                if (!cache.isClosed()) {
+                  createAndStartCacheServers(cacheServerCreation, cache);
+                  if (cache.getCachePerfStats().getReliableRegionsMissing() == 0) {
+                    reconnectAttemptCounter.set(0);
+                  }
+                }
 
-              if (cache.getCachePerfStats().getReliableRegionsMissing() == 0) {
-                reconnectAttemptCounter = 0;
-              } else {
-                // this try failed. The new cache will call reconnect again
+              } catch (GemFireConfigException e) {
+                if (e.getCause() instanceof ClusterConfigurationNotAvailableException) {
+                  retry = true;
+                  logger.info("Reconnected to the cluster but the cluster configuration service "
+                      + "isn't available - will retry creating the cache");
+                  try {
+                    Thread.sleep(5000);
+                  } catch (InterruptedException e1) {
+                    reconnectCancelled = true;
+                    reconnectException = e;
+                    break;
+                  }
+                }
+              } catch (Exception e) {
+                // We need to give up because we'll probably get the same exception in
+                // the next attempt to build the cache.
+                logger.warn(
+                    "Exception occurred while trying to create the cache during reconnect.  "
+                        + "Auto-reconnect is terminating.",
+                    e);
+                reconnectCancelled = true;
+                reconnectException = e;
+                break;
               }
-            } catch (CacheXmlException e) {
-              logger.warn("Exception occurred while trying to create the cache during reconnect",
-                  e);
-              reconnectDS.disconnect();
-              reconnectDS = null;
-              reconnectCancelled = true;
-              break;
-            } catch (CancelException ignor) {
-              logger.warn("Exception occurred while trying to create the cache during reconnect",
-                  ignor);
-              reconnectDS.disconnect();
-              reconnectDS = null;
-            } catch (Exception e) {
-              logger.warn(
-                  LocalizedMessage.create(
-                      LocalizedStrings.InternalDistributedSystem_EXCEPTION_OCCURRED_WHILE_TRYING_TO_CREATE_THE_CACHE_DURING_RECONNECT),
-                  e);
-            }
+            } while (retry);
           }
         }
 
         if (reconnectDS != null && reconnectDS.isConnected()) {
           // make sure the new DS and cache are stable before exiting this loop
           try {
-            Thread.sleep(config.getMemberTimeout() * 3);
+            Thread.sleep(config.getMemberTimeout() * 3L);
           } catch (InterruptedException e) {
             logger.info("Reconnect thread has been interrupted - exiting");
             Thread.currentThread().interrupt();
+            reconnectCancelled = true;
+            reconnectException = e;
             return;
           }
         }
-
       } // while()
 
       if (isReconnectCancelled()) {
-        reconnectDS.disconnect();
+        if (reconnectDS != null) {
+          reconnectDS.disconnect();
+        }
       } else {
         reconnectDS.isReconnectingDS = false;
-        notifyReconnectListeners(this, this.reconnectDS, false);
+        if (reconnectDS.isConnected()) {
+          notifyReconnectListeners(this, reconnectDS, false);
+        }
       }
 
     } finally {
@@ -2844,8 +2698,13 @@ public class InternalDistributedSystem extends DistributedSystem
       } else {
         System.setProperty(InternalLocator.INHIBIT_DM_BANNER, inhibitBanner);
       }
-      if (quorumChecker != null) {
-        mbrMgr.releaseQuorumChecker(quorumChecker);
+      dm.getDistribution().setReconnectCompleted(true);
+      InternalDistributedSystem newds = reconnectDS;
+      if (newds != null) {
+        newds.getDM().getDistribution().setReconnectCompleted(true);
+      }
+      if (quorumChecker != null && (reconnectDS == null || !reconnectDS.isConnected())) {
+        quorumChecker.close();
       }
     }
 
@@ -2855,12 +2714,10 @@ public class InternalDistributedSystem extends DistributedSystem
         reconnectDS.disconnect();
       }
       attemptingToReconnect = false;
-      return;
-    } else {
+    } else if (reconnectDS != null && reconnectDS.isConnected()) {
       logger.info("Reconnect completed.\nNew DistributedSystem is {}\nNew Cache is {}", reconnectDS,
           cache);
     }
-
   }
 
 
@@ -2889,7 +2746,7 @@ public class InternalDistributedSystem extends DistributedSystem
         }
       } catch (IOException ex) {
         throw new GemFireIOException(
-            LocalizedStrings.CacheCreation_WHILE_STARTING_CACHE_SERVER_0.toLocalizedString(server),
+            String.format("While starting cache server %s", server),
             ex);
       }
     }
@@ -2901,21 +2758,19 @@ public class InternalDistributedSystem extends DistributedSystem
    * InternalDistributedSystem
    *
    * @param propsToCheck the Properties instance to compare with the existing Properties
-   *
    * @throws IllegalStateException when the configuration is not the same other returns
    */
   public void validateSameProperties(Properties propsToCheck, boolean isConnected) {
-    if (!this.sameAs(propsToCheck, isConnected)) {
+    if (!sameAs(propsToCheck, isConnected)) {
       StringBuilder sb = new StringBuilder();
 
       DistributionConfig wanted = DistributionConfigImpl.produce(propsToCheck);
 
-      String[] validAttributeNames = this.originalConfig.getAttributeNames();
-      for (int i = 0; i < validAttributeNames.length; i++) {
-        String attName = validAttributeNames[i];
+      String[] validAttributeNames = originalConfig.getAttributeNames();
+      for (String attName : validAttributeNames) {
         Object expectedAtt = wanted.getAttributeObject(attName);
         String expectedAttStr = expectedAtt.toString();
-        Object actualAtt = this.originalConfig.getAttributeObject(attName);
+        Object actualAtt = originalConfig.getAttributeObject(attName);
         String actualAttStr = actualAtt.toString();
         sb.append("  ");
         sb.append(attName);
@@ -2936,15 +2791,19 @@ public class InternalDistributedSystem extends DistributedSystem
         sb.append("\n");
       }
 
-      if (this.creationStack == null) {
+      if (creationStack == null) {
         throw new IllegalStateException(
-            LocalizedStrings.InternalDistributedSystem_A_CONNECTION_TO_A_DISTRIBUTED_SYSTEM_ALREADY_EXISTS_IN_THIS_VM_IT_HAS_THE_FOLLOWING_CONFIGURATION_0
-                .toLocalizedString(sb.toString()));
+            String.format(
+                "A connection to a distributed system already exists in this VM.  It has the "
+                    + "following configuration:%s",
+                sb.toString()));
       } else {
         throw new IllegalStateException(
-            LocalizedStrings.InternalDistributedSystem_A_CONNECTION_TO_A_DISTRIBUTED_SYSTEM_ALREADY_EXISTS_IN_THIS_VM_IT_HAS_THE_FOLLOWING_CONFIGURATION_0
-                .toLocalizedString(sb.toString()),
-            this.creationStack);
+            String.format(
+                "A connection to a distributed system already exists in this VM.  It has the "
+                    + "following configuration:%s",
+                sb.toString()),
+            creationStack);
       }
     }
   }
@@ -2986,21 +2845,12 @@ public class InternalDistributedSystem extends DistributedSystem
     void onConnect(InternalDistributedSystem sys);
   }
 
-  public String forceStop() {
-    if (this.dm == null) {
-      return LocalizedStrings.InternalDistributedSystem_NO_DISTRIBUTION_MANAGER.toLocalizedString();
-    }
-    String reason = dm.getCancelCriterion().cancelInProgress();
-    return reason;
-  }
-
   public boolean hasAlertListenerFor(DistributedMember member) {
-    return hasAlertListenerFor(member, AlertLevel.WARNING.getSeverity());
+    return hasAlertListenerFor(member, AlertLevel.WARNING.intLevel());
   }
-
 
   public boolean hasAlertListenerFor(DistributedMember member, int severity) {
-    return AlertAppender.getInstance().hasAlertListener(member, severity);
+    return alertingService.hasAlertListener(member, AlertLevel.find(severity));
   }
 
   /**
@@ -3016,22 +2866,6 @@ public class InternalDistributedSystem extends DistributedSystem
     DistributedSystem.setEnableAdministrationOnly(adminOnly);
   }
 
-  public boolean isServerLocator() {
-    return this.startedLocator.isServerLocator();
-  }
-
-  /**
-   * Provides synchronized time for this process based on other processes in this GemFire
-   * distributed system. GemFire distributed system coordinator adjusts each member's time by an
-   * offset. This offset for each member is calculated based on Berkeley Time Synchronization
-   * algorithm.
-   *
-   * @return time in milliseconds.
-   */
-  public long systemTimeMillis() {
-    return dm.cacheTimeMillis();
-  }
-
   @Override
   public boolean waitUntilReconnected(long time, TimeUnit units) throws InterruptedException {
     int sleepTime = 1000;
@@ -3041,41 +2875,49 @@ public class InternalDistributedSystem extends DistributedSystem
     } else {
       endTime += TimeUnit.MILLISECONDS.convert(time, units);
     }
-    synchronized (this.reconnectLock) {
-      InternalDistributedSystem recon = this.reconnectDS;
-
+    synchronized (reconnectLock) {
       while (isReconnecting()) {
-        if (this.reconnectCancelled) {
+        if (reconnectCancelled) {
           break;
         }
         if (time != 0) {
-          this.reconnectLock.wait(sleepTime);
+          reconnectLock.wait(sleepTime);
         }
         if (time == 0 || System.currentTimeMillis() > endTime) {
           break;
         }
       }
 
-      recon = this.reconnectDS;
+      if (reconnectException != null) {
+        throw new DistributedSystemDisconnectedException(
+            "Reconnect attempts terminated due to exception", reconnectException);
+      }
+      InternalDistributedSystem recon = reconnectDS;
       return !attemptingToReconnect && recon != null && recon.isConnected();
     }
   }
 
   @Override
   public DistributedSystem getReconnectedSystem() {
-    return this.reconnectDS;
+    return reconnectDS;
   }
 
   @Override
   public void stopReconnecting() {
-    // (new ManagerLogWriter(LogWriterImpl.FINE_LEVEL, System.out)).fine("stopReconnecting invoked",
-    // new Exception("stack trace"));
-    this.reconnectCancelled = true;
-    synchronized (this.reconnectLock) {
-      this.reconnectLock.notify();
+    reconnectCancelled = true;
+    synchronized (reconnectLock) {
+      reconnectLock.notify();
     }
     disconnect(false, "stopReconnecting was invoked", false);
-    this.attemptingToReconnect = false;
+    attemptingToReconnect = false;
+  }
+
+  public void stopReconnectingNoDisconnect() {
+    reconnectCancelled = true;
+    synchronized (reconnectLock) {
+      reconnectLock.notify();
+    }
+    attemptingToReconnect = false;
   }
 
   /**
@@ -3090,10 +2932,109 @@ public class InternalDistributedSystem extends DistributedSystem
   }
 
   public void setCache(InternalCache instance) {
-    this.dm.setCache(instance);
+    dm.setCache(instance);
   }
 
   public InternalCache getCache() {
-    return this.dm == null ? null : this.dm.getCache();
+    return dm == null ? null : dm.getCache();
+  }
+
+  private static StatisticsManagerFactory defaultStatisticsManagerFactory() {
+    return (name, startTime, statsDisabled) -> {
+      if (statsDisabled) {
+        return new DummyStatisticsRegistry(name, startTime);
+      } else {
+        return new StatisticsRegistry(name, startTime);
+      }
+    };
+  }
+
+  public static class Builder {
+
+    private final Properties configProperties;
+
+    private SecurityConfig securityConfig;
+    private MetricsService.Builder metricsServiceBuilder;
+
+    public Builder(Properties configProperties, MetricsService.Builder metricsServiceBuilder) {
+      this.configProperties = configProperties;
+      this.metricsServiceBuilder = metricsServiceBuilder;
+    }
+
+    public Builder setSecurityConfig(SecurityConfig securityConfig) {
+      this.securityConfig = securityConfig;
+      return this;
+    }
+
+    /**
+     * Builds and initializes new instance of InternalDistributedSystem.
+     */
+    public InternalDistributedSystem build() {
+      if (securityConfig == null) {
+        securityConfig = new SecurityConfig(null, null);
+      }
+
+      boolean stopThreads = true;
+      InternalDataSerializer.checkSerializationVersion();
+      try {
+        SystemFailure.startThreads();
+        InternalDistributedSystem newSystem =
+            new InternalDistributedSystem(new ConnectionConfigImpl(
+                configProperties), defaultStatisticsManagerFactory(),
+                FunctionStatsManager::new);
+        newSystem
+            .initialize(securityConfig.getSecurityManager(), securityConfig.getPostProcessor(),
+                metricsServiceBuilder);
+        notifyConnectListeners(newSystem);
+        stopThreads = false;
+        return newSystem;
+      } finally {
+        if (stopThreads) {
+          SystemFailure.stopThreads();
+        }
+      }
+    }
+  }
+
+  @VisibleForTesting
+  public static class BuilderForTesting {
+
+    private final Properties configProperties;
+
+    private DistributionManager distributionManager;
+    private StatisticsManagerFactory statisticsManagerFactory = defaultStatisticsManagerFactory();
+
+    public BuilderForTesting(Properties configProperties) {
+      this.configProperties = configProperties;
+    }
+
+    public BuilderForTesting setDistributionManager(DistributionManager distributionManager) {
+      this.distributionManager = distributionManager;
+      return this;
+    }
+
+    public BuilderForTesting setStatisticsManagerFactory(
+        StatisticsManagerFactory statisticsManagerFactory) {
+      this.statisticsManagerFactory = statisticsManagerFactory;
+      return this;
+    }
+
+    /**
+     * Builds instance without initializing it for testing.
+     */
+    public InternalDistributedSystem build() {
+      ConnectionConfigImpl connectionConfig = new ConnectionConfigImpl(configProperties);
+
+      InternalDistributedSystem internalDistributedSystem =
+          new InternalDistributedSystem(connectionConfig, statisticsManagerFactory,
+              FunctionStatsManager::new);
+
+      internalDistributedSystem.config =
+          new RuntimeDistributionConfigImpl(internalDistributedSystem);
+      internalDistributedSystem.dm = distributionManager;
+      internalDistributedSystem.isConnected = true;
+
+      return internalDistributedSystem;
+    }
   }
 }

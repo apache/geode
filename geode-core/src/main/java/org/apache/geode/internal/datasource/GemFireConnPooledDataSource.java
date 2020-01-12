@@ -23,10 +23,7 @@ import javax.sql.PooledConnection;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.i18n.StringId;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * GemFireTransactionDataSource extends AbstractDataSource. This is a datasource class which
@@ -44,45 +41,42 @@ public class GemFireConnPooledDataSource extends AbstractDataSource
   protected ConnectionProvider provider;
 
   /**
-   * Creates a new instance of GemFireConnPooledDataSource
-   *
-   * @param connPoolDS The ConnectionPoolDataSource object for the database driver.
-   * @param configs The ConfiguredDataSourceProperties containing the datasource properties.
-   * @throws SQLException
-   */
-
-
-  /**
    * Place holder for abstract method isWrapperFor(java.lang.Class) in java.sql.Wrapper required by
    * jdk 1.6
    *
    * @param iface - a Class defining an interface.
-   * @throws SQLException
    */
+  @Override
   public boolean isWrapperFor(Class iface) throws SQLException {
     return true;
   }
 
+  @Override
   public Object unwrap(Class iface) throws SQLException {
     return iface;
   }
 
 
 
+  /**
+   * Creates a new instance of GemFireConnPooledDataSource
+   *
+   * @param connPoolDS The ConnectionPoolDataSource object for the database driver.
+   * @param configs The ConfiguredDataSourceProperties containing the datasource properties.
+   */
   public GemFireConnPooledDataSource(ConnectionPoolDataSource connPoolDS,
       ConfiguredDataSourceProperties configs) throws SQLException {
     super(configs);
     if ((connPoolDS == null) || (configs == null))
       throw new SQLException(
-          LocalizedStrings.GemFireConnPooledDataSource_GEMFIRECONNPOOLEDDATASOURCECONNECTIONPOOLDATASOURCE_CLASS_OBJECT_IS_NULL_OR_CONFIGUREDDATASOURCEPROPERTIES_OBJECT_IS_NULL
-              .toLocalizedString());
+          "GemFireConnPooledDataSource::ConnectionPoolDataSource class object is null or ConfiguredDataSourceProperties object is null");
     try {
       provider = new GemFireConnectionPoolManager(connPoolDS, configs, this);
     } catch (Exception ex) {
-      StringId exception =
-          LocalizedStrings.GemFireConnPooledDataSource_EXCEPTION_CREATING_GEMFIRECONNECTIONPOOLMANAGER;
-      logger.error(LocalizedMessage.create(exception, ex.getLocalizedMessage()), ex);
-      throw new SQLException(exception.toLocalizedString(ex));
+      String exception =
+          "An exception was caught while creating a GemFireConnectionPoolManager. %s";
+      logger.error(String.format(exception, ex.getLocalizedMessage()), ex);
+      throw new SQLException(String.format(exception, ex));
     }
   }
 
@@ -90,15 +84,13 @@ public class GemFireConnPooledDataSource extends AbstractDataSource
    * Implementation of datasource interface function. This method is used to get the connection from
    * the pool. Default user name and password will be used.
    *
-   * @throws SQLException
    * @return ???
    */
   @Override
   public Connection getConnection() throws SQLException {
     if (!isActive) {
       throw new SQLException(
-          LocalizedStrings.GemFireConnPooledDataSource_GEMFIRECONNPOOLEDDATASOURCEGETCONNECTIONNO_VALID_CONNECTION_AVAILABLE
-              .toLocalizedString());
+          "GemFireConnPooledDataSource::getConnection::No valid Connection available");
     }
     PooledConnection connPool = null;
     try {
@@ -115,7 +107,6 @@ public class GemFireConnPooledDataSource extends AbstractDataSource
    *
    * @param clUsername The username for the database connection.
    * @param clPassword The password for the database connection.
-   * @throws SQLException
    * @return ???
    */
   @Override
@@ -128,8 +119,8 @@ public class GemFireConnPooledDataSource extends AbstractDataSource
    * Implementation of call back function from ConnectionEventListener interface. This callback will
    * be invoked on connection close event.
    *
-   * @param event
    */
+  @Override
   public void connectionClosed(ConnectionEvent event) {
     if (isActive) {
       try {
@@ -148,8 +139,8 @@ public class GemFireConnPooledDataSource extends AbstractDataSource
    * Implementation of call back function from ConnectionEventListener interface. This callback will
    * be invoked on connection error event.
    *
-   * @param event
    */
+  @Override
   public void connectionErrorOccurred(ConnectionEvent event) {
     if (isActive) {
       try {
@@ -184,19 +175,23 @@ public class GemFireConnPooledDataSource extends AbstractDataSource
   /**
    * gets tha connection from the pool
    *
-   * @param poolC
    * @return ???
    */
   protected Connection getSQLConnection(PooledConnection poolC) throws SQLException {
-    Connection conn = poolC.getConnection();
+    Connection conn;
+    try {
+      conn = poolC.getConnection();
+    } catch (SQLException e) {
+      provider.returnAndExpireConnection(poolC);
+      throw e;
+    }
     boolean val = validateConnection(conn);
     if (val)
       return conn;
     else {
       provider.returnAndExpireConnection(poolC);
       throw new SQLException(
-          LocalizedStrings.GemFireConnPooledDataSource_GEMFIRECONNPOOLEDDATASOURCEGETCONNFROMCONNPOOLJAVASQLCONNECTION_OBTAINED_IS_INVALID
-              .toLocalizedString());
+          "GemFireConnPooledDataSource::getConnFromConnPool:java.sql.Connection obtained is invalid");
     }
   }
 
@@ -213,8 +208,8 @@ public class GemFireConnPooledDataSource extends AbstractDataSource
    * Clean up the resources before restart of Cache
    */
   @Override
-  public void clearUp() {
-    super.clearUp();
+  public void close() {
+    super.close();
     provider.clearUp();
   }
 }

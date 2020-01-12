@@ -17,6 +17,7 @@ package org.apache.geode.internal.statistics;
 import java.io.File;
 import java.net.UnknownHostException;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
@@ -25,17 +26,18 @@ import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.Statistics;
 import org.apache.geode.SystemFailure;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.NanoTimer;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.io.MainWithChildrenRollingFileHandler;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.process.UncheckedPidUnavailableException;
 import org.apache.geode.internal.statistics.platform.OsStatisticsFactory;
 import org.apache.geode.internal.util.concurrent.StoppableCountDownLatch;
+import org.apache.geode.logging.internal.executors.LoggingThread;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.logging.internal.spi.LogFile;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * HostStatSampler implements a thread which will monitor, sample, and archive statistics. It only
@@ -48,11 +50,11 @@ public abstract class HostStatSampler
   private static final Logger logger = LogService.getLogger();
 
   public static final String TEST_FILE_SIZE_LIMIT_IN_KB_PROPERTY =
-      DistributionConfig.GEMFIRE_PREFIX + "stats.test.fileSizeLimitInKB";
+      GeodeGlossary.GEMFIRE_PREFIX + "stats.test.fileSizeLimitInKB";
   public static final String OS_STATS_DISABLED_PROPERTY = "osStatsDisabled";
 
   protected static final String INITIALIZATION_TIMEOUT_PROPERTY =
-      DistributionConfig.GEMFIRE_PREFIX + "statSamplerInitializationTimeout";
+      GeodeGlossary.GEMFIRE_PREFIX + "statSamplerInitializationTimeout";
   protected static final int INITIALIZATION_TIMEOUT_DEFAULT = 30000;
   protected static final long INITIALIZATION_TIMEOUT_MILLIS =
       Long.getLong(INITIALIZATION_TIMEOUT_PROPERTY, INITIALIZATION_TIMEOUT_DEFAULT);
@@ -63,7 +65,7 @@ public abstract class HostStatSampler
    * check.
    */
   private static final long STAT_SAMPLER_DELAY_THRESHOLD =
-      Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "statSamplerDelayThreshold", 3000);
+      Long.getLong(GeodeGlossary.GEMFIRE_PREFIX + "statSamplerDelayThreshold", 3000);
   private static final long STAT_SAMPLER_DELAY_THRESHOLD_NANOS =
       NanoTimer.millisToNanos(STAT_SAMPLER_DELAY_THRESHOLD);
 
@@ -88,10 +90,9 @@ public abstract class HostStatSampler
   private final StoppableCountDownLatch statSamplerInitializedLatch;
 
   private final CancelCriterion stopper;
-
   private final CallbackSampler callbackSampler;
-
   private final NanoTimer timer;
+  private final LogFile logFile;
 
   protected HostStatSampler(CancelCriterion stopper, StatSamplerStats samplerStats) {
     this(stopper, samplerStats, new NanoTimer());
@@ -99,12 +100,23 @@ public abstract class HostStatSampler
 
   protected HostStatSampler(CancelCriterion stopper, StatSamplerStats samplerStats,
       NanoTimer timer) {
+    this(stopper, samplerStats, timer, null);
+  }
+
+  protected HostStatSampler(CancelCriterion stopper, StatSamplerStats samplerStats,
+      LogFile logFile) {
+    this(stopper, samplerStats, new NanoTimer(), logFile);
+  }
+
+  HostStatSampler(CancelCriterion stopper, StatSamplerStats samplerStats, NanoTimer timer,
+      LogFile logFile) {
     this.stopper = stopper;
     this.statSamplerInitializedLatch = new StoppableCountDownLatch(this.stopper, 1);
     this.samplerStats = samplerStats;
     this.fileSizeLimitInKB = Boolean.getBoolean(TEST_FILE_SIZE_LIMIT_IN_KB_PROPERTY);
     this.callbackSampler = new CallbackSampler(stopper, samplerStats);
     this.timer = timer;
+    this.logFile = logFile;
   }
 
   public StatSamplerStats getStatSamplerStats() {
@@ -128,14 +140,6 @@ public abstract class HostStatSampler
   }
 
   /**
-   * Returns a unique id for the sampler's system.
-   */
-  @Override
-  public long getSystemId() {
-    return getStatisticsManager().getId();
-  }
-
-  /**
    * Returns the time this sampler's system was started.
    */
   @Override
@@ -149,10 +153,15 @@ public abstract class HostStatSampler
   @Override
   public String getSystemDirectoryPath() {
     try {
-      return SocketCreator.getHostName(SocketCreator.getLocalHost());
+      return SocketCreator.getHostName(LocalHostUtil.getLocalHost());
     } catch (UnknownHostException ignore) {
       return "";
     }
+  }
+
+  @Override
+  public Optional<LogFile> getLogFile() {
+    return Optional.ofNullable(logFile);
   }
 
   @Override
@@ -181,9 +190,9 @@ public abstract class HostStatSampler
    */
   @Override
   public void run() {
-    final boolean isDebugEnabled_STATISTICS = logger.isTraceEnabled(LogMarker.STATISTICS);
+    final boolean isDebugEnabled_STATISTICS = logger.isTraceEnabled(LogMarker.STATISTICS_VERBOSE);
     if (isDebugEnabled_STATISTICS) {
-      logger.trace(LogMarker.STATISTICS, "HostStatSampler started");
+      logger.trace(LogMarker.STATISTICS_VERBOSE, "HostStatSampler started");
     }
     boolean latchCountedDown = false;
     try {
@@ -229,12 +238,10 @@ public abstract class HostStatSampler
           sampleSpecialStats(true); // fixes bug 42527
         }
       }
-    } catch (InterruptedException ex) {
-      // Silently exit
-    } catch (CancelException ex) {
+    } catch (InterruptedException | CancelException ex) {
       // Silently exit
     } catch (RuntimeException ex) {
-      logger.fatal(LogMarker.STATISTICS, ex.getMessage(), ex);
+      logger.fatal(LogMarker.STATISTICS_MARKER, ex.getMessage(), ex);
       throw ex;
     } catch (VirtualMachineError err) {
       SystemFailure.initiateFailure(err);
@@ -248,7 +255,7 @@ public abstract class HostStatSampler
       // error condition, so you also need to check to see if the JVM
       // is still usable:
       SystemFailure.checkFailure();
-      logger.fatal(LogMarker.STATISTICS, ex.getMessage(), ex);
+      logger.fatal(LogMarker.STATISTICS_MARKER, ex.getMessage(), ex);
       throw ex;
     } finally {
       try {
@@ -265,7 +272,7 @@ public abstract class HostStatSampler
         }
       }
       if (isDebugEnabled_STATISTICS) {
-        logger.trace(LogMarker.STATISTICS, "HostStatSampler stopped");
+        logger.trace(LogMarker.STATISTICS_VERBOSE, "HostStatSampler stopped");
       }
     }
   }
@@ -287,18 +294,12 @@ public abstract class HostStatSampler
         }
         if (statThread.isAlive()) {
           throw new IllegalStateException(
-              LocalizedStrings.HostStatSampler_STATISTICS_SAMPLING_THREAD_IS_ALREADY_RUNNING_INDICATING_AN_INCOMPLETE_SHUTDOWN_OF_A_PREVIOUS_CACHE
-                  .toLocalizedString());
+              "Statistics sampling thread is already running, indicating an incomplete shutdown of a previous cache.");
         }
       }
-      ThreadGroup group = LoggingThreadGroup.createThreadGroup("StatSampler Threads");
-
-      this.callbackSampler.start(getStatisticsManager(), group, getSampleRate(),
-          TimeUnit.MILLISECONDS);
-      statThread = new Thread(group, this);
-      statThread.setName(statThread.getName() + " StatSampler");
+      this.callbackSampler.start(getStatisticsManager(), getSampleRate(), TimeUnit.MILLISECONDS);
+      statThread = new LoggingThread("StatSampler", this);
       statThread.setPriority(Thread.MAX_PRIORITY);
-      statThread.setDaemon(true);
       statThread.start();
       // fix #46310 (race between management and sampler init) by waiting for init here
       try {
@@ -344,8 +345,8 @@ public abstract class HostStatSampler
             statThread.interrupt();
             stop(false);
           } else {
-            logger.warn(LogMarker.STATISTICS, LocalizedMessage.create(
-                LocalizedStrings.HostStatSampler_HOSTSTATSAMPLER_THREAD_COULD_NOT_BE_STOPPED));
+            logger.warn(LogMarker.STATISTICS_MARKER,
+                "HostStatSampler thread could not be stopped during shutdown.");
           }
         } else {
           this.stopRequested = false;
@@ -447,7 +448,15 @@ public abstract class HostStatSampler
   }
 
   protected long getSpecialStatsId() {
-    return getStatisticsManager().getId();
+    try {
+      int pid = getStatisticsManager().getPid();
+      if (pid > 0) {
+        return pid;
+      }
+    } catch (UncheckedPidUnavailableException ignored) {
+      // ignore and fall through
+    }
+    return getSystemId();
   }
 
   protected boolean fileSizeLimitInKB() {
@@ -565,10 +574,9 @@ public abstract class HostStatSampler
       final long wakeupDelay = elapsedSleepTime - getNanoRate();
       if (wakeupDelay > STAT_SAMPLER_DELAY_THRESHOLD_NANOS) {
         this.samplerStats.incJvmPauses();
-        logger.warn(LogMarker.STATISTICS,
-            LocalizedMessage.create(
-                LocalizedStrings.HostStatSampler_STATISTICS_SAMPLING_THREAD_DETECTED_A_WAKEUP_DELAY_OF_0_MS_INDICATING_A_POSSIBLE_RESOURCE_ISSUE,
-                NanoTimer.nanosToMillis(wakeupDelay)));
+        logger.warn(LogMarker.STATISTICS_MARKER,
+            "Statistics sampling thread detected a wakeup delay of {} ms, indicating a possible resource issue. Check the GC, memory, and CPU statistics.",
+            NanoTimer.nanosToMillis(wakeupDelay));
       }
     }
   }

@@ -12,11 +12,13 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.internal.cache.xmlcache;
 
-import static javax.xml.XMLConstants.*;
-import static org.apache.geode.internal.cache.xmlcache.XmlGeneratorUtils.*;
-import static org.apache.geode.management.internal.configuration.utils.XmlConstants.*;
+import static javax.xml.XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI;
+import static org.apache.geode.internal.cache.xmlcache.XmlGeneratorUtils.addAttribute;
+import static org.apache.geode.management.internal.configuration.utils.XmlConstants.W3C_XML_SCHEMA_INSTANCE_ATTRIBUTE_SCHEMA_LOCATION;
+import static org.apache.geode.management.internal.configuration.utils.XmlConstants.W3C_XML_SCHEMA_INSTANCE_PREFIX;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -50,13 +52,11 @@ import org.xml.sax.EntityResolver;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
-import org.xml.sax.ext.LexicalHandler;
 import org.xml.sax.helpers.AttributesImpl;
 
 import org.apache.geode.InternalGemFireException;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheListener;
@@ -93,7 +93,6 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.PoolManager;
-import org.apache.geode.cache.client.internal.InternalClientCache;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
@@ -124,7 +123,7 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.control.MemoryThresholds;
 import org.apache.geode.internal.cache.extension.Extensible;
 import org.apache.geode.internal.cache.extension.Extension;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.cache.persistence.DefaultDiskDirs;
 import org.apache.geode.internal.size.SizeClassOnceObjectSizer;
 import org.apache.geode.management.internal.configuration.utils.XmlConstants;
 import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
@@ -140,6 +139,7 @@ import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
 public class CacheXmlGenerator extends CacheXml implements XMLReader {
 
   /** An empty <code>Attributes</code> */
+  @Immutable
   private static final Attributes EMPTY = new AttributesImpl();
 
   /** The content handler to which SAX events are generated */
@@ -151,7 +151,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
   /**
    * Will the generated XML file reference an XML schema instead of the DTD?
    */
-  private boolean useSchema = true;
+  private boolean useSchema;
   private boolean includeKeysValues = true;
   private final boolean generateDefaults;
 
@@ -170,44 +170,39 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
    * @since GemFire 4.0
    */
   public static void generate(Cache cache, PrintWriter pw, boolean useSchema, String version) {
-    (new CacheXmlGenerator(cache, useSchema, version, true)).generate(pw);
+    new CacheXmlGenerator(cache, useSchema, version, true).generate(pw);
   }
 
   /**
    * Examines the given <code>Cache</code> and from it generates XML data that is written to the
    * given <code>PrintWriter</code>. The schema/dtd for the current version of GemFire is used.
    *
-   * @param useSchema Should the generated XML reference a schema (as opposed to a DTD)? As of 8.1
-   *        this value is ignored and always true.
-   */
-  public static void generate(Cache cache, PrintWriter pw, boolean useSchema) {
-    (new CacheXmlGenerator(cache, true /* latest version always true */, VERSION_LATEST, true))
-        .generate(pw);
-  }
-
-  /**
-   * Examines the given <code>Cache</code> and from it generates XML data that is written to the
-   * given <code>PrintWriter</code>. The schema/dtd for the current version of GemFire is used.
-   *
-   * @param useSchema Should the generated XML reference a schema (as opposed to a DTD)? As of 8.1
-   *        this value is ignored and always true.
    * @param includeKeysValues true if the xml should include keys and values false otherwise
    */
-  public static void generate(Cache cache, PrintWriter pw, boolean useSchema,
-      boolean includeKeysValues) {
-    (new CacheXmlGenerator(cache, true /* latest version always true */, VERSION_LATEST,
-        includeKeysValues)).generate(pw);
+  public static void generate(Cache cache, PrintWriter pw, boolean includeKeysValues) {
+    new CacheXmlGenerator(cache, true, VERSION_LATEST, includeKeysValues).generate(pw);
   }
 
   /**
    * @param useSchema Should the generated XML reference a schema (as opposed to a DTD)? As of 8.1
    *        this value is ignored and always true.
    * @param includeDefaults set to false to cause generated xml to not have defaults values.
+   * @deprecated Only used for rolling upgrades
    */
+  @Deprecated
   public static void generate(Cache cache, PrintWriter pw, boolean useSchema,
       boolean includeKeysValues, boolean includeDefaults) {
-    (new CacheXmlGenerator(cache, true /* latest version always true */, VERSION_LATEST,
-        includeKeysValues, includeDefaults)).generate(pw);
+    new CacheXmlGenerator(cache, true, VERSION_LATEST, includeKeysValues, includeDefaults)
+        .generate(pw);
+  }
+
+  /**
+   * @param includeDefaults set to false to cause generated xml to not have defaults values.
+   */
+  public static void generate(Cache cache, PrintWriter pw, boolean includeKeysValues,
+      boolean includeDefaults) {
+    new CacheXmlGenerator(cache, true, VERSION_LATEST, includeKeysValues, includeDefaults)
+        .generate(pw);
   }
 
   /**
@@ -215,7 +210,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
    * given <code>PrintWriter</code>.
    */
   public static void generate(Cache cache, PrintWriter pw) {
-    generate(cache, pw, true /* useSchema */);
+    new CacheXmlGenerator(cache, true, VERSION_LATEST, true).generate(pw);
   }
 
   /**
@@ -231,33 +226,17 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
    */
   public static void generate(ClientCache cache, PrintWriter pw, boolean useSchema,
       String version) {
-    (new CacheXmlGenerator(cache, useSchema, version, true)).generate(pw);
+    new CacheXmlGenerator(cache, useSchema, version, true).generate(pw);
   }
 
   /**
    * Examines the given <code>ClientCache</code> and from it generates XML data that is written to
    * the given <code>PrintWriter</code>. The schema/dtd for the current version of GemFire is used.
    *
-   * @param useSchema Should the generated XML reference a schema (as opposed to a DTD)? As of 8.1
-   *        this value is ignored and always true.
-   */
-  public static void generate(ClientCache cache, PrintWriter pw, boolean useSchema) {
-    (new CacheXmlGenerator(cache, true /* latest version always true */, VERSION_LATEST, true))
-        .generate(pw);
-  }
-
-  /**
-   * Examines the given <code>ClientCache</code> and from it generates XML data that is written to
-   * the given <code>PrintWriter</code>. The schema/dtd for the current version of GemFire is used.
-   *
-   * @param useSchema Should the generated XML reference a schema (as opposed to a DTD)? As of 8.1
-   *        this value is ignored and always true.
    * @param includeKeysValues true if the xml should include keys and values false otherwise
    */
-  public static void generate(ClientCache cache, PrintWriter pw, boolean useSchema,
-      boolean includeKeysValues) {
-    (new CacheXmlGenerator(cache, true /* latest version always true */, VERSION_LATEST,
-        includeKeysValues)).generate(pw);
+  public static void generate(ClientCache cache, PrintWriter pw, boolean includeKeysValues) {
+    new CacheXmlGenerator(cache, true, VERSION_LATEST, includeKeysValues).generate(pw);
   }
 
   /**
@@ -265,7 +244,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
    * given <code>PrintWriter</code>.
    */
   public static void generate(ClientCache cache, PrintWriter pw) {
-    generate(cache, pw, true /* useSchema */);
+    new CacheXmlGenerator(cache, true, VERSION_LATEST, true).generate(pw);
   }
 
   /**
@@ -292,55 +271,55 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
     this.generateDefaults = generateDefaults;
 
     if (cache instanceof CacheCreation) {
-      this.creation = (CacheCreation) cache;
-      this.creation.startingGenerate();
+      creation = (CacheCreation) cache;
+      creation.startingGenerate();
 
     } else if (cache instanceof GemFireCacheImpl) {
       if (((InternalCache) cache).isClient()) {
-        this.creation = new ClientCacheCreation();
+        creation = new ClientCacheCreation();
         if (generateDefaults() || cache.getCopyOnRead()) {
-          this.creation.setCopyOnRead(cache.getCopyOnRead());
+          creation.setCopyOnRead(cache.getCopyOnRead());
         }
       } else {
         // if we are not generating defaults then create the CacheCreation for parsing
         // so that we can fetch the actual PoolManager and not a fake.
-        this.creation = new CacheCreation(!generateDefaults);
+        creation = new CacheCreation(!generateDefaults);
         if (generateDefaults() || cache.getLockLease() != GemFireCacheImpl.DEFAULT_LOCK_LEASE) {
-          this.creation.setLockLease(cache.getLockLease());
+          creation.setLockLease(cache.getLockLease());
         }
         if (generateDefaults() || cache.getLockTimeout() != GemFireCacheImpl.DEFAULT_LOCK_TIMEOUT) {
-          this.creation.setLockTimeout(cache.getLockTimeout());
+          creation.setLockTimeout(cache.getLockTimeout());
         }
         if (generateDefaults()
             || cache.getSearchTimeout() != GemFireCacheImpl.DEFAULT_SEARCH_TIMEOUT) {
-          this.creation.setSearchTimeout(cache.getSearchTimeout());
+          creation.setSearchTimeout(cache.getSearchTimeout());
         }
         if (generateDefaults() || cache.isServer()) {
-          this.creation.setIsServer(cache.isServer());
+          creation.setIsServer(cache.isServer());
         }
         if (generateDefaults() || cache.getCopyOnRead()) {
-          this.creation.setCopyOnRead(cache.getCopyOnRead());
+          creation.setCopyOnRead(cache.getCopyOnRead());
         }
       }
     } else {
       // if we are not generating defaults then create the CacheCreation for parsing
       // so that we can fetch the actual PoolManager and not a fake.
-      this.creation = new CacheCreation(!generateDefaults);
+      creation = new CacheCreation(!generateDefaults);
       if (generateDefaults() || cache.getLockLease() != GemFireCacheImpl.DEFAULT_LOCK_LEASE) {
-        this.creation.setLockLease(cache.getLockLease());
+        creation.setLockLease(cache.getLockLease());
       }
       if (generateDefaults() || cache.getLockTimeout() != GemFireCacheImpl.DEFAULT_LOCK_TIMEOUT) {
-        this.creation.setLockTimeout(cache.getLockTimeout());
+        creation.setLockTimeout(cache.getLockTimeout());
       }
       if (generateDefaults()
           || cache.getSearchTimeout() != GemFireCacheImpl.DEFAULT_SEARCH_TIMEOUT) {
-        this.creation.setSearchTimeout(cache.getSearchTimeout());
+        creation.setSearchTimeout(cache.getSearchTimeout());
       }
       if (generateDefaults() || cache.isServer()) {
-        this.creation.setIsServer(cache.isServer());
+        creation.setIsServer(cache.isServer());
       }
       if (generateDefaults() || cache.getCopyOnRead()) {
-        this.creation.setCopyOnRead(cache.getCopyOnRead());
+        creation.setCopyOnRead(cache.getCopyOnRead());
       }
     }
   }
@@ -355,16 +334,16 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
     this.useSchema = useSchema;
     this.version = CacheXmlVersion.valueForVersion(version);
     this.includeKeysValues = includeKeysValues;
-    this.generateDefaults = true;
+
+    generateDefaults = true;
 
     if (cache instanceof ClientCacheCreation) {
-      this.creation = (ClientCacheCreation) cache;
-      this.creation.startingGenerate();
-
+      creation = (ClientCacheCreation) cache;
+      creation.startingGenerate();
     } else {
-      this.creation = new ClientCacheCreation();
-      if (generateDefaults() || cache.getCopyOnRead()) {
-        this.creation.setCopyOnRead(cache.getCopyOnRead());
+      creation = new ClientCacheCreation();
+      if (cache.getCopyOnRead()) {
+        creation.setCopyOnRead(cache.getCopyOnRead());
       }
     }
   }
@@ -373,19 +352,19 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
    * return true if default values should be generated.
    */
   private boolean generateDefaults() {
-    return this.generateDefaults;
+    return generateDefaults;
   }
 
   /**
    * Creates a generator for a default cache.
    */
   private CacheXmlGenerator() {
-    this.cache = null;
-    this.useSchema = true;
-    this.version = CacheXmlVersion.valueForVersion(VERSION_LATEST);
-    this.generateDefaults = true;
+    cache = null;
+    useSchema = true;
+    version = CacheXmlVersion.valueForVersion(VERSION_LATEST);
+    generateDefaults = true;
 
-    this.creation = new CacheCreation();
+    creation = new CacheCreation();
     creation.setLockLease(GemFireCacheImpl.DEFAULT_LOCK_LEASE);
     creation.setLockTimeout(GemFireCacheImpl.DEFAULT_LOCK_TIMEOUT);
     creation.setSearchTimeout(GemFireCacheImpl.DEFAULT_SEARCH_TIMEOUT);
@@ -418,11 +397,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
       pw.flush();
 
     } catch (Exception ex) {
-      RuntimeException ex2 = new RuntimeException(
-          LocalizedStrings.CacheXmlGenerator_AN_EXCEPTION_WAS_THROWN_WHILE_GENERATING_XML
-              .toLocalizedString());
-      ex2.initCause(ex);
-      throw ex2;
+      throw new RuntimeException("An Exception was thrown while generating XML.", ex);
     }
   }
 
@@ -430,17 +405,17 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
    * Called by the transformer to parse the "input source". We ignore the input source and, instead,
    * generate SAX events to the {@link #setContentHandler ContentHandler}.
    */
+  @Override
   public void parse(InputSource input) throws SAXException {
-    Assert.assertTrue(this.handler != null);
+    Assert.assertTrue(handler != null);
 
-    boolean isClientCache = this.creation instanceof ClientCacheCreation;
+    boolean isClientCache = creation instanceof ClientCacheCreation;
 
     handler.startDocument();
 
     AttributesImpl atts = new AttributesImpl();
-    if (this.useSchema) {
+    if (useSchema) {
       if (null == version.getSchemaLocation()) {
-        // TODO jbarrett - localize
         throw new IllegalStateException("No schema for version " + version.getVersion());
       }
       // add schema location for cache schema.
@@ -451,7 +426,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
 
       // add cache schema to default prefix.
       handler.startPrefixMapping(XmlConstants.DEFAULT_PREFIX, version.getNamespace());
-      addAttribute(atts, VERSION, this.version.getVersion());
+      addAttribute(atts, VERSION, version.getVersion());
     }
 
     // Don't generate XML for attributes that are not set.
@@ -465,34 +440,13 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
     if (creation.hasSearchTimeout()) {
       atts.addAttribute("", "", SEARCH_TIMEOUT, "", String.valueOf(creation.getSearchTimeout()));
     }
-    if (this.version.compareTo(CacheXmlVersion.GEMFIRE_5_5) >= 0) {
-      // TODO
-    }
-    if (this.version.compareTo(CacheXmlVersion.GEMFIRE_5_7) >= 0) {
-      // TODO
-    }
-    if (this.version.compareTo(CacheXmlVersion.GEMFIRE_5_8) >= 0) {
-      // TODO
-    }
-    if (this.version.compareTo(CacheXmlVersion.GEMFIRE_6_0) >= 0) {
-      // TODO
-    }
-    if (this.version.compareTo(CacheXmlVersion.GEMFIRE_6_5) >= 0) {
-      // TODO
-    }
-    if (this.version.compareTo(CacheXmlVersion.GEMFIRE_7_0) >= 0) {
-      // TODO
-    }
-    if (this.version.compareTo(CacheXmlVersion.GEMFIRE_7_0) >= 0) {
-      // TODO
-    }
-    if (this.version.compareTo(CacheXmlVersion.GEMFIRE_5_1) >= 0) {
+    if (version.compareTo(CacheXmlVersion.GEMFIRE_5_1) >= 0) {
       if (creation.hasMessageSyncInterval()) {
         atts.addAttribute("", "", MESSAGE_SYNC_INTERVAL, "",
             String.valueOf(creation.getMessageSyncInterval()));
       }
     }
-    if (this.version.compareTo(CacheXmlVersion.GEMFIRE_4_0) >= 0) {
+    if (version.compareTo(CacheXmlVersion.GEMFIRE_4_0) >= 0) {
       if (creation.hasServer()) {
         atts.addAttribute("", "", IS_SERVER, "", String.valueOf(creation.isServer()));
       }
@@ -505,45 +459,44 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
     } else {
       handler.startElement("", CACHE, CACHE, atts);
     }
-    if (this.cache != null) {
+    if (cache != null) {
       if (!isClientCache) {
-        generate(this.cache.getCacheTransactionManager());
-      } else if (this.version.compareTo(CacheXmlVersion.GEMFIRE_6_6) >= 0) {
-        generate(this.cache.getCacheTransactionManager());
+        generate(cache.getCacheTransactionManager());
+      } else if (version.compareTo(CacheXmlVersion.GEMFIRE_6_6) >= 0) {
+        generate(cache.getCacheTransactionManager());
       }
 
-      generateDynamicRegionFactory(this.cache);
+      generateDynamicRegionFactory(cache);
 
       if (!isClientCache) {
-        if (this.version.compareTo(CacheXmlVersion.GEMFIRE_7_0) >= 0) {
+        if (version.compareTo(CacheXmlVersion.GEMFIRE_7_0) >= 0) {
           Set<GatewaySender> senderSet = cache.getGatewaySenders();
           for (GatewaySender sender : senderSet) {
             generateGatewaySender(sender);
           }
-          generateGatewayReceiver(this.cache);
-          generateAsyncEventQueue(this.cache);
+          generateGatewayReceiver(cache);
+          generateAsyncEventQueue(cache);
         }
       }
 
-      if (!isClientCache && this.version.compareTo(CacheXmlVersion.GEMFIRE_7_0) >= 0) {
-        if (this.cache.getGatewayConflictResolver() != null) {
-          generate(GATEWAY_CONFLICT_RESOLVER, this.cache.getGatewayConflictResolver());
+      if (!isClientCache && version.compareTo(CacheXmlVersion.GEMFIRE_7_0) >= 0) {
+        if (cache.getGatewayConflictResolver() != null) {
+          generate(GATEWAY_CONFLICT_RESOLVER, cache.getGatewayConflictResolver());
         }
       }
 
       if (!isClientCache) {
-        for (Iterator iter = this.cache.getCacheServers().iterator(); iter.hasNext();) {
-          CacheServer bridge = (CacheServer) iter.next();
+        for (CacheServer bridge : cache.getCacheServers()) {
           generate(bridge);
         }
       }
 
-      if (this.version.compareTo(CacheXmlVersion.GEMFIRE_5_7) >= 0) {
+      if (version.compareTo(CacheXmlVersion.GEMFIRE_5_7) >= 0) {
         Iterator pools;
-        if (this.cache instanceof GemFireCacheImpl) {
+        if (cache instanceof GemFireCacheImpl) {
           pools = PoolManager.getAll().values().iterator();
         } else {
-          pools = this.creation.getPools().values().iterator();
+          pools = creation.getPools().values().iterator();
         }
         while (pools.hasNext()) {
           Pool cp = (Pool) pools.next();
@@ -551,26 +504,26 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
         }
       }
 
-      if (this.version.compareTo(CacheXmlVersion.GEMFIRE_6_5) >= 0) {
-        if (this.cache instanceof GemFireCacheImpl) {
-          InternalCache gfc = (InternalCache) this.cache;
+      if (version.compareTo(CacheXmlVersion.GEMFIRE_6_5) >= 0) {
+        if (cache instanceof GemFireCacheImpl) {
+          InternalCache gfc = (InternalCache) cache;
           for (DiskStore ds : gfc.listDiskStores()) {
             generate(ds);
           }
         } else {
-          for (DiskStore ds : this.creation.listDiskStores()) {
+          for (DiskStore ds : creation.listDiskStores()) {
             generate(ds);
           }
         }
       }
-      if (this.version.compareTo(CacheXmlVersion.GEMFIRE_6_6) >= 0) {
+      if (version.compareTo(CacheXmlVersion.GEMFIRE_6_6) >= 0) {
         generatePdx();
       }
 
-      if (this.version.compareTo(CacheXmlVersion.GEMFIRE_4_1) >= 0) {
-        Map namedAttributes = this.cache.listRegionAttributes();
-        for (Iterator iter = namedAttributes.entrySet().iterator(); iter.hasNext();) {
-          Map.Entry entry = (Map.Entry) iter.next();
+      if (version.compareTo(CacheXmlVersion.GEMFIRE_4_1) >= 0) {
+        Map namedAttributes = cache.listRegionAttributes();
+        for (Object o : namedAttributes.entrySet()) {
+          Map.Entry entry = (Map.Entry) o;
           String id = (String) entry.getKey();
           RegionAttributes attrs = (RegionAttributes) entry.getValue();
           // Since CacheCreation predefines these even in later versions
@@ -578,10 +531,10 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
           // It would be better if CacheCreation could only predefine them
           // for versions 6.5 and later but that is not easy to do
           {
-            if (this.creation instanceof ClientCacheCreation) {
+            if (creation instanceof ClientCacheCreation) {
               try {
                 ClientRegionShortcut.valueOf(id);
-                // skip this guy since id mapped to one of the enum types
+                // skip this client region since id mapped to one of the enum types
                 continue;
               } catch (IllegalArgumentException ignore) {
                 // id is not a shortcut so go ahead and call generate
@@ -589,7 +542,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
             } else {
               try {
                 RegionShortcut.valueOf(id);
-                // skip this guy since id mapped to one of the enum types
+                // skip this region since id mapped to one of the enum types
                 continue;
               } catch (IllegalArgumentException ignore) {
                 // id is not a shortcut so go ahead and call generate
@@ -603,37 +556,35 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
       if (cache instanceof GemFireCacheImpl) {
         generateRegions();
       } else {
-        TreeSet rSet = new TreeSet(new RegionComparator());
-        rSet.addAll(this.cache.rootRegions());
-        Iterator it = rSet.iterator();
-        while (it.hasNext()) {
-          Region root = (Region) it.next();
-          generateRegion(root);
+        TreeSet<Region<?, ?>> rSet = new TreeSet<>(new RegionComparator());
+        rSet.addAll(cache.rootRegions());
+        for (Region<?, ?> region : rSet) {
+          generateRegion(region);
         }
       }
 
-      if (this.version.compareTo(CacheXmlVersion.GEMFIRE_5_8) >= 0) {
+      if (version.compareTo(CacheXmlVersion.GEMFIRE_5_8) >= 0) {
         generateFunctionService();
       }
-      if (this.version.compareTo(CacheXmlVersion.GEMFIRE_6_0) >= 0) {
+      if (version.compareTo(CacheXmlVersion.GEMFIRE_6_0) >= 0) {
         generateResourceManager();
         generateSerializerRegistration();
       }
       if (!isClientCache) {
-        if (this.version.compareTo(CacheXmlVersion.GEMFIRE_6_5) >= 0) {
-          if (this.cache instanceof GemFireCacheImpl) {
-            InternalCache internalCache = (InternalCache) this.cache;
+        if (version.compareTo(CacheXmlVersion.GEMFIRE_6_5) >= 0) {
+          if (cache instanceof GemFireCacheImpl) {
+            InternalCache internalCache = (InternalCache) cache;
             for (File file : internalCache.getBackupFiles()) {
               generateBackupFile(file);
             }
           } else {
-            for (File file : this.creation.getBackupFiles()) {
+            for (File file : creation.getBackupFiles()) {
               generateBackupFile(file);
             }
           }
         }
       }
-      if (this.version.compareTo(CacheXmlVersion.GEMFIRE_6_6) >= 0) {
+      if (version.compareTo(CacheXmlVersion.GEMFIRE_6_6) >= 0) {
         generateInitializer();
       }
     }
@@ -656,43 +607,43 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
     AttributesImpl atts = new AttributesImpl();
     CacheConfig config = ((InternalCache) cache).getCacheConfig();
     if (config.pdxReadSerializedUserSet) {
-      if (generateDefaults() || this.cache.getPdxReadSerialized())
+      if (generateDefaults() || cache.getPdxReadSerialized())
         atts.addAttribute("", "", READ_SERIALIZED, "",
-            Boolean.toString(this.cache.getPdxReadSerialized()));
+            Boolean.toString(cache.getPdxReadSerialized()));
     }
     if (config.pdxIgnoreUnreadFieldsUserSet) {
-      if (generateDefaults() || this.cache.getPdxIgnoreUnreadFields())
+      if (generateDefaults() || cache.getPdxIgnoreUnreadFields())
         atts.addAttribute("", "", IGNORE_UNREAD_FIELDS, "",
-            Boolean.toString(this.cache.getPdxIgnoreUnreadFields()));
+            Boolean.toString(cache.getPdxIgnoreUnreadFields()));
     }
     if (config.pdxPersistentUserSet) {
-      if (generateDefaults() || this.cache.getPdxPersistent())
-        atts.addAttribute("", "", PERSISTENT, "", Boolean.toString(this.cache.getPdxPersistent()));
+      if (generateDefaults() || cache.getPdxPersistent())
+        atts.addAttribute("", "", PERSISTENT, "", Boolean.toString(cache.getPdxPersistent()));
     }
     if (config.pdxDiskStoreUserSet) {
       if (generateDefaults()
-          || this.cache.getPdxDiskStore() != null && !this.cache.getPdxDiskStore().equals(""))
-        atts.addAttribute("", "", DISK_STORE_NAME, "", this.cache.getPdxDiskStore());
+          || cache.getPdxDiskStore() != null && !cache.getPdxDiskStore().equals(""))
+        atts.addAttribute("", "", DISK_STORE_NAME, "", cache.getPdxDiskStore());
     }
-    if (!generateDefaults() && this.cache.getPdxSerializer() == null && atts.getLength() == 0) {
+    if (!generateDefaults() && cache.getPdxSerializer() == null && atts.getLength() == 0) {
       return;
     }
     handler.startElement("", PDX, PDX, atts);
 
-    if (this.cache.getPdxSerializer() != null) {
-      generate(PDX_SERIALIZER, this.cache.getPdxSerializer());
+    if (cache.getPdxSerializer() != null) {
+      generate(PDX_SERIALIZER, cache.getPdxSerializer());
     }
     handler.endElement("", PDX, PDX);
   }
 
   private void generateInitializer() throws SAXException {
-    if (this.cache.getInitializer() != null) {
-      generate(INITIALIZER, this.cache.getInitializer(), this.cache.getInitializerProps());
+    if (cache.getInitializer() != null) {
+      generate(cache.getInitializer(), cache.getInitializerProps());
     }
   }
 
   private void generateRegion(Region root) throws SAXException {
-    if (this.version.compareTo(CacheXmlVersion.GEMFIRE_5_0) >= 0) {
+    if (version.compareTo(CacheXmlVersion.GEMFIRE_5_0) >= 0) {
       generate(root, REGION);
     } else {
       generate(root, VM_ROOT_REGION);
@@ -700,15 +651,13 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
   }
 
   private void generateRegions() throws SAXException {
-    Set<Region> colocatedChildRegions = new HashSet<Region>();
-    Set<Region> generatedRegions = new HashSet<Region>();
+    Set<Region<?, ?>> colocatedChildRegions = new HashSet<>();
+    Set<Region> generatedRegions = new HashSet<>();
 
     // Merge from persist_Nov10 - iterate the regions in order for persistent recovery.
-    TreeSet rSet = new TreeSet(new RegionComparator());
-    rSet.addAll(this.cache.rootRegions());
-    Iterator it = rSet.iterator();
-    while (it.hasNext()) {
-      Region root = (Region) it.next();
+    TreeSet<Region<?, ?>> rSet = new TreeSet<>(new RegionComparator());
+    rSet.addAll(cache.rootRegions());
+    for (Region<?, ?> root : rSet) {
       Assert.assertTrue(root instanceof LocalRegion);
       if (root instanceof PartitionedRegion) {
         PartitionedRegion pr = (PartitionedRegion) root;
@@ -721,8 +670,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
       } else {
         // normal non pr regions, but they can have PR as subregions
         boolean found = false;
-        for (Object object : root.subregions(false)) {
-          Region subregion = (Region) object;
+        for (Region<?, ?> subregion : root.subregions(false)) {
           Assert.assertTrue(subregion instanceof LocalRegion);
           if (subregion instanceof PartitionedRegion) {
             PartitionedRegion pr = (PartitionedRegion) subregion;
@@ -739,11 +687,9 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
         }
       }
     }
-    TreeSet rColSet = new TreeSet(new RegionComparator());
+    TreeSet<Region<?, ?>> rColSet = new TreeSet<>(new RegionComparator());
     rColSet.addAll(colocatedChildRegions);
-    Iterator colIter = rColSet.iterator();
-    while (colIter.hasNext()) {
-      Region root = (Region) colIter.next();
+    for (Region<?, ?> root : rColSet) {
       Assert.assertTrue(root instanceof LocalRegion);
       if (root instanceof PartitionedRegion) {
         PartitionedRegion pr = (PartitionedRegion) root;
@@ -768,33 +714,33 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
    */
   private void generateResourceManager() throws SAXException {
     AttributesImpl atts = new AttributesImpl();
-    if (this.cache instanceof CacheCreation && this.creation.hasResourceManager()) {
+    if (cache instanceof CacheCreation && creation.hasResourceManager()) {
       boolean generateIt = false;
-      if (this.creation.getResourceManager().hasCriticalHeap()) {
-        float chp = this.creation.getResourceManager().getCriticalHeapPercentage();
+      if (creation.getResourceManager().hasCriticalHeap()) {
+        float chp = creation.getResourceManager().getCriticalHeapPercentage();
         if (generateDefaults() || chp != MemoryThresholds.DEFAULT_CRITICAL_PERCENTAGE) {
           atts.addAttribute("", "", CRITICAL_HEAP_PERCENTAGE, "", String.valueOf(chp));
           generateIt = true;
         }
       }
-      if (this.creation.getResourceManager().hasEvictionHeap()) {
-        float ehp = this.creation.getResourceManager().getEvictionHeapPercentage();
+      if (creation.getResourceManager().hasEvictionHeap()) {
+        float ehp = creation.getResourceManager().getEvictionHeapPercentage();
         if (generateDefaults() || ehp != MemoryThresholds.DEFAULT_EVICTION_PERCENTAGE) {
           atts.addAttribute("", "", EVICTION_HEAP_PERCENTAGE, "", String.valueOf(ehp));
           generateIt = true;
         }
       }
 
-      if (this.version.compareTo(CacheXmlVersion.GEODE_1_0) >= 0) {
-        if (this.creation.getResourceManager().hasCriticalOffHeap()) {
-          float chp = this.creation.getResourceManager().getCriticalOffHeapPercentage();
+      if (version.compareTo(CacheXmlVersion.GEODE_1_0) >= 0) {
+        if (creation.getResourceManager().hasCriticalOffHeap()) {
+          float chp = creation.getResourceManager().getCriticalOffHeapPercentage();
           if (generateDefaults() || chp != MemoryThresholds.DEFAULT_CRITICAL_PERCENTAGE) {
             atts.addAttribute("", "", CRITICAL_OFF_HEAP_PERCENTAGE, "", String.valueOf(chp));
             generateIt = true;
           }
         }
-        if (this.creation.getResourceManager().hasEvictionOffHeap()) {
-          float ehp = this.creation.getResourceManager().getEvictionOffHeapPercentage();
+        if (creation.getResourceManager().hasEvictionOffHeap()) {
+          float ehp = creation.getResourceManager().getEvictionOffHeapPercentage();
           if (generateDefaults() || ehp != MemoryThresholds.DEFAULT_EVICTION_PERCENTAGE) {
             atts.addAttribute("", "", EVICTION_OFF_HEAP_PERCENTAGE, "", String.valueOf(ehp));
             generateIt = true;
@@ -804,28 +750,28 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
       if (generateIt) {
         generateResourceManagerElement(atts);
       }
-    } else if (this.cache instanceof GemFireCacheImpl) {
+    } else if (cache instanceof GemFireCacheImpl) {
       {
-        int chp = (int) this.cache.getResourceManager().getCriticalHeapPercentage();
+        int chp = (int) cache.getResourceManager().getCriticalHeapPercentage();
         if (generateDefaults() || chp != MemoryThresholds.DEFAULT_CRITICAL_PERCENTAGE)
 
           atts.addAttribute("", "", CRITICAL_HEAP_PERCENTAGE, "", String.valueOf(chp));
       }
       {
-        int ehp = (int) this.cache.getResourceManager().getEvictionHeapPercentage();
+        int ehp = (int) cache.getResourceManager().getEvictionHeapPercentage();
         if (generateDefaults() || ehp != MemoryThresholds.DEFAULT_EVICTION_PERCENTAGE)
           atts.addAttribute("", "", EVICTION_HEAP_PERCENTAGE, "", String.valueOf(ehp));
       }
 
-      if (this.version.compareTo(CacheXmlVersion.GEODE_1_0) >= 0) {
+      if (version.compareTo(CacheXmlVersion.GEODE_1_0) >= 0) {
         {
-          int chp = (int) this.cache.getResourceManager().getCriticalOffHeapPercentage();
+          int chp = (int) cache.getResourceManager().getCriticalOffHeapPercentage();
           if (generateDefaults() || chp != MemoryThresholds.DEFAULT_CRITICAL_PERCENTAGE)
 
             atts.addAttribute("", "", CRITICAL_OFF_HEAP_PERCENTAGE, "", String.valueOf(chp));
         }
         {
-          int ehp = (int) this.cache.getResourceManager().getEvictionOffHeapPercentage();
+          int ehp = (int) cache.getResourceManager().getEvictionOffHeapPercentage();
           if (generateDefaults() || ehp != MemoryThresholds.DEFAULT_EVICTION_PERCENTAGE)
             atts.addAttribute("", "", EVICTION_OFF_HEAP_PERCENTAGE, "", String.valueOf(ehp));
         }
@@ -849,10 +795,9 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
   /**
    * Generates the <code>serializer-registration</code> element.
    *
-   * @throws SAXException
    */
   private void generateSerializerRegistration() throws SAXException {
-    final SerializerCreation sc = this.creation.getSerializerCreation();
+    final SerializerCreation sc = creation.getSerializerCreation();
     if (sc == null) {
       return;
     }
@@ -882,14 +827,11 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
     handler.endElement("", TOP_SERIALIZER_REGISTRATION, TOP_SERIALIZER_REGISTRATION);
   }
 
-  /**
-   * @throws SAXException
-   */
   private void generateFunctionService() throws SAXException {
     Collection<Function> functions = Collections.emptyList();
-    if (this.cache instanceof CacheCreation) {
-      if (this.creation.hasFunctionService()) {
-        functions = this.creation.getFunctionServiceCreation().getFunctionList();
+    if (cache instanceof CacheCreation) {
+      if (creation.hasFunctionService()) {
+        functions = creation.getFunctionServiceCreation().getFunctionList();
       }
     } else {
       functions = FunctionService.getRegisteredFunctions().values();
@@ -915,7 +857,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
    *
    * @since GemFire 5.7
    */
-  private void generateClientHaQueue(CacheServer bridge) throws SAXException {
+  private void generateClientHaQueue(CacheServer bridge) {
     AttributesImpl atts = new AttributesImpl();
     ClientSubscriptionConfigImpl csc =
         (ClientSubscriptionConfigImpl) bridge.getClientSubscriptionConfig();
@@ -923,7 +865,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
       atts.addAttribute("", "", CLIENT_SUBSCRIPTION_EVICTION_POLICY, "", csc.getEvictionPolicy());
       atts.addAttribute("", "", CLIENT_SUBSCRIPTION_CAPACITY, "",
           String.valueOf(csc.getCapacity()));
-      if (this.version.compareTo(CacheXmlVersion.GEMFIRE_6_5) >= 0) {
+      if (version.compareTo(CacheXmlVersion.GEMFIRE_6_5) >= 0) {
         String dsVal = csc.getDiskStoreName();
         if (dsVal != null) {
           atts.addAttribute("", "", DISK_STORE_NAME, "", dsVal);
@@ -946,7 +888,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
    * @since GemFire 4.0
    */
   private void generate(CacheServer bridge) throws SAXException {
-    if (this.version.compareTo(CacheXmlVersion.GEMFIRE_4_0) < 0) {
+    if (version.compareTo(CacheXmlVersion.GEMFIRE_4_0) < 0) {
       return;
     }
     AttributesImpl atts = new AttributesImpl();
@@ -954,7 +896,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
       if (generateDefaults() || bridge.getPort() != CacheServer.DEFAULT_PORT)
         atts.addAttribute("", "", PORT, "", String.valueOf(bridge.getPort()));
 
-      if (this.version.compareTo(CacheXmlVersion.GEMFIRE_4_1) < 0) {
+      if (version.compareTo(CacheXmlVersion.GEMFIRE_4_1) < 0) {
         return;
       }
       if (generateDefaults()
@@ -972,14 +914,14 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
         atts.addAttribute("", "", SOCKET_BUFFER_SIZE, "",
             String.valueOf(bridge.getSocketBufferSize()));
 
-      if (this.version.compareTo(CacheXmlVersion.GEMFIRE_5_0) < 0) {
+      if (version.compareTo(CacheXmlVersion.GEMFIRE_5_0) < 0) {
         return;
       }
 
       if (generateDefaults() || bridge.getMaxConnections() != CacheServer.DEFAULT_MAX_CONNECTIONS)
         atts.addAttribute("", "", MAX_CONNECTIONS, "", String.valueOf(bridge.getMaxConnections()));
 
-      if (this.version.compareTo(CacheXmlVersion.GEMFIRE_5_1) < 0) {
+      if (version.compareTo(CacheXmlVersion.GEMFIRE_5_1) < 0) {
         return;
       }
 
@@ -996,7 +938,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
             String.valueOf(bridge.getMessageTimeToLive()));
       }
 
-      if (this.version.compareTo(CacheXmlVersion.GEMFIRE_5_7) < 0) {
+      if (version.compareTo(CacheXmlVersion.GEMFIRE_5_7) < 0) {
         return;
       }
 
@@ -1013,7 +955,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
         atts.addAttribute("", "", LOAD_POLL_INTERVAL, "",
             String.valueOf(bridge.getLoadPollInterval()));
 
-      if (this.version.compareTo(CacheXmlVersion.GEMFIRE_8_0) < 0) {
+      if (version.compareTo(CacheXmlVersion.GEMFIRE_8_0) < 0) {
         return;
       }
 
@@ -1022,17 +964,16 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
       }
 
     } finally {
-      if (this.version.compareTo(CacheXmlVersion.GEMFIRE_5_7) >= 0) {
+      if (version.compareTo(CacheXmlVersion.GEMFIRE_5_7) >= 0) {
         handler.startElement("", CACHE_SERVER, CACHE_SERVER, atts);
       } else {
         handler.startElement("", BRIDGE_SERVER, BRIDGE_SERVER, atts);
       }
 
-      if (this.version.compareTo(CacheXmlVersion.GEMFIRE_5_7) >= 0) {
+      if (version.compareTo(CacheXmlVersion.GEMFIRE_5_7) >= 0) {
         String[] groups = bridge.getGroups();
         if (groups.length > 0) {
-          for (int i = 0; i < groups.length; i++) {
-            String group = groups[i];
+          for (String group : groups) {
             handler.startElement("", GROUP, GROUP, EMPTY);
             handler.characters(group.toCharArray(), 0, group.length());
             handler.endElement("", GROUP, GROUP);
@@ -1048,7 +989,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
           generate(LOAD_PROBE, probe);
         }
       }
-      if (this.version.compareTo(CacheXmlVersion.GEMFIRE_5_7) >= 0) {
+      if (version.compareTo(CacheXmlVersion.GEMFIRE_5_7) >= 0) {
         handler.endElement("", "", CACHE_SERVER);
       } else {
         handler.endElement("", "", BRIDGE_SERVER);
@@ -1062,7 +1003,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
    * @since GemFire prPersistSprint2
    */
   private void generate(DiskStore ds) throws SAXException {
-    if (this.version.compareTo(CacheXmlVersion.GEMFIRE_6_5) < 0) {
+    if (version.compareTo(CacheXmlVersion.GEMFIRE_6_5) < 0) {
       return;
     }
     AttributesImpl atts = new AttributesImpl();
@@ -1116,7 +1057,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
           atts.addAttribute("", "", QUEUE_SIZE, "", String.valueOf(ds.getQueueSize()));
       }
 
-      if (this.version.compareTo(CacheXmlVersion.GEMFIRE_8_0) >= 0) {
+      if (version.compareTo(CacheXmlVersion.GEMFIRE_8_0) >= 0) {
         if ((!(ds instanceof DiskStoreAttributesCreation)
             || ((DiskStoreAttributesCreation) ds).hasDiskUsageWarningPercentage())) {
           if (generateDefaults() || ds
@@ -1141,7 +1082,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
         File[] diskDirs = ds.getDiskDirs();
         int[] diskSizes = ds.getDiskDirSizes();
         if (diskDirs != null && diskDirs.length > 0) {
-          if (generateDefaults() || !Arrays.equals(diskDirs, DiskStoreFactory.DEFAULT_DISK_DIRS)
+          if (generateDefaults() || !Arrays.equals(diskDirs, DefaultDiskDirs.getDefaultDiskDirs())
               || !Arrays.equals(diskSizes, DiskStoreFactory.DEFAULT_DISK_DIR_SIZES)) {
             handler.startElement("", DISK_DIRS, DISK_DIRS, EMPTY);
             for (int i = 0; i < diskDirs.length; i++) {
@@ -1167,13 +1108,10 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
   /**
    * Compare regions by name
    */
-  class RegionComparator implements Comparator {
-    public int compare(Object o1, Object o2) {
-      return (((Region) o1).getFullPath().compareTo(((Region) o2).getFullPath()));
-    }
-
-    public boolean equals(Object anObj) {
-      return ((Region) this).getFullPath().equals(((Region) anObj).getFullPath());
+  static class RegionComparator implements Comparator<Region> {
+    @Override
+    public int compare(Region o1, Region o2) {
+      return o1.getFullPath().compareTo(o2.getFullPath());
     }
   }
 
@@ -1183,7 +1121,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
    * @since GemFire 5.7
    */
   private void generate(Pool cp) throws SAXException {
-    if (this.version.compareTo(CacheXmlVersion.GEMFIRE_5_7) < 0) {
+    if (version.compareTo(CacheXmlVersion.GEMFIRE_5_7) < 0) {
       return;
     }
     if (((PoolImpl) cp).isUsedByGateway()) {
@@ -1193,7 +1131,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
     AttributesImpl atts = new AttributesImpl();
     try {
       atts.addAttribute("", "", NAME, "", cp.getName());
-      if (this.version.compareTo(CacheXmlVersion.GEODE_1_0) >= 0) {
+      if (version.compareTo(CacheXmlVersion.GEODE_1_0) >= 0) {
         if (generateDefaults() || cp
             .getSubscriptionTimeoutMultiplier() != PoolFactory.DEFAULT_SUBSCRIPTION_TIMEOUT_MULTIPLIER) {
           atts.addAttribute("", "", SUBSCRIPTION_TIMEOUT_MULTIPLIER, "",
@@ -1254,14 +1192,14 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
         atts.addAttribute("", "", THREAD_LOCAL_CONNECTIONS, "",
             String.valueOf(cp.getThreadLocalConnections()));
 
-      if (this.version.compareTo(CacheXmlVersion.GEMFIRE_6_1) > 0) {
+      if (version.compareTo(CacheXmlVersion.GEMFIRE_6_1) > 0) {
         if (generateDefaults()
             || cp.getPRSingleHopEnabled() != PoolFactory.DEFAULT_PR_SINGLE_HOP_ENABLED)
           atts.addAttribute("", "", PR_SINGLE_HOP_ENABLED, "",
               String.valueOf(cp.getPRSingleHopEnabled()));
       }
 
-      if (this.version.compareTo(CacheXmlVersion.GEMFIRE_6_1) > 0) {
+      if (version.compareTo(CacheXmlVersion.GEMFIRE_6_1) > 0) {
         if (generateDefaults()
             || cp.getMultiuserAuthentication() != PoolFactory.DEFAULT_MULTIUSER_AUTHENTICATION)
           atts.addAttribute("", "", MULTIUSER_SECURE_MODE_ENABLED, "",
@@ -1270,9 +1208,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
     } finally {
       handler.startElement("", CONNECTION_POOL, CONNECTION_POOL, atts);
       {
-        Iterator/* <InetSocketAddress> */ locators = cp.getLocators().iterator();
-        while (locators.hasNext()) {
-          InetSocketAddress addr = (InetSocketAddress) locators.next();
+        for (InetSocketAddress addr : cp.getLocators()) {
           AttributesImpl sAtts = new AttributesImpl();
           sAtts.addAttribute("", "", HOST, "", addr.getHostName());
           sAtts.addAttribute("", "", PORT, "", String.valueOf(addr.getPort()));
@@ -1281,9 +1217,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
         }
       }
       {
-        Iterator/* <InetSocketAddress> */ servers = cp.getServers().iterator();
-        while (servers.hasNext()) {
-          InetSocketAddress addr = (InetSocketAddress) servers.next();
+        for (InetSocketAddress addr : cp.getServers()) {
           AttributesImpl sAtts = new AttributesImpl();
           sAtts.addAttribute("", "", HOST, "", addr.getHostName());
           sAtts.addAttribute("", "", PORT, "", String.valueOf(addr.getPort()));
@@ -1301,7 +1235,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
    * @since GemFire 4.0
    */
   private void generate(CacheTransactionManager txMgr) throws SAXException {
-    if (this.version.compareTo(CacheXmlVersion.GEMFIRE_4_0) < 0) {
+    if (version.compareTo(CacheXmlVersion.GEMFIRE_4_0) < 0) {
       return;
     }
 
@@ -1315,8 +1249,8 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
     handler.startElement("", TRANSACTION_MANAGER, TRANSACTION_MANAGER, EMPTY);
     {
       TransactionListener[] listeners = txMgr.getListeners();
-      for (int i = 0; i < listeners.length; i++) {
-        generate(TRANSACTION_LISTENER, listeners[i]);
+      for (TransactionListener listener : listeners) {
+        generate(TRANSACTION_LISTENER, listener);
       }
       if (txMgr.getWriter() != null) {
         generate(TRANSACTION_WRITER, txMgr.getWriter());
@@ -1331,7 +1265,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
    * @since GemFire 4.3
    */
   private void generateDynamicRegionFactory(Cache c) throws SAXException {
-    if (this.version.compareTo(CacheXmlVersion.GEMFIRE_4_1) < 0) {
+    if (version.compareTo(CacheXmlVersion.GEMFIRE_4_1) < 0) {
       return;
     }
     DynamicRegionFactory.Config cfg;
@@ -1442,7 +1376,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
       generateGatewayEventFilter(gef);
     }
 
-    if (this.version.compareTo(CacheXmlVersion.GEMFIRE_8_0) >= 0) {
+    if (version.compareTo(CacheXmlVersion.GEMFIRE_8_0) >= 0) {
       if (sender.getGatewayEventSubstitutionFilter() != null) {
         generateGatewayEventSubstitutionFilter(sender.getGatewayEventSubstitutionFilter());
       }
@@ -1506,7 +1440,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
               String.valueOf(asyncEventQueue.getOrderPolicy()));
       }
       // eviction and expiration events
-      if (this.version.compareTo(CacheXmlVersion.GEODE_1_0) >= 0) {
+      if (version.compareTo(CacheXmlVersion.GEODE_1_0) >= 0) {
         if (generateDefaults() || asyncEventQueue
             .isForwardExpirationDestroy() != (GatewaySender.DEFAULT_FORWARD_EXPIRATION_DESTROY))
           atts.addAttribute("", "", FORWARD_EXPIRATION_DESTROY, "",
@@ -1528,7 +1462,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
         }
       }
 
-      if (this.version.compareTo(CacheXmlVersion.GEMFIRE_8_0) >= 0) {
+      if (version.compareTo(CacheXmlVersion.GEMFIRE_8_0) >= 0) {
         if (asyncEventQueue.getGatewayEventSubstitutionFilter() != null) {
           generateGatewayEventSubstitutionFilter(
               asyncEventQueue.getGatewayEventSubstitutionFilter());
@@ -1574,7 +1508,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
           atts.addAttribute("", "", SOCKET_BUFFER_SIZE, "",
               String.valueOf(receiver.getSocketBufferSize()));
 
-        if (this.version.compareTo(CacheXmlVersion.GEMFIRE_8_0) < 0) {
+        if (version.compareTo(CacheXmlVersion.GEMFIRE_8_0) < 0) {
           return;
         }
         // manual-start
@@ -1598,7 +1532,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
     handler.startElement("", CLASS_NAME, CLASS_NAME, EMPTY);
     handler.characters(className.toCharArray(), 0, className.length());
     handler.endElement("", CLASS_NAME, CLASS_NAME);
-    Properties props = null;
+    Properties props;
     if (gef instanceof Declarable2) {
       props = ((Declarable2) gef).getConfig();
       generate(props, null);
@@ -1613,7 +1547,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
     handler.startElement("", CLASS_NAME, CLASS_NAME, EMPTY);
     handler.characters(className.toCharArray(), 0, className.length());
     handler.endElement("", CLASS_NAME, CLASS_NAME);
-    Properties props = null;
+    Properties props;
     if (gef instanceof Declarable2) {
       props = ((Declarable2) gef).getConfig();
       generate(props, null);
@@ -1631,7 +1565,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
     handler.startElement("", CLASS_NAME, CLASS_NAME, EMPTY);
     handler.characters(className.toCharArray(), 0, className.length());
     handler.endElement("", CLASS_NAME, CLASS_NAME);
-    Properties props = null;
+    Properties props;
     if (filter instanceof Declarable2) {
       props = ((Declarable2) filter).getConfig();
       generate(props, null);
@@ -1642,7 +1576,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
   /**
    * Generates XML for a given region
    */
-  private void generate(Region region, String elementName) throws SAXException {
+  private void generate(Region<?, ?> region, String elementName) throws SAXException {
     if (region == null) {
       return;
     }
@@ -1668,35 +1602,32 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
     }
 
     // generate index data here
-    Collection indexesForRegion = this.cache.getQueryService().getIndexes(region);
-    if (indexesForRegion != null) {
-      for (Object index : indexesForRegion) {
-        generate((Index) index);
-      }
+    Collection<Index> indexesForRegion = cache.getQueryService().getIndexes(region);
+    for (Index index : indexesForRegion) {
+      generate(index);
     }
 
     if (region instanceof PartitionedRegion) {
       if (includeKeysValues) {
         if (!region.isEmpty()) {
-          for (Iterator iter = region.entrySet(false).iterator(); iter.hasNext();) {
-            Region.Entry entry = (Region.Entry) iter.next();
+          for (Object o : region.entrySet(false)) {
+            Region.Entry entry = (Region.Entry) o;
             generate(entry);
           }
         }
       }
     } else {
       if (includeKeysValues) {
-        for (Iterator iter = region.entrySet(false).iterator(); iter.hasNext();) {
-          Region.Entry entry = (Region.Entry) iter.next();
+        for (Object o : region.entrySet(false)) {
+          Region.Entry entry = (Region.Entry) o;
           generate(entry);
         }
       }
     }
 
-    TreeSet rSet = new TreeSet(new RegionComparator());
+    TreeSet<Region<?, ?>> rSet = new TreeSet<>(new RegionComparator());
     rSet.addAll(region.subregions(false));
-    for (Iterator iter = rSet.iterator(); iter.hasNext();) {
-      Region subregion = (Region) iter.next();
+    for (Region<?, ?> subregion : rSet) {
       generate(subregion, REGION);
     }
 
@@ -1782,7 +1713,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
    *
    * @param id The id of the named region attributes (may be <code>null</code>)
    */
-  private void generate(String id, RegionAttributes attrs) throws SAXException {
+  private void generate(String id, RegionAttributes<?, ?> attrs) throws SAXException {
     AttributesImpl atts = new AttributesImpl();
 
     if (id != null) {
@@ -1817,7 +1748,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
 
       } else {
         throw new InternalGemFireException(
-            LocalizedStrings.CacheXmlGenerator_UNKNOWN_SCOPE_0.toLocalizedString(scope));
+            String.format("Unknown scope: %s", scope));
       }
 
 
@@ -1863,11 +1794,11 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
             String.valueOf(attrs.getEnableAsyncConflation()));
     }
 
-    if (this.version.compareTo(CacheXmlVersion.GEMFIRE_5_0) >= 0) {
+    if (version.compareTo(CacheXmlVersion.GEMFIRE_5_0) >= 0) {
 
       if ((!(attrs instanceof RegionAttributesCreation)
           || ((RegionAttributesCreation) attrs).hasEnableSubscriptionConflation())) {
-        if (this.version.compareTo(CacheXmlVersion.GEMFIRE_5_7) >= 0) {
+        if (version.compareTo(CacheXmlVersion.GEMFIRE_5_7) >= 0) {
           // starting with 5.7 it is enable-subscription-conflation
           if (generateDefaults() || attrs.getEnableSubscriptionConflation())
             atts.addAttribute("", "", ENABLE_SUBSCRIPTION_CONFLATION, "",
@@ -1897,7 +1828,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
         } else if (dp == DataPolicy.PERSISTENT_PARTITION) {
           dpString = PERSISTENT_PARTITION_DP;
         } else if (dp.isPartition()) {
-          if (this.version.compareTo(CacheXmlVersion.GEMFIRE_5_1) >= 0) {
+          if (version.compareTo(CacheXmlVersion.GEMFIRE_5_1) >= 0) {
             dpString = PARTITION_DP;
           } else {
             // prior to 5.1 the data policy for partitioned regions was EMPTY
@@ -1905,7 +1836,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
           }
         } else {
           throw new InternalGemFireException(
-              LocalizedStrings.CacheXmlGenerator_UNKNOWN_DATA_POLICY_0.toLocalizedString(dp));
+              String.format("Unknown data policy: %s", dp));
         }
 
         if (generateDefaults() || !dp.equals(DataPolicy.DEFAULT))
@@ -1932,7 +1863,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
           mirrorString = KEYS_VALUES;
         else
           throw new InternalGemFireException(
-              LocalizedStrings.CacheXmlGenerator_UNKNOWN_MIRROR_TYPE_0.toLocalizedString(mirror));
+              String.format("Unknown mirror type: %s", mirror));
         atts.addAttribute("", "", MIRROR_TYPE, "", mirrorString);
       }
       if ((!(attrs instanceof RegionAttributesCreation)
@@ -1961,10 +1892,10 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
             String.valueOf(attrs.getConcurrencyLevel()));
     }
 
-    if (this.version.compareTo(CacheXmlVersion.GEMFIRE_7_0) >= 0) {
+    if (version.compareTo(CacheXmlVersion.GEMFIRE_7_0) >= 0) {
       if ((!(attrs instanceof RegionAttributesCreation)
           || ((RegionAttributesCreation) attrs).hasConcurrencyChecksEnabled())) {
-        if (generateDefaults() || attrs.getConcurrencyChecksEnabled() != true/* fixes bug 46654 */)
+        if (generateDefaults() || !attrs.getConcurrencyChecksEnabled())
           atts.addAttribute("", "", CONCURRENCY_CHECKS_ENABLED, "",
               String.valueOf(attrs.getConcurrencyChecksEnabled()));
       }
@@ -1983,14 +1914,14 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
         atts.addAttribute("", "", IGNORE_JTA, "", String.valueOf(attrs.getIgnoreJTA()));
     }
 
-    if (this.version.compareTo(CacheXmlVersion.GEMFIRE_4_0) >= 0) {
+    if (version.compareTo(CacheXmlVersion.GEMFIRE_4_0) >= 0) {
       if ((!(attrs instanceof RegionAttributesCreation)
           || ((RegionAttributesCreation) attrs).hasIsLockGrantor())) {
         if (generateDefaults() || attrs.isLockGrantor())
           atts.addAttribute("", "", IS_LOCK_GRANTOR, "", String.valueOf(attrs.isLockGrantor()));
       }
     }
-    if (this.version.compareTo(CacheXmlVersion.GEMFIRE_5_7) >= 0) {
+    if (version.compareTo(CacheXmlVersion.GEMFIRE_5_7) >= 0) {
       if ((!(attrs instanceof RegionAttributesCreation)
           || ((RegionAttributesCreation) attrs).hasPoolName())) {
         String cpVal = attrs.getPoolName();
@@ -2001,7 +1932,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
           atts.addAttribute("", "", POOL_NAME, "", cpVal);
       }
     }
-    if (this.version.compareTo(CacheXmlVersion.GEMFIRE_6_5) >= 0) {
+    if (version.compareTo(CacheXmlVersion.GEMFIRE_6_5) >= 0) {
       if ((!(attrs instanceof RegionAttributesCreation)
           || ((RegionAttributesCreation) attrs).hasDiskStoreName())) {
         String dsVal = attrs.getDiskStoreName();
@@ -2017,19 +1948,19 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
               String.valueOf(attrs.isDiskSynchronous()));
       }
     }
-    if (this.version.compareTo(CacheXmlVersion.GEMFIRE_6_1) >= 0)
+    if (version.compareTo(CacheXmlVersion.GEMFIRE_6_1) >= 0)
       if ((!(attrs instanceof RegionAttributesCreation)
           || ((RegionAttributesCreation) attrs).hasCloningEnabled())) {
         if (generateDefaults() || attrs.getCloningEnabled())
           atts.addAttribute("", "", CLONING_ENABLED, "", String.valueOf(attrs.getCloningEnabled()));
       }
 
-    if (this.version.compareTo(CacheXmlVersion.GEMFIRE_7_0) >= 0) {
+    if (version.compareTo(CacheXmlVersion.GEMFIRE_7_0) >= 0) {
       if ((!(attrs instanceof RegionAttributesCreation)
           || ((RegionAttributesCreation) attrs).hasGatewaySenderId())) {
-        Set<String> senderIds = new HashSet<String>(attrs.getGatewaySenderIds());
+        Set<String> senderIds = new HashSet<>(attrs.getGatewaySenderIds());
         StringBuilder senderStringBuff = new StringBuilder();
-        if (senderIds != null && senderIds.size() != 0) {
+        if (senderIds.size() != 0) {
           for (String senderId : senderIds) {
             if (!(senderStringBuff.length() == 0)) {
               senderStringBuff.append(",");
@@ -2042,12 +1973,12 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
       }
     }
 
-    if (this.version.compareTo(CacheXmlVersion.GEMFIRE_7_0) >= 0) {
+    if (version.compareTo(CacheXmlVersion.GEMFIRE_7_0) >= 0) {
       if ((!(attrs instanceof RegionAttributesCreation)
           || ((RegionAttributesCreation) attrs).hasAsyncEventListeners())) {
-        Set<String> asyncEventQueueIds = new HashSet<String>(attrs.getAsyncEventQueueIds());
+        Set<String> asyncEventQueueIds = new HashSet<>(attrs.getAsyncEventQueueIds());
         StringBuilder asyncEventQueueStringBuff = new StringBuilder();
-        if (asyncEventQueueIds != null && asyncEventQueueIds.size() != 0) {
+        if (asyncEventQueueIds.size() != 0) {
           for (String asyncEventQueueId : asyncEventQueueIds) {
             if (!(asyncEventQueueStringBuff.length() == 0)) {
               asyncEventQueueStringBuff.append(",");
@@ -2061,7 +1992,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
       }
     }
 
-    if (this.version.compareTo(CacheXmlVersion.GEODE_1_0) >= 0) {
+    if (version.compareTo(CacheXmlVersion.GEODE_1_0) >= 0) {
       if ((!(attrs instanceof RegionAttributesCreation)
           || ((RegionAttributesCreation) attrs).hasOffHeap())) {
         if (generateDefaults() || attrs.getOffHeap()) {
@@ -2111,7 +2042,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
     }
 
     if (attrs.getDiskStoreName() == null
-        && (generateDefaults() || this.version.compareTo(CacheXmlVersion.GEMFIRE_6_5) < 0)) {
+        && (generateDefaults() || version.compareTo(CacheXmlVersion.GEMFIRE_6_5) < 0)) {
       if ((!(attrs instanceof RegionAttributesCreation)
           || ((RegionAttributesCreation) attrs).hasDiskWriteAttributes())) {
         generate(attrs.getDiskWriteAttributes());
@@ -2139,7 +2070,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
       }
     } // pre 6.5
 
-    if (this.version.compareTo(CacheXmlVersion.GEMFIRE_5_0) >= 0) {
+    if (version.compareTo(CacheXmlVersion.GEMFIRE_5_0) >= 0) {
       if ((!(attrs instanceof RegionAttributesCreation)
           || ((RegionAttributesCreation) attrs).hasPartitionAttributes())) {
         PartitionAttributes p = attrs.getPartitionAttributes();
@@ -2149,14 +2080,14 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
       }
     }
 
-    if (this.version.compareTo(CacheXmlVersion.GEMFIRE_5_0) >= 0) {
+    if (version.compareTo(CacheXmlVersion.GEMFIRE_5_0) >= 0) {
       MembershipAttributes p = attrs.getMembershipAttributes();
       if (p != null && p.hasRequiredRoles()) {
         generate(p);
       }
     }
 
-    if (this.version.compareTo(CacheXmlVersion.GEMFIRE_5_0) >= 0) {
+    if (version.compareTo(CacheXmlVersion.GEMFIRE_5_0) >= 0) {
       if ((!(attrs instanceof RegionAttributesCreation)
           || ((RegionAttributesCreation) attrs).hasSubscriptionAttributes())) {
         SubscriptionAttributes sa = attrs.getSubscriptionAttributes();
@@ -2178,12 +2109,12 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
     if ((!(attrs instanceof RegionAttributesCreation)
         || ((RegionAttributesCreation) attrs).hasCacheListeners())) {
       CacheListener[] listeners = attrs.getCacheListeners();
-      for (int i = 0; i < listeners.length; i++) {
-        generate(CACHE_LISTENER, listeners[i]);
+      for (CacheListener listener : listeners) {
+        generate(CACHE_LISTENER, listener);
       }
     }
 
-    if (this.version.compareTo(CacheXmlVersion.GEMFIRE_8_0) >= 0) {
+    if (version.compareTo(CacheXmlVersion.GEMFIRE_8_0) >= 0) {
       if ((!(attrs instanceof RegionAttributesCreation)
           || ((RegionAttributesCreation) attrs).hasCompressor())) {
         generate(COMPRESSOR, attrs.getCompressor());
@@ -2226,12 +2157,12 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
     handler.endElement("", kind, kind);
   }
 
-  private void generate(String kind, Declarable d, Properties p) throws SAXException {
+  private void generate(Declarable d, Properties p) throws SAXException {
     if (d == null) {
       return;
     }
 
-    handler.startElement("", kind, kind, EMPTY);
+    handler.startElement("", CacheXml.INITIALIZER, CacheXml.INITIALIZER, EMPTY);
 
     String className = d.getClass().getName();
     handler.startElement("", CLASS_NAME, CLASS_NAME, EMPTY);
@@ -2240,7 +2171,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
 
     generate(p, null);
 
-    handler.endElement("", kind, kind);
+    handler.endElement("", CacheXml.INITIALIZER, CacheXml.INITIALIZER);
   }
 
   private void generate(EvictionAttributes ea) throws SAXException {
@@ -2267,7 +2198,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
       handler.endElement("", LRU_MEMORY_SIZE, LRU_MEMORY_SIZE);
     } else if (ea.getAlgorithm() == EvictionAlgorithm.LRU_HEAP) {
       handler.startElement("", LRU_HEAP_PERCENTAGE, LRU_HEAP_PERCENTAGE, atts);
-      if (this.version.compareTo(CacheXmlVersion.GEMFIRE_6_0) >= 0) {
+      if (version.compareTo(CacheXmlVersion.GEMFIRE_6_0) >= 0) {
         ObjectSizer os = ea.getObjectSizer();
         if (!(os instanceof SizeClassOnceObjectSizer)) {
           if (os != null) {
@@ -2276,8 +2207,6 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
         }
       }
       handler.endElement("", LRU_HEAP_PERCENTAGE, LRU_HEAP_PERCENTAGE);
-    } else {
-      // all other algos are ignored
     }
     handler.endElement("", EVICTION_ATTRIBUTES, EVICTION_ATTRIBUTES);
   }
@@ -2314,7 +2243,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
 
     } else {
       throw new InternalGemFireException(
-          LocalizedStrings.CacheXmlGenerator_UNKNOWN_EXPIRATIONACTION_0.toLocalizedString(action));
+          String.format("Unknown ExpirationAction: %s", action));
     }
 
     atts.addAttribute("", "", ACTION, "", actionString);
@@ -2323,7 +2252,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
     if (custom != null) {
       AttributesImpl endAtts = new AttributesImpl();
       handler.startElement("", CUSTOM_EXPIRY, CUSTOM_EXPIRY, endAtts);
-      generate((Declarable) custom, false);
+      generate(custom, false);
       handler.endElement("", CUSTOM_EXPIRY, CUSTOM_EXPIRY);
     }
     handler.endElement("", EXPIRATION_ATTRIBUTES, EXPIRATION_ATTRIBUTES);
@@ -2339,7 +2268,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
       return;
     }
 
-    String interestString = null;
+    String interestString;
     InterestPolicy ip = attrs.getInterestPolicy();
     AttributesImpl atts = new AttributesImpl();
 
@@ -2349,7 +2278,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
       interestString = CACHE_CONTENT;
     } else {
       throw new InternalGemFireException(
-          LocalizedStrings.CacheXmlGenerator_UNKNOWN_INTERESTPOLICY_0.toLocalizedString(ip));
+          String.format("Unknown InterestPolicy: %s", ip));
     }
 
     atts.addAttribute("", "", INTEREST_POLICY, "", interestString);
@@ -2361,14 +2290,14 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
   /**
    * Generates XML for a <code>PartitionAttributes</code>
    */
-  private void generate(PartitionAttributes pa) throws SAXException {
+  private void generate(PartitionAttributes<?, ?> pa) throws SAXException {
     AttributesImpl atts = new AttributesImpl();
 
     if (generateDefaults() || pa.getRedundantCopies() != 0)
       atts.addAttribute("", "", PARTITION_REDUNDANT_COPIES, "",
           String.valueOf(pa.getRedundantCopies()));
 
-    if (this.version.compareTo(CacheXmlVersion.GEMFIRE_5_1) >= 0) {
+    if (version.compareTo(CacheXmlVersion.GEMFIRE_5_1) >= 0) {
       if (generateDefaults()
           || pa.getLocalMaxMemory() != ((PartitionAttributesImpl) pa).getLocalMaxMemoryDefault())
         atts.addAttribute("", "", LOCAL_MAX_MEMORY, "", String.valueOf(pa.getLocalMaxMemory()));
@@ -2380,12 +2309,12 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
         atts.addAttribute("", "", TOTAL_NUM_BUCKETS, "", String.valueOf(pa.getTotalNumBuckets()));
     } // GEMFIRE_5_1
 
-    if (this.version.compareTo(CacheXmlVersion.GEMFIRE_5_8) >= 0) {
+    if (version.compareTo(CacheXmlVersion.GEMFIRE_5_8) >= 0) {
       if (pa.getColocatedWith() != null)
         atts.addAttribute("", "", PARTITION_COLOCATED_WITH, "", pa.getColocatedWith());
 
     }
-    if (this.version.compareTo(CacheXmlVersion.GEMFIRE_6_0) >= 0) {
+    if (version.compareTo(CacheXmlVersion.GEMFIRE_6_0) >= 0) {
       if (generateDefaults()
           || pa.getRecoveryDelay() != PartitionAttributesFactory.RECOVERY_DELAY_DEFAULT)
         atts.addAttribute("", "", RECOVERY_DELAY, "", String.valueOf(pa.getRecoveryDelay()));
@@ -2403,31 +2332,30 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
 
     handler.startElement("", PARTITION_ATTRIBUTES, PARTITION_ATTRIBUTES, atts);
 
-    if (this.version.compareTo(CacheXmlVersion.GEMFIRE_5_8) >= 0) {
+    if (version.compareTo(CacheXmlVersion.GEMFIRE_5_8) >= 0) {
       PartitionResolver rr = pa.getPartitionResolver();
       if (rr != null) {
-        generate(PARTITION_RESOLVER, rr);
+        generate(rr);
       }
     }
 
-    if (this.version.compareTo(CacheXmlVersion.GEMFIRE_6_1) >= 0) {
+    if (version.compareTo(CacheXmlVersion.GEMFIRE_6_1) >= 0) {
       PartitionListener[] listeners = pa.getPartitionListeners();
-      for (int i = 0; i < listeners.length; i++) {
-        PartitionListener listener = listeners[i];
+      for (PartitionListener listener : listeners) {
         if (listener != null) {
-          generate(PARTITION_LISTENER, listener);
+          generate(listener);
         }
       }
     }
 
-    if (this.version.compareTo(CacheXmlVersion.GEMFIRE_6_6) >= 0) {
+    if (version.compareTo(CacheXmlVersion.GEMFIRE_6_6) >= 0) {
       List<FixedPartitionAttributes> staticAttrs = pa.getFixedPartitionAttributes();
       if (staticAttrs != null) {
-        generateFixedPartitionAttributes(FIXED_PARTITION_ATTRIBUTES, staticAttrs);
+        generateFixedPartitionAttributes(staticAttrs);
       }
     }
 
-    if (this.version.compareTo(CacheXmlVersion.GEMFIRE_5_1) < 0) {
+    if (version.compareTo(CacheXmlVersion.GEMFIRE_5_1) < 0) {
       Properties p = pa.getLocalProperties();
       generate(p, LOCAL_PROPERTIES);
 
@@ -2441,59 +2369,61 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
   /**
    * Generate XML for partition-resolver element in PartitionedRegion Attributes
    */
-  private void generate(String kind, PartitionResolver rr) throws SAXException {
+  private void generate(PartitionResolver rr) throws SAXException {
     if (rr == null)
       return;
 
-    handler.startElement("", kind, kind, EMPTY);
+    handler.startElement("", CacheXml.PARTITION_RESOLVER, CacheXml.PARTITION_RESOLVER, EMPTY);
 
     String className = rr.getClass().getName();
 
     handler.startElement("", CLASS_NAME, CLASS_NAME, EMPTY);
     handler.characters(className.toCharArray(), 0, className.length());
     handler.endElement("", CLASS_NAME, CLASS_NAME);
-    Properties props = null;
+    Properties props;
     if (rr instanceof Declarable2) {
       props = ((Declarable2) rr).getConfig();
       generate(props, null);
     }
-    handler.endElement("", kind, kind);
+    handler.endElement("", CacheXml.PARTITION_RESOLVER, CacheXml.PARTITION_RESOLVER);
   }
 
   /**
    * Generate XML for partition-listener element in PartitionedRegion Attributes
    */
-  private void generate(String kind, PartitionListener pl) throws SAXException {
+  private void generate(PartitionListener pl) throws SAXException {
     if (pl == null)
       return;
 
-    handler.startElement("", kind, kind, EMPTY);
+    handler.startElement("", CacheXml.PARTITION_LISTENER, CacheXml.PARTITION_LISTENER, EMPTY);
 
     String className = pl.getClass().getName();
 
     handler.startElement("", CLASS_NAME, CLASS_NAME, EMPTY);
     handler.characters(className.toCharArray(), 0, className.length());
     handler.endElement("", CLASS_NAME, CLASS_NAME);
-    Properties props = null;
+    Properties props;
     if (pl instanceof Declarable2) {
       props = ((Declarable2) pl).getConfig();
       generate(props, null);
     }
-    handler.endElement("", kind, kind);
+    handler.endElement("", CacheXml.PARTITION_LISTENER, CacheXml.PARTITION_LISTENER);
   }
 
   /**
    * Generate XML for FixedPartitionAttribute element in PartitionedRegion Attributes
    */
-  private void generateFixedPartitionAttributes(String kind,
-      List<FixedPartitionAttributes> allStaticAttrs) throws SAXException {
+  private void generateFixedPartitionAttributes(List<FixedPartitionAttributes> allStaticAttrs)
+      throws SAXException {
     for (FixedPartitionAttributes attr : allStaticAttrs) {
       AttributesImpl sAtts = new AttributesImpl();
       sAtts.addAttribute("", "", PARTITION_NAME, "", attr.getPartitionName());
       sAtts.addAttribute("", "", IS_PRIMARY, "", String.valueOf(attr.isPrimary()));
       sAtts.addAttribute("", "", NUM_BUCKETS, "", String.valueOf(attr.getNumBuckets()));
-      handler.startElement("", kind, kind, sAtts);
-      handler.endElement("", kind, kind);
+      handler.startElement("", CacheXml.FIXED_PARTITION_ATTRIBUTES,
+          CacheXml.FIXED_PARTITION_ATTRIBUTES, sAtts);
+      handler.endElement("", CacheXml.FIXED_PARTITION_ATTRIBUTES,
+          CacheXml.FIXED_PARTITION_ATTRIBUTES);
     }
   }
 
@@ -2556,8 +2486,8 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
 
     handler.startElement("", MEMBERSHIP_ATTRIBUTES, MEMBERSHIP_ATTRIBUTES, raAtts);
 
-    for (Iterator iter = roles.iterator(); iter.hasNext();) {
-      Role role = (Role) iter.next();
+    for (Object o : roles) {
+      Role role = (Role) o;
       AttributesImpl roleAtts = new AttributesImpl();
       roleAtts.addAttribute("", "", NAME, "", role.getName());
       handler.startElement("", REQUIRED_ROLE, REQUIRED_ROLE, roleAtts);
@@ -2655,8 +2585,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
     if (elementName != null) {
       handler.startElement("", elementName, elementName, EMPTY);
     }
-    for (Iterator iter = props.entrySet().iterator(); iter.hasNext();) {
-      Map.Entry entry = (Map.Entry) iter.next();
+    for (Map.Entry<Object, Object> entry : props.entrySet()) {
       String name = (String) entry.getKey();
       Object value = entry.getValue();
 
@@ -2670,9 +2599,6 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
 
       } else if (value instanceof Declarable) {
         generate((Declarable) value);
-
-      } else {
-        // Ignore it
       }
 
       handler.endElement("", PARAMETER, PARAMETER);
@@ -2692,60 +2618,69 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
   /**
    * Keep track of the content handler for use during {@link #parse(String)}.
    */
+  @Override
   public void setContentHandler(ContentHandler handler) {
     this.handler = handler;
   }
 
+  @Override
   public ContentHandler getContentHandler() {
-    return this.handler;
+    return handler;
   }
 
+  @Override
   public ErrorHandler getErrorHandler() {
     return this;
   }
 
-  public boolean getFeature(String name)
-      throws SAXNotRecognizedException, SAXNotSupportedException {
+  @Override
+  public boolean getFeature(String name) {
     return false;
   }
 
-  public void setFeature(String name, boolean value)
-      throws SAXNotRecognizedException, SAXNotSupportedException {
+  @Override
+  public void setFeature(String name, boolean value) {
     // nothing
   }
 
-  public Object getProperty(String name)
-      throws SAXNotRecognizedException, SAXNotSupportedException {
+  @Override
+  public Object getProperty(String name) {
 
     return null;
   }
 
-  public void setProperty(String name, Object value)
-      throws SAXNotRecognizedException, SAXNotSupportedException {
+  @Override
+  public void setProperty(String name, Object value) {
     // nothing
   }
 
+  @Override
   public void setEntityResolver(EntityResolver resolver) {
     // nothing
   }
 
+  @Override
   public EntityResolver getEntityResolver() {
     return this;
   }
 
+  @Override
   public void setDTDHandler(DTDHandler handler) {
     // nothing
   }
 
+  @Override
   public DTDHandler getDTDHandler() {
     return null;
   }
 
+  @Override
   public void setErrorHandler(ErrorHandler handler) {
     // nothing
   }
 
-  public void parse(String systemId) throws IOException, SAXException {
+  @Override
+  public void parse(String systemId) {
     // nothing
   }
 
@@ -2753,7 +2688,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
    * Used by gemfire build.xml to generate a default gemfire.properties for use by applications. See
    * bug 30995 for the feature request.
    */
-  public static void main(String args[]) throws IOException {
+  public static void main(String[] args) throws IOException {
     FileWriter fw = new FileWriter(new File("cache.xml"));
     PrintWriter pw = new PrintWriter(fw);
 

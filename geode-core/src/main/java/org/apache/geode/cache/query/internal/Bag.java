@@ -27,18 +27,13 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.query.CqResults;
 import org.apache.geode.cache.query.SelectResults;
-import org.apache.geode.cache.query.internal.ObjectIntHashMap.Entry;
 import org.apache.geode.cache.query.internal.types.CollectionTypeImpl;
 import org.apache.geode.cache.query.types.CollectionType;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.cache.query.types.StructType;
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.CachePerfStats;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 // @todo probably should assert element type when elements added
 // @todo support generics when no longer support Java 1.4
@@ -114,11 +109,11 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
     setElementType(elementType);
   }
 
+  @Override
   public void setElementType(ObjectType elementType) {
     if (elementType instanceof StructType)
       throw new IllegalArgumentException(
-          LocalizedStrings.ResultsBag_THIS_COLLECTION_DOES_NOT_SUPPORT_STRUCT_ELEMENTS
-              .toLocalizedString());
+          "This collection does not support struct elements");
     this.elementType = elementType;
   }
 
@@ -127,6 +122,7 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
   /**
    * Returns this bag as a list.
    */
+  @Override
   public List asList() {
     return new ArrayList(this);
   }
@@ -135,16 +131,20 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
    * Return an unmodifiable Set view of this bag. Does not require an iteration by using a
    * lightweight wrapper.
    */
+  @Override
   public Set asSet() {
     return new SetView();
   }
 
+  @Override
   public CollectionType getCollectionType() {
     return new CollectionTypeImpl(Collection.class, this.elementType);
   }
 
+  @Override
   public abstract boolean isModifiable();
 
+  @Override
   public int occurrences(Object element) {
     if (this.hasLimitIterator) {
       // Asif: If limit iterator then occurrence should be calculated
@@ -236,18 +236,18 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
   // gets an Object [] indicating field values as parameter
   // from the CompiledSelect
   public int addAndGetOccurence(Object element) {
-    int occurence;
+    int occurrence;
     if (element == null) {
       numNulls++;
-      occurence = numNulls;
+      occurrence = numNulls;
     } else {
-      occurence = this.mapGet(element); // 0 if not
-                                        // found
-      this.mapPut(element, ++occurence);
+      occurrence = this.mapGet(element); // 0 if not
+                                         // found
+      this.mapPut(element, ++occurrence);
     }
     this.size++;
     assert this.size >= 0 : this.size;
-    return occurence;
+    return occurrence;
   }
 
   @Override
@@ -334,6 +334,7 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
 
   protected abstract int mapHashCode();
 
+  @Override
   public boolean addAll(Collection coll) {
     if (this.limit > -1) {
       throw new UnsupportedOperationException(
@@ -343,20 +344,10 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
     }
   }
 
-  /**
-   *
-   * @param out
-   * @throws IOException
-   */
   void writeNumNulls(DataOutput out) throws IOException {
     out.writeInt(this.numNulls);
   }
 
-  /**
-   *
-   * @param in
-   * @throws IOException
-   */
   void readNumNulls(DataInput in) throws IOException {
     this.numNulls = in.readInt();
   }
@@ -434,11 +425,13 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
       int nullDup = 0;
       int nullDupLimit = Bag.this.numNulls;
 
+      @Override
       public boolean hasNext() {
         return this.mapIterator.hasNext() || this.currentDup < this.dupLimit
             || this.nullDup < this.nullDupLimit;
       }
 
+      @Override
       public Object next() {
         // see if there is another duplicate to emit
         if (this.currentDup < this.dupLimit) {
@@ -459,6 +452,7 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
 
       }
 
+      @Override
       public void remove() {
         throw new UnsupportedOperationException("remove not supported");
       }
@@ -478,10 +472,12 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
        */
       int dupLimit = Bag.this.numNulls;
 
+      @Override
       public boolean hasNext() {
         return this.mapIterator.hasNext() || this.currentDup < this.dupLimit;
       }
 
+      @Override
       public Object next() {
         // see if there is another duplicate to emit
         if (this.currentDup < this.dupLimit) {
@@ -496,12 +492,13 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
         return Bag.this.keyFromEntry(currentEntry);
       }
 
+      @Override
       public void remove() {
         checkModifiablity();
         if (this.currentDup == 0) {
           // next has not yet been called
           throw new IllegalStateException(
-              LocalizedStrings.ResultsBag_NEXT_MUST_BE_CALLED_BEFORE_REMOVE.toLocalizedString());
+              "next() must be called before remove()");
         }
 
         this.dupLimit--;
@@ -539,6 +536,7 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
       localLimit = Bag.this.limit;
     }
 
+    @Override
     public Iterator iterator() {
       if (localLimit > -1) {
         return new LimitSetViewIterator();
@@ -594,6 +592,7 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
       final Iterator it = Bag.this.mapKeyIterator();
       boolean currentIsNull = false;
 
+      @Override
       public Object next() {
         if (this.emitNull) {
           this.emitNull = false;
@@ -605,6 +604,7 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
         return key;
       }
 
+      @Override
       public boolean hasNext() {
         if (this.emitNull) {
           return true;
@@ -612,6 +612,7 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
         return it.hasNext();
       }
 
+      @Override
       public void remove() {
         if (currentIsNull) {
           Bag.this.numNulls = 0;
@@ -663,9 +664,6 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
     }
   }
 
-  /**
-   *
-   */
   protected class LimitBagIterator extends Bag.BagIterator {
     private final int localLimit;
 
@@ -678,10 +676,12 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
       localLimit = Bag.this.limit;
     }
 
+    @Override
     public boolean hasNext() {
       return this.currPos < this.localLimit;
     }
 
+    @Override
     public Object next() {
       if (this.currPos == this.localLimit) {
         throw new NoSuchElementException();
@@ -693,6 +693,7 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
 
     }
 
+    @Override
     public void remove() {
       if (this.currPos == 0) {
         // next has not yet been called

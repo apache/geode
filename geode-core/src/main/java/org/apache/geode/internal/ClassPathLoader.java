@@ -21,18 +21,21 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Proxy;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.internal.util.CollectionUtils;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * The delegating <tt>ClassLoader</tt> used by GemFire to load classes and other resources. This
@@ -40,14 +43,15 @@ import org.apache.geode.internal.util.CollectionUtils;
  * loaders, thread context <tt>ClassLoader</tt> s unless they have been excluded}, the
  * <tt>ClassLoader</tt> which loaded the GemFire classes, and finally the system
  * <tt>ClassLoader</tt>.
+ *
  * <p>
  * The thread context class loaders can be excluded by setting the system property
  * <tt>gemfire.excludeThreadContextClassLoader</tt>:
  * <ul>
  * <li><tt>-Dgemfire.excludeThreadContextClassLoader=true</tt>
- * <li><tt>System.setProperty("gemfire.excludeThreadContextClassLoader", "true");
- * </tt>
+ * <li><tt>System.setProperty("gemfire.excludeThreadContextClassLoader", "true");</tt>
  * </ul>
+ *
  * <p>
  * Class loading and resource loading order:
  * <ul>
@@ -55,46 +59,47 @@ import org.apache.geode.internal.util.CollectionUtils;
  * <li>2. <tt>Thread.currentThread().getContextClassLoader()</tt> unless excludeTCCL == true
  * <li>3. <tt>ClassPathLoader.class.getClassLoader()</tt>
  * <li>4. <tt>ClassLoader.getSystemClassLoader()</tt> If the attempt to acquire any of the above
- * class loaders results in either a {@link java.lang.SecurityException SecurityException} or a
- * null, then that class loader is quietly skipped. Duplicate class loaders will be skipped.
+ * class loaders results in either a {@code SecurityException} or a null, then that class loader is
+ * quietly skipped. Duplicate class loaders will be skipped.
+ * </ul>
+ *
  * <p>
- * This class it not an extension of ClassLoader due to #43080. See also
- * http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-5.html
+ * See http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-5.html for more information about
+ * {@code ClassLoader}s.
  *
  * @since GemFire 6.5.1.4
  */
 public class ClassPathLoader {
-  private static final Logger logger = LogService.getLogger();
+  private static final Logger logger = LogManager.getLogger();
 
   static final String EXCLUDE_TCCL_PROPERTY =
-      DistributionConfig.GEMFIRE_PREFIX + "excludeThreadContextClassLoader";
+      GeodeGlossary.GEMFIRE_PREFIX + "excludeThreadContextClassLoader";
 
+  @MakeNotStatic
   private static volatile ClassPathLoader latest;
 
-  private volatile URLClassLoader classLoaderForDeployedJars;
+  private final HashMap<String, DeployJarChildFirstClassLoader> artifactIdsToClassLoader =
+      new HashMap<>();
+
+  private volatile DeployJarChildFirstClassLoader leafLoader;
 
   private final JarDeployer jarDeployer;
 
-  private boolean excludeTCCL;
-
-  void rebuildClassLoaderForDeployedJars() {
-    ClassLoader parent = ClassPathLoader.class.getClassLoader();
-
-    this.classLoaderForDeployedJars = new URLClassLoader(jarDeployer.getDeployedJarURLs(), parent);
-  }
+  private final boolean excludeTCCL;
 
   public ClassPathLoader(boolean excludeTCCL) {
     this.excludeTCCL = excludeTCCL;
-    this.jarDeployer = new JarDeployer();
+    jarDeployer = new JarDeployer();
     rebuildClassLoaderForDeployedJars();
   }
 
   public ClassPathLoader(boolean excludeTCCL, File workingDir) {
     this.excludeTCCL = excludeTCCL;
-    this.jarDeployer = new JarDeployer(workingDir);
+    jarDeployer = new JarDeployer(workingDir);
     rebuildClassLoaderForDeployedJars();
   }
 
+  @VisibleForTesting
   static ClassPathLoader setLatestToDefault() {
     latest = new ClassPathLoader(Boolean.getBoolean(EXCLUDE_TCCL_PROPERTY));
     return latest;
@@ -106,31 +111,56 @@ public class ClassPathLoader {
   }
 
   public JarDeployer getJarDeployer() {
-    return this.jarDeployer;
+    return jarDeployer;
   }
 
   /**
    * createWithDefaults is exposed for testing.
    */
+  @VisibleForTesting
   static ClassPathLoader createWithDefaults(final boolean excludeTCCL) {
     return new ClassPathLoader(excludeTCCL);
   }
 
+  private synchronized void rebuildClassLoaderForDeployedJars() {
+    leafLoader = null;
+    Collection<DeployedJar> deployedJars = jarDeployer.getDeployedJars().values();
+    for (DeployedJar deployedJar : deployedJars) {
+      chainClassloader(deployedJar);
+    }
+  }
+
+  private ClassLoader getLeafLoader() {
+    if (leafLoader == null) {
+      return ClassPathLoader.class.getClassLoader();
+    }
+    return leafLoader;
+  }
+
+  synchronized void chainClassloader(DeployedJar jar) {
+    leafLoader = new DeployJarChildFirstClassLoader(artifactIdsToClassLoader,
+        new URL[] {jar.getFileURL()}, jar.getArtifactId(), getLeafLoader());
+  }
+
+  synchronized void unloadClassloaderForArtifact(String artifactId) {
+    artifactIdsToClassLoader.put(artifactId, null);
+  }
+
   public URL getResource(final String name) {
-    final boolean isDebugEnabled = logger.isTraceEnabled();
-    if (isDebugEnabled) {
+    final boolean isTraceEnabled = logger.isTraceEnabled();
+    if (isTraceEnabled) {
       logger.trace("getResource({})", name);
     }
 
     for (ClassLoader classLoader : getClassLoaders()) {
-      if (isDebugEnabled) {
+      if (isTraceEnabled) {
         logger.trace("getResource trying: {}", classLoader);
       }
       try {
         URL url = classLoader.getResource(name);
 
         if (url != null) {
-          if (isDebugEnabled) {
+          if (isTraceEnabled) {
             logger.trace("getResource found by: {}", classLoader);
           }
           return url;
@@ -144,20 +174,33 @@ public class ClassPathLoader {
   }
 
   public Class<?> forName(final String name) throws ClassNotFoundException {
-    final boolean isDebugEnabled = logger.isTraceEnabled();
-    if (isDebugEnabled) {
+    final boolean isTraceEnabled = logger.isTraceEnabled();
+    if (isTraceEnabled) {
       logger.trace("forName({})", name);
     }
 
-    for (ClassLoader classLoader : this.getClassLoaders()) {
-      if (isDebugEnabled) {
+    Class<?> clazz = forName(name, isTraceEnabled);
+    if (clazz != null)
+      return clazz;
+
+    throw new ClassNotFoundException(name);
+  }
+
+  private Class<?> forName(String name, boolean isTraceEnabled) {
+    for (ClassLoader classLoader : getClassLoaders()) {
+      if (isTraceEnabled) {
         logger.trace("forName trying: {}", classLoader);
       }
       try {
+        // Do not look up class definitions in jars that have been unloaded or are old
+        if (classLoader instanceof DeployJarChildFirstClassLoader) {
+          if (((DeployJarChildFirstClassLoader) classLoader).thisIsOld()) {
+            return null;
+          }
+        }
         Class<?> clazz = Class.forName(name, true, classLoader);
-
         if (clazz != null) {
-          if (isDebugEnabled) {
+          if (isTraceEnabled) {
             logger.trace("forName found by: {}", classLoader);
           }
           return clazz;
@@ -166,8 +209,7 @@ public class ClassPathLoader {
         // try next classLoader
       }
     }
-
-    throw new ClassNotFoundException(name);
+    return null;
   }
 
   /**
@@ -176,7 +218,7 @@ public class ClassPathLoader {
   Class<?> getProxyClass(final Class<?>... classObjs) {
     IllegalArgumentException ex = null;
 
-    for (ClassLoader classLoader : this.getClassLoaders()) {
+    for (ClassLoader classLoader : getClassLoaders()) {
       try {
         return Proxy.getProxyClass(classLoader, classObjs);
       } catch (SecurityException sex) {
@@ -197,9 +239,10 @@ public class ClassPathLoader {
   public String toString() {
     final StringBuilder sb = new StringBuilder(getClass().getName());
     sb.append("@").append(System.identityHashCode(this)).append("{");
-    sb.append(", excludeTCCL=").append(this.excludeTCCL);
+    sb.append("excludeTCCL=").append(excludeTCCL);
+    sb.append(", jarDeployer=").append(jarDeployer);
     sb.append(", classLoaders=[");
-    sb.append(this.getClassLoaders().stream().map(ClassLoader::toString).collect(joining(", ")));
+    sb.append(getClassLoaders().stream().map(ClassLoader::toString).collect(joining(", ")));
     sb.append("]}");
     return sb.toString();
   }
@@ -264,19 +307,19 @@ public class ClassPathLoader {
 
   /**
    * Finds all the resources with the given name. This method will first search the class loader of
-   * the context class for the resource before searching all other {@link ClassLoader}s.
+   * the context class for the resource before searching all other {@code ClassLoader}s.
    *
    * @param contextClass The class whose class loader will first be searched
    * @param name The resource name
-   * @return An enumeration of {@link java.net.URL <tt>URL</tt>} objects for the resource. If no
-   *         resources could be found, the enumeration will be empty. Resources that the class
-   *         loader doesn't have access to will not be in the enumeration.
+   * @return An enumeration of <tt>URL</tt> objects for the resource. If no resources could be
+   *         found, the enumeration will be empty. Resources that the class loader doesn't have
+   *         access to will not be in the enumeration.
    * @throws IOException If I/O errors occur
    * @see ClassLoader#getResources(String)
    */
   private Enumeration<URL> getResources(final Class<?> contextClass, final String name)
       throws IOException {
-    final LinkedHashSet<URL> urls = new LinkedHashSet<URL>();
+    final LinkedHashSet<URL> urls = new LinkedHashSet<>();
 
     if (contextClass != null) {
       CollectionUtils.addAll(urls, contextClass.getClassLoader().getResources(name));
@@ -306,29 +349,26 @@ public class ClassPathLoader {
       }
     }
 
-    if (classLoaderForDeployedJars != null) {
-      classLoaders.add(classLoaderForDeployedJars);
-    }
-
+    classLoaders.add(getLeafLoader());
     return classLoaders;
   }
 
   /**
-   * Wrap this {@link ClassPathLoader} with a {@link ClassLoader} facade.
+   * Wrap this {@code ClassPathLoader} with a {@code ClassLoader} facade.
    *
-   * @return {@link ClassLoader} facade.
+   * @return a ClassLoader facade.
    * @since GemFire 8.1
    */
   public ClassLoader asClassLoader() {
     return new ClassLoader() {
       @Override
       public Class<?> loadClass(String name) throws ClassNotFoundException {
-        return ClassPathLoader.this.forName(name);
+        return forName(name);
       }
 
       @Override
       protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
-        return ClassPathLoader.this.forName(name);
+        return forName(name);
       }
 
       @Override
@@ -360,9 +400,9 @@ public class ClassPathLoader {
   }
 
   /**
-   * Helper method equivalent to <code>ClassPathLoader.getLatest().asClassLoader();</code>.
+   * Helper method equivalent to {@code ClassPathLoader.getLatest().asClassLoader();}.
    *
-   * @return {@link ClassLoader} for current {@link ClassPathLoader}.
+   * @return a ClassLoader for current ClassPathLoader.
    * @since GemFire 8.1
    */
   public static ClassLoader getLatestAsClassLoader() {

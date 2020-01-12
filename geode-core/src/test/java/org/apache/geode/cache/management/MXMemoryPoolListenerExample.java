@@ -30,7 +30,11 @@ import javax.management.NotificationEmitter;
 import javax.management.NotificationListener;
 
 import org.apache.geode.LogWriter;
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedSystem;
 
@@ -49,9 +53,6 @@ public class MXMemoryPoolListenerExample implements NotificationListener {
   private AtomicBoolean critical = new AtomicBoolean();
   private final LogWriter logger;
 
-  /**
-   * @param ds
-   */
   public MXMemoryPoolListenerExample(DistributedSystem ds) {
     this.logger = ds.getLogWriter();
   }
@@ -62,6 +63,7 @@ public class MXMemoryPoolListenerExample implements NotificationListener {
    * @see javax.management.NotificationListener#handleNotification(javax.management.Notification,
    * java.lang.Object)
    */
+  @Override
   public void handleNotification(Notification arg0, Object arg1) {
     this.logger.info("Notification: " + arg0 + "; o: " + arg1 + "; m: " + arg0.getMessage());
     this.critical.set(true);
@@ -156,9 +158,6 @@ public class MXMemoryPoolListenerExample implements NotificationListener {
       this.criticalState = critical;
     }
 
-    /**
-     * @param percentTenured
-     */
     public MemoryHog consumeMemory(final int percentTenured) {
       final long maxSecondsToRun = 180;
       final LogWriter logger = this.cache.getLogger();

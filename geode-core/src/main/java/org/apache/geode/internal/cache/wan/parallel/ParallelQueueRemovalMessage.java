@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.wan.parallel;
 
+import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.BEFORE_INITIAL_IMAGE;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -39,13 +41,14 @@ import org.apache.geode.internal.cache.AbstractBucketRegionQueue;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.LocalRegion.InitializationLevel;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Removes a batch of events from the remote secondary queues
@@ -70,11 +73,21 @@ public class ParallelQueueRemovalMessage extends PooledDistributionMessage {
   }
 
   @Override
+  public String toString() {
+    String cname = getShortClassName();
+    final StringBuilder sb = new StringBuilder(cname);
+    sb.append("regionToDispatchedKeysMap=" + regionToDispatchedKeysMap);
+    sb.append(" sender=").append(getSender());
+    return sb.toString();
+  }
+
+  @Override
   protected void process(ClusterDistributionManager dm) {
     final boolean isDebugEnabled = logger.isDebugEnabled();
     final InternalCache cache = dm.getCache();
     if (cache != null) {
-      int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.BEFORE_INITIAL_IMAGE);
+      final InitializationLevel oldLevel =
+          LocalRegion.setThreadInitLevelRequirement(BEFORE_INITIAL_IMAGE);
       try {
         for (Object name : regionToDispatchedKeysMap.keySet()) {
           final String regionName = (String) name;
@@ -92,7 +105,7 @@ public class ParallelQueueRemovalMessage extends PooledDistributionMessage {
                   Region.SEPARATOR + PartitionedRegionHelper.PR_ROOT_REGION_NAME + Region.SEPARATOR
                       + region.getBucketName((Integer) bId);
               AbstractBucketRegionQueue brq =
-                  (AbstractBucketRegionQueue) cache.getRegionByPath(bucketFullPath);
+                  (AbstractBucketRegionQueue) cache.getInternalRegionByPath(bucketFullPath);
               if (isDebugEnabled) {
                 logger.debug(
                     "ParallelQueueRemovalMessage : The bucket in the cache is bucketRegionName : {} bucket: {}",
@@ -171,18 +184,23 @@ public class ParallelQueueRemovalMessage extends PooledDistributionMessage {
           filter.afterAcknowledgement(eventForFilter);
         }
       } catch (Exception e) {
-        logger.fatal(LocalizedMessage.create(
-            LocalizedStrings.GatewayEventFilter_EXCEPTION_OCCURRED_WHILE_HANDLING_CALL_TO_0_AFTER_ACKNOWLEDGEMENT_FOR_EVENT_1,
-            new Object[] {filter.toString(), eventForFilter}), e);
+        logger.fatal(String.format(
+            "Exception occurred while handling call to %s.afterAcknowledgement for event %s:",
+            new Object[] {filter.toString(), eventForFilter}),
+            e);
       }
     }
   }
 
-  private void destroyKeyFromBucketQueue(AbstractBucketRegionQueue brq, Object key,
+  void destroyKeyFromBucketQueue(AbstractBucketRegionQueue brq, Object key,
       PartitionedRegion prQ) {
     final boolean isDebugEnabled = logger.isDebugEnabled();
     try {
       brq.destroyKey(key);
+      if (!brq.getBucketAdvisor().isPrimary()) {
+        prQ.getParallelGatewaySender().getStatistics().decSecondaryQueueSize();
+        prQ.getParallelGatewaySender().getStatistics().incEventsProcessedByPQRM(1);
+      }
       if (isDebugEnabled) {
         logger.debug("Destroyed the key {} for shadowPR {} for bucket {}", key, prQ.getName(),
             brq.getId());
@@ -194,8 +212,12 @@ public class ParallelQueueRemovalMessage extends PooledDistributionMessage {
       }
       // add the key to failedBatchRemovalMessageQueue.
       // This is to handle the last scenario in #49196
-      brq.addToFailedBatchRemovalMessageKeys(key);
-
+      // But if GII is already completed and FailedBatchRemovalMessageKeys
+      // are already cleared then no keys should be added to it as they will
+      // never be cleared and increase the memory footprint.
+      if (!brq.isFailedBatchRemovalMessageKeysClearedFlag()) {
+        brq.addToFailedBatchRemovalMessageKeys(key);
+      }
     } catch (ForceReattemptException fe) {
       if (isDebugEnabled) {
         logger.debug(
@@ -205,9 +227,10 @@ public class ParallelQueueRemovalMessage extends PooledDistributionMessage {
     } catch (CancelException e) {
       return; // cache or DS is closing
     } catch (CacheException e) {
-      logger.error(LocalizedMessage.create(
-          LocalizedStrings.ParallelQueueRemovalMessage_QUEUEREMOVALMESSAGEPROCESSEXCEPTION_IN_PROCESSING_THE_LAST_DISPTACHED_KEY_FOR_A_SHADOWPR_THE_PROBLEM_IS_WITH_KEY__0_FOR_SHADOWPR_WITH_NAME_1,
-          new Object[] {key, prQ.getName()}), e);
+      logger.error(String.format(
+          "ParallelQueueRemovalMessage::process:Exception in processing the last disptached key for a ParallelGatewaySenderQueue's shadowPR. The problem is with key,%s for shadowPR with name=%s",
+          new Object[] {key, prQ.getName()}),
+          e);
     }
   }
 
@@ -244,22 +267,25 @@ public class ParallelQueueRemovalMessage extends PooledDistributionMessage {
           filter.afterAcknowledgement(eventForFilter);
         }
       } catch (Exception e) {
-        logger.fatal(LocalizedMessage.create(
-            LocalizedStrings.GatewayEventFilter_EXCEPTION_OCCURRED_WHILE_HANDLING_CALL_TO_0_AFTER_ACKNOWLEDGEMENT_FOR_EVENT_1,
-            new Object[] {filter.toString(), eventForFilter}), e);
+        logger.fatal(String.format(
+            "Exception occurred while handling call to %s.afterAcknowledgement for event %s:",
+            new Object[] {filter.toString(), eventForFilter}),
+            e);
       }
     }
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     DataSerializer.writeHashMap(this.regionToDispatchedKeysMap, out);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.regionToDispatchedKeysMap = DataSerializer.readHashMap(in);
   }
 }

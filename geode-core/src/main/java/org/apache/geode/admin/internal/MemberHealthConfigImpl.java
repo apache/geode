@@ -14,7 +14,7 @@
  */
 package org.apache.geode.admin.internal;
 
-import org.apache.geode.admin.*;
+import org.apache.geode.admin.MemberHealthConfig;
 
 // @todo Make this class (and all of its subclasses) {@link java.io.Externalizable} or
 // {@link org.apache.geode.DataSerializable}.
@@ -61,34 +61,42 @@ public abstract class MemberHealthConfigImpl implements MemberHealthConfig, java
 
   ///////////////////// Instance Methods //////////////////////
 
+  @Override
   public long getMaxVMProcessSize() {
     return this.maxVMProcessSize;
   }
 
+  @Override
   public void setMaxVMProcessSize(long size) {
     this.maxVMProcessSize = size;
   }
 
+  @Override
   public long getMaxMessageQueueSize() {
     return this.maxMessageQueueSize;
   }
 
+  @Override
   public void setMaxMessageQueueSize(long maxMessageQueueSize) {
     this.maxMessageQueueSize = maxMessageQueueSize;
   }
 
+  @Override
   public long getMaxReplyTimeouts() {
     return this.maxReplyTimeouts;
   }
 
+  @Override
   public void setMaxReplyTimeouts(long maxReplyTimeouts) {
     this.maxReplyTimeouts = maxReplyTimeouts;
   }
 
+  @Override
   public double getMaxRetransmissionRatio() {
     return this.maxRetransmissionRatio;
   }
 
+  @Override
   public void setMaxRetransmissionRatio(double ratio) {
     this.maxRetransmissionRatio = ratio;
   }

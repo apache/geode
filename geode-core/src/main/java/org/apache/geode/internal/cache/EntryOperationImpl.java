@@ -52,6 +52,7 @@ public class EntryOperationImpl implements EntryOperation {
    *
    * @return the region associated with this object or the region that raised this event.
    */
+  @Override
   public Region getRegion() {
     return this.region;
   }
@@ -62,6 +63,7 @@ public class EntryOperationImpl implements EntryOperation {
    * @return the operation that triggered this event.
    * @since GemFire 5.8Beta
    */
+  @Override
   public Operation getOperation() {
     return this.operation;
   }
@@ -71,10 +73,12 @@ public class EntryOperationImpl implements EntryOperation {
    *
    * @return the key
    */
+  @Override
   public Object getKey() {
     return this.key;
   }
 
+  @Override
   public Object getCallbackArgument() {
     Object result = this.callbackArgument;
     if (result == Token.NOT_AVAILABLE) {
@@ -87,10 +91,12 @@ public class EntryOperationImpl implements EntryOperation {
     // return AbstractRegion.handleNotAvailable(this.callbackArgument);
   }
 
+  @Override
   public boolean isCallbackArgumentAvailable() {
     return this.callbackArgument != Token.NOT_AVAILABLE;
   }
 
+  @Override
   public Object getNewValue() {
     return this.value;
   }

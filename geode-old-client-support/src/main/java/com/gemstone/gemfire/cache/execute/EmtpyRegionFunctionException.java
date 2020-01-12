@@ -14,7 +14,6 @@
  */
 package com.gemstone.gemfire.cache.execute;
 
-import org.apache.geode.distributed.DistributedMember;
 
 /**
  * Exception to indicate that Region is empty for data aware functions.

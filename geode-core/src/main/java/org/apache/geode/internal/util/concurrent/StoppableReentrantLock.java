@@ -79,9 +79,6 @@ public class StoppableReentrantLock {
     } // for
   }
 
-  /**
-   * @throws InterruptedException
-   */
   public void lockInterruptibly() throws InterruptedException {
     for (;;) {
       stopper.checkCancelInProgress(null);
@@ -101,7 +98,6 @@ public class StoppableReentrantLock {
   /**
    * @param timeoutMs how long to wait in milliseconds
    * @return true if the lock was acquired
-   * @throws InterruptedException
    */
   public boolean tryLock(long timeoutMs) throws InterruptedException {
     stopper.checkCancelInProgress(null);

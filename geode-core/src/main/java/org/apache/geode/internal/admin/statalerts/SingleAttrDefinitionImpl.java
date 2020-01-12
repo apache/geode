@@ -40,9 +40,6 @@ public class SingleAttrDefinitionImpl implements StatAlertDefinition {
 
   public SingleAttrDefinitionImpl() {}
 
-  /**
-   * @param statisticInfo
-   */
   public SingleAttrDefinitionImpl(String name, StatisticInfo statisticInfo) {
     super();
     this.statisticInfo = statisticInfo;
@@ -50,6 +47,7 @@ public class SingleAttrDefinitionImpl implements StatAlertDefinition {
     this._id = getName().toUpperCase().hashCode();
   }
 
+  @Override
   public int getId() {
     return _id;
   }
@@ -59,6 +57,20 @@ public class SingleAttrDefinitionImpl implements StatAlertDefinition {
     return getId();
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof MultiAttrDefinitionImpl)) {
+      return false;
+    }
+    MultiAttrDefinitionImpl that = (MultiAttrDefinitionImpl) o;
+    return _id == that._id;
+  }
+
+
+  @Override
   public boolean verify(StatisticsFactory factory) {
     boolean result = false;
 
@@ -82,6 +94,7 @@ public class SingleAttrDefinitionImpl implements StatAlertDefinition {
     return result;
   }
 
+  @Override
   public String getStringRepresentation() {
 
     StringBuffer buffer = new StringBuffer();
@@ -110,6 +123,7 @@ public class SingleAttrDefinitionImpl implements StatAlertDefinition {
    *
    * @return Name of the StatAlertDefinition
    */
+  @Override
   public String getName() {
     return name;
   }
@@ -119,6 +133,7 @@ public class SingleAttrDefinitionImpl implements StatAlertDefinition {
    *
    * @param name name to be set for this StatAlertDefinition.
    */
+  @Override
   public void setName(String name) {
     this.name = name;
   }
@@ -128,6 +143,7 @@ public class SingleAttrDefinitionImpl implements StatAlertDefinition {
    *
    * @see org.apache.geode.internal.admin.StatAlertDefinition#getStatisticInfo()
    */
+  @Override
   public StatisticInfo[] getStatisticInfo() {
     return new StatisticInfo[] {statisticInfo};
   }
@@ -139,6 +155,7 @@ public class SingleAttrDefinitionImpl implements StatAlertDefinition {
    * org.apache.geode.internal.admin.StatAlertDefinition#setStatisticInfo(org.apache.geode.internal.
    * admin.StatisticInfo[])
    */
+  @Override
   public void setStatisticInfo(StatisticInfo[] info) {
     if (info == null || info.length != 1)
       throw new IllegalArgumentException(
@@ -147,12 +164,14 @@ public class SingleAttrDefinitionImpl implements StatAlertDefinition {
     statisticInfo = info[0];
   }
 
+  @Override
   public Number[] getValue() {
     Number[] vals = new Number[1];
     vals[0] = statisticInfo.getStatistics().get(statisticInfo.getStatisticDescriptor());
     return vals;
   }
 
+  @Override
   public Number[] getValue(Number[] vals) {
     return vals;
   }
@@ -162,18 +181,22 @@ public class SingleAttrDefinitionImpl implements StatAlertDefinition {
    *
    * @see org.apache.geode.internal.admin.StatAlertDefinition#evaluate(java.lang.Number[])
    */
+  @Override
   public boolean evaluate(Number[] params) {
     return evaluate() && params != null && params.length == 1;
   }
 
+  @Override
   public boolean evaluate() {
     return statisticInfo != null;
   }
 
+  @Override
   public StatAlert evaluateAndAlert(Number[] params) {
     return evaluate(params) ? getAlert(params[0]) : null;
   }
 
+  @Override
   public StatAlert evaluateAndAlert() {
     return evaluate() ? getAlert(getValue()[0]) : null;
   }
@@ -184,20 +207,24 @@ public class SingleAttrDefinitionImpl implements StatAlertDefinition {
     return new StatAlert(this.getId(), vals);
   }
 
+  @Override
   public boolean hasDecorator(String decoratorID) {
     return false;
   }
 
+  @Override
   public StatAlertDefinition getDecorator(String decoratorID) {
     return null;
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeString(this.name, out);
     DataSerializer.writePrimitiveInt(this._id, out);
     DataSerializer.writeObject(this.statisticInfo, out);
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.name = DataSerializer.readString(in);
     this._id = DataSerializer.readPrimitiveInt(in);

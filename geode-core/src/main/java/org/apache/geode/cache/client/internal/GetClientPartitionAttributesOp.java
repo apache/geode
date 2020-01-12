@@ -24,8 +24,7 @@ import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  *
@@ -69,7 +68,7 @@ public class GetClientPartitionAttributesOp {
     public GetClientPartitionAttributesOpImpl(String regionFullPath) {
       super(MessageType.GET_CLIENT_PARTITION_ATTRIBUTES, 1);
       this.regionFullPath = regionFullPath;
-      getMessage().addStringPart(regionFullPath);
+      getMessage().addStringPart(regionFullPath, true);
     }
 
     @Override
@@ -138,8 +137,8 @@ public class GetClientPartitionAttributesOp {
               "While performing  GetClientPartitionAttributesOp " + ((Throwable) obj).getMessage();
           throw new ServerOperationException(s, (Throwable) obj);
         default:
-          throw new InternalGemFireError(LocalizedStrings.Op_UNKNOWN_MESSAGE_TYPE_0
-              .toLocalizedString(Integer.valueOf(msg.getMessageType())));
+          throw new InternalGemFireError(String.format("Unknown message type %s",
+              Integer.valueOf(msg.getMessageType())));
       }
     }
 

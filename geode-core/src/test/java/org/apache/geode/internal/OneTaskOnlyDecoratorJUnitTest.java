@@ -14,7 +14,8 @@
  */
 package org.apache.geode.internal;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
@@ -24,11 +25,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class OneTaskOnlyDecoratorJUnitTest {
 
   /**
@@ -39,11 +37,12 @@ public class OneTaskOnlyDecoratorJUnitTest {
     ScheduledExecutorService ex = Executors.newScheduledThreadPool(1);
 
     MyConflationListener listener = new MyConflationListener();
-    OneTaskOnlyExecutor decorator = new OneTaskOnlyExecutor(ex, listener);
+    OneTaskOnlyExecutor decorator = new OneTaskOnlyExecutor(ex, listener, null);
 
     final CountDownLatch latch = new CountDownLatch(1);
     ex.submit(new Callable() {
 
+      @Override
       public Object call() throws Exception {
         latch.await();
         return null;
@@ -54,6 +53,7 @@ public class OneTaskOnlyDecoratorJUnitTest {
 
     Runnable increment = new Runnable() {
 
+      @Override
       public void run() {
         counter.incrementAndGet();
       }
@@ -77,7 +77,7 @@ public class OneTaskOnlyDecoratorJUnitTest {
   @Test
   public void testReschedule() throws Exception {
     ScheduledExecutorService ex = Executors.newScheduledThreadPool(1);
-    OneTaskOnlyExecutor decorator = new OneTaskOnlyExecutor(ex);
+    OneTaskOnlyExecutor decorator = new OneTaskOnlyExecutor(ex, null);
 
     final CountDownLatch taskRunning = new CountDownLatch(1);
     final CountDownLatch continueTask = new CountDownLatch(1);
@@ -85,6 +85,7 @@ public class OneTaskOnlyDecoratorJUnitTest {
 
     Callable waitForLatch = new Callable() {
 
+      @Override
       public Object call() throws Exception {
         taskRunning.countDown();
         continueTask.await();
@@ -95,6 +96,7 @@ public class OneTaskOnlyDecoratorJUnitTest {
 
     Runnable increment = new Runnable() {
 
+      @Override
       public void run() {
         counter.incrementAndGet();
       }
@@ -120,13 +122,14 @@ public class OneTaskOnlyDecoratorJUnitTest {
   public void testRescheduleForEarlierTime() throws Exception {
     ScheduledExecutorService ex = Executors.newScheduledThreadPool(1);
     MyConflationListener listener = new MyConflationListener();
-    OneTaskOnlyExecutor decorator = new OneTaskOnlyExecutor(ex, listener);
+    OneTaskOnlyExecutor decorator = new OneTaskOnlyExecutor(ex, listener, null);
 
     final CountDownLatch latch = new CountDownLatch(1);
     final AtomicInteger counter = new AtomicInteger();
 
     Runnable increment = new Runnable() {
 
+      @Override
       public void run() {
         counter.incrementAndGet();
       }

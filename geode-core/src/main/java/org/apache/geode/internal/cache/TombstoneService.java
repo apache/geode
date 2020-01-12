@@ -14,6 +14,9 @@
  */
 package org.apache.geode.internal.cache;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.apache.geode.util.internal.GeodeGlossary.GEMFIRE_PREFIX;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -35,19 +38,18 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.distributed.internal.CacheTime;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.versions.CompactVersionHolder;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.size.ReflectionSingleObjectSizer;
 import org.apache.geode.internal.util.concurrent.StoppableReentrantLock;
+import org.apache.geode.logging.internal.executors.LoggingThread;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Tombstones are region entries that have been destroyed but are held for future concurrency
@@ -59,6 +61,10 @@ import org.apache.geode.internal.util.concurrent.StoppableReentrantLock;
 public class TombstoneService {
   private static final Logger logger = LogService.getLogger();
 
+  @VisibleForTesting
+  public static final long REPLICATE_TOMBSTONE_TIMEOUT_DEFAULT =
+      Long.getLong(GEMFIRE_PREFIX + "tombstone-timeout", 600000L);
+
   /**
    * The default tombstone expiration period, in milliseconds for replicates and partitions.
    * <p>
@@ -68,8 +74,12 @@ public class TombstoneService {
    *
    * The default is 600,000 milliseconds (10 minutes).
    */
-  public static long REPLICATE_TOMBSTONE_TIMEOUT =
-      Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "tombstone-timeout", 600000L);
+  @MutableForTesting
+  public static long REPLICATE_TOMBSTONE_TIMEOUT = REPLICATE_TOMBSTONE_TIMEOUT_DEFAULT;
+
+  @VisibleForTesting
+  public static final long NON_REPLICATE_TOMBSTONE_TIMEOUT_DEFAULT =
+      Long.getLong(GEMFIRE_PREFIX + "non-replicated-tombstone-timeout", 480000);
 
   /**
    * The default tombstone expiration period in millis for non-replicate/partition regions. This
@@ -80,37 +90,62 @@ public class TombstoneService {
    * <p>
    * The default is 480,000 milliseconds (8 minutes)
    */
-  public static long NON_REPLICATE_TOMBSTONE_TIMEOUT =
-      Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "non-replicated-tombstone-timeout", 480000);
+  @MutableForTesting
+  public static long NON_REPLICATE_TOMBSTONE_TIMEOUT = NON_REPLICATE_TOMBSTONE_TIMEOUT_DEFAULT;
+
+  @VisibleForTesting
+  public static final int EXPIRED_TOMBSTONE_LIMIT_DEFAULT =
+      Integer.getInteger(GEMFIRE_PREFIX + "tombstone-gc-threshold", 100000);
 
   /**
    * The max number of tombstones in an expired batch. This covers all replicated regions, including
    * PR buckets. The default is 100,000 expired tombstones.
    */
-  public static int EXPIRED_TOMBSTONE_LIMIT =
-      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "tombstone-gc-threshold", 100000);
+  @MutableForTesting
+  public static int EXPIRED_TOMBSTONE_LIMIT = EXPIRED_TOMBSTONE_LIMIT_DEFAULT;
+
+  @VisibleForTesting
+  public static final long DEFUNCT_TOMBSTONE_SCAN_INTERVAL_DEFAULT =
+      Long.getLong(GEMFIRE_PREFIX + "tombstone-scan-interval", 60000);
 
   /**
    * The interval to scan for expired tombstones in the queues
    */
-  public static long DEFUNCT_TOMBSTONE_SCAN_INTERVAL =
-      Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "tombstone-scan-interval", 60000);
+  public static final long DEFUNCT_TOMBSTONE_SCAN_INTERVAL =
+      DEFUNCT_TOMBSTONE_SCAN_INTERVAL_DEFAULT;
+
+  @VisibleForTesting
+  public static final double GC_MEMORY_THRESHOLD_DEFAULT =
+      Integer.getInteger(GEMFIRE_PREFIX + "tombstone-gc-memory-threshold", 30) * 0.01;
 
   /**
    * The threshold percentage of free max memory that will trigger tombstone GCs. The default
    * percentage is somewhat less than the LRU Heap evictor so that we evict tombstones before we
    * start evicting cache data.
    */
-  public static double GC_MEMORY_THRESHOLD =
-      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "tombstone-gc-memory-threshold",
-          30 /* 100-HeapLRUCapacityController.DEFAULT_HEAP_PERCENTAGE */) * 0.01;
+  @MutableForTesting
+  public static double GC_MEMORY_THRESHOLD = GC_MEMORY_THRESHOLD_DEFAULT;
+
+  @VisibleForTesting
+  public static final boolean FORCE_GC_MEMORY_EVENTS_DEFAULT = false;
 
   /** this is a test hook for causing the tombstone service to act as though free memory is low */
-  public static boolean FORCE_GC_MEMORY_EVENTS = false;
-  /** maximum time a sweeper will sleep, in milliseconds. */
-  public static long MAX_SLEEP_TIME = 10000;
+  @MutableForTesting
+  public static boolean FORCE_GC_MEMORY_EVENTS = FORCE_GC_MEMORY_EVENTS_DEFAULT;
 
-  public static boolean IDLE_EXPIRATION = false; // dunit test hook for forced batch expiration
+  @VisibleForTesting
+  public static final long MAX_SLEEP_TIME_DEFAULT = 10000;
+
+  /** maximum time a sweeper will sleep, in milliseconds. */
+  @MutableForTesting
+  public static long MAX_SLEEP_TIME = MAX_SLEEP_TIME_DEFAULT;
+
+  @VisibleForTesting
+  public static final boolean IDLE_EXPIRATION_DEFAULT = false;
+
+  /** dunit test hook for forced batch expiration */
+  @MutableForTesting
+  public static boolean IDLE_EXPIRATION = IDLE_EXPIRATION_DEFAULT;
 
   /**
    * two sweepers, one for replicated regions (including PR buckets) and one for other regions. They
@@ -126,7 +161,7 @@ public class TombstoneService {
   private TombstoneService(InternalCache cache) {
     this.replicatedTombstoneSweeper =
         new ReplicateTombstoneSweeper(cache, cache.getCachePerfStats(), cache.getCancelCriterion(),
-            cache.getDistributionManager().getWaitingThreadPool());
+            cache.getDistributionManager().getExecutors().getWaitingThreadPool());
     this.nonReplicatedTombstoneSweeper = new NonReplicateTombstoneSweeper(cache,
         cache.getCachePerfStats(), cache.getCancelCriterion());
     this.replicatedTombstoneSweeper.start();
@@ -306,10 +341,26 @@ public class TombstoneService {
   /**
    * For test purposes only, force the expiration of a number of tombstones for replicated regions.
    *
+   * @param count Number of tombstones to expire
+   *
    * @return true if the expiration occurred
    */
   public boolean forceBatchExpirationForTests(int count) throws InterruptedException {
-    return this.replicatedTombstoneSweeper.testHook_forceExpiredTombstoneGC(count);
+    return this.replicatedTombstoneSweeper.testHook_forceExpiredTombstoneGC(count, 30, SECONDS);
+  }
+
+  /**
+   * For test purposes only, force the expiration of a number of tombstones for replicated regions.
+   *
+   * @param count Number of tombstones to expire
+   * @param timeout the maximum time to wait
+   * @param unit the time unit of the {@code timeout} argument
+   *
+   * @return true if the expiration occurred
+   */
+  public boolean forceBatchExpirationForTests(int count, long timeout, TimeUnit unit)
+      throws InterruptedException {
+    return this.replicatedTombstoneSweeper.testHook_forceExpiredTombstoneGC(count, timeout, unit);
   }
 
   @Override
@@ -324,13 +375,11 @@ public class TombstoneService {
 
   private static class Tombstone extends CompactVersionHolder {
     // tombstone overhead size
-    public static int PER_TOMBSTONE_OVERHEAD = ReflectionSingleObjectSizer.REFERENCE_SIZE // queue's
-                                                                                          // reference
-                                                                                          // to the
-                                                                                          // tombstone
-        + ReflectionSingleObjectSizer.REFERENCE_SIZE * 3 // entry, region, member ID
-        + ReflectionSingleObjectSizer.REFERENCE_SIZE // region entry value (Token.TOMBSTONE)
-        + 18; // version numbers and timestamp
+    public static final int PER_TOMBSTONE_OVERHEAD =
+        ReflectionSingleObjectSizer.REFERENCE_SIZE // queue's reference to the tombstone
+            + ReflectionSingleObjectSizer.REFERENCE_SIZE * 3 // entry, region, member ID
+            + ReflectionSingleObjectSizer.REFERENCE_SIZE // region entry value (Token.TOMBSTONE)
+            + 18; // version numbers and timestamp
 
 
     RegionEntry entry;
@@ -380,8 +429,8 @@ public class TombstoneService {
 
     @Override
     protected void expireTombstone(Tombstone tombstone) {
-      if (logger.isTraceEnabled(LogMarker.TOMBSTONE)) {
-        logger.trace(LogMarker.TOMBSTONE, "removing expired tombstone {}", tombstone);
+      if (logger.isTraceEnabled(LogMarker.TOMBSTONE_VERBOSE)) {
+        logger.trace(LogMarker.TOMBSTONE_VERBOSE, "removing expired tombstone {}", tombstone);
       }
       updateMemoryEstimate(-tombstone.getSize());
       tombstone.region.getRegionMap().removeTombstone(tombstone.entry, tombstone, false, true);
@@ -394,7 +443,8 @@ public class TombstoneService {
     protected void handleNoUnexpiredTombstones() {}
 
     @Override
-    boolean testHook_forceExpiredTombstoneGC(int count) throws InterruptedException {
+    boolean testHook_forceExpiredTombstoneGC(int count, long timeout, TimeUnit unit)
+        throws InterruptedException {
       return true;
     }
 
@@ -566,6 +616,7 @@ public class TombstoneService {
           // do messaging in a pool so this thread is not stuck trying to
           // communicate with other members
           executor.execute(new Runnable() {
+            @Override
             public void run() {
               try {
                 // this thread should not reference other sweeper state, which is not synchronized
@@ -679,8 +730,9 @@ public class TombstoneService {
 
     @Override
     protected void expireTombstone(Tombstone tombstone) {
-      if (logger.isTraceEnabled(LogMarker.TOMBSTONE)) {
-        logger.trace(LogMarker.TOMBSTONE, "adding expired tombstone {} to batch", tombstone);
+      if (logger.isTraceEnabled(LogMarker.TOMBSTONE_VERBOSE)) {
+        logger.trace(LogMarker.TOMBSTONE_VERBOSE, "adding expired tombstone {} to batch",
+            tombstone);
       }
       synchronized (expiredTombstonesLock) {
         expiredTombstones.add(tombstone);
@@ -699,7 +751,8 @@ public class TombstoneService {
     }
 
     @Override
-    boolean testHook_forceExpiredTombstoneGC(int count) throws InterruptedException {
+    boolean testHook_forceExpiredTombstoneGC(int count, long timeout, TimeUnit unit)
+        throws InterruptedException {
       // sync on blockGCLock since expireBatch syncs on it
       synchronized (getBlockGCLock()) {
         testHook_forceBatchExpireCall = new CountDownLatch(1);
@@ -709,9 +762,7 @@ public class TombstoneService {
           testHook_forceExpirationCount += count;
           notifyAll();
         }
-        // Wait for 30 seconds. If we wait longer, we risk hanging the tests if
-        // something goes wrong.
-        return testHook_forceBatchExpireCall.await(30, TimeUnit.SECONDS);
+        return testHook_forceBatchExpireCall.await(timeout, unit);
       } finally {
         testHook_forceBatchExpireCall = null;
       }
@@ -786,10 +837,7 @@ public class TombstoneService {
       this.tombstones = new ConcurrentLinkedQueue<Tombstone>();
       this.memoryUsedEstimate = new AtomicLong();
       this.queueHeadLock = new StoppableReentrantLock(cancelCriterion);
-      this.sweeperThread = new Thread(
-          LoggingThreadGroup.createThreadGroup("Destroyed Entries Processors", logger), this);
-      this.sweeperThread.setDaemon(true);
-      this.sweeperThread.setName(threadName);
+      this.sweeperThread = new LoggingThread(threadName, this);
       this.lastPurgeTimestamp = getNow();
     }
 
@@ -879,9 +927,10 @@ public class TombstoneService {
       updateMemoryEstimate(ts.getSize());
     }
 
+    @Override
     public void run() {
-      if (logger.isTraceEnabled(LogMarker.TOMBSTONE)) {
-        logger.trace(LogMarker.TOMBSTONE,
+      if (logger.isTraceEnabled(LogMarker.TOMBSTONE_VERBOSE)) {
+        logger.trace(LogMarker.TOMBSTONE_VERBOSE,
             "Destroyed entries sweeper starting with sleep interval of {} milliseconds",
             EXPIRY_TIME);
       }
@@ -903,8 +952,8 @@ public class TombstoneService {
           throw err;
         } catch (Throwable e) {
           SystemFailure.checkFailure();
-          logger.fatal(
-              LocalizedMessage.create(LocalizedStrings.TombstoneService_UNEXPECTED_EXCEPTION), e);
+          logger.fatal("GemFire garbage collection service encountered an unexpected exception",
+              e);
         }
       } // while()
     } // run()
@@ -919,8 +968,8 @@ public class TombstoneService {
       }
       beforeSleepChecks();
       sleepTime = Math.min(sleepTime, MAX_SLEEP_TIME);
-      if (logger.isTraceEnabled(LogMarker.TOMBSTONE)) {
-        logger.trace(LogMarker.TOMBSTONE, "sleeping for {}", sleepTime);
+      if (logger.isTraceEnabled(LogMarker.TOMBSTONE_VERBOSE)) {
+        logger.trace(LogMarker.TOMBSTONE_VERBOSE, "sleeping for {}", sleepTime);
       }
       synchronized (this) {
         if (isStopped) {
@@ -951,8 +1000,8 @@ public class TombstoneService {
       boolean removedObsoleteTombstone = removeIf(tombstone -> {
         if (tombstone.region.getRegionMap().isTombstoneNotNeeded(tombstone.entry,
             tombstone.getEntryVersion())) {
-          if (logger.isTraceEnabled(LogMarker.TOMBSTONE)) {
-            logger.trace(LogMarker.TOMBSTONE, "removing obsolete tombstone: {}", tombstone);
+          if (logger.isTraceEnabled(LogMarker.TOMBSTONE_VERBOSE)) {
+            logger.trace(LogMarker.TOMBSTONE_VERBOSE, "removing obsolete tombstone: {}", tombstone);
           }
           return true;
         }
@@ -978,14 +1027,14 @@ public class TombstoneService {
       Tombstone oldest = tombstones.peek();
       try {
         if (oldest == null) {
-          if (logger.isTraceEnabled(LogMarker.TOMBSTONE)) {
-            logger.trace(LogMarker.TOMBSTONE, "queue is empty - will sleep");
+          if (logger.isTraceEnabled(LogMarker.TOMBSTONE_VERBOSE)) {
+            logger.trace(LogMarker.TOMBSTONE_VERBOSE, "queue is empty - will sleep");
           }
           handleNoUnexpiredTombstones();
           sleepTime = EXPIRY_TIME;
         } else {
-          if (logger.isTraceEnabled(LogMarker.TOMBSTONE)) {
-            logger.trace(LogMarker.TOMBSTONE, "oldest unexpired tombstone is {}", oldest);
+          if (logger.isTraceEnabled(LogMarker.TOMBSTONE_VERBOSE)) {
+            logger.trace(LogMarker.TOMBSTONE_VERBOSE, "oldest unexpired tombstone is {}", oldest);
           }
           long msTillHeadTombstoneExpires = oldest.getVersionTimeStamp() + EXPIRY_TIME - now;
           if (hasExpired(msTillHeadTombstoneExpires)) {
@@ -995,8 +1044,7 @@ public class TombstoneService {
             } catch (CancelException ignore) {
               // nothing needed
             } catch (Exception e) {
-              logger.warn(
-                  LocalizedMessage.create(LocalizedStrings.GemFireCacheImpl_TOMBSTONE_ERROR), e);
+              logger.warn("Unexpected exception while processing tombstones", e);
             }
           } else {
             sleepTime = msTillHeadTombstoneExpires;
@@ -1042,6 +1090,7 @@ public class TombstoneService {
      */
     protected abstract void beforeSleepChecks();
 
-    abstract boolean testHook_forceExpiredTombstoneGC(int count) throws InterruptedException;
+    abstract boolean testHook_forceExpiredTombstoneGC(int count, long timeout, TimeUnit unit)
+        throws InterruptedException;
   } // class TombstoneSweeper
 }

@@ -21,7 +21,7 @@ limitations under the License.
 
 This section describes alerts for and appropriate responses to various kinds of system failures. It also helps you plan a strategy for data recovery.
 
-If a system member withdraws from the distributed system involuntarily because the member, host, or network fails, the other members automatically adapt to the loss and continue to operate. The distributed system does not experience any disturbance such as timeouts.
+If a system member withdraws from the cluster involuntarily because the member, host, or network fails, the other members automatically adapt to the loss and continue to operate. The cluster does not experience any disturbance such as timeouts.
 
 ## <a id="sys_failure__section_846B00118184487FB8F1E0CD1DC3A81B" class="no-quick-link"></a>Planning for Data Recovery
 
@@ -30,6 +30,7 @@ In planning a strategy for data recovery, consider these factors:
 -   Whether the region is configured for data redundancy—partitioned regions only.
 -   The region’s role-loss policy configuration, which controls how the region behaves after a crash or system failure—distributed regions only.
 -   Whether the region is configured for persistence to disk.
+-   Whether the region is configured for LRU-based eviction.
 -   The extent of the failure, whether multiple members or a network outage is involved.
 -   Your application’s specific needs, such as the difficulty of replacing the data and the risk of running with inconsistent data for your application.
 -   When an alert is generated due to network partition or slow response, indicating that certain processes may, or will, fail.
@@ -48,7 +49,7 @@ When a network partition detection or slow responses occur, these alerts are gen
 
 For information on configuring system members to help avoid a network partition configuration condition in the presence of a network failure or when members lose the ability to communicate to each other, refer to [Understanding and Recovering from Network Outages](recovering_from_network_outages.html#rec_network_crash).
 
-## <a id="sys_failure__section_D52D902E665F4F038DA4B8298E3F8681" class="no-quick-link"></a>Network Partitioning Detected
+### <a id="sys_failure__section_D52D902E665F4F038DA4B8298E3F8681" class="no-quick-link"></a>Network Partitioning Detected
 
 Alert:
 
@@ -70,7 +71,7 @@ Response:
 
 Check the network connectivity and health of the listed cache processes.
 
-## <a id="sys_failure__section_2C5E8A37733D4B31A12F22B9155796FD" class="no-quick-link"></a>Member Taking Too Long to Respond
+### <a id="sys_failure__section_2C5E8A37733D4B31A12F22B9155796FD" class="no-quick-link"></a>Member Taking Too Long to Respond
 
 Alert:
 
@@ -82,7 +83,7 @@ list is: [[ent(27134):60330/45855, ent(27130):60333/36743]]
 
 Description:
 
-Member ent(27130):60333/36743 is in danger of being forced out of the distributed system because of a suspect-verification failure. This alert is issued at the warning level, after the ack-wait-threshold is reached.
+Member ent(27130):60333/36743 is in danger of being forced out of the cluster because of a suspect-verification failure. This alert is issued at the warning level, after the ack-wait-threshold is reached.
 
 Response:
 
@@ -98,7 +99,7 @@ list is: [[ent(27134):60330/45855, ent(27130):60333/36743]]
 
 Description:
 
-Member ent(27134) is in danger of being forced out of the distributed system because of a suspect-verification failure. This alert is issued at the severe level, after the ack-wait-threshold is reached and after ack-severe-alert-threshold seconds have elapsed.
+Member ent(27134) is in danger of being forced out of the cluster because of a suspect-verification failure. This alert is issued at the severe level, after the ack-wait-threshold is reached and after ack-severe-alert-threshold seconds have elapsed.
 
 Response:
 
@@ -166,7 +167,7 @@ Response:
 
 None.
 
-## <a id="sys_failure__section_AF4F913C244044E7A541D89EC6BCB961" class="no-quick-link"></a>No Locators Can Be Found
+### <a id="sys_failure__section_AF4F913C244044E7A541D89EC6BCB961" class="no-quick-link"></a>No Locators Can Be Found
 
 **Note:**
 It is likely that all processes using the locators will exit with the same message.
@@ -233,7 +234,7 @@ Response:
 
 The operator should examine and restart the disconnected process.
 
-## <a id="sys_failure__section_77BDB0886A944F87BDA4C5408D9C2FC4" class="no-quick-link"></a>Warning Notifications Before Removal
+### <a id="sys_failure__section_77BDB0886A944F87BDA4C5408D9C2FC4" class="no-quick-link"></a>Warning Notifications Before Removal
 
 Alert:
 
@@ -264,7 +265,7 @@ Response:
 
 The operator can turn this off by setting the system property gemfire.disable-same-machine-warnings to true. However, it is best to run locator processes, which act as membership coordinators when network partition detection is enabled, on separate machines from cache processes.
 
-## <a id="sys_failure__section_E777C6EC8DEC4FE692AC5863C4420238" class="no-quick-link"></a>Member Is Forced Out
+### <a id="sys_failure__section_E777C6EC8DEC4FE692AC5863C4420238" class="no-quick-link"></a>Member Is Forced Out
 
 Alert:
 
@@ -276,7 +277,7 @@ find the reason.
 
 Description:
 
-The process discovered that it was not in the distributed system and cannot determine why it was
+The process discovered that it was not in the cluster and cannot determine why it was
 removed. The membership coordinator removed the member after it failed to respond to an internal 
 are-you-alive message.
 
@@ -284,50 +285,31 @@ Response:
 
 The operator should examine the locator processes and logs.
 
-## <a id="restart-failure-persistent-lru" class="no-quick-link"></a> Restart Fails Due To Out-of-Memory Error
+## How Data is Recovered From Persistent Regions
 
-This section describes a restart failure that can occur when the stopped system is one that was configured with persistent regions. Specifically:
+A persistent region is one whose contents (keys and values) can be restored from disk.  Upon
+restart, data recovery of a persistent region always recovers keys.  Under the default behavior, the
+region is regarded as ready for use when the keys have been recovered.
 
-- Some of the regions of the recovering system, when running, were configured as PERSISTENT regions, which means that they save their data to disk.
-- At least one of the persistent regions was configured to evict least recently used (LRU) data by overflowing values to disk.
+The default behavior for restoring values depends on whether the region was configured with an LRU-based eviction algorithm:
 
-### How Data is Recovered From Persistent Regions
+- If the region **was not** configured for LRU-based eviction, the values are loaded asynchronously
+  on a separate thread. The assumption here is that all of the stored values will fit into the space
+  allocated for the region.
 
-Data recovery, upon restart, always recovers keys. You can configure whether and how the system
-recovers the values associated with those keys to populate the system cache.
+- If the region **was** configured for LRU-based eviction, the values are not loaded. Each value
+  will be retrieved only when requested. The assumption here is that the values resident in the
+  region plus any evicted values might exceed the space allocated for the region, possibly resulting
+  in an `OutOfMemoryException` during recovery. **Note:** Recovered values do not contain usage 
+  history&mdash;LRU history is reset at recovery time.
 
-**Value Recovery**
-
-- Recovering all values immediately during startup slows the startup time but results in consistent
-read performance after the startup on a "hot" cache.
-
-- Recovering no values means quicker startup but a "cold" cache, so the first retrieval of each value will read from disk.
-
-- Retrieving values asynchronously in a background thread allows a relatively quick startup on a "warm" cache
-that will eventually recover every value.
-
-**Retrieve or Ignore LRU values**
-
-When a system with persistent LRU regions shuts down, the system does not record which of the values
-were recently used. On subsequent startup, if values are recovered into an LRU region they may be
-the least recently used instead of the most recently used. Also, if LRU values are recovered on a
-heap or an off-heap LRU region, it is possible that the LRU memory limit will be exceeded, resulting
-in an `OutOfMemoryException` during recovery. For these reasons, LRU value recovery can be treated
-differently than non-LRU values.
-
-## Default Recovery Behavior for Persistent Regions
-
-The default behavior is for the system to recover all keys, then asynchronously recover all data
-values, leaving LRU values unrecovered. This default strategy is best for
-most applications, because it strikes a balance between recovery speed and cache completeness.
-
-### Configuring Recovery of Persistent Regions
-
-Three Java system parameters allow the developer to control the recovery behavior for persistent regions:
+This default behavior works well under most circumstances. For special cases, three Java system
+properties allow the developer to modify the recovery behavior for persistent regions:
 
 - `gemfire.disk.recoverValues`
 
-  Default = `true`, recover values. If `false`, recover only keys, do not recover values.
+  Default = `true`, recover values for non-LRU regions. Enables the possibility of recovering values for LRU regions (with the setting of an additional property).
+  If `false`, recover only keys, do not recover values. The `false` setting disallows value recovery for LRU regions as well as non-LRU regions.
 
   *How used:* When `true`, recovery of the values "warms up" the cache so data retrievals will find
   their values in the cache, without causing time consuming disk accesses. When `false`, shortens
@@ -336,23 +318,24 @@ Three Java system parameters allow the developer to control the recovery behavio
 
 - `gemfire.disk.recoverLruValues`
 
-  Default = `false`, do not recover LRU values. If `true`, recover LRU values. If
-  `gemfire.disk.recoverValues` is `false`, then `gemfire.disk.recoverLruValues` is ignored, since
-  no values are recovered.
+  Default = `false`, do not recover values for a region configured with LRU-based eviction.
+  If `true`, recover all of the LRU region's values.
+  **Note:** `gemfire.disk.recoverValues` must also be `true` for this property to take effect.
 
-  *How used:* When `false`, shortens recovery time by ignoring LRU values. When `true`, restores
-  more data values to the cache. Recovery of the LRU values increases heap memory usage and
-  could cause an out-of-memory error, preventing the system from restarting.
+  *How used:* When `false`, shortens recovery time for an LRU-configured region by not loading
+  values. When `true`, restores data values to the cache. As stated above, LRU history is not
+  recoverable, and recovering values for a region configured with LRU-based eviction incurs some
+  risk of exceeding allocated memory.
 
 - `gemfire.disk.recoverValuesSync`
 
   Default = `false`, recover values by an asynchronous background process. If `true`, values are
-  recovered synchronously, and recovery is not complete until all values have been retrieved.  If
-  `gemfire.disk.recoverValues` is `false`, then `gemfire.disk.recoverValuesSync` is ignored since
-  no values are recovered.
+  recovered synchronously, and recovery is not complete until all values have been retrieved. 
+  **Note:** `gemfire.disk.recoverValues` must also be `true` for this property to take effect.
 
   *How used:* When `false`, allows the system to become available sooner, but some time must elapse
   before all values have been read from disk into cache memory. Some key retrievals will require disk access, and some will not.
   When `true`, prolongs restart time, but ensures that when available for use, the cache is fully
   populated and data retrieval times will be optimal.
+
 

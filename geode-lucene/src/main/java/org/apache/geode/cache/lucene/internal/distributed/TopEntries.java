@@ -22,10 +22,11 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.lucene.LuceneQueryFactory;
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * Holds a ordered collection of entries matching a search query.
@@ -57,7 +58,6 @@ public class TopEntries<K> implements DataSerializableFixedID {
    * Adds an entry to the collection. The new entry must have a lower score than all previous
    * entries added to the collection. The new entry will be ignored if the limit is already reached.
    *
-   * @param entry
    */
   public void addHit(EntryScore<K> entry) {
     if (hits.size() > 0) {
@@ -118,14 +118,16 @@ public class TopEntries<K> implements DataSerializableFixedID {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     out.writeInt(limit);
-    DataSerializer.writeObject(hits, out);
+    context.getSerializer().writeObject(hits, out);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     limit = in.readInt();
-    hits = DataSerializer.readObject(in);
+    hits = context.getDeserializer().readObject(in);
   };
 }

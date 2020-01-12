@@ -85,9 +85,7 @@ public class GemfireHttpSession implements HttpSession, DataSerializable, Delta 
    */
   private AtomicBoolean serialized = new AtomicBoolean(false);
 
-  /**
-   * Register ourselves for de-serialization
-   */
+  // Register ourselves for de-serialization
   static {
     registerInstantiator();
   }
@@ -109,7 +107,7 @@ public class GemfireHttpSession implements HttpSession, DataSerializable, Delta 
   /**
    * Constructor
    */
-  public GemfireHttpSession(String id, ServletContext context) {
+  GemfireHttpSession(String id, ServletContext context) {
     this();
     this.id = id;
     this.context = context;
@@ -141,9 +139,7 @@ public class GemfireHttpSession implements HttpSession, DataSerializable, Delta 
           ObjectInputStream ois = new ClassLoaderObjectInputStream(
               new ByteArrayInputStream(baos.toByteArray()), loader);
           tmpObj = ois.readObject();
-        } catch (IOException e) {
-          LOG.error("Exception while recreating attribute '" + name + "'", e);
-        } catch (ClassNotFoundException e) {
+        } catch (IOException | ClassNotFoundException e) {
           LOG.error("Exception while recreating attribute '" + name + "'", e);
         }
         if (tmpObj != null) {
@@ -160,6 +156,7 @@ public class GemfireHttpSession implements HttpSession, DataSerializable, Delta 
    * {@inheritDoc}
    */
   @Override
+  @SuppressWarnings("unchecked")
   public Enumeration getAttributeNames() {
     checkValid();
     return Collections.enumeration(attributes.getAttributeNames());
@@ -304,7 +301,7 @@ public class GemfireHttpSession implements HttpSession, DataSerializable, Delta 
     checkValid();
 
     if (LOG.isDebugEnabled()) {
-      LOG.debug("Session {} setting attribute {} = '{}'", new Object[] {id, name, value});
+      LOG.debug("Session {} setting attribute {} = '{}'", id, name, value);
     }
 
     isDirty = true;
@@ -374,13 +371,11 @@ public class GemfireHttpSession implements HttpSession, DataSerializable, Delta 
 
   @Override
   public String toString() {
-    StringBuilder builder = new StringBuilder();
-    builder.append("[id=").append(id).append(", isNew=").append(isNew).append(", isValid=")
-        .append(isValid).append(", hasDelta=").append(hasDelta()).append(", lastAccessedTime=")
-        .append(attributes.getLastAccessedTime()).append(", jvmOwnerId=")
-        .append(attributes.getJvmOwnerId());
-    builder.append("]");
-    return builder.toString();
+    return "[id=" + id + ", isNew=" + isNew + ", isValid="
+        + isValid + ", hasDelta=" + hasDelta() + ", lastAccessedTime="
+        + attributes.getLastAccessedTime() + ", jvmOwnerId="
+        + attributes.getJvmOwnerId()
+        + "]";
   }
 
   /**
@@ -401,20 +396,15 @@ public class GemfireHttpSession implements HttpSession, DataSerializable, Delta 
     if (!isValid) {
       return false;
     }
+
     if (getMaxInactiveInterval() >= 0) {
       long now = System.currentTimeMillis();
       if (now - attributes.getLastAccessedTime() >= getMaxInactiveInterval() * 1000) {
         return false;
       }
     }
-    return true;
-  }
 
-  /**
-   * Is this session dirty and should it be written to cache
-   */
-  public boolean isDirty() {
-    return isDirty;
+    return true;
   }
 
   public void setManager(SessionManager manager) {
@@ -432,7 +422,6 @@ public class GemfireHttpSession implements HttpSession, DataSerializable, Delta 
   /**
    * The {@code SessionManager} injects this when creating a new session.
    *
-   * @param attributes
    */
   public void setAttributes(AbstractSessionAttributes attributes) {
     this.attributes = attributes;
@@ -444,7 +433,7 @@ public class GemfireHttpSession implements HttpSession, DataSerializable, Delta 
    *
    * @return whether this object has just been serialized
    */
-  public boolean justSerialized() {
+  boolean justSerialized() {
     return serialized.getAndSet(false);
   }
 
@@ -457,7 +446,7 @@ public class GemfireHttpSession implements HttpSession, DataSerializable, Delta 
     attributes.flush();
   }
 
-  public String getJvmOwnerId() {
+  String getJvmOwnerId() {
     if (attributes != null) {
       return attributes.getJvmOwnerId();
     }

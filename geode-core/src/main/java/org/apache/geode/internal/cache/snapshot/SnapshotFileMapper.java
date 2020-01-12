@@ -19,8 +19,6 @@ import java.io.Serializable;
 
 import org.apache.geode.cache.snapshot.CacheSnapshotService;
 import org.apache.geode.cache.snapshot.RegionSnapshotService;
-import org.apache.geode.cache.snapshot.SnapshotOptions;
-import org.apache.geode.cache.snapshot.SnapshotOptions.SnapshotFormat;
 import org.apache.geode.distributed.DistributedMember;
 
 /**

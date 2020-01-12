@@ -14,26 +14,25 @@
  */
 package org.apache.geode.test.junit.rules.serializable;
 
-import static org.apache.geode.test.junit.rules.serializable.FieldSerializationUtils.*;
-import static org.apache.geode.test.junit.rules.serializable.FieldsOfTimeout.*;
-import static org.assertj.core.api.Assertions.*;
+import static org.apache.geode.test.junit.rules.serializable.FieldSerializationUtils.readField;
+import static org.apache.geode.test.junit.rules.serializable.FieldsOfTimeout.FIELD_LOOK_FOR_STUCK_THREAD;
+import static org.apache.geode.test.junit.rules.serializable.FieldsOfTimeout.FIELD_TIMEOUT;
+import static org.apache.geode.test.junit.rules.serializable.FieldsOfTimeout.FIELD_TIME_UNIT;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.lang.SerializationUtils;
+import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.Timeout;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for {@link SerializableTimeout}.
  */
-@Category(UnitTest.class)
 public class SerializableTimeoutTest {
 
   @Test

@@ -14,11 +14,11 @@
  */
 package org.apache.geode.internal.process;
 
-import static org.apache.commons.lang.Validate.notNull;
+import static org.apache.commons.lang3.Validate.notNull;
 
 import java.util.Properties;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Thread based context for launching a process. GemFire internals can acquire optional
@@ -29,17 +29,12 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 public class ProcessLauncherContext {
 
   public static final String OVERRIDDEN_DEFAULTS_PREFIX =
-      DistributionConfig.GEMFIRE_PREFIX + "default.";
+      GeodeGlossary.GEMFIRE_PREFIX + "default.";
 
   /**
    * Default value for {@link #isRedirectingOutput()}
    */
   private static final boolean REDIRECT_OUTPUT_DEFAULT = false;
-
-  /**
-   * Default value for {@link #getOverriddenDefaults()}
-   */
-  private static final Properties OVERRIDDEN_DEFAULTS_DEFAULT = new Properties();
 
   private static final ThreadLocal<ProcessLauncherContext> DATA = new ThreadLocal<>();
 
@@ -74,7 +69,7 @@ public class ProcessLauncherContext {
   public static Properties getOverriddenDefaults() {
     ProcessLauncherContext context = get();
     if (context == null) {
-      return OVERRIDDEN_DEFAULTS_DEFAULT;
+      return new Properties();
     }
     return context.overriddenDefaults();
   }
@@ -110,12 +105,12 @@ public class ProcessLauncherContext {
 
   private static void installLogListener(final StartupStatusListener startupListener) {
     if (startupListener != null) {
-      StartupStatus.setListener(startupListener);
+      StartupStatusListenerRegistry.setListener(startupListener);
     }
   }
 
   private static void clearLogListener() {
-    StartupStatus.clearListener();
+    StartupStatusListenerRegistry.clearListener();
   }
 
   private ProcessLauncherContext(final boolean redirectOutput, final Properties overriddenDefaults,

@@ -14,15 +14,17 @@
  */
 package org.apache.geode.internal.process;
 
-import static org.apache.commons.lang.Validate.notEmpty;
-import static org.apache.commons.lang.Validate.notNull;
+import static org.apache.commons.lang3.Validate.notEmpty;
+import static org.apache.commons.lang3.Validate.notNull;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.executors.LoggingThread;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Invokes a ControlRequestHandler when a control file has been created.
@@ -106,9 +108,9 @@ class ControlFileWatchdog implements Runnable {
   void start() {
     synchronized (this) {
       if (thread == null) {
-        thread = new Thread(this, createThreadName());
-        thread.setDaemon(true);
+        thread = new LoggingThread(createThreadName(), this);
         alive = true;
+        deleteExistingStatusResponseFile();
         thread.start();
       }
     }
@@ -143,6 +145,14 @@ class ControlFileWatchdog implements Runnable {
         alive = false;
         thread = null;
       }
+    }
+  }
+
+  private void deleteExistingStatusResponseFile() {
+    try {
+      Files.deleteIfExists(file.toPath());
+    } catch (IOException e) {
+      logger.warn("Unable to delete file", e);
     }
   }
 

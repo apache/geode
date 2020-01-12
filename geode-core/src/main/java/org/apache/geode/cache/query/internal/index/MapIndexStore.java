@@ -17,12 +17,14 @@ package org.apache.geode.cache.query.internal.index;
 import java.util.Collection;
 import java.util.Iterator;
 
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 import org.apache.geode.cache.query.internal.types.TypeUtils;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.NonTXEntry;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.persistence.query.CloseableIterator;
 import org.apache.geode.internal.cache.persistence.query.IndexMap;
@@ -37,6 +39,7 @@ public class MapIndexStore implements IndexStore {
   Region region;
   private boolean indexOnValues = false;
   private boolean indexOnRegionKeys = false;
+  @MakeNotStatic("Is this a bug that this is even static?")
   private static boolean needToCallHasNext = true;
 
   public MapIndexStore(IndexMap indexMap, Region region) {
@@ -45,22 +48,27 @@ public class MapIndexStore implements IndexStore {
   }
 
   // @todo replace with null when backing structure supports null values
+  @Override
   public void addMapping(Object indexKey, RegionEntry re) {
     indexMap.put(indexKey, re.getKey(), "STUB");
   }
 
+  @Override
   public void updateMapping(Object indexKey, Object oldKey, RegionEntry re, Object oldValue) {
     addMapping(indexKey, re);
   }
 
+  @Override
   public void removeMapping(Object indexKey, RegionEntry re) {
     indexMap.remove(indexKey, re.getKey());
   }
 
+  @Override
   public String printAll() {
     return "";
   }
 
+  @Override
   public CloseableIterator<IndexStoreEntry> get(Object key) {
     return new MapIndexStoreIterator(indexMap.get(key), indexOnValues, indexOnRegionKeys);
   }
@@ -71,6 +79,7 @@ public class MapIndexStore implements IndexStore {
     return iterator(start, startInclusive, end, endInclusive, null);
   }
 
+  @Override
   public CloseableIterator<IndexStoreEntry> iterator(Object start, boolean startInclusive,
       Object end, boolean endInclusive, Collection keysToRemove) {
     // REMOVE THESE CHECKS ONCE nulls are supported
@@ -90,6 +99,7 @@ public class MapIndexStore implements IndexStore {
     return iterator(start, startInclusive, null);
   }
 
+  @Override
   public CloseableIterator<IndexStoreEntry> iterator(Object start, boolean startInclusive,
       Collection keysToRemove) {
     return new MapIndexStoreIterator(indexMap.iterator(start, startInclusive), keysToRemove,
@@ -100,6 +110,7 @@ public class MapIndexStore implements IndexStore {
     return iterator(null);
   }
 
+  @Override
   public CloseableIterator<IndexStoreEntry> iterator(Collection keysToRemove) {
     return new MapIndexStoreIterator(indexMap.iterator(), keysToRemove, indexOnValues,
         indexOnRegionKeys);
@@ -109,6 +120,7 @@ public class MapIndexStore implements IndexStore {
     return descendingIterator(end, endInclusive, null);
   }
 
+  @Override
   public CloseableIterator<IndexStoreEntry> descendingIterator(Object end, boolean endInclusive,
       Collection keysToRemove) {
     return new MapIndexStoreIterator(indexMap.descendingIterator(end, endInclusive), keysToRemove,
@@ -119,11 +131,13 @@ public class MapIndexStore implements IndexStore {
     return descendingIterator(null);
   }
 
+  @Override
   public CloseableIterator<IndexStoreEntry> descendingIterator(Collection keysToRemove) {
     return new MapIndexStoreIterator(indexMap.descendingIterator(), keysToRemove, indexOnValues,
         indexOnRegionKeys);
   }
 
+  @Override
   public CloseableIterator<IndexStoreEntry> descendingIterator(Object start, boolean startInclusive,
       Object end, boolean endInclusive, Collection keysToRemove) {
     // @todo change to descending once it is supported
@@ -131,10 +145,12 @@ public class MapIndexStore implements IndexStore {
         keysToRemove, indexOnValues, indexOnRegionKeys);
   }
 
+  @Override
   public int size() {
     return 1;// (int)this.indexMap.size();
   }
 
+  @Override
   public int size(Object key) {
     // return Long.valueOf(indexMap.size(key, key)).intValue();
     return 1;
@@ -177,7 +193,7 @@ public class MapIndexStore implements IndexStore {
     } else if (indexOnRegionKeys) {
       return entry.getKey();
     }
-    return ((LocalRegion) region).new NonTXEntry(entry);
+    return new NonTXEntry((LocalRegion) region, entry);
   }
 
   @Override
@@ -191,7 +207,7 @@ public class MapIndexStore implements IndexStore {
     } else if (indexOnRegionKeys) {
       return entry.getKey();
     }
-    return ((LocalRegion) region).new NonTXEntry(entry);
+    return new NonTXEntry((LocalRegion) region, entry);
   }
 
   /**
@@ -218,6 +234,7 @@ public class MapIndexStore implements IndexStore {
       this(iterator, null, indexOnValues, indexOnRegionKeys);
     }
 
+    @Override
     public boolean hasNext() {
       if (iterator.hasNext()) {
         IndexMap.IndexEntry indexEntry = iterator.next();
@@ -244,6 +261,7 @@ public class MapIndexStore implements IndexStore {
     /**
      * do not retain a reference to the returned object.
      */
+    @Override
     public IndexStoreEntry next() {
       if (needToCallHasNext) {
         hasNext();
@@ -254,10 +272,12 @@ public class MapIndexStore implements IndexStore {
       return nextEntry;
     }
 
+    @Override
     public void remove() {
       iterator.remove();
     }
 
+    @Override
     public void close() {
       iterator.close();
       nextEntry.setIndexEntry(null);
@@ -280,12 +300,14 @@ public class MapIndexStore implements IndexStore {
       this.entry = entry;
     }
 
+    @Override
     public Object getDeserializedKey() {
       return entry.getKey().getDeserializedForReading();
     }
 
     // Since we are not storing the actual value in the index, we need to
     // retreive the value from the region
+    @Override
     public Object getDeserializedValue() {
       if (indexOnValues) {
         return region.get(entry.getRegionKey().getDeserializedForReading());
@@ -297,10 +319,12 @@ public class MapIndexStore implements IndexStore {
       }
     }
 
+    @Override
     public Object getDeserializedRegionKey() {
       return entry.getRegionKey().getDeserializedForReading();
     }
 
+    @Override
     public boolean isUpdateInProgress() {
       return false;
     }

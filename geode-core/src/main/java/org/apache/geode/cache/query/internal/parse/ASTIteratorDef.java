@@ -15,14 +15,11 @@
 
 package org.apache.geode.cache.query.internal.parse;
 
-import antlr.*;
+import antlr.Token;
 
 import org.apache.geode.cache.query.internal.QCompiler;
 import org.apache.geode.internal.Assert;
 
-/**
- *
- */
 public class ASTIteratorDef extends GemFireAST {
   private static final long serialVersionUID = -736956634497535951L;
 

@@ -50,14 +50,6 @@ public interface SessionCache {
   Region<String, HttpSession> getOperatingRegion();
 
   /**
-   * Get the backing {@code Region} being used. This may not be the same as the region being used by
-   * client code to put attributes.
-   *
-   * @return a {@code Region<String, HttpSession>} reference
-   */
-  Region<String, HttpSession> getSessionRegion();
-
-  /**
    * Is this cache client-server? The only other alternative is peer-to-peer.
    *
    * @return true if this cache is client-server.

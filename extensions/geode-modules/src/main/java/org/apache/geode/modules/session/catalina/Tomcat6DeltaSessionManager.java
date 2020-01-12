@@ -14,27 +14,28 @@
  */
 package org.apache.geode.modules.session.catalina;
 
-import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.util.LifecycleSupport;
 
+/**
+ * @deprecated Tomcat 6 has reached its end of life and support for Tomcat 6 will be removed
+ *             from a future Geode release.
+ */
 public class Tomcat6DeltaSessionManager extends DeltaSessionManager {
 
   /**
    * The <code>LifecycleSupport</code> for this component.
    */
-  protected LifecycleSupport lifecycle = new LifecycleSupport(this);
+  private LifecycleSupport lifecycle = new LifecycleSupport(this);
 
   /**
    * Prepare for the beginning of active use of the public methods of this component. This method
    * should be called after <code>configure()</code>, and before any of the public methods of the
    * component are utilized.
    *
-   * @throws LifecycleException if this component detects a fatal error that prevents this component
-   *         from being used
    */
   @Override
-  public void start() throws LifecycleException {
+  public void start() {
     if (getLogger().isDebugEnabled()) {
       getLogger().debug(this + ": Starting");
     }
@@ -68,10 +69,9 @@ public class Tomcat6DeltaSessionManager extends DeltaSessionManager {
    * Gracefully terminate the active use of the public methods of this component. This method should
    * be the last one called on a given instance of this component.
    *
-   * @throws LifecycleException if this component detects a fatal error that needs to be reported
    */
   @Override
-  public void stop() throws LifecycleException {
+  public void stop() {
     if (getLogger().isDebugEnabled()) {
       getLogger().debug(this + ": Stopping");
     }

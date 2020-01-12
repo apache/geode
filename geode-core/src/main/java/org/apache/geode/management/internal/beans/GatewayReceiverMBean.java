@@ -18,10 +18,6 @@ import javax.management.NotificationBroadcasterSupport;
 
 import org.apache.geode.management.GatewayReceiverMXBean;
 
-/**
- *
- *
- */
 public class GatewayReceiverMBean extends NotificationBroadcasterSupport
     implements GatewayReceiverMXBean {
 
@@ -193,10 +189,7 @@ public class GatewayReceiverMBean extends NotificationBroadcasterSupport
     return bridge.getTotalSentBytes();
   }
 
-  public void stopMonior() {
-    bridge.stopMonitor();
-  }
-
+  @Override
   public String[] getConnectedGatewaySenders() {
     return bridge.getConnectedGatewaySenders();
   }

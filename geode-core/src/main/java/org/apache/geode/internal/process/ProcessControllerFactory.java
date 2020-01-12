@@ -14,15 +14,18 @@
  */
 package org.apache.geode.internal.process;
 
-import static org.apache.commons.lang.Validate.isTrue;
-import static org.apache.commons.lang.Validate.notEmpty;
-import static org.apache.commons.lang.Validate.notNull;
+import static org.apache.commons.lang3.Validate.isTrue;
+import static org.apache.commons.lang3.Validate.notEmpty;
+import static org.apache.commons.lang3.Validate.notNull;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ServiceConfigurationError;
 import java.util.concurrent.TimeoutException;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Manages which implementation of {@link ProcessController} will be used and constructs the
@@ -36,7 +39,7 @@ public class ProcessControllerFactory {
    * For testing only
    */
   public static final String PROPERTY_DISABLE_ATTACH_API =
-      DistributionConfig.GEMFIRE_PREFIX + "test.ProcessControllerFactory.DisableAttachApi";
+      GeodeGlossary.GEMFIRE_PREFIX + "test.ProcessControllerFactory.DisableAttachApi";
 
   private final boolean disableAttachApi;
 
@@ -72,9 +75,14 @@ public class ProcessControllerFactory {
     }
     boolean found = false;
     try {
-      final Class<?> virtualMachineClass = Class.forName("com.sun.tools.attach.VirtualMachine");
-      found = virtualMachineClass != null;
-    } catch (ClassNotFoundException ignore) {
+      final Class<?> virtualMachineClass = Class.forName("com.sun.tools.attach.spi.AttachProvider");
+      if (virtualMachineClass != null) {
+        Method providersMethod = virtualMachineClass.getMethod("providers");
+        providersMethod.invoke(virtualMachineClass);
+        found = true;
+      }
+    } catch (ClassNotFoundException | IllegalAccessException | InvocationTargetException
+        | NoSuchMethodException | ServiceConfigurationError ignore) {
     }
     return found;
   }

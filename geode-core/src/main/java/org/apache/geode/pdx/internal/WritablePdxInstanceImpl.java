@@ -34,13 +34,13 @@ public class WritablePdxInstanceImpl extends PdxInstanceImpl implements Writable
   }
 
   private synchronized void dirtyField(PdxField f, Object value) {
-    if (this.dirtyFields == null) {
-      this.dirtyFields = new Object[getPdxType().getFieldCount()];
+    if (dirtyFields == null) {
+      dirtyFields = new Object[getPdxType().getFieldCount()];
     }
     if (value == null) {
       value = NULL_TOKEN;
     }
-    this.dirtyFields[f.getFieldIndex()] = value;
+    dirtyFields[f.getFieldIndex()] = value;
     clearCachedState();
   }
 
@@ -49,10 +49,10 @@ public class WritablePdxInstanceImpl extends PdxInstanceImpl implements Writable
    */
   @Override
   protected synchronized PdxReaderImpl getUnmodifiableReader(String fieldName) {
-    if (this.dirtyFields != null) {
+    if (dirtyFields != null) {
       PdxField f = getPdxType().getPdxField(fieldName);
       if (f != null) {
-        if (this.dirtyFields[f.getFieldIndex()] != null) {
+        if (dirtyFields[f.getFieldIndex()] != null) {
           return getUnmodifiableReader();
         }
       }
@@ -75,7 +75,7 @@ public class WritablePdxInstanceImpl extends PdxInstanceImpl implements Writable
    */
   @Override
   protected synchronized PdxReaderImpl getUnmodifiableReader() {
-    if (this.dirtyFields != null) {
+    if (dirtyFields != null) {
       PdxOutputStream os = new PdxOutputStream(basicSize() + PdxWriterImpl.HEADER_SIZE);
       PdxWriterImpl writer;
       if (getPdxType().getHasDeletedField()) {
@@ -92,7 +92,7 @@ public class WritablePdxInstanceImpl extends PdxInstanceImpl implements Writable
         if (f.isDeleted()) {
           continue;
         }
-        Object dv = this.dirtyFields[f.getFieldIndex()];
+        Object dv = dirtyFields[f.getFieldIndex()];
         if (dv != null) {
           if (dv == NULL_TOKEN) {
             dv = null;
@@ -106,11 +106,12 @@ public class WritablePdxInstanceImpl extends PdxInstanceImpl implements Writable
       ByteBuffer bb = os.toByteBuffer();
       bb.position(PdxWriterImpl.HEADER_SIZE);
       basicSetBuffer(bb.slice());
-      this.dirtyFields = null;
+      dirtyFields = null;
     }
     return new PdxReaderImpl(this);
   }
 
+  @Override
   public void setField(String fieldName, Object value) {
     PdxField f = getPdxType().getPdxField(fieldName);
     if (f == null) {

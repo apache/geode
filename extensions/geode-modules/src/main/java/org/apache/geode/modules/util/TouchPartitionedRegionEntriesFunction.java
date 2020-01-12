@@ -16,10 +16,8 @@ package org.apache.geode.modules.util;
 
 import java.io.DataInput;
 import java.io.DataOutput;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Properties;
 import java.util.Set;
 
 import org.apache.geode.DataSerializable;
@@ -38,11 +36,10 @@ import org.apache.geode.security.ResourcePermission;
  */
 public class TouchPartitionedRegionEntriesFunction
     implements Function, Declarable, DataSerializable {
-
   private static final long serialVersionUID = -3700389655056961153L;
-
   public static final String ID = "touch-partitioned-region-entries";
 
+  @Override
   @SuppressWarnings("unchecked")
   public void execute(FunctionContext context) {
     RegionFunctionContext rfc = (RegionFunctionContext) context;
@@ -50,13 +47,12 @@ public class TouchPartitionedRegionEntriesFunction
 
     Cache cache = context.getCache();
     // Get local (primary) data for the context
-    Region primaryDataSet = PartitionRegionHelper.getLocalDataForContext(rfc);
+    Region primaryDataSet = getLocalDataForContextViaRegionHelper(rfc);
 
     if (cache.getLogger().fineEnabled()) {
-      StringBuilder builder = new StringBuilder();
-      builder.append("Function ").append(ID).append(" received request to touch ")
-          .append(primaryDataSet.getFullPath()).append("->").append(keys);
-      cache.getLogger().fine(builder.toString());
+      String builder = "Function " + ID + " received request to touch "
+          + primaryDataSet.getFullPath() + "->" + keys;
+      cache.getLogger().fine(builder);
     }
 
     // Retrieve each value to update the lastAccessedTime.
@@ -75,31 +71,34 @@ public class TouchPartitionedRegionEntriesFunction
         ResourcePermission.Operation.READ, regionName));
   }
 
+  @Override
   public String getId() {
     return ID;
   }
 
+  @Override
   public boolean optimizeForWrite() {
     return true;
   }
 
+  @Override
   public boolean isHA() {
     return false;
   }
 
+  @Override
   public boolean hasResult() {
     return true;
   }
 
-  public void init(Properties properties) {}
+  @Override
+  public void toData(DataOutput out) {}
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void fromData(DataInput in) {}
 
-  }
-
-  @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-
+  // Helper methods added to improve unit testing of class
+  Region getLocalDataForContextViaRegionHelper(RegionFunctionContext rfc) {
+    return PartitionRegionHelper.getLocalDataForContext(rfc);
   }
 }

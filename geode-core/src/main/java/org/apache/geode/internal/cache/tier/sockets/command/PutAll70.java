@@ -19,13 +19,13 @@ import java.nio.ByteBuffer;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.DynamicRegionFactory;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.ResourceException;
 import org.apache.geode.cache.operations.PutAllOperationContext;
 import org.apache.geode.cache.operations.internal.UpdateOnlyMap;
 import org.apache.geode.distributed.internal.DistributionStats;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.CachedDeserializableFactory;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.LocalRegion;
@@ -43,15 +43,15 @@ import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 
 public class PutAll70 extends BaseCommand {
 
+  @Immutable
   private static final PutAll70 singleton = new PutAll70();
 
   public static Command getCommand() {
@@ -88,12 +88,11 @@ public class PutAll70 extends BaseCommand {
       // Retrieve the data from the message parts
       // part 0: region name
       regionNamePart = clientMessage.getPart(0);
-      regionName = regionNamePart.getString();
+      regionName = regionNamePart.getCachedString();
 
       if (regionName == null) {
         String putAllMsg =
-            LocalizedStrings.PutAll_THE_INPUT_REGION_NAME_FOR_THE_PUTALL_REQUEST_IS_NULL
-                .toLocalizedString();
+            "The input region name for the putAll request is null";
         logger.warn("{}: {}", serverConnection.getName(), putAllMsg);
         errMessage.append(putAllMsg);
         writeErrorResponse(clientMessage, MessageType.PUT_DATA_ERROR, errMessage.toString(),
@@ -134,8 +133,7 @@ public class PutAll70 extends BaseCommand {
         key = keyPart.getStringOrObject();
         if (key == null) {
           String putAllMsg =
-              LocalizedStrings.PutAll_ONE_OF_THE_INPUT_KEYS_FOR_THE_PUTALL_REQUEST_IS_NULL
-                  .toLocalizedString();
+              "One of the input keys for the putAll request is null";
           logger.warn("{}: {}", serverConnection.getName(), putAllMsg);
           errMessage.append(putAllMsg);
           writeErrorResponse(clientMessage, MessageType.PUT_DATA_ERROR, errMessage.toString(),
@@ -147,8 +145,7 @@ public class PutAll70 extends BaseCommand {
         valuePart = clientMessage.getPart(4 + i * 2 + 1);
         if (valuePart.isNull()) {
           String putAllMsg =
-              LocalizedStrings.PutAll_ONE_OF_THE_INPUT_VALUES_FOR_THE_PUTALL_REQUEST_IS_NULL
-                  .toLocalizedString();
+              "One of the input values for the putAll request is null";
           logger.warn("{}: {}", serverConnection.getName(), putAllMsg);
           errMessage.append(putAllMsg);
           writeErrorResponse(clientMessage, MessageType.PUT_DATA_ERROR, errMessage.toString(),
@@ -276,7 +273,7 @@ public class PutAll70 extends BaseCommand {
       writeException(clientMessage, ce, false, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
       // if (logger.fineEnabled()) {
-      logger.warn(LocalizedMessage.create(LocalizedStrings.Generic_0_UNEXPECTED_EXCEPTION,
+      logger.warn(String.format("%s: Unexpected Exception",
           serverConnection.getName()), ce);
       // }
       return;

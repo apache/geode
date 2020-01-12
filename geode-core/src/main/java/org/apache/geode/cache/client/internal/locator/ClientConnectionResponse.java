@@ -20,7 +20,9 @@ import java.io.IOException;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.ServerLocation;
-import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * A response from a locator to a client Indicating which server to connect to for client to server
@@ -45,7 +47,9 @@ public class ClientConnectionResponse extends ServerLocationResponse {
     }
   }
 
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  @Override
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     this.serverFound = DataSerializer.readPrimitiveBoolean(in);
     if (this.serverFound) {
       server = new ServerLocation();
@@ -53,7 +57,9 @@ public class ClientConnectionResponse extends ServerLocationResponse {
     }
   }
 
-  public void toData(DataOutput out) throws IOException {
+  @Override
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     boolean serverFound = server != null;
     DataSerializer.writePrimitiveBoolean(serverFound, out);
     if (serverFound) {
@@ -70,6 +76,7 @@ public class ClientConnectionResponse extends ServerLocationResponse {
     return "ClientConnectionResponse{server=" + getServer() + "}";
   }
 
+  @Override
   public int getDSFID() {
     return DataSerializableFixedID.CLIENT_CONNECTION_RESPONSE;
   }

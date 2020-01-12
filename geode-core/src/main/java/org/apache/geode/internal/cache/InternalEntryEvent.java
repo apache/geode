@@ -22,4 +22,12 @@ import org.apache.geode.cache.EntryEvent;
 public interface InternalEntryEvent extends EntryEvent {
 
   void setRegionEntry(RegionEntry re);
+
+  Object basicGetNewValue();
+
+  void setCachedSerializedNewValue(byte[] v);
+
+  byte[] getCachedSerializedNewValue();
+
+  void disallowOffHeapValues();
 }

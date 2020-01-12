@@ -14,7 +14,7 @@
  */
 package com.company.data;
 
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.Declarable;
 
 /**
  * A <code>Declarable</code> object
@@ -23,6 +23,7 @@ import org.apache.geode.cache.*;
  */
 public class MyDeclarable implements Declarable {
 
+  @Override
   public void init(java.util.Properties props) {
 
   }

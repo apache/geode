@@ -16,9 +16,6 @@ package org.apache.geode.management.internal.configuration.handlers;
 
 import java.io.IOException;
 
-import org.apache.geode.cache.GemFireCache;
-import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
@@ -53,11 +50,4 @@ public class SharedConfigurationStatusRequestHandler implements TcpHandler {
   public void init(TcpServer tcpServer) {
 
   }
-
-  @Override
-  public void restarting(DistributedSystem system, GemFireCache cache,
-      ClusterConfigurationService sharedConfig) {
-
-  }
-
 }

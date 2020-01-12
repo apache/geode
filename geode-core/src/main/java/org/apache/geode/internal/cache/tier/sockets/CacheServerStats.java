@@ -19,9 +19,7 @@ import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.cache.server.ServerLoad;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.PoolStatHelper;
-import org.apache.geode.internal.net.SocketCreator;
 
 /**
  * Cache Server statistic definitions
@@ -225,16 +223,14 @@ public class CacheServerStats implements MessageStats {
 
   protected StatisticsType statType;
 
-  public CacheServerStats(String ownerName) {
-    this(InternalDistributedSystem.getAnyInstance(), ownerName, typeName, null);
+  public CacheServerStats(StatisticsFactory statisticsFactory, String ownerName) {
+    this(statisticsFactory, ownerName, typeName, null);
   }
 
   /**
    * Add a convinience method to pass in a StatisticsFactory for Statistics construction. Helpful
    * for local Statistics operations
    *
-   * @param statisticsFactory
-   * @param ownerName
    */
   public CacheServerStats(StatisticsFactory statisticsFactory, String ownerName, String typeName,
       StatisticDescriptor[] descriptors) {
@@ -933,14 +929,17 @@ public class CacheServerStats implements MessageStats {
     this.stats.incInt(outOfOrderBatchIdsId, 1);
   }
 
+  @Override
   public void incReceivedBytes(long v) {
     this.stats.incLong(receivedBytesId, v);
   }
 
+  @Override
   public void incSentBytes(long v) {
     this.stats.incLong(sentBytesId, v);
   }
 
+  @Override
   public void incMessagesBeingReceived(int bytes) {
     stats.incInt(messagesBeingReceivedId, 1);
     if (bytes > 0) {
@@ -948,6 +947,7 @@ public class CacheServerStats implements MessageStats {
     }
   }
 
+  @Override
   public void decMessagesBeingReceived(int bytes) {
     stats.incInt(messagesBeingReceivedId, -1);
     if (bytes > 0) {
@@ -1002,10 +1002,12 @@ public class CacheServerStats implements MessageStats {
 
   public PoolStatHelper getCnxPoolHelper() {
     return new PoolStatHelper() {
+      @Override
       public void startJob() {
         incConnectionThreads();
       }
 
+      @Override
       public void endJob() {
         decConnectionThreads();
       }

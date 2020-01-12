@@ -14,30 +14,31 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category({UnitTest.class, ClientServerTest.class})
+@Category({ClientServerTest.class})
 public class MessageJUnitTest {
 
   private Message message;
@@ -134,6 +135,7 @@ public class MessageJUnitTest {
     final ServerSocket serverSocket = new ServerSocket();
     serverSocket.bind(new InetSocketAddress(InetAddress.getLocalHost(), 0));
     Thread serverThread = new Thread("acceptor thread") {
+      @Override
       public void run() {
         Socket client = null;
         try {
@@ -170,4 +172,50 @@ public class MessageJUnitTest {
       }
     }
   }
+
+  @Test(expected = SocketTimeoutException.class)
+  public void messageWillTimeoutDuringRecvOnInactiveSocketWithoutExplicitTimeoutSetting()
+      throws Exception {
+    final ServerSocket serverSocket = new ServerSocket();
+    serverSocket.bind(new InetSocketAddress(InetAddress.getLocalHost(), 0));
+    Thread serverThread = new Thread("acceptor thread") {
+      @Override
+      public void run() {
+        Socket client = null;
+        try {
+          client = serverSocket.accept();
+          Thread.sleep(12000);
+        } catch (InterruptedException e) {
+
+        } catch (IOException e) {
+
+        } finally {
+          if (client != null && !client.isClosed()) {
+            try {
+              client.close();
+            } catch (IOException e) {
+            }
+          }
+        }
+      }
+    };
+    serverThread.setDaemon(true);
+    serverThread.start();
+
+    try {
+      Socket socket = new Socket(serverSocket.getInetAddress(), serverSocket.getLocalPort());
+      socket.setSoTimeout(500);
+      MessageStats messageStats = mock(MessageStats.class);
+
+      message.setComms(socket, ByteBuffer.allocate(100), messageStats);
+      message.receive();
+
+    } finally {
+      serverThread.interrupt();
+      if (serverSocket != null && !serverSocket.isClosed()) {
+        serverSocket.close();
+      }
+    }
+  }
+
 }

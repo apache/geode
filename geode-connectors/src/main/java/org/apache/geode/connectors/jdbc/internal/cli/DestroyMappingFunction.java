@@ -14,66 +14,68 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
+import java.util.Set;
+
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheLoader;
+import org.apache.geode.cache.CacheWriter;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.asyncqueue.internal.InternalAsyncEventQueue;
 import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.connectors.jdbc.JdbcLoader;
+import org.apache.geode.connectors.jdbc.JdbcWriter;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
-import org.apache.geode.connectors.jdbc.internal.RegionMapping;
-import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
-import org.apache.geode.management.internal.configuration.domain.XmlEntity;
+import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
+import org.apache.geode.management.cli.CliFunction;
+import org.apache.geode.management.internal.functions.CliFunctionResult;
+import org.apache.geode.management.internal.functions.CliFunctionResult.StatusState;
+
 
 @Experimental
-public class DestroyMappingFunction extends JdbcCliFunction<String, CliFunctionResult> {
-
-  DestroyMappingFunction() {
-    super();
-  }
+public class DestroyMappingFunction extends CliFunction<String> {
 
   @Override
-  CliFunctionResult getFunctionResult(JdbcConnectorService service, FunctionContext<String> context)
-      throws Exception {
-    // input
+  public CliFunctionResult executeFunction(FunctionContext<String> context) {
+    Cache cache = context.getCache();
+    JdbcConnectorService service = FunctionContextArgumentProvider.getJdbcConnectorService(context);
     String regionName = context.getArguments();
-
-    // action
-    boolean success = destroyRegionMapping(service, regionName);
-
-    // output
-    String member = getMember(context);
-    return createResult(success, context, member, regionName);
-  }
-
-  /**
-   * Destroys the named region mapping
-   */
-  boolean destroyRegionMapping(JdbcConnectorService service, String regionName) {
+    String member = context.getMemberName();
     RegionMapping mapping = service.getMappingForRegion(regionName);
     if (mapping != null) {
+      cleanupRegionAndQueue(cache, regionName);
       service.destroyRegionMapping(regionName);
-      return true;
-    }
-    return false;
-  }
-
-  private CliFunctionResult createResult(boolean success, FunctionContext<String> context,
-      String member, String regionName) {
-    CliFunctionResult result;
-    if (success) {
-      XmlEntity xmlEntity = createXmlEntity(context);
-      result = createSuccessResult(member, regionName, xmlEntity);
+      String message = "Destroyed JDBC mapping for region " + regionName + " on " + member;
+      return new CliFunctionResult(member, StatusState.OK, message);
     } else {
-      result = createNotFoundResult(member, regionName);
+      String message = "JDBC mapping for region \"" + regionName + "\" not found";
+      return new CliFunctionResult(member, StatusState.ERROR, message);
     }
-    return result;
   }
 
-  private CliFunctionResult createSuccessResult(String member, String regionName,
-      XmlEntity xmlEntity) {
-    String message = "Destroyed region mapping for region " + regionName + " on " + member;
-    return new CliFunctionResult(member, xmlEntity, message);
-  }
+  private void cleanupRegionAndQueue(Cache cache, String regionName) {
+    String queueName = MappingCommandUtils.createAsyncEventQueueName(regionName);
 
-  private CliFunctionResult createNotFoundResult(String member, String regionName) {
-    String message = "Region mapping for region \"" + regionName + "\" not found";
-    return new CliFunctionResult(member, false, message);
+    Region<?, ?> region = cache.getRegion(regionName);
+    if (region != null) {
+      CacheLoader<?, ?> loader = region.getAttributes().getCacheLoader();
+      if (loader instanceof JdbcLoader) {
+        region.getAttributesMutator().setCacheLoader(null);
+      }
+      CacheWriter<?, ?> writer = region.getAttributes().getCacheWriter();
+      if (writer instanceof JdbcWriter) {
+        region.getAttributesMutator().setCacheWriter(null);
+      }
+      Set<String> queueIds = region.getAttributes().getAsyncEventQueueIds();
+      if (queueIds.contains(queueName)) {
+        region.getAttributesMutator().removeAsyncEventQueueId(queueName);
+      }
+    }
+
+    InternalAsyncEventQueue queue = (InternalAsyncEventQueue) cache.getAsyncEventQueue(queueName);
+    if (queue != null) {
+      queue.stop();
+      queue.destroy();
+    }
   }
 }

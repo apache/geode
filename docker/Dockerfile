@@ -21,21 +21,21 @@ RUN apk add --no-cache \
 		bash \
 		ncurses
 
-# pub   rsa4096 2016-04-07 [SC] [expires: 2020-04-07]
-#       E1B1 ABE3 4753 E7BA 8097  4285 8F8F 2BCC 18F9 02DB
-# uid           [ unknown] Swapnil Bawaskar <sbawaskar@apache.org>
-# sub   rsa4096 2016-04-07 [E] [expires: 2020-04-07]
-ENV GEODE_GPG E1B1ABE34753E7BA809742858F8F2BCC18F902DB
+# pub   4096R/ABF4396F 2018-04-12 [expires: 2022-04-12]
+#       8763 31B4 5A97 E382 D1BD  FB44 4482 0F9C ABF4 396F
+# uid       [  undef ] Mike Stolz <mikestolz@apache.org>
+# sub   4096R/3871E6AD 2018-04-12 [expires: 2022-04-12]
+ENV GEODE_GPG DB5476815A475574577D442B468A4800EAFB2498
 # TODO does this change per-release like other Apache projects? (and thus needs to be a list of full fingerprints from a KEYS file instead?)
 
 ENV GEODE_HOME /geode
 ENV PATH $PATH:$GEODE_HOME/bin
 
 # https://geode.apache.org/releases/
-ENV GEODE_VERSION 1.4.0
+ENV GEODE_VERSION 1.9.0
 # Binaries TGZ SHA-256
 # https://dist.apache.org/repos/dist/release/geode/VERSION/apache-geode-VERSION.tgz.sha256
-ENV GEODE_SHA256 7f880bed678c44e86e028a0d6e3465cfc8a2979a08c7c708a836425f6e6f6b98
+ENV GEODE_SHA256 8794808ebc89bc855f0b989b32e91e890d446cfd058e123f6ccb9e12597c1c4f
 
 # http://apache.org/dyn/closer.cgi/geode/1.3.0/apache-geode-1.3.0.tgz
 

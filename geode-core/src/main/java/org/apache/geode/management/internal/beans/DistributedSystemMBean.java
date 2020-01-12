@@ -154,6 +154,7 @@ public class DistributedSystemMBean extends NotificationBroadcasterSupport
     return bridge.getMembers();
   }
 
+  @Override
   public String[] listLocatorMembers(boolean onlyStandAloneLocators) {
     return bridge.listLocatorMembers(onlyStandAloneLocators);
   }

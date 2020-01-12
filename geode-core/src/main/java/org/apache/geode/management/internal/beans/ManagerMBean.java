@@ -18,10 +18,6 @@ import javax.management.JMException;
 
 import org.apache.geode.management.ManagerMXBean;
 
-/**
- *
- *
- */
 public class ManagerMBean implements ManagerMXBean {
 
   private ManagerMBeanBridge bridge;

@@ -17,8 +17,8 @@ package org.apache.geode.internal.tcp;
 
 import java.nio.ByteBuffer;
 
-import org.apache.geode.internal.Version;
-import org.apache.geode.internal.VersionedDataStream;
+import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.VersionedDataStream;
 
 /**
  * An extension to {@link ByteBufferInputStream} that implements {@link VersionedDataStream} for a

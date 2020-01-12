@@ -53,6 +53,7 @@ public class TXRmtEvent implements TransactionEvent {
     this.events = null;
   }
 
+  @Override
   public TransactionId getTransactionId() {
     return this.txId;
   }
@@ -62,6 +63,7 @@ public class TXRmtEvent implements TransactionEvent {
         || !(ce.getRegion() instanceof PartitionedRegion);
   }
 
+  @Override
   public List getEvents() {
     if (this.events == null) {
       return Collections.EMPTY_LIST;
@@ -110,12 +112,12 @@ public class TXRmtEvent implements TransactionEvent {
   }
 
   @Retained
-  private EntryEventImpl createEvent(LocalRegion r, Operation op, RegionEntry re, Object key,
+  private EntryEventImpl createEvent(InternalRegion r, Operation op, RegionEntry re, Object key,
       Object newValue, Object aCallbackArgument) {
     DistributedMember originator = ((TXId) this.txId).getMemberId();
     // TODO:ASIF :EventID will not be generated with this constructor . Check if
     // this is correct
-    LocalRegion eventRegion = r;
+    InternalRegion eventRegion = r;
     if (r.isUsedForPartitionedRegionBucket()) {
       eventRegion = r.getPartitionedRegion();
     }
@@ -140,20 +142,21 @@ public class TXRmtEvent implements TransactionEvent {
     }
   }
 
-  void addDestroy(LocalRegion r, RegionEntry re, Object key, Object aCallbackArgument) {
+  public void addDestroy(InternalRegion r, RegionEntry re, Object key, Object aCallbackArgument) {
     addEvent(createEvent(r, Operation.DESTROY, re, key, null, aCallbackArgument));
   }
 
-  void addInvalidate(LocalRegion r, RegionEntry re, Object key, Object newValue,
+  public void addInvalidate(InternalRegion r, RegionEntry re, Object key, Object newValue,
       Object aCallbackArgument) {
     addEvent(createEvent(r, Operation.INVALIDATE, re, key, newValue, aCallbackArgument));
   }
 
-  void addPut(Operation putOp, LocalRegion r, RegionEntry re, Object key, Object newValue,
+  public void addPut(Operation putOp, InternalRegion r, RegionEntry re, Object key, Object newValue,
       Object aCallbackArgument) {
     addEvent(createEvent(r, putOp, re, key, newValue, aCallbackArgument));
   }
 
+  @Override
   public Cache getCache() {
     return this.cache;
   }

@@ -19,6 +19,8 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 
+import java.util.concurrent.Executors;
+
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.store.Directory;
@@ -35,10 +37,10 @@ import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.test.fake.Fakes;
-import org.apache.geode.test.junit.categories.LuceneTest;
 
 public class RawLuceneRepositoryManagerJUnitTest extends PartitionedRepositoryManagerJUnitTest {
 
+  @Override
   @Before
   public void setUp() {
     cache = Fakes.cache();
@@ -51,11 +53,13 @@ public class RawLuceneRepositoryManagerJUnitTest extends PartitionedRepositoryMa
     createIndexAndRepoManager();
   }
 
+  @Override
   @After
   public void tearDown() {
     ((RawLuceneRepositoryManager) repoManager).close();
   }
 
+  @Override
   protected void createIndexAndRepoManager() {
     LuceneServiceImpl.luceneIndexFactory = new LuceneRawIndexFactory();
 
@@ -66,7 +70,8 @@ public class RawLuceneRepositoryManagerJUnitTest extends PartitionedRepositoryMa
     when(indexForPR.getCache()).thenReturn(cache);
     when(indexForPR.getRegionPath()).thenReturn("/testRegion");
     when(indexForPR.withPersistence()).thenReturn(true);
-    repoManager = new RawLuceneRepositoryManager(indexForPR, serializer);
+    repoManager =
+        new RawLuceneRepositoryManager(indexForPR, serializer, Executors.newSingleThreadExecutor());
     repoManager.setUserRegionForRepositoryManager(userRegion);
     repoManager.allowRepositoryComputation();
   }
@@ -78,7 +83,7 @@ public class RawLuceneRepositoryManagerJUnitTest extends PartitionedRepositoryMa
   }
 
   @Override
-  protected void checkRepository(IndexRepositoryImpl repo0, int bucketId) {
+  protected void checkRepository(IndexRepositoryImpl repo0, int... bucketId) {
     IndexWriter writer0 = repo0.getWriter();
     Directory dir0 = writer0.getDirectory();
     assertTrue(dir0 instanceof NIOFSDirectory);
@@ -98,11 +103,13 @@ public class RawLuceneRepositoryManagerJUnitTest extends PartitionedRepositoryMa
     return mockBucket;
   }
 
+  @Override
   @Test
   public void createMissingBucket() throws BucketNotFoundException {
     setUpMockBucket(0);
 
     assertNotNull(repoManager.getRepository(userRegion, 0, null));
   }
+
 
 }

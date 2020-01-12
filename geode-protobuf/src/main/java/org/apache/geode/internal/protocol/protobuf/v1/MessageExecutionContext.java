@@ -14,31 +14,44 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1;
 
+import java.util.Properties;
+
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.distributed.Locator;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
+import org.apache.geode.internal.protocol.protobuf.security.SecureCache;
+import org.apache.geode.internal.protocol.protobuf.security.SecureLocator;
 import org.apache.geode.internal.protocol.protobuf.statistics.ClientStatistics;
-import org.apache.geode.internal.protocol.protobuf.v1.state.ProtobufConnectionStateProcessor;
+import org.apache.geode.internal.protocol.protobuf.v1.state.ConnectionState;
+import org.apache.geode.internal.protocol.protobuf.v1.state.RequireVersion;
+import org.apache.geode.internal.protocol.serialization.NoOpCustomValueSerializer;
+import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.protocol.serialization.ValueSerializer;
 
 @Experimental
 public abstract class MessageExecutionContext {
   protected final ClientStatistics statistics;
-  protected ProtobufConnectionStateProcessor protobufConnectionStateProcessor;
+  protected final SecurityService securityService;
+  protected ConnectionState connectionState;
+  public ProtobufSerializationService serializationService =
+      new ProtobufSerializationService(new NoOpCustomValueSerializer());
 
-  public MessageExecutionContext(ClientStatistics statistics,
-      ProtobufConnectionStateProcessor protobufConnectionStateProcessor) {
+  public MessageExecutionContext(ClientStatistics statistics, SecurityService securityService) {
+    this.securityService = securityService;
     this.statistics = statistics;
-    this.protobufConnectionStateProcessor = protobufConnectionStateProcessor;
+    this.connectionState = new RequireVersion(securityService);
   }
 
-  public ProtobufConnectionStateProcessor getConnectionStateProcessor() {
-    return protobufConnectionStateProcessor;
+  public ConnectionState getConnectionState() {
+    return connectionState;
   }
 
-  public abstract InternalCache getCache() throws InvalidExecutionContextException;
+  public ProtobufSerializationService getSerializationService() {
+    return serializationService;
+  }
 
-  public abstract Locator getLocator() throws InvalidExecutionContextException;
+  public abstract SecureCache getSecureCache() throws InvalidExecutionContextException;
+
+  public abstract SecureLocator getSecureLocator() throws InvalidExecutionContextException;
 
   /**
    * Returns the statistics for recording operation stats. In a unit test environment this may not
@@ -48,8 +61,11 @@ public abstract class MessageExecutionContext {
     return statistics;
   }
 
-  public void setConnectionStateProcessor(
-      ProtobufConnectionStateProcessor protobufConnectionStateProcessor) {
-    this.protobufConnectionStateProcessor = protobufConnectionStateProcessor;
+  public void setState(ConnectionState connectionState) {
+    this.connectionState = connectionState;
   }
+
+  public abstract void authenticate(Properties properties);
+
+  public abstract void setValueSerializer(ValueSerializer valueSerializer);
 }

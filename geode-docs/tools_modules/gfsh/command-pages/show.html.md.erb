@@ -25,7 +25,7 @@ Display deadlocks, logs, metrics and missing disk-stores.
 
 -   **[show dead-locks](#topic_1125347FAD6541DF995C9999650165B1)**
 
-    Display any deadlocks in the <%=vars.product_name%> distributed system.
+    Display any deadlocks in the cluster.
 
 -   **[show log](#topic_45AAEDAC3AFF46EC9BB68B24FC9A32B3)**
 
@@ -33,11 +33,11 @@ Display deadlocks, logs, metrics and missing disk-stores.
 
 -   **[show metrics](#topic_6EB786C63AEB46179EEE8FA18624295A)**
 
-    Display or export metrics for the entire distributed system, a member or a region.
+    Display or export metrics for the entire cluster, a member, or a region.
 
 -   **[show missing-disk-stores](#topic_7B3D624D5B4F41D1A0F8A9C3C8B2E780)**
 
-    Display a summary of the disk stores that are currently missing from a distributed system.
+    Display a summary of the disk stores that are currently missing from the cluster.
 
 -   **[show subscription-queue-size](#topic_395C96B500AD430CBF3D3C8886A4CD2E)**
 
@@ -45,7 +45,7 @@ Display deadlocks, logs, metrics and missing disk-stores.
 
 ## <a id="topic_1125347FAD6541DF995C9999650165B1" class="no-quick-link"></a>show dead-locks
 
-Display any deadlocks in the <%=vars.product_name%> distributed system.
+Display any deadlocks in the cluster.
 
 **Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
 
@@ -121,7 +121,7 @@ r=server1 --lines=5".
 
 ## <a id="topic_6EB786C63AEB46179EEE8FA18624295A" class="no-quick-link"></a>show metrics
 
-Display or export metrics for the entire distributed system, a member or a region.
+Display or export metrics for the entire cluster, a member, or a region.
 
 When no command line arguments are given,
 metrics under the categories of cluster, cache, diskstore, and query
@@ -151,23 +151,23 @@ show metrics [--member=value] [--region=value] [--file=value]
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-member</span></td>
 <td>Name/ID of the member whose metrics will be displayed/exported.</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-region</span></td>
 <td>Name/Path of the region whose metrics will be displayed/exported.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-file</span></td>
 <td>Name of the file to which metrics will be written.</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-port</span></td>
 <td>Port number of the Cache Server whose metrics are to be displayed/exported. This can only be used along with the <code class="ph codeph">--member</code> parameter.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-categories</span></td>
 <td>Categories available based upon the parameters specified (listed above) are:
 <ul>
@@ -224,7 +224,7 @@ query     | queryRequestRate      | 0
 
 ## <a id="topic_7B3D624D5B4F41D1A0F8A9C3C8B2E780" class="no-quick-link"></a>show missing-disk-stores
 
-Display a summary of the disk stores that are currently missing from a distributed system.
+Display a summary of the disk stores that are currently missing from the cluster.
 
 **Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
 

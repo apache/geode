@@ -19,47 +19,46 @@ import org.apache.geode.cache.query.QueryService;
 
 /**
  * Computes the Max or Min
- *
- *
  */
-
 public class MaxMin implements Aggregator {
   private final boolean findMax;
   private Comparable currentOptima;
+
+  Comparable getCurrentOptima() {
+    return currentOptima;
+  }
 
   public MaxMin(boolean findMax) {
     this.findMax = findMax;
   }
 
   @Override
+  public void init() {}
+
+  @Override
   public void accumulate(Object value) {
     if (value == null || value == QueryService.UNDEFINED) {
       return;
     }
+
     Comparable comparable = (Comparable) value;
 
     if (currentOptima == null) {
       currentOptima = comparable;
     } else {
+      @SuppressWarnings("unchecked")
       int compare = currentOptima.compareTo(comparable);
+
       if (findMax) {
         currentOptima = compare < 0 ? comparable : currentOptima;
       } else {
         currentOptima = compare > 0 ? comparable : currentOptima;
       }
     }
-
-  }
-
-  @Override
-  public void init() {
-    // TODO Auto-generated method stub
-
   }
 
   @Override
   public Object terminate() {
     return currentOptima;
   }
-
 }

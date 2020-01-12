@@ -16,13 +16,23 @@
 
 package org.apache.geode.internal.admin.remote;
 
-import java.io.*;
-import java.util.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.Set;
 
-import org.apache.geode.*;
-import org.apache.geode.cache.*;
-import org.apache.geode.distributed.internal.*;
-import org.apache.geode.distributed.internal.membership.*;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.GemFireCacheException;
+import org.apache.geode.annotations.internal.MakeNotStatic;
+import org.apache.geode.cache.CacheException;
+import org.apache.geode.cache.CacheStatistics;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.StatisticsDisabledException;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * Responds to {@link ObjectDetailsRequest}.
@@ -74,6 +84,7 @@ public class ObjectDetailsResponse extends AdminResponse implements Cancellable 
     }
   }
 
+  @Override
   public synchronized void cancel() {
     cancelled = true;
   }
@@ -91,21 +102,24 @@ public class ObjectDetailsResponse extends AdminResponse implements Cancellable 
     return this.stats;
   }
 
+  @Override
   public int getDSFID() {
     return OBJECT_DETAILS_RESPONSE;
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     DataSerializer.writeObject(this.objectValue, out);
     DataSerializer.writeObject(this.userAttribute, out);
     DataSerializer.writeObject(this.stats, out);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.objectValue = DataSerializer.readObject(in);
     this.userAttribute = DataSerializer.readObject(in);
     this.stats = (RemoteCacheStatistics) DataSerializer.readObject(in);
@@ -118,6 +132,7 @@ public class ObjectDetailsResponse extends AdminResponse implements Cancellable 
 
 
   // Holds the last result of getObjectName to optimize the next call
+  @MakeNotStatic
   private static Object lastObjectNameFound = null;
 
   static Object getObjectName(Region r, Object objName) throws CacheException {

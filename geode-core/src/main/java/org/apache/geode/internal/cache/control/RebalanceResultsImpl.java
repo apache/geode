@@ -60,43 +60,67 @@ public class RebalanceResultsImpl implements RebalanceResults, Serializable {
       totalTime = details.totalTime;
   }
 
+  @Override
   public Set<PartitionRebalanceInfo> getPartitionRebalanceDetails() {
     return detailSet;
   }
 
+  @Override
   public long getTotalBucketCreateBytes() {
     return this.totalBucketCreateBytes;
   }
 
+  @Override
   public long getTotalBucketCreateTime() {
     return this.totalBucketCreateTime;
   }
 
+  @Override
   public int getTotalBucketCreatesCompleted() {
     return this.totalBucketCreatesCompleted;
   }
 
+  @Override
   public long getTotalBucketTransferBytes() {
     return this.totalBucketTransferBytes;
   }
 
+  @Override
   public long getTotalBucketTransferTime() {
     return this.totalBucketTransferTime;
   }
 
+  @Override
   public int getTotalBucketTransfersCompleted() {
     return this.totalBucketTransfersCompleted;
   }
 
+  @Override
   public long getTotalPrimaryTransferTime() {
     return this.totalPrimaryTransferTime;
   }
 
+  @Override
   public int getTotalPrimaryTransfersCompleted() {
     return this.totalPrimaryTransfersCompleted;
   }
 
+  @Override
   public long getTotalTime() {
     return this.totalTime;
+  }
+
+  @Override
+  public String toString() {
+    return "{totalBucketCreateBytes=" + totalBucketCreateBytes +
+        ", totalBucketCreateTimeInMilliseconds=" + totalBucketCreateTime +
+        ", totalBucketCreatesCompleted=" + totalBucketCreatesCompleted +
+        ", totalBucketTransferBytes=" + totalBucketTransferBytes +
+        ", totalBucketTransferTimeInMilliseconds=" + totalBucketTransferTime +
+        ", totalBucketTransfersCompleted=" + totalBucketTransfersCompleted +
+        ", totalPrimaryTransferTimeInMilliseconds=" + totalPrimaryTransferTime +
+        ", totalPrimaryTransfersCompleted=" + totalPrimaryTransfersCompleted +
+        ", totalTimeInMilliseconds=" + totalTime +
+        "}";
   }
 }

@@ -13,152 +13,130 @@
  * the License.
  *
  */
-
 package org.apache.geode.internal.cache.tier.sockets;
 
-
-import static org.apache.geode.internal.i18n.LocalizedStrings.HandShake_NO_SECURITY_CREDENTIALS_ARE_PROVIDED;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.Assert.fail;
-import static org.mockito.ArgumentMatchers.isA;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyLong;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.quality.Strictness.STRICT_STUBS;
 
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.util.Locale;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
 
-import org.apache.geode.cache.client.internal.Connection;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.i18n.StringId;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.TXManagerImpl;
-import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.Encryptor;
-import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.ServerSideHandshake;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.security.AuthenticationRequiredException;
-import org.apache.geode.test.junit.categories.UnitTest;
-import org.apache.geode.test.junit.rules.RestoreLocaleRule;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 
-@Category(UnitTest.class)
+@Category(ClientServerTest.class)
 public class ServerConnectionTest {
 
-  /**
-   * This test assumes Locale is in English. Before the test, change the locale of Locale and
-   * StringId to English and restore the original locale after the test.
-   */
   @Rule
-  public final RestoreLocaleRule restoreLocale =
-      new RestoreLocaleRule(Locale.ENGLISH, l -> StringId.setLocale(l));
-
-  @Mock
-  private Message requestMsg;
-
-  @Mock
-  private MessageIdExtractor messageIdExtractor;
-
-  @InjectMocks
-  private ServerConnection serverConnection;
+  public MockitoRule mockitoRule = MockitoJUnit.rule().strictness(STRICT_STUBS);
 
   private AcceptorImpl acceptor;
-  private Socket socket;
+  private Message requestMessage;
   private ServerSideHandshake handshake;
-  private InternalCache cache;
-  private SecurityService securityService;
-  private CacheServerStats stats;
+
+  private ServerConnection serverConnection;
 
   @Before
   public void setUp() throws IOException {
-    acceptor = mock(AcceptorImpl.class);
-
     InetAddress inetAddress = mock(InetAddress.class);
-    when(inetAddress.getHostAddress()).thenReturn("localhost");
+    Socket socket = mock(Socket.class);
 
-    socket = mock(Socket.class);
+    acceptor = mock(AcceptorImpl.class);
+    handshake = mock(ServerSideHandshake.class);
+    requestMessage = mock(Message.class);
+
+    when(inetAddress.getHostAddress()).thenReturn("localhost");
     when(socket.getInetAddress()).thenReturn(inetAddress);
 
-    cache = mock(InternalCache.class);
-    securityService = mock(SecurityService.class);
-
-    stats = mock(CacheServerStats.class);
-
-    handshake = mock(ServerSideHandshake.class);
-    when(handshake.getEncryptor()).thenReturn(mock(Encryptor.class));
-
     serverConnection =
-        new ServerConnectionFactory().makeServerConnection(socket, cache, null, stats, 0, 0, null,
-            CommunicationMode.PrimaryServerToClient.getModeNumber(), acceptor, securityService);
-    MockitoAnnotations.initMocks(this);
+        new ServerConnectionFactory().makeServerConnection(socket, mock(InternalCache.class),
+            mock(CachedRegionHelper.class), mock(CacheServerStats.class), 0, 0, null,
+            CommunicationMode.PrimaryServerToClient.getModeNumber(), acceptor,
+            mock(SecurityService.class));
+
+    serverConnection.setHandshake(handshake);
   }
 
+  @Test
+  public void whenAuthenticationRequiredExceptionIsThrownItShouldBeCaught() {
+    when(acceptor.getClientHealthMonitor()).thenReturn(mock(ClientHealthMonitor.class));
+    when(acceptor.isSelector()).thenReturn(true);
+    doThrow(new AuthenticationRequiredException("Test"))
+        .when(serverConnection.stats).decThreadQueueSize();
+    serverConnection.setProcessMessages(true);
+
+    assertThatCode(() -> serverConnection.run()).doesNotThrowAnyException();
+  }
 
   @Test
   public void pre65SecureShouldReturnUserAuthId() {
     long userAuthId = 12345L;
+    when(handshake.getVersion()).thenReturn(Version.GFE_61);
     serverConnection.setUserAuthId(userAuthId);
 
-    when(handshake.getVersion()).thenReturn(Version.GFE_61);
-    when(requestMsg.isSecureMode()).thenReturn(true);
+    long value = serverConnection.getUniqueId();
 
-    assertThat(serverConnection.getUniqueId()).isEqualTo(userAuthId);
+    assertThat(value).isEqualTo(userAuthId);
   }
 
   @Test
   public void pre65NonSecureShouldReturnUserAuthId() {
+    when(handshake.getVersion()).thenReturn(Version.GFE_61);
     long userAuthId = 12345L;
     serverConnection.setUserAuthId(userAuthId);
 
-    when(handshake.getVersion()).thenReturn(Version.GFE_61);
-    when(requestMsg.isSecureMode()).thenReturn(false);
+    long value = serverConnection.getUniqueId();
 
-    assertThat(serverConnection.getUniqueId()).isEqualTo(userAuthId);
+    assertThat(value).isEqualTo(userAuthId);
   }
-
 
   @Test
   public void post65SecureShouldUseUniqueIdFromMessage() {
     long uniqueIdFromMessage = 23456L;
+    MessageIdExtractor messageIdExtractor = mock(MessageIdExtractor.class);
+    when(handshake.getEncryptor()).thenReturn(mock(Encryptor.class));
     when(handshake.getVersion()).thenReturn(Version.GFE_82);
-    serverConnection.setRequestMsg(requestMsg);
-
-    assertThat(serverConnection.getRequestMessage()).isSameAs(requestMsg);
-    when(requestMsg.isSecureMode()).thenReturn(true);
-
     when(messageIdExtractor.getUniqueIdFromMessage(any(Message.class), any(Encryptor.class),
         anyLong())).thenReturn(uniqueIdFromMessage);
+    when(requestMessage.isSecureMode()).thenReturn(true);
     serverConnection.setMessageIdExtractor(messageIdExtractor);
+    serverConnection.setRequestMessage(requestMessage);
 
-    assertThat(serverConnection.getUniqueId()).isEqualTo(uniqueIdFromMessage);
+    long value = serverConnection.getUniqueId();
+
+    assertThat(value).isEqualTo(uniqueIdFromMessage);
   }
 
   @Test
   public void post65NonSecureShouldThrow() {
     when(handshake.getVersion()).thenReturn(Version.GFE_82);
-    when(requestMsg.isSecureMode()).thenReturn(false);
 
-    assertThatThrownBy(serverConnection::getUniqueId)
+    Throwable thrown = catchThrowable(() -> serverConnection.getUniqueId());
+
+    assertThat(thrown)
         .isExactlyInstanceOf(AuthenticationRequiredException.class)
-        .hasMessage(HandShake_NO_SECURITY_CREDENTIALS_ARE_PROVIDED.getRawText());
+        .hasMessage("No security credentials are provided");
   }
 }

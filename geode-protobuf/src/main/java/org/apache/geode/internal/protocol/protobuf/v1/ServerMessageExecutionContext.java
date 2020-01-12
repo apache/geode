@@ -15,43 +15,58 @@
 
 package org.apache.geode.internal.protocol.protobuf.v1;
 
+import java.util.Properties;
+
+import org.apache.shiro.subject.Subject;
+
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.distributed.Locator;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
+import org.apache.geode.internal.protocol.protobuf.security.NoSecurity;
+import org.apache.geode.internal.protocol.protobuf.security.NotLoggedInSecurity;
+import org.apache.geode.internal.protocol.protobuf.security.SecureCache;
+import org.apache.geode.internal.protocol.protobuf.security.SecureCacheImpl;
+import org.apache.geode.internal.protocol.protobuf.security.SecureLocator;
+import org.apache.geode.internal.protocol.protobuf.security.Security;
+import org.apache.geode.internal.protocol.protobuf.security.ShiroSecurity;
 import org.apache.geode.internal.protocol.protobuf.statistics.ClientStatistics;
-import org.apache.geode.internal.protocol.protobuf.v1.state.ProtobufConnectionStateProcessor;
+import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.protocol.serialization.ValueSerializer;
 
 @Experimental
 public class ServerMessageExecutionContext extends MessageExecutionContext {
   private final InternalCache cache;
+  private SecureCache secureCache;
 
   public ServerMessageExecutionContext(InternalCache cache, ClientStatistics statistics,
-      ProtobufConnectionStateProcessor initialConnectionStateProcessor) {
-    super(statistics, initialConnectionStateProcessor);
-    this.cache = cache;
+      SecurityService securityService) {
+    super(statistics, securityService);
+    this.cache = cache.getCacheForProcessingClientRequests();
+    Security security =
+        securityService.isIntegratedSecurity() ? new NotLoggedInSecurity() : new NoSecurity();
+    this.secureCache = new SecureCacheImpl(this.cache, security);
   }
 
-  /**
-   * Returns the cache associated with this execution
-   * <p>
-   *
-   * @throws InvalidExecutionContextException if there is no cache available
-   */
   @Override
-  public InternalCache getCache() throws InvalidExecutionContextException {
-    return cache;
+  public SecureCache getSecureCache() {
+    return this.secureCache;
   }
 
-  /**
-   * Returns the locator associated with this execution
-   * <p>
-   *
-   * @throws InvalidExecutionContextException if there is no locator available
-   */
   @Override
-  public Locator getLocator() throws InvalidExecutionContextException {
+  public SecureLocator getSecureLocator() throws InvalidExecutionContextException {
     throw new InvalidExecutionContextException(
         "Operations on the server should not to try to operate on a locator");
+  }
+
+  @Override
+  public void authenticate(Properties properties) {
+    Subject subject = securityService.login(properties);
+    this.secureCache = new SecureCacheImpl(cache, new ShiroSecurity(securityService, subject));
+  }
+
+  @Override
+  public void setValueSerializer(ValueSerializer valueSerializer) {
+    valueSerializer.init(cache);
+    this.serializationService = new ProtobufSerializationService(valueSerializer);
   }
 }

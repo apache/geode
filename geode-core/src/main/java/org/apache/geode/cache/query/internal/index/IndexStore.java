@@ -28,8 +28,6 @@ public interface IndexStore {
   /**
    * Add a mapping to the index store
    *
-   * @param indexKey
-   * @param re
    */
   void addMapping(Object indexKey, RegionEntry re) throws IMQException;
 
@@ -37,17 +35,12 @@ public interface IndexStore {
    * Remove a mapping from the index store If entry at indexKey is not found, we must crawl the
    * index to be sure the region entry does not exist
    *
-   * @param indexKey
-   * @param re
    */
   void removeMapping(Object indexKey, RegionEntry re) throws IMQException;
 
   /**
    * Update a mapping in the index store. This method adds a new mapping and removes the old mapping
    *
-   * @param indexKey
-   * @param oldKey
-   * @param re
    */
   void updateMapping(Object indexKey, Object oldKey, RegionEntry re, Object oldValue)
       throws IMQException;

@@ -23,7 +23,7 @@ import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 
 public class DeltaSessionStatistics {
 
-  public static final String typeName = "SessionStatistics";
+  private static final String typeName = "SessionStatistics";
 
   private static final StatisticsType type;
 
@@ -40,10 +40,10 @@ public class DeltaSessionStatistics {
     StatisticsTypeFactory f = StatisticsTypeFactoryImpl.singleton();
     type = f.createType(typeName, typeName,
         new StatisticDescriptor[] {
-            f.createIntCounter(SESSIONS_CREATED, "The number of sessions created", "operations"),
-            f.createIntCounter(SESSIONS_INVALIDATED,
+            f.createLongCounter(SESSIONS_CREATED, "The number of sessions created", "operations"),
+            f.createLongCounter(SESSIONS_INVALIDATED,
                 "The number of sessions invalidated by invoking invalidate", "operations"),
-            f.createIntCounter(SESSIONS_EXPIRED, "The number of sessions invalidated by timeout",
+            f.createLongCounter(SESSIONS_EXPIRED, "The number of sessions invalidated by timeout",
                 "operations"),});
 
     // Initialize id fields
@@ -62,27 +62,30 @@ public class DeltaSessionStatistics {
     this.stats.close();
   }
 
-  public int getSessionsCreated() {
-    return this.stats.getInt(sessionsCreatedId);
+  @SuppressWarnings("unused")
+  public long getSessionsCreated() {
+    return this.stats.getLong(sessionsCreatedId);
   }
 
   public void incSessionsCreated() {
-    this.stats.incInt(sessionsCreatedId, 1);
+    this.stats.incLong(sessionsCreatedId, 1);
   }
 
-  public int getSessionsInvalidated() {
-    return this.stats.getInt(sessionsInvalidatedId);
+  @SuppressWarnings("unused")
+  public long getSessionsInvalidated() {
+    return this.stats.getLong(sessionsInvalidatedId);
   }
 
   public void incSessionsInvalidated() {
-    this.stats.incInt(sessionsInvalidatedId, 1);
+    this.stats.incLong(sessionsInvalidatedId, 1);
   }
 
-  public int getSessionsExpired() {
-    return this.stats.getInt(sessionsExpiredId);
+  @SuppressWarnings("unused")
+  public long getSessionsExpired() {
+    return this.stats.getLong(sessionsExpiredId);
   }
 
   public void incSessionsExpired() {
-    this.stats.incInt(sessionsExpiredId, 1);
+    this.stats.incLong(sessionsExpiredId, 1);
   }
 }

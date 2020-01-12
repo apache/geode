@@ -44,6 +44,7 @@ public class IndexTrackingQueryObserver extends QueryObserverAdapter {
   private static final ThreadLocal lastIndexUsed = new ThreadLocal();
   private volatile TestHook th;
 
+  @Override
   public void beforeIndexLookup(Index index, int oper, Object key) {
     Map<String, IndexInfo> indexMap = (Map) this.indexInfo.get();
     if (indexMap == null) {
@@ -66,6 +67,7 @@ public class IndexTrackingQueryObserver extends QueryObserverAdapter {
     }
   }
 
+  @Override
   public void beforeIndexLookup(Index index, int lowerBoundOperator, Object lowerBoundKey,
       int upperBoundOperator, Object upperBoundKey, Set NotEqualKeys) {
     Map<String, IndexInfo> indexMap = (Map) this.indexInfo.get();
@@ -92,6 +94,7 @@ public class IndexTrackingQueryObserver extends QueryObserverAdapter {
   /**
    * appends the size of the lookup to the last index name in the list
    */
+  @Override
   public void afterIndexLookup(Collection results) {
     if (results == null) {
       // according to javadocs in QueryObserver, can be null if there
@@ -171,7 +174,6 @@ public class IndexTrackingQueryObserver extends QueryObserverAdapter {
     /**
      * Adds a results map (mostly a bucket index lookup results) to the "this" IndexInfo.
      *
-     * @param rslts
      */
     public void addResults(Map rslts) {
       for (Object obj : rslts.entrySet()) {
@@ -184,6 +186,7 @@ public class IndexTrackingQueryObserver extends QueryObserverAdapter {
       return results.keySet();
     }
 
+    // initial result of index in the observer. 0 means it's not updated yet.
     public void addRegionId(String regionId) {
       this.results.put(regionId, 0);
     }

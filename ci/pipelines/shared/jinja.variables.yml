@@ -1,0 +1,204 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+benchmarks:
+  baseline_branch: ''
+  baseline_version: '1.10.0'
+  benchmark_branch: develop
+  flavors:
+  - title: '_base'
+    flag: ''
+    options: ''
+  - title: '_with_ssl'
+    flag: '-PwithSsl -PtestJVM=/usr/lib/jvm/java-11-openjdk-amd64/'
+    options: '--tests=*GetBenchmark --tests=*PutBenchmark'
+  - title: '_with_security_manager'
+    flag: '-PwithSecurityManager'
+    options: '--tests=Partitioned*'
+
+build_test:
+  ARTIFACT_SLUG: build
+  CALL_STACK_TIMEOUT: '600'
+  CPUS: '8'
+  DUNIT_PARALLEL_FORKS: '4'
+  EXECUTE_TEST_TIMEOUT: 20m
+  GRADLE_TASK: build
+  MAX_IN_FLIGHT: 2
+  PARALLEL_DUNIT: 'false'
+  PARALLEL_GRADLE: 'false'
+  PLATFORM: linux
+  RAM: '16'
+  name: Build
+
+examples_test:
+  ARTIFACT_SLUG: examples
+  CALL_STACK_TIMEOUT: '1800'
+  CPUS: '8'
+  DUNIT_PARALLEL_FORKS: '4'
+  EXECUTE_TEST_TIMEOUT: 30m
+  GRADLE_TASK: runAll
+  PARALLEL_DUNIT: 'false'
+  RAM: '16'
+  name: TestExamples
+
+java_build_version:
+  name: OpenJDK8
+  version: 8
+
+java_test_versions:
+- name: OpenJDK8
+  version: 8
+- name: OpenJDK11
+  version: 11
+
+metadata:
+  initial_version: 1.12.0
+
+publish_artifacts:
+  CPUS: '8'
+  EXECUTE_TEST_TIMEOUT: 10m
+  RAM: '16'
+  name: PublishArtifacts
+
+repository:
+  project: geode
+
+tests:
+- ARTIFACT_SLUG: unittestfiles
+  CALL_STACK_TIMEOUT: '1200'
+  CPUS: '8'
+  DUNIT_PARALLEL_FORKS: '0'
+  EXECUTE_TEST_TIMEOUT: 30m
+  GRADLE_TASK: test
+  MAX_IN_FLIGHT: 1
+  PARALLEL_DUNIT: 'false'
+  PARALLEL_GRADLE: 'true'
+  PLATFORM: linux
+  RAM: '16'
+  name: Unit
+- ARTIFACT_SLUG: acceptancetestfiles
+  CALL_STACK_TIMEOUT: '4500'
+  CPUS: '8'
+  DUNIT_PARALLEL_FORKS: '0'
+  EXECUTE_TEST_TIMEOUT: 1h30m
+  GRADLE_TASK: acceptanceTest
+  MAX_IN_FLIGHT: 2
+  PARALLEL_DUNIT: 'false'
+  PARALLEL_GRADLE: 'false'
+  PLATFORM: linux
+  RAM: '12'
+  name: Acceptance
+- ARTIFACT_SLUG: distributedtestfiles
+  CALL_STACK_TIMEOUT: '9900'
+  CPUS: '96'
+  DUNIT_PARALLEL_FORKS: '24'
+  EXECUTE_TEST_TIMEOUT: 3h00m
+  GRADLE_TASK: distributedTest
+  MAX_IN_FLIGHT: 3
+  PARALLEL_DUNIT: 'true'
+  PLATFORM: linux
+  RAM: '250'
+  name: Distributed
+- ARTIFACT_SLUG: integrationtestfiles
+  CALL_STACK_TIMEOUT: '1500'
+  CPUS: '96'
+  DUNIT_PARALLEL_FORKS: '48'
+  EXECUTE_TEST_TIMEOUT: 40m
+  GRADLE_TASK: integrationTest
+  MAX_IN_FLIGHT: 1
+  PARALLEL_DUNIT: 'true'
+  PLATFORM: linux
+  RAM: '90'
+  name: Integration
+- ARTIFACT_SLUG: upgradetestfiles
+  CALL_STACK_TIMEOUT: '3000'
+  CPUS: '96'
+  DUNIT_PARALLEL_FORKS: '48'
+  EXECUTE_TEST_TIMEOUT: 1h
+  GRADLE_TASK: upgradeTest
+  MAX_IN_FLIGHT: 2
+  PARALLEL_DUNIT: 'true'
+  PLATFORM: linux
+  RAM: '210'
+  name: Upgrade
+- ARTIFACT_SLUG: stressnewtestfiles
+  CALL_STACK_TIMEOUT: '20700'
+  CPUS: '96'
+  DUNIT_PARALLEL_FORKS: '24'
+  EXECUTE_TEST_TIMEOUT: 6h
+  GRADLE_TASK: repeatTest
+  PARALLEL_DUNIT: 'true'
+  PARALLEL_GRADLE: 'false'
+  PLATFORM: linux
+  RAM: '280'
+  name: StressNew
+- ARTIFACT_SLUG: windows-acceptancetestfiles
+  CPUS: '16'
+  DUNIT_PARALLEL_FORKS: '0'
+  EXECUTE_TEST_TIMEOUT: 6h
+  GRADLE_TASK: :geode-assembly:acceptanceTest
+  MAX_IN_FLIGHT: 3
+  PARALLEL_DUNIT: 'false'
+  PARALLEL_GRADLE: 'false'
+  PLATFORM: windows
+  RAM: '64'
+  name: WindowsAcceptance
+- ARTIFACT_SLUG: windows-gfshdistributedtest
+  CPUS: '16'
+  DUNIT_PARALLEL_FORKS: '0'
+  EXECUTE_TEST_TIMEOUT: 6h
+  GRADLE_TASK: distributedTest
+  GRADLE_TASK_OPTIONS: -PtestCategory=org.apache.geode.test.junit.categories.GfshTest
+  MAX_IN_FLIGHT: 5
+  PARALLEL_DUNIT: 'false'
+  PARALLEL_GRADLE: 'false'
+  PLATFORM: windows
+  RAM: '64'
+  name: WindowsGfshDistributed
+- ARTIFACT_SLUG: windows-integrationtestfiles
+  CPUS: '16'
+  DUNIT_PARALLEL_FORKS: '0'
+  EXECUTE_TEST_TIMEOUT: 6h
+  GRADLE_TASK: integrationTest
+  GRADLE_TASK_OPTIONS: -x geode-core:integrationTest
+  MAX_IN_FLIGHT: 2
+  PARALLEL_DUNIT: 'false'
+  PARALLEL_GRADLE: 'false'
+  PLATFORM: windows
+  RAM: '64'
+  name: WindowsIntegration
+- ARTIFACT_SLUG: windows-coreintegrationtestfiles
+  CPUS: '16'
+  DUNIT_PARALLEL_FORKS: '0'
+  EXECUTE_TEST_TIMEOUT: 6h
+  GRADLE_TASK: geode-core:integrationTest
+  MAX_IN_FLIGHT: 6
+  PARALLEL_DUNIT: 'false'
+  PARALLEL_GRADLE: 'false'
+  PLATFORM: windows
+  RAM: '64'
+  name: WindowsCoreIntegration
+- ARTIFACT_SLUG: windows-unittestfiles
+  CPUS: '16'
+  DUNIT_PARALLEL_FORKS: '0'
+  EXECUTE_TEST_TIMEOUT: 6h
+  GRADLE_TASK: test
+  MAX_IN_FLIGHT: 1
+  PARALLEL_DUNIT: 'false'
+  PLATFORM: windows
+  RAM: '64'
+  name: WindowsUnit

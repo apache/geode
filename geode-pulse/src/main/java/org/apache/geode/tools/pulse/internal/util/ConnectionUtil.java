@@ -22,10 +22,6 @@ import javax.net.SocketFactory;
 import javax.net.ssl.SSLSocketFactory;
 
 
-/**
- *
- *
- */
 public class ConnectionUtil {
 
 

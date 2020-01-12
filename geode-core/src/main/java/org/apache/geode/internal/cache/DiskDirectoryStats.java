@@ -14,7 +14,12 @@
  */
 package org.apache.geode.internal.cache;
 
-import org.apache.geode.*;
+import org.apache.geode.StatisticDescriptor;
+import org.apache.geode.Statistics;
+import org.apache.geode.StatisticsFactory;
+import org.apache.geode.StatisticsType;
+import org.apache.geode.StatisticsTypeFactory;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 
 /**
@@ -25,6 +30,7 @@ import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
  */
 public class DiskDirectoryStats {
 
+  @Immutable
   private static final StatisticsType type;
 
   //////////////////// Statistic "Id" Fields ////////////////////
@@ -111,4 +117,5 @@ public class DiskDirectoryStats {
   public Statistics getStats() {
     return stats;
   }
+
 }

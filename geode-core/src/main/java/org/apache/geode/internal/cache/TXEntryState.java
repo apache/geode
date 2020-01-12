@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache;
 
 import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.TX_ENTRY_STATE;
@@ -27,31 +26,42 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.cache.*;
-import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.cache.CacheRuntimeException;
+import org.apache.geode.cache.CacheWriter;
+import org.apache.geode.cache.CacheWriterException;
+import org.apache.geode.cache.CommitConflictException;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.EntryDestroyedException;
+import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.EntryNotFoundException;
+import org.apache.geode.cache.Operation;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionDestroyedException;
+import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.lang.StringUtils;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.OffHeapHelper;
 import org.apache.geode.internal.offheap.Releasable;
 import org.apache.geode.internal.offheap.StoredObject;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.pdx.PdxSerializationException;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * TXEntryState is the entity that tracks transactional changes, except for those tracked by
  * {@link TXEntryUserAttrState}, to an entry.
  *
- *
  * @since GemFire 4.0
- *
  */
 public class TXEntryState implements Releasable {
   private static final Logger logger = LogService.getLogger();
@@ -82,6 +92,8 @@ public class TXEntryState implements Releasable {
   private int nearSideEventOffset = -1;
 
   private Object pendingValue;
+
+  private byte[] serializedPendingValue;
 
   /**
    * Remember the callback argument for listener invocation
@@ -151,29 +163,52 @@ public class TXEntryState implements Releasable {
 
   private static final byte OP_PUT = 23;
 
+  static byte getOpCreate() {
+    return OP_CREATE;
+  }
+
+  static byte getOpSearchCreate() {
+    return OP_SEARCH_CREATE;
+  }
+
+  static byte getOpLloadCreate() {
+    return OP_LLOAD_CREATE;
+  }
+
+  static byte getOpNloadCreate() {
+    return OP_NLOAD_CREATE;
+  }
+
+  static byte getOpPut() {
+    return OP_PUT;
+  }
+
+  static byte getOpSearchPut() {
+    return OP_SEARCH_PUT;
+  }
+
+  static byte getOpLloadPut() {
+    return OP_LLOAD_PUT;
+  }
+
+  static byte getOpNloadPut() {
+    return OP_NLOAD_PUT;
+  }
+
   private static final byte OP_SEARCH_PUT = 24;
 
   private static final byte OP_LLOAD_PUT = 25;
 
   private static final byte OP_NLOAD_PUT = 26;
 
-  static {
-    Assert.assertTrue(OP_SEARCH_PUT - OP_PUT == OP_SEARCH_CREATE - OP_CREATE,
-        "search offset inconsistent");
-    Assert.assertTrue(OP_LLOAD_PUT - OP_PUT == OP_LLOAD_CREATE - OP_CREATE,
-        "lload offset inconsistent");
-    Assert.assertTrue(OP_NLOAD_PUT - OP_PUT == OP_NLOAD_CREATE - OP_CREATE,
-        "nload offset inconsistent");
-  }
-
   /**
    * System property to be set when read conflicts should be detected. Benefits of read conflict
    * detection are at: https://wiki.gemstone.com/display/PR/Read+conflict+detection
    */
   private static final boolean DETECT_READ_CONFLICTS =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "detectReadConflicts");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "detectReadConflicts");
 
-  // @todo darrel: optimize footprint by having this field on a subclass
+  // TODO: optimize footprint by having this field on a subclass
   // that is only created by TXRegionState when it knows its region needs refCounts.
   /**
    * A reference to the RegionEntry, in committed state, that this tx entry has referenced. Note:
@@ -227,7 +262,7 @@ public class TXEntryState implements Releasable {
    * Use this system property if you need to display/log string values in conflict messages
    */
   private static final boolean VERBOSE_CONFLICT_STRING =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "verboseConflictString");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "verboseConflictString");
 
   /**
    * This constructor is used to create a singleton used by LocalRegion to signal that noop
@@ -240,7 +275,6 @@ public class TXEntryState implements Releasable {
     this.originalValue = Token.REMOVED_PHASE1;
     this.refCountEntry = null;
   }
-
 
   private TXRegionState txRegionState = null;
 
@@ -271,6 +305,34 @@ public class TXEntryState implements Releasable {
     this.txRegionState = txRegionState;
     if (isDistributed) {
       this.distTxThinEntryState = new DistTxThinEntryState();
+    }
+  }
+
+  private byte[] getSerializedPendingValue() {
+    return serializedPendingValue;
+  }
+
+  private void setSerializedPendingValue(byte[] serializedPendingValue) {
+    this.serializedPendingValue = serializedPendingValue;
+  }
+
+  void serializePendingValue() {
+    Object pendingValue = getPendingValue();
+    if (Token.isInvalidOrRemoved(pendingValue)) {
+      // token
+      return;
+    }
+    if (pendingValue instanceof byte[]) {
+      // byte[]
+      return;
+    }
+
+    // CachedDeserialized, Object or PDX
+    if (pendingValue instanceof CachedDeserializable) {
+      CachedDeserializable cachedDeserializable = (CachedDeserializable) pendingValue;
+      setSerializedPendingValue(cachedDeserializable.getSerializedValue());
+    } else {
+      setSerializedPendingValue(EntryEventImpl.serialize(pendingValue));
     }
   }
 
@@ -412,7 +474,6 @@ public class TXEntryState implements Releasable {
   }
 
   /**
-   * @param key
    * @return the value, or null if the value does not exist in the cache, Token.INVALID or
    *         Token.LOCAL_INVALID if the value is invalid
    */
@@ -466,7 +527,7 @@ public class TXEntryState implements Releasable {
     return this.op <= OP_D_DESTROY && this.op >= OP_L_DESTROY;
   }
 
-  boolean isOpDestroyEvent(LocalRegion r) {
+  boolean isOpDestroyEvent(InternalRegion r) {
     // Note that if the region is a proxy then we go ahead and distributed
     // the destroy because we can't eliminate it based on committed state
     return isOpDestroy()
@@ -478,36 +539,13 @@ public class TXEntryState implements Releasable {
    *
    * @since GemFire 5.0
    */
-  boolean isOpAnyEvent(LocalRegion r) {
+  boolean isOpAnyEvent(InternalRegion r) {
     return isOpPutEvent() || isOpCreateEvent() || isOpInvalidateEvent() || isOpDestroyEvent(r);
-  }
-
-  boolean isOpSearchOrLoad() {
-    return this.op >= OP_SEARCH_CREATE && this.op != OP_PUT && this.op != OP_LOCAL_CREATE;
   }
 
   boolean isOpSearch() {
     return this.op == OP_SEARCH_CREATE || this.op == OP_SEARCH_PUT;
   }
-
-  boolean isOpLocalLoad() {
-    return this.op == OP_LLOAD_CREATE || this.op == OP_LLOAD_PUT;
-  }
-
-  boolean isOpNetLoad() {
-    return this.op == OP_NLOAD_CREATE || this.op == OP_NLOAD_PUT;
-  }
-
-  boolean isOpLoad() {
-    return isOpLocalLoad() || isOpNetLoad();
-  }
-
-  // private boolean isLocalEventDistributed()
-  // {
-  // return this.op == OP_D_DESTROY
-  // || (this.op >= OP_D_INVALIDATE && this.op != OP_SEARCH_CREATE
-  // && this.op != OP_LOCAL_CREATE && this.op != OP_SEARCH_PUT);
-  // }
 
   String opToString() {
     return opToString(this.op);
@@ -636,7 +674,7 @@ public class TXEntryState implements Releasable {
         return Operation.NET_LOAD_CREATE;
       default:
         throw new IllegalStateException(
-            LocalizedStrings.TXEntryState_UNHANDLED_OP_0.toLocalizedString(Byte.valueOf(this.op)));
+            String.format("<unhandled op %s >", Byte.valueOf(this.op)));
     }
   }
 
@@ -875,20 +913,13 @@ public class TXEntryState implements Releasable {
         return Operation.NET_LOAD_UPDATE;
       default:
         throw new IllegalStateException(
-            LocalizedStrings.TXEntryState_UNHANDLED_OP_0.toLocalizedString(Byte.valueOf(this.op)));
+            String.format("<unhandled op %s >", Byte.valueOf(this.op)));
     }
   }
 
-  // private void dumpOp() {
-  // System.out.println("DEBUG: op=" + opToString()
-  // + " destroy=" + this.destroy
-  // + " isDis=" + isLocalEventDistributed());
-  // System.out.flush();
-  // }
   @Retained
-  EntryEvent getEvent(LocalRegion r, Object key, TXState txs) {
-    // dumpOp();
-    LocalRegion eventRegion = r;
+  EntryEvent getEvent(InternalRegion r, Object key, TXState txs) {
+    InternalRegion eventRegion = r;
     if (r.isUsedForPartitionedRegionBucket()) {
       eventRegion = r.getPartitionedRegion();
     }
@@ -917,11 +948,6 @@ public class TXEntryState implements Releasable {
    * @return true if invalidate was done
    */
   public boolean invalidate(EntryEventImpl event) throws EntryNotFoundException {
-    // LocalRegion lr = event.getRegion();
-    // boolean isProxy = lr.isProxy();
-    // if (!isLocallyValid(isProxy)) {
-    // return false;
-    // }
     if (event.isLocalInvalid()) {
       performOp(adviseOp(OP_L_INVALIDATE, event), event);
     } else {
@@ -936,8 +962,8 @@ public class TXEntryState implements Releasable {
    */
   public boolean destroy(EntryEventImpl event, boolean cacheWrite, boolean originRemote)
       throws CacheWriterException, EntryNotFoundException, TimeoutException {
-    LocalRegion lr = event.getRegion();
-    CacheWriter cWriter = lr.basicGetWriter();
+    InternalRegion internalRegion = event.getRegion();
+    CacheWriter cWriter = internalRegion.basicGetWriter();
     byte advisedOp = adviseOp((cacheWrite ? OP_D_DESTROY : OP_L_DESTROY), event);
     if (cWriter != null && cacheWrite && !event.inhibitAllNotifications()) {
       boolean oldOriginRemote = event.isOriginRemote();
@@ -997,9 +1023,9 @@ public class TXEntryState implements Releasable {
     this.bulkOp = event.getOperation().isPutAll();
     byte advisedOp = adviseOp(putOp, event);
 
-    LocalRegion lr = event.getRegion();
+    InternalRegion internalRegion = event.getRegion();
     if (!event.isNetSearch()) {
-      CacheWriter cWriter = lr.basicGetWriter();
+      CacheWriter cWriter = internalRegion.basicGetWriter();
       boolean oldOriginRemote = event.isOriginRemote();
       if (event.hasClientOrigin() || originRemote) {
         event.setOriginRemote(true);
@@ -1026,8 +1052,6 @@ public class TXEntryState implements Releasable {
    * We will try to establish TXState on members with dataPolicy REPLICATE, this is done for the
    * first region to be involved in a transaction. For subsequent region if the dataPolicy is not
    * REPLICATE, we fetch the VersionTag from replicate members.
-   *
-   * @param event
    */
   private void fetchRemoteVersionTag(EntryEventImpl event) {
     if (event.getRegion() instanceof DistributedRegion) {
@@ -1086,8 +1110,8 @@ public class TXEntryState implements Releasable {
           case OP_D_INVALIDATE_LD:
           case OP_D_DESTROY:
             throw new IllegalStateException(
-                LocalizedStrings.TXEntryState_UNEXPECTED_CURRENT_OP_0_FOR_REQUESTED_OP_1
-                    .toLocalizedString(new Object[] {opToString(), opToString(requestedOpCode)}));
+                String.format("Unexpected current op %s for requested op %s",
+                    new Object[] {opToString(), opToString(requestedOpCode)}));
           case OP_L_INVALIDATE:
             advisedOpCode = requestedOpCode;
             break;
@@ -1141,7 +1165,7 @@ public class TXEntryState implements Releasable {
             break;
           default:
             throw new IllegalStateException(
-                LocalizedStrings.TXEntryState_UNHANDLED_0.toLocalizedString(opToString()));
+                String.format("Unhandled %s", opToString()));
         }
         break;
       case OP_D_DESTROY:
@@ -1163,8 +1187,8 @@ public class TXEntryState implements Releasable {
           case OP_D_DESTROY:
           case OP_D_INVALIDATE_LD:
             throw new IllegalStateException(
-                LocalizedStrings.TXEntryState_UNEXPECTED_CURRENT_OP_0_FOR_REQUESTED_OP_1
-                    .toLocalizedString(new Object[] {opToString(), opToString(requestedOpCode)}));
+                String.format("Unexpected current op %s for requested op %s",
+                    new Object[] {opToString(), opToString(requestedOpCode)}));
           case OP_L_INVALIDATE:
             advisedOpCode = requestedOpCode;
             break;
@@ -1213,7 +1237,7 @@ public class TXEntryState implements Releasable {
             break;
           default:
             throw new IllegalStateException(
-                LocalizedStrings.TXEntryState_UNHANDLED_0.toLocalizedString(opToString()));
+                String.format("Unhandled %s", opToString()));
         }
         break;
       case OP_D_INVALIDATE:
@@ -1231,8 +1255,8 @@ public class TXEntryState implements Releasable {
           case OP_D_INVALIDATE_LD:
           case OP_D_DESTROY:
             throw new IllegalStateException(
-                LocalizedStrings.TXEntryState_UNEXPECTED_CURRENT_OP_0_FOR_REQUESTED_OP_1
-                    .toLocalizedString(new Object[] {opToString(), opToString(requestedOpCode)}));
+                String.format("Unexpected current op %s for requested op %s",
+                    new Object[] {opToString(), opToString(requestedOpCode)}));
           case OP_D_INVALIDATE:
           case OP_L_INVALIDATE:
             advisedOpCode = OP_D_INVALIDATE;
@@ -1277,7 +1301,7 @@ public class TXEntryState implements Releasable {
             break;
           default:
             throw new IllegalStateException(
-                LocalizedStrings.TXEntryState_UNHANDLED_0.toLocalizedString(opToString()));
+                String.format("Unhandled %s", opToString()));
         }
         break;
       case OP_CREATE:
@@ -1348,8 +1372,8 @@ public class TXEntryState implements Releasable {
             // Note that OP_D_INVALIDATE followed by OP_SEARCH_PUT is not
             // possible since the netsearch will alwsys "miss" in this case.
             throw new IllegalStateException(
-                LocalizedStrings.TXEntryState_PREVIOUS_OP_0_UNEXPECTED_FOR_REQUESTED_OP_1
-                    .toLocalizedString(new Object[] {opToString(), opToString(requestedOpCode)}));
+                String.format("Previous op %s unexpected for requested op %s",
+                    new Object[] {opToString(), opToString(requestedOpCode)}));
         }
         break;
       case OP_LLOAD_PUT:
@@ -1379,14 +1403,14 @@ public class TXEntryState implements Releasable {
             // case because they should have caused a OP_SEARCH_PUT
             // to be requested.
             throw new IllegalStateException(
-                LocalizedStrings.TXEntryState_PREVIOUS_OP_0_UNEXPECTED_FOR_REQUESTED_OP_1
-                    .toLocalizedString(new Object[] {opToString(), opToString(requestedOpCode)}));
+                String.format("Previous op %s unexpected for requested op %s",
+                    new Object[] {opToString(), opToString(requestedOpCode)}));
         }
         break;
       default:
         throw new IllegalStateException(
-            LocalizedStrings.TXEntryState_OPCODE_0_SHOULD_NEVER_BE_REQUESTED
-                .toLocalizedString(opToString(requestedOpCode)));
+            String.format("OpCode %s should never be requested",
+                opToString(requestedOpCode)));
     }
     return advisedOpCode;
   }
@@ -1406,7 +1430,7 @@ public class TXEntryState implements Releasable {
     return false;
   }
 
-  void checkForConflict(LocalRegion r, Object key) throws CommitConflictException {
+  void checkForConflict(InternalRegion r, Object key) throws CommitConflictException {
     if (!isDirty()) {
       // All we did was read the entry and we don't do read/write conflicts; yet.
       return;
@@ -1447,14 +1471,15 @@ public class TXEntryState implements Releasable {
             String toString = calcConflictString(curCmtVersionId);
             if (!fromString.equals(toString)) {
               throw new CommitConflictException(
-                  LocalizedStrings.TXEntryState_ENTRY_FOR_KEY_0_ON_REGION_1_HAD_ALREADY_BEEN_CHANGED_FROM_2_TO_3
-                      .toLocalizedString(
-                          new Object[] {key, r.getDisplayName(), fromString, toString}));
+                  String.format(
+                      "Entry for key %s on region %s had already been changed from %s to %s",
+
+                      new Object[] {key, r.getDisplayName(), fromString, toString}));
             }
           }
           throw new CommitConflictException(
-              LocalizedStrings.TXEntryState_ENTRY_FOR_KEY_0_ON_REGION_1_HAD_A_STATE_CHANGE
-                  .toLocalizedString(new Object[] {key, r.getDisplayName()}));
+              String.format("Entry for key %s on region %s had a state change",
+                  new Object[] {key, r.getDisplayName()}));
         }
       } finally {
         OffHeapHelper.release(curCmtVersionId);
@@ -1462,7 +1487,7 @@ public class TXEntryState implements Releasable {
     } catch (CacheRuntimeException ex) {
       r.getCancelCriterion().checkCancelInProgress(null);
       throw new CommitConflictException(
-          LocalizedStrings.TXEntryState_CONFLICT_CAUSED_BY_CACHE_EXCEPTION.toLocalizedString(), ex);
+          "Conflict caused by cache exception", ex);
     }
   }
 
@@ -1554,7 +1579,7 @@ public class TXEntryState implements Releasable {
     return isOpCreate();
   }
 
-  private void txApplyDestroyLocally(LocalRegion r, Object key, TXState txState) {
+  private void txApplyDestroyLocally(InternalRegion r, Object key, TXState txState) {
     boolean invokeCallbacks = isOpDestroyEvent(r);
     List<EntryEventImpl> pendingCallbacks =
         invokeCallbacks ? txState.getPendingCallbacks() : new ArrayList<EntryEventImpl>();
@@ -1572,7 +1597,7 @@ public class TXEntryState implements Releasable {
     // transaction listener that no destroy was done.
   }
 
-  private void txApplyInvalidateLocally(LocalRegion r, Object key, Object newValue,
+  private void txApplyInvalidateLocally(InternalRegion r, Object key, Object newValue,
       boolean didDestroy, TXState txState) {
     try {
       r.txApplyInvalidate(key, newValue, didDestroy, txState.getTransactionId(), null,
@@ -1584,7 +1609,7 @@ public class TXEntryState implements Releasable {
     }
   }
 
-  private void txApplyPutLocally(LocalRegion r, Operation putOp, Object key, Object newValue,
+  private void txApplyPutLocally(InternalRegion r, Operation putOp, Object key, Object newValue,
       boolean didDestroy, TXState txState) {
     try {
       r.txApplyPut(putOp, key, newValue, didDestroy, txState.getTransactionId(), null,
@@ -1600,7 +1625,7 @@ public class TXEntryState implements Releasable {
    *
    * @return true if this entry is not dirty.
    */
-  boolean cleanupNonDirty(LocalRegion r) {
+  boolean cleanupNonDirty(InternalRegion r) {
     if (isDirty()) {
       return false;
     } else {
@@ -1609,7 +1634,7 @@ public class TXEntryState implements Releasable {
     }
   }
 
-  void buildMessage(LocalRegion r, Object key, TXCommitMessage msg, Set otherRecipients) {
+  void buildMessage(InternalRegion r, Object key, TXCommitMessage msg, Set otherRecipients) {
     if (!isDirty()) {
       // all we do was read so just return
       return;
@@ -1654,7 +1679,8 @@ public class TXEntryState implements Releasable {
   }
 
 
-  void buildCompleteMessage(LocalRegion r, Object key, TXCommitMessage msg, Set otherRecipients) {
+  void buildCompleteMessage(InternalRegion r, Object key, TXCommitMessage msg,
+      Set otherRecipients) {
     if (!isDirty()) {
       // all we do was read so just return
       return;
@@ -1700,7 +1726,7 @@ public class TXEntryState implements Releasable {
 
 
 
-  void applyChanges(LocalRegion r, Object key, TXState txState) {
+  void applyChanges(InternalRegion r, Object key, TXState txState) {
     if (logger.isDebugEnabled()) {
       logger.debug("applyChanges txState=" + txState + " ,key=" + key + " ,r=" + r.getDisplayName()
           + " ,op=" + this.op + " ,isDirty=" + isDirty());
@@ -1799,9 +1825,10 @@ public class TXEntryState implements Releasable {
         break;
       default:
         throw new IllegalStateException(
-            LocalizedStrings.TXEntryState_UNHANDLED_OP_0.toLocalizedString(opToString()));
+            String.format("<unhandled op %s >", opToString()));
     }
   }
+
 
   /**
    * @return returns {@link Operation#PUTALL_CREATE} if the operation is a result of bulk op,
@@ -1842,6 +1869,10 @@ public class TXEntryState implements Releasable {
    * Serializes this entry state to a data output stream for a far side consumer. Make sure this
    * method is backwards compatible if changes are made.
    *
+   * <p>
+   * The fromData for this is TXCommitMessage$RegionCommit$FarSideEntryOp#fromData.
+   *
+   *
    * @param largeModCount true if modCount needs to be represented by an int; false if a byte is
    *        enough
    * @param sendVersionTag true if versionTag should be sent to clients 7.0 and above
@@ -1849,7 +1880,9 @@ public class TXEntryState implements Releasable {
    *
    * @since GemFire 5.0
    */
-  void toFarSideData(DataOutput out, boolean largeModCount, boolean sendVersionTag,
+  void toFarSideData(DataOutput out,
+      SerializationContext context,
+      boolean largeModCount, boolean sendVersionTag,
       boolean sendShadowKey) throws IOException {
     Operation operation = getFarSideOperation();
     out.writeByte(operation.ordinal);
@@ -1858,10 +1891,10 @@ public class TXEntryState implements Releasable {
     } else {
       out.writeByte(this.modSerialNum);
     }
-    DataSerializer.writeObject(getCallbackArgument(), out);
-    DataSerializer.writeObject(getFilterRoutingInfo(), out);
+    context.getSerializer().writeObject(getCallbackArgument(), out);
+    context.getSerializer().writeObject(getFilterRoutingInfo(), out);
     if (sendVersionTag) {
-      DataSerializer.writeObject(getVersionTag(), out);
+      context.getSerializer().writeObject(getVersionTag(), out);
       assert getVersionTag() != null || !txRegionState.getRegion().getConcurrencyChecksEnabled()
           || txRegionState.getRegion().getDataPolicy() != DataPolicy.REPLICATE : "tag:"
               + getVersionTag() + " r:" + txRegionState.getRegion() + " op:" + opToString()
@@ -1874,13 +1907,15 @@ public class TXEntryState implements Releasable {
     if (!operation.isDestroy()) {
       out.writeBoolean(didDistributedDestroy());
       if (!operation.isInvalidate()) {
-        boolean sendObject = Token.isInvalidOrRemoved(getPendingValue());
-        sendObject = sendObject || getPendingValue() instanceof byte[];
-        out.writeBoolean(sendObject);
-        if (sendObject) {
-          DataSerializer.writeObject(getPendingValue(), out);
+        boolean isTokenOrByteArray = Token.isInvalidOrRemoved(getPendingValue());
+        isTokenOrByteArray = isTokenOrByteArray || getPendingValue() instanceof byte[];
+        out.writeBoolean(isTokenOrByteArray);
+        if (isTokenOrByteArray) {
+          // this is a token or byte[] only
+          context.getSerializer().writeObject(getPendingValue(), out);
         } else {
-          DataSerializer.writeObjectAsByteArray(getPendingValue(), out);
+          // this is a CachedDeserializable, Object and PDX
+          DataSerializer.writeByteArray(getSerializedPendingValue(), out);
         }
       }
     }
@@ -1890,29 +1925,7 @@ public class TXEntryState implements Releasable {
     return filterRoutingInfo;
   }
 
-  /**
-   * Creates a queued op and returns it for this entry on the far side of the tx.
-   *
-   * @param key the key for this op
-   * @since GemFire 5.0
-   */
-  QueuedOperation toFarSideQueuedOp(Object key) {
-    Operation operation = getFarSideOperation();
-    byte[] valueBytes = null;
-    byte deserializationPolicy = DistributedCacheOperation.DESERIALIZATION_POLICY_NONE;
-    if (!operation.isDestroy() && !operation.isInvalidate()) {
-      Object v = getPendingValue();
-      if (v == null || v instanceof byte[]) {
-        valueBytes = (byte[]) v;
-      } else {
-        deserializationPolicy = DistributedCacheOperation.DESERIALIZATION_POLICY_LAZY;
-        valueBytes = EntryEventImpl.serialize(v);
-      }
-    }
-    return new QueuedOperation(operation, key, valueBytes, null, deserializationPolicy, null);
-  }
-
-  void cleanup(LocalRegion r) {
+  void cleanup(InternalRegion r) {
     if (this.refCountEntry != null) {
       r.txDecRefCount(refCountEntry);
     }
@@ -1936,9 +1949,7 @@ public class TXEntryState implements Releasable {
      * Creates a local tx entry event
      */
     @Retained
-    TxEntryEventImpl(LocalRegion r, Object key) {
-      // TODO:ASIF :Check if the eventID should be created. Currently not
-      // creating it
+    TxEntryEventImpl(InternalRegion r, Object key) {
       super(r, getNearSideOperation(), key, getNearSidePendingValue(),
           TXEntryState.this.getCallbackArgument(), false, r.getMyId(), true/* generateCallbacks */,
           true /* initializeId */);
@@ -1951,6 +1962,7 @@ public class TXEntryState implements Releasable {
       return TXEntryState.this.getSortValue();
     }
 
+    @Override
     public int compareTo(Object o) {
       TxEntryEventImpl other = (TxEntryEventImpl) o;
       return getSortValue() - other.getSortValue();
@@ -1969,13 +1981,15 @@ public class TXEntryState implements Releasable {
     }
   }
 
-
+  @Immutable
   private static final TXEntryStateFactory factory = new TXEntryStateFactory() {
 
+    @Override
     public TXEntryState createEntry() {
       return new TXEntryState();
     }
 
+    @Override
     public TXEntryState createEntry(RegionEntry re, Object vId, Object pendingValue,
         Object entryKey, TXRegionState txrs, boolean isDistributed) {
       return new TXEntryState(re, vId, pendingValue, txrs, isDistributed);
@@ -2027,14 +2041,6 @@ public class TXEntryState implements Releasable {
     release();
   }
 
-  public void setNextRegionVersion(long v) {
-    this.nextRegionVersion = v;
-  }
-
-  public long getNextRegionVersion() {
-    return this.nextRegionVersion;
-  }
-
   @Override
   public String toString() {
     StringBuilder str = new StringBuilder();
@@ -2054,13 +2060,12 @@ public class TXEntryState implements Releasable {
 
   /**
    * For Distributed Transaction Usage
-   *
+   * <p>
    * This class is used to bring relevant information for DistTxEntryEvent from primary, after end
    * of precommit. Same information are sent to all replicates during commit.
-   *
-   * Whereas @see DistTxEntryEvent is used forstoring entry event information on TxCordinator and
+   * <p>
+   * Whereas see DistTxEntryEvent is used for storing entry event information on TxCoordinator and
    * carry same to replicates.
-   *
    */
   public static class DistTxThinEntryState implements DataSerializableFixedID {
 
@@ -2073,7 +2078,6 @@ public class TXEntryState implements Releasable {
 
     @Override
     public Version[] getSerializationVersions() {
-      // TODO Auto-generated method stub
       return null;
     }
 
@@ -2083,13 +2087,15 @@ public class TXEntryState implements Releasable {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
       DataSerializer.writeLong(this.regionVersion, out);
       DataSerializer.writeLong(this.tailKey, out);
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
       this.regionVersion = DataSerializer.readLong(in);
       this.tailKey = DataSerializer.readLong(in);
     }

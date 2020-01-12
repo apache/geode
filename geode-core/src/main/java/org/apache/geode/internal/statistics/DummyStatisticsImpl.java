@@ -18,7 +18,9 @@ import java.util.function.DoubleSupplier;
 import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
 
-import org.apache.geode.*;
+import org.apache.geode.StatisticDescriptor;
+import org.apache.geode.Statistics;
+import org.apache.geode.StatisticsType;
 
 /**
  * An implementation of {@link Statistics} that does nothing. Setting the "gemfire.statsDisabled" to
@@ -49,136 +51,176 @@ public class DummyStatisticsImpl implements Statistics {
     this.numericId = numericId;
   }
 
+  @Override
   public void close() {}
 
   //////////////////////// accessor Methods ///////////////////////
 
+  @Override
   public int nameToId(String name) {
     return this.type.nameToId(name);
   }
 
+  @Override
   public StatisticDescriptor nameToDescriptor(String name) {
     return this.type.nameToDescriptor(name);
   }
 
+  @Override
   public long getUniqueId() {
     return 0;
   }
 
+  @Override
   public StatisticsType getType() {
     return this.type;
   }
 
+  @Override
   public String getTextId() {
     return this.textId;
   }
 
+  @Override
   public long getNumericId() {
     return this.numericId;
   }
 
+  @Override
   public boolean isAtomic() {
     return true;
   }
 
+  @Override
   public boolean isClosed() {
     return false;
   }
 
   //////////////////////// set() Methods ///////////////////////
 
+  @Override
   public void setInt(int id, int value) {}
 
+  @Override
   public void setInt(StatisticDescriptor descriptor, int value) {}
 
+  @Override
   public void setInt(String name, int value) {}
 
+  @Override
   public void setLong(int id, long value) {}
 
+  @Override
   public void setLong(StatisticDescriptor descriptor, long value) {}
 
+  @Override
   public void setLong(String name, long value) {}
 
+  @Override
   public void setDouble(int id, double value) {}
 
+  @Override
   public void setDouble(StatisticDescriptor descriptor, double value) {}
 
+  @Override
   public void setDouble(String name, double value) {}
 
   /////////////////////// get() Methods ///////////////////////
 
+  @Override
   public int getInt(int id) {
     return 0;
   }
 
+  @Override
   public int getInt(StatisticDescriptor descriptor) {
     return 0;
   }
 
+  @Override
   public int getInt(String name) {
     return 0;
   }
 
+  @Override
   public long getLong(int id) {
     return 0;
   }
 
+  @Override
   public long getLong(StatisticDescriptor descriptor) {
     return 0;
   }
 
+  @Override
   public long getLong(String name) {
     return 0;
   }
 
+  @Override
   public double getDouble(int id) {
     return 0.0;
   }
 
+  @Override
   public double getDouble(StatisticDescriptor descriptor) {
     return 0.0;
   }
 
+  @Override
   public double getDouble(String name) {
     return 0.0;
   }
 
   private static final Number dummyNumber = Integer.valueOf(0);
 
+  @Override
   public Number get(StatisticDescriptor descriptor) {
     return dummyNumber;
   }
 
+  @Override
   public Number get(String name) {
     return dummyNumber;
   }
 
+  @Override
   public long getRawBits(StatisticDescriptor descriptor) {
     return 0;
   }
 
+  @Override
   public long getRawBits(String name) {
     return 0;
   }
 
   //////////////////////// inc() Methods ////////////////////////
 
+  @Override
   public void incInt(int id, int delta) {}
 
+  @Override
   public void incInt(StatisticDescriptor descriptor, int delta) {}
 
+  @Override
   public void incInt(String name, int delta) {}
 
+  @Override
   public void incLong(int id, long delta) {}
 
+  @Override
   public void incLong(StatisticDescriptor descriptor, long delta) {}
 
+  @Override
   public void incLong(String name, long delta) {}
 
+  @Override
   public void incDouble(int id, double delta) {}
 
+  @Override
   public void incDouble(StatisticDescriptor descriptor, double delta) {}
 
+  @Override
   public void incDouble(String name, double delta) {}
 
   @Override

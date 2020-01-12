@@ -17,7 +17,6 @@ package org.apache.geode.cache.client.internal;
 import static org.apache.geode.distributed.ConfigurationProperties.CONFLATE_EVENTS;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
 
-import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutput;
 import java.io.DataOutputStream;
@@ -34,12 +33,13 @@ import java.util.Properties;
 
 import javax.net.ssl.SSLSocket;
 
-import org.apache.logging.log4j.Logger;
+import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.InternalGemFireException;
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.GatewayConfigurationException;
 import org.apache.geode.cache.client.ServerRefusedConnectionException;
 import org.apache.geode.distributed.DistributedMember;
@@ -52,9 +52,6 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalInstantiator;
-import org.apache.geode.internal.Version;
-import org.apache.geode.internal.VersionedDataInputStream;
-import org.apache.geode.internal.VersionedDataOutputStream;
 import org.apache.geode.internal.cache.tier.ClientSideHandshake;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.Encryptor;
@@ -62,21 +59,16 @@ import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.EncryptorImpl;
 import org.apache.geode.internal.cache.tier.sockets.Handshake;
 import org.apache.geode.internal.cache.tier.sockets.ServerQueueStatus;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.internal.serialization.ByteArrayDataInput;
+import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.VersionedDataInputStream;
+import org.apache.geode.internal.serialization.VersionedDataOutputStream;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.GemFireSecurityException;
 
 public class ClientSideHandshakeImpl extends Handshake implements ClientSideHandshake {
-  /**
-   * Used at client side, indicates whether the 'delta-propagation' property is enabled on the DS
-   * this client is connected to. This variable is used to decide whether to send delta bytes or
-   * full value to the server for a delta-update operation.
-   */
-  private static boolean deltaEnabledOnServer = true;
-
   /**
    * If true, the client has configured multi-user security, meaning that each thread holds its own
    * security principal.
@@ -86,6 +78,7 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
   /**
    * Another test hook, holding a version ordinal that is higher than CURRENT
    */
+  @MutableForTesting
   private static short overrideClientVersion = -1;
 
   private final byte replyCode;
@@ -93,10 +86,6 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
   @Override
   protected byte getReplyCode() {
     return replyCode;
-  }
-
-  public static boolean isDeltaEnabledOnServer() {
-    return deltaEnabledOnServer;
   }
 
   public ClientSideHandshakeImpl(ClientProxyMembershipID proxyId,
@@ -188,7 +177,7 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
       DistributionManager dm = ((InternalDistributedSystem) this.system).getDistributionManager();
       InternalDistributedMember idm = dm.getDistributionManagerId();
       synchronized (idm) {
-        if (idm.getPort() == 0 && dm instanceof LonerDistributionManager) {
+        if (idm.getMembershipPort() == 0 && dm instanceof LonerDistributionManager) {
           int port = sock.getLocalPort();
           ((LonerDistributionManager) dm).updateLonerPort(port);
           this.id.updateID(dm.getDistributionManagerId());
@@ -201,8 +190,9 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
           this.clientReadTimeout, null, this.credentials, member, false);
 
       String authInit = this.system.getProperties().getProperty(SECURITY_CLIENT_AUTH_INIT);
-      if (!communicationMode.isWAN() && intermediateAcceptanceCode != REPLY_AUTH_NOT_REQUIRED
-          && (authInit != null && authInit.length() != 0)) {
+      if (!communicationMode.isWAN()
+          && intermediateAcceptanceCode != REPLY_AUTH_NOT_REQUIRED
+          && (StringUtils.isNotBlank(authInit) || multiuserSecureMode)) {
         location.compareAndSetRequiresCredentials(true);
       }
       // Read the acceptance code
@@ -211,7 +201,7 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
         // This is likely the case of server setup with SSL and client not using
         // SSL
         throw new AuthenticationRequiredException(
-            LocalizedStrings.HandShake_SERVER_EXPECTING_SSL_CONNECTION.toLocalizedString());
+            "Server expecting SSL connection");
       }
       if (acceptanceCode == REPLY_SERVER_IS_LOCATOR) {
         throw new GemFireConfigException("Improperly configured client detected.  " + "Server at "
@@ -245,7 +235,7 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
       // [sumedh] Static variable below? Client can connect to different
       // DSes with different values of this. It shoule be a member variable.
       if (!communicationMode.isWAN() && currentClientVersion.compareTo(Version.GFE_61) >= 0) {
-        deltaEnabledOnServer = dis.readBoolean();
+        ((InternalDistributedSystem) system).setDeltaEnabledOnServer(dis.readBoolean());
       }
 
       // validate that the remote side has a different distributed system id.
@@ -279,19 +269,15 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
   private InternalDistributedMember readServerMember(DataInputStream p_dis) throws IOException {
 
     byte[] memberBytes = DataSerializer.readByteArray(p_dis);
-    ByteArrayInputStream bais = new ByteArrayInputStream(memberBytes);
-    DataInputStream dis = new DataInputStream(bais);
     Version v = InternalDataSerializer.getVersionForDataStreamOrNull(p_dis);
-    if (v != null) {
-      dis = new VersionedDataInputStream(dis, v);
-    }
+    ByteArrayDataInput dis = new ByteArrayDataInput(memberBytes, v);
     try {
       return DataSerializer.readObject(dis);
     } catch (EOFException e) {
       throw e;
     } catch (Exception e) {
       throw new InternalGemFireException(
-          LocalizedStrings.HandShake_UNABLE_TO_DESERIALIZE_MEMBER.toLocalizedString(), e);
+          "Unable to deserialize member", e);
     }
   }
 
@@ -324,7 +310,7 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
         // This is likely the case of server setup with SSL and client not using
         // SSL
         throw new AuthenticationRequiredException(
-            LocalizedStrings.HandShake_SERVER_EXPECTING_SSL_CONNECTION.toLocalizedString());
+            "Server expecting SSL connection");
       }
 
       byte endpointType = dis.readByte();
@@ -354,7 +340,7 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
         Integer id = (Integer) dataSerializer.getKey();
         InternalDataSerializer.register((String) dataSerializer.getValue(), false, null, null, id);
       }
-      HashMap<Integer, ArrayList<String>> dsToSupportedClassNames = DataSerializer.readHashMap(dis);
+      Map<Integer, List<String>> dsToSupportedClassNames = DataSerializer.readHashMap(dis);
       InternalDataSerializer.updateSupportedClassesMap(dsToSupportedClassNames);
 
       // the server's ping interval is only sent to subscription feeds so we can't read it as

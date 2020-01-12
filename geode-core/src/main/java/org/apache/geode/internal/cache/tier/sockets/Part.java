@@ -18,15 +18,18 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.offheap.AddressableMemoryManager;
 import org.apache.geode.internal.offheap.StoredObject;
+import org.apache.geode.internal.serialization.DSCODE;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * Represents one unit of information (essentially a <code>byte</code> array) in the wire protocol.
@@ -49,6 +52,7 @@ public class Part {
    * @since GemFire 5.1
    */
   private static final byte EMPTY_BYTEARRAY_CODE = 2;
+  @Immutable
   private static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
 
   /**
@@ -85,7 +89,7 @@ public class Part {
     }
     if (isObject() && this.part instanceof byte[]) {
       byte[] b = (byte[]) this.part;
-      if (b.length == 1 && b[0] == DSCODE.NULL) {
+      if (b.length == 1 && b[0] == DSCODE.NULL.toByte()) {
         return true;
       }
     }
@@ -172,6 +176,85 @@ public class Part {
     return CacheServerHelper.fromUTF((byte[]) this.part);
   }
 
+  @MakeNotStatic("not tied to the cache lifecycle")
+  private static final Map<ByteArrayKey, String> CACHED_STRINGS = new ConcurrentHashMap<>();
+
+  private static String getCachedString(byte[] serializedBytes) {
+    ByteArrayKey key = new ByteArrayKey(serializedBytes);
+    String result = CACHED_STRINGS.get(key);
+    if (result == null) {
+      result = CacheServerHelper.fromUTF(serializedBytes);
+      CACHED_STRINGS.put(key, result);
+    }
+    return result;
+  }
+
+  /**
+   * Used to wrap a byte array so that it can be used
+   * as a key on a HashMap. This is needed so that
+   * equals and hashCode will be based on the contents
+   * of the byte array instead of the identity.
+   */
+  private static final class ByteArrayKey {
+    private final byte[] bytes;
+
+    public ByteArrayKey(byte[] bytes) {
+      this.bytes = bytes;
+    }
+
+    @Override
+    public int hashCode() {
+      return Arrays.hashCode(bytes);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      ByteArrayKey other = (ByteArrayKey) obj;
+      return Arrays.equals(bytes, other.bytes);
+    }
+  }
+
+  /**
+   * Like getString but will also check a cache of frequently serialized strings.
+   * The result will be added to the cache if it is not already in it.
+   * NOTE: only call this for strings that are reused often (like region names).
+   */
+  public String getCachedString() {
+    if (this.part == null) {
+      return null;
+    }
+    if (!isBytes()) {
+      Assert.assertTrue(false, "expected String part to be of type BYTE, part =" + this.toString());
+    }
+    return getCachedString((byte[]) this.part);
+  }
+
+  @Immutable
+  private static final byte[][] BYTES = new byte[256][1];
+  private static final int BYTES_OFFSET = -1 * Byte.MIN_VALUE;
+  static {
+    for (byte i = Byte.MIN_VALUE; i < Byte.MAX_VALUE; i++) {
+      BYTES[i + BYTES_OFFSET][0] = i;
+    }
+  }
+
+  public void setByte(byte b) {
+    this.typeCode = BYTE_CODE;
+    this.part = BYTES[b + BYTES_OFFSET];
+  }
+
+  public byte getByte() {
+    if (!isBytes()) {
+      Assert.assertTrue(false, "expected int part to be of type BYTE, part = " + this.toString());
+    }
+    if (getLength() != 1) {
+      Assert.assertTrue(false,
+          "expected int length to be 1 but it was " + getLength() + "; part = " + this.toString());
+    }
+    final byte[] bytes = getSerializedForm();
+    return bytes[0];
+  }
+
   public int getInt() {
     if (!isBytes()) {
       Assert.assertTrue(false, "expected int part to be of type BYTE, part = " + this.toString());
@@ -189,6 +272,7 @@ public class Part {
         | (((bytes[offset + 2]) << 8) & 0x0000FF00) | ((bytes[offset + 3]) & 0x000000FF);
   }
 
+  @MakeNotStatic
   private static final Map<Integer, byte[]> CACHED_INTS = new ConcurrentHashMap<Integer, byte[]>();
 
   public void setInt(int v) {

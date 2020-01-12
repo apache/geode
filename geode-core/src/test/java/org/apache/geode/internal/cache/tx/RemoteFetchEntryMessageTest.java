@@ -20,14 +20,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.internal.cache.tx.RemoteFetchEntryMessage;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class RemoteFetchEntryMessageTest {
 
   @Test

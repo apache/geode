@@ -15,10 +15,11 @@
 
 package org.apache.geode.internal.admin.remote;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
-import org.apache.geode.distributed.internal.membership.*;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.annotations.internal.MakeNotStatic;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
 /**
  * This class provides a way for a {@link CancellationMessage} to find its prey. An
@@ -26,6 +27,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
  * doing any work, and deregister just before returning it's response.
  */
 public class CancellationRegistry {
+  @MakeNotStatic
   private static CancellationRegistry internalRef;
   private Map map = new HashMap();
 
@@ -65,7 +67,7 @@ public class CancellationRegistry {
     public Key(InternalDistributedMember console, int msgId) {
       if (console == null) {
         throw new NullPointerException(
-            LocalizedStrings.CancellationRegistry_NULL_CONSOLE.toLocalizedString());
+            "Null Console!");
       }
 
       this.console = console;

@@ -14,7 +14,8 @@
  */
 package org.apache.geode.test.junit.rules.examples;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -23,10 +24,8 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.junit.Repeat;
-import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.rules.RepeatRule;
 
 /**
@@ -37,7 +36,6 @@ import org.apache.geode.test.junit.rules.RepeatRule;
  * @see org.apache.geode.test.junit.Repeat
  * @see org.apache.geode.test.junit.rules.RepeatRule
  */
-@Category(UnitTest.class)
 public class RepeatingTestCasesExampleTest {
 
   private static final AtomicInteger repeatOnceCounter = new AtomicInteger(0);

@@ -33,6 +33,7 @@ import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.EntryExistsException;
 import org.apache.geode.cache.Operation;
+import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.TransactionDataNotColocatedException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
@@ -54,6 +55,7 @@ import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EntryEventImpl.NewValueImporter;
 import org.apache.geode.internal.cache.EntryEventImpl.OldValueImporter;
 import org.apache.geode.internal.cache.EventID;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RemoteOperationException;
@@ -61,12 +63,13 @@ import org.apache.geode.internal.cache.VMCachedDeserializable;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.versions.DiskVersionTag;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.StoredObject;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Unretained;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * This message is used by transactions to update an entry on a transaction hosted on a remote
@@ -203,7 +206,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
    */
   public RemotePutMessage() {}
 
-  private RemotePutMessage(DistributedMember recipient, String regionPath,
+  protected RemotePutMessage(DistributedMember recipient, String regionPath,
       DirectReplyProcessor processor, EntryEventImpl event, final long lastModified, boolean ifNew,
       boolean ifOld, Object expectedOldValue, boolean requireOldValue, boolean useOriginRemote,
       boolean possibleDuplicate) {
@@ -226,7 +229,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
       assert this.deserializationPolicy == DistributedCacheOperation.DESERIALIZATION_POLICY_NONE : this.deserializationPolicy;
     }
 
-    // added for cqs on Bridge Servers. rdubey
+    // added for cqs on cache servers. rdubey
 
 
     if (event.hasOldValue()) {
@@ -311,10 +314,11 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
         }
         successful = true; // not a cancel-exception, so don't complain any more about it
 
-      } catch (RemoteOperationException e) {
-        if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.trace(LogMarker.DM,
-              "RemotePutMessage caught an unexpected exception during distribution", e);
+      } catch (RegionDestroyedException | RemoteOperationException e) {
+        if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+          logger.trace(LogMarker.DM_VERBOSE,
+              "RemotePutMessage caught an exception during distribution; retrying to another member",
+              e);
         }
       }
     }
@@ -339,7 +343,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
    *         indicate that no acknowledgement will be sent
    * @throws RemoteOperationException if the peer is no longer available
    */
-  public static RemotePutResponse txSend(DistributedMember recipient, LocalRegion r,
+  public static RemotePutResponse txSend(DistributedMember recipient, InternalRegion r,
       EntryEventImpl event, final long lastModified, boolean ifNew, boolean ifOld,
       Object expectedOldValue, boolean requireOldValue) throws RemoteOperationException {
     return send(recipient, r, event, lastModified, ifNew, ifOld, expectedOldValue, requireOldValue,
@@ -360,7 +364,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
    *         indicate that no acknowledgement will be sent
    * @throws RemoteOperationException if the peer is no longer available
    */
-  public static RemotePutResponse send(DistributedMember recipient, LocalRegion r,
+  public static RemotePutResponse send(DistributedMember recipient, InternalRegion r,
       EntryEventImpl event, final long lastModified, boolean ifNew, boolean ifOld,
       Object expectedOldValue, boolean requireOldValue, boolean useOriginRemote,
       boolean possibleDuplicate) throws RemoteOperationException {
@@ -378,7 +382,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
     Set<?> failures = r.getDistributionManager().putOutgoing(m);
     if (failures != null && failures.size() > 0) {
       throw new RemoteOperationException(
-          LocalizedStrings.RemotePutMessage_FAILED_SENDING_0.toLocalizedString(m));
+          String.format("Failed sending < %s >", m));
     }
     return processor;
   }
@@ -441,13 +445,15 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
     this.hasOldValue = value;
   }
 
+  @Override
   public int getDSFID() {
     return R_PUT_MESSAGE;
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     setKey(DataSerializer.readObject(in));
 
     final int extraFlags = in.readUnsignedByte();
@@ -484,8 +490,9 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
   }
 
   @Override
-  protected void setFlags(short flags, DataInput in) throws IOException, ClassNotFoundException {
-    super.setFlags(flags, in);
+  protected void setFlags(short flags, DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.setFlags(flags, in, context);
     this.ifNew = (flags & IF_NEW) != 0;
     this.ifOld = (flags & IF_OLD) != 0;
     this.requireOldValue = (flags & REQUIRED_OLD_VAL) != 0;
@@ -499,9 +506,10 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     this.hasDelta = false;
-    super.toData(out);
+    super.toData(out, context);
     DataSerializer.writeObject(getKey(), out);
 
     int extraFlags = this.deserializationPolicy;
@@ -637,9 +645,9 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
           if (!this.ifNew && !this.ifOld) {
             // no reason to be throwing an exception, so let's retry
             RemoteOperationException ex = new RemoteOperationException(
-                LocalizedStrings.RemotePutMessage_UNABLE_TO_PERFORM_PUT_BUT_OPERATION_SHOULD_NOT_FAIL_0
-                    .toLocalizedString());
+                "unable to perform put, but operation should not fail");
             sendReply(getSender(), getProcessorId(), dm, new ReplyException(ex), r, startTime);
+            return false;
           }
         }
       } catch (CacheWriterException cwe) {
@@ -667,7 +675,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
 
   @Override
   protected void sendReply(InternalDistributedMember member, int procId, DistributionManager dm,
-      ReplyException ex, LocalRegion r, long startTime) {
+      ReplyException ex, InternalRegion r, long startTime) {
     PutReplyMessage.send(member, procId, getReplySender(dm), result, getOperation(), ex, this,
         null);
   }
@@ -809,8 +817,8 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
       }
       rp.process(this);
 
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM, "{} processed {}", rp, this);
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE, "{} processed {}", rp, this);
       }
       dm.getStats().incReplyMessageTime(NanoTimer.getTime() - startTime);
     }
@@ -833,8 +841,9 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       byte flags = (byte) (in.readByte() & 0xff);
       this.result = (flags & FLAG_RESULT) != 0;
       this.op = Operation.fromOrdinal(in.readByte());
@@ -869,8 +878,9 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       byte flags = 0;
       if (this.result)
         flags |= FLAG_RESULT;
@@ -968,7 +978,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
       waitForRemoteResponse();
       if (this.op == null) {
         throw new RemoteOperationException(
-            LocalizedStrings.RemotePutMessage_DID_NOT_RECEIVE_A_VALID_REPLY.toLocalizedString());
+            "did not receive a valid reply");
       }
       return new PutResult(this.returnValue, this.op, this.oldValue, this.versionTag);
     }
@@ -1052,6 +1062,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
     }
   }
 
+  @Override
   public void importOldObject(@Unretained(ENTRY_EVENT_OLD_VALUE) Object ov, boolean isSerialized) {
     setOldValueIsSerialized(isSerialized);
     // Defer serialization until toData is called.

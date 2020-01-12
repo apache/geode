@@ -40,6 +40,8 @@ public interface IndexProtocol extends Index {
   int OTHER_OP = 0; // not an UPDATE but some other operation
   int BEFORE_UPDATE_OP = 1; // handled when there is no reverse map
   int AFTER_UPDATE_OP = 2; // handled when there is a reverse map
+  int REMOVE_DUE_TO_GII_TOMBSTONE_CLEANUP = 3;
+  int CLEAN_UP_THREAD_LOCALS = 4;
 
   boolean addIndexMapping(RegionEntry entry) throws IMQException;
 
@@ -63,7 +65,6 @@ public interface IndexProtocol extends Index {
    * @param keysToRemove Set containing Index key which should not be included in the results being
    *        fetched
    * @param context ExecutionContext object
-   * @throws TypeMismatchException
    */
   void query(Collection results, Set keysToRemove, ExecutionContext context)
       throws TypeMismatchException, FunctionDomainException, NameResolutionException,
@@ -83,7 +84,6 @@ public interface IndexProtocol extends Index {
    *        both should not be present in the index results being fetched ( Fetched results should
    *        not contain index results corresponding to key + keys of keysToRemove set )
    * @param context ExecutionContext object
-   * @throws TypeMismatchException
    */
   void query(Object key, int operator, Collection results, Set keysToRemove,
       ExecutionContext context) throws TypeMismatchException, FunctionDomainException,
@@ -96,25 +96,11 @@ public interface IndexProtocol extends Index {
    *        resultset
    * @param results The Collection object used for fetching the index results
    * @param context ExecutionContext object
-   * @throws TypeMismatchException
    */
   void query(Object key, int operator, Collection results, ExecutionContext context)
       throws TypeMismatchException, FunctionDomainException, NameResolutionException,
       QueryInvocationTargetException;
 
-  /**
-   *
-   * @param key
-   * @param operator
-   * @param results
-   * @param iterOp
-   * @param indpndntItr
-   * @param context
-   * @throws TypeMismatchException
-   * @throws QueryInvocationTargetException
-   * @throws NameResolutionException
-   * @throws FunctionDomainException
-   */
   void query(Object key, int operator, Collection results, CompiledValue iterOp,
       RuntimeIterator indpndntItr, ExecutionContext context, List projAttrib,
       SelectResults intermediateResults, boolean isIntersection) throws TypeMismatchException,
@@ -131,7 +117,6 @@ public interface IndexProtocol extends Index {
    * @param keysToRemove Set containing Index key which should not be included in the results being
    *        fetched
    * @param context ExecutionContext object
-   * @throws TypeMismatchException
    */
   void query(Object lowerBoundKey, int lowerBoundOperator, Object upperBoundKey,
       int upperBoundOperator, Collection results, Set keysToRemove, ExecutionContext context)
@@ -149,10 +134,6 @@ public interface IndexProtocol extends Index {
    *         List represents a value (key of Range Index) which satisfies the equi join condition.
    *         The Object array will have two rows. Each row ( one dimensional Object Array ) will
    *         contain objects or type Struct or Object.
-   * @throws TypeMismatchException
-   * @throws QueryInvocationTargetException
-   * @throws NameResolutionException
-   * @throws FunctionDomainException
    */
   List queryEquijoinCondition(IndexProtocol index, ExecutionContext context)
       throws TypeMismatchException, FunctionDomainException, NameResolutionException,
@@ -178,7 +159,6 @@ public interface IndexProtocol extends Index {
    * Asif: Object type of the data ( tuple ) contained in the Index Results . It will be either of
    * type ObjectType or StructType
    *
-   * @return ObjectType
    */
   ObjectType getResultSetType();
 

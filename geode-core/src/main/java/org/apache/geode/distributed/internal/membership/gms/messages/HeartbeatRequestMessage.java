@@ -18,25 +18,29 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import org.apache.geode.DataSerializer;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.Version;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
-public class HeartbeatRequestMessage extends HighPriorityDistributionMessage {
+/**
+ * A member of the cluster sends a HeartbeatRequestMessage to another member if it suspects
+ * that member is gone. A member receiving one of these messages should respond with a
+ * HeartbeatMessage having the same requestId as this message.
+ */
+public class HeartbeatRequestMessage<ID extends MemberIdentifier> extends AbstractGMSMessage<ID> {
 
   int requestId;
-  InternalDistributedMember target;
+  ID target;
 
-  public HeartbeatRequestMessage(InternalDistributedMember neighbour, int id) {
+  public HeartbeatRequestMessage(ID neighbour, int id) {
     requestId = id;
     this.target = neighbour;
   }
 
   public HeartbeatRequestMessage() {}
 
-  public InternalDistributedMember getTarget() {
+  public ID getTarget() {
     return target;
   }
 
@@ -50,11 +54,6 @@ public class HeartbeatRequestMessage extends HighPriorityDistributionMessage {
   @Override
   public int getDSFID() {
     return HEARTBEAT_REQUEST;
-  }
-
-  @Override
-  public void process(ClusterDistributionManager dm) {
-    throw new IllegalStateException("this message is not intended to execute in a thread pool");
   }
 
   @Override
@@ -72,14 +71,16 @@ public class HeartbeatRequestMessage extends HighPriorityDistributionMessage {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     out.writeInt(requestId);
-    DataSerializer.writeObject(target, out);
+    context.getSerializer().writeObject(target, out);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     requestId = in.readInt();
-    target = DataSerializer.readObject(in);
+    target = context.getDeserializer().readObject(in);
   }
 }

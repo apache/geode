@@ -83,6 +83,7 @@ public class ValueMonitor extends StatisticsMonitor {
     return this;
   }
 
+  @Override
   protected void monitor(final long millisTimeStamp,
       final List<ResourceInstance> resourceInstances) {
     super.monitor(millisTimeStamp, resourceInstances);

@@ -16,11 +16,14 @@
 
 package org.apache.geode.internal.admin.remote;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-import org.apache.geode.*;
-import org.apache.geode.distributed.internal.*;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * A message that is sent to a particular app vm to request the value, stats, and attributes of a
@@ -44,9 +47,10 @@ public class ObjectDetailsRequest extends RegionAdminRequest implements Cancella
   }
 
   public ObjectDetailsRequest() {
-    friendlyName = LocalizedStrings.ObjectDetailsRequest_INSPECT_CACHED_OBJECT.toLocalizedString();
+    friendlyName = "Inspect cached object";
   }
 
+  @Override
   public synchronized void cancel() {
     cancelled = true;
     if (resp != null) {
@@ -57,7 +61,6 @@ public class ObjectDetailsRequest extends RegionAdminRequest implements Cancella
   /**
    * Must return a proper response to this request.
    *
-   * @param dm
    */
   @Override
   protected AdminResponse createResponse(DistributionManager dm) {
@@ -74,20 +77,23 @@ public class ObjectDetailsRequest extends RegionAdminRequest implements Cancella
     return resp;
   }
 
+  @Override
   public int getDSFID() {
     return OBJECT_DETAILS_REQUEST;
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     DataSerializer.writeObject(this.objName, out);
     out.writeInt(inspectionType);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.objName = DataSerializer.readObject(in);
     this.inspectionType = in.readInt();
   }

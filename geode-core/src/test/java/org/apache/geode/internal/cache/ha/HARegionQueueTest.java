@@ -26,19 +26,17 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.mockito.stubbing.Answer;
 
 import org.apache.geode.CancelCriterion;
-import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.DSClock;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.HARegion;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
+import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.util.concurrent.StoppableReentrantReadWriteLock;
-import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 
-@Category(UnitTest.class)
+@Category({ClientSubscriptionTest.class})
 public class HARegionQueueTest {
 
   private HARegionQueue haRegionQueue;
@@ -68,7 +66,10 @@ public class HARegionQueueTest {
     when(haRegion.getGemFireCache()).thenReturn(internalCache);
     haRegionQueue = new HARegionQueue("haRegion", haRegion, internalCache,
         new HAContainerMap(new ConcurrentHashMap()), null, (byte) 1, true,
-        mock(HARegionQueueStats.class), giiLock, rwLock, mock(CancelCriterion.class), false);
+        mock(HARegionQueueStats.class), giiLock, rwLock, mock(CancelCriterion.class), false,
+        mock(StatisticsClock.class));
+
+    CacheClientNotifier.resetInstance();
   }
 
   @Test

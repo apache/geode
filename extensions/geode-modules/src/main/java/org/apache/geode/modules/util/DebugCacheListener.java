@@ -14,27 +14,32 @@
  */
 package org.apache.geode.modules.util;
 
-import java.util.Properties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 
-@SuppressWarnings("unchecked")
 public class DebugCacheListener extends CacheListenerAdapter implements Declarable {
+  private static final Logger logger = LoggerFactory.getLogger(DebugCacheListener.class);
 
+  @Override
   public void afterCreate(EntryEvent event) {
     log(event);
   }
 
+  @Override
   public void afterUpdate(EntryEvent event) {
     log(event);
   }
 
+  @Override
   public void afterInvalidate(EntryEvent event) {
     log(event);
   }
 
+  @Override
   public void afterDestroy(EntryEvent event) {
     log(event);
   }
@@ -43,13 +48,13 @@ public class DebugCacheListener extends CacheListenerAdapter implements Declarab
     StringBuilder builder = new StringBuilder();
     builder.append("DebugCacheListener: Received ").append(event.getOperation()).append(" for key=")
         .append(event.getKey());
+
     if (event.getNewValue() != null) {
       builder.append("; value=").append(event.getNewValue());
     }
-    event.getRegion().getCache().getLogger().info(builder.toString());
-  }
 
-  public void init(Properties p) {}
+    logger.info(builder.toString());
+  }
 
   public boolean equals(Object obj) {
     // This method is only implemented so that RegionCreator.validateRegion works properly.
@@ -58,10 +63,12 @@ public class DebugCacheListener extends CacheListenerAdapter implements Declarab
       return true;
     }
 
-    if (obj == null || !(obj instanceof DebugCacheListener)) {
-      return false;
-    }
+    return obj instanceof DebugCacheListener;
+  }
 
-    return true;
+
+  @Override
+  public int hashCode() {
+    return DebugCacheListener.class.hashCode();
   }
 }

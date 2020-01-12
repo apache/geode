@@ -23,7 +23,7 @@ This section provides possible causes and suggested responses for system problem
 
 -   [Locator does not start](diagnosing_system_probs.html#diagnosing_system_probs__section_7BC1FF8CE0FC492CB49235FC4BC4060B)
 -   [Application or cache server process does not start](diagnosing_system_probs.html#diagnosing_system_probs__section_D51F5FA86ABA43C699B593D890BC3E28)
--   [Application or cache server does not join the distributed system](diagnosing_system_probs.html#diagnosing_system_probs__section_53D97CED679443F28E20E8B08C699056)
+-   [Application or cache server does not join the cluster](diagnosing_system_probs.html#diagnosing_system_probs__section_53D97CED679443F28E20E8B08C699056)
 -   [Member process seems to hang](diagnosing_system_probs.html#diagnosing_system_probs__section_D607C96A6CBE42FD880F1463A20A8BEF)
 -   [Member process does not read settings from the gemfire.properties file](diagnosing_system_probs.html#diagnosing_system_probs__section_E3B4A6DB81AB4C659C6093D2D61EFD71)
 -   [Cache creation fails - must match schema definition root](diagnosing_system_probs.html#diagnosing_system_probs__section_B0698527A4DF4D84877B1AF66291ABFD)
@@ -40,7 +40,7 @@ This section provides possible causes and suggested responses for system problem
 -   [Member produces SocketTimeoutException](diagnosing_system_probs.html#diagnosing_system_probs__section_66D11C8E84F941B58800EDB52194B087)
 -   [Member logs ForcedDisconnectException, Cache and DistributedSystem forcibly closed](diagnosing_system_probs.html#diagnosing_system_probs__section_8C7CB2EA0A274DAF90083FECE0BF3B1F)
 -   [Members cannot see each other](diagnosing_system_probs.html#diagnosing_system_probs__section_778D150443044847B1C73B9E02BE247B)
--   [One part of the distributed system cannot see another part](diagnosing_system_probs.html#diagnosing_system_probs__section_E31AFADE4A3A45C7A6EABB67697CFF33)
+-   [One part of the cluster cannot see another part](diagnosing_system_probs.html#diagnosing_system_probs__section_E31AFADE4A3A45C7A6EABB67697CFF33)
 -   [Data distribution has stopped, although member processes are running](diagnosing_system_probs.html#diagnosing_system_probs__section_04CEF27475924E5D9860BEE6D64C49E2)
 -   [Distributed-ack operations take a very long time to complete](diagnosing_system_probs.html#diagnosing_system_probs__section_7A6113ED20044B8C868483AABC45216E)
 -   [Slow system performance](diagnosing_system_probs.html#diagnosing_system_probs__section_E5DB25F2CC454510A9E58790C09C8CE3)
@@ -73,7 +73,7 @@ org.apache.geode.distributed.LocatorLauncher.start(LocatorLauncher.java:596)
 ...
 ```
 
-This indicates a mismatch somewhere in the address, port pairs used for locator startup and configuration. The address you use for locator startup must match the address you list for the locator in the `gemfire.properties` locators specification. Every member of the locator’s distributed system, including the locator itself, must have the complete locators specification in the `gemfire.properties`.
+This indicates a mismatch somewhere in the address, port pairs used for locator startup and configuration. The address you use for locator startup must match the address you list for the locator in the `gemfire.properties` locators specification. Every member of this cluster, including the locator itself, must have the complete locators specification in the `gemfire.properties`.
 
 Response:
 
@@ -97,13 +97,13 @@ Response:
 
 -   If this doesn’t work, try rebooting.
 
-## <a id="diagnosing_system_probs__section_53D97CED679443F28E20E8B08C699056" class="no-quick-link"></a>Application or cache server does not join the distributed system
+## <a id="diagnosing_system_probs__section_53D97CED679443F28E20E8B08C699056" class="no-quick-link"></a>Application or cache server does not join the cluster
 
 Response: Check these possible causes.
 
 -   Network problem—the most common cause. First, try to ping the other hosts.
 -   Firewall problems. If members of your distributed <%=vars.product_name%> system are located outside the LAN, check whether the firewall is blocking communication. <%=vars.product_name%> is a network-centric distributed system, so if you have a firewall running on your machine, it could cause connection problems. For example, your connections may fail if your firewall places restrictions on inbound or outbound permissions for Java-based sockets. You may need to modify your firewall configuration to permit traffic to Java applications running on your machine. The specific configuration depends on the firewall you are using.
--   Wrong multicast port when using multicast for membership. Check the `gemfire.properties` file of this application or cache server to see that the mcast-port is configured correctly. If you are running multiple distributed systems at your site, each distributed system must use a unique multicast port.
+-   Wrong multicast port when using multicast for membership. Check the `gemfire.properties` file of this application or cache server to see that the mcast-port is configured correctly. If you are running multiple clusters at your site, each cluster must use a unique multicast port.
 -   Can not connect to locator (when using TCP for discovery).
     -   Check that the locators attribute in this process’s `gemfire.properties` has the correct IP address for the locator.
     -   Check that the locator process is running. If not, see instructions for related problem, [Data distribution has stopped, although member processes are running](diagnosing_system_probs.html#diagnosing_system_probs__section_04CEF27475924E5D9860BEE6D64C49E2).
@@ -115,7 +115,7 @@ Response: Check these possible causes.
 Response:
 
 -   **During initialization**—For persistent regions, the member may be waiting for another member with more recent data to start and load from its disk stores. See [Disk Storage](../disk_storage/chapter_overview.html). Wait for the initialization to finish or time out. The process could be busy—some caches have millions of entries, and they can take a long time to load. Look for this especially with cache servers, because their regions are typically replicas and therefore store all the entries in the region. Applications, on the other hand, typically store just a subset of the entries. For partitioned regions, if the initialization eventually times out and produces an exception, the system architect needs to repartition the data.
--   **For a running process**—Investigate whether another member is initializing. Under some optional distributed system configurations, a process can be required to wait for a response from other processes before it proceeds.
+-   **For a running process**—Investigate whether another member is initializing. Under some optional cluster configurations, a process can be required to wait for a response from other processes before it proceeds.
 
 ## <a id="diagnosing_system_probs__section_E3B4A6DB81AB4C659C6093D2D61EFD71" class="no-quick-link"></a>Member process does not read settings from the gemfire.properties file
 
@@ -186,7 +186,7 @@ Response:
 If your application should start with a full cache but it comes up empty, check these possible causes:
 
 -   **No regions**—If the cache has no regions, the process isn’t reading the cache configuration file. Check that the name and location of the cache configuration file match those configured in the cache-xml-file attribute in `gemfire.properties`. If they match, the process may not be reading `gemfire.properties`. See [Member process does not read settings from the gemfire.properties file](diagnosing_system_probs.html#diagnosing_system_probs__section_E3B4A6DB81AB4C659C6093D2D61EFD71).
--   **Regions without data**—If the cache starts with regions, but no data, this process may not have joined the correct distributed system. Check the log file for messages that indicate other members. If you don’t see any, the process may be running alone in its own distributed system. In a process that is clearly part of the correct distributed system, regions without data may indicate an implementation design error.
+-   **Regions without data**—If the cache starts with regions, but no data, this process may not have joined the correct cluster. Check the log file for messages that indicate other members. If you don’t see any, the process may be running alone in its own cluster. In a process that is clearly part of the correct cluster, regions without data may indicate an implementation design error.
 
 ## <a id="diagnosing_system_probs__section_6B4E2AD4ECBB4C08B8F1DB5E07AFE7F6" class="no-quick-link"></a>Unexpected results for keySetOnServer and containsKeyOnServer
 
@@ -229,7 +229,7 @@ Response: Bring the missing member online, if possible. This restores the bucket
 
 Check these possible causes.
 
--   Transactions—Entries that are old enough for eviction may remain in the cache if they are involved in a transaction. Further, transactions never time out, so if a transaction hangs, the entries involved in the transaction will remain stuck in the cache. If you have a process with a hung transaction, you may need to end the process to remove the transaction. In your application programming, do not leave transactions open ended. Program all transactions to end with a commit or a rollback. See [Using Eviction and Expiration Operations](../../developing/transactions/working_with_transactions.html#concept_vyt_txz_vk).
+-   Transactions—Entries that are due to be expired may remain in the cache if they are involved in a transaction. Further, transactions never time out, so if a transaction hangs, the entries involved in the transaction will remain stuck in the cache. If you have a process with a hung transaction, you may need to end the process to remove the transaction. In your application programming, do not leave transactions open ended. Program all transactions to end with a commit or a rollback.
 -   Partitioned regions—For performance reasons, eviction and expiration behave differently in partitioned regions and can cause entries to be removed before you expect. See [Eviction](../../developing/eviction/chapter_overview.html) and [Expiration](../../developing/expiration/chapter_overview.html).
 
 ## <a id="diagnosing_system_probs__section_346C62F16B19491E83B59B0A51D9E2B6" class="no-quick-link"></a>Cannot find the log file
@@ -320,10 +320,10 @@ Increase the default socket timeout setting for the member. This timeout is set 
 
 ## <a id="diagnosing_system_probs__section_8C7CB2EA0A274DAF90083FECE0BF3B1F" class="no-quick-link"></a>Member logs ForcedDisconnectException, Cache and DistributedSystem forcibly closed
 
-A distributed system member’s Cache and DistributedSystem are forcibly closed by the system membership coordinator if it becomes sick or too slow to respond to heartbeat requests. When this happens, listeners receive RegionDestroyed notification with an opcode of FORCED\_DISCONNECT. The <%=vars.product_name%> log file for the member shows a ForcedDisconnectException with the message
+A cluster member’s Cache and DistributedSystem are forcibly closed by the system membership coordinator if it becomes sick or too slow to respond to heartbeat requests. When this happens, listeners receive RegionDestroyed notification with an opcode of FORCED\_DISCONNECT. The <%=vars.product_name%> log file for the member shows a ForcedDisconnectException with the message
 
 ``` pre
-This member has been forced out of the distributed system because it did not respond
+This member has been forced out of the cluster because it did not respond
 within member-timeout milliseconds
 ```
 
@@ -341,7 +341,7 @@ Response:
 -   If you are using multi-homed hosts, make sure a bind address is set and consistent for all system members. For details about using bind addresses, see [Topology and Communication General Concepts](../../topologies_and_comm/topology_concepts/chapter_overview.html#concept_7628F498DB534A2D8A99748F5DA5DC94).
 -   Check that all the applications and cache servers are using the same locator address.
 
-## <a id="diagnosing_system_probs__section_E31AFADE4A3A45C7A6EABB67697CFF33" class="no-quick-link"></a>One part of the distributed system cannot see another part
+## <a id="diagnosing_system_probs__section_E31AFADE4A3A45C7A6EABB67697CFF33" class="no-quick-link"></a>One part of the cluster cannot see another part
 
 This situation can leave your caches in an inconsistent state. In networking circles, this kind of network outage is called the "split brain problem."
 
@@ -356,7 +356,7 @@ Also see
 
 ## <a id="diagnosing_system_probs__section_04CEF27475924E5D9860BEE6D64C49E2" class="no-quick-link"></a>Data distribution has stopped, although member processes are running
 
-Suspect a problem with the network, the locator, or the multicast configuration, depending on the transport your distributed system is using.
+Suspect a problem with the network, the locator, or the multicast configuration, depending on the transport your cluster is using.
 
 Response:
 
@@ -371,9 +371,9 @@ Response:
 -   Check your network monitoring tools to see whether the network is down or flooded.
 -   If you are using multicast, check whether the existing configuration is no long appropriate for the current network traffic.
 -   Check whether the locators have stopped. For a list of the locators in use, check the locators property in one of the application `gemfire.properties` files.
-    -   Restart the locator processes on the same hosts, if possible. The distributed system begins normal operation, and data distribution restarts automatically.
+    -   Restart the locator processes on the same hosts, if possible. The cluster begins normal operation, and data distribution restarts automatically.
     -   If a locator must be moved to another host or a different IP address, complete these steps:
-        1.  Shut down all the members of the distributed system in the usual order.
+        1.  Shut down all the members of the cluster in the usual order.
         2.  Restart the locator process in its new location.
         3.  Edit all the gemfire.properties files to change this locator’s IP address in the locators attribute.
         4.  Restart the applications and cache servers in the usual order.

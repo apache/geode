@@ -14,11 +14,17 @@
  */
 package org.apache.geode.sequence;
 
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Toolkit;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 
-import javax.swing.*;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.ScrollPaneConstants;
 
 /**
  * Created by IntelliJ IDEA. User: dan Date: Oct 28, 2010 Time: 10:29:23 PM To change this template

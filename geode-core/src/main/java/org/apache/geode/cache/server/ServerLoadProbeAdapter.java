@@ -28,11 +28,13 @@ public abstract class ServerLoadProbeAdapter implements ServerLoadProbe {
   /**
    * Does nothing.
    */
+  @Override
   public void close() {}
 
   /**
    * Does nothing.
    */
+  @Override
   public void open() {}
 
 }

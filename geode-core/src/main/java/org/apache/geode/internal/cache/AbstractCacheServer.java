@@ -23,7 +23,6 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.server.ClientSubscriptionConfig;
 import org.apache.geode.cache.server.ServerLoadProbe;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.admin.ClientMembershipMessage;
@@ -31,22 +30,24 @@ import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.management.membership.ClientMembership;
 import org.apache.geode.management.membership.ClientMembershipEvent;
 import org.apache.geode.management.membership.ClientMembershipListener;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
- * Abstract class that contains common code that all true implementations of {@link CacheServer} can
- * use.
+ * Abstract class that contains common code that all true implementations of
+ * {@link InternalCacheServer}
+ * can use.
  *
  * @since GemFire 5.7
  */
 public abstract class AbstractCacheServer implements InternalCacheServer {
 
   public static final String TEST_OVERRIDE_DEFAULT_PORT_PROPERTY =
-      DistributionConfig.GEMFIRE_PREFIX + "test.CacheServer.OVERRIDE_DEFAULT_PORT";
+      GeodeGlossary.GEMFIRE_PREFIX + "test.CacheServer.OVERRIDE_DEFAULT_PORT";
 
-  /** The cache that is served by this bridge server */
+  /** The cache that is served by this cache server */
   protected final InternalCache cache;
 
-  /** The port that the bridge server was configured to run on */
+  /** The port that the cache server was configured to run on */
   protected int port;
 
   /** The maximum number of connections that the BridgeServer will accept */
@@ -55,7 +56,7 @@ public abstract class AbstractCacheServer implements InternalCacheServer {
   /** The maximum number of threads that the BridgeServer will create */
   protected int maxThreads;
 
-  /** Whether the bridge server notifies by subscription */
+  /** Whether the cache server notifies by subscription */
   protected boolean notifyBySubscription = true;
 
   /**
@@ -213,91 +214,113 @@ public abstract class AbstractCacheServer implements InternalCacheServer {
 
   ///////////////////// Instance Methods /////////////////////
 
+  @Override
   public int getPort() {
     return this.port;
   }
 
+  @Override
   public void setPort(int port) {
     this.port = port;
   }
 
+  @Override
   public String getBindAddress() {
     return this.bindAddress;
   }
 
+  @Override
   public void setBindAddress(String address) {
     this.bindAddress = address;
   }
 
+  @Override
   public String getHostnameForClients() {
     return this.hostnameForClients;
   }
 
+  @Override
   public void setHostnameForClients(String name) {
     this.hostnameForClients = name;
   }
 
+  @Override
   public int getMaxConnections() {
     return this.maxConnections;
   }
 
+  @Override
   public void setMaxConnections(int maxCon) {
     this.maxConnections = maxCon;
   }
 
+  @Override
   public int getMaxThreads() {
     return this.maxThreads;
   }
 
+  @Override
   public void setMaxThreads(int maxThreads) {
     this.maxThreads = maxThreads;
   }
 
+  @Override
   public void start() throws IOException {
     // This method is invoked during testing, but it is not necessary
     // to do anything.
   }
 
+  @Override
   public void setNotifyBySubscription(boolean b) {
     // this.notifyBySubscription = true;
   }
 
+  @Override
   public boolean getNotifyBySubscription() {
     return this.notifyBySubscription;
   }
 
+  @Override
   public void setSocketBufferSize(int socketBufferSize) {
     this.socketBufferSize = socketBufferSize;
   }
 
+  @Override
   public int getSocketBufferSize() {
     return this.socketBufferSize;
   }
 
+  @Override
   public void setMaximumTimeBetweenPings(int maximumTimeBetweenPings) {
     this.maximumTimeBetweenPings = maximumTimeBetweenPings;
   }
 
+  @Override
   public int getMaximumTimeBetweenPings() {
     return this.maximumTimeBetweenPings;
   }
 
+  @Override
   public int getMaximumMessageCount() {
     return this.maximumMessageCount;
   }
 
+  @Override
   public void setMaximumMessageCount(int maximumMessageCount) {
     this.maximumMessageCount = maximumMessageCount;
   }
 
+  @Override
   public int getMessageTimeToLive() {
     return this.messageTimeToLive;
   }
 
+  @Override
   public void setMessageTimeToLive(int messageTimeToLive) {
     this.messageTimeToLive = messageTimeToLive;
   }
 
+  @Override
   public void setGroups(String[] groups) {
     if (groups == null) {
       this.groups = CacheServer.DEFAULT_GROUPS;
@@ -311,6 +334,7 @@ public abstract class AbstractCacheServer implements InternalCacheServer {
     }
   }
 
+  @Override
   public String[] getGroups() {
     String[] result = this.groups;
     if (result.length > 0) {
@@ -322,31 +346,38 @@ public abstract class AbstractCacheServer implements InternalCacheServer {
     return result;
   }
 
+  @Override
   public ServerLoadProbe getLoadProbe() {
     return loadProbe;
   }
 
+  @Override
   public void setLoadProbe(ServerLoadProbe loadProbe) {
     this.loadProbe = loadProbe;
   }
 
+  @Override
   public long getLoadPollInterval() {
     return loadPollInterval;
   }
 
+  @Override
   public void setLoadPollInterval(long loadPollInterval) {
     this.loadPollInterval = loadPollInterval;
   }
 
+  @Override
   public void setTcpNoDelay(boolean setting) {
     this.tcpNoDelay = setting;
   }
 
+  @Override
   public boolean getTcpNoDelay() {
     return this.tcpNoDelay;
   }
 
-  public Cache getCache() {
+  @Override
+  public InternalCache getCache() {
     return this.cache;
   }
 
@@ -359,7 +390,7 @@ public abstract class AbstractCacheServer implements InternalCacheServer {
   }
 
   /**
-   * Returns whether or not this bridge server has the same configuration as another bridge server.
+   * Returns whether or not this cache server has the same configuration as another cache server.
    */
   public boolean sameAs(CacheServer other) {
     return getPort() == other.getPort() && eq(getBindAddress(), other.getBindAddress())

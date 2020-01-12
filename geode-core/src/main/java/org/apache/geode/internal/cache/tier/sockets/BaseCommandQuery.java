@@ -24,25 +24,26 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.operations.QueryOperationContext;
 import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.QueryException;
+import org.apache.geode.cache.query.QueryExecutionLowMemoryException;
+import org.apache.geode.cache.query.QueryExecutionTimeoutException;
 import org.apache.geode.cache.query.QueryInvalidException;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.Struct;
 import org.apache.geode.cache.query.internal.CqEntry;
 import org.apache.geode.cache.query.internal.DefaultQuery;
+import org.apache.geode.cache.query.internal.QueryExecutionCanceledException;
 import org.apache.geode.cache.query.internal.cq.ServerCQ;
 import org.apache.geode.cache.query.internal.types.CollectionTypeImpl;
 import org.apache.geode.cache.query.internal.types.StructTypeImpl;
 import org.apache.geode.cache.query.types.CollectionType;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.DistributionStats;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.MessageType;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.AuthorizeRequestPP;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 
@@ -53,12 +54,19 @@ public abstract class BaseCommandQuery extends BaseCommand {
    *
    * @return true if successful execution false in case of failure.
    */
-  protected boolean processQuery(Message msg, Query query, String queryString, Set regionNames,
-      long start, ServerCQ cqQuery, QueryOperationContext queryContext, ServerConnection servConn,
-      boolean sendResults, final SecurityService securityService)
+  protected boolean processQuery(final Message msg,
+      final Query query,
+      final String queryString,
+      final Set regionNames,
+      final long start,
+      final ServerCQ cqQuery,
+      final QueryOperationContext queryContext,
+      final ServerConnection servConn,
+      final boolean sendResults,
+      final SecurityService securityService)
       throws IOException, InterruptedException {
-    return processQueryUsingParams(msg, query, queryString, regionNames, start, cqQuery,
-        queryContext, servConn, sendResults, null, securityService);
+    return processQueryUsingParams(msg, query, queryString, regionNames, start,
+        cqQuery, queryContext, servConn, sendResults, null, securityService);
   }
 
   /**
@@ -66,9 +74,16 @@ public abstract class BaseCommandQuery extends BaseCommand {
    *
    * @return true if successful execution false in case of failure.
    */
-  protected boolean processQueryUsingParams(Message msg, Query query, String queryString,
-      Set regionNames, long start, ServerCQ cqQuery, QueryOperationContext queryContext,
-      ServerConnection servConn, boolean sendResults, Object[] params,
+  protected boolean processQueryUsingParams(final Message msg,
+      final Query query,
+      final String queryString,
+      final Set regionNames,
+      long start,
+      final ServerCQ cqQuery,
+      QueryOperationContext queryContext,
+      final ServerConnection servConn,
+      final boolean sendResults,
+      final Object[] params,
       final SecurityService securityService) throws IOException, InterruptedException {
     ChunkedMessage queryResponseMsg = servConn.getQueryResponseMessage();
     CacheServerStats stats = servConn.getCacheServerStats();
@@ -116,8 +131,7 @@ public abstract class BaseCommandQuery extends BaseCommand {
         String regionName = (String) itr.next();
         if (crHelper.getRegion(regionName) == null) {
           throw new RegionDestroyedException(
-              LocalizedStrings.BaseCommand_REGION_DESTROYED_DURING_THE_EXECUTION_OF_THE_QUERY
-                  .toLocalizedString(),
+              "Region destroyed during the execution of the query",
               regionName);
         }
       }
@@ -233,8 +247,8 @@ public abstract class BaseCommandQuery extends BaseCommand {
           writeQueryResponseChunk(result, null, true, servConn);
         }
       } else {
-        throw new QueryInvalidException(LocalizedStrings.BaseCommand_UNKNOWN_RESULT_TYPE_0
-            .toLocalizedString(result.getClass()));
+        throw new QueryInvalidException(String.format("Unknown result type: %s",
+            result.getClass()));
       }
       msg.clearParts();
     } catch (QueryInvalidException e) {
@@ -243,12 +257,12 @@ public abstract class BaseCommandQuery extends BaseCommand {
       // java.io.NotSerializableException: antlr.CommonToken
       // Log a warning to show stack trace and create a new
       // QueryInvalidEsception on the original one's message (not cause).
-      logger.warn(LocalizedMessage.create(
-          LocalizedStrings.BaseCommand_UNEXPECTED_QUERYINVALIDEXCEPTION_WHILE_PROCESSING_QUERY_0,
-          queryString), e);
+      logger.warn(String.format("Unexpected QueryInvalidException while processing query %s",
+          queryString),
+          e);
       QueryInvalidException qie =
-          new QueryInvalidException(LocalizedStrings.BaseCommand_0_QUERYSTRING_IS_1
-              .toLocalizedString(new Object[] {e.getLocalizedMessage(), queryString}));
+          new QueryInvalidException(String.format("%s : QueryString is: %s.",
+              new Object[] {e.getLocalizedMessage(), queryString}));
       writeQueryResponseException(msg, qie, servConn);
       return false;
     } catch (DistributedSystemDisconnectedException se) {
@@ -265,9 +279,11 @@ public abstract class BaseCommandQuery extends BaseCommand {
       checkForInterrupt(servConn, e);
       // Otherwise, write a query response and continue
       // Check if query got canceled from QueryMonitor.
-      DefaultQuery defaultQuery = (DefaultQuery) query;
-      if ((defaultQuery).isCanceled()) {
-        e = new QueryException(defaultQuery.getQueryCanceledException().getMessage(), e.getCause());
+      if (e instanceof QueryExecutionLowMemoryException
+          || e instanceof QueryExecutionTimeoutException
+          || e instanceof QueryExecutionCanceledException) {
+        e = new QueryException(e.getMessage(),
+            e.getCause());
       }
       writeQueryResponseException(msg, e, servConn);
       return false;
@@ -332,7 +348,7 @@ public abstract class BaseCommandQuery extends BaseCommand {
       default:
         msgType = MessageType.CQ_EXCEPTION_TYPE;
         cqMsg.setNumberOfParts(1);
-        msgStr += LocalizedStrings.BaseCommand_UNKNOWN_QUERY_EXCEPTION.toLocalizedString();
+        msgStr += "Uknown query Exception.";
         break;
     }
 
@@ -364,7 +380,7 @@ public abstract class BaseCommandQuery extends BaseCommand {
       }
       Object[] results = new Object[MAXIMUM_CHUNK_SIZE];
       for (int i = 0; i < MAXIMUM_CHUNK_SIZE; i++) {
-        if ((resultIndex) == selectResults.size()) {
+        if ((resultIndex) == objs.length) {
           incompleteArray = true;
           break;
         }
@@ -425,7 +441,7 @@ public abstract class BaseCommandQuery extends BaseCommand {
       }
 
       if (sendResults) {
-        writeQueryResponseChunk(results, collectionType, (resultIndex == selectResults.size()),
+        writeQueryResponseChunk(results, collectionType, (resultIndex == objs.length),
             servConn);
 
         if (logger.isDebugEnabled()) {
@@ -435,7 +451,7 @@ public abstract class BaseCommandQuery extends BaseCommand {
       }
       // If we have reached the last element of SelectResults then we should
       // break out of loop here only.
-      if (resultIndex == selectResults.size()) {
+      if (resultIndex == objs.length) {
         break;
       }
     }

@@ -21,12 +21,14 @@ import java.io.Serializable;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.InternalGemFireError;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.PlaceHolderDiskRegion;
 import org.apache.geode.internal.size.ObjectGraphSizer.ObjectFilter;
+import org.apache.geode.internal.statistics.StatisticsManager;
 
 /**
  * An implementation of {@link ObjectSizer} that calculates an accurate, in memory size of for each
@@ -43,16 +45,23 @@ import org.apache.geode.internal.size.ObjectGraphSizer.ObjectFilter;
  */
 public class ReflectionObjectSizer implements ObjectSizer, Serializable {
 
+  @Immutable
   private static final ReflectionObjectSizer INSTANCE = new ReflectionObjectSizer();
 
+  @Immutable
   private static final ObjectFilter FILTER = new ObjectFilter() {
 
+    @Override
     public boolean accept(Object parent, Object object) {
       // Protect the user from a couple of pitfalls. If their object
       // has a link to a region or cache, we don't want to size the whole thing.
-      if (object instanceof Region || object instanceof Cache
-          || object instanceof PlaceHolderDiskRegion || object instanceof InternalDistributedSystem
-          || object instanceof ClassLoader || object instanceof Logger) {
+      if (object instanceof Region
+          || object instanceof Cache
+          || object instanceof PlaceHolderDiskRegion
+          || object instanceof InternalDistributedSystem
+          || object instanceof ClassLoader
+          || object instanceof Logger
+          || object instanceof StatisticsManager) {
         return false;
       }
 
@@ -61,6 +70,7 @@ public class ReflectionObjectSizer implements ObjectSizer, Serializable {
 
   };
 
+  @Override
   public int sizeof(Object o) {
     try {
       return (int) ObjectGraphSizer.size(o, FILTER, false);

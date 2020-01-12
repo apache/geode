@@ -17,8 +17,6 @@ package org.apache.geode.cache.query.internal.aggregate;
 /**
  * Computes the final average of distinct values for the partitioned region based queries. This
  * aggregator is initialized on the PR query node & acts on the results obtained from bucket nodes.
- *
- *
  */
 public class AvgDistinctPRQueryNode extends SumDistinctPRQueryNode {
 

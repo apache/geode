@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.PartitionResolver;
 import org.apache.geode.cache.Region;
@@ -26,8 +27,6 @@ import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.SecurityService;
 
 /**
@@ -37,6 +36,7 @@ import org.apache.geode.internal.security.SecurityService;
  */
 public class GetClientPartitionAttributesCommand extends BaseCommand {
 
+  @Immutable
   private static final GetClientPartitionAttributesCommand singleton =
       new GetClientPartitionAttributesCommand();
 
@@ -50,25 +50,23 @@ public class GetClientPartitionAttributesCommand extends BaseCommand {
       final SecurityService securityService, long start)
       throws IOException, ClassNotFoundException, InterruptedException {
     String regionFullPath = null;
-    regionFullPath = clientMessage.getPart(0).getString();
+    regionFullPath = clientMessage.getPart(0).getCachedString();
     String errMessage = "";
     if (regionFullPath == null) {
-      logger.warn(LocalizedMessage
-          .create(LocalizedStrings.GetClientPartitionAttributes_THE_INPUT_REGION_PATH_IS_NULL));
-      errMessage = LocalizedStrings.GetClientPartitionAttributes_THE_INPUT_REGION_PATH_IS_NULL
-          .toLocalizedString();
+      errMessage = "The input region path for the GetClientPartitionAttributes request is null";
+      logger.warn(errMessage);
       writeErrorResponse(clientMessage, MessageType.GET_CLIENT_PARTITION_ATTRIBUTES_ERROR,
-          errMessage.toString(), serverConnection);
+          errMessage, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
       return;
     }
     Region region = serverConnection.getCache().getRegion(regionFullPath);
     if (region == null) {
-      logger.warn(LocalizedMessage.create(
-          LocalizedStrings.GetClientPartitionAttributes_REGION_NOT_FOUND_FOR_SPECIFIED_REGION_PATH,
-          regionFullPath));
+      logger.warn(
+          "Region was not found during GetClientPartitionAttributes request for region path : {}",
+          regionFullPath);
       errMessage =
-          LocalizedStrings.GetClientPartitionAttributes_REGION_NOT_FOUND.toLocalizedString()
+          "Region was not found during GetClientPartitionAttributes request for region path : "
               + regionFullPath;
       writeErrorResponse(clientMessage, MessageType.GET_CLIENT_PARTITION_ATTRIBUTES_ERROR,
           errMessage.toString(), serverConnection);

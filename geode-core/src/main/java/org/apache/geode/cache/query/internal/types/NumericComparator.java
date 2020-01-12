@@ -15,7 +15,7 @@
 
 package org.apache.geode.cache.query.internal.types;
 
-import java.util.*;
+import java.util.Comparator;
 
 
 /**
@@ -32,7 +32,14 @@ class NumericComparator implements Comparator {
     return obj instanceof NumericComparator;
   }
 
+  @Override
+  public int hashCode() {
+    return NumericComparator.class.hashCode();
+  }
+
+
   // throws ClassCastExcepton if obj1 or obj2 is not a Number
+  @Override
   public int compare(Object obj1, Object obj2) {
     Number num1 = (Number) obj1;
     Number num2 = (Number) obj2;

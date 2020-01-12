@@ -29,7 +29,7 @@ import org.apache.geode.cache.query.internal.index.IndexManager;
 import org.apache.geode.cache.query.internal.index.IndexProtocol;
 import org.apache.geode.cache.query.internal.index.PrimaryKeyIndex;
 import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.pdx.internal.PdxString;
 
 public class CompiledLike extends CompiledComparison {
@@ -418,8 +418,8 @@ public class CompiledLike extends CompiledComparison {
     if (!((value instanceof String) || (value instanceof PdxString)
         || (value == QueryService.UNDEFINED))) {
       // throw new TypeMismatchException(
-      // LocalizedStrings.TypeUtils_UNABLE_TO_COMPARE_OBJECT_OF_TYPE_0_WITH_OBJECT_OF_TYPE_1
-      // .toLocalizedString("java.lang.String", value.getClass().getName()));
+      // String.format("Unable to compare object of type ' %s ' with object of type ' %s '",
+      // "java.lang.String", value.getClass().getName()));
       if (getOperator() == TOK_NE) {
         return true;
       }

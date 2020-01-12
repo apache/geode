@@ -77,6 +77,7 @@ public abstract class AbstractMapIndex extends AbstractIndex {
     this.evaluator.evaluate(entry, true);
   }
 
+  @Override
   protected InternalIndexStatistics createStats(String indexName) {
     // PartitionedIndexStatistics are used for PR
     if (!(this.region instanceof BucketRegion)) {
@@ -96,54 +97,67 @@ public abstract class AbstractMapIndex extends AbstractIndex {
     /**
      * Return the total number of times this index has been updated
      */
+    @Override
     public long getNumUpdates() {
       return this.vsdStats.getNumUpdates();
     }
 
+    @Override
     public void incNumValues(int delta) {
       this.vsdStats.incNumValues(delta);
     }
 
+    @Override
     public void incNumUpdates() {
       this.vsdStats.incNumUpdates();
     }
 
+    @Override
     public void incNumUpdates(int delta) {
       this.vsdStats.incNumUpdates(delta);
     }
 
+    @Override
     public void updateNumKeys(long numKeys) {
       this.vsdStats.updateNumKeys(numKeys);
     }
 
+    @Override
     public void incNumMapIndexKeys(long numKeys) {
       this.vsdStats.incNumMapIndexKeys(numKeys);
     }
 
+    @Override
     public void incNumKeys(long numKeys) {
       this.vsdStats.incNumKeys(numKeys);
     }
 
+    @Override
     public void incUpdateTime(long delta) {
       this.vsdStats.incUpdateTime(delta);
     }
 
+    @Override
     public void incUpdatesInProgress(int delta) {
       this.vsdStats.incUpdatesInProgress(delta);
     }
 
+    @Override
     public void incNumUses() {
       this.vsdStats.incNumUses();
     }
 
+    @Override
     public void incUseTime(long delta) {
       this.vsdStats.incUseTime(delta);
     }
 
+    @Override
     public void incUsesInProgress(int delta) {
       this.vsdStats.incUsesInProgress(delta);
     }
 
+    @Override
     public void incReadLockCount(int delta) {
       this.vsdStats.incReadLockCount(delta);
     }
@@ -151,6 +165,7 @@ public abstract class AbstractMapIndex extends AbstractIndex {
     /**
      * Returns the total amount of time (in nanoseconds) spent updating this index.
      */
+    @Override
     public long getTotalUpdateTime() {
       return this.vsdStats.getTotalUpdateTime();
     }
@@ -158,6 +173,7 @@ public abstract class AbstractMapIndex extends AbstractIndex {
     /**
      * Returns the total number of times this index has been accessed by a query.
      */
+    @Override
     public long getTotalUses() {
       return this.vsdStats.getTotalUses();
     }
@@ -165,6 +181,7 @@ public abstract class AbstractMapIndex extends AbstractIndex {
     /**
      * Returns the number of keys in this index at the highest level
      */
+    @Override
     public long getNumberOfMapIndexKeys() {
       return this.vsdStats.getNumberOfMapIndexKeys();
     }
@@ -172,6 +189,7 @@ public abstract class AbstractMapIndex extends AbstractIndex {
     /**
      * Returns the number of keys in this index.
      */
+    @Override
     public long getNumberOfKeys() {
       return this.vsdStats.getNumberOfKeys();
     }
@@ -179,6 +197,7 @@ public abstract class AbstractMapIndex extends AbstractIndex {
     /**
      * Returns the number of values in this index.
      */
+    @Override
     public long getNumberOfValues() {
       return this.vsdStats.getNumberOfValues();
     }
@@ -186,6 +205,7 @@ public abstract class AbstractMapIndex extends AbstractIndex {
     /**
      * Return the number of values for the specified key in this index.
      */
+    @Override
     public long getNumberOfValues(Object key) {
       long numValues = 0;
       for (Object ind : mapKeyToValueIndex.values()) {
@@ -197,10 +217,12 @@ public abstract class AbstractMapIndex extends AbstractIndex {
     /**
      * Return the number of read locks taken on this index
      */
+    @Override
     public int getReadLockCount() {
       return this.vsdStats.getReadLockCount();
     }
 
+    @Override
     public void close() {
       this.vsdStats.close();
     }
@@ -266,14 +288,18 @@ public abstract class AbstractMapIndex extends AbstractIndex {
     }
   }
 
+  @Override
   abstract void recreateIndexData() throws IMQException;
 
+  @Override
   protected abstract void removeMapping(RegionEntry entry, int opCode) throws IMQException;
 
+  @Override
   public boolean clear() throws QueryException {
     throw new UnsupportedOperationException("MapType Index method not supported");
   }
 
+  @Override
   public int getSizeEstimate(Object key, int op, int matchLevel) throws TypeMismatchException {
     Object[] mapKeyAndVal = (Object[]) key;
     Object mapKey = mapKeyAndVal[1];
@@ -290,6 +316,7 @@ public abstract class AbstractMapIndex extends AbstractIndex {
     return false;
   }
 
+  @Override
   public IndexType getType() {
     return IndexType.FUNCTIONAL;
   }
@@ -363,6 +390,7 @@ public abstract class AbstractMapIndex extends AbstractIndex {
     return this.mapKeys;
   }
 
+  @Override
   public abstract boolean containsEntry(RegionEntry entry);
 
   @Override
@@ -375,7 +403,7 @@ public abstract class AbstractMapIndex extends AbstractIndex {
       // stripped of the index arg & see if it matches.
       if (condnExpr instanceof MapIndexable) {
         MapIndexable mi = (MapIndexable) condnExpr;
-        CompiledValue recvr = mi.getRecieverSansIndexArgs();
+        CompiledValue recvr = mi.getReceiverSansIndexArgs();
         StringBuilder sb = new StringBuilder();
         recvr.generateCanonicalizedExpression(sb, context);
         sb.append('[').append(']');

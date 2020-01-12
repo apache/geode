@@ -1,5 +1,5 @@
 ---
-title:  GET /gemfire-api/v1/functions
+title:  GET /geode/v1/functions
 ---
 
 <!--
@@ -24,7 +24,7 @@ List all registered <%=vars.product_name%> functions in the cluster.
 ## Resource URL
 
 ``` pre
-http://<hostname_or_http-service-bind-address>:<http-service-port>/gemfire-api/v1/functions
+http://<hostname_or_http-service-bind-address>:<http-service-port>/geode/v1/functions
 ```
 
 ## Parameters
@@ -34,7 +34,7 @@ None.
 ## Example Request
 
 ``` pre
-GET /gemfire-api/v1/functions
+GET /geode/v1/functions
 Accept: application/json
 ```
 
@@ -46,7 +46,7 @@ Response Payload: application/json
 200 OK
 Content-Length: <#-of-bytes>
 Content-Type: application/json
-Location: https://localhost:8080/gemfire-api/v1/functions
+Location: https://localhost:8080/geode/v1/functions
 
 {
     "functions": [

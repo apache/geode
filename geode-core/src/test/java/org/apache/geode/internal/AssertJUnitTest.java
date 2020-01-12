@@ -15,14 +15,11 @@
 
 package org.apache.geode.internal;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class AssertJUnitTest {
   @Test
   public void testAssertArgumentIsLegal() {

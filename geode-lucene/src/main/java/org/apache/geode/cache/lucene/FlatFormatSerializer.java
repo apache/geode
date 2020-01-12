@@ -27,7 +27,8 @@ import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
 
 import org.apache.geode.cache.lucene.internal.repository.serializer.SerializerUtil;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.lang.JavaWorkarounds;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.pdx.PdxInstance;
 
 /**
@@ -84,8 +85,9 @@ public class FlatFormatSerializer implements LuceneSerializer {
   }
 
   private List<String> tokenizeField(String indexedFieldName) {
-    List<String> tokenizedFields = tokenizedFieldCache.computeIfAbsent(indexedFieldName,
-        field -> Arrays.asList(indexedFieldName.split("\\.")));
+    List<String> tokenizedFields =
+        JavaWorkarounds.computeIfAbsent(tokenizedFieldCache, indexedFieldName,
+            field -> Arrays.asList(indexedFieldName.split("\\.")));
     return tokenizedFields;
   }
 
@@ -138,13 +140,17 @@ public class FlatFormatSerializer implements LuceneSerializer {
           && SerializerUtil.supportedPrimitiveTypes().contains(clazz)) {
         return value;
       }
-      try {
-        Field field = clazz.getDeclaredField(fieldName);
-        field.setAccessible(true);
-        return field.get(value);
-      } catch (Exception e) {
-        return null;
-      }
+
+      do {
+        try {
+          Field field = clazz.getDeclaredField(fieldName);
+          field.setAccessible(true);
+          return field.get(value);
+        } catch (Exception e) {
+          clazz = clazz.getSuperclass();
+        }
+      } while (clazz != null && !clazz.equals(Object.class));
+      return null;
     }
   }
 }

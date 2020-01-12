@@ -17,7 +17,8 @@
 
 package org.apache.geode.tools.pulse.internal.service;
 
-import java.text.DecimalFormat;
+import static org.apache.geode.tools.pulse.internal.data.PulseConstants.FOUR_PLACE_DECIMAL_FORMAT;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -29,13 +30,12 @@ import javax.servlet.http.HttpServletRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import org.apache.geode.tools.pulse.internal.data.Cluster;
-import org.apache.geode.tools.pulse.internal.data.PulseConstants;
 import org.apache.geode.tools.pulse.internal.data.Repository;
 
 /**
@@ -93,7 +93,6 @@ public class ClusterRegionService implements PulseService {
    * This method is used to get various regions associated with the given cluster and create json
    * for each region fields and returns Array List for all the regions associated with given cluster
    *
-   * @param cluster
    * @return ArrayNode Array List
    */
   private ArrayNode getRegionJson(Cluster cluster) {
@@ -146,14 +145,14 @@ public class ClusterRegionService implements PulseService {
       regionJSON.put("memberNames", memberNameArray);
       regionJSON.put("entryCount", reg.getSystemRegionEntryCount());
 
-      Boolean persistent = reg.getPersistentEnabled();
+      boolean persistent = reg.getPersistentEnabled();
       if (persistent) {
         regionJSON.put("persistence", VALUE_ON);
       } else {
         regionJSON.put("persistence", VALUE_OFF);
       }
 
-      Boolean isEnableOffHeapMemory = reg.isEnableOffHeapMemory();
+      boolean isEnableOffHeapMemory = reg.isEnableOffHeapMemory();
       if (isEnableOffHeapMemory) {
         regionJSON.put("isEnableOffHeapMemory", VALUE_ON);
       } else {
@@ -180,9 +179,8 @@ public class ClusterRegionService implements PulseService {
       regionJSON.put("diskWritesTrend", mapper.valueToTree(
           reg.getRegionStatisticTrend(Cluster.Region.REGION_STAT_DISK_WRITES_PER_SEC_TREND)));
       regionJSON.put("emptyNodes", reg.getEmptyNode());
-      Long entrySize = reg.getEntrySize();
-      DecimalFormat form = new DecimalFormat(PulseConstants.DECIMAL_FORMAT_PATTERN_2);
-      String entrySizeInMB = form.format(entrySize / (1024f * 1024f));
+      long entrySize = reg.getEntrySize();
+      String entrySizeInMB = FOUR_PLACE_DECIMAL_FORMAT.format(entrySize / (1024f * 1024f));
 
       if (entrySize < 0) {
         regionJSON.put(this.ENTRY_SIZE, VALUE_NA);

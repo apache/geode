@@ -41,6 +41,7 @@ public class CqStateImpl implements CqState {
   /**
    * Returns true if the CQ is in Running state.
    */
+  @Override
   public boolean isRunning() {
     return (this.state == RUNNING);
   }
@@ -48,6 +49,7 @@ public class CqStateImpl implements CqState {
   /**
    * Returns true if the CQ is in Stopped or Initializing state.
    */
+  @Override
   public boolean isStopped() {
     return (this.state == STOPPED || this.state == INIT);
   }
@@ -55,6 +57,7 @@ public class CqStateImpl implements CqState {
   /**
    * Returns true if the CQ is in Closed state.
    */
+  @Override
   public boolean isClosed() {
     return (this.state == CLOSED);
   }
@@ -62,6 +65,7 @@ public class CqStateImpl implements CqState {
   /**
    * Returns true if the CQ is in the Closing state.
    */
+  @Override
   public boolean isClosing() {
     return (this.state == CLOSING);
   }
@@ -69,7 +73,6 @@ public class CqStateImpl implements CqState {
   /**
    * Sets the state of CQ.
    *
-   * @param state
    */
   public void setState(int state) {
     this.state = state;

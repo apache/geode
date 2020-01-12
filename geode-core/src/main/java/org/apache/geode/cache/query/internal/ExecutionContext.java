@@ -18,12 +18,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.Stack;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.geode.cache.CacheRuntimeException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.AmbiguousNameException;
 import org.apache.geode.cache.query.NameResolutionException;
@@ -33,12 +36,12 @@ import org.apache.geode.cache.query.internal.index.IndexManager;
 import org.apache.geode.cache.query.internal.index.IndexUtils;
 import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 import org.apache.geode.cache.query.internal.types.TypeUtils;
+import org.apache.geode.cache.query.security.MethodInvocationAuthorizer;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.pdx.internal.PdxString;
 
 /**
@@ -52,14 +55,14 @@ public class ExecutionContext {
 
   Object[] bindArguments;
 
-  private final Stack scopes = new Stack();
+  private final Stack<QScope> scopes = new Stack<>();
 
   private final InternalCache cache;
 
   /**
    * a Sequentially increasing number identifying a scope & also indicating whether a given scope
-   * came prior or later to another scope. It is needed to distiguish between two scopes having same
-   * nesting level relative to the top scope
+   * came prior or later to another scope. It is needed to distinguish between two scopes having
+   * same nesting level relative to the top scope
    */
   private int scopeNum = 0;
 
@@ -69,7 +72,7 @@ public class ExecutionContext {
    * for only one execution, since regions can be destroyed and re-created with different type
    * constraints. Type of this map: map &lt;CompiledValue, set &lt;RuntimeIterator&gt;&gt;
    */
-  private Map dependencyGraph = new HashMap();
+  private Map<CompiledValue, Set<RuntimeIterator>> dependencyGraph = new HashMap<>();
 
   /**
    * Map which stores the CompiledIteratorDef as the key & the value is the set of Independent
@@ -77,14 +80,15 @@ public class ExecutionContext {
    * final Independent RuntimeIterator or Iterators , ie. those referring to a Region or
    * BindArgument, on which the CompiledIteratorDef depends upon .
    */
-  private final Map itrDefToIndpndtRuntimeItrMap = new HashMap();
+  private final Map<CompiledIteratorDef, Set<RuntimeIterator>> itrDefToIndpndtRuntimeItrMap =
+      new HashMap<>();
 
   /**
    * This Map will store its Region Path String against an Independent RuntimeIterator An entry in
    * this Map will be only for those RuntimeIterators which have an underlying Region as its
    * Collection Expression
    */
-  private final Map indpndtItrToRgnMap = new HashMap();
+  private final Map<RuntimeIterator, String> indpndtItrToRgnMap = new HashMap<>();
 
   // used when querying on a PR: Substitute reference to PartitionedRegion with BucketRegion
   private BucketRegion bukRgn = null;
@@ -93,6 +97,32 @@ public class ExecutionContext {
   private Object currentProjectionField = null;
   private boolean isPRQueryNode = false;
 
+  private Optional<ScheduledFuture> cancelationTask;
+  private volatile CacheRuntimeException canceledException;
+  static final ThreadLocal<AtomicBoolean> isCanceled =
+      ThreadLocal.withInitial(AtomicBoolean::new);
+
+  /**
+   * Authorizer to use during query execution.
+   * It can not be changed for queries in flight, but it should be modifiable for running CQs,
+   * that's the only reason why this field is not marked as {@code final}.
+   *
+   * @see ExecutionContext#reset()
+   */
+  private MethodInvocationAuthorizer methodInvocationAuthorizer;
+  private final QueryConfigurationService queryConfigurationService;
+
+  /**
+   * Returns the {@link MethodInvocationAuthorizer} that will be used, if needed, during the
+   * execution of the query associated with this context.
+   *
+   * @return the {@link MethodInvocationAuthorizer} that will be used, if needed, during the
+   *         execution of the query associated with this context.
+   */
+  public MethodInvocationAuthorizer getMethodInvocationAuthorizer() {
+    return methodInvocationAuthorizer;
+  }
+
   /**
    * Param specialIteratorVar name of special variable to use to denote the current iteration
    * element. Used to implement the "this" var in the query shortcut methods
@@ -100,12 +130,23 @@ public class ExecutionContext {
    * @see org.apache.geode.cache.Region#query
    */
   public ExecutionContext(Object[] bindArguments, InternalCache cache) {
-    this.bindArguments = bindArguments;
     this.cache = cache;
+    this.bindArguments = bindArguments;
+    this.cancelationTask = Optional.empty();
+    this.queryConfigurationService = cache.getService(QueryConfigurationService.class);
+    this.methodInvocationAuthorizer = queryConfigurationService.getMethodAuthorizer();
+  }
+
+  Optional<ScheduledFuture> getCancelationTask() {
+    return cancelationTask;
+  }
+
+  void setCancelationTask(final ScheduledFuture cancelationTask) {
+    this.cancelationTask = Optional.of(cancelationTask);
   }
 
   public CachePerfStats getCachePerfStats() {
-    return this.cache.getCachePerfStats();
+    return cache.getCachePerfStats();
   }
 
   /**
@@ -115,16 +156,16 @@ public class ExecutionContext {
    * @return the dependency set as a shortcut
    */
   Set addDependency(CompiledValue cv, RuntimeIterator itr) {
-    Set ds = getDependencySet(cv, false);
+    Set<RuntimeIterator> ds = getDependencySet(cv, false);
     ds.add(itr);
     return ds;
   }
 
   /** @return the dependency set as a shortcut */
-  public Set addDependencies(CompiledValue cv, Set set /* <RuntimeIterator> */) {
+  public Set addDependencies(CompiledValue cv, Set<RuntimeIterator> set) {
     if (set.isEmpty())
       return getDependencySet(cv, true);
-    Set ds = getDependencySet(cv, false);
+    Set<RuntimeIterator> ds = getDependencySet(cv, false);
     ds.addAll(set);
     return ds;
   }
@@ -134,13 +175,11 @@ public class ExecutionContext {
    */
   boolean isDependentOnCurrentScope(CompiledValue cv) {
     // return !getDependencySet(cv, true).isEmpty();
-    Set setRItr = getDependencySet(cv, true);
+    Set<RuntimeIterator> setRItr = getDependencySet(cv, true);
     boolean isDependent = false;
     if (!setRItr.isEmpty()) {
-      // int currScopeID = this.scopes.size();
       int currScopeID = currentScope().getScopeID();
-      for (Iterator itr = setRItr.iterator(); itr.hasNext();) {
-        RuntimeIterator ritr = (RuntimeIterator) itr.next();
+      for (RuntimeIterator ritr : setRItr) {
         if (currScopeID == ritr.getScopeID()) {
           isDependent = true;
           break;
@@ -164,13 +203,13 @@ public class ExecutionContext {
     return getDependencySet(cv, true).contains(itr);
   }
 
-  Set getDependencySet(CompiledValue cv, boolean readOnly) {
-    Set set = (Set) this.dependencyGraph.get(cv);
+  Set<RuntimeIterator> getDependencySet(CompiledValue cv, boolean readOnly) {
+    Set<RuntimeIterator> set = dependencyGraph.get(cv);
     if (set == null) {
       if (readOnly)
         return Collections.emptySet();
-      set = new HashSet(1);
-      this.dependencyGraph.put(cv, set);
+      set = new HashSet<>(1);
+      dependencyGraph.put(cv, set);
     }
     return set;
   }
@@ -185,20 +224,20 @@ public class ExecutionContext {
     return dependencyGraph;
   }
 
-  public void setDependencyGraph(Map dependencyGraph) {
+  public void setDependencyGraph(Map<CompiledValue, Set<RuntimeIterator>> dependencyGraph) {
     this.dependencyGraph = dependencyGraph;
   }
 
   public Object getBindArgument(int index) {
-    if (index > this.bindArguments.length)
+    if (index > bindArguments.length)
       throw new IllegalArgumentException(
-          LocalizedStrings.ExecutionContext_TOO_FEW_QUERY_PARAMETERS.toLocalizedString());
-    return this.bindArguments[index - 1];
+          "Too few query parameters");
+    return bindArguments[index - 1];
   }
 
   /** bind a named iterator (to current scope) */
   public void bindIterator(RuntimeIterator itr) {
-    QScope currentScope = this.currentScope();
+    QScope currentScope = currentScope();
     int currScopeID = currentScope.getScopeID();
     itr.setScopeID(currScopeID);
     currentScope.bindIterator(itr);
@@ -214,16 +253,16 @@ public class ExecutionContext {
     if (value == null)
       // cannot be resolved
       throw new TypeMismatchException(
-          LocalizedStrings.ExecutionContext_THE_ATTRIBUTE_OR_METHOD_NAME_0_COULD_NOT_BE_RESOLVED
-              .toLocalizedString(name));
+          String.format("The attribute or method name ' %s ' could not be resolved",
+              name));
     return value;
   }
 
   /** Return null if cannot be resolved as a variable in current scope */
   private CompiledValue resolveAsVariable(String name) {
-    CompiledValue value = null;
+    CompiledValue value;
     for (int i = scopes.size() - 1; i >= 0; i--) {
-      QScope scope = (QScope) scopes.get(i);
+      QScope scope = scopes.get(i);
       value = scope.resolve(name);
       if (value != null)
         return value;
@@ -243,12 +282,12 @@ public class ExecutionContext {
    * @return the scope ID which can be associated with the scope
    */
   int associateScopeID() {
-    return ++this.scopeNum;
+    return ++scopeNum;
   }
 
 
-  public QScope currentScope() {
-    return (QScope) scopes.peek();
+  QScope currentScope() {
+    return scopes.peek();
   }
 
   public List getCurrentIterators() {
@@ -260,7 +299,7 @@ public class ExecutionContext {
    * Independent Iterator which is passed as a parameter to the function. For correct usage it is
    * necessary that the RuntimeIterator passed is independent. If there are no dependent Iterators
    * then the list will just contain one element which will be the RuntimeIterator passed as
-   * argument . Also the self independent Runtime Iterator present in the scope ( that is teh
+   * argument . Also the self independent Runtime Iterator present in the scope ( that is the
    * RuntimeIterator same as the independent iterator passed as argument) is added at start of the
    * list. If an iterator is dependent on more than one independent iterator, it is not added to the
    * List
@@ -273,15 +312,13 @@ public class ExecutionContext {
    * @return List containing the independent Runtime Iterator & its dependent iterators
    */
   public List getCurrScopeDpndntItrsBasedOnSingleIndpndntItr(RuntimeIterator rIter) {
-    Iterator iter = currentScope().getIterators().iterator();
-    List list = new ArrayList();
+    List<RuntimeIterator> list = new ArrayList<>();
     list.add(rIter);
-    while (iter.hasNext()) {
-      RuntimeIterator iteratorInCurrentScope = (RuntimeIterator) iter.next();
-      Set itrSet =
-          (Set) itrDefToIndpndtRuntimeItrMap.get(iteratorInCurrentScope.getCmpIteratorDefn());
+    for (RuntimeIterator iteratorInCurrentScope : currentScope().getIterators()) {
+      Set<RuntimeIterator> itrSet =
+          itrDefToIndpndtRuntimeItrMap.get(iteratorInCurrentScope.getCmpIteratorDefn());
       if (rIter != iteratorInCurrentScope && itrSet.size() == 1
-          && ((RuntimeIterator) itrSet.iterator().next()) == rIter) {
+          && itrSet.iterator().next() == rIter) {
         list.add(iteratorInCurrentScope);
       }
     }
@@ -295,7 +332,7 @@ public class ExecutionContext {
   }
 
   public InternalCache getCache() {
-    return this.cache;
+    return cache;
   }
 
   private CompiledValue resolveImplicitPath(String name) throws AmbiguousNameException {
@@ -316,13 +353,11 @@ public class ExecutionContext {
     // iterate through all properties of iterator variables in scope
     // to see if there is a unique resolution
     RuntimeIterator oneUnknown = null;
-    List hits = new ArrayList(2);
+    List<RuntimeIterator> hits = new ArrayList<>(2);
     boolean foundOneUnknown = false;
     NEXT_SCOPE: for (int i = scopes.size() - 1; i >= 0; i--) {
-      QScope scope = (QScope) scopes.get(i);
-      Iterator iter = scope.getIterators().iterator();
-      while (iter.hasNext()) {
-        RuntimeIterator itr = (RuntimeIterator) iter.next();
+      QScope scope = scopes.get(i);
+      for (RuntimeIterator itr : scope.getIterators()) {
         Assert.assertTrue(itr != null);
         // if scope is limited to this iterator, then don't check any more
         // iterators in this scope
@@ -345,19 +380,21 @@ public class ExecutionContext {
       }
     }
     if (hits.size() == 1) {
-      return (RuntimeIterator) hits.get(0);
+      return hits.get(0);
     }
     if (hits.size() > 1) {
       // ambiguous
-      if (mustBeMethod)
+      if (mustBeMethod) {
         throw new AmbiguousNameException(
-            LocalizedStrings.ExecutionContext_METHOD_NAMED_0_WITH_1_ARGUMENTS_IS_AMBIGUOUS_BECAUSE_IT_CAN_APPLY_TO_MORE_THAN_ONE_VARIABLE_IN_SCOPE
-                .toLocalizedString(name, numArgs));
+            String.format(
+                "Method named ' %s ' with %s arguments is ambiguous because it can apply to more than one variable in scope.",
+                name, numArgs));
+      }
       throw new AmbiguousNameException(
-          LocalizedStrings.ExecutionContext_ATTRIBUTE_NAMED_0_IS_AMBIGUOUS_BECAUSE_IT_CAN_APPLY_TO_MORE_THAN_ONE_VARIABLE_IN_SCOPE
-              .toLocalizedString(name));
+          String.format(
+              "Attribute named ' %s ' is ambiguous because it can apply to more than one variable in scope.",
+              name));
     }
-    Assert.assertTrue(hits.isEmpty());
     // if there is a single unknown, then return that one under the assumption
     // that the name must belong to it
     // otherwise, returns null, unable to resolve here
@@ -367,7 +404,7 @@ public class ExecutionContext {
   /**
    * Tries to find for RuntimeIterator associated with specified expression
    */
-  public RuntimeIterator findRuntimeIterator(CompiledValue expr) {
+  RuntimeIterator findRuntimeIterator(CompiledValue expr) {
     // Check if expr is itself RuntimeIterator
     if (expr instanceof RuntimeIterator) {
       return (RuntimeIterator) expr;
@@ -385,7 +422,7 @@ public class ExecutionContext {
         return path;
       }
       if (path instanceof CompiledPath) {
-        CompiledValue rec = ((CompiledPath) path).getReceiver();
+        CompiledValue rec = path.getReceiver();
         return findIterator(rec);
       }
       if (path instanceof CompiledOperation) {
@@ -426,18 +463,13 @@ public class ExecutionContext {
    * TODO: If a CompiledIteratorDef has only one dependent RuntimeIterator should it still be stored
    * in a Set or should it be a single value?
    */
-  void computeUltimateDependencies(CompiledValue cv, Set set) {
-    Set dependencySet = this.getDependencySet(cv, true /* readOnly */);
-    if (dependencySet != Collections.emptySet()) {
-      Iterator iter = dependencySet.iterator();
-      RuntimeIterator rIter;
-      while (iter.hasNext()) {
-        rIter = (RuntimeIterator) iter.next();
-        Set indRuntimeIterators =
-            (Set) this.itrDefToIndpndtRuntimeItrMap.get(rIter.getCmpIteratorDefn());
-        if (indRuntimeIterators != null) {
-          set.addAll(indRuntimeIterators);
-        }
+  void computeUltimateDependencies(CompiledValue cv, Set<RuntimeIterator> set) {
+    Set<RuntimeIterator> dependencySet = getDependencySet(cv, true);
+    for (RuntimeIterator rIter : dependencySet) {
+      Set<RuntimeIterator> indRuntimeIterators =
+          itrDefToIndpndtRuntimeItrMap.get(rIter.getCmpIteratorDefn());
+      if (indRuntimeIterators != null) {
+        set.addAll(indRuntimeIterators);
       }
     }
   }
@@ -451,9 +483,9 @@ public class ExecutionContext {
    * @param itrDef CompiledIteratorDef object representing iterator in the query from clause
    */
   public void addToIndependentRuntimeItrMap(CompiledIteratorDef itrDef)
-      throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
-    Set set = new HashSet();
-    this.computeUltimateDependencies(itrDef, set);
+      throws TypeMismatchException, NameResolutionException {
+    Set<RuntimeIterator> set = new HashSet<>();
+    computeUltimateDependencies(itrDef, set);
     RuntimeIterator itr = null;
     String rgnPath = null;
     // If the set is empty then add the self RuntimeIterator to the Map.
@@ -466,48 +498,45 @@ public class ExecutionContext {
           QueryUtils.obtainTheBottomMostCompiledValue(itrDef.getCollectionExpr());
       if (startVal.getType() == OQLLexerTokenTypes.RegionPath) {
         rgnPath = ((QRegion) ((CompiledRegion) startVal).evaluate(this)).getFullPath();
-        this.indpndtItrToRgnMap.put(itr, rgnPath);
+        indpndtItrToRgnMap.put(itr, rgnPath);
       } else if (startVal.getType() == OQLLexerTokenTypes.QUERY_PARAM) {
         Object rgn;
         CompiledBindArgument cba = (CompiledBindArgument) startVal;
         if ((rgn = cba.evaluate(this)) instanceof Region) {
-          this.indpndtItrToRgnMap.put(itr, rgnPath = ((Region) rgn).getFullPath());
+          indpndtItrToRgnMap.put(itr, rgnPath = ((Region) rgn).getFullPath());
         }
       }
     }
-    this.itrDefToIndpndtRuntimeItrMap.put(itrDef, set);
+    itrDefToIndpndtRuntimeItrMap.put(itrDef, set);
     IndexManager mgr = null;
     // Set the canonicalized index_internal_id if the condition is satisfied
     if (set.size() == 1) {
       if (itr == null) {
-        itr = (RuntimeIterator) set.iterator().next();
-        if (itr.getScopeID() == this.currentScope().getScopeID()) {
-          rgnPath = (String) this.indpndtItrToRgnMap.get(itr);
+        itr = set.iterator().next();
+        if (itr.getScopeID() == currentScope().getScopeID()) {
+          rgnPath = indpndtItrToRgnMap.get(itr);
         }
       }
       if (rgnPath != null) {
-        mgr = IndexUtils.getIndexManager(this.cache, this.cache.getRegion(rgnPath), false);
+        mgr = IndexUtils.getIndexManager(cache, cache.getRegion(rgnPath), false);
         // put a check for null and see if we will be executing on a bucket region.
-        if ((null == mgr) && (null != this.bukRgn)) {
+        if ((null == mgr) && (null != bukRgn)) {
           // for bucket region index use
-          mgr = IndexUtils.getIndexManager(this.cache,
-              this.cache.getRegion(this.bukRgn.getFullPath()), false);
+          mgr = IndexUtils.getIndexManager(cache, cache.getRegion(bukRgn.getFullPath()), false);
         }
       }
     }
-    String tempIndexID = null;
+    String tempIndexID;
     RuntimeIterator currItr = itrDef.getRuntimeIterator(this);
     currItr.setIndexInternalID((mgr == null
         || (tempIndexID = mgr.getCanonicalizedIteratorName(itrDef.genFromClause(this))) == null)
             ? currItr.getInternalId() : tempIndexID);
   }
 
-  public List getAllIndependentIteratorsOfCurrentScope() {
-    List independentIterators = new ArrayList(this.indpndtItrToRgnMap.size());
-    Iterator itr = this.indpndtItrToRgnMap.keySet().iterator();
-    int currentScopeId = this.currentScope().getScopeID();
-    while (itr.hasNext()) {
-      RuntimeIterator rIter = (RuntimeIterator) itr.next();
+  List getAllIndependentIteratorsOfCurrentScope() {
+    List<RuntimeIterator> independentIterators = new ArrayList<>(indpndtItrToRgnMap.size());
+    int currentScopeId = currentScope().getScopeID();
+    for (RuntimeIterator rIter : indpndtItrToRgnMap.keySet()) {
       if (rIter.getScopeID() == currentScopeId) {
         independentIterators.add(rIter);
       }
@@ -524,7 +553,7 @@ public class ExecutionContext {
    * @return String containing region path
    */
   String getRegionPathForIndependentRuntimeIterator(RuntimeIterator riter) {
-    return (String) this.indpndtItrToRgnMap.get(riter);
+    return indpndtItrToRgnMap.get(riter);
   }
 
   /**
@@ -532,16 +561,16 @@ public class ExecutionContext {
    * not create any canonicalized index ids etc.
    */
   public void addToIndependentRuntimeItrMapForIndexCreation(CompiledIteratorDef itrDef)
-      throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
+      throws TypeMismatchException, NameResolutionException {
 
-    Set set = new HashSet();
-    this.computeUltimateDependencies(itrDef, set);
+    Set<RuntimeIterator> set = new HashSet<>();
+    computeUltimateDependencies(itrDef, set);
     // If the set is empty then add the self RuntimeIterator to the Map.
     if (set.isEmpty()) {
       RuntimeIterator itr = itrDef.getRuntimeIterator(this);
       set.add(itr);
     }
-    this.itrDefToIndpndtRuntimeItrMap.put(itrDef, set);
+    itrDefToIndpndtRuntimeItrMap.put(itrDef, set);
   }
 
   public void setBindArguments(Object[] bindArguments) {
@@ -549,18 +578,20 @@ public class ExecutionContext {
   }
 
   public int getScopeNum() {
-    return this.scopeNum;
+    return scopeNum;
   }
 
   /**
    * Added to reset the state from the last execution. This is added for CQs only.
    */
   public void reset() {
-    this.scopes.clear();
+    scopes.clear();
+    // Make sure we use the most up to date authorizer in CQs.
+    methodInvocationAuthorizer = queryConfigurationService.getMethodAuthorizer();
   }
 
   public BucketRegion getBucketRegion() {
-    return this.bukRgn;
+    return bukRgn;
   }
 
   public void setBucketRegion(PartitionedRegion pr, BucketRegion bukRgn) {
@@ -569,7 +600,7 @@ public class ExecutionContext {
   }
 
   public PartitionedRegion getPartitionedRegion() {
-    return this.pr;
+    return pr;
   }
 
   void cachePut(Object key, Object value) {}
@@ -602,10 +633,6 @@ public class ExecutionContext {
     throw new UnsupportedOperationException("Method should not have been called");
   }
 
-  public void setCqQueryContext(boolean cqQuery) {
-    throw new UnsupportedOperationException("Method should not have been called");
-  }
-
   public Query getQuery() {
     throw new UnsupportedOperationException("Method should not have been called");
   }
@@ -626,24 +653,56 @@ public class ExecutionContext {
     this.distinct = distinct;
   }
 
-  public boolean isBindArgsSet() {
-    return this.bindArguments != null;
+  boolean isBindArgsSet() {
+    return bindArguments != null;
   }
 
-  public void setCurrentProjectionField(Object field) {
+  void setCurrentProjectionField(Object field) {
     this.currentProjectionField = field;
   }
 
-  public Object getCurrentProjectionField() {
-    return this.currentProjectionField;
+  Object getCurrentProjectionField() {
+    return currentProjectionField;
   }
 
   public void setIsPRQueryNode(boolean isPRQueryNode) {
     this.isPRQueryNode = isPRQueryNode;
   }
 
-  public boolean getIsPRQueryNode() {
-    return this.isPRQueryNode;
+  boolean getIsPRQueryNode() {
+    return isPRQueryNode;
   }
 
+  /**
+   * Check to see if the query execution was canceled. The query gets canceled by the QueryMonitor
+   * if it takes more than the max query execution time or low memory situations
+   */
+  public boolean isCanceled() {
+    return getQueryCanceledException() != null;
+  }
+
+  public CacheRuntimeException getQueryCanceledException() {
+    return canceledException;
+  }
+
+  public void setQueryCanceledException(final CacheRuntimeException queryCanceledException) {
+    this.canceledException = queryCanceledException;
+  }
+
+  /**
+   * This method attempts to reintrepret a {@link QueryExecutionCanceledException} using the
+   * the value returned by {@link #getQueryCanceledException} (set by the {@link QueryMonitor}).
+   *
+   * @throws CacheRuntimeException if {@link #getQueryCanceledException} doesn't return {@code null}
+   * @throws QueryExecutionCanceledException otherwise
+   */
+  Object reinterpretQueryExecutionCanceledException() {
+    final CacheRuntimeException queryCanceledException = getQueryCanceledException();
+    if (queryCanceledException != null) {
+      throw queryCanceledException;
+    } else {
+      throw new QueryExecutionCanceledException(
+          "Query was canceled. It may be due to low memory or the query was running longer than the MAX_QUERY_EXECUTION_TIME.");
+    }
+  }
 }

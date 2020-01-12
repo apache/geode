@@ -20,13 +20,10 @@ import java.io.IOException;
 import java.util.regex.Pattern;
 
 import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.sequencelog.GraphType;
 import org.apache.geode.internal.sequencelog.model.GraphSet;
+import org.apache.geode.internal.serialization.Version;
 
-/**
- *
- */
 public class GraphReader {
 
   private File[] files;
@@ -45,11 +42,13 @@ public class GraphReader {
 
   public GraphSet readGraphs(boolean areGemfireLogs) throws IOException {
     return readGraphs(new Filter() {
+      @Override
       public boolean accept(GraphType graphType, String name, String edgeName, String source,
           String dest) {
         return true;
       }
 
+      @Override
       public boolean acceptPattern(GraphType graphType, Pattern pattern, String edgeName,
           String source, String dest) {
         return true;

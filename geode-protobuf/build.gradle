@@ -15,16 +15,48 @@
  * limitations under the License.
  */
 
+apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
+
+apply from: "${project.projectDir}/../gradle/publish-java.gradle"
+
+
 dependencies {
-    provided project(':geode-core')
-    compile project(':geode-protobuf-messages')
+  compile(platform(project(':boms:geode-all-bom')))
+  implementation(project(':geode-logging'))
+  implementation(project(':geode-serialization'))
+  implementation(project(':geode-tcp-server'))
+  compile(project(':geode-core'))
+  compile(project(':geode-protobuf-messages'))
+  testCompile(project(':geode-core'))
+  testCompile(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
+  testCompile(project(':geode-protobuf:geode-protobuf-test'))
+  integrationTestCompile(project(':geode-dunit')) {
+    exclude module: 'geode-core'
+  }
+  integrationTestCompile(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
+  integrationTestCompile(project(':geode-protobuf:geode-protobuf-test'))
+  distributedTestCompile(project(':geode-dunit')){
+    exclude module: 'geode-core'
+  }
+  distributedTestCompile(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
+  distributedTestCompile(project(':geode-protobuf:geode-protobuf-test'))
 
-    testCompile project(':geode-junit')
-    testCompile files(project(':geode-core').sourceSets.test.output)
+  compile('com.google.protobuf:protobuf-java')
+  compile('org.apache.logging.log4j:log4j-api')
+  compile('org.apache.shiro:shiro-core')
 
-    testCompile 'org.powermock:powermock-core:' + project.'powermock.version'
-    testCompile 'org.powermock:powermock-module-junit4:' + project.'powermock.version'
-    testCompile 'org.powermock:powermock-api-mockito:' + project.'powermock.version'
+  integrationTestCompile('com.github.stefanbirkner:system-rules') {
+    exclude module: 'junit-dep'
+  }
+  integrationTestCompile('junit:junit')
+  integrationTestCompile('org.awaitility:awaitility')
 
-    compile 'com.google.protobuf:protobuf-java:' + project.'protobuf-java.version'
+  distributedTestCompile('junit:junit')
+  distributedTestCompile('org.awaitility:awaitility')
 }

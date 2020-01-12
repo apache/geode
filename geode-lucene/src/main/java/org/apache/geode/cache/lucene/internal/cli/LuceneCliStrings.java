@@ -97,6 +97,8 @@ public class LuceneCliStrings {
       "Index cannot be empty.";
   public static final String LUCENE_DESTROY_INDEX__MSG__COULDNOT_FIND_MEMBERS_FOR_REGION_0 =
       "Could not find any members defining region {0}.";
+  public static final String LUCENE_DESTROY_INDEX__MSG__COULD_NOT_FIND__MEMBERS_GREATER_THAN_VERSION_0 =
+      "Could not find any members greater than or equal to version {0}.";
   public static final String LUCENE_DESTROY_INDEX__MSG__SUCCESSFULLY_DESTROYED_INDEXES_FROM_REGION_0 =
       "Successfully destroyed all lucene indexes from region {0}";
   public static final String LUCENE_DESTROY_INDEX__MSG__SUCCESSFULLY_DESTROYED_INDEX_0_FROM_REGION_1 =

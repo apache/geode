@@ -24,8 +24,6 @@ public interface ApplicationVM extends GemFireVM {
 
   /**
    * Returns whether or not this "application" VM is a dedicated cache server.
-   *
-   * @see org.apache.geode.internal.cache.CacheServerLauncher
    */
   boolean isDedicatedCacheServer();
 }

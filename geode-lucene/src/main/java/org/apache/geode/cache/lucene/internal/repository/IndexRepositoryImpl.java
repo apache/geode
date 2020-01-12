@@ -24,7 +24,11 @@ import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.*;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.SearcherManager;
+import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.AlreadyClosedException;
 
 import org.apache.geode.cache.Region;
@@ -34,10 +38,9 @@ import org.apache.geode.cache.lucene.internal.LuceneIndexStats;
 import org.apache.geode.cache.lucene.internal.repository.serializer.SerializerUtil;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.LockNotHeldException;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.BucketRegion;
-import org.apache.geode.internal.cache.DistributedRegion;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * A repository that writes to a single lucene index writer
@@ -45,7 +48,7 @@ import org.apache.geode.internal.logging.LogService;
 public class IndexRepositoryImpl implements IndexRepository {
 
   private static final boolean APPLY_ALL_DELETES = System
-      .getProperty(DistributionConfig.GEMFIRE_PREFIX + "IndexRepository.APPLY_ALL_DELETES", "true")
+      .getProperty(GeodeGlossary.GEMFIRE_PREFIX + "IndexRepository.APPLY_ALL_DELETES", "true")
       .equalsIgnoreCase("true");
 
   private final IndexWriter writer;
@@ -170,6 +173,7 @@ public class IndexRepositoryImpl implements IndexRepository {
     }
   }
 
+  @Override
   public IndexWriter getWriter() {
     return writer;
   }

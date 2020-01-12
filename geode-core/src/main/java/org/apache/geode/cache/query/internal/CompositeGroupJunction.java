@@ -78,10 +78,12 @@ public class CompositeGroupJunction extends AbstractCompiledValue
     return children;
   }
 
+  @Override
   public Object evaluate(ExecutionContext context) {
     throw new AssertionError("Should not have come here");
   }
 
+  @Override
   public int getType() {
     return COMPOSITEGROUPJUNCTION;
   }
@@ -451,6 +453,7 @@ public class CompositeGroupJunction extends AbstractCompiledValue
   }
 
   /* Package methods */
+  @Override
   public int getOperator() {
     return operator;
   }
@@ -502,6 +505,7 @@ public class CompositeGroupJunction extends AbstractCompiledValue
     return this.completeExpansion;
   }
 
+  @Override
   public int getSizeEstimate(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     return 1;

@@ -24,7 +24,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.runner.Description;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Request;
@@ -38,9 +37,7 @@ import org.junit.runners.parameterized.BlockJUnit4ClassRunnerWithParameters;
 import org.junit.runners.parameterized.BlockJUnit4ClassRunnerWithParametersFactory;
 import org.junit.runners.parameterized.TestWithParameters;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class CategoryWithParameterizedRunnerFactoryTest {
 
   /**
@@ -61,6 +58,7 @@ public class CategoryWithParameterizedRunnerFactoryTest {
 
   public static class ExposedBlockJUnit4ClassRunnerWithParametersFactory
       extends BlockJUnit4ClassRunnerWithParametersFactory {
+    @Override
     public Runner createRunnerForTestWithParameters(TestWithParameters test)
         throws InitializationError {
       return new ExposedBlockJUnit4ClassRunnerWithParameters(test);
@@ -78,7 +76,6 @@ public class CategoryWithParameterizedRunnerFactoryTest {
     }
   }
 
-  @Category(UnitTest.class)
   @RunWith(ExposedParameterized.class)
   @Parameterized.UseParametersRunnerFactory(ExposedBlockJUnit4ClassRunnerWithParametersFactory.class)
   public static class BrokenCategoryClass {
@@ -96,7 +93,6 @@ public class CategoryWithParameterizedRunnerFactoryTest {
     }
   }
 
-  @Category(UnitTest.class)
   @RunWith(ExposedParameterized.class)
   @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
   public static class WorkingCategoryClass {

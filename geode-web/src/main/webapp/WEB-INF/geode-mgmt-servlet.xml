@@ -21,11 +21,11 @@ limitations under the License.
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="
         http://www.springframework.org/schema/beans
-        http://www.springframework.org/schema/beans/spring-beans.xsd
+        https://www.springframework.org/schema/beans/spring-beans.xsd
         http://www.springframework.org/schema/context
-        http://www.springframework.org/schema/context/spring-context.xsd
+        https://www.springframework.org/schema/context/spring-context.xsd
         http://www.springframework.org/schema/mvc
-        http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+        https://www.springframework.org/schema/mvc/spring-mvc.xsd">
 
   <context:component-scan base-package="org.apache.geode.management.internal.web"/>
 
@@ -48,7 +48,7 @@ limitations under the License.
       <bean class="org.springframework.http.converter.xml.Jaxb2RootElementHttpMessageConverter"/>
       <bean class="org.springframework.http.converter.xml.SourceHttpMessageConverter"/>
       <bean class="org.springframework.http.converter.support.AllEncompassingFormHttpMessageConverter"/>
-      <bean class="org.apache.geode.management.internal.web.http.converter.SerializableObjectHttpMessageConverter"/>
+      <bean class="org.apache.geode.management.internal.web.http.converter.ServerSerializableObjectHttpMessageConverter"/>
     </mvc:message-converters>
   </mvc:annotation-driven>
 

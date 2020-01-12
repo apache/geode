@@ -16,8 +16,6 @@ package org.apache.geode.cache.client.internal.locator.wan;
 
 import java.util.StringTokenizer;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 
 import org.apache.logging.log4j.Logger;
 
@@ -25,8 +23,8 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.WanLocatorDiscoverer;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
+import org.apache.geode.logging.internal.executors.LoggingExecutors;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class WanLocatorDiscovererImpl implements WanLocatorDiscoverer {
 
@@ -43,18 +41,7 @@ public class WanLocatorDiscovererImpl implements WanLocatorDiscoverer {
   @Override
   public void discover(int port, DistributionConfigImpl config,
       LocatorMembershipListener locatorListener, final String hostnameForClients) {
-    final LoggingThreadGroup loggingThreadGroup =
-        LoggingThreadGroup.createThreadGroup("WAN Locator Discovery Logger Group", logger);
-
-    final ThreadFactory threadFactory = new ThreadFactory() {
-      public Thread newThread(final Runnable task) {
-        final Thread thread = new Thread(loggingThreadGroup, task, "WAN Locator Discovery Thread");
-        thread.setDaemon(true);
-        return thread;
-      }
-    };
-
-    this._executor = Executors.newCachedThreadPool(threadFactory);
+    this._executor = LoggingExecutors.newCachedThreadPool("WAN Locator Discovery Thread", true);
     exchangeLocalLocators(port, config, locatorListener, hostnameForClients);
     exchangeRemoteLocators(port, config, locatorListener, hostnameForClients);
     this._executor.shutdown();
@@ -73,8 +60,6 @@ public class WanLocatorDiscovererImpl implements WanLocatorDiscoverer {
   /**
    * For WAN 70 Exchange the locator information within the distributed system
    *
-   * @param config
-   * @param hostnameForClients
    */
   private void exchangeLocalLocators(int port, DistributionConfigImpl config,
       LocatorMembershipListener locatorListener, final String hostnameForClients) {
@@ -105,8 +90,6 @@ public class WanLocatorDiscovererImpl implements WanLocatorDiscoverer {
   /**
    * For WAN 70 Exchange the locator information across the distributed systems (sites)
    *
-   * @param config
-   * @param hostnameForClients
    */
   private void exchangeRemoteLocators(int port, DistributionConfigImpl config,
       LocatorMembershipListener locatorListener, final String hostnameForClients) {

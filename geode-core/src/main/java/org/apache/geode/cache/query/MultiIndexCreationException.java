@@ -18,7 +18,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.geode.cache.query.internal.DefaultQueryService;
 
 /**
  * Consists a map of index names and Exceptions thrown during index creation using

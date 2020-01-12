@@ -22,7 +22,6 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * A Special ResultCollector implementation. Functions having {@link Function#hasResult()} false,
@@ -40,31 +39,32 @@ public class NoResult implements ResultCollector, Serializable {
 
   private static final long serialVersionUID = -4901369422864228848L;
 
+  @Override
   public void addResult(DistributedMember memberID, Object resultOfSingleExecution) {
     throw new UnsupportedOperationException(
-        LocalizedStrings.ExecuteFunction_CANNOT_0_RESULTS_HASRESULT_FALSE.toLocalizedString("add"));
+        "Cannot add result as the Function#hasResult() is false");
   }
 
+  @Override
   public void endResults() {
     throw new UnsupportedOperationException(
-        LocalizedStrings.ExecuteFunction_CANNOT_0_RESULTS_HASRESULT_FALSE
-            .toLocalizedString("close"));
+        "Cannot close result as the Function#hasResult() is false");
   }
 
+  @Override
   public Object getResult() throws FunctionException {
-    throw new FunctionException(LocalizedStrings.ExecuteFunction_CANNOT_0_RESULTS_HASRESULT_FALSE
-        .toLocalizedString("return any"));
+    throw new FunctionException("Cannot return any result as the Function#hasResult() is false");
   }
 
+  @Override
   public Object getResult(long timeout, TimeUnit unit)
       throws FunctionException, InterruptedException {
-    throw new FunctionException(LocalizedStrings.ExecuteFunction_CANNOT_0_RESULTS_HASRESULT_FALSE
-        .toLocalizedString("return any"));
+    throw new FunctionException("Cannot return any result as the Function#hasResult() is false");
   }
 
+  @Override
   public void clearResults() {
     throw new UnsupportedOperationException(
-        LocalizedStrings.ExecuteFunction_CANNOT_0_RESULTS_HASRESULT_FALSE
-            .toLocalizedString("clear"));
+        "Cannot clear result as the Function#hasResult() is false");
   }
 }

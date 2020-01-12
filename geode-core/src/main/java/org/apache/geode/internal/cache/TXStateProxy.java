@@ -54,28 +54,21 @@ public interface TXStateProxy extends TXStateInterface {
   void setJCATransaction();
 
   /**
-   * establishes the synchronization thread used for client/server beforeCompletion/afterCompletion
-   * processing
-   *
-   * @param sync
-   */
-  void setSynchronizationRunnable(TXSynchronizationRunnable sync);
-
-  TXSynchronizationRunnable getSynchronizationRunnable();
-
-  /**
    * Perform additional tasks required by the proxy to suspend a transaction
    */
+  @Override
   void suspend();
 
   /**
    * Perform additional tasks required by the proxy to resume a transaction
    */
+  @Override
   void resume();
 
   /**
    * record a client-side transactional operation for possible later replay
    */
+  @Override
   void recordTXOperation(ServerRegionDataAccess proxy, ServerRegionOperation op, Object key,
       Object[] arguments);
 
@@ -89,9 +82,10 @@ public interface TXStateProxy extends TXStateInterface {
    * single transaction. It becomes necessary to set the progress flag when the second request
    * arrives. When the requeset is processed, progress flag must be reset. see bug 43350
    *
-   * @param progress
    */
   void setInProgress(boolean progress);
 
   void updateProxyServer(InternalDistributedMember proxy);
+
+  InternalDistributedMember getOnBehalfOfClientMember();
 }

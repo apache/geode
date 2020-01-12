@@ -28,8 +28,9 @@ import org.apache.geode.distributed.internal.ConflationKey;
 import org.apache.geode.distributed.internal.DirectReplyProcessor;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.offheap.annotations.Retained;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * Handles distribution messaging for destroying an entry in a region.
@@ -101,11 +102,10 @@ public class DestroyOperation extends DistributedCacheOperation {
         throw e;
       } catch (CacheWriterException e) {
         throw new Error(
-            LocalizedStrings.DestroyOperation_CACHEWRITER_SHOULD_NOT_BE_CALLED.toLocalizedString(),
+            "CacheWriter should not be called",
             e);
       } catch (TimeoutException e) {
-        throw new Error(LocalizedStrings.DestroyOperation_DISTRIBUTEDLOCK_SHOULD_NOT_BE_ACQUIRED
-            .toLocalizedString(), e);
+        throw new Error("DistributedLock should not be acquired", e);
       }
       return true;
     }
@@ -150,13 +150,15 @@ public class DestroyOperation extends DistributedCacheOperation {
       buff.append(" key=").append(this.key).append(" id=").append(this.eventId);
     }
 
+    @Override
     public int getDSFID() {
       return DESTROY_MESSAGE;
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.eventId = (EventID) DataSerializer.readObject(in);
       this.key = DataSerializer.readObject(in);
       Boolean hasTailKey = DataSerializer.readBoolean(in);
@@ -166,8 +168,9 @@ public class DestroyOperation extends DistributedCacheOperation {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       DataSerializer.writeObject(this.eventId, out);
       DataSerializer.writeObject(this.key, out);
 
@@ -207,8 +210,8 @@ public class DestroyOperation extends DistributedCacheOperation {
     }
 
     @Override
-    protected boolean mayAddToMultipleSerialGateways(ClusterDistributionManager dm) {
-      return _mayAddToMultipleSerialGateways(dm);
+    protected boolean mayNotifySerialGatewaySender(ClusterDistributionManager dm) {
+      return notifiesSerialGatewaySender(dm);
     }
   }
 
@@ -245,14 +248,16 @@ public class DestroyOperation extends DistributedCacheOperation {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.context = ClientProxyMembershipID.readCanonicalized(in);
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       DataSerializer.writeObject(this.context, out);
     }
 

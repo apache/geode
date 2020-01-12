@@ -27,13 +27,19 @@ package org.apache.geode.internal.jta;
  * @deprecated as of Geode 1.2.0 user should use a third party JTA transaction manager to manage JTA
  *             transactions.
  */
+
 import java.io.Serializable;
 
-import javax.transaction.*;
+import javax.transaction.HeuristicMixedException;
+import javax.transaction.HeuristicRollbackException;
+import javax.transaction.NotSupportedException;
+import javax.transaction.RollbackException;
+import javax.transaction.SystemException;
+import javax.transaction.TransactionManager;
+import javax.transaction.UserTransaction;
 
+import org.apache.geode.LogWriter;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.i18n.LogWriterI18n;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 @Deprecated
 public class UserTransactionImpl implements UserTransaction, Serializable {
@@ -70,8 +76,9 @@ public class UserTransactionImpl implements UserTransaction, Serializable {
    *
    * @see javax.transaction.UserTransaction#begin()
    */
+  @Override
   public synchronized void begin() throws NotSupportedException, SystemException {
-    LogWriterI18n log = InternalDistributedSystem.getLoggerI18n();
+    LogWriter log = InternalDistributedSystem.getLogger();
     if (log.fineEnabled()) {
       log.fine("UserTransactionImpl starting JTA transaction");
     }
@@ -86,6 +93,7 @@ public class UserTransactionImpl implements UserTransaction, Serializable {
    *
    * @see javax.transaction.UserTransaction#commit()
    */
+  @Override
   public void commit() throws RollbackException, HeuristicMixedException,
       HeuristicRollbackException, SecurityException, IllegalStateException, SystemException {
     tm.commit();
@@ -96,6 +104,7 @@ public class UserTransactionImpl implements UserTransaction, Serializable {
    *
    * @see javax.transaction.UserTransaction#rollback()
    */
+  @Override
   public void rollback() throws IllegalStateException, SecurityException, SystemException {
     tm.rollback();
   }
@@ -105,6 +114,7 @@ public class UserTransactionImpl implements UserTransaction, Serializable {
    *
    * @see javax.transaction.UserTransaction#setRollbackOnly()
    */
+  @Override
   public void setRollbackOnly() throws IllegalStateException, SystemException {
     tm.setRollbackOnly();
   }
@@ -114,6 +124,7 @@ public class UserTransactionImpl implements UserTransaction, Serializable {
    *
    * @see javax.transaction.UserTransaction#getStatus()
    */
+  @Override
   public int getStatus() throws SystemException {
     return tm.getStatus();
   }
@@ -123,12 +134,12 @@ public class UserTransactionImpl implements UserTransaction, Serializable {
    *
    * @see javax.transaction.UserTransaction#setTransactionTimeout
    */
+  @Override
   public void setTransactionTimeout(int timeOut) throws SystemException {
     if (timeOut < 0) {
       String exception =
-          LocalizedStrings.UserTransactionImpl_USERTRANSACTIONIMPL_SETTRANSACTIONTIMEOUT_CANNOT_SET_A_NEGATIVE_TIME_OUT_FOR_TRANSACTIONS
-              .toLocalizedString();
-      LogWriterI18n writer = TransactionUtils.getLogWriterI18n();
+          "Cannot set a negative Time Out for transactions";
+      LogWriter writer = TransactionUtils.getLogWriter();
       if (writer.fineEnabled())
         writer.fine(exception);
       throw new SystemException(exception);

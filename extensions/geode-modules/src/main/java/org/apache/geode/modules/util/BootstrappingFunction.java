@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.cache.Cache;
@@ -30,6 +31,8 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.MembershipListener;
@@ -42,6 +45,7 @@ public class BootstrappingFunction implements Function, MembershipListener, Data
   private static final long serialVersionUID = 1856043174458190605L;
 
   public static final String ID = "bootstrapping-function";
+  private static final ReentrantLock registerFunctionLock = new ReentrantLock();
 
   private static final int TIME_TO_WAIT_FOR_CACHE =
       Integer.getInteger("gemfiremodules.timeToWaitForCache", 30000);
@@ -58,14 +62,22 @@ public class BootstrappingFunction implements Function, MembershipListener, Data
     // Register as membership listener
     registerAsMembershipListener(cache);
 
-    // Register functions
-    registerFunctions();
+    if (!isLocator(cache)) {
+      // Register functions
+      registerFunctions();
+    }
 
     // Return status
     context.getResultSender().lastResult(Boolean.TRUE);
   }
 
-  private Cache verifyCacheExists() {
+  protected boolean isLocator(Cache cache) {
+    DistributedSystem system = cache.getDistributedSystem();
+    InternalDistributedMember member = (InternalDistributedMember) system.getDistributedMember();
+    return member.getVmKind() == ClusterDistributionManager.LOCATOR_DM_TYPE;
+  }
+
+  protected Cache verifyCacheExists() {
     int timeToWait = 0;
     Cache cache = null;
     while (timeToWait < TIME_TO_WAIT_FOR_CACHE) {
@@ -102,10 +114,11 @@ public class BootstrappingFunction implements Function, MembershipListener, Data
     dm.addMembershipListener(this);
   }
 
-  private void registerFunctions() {
+  protected void registerFunctions() {
     // Synchronize so that these functions aren't registered twice. The
     // constructor for the CreateRegionFunction creates a meta region.
-    synchronized (ID) {
+    registerFunctionLock.lock();
+    try {
       // Register the create region function if it is not already registered
       if (!FunctionService.isRegistered(CreateRegionFunction.ID)) {
         FunctionService.registerFunction(new CreateRegionFunction());
@@ -125,6 +138,8 @@ public class BootstrappingFunction implements Function, MembershipListener, Data
       if (!FunctionService.isRegistered(RegionSizeFunction.ID)) {
         FunctionService.registerFunction(new RegionSizeFunction());
       }
+    } finally {
+      registerFunctionLock.unlock();
     }
   }
 

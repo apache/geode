@@ -25,16 +25,23 @@ import org.jgroups.util.AsciiString;
 import org.jgroups.util.DefaultThreadFactory;
 import org.jgroups.util.LazyThreadFactory;
 
-public class Transport extends UDP {
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
+
+/**
+ * Transport is a refinement of the JGroups UDP protocol that does a few things that
+ * JGroupsMessenger
+ * needs, such as sniffing for Ping messages and responding with Pong messages.
+ */
+public class Transport<ID extends MemberIdentifier> extends UDP {
 
   /**
    * This is the initial part of the name of all JGroups threads that deliver messages
    */
   public static final String THREAD_POOL_NAME_PREFIX = "Geode UDP";
 
-  private JGroupsMessenger messenger;
+  private JGroupsMessenger<ID> messenger;
 
-  public void setMessenger(JGroupsMessenger m) {
+  public void setMessenger(JGroupsMessenger<ID> m) {
     messenger = m;
   }
 

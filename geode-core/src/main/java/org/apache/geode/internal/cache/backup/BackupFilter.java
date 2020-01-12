@@ -20,5 +20,6 @@ import java.nio.file.Path;
 import org.apache.geode.cache.DiskStore;
 
 interface BackupFilter {
+
   boolean accept(DiskStore diskStore, Path path) throws IOException;
 }

@@ -14,10 +14,16 @@
  */
 package org.apache.geode.cache.query.internal;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.query.*;
+import org.apache.geode.cache.query.AmbiguousNameException;
+import org.apache.geode.cache.query.FunctionDomainException;
+import org.apache.geode.cache.query.NameResolutionException;
+import org.apache.geode.cache.query.QueryInvocationTargetException;
+import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.internal.cache.PartitionedRegion;
 
 
@@ -55,8 +61,12 @@ public class CompiledID extends AbstractCompiledValue {
     return _id;
   }
 
+  @Override
+  public boolean hasIdentifierAtLeafNode() {
+    return true;
+  }
 
-
+  @Override
   public int getType() {
     return Identifier;
   }
@@ -68,6 +78,7 @@ public class CompiledID extends AbstractCompiledValue {
     return context.addDependencies(this, v.computeDependencies(context));
   }
 
+  @Override
   public Object evaluate(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     CompiledValue v = context.resolve(getId());

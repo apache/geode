@@ -15,7 +15,11 @@
 
 package org.apache.geode.cache.query.internal;
 
-import org.apache.geode.cache.query.*;
+import org.apache.geode.cache.query.AmbiguousNameException;
+import org.apache.geode.cache.query.FunctionDomainException;
+import org.apache.geode.cache.query.NameResolutionException;
+import org.apache.geode.cache.query.QueryInvocationTargetException;
+import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.pdx.internal.PdxString;
 
 /**
@@ -34,11 +38,13 @@ public class CompiledLiteral extends AbstractCompiledValue {
   }
 
 
+  @Override
   public int getType() {
     return LITERAL;
   }
 
 
+  @Override
   public Object evaluate(ExecutionContext context)
       throws FunctionDomainException, TypeMismatchException {
     return _obj;
@@ -66,6 +72,7 @@ public class CompiledLiteral extends AbstractCompiledValue {
     }
   }
 
+  @Override
   public int getSizeEstimate(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     // The literal could be true or false only in case of Filter

@@ -61,8 +61,8 @@ message Message {
         ExecuteFunctionOnMemberRequest executeFunctionOnMemberRequest = 20;
         ExecuteFunctionOnMemberResponse executeFunctionOnMemberResponse= 21;
 
-        AuthenticationRequest authenticationRequest = 22;
-        AuthenticationResponse authenticationResponse = 23;
+        HandshakeRequest handshakeRequest = 22;
+        HandshakeResponse handshakeResponse = 23;
 
         ExecuteFunctionOnGroupRequest executeFunctionOnGroupRequest = 24;
         ExecuteFunctionOnGroupResponse executeFunctionOnGroupResponse= 25;
@@ -78,6 +78,9 @@ message Message {
 
         ClearRequest clearRequest = 32;
         ClearResponse clearResponse = 33;
+
+        PutIfAbsentRequest putIfAbsentRequest = 34;
+        PutIfAbsentResponse putIfAbsentResponse = 35;
     }
 }
 

@@ -25,7 +25,6 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.apache.logging.log4j.Logger;
-import org.json.JSONException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -48,8 +47,8 @@ import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.internal.cache.execute.NoResult;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
 import org.apache.geode.rest.internal.web.exception.GemfireRestException;
 import org.apache.geode.rest.internal.web.util.ArrayUtils;
 import org.apache.geode.rest.internal.web.util.JSONUtils;
@@ -118,7 +117,6 @@ public class FunctionAccessController extends AbstractBaseController {
    * @param filter list of keys which the function will use to determine on which node to execute
    *        the function.
    * @param argsInBody function argument as a JSON document
-   *
    * @return result as a JSON document
    */
   @RequestMapping(method = RequestMethod.POST, value = "/{functionId:.+}",
@@ -148,8 +146,14 @@ public class FunctionAccessController extends AbstractBaseController {
           String.format("The function %s is not registered.", functionId));
     }
 
+    Object[] args = null;
+    if (argsInBody != null) {
+      args = jsonToObjectArray(argsInBody);
+    }
+
     // check for required permissions of the function
-    Collection<ResourcePermission> requiredPermissions = function.getRequiredPermissions(region);
+    Collection<ResourcePermission> requiredPermissions =
+        function.getRequiredPermissions(region, args);
     for (ResourcePermission requiredPermission : requiredPermissions) {
       securityService.authorize(requiredPermission);
     }
@@ -213,9 +217,7 @@ public class FunctionAccessController extends AbstractBaseController {
     final ResultCollector<?, ?> results;
 
     try {
-      if (argsInBody != null) {
-        Object[] args = jsonToObjectArray(argsInBody);
-
+      if (args != null) {
         // execute function with specified arguments
         if (args.length == 1) {
           results = execution.setArguments(args[0]).execute(functionId);
@@ -245,21 +247,16 @@ public class FunctionAccessController extends AbstractBaseController {
       headers.setLocation(toUri("functions", functionId));
 
       Object functionResult = null;
-      if (results instanceof NoResult)
+      if (results instanceof NoResult) {
         return new ResponseEntity<>("", headers, HttpStatus.OK);
-
+      }
       functionResult = results.getResult();
 
       if (functionResult instanceof List<?>) {
-        try {
-          @SuppressWarnings("unchecked")
-          String functionResultAsJson =
-              JSONUtils.convertCollectionToJson((ArrayList<Object>) functionResult);
-          return new ResponseEntity<>(functionResultAsJson, headers, HttpStatus.OK);
-        } catch (JSONException e) {
-          throw new GemfireRestException(
-              "Could not convert function results into Restful (JSON) format!", e);
-        }
+        @SuppressWarnings("unchecked")
+        String functionResultAsJson =
+            JSONUtils.convertCollectionToJson((ArrayList<Object>) functionResult);
+        return new ResponseEntity<>(functionResultAsJson, headers, HttpStatus.OK);
       } else {
         throw new GemfireRestException(
             "Function has returned results that could not be converted into Restful (JSON) format!");

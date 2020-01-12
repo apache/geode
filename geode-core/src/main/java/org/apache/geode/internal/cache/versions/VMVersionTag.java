@@ -20,7 +20,7 @@ import java.io.IOException;
 
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * The version tag class for version tags for non-persistent regions. The VersionSource held in

@@ -20,17 +20,12 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.test.fake.Fakes;
-import org.apache.geode.test.junit.categories.UnitTest;
-import org.apache.geode.test.junit.categories.WanTest;
 
-@Category(UnitTest.class)
 public class AckReaderThreadJUnitTest {
 
   private GemFireCacheImpl cache;
@@ -60,13 +55,14 @@ public class AckReaderThreadJUnitTest {
   }
 
   @Test
-  public void testLogBatchExceptions() throws Exception {
+  public void testLogBatchExceptions() {
+
     // Create AckReaderThread
     GatewaySenderEventRemoteDispatcher.AckReaderThread thread =
         this.dispatcher.new AckReaderThread(this.sender, "AckReaderThread");
 
     // Create parent BatchException containing a NullPointerException with no index
-    List<BatchException70> batchExceptions = new ArrayList();
+    List<BatchException70> batchExceptions = new ArrayList<>();
     batchExceptions
         .add(new BatchException70("null pointer exception", new NullPointerException(), -1, 0));
     BatchException70 batchException = new BatchException70(batchExceptions);

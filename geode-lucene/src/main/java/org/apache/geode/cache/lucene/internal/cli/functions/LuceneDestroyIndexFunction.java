@@ -14,7 +14,7 @@
  */
 package org.apache.geode.cache.lucene.internal.cli.functions;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.lucene.LuceneService;
@@ -24,10 +24,11 @@ import org.apache.geode.cache.lucene.internal.cli.LuceneDestroyIndexInfo;
 import org.apache.geode.cache.lucene.internal.xml.LuceneXmlConstants;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
-import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
+import org.apache.geode.management.internal.functions.CliFunctionResult;
 
 public class LuceneDestroyIndexFunction implements InternalFunction {
+  @Override
   public void execute(final FunctionContext context) {
     CliFunctionResult result;
     String memberId = context.getCache().getDistributedSystem().getDistributedMember().getId();
@@ -41,8 +42,35 @@ public class LuceneDestroyIndexFunction implements InternalFunction {
           ((LuceneServiceImpl) service).destroyDefinedIndexes(regionPath);
           result = new CliFunctionResult(memberId);
         } else {
-          service.destroyIndexes(regionPath);
-          result = new CliFunctionResult(memberId, getXmlEntity(indexName, regionPath));
+          // Destroy all created indexes
+          CliFunctionResult destroyIndexesResult = null;
+          Exception destroyIndexesException = null;
+          try {
+            service.destroyIndexes(regionPath);
+            destroyIndexesResult =
+                new CliFunctionResult(memberId, getXmlEntity(indexName, regionPath));
+          } catch (Exception e) {
+            destroyIndexesException = e;
+          }
+
+          // Destroy all defined indexes
+          CliFunctionResult destroyDefinedIndexesResult = null;
+          Exception destroyDefinedIndexesException = null;
+          try {
+            ((LuceneServiceImpl) service).destroyDefinedIndexes(regionPath);
+            destroyDefinedIndexesResult = new CliFunctionResult(memberId);
+          } catch (Exception e) {
+            destroyDefinedIndexesException = e;
+          }
+
+          // If there are two exceptions, throw one of them. Note: They should be the same 'No
+          // Lucene indexes were found' exception. Otherwise return the appropriate result.
+          if (destroyIndexesException != null && destroyDefinedIndexesException != null) {
+            throw destroyIndexesException;
+          } else {
+            result =
+                destroyIndexesResult == null ? destroyDefinedIndexesResult : destroyIndexesResult;
+          }
         }
       } else {
         if (indexInfo.isDefinedDestroyOnly()) {

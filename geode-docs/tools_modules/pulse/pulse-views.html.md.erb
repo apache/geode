@@ -31,13 +31,13 @@ The following sections provide an overview of the main Pulse views:
 
 # <a id="topic_F0ECE9E8179541CCA3D6C5F4FBA84404__section_9794B5754E474E10ABFBCD8B1DA240F8" class="no-quick-link"></a>Cluster View
 
-The cluster view is a high-level overview of the <%=vars.product_name%> distributed system. It is displayed immediately after you log into Pulse. Information displays around the perimeter of the cluster view show statistics such as memory usage, JVM pauses, and throughput. You can use the cluster view to drill down into details for individual members and regions in the distributed system.
+The cluster view is a high-level overview of the cluster. It is displayed immediately after you log into Pulse. Information displays around the perimeter of the cluster view show statistics such as memory usage, JVM pauses, and throughput. You can use the cluster view to drill down into details for individual members and regions in the cluster.
 
 <img src="../../images/pulse_cluster_view.png" id="topic_F0ECE9E8179541CCA3D6C5F4FBA84404__image_CC7B54903DF24030850E55965CDB6EC4" class="image imageleft" width="624" />
 
 Use these basic controls while in Cluster view:
 
-1.  Click Members or Data to display information about <%=vars.product_name%> members or data regions in the distributed system.
+1.  Click Members or Data to display information about <%=vars.product_name%> members or data regions in the cluster.
 2.  Click the display icons to display the <%=vars.product_name%> members using icon view, block view, or table view. Note that icon view is available only when displaying Members.
 
     For example, the following shows <%=vars.product_name%> Members displayed in table view:
@@ -68,63 +68,63 @@ The following table describes the data pieces displayed on the Cluster View scre
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td><strong>Cluster Status</strong></td>
-<td>Overall status of the distributed system being monitored. Possible statuses include Normal, Warning, or Severe.</td>
+<td>Overall status of the cluster being monitored. Possible statuses include Normal, Warning, or Severe.</td>
 </tr>
-<tr class="even">
+<tr>
 <td>Total Heap</td>
 <td>Total amount of memory (in GB) allocated to the Java heap across all members.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>Members</td>
 <td>Total number of members in the cluster.</td>
 </tr>
-<tr class="even">
+<tr>
 <td>Servers</td>
 <td>Total number of servers in the cluster.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>Clients</td>
 <td>Total number of clients in the cluster.</td>
 </tr>
-<tr class="even">
+<tr>
 <td>Locators</td>
 <td>Total number of locators in the cluster.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>Regions</td>
 <td>Total number of regions in the cluster.</td>
 </tr>
-<tr class="even">
+<tr>
 <td>Functions</td>
 <td>Total number of functions registered in the cluster.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>Unique CQs</td>
 <td>Total number of unique CQs. Corresponds to the UNIQUE _CQ_QUERY statistic.</td>
 </tr>
-<tr class="even">
+<tr>
 <td>Subscriptions</td>
 <td>Total number of client event subscriptions.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><strong>Cluster Members</strong></td>
 <td>Graphical, block, or table view of the members in the cluster.</td>
 </tr>
-<tr class="even">
+<tr>
 <td>Topology</td>
 <td>Organizes cluster members by DistributedMember Id.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>Server Groups</td>
 <td>Organizes cluster members by server group membership. If no server groups are configured, all members appear under the &quot;Default&quot; server group.</td>
 </tr>
-<tr class="even">
+<tr>
 <td>Redundancy Zones</td>
 <td>Organizes cluster members by redundancy zones. If no redundancy zones are configured, all members appear under the &quot;Default&quot; zone.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>Host Machine</td>
 <td>When you mouse over a machine icon in Topology View, a pop-up appears with the following machine statistics:
 <ul>
@@ -134,7 +134,7 @@ The following table describes the data pieces displayed on the Cluster View scre
 <li><em>Sockets</em>. Number of sockets currently open on the machine.</li>
 </ul></td>
 </tr>
-<tr class="even">
+<tr>
 <td>Member</td>
 <td>When you mouse over a member icon in Graphical View, a pop-up appears with the following member statistics:
 <ul>
@@ -148,7 +148,7 @@ The following table describes the data pieces displayed on the Cluster View scre
 <li><em>GemFire Version</em>. The version of the <%=vars.product_name%> member.</li>
 </ul></td>
 </tr>
-<tr class="odd">
+<tr>
 <td>Member</td>
 <td>In List View, the following data fields are displayed for each member:
 <ul>
@@ -161,35 +161,35 @@ The following table describes the data pieces displayed on the Cluster View scre
 <li><em>Clients</em>. Number of clients currently connected to the member. It will have a value only if the member acts as a CacheServer.</li>
 </ul></td>
 </tr>
-<tr class="even">
+<tr>
 <td><strong>Key Statistics</strong></td>
-<td>Displays a few key performance measurements of the distributed system (over the last 15 minutes).</td>
+<td>Displays a few key performance measurements of the cluster (over the last 15 minutes).</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>Write/Sec</td>
 <td>Number of write operations per second that have occurred across the cluster. Each put/putAll operation counts as a write; for example, a putAll of 50 entries is counted as one write.</td>
 </tr>
-<tr class="even">
+<tr>
 <td>Read/Sec</td>
 <td>Number of read operations per second that have occurred across the cluster.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>Queries/Sec</td>
 <td>Number of queries per second that have been executed across the cluster.</td>
 </tr>
-<tr class="even">
+<tr>
 <td><strong>No. of JVM Pauses</strong></td>
 <td>Number of times the JVM has paused during the last five minutes to perform garbage collection.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><strong>WAN Information</strong></td>
 <td>If you have configured gateway senders or receivers for a multi-site (WAN) deployment, this box displays whether the remote cluster is reachable (working connectivity represented by a green triangle).</td>
 </tr>
-<tr class="even">
+<tr>
 <td><strong>Disk Throughput</strong></td>
 <td>Total disk throughput for all disks in cluster.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><strong>Alerts View</strong></td>
 <td>Displays alerts for the cluster.</td>
 </tr>
@@ -225,35 +225,35 @@ The following table describes the data elements displayed on the Member View scr
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td><strong>Member Status</strong></td>
 <td>Overall status of the member being monitored. Possible statuses include Normal, Warning, or Severe.</td>
 </tr>
-<tr class="even">
+<tr>
 <td>Regions</td>
 <td>Total number of regions hosted on the member.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>Threads</td>
 <td>Total number of threads being executed on the member.</td>
 </tr>
-<tr class="even">
+<tr>
 <td>Sockets</td>
 <td>Total number of sockets currently open on the member.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>Load Avg.</td>
 <td>Average number of threads on the member that are in the run queue or are waiting for disk I/O over the last minute. Corresponds to the Linux System statistic loadAverage1. If the load average is not available, a negative value is shown.</td>
 </tr>
-<tr class="even">
+<tr>
 <td>Clients</td>
 <td>Current number of client connections to the member.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><strong>Member Regions</strong></td>
 <td>Block or table view of the regions hosted on the member.</td>
 </tr>
-<tr class="even">
+<tr>
 <td>Regions</td>
 <td>When you mouse over a region in block view, a pop-up appears with the following data fields:
 <ul>
@@ -263,7 +263,7 @@ The following table describes the data elements displayed on the Member View scr
 <li><em>EntrySize</em>. The aggregate entry size (in bytes) of all entries. For replicated regions this field will only provide a value if the eviction algorithm has been set to EvictionAlgorithm#LRU_ MEMORY. All partition regions will have this value. However, the value includes redundant entries and will also count the size of all the secondary entries on the node.</li>
 </ul></td>
 </tr>
-<tr class="odd">
+<tr>
 <td>Regions</td>
 <td>In table view, the following fields are listed for each region:
 <ul>
@@ -277,7 +277,7 @@ The following table describes the data elements displayed on the Member View scr
 <li><em>Gateway Enabled</em>. Whether gateway sender and receiver configurations have been defined on members hosting this region.</li>
 </ul></td>
 </tr>
-<tr class="even">
+<tr>
 <td><strong>Member Clients</strong></td>
 <td>In table view, the following fields are listed for each client:
 <ul>
@@ -293,35 +293,35 @@ The following table describes the data elements displayed on the Member View scr
 <li><em>Puts</em>. Total number of successful put requests completed.</li>
 </ul></td>
 </tr>
-<tr class="odd">
+<tr>
 <td><strong>Key Statistics</strong></td>
 <td>Displays a few key performance measurements for the member (over the last 15 minutes).</td>
 </tr>
-<tr class="even">
+<tr>
 <td>% CPU Usage</td>
 <td>Percentage of CPU used by the member.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>Read/Sec</td>
 <td>Number of read operations per second that have occurred on the member.</td>
 </tr>
-<tr class="even">
+<tr>
 <td>Write/Sec</td>
 <td>Number of write operations per second that have occurred on the member. Each put/putAll operation counts as a write; for example, a putAll of 50 entries is counted as one write.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><strong>Memory Usage</strong></td>
 <td>Total memory used on the member in MB.</td>
 </tr>
-<tr class="even">
+<tr>
 <td><strong>No. of JVM Pauses</strong></td>
 <td>Number of times the JVM has paused during the last five minutes due to garbage collection or excessive CPU usage.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><strong>WAN Information</strong></td>
 <td>Displays cluster information. This dialog box only appears if you have configured WAN functionality (gateway senders and gateway receivers).</td>
 </tr>
-<tr class="even">
+<tr>
 <td><strong>Disk Throughput</strong></td>
 <td>Rate of disk writes on the member.</td>
 </tr>
@@ -330,7 +330,7 @@ The following table describes the data elements displayed on the Member View scr
 
 # <a id="topic_F0ECE9E8179541CCA3D6C5F4FBA84404__section_D151776BAC8B4704A71F37F8B5CE063D" class="no-quick-link"></a>Region View
 
-The Pulse Region View provides a comprehensive overview of all regions in the <%=vars.product_name%> distributed system:
+The Pulse Region View provides a comprehensive overview of all regions in the cluster:
 
 <img src="../../images/pulse_data_view.png" id="topic_F0ECE9E8179541CCA3D6C5F4FBA84404__image_A533852E38654E79BE5628E938E170EB" class="image imageleft" width="624" />
 
@@ -360,11 +360,11 @@ The following table describes the data elements displayed on the Region View scr
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td><strong>Region Members</strong></td>
 <td>Lists information about <%=vars.product_name%> members that host the region, either in block view or table view.</td>
 </tr>
-<tr class="even">
+<tr>
 <td>Region Member (Detail View)</td>
 <td>When you hover over a region member in block view, a pop-up appears with the following data fields:
 <ul>
@@ -375,7 +375,7 @@ The following table describes the data elements displayed on the Region View scr
 <li><em>Reads/Writes</em>. Summary of reads and writes served from memory and from disk stores over the last 15 minutes.</li>
 </ul></td>
 </tr>
-<tr class="odd">
+<tr>
 <td>Region Member (Table View)</td>
 <td>In table view, the following fields are listed for each region member:
 <ul>
@@ -388,7 +388,7 @@ The following table describes the data elements displayed on the Region View scr
 <li><em>Accessor</em>. Indicates whether the member is an accessor member.</li>
 </ul></td>
 </tr>
-<tr class="even">
+<tr>
 <td><strong>Region Detail</strong></td>
 <td>When you have selected a region, the right hand pane displays the following information about the region:
 <ul>

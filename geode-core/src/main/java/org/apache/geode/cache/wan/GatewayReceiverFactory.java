@@ -20,11 +20,14 @@ package org.apache.geode.cache.wan;
  * @since GemFire 7.0
  */
 public interface GatewayReceiverFactory {
+
+  String A_GATEWAY_RECEIVER_ALREADY_EXISTS_ON_THIS_MEMBER =
+      "A Gateway Receiver already exists on this member.";
+
   /**
    * Sets the start port for the <code>GatewayReceiver</code>. If set the GatewayReceiver will start
    * at one of the port between startPort and endPort. The default startPort 50505.
    *
-   * @param startPort
    */
   GatewayReceiverFactory setStartPort(int startPort);
 
@@ -32,7 +35,6 @@ public interface GatewayReceiverFactory {
    * Sets the end port for the GatewayReceiver. If set the GatewayReceiver will start at one of the
    * port between startPort and endPort. The default endPort 50605.
    *
-   * @param endPort
    */
   GatewayReceiverFactory setEndPort(int endPort);
 

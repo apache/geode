@@ -21,7 +21,16 @@ import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.regex.Pattern;
@@ -29,14 +38,20 @@ import java.util.regex.Pattern;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.RegionService;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.CopyOnWriteHashSet;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.PdxSerializerObject;
 import org.apache.geode.internal.util.concurrent.CopyOnWriteWeakHashMap;
-import org.apache.geode.pdx.*;
-import org.apache.geode.pdx.internal.unsafe.UnsafeWrapper;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.pdx.FieldType;
+import org.apache.geode.pdx.NonPortableClassException;
+import org.apache.geode.pdx.PdxReader;
+import org.apache.geode.pdx.PdxSerializationException;
+import org.apache.geode.pdx.PdxWriter;
+import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
+import org.apache.geode.unsafe.internal.sun.misc.Unsafe;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * The core of auto serialization which is used in both aspect and reflection-based
@@ -78,8 +93,8 @@ public class AutoSerializableManager {
    * not evaluate any hardcoded excludes. This helps with testing as well as possibly debugging
    * future customer issues.
    */
-  private static final String NO_HARDCODED_EXCLUDES_PARAM =
-      DistributionConfig.GEMFIRE_PREFIX + "auto.serialization.no.hardcoded.excludes";
+  public static final String NO_HARDCODED_EXCLUDES_PARAM =
+      GeodeGlossary.GEMFIRE_PREFIX + "auto.serialization.no.hardcoded.excludes";
 
   private boolean noHardcodedExcludes = Boolean.getBoolean(NO_HARDCODED_EXCLUDES_PARAM);
 
@@ -176,7 +191,6 @@ public class AutoSerializableManager {
    * Helper method to determine whether the class of a given object is a class which we are
    * interested in (de)serializing.
    *
-   * @param obj
    *
    * @return true if the object should be considered for serialization or false otherwise
    */
@@ -223,7 +237,9 @@ public class AutoSerializableManager {
     }
     String className = clazz.getName();
     if (isExcluded(className)) {
-      return false;
+      if (!PdxSerializerObject.class.isAssignableFrom(clazz)) {
+        return false;
+      }
     }
 
     for (Pattern p : classPatterns) {
@@ -640,20 +656,21 @@ public class AutoSerializableManager {
 
   // unsafe will be null if the Unsafe class is not available or SAFE was requested.
   // We attempt to use Unsafe by default for best performance.
-  private static final UnsafeWrapper unsafe;
+  @Immutable
+  private static final Unsafe unsafe;
   static {
-    UnsafeWrapper tmp = null;
+    Unsafe tmp = null;
     // only use Unsafe if SAFE was not explicitly requested
-    if (!Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "AutoSerializer.SAFE")) {
+    if (!Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "AutoSerializer.SAFE")) {
       try {
-        tmp = new UnsafeWrapper();
+        tmp = new Unsafe();
         // only throw an exception if UNSAFE was explicitly requested
       } catch (RuntimeException ex) {
-        if (Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "AutoSerializer.UNSAFE")) {
+        if (Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "AutoSerializer.UNSAFE")) {
           throw ex;
         }
       } catch (Error ex) {
-        if (Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "AutoSerializer.UNSAFE")) {
+        if (Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "AutoSerializer.UNSAFE")) {
           throw ex;
         }
       }
@@ -2037,7 +2054,7 @@ public class AutoSerializableManager {
   }
 
   private static final boolean USE_CONSTRUCTOR =
-      !Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "autopdx.ignoreConstructor");
+      !Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "autopdx.ignoreConstructor");
 
   /**
    * Using the given PdxReader, recreate the given object.
@@ -2123,7 +2140,6 @@ public class AutoSerializableManager {
    *
    * @param matches a map containing the
    *
-   * @param
    */
   private boolean fieldMatches(Field field, String className, List<String[]> matches) {
     String fieldName = field.getName();
@@ -2190,8 +2206,8 @@ public class AutoSerializableManager {
         }
       } catch (Exception ex) {
         throw new PdxSerializationException(
-            LocalizedStrings.DataSerializer_COULD_NOT_CREATE_AN_INSTANCE_OF_A_CLASS_0
-                .toLocalizedString(clazz.getName()),
+            String.format("Could not create an instance of a class %s",
+                clazz.getName()),
             ex);
       }
       return result;

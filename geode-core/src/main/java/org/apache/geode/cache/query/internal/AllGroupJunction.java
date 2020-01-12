@@ -17,7 +17,11 @@
  */
 package org.apache.geode.cache.query.internal;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.apache.geode.cache.query.FunctionDomainException;
 import org.apache.geode.cache.query.NameResolutionException;
@@ -63,11 +67,13 @@ public class AllGroupJunction extends AbstractCompiledValue implements Filter, O
     return children;
   }
 
+  @Override
   public Object evaluate(ExecutionContext context) {
     Support.assertionFailed("Should not have come here");
     return null;
   }
 
+  @Override
   public int getType() {
     return ALLGROUPJUNCTION;
   }
@@ -91,11 +97,6 @@ public class AllGroupJunction extends AbstractCompiledValue implements Filter, O
    * subtree CompiledJunction
    *
    * @param context ExecutionContext object
-   * @return SelectResults
-   * @throws FunctionDomainException
-   * @throws TypeMismatchException
-   * @throws NameResolutionException
-   * @throws QueryInvocationTargetException
    */
   // Asif : For doing the Cartesian first evaluate the result of all Group
   // Junction. Doing Cartesian of all the Results together is better than doing
@@ -186,10 +187,6 @@ public class AllGroupJunction extends AbstractCompiledValue implements Filter, O
    *
    * @param context ExecutionContext object
    * @return SelectResults object
-   * @throws FunctionDomainException
-   * @throws TypeMismatchException
-   * @throws NameResolutionException
-   * @throws QueryInvocationTargetException
    */
   private SelectResults evaluateOrJunction(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
@@ -244,6 +241,7 @@ public class AllGroupJunction extends AbstractCompiledValue implements Filter, O
     return Collections.unmodifiableList(this.iterOperands);
   }
 
+  @Override
   public int getSizeEstimate(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     return 1;

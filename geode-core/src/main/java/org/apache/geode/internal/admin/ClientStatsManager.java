@@ -16,26 +16,25 @@ package org.apache.geode.internal.admin;
 
 import java.util.Date;
 import java.util.Map;
-import java.util.Map.Entry;
 
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsType;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.CacheWriterException;
-import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.client.internal.ServerRegionProxy;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.admin.remote.ClientHealthStats;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.offheap.annotations.Released;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * This class publishes the client statistics using the admin region.
@@ -47,17 +46,22 @@ public class ClientStatsManager {
    *
    * GuardedBy ClientStatsManager.class
    */
+  @MakeNotStatic
   private static InternalCache lastInitializedCache = null;
 
   /**
    * GuardedBy ClientStatsManager.class
    */
+  @MakeNotStatic
   private static Statistics cachePerfStats = null;
 
   /**
    * GuardedBy ClientStatsManager.class
    */
+  @MakeNotStatic
   private static Statistics vmStats = null;
+
+  private static final Logger logger = LogService.getLogger();
 
   /**
    * This method publishes the client stats using the admin region.
@@ -69,9 +73,9 @@ public class ClientStatsManager {
     if (!initializeStatistics(currentCache)) {
       return; // handles null case too
     }
-    LogWriterI18n logger = currentCache.getLoggerI18n();
-    if (logger.fineEnabled())
-      logger.fine("Entering ClientStatsManager#publishClientStats...");
+    if (logger.isDebugEnabled()) {
+      logger.debug("Entering ClientStatsManager#publishClientStats...");
+    }
 
     ClientHealthStats stats = getClientHealthStats(currentCache, pool);
 
@@ -81,12 +85,18 @@ public class ClientStatsManager {
       ServerRegionProxy regionProxy =
           new ServerRegionProxy(ClientHealthMonitoringRegion.ADMIN_REGION_NAME, pool);
 
+      boolean isOffHeap;
+      if (ds.getOffHeapStore() != null) {
+        isOffHeap = true;
+      } else {
+        isOffHeap = false;
+      }
       EventID eventId = new EventID(ds);
       @Released
-      EntryEventImpl event = new EntryEventImpl((Object) null);
+      EntryEventImpl event = new EntryEventImpl((Object) null, isOffHeap);
       try {
         event.setEventId(eventId);
-        regionProxy.putForMetaRegion(ds.getMemberId(), stats, null, event, null, true);
+        regionProxy.putForMetaRegion(ds.getDistributedMember(), stats, null, event, null);
       } finally {
         event.release();
       }
@@ -96,17 +106,17 @@ public class ClientStatsManager {
       pool.getCancelCriterion().checkCancelInProgress(cwx);
       currentCache.getCancelCriterion().checkCancelInProgress(cwx);
       // TODO: Need to analyze these exception scenarios.
-      logger.warning(
-          LocalizedStrings.ClientStatsManager_FAILED_TO_SEND_CLIENT_HEALTH_STATS_TO_CACHESERVER,
+      logger.warn(
+          "Failed to send client health stats to cacheserver.",
           cwx);
     } catch (Exception e) {
       pool.getCancelCriterion().checkCancelInProgress(e);
       currentCache.getCancelCriterion().checkCancelInProgress(e);
-      logger.info(LocalizedStrings.ClientStatsManager_FAILED_TO_PUBLISH_CLIENT_STATISTICS, e);
+      logger.info("Failed to publish client statistics", e);
     }
 
-    if (logger.fineEnabled()) {
-      logger.fine("Exiting ClientStatsManager#publishClientStats.");
+    if (logger.isDebugEnabled()) {
+      logger.debug("Exiting ClientStatsManager#publishClientStats.");
     }
   }
 
@@ -125,7 +135,7 @@ public class ClientStatsManager {
     if (currentCache == null) {
       return false;
     }
-    LogWriterI18n logger = currentCache.getLoggerI18n();
+
     InternalDistributedSystem ds = (InternalDistributedSystem) currentCache.getDistributedSystem();
     if (currentCache.isClosed()) {
       return false;
@@ -135,9 +145,9 @@ public class ClientStatsManager {
     lastInitializedCache = currentCache;
 
     if (restart) {
-      if (logger.infoEnabled()) {
+      if (logger.isInfoEnabled()) {
         logger.info(
-            LocalizedStrings.ClientStatsManager_CLIENTSTATSMANAGER_INTIALIZING_THE_STATISTICS);
+            "ClientStatsManager, intializing the statistics...");
       }
       cachePerfStats = null;
       vmStats = null;
@@ -165,14 +175,14 @@ public class ClientStatsManager {
 
     // Validate that cache has changed before logging the warning, thus logging it once per cache
     if (cachePerfStats == null && restart) {
-      logger.warning(LocalizedStrings.ClientStatsManager_CLIENTSTATSMANAGER_0_ARE_NOT_AVAILABLE,
-          "CachePerfStats");
+      logger.warn(String.format("ClientStatsManager, %s are not available.",
+          "CachePerfStats"));
     }
 
     // Validate that cache has changed before logging the warning, thus logging it once per cache
     if (vmStats == null && restart) {
-      logger.warning(LocalizedStrings.ClientStatsManager_CLIENTSTATSMANAGER_0_ARE_NOT_AVAILABLE,
-          "VMStats");
+      logger.warn(String.format("ClientStatsManager, %s are not available.",
+          "VMStats"));
     }
 
     return true;
@@ -189,17 +199,16 @@ public class ClientStatsManager {
       return null;
     }
     ClientHealthStats stats = new ClientHealthStats();
-    LogWriterI18n logger = currentCache.getLoggerI18n();
 
-    int gets = -1;
-    int puts = -1;
-    int misses = -1;
+    long gets = -1;
+    long puts = -1;
+    long misses = -1;
     int cacheListenerCalls = -1;
 
     if (cachePerfStats != null) {
-      gets = cachePerfStats.getInt("gets");
-      puts = cachePerfStats.getInt("puts");
-      misses = cachePerfStats.getInt("misses");
+      gets = cachePerfStats.getLong("gets");
+      puts = cachePerfStats.getLong("puts");
+      misses = cachePerfStats.getLong("misses");
       cacheListenerCalls = cachePerfStats.getInt("cacheListenerCallsCompleted");
     }
 
@@ -226,36 +235,12 @@ public class ClientStatsManager {
       String poolStatsStr = "MinConnections=" + pool.getMinConnections() + ";MaxConnections="
           + pool.getMaxConnections() + ";Redundancy=" + pool.getSubscriptionRedundancy() + ";CQS="
           + pool.getQueryService().getCqs().length;
-      logger.info(LocalizedStrings.DEBUG,
-          "ClientHealthStats for poolName " + poolName + " poolStatsStr=" + poolStatsStr);
+      logger.debug("ClientHealthStats for poolName " + poolName + " poolStatsStr=" + poolStatsStr);
 
       newPoolStats.put(poolName, poolStatsStr);
 
-      // consider old stats
-      Region clientHealthMonitoringRegion = ClientHealthMonitoringRegion.getInstance(currentCache);
-
-      if (clientHealthMonitoringRegion != null) {
-        InternalDistributedSystem ds =
-            (InternalDistributedSystem) currentCache.getDistributedSystem();
-        ClientHealthStats oldStats =
-            (ClientHealthStats) clientHealthMonitoringRegion.get(ds.getMemberId());
-        logger.info(LocalizedStrings.DEBUG, "getClientHealthStats got oldStats  " + oldStats);
-        if (oldStats != null) {
-          Map<String, String> oldPoolStats = oldStats.getPoolStats();
-          logger.info(LocalizedStrings.DEBUG,
-              "getClientHealthStats got oldPoolStats  " + oldPoolStats);
-          if (oldPoolStats != null) {
-            for (Entry<String, String> entry : oldPoolStats.entrySet()) {
-              if (!poolName.equals(entry.getKey())) {
-                stats.getPoolStats().put(entry.getKey(), entry.getValue());
-              }
-            }
-          }
-        }
-      }
-
     } catch (Exception e) {
-      logger.fine("Exception in getting pool stats in  getClientHealthStats "
+      logger.debug("Exception in getting pool stats in  getClientHealthStats "
           + ExceptionUtils.getStackTrace(e));
     }
 

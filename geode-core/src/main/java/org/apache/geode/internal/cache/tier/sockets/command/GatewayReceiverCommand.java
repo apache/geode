@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.geode.CancelException;
-import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.operations.DestroyOperationContext;
@@ -28,8 +28,6 @@ import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.i18n.StringId;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.EventIDHolder;
@@ -45,10 +43,9 @@ import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.cache.wan.BatchException70;
 import org.apache.geode.internal.cache.wan.GatewayReceiverStats;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.pdx.PdxConfigurationException;
 import org.apache.geode.pdx.PdxRegistryMismatchException;
@@ -59,45 +56,38 @@ import org.apache.geode.pdx.internal.PeerTypeRegistration;
 
 public class GatewayReceiverCommand extends BaseCommand {
 
-  private static final GatewayReceiverCommand singleton = new GatewayReceiverCommand();
+  @Immutable
+  private static final GatewayReceiverCommand SINGLETON = new GatewayReceiverCommand();
 
   public static Command getCommand() {
-    return singleton;
+    return SINGLETON;
   }
 
-  private GatewayReceiverCommand() {}
+  private GatewayReceiverCommand() {
+    // nothing
+  }
 
   private void handleRegionNull(ServerConnection servConn, String regionName, int batchId) {
-    InternalCache cache = servConn.getCachedRegionHelper().getCache();
+    InternalCache cache = servConn.getCachedRegionHelper().getCacheForGatewayCommand();
     if (cache != null && cache.isCacheAtShutdownAll()) {
       throw cache.getCacheClosedException("Shutdown occurred during message processing");
-    } else {
-      String reason = LocalizedStrings.ProcessBatch_WAS_NOT_FOUND_DURING_BATCH_CREATE_REQUEST_0
-          .toLocalizedString(new Object[] {regionName, Integer.valueOf(batchId)});
-      throw new RegionDestroyedException(reason, regionName);
     }
+    String reason = String.format("Region %s was not found during batch create request %s",
+        regionName, batchId);
+    throw new RegionDestroyedException(reason, regionName);
   }
 
   @Override
   public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
       final SecurityService securityService, long start) throws IOException, InterruptedException {
-    Part regionNamePart = null, keyPart = null, valuePart = null, callbackArgPart = null;
-    String regionName = null;
-    Object callbackArg = null, key = null;
-    int partNumber = 0;
     CachedRegionHelper crHelper = serverConnection.getCachedRegionHelper();
     GatewayReceiverStats stats = (GatewayReceiverStats) serverConnection.getCacheServerStats();
-    EventID eventId = null;
-    LocalRegion region = null;
-    List<BatchException70> exceptions = new ArrayList<BatchException70>();
-    Throwable fatalException = null;
-    // requiresResponse = true;// let PROCESS_BATCH deal with this itself
+
     {
       long oldStart = start;
       start = DistributionStats.getStatTime();
       stats.incReadProcessBatchRequestTime(start - oldStart);
     }
-    Part callbackArgExistsPart;
 
     stats.incBatchSize(clientMessage.getPayloadLength());
 
@@ -115,13 +105,13 @@ public class GatewayReceiverCommand extends BaseCommand {
     if (batchId <= serverConnection.getLatestBatchIdReplied()) {
       if (GatewayReceiver.APPLY_RETRIES) {
         // Do nothing!!!
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.ProcessBatch_RECEIVED_PROCESS_BATCH_REQUEST_0_THAT_HAS_ALREADY_BEEN_OR_IS_BEING_PROCESSED_GEMFIRE_GATEWAY_APPLYRETRIES_IS_SET_SO_THIS_BATCH_WILL_BE_PROCESSED_ANYWAY,
-            batchId));
+        logger.warn(
+            "Received process batch request {} that has already been or is being processed. gemfire.gateway.ApplyRetries is set, so this batch will be processed anyway.",
+            batchId);
       } else {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.ProcessBatch_RECEIVED_PROCESS_BATCH_REQUEST_0_THAT_HAS_ALREADY_BEEN_OR_IS_BEING_PROCESSED__THIS_PROCESS_BATCH_REQUEST_IS_BEING_IGNORED,
-            batchId));
+        logger.warn(
+            "Received process batch request {} that has already been or is being processed. This process batch request is being ignored.",
+            batchId);
         writeReply(clientMessage, serverConnection, batchId, numberOfEvents);
         return;
       }
@@ -130,17 +120,15 @@ public class GatewayReceiverCommand extends BaseCommand {
 
     // Verify the batches arrive in order
     if (batchId != serverConnection.getLatestBatchIdReplied() + 1) {
-      logger.warn(LocalizedMessage.create(
-          LocalizedStrings.ProcessBatch_RECEIVED_PROCESS_BATCH_REQUEST_0_OUT_OF_ORDER_THE_ID_OF_THE_LAST_BATCH_PROCESSED_WAS_1_THIS_BATCH_REQUEST_WILL_BE_PROCESSED_BUT_SOME_MESSAGES_MAY_HAVE_BEEN_LOST,
-          new Object[] {batchId, serverConnection.getLatestBatchIdReplied()}));
+      logger.warn(
+          "Received process batch request {} out of order. The id of the last batch processed was {}. This batch request will be processed, but some messages may have been lost.",
+          batchId, serverConnection.getLatestBatchIdReplied());
       stats.incOutoforderBatchesReceived();
     }
-
 
     if (logger.isDebugEnabled()) {
       logger.debug("Received process batch request {} that will be processed.", batchId);
     }
-
 
     if (logger.isDebugEnabled()) {
       logger.debug(
@@ -148,44 +136,32 @@ public class GatewayReceiverCommand extends BaseCommand {
           serverConnection.getName(), batchId, numberOfEvents, clientMessage.getPayloadLength(),
           "normal", serverConnection.getSocketString());
     }
-    // logger.warn("Received process batch request " + batchId + " containing
-    // " + numberOfEvents + " events (" + msg.getPayloadLength() + " bytes) with
-    // " + (earlyAck ? "early" : "normal") + " acknowledgement on " +
-    // getSocketString());
-    // if (earlyAck) {
-    // logger.warn("Sent process batch early response for batch " + batchId +
-    // " containing " + numberOfEvents + " events (" + msg.getPayloadLength() +
-    // " bytes) with " + (earlyAck ? "early" : "normal") + " acknowledgement on
-    // " + getSocketString());
-    // }
 
     // Retrieve the events from the message parts. The '2' below
     // represents the number of events (part0) and the batchId (part1)
-    partNumber = 2;
+    int partNumber = 2;
     int dsid = clientMessage.getPart(partNumber++).getInt();
 
-    boolean removeOnException =
-        clientMessage.getPart(partNumber++).getSerializedForm()[0] == 1 ? true : false;
+    boolean removeOnException = clientMessage.getPart(partNumber++).getSerializedForm()[0] == 1;
 
     // event received in batch also have PDX events at the start of the batch,to
     // represent correct index on which the exception occurred, number of PDX
     // events need to be subtracted.
     int indexWithoutPDXEvent = -1; //
+    Part valuePart = null;
+    Throwable fatalException = null;
+    List<BatchException70> exceptions = new ArrayList<>();
     for (int i = 0; i < numberOfEvents; i++) {
-      boolean retry = true;
-      boolean isPdxEvent = false;
       indexWithoutPDXEvent++;
-      // System.out.println("Processing event " + i + " in batch " + batchId + "
-      // starting with part number " + partNumber);
+
       Part actionTypePart = clientMessage.getPart(partNumber);
       int actionType = actionTypePart.getInt();
-
-      long versionTimeStamp = VersionTag.ILLEGAL_VERSION_TIMESTAMP;
-      EventIDHolder clientEvent = null;
 
       boolean callbackArgExists = false;
 
       try {
+        boolean isPdxEvent = false;
+        boolean retry = true;
         do {
           if (isPdxEvent) {
             // This is a retried event. Reset the PDX event index.
@@ -197,24 +173,22 @@ public class GatewayReceiverCommand extends BaseCommand {
           try {
             possibleDuplicatePartBytes = (byte[]) possibleDuplicatePart.getObject();
           } catch (Exception e) {
-            logger.warn(LocalizedMessage.create(
-                LocalizedStrings.ProcessBatch_0_CAUGHT_EXCEPTION_PROCESSING_BATCH_REQUEST_1_CONTAINING_2_EVENTS,
-                new Object[] {serverConnection.getName(), Integer.valueOf(batchId),
-                    Integer.valueOf(numberOfEvents)}),
-                e);
+            logger.warn(String.format(
+                "%s: Caught exception processing batch request %s containing %s events",
+                serverConnection.getName(), batchId, numberOfEvents), e);
             handleException(removeOnException, stats, e);
             break;
           }
           boolean possibleDuplicate = possibleDuplicatePartBytes[0] == 0x01;
 
           // Make sure instance variables are null before each iteration
-          regionName = null;
-          key = null;
-          callbackArg = null;
+          String regionName = null;
+          Object key = null;
+          Object callbackArg = null;
 
           // Retrieve the region name from the message parts
-          regionNamePart = clientMessage.getPart(partNumber + 2);
-          regionName = regionNamePart.getString();
+          Part regionNamePart = clientMessage.getPart(partNumber + 2);
+          regionName = regionNamePart.getCachedString();
           if (regionName.equals(PeerTypeRegistration.REGION_FULL_PATH)) {
             indexWithoutPDXEvent--;
             isPdxEvent = true;
@@ -228,32 +202,34 @@ public class GatewayReceiverCommand extends BaseCommand {
           Part eventIdPart = clientMessage.getPart(partNumber + 3);
           eventIdPart.setVersion(serverConnection.getClientVersion());
           // String eventId = eventIdPart.getString();
+          EventID eventId;
           try {
             eventId = (EventID) eventIdPart.getObject();
           } catch (Exception e) {
-            logger.warn(LocalizedMessage.create(
-                LocalizedStrings.ProcessBatch_0_CAUGHT_EXCEPTION_PROCESSING_BATCH_REQUEST_1_CONTAINING_2_EVENTS,
-                new Object[] {serverConnection.getName(), Integer.valueOf(batchId),
-                    Integer.valueOf(numberOfEvents)}),
-                e);
+            logger.warn(String.format(
+                "%s: Caught exception processing batch request %s containing %s events",
+                serverConnection.getName(), batchId, numberOfEvents), e);
             handleException(removeOnException, stats, e);
             break;
           }
 
           // Retrieve the key from the message parts
-          keyPart = clientMessage.getPart(partNumber + 4);
+          Part keyPart = clientMessage.getPart(partNumber + 4);
           try {
             key = keyPart.getStringOrObject();
           } catch (Exception e) {
-            logger.warn(LocalizedMessage.create(
-                LocalizedStrings.ProcessBatch_0_CAUGHT_EXCEPTION_PROCESSING_BATCH_REQUEST_1_CONTAINING_2_EVENTS,
-                new Object[] {serverConnection.getName(), Integer.valueOf(batchId),
-                    Integer.valueOf(numberOfEvents)}),
-                e);
+            logger.warn(String.format(
+                "%s: Caught exception processing batch request %s containing %s events",
+                serverConnection.getName(), batchId, numberOfEvents), e);
             handleException(removeOnException, stats, e);
             break;
           }
-          int index = -1;
+          int index;
+          Part callbackArgPart;
+          EventIDHolder clientEvent;
+          long versionTimeStamp;
+          Part callbackArgExistsPart;
+          LocalRegion region;
           switch (actionType) {
             case 0: // Create
               try {
@@ -263,7 +239,7 @@ public class GatewayReceiverCommand extends BaseCommand {
                  * System.out.println("Processing new key: " + key); if
                  * (keySt.startsWith("failure")) { throw new Exception(LocalizedStrings
                  * .ProcessBatch_THIS_EXCEPTION_REPRESENTS_A_FAILURE_ON_THE_SERVER
-                 * .toLocalizedString()); }
+                 * )); }
                  */
 
                 // Retrieve the value from the message parts (do not deserialize it)
@@ -286,12 +262,9 @@ public class GatewayReceiverCommand extends BaseCommand {
                     callbackArg = callbackArgPart.getObject();
                   } catch (Exception e) {
                     logger
-                        .warn(
-                            LocalizedMessage
-                                .create(
-                                    LocalizedStrings.ProcessBatch_0_CAUGHT_EXCEPTION_PROCESSING_BATCH_CREATE_REQUEST_1_FOR_2_EVENTS,
-                                    new Object[] {serverConnection.getName(),
-                                        Integer.valueOf(batchId), Integer.valueOf(numberOfEvents)}),
+                        .warn(String.format(
+                            "%s: Caught exception processing batch create request %s for %s events",
+                            serverConnection.getName(), batchId, numberOfEvents),
                             e);
                     throw e;
                   }
@@ -305,22 +278,18 @@ public class GatewayReceiverCommand extends BaseCommand {
                 versionTimeStamp = clientMessage.getPart(index++).getLong();
                 // Process the create request
                 if (key == null || regionName == null) {
-                  StringId message = null;
-                  Object[] messageArgs =
-                      new Object[] {serverConnection.getName(), Integer.valueOf(batchId)};
+                  String message = null;
                   if (key == null) {
-                    message =
-                        LocalizedStrings.ProcessBatch_0_THE_INPUT_REGION_NAME_FOR_THE_BATCH_CREATE_REQUEST_1_IS_NULL;
+                    message = "%s: The input key for the batch create request %s is null";
                   }
                   if (regionName == null) {
-                    message =
-                        LocalizedStrings.ProcessBatch_0_THE_INPUT_REGION_NAME_FOR_THE_BATCH_CREATE_REQUEST_1_IS_NULL;
+                    message = "%s: The input region name for the batch create request %s is null";
                   }
-                  String s = message.toLocalizedString(messageArgs);
+                  String s = String.format(message, serverConnection.getName(), batchId);
                   logger.warn(s);
                   throw new Exception(s);
                 }
-                region = (LocalRegion) crHelper.getRegion(regionName);
+                region = (LocalRegion) crHelper.getCacheForGatewayCommand().getRegion(regionName);
                 if (region == null) {
                   handleRegionNull(serverConnection, regionName, batchId);
                 } else {
@@ -367,30 +336,21 @@ public class GatewayReceiverCommand extends BaseCommand {
                   } else {
                     // This exception will be logged in the catch block below
                     throw new Exception(
-                        LocalizedStrings.ProcessBatch_0_FAILED_TO_CREATE_OR_UPDATE_ENTRY_FOR_REGION_1_KEY_2_VALUE_3_CALLBACKARG_4
-                            .toLocalizedString(new Object[] {serverConnection.getName(), regionName,
-                                key, valuePart, callbackArg}));
+                        String.format(
+                            "%s: Failed to create or update entry for region %s key %s value %s callbackArg %s",
+                            serverConnection.getName(), regionName, key, valuePart, callbackArg));
                   }
                 }
               } catch (Exception e) {
-                logger.warn(LocalizedMessage.create(
-                    LocalizedStrings.ProcessBatch_0_CAUGHT_EXCEPTION_PROCESSING_BATCH_CREATE_REQUEST_1_FOR_2_EVENTS,
-                    new Object[] {serverConnection.getName(), Integer.valueOf(batchId),
-                        Integer.valueOf(numberOfEvents)}),
-                    e);
+                logger.warn(String.format(
+                    "%s: Caught exception processing batch create request %s for %s events",
+                    serverConnection.getName(), batchId, numberOfEvents), e);
                 handleException(removeOnException, stats, e);
               }
               break;
+
             case 1: // Update
               try {
-                /*
-                 * CLIENT EXCEPTION HANDLING TESTING CODE keySt = (String) key;
-                 * System.out.println("Processing updated key: " + key); if
-                 * (keySt.startsWith("failure")) { throw new Exception(LocalizedStrings
-                 * .ProcessBatch_THIS_EXCEPTION_REPRESENTS_A_FAILURE_ON_THE_SERVER
-                 * .toLocalizedString()); }
-                 */
-
                 // Retrieve the value from the message parts (do not deserialize it)
                 valuePart = clientMessage.getPart(partNumber + 5);
                 // try {
@@ -412,11 +372,9 @@ public class GatewayReceiverCommand extends BaseCommand {
                   } catch (Exception e) {
                     logger
                         .warn(
-                            LocalizedMessage
-                                .create(
-                                    LocalizedStrings.ProcessBatch_0_CAUGHT_EXCEPTION_PROCESSING_BATCH_UPDATE_REQUEST_1_CONTAINING_2_EVENTS,
-                                    new Object[] {serverConnection.getName(),
-                                        Integer.valueOf(batchId), Integer.valueOf(numberOfEvents)}),
+                            String.format(
+                                "%s: Caught exception processing batch update request %s containing %s events",
+                                serverConnection.getName(), batchId, numberOfEvents),
                             e);
                     throw e;
                   }
@@ -430,22 +388,18 @@ public class GatewayReceiverCommand extends BaseCommand {
                 }
                 // Process the update request
                 if (key == null || regionName == null) {
-                  StringId message = null;
-                  Object[] messageArgs =
-                      new Object[] {serverConnection.getName(), Integer.valueOf(batchId)};
+                  String message = null;
                   if (key == null) {
-                    message =
-                        LocalizedStrings.ProcessBatch_0_THE_INPUT_KEY_FOR_THE_BATCH_UPDATE_REQUEST_1_IS_NULL;
+                    message = "%s: The input key for the batch update request %s is null";
                   }
                   if (regionName == null) {
-                    message =
-                        LocalizedStrings.ProcessBatch_0_THE_INPUT_REGION_NAME_FOR_THE_BATCH_UPDATE_REQUEST_1_IS_NULL;
+                    message = "%s: The input region name for the batch update request %s is null";
                   }
-                  String s = message.toLocalizedString(messageArgs);
+                  String s = String.format(message, serverConnection.getName(), batchId);
                   logger.warn(s);
                   throw new Exception(s);
                 }
-                region = (LocalRegion) crHelper.getRegion(regionName);
+                region = (LocalRegion) crHelper.getCacheForGatewayCommand().getRegion(regionName);
                 if (region == null) {
                   handleRegionNull(serverConnection, regionName, batchId);
                 } else {
@@ -480,25 +434,23 @@ public class GatewayReceiverCommand extends BaseCommand {
                     stats.incUpdateRequest();
                     retry = false;
                   } else {
-                    final Object[] msgArgs = new Object[] {serverConnection.getName(), regionName,
-                        key, valuePart, callbackArg};
-                    final StringId message =
-                        LocalizedStrings.ProcessBatch_0_FAILED_TO_UPDATE_ENTRY_FOR_REGION_1_KEY_2_VALUE_3_AND_CALLBACKARG_4;
-                    String s = message.toLocalizedString(msgArgs);
+                    final String message =
+                        "%s: Failed to update entry for region %s, key %s, value %s, and callbackArg %s";
+                    String s = String.format(message, serverConnection.getName(), regionName,
+                        key, valuePart, callbackArg);
                     logger.info(s);
                     throw new Exception(s);
                   }
                 }
               } catch (Exception e) {
                 // Preserve the connection under all circumstances
-                logger.warn(LocalizedMessage.create(
-                    LocalizedStrings.ProcessBatch_0_CAUGHT_EXCEPTION_PROCESSING_BATCH_UPDATE_REQUEST_1_CONTAINING_2_EVENTS,
-                    new Object[] {serverConnection.getName(), Integer.valueOf(batchId),
-                        Integer.valueOf(numberOfEvents)}),
-                    e);
+                logger.warn(String.format(
+                    "%s: Caught exception processing batch update request %s containing %s events",
+                    serverConnection.getName(), batchId, numberOfEvents), e);
                 handleException(removeOnException, stats, e);
               }
               break;
+
             case 2: // Destroy
               try {
                 // Retrieve the callbackArg from the message parts if necessary
@@ -515,11 +467,9 @@ public class GatewayReceiverCommand extends BaseCommand {
                   } catch (Exception e) {
                     logger
                         .warn(
-                            LocalizedMessage
-                                .create(
-                                    LocalizedStrings.ProcessBatch_0_CAUGHT_EXCEPTION_PROCESSING_BATCH_DESTROY_REQUEST_1_CONTAINING_2_EVENTS,
-                                    new Object[] {serverConnection.getName(),
-                                        Integer.valueOf(batchId), Integer.valueOf(numberOfEvents)}),
+                            String.format(
+                                "%s: Caught exception processing batch destroy request %s containing %s events",
+                                serverConnection.getName(), batchId, numberOfEvents),
                             e);
                     throw e;
                   }
@@ -534,22 +484,20 @@ public class GatewayReceiverCommand extends BaseCommand {
 
                 // Process the destroy request
                 if (key == null || regionName == null) {
-                  StringId message = null;
+                  String message = null;
                   if (key == null) {
                     message =
-                        LocalizedStrings.ProcessBatch_0_THE_INPUT_KEY_FOR_THE_BATCH_DESTROY_REQUEST_1_IS_NULL;
+                        "%s: The input key for the batch destroy request %s is null";
                   }
                   if (regionName == null) {
                     message =
-                        LocalizedStrings.ProcessBatch_0_THE_INPUT_REGION_NAME_FOR_THE_BATCH_DESTROY_REQUEST_1_IS_NULL;
+                        "%s: The input region name for the batch destroy request %s is null";
                   }
-                  Object[] messageArgs =
-                      new Object[] {serverConnection.getName(), Integer.valueOf(batchId)};
-                  String s = message.toLocalizedString(messageArgs);
+                  String s = String.format(message, serverConnection.getName(), batchId);
                   logger.warn(s);
                   throw new Exception(s);
                 }
-                region = (LocalRegion) crHelper.getRegion(regionName);
+                region = (LocalRegion) crHelper.getCacheForGatewayCommand().getRegion(regionName);
                 if (region == null) {
                   handleRegionNull(serverConnection, regionName, batchId);
                 } else {
@@ -574,29 +522,26 @@ public class GatewayReceiverCommand extends BaseCommand {
                         false, clientEvent);
                     serverConnection.setModificationInfo(true, regionName, key);
                   } catch (EntryNotFoundException e) {
-                    logger.info(LocalizedMessage.create(
-                        LocalizedStrings.ProcessBatch_0_DURING_BATCH_DESTROY_NO_ENTRY_WAS_FOUND_FOR_KEY_1,
-                        new Object[] {serverConnection.getName(), key}));
-                    // throw new Exception(e);
+                    logger.info("{}: during batch destroy no entry was found for key {}",
+                        serverConnection.getName(), key);
                   }
                   stats.incDestroyRequest();
                   retry = false;
                 }
               } catch (Exception e) {
-                logger.warn(LocalizedMessage.create(
-                    LocalizedStrings.ProcessBatch_0_CAUGHT_EXCEPTION_PROCESSING_BATCH_DESTROY_REQUEST_1_CONTAINING_2_EVENTS,
-                    new Object[] {serverConnection.getName(), Integer.valueOf(batchId),
-                        Integer.valueOf(numberOfEvents)}),
+                logger.warn(String.format(
+                    "%s: Caught exception processing batch destroy request %s containing %s events",
+                    serverConnection.getName(), batchId, numberOfEvents),
                     e);
                 handleException(removeOnException, stats, e);
               }
               break;
-            case 3: // Update Time-stamp for a RegionEntry
 
+            case 3: // Update Time-stamp for a RegionEntry
               try {
                 // Region name
                 regionNamePart = clientMessage.getPart(partNumber + 2);
-                regionName = regionNamePart.getString();
+                regionName = regionNamePart.getCachedString();
 
                 // Retrieve the event id from the message parts
                 eventIdPart = clientMessage.getPart(partNumber + 3);
@@ -627,17 +572,16 @@ public class GatewayReceiverCommand extends BaseCommand {
                 }
                 // Process the update time-stamp request
                 if (key == null || regionName == null) {
-                  StringId message =
-                      LocalizedStrings.ProcessBatch_0_CAUGHT_EXCEPTION_PROCESSING_BATCH_UPDATE_VERSION_REQUEST_1_CONTAINING_2_EVENTS;
+                  String message =
+                      "%s: Caught exception processing batch update version request request %s containing %s events";
 
-                  Object[] messageArgs = new Object[] {serverConnection.getName(),
-                      Integer.valueOf(batchId), Integer.valueOf(numberOfEvents)};
-                  String s = message.toLocalizedString(messageArgs);
+                  String s = String.format(message, serverConnection.getName(),
+                      batchId, numberOfEvents);
                   logger.warn(s);
                   throw new Exception(s);
 
                 } else {
-                  region = (LocalRegion) crHelper.getRegion(regionName);
+                  region = (LocalRegion) crHelper.getCacheForGatewayCommand().getRegion(regionName);
 
                   if (region == null) {
                     handleRegionNull(serverConnection, regionName, batchId);
@@ -658,28 +602,24 @@ public class GatewayReceiverCommand extends BaseCommand {
                       region.basicBridgeUpdateVersionStamp(key, callbackArg,
                           serverConnection.getProxyID(), false, clientEvent);
                     } catch (EntryNotFoundException e) {
-                      logger.info(LocalizedMessage.create(
-                          LocalizedStrings.ProcessBatch_0_DURING_BATCH_UPDATE_VERSION_NO_ENTRY_WAS_FOUND_FOR_KEY_1,
-                          new Object[] {serverConnection.getName(), key}));
+                      logger.info(
+                          "Entry for key {} was not found in Region {} during ProcessBatch for Update Entry Version",
+                          serverConnection.getName(), key);
                     }
                     retry = false;
                   }
                 }
               } catch (Exception e) {
-                logger.warn(LocalizedMessage.create(
-                    LocalizedStrings.ProcessBatch_0_CAUGHT_EXCEPTION_PROCESSING_BATCH_UPDATE_VERSION_REQUEST_1_CONTAINING_2_EVENTS,
-                    new Object[] {serverConnection.getName(), Integer.valueOf(batchId),
-                        Integer.valueOf(numberOfEvents)}),
-                    e);
+                logger.warn(String.format(
+                    "%s: Caught exception processing batch update version request request %s containing %s events",
+                    serverConnection.getName(), batchId, numberOfEvents), e);
                 handleException(removeOnException, stats, e);
               }
 
               break;
             default:
-              logger.fatal(LocalizedMessage.create(
-                  LocalizedStrings.Processbatch_0_UNKNOWN_ACTION_TYPE_1_FOR_BATCH_FROM_2,
-                  new Object[] {serverConnection.getName(), Integer.valueOf(actionType),
-                      serverConnection.getSocketString()}));
+              logger.fatal("{}: Unknown action type ({}) for batch from {}",
+                  serverConnection.getName(), actionType, serverConnection.getSocketString());
               stats.incUnknowsOperationsReceived();
           }
         } while (retry);
@@ -700,18 +640,19 @@ public class GatewayReceiverCommand extends BaseCommand {
         // If we have an issue with the PDX registry, stop processing more data
         if (e.getCause() instanceof PdxRegistryMismatchException) {
           fatalException = e.getCause();
-          logger.fatal(LocalizedMessage.create(LocalizedStrings.GatewayReceiver_PDX_CONFIGURATION,
-              new Object[] {serverConnection.getMembershipID()}), e.getCause());
+          logger.fatal(String.format(
+              "This gateway receiver has received a PDX type from %s that does match the existing PDX type. This gateway receiver will not process any more events, in order to prevent receiving objects which may not be deserializable.",
+              serverConnection.getMembershipID()), e.getCause());
           break;
         }
 
         // Increment the batch id unless the received batch id is -1 (a
         // failover batch)
-        DistributedSystem ds = crHelper.getCache().getDistributedSystem();
-        String exceptionMessage = LocalizedStrings.GatewayReceiver_EXCEPTION_WHILE_PROCESSING_BATCH
-            .toLocalizedString(new Object[] {
-                ((InternalDistributedSystem) ds).getDistributionManager().getDistributedSystemId(),
-                ds.getDistributedMember()});
+        DistributedSystem ds = crHelper.getCacheForGatewayCommand().getDistributedSystem();
+        String exceptionMessage = String.format(
+            "Exception occurred while processing a batch on the receiver running on DistributedSystem with Id: %s, DistributedMember on which the receiver is running: %s",
+            ((InternalDistributedSystem) ds).getDistributionManager().getDistributedSystemId(),
+            ds.getDistributedMember());
         BatchException70 be =
             new BatchException70(exceptionMessage, e, indexWithoutPDXEvent, batchId);
         exceptions.add(be);
@@ -774,10 +715,12 @@ public class GatewayReceiverCommand extends BaseCommand {
     if (key instanceof EnumId) {
       EnumId enumId = (EnumId) key;
       value = BlobHelper.deserializeBlob((byte[]) value);
-      crHelper.getCache().getPdxRegistry().addRemoteEnum(enumId.intValue(), (EnumInfo) value);
+      crHelper.getCacheForGatewayCommand().getPdxRegistry().addRemoteEnum(enumId.intValue(),
+          (EnumInfo) value);
     } else {
       value = BlobHelper.deserializeBlob((byte[]) value);
-      crHelper.getCache().getPdxRegistry().addRemoteType((int) key, (PdxType) value);
+      crHelper.getCacheForGatewayCommand().getPdxRegistry().addRemoteType((int) key,
+          (PdxType) value);
     }
     return true;
   }
@@ -843,8 +786,8 @@ public class GatewayReceiverCommand extends BaseCommand {
     }
     for (Exception be : exceptions) {
       if (logger.isWarnEnabled()) {
-        logger.warn(LocalizedMessage.create(LocalizedStrings.ProcessBatch_0_WROTE_BATCH_EXCEPTION,
-            servConn.getName()), be);
+        logger.warn(servConn.getName() + ": Wrote batch exception: ",
+            be);
       }
     }
   }
@@ -869,7 +812,7 @@ public class GatewayReceiverCommand extends BaseCommand {
     errorMsg.addObjPart(exception);
     // errorMsg.addStringPart(be.toString());
     errorMsg.send(servConn);
-    logger.warn(LocalizedMessage.create(LocalizedStrings.ProcessBatch_0_WROTE_BATCH_EXCEPTION,
-        servConn.getName()), exception);
+    logger.warn(servConn.getName() + ": Wrote batch exception: ",
+        exception);
   }
 }

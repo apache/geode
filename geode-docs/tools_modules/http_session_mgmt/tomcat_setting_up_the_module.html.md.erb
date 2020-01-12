@@ -56,6 +56,13 @@ For Tomcat 8.0 and 8.5:
                          Tomcat8DeltaSessionManager"/> 
 ```
 
+For Tomcat 9.0:
+
+``` pre
+<Manager className="org.apache.geode.modules.session.catalina.
+                         Tomcat9DeltaSessionManager"/> 
+```
+
 ## <a id="tomcat_setting_up_the_module__section_B0CEBE93564540DBA165E0F7A10FDC0B" class="no-quick-link"></a>Client/Server Setup
 
 <img src="../../images_svg/http_module_cs_with_locator.svg" id="tomcat_setting_up_the_module__image_aqn_jjf_sv" class="image" />
@@ -90,22 +97,28 @@ For Tomcat 8.0 and 8.5:
                          Tomcat8DeltaSessionManager"/> 
 ```
 
+For Tomcat 9.0:
+
+``` pre
+<Manager className="org.apache.geode.modules.session.catalina.
+                         Tomcat9DeltaSessionManager"/> 
+```
+
 The application server operates as a <%=vars.product_name%> client in this configuration. With a similar environment to this example that is for a client/server set up,
 
 ``` pre
-TC_VER=tomcat-8.0.30.C.RELEASE
-INSTANCE=geode-cs
-CLASSPATH=$PWD/$INSTANCE/lib/geode-modules-1.0.0.jar:\
-$PWD/$INSTANCE/lib/geode-modules-tomcat8-1.0.0.jar:\
-$PWD/$TC_VER/lib/servlet-api.jar:\
-$PWD/$TC_VER/lib/catalina.jar:\
-$PWD/$TC_VER/lib/tomcat-util.jar:\
-$PWD/$TC_VER/bin/tomcat-juli.jar
+CLASSPATH=$PWD/lib/geode-modules-<%=vars.product_version%>.0.jar:\
+$PWD/lib/geode-modules-tomcat8-<%=vars.product_version%>.0.jar:\
+$PWD/lib/servlet-api.jar:\
+$PWD/lib/catalina.jar:\
+$PWD/lib/tomcat-util.jar:\
+$PWD/bin/tomcat-juli.jar
 ```
 
-Start the server using `gfsh`:
+Start the locator and server using `gfsh`:
 
 ``` pre
+$ gfsh start locator --name=locator1 --classpath=$CLASSPATH
 $ gfsh start server --name=server1 --locators=localhost[10334] --server-port=0 \
   --classpath=$CLASSPATH
 ```

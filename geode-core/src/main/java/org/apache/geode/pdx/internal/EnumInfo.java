@@ -24,14 +24,13 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.DSCODE;
-import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.Sendable;
-import org.apache.geode.internal.Version;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxSerializationException;
 import org.apache.geode.pdx.WritablePdxInstance;
@@ -59,6 +58,7 @@ public class EnumInfo implements DataSerializableFixedID {
 
   public EnumInfo() {}
 
+  @Override
   public int getDSFID() {
     return ENUM_INFO;
   }
@@ -72,13 +72,17 @@ public class EnumInfo implements DataSerializableFixedID {
     this.clazz = v;
   }
 
-  public void toData(DataOutput out) throws IOException {
+  @Override
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     DataSerializer.writeString(this.clazz, out);
     DataSerializer.writeString(this.name, out);
     DataSerializer.writePrimitiveInt(this.ordinal, out);
   }
 
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  @Override
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     this.clazz = DataSerializer.readString(in);
     this.name = DataSerializer.readString(in);
     this.ordinal = DataSerializer.readPrimitiveInt(in);
@@ -194,7 +198,7 @@ public class EnumInfo implements DataSerializableFixedID {
   }
 
   public static class PdxInstanceEnumInfo
-      implements PdxInstance, Sendable, ConvertableToBytes, ComparableEnum {
+      implements InternalPdxInstance, ComparableEnum {
     private static final long serialVersionUID = 7907582104525106416L;
     private final int enumId;
     private final EnumInfo ei;
@@ -204,37 +208,44 @@ public class EnumInfo implements DataSerializableFixedID {
       this.ei = ei;
     }
 
+    @Override
     public String getClassName() {
       return this.ei.clazz;
     }
 
+    @Override
     public String getName() {
       return this.ei.name;
     }
 
+    @Override
     public int getOrdinal() {
       return this.ei.ordinal;
     }
 
+    @Override
     public boolean isEnum() {
       return true;
     }
 
+    @Override
     public Object getObject() {
       try {
         return this.ei.getEnum();
       } catch (ClassNotFoundException ex) {
         throw new PdxSerializationException(
-            LocalizedStrings.DataSerializer_COULD_NOT_CREATE_AN_INSTANCE_OF_A_CLASS_0
-                .toLocalizedString(getClassName()),
+            String.format("Could not create an instance of a class %s",
+                getClassName()),
             ex);
       }
     }
 
+    @Override
     public boolean hasField(String fieldName) {
       return getFieldNames().contains(fieldName);
     }
 
+    @Immutable
     private static final List<String> fieldNames;
     static {
       ArrayList<String> tmp = new ArrayList<String>(2);
@@ -243,14 +254,17 @@ public class EnumInfo implements DataSerializableFixedID {
       fieldNames = Collections.unmodifiableList(tmp);
     }
 
+    @Override
     public List<String> getFieldNames() {
       return fieldNames;
     }
 
+    @Override
     public boolean isIdentityField(String fieldName) {
       return false;
     }
 
+    @Override
     public Object getField(String fieldName) {
       if ("name".equals(fieldName)) {
         return getName();
@@ -260,10 +274,12 @@ public class EnumInfo implements DataSerializableFixedID {
       return null;
     }
 
+    @Override
     public WritablePdxInstance createWriter() {
       throw new IllegalStateException("PdxInstances that are an enum can not be modified.");
     }
 
+    @Override
     public void sendTo(DataOutput out) throws IOException {
       InternalDataSerializer.writePdxEnumId(this.enumId, out);
     }
@@ -309,12 +325,14 @@ public class EnumInfo implements DataSerializableFixedID {
       return this.ei.name;
     }
 
+    @Override
     public byte[] toBytes() throws IOException {
       HeapDataOutputStream hdos = new HeapDataOutputStream(16, Version.CURRENT);
       sendTo(hdos);
       return hdos.toByteArray();
     }
 
+    @Override
     public int compareTo(Object o) {
       if (o instanceof ComparableEnum) {
         ComparableEnum other = (ComparableEnum) o;

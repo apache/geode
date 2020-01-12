@@ -21,9 +21,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
 
-public enum BackupWriterFactory {
+enum BackupWriterFactory {
+
   FILE_SYSTEM("FileSystem") {
+    @Override
     BackupWriter createWriter(Properties properties, String memberId) {
+      // Remove chars that are illegal in Windows paths
+      memberId = memberId.replaceAll("[:()]", "-");
       FileSystemBackupWriterConfig config = new FileSystemBackupWriterConfig(properties);
       Path targetDir = Paths.get(config.getTargetDirectory())
           .resolve(properties.getProperty(TIMESTAMP)).resolve(memberId);
@@ -37,7 +41,7 @@ public enum BackupWriterFactory {
     }
   };
 
-  private String type;
+  private final String type;
 
   BackupWriterFactory(String type) {
     this.type = type;

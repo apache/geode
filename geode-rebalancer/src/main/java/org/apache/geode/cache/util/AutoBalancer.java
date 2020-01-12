@@ -44,7 +44,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.partitioned.InternalPRInfo;
 import org.apache.geode.internal.cache.partitioned.LoadProbe;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Re-balancing operation relocates data from heavily loaded members to lightly loaded members. In
@@ -157,6 +157,7 @@ public class AutoBalancer implements Declarable {
   /**
    * @deprecated as of Geode 1.5 use initialize instead.
    */
+  @Override
   public void init(Properties props) {
     internalInitialize(props);
   }

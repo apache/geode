@@ -15,7 +15,6 @@
 
 package org.apache.geode.test.dunit.rules;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -26,7 +25,6 @@ import java.util.Set;
 
 import org.junit.rules.ExternalResource;
 
-import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.cache.query.internal.DefaultQueryService;
 import org.apache.geode.cache.query.internal.cq.CqService;
@@ -49,6 +47,7 @@ public class CQUnitTestRule extends ExternalResource {
   public CqService cqService;
   public InternalCqQuery internalCqQuery;
 
+  @Override
   protected void before() throws Throwable {
     securityService = mock(SecurityService.class);
     message = mock(Message.class);
@@ -63,7 +62,7 @@ public class CQUnitTestRule extends ExternalResource {
     DefaultQueryService queryService = mock(DefaultQueryService.class);
     DefaultQuery query = mock(DefaultQuery.class);
 
-    Set<String> regionsInQuery = new HashSet();
+    Set<String> regionsInQuery = new HashSet<>();
     regionsInQuery.add(regionName);
 
     when(connection.getCachedRegionHelper()).thenReturn(crHelper);

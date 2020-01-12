@@ -12,13 +12,11 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- *
- */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.client.internal.DestroyOp;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.tier.Command;
@@ -27,10 +25,8 @@ import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.cache.versions.VersionTag;
 
-/**
- *
- */
 public class Destroy70 extends Destroy65 {
+  @Immutable
   private static final Destroy70 singleton = new Destroy70();
 
   public static Command getCommand() {

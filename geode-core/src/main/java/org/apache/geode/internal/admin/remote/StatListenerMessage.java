@@ -16,9 +16,15 @@
 
 package org.apache.geode.internal.admin.remote;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-import org.apache.geode.distributed.internal.*;
+import org.apache.geode.distributed.internal.AdminMessageType;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.PooledDistributionMessage;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * A message that is sent to a particular console distribution manager when changes have been
@@ -50,7 +56,6 @@ public class StatListenerMessage extends PooledDistributionMessage implements Ad
   /**
    * Notes that the value of a given statistics has changed
    *
-   * @param listenerId
    *
    */
   public void addChange(int listenerId, double value) {
@@ -70,6 +75,7 @@ public class StatListenerMessage extends PooledDistributionMessage implements Ad
     }
   }
 
+  @Override
   public int getDSFID() {
     return STAT_LISTENER_MESSAGE;
   }
@@ -80,8 +86,9 @@ public class StatListenerMessage extends PooledDistributionMessage implements Ad
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     out.writeLong(this.timestamp);
     out.writeInt(this.changeCount);
     for (int i = 0; i < this.changeCount; i++) {
@@ -91,8 +98,9 @@ public class StatListenerMessage extends PooledDistributionMessage implements Ad
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.timestamp = in.readLong();
     this.changeCount = in.readInt();
     this.listenerIds = new int[this.changeCount];

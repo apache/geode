@@ -24,18 +24,15 @@ import java.util.Collections;
 import java.util.List;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.util.StopWatch;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for {@link StatMonitorHandler}.
  *
  * @since GemFire 7.0
  */
-@Category(UnitTest.class)
 public class StatMonitorHandlerTest {
 
   @Test

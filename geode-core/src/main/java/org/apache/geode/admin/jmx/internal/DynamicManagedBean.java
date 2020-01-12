@@ -71,7 +71,7 @@ public class DynamicManagedBean extends org.apache.commons.modeler.ManagedBean {
         }
       }
       this.attributes =
-          (AttributeInfo[]) attributesList.toArray(new AttributeInfo[attributesList.size()]);
+          (AttributeInfo[]) attributesList.toArray(new AttributeInfo[0]);
 
       /*
        * super.info should be nulled out anytime the structure is changed, such as altering the
@@ -103,7 +103,7 @@ public class DynamicManagedBean extends org.apache.commons.modeler.ManagedBean {
         }
       }
       this.operations =
-          (OperationInfo[]) operationsList.toArray(new OperationInfo[operationsList.size()]);
+          (OperationInfo[]) operationsList.toArray(new OperationInfo[0]);
 
       /*
        * super.info should be nulled out anytime the structure is changed, such as altering the

@@ -25,7 +25,7 @@ You have several options for client cache configuration. Start your client cache
 <%=vars.product_name%> clients are processes that send most or all of their data requests and updates to a <%=vars.product_name%> server system. Clients run as standalone processes, without peers of their own.
 
 **Note:**
-<%=vars.product_name%> automatically configures the distributed system for your `ClientCache` as standalone, which means the client has no peers. Do not try to set the `gemfire.properties` `mcast-port` or `locators` for a client application or the system will throw an exception.
+<%=vars.product_name%> automatically configures the cluster for your `ClientCache` as standalone, which means the client has no peers. Do not try to set the `gemfire.properties` `mcast-port` or `locators` for a client application or the system will throw an exception.
 
 1.  Create your client cache:
     1.  In your `cache.xml`, use the `client-cache` DOCTYPE and configure your cache inside a `<client-cache>` element. Configure your server connection pool and your regions as needed. Example:

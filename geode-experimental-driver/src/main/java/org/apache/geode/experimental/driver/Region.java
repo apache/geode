@@ -38,7 +38,6 @@ public interface Region<K, V> {
    * Gets the number of entries in this region.
    *
    * @return Non-negative integer count.
-   * @throws IOException
    */
   int size() throws IOException;
 
@@ -47,7 +46,6 @@ public interface Region<K, V> {
    *
    * @param key Unique key associated with a value.
    * @return Value, if any, associated with <code>key</code>.
-   * @throws IOException
    */
   V get(K key) throws IOException;
 
@@ -56,7 +54,6 @@ public interface Region<K, V> {
    *
    * @param keys Collection of unique keys associated with values.
    * @return Map from <code>keys</code> to their associated values.
-   * @throws IOException
    */
   Map<K, V> getAll(Collection<K> keys) throws IOException;
 
@@ -65,7 +62,6 @@ public interface Region<K, V> {
    *
    * @param key Unique key to associate with the <code>value</code>.
    * @param value Value to associate with the <code>key</code>.
-   * @throws IOException
    */
   void put(K key, V value) throws IOException;
 
@@ -74,22 +70,29 @@ public interface Region<K, V> {
    * not be inserted, the remaining pair insertions will be attempted.
    *
    * @param values Map from <code>keys</code> to their associated values.
-   * @throws IOException
    */
   void putAll(Map<K, V> values) throws IOException;
 
   /**
    * Removes all keys and values associated from this region.
    *
-   * @throws IOException
    */
   void clear() throws IOException;
+
+  /**
+   * Puts the <code>value</code> into this region for the <code>key</code> if <code>key</code> does
+   * not already have a value associated with it.
+   *
+   * @return null if the value was set; the current value otherwise.
+   *         NOTE that if the value in the region was set to null, this method will return null
+   *         without setting a new value.
+   */
+  V putIfAbsent(K key, V value) throws IOException;
 
   /**
    * Removes any value associated with the <code>key</code> from this region.
    *
    * @param key Unique key associated with a value.
-   * @throws IOException
    */
   void remove(K key) throws IOException;
 
@@ -97,7 +100,6 @@ public interface Region<K, V> {
    * Gets all the keys for which this region has entries
    *
    * @return Set of keys in this region
-   * @throws IOException
    */
   Set<K> keySet() throws IOException;
 }

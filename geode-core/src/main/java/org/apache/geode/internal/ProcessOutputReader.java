@@ -15,10 +15,15 @@
 
 package org.apache.geode.internal;
 
-import java.io.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * A ProcessOutputReader will read both stdout and stderr from a {@link java.lang.Process} process.
@@ -91,8 +96,7 @@ public class ProcessOutputReader {
             // The process wrote to stderr so manufacture
             // an error exist code
             lines.add(
-                LocalizedStrings.ProcessOutputReader_FAILED_TO_GET_EXIT_STATUS_AND_IT_WROTE_TO_STDERR_SO_SETTING_EXIT_STATUS_TO_1
-                    .toLocalizedString());
+                "Failed to get exit status and it wrote to stderr so setting exit status to 1.");
             exitCode = 1;
           }
         } else {

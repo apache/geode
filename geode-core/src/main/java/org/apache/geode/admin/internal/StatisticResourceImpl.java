@@ -23,7 +23,6 @@ import org.apache.geode.admin.SystemMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.admin.Stat;
 import org.apache.geode.internal.admin.StatResource;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Provides monitoring of a statistic resource.
@@ -70,22 +69,27 @@ public class StatisticResourceImpl implements org.apache.geode.admin.StatisticRe
   // Attributes accessors and mutators
   // -------------------------------------------------------------------------
 
+  @Override
   public String getName() {
     return this.name;
   }
 
+  @Override
   public String getDescription() {
     return this.description;
   }
 
+  @Override
   public String getType() {
     return this.type;
   }
 
+  @Override
   public String getOwner() {
     return this.member.toString();
   }
 
+  @Override
   public Statistic[] getStatistics() {
     if (this.statistics == null) {
       try {
@@ -97,6 +101,7 @@ public class StatisticResourceImpl implements org.apache.geode.admin.StatisticRe
     return this.statistics;
   }
 
+  @Override
   public long getUniqueId() {
     return this.statResource.getResourceUniqueID();
   }
@@ -105,6 +110,7 @@ public class StatisticResourceImpl implements org.apache.geode.admin.StatisticRe
   // Operations
   // -------------------------------------------------------------------------
 
+  @Override
   public void refresh() throws org.apache.geode.admin.AdminException {
     Stat[] stats = null;
     if (this.statResource != null) {
@@ -112,8 +118,8 @@ public class StatisticResourceImpl implements org.apache.geode.admin.StatisticRe
     }
     if (stats == null || stats.length < 1) {
       throw new AdminException(
-          LocalizedStrings.StatisticResourceImpl_FAILED_TO_REFRESH_STATISTICS_0_FOR_1
-              .toLocalizedString(getType() + "-" + getName(), getOwner()));
+          String.format("Failed to refresh statistics %s for %s",
+              getType() + "-" + getName(), getOwner()));
     }
 
     if (this.statistics == null || this.statistics.length < 1) {

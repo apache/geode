@@ -25,14 +25,13 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.SerializationVersions;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.FilterProfile;
@@ -42,8 +41,12 @@ import org.apache.geode.internal.cache.RegionEventImpl;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.ClientTombstoneMessage;
 import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessage;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.SerializationVersions;
+import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * This message class sends tombstone GC information to other PR holders
@@ -55,7 +58,8 @@ public class PRTombstoneMessage extends PartitionMessageWithDirectReply
 
   private static final Logger logger = LogService.getLogger();
 
-  private static Version[] serializationVersions = null;
+  @Immutable
+  private static final Version[] serializationVersions = null;
 
   private Set<Object> keys;
   private EventID eventID;
@@ -96,12 +100,12 @@ public class PRTombstoneMessage extends PartitionMessageWithDirectReply
   @Override
   protected boolean operateOnPartitionedRegion(final ClusterDistributionManager dm,
       PartitionedRegion r, long startTime) throws ForceReattemptException {
-    if (logger.isTraceEnabled(LogMarker.DM)) {
-      logger.debug("PRTombstoneMessage operateOnRegion: {}", r.getFullPath());
+    if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+      logger.trace("PRTombstoneMessage operateOnRegion: {}", r.getFullPath());
     }
     FilterProfile fp = r.getFilterProfile();
     if (this.keys != null && this.keys.size() > 0) { // sanity check
-      if (fp != null && CacheClientNotifier.getInstance() != null && this.eventID != null) {
+      if (fp != null && CacheClientNotifier.singletonHasClientProxies() && this.eventID != null) {
         RegionEventImpl regionEvent = new RegionEventImpl(r, Operation.REGION_DESTROY, null, true,
             r.getGemFireCache().getMyId());
         regionEvent.setLocalFilterInfo(fp.getLocalFilterRouting(regionEvent));
@@ -119,17 +123,20 @@ public class PRTombstoneMessage extends PartitionMessageWithDirectReply
     buff.append("; eventID=").append(this.eventID);
   }
 
+  @Override
   public int getDSFID() {
     return PR_TOMBSTONE_MESSAGE;
   }
 
+  @Override
   public Version[] getSerializationVersions() {
     return serializationVersions;
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     int numKeys = in.readInt();
     this.keys = new HashSet<Object>(numKeys);
     for (int i = 0; i < numKeys; i++) {
@@ -139,8 +146,9 @@ public class PRTombstoneMessage extends PartitionMessageWithDirectReply
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     out.writeInt(this.keys.size());
     for (Object key : keys) {
       DataSerializer.writeObject(key, out);

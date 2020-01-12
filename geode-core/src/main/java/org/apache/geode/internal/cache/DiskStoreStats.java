@@ -14,7 +14,15 @@
  */
 package org.apache.geode.internal.cache;
 
-import org.apache.geode.*;
+import java.util.function.LongSupplier;
+
+import org.apache.geode.StatisticDescriptor;
+import org.apache.geode.Statistics;
+import org.apache.geode.StatisticsFactory;
+import org.apache.geode.StatisticsType;
+import org.apache.geode.StatisticsTypeFactory;
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 
@@ -26,6 +34,7 @@ import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
  */
 public class DiskStoreStats {
 
+  @Immutable
   private static final StatisticsType type;
 
   //////////////////// Statistic "Id" Fields ////////////////////
@@ -240,16 +249,28 @@ public class DiskStoreStats {
   /** The Statistics object that we delegate most behavior to */
   private final Statistics stats;
 
+  private final LongSupplier clock;
+
   /////////////////////// Constructors ///////////////////////
 
   /**
    * Creates a new <code>DiskStoreStatistics</code> for the given region.
    */
   public DiskStoreStats(StatisticsFactory f, String name) {
-    this.stats = f.createAtomicStatistics(type, name);
+    this(f, name, DistributionStats::getStatTime);
+  }
+
+  @VisibleForTesting
+  public DiskStoreStats(StatisticsFactory factory, String name, LongSupplier clock) {
+    stats = factory.createAtomicStatistics(type, name);
+    this.clock = clock;
   }
 
   ///////////////////// Instance Methods /////////////////////
+
+  private long getTime() {
+    return clock.getAsLong();
+  }
 
   public void close() {
     this.stats.close();
@@ -339,12 +360,12 @@ public class DiskStoreStats {
    */
   public long startWrite() {
     this.stats.incInt(writesInProgressId, 1);
-    return DistributionStats.getStatTime();
+    return getTime();
   }
 
   public long startFlush() {
     this.stats.incInt(flushesInProgressId, 1);
-    return DistributionStats.getStatTime();
+    return getTime();
   }
 
   public void incWrittenBytes(long bytesWritten, boolean async) {
@@ -358,7 +379,7 @@ public class DiskStoreStats {
    */
   public long endWrite(long start) {
     this.stats.incInt(writesInProgressId, -1);
-    long end = DistributionStats.getStatTime();
+    long end = getTime();
     this.stats.incLong(writesId, 1);
     this.stats.incLong(writeTimeId, end - start);
     return end;
@@ -366,7 +387,7 @@ public class DiskStoreStats {
 
   public void endFlush(long start) {
     this.stats.incInt(flushesInProgressId, -1);
-    long end = DistributionStats.getStatTime();
+    long end = getTime();
     this.stats.incLong(flushesId, 1);
     this.stats.incLong(flushTimeId, end - start);
   }
@@ -383,7 +404,7 @@ public class DiskStoreStats {
    * @see DiskRegion#get
    */
   public long startRead() {
-    return DistributionStats.getStatTime();
+    return getTime();
   }
 
   /**
@@ -393,7 +414,7 @@ public class DiskStoreStats {
    * @param bytesRead The number of bytes that were read
    */
   public long endRead(long start, long bytesRead) {
-    long end = DistributionStats.getStatTime();
+    long end = getTime();
     this.stats.incLong(readsId, 1);
     this.stats.incLong(readTimeId, end - start);
     this.stats.incLong(bytesReadId, bytesRead);
@@ -408,16 +429,16 @@ public class DiskStoreStats {
    */
   public long startRecovery() {
     this.stats.incInt(recoveriesInProgressId, 1);
-    return DistributionStats.getStatTime();
+    return getTime();
   }
 
   public long startCompaction() {
     this.stats.incInt(compactsInProgressId, 1);
-    return DistributionStats.getStatTime();
+    return getTime();
   }
 
   public long startOplogRead() {
-    return DistributionStats.getStatTime();
+    return getTime();
   }
 
   /**
@@ -428,20 +449,20 @@ public class DiskStoreStats {
    */
   public void endRecovery(long start, long bytesRead) {
     this.stats.incInt(recoveriesInProgressId, -1);
-    long end = DistributionStats.getStatTime();
+    long end = getTime();
     this.stats.incLong(recoveryTimeId, end - start);
     this.stats.incLong(recoveredBytesId, bytesRead);
   }
 
   public void endCompaction(long start) {
     this.stats.incInt(compactsInProgressId, -1);
-    long end = DistributionStats.getStatTime();
+    long end = getTime();
     this.stats.incInt(compactsId, 1);
     this.stats.incLong(compactTimeId, end - start);
   }
 
   public void endOplogRead(long start, long bytesRead) {
-    long end = DistributionStats.getStatTime();
+    long end = getTime();
     this.stats.incInt(oplogRecoveriesId, 1);
     this.stats.incLong(oplogRecoveryTimeId, end - start);
     this.stats.incLong(oplogRecoveredBytesId, bytesRead);
@@ -475,7 +496,7 @@ public class DiskStoreStats {
    * @see DiskRegion#remove
    */
   public long startRemove() {
-    return DistributionStats.getStatTime();
+    return getTime();
   }
 
   /**
@@ -484,7 +505,7 @@ public class DiskStoreStats {
    * @param start The time at which the read operation started
    */
   public long endRemove(long start) {
-    long end = DistributionStats.getStatTime();
+    long end = getTime();
     this.stats.incLong(removesId, 1);
     this.stats.incLong(removeTimeId, end - start);
     return end;
@@ -522,7 +543,7 @@ public class DiskStoreStats {
   }
 
   public long getStatTime() {
-    return DistributionStats.getStatTime();
+    return getTime();
   }
 
   public void incOpenOplogs() {

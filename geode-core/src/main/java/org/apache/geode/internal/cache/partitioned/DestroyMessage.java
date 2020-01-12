@@ -53,11 +53,12 @@ import org.apache.geode.internal.cache.PrimaryBucketException;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.versions.DiskVersionTag;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * A class that specifies a destroy operation.
@@ -207,7 +208,7 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
     Set failures = r.getDistributionManager().putOutgoing(m);
     if (failures != null && failures.size() > 0) {
       throw new ForceReattemptException(
-          LocalizedStrings.DestroyMessage_FAILED_SENDING_0.toLocalizedString(m));
+          String.format("Failed sending < %s >", m));
     }
     return p;
   }
@@ -264,26 +265,17 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
         try {
           Integer bucket = Integer
               .valueOf(PartitionedRegionHelper.getHashKey(r, null, this.key, null, this.cbArg));
-          // try {
-          // // the event must show its true origin for cachewriter invocation
-          // event.setOriginRemote(true);
-          // event.setPartitionMessage(this);
-          // r.doCacheWriteBeforeDestroy(event);
-          // }
-          // finally {
-          // event.setOriginRemote(false);
-          // }
           event.setCausedByMessage(this);
           r.getDataView().destroyOnRemote(event, true/* cacheWrite */, this.expectedOldValue);
-          if (logger.isTraceEnabled(LogMarker.DM)) {
-            logger.trace(LogMarker.DM, "{} updated bucket: {} with key: {}", getClass().getName(),
-                bucket, this.key);
+          if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+            logger.trace(LogMarker.DM_VERBOSE, "{} updated bucket: {} with key: {}",
+                getClass().getName(), bucket, this.key);
           }
         } catch (CacheWriterException cwe) {
           sendReply(getSender(), this.processorId, dm, new ReplyException(cwe), r, startTime);
           return false;
         } catch (EntryNotFoundException eee) {
-          logger.trace(LogMarker.DM, "{}: operateOnRegion caught EntryNotFoundException",
+          logger.trace(LogMarker.DM_VERBOSE, "{}: operateOnRegion caught EntryNotFoundException",
               getClass().getName());
           ReplyMessage.send(getSender(), getProcessorId(), new ReplyException(eee),
               getReplySender(dm), r.isInternalRegion());
@@ -331,13 +323,15 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
     }
   }
 
+  @Override
   public int getDSFID() {
     return PR_DESTROY;
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     setKey(DataSerializer.readObject(in));
     this.cbArg = DataSerializer.readObject(in);
     this.op = Operation.fromOrdinal(in.readByte());
@@ -357,8 +351,9 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     DataSerializer.writeObject(getKey(), out);
     DataSerializer.writeObject(this.cbArg, out);
     out.writeByte(this.op.ordinal);
@@ -388,7 +383,7 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
   }
 
   /**
-   * create a new EntryEvent to be used in notifying listeners, bridge servers, etc. Caller must
+   * create a new EntryEvent to be used in notifying listeners, cache servers, etc. Caller must
    * release result if it is != to sourceEvent
    */
   @Retained
@@ -420,7 +415,6 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
    * Assists the toString method in reporting the contents of this message
    *
    * @see PartitionMessage#toString()
-   * @param buff
    */
   @Override
   protected void appendFields(StringBuilder buff) {
@@ -467,8 +461,8 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
   }
 
   @Override
-  protected boolean mayAddToMultipleSerialGateways(ClusterDistributionManager dm) {
-    return _mayAddToMultipleSerialGateways(dm);
+  protected boolean mayNotifySerialGatewaySender(ClusterDistributionManager dm) {
+    return notifiesSerialGatewaySender(dm);
   }
 
   public static class DestroyReplyMessage extends ReplyMessage {
@@ -499,16 +493,16 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
     @Override
     public void process(final DistributionManager dm, final ReplyProcessor21 rp) {
       final long startTime = getTimestamp();
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM,
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE,
             "DestroyReplyMessage process invoking reply processor with processorId: {}",
             this.processorId);
       }
       // dm.getLogger().warning("RemotePutResponse processor is " +
       // ReplyProcessor21.getProcessor(this.processorId));
       if (rp == null) {
-        if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.trace(LogMarker.DM, "DestroyReplyMessage processor not found");
+        if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+          logger.trace(LogMarker.DM_VERBOSE, "DestroyReplyMessage processor not found");
         }
         return;
       }
@@ -524,15 +518,16 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
       }
       rp.process(this);
 
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.debug("{} processed {} ", rp, this);
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE, "{} processed {} ", rp, this);
       }
       dm.getStats().incReplyMessageTime(NanoTimer.getTime() - startTime);
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       byte b = this.versionTag != null ? HAS_VERSION_TAG : 0;
       b |= this.versionTag instanceof DiskVersionTag ? PERSISTENT_TAG : 0;
       out.writeByte(b);
@@ -542,8 +537,9 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       byte b = in.readByte();
       boolean hasTag = (b & HAS_VERSION_TAG) != 0;
       boolean persistentTag = (b & PERSISTENT_TAG) != 0;

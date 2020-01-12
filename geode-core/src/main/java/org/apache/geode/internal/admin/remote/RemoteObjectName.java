@@ -16,9 +16,12 @@
 
 package org.apache.geode.internal.admin.remote;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-import org.apache.geode.*;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.DataSerializer;
 
 /**
  * Used to name an object in a region. This class is needed so that the console will not need to
@@ -72,12 +75,14 @@ public class RemoteObjectName implements DataSerializable {
     return className + " \"" + value + "\"";
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeString(this.className, out);
     DataSerializer.writeString(this.value, out);
     out.writeInt(this.hashCode);
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.className = DataSerializer.readString(in);
     this.value = DataSerializer.readString(in);

@@ -21,14 +21,12 @@ import static org.mockito.Mockito.verify;
 
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.query.cq.internal.command.CloseCQ;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 import org.apache.geode.test.dunit.rules.CQUnitTestRule;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class CloseCQTest {
 
   @Rule

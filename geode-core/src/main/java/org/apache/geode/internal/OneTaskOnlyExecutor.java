@@ -20,6 +20,8 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
+
 /**
  * A decorator for a ScheduledExecutorService which tries to make sure that there is only one task
  * in the queue for the executor service that has been submitted through this decorator.
@@ -44,17 +46,20 @@ import java.util.concurrent.TimeUnit;
 @SuppressWarnings("synthetic-access")
 public class OneTaskOnlyExecutor {
 
+  private final ThreadsMonitoring threadMonitoring;
   private final ScheduledExecutorService ex;
   private ScheduledFuture<?> future = null;
   private ConflatedTaskListener listener;
 
-  public OneTaskOnlyExecutor(ScheduledExecutorService ex) {
-    this(ex, new ConflatedTaskListenerAdapter());
+  public OneTaskOnlyExecutor(ScheduledExecutorService ex, ThreadsMonitoring tMonitoring) {
+    this(ex, new ConflatedTaskListenerAdapter(), tMonitoring);
   }
 
-  public OneTaskOnlyExecutor(ScheduledExecutorService ex, ConflatedTaskListener listener) {
+  public OneTaskOnlyExecutor(ScheduledExecutorService ex, ConflatedTaskListener listener,
+      ThreadsMonitoring tMonitoring) {
     this.ex = ex;
     this.listener = listener;
+    this.threadMonitoring = tMonitoring;
   }
 
   /**
@@ -127,11 +132,17 @@ public class OneTaskOnlyExecutor {
       this.runnable = runnable;
     }
 
+    @Override
     public void run() {
       synchronized (OneTaskOnlyExecutor.this) {
         future = null;
       }
-      runnable.run();
+      beforeExecute();
+      try {
+        runnable.run();
+      } finally {
+        afterExecute();
+      }
     }
   }
 
@@ -142,6 +153,7 @@ public class OneTaskOnlyExecutor {
       this.callable = callable;
     }
 
+    @Override
     public T call() throws Exception {
       synchronized (OneTaskOnlyExecutor.this) {
         future = null;
@@ -155,8 +167,21 @@ public class OneTaskOnlyExecutor {
   }
 
   public static class ConflatedTaskListenerAdapter implements ConflatedTaskListener {
+    @Override
     public void taskDropped() {
 
+    }
+  }
+
+  protected void beforeExecute() {
+    if (this.threadMonitoring != null) {
+      threadMonitoring.startMonitor(ThreadsMonitoring.Mode.OneTaskOnlyExecutor);
+    }
+  }
+
+  protected void afterExecute() {
+    if (this.threadMonitoring != null) {
+      threadMonitoring.endMonitor();
     }
   }
 }

@@ -15,8 +15,17 @@
 package org.apache.geode.internal.offheap;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -26,20 +35,17 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.compression.Compressor;
-import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.BytesAndBitsForCompactor;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.RegionEntryContext;
 import org.apache.geode.internal.offheap.MemoryBlock.State;
-import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.internal.serialization.DSCODE;
+import org.apache.geode.internal.serialization.Version;
 
-@Category(UnitTest.class)
 public class OffHeapStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
 
   private MemoryAllocator ma;
@@ -375,19 +381,19 @@ public class OffHeapStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
     OffHeapStoredObject chunk = createValueAsSerializedStoredObject(getValue());
 
     byte[] serailizedValue = chunk.getSerializedValue();
-    serailizedValue[0] = DSCODE.PDX;
+    serailizedValue[0] = DSCODE.PDX.toByte();
     chunk.setSerializedValue(serailizedValue);
 
     assertThat(chunk.isSerializedPdxInstance()).isTrue();
 
     serailizedValue = chunk.getSerializedValue();
-    serailizedValue[0] = DSCODE.PDX_ENUM;
+    serailizedValue[0] = DSCODE.PDX_ENUM.toByte();
     chunk.setSerializedValue(serailizedValue);
 
     assertThat(chunk.isSerializedPdxInstance()).isTrue();
 
     serailizedValue = chunk.getSerializedValue();
-    serailizedValue[0] = DSCODE.PDX_INLINE_ENUM;
+    serailizedValue[0] = DSCODE.PDX_INLINE_ENUM.toByte();
     chunk.setSerializedValue(serailizedValue);
 
     assertThat(chunk.isSerializedPdxInstance()).isTrue();
@@ -572,7 +578,7 @@ public class OffHeapStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
     byte[] actual = dataOutput.toByteArray();
 
     byte[] expected = new byte[regionEntryValue.length + 2];
-    expected[0] = DSCODE.BYTE_ARRAY;
+    expected[0] = DSCODE.BYTE_ARRAY.toByte();
     expected[1] = (byte) regionEntryValue.length;
     System.arraycopy(regionEntryValue, 0, expected, 2, regionEntryValue.length);
 

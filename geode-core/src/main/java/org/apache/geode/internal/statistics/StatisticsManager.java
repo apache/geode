@@ -19,28 +19,27 @@ import java.util.List;
 
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsFactory;
+import org.apache.geode.internal.statistics.platform.OsStatisticsFactory;
 
 /**
  * Defines the contract that a statistics factory must implement for its Statistics instances. This
  * is an internal implementation specific interface.
- *
- *
  */
-public interface StatisticsManager extends StatisticsFactory {
+public interface StatisticsManager extends StatisticsFactory, OsStatisticsFactory {
   /**
    * Called when the Statistics instance <code>s</code> is closed.
    */
   void destroyStatistics(Statistics s);
 
   /**
-   * Returns a name that can be used to identify the manager
+   * Returns a name that can be used to identify the manager.
    */
   String getName();
 
   /**
-   * Returns a numeric id that can be used to identify the manager
+   * Returns the pid for this process.
    */
-  long getId();
+  int getPid();
 
   /**
    * Returns the start time of this manager.
@@ -66,7 +65,7 @@ public interface StatisticsManager extends StatisticsFactory {
   /**
    * Returns the statistics resource instance given its id.
    */
-  Statistics findStatistics(long id);
+  Statistics findStatisticsByUniqueId(long uniqueId);
 
   /**
    * Returns true if the specified statistic resource still exists.

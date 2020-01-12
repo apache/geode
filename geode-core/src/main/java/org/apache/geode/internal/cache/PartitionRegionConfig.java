@@ -12,27 +12,29 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
-/*
- * Created on Dec 1, 2005
- */
 package org.apache.geode.internal.cache;
 
-import java.io.*;
-import java.util.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.ExpirationAttributes;
-import org.apache.geode.cache.FixedPartitionAttributes;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.partition.PartitionListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.ExternalizableDSFID;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.Version;
-import org.apache.geode.internal.cache.PartitionAttributesImpl;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.util.Versionable;
 import org.apache.geode.internal.util.VersionedArrayList;
 
@@ -42,12 +44,11 @@ import org.apache.geode.internal.util.VersionedArrayList;
  */
 public class PartitionRegionConfig extends ExternalizableDSFID implements Versionable {
 
-  /** PRId. */
-  int prId;
+  private int prId;
 
-  PartitionAttributesImpl pAttrs;
+  private PartitionAttributesImpl pAttrs;
 
-  Scope scope = null;
+  private Scope scope = null;
 
   /** Nodes participating in this PartitionedRegion */
   private VersionedArrayList nodes = null;
@@ -90,46 +91,19 @@ public class PartitionRegionConfig extends ExternalizableDSFID implements Versio
 
   private ArrayList<String> partitionListenerClassNames = new ArrayList<String>();
 
-  private Set<String> gatewaySenderIds = Collections.emptySet();
-
-  public Set<String> getGatewaySenderIds() {
-    return gatewaySenderIds;
+  public void setGatewaySenderIds(Set<String> gatewaySenderIds) {
+    this.gatewaySenderIds = Collections.unmodifiableSet(gatewaySenderIds);
   }
+
+  private Set<String> gatewaySenderIds = Collections.emptySet();
 
   /**
    * Default constructor for DataSerializer
    */
-  public PartitionRegionConfig() {}
-
-  /**
-   * Constructor.
-   */
-  PartitionRegionConfig(int prId, String path, PartitionAttributes prAtt, Scope sc) {
-    this.prId = prId;
-    this.pAttrs = (PartitionAttributesImpl) prAtt;
-    this.scope = sc;
-    this.isDestroying = false;
-    this.nodes = new VersionedArrayList();
-    if (prAtt.getPartitionResolver() != null) {
-      this.partitionResolver = prAtt.getPartitionResolver().getClass().getName();
-    }
-    this.colocatedWith = prAtt.getColocatedWith();
-    this.isColocationComplete = colocatedWith == null;
-    this.fullPath = path;
-    this.firstDataStoreCreated = prAtt.getLocalMaxMemory() > 0;
-    this.elderFPAs = new LinkedHashSet<FixedPartitionAttributesImpl>();
-    PartitionListener[] prListeners = prAtt.getPartitionListeners();
-    if (prListeners != null && prListeners.length != 0) {
-      for (int i = 0; i < prListeners.length; i++) {
-        PartitionListener listener = prListeners[i];
-        this.partitionListenerClassNames.add(listener.getClass().getName());
-      }
-    }
+  public PartitionRegionConfig() {
+    // nothing
   }
 
-  /**
-   * Constructor.
-   */
   PartitionRegionConfig(int prId, String path, PartitionAttributes prAtt, Scope sc,
       EvictionAttributes ea, final ExpirationAttributes regionIdleTimeout,
       final ExpirationAttributes regionTimeToLive, final ExpirationAttributes entryIdleTimeout,
@@ -162,6 +136,10 @@ public class PartitionRegionConfig extends ExternalizableDSFID implements Versio
       }
     }
     this.gatewaySenderIds = gatewaySenderIds;
+  }
+
+  public Set<String> getGatewaySenderIds() {
+    return gatewaySenderIds;
   }
 
   /**
@@ -269,7 +247,8 @@ public class PartitionRegionConfig extends ExternalizableDSFID implements Versio
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     out.writeInt(this.prId);
     out.writeByte(this.scope.ordinal);
     InternalDataSerializer.invokeToData(this.pAttrs, out);
@@ -295,7 +274,8 @@ public class PartitionRegionConfig extends ExternalizableDSFID implements Versio
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     this.prId = in.readInt();
     this.scope = Scope.fromOrdinal(in.readByte());
     this.pAttrs = PartitionAttributesImpl.createFromData(in);
@@ -343,26 +323,39 @@ public class PartitionRegionConfig extends ExternalizableDSFID implements Versio
     isDestroying = true;
   }
 
-  void setColocationComplete() {
+  void setColocationComplete(PartitionedRegion partitionedRegion) {
     this.isColocationComplete = true;
+    partitionedRegion.executeColocationCallbacks();
+  }
+
+  public void setEntryIdleTimeout(ExpirationAttributes idleTimeout) {
+    this.entryIdleTimeout = idleTimeout;
+  }
+
+  public void setEntryTimeToLive(ExpirationAttributes timeToLive) {
+    this.entryTimeToLive = timeToLive;
   }
 
   public boolean isGreaterNodeListVersion(final PartitionRegionConfig other) {
     return this.nodes.isNewerThan(other.nodes);
   }
 
+  @Override
   public Comparable getVersion() {
     return this.nodes.getVersion();
   }
 
+  @Override
   public boolean isNewerThan(Versionable other) {
     return this.nodes.isNewerThan(other);
   }
 
+  @Override
   public boolean isSame(Versionable other) {
     return this.nodes.isSame(other);
   }
 
+  @Override
   public boolean isOlderThan(Versionable other) {
     return this.nodes.isOlderThan(other);
   }
@@ -422,7 +415,6 @@ public class PartitionRegionConfig extends ExternalizableDSFID implements Versio
   }
 
   public boolean hasSameDataStoreMembers(PartitionRegionConfig prConfig) {
-
     for (Node node : getNodes()) {
       if (!prConfig.containsMember(node.getMemberId())
           && ((node.getPRType() == Node.ACCESSOR_DATASTORE)
@@ -442,13 +434,11 @@ public class PartitionRegionConfig extends ExternalizableDSFID implements Versio
 
   @Override
   public Version[] getSerializationVersions() {
-    // TODO Auto-generated method stub
     return null;
   }
 
   public void setDatastoreCreated(EvictionAttributes evictionAttributes) {
     this.firstDataStoreCreated = true;
     this.ea = evictionAttributes;
-
   }
 }

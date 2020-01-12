@@ -15,13 +15,11 @@
 
 package org.apache.geode.internal.cache;
 
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.CacheStatistics;
+import org.apache.geode.cache.EntryDestroyedException;
+import org.apache.geode.cache.StatisticsDisabledException;
 import org.apache.geode.internal.InternalStatisticsDisabledException;
 
-/**
- *
- *
- */
 class CacheStatisticsImpl implements CacheStatistics {
   private final InternalRegion region;
   private final RegionEntry regionEntry;
@@ -32,6 +30,7 @@ class CacheStatisticsImpl implements CacheStatistics {
     this.regionEntry = regionEntry;
   }
 
+  @Override
   public long getHitCount() throws StatisticsDisabledException {
     checkEntryDestroyed();
     try {
@@ -41,6 +40,7 @@ class CacheStatisticsImpl implements CacheStatistics {
     }
   }
 
+  @Override
   public float getHitRatio() throws StatisticsDisabledException {
     checkEntryDestroyed();
     // Don't worry about write synchronizing. This is just a stat
@@ -56,6 +56,7 @@ class CacheStatisticsImpl implements CacheStatistics {
     }
   }
 
+  @Override
   public long getLastAccessedTime() throws StatisticsDisabledException {
     checkEntryDestroyed();
     try {
@@ -65,11 +66,13 @@ class CacheStatisticsImpl implements CacheStatistics {
     }
   }
 
+  @Override
   public long getLastModifiedTime() {
     checkEntryDestroyed();
     return this.regionEntry.getLastModified();
   }
 
+  @Override
   public long getMissCount() throws StatisticsDisabledException {
     checkEntryDestroyed();
     try {
@@ -79,6 +82,7 @@ class CacheStatisticsImpl implements CacheStatistics {
     }
   }
 
+  @Override
   public void resetCounts() throws StatisticsDisabledException {
     checkEntryDestroyed();
     try {

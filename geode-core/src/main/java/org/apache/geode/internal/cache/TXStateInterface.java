@@ -43,14 +43,14 @@ public interface TXStateInterface extends Synchronization, InternalDataView {
    *
    * @return the TXRegionState for the given LocalRegion or null if no state exists
    */
-  TXRegionState readRegion(LocalRegion r);
+  TXRegionState readRegion(InternalRegion r);
 
   /**
    * Used by transaction operations that are doing a write operation on the specified region.
    *
    * @return the TXRegionState for the given LocalRegion
    */
-  TXRegionState writeRegion(LocalRegion r);
+  TXRegionState writeRegion(InternalRegion r);
 
   /**
    * Returns a nanotimer timestamp that marks when begin was called on this transaction.
@@ -99,34 +99,24 @@ public interface TXStateInterface extends Synchronization, InternalDataView {
   /** Implement TransactionEvent's getCache */
   InternalCache getCache();
 
-  Collection<LocalRegion> getRegions();
+  Collection<InternalRegion> getRegions();
 
+  @Override
   void invalidateExistingEntry(final EntryEventImpl event, boolean invokeCallbacks,
       boolean forceNewEntry);
 
   /**
-   * @param region
-   * @param keyInfo
-   * @param allowTombstones
    * @return a Region.Entry if it exists either in committed state or in transactional state,
    *         otherwise returns null
    */
+  @Override
   Entry getEntry(final KeyInfo keyInfo, final LocalRegion region, boolean allowTombstones);
-
-  /**
-   * @param keyInfo
-   * @param localRegion
-   * @param updateStats TODO
-   */
-  Object getDeserializedValue(KeyInfo keyInfo, LocalRegion localRegion, boolean updateStats,
-      boolean disableCopyOnRead, boolean preferCD, EntryEventImpl clientEvent,
-      boolean returnTombstones, boolean retainResult);
 
   TXEvent getEvent();
 
-  TXRegionState txWriteRegion(final LocalRegion localRegion, final KeyInfo entryKey);
+  TXRegionState txWriteRegion(final InternalRegion internalRegion, final KeyInfo entryKey);
 
-  TXRegionState txReadRegion(LocalRegion localRegion);
+  TXRegionState txReadRegion(InternalRegion internalRegion);
 
   boolean txPutEntry(final EntryEventImpl event, boolean ifNew, boolean requireOldValue,
       boolean checkResources, Object expectedOldValue);
@@ -147,7 +137,6 @@ public interface TXStateInterface extends Synchronization, InternalDataView {
 
   /**
    *
-   * @param state
    * @return true if transaction is in progress and the given state has the same identity as this
    *         instance
    */

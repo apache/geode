@@ -1,0 +1,409 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+{% from 'shared_jinja.yml' import pipeline_prefix with context %}
+{% from 'shared_jinja.yml' import init_retry with context %}
+
+groups:
+- name: main
+  jobs:
+  - {{ build_test.name }}
+{%- for test in tests if test.PLATFORM=="linux" %}
+  {%- for java_test_version in (java_test_versions) if not java_test_version.name.endswith("JDK8") or test.name == "Unit" %}
+  - {{test.name}}Test{{java_test_version.name}}
+  {%- endfor %}
+{%- endfor %}
+resources:
+- name: geode
+  type: pull-request
+  source:
+    access_token: ((github-apachegeode-ci-read-only-token))
+    repository: {{repository.fork}}/geode
+    disable_ci_skip: false
+    skip_ssl_verification: false
+- name: geode-status
+  type: pull-request
+  source:
+    access_token: ((github-pr-access-token))
+    repository: {{repository.fork}}/geode
+    disable_ci_skip: false
+    skip_ssl_verification: false
+- name: geode-ci
+  type: git
+  source:
+    branch: develop
+    depth: 1
+    paths:
+    - ci/*
+    uri: https://github.com/apache/geode.git
+- name: concourse-metadata-resource
+  type: concourse-metadata-resource
+  source: {}
+- name: alpine-tools-image
+  type: docker-image
+  source:
+    username: ((docker-username))
+    password: ((docker-password))
+    repository: gcr.io/((gcp-project))/((pipeline-prefix))alpine-tools
+    tag: latest
+
+- name: linux-builder-image-family
+  type: gci
+  source:
+    key: ((concourse-gcp-key))
+    family_project: ((gcp-project))
+    family: ((pipeline-prefix))linux-geode-builder
+
+resource_types:
+- name: gci
+  type: registry-image
+  source:
+    repository: smgoller/gci-resource
+- name: gcs-resource
+  type: docker-image
+  source:
+    repository: frodenas/gcs-resource
+- name: pull-request
+  type: docker-image
+  source:
+    repository: teliaoss/github-pr-resource
+- name: concourse-metadata-resource
+  type: docker-image
+  source:
+    password: ((!docker-password))
+    repository: gcr.io/apachegeode-ci/((pipeline-prefix))concourse-metadata-resource
+    tag: latest
+    username: ((!docker-username))
+jobs:
+- name: {{build_test.name}}
+  public: true
+  plan:
+  - do:
+    - aggregate:
+      - get: alpine-tools-image
+      - get: geode
+        trigger: true
+        version: every
+      - get: geode-ci
+      - get: {{ build_test.PLATFORM }}-builder-image-family
+    - aggregate:
+      - do:
+        - put: pull-request-job-pending
+          resource: geode-status
+          params:
+            context: {{ build_test.name }}
+            path: geode
+            status: pending
+          get_params: {skip_download: true}
+      - do:
+        - put: concourse-metadata-resource
+        {{ init_retry()|indent(8) }}
+        - task: create_instance
+          image: alpine-tools-image
+          config:
+            platform: linux
+            params:
+              CPUS: {{build_test.CPUS}}
+              RAM: {{build_test.RAM}}
+              GCP_PROJECT: ((gcp-project))
+              GEODE_BRANCH: {{repository.branch}}
+              GEODE_FORK: {{repository.fork}}
+              JAVA_BUILD_VERSION: 8
+              JAVA_TEST_VERSION: 8
+              IMAGE_FAMILY_NAME: ((pipeline-prefix))linux-geode-builder
+            run:
+              path: geode-ci/ci/scripts/create_instance.sh
+            inputs:
+            - name: concourse-metadata-resource
+            - name: geode
+            - name: geode-ci
+            - name: attempts-log
+              path: old
+            outputs:
+            - name: instance-data
+            - name: attempts-log
+              path: new
+          timeout: 15m
+          attempts: 2
+    - task: rsync_code_up
+      image: alpine-tools-image
+      config:
+        platform: linux
+        run:
+          path: geode-ci/ci/scripts/rsync_code_up.sh
+        inputs:
+        - name: geode-ci
+        - name: geode
+        - name: instance-data
+      timeout: 5m
+    - task: build
+      image: alpine-tools-image
+      config:
+        platform: linux
+        params:
+          JAVA_BUILD_VERSION: 8
+          GRADLE_TASK: {{ build_test.GRADLE_TASK }}
+          ARTIFACT_SLUG: {{build_test.ARTIFACT_SLUG}}
+          JAVA_TEST_VERSION: 8
+          CALL_STACK_TIMEOUT: {{build_test.CALL_STACK_TIMEOUT}}
+          DUNIT_PARALLEL_FORKS: {{build_test.DUNIT_PARALLEL_FORKS}}
+          GRADLE_TASK_OPTIONS: ""
+          MAINTENANCE_VERSION: {{repository.branch}}
+          PARALLEL_DUNIT: {{build_test.PARALLEL_DUNIT}}
+          PARALLEL_GRADLE: {{build_test.PARALLEL_GRADLE}}
+          ARTIFACT_BUCKET: ((artifact-bucket))
+          SERVICE_ACCOUNT: ((concourse-gcp-account))
+          GRADLE_GLOBAL_ARGS: ((gradle-global-args))
+        run:
+          path: geode-ci/ci/scripts/execute_build.sh
+        inputs:
+        - name: geode-ci
+        - name: geode
+        - name: instance-data
+      timeout: {{build_test.EXECUTE_TEST_TIMEOUT}}
+    on_failure:
+      do:
+      - put: pull-request-job-failure
+        resource: geode-status
+        params:
+          context: {{ build_test.name }}
+          path: geode
+          status: failure
+        get_params: {skip_download: true}
+    ensure:
+      do:
+      - task: rsync_code_down
+        image: alpine-tools-image
+        config:
+          platform: linux
+          params:
+            JAVA_BUILD_VERSION: 8
+            ARTIFACT_SLUG: {{build_test.ARTIFACT_SLUG}}
+          run:
+            path: geode-ci/ci/scripts/rsync_code_down.sh
+          inputs:
+          - name: geode
+          - name: geode-ci
+          - name: instance-data
+          outputs:
+          - name: geode-results
+        timeout: 5m
+      ensure:
+        aggregate:
+        - task: archive_results
+          image: alpine-tools-image
+          config:
+            platform: linux
+            params:
+              ARTIFACT_SLUG: {{build_test.ARTIFACT_SLUG}}
+              GRADLE_TASK: {{build_test.GRADLE_TASK}}
+              MAINTENANCE_VERSION: {{repository.branch}}
+              ARTIFACT_BUCKET: ((artifact-bucket))
+              SERVICE_ACCOUNT: ((!concourse-gcp-account))
+            run:
+              path: geode-ci/ci/scripts/archive_results.sh
+            inputs:
+            - name: concourse-metadata-resource
+            - name: geode
+            - name: geode-ci
+            - name: geode-results
+        - task: delete_instance
+          image: alpine-tools-image
+          config:
+            platform: linux
+            run:
+              path: geode-ci/ci/scripts/delete_instance.sh
+            inputs:
+            - name: geode
+            - name: geode-ci
+            - name: instance-data
+          timeout: 1h
+    on_success:
+      do:
+      - put: pull-request-job-success
+        resource: geode-status
+        params:
+          context: {{ build_test.name }}
+          path: geode
+          status: success
+        get_params: {skip_download: true}
+
+
+{% for test in tests if test.PLATFORM=="linux"%}
+  {%- for java_test_version in (java_test_versions) if not java_test_version.name.endswith("JDK8") or test.name == "Unit" %}
+- name: {{test.name}}Test{{java_test_version.name}}
+  public: true
+  plan:
+  - do:
+    - aggregate:
+      - get: alpine-tools-image
+      - get: geode
+        trigger: true
+        version: every
+      - get: geode-ci
+      - get: {{ test.PLATFORM }}-builder-image-family
+    - aggregate:
+      - do:
+        - put: pull-request-job-pending
+          resource: geode-status
+          params:
+            context: {{test.name}}Test{{java_test_version.name}}
+            path: geode
+            status: pending
+          get_params: {skip_download: true}
+      - do:
+        - put: concourse-metadata-resource
+        {{ init_retry()|indent(8) }}
+        - task: create_instance-{{java_test_version.name}}
+          image: alpine-tools-image
+          config:
+            platform: linux
+            params:
+              CPUS: {{test.CPUS}}
+              GEODE_BRANCH: {{repository.branch}}
+              GEODE_FORK: {{repository.fork}}
+              GCP_PROJECT: ((gcp-project))
+              RAM: {{test.RAM}}
+              JAVA_BUILD_VERSION: {{ java_build_version.version }}
+              JAVA_TEST_VERSION: {{ java_test_version.version }}
+              IMAGE_FAMILY_NAME: ((pipeline-prefix)){{ test.PLATFORM }}-geode-builder
+            run:
+              path: geode-ci/ci/scripts/create_instance.sh
+            inputs:
+            - name: concourse-metadata-resource
+            - name: geode
+            - name: geode-ci
+            - name: attempts-log
+              path: old
+            outputs:
+            - name: instance-data
+            - name: attempts-log
+              path: new
+          timeout: 15m
+          attempts: 2
+    - task: rsync_code_up-{{java_test_version.name}}
+      image: alpine-tools-image
+      config:
+        platform: linux
+        run:
+          path: geode-ci/ci/scripts/rsync_code_up.sh
+        inputs:
+        - name: geode
+        - name: geode-ci
+        - name: instance-data
+      timeout: 5m
+    - task: execute_tests-{{java_test_version.name}}
+      image: alpine-tools-image
+      config:
+        platform: linux
+        params:
+          ARTIFACT_SLUG: {{test.ARTIFACT_SLUG}}
+          JAVA_BUILD_VERSION: {{ java_build_version.version }}
+          JAVA_TEST_VERSION: {{ java_test_version.version }}
+          CALL_STACK_TIMEOUT: {{test.CALL_STACK_TIMEOUT}}
+          DUNIT_PARALLEL_FORKS: {{test.DUNIT_PARALLEL_FORKS}}
+          GRADLE_TASK: {{test.GRADLE_TASK}}
+          GRADLE_TASK_OPTIONS: ""
+          MAINTENANCE_VERSION: {{repository.branch}}
+          PARALLEL_DUNIT: {{test.PARALLEL_DUNIT}}
+        {% if test.PARALLEL_GRADLE is defined %}
+          PARALLEL_GRADLE: {{test.PARALLEL_GRADLE}}
+        {% else %}
+          PARALLEL_GRADLE: true
+        {% endif %}
+          ARTIFACT_BUCKET: ((artifact-bucket))
+          SERVICE_ACCOUNT: ((concourse-gcp-account))
+          GRADLE_GLOBAL_ARGS: ((gradle-global-args))
+        run:
+          {%- if test.name=="StressNew" %}
+          path: geode/ci/scripts/repeat-new-tests.sh
+          {%- else %}
+          path: geode-ci/ci/scripts/execute_tests.sh
+          {%- endif %}
+        inputs:
+        - name: geode
+        - name: geode-ci
+        - name: instance-data
+      timeout: {{test.EXECUTE_TEST_TIMEOUT}}
+    on_failure:
+      do:
+      - put: pull-request-job-failure
+        resource: geode-status
+        params:
+          context: {{test.name}}Test{{java_test_version.name}}
+          path: geode
+          status: failure
+        get_params: {skip_download: true}
+    ensure:
+      do:
+      - task: rsync_code_down-{{java_test_version.name}}
+        image: alpine-tools-image
+        config:
+          platform: linux
+          params:
+            JAVA_BUILD_VERSION: 8
+            ARTIFACT_SLUG: {{test.ARTIFACT_SLUG}}
+          run:
+            path: geode-ci/ci/scripts/rsync_code_down.sh
+          inputs:
+          - name: geode
+          - name: geode-ci
+          - name: instance-data
+          outputs:
+          - name: geode-results
+        timeout: 5m
+      ensure:
+        aggregate:
+        - task: archive-results-{{java_test_version.name}}
+          image: alpine-tools-image
+          config:
+            platform: linux
+            params:
+              ARTIFACT_SLUG: {{test.ARTIFACT_SLUG}}
+              GRADLE_TASK: {{test.GRADLE_TASK}}
+              MAINTENANCE_VERSION: {{repository.branch}}
+              ARTIFACT_BUCKET: ((artifact-bucket))
+              SERVICE_ACCOUNT: ((!concourse-gcp-account))
+            run:
+              path: geode-ci/ci/scripts/archive_results.sh
+            inputs:
+            - name: concourse-metadata-resource
+            - name: geode
+            - name: geode-ci
+            - name: geode-results
+        - task: delete_instance-{{java_test_version.name}}
+          image: alpine-tools-image
+          config:
+            platform: linux
+            run:
+              path: geode-ci/ci/scripts/delete_instance.sh
+            inputs:
+            - name: geode
+            - name: geode-ci
+            - name: instance-data
+          timeout: 1h
+    on_success:
+      do:
+      - put: pull-request-job-success
+        resource: geode-status
+        params:
+          context: {{test.name}}Test{{java_test_version.name}}
+          path: geode
+          status: success
+        get_params: {skip_download: true}
+{% endfor %}
+{% endfor %}

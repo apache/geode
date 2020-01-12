@@ -36,12 +36,11 @@ import org.apache.geode.admin.SystemMember;
 import org.apache.geode.admin.SystemMemberCache;
 import org.apache.geode.admin.SystemMemberCacheEvent;
 import org.apache.geode.admin.SystemMemberRegionEvent;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.Operation;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.admin.ClientMembershipMessage;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Defines methods that all <code>SystemMember</code> MBeans should implement.
@@ -53,35 +52,35 @@ public interface SystemMemberJmx extends SystemMember, NotificationListener {
    * Notification type for indicating a cache got created on a member of this distributed system.
    */
   String NOTIF_CACHE_CREATED =
-      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cache.created";
+      GeodeGlossary.GEMFIRE_PREFIX + "distributedsystem.cache.created";
   /**
    * Notification type for indicating a cache is closed on a member of this distributed system.
    */
-  String NOTIF_CACHE_CLOSED = DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cache.closed";
+  String NOTIF_CACHE_CLOSED = GeodeGlossary.GEMFIRE_PREFIX + "distributedsystem.cache.closed";
   /**
    * Notification type for indicating a region is created in a cache on a member of this distributed
    * system.
    */
   String NOTIF_REGION_CREATED =
-      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cache.region.created";
+      GeodeGlossary.GEMFIRE_PREFIX + "distributedsystem.cache.region.created";
   /**
    * Notification type for indicating a region was removed from a cache on a member of this
    * distributed system.
    */
   String NOTIF_REGION_LOST =
-      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cache.region.lost";
+      GeodeGlossary.GEMFIRE_PREFIX + "distributedsystem.cache.region.lost";
 
   /** Notification type for indicating client joined */
   String NOTIF_CLIENT_JOINED =
-      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cache.client.joined";
+      GeodeGlossary.GEMFIRE_PREFIX + "distributedsystem.cache.client.joined";
 
   /** Notification type for indicating client left */
   String NOTIF_CLIENT_LEFT =
-      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cache.client.left";
+      GeodeGlossary.GEMFIRE_PREFIX + "distributedsystem.cache.client.left";
 
   /** Notification type for indicating client crashed */
   String NOTIF_CLIENT_CRASHED =
-      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cache.client.crashed";
+      GeodeGlossary.GEMFIRE_PREFIX + "distributedsystem.cache.client.crashed";
 
   /**
    * Gets the interval in seconds between config refreshes
@@ -140,6 +139,7 @@ public interface SystemMemberJmx extends SystemMember, NotificationListener {
    * @param notification the JMX notification being received
    * @param hb handback object is unused
    */
+  @Override
   void handleNotification(Notification notification, Object hb);
 
   /**
@@ -202,7 +202,8 @@ public interface SystemMemberJmx extends SystemMember, NotificationListener {
   class Helper {
     private static final Logger logger = LogService.getLogger();
 
-    private static AtomicInteger notificationSequenceNumber = new AtomicInteger();
+    @MakeNotStatic
+    private static final AtomicInteger notificationSequenceNumber = new AtomicInteger();
 
     public static int setAndReturnRefreshInterval(SystemMemberJmx member, int refreshInterval) {
       int ret = refreshInterval;
@@ -243,8 +244,7 @@ public interface SystemMemberJmx extends SystemMember, NotificationListener {
         if (cache == null) {
           IthrewIt = true;
           throw new AdminException(
-              LocalizedStrings.SystemMemberJmx_THIS_SYSTEM_MEMBER_DOES_NOT_HAVE_A_CACHE
-                  .toLocalizedString());
+              "This System Member does not have a Cache.");
         }
         SystemMemberCacheJmxImpl cacheJmx = (SystemMemberCacheJmxImpl) cache;
         return ObjectName.getInstance(cacheJmx.getMBeanName());
@@ -374,7 +374,7 @@ public interface SystemMemberJmx extends SystemMember, NotificationListener {
 
       if (managed == null) {
         throw new IllegalArgumentException(
-            LocalizedStrings.SystemMemberJmx_MANAGEDBEAN_IS_NULL.toLocalizedString());
+            "ManagedBean is null");
       }
 
       member.refreshConfig(); // to get the config parms...
@@ -453,17 +453,13 @@ public interface SystemMemberJmx extends SystemMember, NotificationListener {
         }
       } catch (RuntimeOperationsException e) {
         logger
-            .info(
-                LocalizedMessage.create(
-                    LocalizedStrings.SystemMemberJmx_FAILED_TO_SEND_0_NOTIFICATION_FOR_1,
-                    new Object[] {"'" + notif.getType() + "'", "'" + notif.getMessage() + "'"}),
+            .info(String.format("Failed to send %s notification for %s",
+                new Object[] {"'" + notif.getType() + "'", "'" + notif.getMessage() + "'"}),
                 e);
       } catch (MBeanException e) {
         logger
-            .info(
-                LocalizedMessage.create(
-                    LocalizedStrings.SystemMemberJmx_FAILED_TO_SEND_0_NOTIFICATION_FOR_1,
-                    new Object[] {"'" + notif.getType() + "'", "'" + notif.getMessage() + "'"}),
+            .info(String.format("Failed to send %s notification for %s",
+                new Object[] {"'" + notif.getType() + "'", "'" + notif.getMessage() + "'"}),
                 e);
       }
     }

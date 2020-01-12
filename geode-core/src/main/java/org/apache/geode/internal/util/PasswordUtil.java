@@ -17,13 +17,16 @@ package org.apache.geode.internal.util;
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 
+import org.apache.geode.annotations.Immutable;
+
 /**
  * Makes use of Blowfish algorithm to decrypt a pre-encrypted password string. As of June 2017, no
  * longer supports encrypting a password. However, decrypting still works.
  */
 public class PasswordUtil {
 
-  private static byte[] init = "string".getBytes();
+  @Immutable
+  private static final byte[] init = "string".getBytes();
 
   /**
    * Decrypts an encrypted password string.
@@ -61,7 +64,7 @@ public class PasswordUtil {
     for (int i = 0; i < b.length; i++) {
       int index = i * 2;
       int v = Integer.parseInt(s.substring(index, index + 2), 16);
-      b[i] = (byte) v;
+      b[i] = (byte) (v & 0xff);
     }
     return b;
   }

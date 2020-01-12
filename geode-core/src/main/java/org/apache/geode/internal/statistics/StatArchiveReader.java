@@ -44,19 +44,12 @@ import org.apache.geode.GemFireIOException;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.ExitCode;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.DateFormatter;
 
 /**
  * StatArchiveReader provides APIs to read statistic snapshots from an archive file.
  */
-public class StatArchiveReader implements StatArchiveFormat {
-
-  protected static final NumberFormat nf = NumberFormat.getNumberInstance();
-  static {
-    nf.setMaximumFractionDigits(2);
-    nf.setGroupingUsed(false);
-  }
+public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
 
   private final StatArchiveFile[] archives;
   private boolean dump;
@@ -167,6 +160,7 @@ public class StatArchiveReader implements StatArchiveFormat {
   /**
    * Closes all archives.
    */
+  @Override
   public void close() throws IOException {
     if (!this.closed) {
       StatArchiveReader.StatArchiveFile[] archives = getArchives();
@@ -211,8 +205,8 @@ public class StatArchiveReader implements StatArchiveFormat {
       case DOUBLE_CODE:
         return Double.longBitsToDouble(bits);
       default:
-        throw new InternalGemFireException(LocalizedStrings.StatArchiveReader_UNEXPECTED_TYPECODE_0
-            .toLocalizedString(Integer.valueOf(type)));
+        throw new InternalGemFireException(String.format("Unexpected typecode %s",
+            Integer.valueOf(type)));
     }
   }
 
@@ -244,22 +238,27 @@ public class StatArchiveReader implements StatArchiveFormat {
       this.spec = wrappedSpec;
     }
 
+    @Override
     public int getCombineType() {
       return StatSpec.NONE;
     }
 
+    @Override
     public boolean typeMatches(String typeName) {
       return spec.typeMatches(typeName);
     }
 
+    @Override
     public boolean statMatches(String statName) {
       return spec.statMatches(statName);
     }
 
+    @Override
     public boolean instanceMatches(String textId, long numericId) {
       return spec.instanceMatches(textId, numericId);
     }
 
+    @Override
     public boolean archiveMatches(File archive) {
       return spec.archiveMatches(archive);
     }
@@ -565,49 +564,58 @@ public class StatArchiveReader implements StatArchiveFormat {
       }
     }
 
+    @Override
     public int getSnapshotsSize() {
       calcStats();
       return this.size;
     }
 
+    @Override
     public double getSnapshotsMinimum() {
       calcStats();
       return this.min;
     }
 
+    @Override
     public double getSnapshotsMaximum() {
       calcStats();
       return this.max;
     }
 
+    @Override
     public double getSnapshotsAverage() {
       calcStats();
       return this.avg;
     }
 
+    @Override
     public double getSnapshotsStandardDeviation() {
       calcStats();
       return this.stddev;
     }
 
+    @Override
     public double getSnapshotsMostRecent() {
       calcStats();
       return this.mostRecent;
     }
 
+    @Override
     public StatDescriptor getDescriptor() {
       return this.descriptor;
     }
 
+    @Override
     public int getFilter() {
       return this.filter;
     }
 
+    @Override
     public void setFilter(int filter) {
       if (filter != this.filter) {
         if (filter != FILTER_NONE && filter != FILTER_PERSEC && filter != FILTER_PERSAMPLE) {
           throw new IllegalArgumentException(
-              LocalizedStrings.StatArchiveReader_FILTER_VALUE_0_MUST_BE_1_2_OR_3.toLocalizedString(
+              String.format("Filter value %s must be %s, %s, or %s.",
                   new Object[] {Integer.valueOf(filter), Integer.valueOf(FILTER_NONE),
                       Integer.valueOf(FILTER_PERSEC), Integer.valueOf(FILTER_PERSAMPLE)}));
         }
@@ -681,6 +689,8 @@ public class StatArchiveReader implements StatArchiveFormat {
       if (endTime != -1) {
         result.append(" endTime=\"").append(new Date(endTime)).append("\"");
       }
+
+      NumberFormat nf = getNumberFormat();
       result.append(" min=").append(nf.format(min));
       result.append(" max=").append(nf.format(max));
       result.append(" average=").append(nf.format(avg));
@@ -704,7 +714,7 @@ public class StatArchiveReader implements StatArchiveFormat {
      * Creates a ComboValue by adding all the specified values together.
      */
     ComboValue(List valueList) {
-      this((StatValue[]) valueList.toArray(new StatValue[valueList.size()]));
+      this((StatValue[]) valueList.toArray(new StatValue[0]));
     }
 
     /**
@@ -723,36 +733,34 @@ public class StatArchiveReader implements StatArchiveFormat {
            * change the filter since a client has no way to select values based on the filter.
            */
           throw new IllegalArgumentException(
-              LocalizedStrings.StatArchiveReader_CANT_COMBINE_VALUES_WITH_DIFFERENT_FILTERS
-                  .toLocalizedString());
+              "Cannot combine values with different filters.");
         }
         if (!typeName.equals(this.values[i].getType().getName())) {
           throw new IllegalArgumentException(
-              LocalizedStrings.StatArchiveReader_CANT_COMBINE_VALUES_WITH_DIFFERENT_TYPES
-                  .toLocalizedString());
+              "Cannot combine values with different types.");
         }
         if (!statName.equals(this.values[i].getDescriptor().getName())) {
           throw new IllegalArgumentException(
-              LocalizedStrings.StatArchiveReader_CANT_COMBINE_DIFFERENT_STATS.toLocalizedString());
+              "Cannot combine different stats.");
         }
         if (this.values[i].getDescriptor().isCounter()) {
-          // its a counter which is not the default
+          // it is a counter which is not the default
           if (!this.values[i].getDescriptor().isLargerBetter()) {
-            // this guy has non-defaults for both use him
+            // this value has non-defaults for both, use it
             bestTypeIdx = i;
           } else if (this.values[bestTypeIdx].getDescriptor()
               .isCounter() == this.values[bestTypeIdx].getDescriptor().isLargerBetter()) {
-            // as long as we haven't already found a guy with defaults
-            // make this guy the best type
+            // as long as we haven't already found a value with defaults
+            // make this value the best type
             bestTypeIdx = i;
           }
         } else {
           // its a gauge, see if it has a non-default largerBetter
           if (this.values[i].getDescriptor().isLargerBetter()) {
-            // as long as we haven't already found a guy with defaults
+            // as long as we haven't already found a value with defaults
             if (this.values[bestTypeIdx].getDescriptor().isCounter() == this.values[bestTypeIdx]
                 .getDescriptor().isLargerBetter()) {
-              // make this guy the best type
+              // make this value the best type
               bestTypeIdx = i;
             }
           }
@@ -774,6 +782,7 @@ public class StatArchiveReader implements StatArchiveFormat {
       }
     }
 
+    @Override
     public StatValue createTrimmed(long startTime, long endTime) {
       if (startTime == this.startTime && endTime == this.endTime) {
         return this;
@@ -782,10 +791,12 @@ public class StatArchiveReader implements StatArchiveFormat {
       }
     }
 
+    @Override
     public ResourceType getType() {
       return this.type;
     }
 
+    @Override
     public ResourceInst[] getResources() {
       Set set = new HashSet();
       for (int i = 0; i < values.length; i++) {
@@ -795,6 +806,7 @@ public class StatArchiveReader implements StatArchiveFormat {
       return (ResourceInst[]) set.toArray(result);
     }
 
+    @Override
     public boolean hasValueChanged() {
       return true;
     }
@@ -819,10 +831,12 @@ public class StatArchiveReader implements StatArchiveFormat {
       return (nextIdx < valueTimeStamps.length) && (valueTimeStamps[nextIdx] <= tsAtInsertPoint);
     }
 
+    @Override
     public long[] getRawAbsoluteTimeStampsWithSecondRes() {
       return getRawAbsoluteTimeStamps();
     }
 
+    @Override
     public long[] getRawAbsoluteTimeStamps() {
       if (values.length == 0) {
         return new long[0];
@@ -916,6 +930,7 @@ public class StatArchiveReader implements StatArchiveFormat {
       return ourTimeStamps;
     }
 
+    @Override
     public double[] getRawSnapshots() {
       return getRawSnapshots(getRawAbsoluteTimeStamps());
     }
@@ -935,6 +950,7 @@ public class StatArchiveReader implements StatArchiveFormat {
       return closer(ts, timeStamps[curIdx], timeStamps[curIdx + 1]);
     }
 
+    @Override
     public boolean isTrimmedLeft() {
       for (int i = 0; i < this.values.length; i++) {
         if (this.values[i].isTrimmedLeft()) {
@@ -991,6 +1007,7 @@ public class StatArchiveReader implements StatArchiveFormat {
       return result;
     }
 
+    @Override
     public double[] getSnapshots() {
       double[] result;
       if (filter != FILTER_NONE) {
@@ -1029,6 +1046,7 @@ public class StatArchiveReader implements StatArchiveFormat {
     private boolean valueChangeNoticed = false;
 
 
+    @Override
     public StatValue createTrimmed(long startTime, long endTime) {
       if (startTime == this.startTime && endTime == this.endTime) {
         return this;
@@ -1062,14 +1080,17 @@ public class StatArchiveReader implements StatArchiveFormat {
       this.valueChangeNoticed = true;
     }
 
+    @Override
     public ResourceType getType() {
       return this.resource.getType();
     }
 
+    @Override
     public ResourceInst[] getResources() {
       return new ResourceInst[] {this.resource};
     }
 
+    @Override
     public boolean isTrimmedLeft() {
       return getStartIdx() != 0;
     }
@@ -1108,6 +1129,7 @@ public class StatArchiveReader implements StatArchiveFormat {
       return endIdx;
     }
 
+    @Override
     public double[] getSnapshots() {
       double[] result;
       int startIdx = getStartIdx();
@@ -1137,6 +1159,7 @@ public class StatArchiveReader implements StatArchiveFormat {
       return result;
     }
 
+    @Override
     public double[] getRawSnapshots() {
       int startIdx = getStartIdx();
       int endIdx = getEndIdx(startIdx);
@@ -1144,6 +1167,7 @@ public class StatArchiveReader implements StatArchiveFormat {
       return series.getValuesEx(descriptor.getTypeCode(), startIdx, resultSize);
     }
 
+    @Override
     public long[] getRawAbsoluteTimeStampsWithSecondRes() {
       long[] result = getRawAbsoluteTimeStamps();
       for (int i = 0; i < result.length; i++) {
@@ -1154,6 +1178,7 @@ public class StatArchiveReader implements StatArchiveFormat {
       return result;
     }
 
+    @Override
     public long[] getRawAbsoluteTimeStamps() {
       int startIdx = getStartIdx();
       int endIdx = getEndIdx(startIdx);
@@ -1172,6 +1197,7 @@ public class StatArchiveReader implements StatArchiveFormat {
       }
     }
 
+    @Override
     public boolean hasValueChanged() {
       if (valueChangeNoticed) {
         valueChangeNoticed = false;
@@ -1192,6 +1218,7 @@ public class StatArchiveReader implements StatArchiveFormat {
     protected void dump(PrintWriter stream) {
       calcStats();
       stream.print("  " + descriptor.getName() + "=");
+      NumberFormat nf = getNumberFormat();
       stream.print("[size=" + getSnapshotsSize() + " min=" + nf.format(min) + " max="
           + nf.format(max) + " avg=" + nf.format(avg) + " stddev=" + nf.format(stddev) + "]");
       if (Boolean.getBoolean("StatArchiveReader.dumpall")) {
@@ -1887,8 +1914,8 @@ public class StatArchiveReader implements StatArchiveFormat {
       // assert
       if (idx != resultSize) {
         throw new InternalGemFireException(
-            LocalizedStrings.StatArchiveReader_GETVALUESEX_DIDNT_FILL_THE_LAST_0_ENTRIES_OF_ITS_RESULT
-                .toLocalizedString(Integer.valueOf(resultSize - idx)));
+            String.format("getValuesEx did not fill the last %s entries of its result.",
+                Integer.valueOf(resultSize - idx)));
       }
       return result;
     }
@@ -2108,7 +2135,7 @@ public class StatArchiveReader implements StatArchiveFormat {
 
     /**
      * Frees up any resources no longer needed after the archive file is closed. Returns true if
-     * this guy is no longer needed.
+     * this resource is no longer needed.
      */
     protected boolean close() {
       if (isLoaded()) {
@@ -2483,7 +2510,7 @@ public class StatArchiveReader implements StatArchiveFormat {
 
     /**
      * Frees up any resources no longer needed after the archive file is closed. Returns true if
-     * this guy is no longer needed.
+     * these stats are no longer needed.
      */
     protected boolean close() {
       if (isLoaded()) {
@@ -2832,8 +2859,7 @@ public class StatArchiveReader implements StatArchiveFormat {
       }
       if (!this.updateOK) {
         throw new InternalGemFireException(
-            LocalizedStrings.StatArchiveReader_UPDATE_OF_THIS_TYPE_OF_FILE_IS_NOT_SUPPORTED
-                .toLocalizedString());
+            "update of this type of file is not supported.");
       }
 
       if (doReset) {
@@ -2952,15 +2978,15 @@ public class StatArchiveReader implements StatArchiveFormat {
       String machine = dataIn.readUTF();
       if (archiveVersion <= 1) {
         throw new GemFireIOException(
-            LocalizedStrings.StatArchiveReader_ARCHIVE_VERSION_0_IS_NO_LONGER_SUPPORTED
-                .toLocalizedString(Byte.valueOf(archiveVersion)),
+            String.format("Archive version: %s is no longer supported.",
+                Byte.valueOf(archiveVersion)),
             null);
       }
       if (archiveVersion > ARCHIVE_VERSION) {
         throw new GemFireIOException(
-            LocalizedStrings.StatArchiveReader_UNSUPPORTED_ARCHIVE_VERSION_0_THE_SUPPORTED_VERSION_IS_1
-                .toLocalizedString(
-                    new Object[] {Byte.valueOf(archiveVersion), Byte.valueOf(ARCHIVE_VERSION)}),
+            String.format("Unsupported archive version: %s .  The supported version is: %s .",
+
+                new Object[] {Byte.valueOf(archiveVersion), Byte.valueOf(ARCHIVE_VERSION)}),
             null);
       }
       this.archiveVersion = archiveVersion;
@@ -3150,8 +3176,8 @@ public class StatArchiveReader implements StatArchiveFormat {
               v = readCompactValue();
               break;
             default:
-              throw new IOException(LocalizedStrings.StatArchiveReader_UNEXPECTED_TYPECODE_VALUE_0
-                  .toLocalizedString(Byte.valueOf(stats[i].getTypeCode())));
+              throw new IOException(String.format("unexpected typeCode value %s",
+                  Byte.valueOf(stats[i].getTypeCode())));
           }
           resourceInstTable[resourceInstId].initialValue(i, v);
         }
@@ -3227,8 +3253,8 @@ public class StatArchiveReader implements StatArchiveFormat {
               statDeltaBits = readCompactValue();
               break;
             default:
-              throw new IOException(LocalizedStrings.StatArchiveReader_UNEXPECTED_TYPECODE_VALUE_0
-                  .toLocalizedString(Byte.valueOf(stats[statOffset].getTypeCode())));
+              throw new IOException(String.format("unexpected typeCode value %s",
+                  Byte.valueOf(stats[statOffset].getTypeCode())));
           }
           if (resourceInstTable[resourceInstId].addValueSample(statOffset, statDeltaBits)) {
             if (dump) {
@@ -3281,8 +3307,8 @@ public class StatArchiveReader implements StatArchiveFormat {
             readSampleToken();
             break;
           default:
-            throw new IOException(LocalizedStrings.StatArchiveReader_UNEXPECTED_TOKEN_BYTE_VALUE_0
-                .toLocalizedString(Byte.valueOf(token)));
+            throw new IOException(String.format("Unexpected token byte value: %s",
+                Byte.valueOf(token)));
         }
         return true;
       } catch (EOFException ignore) {
@@ -3303,4 +3329,12 @@ public class StatArchiveReader implements StatArchiveFormat {
       return result;
     }
   }
+
+  private static NumberFormat getNumberFormat() {
+    NumberFormat nf = NumberFormat.getNumberInstance();
+    nf.setMaximumFractionDigits(2);
+    nf.setGroupingUsed(false);
+    return nf;
+  }
+
 }

@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.ha;
 
+import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.BEFORE_INITIAL_IMAGE;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -34,9 +36,10 @@ import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.HARegion;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.cache.LocalRegion.InitializationLevel;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * This message is sent to all the nodes in the DistributedSystem. It contains the list of messages
@@ -74,7 +77,8 @@ public class QueueRemovalMessage extends PooledDistributionMessage {
     final InternalCache cache = dm.getCache();
     if (cache != null) {
       Iterator iterator = this.messagesList.iterator();
-      int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.BEFORE_INITIAL_IMAGE);
+      final InitializationLevel oldLevel =
+          LocalRegion.setThreadInitLevelRequirement(BEFORE_INITIAL_IMAGE);
       try {
         while (iterator.hasNext()) {
           final String regionName = (String) iterator.next();
@@ -111,15 +115,16 @@ public class QueueRemovalMessage extends PooledDistributionMessage {
                 }
                 hrq.removeDispatchedEvents(id);
               } catch (RegionDestroyedException ignore) {
-                logger.info(LocalizedMessage.create(
-                    LocalizedStrings.QueueRemovalMessage_QUEUE_FOUND_DESTROYED_WHILE_PROCESSING_THE_LAST_DISPTACHED_SEQUENCE_ID_FOR_A_HAREGIONQUEUES_DACE_THE_EVENT_ID_IS_0_FOR_HAREGION_WITH_NAME_1,
-                    new Object[] {id, regionName}));
+                logger.info(
+                    "Queue found destroyed while processing the last disptached sequence ID for a HARegionQueue's DACE. The event ID is {} for HARegion with name={}",
+                    new Object[] {id, regionName});
               } catch (CancelException ignore) {
                 return; // cache or DS is closing
               } catch (CacheException e) {
-                logger.error(LocalizedMessage.create(
-                    LocalizedStrings.QueueRemovalMessage_QUEUEREMOVALMESSAGEPROCESSEXCEPTION_IN_PROCESSING_THE_LAST_DISPTACHED_SEQUENCE_ID_FOR_A_HAREGIONQUEUES_DACE_THE_PROBLEM_IS_WITH_EVENT_ID__0_FOR_HAREGION_WITH_NAME_1,
-                    new Object[] {regionName, id}), e);
+                logger.error(String.format(
+                    "QueueRemovalMessage::process:Exception in processing the last disptached sequence ID for a HARegionQueue's DACE. The problem is with event ID,%s for HARegion with name=%s",
+                    new Object[] {regionName, id}),
+                    e);
               } catch (InterruptedException ignore) {
                 return; // interrupt occurs during shutdown. this runs in an executor, so just stop
                         // processing
@@ -140,12 +145,13 @@ public class QueueRemovalMessage extends PooledDistributionMessage {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     /*
      * first write the total list size then in a loop write the region name, number of eventIds and
      * the event ids
      */
-    super.toData(out);
+    super.toData(out, context);
     // write the size of the data list
     DataSerializer.writeInteger(this.messagesList.size(), out);
     Iterator iterator = messagesList.iterator();
@@ -169,17 +175,19 @@ public class QueueRemovalMessage extends PooledDistributionMessage {
     }
   }
 
+  @Override
   public int getDSFID() {
     return QUEUE_REMOVAL_MESSAGE;
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     /*
      * read the total list size, reconstruct the message list in a loop by reading the region name,
      * number of eventIds and the event ids
      */
-    super.fromData(in);
+    super.fromData(in, context);
     // read the size of the message
     int size = DataSerializer.readInteger(in);
     this.messagesList = new LinkedList();

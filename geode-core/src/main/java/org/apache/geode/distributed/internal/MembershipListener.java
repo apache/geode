@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.distributed.internal;
 
 import java.util.List;
@@ -22,7 +21,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 
 /**
  * This interface specifies callback methods that are invoked when remote GemFire systems enter and
- * exit the distributed cache. Note that a <code>MembershipListener</code> can be added from any VM,
+ * exit the distributed cache. Note that a {@code MembershipListener} can be added from any VM,
  * but the callback methods are always invoked in the GemFire manager VM. Thus, the callback methods
  * should not perform time-consuming operations.
  *
@@ -36,7 +35,9 @@ public interface MembershipListener {
    * @param distributionManager that is calling this listener
    * @param id The id of the new member that has joined the system
    */
-  void memberJoined(DistributionManager distributionManager, InternalDistributedMember id);
+  default void memberJoined(DistributionManager distributionManager, InternalDistributedMember id) {
+    // implement if needed
+  }
 
   /**
    * This method is invoked after a member has explicitly left the system. It may not get invoked if
@@ -46,8 +47,10 @@ public interface MembershipListener {
    * @param id The id of the new member that has joined the system
    * @param crashed True if member did not depart in an orderly manner.
    */
-  void memberDeparted(DistributionManager distributionManager, InternalDistributedMember id,
-      boolean crashed);
+  default void memberDeparted(DistributionManager distributionManager, InternalDistributedMember id,
+      boolean crashed) {
+    // implement if needed
+  }
 
   /**
    * This method is invoked after the group membership service has suspected that a member is no
@@ -58,8 +61,10 @@ public interface MembershipListener {
    * @param whoSuspected the member that initiated suspect processing
    * @param reason the reason the member was suspected
    */
-  void memberSuspect(DistributionManager distributionManager, InternalDistributedMember id,
-      InternalDistributedMember whoSuspected, String reason);
+  default void memberSuspect(DistributionManager distributionManager, InternalDistributedMember id,
+      InternalDistributedMember whoSuspected, String reason) {
+    // implement if needed
+  }
 
   /**
    * This is notification that more than 50% of member weight has been lost in a single view change.
@@ -69,7 +74,9 @@ public interface MembershipListener {
    * @param failures members that have been lost
    * @param remaining members that remain
    */
-  void quorumLost(DistributionManager distributionManager, Set<InternalDistributedMember> failures,
-      List<InternalDistributedMember> remaining);
-
+  default void quorumLost(DistributionManager distributionManager,
+      Set<InternalDistributedMember> failures,
+      List<InternalDistributedMember> remaining) {
+    // implement if needed
+  }
 }

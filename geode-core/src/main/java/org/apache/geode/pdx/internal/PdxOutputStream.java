@@ -12,9 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- *
- */
 package org.apache.geode.pdx.internal;
 
 import java.io.DataOutput;
@@ -26,7 +23,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.ByteBufferWriter;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.tcp.ByteBufferInputStream.ByteSource;
 import org.apache.geode.pdx.PdxSerializationException;
 
@@ -38,16 +35,10 @@ public class PdxOutputStream implements ByteBufferWriter {
 
   private final HeapDataOutputStream hdos;
 
-  /**
-   *
-   */
   public PdxOutputStream() {
     this.hdos = new HeapDataOutputStream(Version.CURRENT);
   }
 
-  /**
-   * @param allocSize
-   */
   public PdxOutputStream(int allocSize) {
     this.hdos = new HeapDataOutputStream(allocSize, Version.CURRENT);
   }
@@ -55,7 +46,6 @@ public class PdxOutputStream implements ByteBufferWriter {
   /**
    * Wrapper constructor
    *
-   * @param hdos
    */
   public PdxOutputStream(HeapDataOutputStream hdos) {
     this.hdos = hdos;
@@ -228,6 +218,10 @@ public class PdxOutputStream implements ByteBufferWriter {
 
   public ByteBuffer toByteBuffer() {
     return this.hdos.toByteBuffer();
+  }
+
+  public ByteBuffer toByteBuffer(int startPosition) {
+    return this.hdos.toByteBuffer(startPosition);
   }
 
   public byte[] toByteArray() {

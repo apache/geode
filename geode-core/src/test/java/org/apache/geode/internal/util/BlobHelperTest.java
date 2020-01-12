@@ -14,8 +14,11 @@
  */
 package org.apache.geode.internal.util;
 
-import static org.apache.geode.internal.util.BlobHelper.*;
-import static org.assertj.core.api.Assertions.*;
+import static org.apache.geode.internal.util.BlobHelper.deserializeBlob;
+import static org.apache.geode.internal.util.BlobHelper.serializeTo;
+import static org.apache.geode.internal.util.BlobHelper.serializeToBlob;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.EOFException;
 import java.io.NotSerializableException;
@@ -26,14 +29,12 @@ import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.ByteArrayDataInput;
 import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.offheap.StoredObject;
-import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.internal.serialization.ByteArrayDataInput;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * Unit Tests for {@link BlobHelper}.
@@ -44,7 +45,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * <li>{@link BlobHelper#deserializeOffHeapBlob(StoredObject)}
  * <li>{@link BlobHelper#serializeToBlob(Object, Version)}
  */
-@Category(UnitTest.class)
 public class BlobHelperTest {
 
   private static final int HDOS_ALLOC_SIZE = 32;

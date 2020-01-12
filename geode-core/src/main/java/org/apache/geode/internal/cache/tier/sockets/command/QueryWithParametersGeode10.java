@@ -12,23 +12,23 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- *
- */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.types.CollectionType;
 import org.apache.geode.internal.cache.tier.Command;
 
 public class QueryWithParametersGeode10 extends Query651 {
 
+  @Immutable
   private static final QueryWithParametersGeode10 singleton = new QueryWithParametersGeode10();
 
   public static Command getCommand() {
     return singleton;
   }
 
+  @Override
   protected CollectionType getCollectionType(SelectResults selectResults) {
     return selectResults.getCollectionType();
   }

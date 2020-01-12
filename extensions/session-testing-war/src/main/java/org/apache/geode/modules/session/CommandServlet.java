@@ -21,29 +21,29 @@ import java.util.function.Function;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-/**
- *
- */
 public class CommandServlet extends HttpServlet {
-
+  @SuppressWarnings("unused")
   private ServletContext context;
 
   /**
+   * Save a reference to the ServletContext for later use.
+   */
+  @Override
+  public void init(ServletConfig config) {
+    this.context = config.getServletContext();
+  }
+
+  /**
    * The standard servlet method overridden.
-   *
-   * @param request
-   * @param response
-   * @throws IOException
    */
   @Override
   protected void doGet(HttpServletRequest request, HttpServletResponse response)
-      throws IOException, ServletException {
+      throws IOException {
 
     QueryCommand cmd = QueryCommand.UNKNOWN;
     String param = request.getParameter("param");
@@ -97,15 +97,5 @@ public class CommandServlet extends HttpServlet {
       out.write("Error in servlet: " + e.toString());
       e.printStackTrace(out);
     }
-  }
-
-  /**
-   * Save a reference to the ServletContext for later use.
-   *
-   * @param config
-   */
-  @Override
-  public void init(ServletConfig config) {
-    this.context = config.getServletContext();
   }
 }

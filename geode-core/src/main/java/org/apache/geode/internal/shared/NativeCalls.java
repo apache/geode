@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.Immutable;
 
 /**
  * Encapsulates native C/C++ calls via JNA. To obtain an instance of implementation for a platform,
@@ -47,7 +48,8 @@ public abstract class NativeCalls {
    * Note: this variable is deliberately not final so that other clients can plug in their own
    * native implementations of NativeCalls.
    */
-  protected static NativeCalls instance;
+  @Immutable
+  protected static final NativeCalls instance;
 
   static {
     NativeCalls inst;
@@ -420,7 +422,6 @@ public abstract class NativeCalls {
    * Linux impls create temporary timespec object and marshals that for invoking native api.
    * Shouldn't be used if to be called too many times, instead jni implementation is more desirable.
    *
-   * @param clock_id
    * @return nanosecond precision performance counter.
    */
   public long nanoTime(int clock_id) {

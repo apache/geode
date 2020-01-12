@@ -20,10 +20,12 @@ import java.io.IOException;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.StatisticsFactory;
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.admin.StatAlert;
 import org.apache.geode.internal.admin.StatAlertDefinition;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * Implementation of {@link StatAlertDefinition}, represents threshold as number
@@ -46,6 +48,7 @@ public class NumberThresholdDecoratorImpl extends BaseDecoratorImpl
     this.evalForGtThan = evalForGtThan;
   }
 
+  @Override
   public int getDSFID() {
     return DataSerializableFixedID.STAT_ALERT_DEFN_NUM_THRESHOLD;
   }
@@ -122,16 +125,18 @@ public class NumberThresholdDecoratorImpl extends BaseDecoratorImpl
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     super.toData(out);
-    DataSerializer.writeObject(this.threshold, out);
+    context.getSerializer().writeObject(this.threshold, out);
     DataSerializer.writePrimitiveBoolean(this.evalForGtThan, out);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in);
-    this.threshold = (Number) DataSerializer.readObject(in);
+    this.threshold = (Number) context.getDeserializer().readObject(in);
     this.evalForGtThan = DataSerializer.readPrimitiveBoolean(in);
   }
 

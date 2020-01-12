@@ -18,8 +18,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import org.apache.geode.DataSerializable;
-import org.apache.geode.Instantiator;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
@@ -28,38 +26,37 @@ import org.apache.geode.modules.session.catalina.DeltaSessionInterface;
 @SuppressWarnings("serial")
 public class GatewayDeltaDestroyEvent extends AbstractGatewayDeltaEvent {
 
-  public GatewayDeltaDestroyEvent() {}
-
-  public GatewayDeltaDestroyEvent(String regionName, String key) {
+  GatewayDeltaDestroyEvent(String regionName, String key) {
     super(regionName, key);
   }
 
+  @Override
   public void apply(Cache cache) {
+    @SuppressWarnings("unchecked")
     Region<String, DeltaSessionInterface> region = getRegion(cache);
+
     try {
       region.destroy(this.key);
       if (cache.getLogger().fineEnabled()) {
-        StringBuilder builder = new StringBuilder();
-        builder.append("Applied ").append(this);
-        cache.getLogger().fine(builder.toString());
+        cache.getLogger().fine("Applied " + this);
       }
     } catch (EntryNotFoundException e) {
-      StringBuilder builder = new StringBuilder();
-      builder.append(this).append(": Session ").append(this.key).append(" was not found");
-      cache.getLogger().warning(builder.toString());
+      cache.getLogger().warning(this + ": Session " + this.key + " was not found");
     }
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     super.toData(out);
   }
 
   public String toString() {
-    return new StringBuilder().append("GatewayDeltaDestroyEvent[").append("regionName=")
-        .append(this.regionName).append("; key=").append(this.key).append("]").toString();
+    return "GatewayDeltaDestroyEvent[" + "regionName="
+        + this.regionName + "; key=" + this.key + "]";
   }
 }

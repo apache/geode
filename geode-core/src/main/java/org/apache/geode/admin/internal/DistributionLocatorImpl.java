@@ -17,7 +17,11 @@ package org.apache.geode.admin.internal;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.*;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
 
 import org.apache.logging.log4j.Logger;
 
@@ -25,13 +29,12 @@ import org.apache.geode.admin.AdminDistributedSystem;
 import org.apache.geode.admin.DistributionLocator;
 import org.apache.geode.admin.DistributionLocatorConfig;
 import org.apache.geode.admin.ManagedEntityConfig;
-import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Default administrative implementation of a DistributionLocator.
@@ -45,6 +48,7 @@ public class DistributionLocatorImpl implements DistributionLocator, InternalMan
   /**
    * How many new <code>DistributionLocator</code>s have been created?
    */
+  @MakeNotStatic
   private static int newLocators = 0;
 
   //////////////////// Instance Fields ////////////////////
@@ -91,10 +95,12 @@ public class DistributionLocatorImpl implements DistributionLocator, InternalMan
   // Attribute accessors/mutators...
   // -------------------------------------------------------------------------
 
+  @Override
   public String getId() {
     return this.id;
   }
 
+  @Override
   public String getNewId() {
     synchronized (DistributionLocatorImpl.class) {
       return "Locator" + (++newLocators);
@@ -106,10 +112,12 @@ public class DistributionLocatorImpl implements DistributionLocator, InternalMan
    *
    * @since GemFire 4.0
    */
+  @Override
   public DistributionLocatorConfig getConfig() {
     return this.config;
   }
 
+  @Override
   public AdminDistributedSystem getDistributedSystem() {
     return this.system;
   }
@@ -119,10 +127,10 @@ public class DistributionLocatorImpl implements DistributionLocator, InternalMan
    * does not receive notification when the locator actually starts and stops. If we try to guess,
    * we'll just end up with race conditions galore. So, we can't fix bug 32455 for locators.
    */
+  @Override
   public int setState(int state) {
     throw new UnsupportedOperationException(
-        LocalizedStrings.DistributionLocatorImpl_CAN_NOT_SET_THE_STATE_OF_A_LOCATOR
-            .toLocalizedString());
+        "Can not set the state of a locator.");
   }
 
   // -------------------------------------------------------------------------
@@ -132,6 +140,7 @@ public class DistributionLocatorImpl implements DistributionLocator, InternalMan
   /**
    * Polls to determine whether or not this managed entity has started.
    */
+  @Override
   public boolean waitToStart(long timeout) throws InterruptedException {
 
     if (Thread.interrupted())
@@ -147,14 +156,14 @@ public class DistributionLocatorImpl implements DistributionLocator, InternalMan
       }
     }
 
-    logger.info(
-        LocalizedMessage.create(LocalizedStrings.DistributionLocatorImpl_DONE_WAITING_FOR_LOCATOR));
+    logger.info("Done waiting for locator");
     return this.isRunning();
   }
 
   /**
    * Polls to determine whether or not this managed entity has stopped.
    */
+  @Override
   public boolean waitToStop(long timeout) throws InterruptedException {
 
     if (Thread.interrupted())
@@ -173,6 +182,7 @@ public class DistributionLocatorImpl implements DistributionLocator, InternalMan
     return !this.isRunning();
   }
 
+  @Override
   public boolean isRunning() {
     DistributionManager dm =
         ((AdminDistributedSystemImpl) getDistributedSystem()).getDistributionManager();
@@ -221,6 +231,7 @@ public class DistributionLocatorImpl implements DistributionLocator, InternalMan
     return found;
   }
 
+  @Override
   public void start() {
     this.config.validate();
     this.controller.start(this);
@@ -228,11 +239,13 @@ public class DistributionLocatorImpl implements DistributionLocator, InternalMan
     this.system.updateLocatorsString();
   }
 
+  @Override
   public void stop() {
     this.controller.stop(this);
     this.config.setLocator(null);
   }
 
+  @Override
   public String getLog() {
     return this.controller.getLog(this);
   }
@@ -249,14 +262,17 @@ public class DistributionLocatorImpl implements DistributionLocator, InternalMan
 
   //////////////////////// Command execution ////////////////////////
 
+  @Override
   public ManagedEntityConfig getEntityConfig() {
     return this.getConfig();
   }
 
+  @Override
   public String getEntityType() {
     return "Locator";
   }
 
+  @Override
   public String getStartCommand() {
     StringBuffer sb = new StringBuffer();
     sb.append(this.controller.getProductExecutable(this, "gemfire"));
@@ -268,7 +284,7 @@ public class DistributionLocatorImpl implements DistributionLocator, InternalMan
     Enumeration en = props.propertyNames();
     while (en.hasMoreElements()) {
       String pn = (String) en.nextElement();
-      sb.append(" -D" + DistributionConfig.GEMFIRE_PREFIX + "" + pn + "=" + props.getProperty(pn));
+      sb.append(" -D" + GeodeGlossary.GEMFIRE_PREFIX + "" + pn + "=" + props.getProperty(pn));
     }
 
     String bindAddress = this.getConfig().getBindAddress();
@@ -286,6 +302,7 @@ public class DistributionLocatorImpl implements DistributionLocator, InternalMan
     return sb.toString().trim();
   }
 
+  @Override
   public String getStopCommand() {
     StringBuffer sb = new StringBuffer();
     sb.append(this.controller.getProductExecutable(this, "gemfire"));
@@ -309,6 +326,7 @@ public class DistributionLocatorImpl implements DistributionLocator, InternalMan
     return sb.toString().trim();
   }
 
+  @Override
   public String getIsRunningCommand() {
     StringBuffer sb = new StringBuffer();
     sb.append(this.controller.getProductExecutable(this, "gemfire"));

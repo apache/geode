@@ -70,12 +70,6 @@ public class BucketServerLocation extends ServerLocation {
     return this.version;
   }
 
-  /*
-   * @Override public String toString() { return "BucketServerLocation{bucketId=" + bucketId +
-   * ",host=" + this.getHostName() + ",port=" + this.getPort() + ",isPrimary=" + isPrimary +
-   * ",version=" + this.version + "}"; }
-   */
-
   public int getBucketId() {
     return bucketId;
   }

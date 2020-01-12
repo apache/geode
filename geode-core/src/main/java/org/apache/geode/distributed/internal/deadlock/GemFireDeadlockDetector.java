@@ -60,25 +60,30 @@ public class GemFireDeadlockDetector {
     ResultCollector<HashSet<Dependency>, Serializable> collector =
         new ResultCollector<HashSet<Dependency>, Serializable>() {
 
+          @Override
           public synchronized Serializable getResult() throws FunctionException {
             return null;
           }
 
+          @Override
           public synchronized Serializable getResult(long timeout, TimeUnit unit)
               throws FunctionException, InterruptedException {
             return null;
           }
 
+          @Override
           public synchronized void addResult(DistributedMember memberID,
               HashSet<Dependency> resultOfSingleExecution) {
             detector.addDependencies(resultOfSingleExecution);
 
           }
 
+          @Override
           public void endResults() {
 
         }
 
+          @Override
           public void clearResults() {
 
         }
@@ -106,10 +111,12 @@ public class GemFireDeadlockDetector {
 
     private static final long serialVersionUID = 6204378622627095817L;
 
+    @Override
     public boolean hasResult() {
       return true;
     }
 
+    @Override
     public void execute(FunctionContext context) {
       InternalDistributedSystem instance = InternalDistributedSystem.getAnyInstance();
       if (instance == null) {
@@ -123,14 +130,17 @@ public class GemFireDeadlockDetector {
       context.getResultSender().lastResult((Serializable) dependencies);
     }
 
+    @Override
     public String getId() {
       return "DetectDeadlock";
     }
 
+    @Override
     public boolean optimizeForWrite() {
       return false;
     }
 
+    @Override
     public boolean isHA() {
       return false;
     }

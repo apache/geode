@@ -285,7 +285,6 @@ public interface AdminDistributedSystem {
    *
    * @param durableClientId - durable-id of the client
    * @return array of CacheServer(s) having the queue for the durable client
-   * @throws AdminException
    *
    * @since GemFire 5.6
    */
@@ -350,7 +349,6 @@ public interface AdminDistributedSystem {
    *
    * @return The persistent members that were known to the existing persistent members, when the
    *         existing members were last online.
-   * @throws AdminException
    * @since GemFire 6.5
    *
    */

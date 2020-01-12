@@ -16,12 +16,17 @@
 
 package org.apache.geode.internal.admin.remote;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-import org.apache.geode.*;
-import org.apache.geode.distributed.internal.*;
-import org.apache.geode.distributed.internal.membership.*;
-import org.apache.geode.internal.*;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.RuntimeDistributionConfigImpl;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.Config;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * A message that is sent to a particular distribution manager to get its current {@link Config}.
@@ -50,19 +55,22 @@ public class FetchSysCfgResponse extends AdminResponse {
     return this.sc;
   }
 
+  @Override
   public int getDSFID() {
     return FETCH_SYS_CFG_RESPONSE;
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     DataSerializer.writeObject(this.sc, out);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.sc = (Config) DataSerializer.readObject(in);
   }
 

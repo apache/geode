@@ -85,38 +85,47 @@ public class InterestRegistrationEventImpl implements InterestRegistrationEvent,
   }
 
 
+  @Override
   public ClientSession getClientSession() {
     return this.clientSession;
   }
 
+  @Override
   public String getRegionName() {
     return this.regionName;
   }
 
+  @Override
   public Region getRegion() {
     return this.cache.getRegion(this.regionName);
   }
 
+  @Override
   public Set getKeysOfInterest() {
     return this.keysOfInterest;
   }
 
+  @Override
   public int getInterestType() {
     return this.interestType;
   }
 
+  @Override
   public boolean isRegister() {
     return this.isRegister;
   }
 
+  @Override
   public boolean isKey() {
     return this.interestType == InterestType.KEY;
   }
 
+  @Override
   public boolean isRegularExpression() {
     return this.interestType == InterestType.REGULAR_EXPRESSION;
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     // The proxy isn't being serialized right now, but if it needs to be
     // then the proxyId would probably be the best way to do it.
@@ -126,6 +135,7 @@ public class InterestRegistrationEventImpl implements InterestRegistrationEvent,
     DataSerializer.writePrimitiveBoolean(this.isRegister, out);
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.regionName = DataSerializer.readString(in);
     this.keysOfInterest = DataSerializer.readHashSet(in);

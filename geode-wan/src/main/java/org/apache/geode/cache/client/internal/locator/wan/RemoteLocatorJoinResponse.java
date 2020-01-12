@@ -18,15 +18,16 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.CopyOnWriteHashSet;
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * List of remote locators as a response
@@ -53,12 +54,16 @@ public class RemoteLocatorJoinResponse implements DataSerializableFixedID {
     }
   }
 
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  @Override
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     this.locators = DataSerializer.readHashMap(in);
 
   }
 
-  public void toData(DataOutput out) throws IOException {
+  @Override
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     DataSerializer.writeHashMap(locators, out);
   }
 
@@ -71,6 +76,7 @@ public class RemoteLocatorJoinResponse implements DataSerializableFixedID {
     return "RemoteLocatorJoinResponse{locators=" + locators + "}";
   }
 
+  @Override
   public int getDSFID() {
     return DataSerializableFixedID.REMOTE_LOCATOR_JOIN_RESPONSE;
   }

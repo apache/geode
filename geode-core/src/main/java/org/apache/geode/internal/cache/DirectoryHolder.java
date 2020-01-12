@@ -18,6 +18,7 @@ import java.io.File;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.geode.StatisticsFactory;
+import org.apache.geode.annotations.VisibleForTesting;
 
 /**
  * A holder for a disk Directory. Used for maintaining the available space and updating disk
@@ -27,6 +28,8 @@ import org.apache.geode.StatisticsFactory;
  *
  */
 public class DirectoryHolder {
+
+
 
   private final File dir;
 
@@ -42,19 +45,29 @@ public class DirectoryHolder {
   private final DiskDirectoryStats dirStats;
 
   /** For testing purposes we can set the disk directory size in bytes **/
-  static boolean SET_DIRECTORY_SIZE_IN_BYTES_FOR_TESTING_PURPOSES = false;
+  private final DiskDirSizesUnit diskDirSizesUnit;
 
   DirectoryHolder(StatisticsFactory factory, File dir, long space, int index) {
     this(dir.getPath(), factory, dir, space, index);
   }
 
   DirectoryHolder(String ownersName, StatisticsFactory factory, File dir, long space, int index) {
+    this(ownersName, factory, dir, space, index, DiskDirSizesUnit.MEGABYTES);
+  }
+
+  @VisibleForTesting
+  DirectoryHolder(String ownersName, StatisticsFactory factory, File dir, long space, int index,
+      DiskDirSizesUnit unit) {
     this.dir = dir;
-    if (SET_DIRECTORY_SIZE_IN_BYTES_FOR_TESTING_PURPOSES) {
+    this.diskDirSizesUnit = unit;
+    if (this.diskDirSizesUnit == DiskDirSizesUnit.BYTES) {
       this.capacity = space;
-    } else {
+    } else if (this.diskDirSizesUnit == DiskDirSizesUnit.MEGABYTES) {
       // convert megabytes to bytes
       this.capacity = space * 1024 * 1024;
+    } else {
+      throw new IllegalArgumentException(
+          "Invalid value for disk size units. Only megabytes and bytes are accepted.");
     }
     this.index = index;
     this.dirStats = new DiskDirectoryStats(factory, ownersName);

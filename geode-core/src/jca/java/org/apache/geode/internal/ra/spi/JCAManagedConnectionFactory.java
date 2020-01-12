@@ -26,10 +26,6 @@ import javax.security.auth.Subject;
 
 import org.apache.geode.internal.ra.GFConnectionFactoryImpl;
 
-/**
- *
- *
- */
 public class JCAManagedConnectionFactory implements ManagedConnectionFactory {
   private String productName;
 
@@ -39,33 +35,39 @@ public class JCAManagedConnectionFactory implements ManagedConnectionFactory {
 
   private PrintWriter logger;
 
+  @Override
   public Object createConnectionFactory() throws ResourceException {
 
     return new GFConnectionFactoryImpl(this);
   }
 
+  @Override
   public Object createConnectionFactory(ConnectionManager cm) throws ResourceException {
 
     return new GFConnectionFactoryImpl(cm, this);
   }
 
+  @Override
   public ManagedConnection createManagedConnection(Subject arg0, ConnectionRequestInfo arg1)
       throws ResourceException {
     return new JCAManagedConnection(this);
 
   }
 
+  @Override
   public PrintWriter getLogWriter() throws ResourceException {
 
     return this.logger;
   }
 
+  @Override
   public ManagedConnection matchManagedConnections(Set arg0, Subject arg1,
       ConnectionRequestInfo arg2) throws ResourceException {
     // TODO Auto-generated method stub
     return null;
   }
 
+  @Override
   public void setLogWriter(PrintWriter logger) throws ResourceException {
     this.logger = logger;
 

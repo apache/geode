@@ -37,6 +37,12 @@ public class MBeanOrFileProcessController implements ProcessController {
       return mbeanController.status();
     } catch (IOException | MBeanInvocationFailedException | ConnectionFailedException
         | UnableToControlProcessException e) {
+      // if mbeanController already determines no such process exists, we can skip trying with
+      // fileController
+      String message = e.getMessage();
+      if (message != null && message.toLowerCase().contains("no such process")) {
+        throw e;
+      }
       return fileController.status();
     }
   }

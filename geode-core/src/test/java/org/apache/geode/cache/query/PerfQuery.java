@@ -34,9 +34,6 @@ import org.apache.geode.cache.query.internal.ResultsSet;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.NanoTimer;
 
-/**
- *
- */
 public class PerfQuery {
   private static int NUM_ITERATIONS = 20000;
 
@@ -179,6 +176,7 @@ public class PerfQuery {
 
   private Query getType1HandQuery(String queryString) {
     return new HandQuery(queryString) {
+      @Override
       public Object execute() {
         Region region = PerfQuery.this.cache.getRegion("/portfolios");
         SelectResults results = new ResultsSet();
@@ -195,6 +193,7 @@ public class PerfQuery {
 
   private Query getMissHandQuery(String queryString) {
     return new HandQuery(queryString) {
+      @Override
       public Object execute() {
         Region region = PerfQuery.this.cache.getRegion("/portfolios");
         SelectResults results = new ResultsSet();
@@ -275,27 +274,33 @@ public class PerfQuery {
       this.queryString = queryString;
     }
 
+    @Override
     public abstract Object execute() throws FunctionDomainException, TypeMismatchException,
         NameResolutionException, QueryInvocationTargetException;
 
 
+    @Override
     public void compile() throws TypeMismatchException, NameResolutionException {
       // already compiled
     }
 
+    @Override
     public boolean isCompiled() {
       return true;
     }
 
+    @Override
     public String getQueryString() {
       return this.queryString;
     }
 
+    @Override
     public Object execute(Object[] params) throws FunctionDomainException, TypeMismatchException,
         NameResolutionException, QueryInvocationTargetException {
       throw new UnsupportedOperationException();
     }
 
+    @Override
     public QueryStatistics getStatistics() {
       throw new UnsupportedOperationException();
     }

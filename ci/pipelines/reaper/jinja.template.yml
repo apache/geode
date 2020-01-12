@@ -1,0 +1,127 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+
+---
+
+resource_types:
+- name: gce-instances
+  type: docker-image
+  source:
+    username: ((!docker-username))
+    password: ((!docker-password))
+    repository: gcr.io/((gcp-project))/((!docker-image-prefix))gce-instances-resource
+    tag: latest
+
+resources:
+- name: four-times-a-day
+  type: time
+  source:
+    interval: 6h
+- name: geode-benchmarks
+  type: git
+  source:
+    branch: develop
+    depth: 1
+    uri: https://github.com/apache/geode-benchmarks.git
+
+- name: stoppable-instance
+  type: gce-instances
+  source:
+    filter: 'labels.time-to-live:* AND labels.time-to-live<$(date +%s) AND status:RUNNING'
+
+- name: deletable-instance
+  type: gce-instances
+  source:
+    filter: 'labels.time-to-live:* AND labels.time-to-live<$(($(date +%s) - 86400)) AND status:TERMINATED'
+
+- name: alpine-tools-image
+  type: docker-image
+  source:
+    username: ((docker-username))
+    password: ((docker-password))
+    repository: gcr.io/((gcp-project))/((pipeline-prefix))alpine-tools
+    tag: latest
+
+- name: google-cloud-sdk-image
+  type: docker-image
+  source:
+    repository: google/cloud-sdk
+    tag: alpine
+
+jobs:
+- name: stop-instance
+  plan:
+  - aggregate:
+    - get: google-cloud-sdk-image
+    - get: stoppable-instance
+      version: every
+      trigger: true
+  - task: stop-instances
+    image: google-cloud-sdk-image
+    config:
+      platform: linux
+      inputs:
+      - name: stoppable-instance
+      run:
+        path: /bin/sh
+        args:
+        - -ec
+        - |
+          gcloud compute instances stop $(cat stoppable-instance/selfLink) --quiet
+
+- name: delete-instance
+  plan:
+  - aggregate:
+    - get: google-cloud-sdk-image
+    - get: deletable-instance
+      version: every
+      trigger: true
+  - task: delete-instance
+    image: google-cloud-sdk-image
+    config:
+      platform: linux
+      inputs:
+      - name: deletable-instance
+      run:
+        path: /bin/sh
+        args:
+        - -ec
+        - |
+          gcloud compute instances delete $(cat deletable-instance/selfLink) --quiet
+
+- name: reap-benchmark-instances
+  plan:
+  - aggregate:
+    - get: alpine-tools-image
+    - get: four-times-a-day
+      trigger: true
+    - get: geode-benchmarks
+  - task: reap-benchmark-instances
+    image: alpine-tools-image
+    config:
+      platform: linux
+      params:
+        AWS_ACCESS_KEY_ID: ((benchmarks-access-key-id))
+        AWS_SECRET_ACCESS_KEY: ((benchmarks-secret-access-key))
+        AWS_DEFAULT_REGION: us-west-2
+        AWS_REGION: us-west-2
+      inputs:
+      - name: geode-benchmarks
+      run:
+        path: geode-benchmarks/infrastructure/scripts/aws/expire_clusters.sh
+    timeout: 4h

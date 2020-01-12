@@ -20,7 +20,10 @@ import java.io.IOException;
 
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.OperationExecutors;
 import org.apache.geode.distributed.internal.ReplyMessage;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  *
@@ -45,7 +48,7 @@ public class ShutdownAllGatewayHubsRequest extends DistributionMessage {
 
   @Override
   public int getProcessorType() {
-    return ClusterDistributionManager.STANDARD_EXECUTOR;
+    return OperationExecutors.STANDARD_EXECUTOR;
   }
 
   @Override
@@ -53,13 +56,17 @@ public class ShutdownAllGatewayHubsRequest extends DistributionMessage {
     ReplyMessage.send(getSender(), this.rpid, null, dm, true /* ignored */, false, false);
   }
 
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  @Override
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.rpid = in.readInt();
   }
 
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  @Override
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     out.writeInt(this.rpid);
   }
 }

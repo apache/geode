@@ -23,6 +23,7 @@ import org.apache.geode.i18n.StringId;
  * places where security related logging (authentication, authorization success and failure of
  * clients and peers) as well as for security callbacks.
  *
+ * <p>
  * This class wraps an existing {@link InternalLogWriter} instance to add the security prefix
  * feature mentioned above.
  *
@@ -33,22 +34,16 @@ public class SecurityLogWriter extends LogWriterImpl implements InternalLogWrite
   public static final String SECURITY_PREFIX = DistributionConfig.SECURITY_PREFIX_NAME;
 
   private final int logLevel;
-
   private final InternalLogWriter realLogWriter;
 
-  public SecurityLogWriter(int level, InternalLogWriter logWriter) {
-    this.logLevel = level;
-    this.realLogWriter = logWriter;
+  public SecurityLogWriter(final int level, final InternalLogWriter logWriter) {
+    logLevel = level;
+    realLogWriter = logWriter;
   }
 
   @Override
   public int getLogWriterLevel() {
-    return this.logLevel;
-  }
-
-  @Override
-  public void setLogWriterLevel(int newLevel) {
-    throw new UnsupportedOperationException("Unable to change log level after creation");
+    return logLevel;
   }
 
   @Override
@@ -62,8 +57,9 @@ public class SecurityLogWriter extends LogWriterImpl implements InternalLogWrite
   }
 
   @Override
-  public void put(int msgLevel, StringId msgId, Object[] params, Throwable exception) {
-    put(msgLevel, msgId.toLocalizedString(params), exception);
+  public void put(final int messageLevel, final StringId messageId, final Object[] parameters,
+      final Throwable throwable) {
+    put(messageLevel, messageId.toLocalizedString(parameters), throwable);
   }
 
   /**
@@ -71,8 +67,8 @@ public class SecurityLogWriter extends LogWriterImpl implements InternalLogWrite
    * security related log-lines.
    */
   @Override
-  public void put(int msgLevel, String msg, Throwable exception) {
-    this.realLogWriter.put(msgLevel, new StringBuilder(SecurityLogWriter.SECURITY_PREFIX)
-        .append(levelToString(msgLevel)).append(" ").append(msg).toString(), exception);
+  public void put(final int messageLevel, final String message, final Throwable throwable) {
+    realLogWriter.put(messageLevel, new StringBuilder(SECURITY_PREFIX)
+        .append(levelToString(messageLevel)).append(" ").append(message).toString(), throwable);
   }
 }

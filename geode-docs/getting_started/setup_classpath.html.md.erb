@@ -21,7 +21,14 @@ limitations under the License.
 
 This topic describes how <%=vars.product_name%> processes set their CLASSPATH.
 
-To simplify CLASSPATH environment settings, <%=vars.product_name%> has organized all application libraries required by <%=vars.product_name%> processes into `*-dependencies.jar` files. All dependency JAR files are located in the `path_to_product/lib` directory. When starting a server or locator process using `gfsh`, the required application JAR files are automatically loaded into the process's CLASSPATH for you.
+To simplify CLASSPATH environment settings, <%=vars.product_name%> has organized all application libraries required by <%=vars.product_name%> processes into `*-dependencies.jar` files. All dependency JAR files are located in the `path_to_product/lib` directory.
+
+When starting a server or locator process using `gfsh`,
+application JAR files are automatically loaded into
+the process's CLASSPATH from two directories:
+
+- `path_to_product/lib/`
+- `path_to_product/extensions/`
 
 **Note:**
 To embed <%=vars.product_name%> in your application, add `path_to_product/lib/geode-dependencies.jar` to your CLASSPATH.
@@ -40,11 +47,11 @@ The following table lists the dependency JAR files associated with various <%=va
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>gfsh</td>
 <td>gfsh-dependencies.jar</td>
 </tr>
-<tr class="even">
+<tr>
 <td>server and locator</td>
 <td>geode-dependencies.jar
 <div class="note note">

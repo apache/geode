@@ -24,8 +24,10 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.GemFireVersion;
-import org.apache.geode.internal.Version;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * @since GemFire 6.6.2
@@ -66,6 +68,7 @@ public class StartupResponseWithVersionMessage extends StartupResponseMessage {
     super.process(dm);
   }
 
+  @Override
   public int getDSFID() {
     return STARTUP_RESPONSE_WITHVERSION_MESSAGE;
   }
@@ -81,8 +84,9 @@ public class StartupResponseWithVersionMessage extends StartupResponseMessage {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     DataSerializer.writeString(this.version, out);
     StartupMessageData data = new StartupMessageData();
     data.writeHostedLocators(this.hostedLocators);
@@ -91,8 +95,9 @@ public class StartupResponseWithVersionMessage extends StartupResponseMessage {
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.version = DataSerializer.readString(in);
     StartupMessageData data = new StartupMessageData();
     data.readFrom(in);

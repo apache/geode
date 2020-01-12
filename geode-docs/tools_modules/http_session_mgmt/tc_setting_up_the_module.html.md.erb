@@ -111,7 +111,7 @@ lifecycleEvent
 INFO: Initializing <%=vars.product_name%> Modules
 Modules version: 1.0.0
 Java version:   1.0.0 user1 032916 2016-11-29 07:49:26 -0700
-javac 1.8.0_<%=vars.min_java_update%>
+javac 1.<%=vars.min_java_version%>.0_<%=vars.min_java_update%>
 Native version: native code unavailable
 Source revision: c36591b73243c7ee3a0186710338453d12efe364
 Source repository: develop
@@ -119,21 +119,3 @@ Running on: /192.0.2.0, 8 cpu(s), x86_64 Mac OS X 10.11.4
 ```
 
 Information is also logged within the <%=vars.product_name%> log file, which by default is named `gemfire_modules.log`.
-
-## <a id="tc_setting_up_the_module__section_B2396FB0879248DBA85ADFDBBEFA987E" class="no-quick-link"></a>Configuring Non-Sticky Session Replication
-
-Some situations require that sessions be 'non-sticky', which means that client requests can be directed to any server in a cluster of application servers instead of the same server each time. To achieve this, you must configure your deployment as described for the following topologies.
-
-**Peer-to-Peer**
-
-For peer-to-peer topologies, apply the following settings to enable non-sticky sessions to work correctly:
-
--   Java system property `gemfire.loadClassOnEveryDeserialization=true`. Set this property by editing the `bin/setenv.sh` file.
--   `prefer.deserialized.form=false`. Set this property in `conf/catalina.properties`.
-
-**Client-server**
-
-For client-server topologies, only the Java system property `gemfire.loadClassOnEveryDeserialization=true` must be set, in the `bin/setenv.sh file`.
-
-**Note:**
-Non-sticky sessions cause a performance impact because sessions need to be re-created every time a request hits a different server. This may not be noticeable when the session attributes are small, but may become more evident as the session attributes increase in size and/or number.

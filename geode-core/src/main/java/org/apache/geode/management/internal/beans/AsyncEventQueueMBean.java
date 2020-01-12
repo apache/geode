@@ -17,7 +17,6 @@ package org.apache.geode.management.internal.beans;
 import javax.management.NotificationBroadcasterSupport;
 
 import org.apache.geode.management.AsyncEventQueueMXBean;
-import org.apache.geode.management.internal.beans.stats.StatsKey;
 
 /**
  * Concrete implementation of AsyncEventQueueMXBean
@@ -124,5 +123,10 @@ public class AsyncEventQueueMBean extends NotificationBroadcasterSupport
 
   public void stopMonitor() {
     bridge.stopMonitor();
+  }
+
+  @Override
+  public boolean isDispatchingPaused() {
+    return bridge.isDispatchingPaused();
   }
 }

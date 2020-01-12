@@ -25,11 +25,13 @@ import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.admin.GemFireVM;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Responds to {@link RootRegionResponse}.
@@ -49,7 +51,7 @@ public class RootRegionResponse extends AdminResponse {
     try {
       InternalCache cache = (InternalCache) CacheFactory.getInstance(dm.getSystem());
       final Collection roots;
-      if (!Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "PRDebug")) {
+      if (!Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "PRDebug")) {
         roots = cache.rootRegions();
       } else {
         roots = cache.rootRegions(true);
@@ -94,15 +96,17 @@ public class RootRegionResponse extends AdminResponse {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     DataSerializer.writeObject(this.regions, out);
     DataSerializer.writeObject(this.userAttrs, out);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.regions = DataSerializer.readObject(in);
     this.userAttrs = DataSerializer.readObject(in);
   }

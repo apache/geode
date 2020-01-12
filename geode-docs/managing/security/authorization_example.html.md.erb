@@ -19,35 +19,22 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-This example demonstrates the basics of an implementation of the
-`SecurityManager.authorize` method.
-The remainder of the example may be found within the <%=vars.product_name_long%>
-source code within the
-`geode-core/src/main/java/org/apache/geode/examples/security` directory.
+## <a id="overview"></a>Disclaimer
 
-Of course, the security implementation of every installation is unique,
-so this example cannot be used in a production environment,
-as the roles and permissions will not match the needs of any
-real distributed system. 
+The security implementation of every installation is unique. These examples are provided for illustrative purposes only and must not be used in a production environment.
 
-This example assumes that a set of users, a set of roles
-that a user might take on within the system,
-and a mapping of users to their roles are described
-in a JSON format file.
-The roles define a set of authorized resource permissions granted
-for users in those roles.
-Code not shown here parses the file to compose a data structure
-with the information on roles and users.
-The `authorize` callback denies permission for any operation
-that does not have a principal representing the identity of the
-operation's requester.
-Given the principal, 
-the method iterates through the data structure searching for the 
-necessary permissions for the principal.
-When the necessary permission is found, 
-authorization is granted by returning the value `true`.
-If the permission is not found in the data structure,
-then the method returns `false`, denying authorization of the operation.
+The examples demonstrate the basics for implementing both user authorization (`SecurityManager.authorize`) and method invocation authorization (`MethodInvocationAuthorizer.authorize`) during query executions.
+The remainder of the examples may be found within the <%=vars.product_name_long%> source code under the `geode-core/src/main/java/org/apache/geode/examples/security` directory.
+
+## <a id="user_authorization_example"></a>User Authorization Example
+
+This example assumes that a set of users, a set of roles that a user might take on within the system, and a mapping of users to their roles are described in a JSON format file.
+The roles define a set of authorized resource permissions granted for users in those roles.
+Code not shown here parses the file to compose a data structure with the information on roles and users.
+The `authorize` callback denies permission for any operation that does not have a principal representing the identity of the operation's requester.
+Given the principal, the method iterates through the data structure searching for the necessary permissions for the principal.
+When the necessary permission is found, authorization is granted by returning the value `true`.
+If the permission is not found in the data structure, then the method returns `false`, denying authorization of the operation.
 
 ``` pre
 public boolean authorize(final Object principal, final ResourcePermission context) {
@@ -67,4 +54,23 @@ public boolean authorize(final Object principal, final ResourcePermission contex
 
     return false;
 }
+```
+
+## <a id="method_authorization_example"></a>Method Invocation Authorization Example
+
+This example assumes that the entire domain model is deployed to the cluster and that the user is allowed to modify these classes.
+The `authorize` callback denies access to methods that have been permanently forbidden by the [RestrictedMethodAuthorizer](method_invocation_authorizers.html#restrictedMethodAuthorizer) and returns `false` right away.
+When the method is not permanently forbidden, the implementation checks whether the method has been annotated with a custom annotation. When the necessary annotation is found, authorization is granted by returning the value `true`.
+If the annotation is not found, then the method returns `false`, denying the invocation of the method during the query execution.
+
+``` pre
+public boolean authorize(Method method, Object target) {
+    // Check if forbidden by default.
+    if (defaultAuthorizer.isPermanentlyForbiddenMethod(method, target)) {
+        return false;
+    }
+
+    // Check if annotation is present
+    return method.isAnnotationPresent(Authorized.class);
+  }
 ```

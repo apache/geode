@@ -16,17 +16,17 @@ package org.apache.geode.internal.lang;
 
 import java.util.Optional;
 
+
 /**
  * The SystemPropertyHelper class is an helper class for accessing system properties used in geode.
  * The method name to get the system property should be the same as the system property name.
  *
  * @since Geode 1.4.0
  */
-
 public class SystemPropertyHelper {
-  private static final String GEODE_PREFIX = "geode.";
-  private static final String GEMFIRE_PREFIX = "gemfire.";
 
+  public static final String GEODE_PREFIX = "geode.";
+  public static final String GEMFIRE_PREFIX = "gemfire.";
 
   /**
    * When set to "true" enables asynchronous eviction algorithm (defaults to true). For more details
@@ -58,6 +58,29 @@ public class SystemPropertyHelper {
 
   public static final String EVICTION_SEARCH_MAX_ENTRIES = "lru.maxSearchEntries";
 
+  public static final String EARLY_ENTRY_EVENT_SERIALIZATION = "earlyEntryEventSerialization";
+
+  public static final String DEFAULT_DISK_DIRS_PROPERTY = "defaultDiskDirs";
+
+  public static final String HA_REGION_QUEUE_EXPIRY_TIME_PROPERTY = "MessageTimeToLive";
+
+  public static final String THREAD_ID_EXPIRY_TIME_PROPERTY = "threadIdExpiryTime";
+
+  public static final String PERSISTENT_VIEW_RETRY_TIMEOUT_SECONDS =
+      "PERSISTENT_VIEW_RETRY_TIMEOUT_SECONDS";
+
+  public static final String USE_HTTP_SYSTEM_PROPERTY = "useHTTP";
+
+  /**
+   * a comma separated string to list out the packages to scan. If not specified, the entire
+   * classpath is scanned.
+   * This is used by the FastPathScanner to scan for:
+   * 1. XSDRootElement annotation
+   *
+   * @since Geode 1.7.0
+   */
+  public static final String PACKAGES_TO_SCAN = "packagesToScan";
+
   /**
    * This method will try to look up "geode." and "gemfire." versions of the system property. It
    * will check and prefer "geode." setting first, then try to check "gemfire." setting.
@@ -70,6 +93,13 @@ public class SystemPropertyHelper {
     return property != null ? Optional.of(Boolean.parseBoolean(property)) : Optional.empty();
   }
 
+  /**
+   * This method will try to look up "geode." and "gemfire." versions of the system property. It
+   * will check and prefer "geode." setting first, then try to check "gemfire." setting.
+   *
+   * @param name system property name set in Geode
+   * @return an Optional containing the Integer value of the system property
+   */
   public static Optional<Integer> getProductIntegerProperty(String name) {
     Integer propertyValue = Integer.getInteger(GEODE_PREFIX + name);
     if (propertyValue == null) {
@@ -83,7 +113,19 @@ public class SystemPropertyHelper {
     }
   }
 
-  private static String getProperty(String name) {
+  /**
+   * This method will try to look up "geode." and "gemfire." versions of the system property. It
+   * will check and prefer "geode." setting first, then try to check "gemfire." setting.
+   *
+   * @param name system property name set in Geode
+   * @return an Optional containing the String value of the system property
+   */
+  public static Optional<String> getProductStringProperty(String name) {
+    String property = getProperty(name);
+    return property != null ? Optional.of(property) : Optional.empty();
+  }
+
+  public static String getProperty(String name) {
     String property = getGeodeProperty(name);
     return property != null ? property : getGemfireProperty(name);
   }

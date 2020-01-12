@@ -24,7 +24,10 @@ import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventDispatcher;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
-import org.apache.geode.management.internal.ManagementStrings;
+import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderEventProcessor;
+import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderEventProcessor;
+import org.apache.geode.internal.cache.wan.serial.ConcurrentSerialGatewaySenderEventProcessor;
+import org.apache.geode.internal.cache.wan.serial.SerialGatewaySenderEventProcessor;
 import org.apache.geode.management.internal.beans.stats.GatewaySenderOverflowMonitor;
 import org.apache.geode.management.internal.beans.stats.MBeanStatsMonitor;
 import org.apache.geode.management.internal.beans.stats.StatType;
@@ -57,10 +60,9 @@ public class GatewaySenderMBeanBridge {
   public GatewaySenderMBeanBridge(GatewaySender sender) {
     this.sender = sender;
     this.monitor =
-        new MBeanStatsMonitor(ManagementStrings.GATEWAY_SENDER_MONITOR.toLocalizedString());
+        new MBeanStatsMonitor("GatewaySenderMXBeanMonitor");
 
-    this.overflowMonitor = new GatewaySenderOverflowMonitor(
-        ManagementStrings.GATEWAY_SENDER_OVERFLOW_MONITOR.toLocalizedString());
+    this.overflowMonitor = new GatewaySenderOverflowMonitor("GatewaySenderMXBeanOverflowMonitor");
 
     this.abstractSender = ((AbstractGatewaySender) this.sender);
     GatewaySenderStats stats = abstractSender.getStatistics();
@@ -295,9 +297,29 @@ public class GatewaySenderMBeanBridge {
   public boolean isConnected() {
     if (this.dispatcher != null && this.dispatcher.isConnectedToRemote()) {
       return true;
-    } else {
-      return false;
     }
+    if (this.sender.isParallel()) {
+      ConcurrentParallelGatewaySenderEventProcessor cProc =
+          (ConcurrentParallelGatewaySenderEventProcessor) ((AbstractGatewaySender) sender)
+              .getEventProcessor();
+      for (ParallelGatewaySenderEventProcessor lProc : cProc.getProcessors()) {
+        if (lProc.getDispatcher() != null && lProc.getDispatcher().isConnectedToRemote()) {
+          this.dispatcher = lProc.getDispatcher();
+          return true;
+        }
+      }
+    } else {
+      ConcurrentSerialGatewaySenderEventProcessor cProc =
+          (ConcurrentSerialGatewaySenderEventProcessor) ((AbstractGatewaySender) sender)
+              .getEventProcessor();
+      for (SerialGatewaySenderEventProcessor lProc : cProc.getProcessors()) {
+        if (lProc.getDispatcher() != null && lProc.getDispatcher().isConnectedToRemote()) {
+          this.dispatcher = lProc.getDispatcher();
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   public int getEventsExceedingAlertThreshold() {

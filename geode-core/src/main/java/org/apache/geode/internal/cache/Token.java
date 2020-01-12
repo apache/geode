@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache;
 
 import java.io.DataInput;
@@ -22,24 +21,31 @@ import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 
-import org.apache.geode.internal.DSCODE;
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.Version;
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.internal.serialization.DSCODE;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * Internal tokens used as region values. These tokens are never seen from the public API.
  *
+ * <p>
  * These classes are Serializable and implement readResolve to support canonicalization in the face
  * of copysharing.
- *
  */
+@Immutable
 public abstract class Token {
 
+  @Immutable
   public static final Invalid INVALID = new Invalid();
+  @Immutable
   public static final LocalInvalid LOCAL_INVALID = new LocalInvalid();
 
   // DESTROYED token, used during getInitialImage only
   // and only for identity comparisons
+  @Immutable
   public static final Destroyed DESTROYED = new Destroyed();
 
   /**
@@ -47,6 +53,7 @@ public abstract class Token {
    * DESTROYED and REMOVED_PHASE2 tokens transition to TOMBSTONE during GII and normal entry
    * removal.
    */
+  @Immutable
   public static final Tombstone TOMBSTONE = new Tombstone();
 
   /**
@@ -55,6 +62,7 @@ public abstract class Token {
    * distribution is done. During this period, the entry may be modified, preventing the entry from
    * being removed from its map.
    */
+  @Immutable
   public static final Removed REMOVED_PHASE1 = new Removed();
 
   /**
@@ -62,16 +70,19 @@ public abstract class Token {
    * entry are invoked under synchronization and the entry is then removed from the map. If an entry
    * is seen in this state, you should wait in a loop for the entry to be removed from the map.
    */
+  @Immutable
   public static final Removed2 REMOVED_PHASE2 = new Removed2();
 
   /**
    * Used to designate end of stream in StreamingOperation
    */
+  @Immutable
   public static final EndOfStream END_OF_STREAM = new EndOfStream();
 
   /**
    * Indicates that a decision was made to not provide some information that is normally available.
    */
+  @Immutable
   public static final NotAvailable NOT_AVAILABLE = new NotAvailable();
 
   // !!! NOTICE !!!
@@ -83,6 +94,7 @@ public abstract class Token {
   /**
    * A token used to represent a value that is not a token.
    */
+  @Immutable
   public static final NotAToken NOT_A_TOKEN = new NotAToken();
 
   /**
@@ -108,6 +120,10 @@ public abstract class Token {
     return o == DESTROYED;
   }
 
+  public static boolean isToken(Object o) {
+    return o instanceof Token;
+  }
+
   /**
    * Singleton token indicating an Invalid Entry.
    */
@@ -125,23 +141,27 @@ public abstract class Token {
       return INVALID;
     }
 
+    @Override
     public int getDSFID() {
       return TOKEN_INVALID;
     }
 
-    public void toData(DataOutput out) throws IOException {}
+    @Override
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {}
 
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {}
+    @Override
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {}
 
     public boolean isSerializedValue(byte[] value) {
       ByteBuffer buf = ByteBuffer.wrap(value);
-      return buf.capacity() == 3 && buf.get() == DSCODE.DS_FIXED_ID_SHORT
+      return buf.capacity() == 3 && buf.get() == DSCODE.DS_FIXED_ID_SHORT.toByte()
           && buf.getShort() == getDSFID();
     }
 
     @Override
     public Version[] getSerializationVersions() {
-      // TODO Auto-generated method stub
       return null;
     }
   }
@@ -180,17 +200,21 @@ public abstract class Token {
       return DESTROYED;
     }
 
+    @Override
     public int getDSFID() {
       return TOKEN_DESTROYED;
     }
 
-    public void toData(DataOutput out) throws IOException {}
+    @Override
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {}
 
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {}
+    @Override
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {}
 
     @Override
     public Version[] getSerializationVersions() {
-      // TODO Auto-generated method stub
       return null;
     }
   }
@@ -209,17 +233,21 @@ public abstract class Token {
       return TOMBSTONE;
     }
 
+    @Override
     public int getDSFID() {
       return TOKEN_TOMBSTONE;
     }
 
-    public void toData(DataOutput out) throws IOException {}
+    @Override
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {}
 
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {}
+    @Override
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {}
 
     @Override
     public Version[] getSerializationVersions() {
-      // TODO Auto-generated method stub
       return null;
     }
   }
@@ -238,17 +266,21 @@ public abstract class Token {
       return REMOVED_PHASE1;
     }
 
+    @Override
     public int getDSFID() {
       return TOKEN_REMOVED;
     }
 
-    public void toData(DataOutput out) throws IOException {}
+    @Override
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {}
 
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {}
+    @Override
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {}
 
     @Override
     public Version[] getSerializationVersions() {
-      // TODO Auto-generated method stub
       return null;
     }
   }
@@ -267,17 +299,21 @@ public abstract class Token {
       return REMOVED_PHASE2;
     }
 
+    @Override
     public int getDSFID() {
       return TOKEN_REMOVED2;
     }
 
-    public void toData(DataOutput out) throws IOException {}
+    @Override
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {}
 
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {}
+    @Override
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {}
 
     @Override
     public Version[] getSerializationVersions() {
-      // TODO Auto-generated method stub
       return null;
     }
   }
@@ -315,17 +351,21 @@ public abstract class Token {
       return END_OF_STREAM;
     }
 
+    @Override
     public int getDSFID() {
       return END_OF_STREAM_TOKEN;
     }
 
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {}
+    @Override
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {}
 
-    public void toData(DataOutput out) throws IOException {}
+    @Override
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {}
 
     @Override
     public Version[] getSerializationVersions() {
-      // TODO Auto-generated method stub
       return null;
     }
   }

@@ -21,9 +21,9 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.protocol.protobuf.statistics.ClientStatistics;
 import org.apache.geode.internal.statistics.DummyStatisticsFactory;
-import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 
-@Category(UnitTest.class)
+@Category({ClientServerTest.class})
 public class ProtobufProtocolServiceJUnitTest {
   @Test
   public void initializeStatistics() {

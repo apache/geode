@@ -32,9 +32,9 @@ import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.ExitCode;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * A tool that reads the XML description of MBeans used with the Jakarta Commons Modeler and
@@ -135,8 +135,8 @@ public class GenerateMBeanHTML extends DefaultHandler {
   public InputSource resolveEntity(String publicId, String systemId) throws SAXException {
 
     if (publicId == null || systemId == null) {
-      throw new SAXException(LocalizedStrings.GenerateMBeanHTML_PUBLIC_ID_0_SYSTEM_ID_1
-          .toLocalizedString(new Object[] {publicId, systemId}));
+      throw new SAXException(String.format("Public Id: %s System Id: %s",
+          new Object[] {publicId, systemId}));
     }
 
     // Figure out the location for the publicId.
@@ -149,7 +149,7 @@ public class GenerateMBeanHTML extends DefaultHandler {
         result = new InputSource(stream);
       } else {
         throw new SAXNotRecognizedException(
-            LocalizedStrings.GenerateMBeanHTML_DTD_NOT_FOUND_0.toLocalizedString(location));
+            String.format("DTD not found: %s", location));
       }
     }
 
@@ -444,6 +444,7 @@ public class GenerateMBeanHTML extends DefaultHandler {
 
   //////////////////////// Main Program ////////////////////////
 
+  @Immutable
   private static final PrintStream err = System.err;
 
   /**

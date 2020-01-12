@@ -23,7 +23,6 @@ import static org.apache.geode.internal.cache.tier.sockets.Handshake.PUBLIC_KEY_
 import static org.apache.geode.internal.cache.tier.sockets.Handshake.REPLY_AUTH_NOT_REQUIRED;
 import static org.apache.geode.internal.cache.tier.sockets.Handshake.REPLY_OK;
 
-import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.FileInputStream;
@@ -63,13 +62,14 @@ import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.LogWriter;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.tier.Encryptor;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
+import org.apache.geode.internal.serialization.ByteArrayDataInput;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.GemFireSecurityException;
 
@@ -98,26 +98,38 @@ public class EncryptorImpl implements Encryptor {
 
   private String clientSKAlgo;
 
+  @MakeNotStatic
   private static PrivateKey dhPrivateKey;
 
+  @MakeNotStatic
   private static PublicKey dhPublicKey;
 
+  @MakeNotStatic
   private static String dhSKAlgo;
 
   // Members for server authentication using digital signature
 
+  // Members for server authentication using digital signature
+
+  @MakeNotStatic
   private static String certificateFilePath;
 
+  @MakeNotStatic
   private static HashMap certificateMap;
 
+  @MakeNotStatic
   private static String privateKeyAlias;
 
+  @MakeNotStatic
   private static String privateKeySubject;
 
+  @MakeNotStatic
   private static PrivateKey privateKeyEncrypt;
 
+  @MakeNotStatic
   private static String privateKeySignAlgo;
 
+  @MakeNotStatic
   private static SecureRandom random;
 
   private byte appSecureMode = (byte) 0;
@@ -265,6 +277,7 @@ public class EncryptorImpl implements Encryptor {
     }
   }
 
+  @Override
   public byte[] decryptBytes(byte[] data) throws Exception {
     if (this.appSecureMode == CREDENTIALS_DHENCRYPT) {
       String algo = null;
@@ -282,6 +295,7 @@ public class EncryptorImpl implements Encryptor {
 
 
 
+  @Override
   public byte[] encryptBytes(byte[] data) throws Exception {
     if (this.appSecureMode == CREDENTIALS_DHENCRYPT) {
       String algo = null;
@@ -375,8 +389,8 @@ public class EncryptorImpl implements Encryptor {
           byte[] signatureBytes = DataSerializer.readByteArray(dis);
           if (!certificateMap.containsKey(subject)) {
             throw new AuthenticationFailedException(
-                LocalizedStrings.HandShake_HANDSHAKE_FAILED_TO_FIND_PUBLIC_KEY_FOR_SERVER_WITH_SUBJECT_0
-                    .toLocalizedString(subject));
+                String.format("HandShake failed to find public key for server with subject %s",
+                    subject));
           }
 
           // Check the signature with the public key
@@ -459,8 +473,8 @@ public class EncryptorImpl implements Encryptor {
           byte[] signatureBytes = DataSerializer.readByteArray(dis);
           if (!certificateMap.containsKey(subject)) {
             throw new AuthenticationFailedException(
-                LocalizedStrings.HandShake_HANDSHAKE_FAILED_TO_FIND_PUBLIC_KEY_FOR_SERVER_WITH_SUBJECT_0
-                    .toLocalizedString(subject));
+                String.format("HandShake failed to find public key for server with subject %s",
+                    subject));
           }
 
           // Check the signature with the public key
@@ -538,8 +552,7 @@ public class EncryptorImpl implements Encryptor {
         byte[] clientChallenge = DataSerializer.readByteArray(dis);
         if (privateKeyEncrypt == null) {
           throw new AuthenticationFailedException(
-              LocalizedStrings.HandShake_SERVER_PRIVATE_KEY_NOT_AVAILABLE_FOR_CREATING_SIGNATURE
-                  .toLocalizedString());
+              "Server private key not available for creating signature.");
         }
         // Sign the challenge from client and send it to the client
         Signature sig = Signature.getInstance(privateKeySignAlgo);
@@ -569,16 +582,14 @@ public class EncryptorImpl implements Encryptor {
       byte[] encBytes = DataSerializer.readByteArray(dis);
       Cipher c = getDecryptCipher(this.clientSKAlgo, this.clientPublicKey);
       byte[] credentialBytes = decryptBytes(encBytes, c);
-      ByteArrayInputStream bis = new ByteArrayInputStream(credentialBytes);
-      DataInputStream dinp = new DataInputStream(bis);
+      ByteArrayDataInput dinp = new ByteArrayDataInput(credentialBytes);
       // credentials = DataSerializer.readProperties(dinp);//Hitesh: we don't send in handshake
       // now
       byte[] challengeRes = DataSerializer.readByteArray(dinp);
       // Check the challenge string
       if (!Arrays.equals(challenge, challengeRes)) {
         throw new AuthenticationFailedException(
-            LocalizedStrings.HandShake_MISMATCH_IN_CHALLENGE_BYTES_MALICIOUS_CLIENT
-                .toLocalizedString());
+            "Mismatch in challenge bytes. Malicious client?");
       }
       dinp.close();
     } else {
@@ -622,8 +633,7 @@ public class EncryptorImpl implements Encryptor {
         byte[] clientChallenge = DataSerializer.readByteArray(dis);
         if (privateKeyEncrypt == null) {
           throw new AuthenticationFailedException(
-              LocalizedStrings.HandShake_SERVER_PRIVATE_KEY_NOT_AVAILABLE_FOR_CREATING_SIGNATURE
-                  .toLocalizedString());
+              "Server private key not available for creating signature.");
         }
         // Sign the challenge from client and send it to the client
         Signature sig = Signature.getInstance(privateKeySignAlgo);
@@ -676,15 +686,13 @@ public class EncryptorImpl implements Encryptor {
       }
 
       byte[] credentialBytes = decrypt.doFinal(encBytes);
-      ByteArrayInputStream bis = new ByteArrayInputStream(credentialBytes);
-      DataInputStream dinp = new DataInputStream(bis);
+      ByteArrayDataInput dinp = new ByteArrayDataInput(credentialBytes);
       credentials = DataSerializer.readProperties(dinp);
       byte[] challengeRes = DataSerializer.readByteArray(dinp);
       // Check the challenge string
       if (!Arrays.equals(challenge, challengeRes)) {
         throw new AuthenticationFailedException(
-            LocalizedStrings.HandShake_MISMATCH_IN_CHALLENGE_BYTES_MALICIOUS_CLIENT
-                .toLocalizedString());
+            "Mismatch in challenge bytes. Malicious client?");
       }
       dinp.close();
     } else {

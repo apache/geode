@@ -19,17 +19,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-You can dynamically create regions in your application code and automatically instantiate them on members of a distributed system.
-
-If your application does not require partitioned regions, you can use the <span class="keyword apiname">org.apache.geode.cache.DynamicRegionFactory</span> class to dynamically create regions, or you can create them using the `<dynamic-region-factory>` element in the cache.xml file that defines the region. See [&lt;dynamic-region-factory&gt;](../../reference/topics/cache_xml.html#dynamic-region-factory).
+You can dynamically create regions in your application code and automatically instantiate them on members of a cluster.
 
 Due to the number of options involved, most developers use functions to create regions dynamically in their applications, as described in this topic. Dynamic regions can also be created from the `gfsh` command line.
 
-For a complete discussion of using <%=vars.product_name%> functions, see [Function Execution](../function_exec/chapter_overview.html). Functions use the <span class="keyword apiname">org.apache.geode.cache.execute.FunctionService</span> class.
+For a complete discussion of using <%=vars.product_name%> functions, see [Function Execution](../function_exec/chapter_overview.html). Functions use the `org.apache.geode.cache.execute.FunctionService` class.
 
-For example, the following Java classes define and use a function for dynamic region creation:
+If your application does not require partitioned regions, you can use the `org.apache.geode.cache.DynamicRegionFactory` class to dynamically create regions, or
+you can create them using the `<dynamic-region-factory>` element in the cache.xml file that defines the region.
+(You can create partitioned regions dynamically, but you cannot use the `DynamicRegionFactory` class or the
+`<dynamic-region-factory>` element to do it.)
 
-The <span class="keyword apiname">CreateRegionFunction</span> class defines a function invoked on a server by a client using the <span class="keyword apiname">onServer()</span> method of the <span class="keyword apiname">FunctionService</span> class. This function call initiates region creation by putting an entry into the region attributes metadata region. The entry key is the region name and the value is the set of region attributes used to create the region.
+**Note:** Use of the `DynamicRegionFactory` class (and the `<dynamic-region-factory>` element) are deprecated in favor of the `FunctionService` approach described here.
+
+In the following example, the `CreateRegionFunction` class defines a function invoked on a server by a client using the `onServer()` method of the `FunctionService` class. This function call initiates region creation by putting an entry into the region attributes metadata region. The entry key is the region name and the value is the set of region attributes used to create the region.
 
 ``` pre
 #CreateRegionFunction.java
@@ -132,7 +135,7 @@ public class CreateRegionFunction implements Function, Declarable {
 }
 ```
 
-The <span class="keyword apiname">CreateRegionCacheListener</span> class is a cache listener that implements two methods, <span class="keyword apiname">afterCreate()</span> and <span class="keyword apiname">afterRegionCreate()</span>. The <span class="keyword apiname">afterCreate()</span> method creates the region. The <span class="keyword apiname">afterRegionCreate()</span> method causes each new server to create all the regions defined in the metadata region.
+The `CreateRegionCacheListener` class is a cache listener that implements two methods, `afterCreate()` and `afterRegionCreate()`. The `afterCreate()` method creates the region. The `afterRegionCreate()` method causes each new server to create all the regions defined in the metadata region.
 
 ``` pre
 #CreateRegionCacheListener.java

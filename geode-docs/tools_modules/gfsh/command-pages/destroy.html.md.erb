@@ -34,6 +34,10 @@ Delete or unregister functions, remove indexes, disk stores and regions.
 
     Destroy or unregister a function.
 
+-   **[destroy gateway-receiver](#destroy-gr)**
+
+    Destroy a gateway receiver.
+
 -   **[destroy gateway-sender](#destroy-gs)**
 
     Destroy a gateway sender.
@@ -41,6 +45,10 @@ Delete or unregister functions, remove indexes, disk stores and regions.
 -   **[destroy index](#topic_D00219CCD6F64C1582A0802AC5CDF3F3)**
 
     Destroy or remove the specified index.
+
+-   **[destroy jndi-binding](#destroy_jndi-binding)**
+
+    Destroy the specified JNDI binding.
 
 -   **[destroy lucene index](#destroy_lucene_index)**
 
@@ -143,6 +151,34 @@ destroy function --id=value [--groups=value(,value)*] [--member=value]
 (2) destroy function --id=InterestCalculations --member=server1
 (3) destroy function --id=InterestCalculations --group=Group1
 ```
+## <a id="destroy-gr" class="no-quick-link"></a>destroy gateway-receiver
+
+Destroy the gateway receiver on one or more members.
+Since there can be only one gateway receiver per member,
+specifying the member specifies which gateway receiver to destroy.
+
+**Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
+
+**Syntax:**
+
+``` pre
+destroy gateway-receiver [--group=value(,value)*]
+  [--member=value(,value)*] [--if-exists(=value)?]
+```
+
+**Parameters, destroy gateway-receiver:**
+
+| Name                                           | Description                                                                                |
+|------------------------------------------------|--------------------------------------------------------------------------------------------|
+| <span class="keyword parmname">\\-\\-group</span> | One or more groups of members on which the gateway receiver will be destroyed.       |
+| <span class="keyword parmname">&#8209;&#8209;members</span> | Name or ID of each member on which the gateway receiver will be destroyed.   |
+| &#8209;&#8209;if&#8209;exists | If this option is true and the gateway receiver does not exist, gfsh responds with a message prefixed with the label "Skipping: ". If this option is false and the gateway receiver does not exist, an error message is output. Default (if this option is not specified): false. Default (if this option is specified without a value): true.     |
+
+**Example Commands:**
+
+``` pre
+destroy gateway-receiver --member=server1,server2
+```
 
 ## <a id="destroy-gs" class="no-quick-link"></a>destroy gateway-sender
 
@@ -221,6 +257,32 @@ You must specify at least one of the parameter options. If you enter `destroy in
 ``` pre
 destroy index --members=server2
 destroy index --name=MyKeyIndex
+```
+
+## <a id="destroy_jndi-binding" class="no-quick-link"></a>destroy jndi-binding
+
+Destroy a specified JNDI binding that holds the configuration for
+an XA data source.
+
+**Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
+
+**Syntax:**
+
+``` pre
+destroy jndi-binding --name=value [--if-exists=value]
+```
+
+**Parameters, destroy jndi-binding:**
+
+| Name                                         | Description                                            |
+|----------------------------------------------|--------------------------------------------------------|
+| <span class="keyword parmname">\\-\\-name</span> | *Required.* Name of the JNDI binding to be destroyed. |
+| &#8209;&#8209;if&#8209;exists | Skip the destroy operation when the specified JNDI binding does not exist. Without this option, an error results from the specification of a JNDI binding that does not exist. Default (if the parameter is not specified): false. Default (if the parameter is specified without value): true.     |
+
+**Example Command:**
+
+``` pre
+destroy jndi-binding --name=jndi1
 ```
 
 ## <a id="destroy_lucene_index" class="no-quick-link"></a>destroy lucene index

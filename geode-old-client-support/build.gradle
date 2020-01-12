@@ -15,11 +15,21 @@
  * limitations under the License.
  */
 
+apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
+
+apply from: "${project.projectDir}/../gradle/publish-java.gradle"
+
+
 dependencies {
-    compile project(':geode-core')
-    compile project(':geode-common')
+  implementation(platform(project(':boms:geode-all-bom')))
+  implementation(project(':geode-core'))
+  implementation(project(':geode-logging'))
+  implementation(project(':geode-serialization'))
+  distributedTestImplementation(project(':geode-dunit')){
+    exclude module: 'geode-core'
+  }
 
-    testCompile project(':geode-junit')
 
-    testCompile files(project(':geode-core').sourceSets.test.output)
+  distributedTestImplementation('junit:junit')
 }
+

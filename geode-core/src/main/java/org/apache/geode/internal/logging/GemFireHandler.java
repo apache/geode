@@ -20,7 +20,7 @@ import java.util.logging.LogRecord;
 
 import org.apache.geode.GemFireException;
 import org.apache.geode.LogWriter;
-import org.apache.geode.internal.logging.log4j.LogWriterLogger;
+import org.apache.geode.logging.internal.log4j.LogWriterLogger;
 
 /**
  * Implementation of the standard JDK handler that publishes a log record to a LogWriterImpl. Note
@@ -35,13 +35,13 @@ public class GemFireHandler extends Handler {
 
   public GemFireHandler(LogWriter logWriter) {
     this.logWriter = logWriter;
-    this.setFormatter(new GemFireFormatter(logWriter));
+    setFormatter(new GemFireFormatter());
   }
 
   @Override
   public void close() {
     // clear the reference to GFE LogWriter
-    this.logWriter = null;
+    logWriter = null;
   }
 
   @Override
@@ -49,25 +49,25 @@ public class GemFireHandler extends Handler {
     // nothing needed
   }
 
-  private String getMessage(LogRecord record) {
-    final StringBuilder b = new StringBuilder();
-    b.append('(').append("tid=" + record.getThreadID())
-        .append(" msgId=" + record.getSequenceNumber()).append(") ");
+  private String getMessage(final LogRecord record) {
+    StringBuilder stringBuilder = new StringBuilder();
+    stringBuilder.append('(').append("tid=").append(record.getThreadID())
+        .append(" msgId=").append(record.getSequenceNumber()).append(") ");
     if (record.getMessage() != null) {
-      b.append(getFormatter().formatMessage(record));
+      stringBuilder.append(getFormatter().formatMessage(record));
     }
-    return b.toString();
+    return stringBuilder.toString();
   }
 
   @Override
-  public void publish(LogRecord record) {
+  public void publish(final LogRecord record) {
     if (isLoggable(record)) {
       try {
-        if (this.logWriter instanceof LogWriterLogger) {
-          ((LogWriterLogger) this.logWriter).log(record.getLevel().intValue(), getMessage(record),
+        if (logWriter instanceof LogWriterLogger) {
+          ((LogWriterLogger) logWriter).log(record.getLevel().intValue(), getMessage(record),
               record.getThrown());
         } else {
-          ((LogWriterImpl) this.logWriter).put(record.getLevel().intValue(), getMessage(record),
+          ((LogWriterImpl) logWriter).put(record.getLevel().intValue(), getMessage(record),
               record.getThrown());
         }
       } catch (GemFireException ex) {

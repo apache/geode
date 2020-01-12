@@ -28,6 +28,8 @@ import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.pdx.PdxInitializationException;
 
 public class CheckTypeRegistryState extends HighPriorityDistributionMessage
@@ -91,19 +93,22 @@ public class CheckTypeRegistryState extends HighPriorityDistributionMessage
     }
   }
 
+  @Override
   public int getDSFID() {
     return CHECK_TYPE_REGISTRY_STATE;
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.processorId = in.readInt();
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     out.writeInt(this.processorId);
   }
 }

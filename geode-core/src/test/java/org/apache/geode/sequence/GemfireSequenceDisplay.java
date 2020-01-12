@@ -46,8 +46,6 @@ import org.apache.geode.internal.sequencelog.model.GraphID;
 import org.apache.geode.internal.sequencelog.model.GraphSet;
 import org.apache.geode.internal.sequencelog.model.Vertex;
 
-/**
- */
 public class GemfireSequenceDisplay {
 
   private JLabel selectedGraphsLabel;
@@ -63,8 +61,6 @@ public class GemfireSequenceDisplay {
    * Create the GUI and show it. For thread safety, this method should be invoked from the
    * event-dispatching thread.
    *
-   * @param graphs
-   * @param lineMapper
    */
   private void createAndShowGUI(final GraphSet graphs, LineMapper lineMapper) {
     // Create and set up the window.
@@ -105,6 +101,7 @@ public class GemfireSequenceDisplay {
     selectGraphs.setActionCommand("selectgraphs");
     selectGraphs.addActionListener(new ActionListener() {
 
+      @Override
       public void actionPerformed(ActionEvent e) {
         showGraphSelector();
       }
@@ -118,6 +115,7 @@ public class GemfireSequenceDisplay {
     selectGraphDialog = new SelectGraphDialog(graphs);
     selectGraphDialog.addSelectionListener(new SelectGraphDialog.SelectionListener() {
 
+      @Override
       public void selectionChanged(List<GraphID> selectedIds) {
         updateGraphs(selectedIds);
       }
@@ -281,6 +279,7 @@ public class GemfireSequenceDisplay {
     // Schedule a job for the event-dispatching thread:
     // creating and showing this application's GUI.
     javax.swing.SwingUtilities.invokeLater(new Runnable() {
+      @Override
       public void run() {
         display.createAndShowGUI(graphs, lineMapper);
       }
@@ -302,10 +301,6 @@ public class GemfireSequenceDisplay {
     return graphs;
   }
 
-  /**
-   * @param files
-   * @return
-   */
   private static LineMapper getLineMapper(File[] files) {
     if (HydraLineMapper.isInHydraRun(files)) {
       return new HydraLineMapper(files);
@@ -324,6 +319,7 @@ public class GemfireSequenceDisplay {
       }
     }
 
+    @Override
     public boolean accept(GraphType graphType, String name, String edgeName, String source,
         String dest) {
       if (graphType.equals(GraphType.KEY)) {
@@ -339,6 +335,7 @@ public class GemfireSequenceDisplay {
       }
     }
 
+    @Override
     public boolean acceptPattern(GraphType graphType, Pattern pattern, String edgeName,
         String source, String dest) {
       return true;

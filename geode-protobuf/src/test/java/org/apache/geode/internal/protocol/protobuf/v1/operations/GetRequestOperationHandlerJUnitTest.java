@@ -20,26 +20,25 @@ import static org.mockito.Mockito.when;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.ExpectedException;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.internal.protocol.TestExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
-import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
-import org.apache.geode.internal.protocol.protobuf.v1.Failure;
-import org.apache.geode.internal.protocol.protobuf.v1.ProtobufOpsProcessor;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufRequestUtilities;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
-import org.apache.geode.internal.protocol.protobuf.v1.registry.ProtobufOperationContextRegistry;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
-import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 
-@Category(UnitTest.class)
+@Category({ClientServerTest.class})
 public class GetRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTest {
   private final String TEST_KEY = "my key";
   private final String TEST_VALUE = "my value";
@@ -47,6 +46,9 @@ public class GetRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
   private final String MISSING_REGION = "missing region";
   private final String MISSING_KEY = "missing key";
   private final String NULLED_KEY = "nulled key";
+
+  @Rule
+  public ExpectedException expectedException = ExpectedException.none();
 
   @Before
   public void setUp() throws Exception {
@@ -79,13 +81,10 @@ public class GetRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
   @Test
   public void processReturnsUnsucessfulResponseForInvalidRegion() throws Exception {
     RegionAPI.GetRequest getRequest = generateTestRequest(true, false, false);
+    expectedException.expect(RegionDestroyedException.class);
     Result response = operationHandler.process(serializationService, getRequest,
         TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
 
-    Assert.assertTrue(response instanceof Failure);
-    ClientProtocol.ErrorResponse errorMessage =
-        (ClientProtocol.ErrorResponse) response.getErrorMessage();
-    Assert.assertEquals(BasicTypes.ErrorCode.SERVER_ERROR, errorMessage.getError().getErrorCode());
   }
 
   @Test
@@ -100,10 +99,11 @@ public class GetRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
   @Test
   public void processReturnsLookupFailureWhenKeyFoundWithNoValue() throws Exception {
     RegionAPI.GetRequest getRequest = generateTestRequest(false, false, true);
-    Result response = operationHandler.process(serializationService, getRequest,
-        TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
+    Result<RegionAPI.GetResponse> response = operationHandler.process(serializationService,
+        getRequest, TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
 
     Assert.assertTrue(response instanceof Success);
+    Assert.assertNull(serializationService.decode(response.getMessage().getResult()));
   }
 
   @Test(expected = DecodingException.class)

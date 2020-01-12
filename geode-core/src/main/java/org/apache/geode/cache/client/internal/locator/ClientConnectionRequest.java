@@ -12,6 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.cache.client.internal.locator;
 
 import java.io.DataInput;
@@ -19,7 +20,10 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Set;
 
-import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * A request from a client to the locator asking for a server to connect to for client to server
@@ -27,26 +31,28 @@ import org.apache.geode.internal.DataSerializableFixedID;
  *
  */
 public class ClientConnectionRequest extends ServerLocationRequest {
-  Set/* <ServerLocation> */ excludedServers;
+  private Set<ServerLocation> excludedServers;
 
   public ClientConnectionRequest() {
 
   }
 
-  public ClientConnectionRequest(Set/* <ServerLocation> */ excludedServers, String serverGroup) {
+  public ClientConnectionRequest(Set<ServerLocation> excludedServers, String serverGroup) {
     super(serverGroup);
     this.excludedServers = excludedServers;
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.excludedServers = SerializationHelper.readServerLocationSet(in);
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     SerializationHelper.writeServerLocationSet(this.excludedServers, out);
   }
 
@@ -60,6 +66,7 @@ public class ClientConnectionRequest extends ServerLocationRequest {
         + getExcludedServers() + "}";
   }
 
+  @Override
   public int getDSFID() {
     return DataSerializableFixedID.CLIENT_CONNECTION_REQUEST;
   }

@@ -20,7 +20,6 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 
@@ -45,6 +44,7 @@ public class TransportFilterSocket extends Socket {
     this.gatewayTransportFilters = transportFilters;
   }
 
+  @Override
   public InputStream getInputStream() throws IOException {
     if (in == null) {
       in = super.getInputStream();
@@ -55,6 +55,7 @@ public class TransportFilterSocket extends Socket {
     return in;
   }
 
+  @Override
   public OutputStream getOutputStream() throws IOException {
     if (out == null) {
       out = super.getOutputStream();
@@ -68,6 +69,7 @@ public class TransportFilterSocket extends Socket {
   /*
    * Flush the OutputStream before closing the socket.
    */
+  @Override
   public synchronized void close() throws IOException {
     OutputStream o = getOutputStream();
     o.flush();

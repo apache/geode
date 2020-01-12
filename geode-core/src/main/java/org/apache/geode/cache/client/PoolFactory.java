@@ -12,6 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.cache.client;
 
 import org.apache.geode.cache.InterestResultPolicy;
@@ -141,7 +142,11 @@ public interface PoolFactory {
    * them.
    * <p>
    * Current value: <code>false</code>.
+   *
+   * @deprecated Since Geode 1.10.0. Thread local connections are ignored. Will be removed in future
+   *             major release.
    */
+  @Deprecated
   boolean DEFAULT_THREAD_LOCAL_CONNECTIONS = false;
 
   /**
@@ -180,7 +185,7 @@ public interface PoolFactory {
    * <p>
    * Current value: 0
    */
-  public static final int DEFAULT_SUBSCRIPTION_TIMEOUT_MULTIPLIER = 0;
+  int DEFAULT_SUBSCRIPTION_TIMEOUT_MULTIPLIER = 0;
 
   /**
    * The default server group.
@@ -273,7 +278,10 @@ public interface PoolFactory {
    *
    * @param threadLocalConnections if <code>true</code> then enable thread local connections.
    * @return a reference to <code>this</code>
+   * @deprecated Since Geode 1.10.0. Thread local connections are ignored. Will be removed in future
+   *             major release.
    */
+  @Deprecated
   PoolFactory setThreadLocalConnections(boolean threadLocalConnections);
 
   /**
@@ -440,12 +448,18 @@ public interface PoolFactory {
    * minute (60,000 milliseconds). If a subscription timeout multipler is set in the client it
    * enables timing out of the subscription feed with failover to another server.
    * <p>
+   * The client will time out it's subscription connection after a number of seconds equal to this
+   * multiplier times the server's subscription-timeout.
+   * <p>
+   * Set this to 2 or more to make sure the client will receive pings from the server before the
+   * timeout.
+   * <p>
    * A value of zero (the default) disables timeouts
    * <p>
    * The resulting timeout will be multiplied by 1.25 in order to avoid race conditions with the
    * server sending its "ping" message.
    */
-  public PoolFactory setSubscriptionTimeoutMultiplier(int multiplier);
+  PoolFactory setSubscriptionTimeoutMultiplier(int multiplier);
 
   /**
    * Sets the interval in milliseconds to wait before sending acknowledgements to the cache server

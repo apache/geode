@@ -24,6 +24,7 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.AmbiguousNameException;
 import org.apache.geode.cache.query.FunctionDomainException;
@@ -39,8 +40,7 @@ import org.apache.geode.cache.query.internal.types.TypeUtils;
 import org.apache.geode.cache.query.types.CollectionType;
 import org.apache.geode.cache.query.types.MapType;
 import org.apache.geode.cache.query.types.ObjectType;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.security.NotAuthorizedException;
 
 public class CompiledIteratorDef extends AbstractCompiledValue {
@@ -68,10 +68,11 @@ public class CompiledIteratorDef extends AbstractCompiledValue {
    * Returns a RuntimeIterator (or null if evaluates to null or UNDEFINED); the collection expr is
    * evaluated lazily after dependencies are known
    */
+  @Override
   public Object evaluate(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.CompiledIteratorDef_NOT_TO_BE_EVALUATED_DIRECTLY.toLocalizedString());
+        "Not to be evaluated directly");
   }
 
   public RuntimeIterator getRuntimeIterator(ExecutionContext context)
@@ -113,27 +114,36 @@ public class CompiledIteratorDef extends AbstractCompiledValue {
         && !this.isDependentOnAnyIteratorOfScopeLessThanItsOwn(context)) {
       // The current Iterator definition is independent , so lets evaluate
       // the collection
-      try {
-        rIter.evaluateCollection(context);
-      } catch (QueryExecutionTimeoutException qet) {
-        throw qet;
-      } catch (RegionNotFoundException re) {
-        throw re;
-      } catch (NotAuthorizedException e) {
-        throw e;
-      } catch (Exception e) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("Exception while getting runtime iterator.", e);
-        }
-        throw new TypeMismatchException(
-            LocalizedStrings.CompiledIteratorDef_EXCEPTION_IN_EVALUATING_THE_COLLECTION_EXPRESSION_IN_GETRUNTIMEITERATOR_EVEN_THOUGH_THE_COLLECTION_IS_INDEPENDENT_OF_ANY_RUNTIMEITERATOR
-                .toLocalizedString(),
-            e);
-      }
+      evaluateCollectionForIndependentIterator(context, rIter);
     }
     // cache in context
     context.cachePut(this, rIter);
     return rIter;
+  }
+
+  protected void evaluateCollectionForIndependentIterator(ExecutionContext context,
+      RuntimeIterator rIter)
+      throws RegionNotFoundException, TypeMismatchException {
+    try {
+      rIter.evaluateCollection(context);
+    } catch (QueryExecutionTimeoutException qet) {
+      throw qet;
+    } catch (RegionNotFoundException re) {
+      throw re;
+    } catch (NotAuthorizedException e) {
+      throw e;
+    } catch (QueryExecutionCanceledException e) {
+      throw e;
+    } catch (CacheClosedException e) {
+      throw e;
+    } catch (Exception e) {
+      if (logger.isDebugEnabled()) {
+        logger.debug("Exception while getting runtime iterator.", e);
+      }
+      throw new TypeMismatchException(
+          "Exception in evaluating the Collection Expression in getRuntimeIterator() even though the Collection is independent of any RuntimeIterator",
+          e);
+    }
   }
 
   ObjectType getCollectionElementTypeCast() throws TypeMismatchException {
@@ -141,8 +151,8 @@ public class CompiledIteratorDef extends AbstractCompiledValue {
     if (typ != null) {
       if (!(typ instanceof CollectionType)) {
         throw new TypeMismatchException(
-            LocalizedStrings.CompiledIteratorDef_AN_ITERATOR_DEFINITION_MUST_BE_A_COLLECTION_TYPE_NOT_A_0
-                .toLocalizedString(typ));
+            String.format("An iterator definition must be a collection type, not a %s",
+                typ));
       }
       if (typ instanceof MapType) { // we iterate over map entries
         return ((MapType) typ).getEntryType();
@@ -169,9 +179,6 @@ public class CompiledIteratorDef extends AbstractCompiledValue {
       QueryInvocationTargetException {
     Object coll;
 
-    // Check if query execution on this thread is Canceled.
-    // QueryMonitor.isQueryExecutionCanceled();
-
     context.currentScope().setLimit(stopAtIter);
     try {
       coll = this.collectionExpr.evaluate(context);
@@ -193,6 +200,7 @@ public class CompiledIteratorDef extends AbstractCompiledValue {
     return prepareIteratorDef(coll, this.elementType, context);
   }
 
+  @Override
   public int getType() {
     return OQLLexerTokenTypes.ITERATOR_DEF;
   }
@@ -215,7 +223,7 @@ public class CompiledIteratorDef extends AbstractCompiledValue {
   }
 
   /**
-   * TODO: We need to implement the belwo method of computeDependencies Once we come to implement
+   * TODO: We need to implement the below method of computeDependencies Once we come to implement
    * changes for partitioned region querying, as in that case if first iterator itself is a Select
    * Query , then ideally we cannot call that CompiledIteratorDef independent ( which will be the
    * case at present). When we use this commented function we will also need to take care of

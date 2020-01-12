@@ -14,27 +14,30 @@
  */
 package org.apache.geode.internal.cache.wan;
 
-import org.apache.geode.cache.asyncqueue.AsyncEvent;
 import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewayQueueEvent;
 
 public class GatewayEventFilterImpl implements GatewayEventFilter {
 
+  @Override
   public void close() {
     // TODO Auto-generated method stub
 
   }
 
+  @Override
   public boolean beforeEnqueue(GatewayQueueEvent event) {
     // TODO Auto-generated method stub
     return false;
   }
 
+  @Override
   public boolean beforeTransmit(GatewayQueueEvent event) {
     // TODO Auto-generated method stub
     return false;
   }
 
+  @Override
   public void afterAcknowledgement(GatewayQueueEvent event) {
     // TODO Auto-generated method stub
 

@@ -31,6 +31,7 @@ public class FakeValueMonitor extends ValueMonitor {
     this.statMonitorHandler = statMonitorHandler;
   }
 
+  @Override
   StatMonitorHandler getStatMonitorHandler() {
     return this.statMonitorHandler;
   }

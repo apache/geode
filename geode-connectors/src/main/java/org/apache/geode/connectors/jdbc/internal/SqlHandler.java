@@ -17,43 +17,98 @@ package org.apache.geode.connectors.jdbc.internal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import javax.sql.DataSource;
+
+import org.apache.geode.InternalGemFireException;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
 import org.apache.geode.connectors.jdbc.JdbcConnectorException;
+import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
+import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.pdx.PdxInstance;
-import org.apache.geode.pdx.PdxInstanceFactory;
 
 @Experimental
 public class SqlHandler {
-  private final JdbcConnectorService configService;
-  private final DataSourceManager manager;
-  private final TableKeyColumnManager tableKeyColumnManager;
+  private final InternalCache cache;
+  private final RegionMapping regionMapping;
+  private final DataSource dataSource;
+  private final TableMetaDataView tableMetaData;
+  private final Map<String, FieldMapping> pdxToFieldMappings = new HashMap<>();
+  private volatile SqlToPdxInstance sqlToPdxInstance;
 
-  public SqlHandler(DataSourceManager manager, JdbcConnectorService configService) {
-    this(manager, new TableKeyColumnManager(), configService);
+  public SqlHandler(InternalCache cache, String regionName,
+      TableMetaDataManager tableMetaDataManager, JdbcConnectorService configService,
+      DataSourceFactory dataSourceFactory) {
+    this.cache = cache;
+    this.regionMapping = getMappingForRegion(configService, regionName);
+    this.dataSource = getDataSource(dataSourceFactory, this.regionMapping.getDataSourceName());
+    this.tableMetaData = getTableMetaDataView(tableMetaDataManager);
+    cache.getService(JdbcConnectorService.class).validateMapping(regionMapping, dataSource);
+    initializeFieldMappingMaps();
   }
 
-  SqlHandler(DataSourceManager manager, TableKeyColumnManager tableKeyColumnManager,
-      JdbcConnectorService configService) {
-    this.manager = manager;
-    this.tableKeyColumnManager = tableKeyColumnManager;
-    this.configService = configService;
+  public SqlHandler(InternalCache cache, String regionName,
+      TableMetaDataManager tableMetaDataManager, JdbcConnectorService configService) {
+    this(cache, regionName, tableMetaDataManager, configService,
+        dataSourceName -> JNDIInvoker.getDataSource(dataSourceName));
   }
 
-  public void close() {
-    manager.close();
+  private TableMetaDataView getTableMetaDataView(TableMetaDataManager tableMetaDataManager) {
+    try (Connection connection = getConnection()) {
+      return tableMetaDataManager.getTableMetaDataView(connection, regionMapping);
+    } catch (SQLException ex) {
+      throw new JdbcConnectorException("Could not connect to datasource \""
+          + regionMapping.getDataSourceName() + "\" because: " + ex);
+    }
   }
 
-  Connection getConnection(ConnectionConfiguration config) throws SQLException {
-    return manager.getDataSource(config).getConnection();
+  private static RegionMapping getMappingForRegion(JdbcConnectorService configService,
+      String regionName) {
+    RegionMapping regionMapping = configService.getMappingForRegion(regionName);
+    if (regionMapping == null) {
+      throw new JdbcConnectorException("JDBC mapping for region " + regionName
+          + " not found. Create the mapping with the gfsh command 'create jdbc-mapping'.");
+    }
+    return regionMapping;
+  }
+
+  private static DataSource getDataSource(DataSourceFactory dataSourceFactory,
+      String dataSourceName) {
+    DataSource dataSource = dataSourceFactory.getDataSource(dataSourceName);
+    if (dataSource == null) {
+      throw new JdbcConnectorException("JDBC data-source named \"" + dataSourceName
+          + "\" not found. Create it with gfsh 'create data-source --pooled --name="
+          + dataSourceName + "'.");
+    }
+    return dataSource;
+  }
+
+  private void initializeFieldMappingMaps() {
+    for (FieldMapping fieldMapping : regionMapping.getFieldMappings()) {
+      this.pdxToFieldMappings.put(fieldMapping.getPdxName(), fieldMapping);
+    }
+  }
+
+  private String getColumnNameForField(String fieldName) {
+    FieldMapping match = this.pdxToFieldMappings.get(fieldName);
+    if (match != null) {
+      return match.getJdbcName();
+    }
+    return null;
+  }
+
+  Connection getConnection() throws SQLException {
+    return this.dataSource.getConnection();
   }
 
   public <K, V> PdxInstance read(Region<K, V> region, K key) throws SQLException {
@@ -61,118 +116,107 @@ public class SqlHandler {
       throw new IllegalArgumentException("Key for query cannot be null");
     }
 
-    RegionMapping regionMapping = getMappingForRegion(region.getName());
-    ConnectionConfiguration connectionConfig =
-        getConnectionConfig(regionMapping.getConnectionConfigName());
-    String tableName = regionMapping.getRegionToTableName();
     PdxInstance result;
-    try (Connection connection = getConnection(connectionConfig)) {
-      List<ColumnValue> columnList =
-          getColumnToValueList(connection, regionMapping, key, null, Operation.GET);
+    try (Connection connection = getConnection()) {
+      EntryColumnData entryColumnData =
+          getEntryColumnData(tableMetaData, key, null, Operation.GET);
       try (PreparedStatement statement =
-          getPreparedStatement(connection, columnList, tableName, Operation.GET)) {
-        PdxInstanceFactory factory = getPdxInstanceFactory(region, regionMapping);
-        String keyColumnName = getKeyColumnName(connection, tableName);
-        result = executeReadStatement(statement, columnList, factory, regionMapping, keyColumnName);
+          getPreparedStatement(connection, tableMetaData, entryColumnData, Operation.GET)) {
+        try (ResultSet resultSet = executeReadQuery(statement, entryColumnData)) {
+          result = getSqlToPdxInstance().create(resultSet);
+        }
       }
     }
     return result;
   }
 
-  private RegionMapping getMappingForRegion(String regionName) {
-    RegionMapping regionMapping = this.configService.getMappingForRegion(regionName);
-    if (regionMapping == null) {
-      throw new IllegalStateException("JDBC mapping for region " + regionName
-          + " not found. Create the mapping with the gfsh command 'create jdbc-mapping'.");
+  private SqlToPdxInstance getSqlToPdxInstance() {
+    SqlToPdxInstance result = this.sqlToPdxInstance;
+    if (result == null) {
+      result = initializeSqlToPdxInstance();
     }
-    return regionMapping;
+    return result;
   }
 
-  private ConnectionConfiguration getConnectionConfig(String connectionConfigName) {
-    ConnectionConfiguration connectionConfig =
-        this.configService.getConnectionConfig(connectionConfigName);
-    if (connectionConfig == null) {
-      throw new IllegalStateException("JDBC connection with name " + connectionConfigName
-          + " not found. Create the connection with the gfsh command 'create jdbc-connection'");
-    }
-    return connectionConfig;
+  private synchronized SqlToPdxInstance initializeSqlToPdxInstance() {
+    SqlToPdxInstanceCreator sqlToPdxInstanceCreator =
+        new SqlToPdxInstanceCreator(cache, regionMapping);
+    SqlToPdxInstance result = sqlToPdxInstanceCreator.create();
+    this.sqlToPdxInstance = result;
+    return result;
   }
 
-  private String getKeyColumnName(Connection connection, String tableName) {
-    return this.tableKeyColumnManager.getKeyColumnName(connection, tableName);
-  }
-
-  private <K, V> PdxInstanceFactory getPdxInstanceFactory(Region<K, V> region,
-      RegionMapping regionMapping) {
-    InternalCache cache = (InternalCache) region.getRegionService();
-    String valueClassName = regionMapping.getPdxClassName();
-    PdxInstanceFactory factory;
-    if (valueClassName != null) {
-      factory = cache.createPdxInstanceFactory(valueClassName);
-    } else {
-      factory = cache.createPdxInstanceFactory("no class", false);
-    }
-    return factory;
-  }
-
-  PdxInstance executeReadStatement(PreparedStatement statement, List<ColumnValue> columnList,
-      PdxInstanceFactory factory, RegionMapping regionMapping, String keyColumnName)
+  private ResultSet executeReadQuery(PreparedStatement statement, EntryColumnData entryColumnData)
       throws SQLException {
-    PdxInstance pdxInstance = null;
-    setValuesInStatement(statement, columnList);
-    try (ResultSet resultSet = statement.executeQuery()) {
-      if (resultSet.next()) {
-        ResultSetMetaData metaData = resultSet.getMetaData();
-        int ColumnsNumber = metaData.getColumnCount();
-        for (int i = 1; i <= ColumnsNumber; i++) {
-          Object columnValue = resultSet.getObject(i);
-          String columnName = metaData.getColumnName(i);
-          String fieldName = mapColumnNameToFieldName(columnName, regionMapping);
-          if (regionMapping.isPrimaryKeyInValue() || !keyColumnName.equalsIgnoreCase(columnName)) {
-            factory.writeField(fieldName, columnValue, Object.class);
-          }
-        }
-        if (resultSet.next()) {
-          throw new JdbcConnectorException(
-              "Multiple rows returned for query: " + resultSet.getStatement().toString());
-        }
-        pdxInstance = factory.create();
-      }
-    }
-    return pdxInstance;
+    setValuesInStatement(statement, entryColumnData, Operation.GET);
+    return statement.executeQuery();
   }
 
-  private void setValuesInStatement(PreparedStatement statement, List<ColumnValue> columnList)
+  private void setValuesInStatement(PreparedStatement statement, EntryColumnData entryColumnData,
+      Operation operation)
       throws SQLException {
     int index = 0;
-    for (ColumnValue columnValue : columnList) {
-      index++;
-      statement.setObject(index, columnValue.getValue());
+    if (operation.isCreate() || operation.isUpdate()) {
+      index = setValuesFromColumnData(statement, entryColumnData.getEntryValueColumnData(), index);
     }
+    setValuesFromColumnData(statement, entryColumnData.getEntryKeyColumnData(), index);
   }
 
-  private String mapColumnNameToFieldName(String columnName, RegionMapping regionMapping) {
-    return regionMapping.getFieldNameForColumn(columnName);
+  private int setValuesFromColumnData(PreparedStatement statement, List<ColumnData> columnDataList,
+      int index) throws SQLException {
+    for (ColumnData columnData : columnDataList) {
+      index++;
+      setValueOnStatement(statement, index, columnData);
+    }
+    return index;
+  }
+
+  private void setValueOnStatement(PreparedStatement statement, int index, ColumnData columnData)
+      throws SQLException {
+    Object value = columnData.getValue();
+    if (value instanceof Character) {
+      Character character = ((Character) value);
+      // if null character, set to null string instead of a string with the null character
+      value = character.equals(Character.valueOf((char) 0)) ? null : character.toString();
+    } else if (value instanceof Date) {
+      Date jdkDate = (Date) value;
+      switch (columnData.getDataType()) {
+        case DATE:
+          value = new java.sql.Date(jdkDate.getTime());
+          break;
+        case TIME:
+        case TIME_WITH_TIMEZONE:
+          value = new java.sql.Time(jdkDate.getTime());
+          break;
+        case TIMESTAMP:
+        case TIMESTAMP_WITH_TIMEZONE:
+          value = new java.sql.Timestamp(jdkDate.getTime());
+          break;
+        default:
+          // no conversion needed
+          break;
+      }
+    }
+    if (value == null) {
+      statement.setNull(index, columnData.getDataType().getVendorTypeNumber());
+    } else {
+      statement.setObject(index, value);
+    }
   }
 
   public <K, V> void write(Region<K, V> region, Operation operation, K key, PdxInstance value)
       throws SQLException {
-    if (value == null && operation != Operation.DESTROY) {
+    if (value == null && !operation.isDestroy()) {
       throw new IllegalArgumentException("PdxInstance cannot be null for non-destroy operations");
     }
-    RegionMapping regionMapping = getMappingForRegion(region.getName());
-    ConnectionConfiguration connectionConfig =
-        getConnectionConfig(regionMapping.getConnectionConfigName());
 
-    String tableName = regionMapping.getRegionToTableName();
-
-    try (Connection connection = getConnection(connectionConfig)) {
-      List<ColumnValue> columnList =
-          getColumnToValueList(connection, regionMapping, key, value, operation);
+    try (Connection connection = getConnection()) {
+      EntryColumnData entryColumnData =
+          getEntryColumnData(tableMetaData, key, value, operation);
       int updateCount = 0;
       try (PreparedStatement statement =
-          getPreparedStatement(connection, columnList, tableName, operation)) {
-        updateCount = executeWriteStatement(statement, columnList);
+          getPreparedStatement(connection, tableMetaData, entryColumnData, operation)) {
+        updateCount = executeWriteStatement(statement, entryColumnData, operation);
       } catch (SQLException e) {
         if (operation.isDestroy()) {
           throw e;
@@ -187,14 +231,12 @@ public class SqlHandler {
       if (updateCount <= 0) {
         Operation upsertOp = getOppositeOperation(operation);
         try (PreparedStatement upsertStatement =
-            getPreparedStatement(connection, columnList, tableName, upsertOp)) {
-          updateCount = executeWriteStatement(upsertStatement, columnList);
+            getPreparedStatement(connection, tableMetaData, entryColumnData, upsertOp)) {
+          updateCount = executeWriteStatement(upsertStatement, entryColumnData, operation);
         }
       }
 
-      if (updateCount != 1) {
-        throw new IllegalStateException("Unexpected updateCount " + updateCount);
-      }
+      assert updateCount == 1 : "expected 1 but updateCount was: " + updateCount;
     }
   }
 
@@ -202,59 +244,110 @@ public class SqlHandler {
     return operation.isUpdate() ? Operation.CREATE : Operation.UPDATE;
   }
 
-  private int executeWriteStatement(PreparedStatement statement, List<ColumnValue> columnList)
+  private int executeWriteStatement(PreparedStatement statement, EntryColumnData entryColumnData,
+      Operation operation)
       throws SQLException {
-    setValuesInStatement(statement, columnList);
+    setValuesInStatement(statement, entryColumnData, operation);
     return statement.executeUpdate();
   }
 
   private PreparedStatement getPreparedStatement(Connection connection,
-      List<ColumnValue> columnList, String tableName, Operation operation) throws SQLException {
-    String sqlStr = getSqlString(tableName, columnList, operation);
+      TableMetaDataView tableMetaData, EntryColumnData entryColumnData, Operation operation)
+      throws SQLException {
+    String sqlStr = getSqlString(tableMetaData, entryColumnData, operation);
     return connection.prepareStatement(sqlStr);
   }
 
-  private String getSqlString(String tableName, List<ColumnValue> columnList, Operation operation) {
-    SqlStatementFactory statementFactory = new SqlStatementFactory();
+  private String getSqlString(TableMetaDataView tableMetaData, EntryColumnData entryColumnData,
+      Operation operation) {
+    SqlStatementFactory statementFactory =
+        new SqlStatementFactory(tableMetaData.getIdentifierQuoteString());
+    String tableName = tableMetaData.getQuotedTablePath();
     if (operation.isCreate()) {
-      return statementFactory.createInsertSqlString(tableName, columnList);
+      return statementFactory.createInsertSqlString(tableName, entryColumnData);
     } else if (operation.isUpdate()) {
-      return statementFactory.createUpdateSqlString(tableName, columnList);
+      return statementFactory.createUpdateSqlString(tableName, entryColumnData);
     } else if (operation.isDestroy()) {
-      return statementFactory.createDestroySqlString(tableName, columnList);
+      return statementFactory.createDestroySqlString(tableName, entryColumnData);
     } else if (operation.isGet()) {
-      return statementFactory.createSelectQueryString(tableName, columnList);
+      return statementFactory.createSelectQueryString(tableName, entryColumnData);
     } else {
-      throw new IllegalArgumentException("unsupported operation " + operation);
+      throw new InternalGemFireException("unsupported operation " + operation);
     }
   }
 
-  <K> List<ColumnValue> getColumnToValueList(Connection connection, RegionMapping regionMapping,
+  <K> EntryColumnData getEntryColumnData(TableMetaDataView tableMetaData,
       K key, PdxInstance value, Operation operation) {
-    String tableName = regionMapping.getRegionToTableName();
-    String keyColumnName = getKeyColumnName(connection, tableName);
-    ColumnValue keyColumnValue = new ColumnValue(true, keyColumnName, key);
+    List<ColumnData> keyColumnData = createKeyColumnDataList(tableMetaData, key);
+    List<ColumnData> valueColumnData = null;
 
-    if (operation.isDestroy() || operation.isGet()) {
-      return Collections.singletonList(keyColumnValue);
+    if (operation.isCreate() || operation.isUpdate()) {
+      valueColumnData = createValueColumnDataList(tableMetaData, value);
     }
 
-    List<ColumnValue> result = createColumnValueList(regionMapping, value, keyColumnName);
-    result.add(keyColumnValue);
+    return new EntryColumnData(keyColumnData, valueColumnData);
+  }
+
+  private <K> List<ColumnData> createKeyColumnDataList(TableMetaDataView tableMetaData, K key) {
+    List<String> keyColumnNames = tableMetaData.getKeyColumnNames();
+    List<ColumnData> result = new ArrayList<>();
+    if (keyColumnNames.size() == 1) {
+      String keyColumnName = keyColumnNames.get(0);
+      ColumnData columnData =
+          new ColumnData(keyColumnName, key, tableMetaData.getColumnDataType(keyColumnName));
+      result.add(columnData);
+    } else {
+      if (!(key instanceof PdxInstance)) {
+        throw new JdbcConnectorException(
+            "The key \"" + key + "\" of class \"" + key.getClass().getName()
+                + "\" must be a PdxInstance because multiple columns are configured as ids.");
+      }
+      PdxInstance compositeKey = (PdxInstance) key;
+      if (compositeKey.isDeserializable()) {
+        throw new JdbcConnectorException(
+            "The key \"" + key
+                + "\" must be a PdxInstance created with PdxInstanceFactory.neverDeserialize");
+      }
+      List<String> fieldNames = compositeKey.getFieldNames();
+      if (fieldNames.size() != keyColumnNames.size()) {
+        throw new JdbcConnectorException("The key \"" + key + "\" should have "
+            + keyColumnNames.size() + " fields but has " + fieldNames.size() + " fields.");
+      }
+      for (String fieldName : fieldNames) {
+        String columnName = getColumnNameForField(fieldName);
+        if (columnName == null || !keyColumnNames.contains(columnName)) {
+          throw new JdbcConnectorException("The key \"" + key + "\" has the field \"" + fieldName
+              + "\" which does not match any of the key columns: " + keyColumnNames);
+        }
+        ColumnData columnData = new ColumnData(columnName, compositeKey.getField(fieldName),
+            tableMetaData.getColumnDataType(columnName));
+        result.add(columnData);
+      }
+    }
     return result;
   }
 
-  private List<ColumnValue> createColumnValueList(RegionMapping regionMapping, PdxInstance value,
-      String keyColumnName) {
-    List<ColumnValue> result = new ArrayList<>();
+  private List<ColumnData> createValueColumnDataList(TableMetaDataView tableMetaData,
+      PdxInstance value) {
+    List<ColumnData> result = new ArrayList<>();
     for (String fieldName : value.getFieldNames()) {
-      String columnName = regionMapping.getColumnNameForField(fieldName);
-      if (columnName.equalsIgnoreCase(keyColumnName)) {
+      String columnName = getColumnNameForField(fieldName);
+      if (columnName == null) {
+        // The user must have added a new field to their pdx domain class.
+        // To support PDX class versioning we will ignore this field.
         continue;
       }
-      ColumnValue columnValue = new ColumnValue(false, columnName, value.getField(fieldName));
-      result.add(columnValue);
+      if (tableMetaData.getKeyColumnNames().contains(columnName)) {
+        continue;
+      }
+      ColumnData columnData = new ColumnData(columnName, value.getField(fieldName),
+          tableMetaData.getColumnDataType(columnName));
+      result.add(columnData);
     }
     return result;
+  }
+
+  public interface DataSourceFactory {
+    public DataSource getDataSource(String dataSourceName);
   }
 }

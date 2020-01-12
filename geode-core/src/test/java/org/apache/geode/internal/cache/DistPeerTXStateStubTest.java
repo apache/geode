@@ -21,12 +21,9 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.cache.tx.DistTxEntryEvent;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class DistPeerTXStateStubTest {
 
   @Test

@@ -14,21 +14,16 @@
  */
 package org.apache.geode.internal.cache.ha;
 
-import java.io.ByteArrayInputStream;
 import java.io.DataInput;
-import java.io.DataInputStream;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Arrays;
 
-import org.apache.logging.log4j.Logger;
-
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
-import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.EventID;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.ByteArrayDataInput;
 
 /**
  * Class identifying a Thread uniquely across the distributed system. It is composed of two fields
@@ -208,7 +203,7 @@ public class ThreadIdentifier implements DataSerializable {
     Object mbr;
     try {
       mbr = InternalDistributedMember
-          .readEssentialData(new DataInputStream(new ByteArrayInputStream(membershipID)));
+          .readEssentialData(new ByteArrayDataInput(membershipID));
     } catch (Exception e) {
       mbr = membershipID; // punt and use the bytes
     }
@@ -259,7 +254,6 @@ public class ThreadIdentifier implements DataSerializable {
   /**
    * Checks if the input thread id is a WAN_TYPE thread id
    *
-   * @param tid
    * @return whether the input thread id is a WAN_TYPE thread id
    */
   public static boolean isWanTypeThreadID(long tid) {
@@ -308,18 +302,19 @@ public class ThreadIdentifier implements DataSerializable {
   /**
    * checks to see if the membership id of this identifier is the same as in the argument
    *
-   * @param other
    * @return whether the two IDs are from the same member
    */
   public boolean isSameMember(ThreadIdentifier other) {
     return Arrays.equals(this.membershipID, other.membershipID);
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     membershipID = DataSerializer.readByteArray(in);
     threadID = in.readLong();
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeByteArray(membershipID, out);
     out.writeLong(threadID);

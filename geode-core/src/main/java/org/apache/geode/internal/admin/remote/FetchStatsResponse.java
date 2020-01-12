@@ -23,8 +23,9 @@ import java.util.List;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.Statistics;
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.InternalDistributedSystem.StatisticsVisitor;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * Provides a response of remote statistic resources for a {@code FetchStatsRequest}
@@ -42,29 +43,21 @@ public class FetchStatsResponse extends AdminResponse {
    */
   public static FetchStatsResponse create(DistributionManager dm,
       InternalDistributedMember recipient, final String statisticsTypeName) {
-    FetchStatsResponse m = new FetchStatsResponse();
-    m.setRecipient(recipient);
-    List<RemoteStatResource> statList = new ArrayList<RemoteStatResource>();
-    // get vm-local stats
-    // call visitStatistics to fix for bug 40358
+    FetchStatsResponse response = new FetchStatsResponse();
+    response.setRecipient(recipient);
+
+    List<Statistics> statsList = dm.getSystem().getStatisticsManager().getStatsList();
     if (statisticsTypeName == null) {
-      dm.getSystem().visitStatistics(new StatisticsVisitor() {
-        public void visit(Statistics s) {
-          statList.add(new RemoteStatResource(s));
-        }
-      });
+      response.stats = statsList.stream()
+          .map(RemoteStatResource::new)
+          .toArray(RemoteStatResource[]::new);
     } else {
-      dm.getSystem().visitStatistics(new StatisticsVisitor() {
-        public void visit(Statistics s) {
-          if (s.getType().getName().equals(statisticsTypeName)) {
-            statList.add(new RemoteStatResource(s));
-          }
-        }
-      });
+      response.stats = statsList.stream()
+          .filter(s -> s.getType().getName().equals(statisticsTypeName))
+          .map(RemoteStatResource::new)
+          .toArray(RemoteStatResource[]::new);
     }
-    m.stats = new RemoteStatResource[statList.size()];
-    m.stats = (RemoteStatResource[]) statList.toArray(m.stats);
-    return m;
+    return response;
   }
 
   @Override
@@ -72,19 +65,22 @@ public class FetchStatsResponse extends AdminResponse {
     return true;
   }
 
+  @Override
   public int getDSFID() {
     return FETCH_STATS_RESPONSE;
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     DataSerializer.writeObject(stats, out);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     stats = (RemoteStatResource[]) DataSerializer.readObject(in);
   }
 

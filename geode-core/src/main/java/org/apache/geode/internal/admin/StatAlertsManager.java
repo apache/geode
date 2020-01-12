@@ -30,6 +30,7 @@ import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.admin.jmx.internal.StatAlertsAggregator;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.SystemTimer;
@@ -39,9 +40,7 @@ import org.apache.geode.internal.admin.remote.UpdateAlertDefinitionMessage;
 import org.apache.geode.internal.admin.statalerts.DummyStatisticInfoImpl;
 import org.apache.geode.internal.admin.statalerts.StatisticInfo;
 import org.apache.geode.internal.admin.statalerts.StatisticInfoImpl;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * The alert manager maintains the list of alert definitions (added by client e.g GFMon 2.0).
@@ -63,6 +62,7 @@ public class StatAlertsManager {
    *
    * Guarded by StatAlertsManager.class
    */
+  @MakeNotStatic
   private static StatAlertsManager alertManager;
 
   /**
@@ -73,6 +73,7 @@ public class StatAlertsManager {
   /**
    * Guarded by this.alertDefinitionsMap
    */
+  @MakeNotStatic
   protected final HashMap alertDefinitionsMap = new HashMap();
 
   /**
@@ -92,8 +93,7 @@ public class StatAlertsManager {
 
   private StatAlertsManager(ClusterDistributionManager dm) {
     this.dm = dm;
-    logger.info(
-        LocalizedMessage.create(LocalizedStrings.StatAlertsManager_STATALERTSMANAGER_CREATED));
+    logger.info("StatAlertsManager created");
   }
 
   /**
@@ -218,7 +218,6 @@ public class StatAlertsManager {
    *
    * TODO never called
    *
-   * @param refreshAtFixedRate
    */
   public synchronized void setRefreshAtFixedRate(boolean refreshAtFixedRate) {
     this.refreshAtFixedRate = refreshAtFixedRate;
@@ -251,7 +250,7 @@ public class StatAlertsManager {
         }
       } // while
     } // synchronized
-    return (StatAlert[]) alerts.toArray(new StatAlert[alerts.size()]);
+    return (StatAlert[]) alerts.toArray(new StatAlert[0]);
   }
 
   /**
@@ -279,9 +278,9 @@ public class StatAlertsManager {
         // TODO If none by TextID, use StatType and getAll.
         statistics = dm.getSystem().findStatisticsByTextId(textId);
         if (statistics.length == 0) {
-          logger.error(LocalizedMessage.create(
-              LocalizedStrings.StatAlertsManager_STATALERTSMANAGER_CREATEMEMBERSTATALERTDEFINITION_STATISTICS_WITH_GIVEN_TEXTID_0_NOT_FOUND,
-              textId));
+          logger.error(
+              "StatAlertsManager.createMemberStatAlertDefinition :: statistics with given textId={}, NOT found.",
+              textId);
           skipDefinition = true;
           // break;
           continue; // To print all errors
@@ -313,7 +312,7 @@ public class StatAlertsManager {
       }
     } // for
 
-    return (StatAlertDefinition[]) result.toArray(new StatAlertDefinition[result.size()]);
+    return (StatAlertDefinition[]) result.toArray(new StatAlertDefinition[0]);
   }
 
   /**
@@ -383,9 +382,7 @@ public class StatAlertsManager {
           logger.debug("EvaluateAlertDefnsTask: system closed: {}", e.getMessage(), e);
           close();
         } catch (Exception e) {
-          logger.error(
-              LocalizedMessage.create(
-                  LocalizedStrings.StatAlertsManager_EVALUATEALERTDEFNSTASK_FAILED_WITH_AN_EXCEPTION),
+          logger.error("EvaluateAlertDefnsTask failed with an exception",
               e);
           close();
         }

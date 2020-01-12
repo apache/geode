@@ -120,7 +120,7 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
     if (l == null) {
       l = Collections.emptyList();
     }
-    return l.toArray(new String[l.size()]);
+    return l.toArray(new String[0]);
   }
 
   /**
@@ -342,6 +342,7 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
    * @param writer the <code>PdxWriter</code> to use when serializing this object
    * @return <code>true</code> if the object was serialized, <code>false</code> otherwise
    */
+  @Override
   public boolean toData(Object obj, PdxWriter writer) {
     return manager.writeData(writer, obj);
   }
@@ -353,6 +354,7 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
    * @param reader the <code>PdxReader</code> to use when creating this object
    * @return the deserialized object if this serializer handles the given class, null otherwise.
    */
+  @Override
   public Object fromData(Class<?> clazz, PdxReader reader) {
     return manager.readData(reader, clazz);
   }

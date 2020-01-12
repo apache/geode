@@ -17,27 +17,33 @@ package org.apache.geode.distributed.internal.membership.gms.messages;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.Collection;
+import java.util.List;
 
-import org.apache.geode.DataSerializer;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.Version;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.StaticSerialization;
+import org.apache.geode.internal.serialization.Version;
 
-public class LeaveRequestMessage extends HighPriorityDistributionMessage implements HasMemberID {
-  private InternalDistributedMember memberID;
+/**
+ * A LeaveRequestMessage is sent by a member of the cluster when it intends to shut down.
+ * This informs other members of the cluster that they should not consider the shutdown to
+ * be abnormal. No response is required.
+ */
+public class LeaveRequestMessage<ID extends MemberIdentifier> extends AbstractGMSMessage<ID>
+    implements HasMemberID<ID> {
+  private ID memberID;
   private String reason;
 
-  public LeaveRequestMessage(Collection<InternalDistributedMember> coords,
-      InternalDistributedMember id, String reason) {
+  public LeaveRequestMessage(List<ID> coords,
+      ID id, String reason) {
     super();
     setRecipients(coords);
     this.memberID = id;
     this.reason = reason;
   }
 
-  public LeaveRequestMessage(InternalDistributedMember coord, InternalDistributedMember id,
+  public LeaveRequestMessage(ID coord, ID id,
       String reason) {
     super();
     setRecipient(coord);
@@ -55,11 +61,7 @@ public class LeaveRequestMessage extends HighPriorityDistributionMessage impleme
   }
 
   @Override
-  public void process(ClusterDistributionManager dm) {
-    throw new IllegalStateException("this message is not intended to execute in a thread pool");
-  }
-
-  public InternalDistributedMember getMemberID() {
+  public ID getMemberID() {
     return memberID;
   }
 
@@ -73,15 +75,17 @@ public class LeaveRequestMessage extends HighPriorityDistributionMessage impleme
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeObject(memberID, out);
-    DataSerializer.writeString(reason, out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    context.getSerializer().writeObject(memberID, out);
+    StaticSerialization.writeString(reason, out);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    memberID = DataSerializer.readObject(in);
-    reason = DataSerializer.readString(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    memberID = context.getDeserializer().readObject(in);
+    reason = StaticSerialization.readString(in);
   }
 
   @Override

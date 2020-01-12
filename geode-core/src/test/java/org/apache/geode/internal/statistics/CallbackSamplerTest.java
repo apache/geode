@@ -14,7 +14,11 @@
  */
 package org.apache.geode.internal.statistics;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.anyLong;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 import java.util.concurrent.ScheduledExecutorService;
@@ -22,19 +26,16 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import org.apache.geode.CancelCriterion;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for {@link CallbackSampler}.
  */
-@Category(UnitTest.class)
 @RunWith(MockitoJUnitRunner.class)
 public class CallbackSamplerTest {
 
@@ -60,8 +61,8 @@ public class CallbackSamplerTest {
 
     StatisticsImpl stats1 = mock(StatisticsImpl.class);
     StatisticsImpl stats2 = mock(StatisticsImpl.class);
-    when(stats1.invokeSuppliers()).thenReturn(3);
-    when(stats2.invokeSuppliers()).thenReturn(2);
+    when(stats1.updateSuppliedValues()).thenReturn(3);
+    when(stats2.updateSuppliedValues()).thenReturn(2);
     when(stats1.getSupplierCount()).thenReturn(7);
     when(stats2.getSupplierCount()).thenReturn(8);
     when(statisticsManager.getStatsList()).thenReturn(Arrays.asList(stats1, stats2));

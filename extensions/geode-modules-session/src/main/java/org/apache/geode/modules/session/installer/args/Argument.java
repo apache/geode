@@ -52,7 +52,7 @@ public class Argument {
   /**
    * List of all representation forms.
    */
-  private final List<String> forms = new ArrayList<String>();
+  private final List<String> forms = new ArrayList<>();
 
   /**
    * Usage description.
@@ -82,7 +82,7 @@ public class Argument {
    *
    * @return parameter count
    */
-  public int getParameterCount() {
+  int getParameterCount() {
     return paramNames.length;
   }
 
@@ -92,7 +92,7 @@ public class Argument {
    * @param idx parameter index
    * @return parameter name
    */
-  public String getParameterName(final int idx) {
+  String getParameterName(final int idx) {
     return paramNames[idx];
   }
 
@@ -108,7 +108,7 @@ public class Argument {
   /**
    * Determines if the argument provisioning has been done via the environment.
    */
-  public boolean isDefinedInEnv() {
+  boolean isDefinedInEnv() {
     if (envVars == null || paramNames.length == 0) {
       return false;
     }
@@ -136,7 +136,7 @@ public class Argument {
    *
    * @return argument handler
    */
-  public ArgumentHandler getArgumentHandler() {
+  ArgumentHandler getArgumentHandler() {
     return handler;
   }
 
@@ -169,7 +169,7 @@ public class Argument {
    *
    * @return list of all registered forms
    */
-  public List<String> getForms() {
+  List<String> getForms() {
     return forms;
   }
 
@@ -187,9 +187,8 @@ public class Argument {
   /**
    * Returns a usage description of this argument.
    *
-   * @return description
    */
-  public String getDescription() {
+  String getDescription() {
     return description;
   }
 
@@ -213,7 +212,7 @@ public class Argument {
    *
    * @return default parameter values
    */
-  public String[] getDefaults() {
+  String[] getDefaults() {
     return defaults;
   }
 
@@ -238,7 +237,7 @@ public class Argument {
    *
    * @return environment variable names
    */
-  public String[] getEnvVars() {
+  String[] getEnvVars() {
     return envVars;
   }
 
@@ -254,9 +253,9 @@ public class Argument {
     builder.append(forms.get(0));
     builder.append("'");
     if (paramNames.length > 0) {
-      for (int i = 0; i < paramNames.length; i++) {
+      for (String paramName : paramNames) {
         builder.append(" <");
-        builder.append(paramNames[i]);
+        builder.append(paramName);
         builder.append(">");
       }
     }

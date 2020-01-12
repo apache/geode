@@ -20,9 +20,7 @@ import java.util.Properties;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Property resolver for resolving ${} like strings with system or Gemfire properties in Cache.xml
@@ -58,6 +56,7 @@ public class CacheXmlPropertyResolver implements PropertyResolver {
     this.props = props;
   }
 
+  @Override
   public int getPropertyOverridden() {
     return propertyOverridden;
   }
@@ -66,7 +65,6 @@ public class CacheXmlPropertyResolver implements PropertyResolver {
    * Sets <code>propertyOverridden</code> with one of the constants specified in this
    * {@link CacheXmlPropertyResolver} class.
    *
-   * @param propertyOverridden
    */
   public void setPropertyOverridden(int propertyOverridden) {
     this.propertyOverridden = propertyOverridden;
@@ -76,6 +74,7 @@ public class CacheXmlPropertyResolver implements PropertyResolver {
     this.ignoreUnresolvedProperties = ignoreUnresolvedProperties;
   }
 
+  @Override
   public boolean isIgnoreUnresolvedProperties() {
     return ignoreUnresolvedProperties;
   }
@@ -86,9 +85,8 @@ public class CacheXmlPropertyResolver implements PropertyResolver {
    * is found then {@link IllegalArgumentException} would be thrown based on
    * <code>ignoreUnresolvedProperties</code> flag being set by {@link CacheXmlParser}.
    *
-   * @param replaceString
-   * @return resolvedString
    */
+  @Override
   public String resolveReplaceString(String replaceString) {
     String replacement = null;
 
@@ -106,12 +104,7 @@ public class CacheXmlPropertyResolver implements PropertyResolver {
     return replacement;
   }
 
-  /**
-   * @param stringWithPrefixAndSuffix
-   * @param prefix
-   * @param suffix
-   * @return string
-   */
+  @Override
   public String processUnresolvableString(String stringWithPrefixAndSuffix, String prefix,
       String suffix) {
     String resolvedString = null;
@@ -129,9 +122,8 @@ public class CacheXmlPropertyResolver implements PropertyResolver {
       if (ignoreUnresolvedProperties) {
         // Do Nothing
       } else {
-        logger.error(LocalizedMessage.create(
-            LocalizedStrings.CacheXmlPropertyResolver_UNSEROLVAVLE_STRING_FORMAT_ERROR__0,
-            stringWithPrefixAndSuffix));
+        logger.error("Format of the string {} used for perameterization is unresolvable",
+            stringWithPrefixAndSuffix);
       }
     }
     return resolvedString;
@@ -141,6 +133,7 @@ public class CacheXmlPropertyResolver implements PropertyResolver {
     this.props = props;
   }
 
+  @Override
   public String processUnresolvableString(String stringWithPrefixAndSuffix) {
     return processUnresolvableString(stringWithPrefixAndSuffix, null, null);
   }

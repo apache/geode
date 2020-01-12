@@ -31,14 +31,13 @@ import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EnumListenerEvent;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.InternalRegion;
-import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventCallbackDispatcher;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class ParallelGatewaySenderEventProcessor extends AbstractGatewaySenderEventProcessor {
 
@@ -47,28 +46,23 @@ public class ParallelGatewaySenderEventProcessor extends AbstractGatewaySenderEv
   final int index;
   final int nDispatcher;
 
-  protected ParallelGatewaySenderEventProcessor(AbstractGatewaySender sender) {
-    super(LoggingThreadGroup
-        .createThreadGroup("Event Processor for GatewaySender_" + sender.getId(), logger),
-        "Event Processor for GatewaySender_" + sender.getId(), sender);
+  protected ParallelGatewaySenderEventProcessor(AbstractGatewaySender sender,
+      ThreadsMonitoring tMonitoring) {
+    super("Event Processor for GatewaySender_" + sender.getId(), sender, tMonitoring);
     this.index = 0;
     this.nDispatcher = 1;
     initializeMessageQueue(sender.getId());
-    setDaemon(true);
   }
 
   /**
    * use in concurrent scenario where queue is to be shared among all the processors.
    */
   protected ParallelGatewaySenderEventProcessor(AbstractGatewaySender sender,
-      Set<Region> userRegions, int id, int nDispatcher) {
-    super(LoggingThreadGroup
-        .createThreadGroup("Event Processor for GatewaySender_" + sender.getId(), logger),
-        "Event Processor for GatewaySender_" + sender.getId() + "_" + id, sender);
+      Set<Region> userRegions, int id, int nDispatcher, ThreadsMonitoring tMonitoring) {
+    super("Event Processor for GatewaySender_" + sender.getId() + "_" + id, sender, tMonitoring);
     this.index = id;
     this.nDispatcher = nDispatcher;
     initializeMessageQueue(sender.getId());
-    setDaemon(true);
   }
 
   @Override
@@ -92,6 +86,12 @@ public class ParallelGatewaySenderEventProcessor extends AbstractGatewaySenderEv
     if (((ParallelGatewaySenderQueue) queue).localSize() > 0) {
       ((ParallelGatewaySenderQueue) queue).notifyEventProcessorIfRequired();
     }
+  }
+
+  @Override
+  public int eventQueueSize() {
+    ParallelGatewaySenderQueue queue = (ParallelGatewaySenderQueue) getQueue();
+    return queue == null ? 0 : queue.localSize();
   }
 
   @Override
@@ -150,34 +150,48 @@ public class ParallelGatewaySenderEventProcessor extends AbstractGatewaySenderEv
     }
   }
 
+  @Override
+  protected void registerEventDroppedInPrimaryQueue(EntryEventImpl droppedEvent) {
+    logger.info("ParallelGatewaySenderEventProcessor should not process dropped event {}",
+        droppedEvent);
+  }
+
+  @Override
   public void clear(PartitionedRegion pr, int bucketId) {
     ((ParallelGatewaySenderQueue) this.queue).clear(pr, bucketId);
   }
 
+  @Override
   public void notifyEventProcessorIfRequired(int bucketId) {
     ((ParallelGatewaySenderQueue) this.queue).notifyEventProcessorIfRequired();
   }
 
+  @Override
   public BlockingQueue<GatewaySenderEventImpl> getBucketTmpQueue(int bucketId) {
     return ((ParallelGatewaySenderQueue) this.queue).getBucketToTempQueueMap().get(bucketId);
   }
 
+  @Override
   public PartitionedRegion getRegion(String prRegionName) {
     return ((ParallelGatewaySenderQueue) this.queue).getRegion(prRegionName);
   }
 
+  @Override
   public void removeShadowPR(String prRegionName) {
     ((ParallelGatewaySenderQueue) this.queue).removeShadowPR(prRegionName);
   }
 
+  @Override
   public void conflateEvent(Conflatable conflatableObject, int bucketId, Long tailKey) {
     ((ParallelGatewaySenderQueue) this.queue).conflateEvent(conflatableObject, bucketId, tailKey);
   }
 
+  @Override
   public void addShadowPartitionedRegionForUserPR(PartitionedRegion pr) {
     ((ParallelGatewaySenderQueue) this.queue).addShadowPartitionedRegionForUserPR(pr);
   }
 
+  @Override
   public void addShadowPartitionedRegionForUserRR(DistributedRegion userRegion) {
     ((ParallelGatewaySenderQueue) this.queue).addShadowPartitionedRegionForUserRR(userRegion);
   }

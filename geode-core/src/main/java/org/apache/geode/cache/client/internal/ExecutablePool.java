@@ -12,6 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.cache.client.internal;
 
 import org.apache.geode.cache.NoSubscriptionServersAvailableException;
@@ -119,11 +120,6 @@ public interface ExecutablePool {
   RegisterInterestTracker getRITracker();
 
   /**
-   * Release the connection held by the calling thread if we're using thread local connections
-   */
-  void releaseThreadLocalConnection();
-
-  /**
    * The calling thread will connect to only one server for executing all ops until it calls
    * {@link #releaseServerAffinity()}
    *
@@ -154,7 +150,6 @@ public interface ExecutablePool {
    * All subsequent operations by this thread will be performed on the given ServerLocation. Used
    * for resuming suspended transactions.
    *
-   * @param serverLocation
    * @since GemFire 6.6
    */
   void setServerAffinityLocation(ServerLocation serverLocation);

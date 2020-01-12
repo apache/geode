@@ -14,28 +14,28 @@
  */
 package org.apache.geode.internal.cache.partitioned;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InitialImageOperation;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.partitioned.FetchEntriesMessage.FetchEntriesReplyMessage;
 import org.apache.geode.internal.cache.partitioned.FetchEntriesMessage.FetchEntriesResponse;
 import org.apache.geode.internal.cache.versions.VersionTag;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.test.fake.Fakes;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class FetchEntriesMessageJUnitTest {
 
   private GemFireCacheImpl cache;

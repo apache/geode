@@ -25,8 +25,7 @@ import org.apache.geode.internal.cache.BucketServerLocation66;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Retrieves {@link ClientPartitionAdvisor} for the specified PartitionedRegion from one of the
@@ -64,7 +63,7 @@ public class GetClientPRMetaDataOp {
       super(MessageType.GET_CLIENT_PR_METADATA, 1);
       this.regionFullPath = regionFullPath;
       this.cms = cms;
-      getMessage().addStringPart(regionFullPath);
+      getMessage().addStringPart(regionFullPath, true);
     }
 
     @Override
@@ -106,7 +105,9 @@ public class GetClientPRMetaDataOp {
                     "GetClientPRMetaDataOpImpl#processResponse: for bucketId : {} locations are {}",
                     bucketId, locations);
               }
-              advisor.updateBucketServerLocations(bucketId, locations, cms);
+              if (advisor != null) {
+                advisor.updateBucketServerLocations(bucketId, locations, cms);
+              }
 
               Set<ClientPartitionAdvisor> cpas =
                   cms.getColocatedClientPartitionAdvisor(regionFullPath);
@@ -133,8 +134,8 @@ public class GetClientPRMetaDataOp {
           String s = "While performing  GetClientPRMetaDataOp " + ((Throwable) obj).getMessage();
           throw new ServerOperationException(s, (Throwable) obj);
         default:
-          throw new InternalGemFireError(LocalizedStrings.Op_UNKNOWN_MESSAGE_TYPE_0
-              .toLocalizedString(Integer.valueOf(msg.getMessageType())));
+          throw new InternalGemFireError(String.format("Unknown message type %s",
+              Integer.valueOf(msg.getMessageType())));
       }
     }
 

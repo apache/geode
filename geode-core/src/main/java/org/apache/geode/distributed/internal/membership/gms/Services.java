@@ -14,69 +14,95 @@
  */
 package org.apache.geode.distributed.internal.membership.gms;
 
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.DISTRIBUTED_MEMBER;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.FINAL_CHECK_PASSED_MESSAGE;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.FIND_COORDINATOR_REQ;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.FIND_COORDINATOR_RESP;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.GET_VIEW_REQ;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.GET_VIEW_RESP;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.HEARTBEAT_REQUEST;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.HEARTBEAT_RESPONSE;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.INSTALL_VIEW_MESSAGE;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.JOIN_REQUEST;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.JOIN_RESPONSE;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.LEAVE_REQUEST_MESSAGE;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.NETVIEW;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.NETWORK_PARTITION_MESSAGE;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.REMOVE_MEMBER_REQUEST;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.SUSPECT_MEMBERS_MESSAGE;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.VIEW_ACK_MESSAGE;
+
 import java.util.Timer;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.CancelCriterion;
-import org.apache.geode.ForcedDisconnectException;
-import org.apache.geode.distributed.DistributedSystemDisconnectedException;
-import org.apache.geode.distributed.internal.DMStats;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.distributed.internal.membership.DistributedMembershipListener;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.MembershipManager;
-import org.apache.geode.distributed.internal.membership.NetView;
-import org.apache.geode.distributed.internal.membership.gms.auth.GMSAuthenticator;
+import org.apache.geode.distributed.internal.membership.api.Authenticator;
+import org.apache.geode.distributed.internal.membership.api.MemberDisconnectedException;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifierFactory;
+import org.apache.geode.distributed.internal.membership.api.MemberStartupException;
+import org.apache.geode.distributed.internal.membership.api.MembershipClosedException;
+import org.apache.geode.distributed.internal.membership.api.MembershipConfig;
+import org.apache.geode.distributed.internal.membership.api.MembershipConfigurationException;
+import org.apache.geode.distributed.internal.membership.api.MembershipStatistics;
 import org.apache.geode.distributed.internal.membership.gms.fd.GMSHealthMonitor;
-import org.apache.geode.distributed.internal.membership.gms.interfaces.Authenticator;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.HealthMonitor;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.JoinLeave;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Locator;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Manager;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Messenger;
-import org.apache.geode.distributed.internal.membership.gms.locator.GMSLocator;
+import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordinatorRequest;
+import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordinatorResponse;
+import org.apache.geode.distributed.internal.membership.gms.locator.GetViewRequest;
+import org.apache.geode.distributed.internal.membership.gms.locator.GetViewResponse;
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
+import org.apache.geode.distributed.internal.membership.gms.messages.FinalCheckPassedMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.HeartbeatMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.HeartbeatRequestMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.InstallViewMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.JoinRequestMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.JoinResponseMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.LeaveRequestMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.NetworkPartitionMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.RemoveMemberMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.SuspectMembersMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.ViewAckMessage;
 import org.apache.geode.distributed.internal.membership.gms.messenger.JGroupsMessenger;
-import org.apache.geode.distributed.internal.membership.gms.mgr.GMSMembershipManager;
-import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
-import org.apache.geode.internal.logging.InternalLogWriter;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
-import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.internal.security.SecurityServiceFactory;
-import org.apache.geode.security.AuthenticationFailedException;
+import org.apache.geode.distributed.internal.tcpserver.TcpClient;
+import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
+import org.apache.geode.internal.serialization.DSFIDSerializer;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
+/**
+ * Services holds all of the membership services of a GMSMembership. It serves as a
+ * directory for the services, enabling them to find one another. It also controls the
+ * lifecycle of the services and holds a Stopper that services should consult in
+ * exceptional situations to see if Membership is shutting down.
+ */
 @SuppressWarnings("ConstantConditions")
-public class Services {
+public class Services<ID extends MemberIdentifier> {
 
   private static final Logger logger = LogService.getLogger();
 
-  private static final ThreadGroup threadGroup =
-      LoggingThreadGroup.createThreadGroup("GemFire Membership", logger);
-
-  private static InternalLogWriter staticLogWriter;
-  private static InternalLogWriter staticSecurityLogWriter;
-
-  private final Manager manager;
-  private final JoinLeave joinLeave;
-  private final HealthMonitor healthMon;
-  private final Messenger messenger;
-  private final Authenticator auth;
-  private final ServiceConfig config;
-  private final DMStats stats;
+  private final Manager<ID> manager;
+  private final JoinLeave<ID> joinLeave;
+  private final HealthMonitor<ID> healthMon;
+  private final Messenger<ID> messenger;
+  private final Authenticator<ID> auth;
+  private final MembershipConfig config;
+  private final MembershipStatistics stats;
   private final Stopper cancelCriterion;
-  private final SecurityService securityService;
+  private final DSFIDSerializer serializer;
+
+  private final MemberIdentifierFactory<ID> memberFactory;
 
   private volatile boolean stopping;
   private volatile boolean stopped;
   private volatile Exception shutdownCause;
 
-  private Locator locator;
-
-  private InternalLogWriter logWriter;
-  private InternalLogWriter securityLogWriter;
+  private Locator<ID> locator;
 
   private final Timer timer = new Timer("Geode Membership Timer", true);
 
@@ -85,13 +111,6 @@ public class Services {
    */
   public static Logger getLogger() {
     return logger;
-  }
-
-  /**
-   * The thread group for all membership threads
-   */
-  public static ThreadGroup getThreadGroup() {
-    return threadGroup;
   }
 
   /**
@@ -116,43 +135,68 @@ public class Services {
     this.joinLeave = null;
     this.healthMon = null;
     this.messenger = null;
-    this.securityService = SecurityServiceFactory.create();
     this.auth = null;
+    this.serializer = null;
+    this.memberFactory = null;
   }
 
-  public Services(DistributedMembershipListener listener, DistributionConfig config,
-      RemoteTransportConfig transport, DMStats stats, SecurityService securityService) {
+  public Services(Manager<ID> membershipManager, MembershipStatistics stats,
+      final Authenticator<ID> authenticator, MembershipConfig membershipConfig,
+      DSFIDSerializer serializer, MemberIdentifierFactory<ID> memberFactory,
+      final TcpClient locatorClient, final TcpSocketCreator socketCreator) {
     this.cancelCriterion = new Stopper();
     this.stats = stats;
-    this.config = new ServiceConfig(transport, config);
-    this.manager = new GMSMembershipManager(listener);
-    this.joinLeave = new GMSJoinLeave();
-    this.healthMon = new GMSHealthMonitor();
-    this.messenger = new JGroupsMessenger();
-    this.securityService = securityService;
-    this.auth = new GMSAuthenticator();
+    this.config = membershipConfig;
+    this.manager = membershipManager;
+    this.joinLeave = new GMSJoinLeave<>(locatorClient);
+    this.healthMon = new GMSHealthMonitor<>(socketCreator);
+    this.messenger = new JGroupsMessenger<>();
+    this.auth = authenticator;
+    this.serializer = serializer;
+    this.memberFactory = memberFactory;
+    registerSerializables(serializer);
   }
 
-  protected void init() {
-    // InternalDistributedSystem establishes this log writer at boot time
-    // TODO fix this so that IDS doesn't know about Services
-    this.securityLogWriter = staticSecurityLogWriter;
-    staticSecurityLogWriter = null;
-    this.logWriter = staticLogWriter;
-    staticLogWriter = null;
-    this.auth.init(this);
+  @VisibleForTesting
+  public static void registerSerializables(DSFIDSerializer serializer) {
+    serializer.registerDSFID(FINAL_CHECK_PASSED_MESSAGE, FinalCheckPassedMessage.class);
+    serializer.registerDSFID(NETWORK_PARTITION_MESSAGE, NetworkPartitionMessage.class);
+    serializer.registerDSFID(REMOVE_MEMBER_REQUEST, RemoveMemberMessage.class);
+    serializer.registerDSFID(HEARTBEAT_REQUEST, HeartbeatRequestMessage.class);
+    serializer.registerDSFID(HEARTBEAT_RESPONSE, HeartbeatMessage.class);
+    serializer.registerDSFID(SUSPECT_MEMBERS_MESSAGE, SuspectMembersMessage.class);
+    serializer.registerDSFID(LEAVE_REQUEST_MESSAGE, LeaveRequestMessage.class);
+    serializer.registerDSFID(VIEW_ACK_MESSAGE, ViewAckMessage.class);
+    serializer.registerDSFID(INSTALL_VIEW_MESSAGE, InstallViewMessage.class);
+    serializer.registerDSFID(DISTRIBUTED_MEMBER, InternalDistributedMember.class);
+    serializer.registerDSFID(NETVIEW, GMSMembershipView.class);
+    serializer.registerDSFID(GET_VIEW_REQ, GetViewRequest.class);
+    serializer.registerDSFID(GET_VIEW_RESP, GetViewResponse.class);
+    serializer.registerDSFID(FIND_COORDINATOR_REQ, FindCoordinatorRequest.class);
+    serializer.registerDSFID(FIND_COORDINATOR_RESP, FindCoordinatorResponse.class);
+    serializer.registerDSFID(JOIN_RESPONSE, JoinResponseMessage.class);
+    serializer.registerDSFID(JOIN_REQUEST, JoinRequestMessage.class);
+
+  }
+
+  /**
+   * Initialize services - do this before invoking start()
+   */
+  public void init() throws MembershipConfigurationException {
     this.messenger.init(this);
     this.manager.init(this);
     this.joinLeave.init(this);
     this.healthMon.init(this);
   }
 
-  protected void start() {
+  /**
+   * Start services - this will start everything up and join the cluster.
+   * Invoke init() before this method.
+   */
+  public void start() throws MemberStartupException {
     boolean started = false;
     try {
       logger.info("Starting membership services");
-      logger.debug("starting Authenticator");
-      this.auth.start();
       logger.debug("starting Messenger");
       this.messenger.start();
       logger.debug("starting JoinLeave");
@@ -161,6 +205,11 @@ public class Services {
       this.healthMon.start();
       logger.debug("starting Manager");
       this.manager.start();
+      this.messenger.started();
+      this.joinLeave.started();
+      this.healthMon.started();
+      this.manager.started();
+      logger.debug("All membership services have been started");
       started = true;
     } catch (RuntimeException e) {
       logger.fatal("Unexpected exception while booting membership services", e);
@@ -171,28 +220,23 @@ public class Services {
         this.healthMon.stop();
         this.joinLeave.stop();
         this.messenger.stop();
-        this.auth.stop();
         this.timer.cancel();
       }
     }
-    this.auth.started();
-    this.messenger.started();
-    this.joinLeave.started();
-    this.healthMon.started();
-    this.manager.started();
-    InternalLocator l = (InternalLocator) org.apache.geode.distributed.Locator.getLocator();
-    if (l != null && l.getLocatorHandler() != null) {
-      if (l.getLocatorHandler().setMembershipManager((MembershipManager) this.manager)) {
-        this.locator = (Locator) l.getLocatorHandler();
-      }
-    }
-    logger.debug("All membership services have been started");
+
     try {
       this.manager.joinDistributedSystem();
     } catch (Throwable e) {
       stop();
       throw e;
     }
+  }
+
+  public void setLocalAddress(ID address) {
+    this.messenger.setLocalAddress(address);
+    this.joinLeave.setLocalAddress(address);
+    this.healthMon.setLocalAddress(address);
+    this.manager.setLocalAddress(address);
   }
 
   public void emergencyClose() {
@@ -209,17 +253,13 @@ public class Services {
         this.healthMon.emergencyClose();
       } finally {
         try {
-          this.auth.emergencyClose();
+          this.messenger.emergencyClose();
         } finally {
           try {
-            this.messenger.emergencyClose();
+            this.manager.emergencyClose();
           } finally {
-            try {
-              this.manager.emergencyClose();
-            } finally {
-              this.cancelCriterion.cancel("Membership services are shut down");
-              this.stopped = true;
-            }
+            this.cancelCriterion.cancel("Membership services are shut down");
+            this.stopped = true;
           }
         }
       }
@@ -242,17 +282,13 @@ public class Services {
           this.healthMon.stop();
         } finally {
           try {
-            this.auth.stop();
+            this.messenger.stop();
           } finally {
             try {
-              this.messenger.stop();
+              this.manager.stop();
             } finally {
-              try {
-                this.manager.stop();
-              } finally {
-                this.cancelCriterion.cancel("Membership services are shut down");
-                this.stopped = true;
-              }
+              this.cancelCriterion.cancel("Membership services are shut down");
+              this.stopped = true;
             }
           }
         }
@@ -260,36 +296,11 @@ public class Services {
     }
   }
 
-  public static void setLogWriter(InternalLogWriter writer) {
-    staticLogWriter = writer;
-  }
-
-  public static void setSecurityLogWriter(InternalLogWriter securityWriter) {
-    staticSecurityLogWriter = securityWriter;
-  }
-
-  public SecurityService getSecurityService() {
-    return this.securityService;
-  }
-
-  public InternalLogWriter getLogWriter() {
-    return this.logWriter;
-  }
-
-  public InternalLogWriter getSecurityLogWriter() {
-    return this.securityLogWriter;
-  }
-
-  public Authenticator getAuthenticator() {
+  public Authenticator<ID> getAuthenticator() {
     return this.auth;
   }
 
-  public void installView(NetView v) {
-    try {
-      this.auth.installView(v);
-    } catch (AuthenticationFailedException e) {
-      return;
-    }
+  public void installView(GMSMembershipView<ID> v) {
     if (this.locator != null) {
       this.locator.installView(v);
     }
@@ -298,8 +309,8 @@ public class Services {
     this.manager.installView(v);
   }
 
-  public void memberSuspected(InternalDistributedMember initiator,
-      InternalDistributedMember suspect, String reason) {
+  public void memberSuspected(ID initiator,
+      ID suspect, String reason) {
     try {
       this.joinLeave.memberSuspected(initiator, suspect, reason);
     } finally {
@@ -307,48 +318,48 @@ public class Services {
         this.healthMon.memberSuspected(initiator, suspect, reason);
       } finally {
         try {
-          this.auth.memberSuspected(initiator, suspect, reason);
+          this.messenger.memberSuspected(initiator, suspect, reason);
         } finally {
-          try {
-            this.messenger.memberSuspected(initiator, suspect, reason);
-          } finally {
-            this.manager.memberSuspected(initiator, suspect, reason);
-          }
+          this.manager.memberSuspected(initiator, suspect, reason);
         }
       }
     }
   }
 
-  public Manager getManager() {
+  public Manager<ID> getManager() {
     return this.manager;
   }
 
-  public Locator getLocator() {
+  public Locator<ID> getLocator() {
     return this.locator;
   }
 
-  public void setLocator(Locator locator) {
+  public void setLocator(Locator<ID> locator) {
     this.locator = locator;
   }
 
-  public JoinLeave getJoinLeave() {
+  public JoinLeave<ID> getJoinLeave() {
     return this.joinLeave;
   }
 
-  public HealthMonitor getHealthMonitor() {
+  public HealthMonitor<ID> getHealthMonitor() {
     return this.healthMon;
   }
 
-  public ServiceConfig getConfig() {
+  public MembershipConfig getConfig() {
     return this.config;
   }
 
-  public Messenger getMessenger() {
+  public Messenger<ID> getMessenger() {
     return this.messenger;
   }
 
-  public DMStats getStatistics() {
+  public MembershipStatistics getStatistics() {
     return this.stats;
+  }
+
+  public MemberIdentifierFactory<ID> getMemberFactory() {
+    return memberFactory;
   }
 
   public Stopper getCancelCriterion() {
@@ -364,46 +375,59 @@ public class Services {
   }
 
   public boolean isShutdownDueToForcedDisconnect() {
-    return this.shutdownCause instanceof ForcedDisconnectException;
+    return this.shutdownCause instanceof MemberDisconnectedException;
   }
 
   public boolean isAutoReconnectEnabled() {
-    return !getConfig().getDistributionConfig().getDisableAutoReconnect();
+    return !getConfig().getDisableAutoReconnect();
   }
 
-  public byte[] getPublicKey(InternalDistributedMember mbr) {
-    if (this.locator != null) {
-      return ((GMSLocator) this.locator).getPublicKey(mbr);
-    }
-    return null;
+  public DSFIDSerializer getSerializer() {
+    return this.serializer;
   }
 
-  public class Stopper extends CancelCriterion {
+  public class Stopper {
     volatile String reasonForStopping = null;
 
     public void cancel(String reason) {
       this.reasonForStopping = reason;
     }
 
-    @Override
     public String cancelInProgress() {
       if (Services.this.shutdownCause != null)
         return Services.this.shutdownCause.toString();
       return this.reasonForStopping;
     }
 
-    @Override
     public RuntimeException generateCancelledException(Throwable e) {
+      if (shutdownCause instanceof MemberDisconnectedException) {
+        MembershipClosedException newException =
+            new MembershipClosedException("membership shutdown",
+                e);
+        throw newException;
+      }
       String reason = cancelInProgress();
       if (reason == null) {
         return null;
       } else {
         if (e == null) {
-          return new DistributedSystemDisconnectedException(reason);
+          return new MembershipClosedException(reason);
         } else {
-          return new DistributedSystemDisconnectedException(reason, e);
+          return new MembershipClosedException(reason, e);
         }
       }
+    }
+
+    public boolean isCancelInProgress() {
+      return cancelInProgress() != null;
+    }
+
+    public void checkCancelInProgress(Throwable e) {
+      String reason = cancelInProgress();
+      if (reason == null) {
+        return;
+      }
+      throw generateCancelledException(e);
     }
 
   }

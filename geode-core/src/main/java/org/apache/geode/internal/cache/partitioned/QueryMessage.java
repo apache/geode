@@ -32,8 +32,10 @@ import org.apache.geode.cache.query.QueryException;
 import org.apache.geode.cache.query.QueryExecutionLowMemoryException;
 import org.apache.geode.cache.query.Struct;
 import org.apache.geode.cache.query.internal.DefaultQuery;
+import org.apache.geode.cache.query.internal.ExecutionContext;
 import org.apache.geode.cache.query.internal.IndexTrackingQueryObserver;
 import org.apache.geode.cache.query.internal.PRQueryTraceInfo;
+import org.apache.geode.cache.query.internal.QueryExecutionContext;
 import org.apache.geode.cache.query.internal.QueryMonitor;
 import org.apache.geode.cache.query.internal.QueryObserver;
 import org.apache.geode.cache.query.internal.types.ObjectTypeImpl;
@@ -45,14 +47,15 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.streaming.StreamingOperation.StreamingReplyMessage;
 import org.apache.geode.internal.NanoTimer;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.PRQueryProcessor;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.Token;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class QueryMessage extends StreamingPartitionOperation.StreamingPartitionMessage {
   private static final Logger logger = LogService.getLogger();
@@ -96,8 +99,9 @@ public class QueryMessage extends StreamingPartitionOperation.StreamingPartition
     final boolean isDebugEnabled = logger.isDebugEnabled();
 
     if (QueryMonitor.isLowMemory()) {
-      String reason = LocalizedStrings.QueryMonitor_LOW_MEMORY_CANCELED_QUERY
-          .toLocalizedString(QueryMonitor.getMemoryUsedDuringLowMemory());
+      String reason = String.format(
+          "Query execution canceled due to memory threshold crossed in system, memory used: %s bytes.",
+          QueryMonitor.getMemoryUsedBytes());
       throw new QueryExecutionLowMemoryException(reason);
     }
     if (Thread.interrupted()) {
@@ -152,22 +156,24 @@ public class QueryMessage extends StreamingPartitionOperation.StreamingPartition
     if (Thread.interrupted()) {
       throw new InterruptedException();
     }
-    if (logger.isTraceEnabled(LogMarker.DM)) {
-      logger.trace(LogMarker.DM, "QueryMessage operateOnPartitionedRegion: {} buckets {}",
+    if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+      logger.trace(LogMarker.DM_VERBOSE, "QueryMessage operateOnPartitionedRegion: {} buckets {}",
           pr.getFullPath(), this.buckets);
     }
 
     pr.waitOnInitialization();
 
     if (QueryMonitor.isLowMemory()) {
-      String reason = LocalizedStrings.QueryMonitor_LOW_MEMORY_CANCELED_QUERY
-          .toLocalizedString(QueryMonitor.getMemoryUsedDuringLowMemory());
+      String reason = String.format(
+          "Query execution canceled due to memory threshold crossed in system, memory used: %s bytes.",
+          QueryMonitor.getMemoryUsedBytes());
       // throw query exception to piggyback on existing error handling as qp.executeQuery also
       // throws the same error for low memory
       throw new QueryExecutionLowMemoryException(reason);
     }
 
     DefaultQuery query = new DefaultQuery(this.queryString, pr.getCache(), false);
+    final ExecutionContext executionContext = new QueryExecutionContext(null, pr.getCache(), query);
     // Remote query, use the PDX types in serialized form.
     Boolean initialPdxReadSerialized = pr.getCache().getPdxReadSerializedOverride();
     pr.getCache().setPdxReadSerializedOverride(true);
@@ -191,7 +197,9 @@ public class QueryMessage extends StreamingPartitionOperation.StreamingPartition
       if (isQueryTraced) {
         this.isTraceInfoIteration = true;
         if (DefaultQuery.testHook != null) {
-          DefaultQuery.testHook.doTestHook("Create PR Query Trace Info for Remote Query");
+          DefaultQuery.testHook
+              .doTestHook(DefaultQuery.TestHook.SPOTS.CREATE_PR_QUERY_TRACE_INFO_FOR_REMOTE_QUERY,
+                  null, null);
         }
         queryTraceInfo = new PRQueryTraceInfo();
         queryTraceList = Collections.singletonList(queryTraceInfo);
@@ -210,7 +218,9 @@ public class QueryMessage extends StreamingPartitionOperation.StreamingPartition
       // information here rather than the finally block.
       if (isQueryTraced) {
         if (DefaultQuery.testHook != null) {
-          DefaultQuery.testHook.doTestHook("Populating Trace Info for Remote Query");
+          DefaultQuery.testHook
+              .doTestHook(DefaultQuery.TestHook.SPOTS.POPULATING_TRACE_INFO_FOR_REMOTE_QUERY, null,
+                  null);
         }
 
         // calculate the number of rows being sent
@@ -240,9 +250,12 @@ public class QueryMessage extends StreamingPartitionOperation.StreamingPartition
       }
 
       if (QueryMonitor.isLowMemory()) {
-        String reason = LocalizedStrings.QueryMonitor_LOW_MEMORY_CANCELED_QUERY
-            .toLocalizedString(QueryMonitor.getMemoryUsedDuringLowMemory());
+        String reason = String.format(
+            "Query execution canceled due to memory threshold crossed in system, memory used: %s bytes.",
+            QueryMonitor.getMemoryUsedBytes());
         throw new QueryExecutionLowMemoryException(reason);
+      } else if (executionContext.isCanceled()) {
+        throw executionContext.getQueryCanceledException();
       }
       super.operateOnPartitionedRegion(dm, pr, startTime);
     } finally {
@@ -295,8 +308,9 @@ public class QueryMessage extends StreamingPartitionOperation.StreamingPartition
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.queryString = DataSerializer.readString(in);
     this.buckets = DataSerializer.readArrayList(in);
     this.parameters = DataSerializer.readObjectArray(in);
@@ -306,8 +320,9 @@ public class QueryMessage extends StreamingPartitionOperation.StreamingPartition
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     DataSerializer.writeString(this.queryString, out);
     DataSerializer.writeArrayList((ArrayList) this.buckets, out);
     DataSerializer.writeObjectArray(this.parameters, out);

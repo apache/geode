@@ -23,15 +23,16 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
-import org.apache.geode.DataSerializer;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.LowMemoryException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.RegionDestroyedException;
+import org.apache.geode.cache.TransactionException;
 import org.apache.geode.cache.query.QueryException;
 import org.apache.geode.cache.query.RegionNotFoundException;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
@@ -41,13 +42,13 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.MessageWithReply;
+import org.apache.geode.distributed.internal.OperationExecutors;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.DataLocationException;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.FilterRoutingInfo;
@@ -59,11 +60,13 @@ import org.apache.geode.internal.cache.PrimaryBucketException;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXStateProxy;
 import org.apache.geode.internal.cache.TransactionMessage;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.sequencelog.EntryLogger;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * The base PartitionedRegion message type upon which other messages should be based.
@@ -75,9 +78,10 @@ public abstract class PartitionMessage extends DistributionMessage
   private static final Logger logger = LogService.getLogger();
 
   /** default exception to ensure a false-positive response is never returned */
+  @Immutable
   static final ForceReattemptException UNHANDLED_EXCEPTION =
       (ForceReattemptException) new ForceReattemptException(
-          LocalizedStrings.PartitionMessage_UNKNOWN_EXCEPTION.toLocalizedString())
+          "Unknown exception")
               .fillInStackTrace();
 
   int regionId;
@@ -158,15 +162,12 @@ public abstract class PartitionMessage extends DistributionMessage
       // [DISTTX] Lets not throw this exception for Dist Tx
       if (canStartRemoteTransaction() && txState.isRealDealLocal() && !txState.isDistTx()) {
         // logger.error("sending rmt txId even though tx is local! txState=" + txState, new
-        // RuntimeException("STACK"));
+        // RuntimeException("STACK");
         throw new IllegalStateException(
             "Sending remote txId even though transaction is local. This should never happen: txState="
                 + txState);
       }
-      // GEODE-3679. Even if TXStateProxy has a local transaction,
-      // we still need to forward original txMemberId to other nodes
-      // if the message does not start a new transaction.
-      this.txMemberId = txState.getTxId().getMemberId();
+      txMemberId = txState.getOriginatingMember();
     }
   }
 
@@ -182,10 +183,12 @@ public abstract class PartitionMessage extends DistributionMessage
     this.isTransactionDistributed = other.isTransactionDistributed;
   }
 
+  @Override
   public InternalDistributedMember getTXOriginatorClient() {
     return txMemberId;
   }
 
+  @Override
   public InternalDistributedMember getMemberToMasqueradeAs() {
     if (txMemberId == null) {
       return getSender();
@@ -208,9 +211,9 @@ public abstract class PartitionMessage extends DistributionMessage
   @Override
   public int getProcessorType() {
     if (this.notificationOnly) {
-      return ClusterDistributionManager.SERIAL_EXECUTOR;
+      return OperationExecutors.SERIAL_EXECUTOR;
     } else {
-      return ClusterDistributionManager.PARTITIONED_REGION_EXECUTOR;
+      return OperationExecutors.PARTITIONED_REGION_EXECUTOR;
     }
   }
 
@@ -301,22 +304,19 @@ public abstract class PartitionMessage extends DistributionMessage
       if (checkCacheClosing(dm) || checkDSClosing(dm)) {
         if (cache != null) {
           thr = cache
-              .getCacheClosedException(LocalizedStrings.PartitionMessage_REMOTE_CACHE_IS_CLOSED_0
-                  .toLocalizedString(dm.getId()));
+              .getCacheClosedException(String.format("Remote cache is closed: %s",
+                  dm.getId()));
         } else {
-          thr = new CacheClosedException(LocalizedStrings.PartitionMessage_REMOTE_CACHE_IS_CLOSED_0
-              .toLocalizedString(dm.getId()));
+          thr = new CacheClosedException(String.format("Remote cache is closed: %s",
+              dm.getId()));
         }
         return;
       }
       pr = getPartitionedRegion();
-      if (pr == null && failIfRegionMissing()) {
-        // if the distributed system is disconnecting, don't send a reply saying
-        // the partitioned region can't be found (bug 36585)
-        thr = new ForceReattemptException(
-            LocalizedStrings.PartitionMessage_0_COULD_NOT_FIND_PARTITIONED_REGION_WITH_ID_1
-                .toLocalizedString(dm.getDistributionManagerId(), regionId));
-        return; // reply sent in finally block below
+      Throwable forcedReattempt = processCheckForPR(pr, dm);
+      if (forcedReattempt != null) {
+        thr = forcedReattempt;
+        return;
       }
 
       if (pr != null) {
@@ -325,8 +325,7 @@ public abstract class PartitionMessage extends DistributionMessage
       thr = UNHANDLED_EXCEPTION;
 
       if (cache == null) {
-        throw new ForceReattemptException(
-            LocalizedStrings.PartitionMessage_REMOTE_CACHE_IS_CLOSED_0.toLocalizedString());
+        throw new ForceReattemptException("Remote cache is closed");
       }
       TXManagerImpl txMgr = getTXManagerImpl(cache);
       TXStateProxy tx = txMgr.masqueradeAs(this);
@@ -340,6 +339,13 @@ public abstract class PartitionMessage extends DistributionMessage
           } else if (tx.isInProgress()) {
             sendReply = operateOnPartitionedRegion(dm, pr, startTime);
             tx.updateProxyServer(this.getSender());
+          } else {
+            /*
+             * This can occur when processing an in-flight message after the transaction has
+             * been failed over and committed.
+             */
+            throw new TransactionException("transactional operation elided because transaction {"
+                + tx.getTxId() + "} is closed");
           }
         } finally {
           txMgr.unmasquerade(tx);
@@ -347,8 +353,8 @@ public abstract class PartitionMessage extends DistributionMessage
       }
       thr = null;
 
-    } catch (ForceReattemptException fre) {
-      thr = fre;
+    } catch (ForceReattemptException | TransactionException e) {
+      thr = e;
     } catch (DataLocationException fre) {
       thr = new ForceReattemptException(fre.getMessage(), fre);
     } catch (DistributedSystemDisconnectedException se) {
@@ -365,8 +371,8 @@ public abstract class PartitionMessage extends DistributionMessage
       // destroyed, so we must send back an exception. If the sender's
       // region is also destroyed, who cares if we send it an exception
       // if (pr != null && pr.isClosed) {
-      thr = new ForceReattemptException(LocalizedStrings.PartitionMessage_REGION_IS_DESTROYED_IN_0
-          .toLocalizedString(dm.getDistributionManagerId()), rde);
+      thr = new ForceReattemptException(String.format("Region is destroyed in %s",
+          dm.getDistributionManagerId()), rde);
       // }
     } catch (VirtualMachineError err) {
       SystemFailure.initiateFailure(err);
@@ -389,13 +395,12 @@ public abstract class PartitionMessage extends DistributionMessage
           // don't pass arbitrary runtime exceptions and errors back if this
           // cache/vm is closing
           thr = new ForceReattemptException(
-              LocalizedStrings.PartitionMessage_DISTRIBUTED_SYSTEM_IS_DISCONNECTING
-                  .toLocalizedString());
+              "Distributed system is disconnecting");
         }
       }
-      if (logger.isTraceEnabled(LogMarker.DM) && t instanceof RuntimeException) {
-        logger.trace(LogMarker.DM, "Exception caught while processing message: {}", t.getMessage(),
-            t);
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE) && t instanceof RuntimeException) {
+        logger.trace(LogMarker.DM_VERBOSE, "Exception caught while processing message: {}",
+            t.getMessage(), t);
       }
     } finally {
       if (sendReply) {
@@ -417,6 +422,23 @@ public abstract class PartitionMessage extends DistributionMessage
         EntryLogger.clearSource();
       }
     }
+  }
+
+  /**
+   * If the PR is missing or isn't ready for use we may want to return a
+   * ForceReattemptException to have the sender retry after a bit
+   */
+  protected Throwable processCheckForPR(PartitionedRegion pr,
+      DistributionManager distributionManager) {
+    if ((pr == null || !pr.getDistributionAdvisor().isInitialized()) && failIfRegionMissing()) {
+      // if the distributed system is disconnecting, don't send a reply saying
+      // the partitioned region can't be found (bug 36585)
+      Throwable thr = new ForceReattemptException(
+          String.format("%s : could not find partitioned region with Id %s",
+              distributionManager.getDistributionManagerId(), regionId));
+      return thr; // reply sent in finally block below
+    }
+    return null;
   }
 
   /**
@@ -466,8 +488,8 @@ public abstract class PartitionMessage extends DistributionMessage
     this.setFilterInfo(filterRoutingInfo);
     Set failures1 = null;
     if (!adjunctRecipients.isEmpty()) {
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM,
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE,
             "Relaying partition message to other processes for listener notification");
       }
       resetRecipients();
@@ -489,8 +511,7 @@ public abstract class PartitionMessage extends DistributionMessage
 
   protected boolean operateOnRegion(ClusterDistributionManager dm, PartitionedRegion pr) {
     throw new InternalGemFireError(
-        LocalizedStrings.PartitionMessage_SORRY_USE_OPERATEONPARTITIONEDREGION_FOR_PR_MESSAGES
-            .toLocalizedString());
+        "Sorry, use operateOnPartitionedRegion for PR messages");
   }
 
   /**
@@ -510,13 +531,14 @@ public abstract class PartitionMessage extends DistributionMessage
   /**
    * Fill out this instance of the message using the <code>DataInput</code> Required to be a
    * {@link org.apache.geode.DataSerializable}Note: must be symmetric with
-   * {@link #toData(DataOutput)}in what it reads
+   * {@link DataSerializableFixedID#toData(DataOutput, SerializationContext)}in what it reads
    */
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.flags = in.readShort();
-    setBooleans(this.flags, in);
+    setBooleans(this.flags, in, context);
     this.regionId = in.readInt();
     // extra field post 9.0
     if (InternalDataSerializer.getVersionForDataStream(in).compareTo(Version.GFE_90) >= 0) {
@@ -528,7 +550,8 @@ public abstract class PartitionMessage extends DistributionMessage
    * Re-construct the booleans using the compressed short. A subclass must override this method if
    * it is using bits in the compressed short.
    */
-  protected void setBooleans(short s, DataInput in) throws IOException, ClassNotFoundException {
+  protected void setBooleans(short s, DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     if ((s & HAS_PROCESSOR_ID) != 0) {
       this.processorId = in.readInt();
       ReplyProcessor21.setMessageRPId(this.processorId);
@@ -538,18 +561,19 @@ public abstract class PartitionMessage extends DistributionMessage
     if ((s & HAS_TX_ID) != 0)
       this.txUniqId = in.readInt();
     if ((s & HAS_TX_MEMBERID) != 0) {
-      this.txMemberId = (InternalDistributedMember) DataSerializer.readObject(in);
+      this.txMemberId = context.getDeserializer().readObject(in);
     }
   }
 
   /**
    * Send the contents of this instance to the DataOutput Required to be a
    * {@link org.apache.geode.DataSerializable}Note: must be symmetric with
-   * {@link #fromData(DataInput)}in what it writes
+   * {@link DataSerializableFixedID#fromData(DataInput, DeserializationContext)}in what it writes
    */
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     short compressedShort = 0;
     compressedShort = computeCompressedShort(compressedShort);
     out.writeShort(compressedShort);
@@ -558,7 +582,7 @@ public abstract class PartitionMessage extends DistributionMessage
     if (this.txUniqId != TXManagerImpl.NOTX)
       out.writeInt(this.txUniqId);
     if (this.txMemberId != null)
-      DataSerializer.writeObject(this.txMemberId, out);
+      context.getSerializer().writeObject(this.txMemberId, out);
     out.writeInt(this.regionId);
     // extra field post 9.0
     if (InternalDataSerializer.getVersionForDataStream(out).compareTo(Version.GFE_90) >= 0) {
@@ -639,7 +663,7 @@ public abstract class PartitionMessage extends DistributionMessage
   }
 
   public InternalDistributedMember getRecipient() {
-    return getRecipients()[0];
+    return getRecipientsArray()[0];
   }
 
   public void setOperation(Operation op) {
@@ -667,10 +691,12 @@ public abstract class PartitionMessage extends DistributionMessage
   /**
    * @return the txUniqId
    */
+  @Override
   public int getTXUniqId() {
     return txUniqId;
   }
 
+  @Override
   public boolean canStartRemoteTransaction() {
     return false;
   }
@@ -684,13 +710,13 @@ public abstract class PartitionMessage extends DistributionMessage
     return true;
   }
 
-  protected boolean _mayAddToMultipleSerialGateways(ClusterDistributionManager dm) {
+  protected boolean notifiesSerialGatewaySender(ClusterDistributionManager dm) {
     try {
       PartitionedRegion pr = PartitionedRegion.getPRFromId(this.regionId);
       if (pr == null) {
         return false;
       }
-      return pr.notifiesMultipleSerialGateways();
+      return pr.notifiesSerialGatewaySender();
     } catch (PRLocallyDestroyedException ignore) {
       return false;
     } catch (RuntimeException ignore) {
@@ -757,15 +783,14 @@ public abstract class PartitionMessage extends DistributionMessage
       if (id != null) {
         if (removeMember(id, true)) {
           this.prce = new ForceReattemptException(
-              LocalizedStrings.PartitionMessage_PARTITIONRESPONSE_GOT_MEMBERDEPARTED_EVENT_FOR_0_CRASHED_1
-                  .toLocalizedString(id, crashed));
+              String.format("memberDeparted event for < %s > crashed, %s",
+                  id, crashed));
         }
         checkIfDone();
       } else {
         Exception e = new Exception(
-            LocalizedStrings.PartitionMessage_MEMBERDEPARTED_GOT_NULL_MEMBERID.toLocalizedString());
-        logger.info(LocalizedMessage.create(
-            LocalizedStrings.PartitionMessage_MEMBERDEPARTED_GOT_NULL_MEMBERID_CRASHED_0, crashed),
+            "memberDeparted got null memberId");
+        logger.info(String.format("memberDeparted got null memberId crashed=%s", crashed),
             e);
       }
     }
@@ -783,7 +808,7 @@ public abstract class PartitionMessage extends DistributionMessage
         waitForRepliesUninterruptibly();
         if (this.prce != null || (this.responseRequired && !this.responseReceived)) {
           throw new ForceReattemptException(
-              LocalizedStrings.PartitionMessage_ATTEMPT_FAILED.toLocalizedString(), this.prce);
+              "Attempt failed", this.prce);
         }
       } catch (ReplyException e) {
         Throwable t = e.getCause();
@@ -794,7 +819,7 @@ public abstract class PartitionMessage extends DistributionMessage
           // See FetchEntriesMessage, which can marshal a ForceReattempt
           // across to the sender
           ForceReattemptException fre = new ForceReattemptException(
-              LocalizedStrings.PartitionMessage_PEER_REQUESTS_REATTEMPT.toLocalizedString(), t);
+              "Peer requests reattempt", t);
           if (ft.hasHash()) {
             fre.setHash(ft.getHash());
           }
@@ -804,22 +829,20 @@ public abstract class PartitionMessage extends DistributionMessage
           // PutMessage
           // which can marshal a ForceReattemptacross to the sender
           throw new PrimaryBucketException(
-              LocalizedStrings.PartitionMessage_PEER_FAILED_PRIMARY_TEST.toLocalizedString(), t);
+              "Peer failed primary test", t);
         } else if (t instanceof CancelException) {
           logger.debug(
               "PartitionResponse got CacheClosedException from {}, throwing ForceReattemptException",
               e.getSender(), t);
           throw new ForceReattemptException(
-              LocalizedStrings.PartitionMessage_PARTITIONRESPONSE_GOT_REMOTE_CACHECLOSEDEXCEPTION
-                  .toLocalizedString(),
+              "PartitionResponse got remote CacheClosedException",
               t);
         } else if (t instanceof DiskAccessException) {
           logger.debug(
               "PartitionResponse got DiskAccessException from {}, throwing ForceReattemptException",
               e.getSender(), t);
           throw new ForceReattemptException(
-              LocalizedStrings.PartitionMessage_PARTITIONRESPONSE_GOT_REMOTE_CACHECLOSEDEXCEPTION
-                  .toLocalizedString(),
+              "PartitionResponse got remote CacheClosedException",
               t);
         } else if (t instanceof LowMemoryException) {
           logger.debug("PartitionResponse re-throwing remote LowMemoryException from {}",

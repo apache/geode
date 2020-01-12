@@ -15,11 +15,19 @@
 
 package org.apache.geode.cache.query.internal;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.query.*;
+import org.apache.geode.cache.query.AmbiguousNameException;
+import org.apache.geode.cache.query.FunctionDomainException;
+import org.apache.geode.cache.query.NameResolutionException;
+import org.apache.geode.cache.query.QueryInvocationTargetException;
+import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.internal.cache.PartitionedRegion;
 
 
@@ -45,6 +53,7 @@ public class CompiledPath extends AbstractCompiledValue {
     return Collections.singletonList(this._receiver);
   }
 
+  @Override
   public int getType() {
     return PATH;
   }
@@ -86,6 +95,7 @@ public class CompiledPath extends AbstractCompiledValue {
   }
 
 
+  @Override
   public Object evaluate(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     CompiledValue rcvr = getReceiver();
@@ -151,8 +161,18 @@ public class CompiledPath extends AbstractCompiledValue {
     return _tailID;
   }
 
+  @Override
   public CompiledValue getReceiver() {
     return _receiver;
+  }
+
+  @Override
+  public boolean hasIdentifierAtLeafNode() {
+    if (this._receiver.getType() == Identifier) {
+      return true;
+    } else {
+      return this._receiver.hasIdentifierAtLeafNode();
+    }
   }
 
   @Override

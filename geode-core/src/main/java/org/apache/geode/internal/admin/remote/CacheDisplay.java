@@ -18,7 +18,6 @@ package org.apache.geode.internal.admin.remote;
 
 
 import org.apache.geode.internal.admin.GemFireVM;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 public class CacheDisplay {
   public static Object getCachedObjectDisplay(Object obj, int inspectionType) {
@@ -48,8 +47,7 @@ public class CacheDisplay {
         return (logicalVal == null) ? "null" : logicalVal;
       default:
         throw new IllegalArgumentException(
-            LocalizedStrings.CacheDisplay_INVALID_INSPECTIONTYPE_PASSED_TO_CACHEDISPLAYGETCACHEDOBJECTDISPLAY
-                .toLocalizedString());
+            "Invalid inspectionType passed to CacheDisplay.getCachedObjectDisplay");
     }
   }
 

@@ -20,14 +20,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.CacheException;
-import org.apache.geode.cache.query.AmbiguousNameException;
 import org.apache.geode.cache.query.FunctionDomainException;
 import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 import org.apache.geode.cache.query.internal.types.TypeUtils;
+import org.apache.geode.cache.query.types.ObjectType;
 
 /**
  * This class represents a compiled form of sort criterian present in order by clause
@@ -48,6 +49,7 @@ public class CompiledSortCriterion extends AbstractCompiledValue {
     return Collections.singletonList(this.originalCorrectedExpression);
   }
 
+  @Override
   public int getType() {
     return SORT_CRITERION;
   }
@@ -258,10 +260,12 @@ public class CompiledSortCriterion extends AbstractCompiledValue {
 
   static class ProjectionField extends AbstractCompiledValue {
 
-    private static ProjectionField singleton = new ProjectionField();
+    @Immutable
+    private static final ProjectionField singleton = new ProjectionField();
 
     private ProjectionField() {}
 
+    @Override
     public Object evaluate(ExecutionContext context) throws FunctionDomainException,
         TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
       return context.getCurrentProjectionField();
@@ -274,6 +278,11 @@ public class CompiledSortCriterion extends AbstractCompiledValue {
 
     public static ProjectionField getProjectionField() {
       return singleton;
+    }
+
+    @Override
+    void setTypecast(ObjectType objectType) {
+      throw new UnsupportedOperationException("Cannot modify singleton ProjectionField");
     }
   }
 }

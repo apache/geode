@@ -19,25 +19,29 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.ServiceLoader;
 
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.query.internal.cq.spi.CqServiceFactory;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 public class CqServiceProvider {
 
+  @Immutable
   private static final CqServiceFactory factory;
 
   /**
    * System property to maintain the CQ event references for optimizing the updates. This will allow
    * running the CQ query only once during update events.
    */
+  @MutableForTesting
   public static boolean MAINTAIN_KEYS = Boolean
-      .valueOf(System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "cq.MAINTAIN_KEYS", "true"));
+      .valueOf(System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + "cq.MAINTAIN_KEYS", "true"));
 
   /**
    * A debug flag used for testing vMotion during CQ registration
    */
-  public static boolean VMOTION_DURING_CQ_REGISTRATION_FLAG = false;
+  public static final boolean VMOTION_DURING_CQ_REGISTRATION_FLAG = false;
 
   static {
     ServiceLoader<CqServiceFactory> loader = ServiceLoader.load(CqServiceFactory.class);

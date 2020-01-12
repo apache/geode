@@ -17,16 +17,13 @@
 package org.apache.geode.tools.pulse.internal.data;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
 
 import org.assertj.core.data.Offset;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class JMXDataUpdaterGetDoubleAttributeTest {
 
   private Cluster cluster;

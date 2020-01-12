@@ -18,7 +18,7 @@ package org.apache.geode.internal.datasource;
  * This class wraps the client connection factory and the corresponding connection manager Object.
  *
  */
-public class ClientConnectionFactoryWrapper {
+public class ClientConnectionFactoryWrapper implements AutoCloseable {
 
   private Object clientConnFac;
   private Object manager;
@@ -31,7 +31,8 @@ public class ClientConnectionFactoryWrapper {
     this.manager = man;
   }
 
-  public void clearUp() {
+  @Override
+  public void close() {
     if (manager instanceof JCAConnectionManagerImpl) {
       ((JCAConnectionManagerImpl) this.manager).clearUp();
     } else if (manager instanceof FacetsJCAConnectionManagerImpl) {

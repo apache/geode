@@ -31,14 +31,6 @@ public class PartitionedRegionStatus extends RegionStatus {
     initialize(region);
   }
 
-  public int getNumberOfLocalEntries() {
-    return this.numberOfLocalEntries;
-  }
-
-  protected void setNumberOfLocalEntries(int numberOfLocalEntries) {
-    this.numberOfLocalEntries = numberOfLocalEntries;
-  }
-
   @Override
   public long getHeapSize() {
     return this.heapSize;
@@ -55,14 +47,10 @@ public class PartitionedRegionStatus extends RegionStatus {
     // in this VM), get the number of entries and heap size. Else,
     // set these to 0.
     PartitionedRegionDataStore ds = region.getDataStore();
-    int numLocalEntries = 0;
     long heapSize = 0;
     if (ds != null) {
-      CachePerfStats cpStats = ds.getCachePerfStats();
-      numLocalEntries = (int) cpStats.getEntries();
       heapSize = ds.currentAllocatedMemory();
     }
-    setNumberOfLocalEntries(numLocalEntries);
     setHeapSize(heapSize);
   }
 

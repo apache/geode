@@ -53,6 +53,7 @@ public class ClusterMemberService implements PulseService {
 
   private final String HEAP_USAGE = "heapUsage";
 
+  @Override
   public ObjectNode execute(final HttpServletRequest request) throws Exception {
 
     // get cluster object

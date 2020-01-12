@@ -16,7 +16,7 @@ package org.apache.geode.connectors.jdbc;
 
 import java.sql.SQLException;
 
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import org.apache.geode.cache.CacheRuntimeException;
 
@@ -42,13 +42,37 @@ public class JdbcConnectorException extends CacheRuntimeException {
    *         its message if not
    */
   public static JdbcConnectorException createException(Exception e) {
-    String message;
     if (containsNonSerializableException(e)) {
-      message = e.getMessage() + System.lineSeparator() + ExceptionUtils.getFullStackTrace(e);
+      String message =
+          e.getMessage() + System.lineSeparator() + ExceptionUtils.getStackTrace(e);
       return new JdbcConnectorException(message);
     } else {
       return new JdbcConnectorException(e);
     }
+  }
+
+  /**
+   * Create a new JdbcConnectorException by first checking to see if the causing exception is or
+   * contains an exception that potentially could not be deserialized by remote systems receiving
+   * the serialized exception.
+   *
+   * @param message message of this Exception
+   * @param e cause of this Exception
+   * @return a new JdbcConnectorException containing either the causing exception, if it can be
+   *         serialized/deserialized by Geode, or containing the causing exception stack trace in
+   *         its message if not
+   */
+  public static JdbcConnectorException createException(String message, Exception e) {
+    if (containsNonSerializableException(e)) {
+      message += e.getMessage() + System.lineSeparator() + ExceptionUtils.getStackTrace(e);
+      return new JdbcConnectorException(message);
+    } else {
+      return new JdbcConnectorException(message, e);
+    }
+  }
+
+  public JdbcConnectorException(String message) {
+    super(message);
   }
 
   /*
@@ -65,11 +89,12 @@ public class JdbcConnectorException extends CacheRuntimeException {
       return true;
     }
 
-    Throwable cause;
-    while ((cause = e.getCause()) != null) {
+    Throwable cause = e.getCause();
+    while (cause != null) {
       if (cause instanceof SQLException) {
         return true;
       }
+      cause = cause.getCause();
     }
     return false;
   }
@@ -78,7 +103,7 @@ public class JdbcConnectorException extends CacheRuntimeException {
     super(e);
   }
 
-  public JdbcConnectorException(String message) {
-    super(message);
+  private JdbcConnectorException(String message, Exception e) {
+    super(message, e);
   }
 }

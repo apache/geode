@@ -14,24 +14,21 @@
  */
 package org.apache.geode.test.junit.rules.examples;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runner.Result;
 import org.junit.runners.model.Statement;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.runners.TestRunner;
 
 /**
  * Example usage of a rule as both a method {@literal @}Rule and a {@literal @}ClassRule.
  */
-@Category(UnitTest.class)
 public class RuleAndClassRuleTest {
 
   @Test

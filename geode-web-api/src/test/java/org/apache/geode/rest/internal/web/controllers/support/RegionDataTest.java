@@ -14,14 +14,16 @@
  */
 package org.apache.geode.rest.internal.web.controllers.support;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.categories.RestAPITest;
 
-@Category(UnitTest.class)
+@Category({RestAPITest.class})
 public class RegionDataTest {
 
   @Test

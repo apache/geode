@@ -19,13 +19,13 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.geode.cache.CacheCallback;
+import org.apache.geode.cache.CacheEvent;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.TransactionId;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.cache.AbstractRegionMap.ARMLockTestHook;
 import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.internal.cache.eviction.EvictableEntry;
 import org.apache.geode.internal.cache.eviction.EvictableMap;
@@ -43,6 +43,26 @@ import org.apache.geode.internal.util.concurrent.ConcurrentMapWithReusableEntrie
  * @since GemFire 3.5.1
  */
 public interface RegionMap extends EvictableMap {
+
+  interface ARMLockTestHook {
+    void beforeBulkLock(InternalRegion region);
+
+    void afterBulkLock(InternalRegion region);
+
+    void beforeBulkRelease(InternalRegion region);
+
+    void afterBulkRelease(InternalRegion region);
+
+    void beforeLock(InternalRegion region, CacheEvent event);
+
+    void afterLock(InternalRegion region, CacheEvent event);
+
+    void beforeRelease(InternalRegion region, CacheEvent event);
+
+    void afterRelease(InternalRegion region, CacheEvent event);
+
+    void beforeStateFlushWait();
+  }
 
   /**
    * Parameter object used to facilitate construction of an EntriesMap. Modification of fields after
@@ -344,9 +364,9 @@ public interface RegionMap extends EvictableMap {
 
   void close(BucketRegion bucketRegion);
 
-  default void lockRegionForAtomicTX(LocalRegion r) {}
+  default void lockRegionForAtomicTX(InternalRegion r) {}
 
-  default void unlockRegionForAtomicTX(LocalRegion r) {}
+  default void unlockRegionForAtomicTX(InternalRegion r) {}
 
   ARMLockTestHook getARMLockTestHook();
 

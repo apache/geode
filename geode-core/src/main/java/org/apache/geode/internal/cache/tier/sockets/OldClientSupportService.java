@@ -18,8 +18,8 @@ package org.apache.geode.internal.cache.tier.sockets;
 import java.io.DataInput;
 import java.io.DataOutput;
 
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.CacheService;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * Support for old GemFire clients
@@ -38,7 +38,6 @@ public interface OldClientSupportService extends CacheService {
   /**
    * Process a class name read from a serialized object of unknown origin
    *
-   * @param name
    * @return the class name to use
    */
   String processIncomingClassName(String name);

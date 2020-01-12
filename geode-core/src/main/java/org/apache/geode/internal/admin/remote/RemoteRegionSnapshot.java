@@ -15,13 +15,17 @@
 
 package org.apache.geode.internal.admin.remote;
 
-import java.io.*;
-import java.util.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.Set;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
-import org.apache.geode.cache.*;
-import org.apache.geode.internal.admin.*;
+import org.apache.geode.cache.CacheException;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.internal.admin.RegionSnapshot;
 
 public class RemoteRegionSnapshot implements RegionSnapshot, DataSerializable {
   private static final long serialVersionUID = -2006079857403000280L;
@@ -60,30 +64,37 @@ public class RemoteRegionSnapshot implements RegionSnapshot, DataSerializable {
    */
   public RemoteRegionSnapshot() {}
 
+  @Override
   public Object getName() {
     return this.name;
   }
 
+  @Override
   public long getLastModifiedTime() {
     return stats.getLastModifiedTime();
   }
 
+  @Override
   public long getLastAccessTime() {
     return stats.getLastAccessedTime();
   }
 
+  @Override
   public long getNumberOfHits() {
     return stats.getHitCount();
   }
 
+  @Override
   public long getNumberOfMisses() {
     return stats.getMissCount();
   }
 
+  @Override
   public float getHitRatio() {
     return stats.getHitRatio();
   }
 
+  @Override
   public RegionAttributes getAttributes() {
     return this.attributes;
     // if (rUserAttributes != null) {
@@ -103,6 +114,7 @@ public class RemoteRegionSnapshot implements RegionSnapshot, DataSerializable {
     return subregionCount;
   }
 
+  @Override
   public Object getUserAttribute() {
     return userAttribute;
   }
@@ -136,6 +148,7 @@ public class RemoteRegionSnapshot implements RegionSnapshot, DataSerializable {
     return getName().toString();
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeString(this.name, out);
     DataSerializer.writeObject(this.stats, out);
@@ -145,6 +158,7 @@ public class RemoteRegionSnapshot implements RegionSnapshot, DataSerializable {
     DataSerializer.writeObject(this.userAttribute, out);
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.name = DataSerializer.readString(in);
     this.stats = (RemoteCacheStatistics) DataSerializer.readObject(in);

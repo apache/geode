@@ -80,7 +80,7 @@ public interface SelectResults<E> extends Collection<E> {
    * <code>element</code> is not present in this collection, then 0 is returned.
    *
    * @param element the element
-   * @return the number of occurrances of element
+   * @return the number of occurrences of element
    * @since GemFire 5.1
    */
   int occurrences(E element);

@@ -21,16 +21,14 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionException;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.internal.cache.execute.MemberMappedArgument;
 import org.apache.geode.internal.cache.execute.ServerRegionFunctionExecutor;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Does a Execution of function on server region It does not get the resul from the server (follows
@@ -121,7 +119,7 @@ public class ExecuteRegionFunctionNoAckOp {
       Object args = serverRegionExecutor.getArguments();
       MemberMappedArgument memberMappedArg = serverRegionExecutor.getMemberMappedArgument();
       getMessage().addBytesPart(new byte[] {functionState});
-      getMessage().addStringPart(region);
+      getMessage().addStringPart(region, true);
       if (serverRegionExecutor.isFnSerializationReqd()) {
         getMessage().addStringOrObjPart(function);
       } else {
@@ -154,7 +152,7 @@ public class ExecuteRegionFunctionNoAckOp {
       Object args = serverRegionExecutor.getArguments();
       MemberMappedArgument memberMappedArg = serverRegionExecutor.getMemberMappedArgument();
       getMessage().addBytesPart(new byte[] {functionState});
-      getMessage().addStringPart(region);
+      getMessage().addStringPart(region, true);
       getMessage().addStringOrObjPart(functionId);
       getMessage().addObjPart(args);
       getMessage().addObjPart(memberMappedArg);
@@ -178,11 +176,9 @@ public class ExecuteRegionFunctionNoAckOp {
         Part part = msg.getPart(0);
         if (msgType == MessageType.EXCEPTION) {
           Throwable t = (Throwable) part.getObject();
-          logger.warn(LocalizedMessage
-              .create(LocalizedStrings.EXECUTE_FUNCTION_NO_HAS_RESULT_RECEIVED_EXCEPTION), t);
+          logger.warn("Function execution without result encountered an Exception on server.", t);
         } else if (isErrorResponse(msgType)) {
-          logger.warn(LocalizedMessage
-              .create(LocalizedStrings.EXECUTE_FUNCTION_NO_HAS_RESULT_RECEIVED_EXCEPTION));
+          logger.warn("Function execution without result encountered an Exception on server.");
         } else {
           throw new InternalGemFireError(
               "Unexpected message type " + MessageType.getString(msgType));

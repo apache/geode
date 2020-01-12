@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal;
 
+import org.apache.geode.annotations.internal.MutableForTesting;
+
 /**
  * Allows tests to expect certain exceptions without the SystemFailure watchdog getting upset. See
  * bug 46988.
@@ -22,6 +24,7 @@ package org.apache.geode.internal;
  */
 public class SystemFailureTestHook {
 
+  @MutableForTesting
   private static Class<?> expectedClass;
 
   /**
@@ -37,9 +40,5 @@ public class SystemFailureTestHook {
    */
   public static boolean errorIsExpected(Error failure) {
     return expectedClass != null && expectedClass.isInstance(failure);
-  }
-
-  public static void loadEmergencyClasses() {
-    // nothing more needed
   }
 }

@@ -20,16 +20,19 @@ import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventCallbackDispatcher;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventRemoteDispatcher;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class RemoteSerialGatewaySenderEventProcessor extends SerialGatewaySenderEventProcessor {
 
   private static final Logger logger = LogService.getLogger();
 
-  public RemoteSerialGatewaySenderEventProcessor(AbstractGatewaySender sender, String id) {
-    super(sender, id);
+  public RemoteSerialGatewaySenderEventProcessor(AbstractGatewaySender sender, String id,
+      ThreadsMonitoring tMonitoring) {
+    super(sender, id, tMonitoring);
   }
 
+  @Override
   public void initializeEventDispatcher() {
     if (logger.isDebugEnabled()) {
       logger.debug(" Creating the GatewayEventRemoteDispatcher");

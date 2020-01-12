@@ -16,29 +16,25 @@ package org.apache.geode.pdx.internal;
 
 import java.io.DataOutput;
 import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.DSCODE;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.Sendable;
-import org.apache.geode.internal.Version;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.pdx.PdxInstance;
+import org.apache.geode.internal.serialization.DSCODE;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.pdx.PdxSerializationException;
 import org.apache.geode.pdx.WritablePdxInstance;
-import org.apache.geode.pdx.internal.EnumInfo.PdxInstanceEnumInfo;
 
 /**
  * Used to represent an enum value as a PdxInstance
  *
  * @since GemFire 6.6.2
  */
-public class PdxInstanceEnum implements PdxInstance, Sendable, ConvertableToBytes, ComparableEnum {
+public class PdxInstanceEnum implements InternalPdxInstance, ComparableEnum {
   private static final long serialVersionUID = -7417287878052772302L;
   private final String className;
   private final String enumName;
@@ -56,22 +52,27 @@ public class PdxInstanceEnum implements PdxInstance, Sendable, ConvertableToByte
     this.enumOrdinal = e.ordinal();
   }
 
+  @Override
   public String getClassName() {
     return this.className;
   }
 
+  @Override
   public String getName() {
     return this.enumName;
   }
 
+  @Override
   public boolean isEnum() {
     return true;
   }
 
+  @Override
   public int getOrdinal() {
     return this.enumOrdinal;
   }
 
+  @Override
   @SuppressWarnings("unchecked")
   public Object getObject() {
     @SuppressWarnings("rawtypes")
@@ -80,8 +81,8 @@ public class PdxInstanceEnum implements PdxInstance, Sendable, ConvertableToByte
       c = InternalDataSerializer.getCachedClass(this.className);
     } catch (ClassNotFoundException ex) {
       throw new PdxSerializationException(
-          LocalizedStrings.DataSerializer_COULD_NOT_CREATE_AN_INSTANCE_OF_A_CLASS_0
-              .toLocalizedString(this.className),
+          String.format("Could not create an instance of a class %s",
+              this.className),
           ex);
     }
     try {
@@ -92,10 +93,12 @@ public class PdxInstanceEnum implements PdxInstance, Sendable, ConvertableToByte
     }
   }
 
+  @Override
   public boolean hasField(String fieldName) {
     return getFieldNames().contains(fieldName);
   }
 
+  @Immutable
   private static final List<String> fieldNames;
   static {
     ArrayList<String> tmp = new ArrayList<String>(2);
@@ -104,14 +107,17 @@ public class PdxInstanceEnum implements PdxInstance, Sendable, ConvertableToByte
     fieldNames = Collections.unmodifiableList(tmp);
   }
 
+  @Override
   public List<String> getFieldNames() {
     return fieldNames;
   }
 
+  @Override
   public boolean isIdentityField(String fieldName) {
     return false;
   }
 
+  @Override
   public Object getField(String fieldName) {
     if ("name".equals(fieldName)) {
       return this.enumName;
@@ -121,12 +127,14 @@ public class PdxInstanceEnum implements PdxInstance, Sendable, ConvertableToByte
     return null;
   }
 
+  @Override
   public WritablePdxInstance createWriter() {
     throw new IllegalStateException("PdxInstances that are an enum can not be modified.");
   }
 
+  @Override
   public void sendTo(DataOutput out) throws IOException {
-    out.writeByte(DSCODE.PDX_INLINE_ENUM);
+    out.writeByte(DSCODE.PDX_INLINE_ENUM.toByte());
     DataSerializer.writeString(this.className, out);
     DataSerializer.writeString(this.enumName, out);
     InternalDataSerializer.writeArrayLength(this.enumOrdinal, out);
@@ -169,12 +177,14 @@ public class PdxInstanceEnum implements PdxInstance, Sendable, ConvertableToByte
     return this.enumName;
   }
 
+  @Override
   public byte[] toBytes() throws IOException {
     HeapDataOutputStream hdos = new HeapDataOutputStream(Version.CURRENT);
     sendTo(hdos);
     return hdos.toByteArray();
   }
 
+  @Override
   public int compareTo(Object o) {
     if (o instanceof ComparableEnum) {
       ComparableEnum other = (ComparableEnum) o;

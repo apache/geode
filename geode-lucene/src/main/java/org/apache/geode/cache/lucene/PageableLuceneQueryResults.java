@@ -51,6 +51,7 @@ public interface PageableLuceneQueryResults<K, V> extends Iterator<List<LuceneRe
    *
    * @return a page of results, or null if there are no more pages
    */
+  @Override
   List<LuceneResultStruct<K, V>> next();
 
   /**
@@ -58,5 +59,6 @@ public interface PageableLuceneQueryResults<K, V> extends Iterator<List<LuceneRe
    *
    * @return boolean value, true if another Lucene result page is present, false otherwise.
    */
+  @Override
   boolean hasNext();
 }

@@ -18,7 +18,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -26,19 +25,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
-import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.tier.sockets.OldClientSupportService;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.pdx.PdxFieldAlreadyExistsException;
-import org.apache.geode.pdx.PdxSerializationException;
 import org.apache.geode.pdx.internal.AutoSerializableManager.AutoClassInfo;
 
 public class PdxType implements DataSerializable {
@@ -97,6 +92,7 @@ public class PdxType implements DataSerializable {
     }
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.className = DataSerializer.readString(in);
     swizzleGemFireClassNames();
@@ -118,6 +114,7 @@ public class PdxType implements DataSerializable {
     }
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeString(this.className, out);
     {
@@ -230,20 +227,12 @@ public class PdxType implements DataSerializable {
     return this.className;
   }
 
-  public Class<?> getPdxClass() {
-    try {
-      return InternalDataSerializer.getCachedClass(getClassName());
-    } catch (Exception e) {
-      PdxSerializationException ex = new PdxSerializationException(
-          LocalizedStrings.DataSerializer_COULD_NOT_CREATE_AN_INSTANCE_OF_A_CLASS_0
-              .toLocalizedString(getClassName()),
-          e);
-      throw ex;
-    }
-  }
-
   public boolean getNoDomainClass() {
     return this.noDomainClass;
+  }
+
+  public void setNoDomainClass(boolean noDomainClass) {
+    this.noDomainClass = noDomainClass;
   }
 
   public int getTypeId() {

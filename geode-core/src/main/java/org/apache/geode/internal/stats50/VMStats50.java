@@ -39,11 +39,13 @@ import org.apache.geode.StatisticsFactory;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
 import org.apache.geode.SystemFailure;
-import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 import org.apache.geode.internal.statistics.VMStatsContract;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Statistics related to a Java VM. This version is hardcoded to use 1.5 MXBean stats from
@@ -52,19 +54,28 @@ import org.apache.geode.internal.statistics.VMStatsContract;
 public class VMStats50 implements VMStatsContract {
   private static final Logger logger = LogService.getLogger(VMStats50.class.getName());
 
+  @Immutable
   private static final StatisticsType vmType;
 
+  @Immutable
   private static final ClassLoadingMXBean clBean;
+  @Immutable
   private static final MemoryMXBean memBean;
+  @Immutable
   private static final OperatingSystemMXBean osBean;
   /**
    * This is actually an instance of UnixOperatingSystemMXBean but this class is not available on
    * Windows so needed to make this a runtime check.
    */
+  @Immutable
   private static final Object unixBean;
+  @Immutable
   private static final Method getMaxFileDescriptorCount;
+  @Immutable
   private static final Method getOpenFileDescriptorCount;
+  @Immutable
   private static final Method getProcessCpuTime;
+  @Immutable
   private static final ThreadMXBean threadBean;
 
   private static final int pendingFinalizationCountId;
@@ -81,18 +92,22 @@ public class VMStats50 implements VMStatsContract {
   private static final int totalMemoryId;
   private static final int maxMemoryId;
 
+  @Immutable
   private static final StatisticsType memoryUsageType;
   private static final int mu_initMemoryId;
   private static final int mu_maxMemoryId;
   private static final int mu_usedMemoryId;
   private static final int mu_committedMemoryId;
 
+  @Immutable
   private static final StatisticsType gcType;
   private static final int gc_collectionsId;
   private static final int gc_collectionTimeId;
+  @MakeNotStatic
   private final Map<GarbageCollectorMXBean, Statistics> gcMap =
       new HashMap<GarbageCollectorMXBean, Statistics>();
 
+  @Immutable
   private static final StatisticsType mpType;
   private static final int mp_l_initMemoryId;
   private static final int mp_l_maxMemoryId;
@@ -106,6 +121,7 @@ public class VMStats50 implements VMStatsContract {
   private static final int mp_collectionUsageThresholdId;
   private static final int mp_usageExceededId;
   private static final int mp_collectionUsageExceededId;
+  @MakeNotStatic
   private final Map<MemoryPoolMXBean, Statistics> mpMap =
       new HashMap<MemoryPoolMXBean, Statistics>();
 
@@ -116,9 +132,10 @@ public class VMStats50 implements VMStatsContract {
   private long threadStartCount = 0;
   private long[] allThreadIds = null;
   private static final boolean THREAD_STATS_ENABLED =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "enableThreadStats");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "enableThreadStats");
   private final Map<Long, ThreadStatInfo> threadMap =
       THREAD_STATS_ENABLED ? new HashMap<Long, ThreadStatInfo>() : null;
+  @Immutable
   private static final StatisticsType threadType;
   private static final int thread_blockedId;
   private static final int thread_lockOwnerId;
@@ -165,6 +182,7 @@ public class VMStats50 implements VMStatsContract {
         // _still_ a possibility that you are dealing with a cascading
         // error condition, so you also need to check to see if the JVM
         // is still usable:
+        logger.warn(ex.getMessage());
         SystemFailure.checkFailure();
         // must be on a platform that does not support unix mxbean
         bean = null;
@@ -182,14 +200,14 @@ public class VMStats50 implements VMStatsContract {
     if (THREAD_STATS_ENABLED) {
       if (threadBean.isThreadCpuTimeSupported()) {
         if (!threadBean.isThreadCpuTimeEnabled()) {
-          if (Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "enableCpuTime")) {
+          if (Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "enableCpuTime")) {
             threadBean.setThreadCpuTimeEnabled(true);
           }
         }
       }
       if (threadBean.isThreadContentionMonitoringSupported()) {
         if (!threadBean.isThreadContentionMonitoringEnabled()) {
-          if (Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "enableContentionTime")) {
+          if (Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "enableContentionTime")) {
             threadBean.setThreadContentionMonitoringEnabled(true);
           }
         }
@@ -214,7 +232,7 @@ public class VMStats50 implements VMStatsContract {
     sds.add(f.createLongCounter("unloadedClasses",
         "Total number of classes unloaded since vm started.", "classes", true));
     sds.add(f.createLongGauge("freeMemory",
-        "An approximation fo the total amount of memory currently available for future allocated objects, measured in bytes.",
+        "An approximation of the total amount of memory currently available for future allocated objects, measured in bytes.",
         "bytes", true));
     sds.add(f.createLongGauge("totalMemory",
         "The total amount of memory currently available for current and future objects, measured in bytes.",
@@ -229,7 +247,7 @@ public class VMStats50 implements VMStatsContract {
       sds.add(f.createLongGauge("fdsOpen", "Current number of open file descriptors", "fds"));
     }
     vmType = f.createType("VMStats", "Stats available on a 1.5 java virtual machine.",
-        sds.toArray(new StatisticDescriptor[sds.size()]));
+        sds.toArray(new StatisticDescriptor[0]));
     pendingFinalizationCountId = vmType.nameToId("pendingFinalization");
     loadedClassesId = vmType.nameToId("loadedClasses");
     unloadedClassesId = vmType.nameToId("unloadedClasses");
@@ -565,6 +583,7 @@ public class VMStats50 implements VMStatsContract {
     }
   }
 
+  @Override
   public void refresh() {
     Runtime rt = Runtime.getRuntime();
     this.vmStats.setInt(pendingFinalizationCountId, memBean.getObjectPendingFinalizationCount());
@@ -620,20 +639,56 @@ public class VMStats50 implements VMStatsContract {
       }
     }
 
-    refresh(this.heapMemStats, memBean.getHeapMemoryUsage());
-    refresh(this.nonHeapMemStats, memBean.getNonHeapMemoryUsage());
+    refresh(this.heapMemStats, getHeapMemoryUsage(memBean));
+    refresh(this.nonHeapMemStats, getNonHeapMemoryUsage(memBean));
     refreshGC();
     refreshMemoryPools();
     refreshThreads();
   }
 
+  /**
+   * Handle JDK-8207200 gracefully while fetching getHeapMemoryUsage from MemoryMXBean.
+   *
+   * @see <a href="https://bugs.openjdk.java.net/browse/JDK-8207200">JDK-8207200</a>
+   */
+  private MemoryUsage getHeapMemoryUsage(MemoryMXBean memBean) {
+    try {
+      return memBean.getHeapMemoryUsage();
+    } catch (IllegalArgumentException e) {
+      if (logger.isDebugEnabled()) {
+        logger.debug("JDK-8207200 prevented stat sampling for HeapMemoryUsage");
+      }
+      return null;
+    }
+  }
+
+  /**
+   * Handle JDK-8207200 gracefully while fetching getNonHeapMemoryUsage from MemoryMXBean.
+   *
+   * @see <a href="https://bugs.openjdk.java.net/browse/JDK-8207200">JDK-8207200</a>
+   */
+  private MemoryUsage getNonHeapMemoryUsage(MemoryMXBean memBean) {
+    try {
+      return memBean.getNonHeapMemoryUsage();
+    } catch (IllegalArgumentException e) {
+      if (logger.isDebugEnabled()) {
+        logger.debug("JDK-8207200 prevented stat sampling for NonHeapMemoryUsage");
+      }
+      return null;
+    }
+  }
+
   private void refresh(Statistics stats, MemoryUsage mu) {
+    if (mu == null) {
+      return;
+    }
     stats.setLong(mu_initMemoryId, mu.getInit());
     stats.setLong(mu_usedMemoryId, mu.getUsed());
     stats.setLong(mu_committedMemoryId, mu.getCommitted());
     stats.setLong(mu_maxMemoryId, mu.getMax());
   }
 
+  @Override
   public void close() {
     this.heapMemStats.close();
     this.nonHeapMemStats.close();

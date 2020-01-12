@@ -14,7 +14,6 @@
  */
 package org.apache.geode;
 
-import org.apache.geode.GemFireIOException;
 
 /**
  * An exception indicating that a serialization or deserialization failed.

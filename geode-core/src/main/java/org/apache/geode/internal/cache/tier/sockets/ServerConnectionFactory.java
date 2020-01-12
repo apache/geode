@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.apache.geode.internal.cache.tier.CommunicationMode.ProtobufClientServerProtocol;
@@ -35,13 +34,13 @@ import org.apache.geode.internal.security.SecurityService;
  * Creates instances of ServerConnection based on the connection mode provided.
  */
 public class ServerConnectionFactory {
+
   private final ClientProtocolServiceLoader clientProtocolServiceLoader;
   private volatile ClientProtocolService clientProtocolService;
 
   public ServerConnectionFactory() {
     clientProtocolServiceLoader = new ClientProtocolServiceLoader();
   }
-
 
   private synchronized ClientProtocolService getClientProtocolService(
       StatisticsFactory statisticsFactory, String serverName) {
@@ -52,39 +51,41 @@ public class ServerConnectionFactory {
     return clientProtocolService;
   }
 
-  public ServerConnection makeServerConnection(Socket socket, InternalCache cache,
-      CachedRegionHelper helper, CacheServerStats stats, int hsTimeout, int socketBufferSize,
-      String communicationModeStr, byte communicationMode, Acceptor acceptor,
-      SecurityService securityService) throws IOException {
+  ServerConnection makeServerConnection(final Socket socket, final InternalCache cache,
+      final CachedRegionHelper cachedRegionHelper, final CacheServerStats stats,
+      final int hsTimeout, final int socketBufferSize, final String communicationModeStr,
+      final byte communicationMode, final Acceptor acceptor, final SecurityService securityService)
+      throws IOException {
     if (ProtobufClientServerProtocol.getModeNumber() == communicationMode) {
       if (!Boolean.getBoolean("geode.feature-protobuf-protocol")) {
         throw new IOException("Server received unknown communication mode: " + communicationMode);
-      } else {
-        try {
-          return createProtobufServerConnection(socket, cache, helper, stats, hsTimeout,
-              socketBufferSize, communicationModeStr, communicationMode, acceptor, securityService);
-        } catch (ServiceLoadingFailureException ex) {
-          throw new IOException("Could not load protobuf client protocol", ex);
-        } catch (ServiceVersionNotFoundException ex) {
-          throw new IOException("No service matching provided version byte", ex);
-        }
       }
-    } else {
-      return new OriginalServerConnection(socket, cache, helper, stats, hsTimeout, socketBufferSize,
-          communicationModeStr, communicationMode, acceptor, securityService);
+      try {
+        return createProtobufServerConnection(socket, cache, cachedRegionHelper, stats, hsTimeout,
+            socketBufferSize, communicationModeStr, communicationMode, acceptor, securityService);
+      } catch (ServiceLoadingFailureException ex) {
+        throw new IOException("Could not load protobuf client protocol", ex);
+      } catch (ServiceVersionNotFoundException ex) {
+        throw new IOException("No service matching provided version byte", ex);
+      }
     }
+    return new OriginalServerConnection(socket, cache, cachedRegionHelper, stats, hsTimeout,
+        socketBufferSize, communicationModeStr, communicationMode, acceptor, securityService);
   }
 
-  private ServerConnection createProtobufServerConnection(Socket socket, InternalCache cache,
-      CachedRegionHelper helper, CacheServerStats stats, int hsTimeout, int socketBufferSize,
-      String communicationModeStr, byte communicationMode, Acceptor acceptor,
-      SecurityService securityService) {
+  private ServerConnection createProtobufServerConnection(final Socket socket,
+      final InternalCache cache, final CachedRegionHelper cachedRegionHelper,
+      final CacheServerStats stats, final int hsTimeout, final int socketBufferSize,
+      final String communicationModeStr, final byte communicationMode, final Acceptor acceptor,
+      final SecurityService securityService)
+      throws IOException {
     ClientProtocolService service =
         getClientProtocolService(cache.getDistributedSystem(), acceptor.getServerName());
 
     ClientProtocolProcessor processor = service.createProcessorForCache(cache, securityService);
 
-    return new ProtobufServerConnection(socket, cache, helper, stats, hsTimeout, socketBufferSize,
-        communicationModeStr, communicationMode, acceptor, processor, securityService);
+    return new ProtobufServerConnection(socket, cache, cachedRegionHelper, stats, hsTimeout,
+        socketBufferSize, communicationModeStr, communicationMode, acceptor, processor,
+        securityService);
   }
 }

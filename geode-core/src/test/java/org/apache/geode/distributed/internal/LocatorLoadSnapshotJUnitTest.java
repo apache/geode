@@ -14,7 +14,11 @@
  */
 package org.apache.geode.distributed.internal;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -26,13 +30,13 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.server.ServerLoad;
-import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.categories.MembershipTest;
 
 /**
  * Tests the functionality of the LocatorLoadSnapshot, which is the data structure that is used in
  * the locator to compare the load between multiple servers.
  */
-@Category(UnitTest.class)
+@Category({MembershipTest.class})
 public class LocatorLoadSnapshotJUnitTest {
 
   /**

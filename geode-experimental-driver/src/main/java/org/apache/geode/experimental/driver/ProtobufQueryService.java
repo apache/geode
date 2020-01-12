@@ -35,9 +35,11 @@ import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI.OQLQueryResponse
 
 class ProtobufQueryService implements QueryService {
   private final ProtobufChannel channel;
+  private final ValueEncoder valueEncoder;
 
-  public ProtobufQueryService(ProtobufChannel channel) {
+  public ProtobufQueryService(ProtobufChannel channel, ValueEncoder valueEncoder) {
     this.channel = channel;
+    this.valueEncoder = valueEncoder;
   }
 
   @Override
@@ -56,7 +58,7 @@ class ProtobufQueryService implements QueryService {
     @Override
     public List<T> execute(final Object... bindParameters) throws IOException {
       List<EncodedValue> encodedParameters = Arrays.asList(bindParameters).stream()
-          .map(ValueEncoder::encodeValue).collect(Collectors.toList());;
+          .map(valueEncoder::encodeValue).collect(Collectors.toList());;
       Message request = Message.newBuilder().setOqlQueryRequest(
           OQLQueryRequest.newBuilder().addAllBindParameter(encodedParameters).setQuery(queryString))
           .build();
@@ -79,13 +81,14 @@ class ProtobufQueryService implements QueryService {
       final ProtocolStringList fieldNames = table.getFieldNameList();
       List<Map<String, Object>> results = new ArrayList<>();
       for (BasicTypes.EncodedValueList row : table.getRowList()) {
-        final List<Object> decodedRow = row.getElementList().stream().map(ValueEncoder::decodeValue)
+        final List<Object> decodedRow = row.getElementList().stream().map(valueEncoder::decodeValue)
             .collect(Collectors.toList());
 
         Map<String, Object> rowMap = new LinkedHashMap<>(decodedRow.size());
         for (int i = 0; i < decodedRow.size(); i++) {
           rowMap.put(fieldNames.get(i), decodedRow.get(i));
         }
+        results.add(rowMap);
       }
 
       return results;
@@ -93,11 +96,11 @@ class ProtobufQueryService implements QueryService {
 
     private List<T> parseListResult(final OQLQueryResponse response) {
       return response.getListResult().getElementList().stream()
-          .map(value -> (T) ValueEncoder.decodeValue(value)).collect(Collectors.toList());
+          .map(value -> (T) valueEncoder.decodeValue(value)).collect(Collectors.toList());
     }
 
     private List<Object> parseSingleResult(final OQLQueryResponse response) {
-      return Collections.singletonList(ValueEncoder.decodeValue(response.getSingleResult()));
+      return Collections.singletonList(valueEncoder.decodeValue(response.getSingleResult()));
     }
   }
 

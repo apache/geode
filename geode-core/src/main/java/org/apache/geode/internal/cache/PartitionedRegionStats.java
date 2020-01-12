@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache;
 
 import java.util.Collections;
@@ -24,7 +23,10 @@ import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Region;
+import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 
 /**
@@ -44,6 +46,7 @@ import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
  */
 public class PartitionedRegionStats {
 
+  @Immutable
   private static final StatisticsType type;
 
   private static final int dataStoreEntryCountId;
@@ -181,85 +184,87 @@ public class PartitionedRegionStats {
         "Statistics for operations and connections in the Partitioned Region",
         new StatisticDescriptor[] {
 
-            f.createIntGauge("bucketCount", "Number of buckets in this node.", "buckets"),
-            f.createIntCounter("putsCompleted", "Number of puts completed.", "operations",
+            f.createLongGauge("bucketCount", "Number of buckets in this node.", "buckets"),
+            f.createLongCounter("putsCompleted", "Number of puts completed.", "operations",
                 largerIsBetter),
-            f.createIntCounter("putOpsRetried",
+            f.createLongCounter("putOpsRetried",
                 "Number of put operations which had to be retried due to failures.", "operations",
                 false),
-            f.createIntCounter("putRetries",
+            f.createLongCounter("putRetries",
                 "Total number of times put operations had to be retried.", "retry attempts", false),
-            f.createIntCounter("createsCompleted", "Number of creates completed.", "operations",
+            f.createLongCounter("createsCompleted", "Number of creates completed.", "operations",
                 largerIsBetter),
-            f.createIntCounter("createOpsRetried",
+            f.createLongCounter("createOpsRetried",
                 "Number of create operations which had to be retried due to failures.",
                 "operations", false),
-            f.createIntCounter("createRetries",
+            f.createLongCounter("createRetries",
                 "Total number of times put operations had to be retried.", "retry attempts", false),
-            f.createIntCounter("preferredReadLocal", "Number of reads satisfied from local store",
+            f.createLongCounter("preferredReadLocal", "Number of reads satisfied from local store",
                 "operations", largerIsBetter),
-            f.createIntCounter(PUTALLS_COMPLETED, "Number of putAlls completed.", "operations",
+            f.createLongCounter(PUTALLS_COMPLETED, "Number of putAlls completed.", "operations",
                 largerIsBetter),
-            f.createIntCounter(PUTALL_MSGS_RETRIED,
+            f.createLongCounter(PUTALL_MSGS_RETRIED,
                 "Number of putAll messages which had to be retried due to failures.", "operations",
                 false),
-            f.createIntCounter(PUTALL_RETRIES,
+            f.createLongCounter(PUTALL_RETRIES,
                 "Total number of times putAll messages had to be retried.", "retry attempts",
                 false),
             f.createLongCounter(PUTALL_TIME, "Total time spent doing putAlls.", "nanoseconds",
                 !largerIsBetter),
-            f.createIntCounter(REMOVE_ALLS_COMPLETED, "Number of removeAlls completed.",
+            f.createLongCounter(REMOVE_ALLS_COMPLETED, "Number of removeAlls completed.",
                 "operations", largerIsBetter),
-            f.createIntCounter(REMOVE_ALL_MSGS_RETRIED,
+            f.createLongCounter(REMOVE_ALL_MSGS_RETRIED,
                 "Number of removeAll messages which had to be retried due to failures.",
                 "operations", false),
-            f.createIntCounter(REMOVE_ALL_RETRIES,
+            f.createLongCounter(REMOVE_ALL_RETRIES,
                 "Total number of times removeAll messages had to be retried.", "retry attempts",
                 false),
             f.createLongCounter(REMOVE_ALL_TIME, "Total time spent doing removeAlls.",
                 "nanoseconds", !largerIsBetter),
-            f.createIntCounter("preferredReadRemote", "Number of reads satisfied from remote store",
+            f.createLongCounter("preferredReadRemote",
+                "Number of reads satisfied from remote store",
                 "operations", false),
-            f.createIntCounter("getsCompleted", "Number of gets completed.", "operations",
+            f.createLongCounter("getsCompleted", "Number of gets completed.", "operations",
                 largerIsBetter),
-            f.createIntCounter("getOpsRetried",
+            f.createLongCounter("getOpsRetried",
                 "Number of get operations which had to be retried due to failures.", "operations",
                 false),
-            f.createIntCounter("getRetries",
+            f.createLongCounter("getRetries",
                 "Total number of times get operations had to be retried.", "retry attempts", false),
-            f.createIntCounter("destroysCompleted", "Number of destroys completed.", "operations",
+            f.createLongCounter("destroysCompleted", "Number of destroys completed.", "operations",
                 largerIsBetter),
-            f.createIntCounter("destroyOpsRetried",
+            f.createLongCounter("destroyOpsRetried",
                 "Number of destroy operations which had to be retried due to failures.",
                 "operations", false),
-            f.createIntCounter("destroyRetries",
+            f.createLongCounter("destroyRetries",
                 "Total number of times destroy operations had to be retried.", "retry attempts",
                 false),
-            f.createIntCounter("invalidatesCompleted", "Number of invalidates completed.",
+            f.createLongCounter("invalidatesCompleted", "Number of invalidates completed.",
                 "operations", largerIsBetter),
 
-            f.createIntCounter("invalidateOpsRetried",
+            f.createLongCounter("invalidateOpsRetried",
                 "Number of invalidate operations which had to be retried due to failures.",
                 "operations", false),
-            f.createIntCounter("invalidateRetries",
+            f.createLongCounter("invalidateRetries",
                 "Total number of times invalidate operations had to be retried.", "retry attempts",
                 false),
-            f.createIntCounter("containsKeyCompleted", "Number of containsKeys completed.",
+            f.createLongCounter("containsKeyCompleted", "Number of containsKeys completed.",
                 "operations", largerIsBetter),
 
-            f.createIntCounter("containsKeyOpsRetried",
+            f.createLongCounter("containsKeyOpsRetried",
                 "Number of containsKey or containsValueForKey operations which had to be retried due to failures.",
                 "operations", false),
-            f.createIntCounter("containsKeyRetries",
+            f.createLongCounter("containsKeyRetries",
                 "Total number of times containsKey or containsValueForKey operations had to be retried.",
                 "operations", false),
-            f.createIntCounter("containsValueForKeyCompleted",
+            f.createLongCounter("containsValueForKeyCompleted",
                 "Number of containsValueForKeys completed.", "operations", largerIsBetter),
-            f.createIntCounter("PartitionMessagesSent", "Number of PartitionMessages Sent.",
+            f.createLongCounter("PartitionMessagesSent", "Number of PartitionMessages Sent.",
                 "operations", largerIsBetter),
-            f.createIntCounter("PartitionMessagesReceived", "Number of PartitionMessages Received.",
+            f.createLongCounter("PartitionMessagesReceived",
+                "Number of PartitionMessages Received.",
                 "operations", largerIsBetter),
-            f.createIntCounter("PartitionMessagesProcessed",
+            f.createLongCounter("PartitionMessagesProcessed",
                 "Number of PartitionMessages Processed.", "operations", largerIsBetter),
             f.createLongCounter("putTime", "Total time spent doing puts.", "nanoseconds", false),
             f.createLongCounter("createTime", "Total time spent doing create operations.",
@@ -277,139 +282,139 @@ public class PartitionedRegionStats {
                 false),
             f.createLongCounter("partitionMessagesProcessingTime",
                 "Total time spent on PartitionMessages processing.", "nanoseconds", false),
-            f.createIntGauge("dataStoreEntryCount",
+            f.createLongGauge("dataStoreEntryCount",
                 "The number of entries stored in this Cache for the named Partitioned Region. This does not include entries which are tombstones. See CachePerfStats.tombstoneCount.",
                 "entries"),
             f.createLongGauge("dataStoreBytesInUse",
                 "The current number of bytes stored in this Cache for the named Partitioned Region",
                 "bytes"),
-            f.createIntGauge("volunteeringInProgress",
+            f.createLongGauge("volunteeringInProgress",
                 "Current number of attempts to volunteer for primary of a bucket.", "operations"),
-            f.createIntCounter("volunteeringBecamePrimary",
+            f.createLongCounter("volunteeringBecamePrimary",
                 "Total number of attempts to volunteer that ended when this member became primary.",
                 "operations"),
             f.createLongCounter("volunteeringBecamePrimaryTime",
                 "Total time spent volunteering that ended when this member became primary.",
                 "nanoseconds", false),
-            f.createIntCounter("volunteeringOtherPrimary",
+            f.createLongCounter("volunteeringOtherPrimary",
                 "Total number of attempts to volunteer that ended when this member discovered other primary.",
                 "operations"),
             f.createLongCounter("volunteeringOtherPrimaryTime",
                 "Total time spent volunteering that ended when this member discovered other primary.",
                 "nanoseconds", false),
-            f.createIntCounter("volunteeringClosed",
+            f.createLongCounter("volunteeringClosed",
                 "Total number of attempts to volunteer that ended when this member's bucket closed.",
                 "operations"),
             f.createLongCounter("volunteeringClosedTime",
                 "Total time spent volunteering that ended when this member's bucket closed.",
                 "nanoseconds", false),
-            f.createIntGauge("totalNumBuckets", "The total number of buckets.", "buckets"),
-            f.createIntGauge("primaryBucketCount",
+            f.createLongGauge("totalNumBuckets", "The total number of buckets.", "buckets"),
+            f.createLongGauge("primaryBucketCount",
                 "Current number of primary buckets hosted locally.", "buckets"),
-            f.createIntGauge("volunteeringThreads",
+            f.createLongGauge("volunteeringThreads",
                 "Current number of threads volunteering for primary.", "threads"),
-            f.createIntGauge("lowRedundancyBucketCount",
+            f.createLongGauge("lowRedundancyBucketCount",
                 "Current number of buckets without full redundancy.", "buckets"),
-            f.createIntGauge("noCopiesBucketCount",
+            f.createLongGauge("noCopiesBucketCount",
                 "Current number of buckets without any copies remaining.", "buckets"),
-            f.createIntGauge("configuredRedundantCopies",
+            f.createLongGauge("configuredRedundantCopies",
                 "Configured number of redundant copies for this partitioned region.", "copies"),
-            f.createIntGauge("actualRedundantCopies",
+            f.createLongGauge("actualRedundantCopies",
                 "Actual number of redundant copies for this partitioned region.", "copies"),
-            f.createIntCounter("getEntryCompleted", "Number of getEntry operations completed.",
+            f.createLongCounter("getEntryCompleted", "Number of getEntry operations completed.",
                 "operations", largerIsBetter),
             f.createLongCounter("getEntryTime", "Total time spent performing getEntry operations.",
                 "nanoseconds", false),
 
-            f.createIntGauge("recoveriesInProgress",
+            f.createLongGauge("recoveriesInProgress",
                 "Current number of redundancy recovery operations in progress for this region.",
                 "operations"),
-            f.createIntCounter("recoveriesCompleted",
+            f.createLongCounter("recoveriesCompleted",
                 "Total number of redundancy recovery operations performed on this region.",
                 "operations"),
             f.createLongCounter("recoveryTime", "Total number time spent recovering redundancy.",
                 "operations"),
-            f.createIntGauge("bucketCreatesInProgress",
+            f.createLongGauge("bucketCreatesInProgress",
                 "Current number of bucket create operations being performed for rebalancing.",
                 "operations"),
-            f.createIntCounter("bucketCreatesCompleted",
+            f.createLongCounter("bucketCreatesCompleted",
                 "Total number of bucket create operations performed for rebalancing.",
                 "operations"),
-            f.createIntCounter("bucketCreatesFailed",
+            f.createLongCounter("bucketCreatesFailed",
                 "Total number of bucket create operations performed for rebalancing that failed.",
                 "operations"),
             f.createLongCounter("bucketCreateTime",
                 "Total time spent performing bucket create operations for rebalancing.",
                 "nanoseconds", false),
-            f.createIntGauge("primaryTransfersInProgress",
+            f.createLongGauge("primaryTransfersInProgress",
                 "Current number of primary transfer operations being performed for rebalancing.",
                 "operations"),
-            f.createIntCounter("primaryTransfersCompleted",
+            f.createLongCounter("primaryTransfersCompleted",
                 "Total number of primary transfer operations performed for rebalancing.",
                 "operations"),
-            f.createIntCounter("primaryTransfersFailed",
+            f.createLongCounter("primaryTransfersFailed",
                 "Total number of primary transfer operations performed for rebalancing that failed.",
                 "operations"),
             f.createLongCounter("primaryTransferTime",
                 "Total time spent performing primary transfer operations for rebalancing.",
                 "nanoseconds", false),
 
-            f.createIntCounter("applyReplicationCompleted",
+            f.createLongCounter("applyReplicationCompleted",
                 "Total number of replicated values sent from a primary to this redundant data store.",
                 "operations", largerIsBetter),
-            f.createIntGauge("applyReplicationInProgress",
+            f.createLongGauge("applyReplicationInProgress",
                 "Current number of replication operations in progress on this redundant data store.",
                 "operations", !largerIsBetter),
             f.createLongCounter("applyReplicationTime",
                 "Total time spent storing replicated values on this redundant data store.",
                 "nanoseconds", !largerIsBetter),
-            f.createIntCounter("sendReplicationCompleted",
+            f.createLongCounter("sendReplicationCompleted",
                 "Total number of replicated values sent from this primary to a redundant data store.",
                 "operations", largerIsBetter),
-            f.createIntGauge("sendReplicationInProgress",
+            f.createLongGauge("sendReplicationInProgress",
                 "Current number of replication operations in progress from this primary.",
                 "operations", !largerIsBetter),
             f.createLongCounter("sendReplicationTime",
                 "Total time spent replicating values from this primary to a redundant data store.",
                 "nanoseconds", !largerIsBetter),
-            f.createIntCounter("putRemoteCompleted",
+            f.createLongCounter("putRemoteCompleted",
                 "Total number of completed puts that did not originate in the primary. These puts require an extra network hop to the primary.",
                 "operations", largerIsBetter),
-            f.createIntGauge("putRemoteInProgress",
+            f.createLongGauge("putRemoteInProgress",
                 "Current number of puts in progress that did not originate in the primary.",
                 "operations", !largerIsBetter),
             f.createLongCounter("putRemoteTime",
                 "Total time spent doing puts that did not originate in the primary.", "nanoseconds",
                 !largerIsBetter),
-            f.createIntCounter("putLocalCompleted",
+            f.createLongCounter("putLocalCompleted",
                 "Total number of completed puts that did originate in the primary. These puts are optimal.",
                 "operations", largerIsBetter),
-            f.createIntGauge("putLocalInProgress",
+            f.createLongGauge("putLocalInProgress",
                 "Current number of puts in progress that did originate in the primary.",
                 "operations", !largerIsBetter),
             f.createLongCounter("putLocalTime",
                 "Total time spent doing puts that did originate in the primary.", "nanoseconds",
                 !largerIsBetter),
 
-            f.createIntGauge("rebalanceBucketCreatesInProgress",
+            f.createLongGauge("rebalanceBucketCreatesInProgress",
                 "Current number of bucket create operations being performed for rebalancing.",
                 "operations"),
-            f.createIntCounter("rebalanceBucketCreatesCompleted",
+            f.createLongCounter("rebalanceBucketCreatesCompleted",
                 "Total number of bucket create operations performed for rebalancing.",
                 "operations"),
-            f.createIntCounter("rebalanceBucketCreatesFailed",
+            f.createLongCounter("rebalanceBucketCreatesFailed",
                 "Total number of bucket create operations performed for rebalancing that failed.",
                 "operations"),
             f.createLongCounter("rebalanceBucketCreateTime",
                 "Total time spent performing bucket create operations for rebalancing.",
                 "nanoseconds", false),
-            f.createIntGauge("rebalancePrimaryTransfersInProgress",
+            f.createLongGauge("rebalancePrimaryTransfersInProgress",
                 "Current number of primary transfer operations being performed for rebalancing.",
                 "operations"),
-            f.createIntCounter("rebalancePrimaryTransfersCompleted",
+            f.createLongCounter("rebalancePrimaryTransfersCompleted",
                 "Total number of primary transfer operations performed for rebalancing.",
                 "operations"),
-            f.createIntCounter("rebalancePrimaryTransfersFailed",
+            f.createLongCounter("rebalancePrimaryTransfersFailed",
                 "Total number of primary transfer operations performed for rebalancing that failed.",
                 "operations"),
             f.createLongCounter("rebalancePrimaryTransferTime",
@@ -530,6 +535,8 @@ public class PartitionedRegionStats {
 
   private final Statistics stats;
 
+  private final StatisticsClock clock;
+
   /**
    * Utility map for temporarily holding stat start times.
    * <p>
@@ -541,22 +548,16 @@ public class PartitionedRegionStats {
    */
   private final Map startTimeMap;
 
-  public static long startTime() {
-    return CachePerfStats.getStatTime();
-  }
+  public PartitionedRegionStats(StatisticsFactory factory, String name, StatisticsClock clock) {
+    stats = factory.createAtomicStatistics(type, name);
 
-  public static long getStatTime() {
-    return CachePerfStats.getStatTime();
-  }
-
-  public PartitionedRegionStats(StatisticsFactory factory, String name) {
-    this.stats = factory.createAtomicStatistics(type, name /* fixes bug 42343 */);
-
-    if (CachePerfStats.enableClockStats) {
-      this.startTimeMap = new ConcurrentHashMap();
+    if (clock.isEnabled()) {
+      startTimeMap = new ConcurrentHashMap();
     } else {
-      this.startTimeMap = Collections.EMPTY_MAP;
+      startTimeMap = Collections.emptyMap();
     }
+
+    this.clock = clock;
   }
 
   public void close() {
@@ -565,6 +566,10 @@ public class PartitionedRegionStats {
 
   public Statistics getStats() {
     return this.stats;
+  }
+
+  public long getTime() {
+    return clock.getTime();
   }
 
   // ------------------------------------------------------------------------
@@ -578,7 +583,6 @@ public class PartitionedRegionStats {
   /**
    * This method sets the end time for putAll and updates the counters
    *
-   * @param start
    */
   public void endPutAll(long start) {
     endPutAll(start, 1);
@@ -605,126 +609,129 @@ public class PartitionedRegionStats {
   }
 
   public void endPut(long start, int numInc) {
-    if (CachePerfStats.enableClockStats) {
-      long delta = CachePerfStats.getStatTime() - start;
+    if (clock.isEnabled()) {
+      long delta = clock.getTime() - start;
       this.stats.incLong(putTimeId, delta);
     }
-    this.stats.incInt(putsCompletedId, numInc);
+    this.stats.incLong(putsCompletedId, numInc);
   }
 
   /**
    * This method sets the end time for putAll and updates the counters
    *
-   * @param start
-   * @param numInc
    */
   public void endPutAll(long start, int numInc) {
-    if (CachePerfStats.enableClockStats) {
-      long delta = CachePerfStats.getStatTime() - start;
+    if (clock.isEnabled()) {
+      long delta = clock.getTime() - start;
       this.stats.incLong(fieldId_PUTALL_TIME, delta);
       // this.putStatsHistogram.endOp(delta);
 
     }
-    this.stats.incInt(fieldId_PUTALLS_COMPLETED, numInc);
+    this.stats.incLong(fieldId_PUTALLS_COMPLETED, numInc);
   }
 
   public void endRemoveAll(long start, int numInc) {
-    if (CachePerfStats.enableClockStats) {
-      long delta = CachePerfStats.getStatTime() - start;
+    if (clock.isEnabled()) {
+      long delta = clock.getTime() - start;
       this.stats.incLong(fieldId_REMOVE_ALL_TIME, delta);
     }
-    this.stats.incInt(fieldId_REMOVE_ALLS_COMPLETED, numInc);
+    this.stats.incLong(fieldId_REMOVE_ALLS_COMPLETED, numInc);
   }
 
   public void endCreate(long start, int numInc) {
-    if (CachePerfStats.enableClockStats) {
-      this.stats.incLong(createTimeId, CachePerfStats.getStatTime() - start);
+    if (clock.isEnabled()) {
+      this.stats.incLong(createTimeId, clock.getTime() - start);
     }
-    this.stats.incInt(createsCompletedId, numInc);
+    this.stats.incLong(createsCompletedId, numInc);
   }
 
   public void endGet(long start, int numInc) {
-    if (CachePerfStats.enableClockStats) {
-      final long delta = CachePerfStats.getStatTime() - start;
+    if (clock.isEnabled()) {
+      final long delta = clock.getTime() - start;
       this.stats.incLong(getTimeId, delta);
     }
-    this.stats.incInt(getsCompletedId, numInc);
+    this.stats.incLong(getsCompletedId, numInc);
   }
 
   public void endDestroy(long start) {
-    if (CachePerfStats.enableClockStats) {
-      this.stats.incLong(destroyTimeId, CachePerfStats.getStatTime() - start);
+    if (clock.isEnabled()) {
+      this.stats.incLong(destroyTimeId, clock.getTime() - start);
     }
-    this.stats.incInt(destroysCompletedId, 1);
+    this.stats.incLong(destroysCompletedId, 1);
   }
 
   public void endInvalidate(long start) {
-    if (CachePerfStats.enableClockStats) {
-      this.stats.incLong(invalidateTimeId, CachePerfStats.getStatTime() - start);
+    if (clock.isEnabled()) {
+      this.stats.incLong(invalidateTimeId, clock.getTime() - start);
     }
-    this.stats.incInt(invalidatesCompletedId, 1);
+    this.stats.incLong(invalidatesCompletedId, 1);
   }
 
   public void endContainsKey(long start, int numInc) {
-    if (CachePerfStats.enableClockStats) {
-      this.stats.incLong(containsKeyTimeId, CachePerfStats.getStatTime() - start);
+    if (clock.isEnabled()) {
+      this.stats.incLong(containsKeyTimeId, clock.getTime() - start);
     }
-    this.stats.incInt(containsKeyCompletedId, numInc);
+    this.stats.incLong(containsKeyCompletedId, numInc);
   }
 
   public void endContainsValueForKey(long start, int numInc) {
-    if (CachePerfStats.enableClockStats) {
-      this.stats.incLong(containsValueForKeyTimeId, CachePerfStats.getStatTime() - start);
+    if (clock.isEnabled()) {
+      this.stats.incLong(containsValueForKeyTimeId, clock.getTime() - start);
     }
-    this.stats.incInt(containsValueForKeyCompletedId, numInc);
+    this.stats.incLong(containsValueForKeyCompletedId, numInc);
   }
 
   public void incContainsKeyValueRetries() {
-    this.stats.incInt(containsKeyRetriesId, 1);
+    this.stats.incLong(containsKeyRetriesId, 1);
   }
 
   public void incContainsKeyValueOpsRetried() {
-    this.stats.incInt(containsKeyOpsRetriedId, 1);
+    this.stats.incLong(containsKeyOpsRetriedId, 1);
   }
 
   public void incInvalidateRetries() {
-    this.stats.incInt(invalidateRetriesId, 1);
+    this.stats.incLong(invalidateRetriesId, 1);
   }
 
   public void incInvalidateOpsRetried() {
-    this.stats.incInt(invalidateOpsRetriedId, 1);
+    this.stats.incLong(invalidateOpsRetriedId, 1);
   }
 
   public void incDestroyRetries() {
-    this.stats.incInt(destroyRetriesId, 1);
+    this.stats.incLong(destroyRetriesId, 1);
   }
 
   public void incDestroyOpsRetried() {
-    this.stats.incInt(destroyOpsRetriedId, 1);
+    this.stats.incLong(destroyOpsRetriedId, 1);
   }
 
   public void incPutRetries() {
-    this.stats.incInt(putRetriesId, 1);
+    this.stats.incLong(putRetriesId, 1);
   }
 
   public void incPutOpsRetried() {
-    this.stats.incInt(putOpsRetriedId, 1);
+    this.stats.incLong(putOpsRetriedId, 1);
   }
 
   public void incGetOpsRetried() {
-    this.stats.incInt(getOpsRetriedId, 1);
+    this.stats.incLong(getOpsRetriedId, 1);
   }
 
   public void incGetRetries() {
-    this.stats.incInt(getRetriesId, 1);
+    this.stats.incLong(getRetriesId, 1);
+  }
+
+  @VisibleForTesting
+  public long getGetRetries() {
+    return this.stats.getLong(getRetriesId);
   }
 
   public void incCreateOpsRetried() {
-    this.stats.incInt(createOpsRetriedId, 1);
+    this.stats.incLong(createOpsRetriedId, 1);
   }
 
   public void incCreateRetries() {
-    this.stats.incInt(createRetriesId, 1);
+    this.stats.incLong(createRetriesId, 1);
   }
 
   // ------------------------------------------------------------------------
@@ -732,11 +739,11 @@ public class PartitionedRegionStats {
   // ------------------------------------------------------------------------
 
   public void incPreferredReadLocal() {
-    this.stats.incInt(preferredReadLocalId, 1);
+    this.stats.incLong(preferredReadLocalId, 1);
   }
 
   public void incPreferredReadRemote() {
-    this.stats.incInt(preferredReadRemoteId, 1);
+    this.stats.incLong(preferredReadRemoteId, 1);
   }
 
   // ------------------------------------------------------------------------
@@ -744,20 +751,20 @@ public class PartitionedRegionStats {
   // ------------------------------------------------------------------------
 
   public long startPartitionMessageProcessing() {
-    this.stats.incInt(partitionMessagesReceivedId, 1);
-    return startTime();
+    this.stats.incLong(partitionMessagesReceivedId, 1);
+    return getTime();
   }
 
   public void endPartitionMessagesProcessing(long start) {
-    if (CachePerfStats.enableClockStats) {
-      long delta = CachePerfStats.getStatTime() - start;
+    if (clock.isEnabled()) {
+      long delta = clock.getTime() - start;
       this.stats.incLong(partitionMessagesProcessingTimeId, delta);
     }
-    this.stats.incInt(partitionMessagesProcessedId, 1);
+    this.stats.incLong(partitionMessagesProcessedId, 1);
   }
 
   public void incPartitionMessagesSent() {
-    this.stats.incInt(partitionMessagesSentId, 1);
+    this.stats.incLong(partitionMessagesSentId, 1);
   }
 
   // ------------------------------------------------------------------------
@@ -765,19 +772,19 @@ public class PartitionedRegionStats {
   // ------------------------------------------------------------------------
 
   public void incBucketCount(int delta) {
-    this.stats.incInt(bucketCountId, delta);
+    this.stats.incLong(bucketCountId, delta);
   }
 
   public void setBucketCount(int i) {
-    this.stats.setInt(bucketCountId, i);
+    this.stats.setLong(bucketCountId, i);
   }
 
   public void incDataStoreEntryCount(int amt) {
-    this.stats.incInt(dataStoreEntryCountId, amt);
+    this.stats.incLong(dataStoreEntryCountId, amt);
   }
 
-  public int getDataStoreEntryCount() {
-    return this.stats.getInt(dataStoreEntryCountId);
+  public long getDataStoreEntryCount() {
+    return this.stats.getLong(dataStoreEntryCountId);
   }
 
   public void incBytesInUse(long delta) {
@@ -788,53 +795,52 @@ public class PartitionedRegionStats {
     return this.stats.getLong(dataStoreBytesInUseId);
   }
 
-  public int getTotalBucketCount() {
-    int bucketCount = this.stats.getInt(bucketCountId);
-    return bucketCount;
+  public long getTotalBucketCount() {
+    return this.stats.getLong(bucketCountId);
   }
 
   public void incPutAllRetries() {
-    this.stats.incInt(fieldId_PUTALL_RETRIES, 1);
+    this.stats.incLong(fieldId_PUTALL_RETRIES, 1);
   }
 
   public void incPutAllMsgsRetried() {
-    this.stats.incInt(fieldId_PUTALL_MSGS_RETRIED, 1);
+    this.stats.incLong(fieldId_PUTALL_MSGS_RETRIED, 1);
   }
 
   public void incRemoveAllRetries() {
-    this.stats.incInt(fieldId_REMOVE_ALL_RETRIES, 1);
+    this.stats.incLong(fieldId_REMOVE_ALL_RETRIES, 1);
   }
 
   public void incRemoveAllMsgsRetried() {
-    this.stats.incInt(fieldId_REMOVE_ALL_MSGS_RETRIED, 1);
+    this.stats.incLong(fieldId_REMOVE_ALL_MSGS_RETRIED, 1);
   }
 
   // ------------------------------------------------------------------------
   // stats for volunteering/discovering/becoming primary
   // ------------------------------------------------------------------------
 
-  public int getVolunteeringInProgress() {
-    return this.stats.getInt(volunteeringInProgressId);
+  public long getVolunteeringInProgress() {
+    return this.stats.getLong(volunteeringInProgressId);
   }
 
-  public int getVolunteeringBecamePrimary() {
-    return this.stats.getInt(volunteeringBecamePrimaryId);
+  public long getVolunteeringBecamePrimary() {
+    return this.stats.getLong(volunteeringBecamePrimaryId);
   }
 
   public long getVolunteeringBecamePrimaryTime() {
     return this.stats.getLong(volunteeringBecamePrimaryTimeId);
   }
 
-  public int getVolunteeringOtherPrimary() {
-    return this.stats.getInt(volunteeringOtherPrimaryId);
+  public long getVolunteeringOtherPrimary() {
+    return this.stats.getLong(volunteeringOtherPrimaryId);
   }
 
   public long getVolunteeringOtherPrimaryTime() {
     return this.stats.getLong(volunteeringOtherPrimaryTimeId);
   }
 
-  public int getVolunteeringClosed() {
-    return this.stats.getInt(volunteeringClosedId);
+  public long getVolunteeringClosed() {
+    return this.stats.getLong(volunteeringClosedId);
   }
 
   public long getVolunteeringClosedTime() {
@@ -842,98 +848,94 @@ public class PartitionedRegionStats {
   }
 
   public long startVolunteering() {
-    this.stats.incInt(volunteeringInProgressId, 1);
-    return CachePerfStats.getStatTime();
+    this.stats.incLong(volunteeringInProgressId, 1);
+    return clock.getTime();
   }
 
   public void endVolunteeringBecamePrimary(long start) {
-    long ts = CachePerfStats.getStatTime();
-    this.stats.incInt(volunteeringInProgressId, -1);
-    this.stats.incInt(volunteeringBecamePrimaryId, 1);
-    if (CachePerfStats.enableClockStats) {
+    long ts = clock.getTime();
+    this.stats.incLong(volunteeringInProgressId, -1);
+    this.stats.incLong(volunteeringBecamePrimaryId, 1);
+    if (clock.isEnabled()) {
       long time = ts - start;
       this.stats.incLong(volunteeringBecamePrimaryTimeId, time);
     }
   }
 
   public void endVolunteeringOtherPrimary(long start) {
-    long ts = CachePerfStats.getStatTime();
-    this.stats.incInt(volunteeringInProgressId, -1);
-    this.stats.incInt(volunteeringOtherPrimaryId, 1);
-    if (CachePerfStats.enableClockStats) {
+    long ts = clock.getTime();
+    this.stats.incLong(volunteeringInProgressId, -1);
+    this.stats.incLong(volunteeringOtherPrimaryId, 1);
+    if (clock.isEnabled()) {
       long time = ts - start;
       this.stats.incLong(volunteeringOtherPrimaryTimeId, time);
     }
   }
 
   public void endVolunteeringClosed(long start) {
-    long ts = CachePerfStats.getStatTime();
-    this.stats.incInt(volunteeringInProgressId, -1);
-    this.stats.incInt(volunteeringClosedId, 1);
-    if (CachePerfStats.enableClockStats) {
+    long ts = clock.getTime();
+    this.stats.incLong(volunteeringInProgressId, -1);
+    this.stats.incLong(volunteeringClosedId, 1);
+    if (clock.isEnabled()) {
       long time = ts - start;
       this.stats.incLong(volunteeringClosedTimeId, time);
     }
   }
 
-  public int getTotalNumBuckets() {
-    return this.stats.getInt(totalNumBucketsId);
+  public long getTotalNumBuckets() {
+    return this.stats.getLong(totalNumBucketsId);
   }
 
   public void incTotalNumBuckets(int val) {
-    this.stats.incInt(totalNumBucketsId, val);
+    this.stats.incLong(totalNumBucketsId, val);
   }
 
-  public int getPrimaryBucketCount() {
-    return this.stats.getInt(primaryBucketCountId);
+  public long getPrimaryBucketCount() {
+    return this.stats.getLong(primaryBucketCountId);
   }
 
   public void incPrimaryBucketCount(int val) {
-    this.stats.incInt(primaryBucketCountId, val);
+    this.stats.incLong(primaryBucketCountId, val);
   }
 
-  public int getVolunteeringThreads() {
-    return this.stats.getInt(volunteeringThreadsId);
+  public long getVolunteeringThreads() {
+    return this.stats.getLong(volunteeringThreadsId);
   }
 
   public void incVolunteeringThreads(int val) {
-    this.stats.incInt(volunteeringThreadsId, val);
+    this.stats.incLong(volunteeringThreadsId, val);
   }
 
-  public int getLowRedundancyBucketCount() {
-    return this.stats.getInt(lowRedundancyBucketCountId);
+  public long getLowRedundancyBucketCount() {
+    return this.stats.getLong(lowRedundancyBucketCountId);
   }
 
-  public int getNoCopiesBucketCount() {
-    return this.stats.getInt(noCopiesBucketCountId);
+  public long getNoCopiesBucketCount() {
+    return this.stats.getLong(noCopiesBucketCountId);
   }
 
   public void incLowRedundancyBucketCount(int val) {
-    this.stats.incInt(lowRedundancyBucketCountId, val);
+    this.stats.incLong(lowRedundancyBucketCountId, val);
   }
 
   public void incNoCopiesBucketCount(int val) {
-    this.stats.incInt(noCopiesBucketCountId, val);
+    this.stats.incLong(noCopiesBucketCountId, val);
   }
 
-  public int getConfiguredRedundantCopies() {
-    return this.stats.getInt(configuredRedundantCopiesId);
+  public long getConfiguredRedundantCopies() {
+    return this.stats.getLong(configuredRedundantCopiesId);
   }
 
   public void setConfiguredRedundantCopies(int val) {
-    this.stats.setInt(configuredRedundantCopiesId, val);
+    this.stats.setLong(configuredRedundantCopiesId, val);
   }
 
   public void setLocalMaxMemory(long l) {
     this.stats.setLong(localMaxMemoryId, l);
   }
 
-  public int getActualRedundantCopies() {
-    return this.stats.getInt(actualRedundantCopiesId);
-  }
-
   public void setActualRedundantCopies(int val) {
-    this.stats.setInt(actualRedundantCopiesId, val);
+    this.stats.setLong(actualRedundantCopiesId, val);
   }
 
   // ------------------------------------------------------------------------
@@ -942,7 +944,7 @@ public class PartitionedRegionStats {
 
   /** Put stat start time in holding map for later removal and use by caller */
   public void putStartTime(Object key, long startTime) {
-    if (CachePerfStats.enableClockStats) {
+    if (clock.isEnabled()) {
       this.startTimeMap.put(key, Long.valueOf(startTime));
     }
   }
@@ -965,51 +967,49 @@ public class PartitionedRegionStats {
   /**
    * This method sets the end time for update and updates the counters
    *
-   * @param start
-   * @param numInc
    */
   public void endGetEntry(long start, int numInc) {
-    if (CachePerfStats.enableClockStats) {
-      this.stats.incLong(getEntryTimeId, CachePerfStats.getStatTime() - start);
+    if (clock.isEnabled()) {
+      this.stats.incLong(getEntryTimeId, clock.getTime() - start);
     }
-    this.stats.incInt(getEntriesCompletedId, numInc);
+    this.stats.incLong(getEntriesCompletedId, numInc);
   }
 
   // ------------------------------------------------------------------------
   // bucket creation, primary transfer stats (see also rebalancing stats below)
   // ------------------------------------------------------------------------
   public long startRecovery() {
-    this.stats.incInt(recoveriesInProgressId, 1);
-    return PartitionedRegionStats.getStatTime();
+    this.stats.incLong(recoveriesInProgressId, 1);
+    return clock.getTime();
   }
 
   public void endRecovery(long start) {
-    long ts = PartitionedRegionStats.getStatTime();
-    this.stats.incInt(recoveriesInProgressId, -1);
-    if (CachePerfStats.enableClockStats) {
+    long ts = clock.getTime();
+    this.stats.incLong(recoveriesInProgressId, -1);
+    if (clock.isEnabled()) {
       this.stats.incLong(recoveriesTimeId, ts - start);
     }
-    this.stats.incInt(recoveriesCompletedId, 1);
+    this.stats.incLong(recoveriesCompletedId, 1);
   }
 
   public long startBucketCreate(boolean isRebalance) {
-    this.stats.incInt(bucketCreatesInProgressId, 1);
+    this.stats.incLong(bucketCreatesInProgressId, 1);
     if (isRebalance) {
       startRebalanceBucketCreate();
     }
-    return PartitionedRegionStats.getStatTime();
+    return clock.getTime();
   }
 
   public void endBucketCreate(long start, boolean success, boolean isRebalance) {
-    long ts = PartitionedRegionStats.getStatTime();
-    this.stats.incInt(bucketCreatesInProgressId, -1);
-    if (CachePerfStats.enableClockStats) {
+    long ts = clock.getTime();
+    this.stats.incLong(bucketCreatesInProgressId, -1);
+    if (clock.isEnabled()) {
       this.stats.incLong(bucketCreateTimeId, ts - start);
     }
     if (success) {
-      this.stats.incInt(bucketCreatesCompletedId, 1);
+      this.stats.incLong(bucketCreatesCompletedId, 1);
     } else {
-      this.stats.incInt(bucketCreatesFailedId, 1);
+      this.stats.incLong(bucketCreatesFailedId, 1);
     }
     if (isRebalance) {
       endRebalanceBucketCreate(start, ts, success);
@@ -1017,55 +1017,55 @@ public class PartitionedRegionStats {
   }
 
   public long startPrimaryTransfer(boolean isRebalance) {
-    this.stats.incInt(primaryTransfersInProgressId, 1);
+    this.stats.incLong(primaryTransfersInProgressId, 1);
     if (isRebalance) {
       startRebalancePrimaryTransfer();
     }
-    return PartitionedRegionStats.getStatTime();
+    return clock.getTime();
   }
 
   public void endPrimaryTransfer(long start, boolean success, boolean isRebalance) {
-    long ts = PartitionedRegionStats.getStatTime();
-    this.stats.incInt(primaryTransfersInProgressId, -1);
-    if (CachePerfStats.enableClockStats) {
+    long ts = clock.getTime();
+    this.stats.incLong(primaryTransfersInProgressId, -1);
+    if (clock.isEnabled()) {
       this.stats.incLong(primaryTransferTimeId, ts - start);
     }
     if (success) {
-      this.stats.incInt(primaryTransfersCompletedId, 1);
+      this.stats.incLong(primaryTransfersCompletedId, 1);
     } else {
-      this.stats.incInt(primaryTransfersFailedId, 1);
+      this.stats.incLong(primaryTransfersFailedId, 1);
     }
     if (isRebalance) {
       endRebalancePrimaryTransfer(start, ts, success);
     }
   }
 
-  public int getBucketCreatesInProgress() {
-    return this.stats.getInt(bucketCreatesInProgressId);
+  public long getBucketCreatesInProgress() {
+    return this.stats.getLong(bucketCreatesInProgressId);
   }
 
-  public int getBucketCreatesCompleted() {
-    return this.stats.getInt(bucketCreatesCompletedId);
+  public long getBucketCreatesCompleted() {
+    return this.stats.getLong(bucketCreatesCompletedId);
   }
 
-  public int getBucketCreatesFailed() {
-    return this.stats.getInt(bucketCreatesFailedId);
+  public long getBucketCreatesFailed() {
+    return this.stats.getLong(bucketCreatesFailedId);
   }
 
   public long getBucketCreateTime() {
     return this.stats.getLong(bucketCreateTimeId);
   }
 
-  public int getPrimaryTransfersInProgress() {
-    return this.stats.getInt(primaryTransfersInProgressId);
+  public long getPrimaryTransfersInProgress() {
+    return this.stats.getLong(primaryTransfersInProgressId);
   }
 
-  public int getPrimaryTransfersCompleted() {
-    return this.stats.getInt(primaryTransfersCompletedId);
+  public long getPrimaryTransfersCompleted() {
+    return this.stats.getLong(primaryTransfersCompletedId);
   }
 
-  public int getPrimaryTransfersFailed() {
-    return this.stats.getInt(primaryTransfersFailedId);
+  public long getPrimaryTransfersFailed() {
+    return this.stats.getLong(primaryTransfersFailedId);
   }
 
   public long getPrimaryTransferTime() {
@@ -1077,63 +1077,63 @@ public class PartitionedRegionStats {
   // ------------------------------------------------------------------------
 
   private void startRebalanceBucketCreate() {
-    this.stats.incInt(rebalanceBucketCreatesInProgressId, 1);
+    this.stats.incLong(rebalanceBucketCreatesInProgressId, 1);
   }
 
   private void endRebalanceBucketCreate(long start, long end, boolean success) {
-    this.stats.incInt(rebalanceBucketCreatesInProgressId, -1);
-    if (CachePerfStats.enableClockStats) {
+    this.stats.incLong(rebalanceBucketCreatesInProgressId, -1);
+    if (clock.isEnabled()) {
       this.stats.incLong(rebalanceBucketCreateTimeId, end - start);
     }
     if (success) {
-      this.stats.incInt(rebalanceBucketCreatesCompletedId, 1);
+      this.stats.incLong(rebalanceBucketCreatesCompletedId, 1);
     } else {
-      this.stats.incInt(rebalanceBucketCreatesFailedId, 1);
+      this.stats.incLong(rebalanceBucketCreatesFailedId, 1);
     }
   }
 
   private void startRebalancePrimaryTransfer() {
-    this.stats.incInt(rebalancePrimaryTransfersInProgressId, 1);
+    this.stats.incLong(rebalancePrimaryTransfersInProgressId, 1);
   }
 
   private void endRebalancePrimaryTransfer(long start, long end, boolean success) {
-    this.stats.incInt(rebalancePrimaryTransfersInProgressId, -1);
-    if (CachePerfStats.enableClockStats) {
+    this.stats.incLong(rebalancePrimaryTransfersInProgressId, -1);
+    if (clock.isEnabled()) {
       this.stats.incLong(rebalancePrimaryTransferTimeId, end - start);
     }
     if (success) {
-      this.stats.incInt(rebalancePrimaryTransfersCompletedId, 1);
+      this.stats.incLong(rebalancePrimaryTransfersCompletedId, 1);
     } else {
-      this.stats.incInt(rebalancePrimaryTransfersFailedId, 1);
+      this.stats.incLong(rebalancePrimaryTransfersFailedId, 1);
     }
   }
 
-  public int getRebalanceBucketCreatesInProgress() {
-    return this.stats.getInt(rebalanceBucketCreatesInProgressId);
+  public long getRebalanceBucketCreatesInProgress() {
+    return this.stats.getLong(rebalanceBucketCreatesInProgressId);
   }
 
-  public int getRebalanceBucketCreatesCompleted() {
-    return this.stats.getInt(rebalanceBucketCreatesCompletedId);
+  public long getRebalanceBucketCreatesCompleted() {
+    return this.stats.getLong(rebalanceBucketCreatesCompletedId);
   }
 
-  public int getRebalanceBucketCreatesFailed() {
-    return this.stats.getInt(rebalanceBucketCreatesFailedId);
+  public long getRebalanceBucketCreatesFailed() {
+    return this.stats.getLong(rebalanceBucketCreatesFailedId);
   }
 
   public long getRebalanceBucketCreateTime() {
     return this.stats.getLong(rebalanceBucketCreateTimeId);
   }
 
-  public int getRebalancePrimaryTransfersInProgress() {
-    return this.stats.getInt(rebalancePrimaryTransfersInProgressId);
+  public long getRebalancePrimaryTransfersInProgress() {
+    return this.stats.getLong(rebalancePrimaryTransfersInProgressId);
   }
 
-  public int getRebalancePrimaryTransfersCompleted() {
-    return this.stats.getInt(rebalancePrimaryTransfersCompletedId);
+  public long getRebalancePrimaryTransfersCompleted() {
+    return this.stats.getLong(rebalancePrimaryTransfersCompletedId);
   }
 
-  public int getRebalancePrimaryTransfersFailed() {
-    return this.stats.getInt(rebalancePrimaryTransfersFailedId);
+  public long getRebalancePrimaryTransfersFailed() {
+    return this.stats.getLong(rebalancePrimaryTransfersFailedId);
   }
 
   public long getRebalancePrimaryTransferTime() {
@@ -1141,50 +1141,50 @@ public class PartitionedRegionStats {
   }
 
   public long startApplyReplication() {
-    stats.incInt(applyReplicationInProgressId, 1);
-    return CachePerfStats.getStatTime();
+    stats.incLong(applyReplicationInProgressId, 1);
+    return clock.getTime();
   }
 
   public void endApplyReplication(long start) {
-    long delta = CachePerfStats.getStatTime() - start;
-    stats.incInt(applyReplicationInProgressId, -1);
-    stats.incInt(applyReplicationCompletedId, 1);
+    long delta = clock.getTime() - start;
+    stats.incLong(applyReplicationInProgressId, -1);
+    stats.incLong(applyReplicationCompletedId, 1);
     stats.incLong(applyReplicationTimeId, delta);
   }
 
   public long startSendReplication() {
-    stats.incInt(sendReplicationInProgressId, 1);
-    return CachePerfStats.getStatTime();
+    stats.incLong(sendReplicationInProgressId, 1);
+    return clock.getTime();
   }
 
   public void endSendReplication(long start) {
-    long delta = CachePerfStats.getStatTime() - start;
-    stats.incInt(sendReplicationInProgressId, -1);
-    stats.incInt(sendReplicationCompletedId, 1);
+    long delta = clock.getTime() - start;
+    stats.incLong(sendReplicationInProgressId, -1);
+    stats.incLong(sendReplicationCompletedId, 1);
     stats.incLong(sendReplicationTimeId, delta);
   }
 
   public long startPutRemote() {
-    stats.incInt(putRemoteInProgressId, 1);
-    return CachePerfStats.getStatTime();
+    stats.incLong(putRemoteInProgressId, 1);
+    return clock.getTime();
   }
 
   public void endPutRemote(long start) {
-    long delta = CachePerfStats.getStatTime() - start;
-    stats.incInt(putRemoteInProgressId, -1);
-    stats.incInt(putRemoteCompletedId, 1);
+    long delta = clock.getTime() - start;
+    stats.incLong(putRemoteInProgressId, -1);
+    stats.incLong(putRemoteCompletedId, 1);
     stats.incLong(putRemoteTimeId, delta);
   }
 
   public long startPutLocal() {
-    stats.incInt(putLocalInProgressId, 1);
-    return CachePerfStats.getStatTime();
+    stats.incLong(putLocalInProgressId, 1);
+    return clock.getTime();
   }
 
   public void endPutLocal(long start) {
-    long delta = CachePerfStats.getStatTime() - start;
-    stats.incInt(putLocalInProgressId, -1);
-    stats.incInt(putLocalCompletedId, 1);
+    long delta = clock.getTime() - start;
+    stats.incLong(putLocalInProgressId, -1);
+    stats.incLong(putLocalCompletedId, 1);
     stats.incLong(putLocalTimeId, delta);
   }
 

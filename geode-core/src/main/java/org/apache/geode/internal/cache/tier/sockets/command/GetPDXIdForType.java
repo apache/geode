@@ -16,19 +16,20 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
-import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.pdx.internal.PdxType;
 import org.apache.geode.pdx.internal.TypeRegistry;
 
 public class GetPDXIdForType extends BaseCommand {
 
+  @Immutable
   private static final GetPDXIdForType singleton = new GetPDXIdForType();
 
   public static Command getCommand() {
@@ -60,7 +61,8 @@ public class GetPDXIdForType extends BaseCommand {
     try {
       InternalCache cache = serverConnection.getCache();
       TypeRegistry registry = cache.getPdxRegistry();
-      pdxId = registry.defineType(type);
+      PdxType pdxType = registry.defineType(type);
+      pdxId = pdxType.getTypeId();
     } catch (Exception e) {
       writeException(clientMessage, e, false, serverConnection);
       serverConnection.setAsTrue(RESPONDED);

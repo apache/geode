@@ -15,10 +15,11 @@
 
 package org.apache.geode.internal.cache;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.Map;
 
-import org.apache.geode.cache.*;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.cache.CommitConflictException;
 
 /**
  * Used to reserve region entries, during a transaction commit, for modification by the transaction.
@@ -31,6 +32,7 @@ public class TXReservationMgr {
   /**
    * keys are LocalRegion; values are ArrayList of Sets of held locks.
    */
+
   private final Map regionLocks;
   private final boolean local;
 
@@ -64,14 +66,15 @@ public class TXReservationMgr {
   private void checkForConflict(TXRegionLockRequestImpl rr, IdentityArrayList localLocks)
       throws CommitConflictException {
     Object r = getRegionObject(rr);
-    Set keys = rr.getKeys();
+    Map keys = rr.getKeys();
+
     Object oldValue = this.regionLocks.put(r, keys);
     if (oldValue != null) {
       try {
         // we may have a conflict
-        Object[] keysArray = keys.toArray();
-        if (oldValue instanceof Set) {
-          checkSetForConflict(rr, (Set) oldValue, keysArray, localLocks);
+        if (oldValue instanceof Map) {
+
+          checkSetForConflict(rr, (Map) oldValue, keys, localLocks);
           IdentityArrayList newValue = new IdentityArrayList(2);
           newValue.add(oldValue);
           newValue.add(keys);
@@ -81,7 +84,7 @@ public class TXReservationMgr {
           int alSize = al.size();
           Object[] alArray = al.getArrayRef();
           for (int i = 0; i < alSize; i++) {
-            checkSetForConflict(rr, (Set) alArray[i], keysArray, localLocks);
+            checkSetForConflict(rr, (Map) alArray[i], keys, localLocks);
           }
           al.add(keys);
           this.regionLocks.put(r, al); // fix for bug 36689
@@ -94,14 +97,17 @@ public class TXReservationMgr {
     }
   }
 
-  private void checkSetForConflict(TXRegionLockRequestImpl rr, Set s, Object[] keys,
-      IdentityArrayList localLocks) throws CommitConflictException {
-    for (int i = 0; i < keys.length; i++) {
-      if (s.contains(keys[i])) {
-        release(localLocks, true);
-        throw new CommitConflictException(
-            LocalizedStrings.TXReservationMgr_THE_KEY_0_IN_REGION_1_WAS_BEING_MODIFIED_BY_ANOTHER_TRANSACTION_LOCALLY
-                .toLocalizedString(new Object[] {keys[i], rr.getRegionFullPath()}));
+  private void checkSetForConflict(TXRegionLockRequestImpl rr, Map<Object, Boolean> oldValue,
+      Map<Object, Boolean> keys, IdentityArrayList localLocks) throws CommitConflictException {
+    for (Map.Entry<Object, Boolean> e : keys.entrySet()) {
+      if (oldValue.containsKey(e.getKey())) {
+        if (oldValue.get(e.getKey()) || e.getValue()) {
+          release(localLocks, true);
+          throw new CommitConflictException(
+              String.format(
+                  "The key %s in region %s was being modified by another transaction locally.",
+                  new Object[] {e.getKey(), rr.getRegionFullPath()}));
+        }
       }
     }
   }
@@ -117,17 +123,21 @@ public class TXReservationMgr {
   private void release(IdentityArrayList localLocks, boolean conflictDetected) {
     final int llSize = localLocks.size();
     final Object[] llArray = localLocks.getArrayRef();
+
     for (int i = 0; i < llSize; i++) {
       TXRegionLockRequestImpl rr = (TXRegionLockRequestImpl) llArray[i];
       Object r = getRegionObject(rr);
-      Set keys = rr.getKeys();
+      Map<Object, Boolean> keys = rr.getKeys();
+
       Object curValue = this.regionLocks.get(r);
       boolean foundIt = false;
       if (curValue != null) {
         if (curValue == keys) {
           foundIt = true;
           this.regionLocks.remove(r);
+
         } else if (curValue instanceof IdentityArrayList) {
+
           IdentityArrayList al = (IdentityArrayList) curValue;
           int idx = al.indexOf(keys);
           if (idx != -1) {
@@ -135,6 +145,8 @@ public class TXReservationMgr {
             al.remove(idx);
             if (al.isEmpty()) {
               this.regionLocks.remove(r);
+            } else {
+              this.regionLocks.put(r, al);
             }
           }
         }

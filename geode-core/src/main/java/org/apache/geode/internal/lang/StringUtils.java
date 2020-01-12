@@ -31,7 +31,7 @@ import org.apache.geode.internal.cache.Token;
  */
 @SuppressWarnings("unused")
 @Deprecated
-public class StringUtils extends org.apache.commons.lang.StringUtils {
+public class StringUtils extends org.apache.commons.lang3.StringUtils {
 
   public static final String COMMA_DELIMITER = ",";
   public static final String LINE_SEPARATOR = System.getProperty("line.separator");

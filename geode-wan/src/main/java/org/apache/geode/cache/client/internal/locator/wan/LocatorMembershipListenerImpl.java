@@ -14,22 +14,29 @@
  */
 package org.apache.geode.cache.client.internal.locator.wan;
 
-import java.util.ArrayList;
+import static org.apache.geode.distributed.internal.membership.adapter.TcpSocketCreatorAdapter.asTcpSocketCreator;
+
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ThreadFactory;
 
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.CopyOnWriteHashSet;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.net.SocketCreatorFactory;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.logging.internal.executors.LoggingThreadFactory;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * An implementation of
@@ -38,105 +45,103 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
  *
  */
 public class LocatorMembershipListenerImpl implements LocatorMembershipListener {
-
-  private ConcurrentMap<Integer, Set<DistributionLocatorId>> allLocatorsInfo =
-      new ConcurrentHashMap<Integer, Set<DistributionLocatorId>>();
-
-  private ConcurrentMap<Integer, Set<String>> allServerLocatorsInfo =
-      new ConcurrentHashMap<Integer, Set<String>>();
-
   private static final Logger logger = LogService.getLogger();
-
-  private DistributionConfig config;
-
-  private TcpClient tcpClient;
+  static final int LOCATOR_DISTRIBUTION_RETRY_ATTEMPTS = 3;
+  private static final String LOCATORS_DISTRIBUTOR_THREAD_NAME = "LocatorsDistributorThread";
+  private static final String LISTENER_FAILURE_MESSAGE =
+      "Locator Membership listener could not exchange locator information {}:{} with {}:{} after {} retry attempts";
+  private static final String LISTENER_FINAL_FAILURE_MESSAGE =
+      "Locator Membership listener permanently failed to exchange locator information {}:{} with {}:{} after {} retry attempts";
 
   private int port;
+  private DistributionConfig config;
+  private final TcpClient tcpClient;
+  private final ConcurrentMap<Integer, Set<String>> allServerLocatorsInfo =
+      new ConcurrentHashMap<>();
+  private final ConcurrentMap<Integer, Set<DistributionLocatorId>> allLocatorsInfo =
+      new ConcurrentHashMap<>();
 
-  public LocatorMembershipListenerImpl() {
-    this.tcpClient = new TcpClient();
+  LocatorMembershipListenerImpl() {
+    this.tcpClient = new TcpClient(
+        asTcpSocketCreator(
+            SocketCreatorFactory
+                .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
+        InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
+        InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());
   }
 
+  LocatorMembershipListenerImpl(TcpClient tcpClient) {
+    this.tcpClient = tcpClient;
+  }
+
+  @Override
   public void setPort(int port) {
     this.port = port;
   }
 
+  @Override
   public void setConfig(DistributionConfig config) {
     this.config = config;
+  }
+
+  Thread buildLocatorsDistributorThread(DistributionLocatorId localLocatorId,
+      Map<Integer, Set<DistributionLocatorId>> remoteLocators, DistributionLocatorId joiningLocator,
+      int joiningLocatorDistributedSystemId) {
+    Runnable distributeLocatorsRunnable =
+        new DistributeLocatorsRunnable(config.getMemberTimeout(), tcpClient, localLocatorId,
+            remoteLocators, joiningLocator, joiningLocatorDistributedSystemId);
+    ThreadFactory threadFactory = new LoggingThreadFactory(LOCATORS_DISTRIBUTOR_THREAD_NAME, true);
+
+    return threadFactory.newThread(distributeLocatorsRunnable);
   }
 
   /**
    * When the new locator is added to remote locator metadata, inform all other locators in remote
    * locator metadata about the new locator so that they can update their remote locator metadata.
    *
-   * @param locator
+   * @param distributedSystemId Id of the joining locator.
+   * @param locator Id of the joining locator.
+   * @param sourceLocator Id of the locator that notified this locator about the new one.
    */
-
+  @Override
   public void locatorJoined(final int distributedSystemId, final DistributionLocatorId locator,
       final DistributionLocatorId sourceLocator) {
-    Thread distributeLocator = new Thread(new Runnable() {
-      public void run() {
-        ConcurrentMap<Integer, Set<DistributionLocatorId>> remoteLocators = getAllLocatorsInfo();
-        ArrayList<DistributionLocatorId> locatorsToRemove = new ArrayList<DistributionLocatorId>();
+    // DistributionLocatorId for local locator.
+    DistributionLocatorId localLocatorId;
+    String localLocator = config.getStartLocator();
+    if (localLocator.equals(DistributionConfig.DEFAULT_START_LOCATOR)) {
+      localLocatorId = new DistributionLocatorId(port, config.getBindAddress());
+    } else {
+      localLocatorId = new DistributionLocatorId(localLocator);
+    }
 
-        String localLocator = config.getStartLocator();
-        DistributionLocatorId localLocatorId = null;
-        if (localLocator.equals(DistributionConfig.DEFAULT_START_LOCATOR)) {
-          localLocatorId = new DistributionLocatorId(port, config.getBindAddress());
-        } else {
-          localLocatorId = new DistributionLocatorId(localLocator);
-        }
-        locatorsToRemove.add(localLocatorId);
-        locatorsToRemove.add(locator);
-        locatorsToRemove.add(sourceLocator);
+    // Make a local copy of the current list of known locators.
+    ConcurrentMap<Integer, Set<DistributionLocatorId>> remoteLocators = getAllLocatorsInfo();
+    Map<Integer, Set<DistributionLocatorId>> localCopy = new HashMap<>();
+    for (Map.Entry<Integer, Set<DistributionLocatorId>> entry : remoteLocators.entrySet()) {
+      Set<DistributionLocatorId> value = new CopyOnWriteHashSet<>(entry.getValue());
+      localCopy.put(entry.getKey(), value);
+    }
 
-        Map<Integer, Set<DistributionLocatorId>> localCopy =
-            new HashMap<Integer, Set<DistributionLocatorId>>();
-        for (Map.Entry<Integer, Set<DistributionLocatorId>> entry : remoteLocators.entrySet()) {
-          Set<DistributionLocatorId> value =
-              new CopyOnWriteHashSet<DistributionLocatorId>(entry.getValue());
-          localCopy.put(entry.getKey(), value);
-        }
-        for (Map.Entry<Integer, Set<DistributionLocatorId>> entry : localCopy.entrySet()) {
-          for (DistributionLocatorId removeLocId : locatorsToRemove) {
-            if (entry.getValue().contains(removeLocId)) {
-              entry.getValue().remove(removeLocId);
-            }
-          }
-          for (DistributionLocatorId value : entry.getValue()) {
-            try {
-              tcpClient.requestToServer(value.getHost(),
-                  new LocatorJoinMessage(distributedSystemId, locator, localLocatorId, ""), 1000,
-                  false);
-            } catch (Exception e) {
-              if (logger.isDebugEnabled()) {
-                logger.debug(LocalizedMessage.create(
-                    LocalizedStrings.LOCATOR_MEMBERSHIP_LISTENER_COULD_NOT_EXCHANGE_LOCATOR_INFORMATION_0_1_WIHT_2_3,
-                    new Object[] {locator.getHostName(), locator.getPort(), value.getHostName(),
-                        value.getPort()}));
-              }
-            }
-            try {
-              tcpClient.requestToServer(locator.getHost(),
-                  new LocatorJoinMessage(entry.getKey(), value, localLocatorId, ""), 1000, false);
-            } catch (Exception e) {
-              if (logger.isDebugEnabled()) {
-                logger.debug(LocalizedMessage.create(
-                    LocalizedStrings.LOCATOR_MEMBERSHIP_LISTENER_COULD_NOT_EXCHANGE_LOCATOR_INFORMATION_0_1_WIHT_2_3,
-                    new Object[] {value.getHostName(), value.getPort(), locator.getHostName(),
-                        locator.getPort()}));
-              }
-            }
-          }
-        }
+    // Remove locators that don't need to be notified (myself, the joining one and the one that
+    // notified myself).
+    List<DistributionLocatorId> ignoreList = Arrays.asList(locator, localLocatorId, sourceLocator);
+    for (Map.Entry<Integer, Set<DistributionLocatorId>> entry : localCopy.entrySet()) {
+      for (DistributionLocatorId removeLocId : ignoreList) {
+        entry.getValue().remove(removeLocId);
       }
-    });
-    distributeLocator.setDaemon(true);
-    distributeLocator.start();
+    }
+
+    // Launch Locators Distributor thread.
+    Thread locatorsDistributorThread =
+        buildLocatorsDistributorThread(localLocatorId, localCopy, locator, distributedSystemId);
+    locatorsDistributorThread.start();
   }
 
+  @Override
   public Object handleRequest(Object request) {
     Object response = null;
+
     if (request instanceof RemoteLocatorJoinRequest) {
       response = updateAllLocatorInfo((RemoteLocatorJoinRequest) request);
     } else if (request instanceof LocatorJoinMessage) {
@@ -146,6 +151,7 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
     } else if (request instanceof RemoteLocatorRequest) {
       response = getRemoteLocators((RemoteLocatorRequest) request);
     }
+
     return response;
   }
 
@@ -155,7 +161,6 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
    * invoked to inform about the this newly added locator to all other locators available in remote
    * locator metadata. As a response, remote locator metadata is sent.
    *
-   * @param request
    */
   private synchronized Object updateAllLocatorInfo(RemoteLocatorJoinRequest request) {
     int distributedSystemId = request.getDistributedSystemId();
@@ -165,6 +170,7 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
     return new RemoteLocatorJoinResponse(this.getAllLocatorsInfo());
   }
 
+  @SuppressWarnings("unused")
   private Object getPingResponse(RemoteLocatorPingRequest request) {
     return new RemoteLocatorPingResponse();
   }
@@ -192,20 +198,141 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
     return new RemoteLocatorResponse(locators);
   }
 
+  @Override
   public Set<String> getRemoteLocatorInfo(int dsId) {
     return this.allServerLocatorsInfo.get(dsId);
   }
 
+  @Override
   public ConcurrentMap<Integer, Set<DistributionLocatorId>> getAllLocatorsInfo() {
     return this.allLocatorsInfo;
   }
 
+  @Override
   public ConcurrentMap<Integer, Set<String>> getAllServerLocatorsInfo() {
     return this.allServerLocatorsInfo;
   }
 
+  @Override
   public void clearLocatorInfo() {
     allLocatorsInfo.clear();
     allServerLocatorsInfo.clear();
+  }
+
+  private static class DistributeLocatorsRunnable implements Runnable {
+    private final int memberTimeout;
+    private final TcpClient tcpClient;
+    private final DistributionLocatorId localLocatorId;
+    private final Map<Integer, Set<DistributionLocatorId>> remoteLocators;
+    private final DistributionLocatorId joiningLocator;
+    private final int joiningLocatorDistributedSystemId;
+
+    DistributeLocatorsRunnable(int memberTimeout,
+        TcpClient tcpClient,
+        DistributionLocatorId localLocatorId,
+        Map<Integer, Set<DistributionLocatorId>> remoteLocators,
+        DistributionLocatorId joiningLocator,
+        int joiningLocatorDistributedSystemId) {
+
+      this.memberTimeout = memberTimeout;
+      this.tcpClient = tcpClient;
+      this.localLocatorId = localLocatorId;
+      this.remoteLocators = remoteLocators;
+      this.joiningLocator = joiningLocator;
+      this.joiningLocatorDistributedSystemId = joiningLocatorDistributedSystemId;
+    }
+
+    void sendMessage(DistributionLocatorId targetLocator, LocatorJoinMessage locatorJoinMessage,
+        Map<DistributionLocatorId, Set<LocatorJoinMessage>> failedMessages) {
+      DistributionLocatorId advertisedLocator = locatorJoinMessage.getLocator();
+
+      try {
+        tcpClient.requestToServer(targetLocator.getHost(), locatorJoinMessage, memberTimeout,
+            false);
+      } catch (Exception exception) {
+        if (logger.isDebugEnabled()) {
+          logger.debug(LISTENER_FAILURE_MESSAGE,
+              new Object[] {advertisedLocator.getHostName(), advertisedLocator.getPort(),
+                  targetLocator.getHostName(), targetLocator.getPort(), 1, exception});
+        }
+
+        if (!failedMessages.containsKey(targetLocator)) {
+          failedMessages.put(targetLocator, new HashSet<>());
+        }
+
+        failedMessages.get(targetLocator).add(locatorJoinMessage);
+      }
+    }
+
+    boolean retryMessage(DistributionLocatorId targetLocator, LocatorJoinMessage locatorJoinMessage,
+        int retryAttempt) {
+      DistributionLocatorId advertisedLocator = locatorJoinMessage.getLocator();
+
+      try {
+        tcpClient.requestToServer(targetLocator.getHost(), locatorJoinMessage, memberTimeout,
+            false);
+
+        return true;
+      } catch (Exception exception) {
+        if (retryAttempt == LOCATOR_DISTRIBUTION_RETRY_ATTEMPTS) {
+          logger.warn(LISTENER_FINAL_FAILURE_MESSAGE,
+              new Object[] {advertisedLocator.getHostName(), advertisedLocator.getPort(),
+                  targetLocator.getHostName(), targetLocator.getPort(), retryAttempt, exception});
+        } else {
+          if (logger.isDebugEnabled()) {
+            logger.debug(LISTENER_FAILURE_MESSAGE,
+                new Object[] {advertisedLocator.getHostName(), advertisedLocator.getPort(),
+                    targetLocator.getHostName(), targetLocator.getPort(), retryAttempt, exception});
+          }
+        }
+
+        return false;
+      }
+    }
+
+    @Override
+    public void run() {
+      Map<DistributionLocatorId, Set<LocatorJoinMessage>> failedMessages = new HashMap<>();
+      for (Map.Entry<Integer, Set<DistributionLocatorId>> entry : remoteLocators.entrySet()) {
+        for (DistributionLocatorId value : entry.getValue()) {
+          // Notify known remote locator about the advertised locator.
+          LocatorJoinMessage advertiseNewLocatorMessage = new LocatorJoinMessage(
+              joiningLocatorDistributedSystemId, joiningLocator, localLocatorId, "");
+          sendMessage(value, advertiseNewLocatorMessage, failedMessages);
+
+          // Notify the advertised locator about remote known locator.
+          LocatorJoinMessage advertiseKnownLocatorMessage =
+              new LocatorJoinMessage(entry.getKey(), value, localLocatorId, "");
+          sendMessage(joiningLocator, advertiseKnownLocatorMessage, failedMessages);
+        }
+      }
+
+      // Retry failed messages and remove those that succeed.
+      if (!failedMessages.isEmpty()) {
+        for (int attempt = 1; attempt <= LOCATOR_DISTRIBUTION_RETRY_ATTEMPTS; attempt++) {
+
+          for (Map.Entry<DistributionLocatorId, Set<LocatorJoinMessage>> entry : failedMessages
+              .entrySet()) {
+            DistributionLocatorId targetLocator = entry.getKey();
+            Set<LocatorJoinMessage> joinMessages = entry.getValue();
+
+            for (LocatorJoinMessage locatorJoinMessage : joinMessages) {
+              if (retryMessage(targetLocator, locatorJoinMessage, attempt)) {
+                joinMessages.remove(locatorJoinMessage);
+              } else {
+                // Sleep between retries.
+                try {
+                  Thread.sleep(memberTimeout);
+                } catch (InterruptedException e) {
+                  Thread.currentThread().interrupt();
+                  logger.warn(
+                      "Locator Membership listener permanently failed to exchange locator information due to interruption.");
+                }
+              }
+            }
+          }
+        }
+      }
+    }
   }
 }

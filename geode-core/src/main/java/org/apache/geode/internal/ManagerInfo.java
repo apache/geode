@@ -25,6 +25,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InvalidClassException;
 import java.net.InetAddress;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
@@ -32,7 +35,8 @@ import org.apache.geode.GemFireIOException;
 import org.apache.geode.SystemIsRunningException;
 import org.apache.geode.UncreatedSystemException;
 import org.apache.geode.UnstartedSystemException;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.logging.internal.OSProcess;
 
 /**
  * Represents the information about the manager that is stored in its SystemAdmin manager VM's main
@@ -88,8 +92,8 @@ public class ManagerInfo implements DataSerializable {
 
   public static File setLocatorStarting(File directory, int port, InetAddress bindAddress) {
     if (ManagerInfo.isManagerRunning(directory, true)) {
-      throw new SystemIsRunningException(LocalizedStrings.ManagerInfo_0_1_IS_ALREADY_RUNNING
-          .toLocalizedString(new Object[] {"Locator", directory.getPath()}));
+      throw new SystemIsRunningException(String.format("%s %s is already running.",
+          new Object[] {"Locator", directory.getPath()}));
     }
     File result = getManagerInfoFile(directory, true);
     ManagerInfo.saveManagerInfo(OSProcess.getId(), STARTING_STATUS_CODE, directory, port,
@@ -125,7 +129,7 @@ public class ManagerInfo implements DataSerializable {
       ostream.close();
     } catch (IOException io) {
       throw new GemFireIOException(
-          LocalizedStrings.ManagerInfo_COULD_NOT_WRITE_FILE_0.toLocalizedString(infoFile), io);
+          String.format("Could not write file %s.", infoFile), io);
     }
   }
 
@@ -157,18 +161,19 @@ public class ManagerInfo implements DataSerializable {
     return this.bindAddress;
   }
 
-  static final String[] statusNames =
-      new String[] {LocalizedStrings.ManagerInfo_STOPPED.toLocalizedString(),
-          LocalizedStrings.ManagerInfo_STOPPING.toLocalizedString(),
-          LocalizedStrings.ManagerInfo_KILLED.toLocalizedString(),
-          LocalizedStrings.ManagerInfo_STARTING.toLocalizedString(),
-          LocalizedStrings.ManagerInfo_RUNNING.toLocalizedString()};
+  @Immutable
+  static final List<String> statusNames =
+      Collections.unmodifiableList(Arrays.asList("stopped",
+          "stopping",
+          "killed",
+          "starting",
+          "running"));
 
   /**
    * Gets the string representation for the given <code>status</code> int code.
    */
   public static String statusToString(int status) {
-    return statusNames[status];
+    return statusNames.get(status);
   }
 
   /**
@@ -178,12 +183,12 @@ public class ManagerInfo implements DataSerializable {
    */
   public static int statusNameToCode(String statusName) {
     for (int i = STOPPED_STATUS_CODE; i <= STARTED_STATUS_CODE; i++) {
-      if (statusNames[i].equalsIgnoreCase(statusName)) {
+      if (statusNames.get(i).equalsIgnoreCase(statusName)) {
         return i;
       }
     }
     throw new IllegalArgumentException(
-        LocalizedStrings.ManagerInfo_UNKNOWN_STATUSNAME_0.toLocalizedString(statusName));
+        String.format("Unknown statusName %s", statusName));
   }
 
   public static ManagerInfo loadLocatorInfo(File directory) {
@@ -193,20 +198,21 @@ public class ManagerInfo implements DataSerializable {
   private static ManagerInfo loadManagerInfo(File directory, boolean locator) {
     if (!directory.exists() || !directory.isDirectory()) {
       throw new UncreatedSystemException(
-          LocalizedStrings.ManagerInfo__0_DOES_NOT_EXIST_OR_IS_NOT_A_DIRECTORY
-              .toLocalizedString(directory.getPath()));
+          String.format("%s does not exist or is not a directory.",
+              directory.getPath()));
     }
     File infoFile = getManagerInfoFile(directory, locator);
     if (!infoFile.exists()) {
-      throw new UnstartedSystemException(LocalizedStrings.ManagerInfo_THE_INFO_FILE_0_DOES_NOT_EXIST
-          .toLocalizedString(infoFile.getPath()));
+      throw new UnstartedSystemException(String.format("The info file %s does not exist.",
+          infoFile.getPath()));
     }
     try {
       FileInputStream fis = new FileInputStream(infoFile);
       if (fis.available() == 0) {
         throw new GemFireIOException(
-            LocalizedStrings.ManagerInfo_COULD_NOT_LOAD_FILE_0_BECAUSE_THE_FILE_IS_EMPTY_WAIT_FOR_THE_1_TO_FINISH_STARTING
-                .toLocalizedString(new Object[] {infoFile, (locator ? "locator" : "system")}),
+            String.format(
+                "Could not load file %s because the file is empty. Wait for the %s to finish starting.",
+                new Object[] {infoFile, (locator ? "locator" : "system")}),
             null);
       }
       DataInputStream dis = new DataInputStream(fis);
@@ -215,11 +221,11 @@ public class ManagerInfo implements DataSerializable {
       return result;
     } catch (IOException io) {
       throw new GemFireIOException(
-          LocalizedStrings.ManagerInfo_COULD_NOT_LOAD_FILE_0.toLocalizedString(infoFile), io);
+          String.format("Could not load file %s.", infoFile), io);
     } catch (ClassNotFoundException ex) {
       throw new GemFireIOException(
-          LocalizedStrings.ManagerInfo_COULD_NOT_LOAD_FILE_0_BECAUSE_A_CLASS_COULD_NOT_BE_FOUND
-              .toLocalizedString(infoFile),
+          String.format("Could not load file %s because a class could not be found.",
+              infoFile),
           ex);
     }
   }
@@ -231,7 +237,7 @@ public class ManagerInfo implements DataSerializable {
   private static File getManagerInfoFile(File directory, boolean locator) {
     if (!locator) {
       throw new IllegalArgumentException(
-          LocalizedStrings.ManagerInfo_ONLY_LOCATORS_ARE_SUPPORTED.toLocalizedString());
+          "Only locators are supported");
     }
     File res = new File(directory, LOCATOR_INFO_FILE_NAME);
     try {
@@ -254,11 +260,8 @@ public class ManagerInfo implements DataSerializable {
     boolean interrupted = false;
     try {
       ManagerInfo mi = ManagerInfo.loadManagerInfo(directory, locator);
-      if (!PureJavaMode.isPure() && !OSProcess.exists(mi.getManagerProcessId())) {
-        return KILLED_STATUS_CODE;
-      } else {
-        return mi.getManagerStatus();
-      }
+      return mi.getManagerStatus();
+
     } catch (UnstartedSystemException ex) {
       return STOPPED_STATUS_CODE;
     } catch (GemFireIOException ex) {
@@ -294,11 +297,7 @@ public class ManagerInfo implements DataSerializable {
       if (status != STARTED_STATUS_CODE) {
         return false;
       }
-      // Check to see if manager process exists, assume it is for PureJava
-      if (PureJavaMode.isPure() || OSProcess.exists(mi.getManagerProcessId())) {
-        return true;
-      }
-      return false;
+      return true;
     } catch (UnstartedSystemException ignore) {
       return false;
     } catch (GemFireIOException ex) {
@@ -326,10 +325,6 @@ public class ManagerInfo implements DataSerializable {
       int status = mi.getManagerStatus();
       if (status != STARTED_STATUS_CODE && status != STARTING_STATUS_CODE
           && status != STOPPING_STATUS_CODE) {
-        return false;
-      }
-      // Check to see if manager process exists
-      if (!PureJavaMode.isPure() && !OSProcess.exists(mi.getManagerProcessId())) {
         return false;
       }
       return true;
@@ -404,6 +399,7 @@ public class ManagerInfo implements DataSerializable {
   private int port;
   private InetAddress bindAddress;
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     out.writeInt(this.managerPid);
     out.writeInt(this.managerStatus);
@@ -417,6 +413,7 @@ public class ManagerInfo implements DataSerializable {
     }
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
 
     this.managerPid = in.readInt();

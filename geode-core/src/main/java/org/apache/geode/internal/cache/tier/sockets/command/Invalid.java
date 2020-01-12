@@ -12,22 +12,21 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- *
- */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.MessageType;
-import org.apache.geode.internal.cache.tier.sockets.*;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
+import org.apache.geode.internal.cache.tier.sockets.Message;
+import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.security.SecurityService;
 
 public class Invalid extends BaseCommand {
 
+  @Immutable
   private static final Invalid singleton = new Invalid();
 
   public static Command getCommand() {
@@ -39,11 +38,10 @@ public class Invalid extends BaseCommand {
   @Override
   public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
       final SecurityService securityService, long start) throws IOException {
-    logger.error(
-        LocalizedMessage.create(LocalizedStrings.Invalid_0_INVALID_MESSAGE_TYPE_WITH_TX_1_FROM_2,
-            new Object[] {serverConnection.getName(),
-                Integer.valueOf(clientMessage.getTransactionId()),
-                serverConnection.getSocketString()}));
+    logger.error("{}: INVALID message type with tx: {} from {}",
+        new Object[] {serverConnection.getName(),
+            Integer.valueOf(clientMessage.getTransactionId()),
+            serverConnection.getSocketString()});
     writeErrorResponse(clientMessage, MessageType.INVALID, serverConnection);
 
   }

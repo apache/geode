@@ -29,8 +29,13 @@ public interface CacheService {
    *
    * Services are initialized in random order, fairly early on in cache initialization. In
    * particular, the cache.xml has not yet been parsed.
+   *
+   * @return a boolean indicating whether the service was successfully initialized. If false, then
+   *         the service will not subsequently be available.
    */
-  void init(Cache cache);
+  default boolean init(Cache cache) {
+    return true;
+  }
 
   /**
    * Return the class or interface used to look up this service.
@@ -43,4 +48,11 @@ public interface CacheService {
    * @return the MBean associated with this server
    */
   CacheServiceMBeanBase getMBean();
+
+  /**
+   * Close this service. Called when the cache is shutting down.
+   */
+  default void close() {
+    // do nothing
+  }
 }

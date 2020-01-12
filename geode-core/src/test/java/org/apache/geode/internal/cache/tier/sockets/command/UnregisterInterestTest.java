@@ -26,19 +26,12 @@ import static org.mockito.Mockito.when;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.operations.UnregisterInterestOperationContext;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
@@ -50,15 +43,13 @@ import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
-import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 
-@RunWith(PowerMockRunner.class)
-@PowerMockIgnore({"*.UnitTest"})
-@PrepareForTest({CacheClientNotifier.class})
-@Category(UnitTest.class)
+@Category({ClientServerTest.class})
 public class UnregisterInterestTest {
 
   private static final String REGION_NAME = "region1";
@@ -129,7 +120,7 @@ public class UnregisterInterestTest {
     when(this.message.getPart(eq(3))).thenReturn(this.isClosingPart);
     when(this.message.getPart(eq(4))).thenReturn(this.keepAlivePart);
 
-    when(this.regionNamePart.getString()).thenReturn(REGION_NAME);
+    when(this.regionNamePart.getCachedString()).thenReturn(REGION_NAME);
 
     when(this.serverConnection.getCache()).thenReturn(this.cache);
     when(this.serverConnection.getCacheServerStats()).thenReturn(this.cacheServerStats);
@@ -145,8 +136,6 @@ public class UnregisterInterestTest {
     when(this.unregisterInterestOperationContext.getKey()).thenReturn(KEY);
 
     CacheClientNotifier ccn = mock(CacheClientNotifier.class);
-    PowerMockito.mockStatic(CacheClientNotifier.class, Mockito.CALLS_REAL_METHODS);
-    PowerMockito.when(CacheClientNotifier.getInstance()).thenReturn(ccn);
 
     when(this.acceptor.getCacheClientNotifier()).thenReturn(ccn);
   }

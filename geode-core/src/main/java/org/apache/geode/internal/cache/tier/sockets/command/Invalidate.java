@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.operations.InvalidateOperationContext;
@@ -33,8 +34,6 @@ import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.util.Breadcrumbs;
@@ -44,6 +43,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
 
 public class Invalidate extends BaseCommand {
 
+  @Immutable
   private static final Invalidate singleton = new Invalidate();
 
   public static Command getCommand() {
@@ -81,7 +81,7 @@ public class Invalidate extends BaseCommand {
         return;
       }
     }
-    regionName = regionNamePart.getString();
+    regionName = regionNamePart.getCachedString();
     try {
       key = keyPart.getStringOrObject();
     } catch (Exception e) {
@@ -98,18 +98,13 @@ public class Invalidate extends BaseCommand {
     // Process the invalidate request
     if (key == null || regionName == null) {
       if (key == null) {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.BaseCommand__THE_INPUT_KEY_FOR_THE_0_REQUEST_IS_NULL, "invalidate"));
-        errMessage.append(LocalizedStrings.BaseCommand__THE_INPUT_KEY_FOR_THE_0_REQUEST_IS_NULL
-            .toLocalizedString("invalidate"));
+        logger.warn("The input key for the invalidate request is null");
+        errMessage.append("The input key for the invalidate request is null");
       }
       if (regionName == null) {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.BaseCommand__THE_INPUT_REGION_NAME_FOR_THE_0_REQUEST_IS_NULL,
-            "invalidate"));
+        logger.warn("The input region name for the invalidate request is null");
         errMessage
-            .append(LocalizedStrings.BaseCommand__THE_INPUT_REGION_NAME_FOR_THE_0_REQUEST_IS_NULL
-                .toLocalizedString("invalidate"));
+            .append("The input region name for the invalidate request is null");
       }
       writeErrorResponse(clientMessage, MessageType.DESTROY_DATA_ERROR, errMessage.toString(),
           serverConnection);
@@ -118,8 +113,8 @@ public class Invalidate extends BaseCommand {
     }
     LocalRegion region = (LocalRegion) serverConnection.getCache().getRegion(regionName);
     if (region == null) {
-      String reason = LocalizedStrings.BaseCommand__0_WAS_NOT_FOUND_DURING_1_REQUEST
-          .toLocalizedString(regionName, "invalidate");
+      String reason = String.format("%s was not found during %s request",
+          regionName, "invalidate");
       writeRegionDestroyedEx(clientMessage, regionName, reason, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
       return;
@@ -137,7 +132,7 @@ public class Invalidate extends BaseCommand {
 
     try {
       // for integrated security
-      securityService.authorize(Resource.DATA, Operation.WRITE, regionName, key.toString());
+      securityService.authorize(Resource.DATA, Operation.WRITE, regionName, key);
 
       AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
       if (authzRequest != null) {
@@ -169,9 +164,8 @@ public class Invalidate extends BaseCommand {
     } catch (EntryNotFoundException e) {
       // Don't send an exception back to the client if this
       // exception happens. Just log it and continue.
-      logger.info(LocalizedMessage.create(
-          LocalizedStrings.BaseCommand_DURING_0_NO_ENTRY_WAS_FOUND_FOR_KEY_1,
-          new Object[] {"invalidate", key}));
+      logger.info("During {} no entry was found for key {}",
+          new Object[] {"invalidate", key});
     } catch (RegionDestroyedException rde) {
       writeException(clientMessage, rde, false, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
@@ -190,7 +184,7 @@ public class Invalidate extends BaseCommand {
           logger.debug("{}: Unexpected Security exception", serverConnection.getName(), e);
         }
       } else {
-        logger.warn(LocalizedMessage.create(LocalizedStrings.BaseCommand_0_UNEXPECTED_EXCEPTION,
+        logger.warn(String.format("%s: Unexpected Exception",
             serverConnection.getName()), e);
       }
       return;

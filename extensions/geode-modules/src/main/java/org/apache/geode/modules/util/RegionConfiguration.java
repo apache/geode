@@ -21,8 +21,6 @@ import java.io.InputStream;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
-import org.apache.geode.Instantiator;
-import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.CustomExpiry;
 
 /**
@@ -31,7 +29,7 @@ import org.apache.geode.cache.CustomExpiry;
  *
  * @since GemFire 6.5
  */
-@SuppressWarnings({"serial", "unchecked"})
+@SuppressWarnings("serial")
 public class RegionConfiguration implements DataSerializable {
 
   /**
@@ -122,7 +120,7 @@ public class RegionConfiguration implements DataSerializable {
    *
    * @return the id of the <code>RegionAttributes</code> to be used
    */
-  public String getRegionAttributesId() {
+  String getRegionAttributesId() {
     return this.regionAttributesId;
   }
 
@@ -158,7 +156,7 @@ public class RegionConfiguration implements DataSerializable {
    *
    * @return the <code>CustomExpiry</code> to be used
    */
-  public CustomExpiry getCustomExpiry() {
+  CustomExpiry getCustomExpiry() {
     return this.customExpiry;
   }
 
@@ -177,7 +175,7 @@ public class RegionConfiguration implements DataSerializable {
    *
    * @return whether delta replication across a <code>Gateway</code> is enabled
    */
-  public boolean getEnableGatewayDeltaReplication() {
+  boolean getEnableGatewayDeltaReplication() {
     return this.enableGatewayDeltaReplication;
   }
 
@@ -188,15 +186,6 @@ public class RegionConfiguration implements DataSerializable {
    */
   public void setEnableGatewayReplication(boolean enableGatewayReplication) {
     this.enableGatewayReplication = enableGatewayReplication;
-  }
-
-  /**
-   * Returns whether replication across a <code>Gateway</code> is enabled.
-   *
-   * @return whether replication across a <code>Gateway</code> is enabled
-   */
-  public boolean getEnableGatewayReplication() {
-    return this.enableGatewayReplication;
   }
 
   /**
@@ -213,7 +202,7 @@ public class RegionConfiguration implements DataSerializable {
    *
    * @return whether a debug <code>CacheListener</code> is enabled
    */
-  public boolean getEnableDebugListener() {
+  boolean getEnableDebugListener() {
     return this.enableDebugListener;
   }
 
@@ -221,10 +210,11 @@ public class RegionConfiguration implements DataSerializable {
     this.enableSessionExpirationCacheListener = enableSessionExpirationCacheListener;
   }
 
-  public boolean getSessionExpirationCacheListener() {
+  boolean getSessionExpirationCacheListener() {
     return this.enableSessionExpirationCacheListener;
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeString(this.regionName, out);
     DataSerializer.writeString(this.regionAttributesId, out);
@@ -237,6 +227,7 @@ public class RegionConfiguration implements DataSerializable {
     DataSerializer.writeBoolean(this.enableSessionExpirationCacheListener, out);
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.regionName = DataSerializer.readString(in);
     this.regionAttributesId = DataSerializer.readString(in);
@@ -255,41 +246,19 @@ public class RegionConfiguration implements DataSerializable {
     }
   }
 
-  /**
-   * Registers an <code>Instantiator</code> for the <code>SessionConfiguration</code> class
-   */
-  public static void registerInstantiator(int id) {
-    Instantiator.register(new Instantiator(RegionConfiguration.class, id) {
-      public DataSerializable newInstance() {
-        return new RegionConfiguration();
-      }
-    });
-  }
-
   public String toString() {
-    return new StringBuilder().append("RegionConfiguration[").append("regionName=")
-        .append(this.regionName).append("; regionAttributesId=").append(this.regionAttributesId)
-        .append("; maxInactiveInterval=").append(this.maxInactiveInterval)
-        .append("; enableGatewayDeltaReplication=").append(this.enableGatewayDeltaReplication)
-        .append("; enableGatewayReplication=").append(this.enableGatewayReplication)
-        .append("; enableDebugListener=").append(this.enableDebugListener)
-        .append("; enableSessionExpirationCacheListener=")
-        .append(this.enableSessionExpirationCacheListener).append("; cacheWriter=")
-        .append(this.cacheWriterName).append("]").toString();
+    return "RegionConfiguration[" + "regionName="
+        + this.regionName + "; regionAttributesId=" + this.regionAttributesId
+        + "; maxInactiveInterval=" + this.maxInactiveInterval
+        + "; enableGatewayDeltaReplication=" + this.enableGatewayDeltaReplication
+        + "; enableGatewayReplication=" + this.enableGatewayReplication
+        + "; enableDebugListener=" + this.enableDebugListener
+        + "; enableSessionExpirationCacheListener="
+        + this.enableSessionExpirationCacheListener + "; cacheWriter="
+        + this.cacheWriterName + "]";
   }
 
-  /**
-   * set the fully qualified name of the {@link CacheWriter} to be created on the server. The
-   * cacheWriter must have a zero arg constructor, and must be present on the classpath on the
-   * server.
-   *
-   * @param cacheWriterName fully qualified class name of the cacheWriter
-   */
-  public void setCacheWriterName(String cacheWriterName) {
-    this.cacheWriterName = cacheWriterName;
-  }
-
-  public String getCacheWriterName() {
+  String getCacheWriterName() {
     return cacheWriterName;
   }
 }

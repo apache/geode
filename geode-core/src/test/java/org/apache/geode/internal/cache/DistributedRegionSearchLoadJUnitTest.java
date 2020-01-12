@@ -14,14 +14,21 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyObject;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.anyBoolean;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -40,9 +47,7 @@ import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationExcep
 import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.test.fake.Fakes;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 @RunWith(PowerMockRunner.class)
 @PowerMockIgnore("*.UnitTest")
 @PrepareForTest({SearchLoadAndWriteProcessor.class})
@@ -50,7 +55,8 @@ public class DistributedRegionSearchLoadJUnitTest {
 
   protected DistributedRegion createAndDefineRegion(boolean isConcurrencyChecksEnabled,
       RegionAttributes ra, InternalRegionArguments ira, GemFireCacheImpl cache) {
-    DistributedRegion region = new DistributedRegion("testRegion", ra, null, cache, ira);
+    DistributedRegion region =
+        new DistributedRegion("testRegion", ra, null, cache, ira, disabledClock());
     if (isConcurrencyChecksEnabled) {
       region.enableConcurrencyChecks();
     }
@@ -133,6 +139,7 @@ public class DistributedRegionSearchLoadJUnitTest {
     VersionTag tag = createVersionTag(true);
 
     doAnswer(new Answer<EntryEventImpl>() {
+      @Override
       public EntryEventImpl answer(InvocationOnMock invocation) throws Throwable {
         Object[] args = invocation.getArguments();
         if (args[0] instanceof EntryEventImpl) {
@@ -142,7 +149,8 @@ public class DistributedRegionSearchLoadJUnitTest {
         }
         return null;
       }
-    }).when(proc).doSearchAndLoad(any(EntryEventImpl.class), anyObject(), anyObject());
+    }).when(proc).doSearchAndLoad(any(EntryEventImpl.class), anyObject(), anyObject(),
+        anyBoolean());
   }
 
   @Test

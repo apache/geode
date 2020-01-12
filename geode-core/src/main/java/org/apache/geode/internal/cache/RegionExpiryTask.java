@@ -22,7 +22,6 @@ package org.apache.geode.internal.cache;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.ExpirationAttributes;
-import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.TimeoutException;
 
 abstract class RegionExpiryTask extends ExpiryTask {

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.EntrySnapshot;
 import org.apache.geode.internal.cache.LocalRegion;
@@ -30,6 +31,7 @@ import org.apache.geode.internal.cache.versions.VersionTag;
  */
 public class GetEntry70 extends Get70 {
 
+  @Immutable
   private static final GetEntry70 singleton = new GetEntry70();
 
   public static Command getCommand() {
@@ -62,11 +64,6 @@ public class GetEntry70 extends Get70 {
       data = snap;
       tag = snap.getVersionTag();
     }
-    Get70.Entry result = new Get70.Entry();
-    result.value = data;
-    result.isObject = true;
-    result.keyNotPresent = false;
-    result.versionTag = tag;
-    return result;
+    return new Entry(data, true, false, tag);
   }
 }

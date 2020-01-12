@@ -21,7 +21,10 @@ limitations under the License.
 
 You can configure SSL for authentication between members and to protect your data during
 distribution. You can use SSL alone or in conjunction with the other <%=vars.product_name%> security options.
-<%=vars.product_name%> SSL connections use the Java Secure Sockets Extension (JSSE) package.
+
+<%=vars.product_name%> SSL connections use the Java Secure Sockets Extension (JSSE) package, so the properties
+described here apply to <%=vars.product_name%> servers and to Java-based clients. SSL configuration in non-Java
+clients may differ &mdash; see the client's documentation for details.
 
 ## <a id="ssl_configurable_components" class="no-quick-link"></a>SSL-Configurable Components
 
@@ -30,7 +33,7 @@ system components.  The following list shows the system components that can be s
 to communicate using SSL, and the kind of communications to which each component name refers:
 
 <dt>**cluster**</dt>
-<dd>Peer-to-peer communications among members of a distributed system</dd>
+<dd>Peer-to-peer communications among members of a cluster</dd>
 
 <dt>**gateway**</dt>
 <dd>Communication across WAN gateways from one site to another</dd>
@@ -58,7 +61,7 @@ involve a TCP connection, so SSL does not apply.</dd>
 
 Specifying that a component is enabled for SSL applies to the component's server-socket side and its
 client-socket side.  For example, if you enable SSL for locators, then any process that communicates
-with a locator must also have SSL enabled.
+with a locator must also have SSL enabled.  If you provide "" as the value, SSL is turned off for all components.
 
 ## <a id="ssl_configuration_properties" class="no-quick-link"></a>SSL Configuration Properties
 
@@ -66,7 +69,18 @@ You can use <%=vars.product_name%> configuration properties to enable or disable
 protocols, and to provide the location and credentials for key and trust stores.
 
 <dt>**ssl-enabled-components**</dt>
-<dd>List of components for which to enable SSL. Component list can be "all" or a comma-separated list of components.</dd>
+<dd>List of components for which to enable SSL. Component list can be "" (disable SSL), "all", or a comma-separated list of components.</dd>
+
+<dt>**ssl-endpoint-identification-enabled**</dt>
+<dd>A boolean value that, when set to true, causes clients to validate the server's hostname using the server's certificate.
+The default value is false.
+Enabling endpoint identification guards against DNS man-in-the-middle attacks when trusting certificates that are not self-signed.</dd>
+
+<dt>**ssl-use-default-context**</dt>
+<dd>A boolean value that, when set to true, allows <%=vars.product_name%> to use the default SSL context as returned by
+SSLContext.getInstance('Default') or set by using SSLContext.setDefault().
+When enabled, also causes ssl-endpoint-identification-enabled to be set to true.
+</dd>
 
 <dt>**ssl-require-authentication**</dt>
 <dd>Requires two-way authentication, applies to all components except web. Boolean - if true (the default), two-way authentication is required.</dd>
@@ -106,11 +120,12 @@ any protocol that is enabled by default in the configured JSSE provider.</dd>
 
 ### Example: secure communications throughout
 
-To implement secure SSL communications throughout an entire distributed system, each process should
+To implement secure SSL communications throughout an entire cluster, each process should
 enable SSL for all components.
  
 ``` pre
 ssl-enabled-components=all
+ssl-endpoint-identification-enabled=true
 ssl-keystore=secure/keystore.dat
 ssl-keystore-password=changeit
 ssl-truststore=secure/truststore.dat
@@ -118,7 +133,6 @@ ssl-truststore-password=changeit
 ```
  
 If the key store has multiple certificates you may want to specify the alias of the one you wish to use for each process.  For instance, `ssl-default-alias=Hiroki`.
-
 
 ### Example: non-secure cluster communications, secure client/server
 
@@ -154,7 +168,7 @@ ssl-default-alias=Locator-Cert
  
 **Client properties**
 
-On the client, the list of enabled components reflects the server's configuration so the client
+On Java clients, the list of enabled components reflects the server's configuration so the client
 knows how it is expected to communicate with (for example) servers and locators.  Paths to keystore
 and truststore are local to the client.
 
@@ -164,6 +178,7 @@ store.
 
 ``` pre
 ssl-enabled-components=server,locator
+ssl-endpoint-identification-enabled=true
 ssl-keystore=secret/keystore.dat
 ssl-keystore-password=changeit
 ssl-truststore=secret/truststore.dat
@@ -178,7 +193,7 @@ The following table lists the components you can configure to use SSL.
 
 | Component | Communication Types                                                   |
 |-----------|-----------------------------------------------------------------------|
-| cluster   | Peer-to-peer communications among members of a distributed system     |
+| cluster   | Peer-to-peer communications among members of a cluster                |
 | gateway   | Communication across WAN gateways from one site to another            |
 | web       | Web-based communication, including REST interfaces                    |
 | jmx       | Java management extension communications, including gfsh              |
@@ -192,7 +207,9 @@ The following table lists the properties you can use to configure SSL on your <%
 
 | Property                           | Description                                                                  | Value |
 |------------------------------------|------------------------------------------------------------------------------|-------|
-| ssl&#8209;enabled&#8209;components | list of components for which to enable SSL | "all" or comma-separated list of components: cluster, gateway, web, jmx, locator, server |
+| ssl&#8209;enabled&#8209;components | list of components for which to enable SSL | "all", "", or comma-separated list of components: cluster, gateway, web, jmx, locator, server |
+| ssl&#8209;endpoint&#8209;identification&#8209;enabled | causes clients to validate server hostname using server certificate | boolean - if true, does validation; defaults to false |
+| ssl&#8209;use&#8209;default&#8209;context | allows <%=vars.product_name%> to use the default SSL context | boolean - if true, uses the default SSL context. Also sets ssl-endpoint-identification-enabled to true; defaults to false |
 | ssl-require-authentication         | requires two-way authentication, applies to all components except web | boolean - if true (the default), two-way authentication is required |
 | ssl&#8209;web&#8209;require&#8209;authentication    | requires two-way authentication for web component | boolean - if true, two-way authentication is required. Default is false (one-way authentication only) |
 | ssl-default-alias                  | default certificate name                   | string - if empty, use first certificate in key store |
@@ -211,7 +228,7 @@ use. For information, see the [Oracle JSSE website](http://www.oracle.com/techne
 
 2.  Configure SSL as needed for each connection type:
 
-    1.  Use locators for member discovery within the distributed systems and for client discovery of
+    1.  Use locators for member discovery within the clusters and for client discovery of
     servers. See [Configuring Peer-to-Peer Discovery](../../topologies_and_comm/p2p_configuration/setting_up_a_p2p_system.html) and
     [Configuring a Client/Server System](../../topologies_and_comm/cs_configuration/setting_up_a_client_server_system.html#setting_up_a_client_server_system).
 

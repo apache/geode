@@ -16,6 +16,7 @@ package org.apache.geode.cache.client.internal;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Operation;
@@ -30,8 +31,7 @@ import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Does a region destroy on a server
@@ -105,6 +105,7 @@ public class DestroyOp {
   }
 
   /** this is set if a response is received indicating that the entry was not found on the server */
+  @MutableForTesting
   public static boolean TEST_HOOK_ENTRY_NOT_FOUND;
 
   private DestroyOp() {
@@ -137,12 +138,10 @@ public class DestroyOp {
       this.prSingleHopEnabled = prSingleHopEnabled;
       this.callbackArg = callbackArg;
       this.event = event;
-      getMessage().addStringPart(region.getFullPath());
+      getMessage().addStringPart(region.getFullPath(), true);
       getMessage().addStringOrObjPart(key);
       getMessage().addObjPart(expectedOldValue);
-      getMessage().addObjPart(operation == Operation.DESTROY ? null : operation); // server
-                                                                                  // interprets null
-                                                                                  // as DESTROY
+      getMessage().addBytePart(operation.ordinal);
       getMessage().addBytesPart(event.getEventId().calcBytes());
       if (callbackArg != null) {
         getMessage().addObjPart(callbackArg);
@@ -156,12 +155,10 @@ public class DestroyOp {
       this.key = key;
       this.event = event;
       this.callbackArg = callbackArg;
-      getMessage().addStringPart(region);
+      getMessage().addStringPart(region, true);
       getMessage().addStringOrObjPart(key);
       getMessage().addObjPart(expectedOldValue);
-      getMessage().addObjPart(operation == Operation.DESTROY ? null : operation); // server
-                                                                                  // interprets null
-                                                                                  // as DESTROY
+      getMessage().addBytePart(operation.ordinal);
       getMessage().addBytesPart(event.getEventId().calcBytes());
       if (callbackArg != null) {
         getMessage().addObjPart(callbackArg);
@@ -230,8 +227,7 @@ public class DestroyOp {
           logger.debug("received REMOVE response from server with entryNotFound={}", entryNotFound);
         }
         return new EntryNotFoundException(
-            LocalizedStrings.AbstractRegionMap_ENTRY_NOT_FOUND_WITH_EXPECTED_VALUE
-                .toLocalizedString());
+            "entry not found with expected value");
       }
       return null;
     }

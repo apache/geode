@@ -31,6 +31,7 @@ public class TransportFilterServerSocket extends ServerSocket {
     this.gatewayTransportFilters = transportFilters;
   }
 
+  @Override
   public Socket accept() throws IOException {
     Socket s = new TransportFilterSocket(this.gatewayTransportFilters);
     implAccept(s);

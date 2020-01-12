@@ -18,10 +18,6 @@ import javax.management.NotificationBroadcasterSupport;
 
 import org.apache.geode.management.LocatorMXBean;
 
-/**
- *
- *
- */
 public class LocatorMBean extends NotificationBroadcasterSupport implements LocatorMXBean {
 
   private LocatorMBeanBridge bridge;

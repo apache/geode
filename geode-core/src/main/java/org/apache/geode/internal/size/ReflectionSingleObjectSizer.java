@@ -18,9 +18,10 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.SharedLibrary;
-import org.apache.geode.pdx.internal.unsafe.UnsafeWrapper;
+import org.apache.geode.internal.JvmSizeUtils;
+import org.apache.geode.unsafe.internal.sun.misc.Unsafe;
 
 /**
  * Figure out the size of an object using reflection. This class does not follow any object
@@ -29,20 +30,22 @@ import org.apache.geode.pdx.internal.unsafe.UnsafeWrapper;
  *
  */
 public class ReflectionSingleObjectSizer implements SingleObjectSizer {
-  public static final int REFERENCE_SIZE = SharedLibrary.getReferenceSize();
-  public static final int OBJECT_SIZE = SharedLibrary.getObjectHeaderSize();
+  public static final int REFERENCE_SIZE = JvmSizeUtils.getReferenceSize();
+  public static final int OBJECT_SIZE = JvmSizeUtils.getObjectHeaderSize();
 
-  private static final UnsafeWrapper unsafe;
+  @Immutable
+  private static final Unsafe unsafe;
   static {
-    UnsafeWrapper tmp = null;
+    Unsafe tmp = null;
     try {
-      tmp = new UnsafeWrapper();
+      tmp = new Unsafe();
     } catch (RuntimeException ignore) {
     } catch (Error ignore) {
     }
     unsafe = tmp;
   }
 
+  @Override
   public long sizeof(Object object) {
     return sizeof(object, true);
   }

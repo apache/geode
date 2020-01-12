@@ -15,10 +15,64 @@
  * limitations under the License.
  */
 
-dependencies {
-  provided project(':geode-core')
+apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 
-  testCompile files(project(':geode-core').sourceSets.test.output)
-  testCompile project(':geode-old-versions')
-  testCompile project(':geode-junit')
+apply from: "${project.projectDir}/../gradle/publish-java.gradle"
+
+
+dependencies {
+  compile(platform(project(':boms:geode-all-bom')))
+  compile(project(':geode-core'))
+  implementation(project(':geode-logging'))
+  implementation(project(':geode-serialization'))
+  testCompile(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
+  integrationTestCompile(project(':geode-dunit')) {
+    exclude module: 'geode-core'
+  }
+  integrationTestCompile(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
+  distributedTestCompile(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
+  distributedTestCompile(project(':geode-dunit')){
+    exclude module: 'geode-core'
+  }
+  upgradeTestCompile(project(':geode-dunit')) {
+    exclude module: 'geode-core'
+  }
+  upgradeTestCompile(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
+
+  compile('org.apache.logging.log4j:log4j-api')
+
+  integrationTestCompile('junit:junit')
+  integrationTestCompile('org.awaitility:awaitility')
+
+  distributedTestCompile('org.apache.commons:commons-lang3')
+  distributedTestCompile('junit:junit')
+  distributedTestCompile('mx4j:mx4j')
+  distributedTestCompile('org.assertj:assertj-core')
+  distributedTestCompile('org.awaitility:awaitility')
+  distributedTestCompile('org.hamcrest:hamcrest-all')
+  distributedTestCompile('org.hamcrest:hamcrest-core')
+  distributedTestCompile('org.hamcrest:hamcrest-library')
+
+  upgradeTestCompile('junit:junit')
+  upgradeTestCompile('org.awaitility:awaitility')
+  upgradeTestCompile('org.mockito:mockito-core')
+
+  upgradeTestRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
+}
+
+ext.moduleName = group + '.cq'
+
+jar {
+  inputs.property("moduleName", moduleName)
+  manifest {
+    attributes('Automatic-Module-Name': moduleName)
+  }
 }

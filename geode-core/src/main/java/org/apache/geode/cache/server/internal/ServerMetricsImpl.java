@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.geode.cache.server.ServerMetrics;
 
 /**
- * Metrics describing the load on a bridge server.
+ * Metrics describing the load on a cache server.
  *
  * @since GemFire 5.7
  *
@@ -34,18 +34,22 @@ public class ServerMetricsImpl implements ServerMetrics {
     this.maxConnections = maxConnections;
   }
 
+  @Override
   public int getClientCount() {
     return clientCount.get();
   }
 
+  @Override
   public int getConnectionCount() {
     return connectionCount.get();
   }
 
+  @Override
   public int getMaxConnections() {
     return maxConnections;
   }
 
+  @Override
   public int getSubscriptionConnectionCount() {
     return queueCount.get();
   }

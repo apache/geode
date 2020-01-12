@@ -17,7 +17,8 @@
 
 package org.apache.geode.tools.pulse.internal.service;
 
-import java.text.DecimalFormat;
+import static org.apache.geode.tools.pulse.internal.data.PulseConstants.TWO_PLACE_DECIMAL_FORMAT;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +33,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import org.apache.geode.tools.pulse.internal.data.Cluster;
-import org.apache.geode.tools.pulse.internal.data.PulseConstants;
 import org.apache.geode.tools.pulse.internal.data.Repository;
 
 /**
@@ -82,6 +82,7 @@ public class ClusterMembersRGraphService implements PulseService {
   private List<String> errorAlertsList;
   private List<String> warningAlertsList;
 
+  @Override
   public ObjectNode execute(final HttpServletRequest request) throws Exception {
 
     // Reference to repository
@@ -107,9 +108,6 @@ public class ClusterMembersRGraphService implements PulseService {
    * cluster. This function create json based on the relation of physical host and members related
    * to it.
    *
-   * @param cluster
-   * @param host
-   * @param port
    * @return Array list of JSON objects for required fields of members in cluster
    */
   private ObjectNode getPhysicalServerJson(Cluster cluster, String host, String port) {
@@ -122,7 +120,6 @@ public class ClusterMembersRGraphService implements PulseService {
     ObjectNode data1 = mapper.createObjectNode();
     clusterTopologyJSON.put(this.DATA, data1);
     ArrayNode childHostArray = mapper.createArrayNode();
-    DecimalFormat df2 = new DecimalFormat(PulseConstants.DECIMAL_FORMAT_PATTERN);
 
     updateAlertLists(cluster);
 
@@ -154,19 +151,19 @@ public class ClusterMembersRGraphService implements PulseService {
 
         memberData.put("gemfireVersion", member.getGemfireVersion());
 
-        Long currentHeap = member.getCurrentHeapSize();
-        Long usedHeapSize = cluster.getUsedHeapSize();
+        long currentHeap = member.getCurrentHeapSize();
+        long usedHeapSize = cluster.getUsedHeapSize();
 
         if (usedHeapSize > 0) {
-          double heapUsage = (currentHeap.doubleValue() / usedHeapSize.doubleValue()) * 100;
+          double heapUsage = ((currentHeap * 1D) / usedHeapSize) * 100;
 
-          memberData.put(this.MEMORY_USAGE, Double.valueOf(df2.format(heapUsage)));
+          memberData.put(this.MEMORY_USAGE, TWO_PLACE_DECIMAL_FORMAT.format(heapUsage));
         } else
           memberData.put(this.MEMORY_USAGE, 0);
 
         double currentCPUUsage = member.getCpuUsage();
 
-        memberData.put(this.CPU_USAGE, Double.valueOf(df2.format(currentCPUUsage)));
+        memberData.put(this.CPU_USAGE, TWO_PLACE_DECIMAL_FORMAT.format(currentCPUUsage));
         memberData.put(this.REGIONS, member.getMemberRegions().size());
         memberData.put(this.HOST, member.getHost());
         if ((member.getMemberPort() == null) || (member.getMemberPort().equals(""))) {
@@ -226,10 +223,10 @@ public class ClusterMembersRGraphService implements PulseService {
       }
       ObjectNode data = mapper.createObjectNode();
 
-      data.put(this.LOAD_AVG, Double.valueOf(df2.format(hostLoadAvg)));
+      data.put(this.LOAD_AVG, TWO_PLACE_DECIMAL_FORMAT.format(hostLoadAvg));
       data.put(this.SOCKETS, hostSockets);
       data.put(this.THREADS, hostNumThreads);
-      data.put(this.CPU_USAGE, Double.valueOf(df2.format(hostCpuUsage)));
+      data.put(this.CPU_USAGE, TWO_PLACE_DECIMAL_FORMAT.format(hostCpuUsage));
       data.put(this.MEMORY_USAGE, hostMemoryUsage);
 
       String hostNodeType;
@@ -265,7 +262,6 @@ public class ClusterMembersRGraphService implements PulseService {
    *
    * @param member Member
    * @param memberState i.e Severe, Error, Warning or Normal
-   * @return
    */
   private String getMemberNodeType(Cluster.Member member, String memberState) {
     String memberNodeType = "";
@@ -294,7 +290,6 @@ public class ClusterMembersRGraphService implements PulseService {
    * function used for getting list of all the alerts and save the member names in respective error,
    * warning and severe alert lists
    *
-   * @param cluster
    */
   private void updateAlertLists(Cluster cluster) {
 

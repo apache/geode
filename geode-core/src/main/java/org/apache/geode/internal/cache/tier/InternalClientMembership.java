@@ -21,16 +21,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.internal.MakeNotStatic;
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.server.CacheServer;
@@ -39,21 +38,18 @@ import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
+import org.apache.geode.internal.cache.InternalCacheServer;
 import org.apache.geode.internal.cache.tier.sockets.ClientHealthMonitor;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.logging.internal.executors.LoggingExecutors;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.management.membership.ClientMembership;
 import org.apache.geode.management.membership.ClientMembershipEvent;
 import org.apache.geode.management.membership.ClientMembershipListener;
 
 /**
- * Handles registration and event notification duties for <code>ClientMembershipListener</code>s.
- * The public counterpart for this class is
- * {@link org.apache.geode.management.membership.ClientMembership}.
+ * Handles registration and event notification duties for {@code ClientMembershipListener}s.
+ * The public counterpart for this class is {@link ClientMembership}.
  *
  * @since GemFire 4.2.1
  */
@@ -67,6 +63,7 @@ public class InternalClientMembership {
    * This list is never modified in place, and a new list is installed only under the control of
    * (@link #membershipLock}.
    */
+  @MakeNotStatic
   private static volatile List<ClientMembershipListener> clientMembershipListeners =
       Collections.emptyList();
 
@@ -81,12 +78,11 @@ public class InternalClientMembership {
    *
    * Access synchronized via {@link #systems}
    */
-  private static ThreadPoolExecutor executor;
+  @MakeNotStatic
+  private static ExecutorService executor;
 
-  private static final ThreadGroup threadGroup =
-      LoggingThreadGroup.createThreadGroup("ClientMembership Event Invoker Group", logger);
-
-  /** List of connected <code>DistributedSystem</code>s */
+  /** List of connected {@code DistributedSystem}s */
+  @MakeNotStatic
   private static final List systems = new ArrayList(1);
 
   /**
@@ -94,6 +90,7 @@ public class InternalClientMembership {
    *
    * guarded.By InternalClientMembership.class
    */
+  @MakeNotStatic
   private static boolean isMonitoring = false;
 
   /**
@@ -110,6 +107,7 @@ public class InternalClientMembership {
       // Initialize our own list of distributed systems via a connect listener
       List existingSystems = InternalDistributedSystem
           .addConnectListener(new InternalDistributedSystem.ConnectListener() {
+            @Override
             public void onConnect(InternalDistributedSystem sys) {
               addInternalDistributedSystem(sys);
             }
@@ -174,10 +172,10 @@ public class InternalClientMembership {
   }
 
   /**
-   * Returns an array of all the currently registered <code>ClientMembershipListener</code>s.
+   * Returns an array of all the currently registered {@code ClientMembershipListener}s.
    * Modifications to the returned array will not effect the registration of these listeners.
    *
-   * @return the registered <code>ClientMembershipListener</code>s; an empty array if no listeners
+   * @return the registered {@code ClientMembershipListener}s; an empty array if no listeners
    */
   public static ClientMembershipListener[] getClientMembershipListeners() {
     startMonitoring();
@@ -187,13 +185,13 @@ public class InternalClientMembership {
     List<ClientMembershipListener> l = clientMembershipListeners; // volatile fetch
     // convert to an array
     ClientMembershipListener[] listeners =
-        (ClientMembershipListener[]) l.toArray(new ClientMembershipListener[l.size()]);
+        (ClientMembershipListener[]) l.toArray(new ClientMembershipListener[0]);
     return listeners;
   }
 
   /**
-   * Removes registration of all currently registered <code>ClientMembershipListener<code>s. and
-   * <code>ClientMembershipListener<code>s.
+   * Removes registration of all currently registered {@code ClientMembershipListener}s. and
+   * {@code ClientMembershipListener}s.
    */
   public static void unregisterAllListeners() {
     startMonitoring();
@@ -224,15 +222,15 @@ public class InternalClientMembership {
       // Note it is not necessary to synchronize on the list of Client servers here,
       // since this is only a status (snapshot) of the system.
       for (Iterator bsii = cache.getCacheServers().iterator(); bsii.hasNext();) {
-        CacheServerImpl bsi = (CacheServerImpl) bsii.next();
-        AcceptorImpl ai = bsi.getAcceptor();
-        if (ai != null && ai.getCacheClientNotifier() != null) {
+        InternalCacheServer cacheServer = (InternalCacheServer) bsii.next();
+        Acceptor acceptor = cacheServer.getAcceptor();
+        if (acceptor != null && acceptor.getCacheClientNotifier() != null) {
           if (filterProxyIDs != null) {
             // notifierClients is a copy set from CacheClientNotifier
-            filterProxyIDs.addAll(ai.getCacheClientNotifier().getActiveClients());
+            filterProxyIDs.addAll(acceptor.getCacheClientNotifier().getActiveClients());
           } else {
             // notifierClients is a copy set from CacheClientNotifier
-            filterProxyIDs = ai.getCacheClientNotifier().getActiveClients();
+            filterProxyIDs = acceptor.getCacheClientNotifier().getActiveClients();
           }
         }
       }
@@ -273,10 +271,10 @@ public class InternalClientMembership {
     // Get all clients
     Map allClients = new HashMap();
     for (Iterator bsii = cache.getCacheServers().iterator(); bsii.hasNext();) {
-      CacheServerImpl bsi = (CacheServerImpl) bsii.next();
-      AcceptorImpl ai = bsi.getAcceptor();
-      if (ai != null && ai.getCacheClientNotifier() != null) {
-        allClients.putAll(ai.getCacheClientNotifier().getAllClients());
+      InternalCacheServer cacheServer = (InternalCacheServer) bsii.next();
+      Acceptor acceptor = cacheServer.getAcceptor();
+      if (acceptor != null && acceptor.getCacheClientNotifier() != null) {
+        allClients.putAll(acceptor.getCacheClientNotifier().getAllClients());
       }
     }
 
@@ -294,8 +292,8 @@ public class InternalClientMembership {
 
     Map clientQueueSizes = new HashMap();
     for (CacheServer cacheServer : cache.getCacheServers()) {
-      CacheServerImpl cacheServerImpl = (CacheServerImpl) cacheServer;
-      AcceptorImpl acceptor = cacheServerImpl.getAcceptor();
+      InternalCacheServer internalCacheServer = (InternalCacheServer) cacheServer;
+      Acceptor acceptor = internalCacheServer.getAcceptor();
       if (acceptor != null && acceptor.getCacheClientNotifier() != null) {
         clientQueueSizes.putAll(acceptor.getCacheClientNotifier().getClientQueueSizes());
       }
@@ -413,14 +411,14 @@ public class InternalClientMembership {
    * Notifies registered listeners that a Client member has joined. The new member may be a client
    * connecting to this process or a server that this process has just connected to.
    *
-   * @param member the <code>DistributedMember</code>
+   * @param member the {@code DistributedMember}
    * @param client true if the member is a client; false if server
    * @param typeOfEvent joined/left/crashed
    */
   private static void notifyListeners(final DistributedMember member, final boolean client,
       final EventType typeOfEvent) {
     startMonitoring();
-    ThreadPoolExecutor queuedExecutor = executor;
+    ExecutorService queuedExecutor = executor;
     if (queuedExecutor == null) {
       return;
     }
@@ -464,7 +462,7 @@ public class InternalClientMembership {
         throw e;
       } catch (Throwable t) {
         SystemFailure.checkFailure();
-        logger.warn(LocalizedMessage.create(LocalizedStrings.LocalRegion_UNEXPECTED_EXCEPTION), t);
+        logger.warn("unexpected exception", t);
       }
     }
   }
@@ -487,6 +485,7 @@ public class InternalClientMembership {
           return "Disconnect listener for InternalClientMembership";
         }
 
+        @Override
         public void onDisconnect(InternalDistributedSystem ss) {
           removeInternalDistributedSystem(ss);
         }
@@ -533,16 +532,8 @@ public class InternalClientMembership {
   private static void ensureExecutorIsRunning() {
     // protected by calling method synchronized on systems
     if (executor == null) {
-      final ThreadGroup group = threadGroup;
-      ThreadFactory tf = new ThreadFactory() {
-        public Thread newThread(Runnable command) {
-          Thread thread = new Thread(group, command, "ClientMembership Event Invoker");
-          thread.setDaemon(true);
-          return thread;
-        }
-      };
-      LinkedBlockingQueue q = new LinkedBlockingQueue();
-      executor = new ThreadPoolExecutor(1, 1/* max unused */, 15, TimeUnit.SECONDS, q, tf);
+      executor =
+          LoggingExecutors.newFixedThreadPoolWithTimeout("ClientMembership Event Invoker", 1, 15);
     }
   }
 
@@ -569,14 +560,17 @@ public class InternalClientMembership {
       this.client = isClient;
     }
 
+    @Override
     public DistributedMember getMember() {
       return this.member;
     }
 
+    @Override
     public String getMemberId() {
       return this.member == null ? "unknown" : this.member.getId();
     }
 
+    @Override
     public boolean isClient() {
       return this.client;
     }
@@ -592,6 +586,7 @@ public class InternalClientMembership {
   }
 
   /** If set to true for testing then notification will be synchronous */
+  @MutableForTesting
   private static boolean forceSynchronous = false;
 
   /** Set to true if synchronous notification is needed for testing */

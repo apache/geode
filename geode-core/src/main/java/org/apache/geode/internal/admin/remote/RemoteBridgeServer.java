@@ -19,10 +19,10 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.ClientSession;
 import org.apache.geode.cache.InterestRegistrationListener;
 import org.apache.geode.cache.server.ClientSubscriptionConfig;
@@ -34,12 +34,20 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.admin.AdminBridgeServer;
 import org.apache.geode.internal.cache.AbstractCacheServer;
 import org.apache.geode.internal.cache.CacheServerImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.Acceptor;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.cache.tier.OverflowAttributes;
+import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
+import org.apache.geode.internal.cache.tier.sockets.ClientHealthMonitor;
+import org.apache.geode.internal.cache.tier.sockets.ConnectionListener;
+import org.apache.geode.internal.cache.tier.sockets.ServerConnectionFactory;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.internal.statistics.StatisticsClock;
 
 /**
  * A remote (serializable) implementation of <code>BridgeServer</code> that is passed between
- * administration VMs and VMs that host caches with bridge servers.
+ * administration VMs and VMs that host caches with cache servers.
  *
  * @since GemFire 4.0
  */
@@ -48,10 +56,10 @@ public class RemoteBridgeServer extends AbstractCacheServer
 
   private static final long serialVersionUID = 8417391824652384959L;
 
-  /** Is this bridge server running? */
+  /** Is this cache server running? */
   private boolean isRunning;
 
-  /** The id of this bridge server */
+  /** The id of this cache server */
   private int id;
 
 
@@ -121,55 +129,105 @@ public class RemoteBridgeServer extends AbstractCacheServer
   @Override
   public void start() throws IOException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.RemoteBridgeServer_A_REMOTE_BRIDGESERVER_CANNOT_BE_STARTED
-            .toLocalizedString());
+        "A remote BridgeServer cannot be started.");
   }
 
+  @Override
   public boolean isRunning() {
     return this.isRunning;
   }
 
+  @Override
   public void stop() {
     throw new UnsupportedOperationException(
-        LocalizedStrings.RemoteBridgeServer_A_REMOTE_BRIDGESERVER_CANNOT_BE_STOPPED
-            .toLocalizedString());
+        "A remote BridgeServer cannot be stopped.");
   }
 
   /**
-   * Returns the cache that is served by this bridge server or <code>null</code> if this server is
+   * Returns the cache that is served by this cache server or <code>null</code> if this server is
    * not running.
    */
   @Override
-  public Cache getCache() {
+  public InternalCache getCache() {
     throw new UnsupportedOperationException(
-        LocalizedStrings.RemoteBridgeServer_CANNOT_GET_THE_CACHE_OF_A_REMOTE_BRIDGESERVER
-            .toLocalizedString());
+        "Cannot get the Cache of a remote BridgeServer.");
   }
 
+  @Override
+  public ConnectionListener getConnectionListener() {
+    throw new UnsupportedOperationException("Unsupported in RemoteBridgeServer");
+  }
+
+  @Override
+  public ServerConnectionFactory getServerConnectionFactory() {
+    throw new UnsupportedOperationException("Unsupported in RemoteBridgeServer");
+  }
+
+  @Override
+  public long getTimeLimitMillis() {
+    throw new UnsupportedOperationException("Unsupported in RemoteBridgeServer");
+  }
+
+  @Override
+  public SecurityService getSecurityService() {
+    throw new UnsupportedOperationException("Unsupported in RemoteBridgeServer");
+  }
+
+  @Override
+  public Supplier<SocketCreator> getSocketCreatorSupplier() {
+    throw new UnsupportedOperationException("Unsupported in RemoteBridgeServer");
+  }
+
+  @Override
+  public CacheClientNotifier.CacheClientNotifierProvider getCacheClientNotifierProvider() {
+    throw new UnsupportedOperationException("Unsupported in RemoteBridgeServer");
+  }
+
+  @Override
+  public ClientHealthMonitor.ClientHealthMonitorProvider getClientHealthMonitorProvider() {
+    throw new UnsupportedOperationException("Unsupported in RemoteBridgeServer");
+  }
+
+  @Override
+  public String[] getCombinedGroups() {
+    throw new UnsupportedOperationException("Unsupported in RemoteBridgeServer");
+  }
+
+  @Override
+  public StatisticsClock getStatisticsClock() {
+    throw new UnsupportedOperationException("Unsupported in RemoteBridgeServer");
+  }
+
+  @Override
   public ClientSession getClientSession(String durableClientId) {
-    String s = LocalizedStrings.RemoteBridgeServer_CANNOT_GET_CLIENT_SESSION.toLocalizedString();
+    String s = "Cannot get a client session for a remote BridgeServer";
     throw new UnsupportedOperationException(s);
   }
 
+  @Override
   public ClientSession getClientSession(DistributedMember member) {
-    String s = LocalizedStrings.RemoteBridgeServer_CANNOT_GET_CLIENT_SESSION.toLocalizedString();
+    String s = "Cannot get a client session for a remote BridgeServer";
     throw new UnsupportedOperationException(s);
   }
 
+  @Override
   public Set getAllClientSessions() {
     String s =
-        LocalizedStrings.RemoteBridgeServer_CANNOT_GET_ALL_CLIENT_SESSIONS.toLocalizedString();
+        "Cannot get all client sessions for a remote BridgeServer";
     throw new UnsupportedOperationException(s);
   }
 
+  @Override
   public ClientSubscriptionConfig getClientSubscriptionConfig() {
     return this.clientSubscriptionConfig;
   }
 
+  @Override
   public int getId() {
     return this.id;
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     out.writeInt(this.port);
     out.writeBoolean(this.notifyBySubscription);
@@ -195,6 +253,7 @@ public class RemoteBridgeServer extends AbstractCacheServer
     }
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
 
     this.port = in.readInt();
@@ -228,6 +287,16 @@ public class RemoteBridgeServer extends AbstractCacheServer
     throw new UnsupportedOperationException("not implemented on " + getClass().getSimpleName());
   }
 
+  @Override
+  public Acceptor createAcceptor(OverflowAttributes overflowAttributes) throws IOException {
+    throw new UnsupportedOperationException("not implemented on " + getClass().getSimpleName());
+  }
+
+  @Override
+  public String getExternalAddress() {
+    throw new UnsupportedOperationException("not implemented on " + getClass().getSimpleName());
+  }
+
   private static class RemoteLoadProbe extends ServerLoadProbeAdapter {
     /** The description of this callback */
     private final String desc;
@@ -236,6 +305,7 @@ public class RemoteBridgeServer extends AbstractCacheServer
       this.desc = desc;
     }
 
+    @Override
     public ServerLoad getLoad(ServerMetrics metrics) {
       return null;
     }
@@ -254,10 +324,10 @@ public class RemoteBridgeServer extends AbstractCacheServer
    *
    * @since GemFire 5.8Beta
    */
+  @Override
   public void registerInterestRegistrationListener(InterestRegistrationListener listener) {
     final String s =
-        LocalizedStrings.RemoteBridgeServer_INTERESTREGISTRATIONLISTENERS_CANNOT_BE_REGISTERED_ON_A_REMOTE_BRIDGESERVER
-            .toLocalizedString();
+        "InterestRegistrationListeners cannot be registered on a remote BridgeServer";
     throw new UnsupportedOperationException(s);
   }
 
@@ -269,10 +339,10 @@ public class RemoteBridgeServer extends AbstractCacheServer
    *
    * @since GemFire 5.8Beta
    */
+  @Override
   public void unregisterInterestRegistrationListener(InterestRegistrationListener listener) {
     final String s =
-        LocalizedStrings.RemoteBridgeServer_INTERESTREGISTRATIONLISTENERS_CANNOT_BE_UNREGISTERED_FROM_A_REMOTE_BRIDGESERVER
-            .toLocalizedString();
+        "InterestRegistrationListeners cannot be unregistered from a remote BridgeServer";
     throw new UnsupportedOperationException(s);
   }
 
@@ -285,10 +355,10 @@ public class RemoteBridgeServer extends AbstractCacheServer
    *
    * @since GemFire 5.8Beta
    */
+  @Override
   public Set getInterestRegistrationListeners() {
     final String s =
-        LocalizedStrings.RemoteBridgeServer_INTERESTREGISTRATIONLISTENERS_CANNOT_BE_RETRIEVED_FROM_A_REMOTE_BRIDGESERVER
-            .toLocalizedString();
+        "InterestRegistrationListeners cannot be retrieved from a remote BridgeServer";
     throw new UnsupportedOperationException(s);
   }
 }

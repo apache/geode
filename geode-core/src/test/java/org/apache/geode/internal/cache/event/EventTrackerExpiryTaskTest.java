@@ -19,14 +19,11 @@ import static org.mockito.Mockito.mock;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class EventTrackerExpiryTaskTest {
   private static final long TIME_TO_LIVE = 100;
 

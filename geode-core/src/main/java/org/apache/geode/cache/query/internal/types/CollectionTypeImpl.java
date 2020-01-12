@@ -18,17 +18,25 @@ package org.apache.geode.cache.query.internal.types;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.query.internal.NWayMergeResults;
 import org.apache.geode.cache.query.internal.Ordered;
 import org.apache.geode.cache.query.internal.ResultsSet;
 import org.apache.geode.cache.query.internal.SortedResultSet;
 import org.apache.geode.cache.query.internal.SortedStructSet;
 import org.apache.geode.cache.query.internal.StructSet;
-import org.apache.geode.cache.query.types.*;
+import org.apache.geode.cache.query.types.CollectionType;
+import org.apache.geode.cache.query.types.ObjectType;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * Implementation of CollectionType
@@ -72,6 +80,7 @@ public class CollectionTypeImpl extends ObjectTypeImpl implements CollectionType
     return resolveClass().getName() + "<" + this.elementType.resolveClass().getName() + ">";
   }
 
+  @Override
   public boolean allowsDuplicates() {
     Class cls = resolveClass();
     return !Set.class.isAssignableFrom(cls) && !Map.class.isAssignableFrom(cls)
@@ -80,10 +89,12 @@ public class CollectionTypeImpl extends ObjectTypeImpl implements CollectionType
         && !SortedResultSet.class.isAssignableFrom(cls) && !ResultsSet.class.isAssignableFrom(cls);
   }
 
+  @Override
   public ObjectType getElementType() {
     return this.elementType;
   }
 
+  @Override
   public boolean isOrdered() {
     Class cls = resolveClass();
     return List.class.isAssignableFrom(cls) || cls.isArray() || Ordered.class.isAssignableFrom(cls)
@@ -112,14 +123,16 @@ public class CollectionTypeImpl extends ObjectTypeImpl implements CollectionType
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.elementType = (ObjectType) DataSerializer.readObject(in);
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     DataSerializer.writeObject(this.elementType, out);
   }
 }

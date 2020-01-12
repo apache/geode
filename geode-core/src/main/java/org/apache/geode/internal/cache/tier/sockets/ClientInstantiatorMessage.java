@@ -21,10 +21,12 @@ import java.io.IOException;
 import java.util.Arrays;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.EnumListenerEvent;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.tier.MessageType;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * Class <code>ClientInstantiatorMessage</code> represents a message that is to be sent to the
@@ -142,10 +144,11 @@ public class ClientInstantiatorMessage extends ClientUpdateMessageImpl {
    * Writes an object to a <code>Datautput</code>.
    *
    * @throws IOException If this serializer cannot write an object to <code>out</code>.
-   * @see #fromData
+   * @see DataSerializableFixedID#fromData
    */
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     // Note: does not call super.toData what a HACK
     out.writeByte(_operation.getEventCode());
     int instantiatorCount = this.serializedInstantiators.length;
@@ -153,8 +156,8 @@ public class ClientInstantiatorMessage extends ClientUpdateMessageImpl {
     for (int i = 0; i < instantiatorCount; i++) {
       DataSerializer.writeByteArray(this.serializedInstantiators[i], out);
     }
-    DataSerializer.writeObject(_membershipId, out);
-    DataSerializer.writeObject(_eventIdentifier, out);
+    context.getSerializer().writeObject(_membershipId, out);
+    context.getSerializer().writeObject(_eventIdentifier, out);
   }
 
   /**
@@ -162,10 +165,11 @@ public class ClientInstantiatorMessage extends ClientUpdateMessageImpl {
    *
    * @throws IOException If this serializer cannot read an object from <code>in</code>.
    * @throws ClassNotFoundException If the class for an object being restored cannot be found.
-   * @see #toData
+   * @see DataSerializableFixedID#toData
    */
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     // Note: does not call super.fromData what a HACK
     _operation = EnumListenerEvent.getEnumListenerEvent(in.readByte());
     int instantiatorCount = in.readInt(); // is byte suficient for this ?
@@ -174,7 +178,7 @@ public class ClientInstantiatorMessage extends ClientUpdateMessageImpl {
       this.serializedInstantiators[i] = DataSerializer.readByteArray(in);
     }
     _membershipId = ClientProxyMembershipID.readCanonicalized(in);
-    _eventIdentifier = (EventID) DataSerializer.readObject(in);
+    _eventIdentifier = (EventID) context.getDeserializer().readObject(in);
   }
 
   @Override
@@ -198,9 +202,10 @@ public class ClientInstantiatorMessage extends ClientUpdateMessageImpl {
   @Override
   public String toString() {
     StringBuffer buffer = new StringBuffer();
-    buffer.append("ClientInstantiatorMessage[").append(";value=")
-        .append((Arrays.toString(this.serializedInstantiators))).append(";memberId=")
-        .append(getMembershipId()).append(";eventId=").append(getEventId()).append(";notifyAll=")
+    buffer.append("ClientInstantiatorMessage[value=")
+        .append(Arrays.toString(this.serializedInstantiators))
+        .append(";memberId=")
+        .append(getMembershipId()).append(";eventId=").append(getEventId())
         .append("]");
     return buffer.toString();
   }

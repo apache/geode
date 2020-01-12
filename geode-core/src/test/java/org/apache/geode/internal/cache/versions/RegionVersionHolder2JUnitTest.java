@@ -14,14 +14,13 @@
  */
 package org.apache.geode.internal.cache.versions;
 
-import static org.junit.Assert.*;
+import static org.apache.geode.internal.cache.versions.RegionVersionHolder.BIT_SET_WIDTH;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class RegionVersionHolder2JUnitTest {
 
   @Test
@@ -124,7 +123,7 @@ public class RegionVersionHolder2JUnitTest {
 
   private void fillLargeException(boolean useBitSet) {
     RegionVersionHolder h = createHolder(useBitSet);
-    long bigVersion = RegionVersionHolder.BIT_SET_WIDTH + 1;
+    long bigVersion = BIT_SET_WIDTH + 1;
     h.recordVersion(bigVersion);
     for (long i = 0l; i < bigVersion; i++) {
       h.recordVersion(i);
@@ -136,7 +135,7 @@ public class RegionVersionHolder2JUnitTest {
   @Test
   public void testReceiveDuplicateAfterBitSetFlushWithBitSet() {
     RegionVersionHolder h = createHolder(true);
-    long bigVersion = RegionVersionHolder.BIT_SET_WIDTH + 1;
+    long bigVersion = BIT_SET_WIDTH + 1;
     h.recordVersion(bigVersion);
     for (long i = 0l; i < bigVersion; i++) {
       h.recordVersion(i);
@@ -159,11 +158,12 @@ public class RegionVersionHolder2JUnitTest {
     // assertIndexDetailsEquals("unexpected RVV exception : " + h, 0, h.getExceptionCount());
   }
 
+
   private void createSpecialException(RegionVersionHolder h) {
     h.addException(h.getVersion() - 1, h.getVersion() + 1);
   }
 
-  private RegionVersionHolder createHolder(boolean useBitSet) {
+  static RegionVersionHolder createHolder(boolean useBitSet) {
     if (useBitSet) {
       return new RegionVersionHolder("id");
     }

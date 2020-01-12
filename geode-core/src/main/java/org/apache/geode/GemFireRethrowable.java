@@ -35,7 +35,6 @@ public class GemFireRethrowable extends Error {
   /**
    * Create a GemFireRethrowable with the specified message.
    *
-   * @param message
    */
   public GemFireRethrowable(String message) {
     super(message);

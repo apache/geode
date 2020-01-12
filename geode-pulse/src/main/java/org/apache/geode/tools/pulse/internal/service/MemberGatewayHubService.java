@@ -51,6 +51,7 @@ public class MemberGatewayHubService implements PulseService {
 
   private final ObjectMapper mapper = new ObjectMapper();
 
+  @Override
   public ObjectNode execute(final HttpServletRequest request) throws Exception {
 
     // get cluster object

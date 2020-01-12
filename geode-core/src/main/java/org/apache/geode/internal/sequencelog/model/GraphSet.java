@@ -26,9 +26,6 @@ import java.util.regex.Pattern;
 
 import org.apache.geode.internal.sequencelog.GraphType;
 
-/**
- *
- */
 public class GraphSet implements GraphReaderCallback {
   private Map<GraphID, Graph> graphs = new HashMap<GraphID, Graph>();
   private long maxTime = Long.MIN_VALUE;
@@ -37,6 +34,7 @@ public class GraphSet implements GraphReaderCallback {
 
   private Set<EdgePattern> edgePatterns = new TreeSet<EdgePattern>();
 
+  @Override
   public void addEdge(long timestamp, GraphType graphType, String graphName, String edgeName,
       String state, String source, String dest) {
     addEdge(timestamp, graphType, graphName, edgeName, state, source, dest, false);
@@ -81,6 +79,7 @@ public class GraphSet implements GraphReaderCallback {
 
   }
 
+  @Override
   public void addEdgePattern(long timestamp, GraphType graphType, Pattern graphNamePattern,
       String edgeName, String state, String source, String dest) {
     edgePatterns.add(
@@ -118,6 +117,7 @@ public class GraphSet implements GraphReaderCallback {
   public List<String> getLocations() {
     List<String> result = new ArrayList<String>(locations.keySet());
     Collections.<String>sort(result, new Comparator<String>() {
+      @Override
       public int compare(String o1, String o2) {
         Long time1 = locations.get(o1);
         Long time2 = locations.get(o2);
@@ -147,6 +147,7 @@ public class GraphSet implements GraphReaderCallback {
       this.dest = dest;
     }
 
+    @Override
     public int compareTo(EdgePattern o) {
       int timeDifference = Long.signum(timestamp - o.timestamp);
       if (timeDifference != 0) {

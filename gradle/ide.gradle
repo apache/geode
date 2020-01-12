@@ -15,70 +15,62 @@
  * limitations under the License.
  */
 import org.gradle.plugins.ide.eclipse.model.Container
-allprojects {
-  apply plugin: 'idea'
-  apply plugin: 'eclipse'
-}
 
-subprojects {
-  eclipse {
-    classpath {
-      defaultOutputDir = file('build-eclipse')
-      downloadSources = true
-      plusConfigurations += [ configurations.provided ]
-      file {
-        whenMerged { classpath ->
-            // Remove the gradle output directories from the eclipse classpath.
-            // Unfortunately, using minusConfigurations does not work here, because
-            // it removes the entire geode-core project.
-            classpath.entries.removeAll { entry -> 
-              (entry.path.contains('geode-core/build') ||
-              entry.path.contains('geode-web/build') ||
-              entry.path.contains('geode-assembly/build') ||
-              entry.path.contains('geode-dependencies.jar')) &&
-              !entry.path.contains('generated-resources') &&
-              !entry.path.contains('generated-src')
-            }
+apply plugin: 'idea'
+apply plugin: 'eclipse'
 
-            //By default, gradle adds the java 1.8 *execution environment*, which has access restrictions on
-            //things like Unsafe. Change it to a direct dependency on the workspace JDK
-            classpath.entries = classpath.entries.collect { entry -> 
-              entry.path.contains('org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE')
-                ? new Container('org.eclipse.jdt.launching.JRE_CONTAINER')
-                : entry
-            }
+eclipse {
+  classpath {
+    defaultOutputDir = file('build-eclipse')
+    downloadSources = true
+    file {
+      whenMerged { classpath ->
+        // Remove the gradle output directories from the eclipse classpath.
+        // Unfortunately, using minusConfigurations does not work here, because
+        // it removes the entire geode-core project.
+        classpath.entries.removeAll { entry ->
+          (entry.path.contains('geode-core/build') ||
+            entry.path.contains('geode-web/build') ||
+            entry.path.contains('geode-assembly/build') ||
+            entry.path.contains('geode-dependencies.jar')) &&
+            !entry.path.contains('generated-resources') &&
+            !entry.path.contains('generated-src')
+        }
+
+        //By default, gradle adds the java 1.8 *execution environment*, which has access restrictions on
+        //things like Unsafe. Change it to a direct dependency on the workspace JDK
+        classpath.entries = classpath.entries.collect { entry ->
+          entry.path.contains('org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE') ?
+            new Container('org.eclipse.jdt.launching.JRE_CONTAINER') :
+            entry
         }
       }
     }
-    project {
-      name = sanitizedName()
-    }
-    // Several files have UTF-8 encoding and Eclipse running on Windows
-    // will have trouble unless we tell it to use UTF-8 encoding.
-    // This setting needs to go into the core.resources.prefs file,
-    // which the JDT script isn't set up to configure
-    eclipseJdt {
-      doLast {
-        File f = file('.settings/org.eclipse.core.resources.prefs')
-        f.write('eclipse.preferences.version=1\n')
-        f.append('encoding/<project>=utf-8')
-      }
-    }
   }
-
-  cleanEclipse {
+  // Several files have UTF-8 encoding and Eclipse running on Windows
+  // will have trouble unless we tell it to use UTF-8 encoding.
+  // This setting needs to go into the core.resources.prefs file,
+  // which the JDT script isn't set up to configure
+  eclipseJdt {
     doLast {
-      delete '.settings/org.eclipse.core.resources.prefs'
-    }
-  }
-  
-  tasks.eclipse.dependsOn(cleanEclipse)
-  
-  idea {
-    module {
-      downloadSources = true
-      scopes.PROVIDED.plus += [ configurations.provided ]
+      File f = file('.settings/org.eclipse.core.resources.prefs')
+      f.write('eclipse.preferences.version=1\n')
+      f.append('encoding/<project>=utf-8')
     }
   }
 }
-  
+
+cleanEclipse {
+  doLast {
+    delete '.settings/org.eclipse.core.resources.prefs'
+  }
+}
+
+tasks.eclipse.dependsOn(cleanEclipse)
+
+idea {
+  module {
+    inheritOutputDirs = true
+    downloadSources = true
+  }
+}

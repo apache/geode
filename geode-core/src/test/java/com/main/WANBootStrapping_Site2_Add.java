@@ -25,8 +25,8 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.wan.GatewayReceiver;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.ExitCode;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * This is a member representing site 2 who wants to receive data from site 1
@@ -56,7 +56,7 @@ public class WANBootStrapping_Site2_Add {
 
   public static void main(String[] args) {
 
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "DistributedSystemListener",
+    System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "DistributedSystemListener",
         "com.main.MyDistributedSystemListener");
 
     // create a locator and a cache
@@ -79,7 +79,7 @@ public class WANBootStrapping_Site2_Add {
       }
     }
 
-    // region size should be 100. This is the data which will recieve from remote site
+    // region size should be 100. This is the data which will receive from remote site
     while (region.size() != 100) {
       continue;
     }

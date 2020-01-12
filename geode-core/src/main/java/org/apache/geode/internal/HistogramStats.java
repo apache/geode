@@ -36,9 +36,7 @@ public class HistogramStats {
    *
    * @param name a unique name for the histogram type
    * @param unit the unit of data collected
-   * @param factory
    * @param breakPoints the breakpoints for each bucket
-   * @param largerIsBetter
    */
   public HistogramStats(String name, String unit, StatisticsFactory factory, long[] breakPoints,
       boolean largerIsBetter) {

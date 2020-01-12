@@ -17,16 +17,17 @@ package org.apache.geode.internal.size;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.Map;
+import java.util.Set;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.util.internal.GeodeGlossary;
 
-@Category(UnitTest.class)
 public class ObjectTraverserJUnitTest {
 
   @Test
@@ -74,6 +75,7 @@ public class ObjectTraverserJUnitTest {
 
     TestVisitor visitor = new TestVisitor();
     visitor = new TestVisitor() {
+      @Override
       public boolean visit(Object parent, Object object) {
         super.visit(parent, object);
         return object != set2;
@@ -97,7 +99,7 @@ public class ObjectTraverserJUnitTest {
     set1.add(set2);
     set2.add(object3);
 
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "ObjectSizer.SIZE_OF_CLASS",
+    System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "ObjectSizer.SIZE_OF_CLASS",
         "org.apache.geode.internal.size.SizeOfUtil0");
     System.out.println(ObjectGraphSizer.histogram(set1, true));
   }
@@ -107,6 +109,7 @@ public class ObjectTraverserJUnitTest {
 
     public Map visited = new IdentityHashMap();
 
+    @Override
     public boolean visit(Object parent, Object object) {
       assertNull(visited.put(object, VALUE));
       return true;

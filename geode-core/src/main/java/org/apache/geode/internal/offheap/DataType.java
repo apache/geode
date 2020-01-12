@@ -14,17 +14,15 @@
  */
 package org.apache.geode.internal.offheap;
 
-import java.io.ByteArrayInputStream;
 import java.io.DataInput;
-import java.io.DataInputStream;
 import java.io.IOException;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.Instantiator;
-import org.apache.geode.internal.DSCODE;
-import org.apache.geode.internal.DSFIDFactory;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalInstantiator;
+import org.apache.geode.internal.serialization.ByteArrayDataInput;
+import org.apache.geode.internal.serialization.DSCODE;
 
 /**
  * Determines the data type of the bytes in an off-heap MemoryBlock. This is used by the tests for
@@ -32,7 +30,7 @@ import org.apache.geode.internal.InternalInstantiator;
  *
  * @since Geode 1.0
  */
-public class DataType implements DSCODE {
+public class DataType {
 
   public static String getDataType(byte[] bytes) {
     final DataInput in = getDataInput(bytes);
@@ -43,182 +41,236 @@ public class DataType implements DSCODE {
       return "IOException: " + e.getMessage();
     }
     try {
-      switch (header) {
-        case DS_FIXED_ID_BYTE: {
-          return "org.apache.geode.internal.DataSerializableFixedID:"
-              + DSFIDFactory.create(in.readByte(), in).getClass().getName();
+      if (header == DSCODE.DS_FIXED_ID_BYTE.toByte()) {
+        return "org.apache.geode.internal.serialization.DataSerializableFixedID:"
+            + InternalDataSerializer.getDSFIDFactory().create(in.readByte(), in).getClass()
+                .getName();
+      }
+      if (header == DSCODE.DS_FIXED_ID_SHORT.toByte()) {
+        return "org.apache.geode.internal.serialization.DataSerializableFixedID:"
+            + InternalDataSerializer.getDSFIDFactory().create(in.readShort(), in).getClass()
+                .getName();
+      }
+      if (header == DSCODE.DS_FIXED_ID_INT.toByte()) {
+        return "org.apache.geode.internal.serialization.DataSerializableFixedID:"
+            + InternalDataSerializer.getDSFIDFactory().create(in.readInt(), in).getClass()
+                .getName();
+      }
+      if (header == DSCODE.DS_NO_FIXED_ID.toByte()) {
+        return "org.apache.geode.internal.serialization.DataSerializableFixedID:"
+            + DataSerializer.readClass(in).getName();
+      }
+      if (header == DSCODE.NULL.toByte()) {
+        return "null";
+      }
+      if (header == DSCODE.NULL_STRING.toByte() || header == DSCODE.STRING.toByte()
+          || header == DSCODE.HUGE_STRING.toByte() || header == DSCODE.STRING_BYTES.toByte()
+          || header == DSCODE.HUGE_STRING_BYTES.toByte()) {
+        return "java.lang.String";
+      }
+      if (header == DSCODE.CLASS.toByte()) {
+        return "java.lang.Class";
+      }
+      if (header == DSCODE.DATE.toByte()) {
+        return "java.util.Date";
+      }
+      if (header == DSCODE.FILE.toByte()) {
+        return "java.io.File";
+      }
+      if (header == DSCODE.INET_ADDRESS.toByte()) {
+        return "java.net.InetAddress";
+      }
+      if (header == DSCODE.BOOLEAN.toByte()) {
+        return "java.lang.Boolean";
+      }
+      if (header == DSCODE.CHARACTER.toByte()) {
+        return "java.lang.Character";
+      }
+      if (header == DSCODE.BYTE.toByte()) {
+        return "java.lang.Byte";
+      }
+      if (header == DSCODE.SHORT.toByte()) {
+        return "java.lang.Short";
+      }
+      if (header == DSCODE.INTEGER.toByte()) {
+        return "java.lang.Integer";
+      }
+      if (header == DSCODE.LONG.toByte()) {
+        return "java.lang.Long";
+      }
+      if (header == DSCODE.FLOAT.toByte()) {
+        return "java.lang.Float";
+      }
+      if (header == DSCODE.DOUBLE.toByte()) {
+        return "java.lang.Double";
+      }
+      if (header == DSCODE.BYTE_ARRAY.toByte()) {
+        return "byte[]";
+      }
+      if (header == DSCODE.ARRAY_OF_BYTE_ARRAYS.toByte()) {
+        return "byte[][]";
+      }
+      if (header == DSCODE.SHORT_ARRAY.toByte()) {
+        return "short[]";
+      }
+      if (header == DSCODE.STRING_ARRAY.toByte()) {
+        return "java.lang.String[]";
+      }
+      if (header == DSCODE.INT_ARRAY.toByte()) {
+        return "int[]";
+      }
+      if (header == DSCODE.LONG_ARRAY.toByte()) {
+        return "long[]";
+      }
+      if (header == DSCODE.FLOAT_ARRAY.toByte()) {
+        return "float[]";
+      }
+      if (header == DSCODE.DOUBLE_ARRAY.toByte()) {
+        return "double[]";
+      }
+      if (header == DSCODE.BOOLEAN_ARRAY.toByte()) {
+        return "boolean[]";
+      }
+      if (header == DSCODE.CHAR_ARRAY.toByte()) {
+        return "char[]";
+      }
+      if (header == DSCODE.OBJECT_ARRAY.toByte()) {
+        return "java.lang.Object[]";
+      }
+      if (header == DSCODE.ARRAY_LIST.toByte()) {
+        return "java.util.ArrayList";
+      }
+      if (header == DSCODE.LINKED_LIST.toByte()) {
+        return "java.util.LinkedList";
+      }
+      if (header == DSCODE.HASH_SET.toByte()) {
+        return "java.util.HashSet";
+      }
+      if (header == DSCODE.LINKED_HASH_SET.toByte()) {
+        return "java.util.LinkedHashSet";
+      }
+      if (header == DSCODE.HASH_MAP.toByte()) {
+        return "java.util.HashMap";
+      }
+      if (header == DSCODE.IDENTITY_HASH_MAP.toByte()) {
+        return "java.util.IdentityHashMap";
+      }
+      if (header == DSCODE.HASH_TABLE.toByte()) {
+        return "java.util.Hashtable";
+      }
+      // ConcurrentHashMap is written as java.io.serializable
+      // if (header == DSCODE.CONCURRENT_HASH_MAP.toByte()) {
+      // return "java.util.concurrent.ConcurrentHashMap";
+      if (header == DSCODE.PROPERTIES.toByte()) {
+        return "java.util.Properties";
+      }
+      if (header == DSCODE.TIME_UNIT.toByte()) {
+        return "java.util.concurrent.TimeUnit";
+      }
+      if (header == DSCODE.USER_CLASS.toByte()) {
+        byte userClassDSId = in.readByte();
+        return "DataSerializer: with Id:" + userClassDSId;
+      }
+      if (header == DSCODE.USER_CLASS_2.toByte()) {
+        short userClass2DSId = in.readShort();
+        return "DataSerializer: with Id:" + userClass2DSId;
+      }
+      if (header == DSCODE.USER_CLASS_4.toByte()) {
+        int userClass4DSId = in.readInt();
+        return "DataSerializer: with Id:" + userClass4DSId;
+      }
+      if (header == DSCODE.VECTOR.toByte()) {
+        return "java.util.Vector";
+      }
+      if (header == DSCODE.STACK.toByte()) {
+        return "java.util.Stack";
+      }
+      if (header == DSCODE.TREE_MAP.toByte()) {
+        return "java.util.TreeMap";
+      }
+      if (header == DSCODE.TREE_SET.toByte()) {
+        return "java.util.TreeSet";
+      }
+      if (header == DSCODE.BOOLEAN_TYPE.toByte()) {
+        return "java.lang.Boolean.class";
+      }
+      if (header == DSCODE.CHARACTER_TYPE.toByte()) {
+        return "java.lang.Character.class";
+      }
+      if (header == DSCODE.BYTE_TYPE.toByte()) {
+        return "java.lang.Byte.class";
+      }
+      if (header == DSCODE.SHORT_TYPE.toByte()) {
+        return "java.lang.Short.class";
+      }
+      if (header == DSCODE.INTEGER_TYPE.toByte()) {
+        return "java.lang.Integer.class";
+      }
+      if (header == DSCODE.LONG_TYPE.toByte()) {
+        return "java.lang.Long.class";
+      }
+      if (header == DSCODE.FLOAT_TYPE.toByte()) {
+        return "java.lang.Float.class";
+      }
+      if (header == DSCODE.DOUBLE_TYPE.toByte()) {
+        return "java.lang.Double.class";
+      }
+      if (header == DSCODE.VOID_TYPE.toByte()) {
+        return "java.lang.Void.class";
+      }
+      if (header == DSCODE.USER_DATA_SERIALIZABLE.toByte()) {
+        Instantiator instantiator = InternalInstantiator.getInstantiator(in.readByte());
+        return "org.apache.geode.Instantiator:" + instantiator.getInstantiatedClass().getName();
+      }
+      if (header == DSCODE.USER_DATA_SERIALIZABLE_2.toByte()) {
+        Instantiator instantiator = InternalInstantiator.getInstantiator(in.readShort());
+        return "org.apache.geode.Instantiator:" + instantiator.getInstantiatedClass().getName();
+      }
+      if (header == DSCODE.USER_DATA_SERIALIZABLE_4.toByte()) {
+        Instantiator instantiator = InternalInstantiator.getInstantiator(in.readInt());
+        return "org.apache.geode.Instantiator:" + instantiator.getInstantiatedClass().getName();
+      }
+      if (header == DSCODE.DATA_SERIALIZABLE.toByte()) {
+        return "org.apache.geode.DataSerializable:" + DataSerializer.readClass(in).getName();
+      }
+      if (header == DSCODE.SERIALIZABLE.toByte()) {
+        String name = null;
+        try {
+          Object obj = InternalDataSerializer.basicReadObject(getDataInput(bytes));
+          name = obj.getClass().getName();
+        } catch (ClassNotFoundException e) {
+          name = e.getMessage();
         }
-        case DS_FIXED_ID_SHORT: {
-          return "org.apache.geode.internal.DataSerializableFixedID:"
-              + DSFIDFactory.create(in.readShort(), in).getClass().getName();
-        }
-        case DS_FIXED_ID_INT: {
-          return "org.apache.geode.internal.DataSerializableFixedID:"
-              + DSFIDFactory.create(in.readInt(), in).getClass().getName();
-        }
-        case DS_NO_FIXED_ID:
-          return "org.apache.geode.internal.DataSerializableFixedID:"
-              + DataSerializer.readClass(in).getName();
-        case NULL:
-          return "null";
-        case NULL_STRING:
-        case STRING:
-        case HUGE_STRING:
-        case STRING_BYTES:
-        case HUGE_STRING_BYTES:
-          return "java.lang.String";
-        case CLASS:
-          return "java.lang.Class";
-        case DATE:
-          return "java.util.Date";
-        case FILE:
-          return "java.io.File";
-        case INET_ADDRESS:
-          return "java.net.InetAddress";
-        case BOOLEAN:
-          return "java.lang.Boolean";
-        case CHARACTER:
-          return "java.lang.Character";
-        case BYTE:
-          return "java.lang.Byte";
-        case SHORT:
-          return "java.lang.Short";
-        case INTEGER:
-          return "java.lang.Integer";
-        case LONG:
-          return "java.lang.Long";
-        case FLOAT:
-          return "java.lang.Float";
-        case DOUBLE:
-          return "java.lang.Double";
-        case BYTE_ARRAY:
-          return "byte[]";
-        case ARRAY_OF_BYTE_ARRAYS:
-          return "byte[][]";
-        case SHORT_ARRAY:
-          return "short[]";
-        case STRING_ARRAY:
-          return "java.lang.String[]";
-        case INT_ARRAY:
-          return "int[]";
-        case LONG_ARRAY:
-          return "long[]";
-        case FLOAT_ARRAY:
-          return "float[]";
-        case DOUBLE_ARRAY:
-          return "double[]";
-        case BOOLEAN_ARRAY:
-          return "boolean[]";
-        case CHAR_ARRAY:
-          return "char[]";
-        case OBJECT_ARRAY:
-          return "java.lang.Object[]";
-        case ARRAY_LIST:
-          return "java.util.ArrayList";
-        case LINKED_LIST:
-          return "java.util.LinkedList";
-        case HASH_SET:
-          return "java.util.HashSet";
-        case LINKED_HASH_SET:
-          return "java.util.LinkedHashSet";
-        case HASH_MAP:
-          return "java.util.HashMap";
-        case IDENTITY_HASH_MAP:
-          return "java.util.IdentityHashMap";
-        case HASH_TABLE:
-          return "java.util.Hashtable";
-        // ConcurrentHashMap is written as java.io.serializable
-        // case CONCURRENT_HASH_MAP:
-        // return "java.util.concurrent.ConcurrentHashMap";
-        case PROPERTIES:
-          return "java.util.Properties";
-        case TIME_UNIT:
-          return "java.util.concurrent.TimeUnit";
-        case USER_CLASS:
-          byte userClassDSId = in.readByte();
-          return "DataSerializer: with Id:" + userClassDSId;
-        case USER_CLASS_2:
-          short userClass2DSId = in.readShort();
-          return "DataSerializer: with Id:" + userClass2DSId;
-        case USER_CLASS_4:
-          int userClass4DSId = in.readInt();
-          return "DataSerializer: with Id:" + userClass4DSId;
-        case VECTOR:
-          return "java.util.Vector";
-        case STACK:
-          return "java.util.Stack";
-        case TREE_MAP:
-          return "java.util.TreeMap";
-        case TREE_SET:
-          return "java.util.TreeSet";
-        case BOOLEAN_TYPE:
-          return "java.lang.Boolean.class";
-        case CHARACTER_TYPE:
-          return "java.lang.Character.class";
-        case BYTE_TYPE:
-          return "java.lang.Byte.class";
-        case SHORT_TYPE:
-          return "java.lang.Short.class";
-        case INTEGER_TYPE:
-          return "java.lang.Integer.class";
-        case LONG_TYPE:
-          return "java.lang.Long.class";
-        case FLOAT_TYPE:
-          return "java.lang.Float.class";
-        case DOUBLE_TYPE:
-          return "java.lang.Double.class";
-        case VOID_TYPE:
-          return "java.lang.Void.class";
-        case USER_DATA_SERIALIZABLE: {
-          Instantiator instantiator = InternalInstantiator.getInstantiator(in.readByte());
-          return "org.apache.geode.Instantiator:" + instantiator.getInstantiatedClass().getName();
-        }
-        case USER_DATA_SERIALIZABLE_2: {
-          Instantiator instantiator = InternalInstantiator.getInstantiator(in.readShort());
-          return "org.apache.geode.Instantiator:" + instantiator.getInstantiatedClass().getName();
-        }
-        case USER_DATA_SERIALIZABLE_4: {
-          Instantiator instantiator = InternalInstantiator.getInstantiator(in.readInt());
-          return "org.apache.geode.Instantiator:" + instantiator.getInstantiatedClass().getName();
-        }
-        case DATA_SERIALIZABLE:
-          return "org.apache.geode.DataSerializable:" + DataSerializer.readClass(in).getName();
-        case SERIALIZABLE: {
-          String name = null;
-          try {
-            Object obj = InternalDataSerializer.basicReadObject(getDataInput(bytes));
-            name = obj.getClass().getName();
-          } catch (ClassNotFoundException e) {
-            name = e.getMessage();
-          }
-          return "java.io.Serializable:" + name;
-        }
-        case PDX: {
-          int typeId = in.readInt();
-          return "pdxType:" + typeId;
-        }
-        case PDX_ENUM: {
-          in.readByte(); // dsId is not needed
-          int enumId = InternalDataSerializer.readArrayLength(in);
-          return "pdxEnum:" + enumId;
-        }
-        case GEMFIRE_ENUM: {
-          String name = DataSerializer.readString(in);
-          return "java.lang.Enum:" + name;
-        }
-        case PDX_INLINE_ENUM: {
-          String name = DataSerializer.readString(in);
-          return "java.lang.Enum:" + name;
-        }
-        case BIG_INTEGER:
-          return "java.math.BigInteger";
-        case BIG_DECIMAL:
-          return "java.math.BigDecimal";
-        case UUID:
-          return "java.util.UUID";
-        case TIMESTAMP:
-          return "java.sql.Timestamp";
-        default:
+        return "java.io.Serializable:" + name;
+      }
+      if (header == DSCODE.PDX.toByte()) {
+        int typeId = in.readInt();
+        return "pdxType:" + typeId;
+      }
+      if (header == DSCODE.PDX_ENUM.toByte()) {
+        in.readByte(); // dsId is not needed
+        int enumId = InternalDataSerializer.readArrayLength(in);
+        return "pdxEnum:" + enumId;
+      }
+      if (header == DSCODE.GEMFIRE_ENUM.toByte()) {
+        String name = DataSerializer.readString(in);
+        return "java.lang.Enum:" + name;
+      }
+      if (header == DSCODE.PDX_INLINE_ENUM.toByte()) {
+        String name = DataSerializer.readString(in);
+        return "java.lang.Enum:" + name;
+      }
+      if (header == DSCODE.BIG_INTEGER.toByte()) {
+        return "java.math.BigInteger";
+      }
+      if (header == DSCODE.BIG_DECIMAL.toByte()) {
+        return "java.math.BigDecimal";
+      }
+      if (header == DSCODE.UUID.toByte()) {
+        return "java.util.UUID";
+      }
+      if (header == DSCODE.TIMESTAMP.toByte()) {
+        return "java.sql.Timestamp";
       }
       return "Unknown header byte: " + header;
     } catch (IOException e) {
@@ -229,6 +281,6 @@ public class DataType implements DSCODE {
   }
 
   public static DataInput getDataInput(byte[] bytes) {
-    return new DataInputStream(new ByteArrayInputStream(bytes));
+    return new ByteArrayDataInput(bytes);
   }
 }

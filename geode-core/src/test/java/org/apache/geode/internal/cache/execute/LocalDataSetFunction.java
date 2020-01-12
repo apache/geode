@@ -33,6 +33,7 @@ public class LocalDataSetFunction extends FunctionAdapter {
     this.optimizeForWrite = optimizeForWrite;
   }
 
+  @Override
   public void execute(FunctionContext context) {
     RegionFunctionContext rContext = (RegionFunctionContext) context;
     Region cust = rContext.getDataSet();
@@ -72,18 +73,22 @@ public class LocalDataSetFunction extends FunctionAdapter {
     context.getResultSender().lastResult(null);
   }
 
+  @Override
   public String getId() {
     return "LocalDataSetFunction" + optimizeForWrite;
   }
 
+  @Override
   public boolean hasResult() {
     return true;
   }
 
+  @Override
   public boolean optimizeForWrite() {
     return optimizeForWrite;
   }
 
+  @Override
   public boolean isHA() {
     return false;
   }

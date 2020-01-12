@@ -21,8 +21,10 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * Sent to a locator to request it to find (and possibly start) a jmx manager for us. It returns a
@@ -46,20 +48,25 @@ public class JmxManagerLocatorResponse implements DataSerializableFixedID {
 
   public JmxManagerLocatorResponse() {}
 
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  @Override
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     this.host = DataSerializer.readString(in);
     this.port = DataSerializer.readPrimitiveInt(in);
     this.ssl = DataSerializer.readPrimitiveBoolean(in);
-    this.ex = DataSerializer.readObject(in);
+    this.ex = context.getDeserializer().readObject(in);
   }
 
-  public void toData(DataOutput out) throws IOException {
+  @Override
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     DataSerializer.writeString(this.host, out);
     DataSerializer.writePrimitiveInt(this.port, out);
     DataSerializer.writePrimitiveBoolean(this.ssl, out);
-    DataSerializer.writeObject(this.ex, out);
+    context.getSerializer().writeObject(this.ex, out);
   }
 
+  @Override
   public int getDSFID() {
     return DataSerializableFixedID.JMX_MANAGER_LOCATOR_RESPONSE;
   }

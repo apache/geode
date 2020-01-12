@@ -17,6 +17,7 @@ package org.apache.geode.distributed.internal;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -27,7 +28,9 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * A message that is sent to a given collection of managers and then awaits replies. It is used by
@@ -61,7 +64,8 @@ public class SerialAckedMessage extends SerialDistributionMessage implements Mes
    * @throws InterruptedException if the operation is interrupted (as by shutdown)
    * @throws ReplyException if an exception was sent back by another manager
    */
-  public void send(Set recipients, boolean multicast) throws InterruptedException, ReplyException {
+  public void send(Collection recipients, boolean multicast)
+      throws InterruptedException, ReplyException {
     final boolean isDebugEnabled = logger.isDebugEnabled();
 
     if (Thread.interrupted())
@@ -127,21 +131,24 @@ public class SerialAckedMessage extends SerialDistributionMessage implements Mes
     dm.putOutgoing(reply);
   }
 
+  @Override
   public int getDSFID() {
     return SERIAL_ACKED_MESSAGE;
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     out.writeInt(processorId);
     DataSerializer.writeObject(this.id, out);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
 
-    super.fromData(in);
+    super.fromData(in, context);
     processorId = in.readInt();
     this.id = (InternalDistributedMember) DataSerializer.readObject(in);
   }

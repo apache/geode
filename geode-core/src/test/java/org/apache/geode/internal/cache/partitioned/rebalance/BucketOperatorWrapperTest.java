@@ -36,7 +36,6 @@ import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -45,9 +44,7 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.control.PartitionRebalanceDetailsImpl;
 import org.apache.geode.internal.cache.control.ResourceManagerStats;
 import org.apache.geode.internal.cache.partitioned.rebalance.BucketOperator.Completion;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class BucketOperatorWrapperTest {
 
   private ResourceManagerStats stats;
@@ -108,6 +105,7 @@ public class BucketOperatorWrapperTest {
   @Test
   public void bucketWrapperShouldRecordNumberOfBucketsCreatedIfCreateBucketSucceeds() {
     doAnswer(new Answer<Object>() {
+      @Override
       public Object answer(InvocationOnMock invocation) {
         // 3rd argument is Completion object sent to BucketOperatorImpl.createRedundantBucket
         ((Completion) invocation.getArguments()[3]).onSuccess();
@@ -134,6 +132,7 @@ public class BucketOperatorWrapperTest {
   @Test
   public void bucketWrapperShouldNotRecordNumberOfBucketsCreatedIfCreateBucketFails() {
     doAnswer(new Answer<Object>() {
+      @Override
       public Object answer(InvocationOnMock invocation) {
         // 3rd argument is Completion object sent to BucketOperatorImpl.createRedundantBucket
         ((Completion) invocation.getArguments()[3]).onFailure();
@@ -155,6 +154,7 @@ public class BucketOperatorWrapperTest {
   @Test
   public void bucketWrapperShouldInvokeOnFailureWhenCreateBucketFails() {
     doAnswer(new Answer<Object>() {
+      @Override
       public Object answer(InvocationOnMock invocation) {
         // 3rd argument is Completion object sent to BucketOperatorImpl.createRedundantBucket
         ((Completion) invocation.getArguments()[3]).onFailure();
@@ -174,6 +174,7 @@ public class BucketOperatorWrapperTest {
   @Test
   public void bucketWrapperShouldInvokeOnSuccessWhenCreateBucketSucceeds() {
     doAnswer(new Answer<Object>() {
+      @Override
       public Object answer(InvocationOnMock invocation) {
         // 3rd argument is Completion object sent to BucketOperatorImpl.createRedundantBucket
         ((Completion) invocation.getArguments()[3]).onSuccess();

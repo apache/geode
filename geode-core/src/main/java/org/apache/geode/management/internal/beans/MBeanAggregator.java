@@ -21,10 +21,11 @@ import java.util.Set;
 import javax.management.Notification;
 import javax.management.ObjectName;
 
+import org.apache.geode.LogWriter;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.management.CacheServerMXBean;
 import org.apache.geode.management.GatewayReceiverMXBean;
 import org.apache.geode.management.GatewaySenderMXBean;
@@ -43,6 +44,7 @@ import org.apache.geode.management.internal.SystemManagementService;
  */
 public class MBeanAggregator implements ProxyListener {
 
+  @MakeNotStatic
   private static final List<Class> distributedMBeanList = new ArrayList<>();
 
 
@@ -50,7 +52,7 @@ public class MBeanAggregator implements ProxyListener {
    * Log writer
    */
 
-  protected LogWriterI18n logger;
+  protected LogWriter logger;
 
 
 
@@ -109,7 +111,6 @@ public class MBeanAggregator implements ProxyListener {
   /**
    * Public constructor.
    *
-   * @param distributedSystemBridge
    */
   public MBeanAggregator(DistributedSystemBridge distributedSystemBridge) {
 
@@ -119,7 +120,7 @@ public class MBeanAggregator implements ProxyListener {
     this.cacheServerHandler = new CacheServerHandler();
     this.gatewayReceiverHandler = new GatewayReceiverHandler();
     this.gatewaySenderHandler = new GatewaySenderHandler();
-    this.logger = InternalDistributedSystem.getLoggerI18n();
+    this.logger = InternalDistributedSystem.getLogger();
     this.distributedSystemBridge = distributedSystemBridge;
 
 
@@ -195,6 +196,7 @@ public class MBeanAggregator implements ProxyListener {
    */
   private class CacheServerHandler implements AggregateHandler {
 
+    @Override
     public void handleProxyAddition(ObjectName objectName, Class interfaceClass, Object proxyObject,
         FederationComponent newVal) {
 
@@ -203,6 +205,7 @@ public class MBeanAggregator implements ProxyListener {
 
     }
 
+    @Override
     public void handleProxyRemoval(ObjectName objectName, Class interfaceClass, Object obj,
         FederationComponent oldVal) {
       CacheServerMXBean serverProxy = (CacheServerMXBean) interfaceClass.cast(obj);
@@ -231,6 +234,7 @@ public class MBeanAggregator implements ProxyListener {
    */
   private class GatewayReceiverHandler implements AggregateHandler {
 
+    @Override
     public void handleProxyAddition(ObjectName objectName, Class interfaceClass, Object proxyObject,
         FederationComponent newVal) {
 
@@ -239,6 +243,7 @@ public class MBeanAggregator implements ProxyListener {
 
     }
 
+    @Override
     public void handleProxyRemoval(ObjectName objectName, Class interfaceClass, Object proxyObject,
         FederationComponent oldVal) {
       GatewayReceiverMXBean proxy = (GatewayReceiverMXBean) interfaceClass.cast(proxyObject);
@@ -269,6 +274,7 @@ public class MBeanAggregator implements ProxyListener {
    */
   private class GatewaySenderHandler implements AggregateHandler {
 
+    @Override
     public void handleProxyAddition(ObjectName objectName, Class interfaceClass, Object proxyObject,
         FederationComponent newVal) {
 
@@ -276,6 +282,7 @@ public class MBeanAggregator implements ProxyListener {
       distributedSystemBridge.addGatewaySenderToSystem(objectName, proxy, newVal);
     }
 
+    @Override
     public void handleProxyRemoval(ObjectName objectName, Class interfaceClass, Object proxyObject,
         FederationComponent oldVal) {
       GatewaySenderMXBean proxy = (GatewaySenderMXBean) interfaceClass.cast(proxyObject);
@@ -302,6 +309,7 @@ public class MBeanAggregator implements ProxyListener {
    */
   private class RegionHandler implements AggregateHandler {
 
+    @Override
     public void handleProxyAddition(ObjectName objectName, Class interfaceClass, Object proxyObject,
         FederationComponent newVal) {
       RegionMXBean regionProxy = (RegionMXBean) interfaceClass.cast(proxyObject);
@@ -309,6 +317,7 @@ public class MBeanAggregator implements ProxyListener {
 
     }
 
+    @Override
     public void handleProxyRemoval(ObjectName objectName, Class interfaceClass, Object proxyObject,
         FederationComponent oldVal) {
       RegionMXBean regionProxy = (RegionMXBean) interfaceClass.cast(proxyObject);
@@ -335,6 +344,7 @@ public class MBeanAggregator implements ProxyListener {
    */
   private class MemberHandler implements AggregateHandler {
 
+    @Override
     public void handleProxyAddition(ObjectName objectName, Class interfaceClass, Object proxyObject,
         FederationComponent newVal) {
       MemberMXBean memberProxy = (MemberMXBean) interfaceClass.cast(proxyObject);
@@ -342,6 +352,7 @@ public class MBeanAggregator implements ProxyListener {
 
     }
 
+    @Override
     public void handleProxyRemoval(ObjectName objectName, Class interfaceClass, Object proxyObject,
         FederationComponent oldVal) {
       MemberMXBean memberProxy = (MemberMXBean) interfaceClass.cast(proxyObject);
@@ -369,6 +380,7 @@ public class MBeanAggregator implements ProxyListener {
    */
   private class LockServiceHandler implements AggregateHandler {
 
+    @Override
     public void handleProxyAddition(ObjectName objectName, Class interfaceClass, Object proxyObject,
         FederationComponent newVal) {
 
@@ -377,6 +389,7 @@ public class MBeanAggregator implements ProxyListener {
 
     }
 
+    @Override
     public void handleProxyRemoval(ObjectName objectName, Class interfaceClass, Object proxyObject,
         FederationComponent oldVal) {
       LockServiceMXBean lockServiceProxy = (LockServiceMXBean) interfaceClass.cast(proxyObject);
@@ -406,6 +419,7 @@ public class MBeanAggregator implements ProxyListener {
 
   }
 
+  @Override
   public void quorumLost(DistributionManager distributionManager,
       Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {}
 

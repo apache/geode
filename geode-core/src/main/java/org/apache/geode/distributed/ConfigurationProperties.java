@@ -15,8 +15,6 @@
 
 package org.apache.geode.distributed;
 
-import org.apache.geode.redis.GeodeRedisServer;
-
 /**
  * This interface defines all the configuration properties that can be used. <U>Since</U>: Geode 1.0
  */
@@ -392,6 +390,18 @@ public interface ConfigurationProperties {
    */
   String DISABLE_TCP = "disable-tcp";
   /**
+   * The static String definition of the <i>"disable-jmx"</i> property <a name="disable-tcp"/a>
+   * <p>
+   * <U>Description</U>: Turns off use of JMX, preventing the process from creating Geode MBeans.
+   * <p>
+   * <U>Default</U>: "false"
+   * <p>
+   * <U>Allowed values</U>: true or false
+   * <p>
+   * <U>Since</U>: Geode 1.9
+   */
+  String DISABLE_JMX = "disable-jmx";
+  /**
    * The static String definition of the <i>"distributed-system-id"</i> property
    * <p>
    * <a name="distributed-system-id"/a> <U>Decription:</U>A number that uniquely identifies this
@@ -446,6 +456,26 @@ public interface ConfigurationProperties {
    * <U>Since</U>: GemFire 8.0
    */
   String ENABLE_CLUSTER_CONFIGURATION = "enable-cluster-configuration";
+
+  /**
+   * The static String definition of the <i>"enable-management-rest-service"</i> property <a
+   * name="enable-management-rest-service"/a>
+   * </p>
+   * <U>Description</U>: "true" causes the cluster management rest service to be enabled. This
+   * service
+   * requires the cluster configuration service to be enabled. If "enable-cluster-configuration" is
+   * false and this is true, the management rest service would do nothing but report an error if you
+   * try to use it. Also even if this property is set to "true", The management rest service will
+   * only be started if "http-service-port" is not "0".
+   * </p>
+   * <U>Default</U>: "true"
+   * </p>
+   * <U>Allowed values</U>: true or false
+   * </p>
+   * <U>Since</U>: Geode 1.10
+   */
+  String ENABLE_MANAGEMENT_REST_SERVICE = "enable-management-rest-service";
+
   /**
    * The static String definition of the <i>"enable-network-partition-detection"</i> property <a
    * name="enable-network-partition-detection"/a>
@@ -503,7 +533,7 @@ public interface ConfigurationProperties {
    * The static String definition of the <i>"gateway-ssl-ciphers"</i> property <a
    * name="gateway-ssl-ciphers"/a>
    * </p>
-   * <U>Description</U>: A space seperated list of the SSL cipher suites to enable. Those listed
+   * <U>Description</U>: A space separated list of the SSL cipher suites to enable. Those listed
    * must be supported by the available providers.
    * </p>
    * <U>Default</U>: <code>any</code>
@@ -578,7 +608,7 @@ public interface ConfigurationProperties {
    * The static String definition of the <i>"gateway-ssl-protocols"</i> property <a
    * name="gateway-ssl-protocols"/a>
    * </p>
-   * <U>Description</U>: A space seperated list of the SSL protocols to enable. Those listed must be
+   * <U>Description</U>: A space separated list of the SSL protocols to enable. Those listed must be
    * supported by the available providers.
    * </p>
    * <U>Default</U>: <code>any</code>
@@ -974,7 +1004,7 @@ public interface ConfigurationProperties {
    * The static String definition of the <i>"jmx-manager-ssl-ciphers"</i> property <a
    * name="jmx-manager-ssl-ciphers"/a>
    * </p>
-   * <U>Description</U>: A space seperated list of the SSL cipher suites to enable. Those listed
+   * <U>Description</U>: A space separated list of the SSL cipher suites to enable. Those listed
    * must be supported by the available providers.
    * </p>
    * <U>Default</U>: "any"
@@ -1047,7 +1077,7 @@ public interface ConfigurationProperties {
    * The static String definition of the <i>"jmx-manager-ssl-protocols"</i> property <a
    * name="jmx-manager-ssl-protocols"/a>
    * </p>
-   * <U>Description</U>: A space seperated list of the SSL protocols to enable. Those listed must be
+   * <U>Description</U>: A space separated list of the SSL protocols to enable. Those listed must be
    * supported by the available providers.
    * </p>
    * <U>Default</U>: "any"
@@ -1175,7 +1205,7 @@ public interface ConfigurationProperties {
   /**
    * The static String definition of the <i>"log-file"</i> property <a name="log-file"/a>
    * </p>
-   * <U>Description</U>: Name of the file to write logging messages to. If the file name if ""
+   * <U>Description</U>: Name of the file to write logging messages to. If the file name is ""
    * (default) then messages are written to standard out.
    * </p>
    * <U>Default</U>: ""
@@ -1333,7 +1363,7 @@ public interface ConfigurationProperties {
    * (TCP). This range is given as two numbers separated by a minus sign. Minimum 3 values in range
    * are required to successfully startup.
    * <p>
-   * <U>Default</U>: 1024-65535
+   * <U>Default</U>: 41000-61000
    */
   String MEMBERSHIP_PORT_RANGE = "membership-port-range";
   /**
@@ -1341,7 +1371,7 @@ public interface ConfigurationProperties {
    * name="memcached-bind-address"/a>
    * </p>
    * <U>Description</U>: Specifies the bind address used by
-   * {@link org.apache.geode.memcached.GemFireMemcachedServer}
+   * {@code org.apache.geode.memcached.GemFireMemcachedServer}
    * </p>
    * <U>Default</U>: ""
    */
@@ -1351,9 +1381,9 @@ public interface ConfigurationProperties {
    * name="memcached-port"/a>
    * </p>
    * <U>Description</U>: Specifies the port used by
-   * {@link org.apache.geode.memcached.GemFireMemcachedServer} which enables memcached clients to
+   * {@code org.apache.geode.memcached.GemFireMemcachedServer} which enables memcached clients to
    * connect and store data in GemFire distributed system. see
-   * {@link org.apache.geode.memcached.GemFireMemcachedServer} for other configuration options.
+   * {@code org.apache.geode.memcached.GemFireMemcachedServer} for other configuration options.
    * </p>
    * <U>Default</U>: "0" disables GemFireMemcachedServer
    * </p>
@@ -1365,7 +1395,7 @@ public interface ConfigurationProperties {
    * name="memcached-protocol"/a>
    * </p>
    * <U>Description</U>: Specifies the protocol used by
-   * {@link org.apache.geode.memcached.GemFireMemcachedServer}
+   * {@code org.apache.geode.memcached.GemFireMemcachedServer}
    * </p>
    * <U>Default</U>: "ASCII"
    * </p>
@@ -1555,7 +1585,7 @@ public interface ConfigurationProperties {
    * The static String definition of the <i>"server-ssl-ciphers"</i> property <a
    * name="server-ssl-ciphers"/a>
    * </p>
-   * <U>Description</U>: A space seperated list of the SSL cipher suites to enable. Those listed
+   * <U>Description</U>: A space separated list of the SSL cipher suites to enable. Those listed
    * must be supported by the available providers.
    * </p>
    * <U>Default</U>: <code>any</code>
@@ -1630,7 +1660,7 @@ public interface ConfigurationProperties {
    * The static String definition of the <i>"server-ssl-protocols"</i> property <a
    * name="server-ssl-protocols"/a>
    * </p>
-   * <U>Description</U>: A space seperated list of the SSL protocols to enable. Those listed must be
+   * <U>Description</U>: A space separated list of the SSL protocols to enable. Those listed must be
    * supported by the available providers.
    * </p>
    * <U>Default</U>: <code>any</code>
@@ -1706,7 +1736,7 @@ public interface ConfigurationProperties {
    * <U>Description</U>: The number of milliseconds a thread can keep exclusive access to a socket
    * that it is not actively using. Once a thread loses its lease to a socket it will need to
    * re-acquire a socket the next time it sends a message. A value of zero causes socket leases to
-   * never expire. This property is ignored if "conserve-sockets" is true. <U>Default</U>: "15000"
+   * never expire. This property is ignored if "conserve-sockets" is true. <U>Default</U>: "60000"
    * </p>
    * <U>Allowed values</U>: 0..600000
    * </p>
@@ -1880,8 +1910,8 @@ public interface ConfigurationProperties {
   /**
    * The static String definition of the <i>"redis-port"</i> property <a name="redis-port"/a>
    * </p>
-   * <U>Description</U>: Specifies the port used by {@link GeodeRedisServer} which enables redis
-   * clients to connect and store data in GemFire distributed system. see {@link GeodeRedisServer}
+   * <U>Description</U>: Specifies the port used by {@code GeodeRedisServer} which enables redis
+   * clients to connect and store data in GemFire distributed system. see {@code GeodeRedisServer}
    * for other configuration options.
    * </p>
    * <U>Default</U>: "0" disables GemFireMemcachedServer
@@ -1893,7 +1923,7 @@ public interface ConfigurationProperties {
    * The static String definition of the <i>"redis-bind-address"</i> property <a
    * name="redis-bind-address"/a>
    * </p>
-   * <U>Description</U>: Specifies the bind address used by {@link GeodeRedisServer}
+   * <U>Description</U>: Specifies the bind address used by {@code GeodeRedisServer}
    * </p>
    * <U>Default</U>: ""
    */
@@ -1902,7 +1932,7 @@ public interface ConfigurationProperties {
    * The static String definition of the <i>"redis-password"</i> property <a
    * name="redis-password"/a>
    * </p>
-   * <U>Description</U>: Specifies the password to authenticate a client of {@link GeodeRedisServer}
+   * <U>Description</U>: Specifies the password to authenticate a client of {@code GeodeRedisServer}
    * </p>
    * <U>Default</U>: ""
    */
@@ -1929,6 +1959,38 @@ public interface ConfigurationProperties {
    * Geode 1.0
    */
   String DISTRIBUTED_TRANSACTIONS = "distributed-transactions";
+
+  /**
+   * The static String definition of the <i>"ssl-use-default-context"</i> property
+   * </p>
+   *
+   * <U>Description</U> When true, either uses the default context as returned by
+   * SSLContext.getInstance('Default') or uses the context as set by using
+   * SSLContext.setDefault(). If false, then specify the keystore and the truststore by setting
+   * ssl-keystore-* and ssl-truststore-* properties. If true, then
+   * ssl-endpoint-identification-enabled
+   * is set to true. This property does not enable SSL.
+   * </p>
+   *
+   * <U>Default</U>: "false"
+   * </p>
+   *
+   * <U>Since</U>: Geode 1.7
+   * </p>
+   */
+  String SSL_USE_DEFAULT_CONTEXT = "ssl-use-default-context";
+  /**
+   * The static String definition of the <i>"ssl-endpoint-identification-enabled"</i> property <a
+   * name="ssl-endpoint-identification-enabled"/a>
+   * </p>
+   * <U>Description</U>: If true, clients validate server hostname using server certificate during
+   * SSL handshake. It defaults to true when ssl-use-default-context is true or else false.
+   * </p>
+   * <U>Default</U>: code>"false"</code>
+   * </p>
+   * <U>Since</U>: Geode 1.7
+   */
+  String SSL_ENDPOINT_IDENTIFICATION_ENABLED = "ssl-endpoint-identification-enabled";
   /**
    * The static String definition of the <i>"ssl-enabled-components"</i> property <a
    * name="ssl-enabled-components"/a>
@@ -1937,10 +1999,31 @@ public interface ConfigurationProperties {
    * the {@link #CLUSTER_SSL_PREFIX} properties. This property will determine which components will
    * use SSL for their communications.
    * </p>
-   * <U>Options</U>: "all","server","cluster","gateway","web","jmx","none" -- As described
+   * <U>Options</U>: "all","server","cluster","gateway","web","jmx","" -- As described
    * {@link org.apache.geode.security.SecurableCommunicationChannels} <U>Since</U>: Geode 1.0
    */
   String SSL_ENABLED_COMPONENTS = "ssl-enabled-components";
+
+  /**
+   * The static String definition of the <i>"security-auth-token-enabled-components"</i> property <a
+   * name="security-auth-token-enabled-components"/a>
+   * </p>
+   * <U>Description</U>: This setting is a comma delimited list of component names which works in
+   * conjunction with
+   * the {@link #SECURITY_MANAGER} properties. if security manager is enabled, this property will
+   * determine what rest end point will use token based authentication instead of basic
+   * (username/password)
+   * authentication.
+   * </p>
+   * <U>Componant names</U>: "all","management" <U>Since</U>: Geode 1.11
+   * "all": shorthand for all the security components that support token authentication.
+   * "management": the {@link #ENABLE_MANAGEMENT_REST_SERVICE Management REST Service}
+   *
+   * Note: listing components that are not enabled does nothing.
+   *
+   * Default: empty. All security components use basic (username/password) authentication
+   */
+  String SECURITY_AUTH_TOKEN_ENABLED_COMPONENTS = SECURITY_PREFIX + "auth-token-enabled-components";
   /**
    * The static String definition of the <i>"ssl-ciphers"</i> property <a name="ssl-ciphers"/a>
    * </p>
@@ -2084,7 +2167,8 @@ public interface ConfigurationProperties {
   /**
    * The static String definition of the <i>"serializable-object-filter"</i> property
    *
-   * <U>Description</U>A user provided whitelist of objects that the system will allow to serialize.
+   * <U>Description</U>A user provided acceptlist of objects that the system will allow to
+   * serialize.
    *
    * <p>
    * See java.io.ObjectInputFilter.Config for details on the syntax for creating filters.
@@ -2097,4 +2181,38 @@ public interface ConfigurationProperties {
    *
    */
   String SERIALIZABLE_OBJECT_FILTER = "serializable-object-filter";
+  /**
+   * The static String definition of the <i>"thread-monitor-enabled"</i> property <a
+   * name="thread-monitor-enabled"/a>
+   * <p>
+   * <U>Description</U>: Defines whether thread monitoring is to be enabled.
+   * <p>
+   * <U>Default</U>: "true"
+   * <p>
+   * <U>Allowed values</U>: false/true
+   * <p>
+   */
+  String THREAD_MONITOR_ENABLED = "thread-monitor-enabled";
+  /**
+   * The static String definition of the <i>"thread-monitor-interval-ms"</i> property <a
+   * name="thread-monitor-interval-ms"/a>
+   * <p>
+   * <U>Description</U>: Defines the time interval (in milliseconds) with which thread monitoring is
+   * scheduled to run.
+   * <p>
+   * <U>Default</U>: "60000"
+   * <p>
+   */
+  String THREAD_MONITOR_INTERVAL = "thread-monitor-interval-ms";
+  /**
+   * The static String definition of the <i>"thread-monitor-time-limit-ms"</i> property <a
+   * name="thread-monitor-time-limit-ms"/a>
+   * <p>
+   * <U>Description</U>: Defines the time period (in milliseconds) after which the monitored thread
+   * is considered to be stuck.
+   * <p>
+   * <U>Default</U>: "30000"
+   * <p>
+   */
+  String THREAD_MONITOR_TIME_LIMIT = "thread-monitor-time-limit-ms";
 }

@@ -26,22 +26,22 @@ import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
 import org.apache.geode.internal.cache.persistence.PersistentMemberState;
 import org.apache.geode.internal.cache.persistence.PersistentMemberView;
 
-/**
- *
- */
 public class InMemoryPersistentMemberView implements PersistentMemberView {
   private Map<PersistentMemberID, PersistentMemberState> members =
       new ConcurrentHashMap<PersistentMemberID, PersistentMemberState>();
 
 
+  @Override
   public PersistentMemberID generatePersistentID() {
     return null;
   }
 
+  @Override
   public PersistentMemberID getMyPersistentID() {
     return null;
   }
 
+  @Override
   public Set<PersistentMemberID> getOfflineMembers() {
     Set<PersistentMemberID> offlineMembers = new HashSet<PersistentMemberID>();
     for (Map.Entry<PersistentMemberID, PersistentMemberState> entry : members.entrySet()) {
@@ -52,6 +52,7 @@ public class InMemoryPersistentMemberView implements PersistentMemberView {
     return offlineMembers;
   }
 
+  @Override
   public Set<PersistentMemberID> getOfflineAndEqualMembers() {
     Set<PersistentMemberID> equalMembers = new HashSet<PersistentMemberID>();
     for (Map.Entry<PersistentMemberID, PersistentMemberState> entry : members.entrySet()) {
@@ -62,6 +63,7 @@ public class InMemoryPersistentMemberView implements PersistentMemberView {
     return equalMembers;
   }
 
+  @Override
   public Set<PersistentMemberID> getOnlineMembers() {
     Set<PersistentMemberID> onlineMembers = new HashSet<PersistentMemberID>();
     for (Map.Entry<PersistentMemberID, PersistentMemberState> entry : members.entrySet()) {
@@ -72,52 +74,66 @@ public class InMemoryPersistentMemberView implements PersistentMemberView {
     return onlineMembers;
   }
 
+  @Override
   public void memberOffline(PersistentMemberID persistentID) {
     members.put(persistentID, PersistentMemberState.OFFLINE);
   }
 
+  @Override
   public void memberOfflineAndEqual(PersistentMemberID persistentID) {
     members.put(persistentID, PersistentMemberState.EQUAL);
   }
 
+  @Override
   public void memberOnline(PersistentMemberID persistentID) {
     members.put(persistentID, PersistentMemberState.ONLINE);
   }
 
+  @Override
   public void memberRemoved(PersistentMemberID persistentID) {
     members.remove(persistentID);
   }
 
+  @Override
   public void setInitialized() {}
 
+  @Override
   public PersistentMemberID getMyInitializingID() {
     return null;
   }
 
+  @Override
   public void setInitializing(PersistentMemberID newId) {}
 
+  @Override
   public void endDestroy(LocalRegion region) {
     // don't care
   }
 
+  @Override
   public void beginDestroy(LocalRegion region) {
     // don't care
   }
 
+  @Override
   public void beginDestroyDataStorage() {
     // don't care
   }
 
+  @Override
   public void finishPendingDestroy() {}
 
+  @Override
   public boolean wasAboutToDestroy() {
     return false;
   }
 
+  @Override
   public boolean wasAboutToDestroyDataStorage() {
     return false;
   }
 
+  @Override
   public DiskStoreID getDiskStoreID() {
     return null;
   }

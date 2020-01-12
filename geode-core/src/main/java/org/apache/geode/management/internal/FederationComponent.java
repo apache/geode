@@ -25,12 +25,12 @@ import javax.management.ObjectName;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.Version;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.management.ManagementException;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Central component for federation It consists of an Object State as well as some meta data for the
@@ -40,13 +40,10 @@ import org.apache.geode.management.ManagementException;
  */
 
 public class FederationComponent
-    implements java.io.Serializable, DataSerializable, DataSerializableFixedID {
+    implements java.io.Serializable, DataSerializableFixedID {
   private static final Logger logger = LogService.getLogger();
 
   private static final String THIS_COMPONENT = FederationComponent.class.getName();
-  /**
-   *
-   */
   private static final long serialVersionUID = 3123549507449088591L;
 
   /**
@@ -155,7 +152,6 @@ public class FederationComponent
    * @return true if the refresh detects that the state changed. It will return false if two
    *         consecutive refresh calls results in no state change. This indicates to the
    *         LocalManager whether to send the MBean state to Manager or not.
-   * @throws ManagementException
    */
 
   public boolean refreshObjectState(boolean keepOldState) {
@@ -229,7 +225,6 @@ public class FederationComponent
   /**
    * Managing node will get Object state by calling this method
    *
-   * @param propertyName
    * @return value of the given property
    */
   public Object getValue(String propertyName) {
@@ -256,7 +251,8 @@ public class FederationComponent
 
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     this.notificationEmitter = DataSerializer.readPrimitiveBoolean(in);
     this.interfaceClassName = DataSerializer.readString(in);
     this.objectState = DataSerializer.readHashMap(in);
@@ -264,7 +260,8 @@ public class FederationComponent
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
 
     DataSerializer.writePrimitiveBoolean(this.notificationEmitter, out);
     DataSerializer.writeString(this.interfaceClassName, out);

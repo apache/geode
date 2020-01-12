@@ -21,12 +21,15 @@ import javax.naming.Name;
 import javax.naming.NameParser;
 import javax.naming.NamingException;
 
+import org.apache.geode.annotations.Immutable;
+
 /**
  * ContextImpl name parser.
  *
  */
 class NameParserImpl implements NameParser {
 
+  @Immutable
   private static final Properties syntax = new Properties();
   static {
     syntax.put("jndi.syntax.direction", "left_to_right");
@@ -47,6 +50,7 @@ class NameParserImpl implements NameParser {
    * @param name name to parse
    * @throws NamingException if naming error occurrs
    */
+  @Override
   public Name parse(String name) throws NamingException {
     return new CompoundName(name.replace('.', '/'), syntax);
   }

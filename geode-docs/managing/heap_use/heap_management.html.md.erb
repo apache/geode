@@ -1,5 +1,5 @@
 ---
-title: Managing Heap and Off-heap Memory
+title: Managing Heap Memory
 ---
 
 <!--
@@ -19,41 +19,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-By default, <%=vars.product_name_long%> uses the JVM heap. <%=vars.product_name_long%> also offers an option to store data off heap. This section describes how to manage heap and off-heap memory to best support your application.
-
-## <a id="section_590DA955523246ED980E4E351FF81F71" class="no-quick-link"></a>Tuning the JVM's Garbage Collection Parameters
-
-Because <%=vars.product_name_long%> is specifically designed to manipulate data held in memory, you can optimize your application's performance by tuning the way <%=vars.product_name_long%> uses the JVM heap.
-
-See your JVM documentation for all JVM-specific settings that can be used to improve garbage collection (GC) response. At a minimum, do the following:
-
-1.  Set the initial and maximum heap switches, `-Xms` and `-Xmx`, to the same values. The `gfsh start server` options `--initial-heap` and `--max-heap` accomplish the same purpose, with the added value of providing resource manager defaults such as eviction threshold and critical threshold.
-2.  Configure your JVM for concurrent mark-sweep (CMS) garbage collection.
-3.  If your JVM allows, configure it to initiate CMS collection when heap use is at least 10% lower than your setting for the resource manager `eviction-heap-percentage`. You want the collector to be working when <%=vars.product_name%> is evicting or the evictions will not result in more free memory. For example, if the `eviction-heap-percentage` is set to 65, set your garbage collection to start when the heap use is no higher than 55%.
-
-| JVM         | CMS switch flag           | CMS initiation (begin at heap % N)     |
-|-------------|---------------------------|----------------------------------------|
-| Sun HotSpot | `‑XX:+UseConcMarkSweepGC` | `‑XX:CMSInitiatingOccupancyFraction=N` |
-| JRockit     | `-Xgc:gencon`             | `-XXgcTrigger:N`                       |
-| IBM         | `-Xgcpolicy:gencon`       | N/A                                    |
-
-For the `gfsh start server` command, pass these settings with the `--J` switch, for example: `‑‑J=‑XX:+UseConcMarkSweepGC`.
-
-The following is an example of setting JVM for an application:
-
-``` pre
-$ java app.MyApplication -Xms=30m -Xmx=30m -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=60
-```
-
-**Note:** Do not use the `-XX:+UseCompressedStrings` and `-XX:+UseStringCache` JVM configuration properties when starting up servers. These JVM options can cause issues with data corruption and compatibility.
-
-Or, using `gfsh`:
-
-``` pre
-$ gfsh start server --name=app.MyApplication --initial-heap=30m --max-heap=30m \
---J=-XX:+UseConcMarkSweepGC --J=-XX:CMSInitiatingOccupancyFraction=60
-```
-
 ## <a id="how_the_resource_manager_works" class="no-quick-link"></a>Using the <%=vars.product_name%> Resource Manager
 
 The <%=vars.product_name%> resource manager works with your JVM's tenured garbage collector to control heap use and protect your member from hangs and crashes due to memory overload.
@@ -67,7 +32,7 @@ The resource manager has two threshold settings, each expressed as a percentage 
 
     The resource manager enforces eviction thresholds only on regions whose LRU eviction policies are based on heap percentage. Regions whose eviction policies based on entry count or memory size use other mechanisms to manage evictions. See [Eviction](../../developing/eviction/chapter_overview.html) for more detail regarding eviction policies.
 
-  2.  **Critical Threshold**. Above this, all activity that might add data to the cache is refused. This threshold is set above the eviction threshold and is intended to allow the eviction and GC work to catch up. This JVM, all other JVMs in the distributed system, and all clients to the system receive `LowMemoryException` for operations that would add to this critical member's heap consumption. Activities that fetch or reduce data are allowed. For a list of refused operations, see the Javadocs for the `ResourceManager` method `setCriticalHeapPercentage`.
+  2.  **Critical Threshold**. Above this, all activity that might add data to the cache is refused. This threshold is set above the eviction threshold and is intended to allow the eviction and GC work to catch up. This JVM, all other JVMs in the cluster, and all clients to the system receive `LowMemoryException` for operations that would add to this critical member's heap consumption. Activities that fetch or reduce data are allowed. For a list of refused operations, see the Javadocs for the `ResourceManager` method `setCriticalHeapPercentage`.
 
     Critical threshold is enforced on all regions, regardless of LRU eviction policy, though it can be set to zero to disable its effect.
 
@@ -147,13 +112,55 @@ cache.xml example:
 
 **Note:** The `resource-manager` specification must appear after the region declarations in your cache.xml file.
 
-## <a id="set_jvm_gc_tuning_params" class="no-quick-link"></a>Set the JVM GC Tuning Parameters
+## <a id="tuning_jvm_gc_parameters" class="no-quick-link"></a>Tuning the JVM's Garbage Collection Parameters
 
-If your JVM allows, configure it to initiate concurrent mark-sweep (CMS) garbage collection when heap use is at least 10% lower than your setting for the resource manager `eviction-heap-percentage`. You want the collector to be working when <%=vars.product_name%> is evicting or the evictions will not result in more free memory. For example, if the `eviction-heap-percentage` is set to 65, set your garbage collection to start when the heap use is no higher than 55%.
+Because <%=vars.product_name_long%> is specifically designed to manipulate data held in memory, you can optimize your application's performance by tuning the way <%=vars.product_name_long%> uses the JVM heap.
+
+See your JVM documentation for all JVM-specific settings that can be used to improve garbage collection (GC) response. Best configuration can vary depending of the use case and JVM garbage collector used.
+
+### Concurrent Mark-Sweep (CMS) Garbage Collector
+
+If you are using concurrent mark-sweep (CMS) garbage collection with <%=vars.product_name_long%>, use the following settings to improve performance:
+
+1.  Set the initial and maximum heap switches, `-Xms` and `-Xmx`, to the same values. The `gfsh start server` options `--initial-heap` and `--max-heap` accomplish the same purpose, with the added value of providing resource manager defaults such as eviction threshold and critical threshold.
+2.  If your JVM allows, configure it to initiate CMS collection when heap use is at least 10% lower than your setting for the resource manager `eviction-heap-percentage`. You want the collector to be working when <%=vars.product_name%> is evicting or the evictions will not result in more free memory. For example, if the `eviction-heap-percentage` is set to 65, set your garbage collection to start when the heap use is no higher than 55%.
+
+| JVM         | CMS switch flag           | CMS initiation (begin at heap % N)     |
+|-------------|---------------------------|----------------------------------------|
+| Sun HotSpot | `‑XX:+UseConcMarkSweepGC` | `‑XX:CMSInitiatingOccupancyFraction=N` |
+| JRockit     | `-Xgc:gencon`             | `-XXgcTrigger:N`                       |
+| IBM         | `-Xgcpolicy:gencon`       | N/A                                    |
+
+For the `gfsh start server` command, pass these settings with the `--J` switch, for example: `‑‑J=‑XX:+UseConcMarkSweepGC`.
+
+The following is an example of setting Hotspot JVM for an application:
+
+``` pre
+$ java app.MyApplication -Xms=30m -Xmx=30m -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=60
+```
+
+**Note:** Do not use the `-XX:+UseCompressedStrings` and `-XX:+UseStringCache` JVM configuration properties when starting up servers. These JVM options can cause issues with data corruption and compatibility.
+
+Or, using `gfsh`:
+
+``` pre
+$ gfsh start server --name=app.MyApplication --initial-heap=30m --max-heap=30m \
+--J=-XX:+UseConcMarkSweepGC --J=-XX:CMSInitiatingOccupancyFraction=60
+```
+
+### Garbage First (G1) Garbage Collector
+
+Although the garbage first (G1) garbage collector works effectively with <%=vars.product_name_long%>, issues can arise in some cases due to the differences between CMS and G1.
+For example, G1 by design is not able to set a maximum tenured heap size, so when this value is requested from the garbage collector, it reports the total heap maximum size. This impacts <%=vars.product_name_long%>, as the resource manager uses the maximum size of the tenured heap size to calculate the value in bytes of the eviction and critical percentages.
+Extensive testing is recommended before using G1 garbage collector. See your JVM documentation for all JVM-specific settings that can be used to improve garbage collection (GC) response.
+If you find the <%=vars.product_name_long%> Resource Manager does not detect crossing the eviction or critical threshold quickly enough, it has been observed that its responsiveness is increased by reducing the default value of `--J-XX:MaxGCPauseMillis=VALUE` JVM parameter (which is `200`). Be sure to take into account that this change also increases the amount of time spent in garbage collection.
+
+Size of objects stored on a region must also be taken into account. If the primary heap objects you allocate are larger than 50 percent of the G1 region size (what are called "humongous" objects), this can cause the JVM to report `out of heap memory` when it has used only 50 percent of the heap.
+The default G1 region size is 1 Mb; it can be increased up to 32 Mb (with values that are always a power of 2) by using the `--J-XX:G1HeapRegionSize=VALUE` JVM parameter. If you are using large objects and want to use G1GC without increasing its heap region size (or if your values are larger than 16 Mb), then you could configure your <%=vars.product_name_long%> regions to store the large values off-heap. However, even if you do that the large off-heap values will allocate large temporary heap values that G1GC will treat as "humongous" allocations, even though they will be short lived. Consider using CMS if most of you values will result in "humongous" allocations.
 
 ## <a id="configuring_resource_manager__section_DE1CC494C2B547B083AA00821250972A" class="no-quick-link"></a>Monitor and Tune Heap LRU Configurations
 
-In tuning the resource manager, your central focus should be keeping the member below the critical threshold. The critical threshold is provided to avoid member hangs and crashes, but because of its exception-throwing behavior for distributed updates, the time spent in critical negatively impacts the entire distributed system. To stay below critical, tune so that the <%=vars.product_name%> eviction and the JVM's GC respond adequately when the eviction threshold is reached.
+In tuning the resource manager, your central focus should be keeping the member below the critical threshold. The critical threshold is provided to avoid member hangs and crashes, but because of its exception-throwing behavior for distributed updates, the time spent in critical negatively impacts the entire cluster. To stay below critical, tune so that the <%=vars.product_name%> eviction and the JVM's GC respond adequately when the eviction threshold is reached.
 
 Use the statistics provided by your JVM to make sure your memory and GC settings are sufficient for your needs.
 
@@ -163,13 +170,13 @@ If your application spikes above the critical threshold on a regular basis, try 
 
 The settings that will work well for your system depend on a number of factors, including these:
 
- - The size of the data objects you store in the cache
+ - **The size of the data objects you store in the cache:**
 Very large data objects can be evicted and garbage collected relatively quickly. The same amount of space in use by many small objects takes more processing effort to clear and might require lower thresholds to allow eviction and GC activities to keep up.
 
- - Application behavior
+ - **Application behavior:**
 Applications that quickly put a lot of data into the cache can more easily overrun the eviction and GC capabilities. Applications that operate more slowly may be more easily offset by eviction and GC efforts, possibly allowing you to set your thresholds higher than in the more volatile system.
 
- - Your choice of JVM
+ - **Your choice of JVM:**
 Each JVM has its own GC behavior, which affects how efficiently the collector can operate, how quickly it kicks in when needed, and other factors.
 
 ## <a id="resource_manager_example_configurations" class="no-quick-link"></a>Resource Manager Example Configurations

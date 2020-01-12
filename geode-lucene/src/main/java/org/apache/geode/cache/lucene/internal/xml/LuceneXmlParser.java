@@ -15,7 +15,12 @@
 
 package org.apache.geode.cache.lucene.internal.xml;
 
-import static org.apache.geode.cache.lucene.internal.xml.LuceneXmlConstants.*;
+import static org.apache.geode.cache.lucene.internal.xml.LuceneXmlConstants.ANALYZER;
+import static org.apache.geode.cache.lucene.internal.xml.LuceneXmlConstants.FIELD;
+import static org.apache.geode.cache.lucene.internal.xml.LuceneXmlConstants.INDEX;
+import static org.apache.geode.cache.lucene.internal.xml.LuceneXmlConstants.NAME;
+import static org.apache.geode.cache.lucene.internal.xml.LuceneXmlConstants.NAMESPACE;
+import static org.apache.geode.cache.lucene.internal.xml.LuceneXmlConstants.SERIALIZER;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.xml.sax.Attributes;
@@ -25,8 +30,10 @@ import org.apache.geode.cache.CacheXmlException;
 import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.cache.xmlcache.*;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.cache.xmlcache.AbstractXmlParser;
+import org.apache.geode.internal.cache.xmlcache.CacheCreation;
+import org.apache.geode.internal.cache.xmlcache.CacheXmlParser;
+import org.apache.geode.internal.cache.xmlcache.RegionCreation;
 
 public class LuceneXmlParser extends AbstractXmlParser {
   private CacheCreation cache;
@@ -146,12 +153,12 @@ public class LuceneXmlParser extends AbstractXmlParser {
       obj = c.newInstance();
     } catch (Exception ex) {
       throw new CacheXmlException(
-          LocalizedStrings.CacheXmlParser_WHILE_INSTANTIATING_A_0.toLocalizedString(className), ex);
+          String.format("While instantiating a %s", className), ex);
     }
     if (!(obj instanceof Analyzer)) {
       throw new CacheXmlException(
-          LocalizedStrings.LuceneXmlParser_CLASS_0_IS_NOT_AN_INSTANCE_OF_ANALYZER
-              .toLocalizedString(className));
+          String.format("Class %s is not an instance of Analyzer.",
+              className));
     }
     return (Analyzer) obj;
   }

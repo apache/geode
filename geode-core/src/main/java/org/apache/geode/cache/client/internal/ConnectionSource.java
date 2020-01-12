@@ -30,7 +30,7 @@ import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
  */
 public interface ConnectionSource {
 
-  ServerLocation findServer(Set/* <ServerLocation> */ excludedServers);
+  ServerLocation findServer(Set<ServerLocation> excludedServers);
 
   /**
    * Asks if we should replace a connection to <code>currentServer</code> with one to the returned
@@ -42,7 +42,7 @@ public interface ConnectionSource {
    *         needed; <code>null</code> if no server found
    */
   ServerLocation findReplacementServer(ServerLocation currentServer,
-      Set/* <ServerLocation> */ excludedServers);
+      Set<ServerLocation> excludedServers);
 
   /**
    * Find the servers to host the queue
@@ -54,7 +54,7 @@ public interface ConnectionSource {
    *        for this client
    * @return a list of locations to connect to
    */
-  List/* ServerLocation */ findServersForQueue(Set/* <ServerLocation> */ excludedServers,
+  List<ServerLocation> findServersForQueue(Set<ServerLocation> excludedServers,
       int numServers, ClientProxyMembershipID proxyId, boolean findDurableQueue);
 
   void start(InternalPool poolImpl);

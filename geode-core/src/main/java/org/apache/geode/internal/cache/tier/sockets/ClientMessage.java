@@ -17,8 +17,8 @@ package org.apache.geode.internal.cache.tier.sockets;
 
 import java.io.IOException;
 
-import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.cache.Conflatable;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 
 /**
  * Interface <code>ClientMessage</code> is a message representing a cache operation that is sent
@@ -35,7 +35,6 @@ public interface ClientMessage extends Conflatable, DataSerializableFixedID {
    * @param proxy the proxy that is dispatching this message
    * @return a <code>Message</code> generated from the fields of this
    *         <code>ClientUpdateMessage</code>
-   * @throws IOException
    * @see org.apache.geode.internal.cache.tier.sockets.Message
    */
   Message getMessage(CacheClientProxy proxy, boolean notify) throws IOException;

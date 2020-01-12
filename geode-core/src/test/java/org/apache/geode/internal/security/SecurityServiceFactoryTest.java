@@ -32,14 +32,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.internal.cache.CacheConfig;
 import org.apache.geode.security.PostProcessor;
-import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.security.TestPostProcessor;
 import org.apache.geode.test.junit.categories.SecurityTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category({UnitTest.class, SecurityTest.class})
+@Category({SecurityTest.class})
 public class SecurityServiceFactoryTest {
 
   private SecurityService service;
@@ -96,7 +95,7 @@ public class SecurityServiceFactoryTest {
 
   @Test
   public void createWithPropsWithSecurityManager() throws Exception {
-    properties.setProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName());
+    properties.setProperty(SECURITY_MANAGER, SimpleSecurityManager.class.getName());
     service = SecurityServiceFactory.create(properties);
     assertThat(service).isInstanceOf(IntegratedSecurityService.class);
     assertThat(service.getSecurityManager()).isNotNull();
@@ -122,7 +121,7 @@ public class SecurityServiceFactoryTest {
   @Test
   public void shiroOverwritesSecurityManager() throws Exception {
     properties.setProperty(SECURITY_SHIRO_INIT, "shiro.ini");
-    properties.setProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName());
+    properties.setProperty(SECURITY_MANAGER, SimpleSecurityManager.class.getName());
     service = SecurityServiceFactory.create(properties);
     assertThat(service).isInstanceOf(IntegratedSecurityService.class);
     assertThat(service.getSecurityManager()).isNull();
@@ -152,7 +151,7 @@ public class SecurityServiceFactoryTest {
 
   @Test
   public void cacheConfigOverideProperties_securityManager() throws Exception {
-    properties.setProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName());
+    properties.setProperty(SECURITY_MANAGER, SimpleSecurityManager.class.getName());
     when(cacheConfig.getSecurityManager()).thenReturn(securityManager);
     service = SecurityServiceFactory.create(properties, cacheConfig);
     assertThat(service).isInstanceOf(IntegratedSecurityService.class);
@@ -162,12 +161,12 @@ public class SecurityServiceFactoryTest {
 
   @Test
   public void cacheConfigOverideProperties_postProcessor() throws Exception {
-    properties.setProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName());
+    properties.setProperty(SECURITY_MANAGER, SimpleSecurityManager.class.getName());
     properties.setProperty(SECURITY_POST_PROCESSOR, TestPostProcessor.class.getName());
     when(cacheConfig.getPostProcessor()).thenReturn(postProcessor);
     service = SecurityServiceFactory.create(properties, cacheConfig);
     assertThat(service).isInstanceOf(IntegratedSecurityService.class);
-    assertThat(service.getSecurityManager()).isInstanceOf(SimpleTestSecurityManager.class);
+    assertThat(service.getSecurityManager()).isInstanceOf(SimpleSecurityManager.class);
     assertThat(service.getPostProcessor()).isEqualTo(postProcessor);
   }
 
@@ -183,11 +182,11 @@ public class SecurityServiceFactoryTest {
 
   @Test
   public void cacheConfigPostProcessorWithPropertySecurityManager() throws Exception {
-    properties.setProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName());
+    properties.setProperty(SECURITY_MANAGER, SimpleSecurityManager.class.getName());
     when(cacheConfig.getPostProcessor()).thenReturn(postProcessor);
     service = SecurityServiceFactory.create(properties, cacheConfig);
     assertThat(service).isInstanceOf(IntegratedSecurityService.class);
-    assertThat(service.getSecurityManager()).isInstanceOf(SimpleTestSecurityManager.class);
+    assertThat(service.getSecurityManager()).isInstanceOf(SimpleSecurityManager.class);
     assertThat(service.getPostProcessor()).isEqualTo(postProcessor);
   }
 }

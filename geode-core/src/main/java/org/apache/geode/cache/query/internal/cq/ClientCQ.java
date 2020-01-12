@@ -26,8 +26,8 @@ public interface ClientCQ extends InternalCqQuery {
    * care of repository cleanup.
    *
    * @param sendRequestToServer true to send the request to server.
-   * @throws CqException
    */
+  @Override
   void close(boolean sendRequestToServer) throws CqClosedException, CqException;
 
   void setProxyCache(ProxyCache proxyCache);

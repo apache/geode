@@ -15,10 +15,15 @@
 
 package org.apache.geode.internal.admin.remote;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-import org.apache.geode.*;
-import org.apache.geode.internal.admin.*;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.StatisticDescriptor;
+import org.apache.geode.Statistics;
+import org.apache.geode.internal.admin.Stat;
 import org.apache.geode.internal.statistics.StatisticDescriptorImpl;
 
 public class RemoteStat implements Stat, DataSerializable {
@@ -53,32 +58,39 @@ public class RemoteStat implements Stat, DataSerializable {
 
   // Stat methods
 
+  @Override
   public Number getValue() {
     return this.value;
   }
 
+  @Override
   public String getUnits() {
     return this.units;
   }
 
+  @Override
   public boolean isCounter() {
     return this.isCounter;
   }
 
   // GfObject methods
 
+  @Override
   public int getID() {
     return this.id;
   }
 
+  @Override
   public String getName() {
     return this.name;
   }
 
+  @Override
   public String getType() {
     return StatisticDescriptorImpl.getTypeCodeName(this.typeCode);
   }
 
+  @Override
   public String getDescription() {
     return this.desc;
   }
@@ -91,6 +103,7 @@ public class RemoteStat implements Stat, DataSerializable {
         + isCounter() + " value=" + getValue() + " desc=\"" + getDescription() + "\">";
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeString(this.name, out);
     out.writeByte(this.typeCode);
@@ -101,6 +114,7 @@ public class RemoteStat implements Stat, DataSerializable {
     out.writeBoolean(this.isCounter);
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
 
     this.name = DataSerializer.readString(in);

@@ -14,10 +14,12 @@
  */
 package org.apache.geode.internal.admin.remote;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 import org.apache.geode.DataSerializable;
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.CacheStatistics;
 
 /**
  * This class represents a snapshot of a {@link org.apache.geode.cache.CacheStatistics} from a
@@ -44,30 +46,37 @@ public class RemoteCacheStatistics implements CacheStatistics, DataSerializable 
    */
   public RemoteCacheStatistics() {}
 
+  @Override
   public long getLastModifiedTime() {
     return lastModified;
   }
 
+  @Override
   public long getLastAccessedTime() {
     return lastAccessed;
   }
 
+  @Override
   public long getHitCount() {
     return hitCount;
   }
 
+  @Override
   public long getMissCount() {
     return missCount;
   }
 
+  @Override
   public float getHitRatio() {
     return hitRatio;
   }
 
+  @Override
   public void resetCounts() {
     throw new UnsupportedOperationException();
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     out.writeLong(lastModified);
     out.writeLong(lastAccessed);
@@ -76,6 +85,7 @@ public class RemoteCacheStatistics implements CacheStatistics, DataSerializable 
     out.writeFloat(hitRatio);
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     lastModified = in.readLong();
     lastAccessed = in.readLong();

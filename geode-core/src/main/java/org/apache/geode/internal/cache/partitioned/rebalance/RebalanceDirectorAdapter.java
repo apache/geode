@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.partitioned.rebalance;
 
+import org.apache.geode.internal.cache.partitioned.rebalance.model.PartitionedRegionLoadModel;
+
 /**
  * A base class for rebalance directors that provides some default implementations of methods on
  * rebalance director.

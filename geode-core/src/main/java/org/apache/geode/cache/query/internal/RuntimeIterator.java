@@ -12,13 +12,14 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.cache.query.internal;
 
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.Set;
 
-import org.apache.geode.cache.query.AmbiguousNameException;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.query.FunctionDomainException;
 import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
@@ -28,7 +29,6 @@ import org.apache.geode.cache.query.internal.index.IndexCreationHelper;
 import org.apache.geode.cache.query.internal.types.TypeUtils;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.cache.query.types.StructType;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Value representing a current iteration element. This is the representation used during
@@ -45,60 +45,45 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 public class RuntimeIterator extends AbstractCompiledValue {
 
   // token to differentiate null from uninitialized
+  @Immutable
   private static final SelectResults UNINITIALIZED = new ResultsBag(0, null);
   private Object current = UNINITIALIZED;
-  private String name;
+  private final String name;
   private SelectResults collection = UNINITIALIZED;
-  private CompiledIteratorDef cmpIteratorDefn;
-  private ObjectType elementType; // may be more specific than that in
-  // cmpIteratorDefn
-  // for canonicalization
+  private final CompiledIteratorDef cmpIteratorDefn;
+  /** may be more specific than that in cmpIteratorDefn */
+  private ObjectType elementType;
+  /** for canonicalization */
   private String internalId = null;
   private String definition = null;
   private String index_internal_id = null;
   private int scopeID = -1;
 
+  @Override
   public int getType() {
     return ITERATOR_DEF;
   }
 
   public ObjectType getElementType() {
-    return this.elementType;
+    return elementType;
   }
 
   RuntimeIterator(CompiledIteratorDef cmpIteratorDefn, ObjectType elementType) {
     if (elementType == null || cmpIteratorDefn == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.RuntimeIterator_ELEMENTTYPE_ANDOR_CMPITERATORDEFN_SHOULD_NOT_BE_NULL
-              .toLocalizedString());
+          "elementType and/or cmpIteratorDefn should not be null");
     }
     this.name = cmpIteratorDefn.getName();
     this.elementType = elementType;
     this.cmpIteratorDefn = cmpIteratorDefn;
   }
 
-  // public RuntimeIterator(String name, SelectResults collection) {
-  // if (collection == null)
-  // throw new IllegalArgumentException("base collection must not be null");
-  //
-  // this.name = name; // may be null
-  // this.collection = collection;
-  // this.cmpIteratorDefn = null;
-  // this.elementType = collection.getCollectionType().getElementType();
-  // }
-  // /** Return true if this is an iterator that is dependent on other
-  // iterator(s)
-  // * in this scope (a cached result from isDependentOn(context))
-  // */
-  // public boolean isDependent() {
-  // return this.isDependent;
-  // }
   CompiledIteratorDef getCmpIteratorDefn() {
-    return this.cmpIteratorDefn;
+    return cmpIteratorDefn;
   }
 
   public String getName() {
-    return this.name;
+    return name;
   }
 
   /**
@@ -108,27 +93,26 @@ public class RuntimeIterator extends AbstractCompiledValue {
    */
   public SelectResults evaluateCollection(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
-    if (this.collection != UNINITIALIZED
-        && !this.cmpIteratorDefn.isDependentOnAnyIteratorOfScopeLessThanItsOwn(context)
-        && this.scopeID != IndexCreationHelper.INDEX_QUERY_SCOPE_ID) {
-      return this.collection;
+    if (collection != UNINITIALIZED
+        && !cmpIteratorDefn.isDependentOnAnyIteratorOfScopeLessThanItsOwn(context)
+        && scopeID != IndexCreationHelper.INDEX_QUERY_SCOPE_ID) {
+      return collection;
     }
     // limit the scope for evaluation to this RuntimeIterator:
     // we don't want to use this iterator or subsequent ones in the from clause
     // to evaluate this collection.
-    this.collection = this.cmpIteratorDefn.evaluateCollection(context, this);
-    if (this.collection == null) {
+    collection = cmpIteratorDefn.evaluateCollection(context, this);
+    if (collection == null) {
       return null;
     }
     // if we already have a more specific elementType, set it in the collection
-    if (!this.elementType.equals(TypeUtils.OBJECT_TYPE)) {
-      this.collection.setElementType(elementType);
+    if (!elementType.equals(TypeUtils.OBJECT_TYPE)) {
+      collection.setElementType(elementType);
     } else {
-      // Asif : The elementType in the Collection obtained is more
-      // specific . So use that type.
-      this.elementType = collection.getCollectionType().getElementType();
+      // The elementType in the Collection obtained is more specific . So use that type.
+      elementType = collection.getCollectionType().getElementType();
     }
-    return this.collection;
+    return collection;
   }
 
   @Override
@@ -141,37 +125,38 @@ public class RuntimeIterator extends AbstractCompiledValue {
   public boolean isDependentOnIterator(RuntimeIterator itr, ExecutionContext context) {
     if (itr == this)
       return true; // never true(?)
-    return this.cmpIteratorDefn.isDependentOnIterator(itr, context);
+    return cmpIteratorDefn.isDependentOnIterator(itr, context);
   }
 
   @Override
   public boolean isDependentOnCurrentScope(ExecutionContext context) {
-    return this.cmpIteratorDefn.isDependentOnCurrentScope(context);
+    return cmpIteratorDefn.isDependentOnCurrentScope(context);
   }
 
   public void setCurrent(Object current) {
     this.current = current;
   }
 
+  @Override
   public Object evaluate(ExecutionContext context) {
     Support.Assert(current != UNINITIALIZED,
         "error to evaluate RuntimeIterator without setting current first");
-    return this.current;
+    return current;
   }
 
-  boolean containsProperty(ExecutionContext context, String name, int numArgs, boolean mustBeMethod)
-      throws AmbiguousNameException {
+  boolean containsProperty(ExecutionContext context, String name, int numArgs,
+      boolean mustBeMethod) {
     // first handle structs
-    if ((this.elementType instanceof StructType) && !mustBeMethod) {
+    if ((elementType instanceof StructType) && !mustBeMethod) {
       // check field names
-      String fieldName[] = ((StructType) this.elementType).getFieldNames();
-      for (int i = 0; i < fieldName.length; i++) {
-        if (name.equals(fieldName[i])) {
+      String[] fieldName = ((StructType) elementType).getFieldNames();
+      for (String s : fieldName) {
+        if (name.equals(s)) {
           return true;
         }
       }
     }
-    Class clazz = this.elementType.resolveClass();
+    Class<?> clazz = elementType.resolveClass();
     if (numArgs > 0 || mustBeMethod) {
       // if numArgs==0, then just look up method directly
       // instead of sifting through all methods
@@ -188,106 +173,26 @@ public class RuntimeIterator extends AbstractCompiledValue {
       // we'll check for ambiguous method invocation when the method is
       // actually fully resolved and invoked
       Method[] methods = clazz.getMethods();
-      for (int i = 0; i < methods.length; i++) {
-        Method m = methods[i];
-        if (m.getName().equals(name) && m.getParameterTypes().length == numArgs)
+      for (Method m : methods) {
+        if (m.getName().equals(name) && m.getParameterTypes().length == numArgs) {
           return true;
+        }
       }
       return false;
     }
     // if there are zero arguments and it's an attribute, then defer to
-    // AttributeDescriptor
-    // to see if there's a match
-    return new AttributeDescriptor(
-        context.getCache().getQueryService().getMethodInvocationAuthorizer(), name)
-            .validateReadType(clazz);
+    // AttributeDescriptor to see if there's a match
+    return new AttributeDescriptor(context.getCache().getPdxRegistry(), name)
+        .validateReadType(clazz);
   }
 
-  // private SelectResults prepareIteratorDef(Object obj)
-  // throws TypeMismatchException {
-  // if (obj == null) {
-  // return null;
-  // }
-  //
-  // if (obj == QueryService.UNDEFINED) {
-  // return null;
-  // }
-  //
-  // if (obj instanceof SelectResults) {
-  // // probably came from nested query or is a QRegion already from region
-  // path
-  // return (SelectResults)obj;
-  // }
-  //
-  // if (obj instanceof Region) {
-  // return new QRegion((Region)obj); // this can happen if region passed in as
-  // parameter
-  // }
-  //
-  // // if this is a domain collection, it should be unmodifiable
-  // // if obj is a Collection but not a SelectResults, it must be from the
-  // // domain, otherwise it would be a SelectResults.
-  // if (obj instanceof Collection) {
-  // // do not lose ordering and duplicate information,
-  // ResultsCollectionWrapper res =
-  // new ResultsCollectionWrapper(this.elementType, (Collection)obj);
-  // res.setModifiable(false);
-  // return res;
-  // }
-  //
-  // // Object[] is wrapped and considered a domain object so unmodifiable
-  // if (obj instanceof Object[]) {
-  // // the element type is specified in the array itself, unless we have
-  // // something more specific
-  // if (this.elementType.equals(TypeUtils.OBJECT_TYPE)) { // if we don't have
-  // constraint info
-  // this.elementType =
-  // TypeUtils.getObjectType(obj.getClass().getComponentType());
-  // }
-  //
-  // // do not lose ordering and duplicate information,
-  // ResultsCollectionWrapper res =
-  // new ResultsCollectionWrapper(this.elementType,
-  // Arrays.asList((Object[])obj));
-  // res.setModifiable(false);
-  // return res;
-  // }
-  //
-  // if (obj instanceof Map) {
-  // if (this.elementType.equals(TypeUtils.OBJECT_TYPE)) { // if we don't have
-  // more specific type info, use Map.Entry
-  // elementType = TypeUtils.getObjectType(Map.Entry.class);
-  // }
-  // ResultsCollectionWrapper res =
-  // new ResultsCollectionWrapper(elementType, ((Map)obj).entrySet());
-  // res.setModifiable(false);
-  // return res;
-  // } else {
-  // throw new TypeMismatchException(
-  // "The expression in the FROM clause of a SELECT statement was type '"
-  // + obj.getClass().getName()
-  // + "', which cannot be interpreted as a collection");
-  // }
-  // }
   @Override
   public String toString() {
-    StringBuffer sb = new StringBuffer();
-    sb.append(this.getClass().getName());
-    sb.append(" (name=" + this.name);
-    // if(isDependent)
-    sb.append(" collection expr=" + cmpIteratorDefn);
-    // else {
-    // sb.append("; collection=" +this.collection + ")");
-    // sb.append("; collectionType=" +this.collection.getCollectionType() +
-    // ")");
-    // sb.append("; elementType="
-    // +this.collection.getCollectionType().getElementType() + ")");
-    // }
-    return sb.toString();
+    return getClass().getName() + " (name=" + name + " collection expr=" + cmpIteratorDefn + ")";
   }
 
   // Canonicalization
-  public void setInternalId(String id) {
+  void setInternalId(String id) {
     // it's okay for this to be set more than once; a RuntimeIterator
     // can be bound to a scope to compute dependencies, then
     // re-bound to a different scope later at eval time.
@@ -312,7 +217,7 @@ public class RuntimeIterator extends AbstractCompiledValue {
   }
 
   public String getIndexInternalID() {
-    return this.index_internal_id;
+    return index_internal_id;
   }
 
   public String getDefinition() {
@@ -321,19 +226,15 @@ public class RuntimeIterator extends AbstractCompiledValue {
   }
 
   @Override
-  public void generateCanonicalizedExpression(StringBuilder clauseBuffer, ExecutionContext context)
-      throws AmbiguousNameException, TypeMismatchException {
-    // Asif: prepend the internal iterator variable name for this
-    // RunTimeIterator
-    //
+  public void generateCanonicalizedExpression(StringBuilder clauseBuffer,
+      ExecutionContext context) {
+    // prepend the internal iterator variable name for this RunTimeIterator
     int currScopeID = context.currentScope().getScopeID();
-    if (currScopeID == this.scopeID) {
-      // Support.Assert(this.index_internal_id != null, "Index_Internal_ID
-      // should have been set at this point");
-      clauseBuffer.insert(0,
-          this.index_internal_id == null ? this.internalId : this.index_internal_id);
+    if (currScopeID == scopeID) {
+      // should have been set at this point
+      clauseBuffer.insert(0, index_internal_id == null ? internalId : index_internal_id);
     } else {
-      clauseBuffer.insert(0, internalId).insert(0, '_').insert(0, this.scopeID).insert(0, "scope");
+      clauseBuffer.insert(0, internalId).insert(0, '_').insert(0, scopeID).insert(0, "scope");
     }
   }
 
@@ -342,6 +243,6 @@ public class RuntimeIterator extends AbstractCompiledValue {
   }
 
   int getScopeID() {
-    return this.scopeID;
+    return scopeID;
   }
 }

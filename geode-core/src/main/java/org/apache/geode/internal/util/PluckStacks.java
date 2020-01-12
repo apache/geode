@@ -25,15 +25,15 @@ import java.io.LineNumberReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.zip.GZIPInputStream;
 
-import org.apache.geode.management.internal.cli.commands.ExportStackTraceCommand;
+import org.apache.geode.internal.tcp.Connection;
+import org.apache.geode.management.internal.i18n.CliStrings;
 
 /**
  * PluckStacks is a replacement for the old pluckstacks.pl Perl script that we've used for years.
@@ -46,7 +46,7 @@ import org.apache.geode.management.internal.cli.commands.ExportStackTraceCommand
  */
 
 public class PluckStacks {
-  static boolean DEBUG = Boolean.getBoolean("PluckStacks.DEBUG");
+  static final boolean DEBUG = Boolean.getBoolean("PluckStacks.DEBUG");
 
   // only print one stack dump from each file
   static final boolean ONE_STACK = Boolean.getBoolean("oneDump");
@@ -79,7 +79,7 @@ public class PluckStacks {
     }
 
     try {
-      Map<String, List<ThreadStack>> dumps = getThreadDumps(reader, log.getName());
+      TreeMap<String, List<ThreadStack>> dumps = getThreadDumps(reader, log.getName());
 
       StringBuffer buffer = new StringBuffer();
       for (Map.Entry<String, List<ThreadStack>> dump : dumps.entrySet()) {
@@ -104,16 +104,16 @@ public class PluckStacks {
     }
   }
 
-  public Map<String, List<ThreadStack>> getThreadDumps(LineNumberReader reader,
+  public TreeMap<String, List<ThreadStack>> getThreadDumps(LineNumberReader reader,
       String logFileName) {
-    Map<String, List<ThreadStack>> result = new HashMap<>();
+    TreeMap<String, List<ThreadStack>> result = new TreeMap<>();
 
     String line = null;
     int stackNumber = 1;
     try {
       while ((line = reader.readLine()) != null) {
         if (line.startsWith("Full thread dump")
-            || line.startsWith(ExportStackTraceCommand.STACK_TRACE_FOR_MEMBER)) {
+            || line.startsWith(CliStrings.STACK_TRACE_FOR_MEMBER)) {
           int lineNumber = reader.getLineNumber();
           List<ThreadStack> stacks = getStacks(reader);
           if (stacks.size() > 0) {
@@ -147,7 +147,7 @@ public class PluckStacks {
         if ((line = reader.readLine()) == null) {
           break;
         }
-        if (line.startsWith(ExportStackTraceCommand.STACK_TRACE_FOR_MEMBER)) {
+        if (line.startsWith(CliStrings.STACK_TRACE_FOR_MEMBER)) {
           reader.reset();
           Collections.sort(result);
           return result;
@@ -239,7 +239,7 @@ public class PluckStacks {
       return isIdleExecutor(thread);
     }
     if (threadName.startsWith("Geode Failure Detection Server")) {
-      return stackSize < 11 && thread.getFirstFrame().contains("socketAccept");
+      return stackSize < 12 && thread.getFirstFrame().contains("socketAccept");
     }
     if (threadName.startsWith("Geode Membership Timer")) {
       // System.out.println("gf timer stack size = " + stackSize + "; frame = " + thread.get(1));
@@ -265,7 +265,7 @@ public class PluckStacks {
       // thread.get(2));
       return (stackSize == 8 && thread.get(2).contains("SocketChannelImpl.accept"));
     }
-    if (threadName.startsWith("P2P message reader")) {
+    if (threadName.startsWith(Connection.THREAD_KIND_IDENTIFIER)) {
       return (stackSize <= 14 && (thread.getFirstFrame().contains("FileDispatcherImpl.read")
           || thread.getFirstFrame().contains("FileDispatcher.read")
           || thread.getFirstFrame().contains("SocketDispatcher.read")));
@@ -346,10 +346,10 @@ public class PluckStacks {
       return !thread.isRunnable() && stackSize <= 6;
     }
     if (threadName.startsWith("Replicate/Partition Region Garbage Collector")) {
-      return !thread.isRunnable() && (stackSize <= 7);
+      return !thread.isRunnable() && (stackSize <= 9);
     }
     if (threadName.startsWith("Non-replicate Region Garbage Collector")) {
-      return !thread.isRunnable() && (stackSize <= 7);
+      return !thread.isRunnable() && (stackSize <= 9);
     }
     if (threadName.equals("GemFire Time Service")) {
       return !thread.isRunnable();
@@ -420,6 +420,9 @@ public class PluckStacks {
     if (threadName.startsWith("ThresholdEventProcessor")) {
       return isIdleExecutor(thread);
     }
+    if (threadName.startsWith("ThreadsMonitor") && thread.getFirstFrame().contains("Object.wait")) {
+      return true;
+    }
     if (threadName.startsWith("Timer-")) {
       if (thread.isRunnable())
         return true;
@@ -445,19 +448,18 @@ public class PluckStacks {
 
 
   boolean isIdleExecutor(ThreadStack thread) {
-    if (thread.isRunnable())
+    if (thread.isRunnable()) {
       return false;
+    }
     int size = thread.size();
-    if (size > 8 && thread.get(7).contains("DMStats.take"))
+    if (size > 8 && thread.get(7).contains("DMStats.take")) {
       return true;
-    if (size > 3 && thread.get(size - 3).contains("getTask"))
-      return true; // locator request thread
-    if (size > 4 && thread.get(size - 4).contains("getTask"))
-      return true; // most executors match this
-    if (size > 5 && thread.get(size - 5).contains("getTask"))
-      return true; // View Message Processor
-    if (size > 6 && thread.get(size - 6).contains("getTask"))
-      return true; // View Message Processor
+    }
+    for (int i = 3; i < 12; i++) {
+      if (size > i && thread.get(size - i).contains("getTask")) {
+        return true;
+      }
+    }
     return false;
   }
 

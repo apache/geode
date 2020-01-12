@@ -15,9 +15,9 @@
 package org.apache.geode.internal.process;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static org.apache.commons.lang.StringUtils.isBlank;
-import static org.apache.commons.lang.Validate.isTrue;
-import static org.apache.commons.lang.Validate.notNull;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.Validate.isTrue;
+import static org.apache.commons.lang3.Validate.notNull;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -27,12 +27,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.process.ControlFileWatchdog.ControlRequestHandler;
 import org.apache.geode.lang.AttachAPINotFoundException;
 
 /**
- * Controls a {@link ControllableProcess} using files to communicate between processes.
+ * Controls a process using files.
  *
  * @since GemFire 8.0
  */
@@ -98,7 +97,7 @@ class FileProcessController implements ProcessController {
   @Override
   public void checkPidSupport() {
     throw new AttachAPINotFoundException(
-        LocalizedStrings.Launcher_ATTACH_API_NOT_FOUND_ERROR_MESSAGE.toLocalizedString());
+        "The Attach API classes could not be found on the classpath.  Please include JDK tools.jar on the classpath or add the JDK tools.jar to the jre/lib/ext directory.");
   }
 
   long getStatusTimeoutMillis() {

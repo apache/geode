@@ -61,7 +61,7 @@ as locator1 is currently online.
 Process ID: 67666
 Uptime: 6 seconds
 <%=vars.product_name%> Version: <%=vars.product_version%>
-Java Version: 1.8.0_<%=vars.min_java_update%>
+Java Version: 1.<%=vars.min_java_version%>.0_<%=vars.min_java_update%>
 Log File: /home/username/gfsh_tutorial/locator1.log
 JVM Arguments: -Dgemfire.enable-cluster-configuration=true
  -Dgemfire.load-cluster-configuration-from-dir=false
@@ -136,7 +136,7 @@ Connecting to Manager at [host=ubuntu.local, port=1099] ..
 Successfully connected to: [host=ubuntu.local, port=1099]
 ```
 
-Note that if you had used a custom `--port` when starting your locator, or you were connecting from the `gfsh` prompt on another member, you would also need to specify `--locator=hostname[port]` when connecting to the distributed system. For example (type `disconnect` first if you want to try this next command):
+Note that if you had used a custom `--port` when starting your locator, or you were connecting from the `gfsh` prompt on another member, you would also need to specify `--locator=hostname[port]` when connecting to the cluster. For example (type `disconnect` first if you want to try this next command):
 
 ``` pre
 gfsh>connect --locator=localhost[10334]
@@ -145,7 +145,7 @@ Connecting to Manager at [host=ubuntu.local, port=1099] ..
 Successfully connected to: [host=ubuntu.local, port=1099]
 ```
 
-Another way to connect your `gfsh` prompt to the distributed system would be to connect to directly to the JMX Manager running inside the locator. For example (type `disconnect` first if you want to try this next command):
+Another way to connect `gfsh` to the cluster would be to connect to directly to the JMX Manager running inside the locator. For example (type `disconnect` first if you want to try this next command):
 
 ``` pre
 gfsh>connect --jmx-manager=localhost[1099]
@@ -183,7 +183,7 @@ is currently online.
 Process ID: 68375
 Uptime: 4 seconds
 <%=vars.product_name%> Version: <%=vars.product_version%>
-Java Version: 1.8.0_<%=vars.min_java_update%>
+Java Version: 1.<%=vars.min_java_version%>.0_<%=vars.min_java_update%>
 Log File: /home/username//gfsh_tutorial/server1/server1.log
 JVM Arguments: -Dgemfire.locators=localhost[10334]
  -Dgemfire.use-cluster-configuration=true -Dgemfire.start-dev-rest-api=false
@@ -203,7 +203,7 @@ directory (named after the server), and within that working directory, it has cr
 a .pid (containing the server's process ID) for this cache server. In addition, it has also written
 log files.
 
-**Step 7: List members.** Use the `list members` command to view the current members of the <%=vars.product_name_long%> distributed system you have just created.
+**Step 7: List members.** Use the `list members` command to view the current members of the cluster you have just created.
 
 ``` pre
 gfsh>list members
@@ -286,7 +286,7 @@ Member  | Status
 server1 | Region "/region1" created on "server1"
 ```
 
-Because only one server is in the distributed system at the moment, the command creates the local region on server1.
+Because only one server is in the cluster at the moment, the command creates the local region on server1.
 
 **Step 10: Start another server.** This time specify a `--server-port` argument with a different server port because you are starting a cache server process on the same host machine.
 
@@ -299,7 +299,7 @@ server2 is currently online.
 Process ID: 68423
 Uptime: 4 seconds
 <%=vars.product_name%> Version: <%=vars.product_version%>
-Java Version: 1.8.0_<%=vars.min_java_update%>
+Java Version: 1.<%=vars.min_java_version%>.0_<%=vars.min_java_update%>
 Log File: /home/username/gfsh_tutorial/server2/server2.log
 JVM Arguments: -Dgemfire.default.locators=192.0.2.0[10334]
  -Dgemfire.use-cluster-configuration=true -Dgemfire.start-dev-rest-api=false
@@ -457,7 +457,7 @@ server2    | ubuntu(server2:6092)<v2>:17443
 server1    | ubuntu(server1:5931)<v1>:35285
 ```
 
-Notice that because the entry was put into a replicated region the entry is located on both distributed system members.
+Notice that because the entry was put into a replicated region, the entry is located on both cluster members.
 
 For example, using the `query` command:
 

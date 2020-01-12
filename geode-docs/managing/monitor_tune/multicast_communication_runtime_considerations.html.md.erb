@@ -24,13 +24,13 @@ When you use multicast for messaging and data distribution, you need to understa
 **Multicast Health Monitor**
 
 The <%=vars.product_name%> management and monitoring system is supplemented by a `maxRetransmissionRatio` health
-monitoring setting for distributed system members. This ratio is the number of retransmission
+monitoring setting for cluster members. This ratio is the number of retransmission
 requests received divided by the number of multicast datagrams written. If the ratio is at 1.0, the
 member is retransmitting as many packets as it originally sent. Retransmissions are point-to-point,
 and many processes may request retransmission, so this number can get quite high if problems
 occur. The default value for `maxRetransmissionRatio` is 0.2.
 
-For example, consider a distributed system with one producer and two consumers of cache events using
+For example, consider a cluster with one producer and two consumers of cache events using
 multicast to transmit cache updates. The new member is added, which is running on a machine without
 multicast enabled. As a result, there is a retransmission request for every cache update, and the
 `maxRetransmissionRatio` changes to 1.0.

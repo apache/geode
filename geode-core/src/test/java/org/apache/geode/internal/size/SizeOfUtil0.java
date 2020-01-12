@@ -23,6 +23,7 @@ package org.apache.geode.internal.size;
  */
 public class SizeOfUtil0 implements SingleObjectSizer {
 
+  @Override
   public long sizeof(Object object) {
     return 2;
   }

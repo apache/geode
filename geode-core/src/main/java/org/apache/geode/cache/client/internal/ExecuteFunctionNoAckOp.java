@@ -24,15 +24,13 @@ import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.distributed.internal.ServerLocation;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.internal.cache.execute.MemberMappedArgument;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Does a Execution of function on server (possibly without region/cache) It does not get the resulf
@@ -166,15 +164,6 @@ public class ExecuteFunctionNoAckOp {
       getMessage().addBytesPart(ExecuteFunctionOp.getByteArrayForFlags(allMembers));
     }
 
-    /**
-     * @param functionId
-     * @param args
-     * @param memberMappedArg
-     * @param hasResult
-     * @param isFnSerializationReqd
-     * @param isHA
-     * @param optimizeForWrite
-     */
     public ExecuteFunctionNoAckOpImpl(String functionId, Object args,
         MemberMappedArgument memberMappedArg, byte hasResult, boolean isFnSerializationReqd,
         boolean isHA, boolean optimizeForWrite, String[] groups, boolean allMembers) {
@@ -197,11 +186,9 @@ public class ExecuteFunctionNoAckOp {
         Part part = msg.getPart(0);
         if (msgType == MessageType.EXCEPTION) {
           Throwable t = (Throwable) part.getObject();
-          logger.warn(LocalizedMessage
-              .create(LocalizedStrings.EXECUTE_FUNCTION_NO_HAS_RESULT_RECEIVED_EXCEPTION), t);
+          logger.warn("Function execution without result encountered an Exception on server.", t);
         } else if (isErrorResponse(msgType)) {
-          logger.warn(LocalizedMessage
-              .create(LocalizedStrings.EXECUTE_FUNCTION_NO_HAS_RESULT_RECEIVED_EXCEPTION));
+          logger.warn("Function execution without result encountered an Exception on server.");
         } else {
           throw new InternalGemFireError(
               "Unexpected message type " + MessageType.getString(msgType));

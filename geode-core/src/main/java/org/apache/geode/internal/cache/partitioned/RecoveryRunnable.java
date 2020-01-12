@@ -21,16 +21,13 @@ import org.apache.geode.InternalGemFireError;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.PRHARedundancyProvider;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public abstract class RecoveryRunnable implements Runnable {
   private static final Logger logger = LogService.getLogger();
 
   protected final PRHARedundancyProvider redundancyProvider;
 
-  /**
-   * @param prhaRedundancyProvider
-   */
   public RecoveryRunnable(PRHARedundancyProvider prhaRedundancyProvider) {
     redundancyProvider = prhaRedundancyProvider;
   }
@@ -49,9 +46,11 @@ public abstract class RecoveryRunnable implements Runnable {
     }
   }
 
+  @Override
   public void run() {
     CancelCriterion stopper =
-        redundancyProvider.prRegion.getGemFireCache().getDistributedSystem().getCancelCriterion();
+        redundancyProvider.getPartitionedRegion().getGemFireCache().getDistributedSystem()
+            .getCancelCriterion();
     DistributedSystem.setThreadsSocketPolicy(true /* conserve sockets */);
     SystemFailure.checkFailure();
     if (stopper.isCancelInProgress()) {

@@ -25,13 +25,14 @@ import java.util.List;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.OffHeapHelper;
 import org.apache.geode.internal.offheap.Releasable;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Encapsulates list containing objects, serialized objects, raw byte arrays, or exceptions. It can
@@ -115,10 +116,6 @@ public class ObjectPartList implements DataSerializableFixedID, Releasable {
 
 
   public void addAll(ObjectPartList other) {
-    if (logger.isTraceEnabled(LogMarker.OBJECT_PART_LIST)) {
-      logger.trace(LogMarker.OBJECT_PART_LIST, "OPL.addAll: other={}\nthis={}", other, this);
-    }
-
     if (this.hasKeys) {
       if (other.keys != null) {
         if (this.keys == null) {
@@ -187,7 +184,9 @@ public class ObjectPartList implements DataSerializableFixedID, Releasable {
     }
   }
 
-  public void toData(DataOutput out) throws IOException {
+  @Override
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     out.writeBoolean(this.hasKeys);
     if (this.objectTypeArray != null) {
       int numObjects = this.objects.size();
@@ -196,7 +195,7 @@ public class ObjectPartList implements DataSerializableFixedID, Releasable {
         Object value = this.objects.get(index);
         byte objectType = this.objectTypeArray[index];
         if (this.hasKeys) {
-          DataSerializer.writeObject(this.keys.get(index), out);
+          context.getSerializer().writeObject(this.keys.get(index), out);
         }
         out.writeBoolean(objectType == EXCEPTION);
         if (objectType == OBJECT && value instanceof byte[]) {
@@ -207,7 +206,7 @@ public class ObjectPartList implements DataSerializableFixedID, Releasable {
           // write the exception string for native clients
           DataSerializer.writeString(value.toString(), out);
         } else {
-          DataSerializer.writeObject(value, out);
+          context.getSerializer().writeObject(value, out);
         }
       }
     } else {
@@ -215,7 +214,9 @@ public class ObjectPartList implements DataSerializableFixedID, Releasable {
     }
   }
 
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  @Override
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     this.hasKeys = in.readBoolean();
     if (this.hasKeys) {
       this.keys = new ArrayList();
@@ -224,7 +225,7 @@ public class ObjectPartList implements DataSerializableFixedID, Releasable {
     if (numObjects > 0) {
       for (int index = 0; index < numObjects; ++index) {
         if (this.hasKeys) {
-          Object key = DataSerializer.readObject(in);
+          Object key = context.getDeserializer().readObject(in);
           this.keys.add(key);
         }
         boolean isException = in.readBoolean();
@@ -235,13 +236,14 @@ public class ObjectPartList implements DataSerializableFixedID, Releasable {
           // ignore the exception string meant for native clients
           DataSerializer.readString(in);
         } else {
-          value = DataSerializer.readObject(in);
+          value = context.getDeserializer().readObject(in);
         }
         this.objects.add(value);
       }
     }
   }
 
+  @Override
   public int getDSFID() {
     return DataSerializableFixedID.OBJECT_PART_LIST;
   }
@@ -257,5 +259,4 @@ public class ObjectPartList implements DataSerializableFixedID, Releasable {
       OffHeapHelper.release(v);
     }
   }
-
 }

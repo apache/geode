@@ -18,42 +18,41 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
-import org.apache.geode.Instantiator;
-import org.apache.geode.modules.session.catalina.DeltaSession;
 import org.apache.geode.modules.session.catalina.DeltaSessionInterface;
-
 
 @SuppressWarnings("serial")
 public class DeltaSessionDestroyAttributeEvent implements DeltaSessionAttributeEvent {
-
   private String attributeName;
 
+  String getAttributeName() {
+    return attributeName;
+  }
+
+  @SuppressWarnings("unused")
   public DeltaSessionDestroyAttributeEvent() {}
 
   public DeltaSessionDestroyAttributeEvent(String attributeName) {
     this.attributeName = attributeName;
   }
 
-  public String getAttributeName() {
-    return this.attributeName;
-  }
-
+  @Override
   public void apply(DeltaSessionInterface session) {
     session.localDestroyAttribute(this.attributeName);
   }
 
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  @Override
+  public void fromData(DataInput in) throws IOException {
     this.attributeName = DataSerializer.readString(in);
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeString(this.attributeName, out);
   }
 
   public String toString() {
-    return new StringBuilder().append("DeltaSessionDestroyAttributeEvent[").append("attributeName=")
-        .append(this.attributeName).append("]").toString();
+    return "DeltaSessionDestroyAttributeEvent[" + "attributeName="
+        + this.attributeName + "]";
   }
 }

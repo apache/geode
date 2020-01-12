@@ -15,14 +15,16 @@
 
 package org.apache.geode.distributed.internal;
 
-/**
- *
- */
 public abstract class HighPriorityDistributionMessage extends DistributionMessage {
 
   @Override
   public int getProcessorType() {
-    return ClusterDistributionManager.HIGH_PRIORITY_EXECUTOR;
+    return OperationExecutors.HIGH_PRIORITY_EXECUTOR;
+  }
+
+  @Override
+  public boolean isHighPriority() {
+    return true;
   }
 
 }

@@ -15,6 +15,8 @@
 
 package org.apache.geode.internal.lang;
 
+import org.apache.geode.annotations.Immutable;
+
 /**
  * The ClassUtils class is an abstract utility class for working with and invoking methods on Class
  * objects.
@@ -26,6 +28,7 @@ package org.apache.geode.internal.lang;
  */
 public abstract class ClassUtils {
 
+  @Immutable
   public static final Class[] EMPTY_CLASS_ARRAY = new Class[0];
 
   /**

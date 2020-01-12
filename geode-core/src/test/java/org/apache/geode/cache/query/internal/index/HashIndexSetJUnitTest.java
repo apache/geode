@@ -14,9 +14,13 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -28,15 +32,12 @@ import java.util.Set;
 import java.util.stream.IntStream;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.cache.query.data.Portfolio;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class HashIndexSetJUnitTest {
 
   Map<Integer, Portfolio> portfoliosMap;

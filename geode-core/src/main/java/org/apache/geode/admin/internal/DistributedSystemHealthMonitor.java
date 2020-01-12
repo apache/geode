@@ -42,11 +42,9 @@ import org.apache.geode.internal.admin.Stat;
 import org.apache.geode.internal.admin.StatAlertDefinition;
 import org.apache.geode.internal.admin.StatListener;
 import org.apache.geode.internal.admin.StatResource;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
-import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.inet.LocalHostUtil;
+import org.apache.geode.logging.internal.executors.LoggingThread;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * A thread that monitors the health of the distributed system. It is kind of like a
@@ -82,12 +80,12 @@ class DistributedSystemHealthMonitor implements Runnable, GemFireVM {
   /**
    * The most recent <code>OKAY_HEALTH</code> diagnoses of the GemFire system
    */
-  private List okayDiagnoses;
+  private List<String> okayDiagnoses;
 
   /**
    * The most recent <code>POOR_HEALTH</code> diagnoses of the GemFire system
    */
-  private List poorDiagnoses;
+  private List<String> poorDiagnoses;
 
   ////////////////////// Constructors //////////////////////
 
@@ -104,21 +102,18 @@ class DistributedSystemHealthMonitor implements Runnable, GemFireVM {
     this.eval = eval;
     this.healthImpl = healthImpl;
     this.interval = interval;
-    this.okayDiagnoses = new ArrayList();
-    this.poorDiagnoses = new ArrayList();
+    this.okayDiagnoses = new ArrayList<>();
+    this.poorDiagnoses = new ArrayList<>();
 
-    ThreadGroup group = LoggingThreadGroup.createThreadGroup(
-        LocalizedStrings.DistributedSystemHealthMonitor_HEALTH_MONITORS.toLocalizedString(),
-        logger);
-    String name = LocalizedStrings.DistributedSystemHealthMonitor_HEALTH_MONITOR_FOR_0
-        .toLocalizedString(eval.getDescription());
-    this.thread = new Thread(group, this, name);
-    this.thread.setDaemon(true);
+    String name = String.format("Health monitor for %s",
+        eval.getDescription());
+    this.thread = new LoggingThread(name, this);
   }
 
   /**
    * Does the work of monitoring the health of the distributed system.
    */
+  @Override
   public void run() {
     if (logger.isDebugEnabled()) {
       logger.debug("Monitoring health of {} every {} seconds", this.eval.getDescription(),
@@ -128,7 +123,7 @@ class DistributedSystemHealthMonitor implements Runnable, GemFireVM {
     while (!this.stopRequested) {
       SystemFailure.checkFailure();
       try {
-        Thread.sleep(interval * 1000);
+        Thread.sleep(interval * 1000L);
         List status = new ArrayList();
         eval.evaluate(status);
 
@@ -198,9 +193,7 @@ class DistributedSystemHealthMonitor implements Runnable, GemFireVM {
         this.thread.join();
       } catch (InterruptedException ex) {
         Thread.currentThread().interrupt();
-        logger.warn(
-            LocalizedMessage.create(
-                LocalizedStrings.DistributedSystemHealthMonitor_INTERRUPTED_WHILE_STOPPING_HEALTH_MONITOR_THREAD),
+        logger.warn("Interrupted while stopping health monitor thread",
             ex);
       }
     }
@@ -208,89 +201,104 @@ class DistributedSystemHealthMonitor implements Runnable, GemFireVM {
 
   ////////////////////// GemFireVM Methods //////////////////////
 
+  @Override
   public java.net.InetAddress getHost() {
     try {
-      return SocketCreator.getLocalHost();
+      return LocalHostUtil.getLocalHost();
 
     } catch (Exception ex) {
       throw new org.apache.geode.InternalGemFireException(
-          LocalizedStrings.DistributedSystemHealthMonitor_COULD_NOT_GET_LOCALHOST
-              .toLocalizedString());
+          "Could not get localhost?!");
     }
   }
 
+  @Override
   public String getName() {
     throw new UnsupportedOperationException("Not a real GemFireVM");
   }
 
+  @Override
   public java.io.File getWorkingDirectory() {
     throw new UnsupportedOperationException(
-        LocalizedStrings.DistributedSystemHealthMonitor_NOT_A_REAL_GEMFIREVM.toLocalizedString());
+        "Not a real GemFireVM");
   }
 
+  @Override
   public java.io.File getGeodeHomeDir() {
     throw new UnsupportedOperationException(
-        LocalizedStrings.DistributedSystemHealthMonitor_NOT_A_REAL_GEMFIREVM.toLocalizedString());
+        "Not a real GemFireVM");
   }
 
+  @Override
   public java.util.Date getBirthDate() {
     throw new UnsupportedOperationException(
-        LocalizedStrings.DistributedSystemHealthMonitor_NOT_A_REAL_GEMFIREVM.toLocalizedString());
+        "Not a real GemFireVM");
   }
 
   public Properties getLicenseInfo() {
     throw new UnsupportedOperationException(
-        LocalizedStrings.DistributedSystemHealthMonitor_NOT_A_REAL_GEMFIREVM.toLocalizedString());
+        "Not a real GemFireVM");
   }
 
+  @Override
   public GemFireMemberStatus getSnapshot() {
     throw new UnsupportedOperationException(
-        LocalizedStrings.DistributedSystemHealthMonitor_NOT_A_REAL_GEMFIREVM.toLocalizedString());
+        "Not a real GemFireVM");
   }
 
+  @Override
   public RegionSubRegionSnapshot getRegionSnapshot() {
     throw new UnsupportedOperationException(
-        LocalizedStrings.DistributedSystemHealthMonitor_NOT_A_REAL_GEMFIREVM.toLocalizedString());
+        "Not a real GemFireVM");
   }
 
+  @Override
   public StatResource[] getStats(String statisticsTypeName) {
     throw new UnsupportedOperationException(
-        LocalizedStrings.DistributedSystemHealthMonitor_NOT_A_REAL_GEMFIREVM.toLocalizedString());
+        "Not a real GemFireVM");
   }
 
+  @Override
   public StatResource[] getAllStats() {
     throw new UnsupportedOperationException(
-        LocalizedStrings.DistributedSystemHealthMonitor_NOT_A_REAL_GEMFIREVM.toLocalizedString());
+        "Not a real GemFireVM");
   }
 
+  @Override
   public DLockInfo[] getDistributedLockInfo() {
     throw new UnsupportedOperationException(
-        LocalizedStrings.DistributedSystemHealthMonitor_NOT_A_REAL_GEMFIREVM.toLocalizedString());
+        "Not a real GemFireVM");
   }
 
+  @Override
   public void addStatListener(StatListener observer, StatResource observedResource,
       Stat observedStat) {
     throw new UnsupportedOperationException(
-        LocalizedStrings.DistributedSystemHealthMonitor_NOT_A_REAL_GEMFIREVM.toLocalizedString());
+        "Not a real GemFireVM");
   }
 
+  @Override
   public void removeStatListener(StatListener observer) {
     throw new UnsupportedOperationException(
-        LocalizedStrings.DistributedSystemHealthMonitor_NOT_A_REAL_GEMFIREVM.toLocalizedString());
+        "Not a real GemFireVM");
   }
 
+  @Override
   public void addHealthListener(HealthListener observer, GemFireHealthConfig cfg) {
 
   }
 
+  @Override
   public void removeHealthListener() {
 
   }
 
+  @Override
   public void resetHealthStatus() {
     this.prevHealth = GemFireHealth.GOOD_HEALTH;
   }
 
+  @Override
   public String[] getHealthDiagnosis(GemFireHealth.Health healthCode) {
     if (healthCode == GemFireHealth.GOOD_HEALTH) {
       return new String[0];
@@ -308,153 +316,179 @@ class DistributedSystemHealthMonitor implements Runnable, GemFireVM {
     }
   }
 
+  @Override
   public Config getConfig() {
     throw new UnsupportedOperationException(
-        LocalizedStrings.DistributedSystemHealthMonitor_NOT_A_REAL_GEMFIREVM.toLocalizedString());
+        "Not a real GemFireVM");
   }
 
+  @Override
   public void setConfig(Config cfg) {
     throw new UnsupportedOperationException(
-        LocalizedStrings.DistributedSystemHealthMonitor_NOT_A_REAL_GEMFIREVM.toLocalizedString());
+        "Not a real GemFireVM");
   }
 
+  @Override
   public GfManagerAgent getManagerAgent() {
     throw new UnsupportedOperationException(
-        LocalizedStrings.DistributedSystemHealthMonitor_NOT_A_REAL_GEMFIREVM.toLocalizedString());
+        "Not a real GemFireVM");
   }
 
+  @Override
   public String[] getSystemLogs() {
     throw new UnsupportedOperationException(
-        LocalizedStrings.DistributedSystemHealthMonitor_NOT_A_REAL_GEMFIREVM.toLocalizedString());
+        "Not a real GemFireVM");
   }
 
+  @Override
   public void setInspectionClasspath(String classpath) {
     throw new UnsupportedOperationException(
-        LocalizedStrings.DistributedSystemHealthMonitor_NOT_A_REAL_GEMFIREVM.toLocalizedString());
+        "Not a real GemFireVM");
   }
 
+  @Override
   public String getInspectionClasspath() {
     throw new UnsupportedOperationException(
-        LocalizedStrings.DistributedSystemHealthMonitor_NOT_A_REAL_GEMFIREVM.toLocalizedString());
+        "Not a real GemFireVM");
   }
 
+  @Override
   public Region[] getRootRegions() {
     throw new UnsupportedOperationException(
-        LocalizedStrings.DistributedSystemHealthMonitor_NOT_A_REAL_GEMFIREVM.toLocalizedString());
+        "Not a real GemFireVM");
   }
 
+  @Override
   public Region getRegion(CacheInfo c, String path) {
     throw new UnsupportedOperationException(
-        LocalizedStrings.DistributedSystemHealthMonitor_NOT_A_REAL_GEMFIREVM.toLocalizedString());
+        "Not a real GemFireVM");
   }
 
+  @Override
   public Region createVMRootRegion(CacheInfo c, String name, RegionAttributes attrs) {
     throw new UnsupportedOperationException(
-        LocalizedStrings.DistributedSystemHealthMonitor_NOT_A_REAL_GEMFIREVM.toLocalizedString());
+        "Not a real GemFireVM");
   }
 
+  @Override
   public Region createSubregion(CacheInfo c, String parentPath, String name,
       RegionAttributes attrs) {
     throw new UnsupportedOperationException(
-        LocalizedStrings.DistributedSystemHealthMonitor_NOT_A_REAL_GEMFIREVM.toLocalizedString());
+        "Not a real GemFireVM");
   }
 
+  @Override
   public void setCacheInspectionMode(int mode) {
     throw new UnsupportedOperationException(
-        LocalizedStrings.DistributedSystemHealthMonitor_NOT_A_REAL_GEMFIREVM.toLocalizedString());
+        "Not a real GemFireVM");
   }
 
+  @Override
   public int getCacheInspectionMode() {
     throw new UnsupportedOperationException(
-        LocalizedStrings.DistributedSystemHealthMonitor_NOT_A_REAL_GEMFIREVM.toLocalizedString());
+        "Not a real GemFireVM");
   }
 
+  @Override
   public void takeRegionSnapshot(String regionName, int snapshotId) {
     throw new UnsupportedOperationException(
-        LocalizedStrings.DistributedSystemHealthMonitor_NOT_A_REAL_GEMFIREVM.toLocalizedString());
+        "Not a real GemFireVM");
   }
 
+  @Override
   public InternalDistributedMember getId() {
     throw new UnsupportedOperationException(
-        LocalizedStrings.DistributedSystemHealthMonitor_NOT_A_REAL_GEMFIREVM.toLocalizedString());
+        "Not a real GemFireVM");
   }
 
+  @Override
   public CacheInfo getCacheInfo() {
     throw new UnsupportedOperationException(
-        LocalizedStrings.DistributedSystemHealthMonitor_NOT_A_REAL_GEMFIREVM.toLocalizedString());
+        "Not a real GemFireVM");
   }
 
+  @Override
   public String getVersionInfo() {
     throw new UnsupportedOperationException(
-        LocalizedStrings.DistributedSystemHealthMonitor_NOT_A_REAL_GEMFIREVM.toLocalizedString());
+        "Not a real GemFireVM");
   }
 
+  @Override
   public CacheInfo setCacheLockTimeout(CacheInfo c, int v) {
     throw new UnsupportedOperationException(
-        LocalizedStrings.DistributedSystemHealthMonitor_NOT_A_REAL_GEMFIREVM.toLocalizedString());
+        "Not a real GemFireVM");
   }
 
+  @Override
   public CacheInfo setCacheLockLease(CacheInfo c, int v) {
     throw new UnsupportedOperationException(
-        LocalizedStrings.DistributedSystemHealthMonitor_NOT_A_REAL_GEMFIREVM.toLocalizedString());
+        "Not a real GemFireVM");
   }
 
+  @Override
   public CacheInfo setCacheSearchTimeout(CacheInfo c, int v) {
     throw new UnsupportedOperationException(
-        LocalizedStrings.DistributedSystemHealthMonitor_NOT_A_REAL_GEMFIREVM.toLocalizedString());
+        "Not a real GemFireVM");
   }
 
+  @Override
   public AdminBridgeServer addCacheServer(CacheInfo cache) throws AdminException {
 
     throw new UnsupportedOperationException(
-        LocalizedStrings.DistributedSystemHealthMonitor_NOT_A_REAL_GEMFIREVM.toLocalizedString());
+        "Not a real GemFireVM");
   }
 
+  @Override
   public AdminBridgeServer getBridgeInfo(CacheInfo cache, int id) throws AdminException {
 
     throw new UnsupportedOperationException(
-        LocalizedStrings.DistributedSystemHealthMonitor_NOT_A_REAL_GEMFIREVM.toLocalizedString());
+        "Not a real GemFireVM");
   }
 
+  @Override
   public AdminBridgeServer startBridgeServer(CacheInfo cache, AdminBridgeServer bridge)
       throws AdminException {
 
     throw new UnsupportedOperationException(
-        LocalizedStrings.DistributedSystemHealthMonitor_NOT_A_REAL_GEMFIREVM.toLocalizedString());
+        "Not a real GemFireVM");
   }
 
+  @Override
   public AdminBridgeServer stopBridgeServer(CacheInfo cache, AdminBridgeServer bridge)
       throws AdminException {
 
     throw new UnsupportedOperationException(
-        LocalizedStrings.DistributedSystemHealthMonitor_NOT_A_REAL_GEMFIREVM.toLocalizedString());
+        "Not a real GemFireVM");
   }
 
   /**
    * This operation is not supported for this object. Will throw UnsupportedOperationException if
    * invoked.
    */
+  @Override
   public void setAlertsManager(StatAlertDefinition[] alertDefs, long refreshInterval,
       boolean setRemotely) {
     throw new UnsupportedOperationException(
-        LocalizedStrings.DistributedSystemHealthMonitor_NOT_A_REAL_GEMFIREVM.toLocalizedString());
+        "Not a real GemFireVM");
   }
 
   /**
    * This operation is not supported for this object. Will throw UnsupportedOperationException if
    * invoked.
    */
+  @Override
   public void setRefreshInterval(long refreshInterval) {
     throw new UnsupportedOperationException(
-        LocalizedStrings.DistributedSystemHealthMonitor_NOT_A_REAL_GEMFIREVM.toLocalizedString());
+        "Not a real GemFireVM");
   }
 
   /**
    * This operation is not supported for this object. Will throw UnsupportedOperationException if
    * invoked.
    */
+  @Override
   public void updateAlertDefinitions(StatAlertDefinition[] alertDefs, int actionCode) {
     throw new UnsupportedOperationException(
-        LocalizedStrings.DistributedSystemHealthMonitor_NOT_A_REAL_GEMFIREVM.toLocalizedString());
+        "Not a real GemFireVM");
   }
 }

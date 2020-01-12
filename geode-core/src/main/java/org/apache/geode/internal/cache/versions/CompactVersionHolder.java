@@ -47,22 +47,27 @@ public class CompactVersionHolder<T extends VersionSource> implements VersionHol
 
 
 
+  @Override
   public int getEntryVersion() {
     return ((entryVersionHighByte << 16) & 0xFF0000) | (entryVersionLowBytes & 0xFFFF);
   }
 
+  @Override
   public long getRegionVersion() {
     return (((long) regionVersionHighBytes) << 32) | (regionVersionLowBytes & 0x00000000FFFFFFFFL);
   }
 
+  @Override
   public long getVersionTimeStamp() {
     return versionTimeStamp;
   }
 
+  @Override
   public T getMemberID() {
     return this.memberID;
   }
 
+  @Override
   public int getDistributedSystemId() {
     return this.distributedSystemId;
   }
@@ -77,11 +82,13 @@ public class CompactVersionHolder<T extends VersionSource> implements VersionHol
   }
 
   /** get rvv internal high byte. Used by region entries for transferring to storage */
+  @Override
   public short getRegionVersionHighBytes() {
     return this.regionVersionHighBytes;
   }
 
   /** get rvv internal low bytes. Used by region entries for transferring to storage */
+  @Override
   public int getRegionVersionLowBytes() {
     return this.regionVersionLowBytes;
   }

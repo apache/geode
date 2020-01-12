@@ -14,15 +14,17 @@
  */
 package org.apache.geode.internal.process;
 
-import static org.apache.commons.lang.Validate.isTrue;
-import static org.apache.commons.lang.Validate.notEmpty;
-import static org.apache.commons.lang.Validate.notNull;
+import static org.apache.commons.lang3.Validate.isTrue;
+import static org.apache.commons.lang3.Validate.notEmpty;
+import static org.apache.commons.lang3.Validate.notNull;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
+
+import org.apache.geode.annotations.Immutable;
 
 /**
  * Utility operations for processes such as identifying the process id (pid).
@@ -31,7 +33,8 @@ import java.lang.management.ManagementFactory;
  */
 public class ProcessUtils {
 
-  private static InternalProcessUtils internal = initializeInternalProcessUtils();
+  @Immutable
+  private static final InternalProcessUtils internal = initializeInternalProcessUtils();
 
   private ProcessUtils() {
     // nothing
@@ -49,13 +52,28 @@ public class ProcessUtils {
   }
 
   /**
+   * Returns the pid for this process without throwing a checked exception.
+   *
+   * @throws UncheckedPidUnavailableException if parsing the pid from the name of the RuntimeMXBean
+   *         fails
+   *
+   * @see java.lang.management.RuntimeMXBean#getName()
+   */
+  public static int identifyPidAsUnchecked() throws UncheckedPidUnavailableException {
+    try {
+      return identifyPid();
+    } catch (PidUnavailableException e) {
+      throw new UncheckedPidUnavailableException(e);
+    }
+  }
+
+  /**
    * Returns the pid for this process using the specified name from RuntimeMXBean.
    *
    * @throws PidUnavailableException if parsing the pid from the RuntimeMXBean name fails
    */
   public static int identifyPid(final String name) throws PidUnavailableException {
     notEmpty(name, "Invalid name '" + name + "' specified");
-
 
     try {
       final int index = name.indexOf('@');

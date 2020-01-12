@@ -15,7 +15,7 @@
 
 package org.apache.geode.cache.query.internal.types;
 
-import java.util.*;
+import java.util.Comparator;
 
 import org.apache.geode.cache.query.internal.NullToken;
 import org.apache.geode.cache.query.internal.Undefined;
@@ -32,6 +32,12 @@ public class ExtendedNumericComparator extends NumericComparator implements Comp
     return obj instanceof ExtendedNumericComparator;
   }
 
+  @Override
+  public int hashCode() {
+    return ExtendedNumericComparator.class.hashCode();
+  }
+
+  @Override
   public int compare(Object obj1, Object obj2) {
     if (obj1.getClass() != obj2.getClass() && (obj1 instanceof Number && obj2 instanceof Number)) {
       return super.compare(obj1, obj2);

@@ -22,7 +22,12 @@ import java.util.Set;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.cache.lucene.*;
+import org.apache.geode.cache.lucene.LuceneQuery;
+import org.apache.geode.cache.lucene.LuceneQueryException;
+import org.apache.geode.cache.lucene.LuceneResultStruct;
+import org.apache.geode.cache.lucene.LuceneService;
+import org.apache.geode.cache.lucene.LuceneServiceProvider;
+import org.apache.geode.cache.lucene.PageableLuceneQueryResults;
 import org.apache.geode.cache.lucene.internal.cli.LuceneIndexDetails;
 import org.apache.geode.cache.lucene.internal.cli.LuceneIndexInfo;
 import org.apache.geode.cache.lucene.internal.cli.LuceneQueryInfo;
@@ -48,10 +53,12 @@ public class LuceneSearchIndexFunction<K, V> implements InternalFunction {
 
   private static final long serialVersionUID = 163818919780803222L;
 
+  @Override
   public String getId() {
     return LuceneSearchIndexFunction.class.getName();
   }
 
+  @Override
   public void execute(final FunctionContext context) {
     Set<LuceneSearchResults> result = new HashSet<>();
     final Cache cache = context.getCache();
@@ -78,9 +85,7 @@ public class LuceneSearchIndexFunction<K, V> implements InternalFunction {
                       searchResult.getValue().toString(), searchResult.getScore())));
         }
       }
-      if (result != null) {
-        context.getResultSender().lastResult(result);
-      }
+      context.getResultSender().lastResult(result);
     } catch (LuceneQueryException e) {
       result.add(new LuceneSearchResults(true, e.getRootCause().getMessage()));
       context.getResultSender().lastResult(result);

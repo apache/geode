@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.TransactionDataNodeHasDepartedException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.ReplyException;
@@ -41,6 +42,7 @@ import org.apache.geode.internal.security.SecurityService;
  */
 public class TXFailoverCommand extends BaseCommand {
 
+  @Immutable
   private static final Command singleton = new TXFailoverCommand();
 
   public static Command getCommand() {
@@ -124,7 +126,7 @@ public class TXFailoverCommand extends BaseCommand {
           writeException(clientMessage, new TransactionDataNodeHasDepartedException(
               "Could not find transaction host for " + txId), false, serverConnection);
           serverConnection.setAsTrue(RESPONDED);
-          mgr.removeHostedTXState(txId);
+          mgr.removeHostedTXState(txId, true);
           return;
         }
       }

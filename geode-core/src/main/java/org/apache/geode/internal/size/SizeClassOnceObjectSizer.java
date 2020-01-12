@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.internal.util.concurrent.CopyOnWriteWeakHashMap;
@@ -37,6 +38,7 @@ import org.apache.geode.internal.util.concurrent.CopyOnWriteWeakHashMap;
  */
 public class SizeClassOnceObjectSizer implements ObjectSizer, Serializable, Declarable {
 
+  @Immutable
   private static final SizeClassOnceObjectSizer INSTANCE = new SizeClassOnceObjectSizer();
 
   private final transient Map<Class, Integer> savedSizes =
@@ -44,6 +46,7 @@ public class SizeClassOnceObjectSizer implements ObjectSizer, Serializable, Decl
 
   private final transient ReflectionObjectSizer sizer = ReflectionObjectSizer.getInstance();
 
+  @Override
   public int sizeof(Object o) {
     if (o == null) {
       return 0;
@@ -84,6 +87,7 @@ public class SizeClassOnceObjectSizer implements ObjectSizer, Serializable, Decl
 
   }
 
+  @Override
   public void init(Properties props) {
     // TODO Auto-generated method stub
 

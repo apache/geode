@@ -17,26 +17,14 @@
 
 package org.apache.geode.tools.pulse.internal.data;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Random;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TimeZone;
@@ -47,12 +35,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.management.remote.JMXConnector;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.collections.buffer.CircularFifoBuffer;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -151,17 +137,7 @@ public class Cluster extends Thread {
   // used for updating member's client data
   public static long LAST_UPDATE_TIME = 0;
 
-  public int getStaleStatus() {
-    return this.stale;
-  }
-
   private boolean stopUpdates = false;
-
-  private static final int MAX_HOSTS = 40;
-
-  private final List<String> hostNames = new ArrayList<String>();
-
-  private final ObjectMapper mapper = new ObjectMapper();
 
   public Object[] getStatisticTrend(int trendId) {
 
@@ -774,7 +750,6 @@ public class Cluster extends Thread {
     }
 
     public void updateMemberClientsHMap(HashMap<String, Cluster.Client> memberClientsHM) {
-
       if (Cluster.LAST_UPDATE_TIME == 0) {
         Cluster.LAST_UPDATE_TIME = System.nanoTime();
       }
@@ -802,12 +777,13 @@ public class Cluster extends Thread {
           existingClient.setUptime(updatedClient.getUptime());
 
           // set cpu usage
-          long lastCPUTime = 0;
-          lastCPUTime = existingClient.getProcessCpuTime();
-          long currCPUTime = 0;
-          currCPUTime = updatedClient.getProcessCpuTime();
+          long currCPUTime = updatedClient.getProcessCpuTime();
+          long lastCPUTime = existingClient.getProcessCpuTime();
 
-          double newCPUTime = (double) (currCPUTime - lastCPUTime) / (elapsedTime * 1000000000);
+          double newCPUTime = 0;
+          if (elapsedTime > 0) {
+            newCPUTime = (double) (((currCPUTime - lastCPUTime) / elapsedTime) / 1_000_000_000L);
+          }
 
           double newCPUUsage = 0;
           int availableCpus = updatedClient.getCpus();
@@ -817,16 +793,14 @@ public class Cluster extends Thread {
 
           existingClient.setCpuUsage(newCPUUsage);
           existingClient.setProcessCpuTime(currCPUTime);
-
         } else {
           // Add client to clients list
           memberClientsHMap.put(clientId, client);
         }
-
       }
 
       // Remove unwanted entries from clients list
-      HashMap<String, Cluster.Client> memberClientsHMapNew = new HashMap<String, Cluster.Client>();
+      HashMap<String, Cluster.Client> memberClientsHMapNew = new HashMap<>();
       for (Map.Entry<String, Cluster.Client> entry : memberClientsHMap.entrySet()) {
         String clientId = entry.getKey();
         if (memberClientsHM.get(clientId) != null) {
@@ -838,9 +812,7 @@ public class Cluster extends Thread {
 
       // update last update time
       Cluster.LAST_UPDATE_TIME = systemNanoTime;
-
     }
-
   }
 
   /**
@@ -1311,9 +1283,6 @@ public class Cluster extends Thread {
       return this.localMaxMemory;
     }
 
-    /**
-     * @param localMaxMemory
-     */
     public void setLocalMaxMemory(int localMaxMemory) {
       this.localMaxMemory = localMaxMemory;
     }
@@ -2886,7 +2855,6 @@ public class Cluster extends Thread {
    * '-'
    *
    *
-   * @param memberKey
    * @return the Member for a given key
    */
   public Cluster.Member getMember(String memberKey) {

@@ -37,7 +37,6 @@ public class TXSynchronizationOp {
   }
 
   /**
-   * @param pool
    * @param status - the status of an afterCompletion notification
    * @param txId - the transaction identifier
    * @param type - BEFORE_COMPLETION or AFTER_COMPLETION
@@ -56,10 +55,6 @@ public class TXSynchronizationOp {
     private CompletionType type;
     TXCommitMessage tXCommitMessageResponse;
 
-    /**
-     * @param status
-     * @param type
-     */
     public Impl(int status, int txId, CompletionType type) {
       super(MessageType.TX_SYNCHRONIZATION, (type == CompletionType.AFTER_COMPLETION) ? 3 : 2);
       this.status = status;

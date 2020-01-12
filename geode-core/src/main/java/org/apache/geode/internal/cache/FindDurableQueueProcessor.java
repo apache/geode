@@ -37,11 +37,13 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.ServerLocator;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * A processor for helping a locator find the durable queues for a given durable client id. Asks
- * each bridge server if they have the durable id and builds a list of matching servers.
+ * each cache server if they have the durable id and builds a list of matching servers.
  *
  * @since GemFire 5.7
  */
@@ -157,6 +159,7 @@ public class FindDurableQueueProcessor extends ReplyProcessor21 {
       }
     }
 
+    @Override
     public int getDSFID() {
       return FIND_DURABLE_QUEUE;
     }
@@ -168,15 +171,17 @@ public class FindDurableQueueProcessor extends ReplyProcessor21 {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.processorId = in.readInt();
       this.proxyId = ClientProxyMembershipID.readCanonicalized(in);
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       out.writeInt(this.processorId);
       DataSerializer.writeObject(this.proxyId, out);
     }
@@ -203,14 +208,16 @@ public class FindDurableQueueProcessor extends ReplyProcessor21 {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.matches = DataSerializer.readArrayList(in);
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       DataSerializer.writeArrayList(matches, out);
     }
 

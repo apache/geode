@@ -23,6 +23,8 @@ import javax.management.MBeanException;
 import javax.management.openmbean.OpenDataException;
 import javax.management.openmbean.OpenType;
 
+import org.apache.geode.annotations.Immutable;
+
 /**
  * Each data type in corresponding to an Open type will have a
  *
@@ -30,6 +32,7 @@ import javax.management.openmbean.OpenType;
  */
 public class OpenMethod {
 
+  @Immutable
   private static final OpenType[] noOpenTypes = new OpenType[0];
   private static final String[] noStrings = new String[0];
 
@@ -41,7 +44,6 @@ public class OpenMethod {
   /**
    * Static method to get the OpenMethod
    *
-   * @param m
    * @return an open method
    */
   static OpenMethod from(Method m) {

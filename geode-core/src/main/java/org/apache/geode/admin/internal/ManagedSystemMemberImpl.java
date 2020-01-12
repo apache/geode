@@ -92,6 +92,7 @@ public abstract class ManagedSystemMemberImpl extends SystemMemberImpl
     return this.getEntityConfig().getHost();
   }
 
+  @Override
   public int setState(int state) {
     if (this.stateChange == null) {
       // The initial state is set in the constructor before
@@ -164,6 +165,7 @@ public abstract class ManagedSystemMemberImpl extends SystemMemberImpl
   /**
    * Waits until this system member's "state" is {@link #RUNNING}.
    */
+  @Override
   public boolean waitToStart(long timeout) throws InterruptedException {
 
     if (Thread.interrupted())
@@ -189,6 +191,7 @@ public abstract class ManagedSystemMemberImpl extends SystemMemberImpl
   /**
    * Waits until this system member's "state" is {@link #STOPPED}.
    */
+  @Override
   public boolean waitToStop(long timeout) throws InterruptedException {
 
     if (Thread.interrupted())

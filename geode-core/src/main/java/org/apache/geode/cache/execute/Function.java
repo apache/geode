@@ -16,7 +16,6 @@ package org.apache.geode.cache.execute;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Optional;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.lang.Identifiable;
@@ -26,14 +25,12 @@ import org.apache.geode.security.ResourcePermission;
 /**
  * Defines the interface a user defined function implements. {@link Function}s can be of different
  * types. Some can have results while others need not return any result. Some functions require
- * writing in the targeted {@link Region} while some may just be read operations. Consider extending
- * {@link FunctionAdapter} which has default values for some of the function attributes.
+ * writing in the targeted {@link Region} while some may just be read operations.
  * <p>
  * Even though this interface extends Serializable, functions will only be serialized if they are
  * not registered. For best performance it is recommended that you implement {@link #getId()} to
- * return a non-null identifier and register your function using
- * {@link FunctionService#registerFunction(Function)} or the cache.xml <code>function</code>
- * element.
+ * return a non-null identifier and register your function using {@link
+ * FunctionService#registerFunction(Function)} or the cache.xml <code>function</code> element.
  * </p>
  *
  * @since GemFire 6.0
@@ -73,11 +70,13 @@ public interface Function<T> extends Identifiable<String> {
   void execute(FunctionContext<T> context);
 
   /**
-   * Return a unique function identifier, used to register the function with {@link FunctionService}
+   * Return a unique function identifier, used to register the function with {@link
+   * FunctionService}
    *
    * @return string identifying this function
    * @since GemFire 6.0
    */
+  @Override
   default String getId() {
     return getClass().getCanonicalName();
   }
@@ -85,19 +84,20 @@ public interface Function<T> extends Identifiable<String> {
   /**
    * <p>
    * Return true to indicate to GemFire the method requires optimization for writing the targeted
-   * {@link FunctionService#onRegion(org.apache.geode.cache.Region)} and any associated
-   * {@linkplain Execution#withFilter(java.util.Set) routing objects}.
+   * {@link FunctionService#onRegion(org.apache.geode.cache.Region)} and any associated {@linkplain
+   * Execution#withFilter(java.util.Set) routing objects}.
    * </p>
    *
    * <p>
-   * Returning false will optimize for read behavior on the targeted
-   * {@link FunctionService#onRegion(org.apache.geode.cache.Region)} and any associated
-   * {@linkplain Execution#withFilter(java.util.Set) routing objects}.
+   * Returning false will optimize for read behavior on the targeted {@link
+   * FunctionService#onRegion(org.apache.geode.cache.Region)} and any associated {@linkplain
+   * Execution#withFilter(java.util.Set) routing objects}.
    * </p>
    *
    * <p>
    * This method is only consulted when Region passed to
-   * FunctionService#onRegion(org.apache.geode.cache.Region) is a partitioned region
+   * FunctionService#onRegion(org.apache.geode.cache.Region)
+   * is a partitioned region
    * </p>
    *
    * @return false if the function is read only, otherwise returns true
@@ -138,12 +138,45 @@ public interface Function<T> extends Identifiable<String> {
    *
    * @param regionName the region this function will be executed on. The regionName is optional and
    *        will only be present when the function is executed by an onRegion() executor. In other
-   *        cases, it will be null. This method returns permissions appropriate to the context,
-   *        independent of the presence of the regionName parameter.
+   *        cases,
+   *        it will be null. This method returns permissions appropriate to the context, independent
+   *        of the
+   *        presence of the regionName parameter.
    * @return a collection of {@link ResourcePermission}s indicating the permissions required to
    *         execute the function.
    */
   default Collection<ResourcePermission> getRequiredPermissions(String regionName) {
     return Collections.singletonList(ResourcePermissions.DATA_WRITE);
+  }
+
+  /**
+   * Returns the list of ResourcePermission this function requires.
+   * <p>
+   * By default, functions require DATA:WRITE permission. If your function requires other
+   * permissions, you will need to override this method.
+   * </p>
+   * <p>
+   * Please be as specific as possible when you set the required permissions for your function e.g.
+   * if your function reads from a region, it would be good to include the region name in your
+   * permission. It's better to return "DATA:READ:regionName" as the required permission other than
+   * "DATA:READ", because the latter means only users with read permission on ALL regions can
+   * execute your function.
+   * </p>
+   * <p>
+   * All the permissions returned from this method will be ANDed together.
+   * </p>
+   *
+   * @param regionName the region this function will be executed on. The regionName is optional and
+   *        will only be present when the function is executed by an onRegion() executor. In other
+   *        cases,
+   *        it will be null. This method returns permissions appropriate to the context, independent
+   *        of the
+   *        presence of the regionName parameter.
+   * @param args the arguments to the function.
+   * @return a collection of {@link ResourcePermission}s indicating the permissions required to
+   *         execute the function.
+   */
+  default Collection<ResourcePermission> getRequiredPermissions(String regionName, Object args) {
+    return getRequiredPermissions(regionName);
   }
 }

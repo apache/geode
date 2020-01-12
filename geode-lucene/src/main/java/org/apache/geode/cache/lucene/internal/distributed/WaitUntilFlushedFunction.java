@@ -15,6 +15,8 @@
 
 package org.apache.geode.cache.lucene.internal.distributed;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.geode.cache.Cache;
@@ -25,6 +27,8 @@ import org.apache.geode.cache.execute.RegionFunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.internal.cache.execute.InternalFunction;
+import org.apache.geode.management.internal.security.ResourcePermissions;
+import org.apache.geode.security.ResourcePermission;
 
 /**
  * {@link WaitUntilFlushedFunction} will check all the members with index to wait until the events
@@ -43,6 +47,9 @@ public class WaitUntilFlushedFunction implements InternalFunction<Object> {
     Region region = ctx.getDataSet();
     Cache cache = region.getCache();
     WaitUntilFlushedFunctionContext arg = (WaitUntilFlushedFunctionContext) ctx.getArguments();
+    if (arg == null) {
+      return;
+    }
     String indexName = arg.getIndexName();
     if (indexName == null) {
       throw new IllegalArgumentException("Missing index name");
@@ -74,5 +81,10 @@ public class WaitUntilFlushedFunction implements InternalFunction<Object> {
   @Override
   public boolean optimizeForWrite() {
     return true;
+  }
+
+  @Override
+  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
+    return Collections.singletonList(ResourcePermissions.DATA_READ);
   }
 }

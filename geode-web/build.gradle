@@ -15,78 +15,61 @@
  * limitations under the License.
  */
 
+apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
+
 apply plugin: 'war'
 
+apply from: "${project.projectDir}/../gradle/publish-war.gradle"
+
+jar.enabled = false
+
 dependencies {
-  runtime ('org.springframework:spring-aspects:' + project.'springframework.version') {
+  api(platform(project(':boms:geode-all-bom')))
+
+  //Note - marking these deps as providedCompile means that we will exclude them and all of their
+  //transitive dependencies from geode-web.war. Since geode-web.war is ony run within
+  //a container that has geode-core on the classpath, is prevents duplicating jars. geode-core
+  //in particular should not be duplicated in the war.
+  providedCompile(project(':geode-logging'))
+  providedCompile(project(':geode-serialization'))
+  providedCompile(project(':geode-gfsh')) {
+    exclude module: 'spring-web'
+    exclude module: 'spring-core'
+  }
+
+  providedCompile(platform(project(':boms:geode-all-bom')))
+  providedCompile('javax.servlet:javax.servlet-api')
+  providedCompile('org.apache.logging.log4j:log4j-api')
+
+  implementation('org.springframework:spring-webmvc')
+
+  runtimeOnly('org.springframework:spring-aspects') {
     exclude module: 'aspectjweaver'
-    exclude module: 'aopalliance'
-    exclude module: 'spring-core'
   }
-  runtime ('org.springframework:spring-oxm:' + project.'springframework.version') {
-    exclude module: 'commons-logging'
-    exclude module: 'spring-beans'
-    exclude module: 'spring-core'
-  }
-  runtime ('org.springframework:spring-webmvc:' + project.'springframework.version') {
-    exclude module: 'aopalliance'
-    exclude module: 'aspectjweaver'
-    exclude module: 'spring-core'
-  }
-  runtime ('commons-fileupload:commons-fileupload:' + project.'commons-fileupload.version') {
-    exclude module: 'commons-io'
-  }
+  runtimeOnly('org.springframework:spring-oxm')
+  runtimeOnly('commons-fileupload:commons-fileupload')
 
-  testCompile 'org.springframework:spring-test:' + project.'springframework.version'
+  testImplementation(project(':geode-junit'))
+  testImplementation('org.springframework:spring-test')
 
-  testCompile ('org.springframework:spring-webmvc:' + project.'springframework.version') {
-    exclude module: 'aopalliance'
-    exclude module: 'spring-aop'
-  }
+  integrationTestImplementation(project(':geode-dunit'));
 
-  provided 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
-   
-  // have to use output since we exclude the dependent classes from jar :(
-  provided project(path: ':geode-core', configuration: 'classesOutput')
-  
-  testCompile project(':geode-junit')
-  testRuntime project(':geode-common')
-  testRuntime project(':geode-core')
-  testCompile files(project(':geode-core').sourceSets.test.output)
+  integrationTestRuntimeOnly(files(war.destinationDir))
 
-  testCompile 'com.pholser:junit-quickcheck-core:' + project.'junit-quickcheck.version'
-  testCompile 'com.pholser:junit-quickcheck-generators:' + project.'junit-quickcheck.version'
-  testCompile 'com.pholser:junit-quickcheck-guava:' + project.'junit-quickcheck.version'
+  distributedTestImplementation(project(':geode-common'))
+  distributedTestImplementation(project(':geode-dunit'))
+  distributedTestImplementation('pl.pragmatists:JUnitParams')
 
-  testRuntime files(war.destinationDir)
-}
+  distributedTestRuntimeOnly(files(war.destinationDir))
 
-//Remove the gradle output directories from the eclipse classpath. These
-//are added by the classesOutput configuration, above. Unfortunately, using
-//minusConfigurations does not work here, because it removes the entire
-//geode-core project
-eclipse.classpath.file {
-    whenMerged { classpath ->
-        classpath.entries.removeAll { entry -> entry.path.contains('geode-core/build')}
-    }
-}
-idea.module.iml {
-  whenMerged {module ->
-     module.dependencies.removeAll { entry -> entry.toString().contains('geode-core/build')}
+  upgradeTestImplementation(project(':geode-dunit')) {
   }
 }
 
-distributedTest {
-  dependsOn war
-}
-
-integrationTest {
-  dependsOn war
-}
+distributedTest.dependsOn(war)
+integrationTest.dependsOn(war)
 
 war {
-  dependsOn ':geode-core:webJar'
+  enabled = true
   duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-  classpath configurations.runtime
-  classpath project(':geode-core').webJar.archivePath
 }

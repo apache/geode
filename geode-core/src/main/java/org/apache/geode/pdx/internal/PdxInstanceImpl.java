@@ -28,21 +28,21 @@ import java.util.TreeSet;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.InternalGemFireException;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.Sendable;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.serialization.DSCODE;
 import org.apache.geode.internal.tcp.ByteBufferInputStream;
 import org.apache.geode.internal.tcp.ByteBufferInputStream.ByteSource;
 import org.apache.geode.internal.tcp.ByteBufferInputStream.ByteSourceFactory;
+import org.apache.geode.internal.util.Hex;
 import org.apache.geode.pdx.JSONFormatter;
-import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxSerializationException;
 import org.apache.geode.pdx.WritablePdxInstance;
 
@@ -55,15 +55,15 @@ import org.apache.geode.pdx.WritablePdxInstance;
  * We do not use this normal java io serialization when serializing this class in GemFire because
  * Sendable takes precedence over Serializable.
  */
-public class PdxInstanceImpl extends PdxReaderImpl
-    implements PdxInstance, Sendable, ConvertableToBytes {
+public class PdxInstanceImpl extends PdxReaderImpl implements InternalPdxInstance {
 
   private static final long serialVersionUID = -1669268527103938431L;
 
   private static final boolean USE_STATIC_MAPPER =
       Boolean.getBoolean("PdxInstance.use-static-mapper");
 
-  static final ObjectMapper mapper = USE_STATIC_MAPPER ? createObjectMapper() : null;
+  @Immutable
+  private static final ObjectMapper mapper = USE_STATIC_MAPPER ? createObjectMapper() : null;
 
   private static ObjectMapper createObjectMapper() {
     ObjectMapper mapper = new ObjectMapper();
@@ -135,6 +135,7 @@ public class PdxInstanceImpl extends PdxReaderImpl
     }
   }
 
+  @Override
   public Object getField(String fieldName) {
     return getUnmodifiableReader(fieldName).readField(fieldName);
   }
@@ -155,20 +156,21 @@ public class PdxInstanceImpl extends PdxReaderImpl
     return writer;
   }
 
-  // Sendable implementation
+  @Override
   public void sendTo(DataOutput out) throws IOException {
     PdxReaderImpl ur = getUnmodifiableReader();
     if (ur.getPdxType().getHasDeletedField()) {
       PdxWriterImpl writer = convertToTypeWithNoDeletedFields(ur);
       writer.sendTo(out);
     } else {
-      out.write(DSCODE.PDX);
+      out.write(DSCODE.PDX.toByte());
       out.writeInt(ur.basicSize());
       out.writeInt(ur.getPdxType().getTypeId());
       ur.basicSendTo(out);
     }
   }
 
+  @Override
   public byte[] toBytes() {
     PdxReaderImpl ur = getUnmodifiableReader();
     if (ur.getPdxType().getHasDeletedField()) {
@@ -177,7 +179,7 @@ public class PdxInstanceImpl extends PdxReaderImpl
     } else {
       byte[] result = new byte[PdxWriterImpl.HEADER_SIZE + ur.basicSize()];
       ByteBuffer bb = ByteBuffer.wrap(result);
-      bb.put(DSCODE.PDX);
+      bb.put(DSCODE.PDX.toByte());
       bb.putInt(ur.basicSize());
       bb.putInt(ur.getPdxType().getTypeId());
       ur.basicSendTo(bb);
@@ -185,7 +187,7 @@ public class PdxInstanceImpl extends PdxReaderImpl
     }
   }
 
-  // this is for internal use of the query engine.
+  @Override
   public Object getCachedObject() {
     Object result = this.cachedObjectForm;
     if (result == null) {
@@ -214,7 +216,7 @@ public class PdxInstanceImpl extends PdxReaderImpl
       // In case of Developer Rest APIs, All PdxInstances converted from Json will have a className
       // =__GEMFIRE_JSON.
       // Following code added to convert Json/PdxInstance into the Java object.
-      if (this.getClassName().equals("__GEMFIRE_JSON")) {
+      if (this.getClassName().equals(JSONFormatter.JSON_CLASSNAME)) {
 
         // introspect the JSON, does the @type meta-data exist.
         String className = extractTypeMetaData();
@@ -228,7 +230,7 @@ public class PdxInstanceImpl extends PdxReaderImpl
             return classInstance;
           } catch (Exception e) {
             throw new PdxSerializationException(
-                "Could not deserialize as java class type could not resolved", e);
+                "Could not deserialize as java class '" + className + "' could not be resolved", e);
           }
         }
       }
@@ -342,6 +344,9 @@ public class PdxInstanceImpl extends PdxReaderImpl
     SortedSet<PdxField> myFields = ur1.getPdxType().getSortedIdentityFields();
     SortedSet<PdxField> otherFields = ur2.getPdxType().getSortedIdentityFields();
     if (!myFields.equals(otherFields)) {
+      if (ur1.getPdxType().getClassName().isEmpty()) {
+        return false;
+      }
       // It is not ok to modify myFields and otherFields in place so make copies
       myFields = new TreeSet<PdxField>(myFields);
       otherFields = new TreeSet<PdxField>(otherFields);
@@ -464,8 +469,30 @@ public class PdxInstanceImpl extends PdxReaderImpl
       result.append(fieldType.getFieldName());
       result.append("=");
       try {
-        // TODO check to see if getField returned an array and if it did use Arrays.deepToString
-        result.append(ur.readField(fieldType.getFieldName()));
+        final Object value = ur.readField(fieldType.getFieldName());
+        if (value instanceof byte[]) {
+          result.append(Hex.toHex((byte[]) value));
+        } else if (value.getClass().isArray()) {
+          if (value instanceof short[]) {
+            result.append(Arrays.toString((short[]) value));
+          } else if (value instanceof int[]) {
+            result.append(Arrays.toString((int[]) value));
+          } else if (value instanceof long[]) {
+            result.append(Arrays.toString((long[]) value));
+          } else if (value instanceof char[]) {
+            result.append(Arrays.toString((char[]) value));
+          } else if (value instanceof float[]) {
+            result.append(Arrays.toString((float[]) value));
+          } else if (value instanceof double[]) {
+            result.append(Arrays.toString((double[]) value));
+          } else if (value instanceof boolean[]) {
+            result.append(Arrays.toString((boolean[]) value));
+          } else {
+            result.append(Arrays.deepToString((Object[]) value));
+          }
+        } else {
+          result.append(value);
+        }
       } catch (RuntimeException e) {
         result.append(e);
       }
@@ -474,6 +501,7 @@ public class PdxInstanceImpl extends PdxReaderImpl
     return result.toString();
   }
 
+  @Override
   public List<String> getFieldNames() {
     return getPdxType().getFieldNames();
   }
@@ -488,6 +516,7 @@ public class PdxInstanceImpl extends PdxReaderImpl
     this.cachedObjectForm = null;
   }
 
+  @Override
   public WritablePdxInstance createWriter() {
     if (isEnum()) {
       throw new IllegalStateException("PdxInstances that are an enum can not be modified.");
@@ -617,28 +646,26 @@ public class PdxInstanceImpl extends PdxReaderImpl
     super.basicSendTo(bb);
   }
 
+  @Override
   public String getClassName() {
     return getPdxType().getClassName();
   }
 
+  @Override
   public boolean isEnum() {
     return false;
   }
 
+  @Override
   public Object getRawField(String fieldName) {
     return getUnmodifiableReader(fieldName).readRawField(fieldName);
   }
 
-  public Object getDefaultValueIfFieldExistsInAnyPdxVersions(String fieldName, String className)
-      throws FieldNotFoundInPdxVersion {
-    PdxType pdxType =
-        GemFireCacheImpl.getForPdx("PDX registry is unavailable because the Cache has been closed.")
-            .getPdxRegistry().getPdxTypeForField(fieldName, className);
-    if (pdxType == null) {
-      throw new FieldNotFoundInPdxVersion(
-          "PdxType with field " + fieldName + " is not found for class " + className);
+  @Override
+  public boolean isDeserializable() {
+    if (this.getClassName().equals(JSONFormatter.JSON_CLASSNAME)) {
+      return true;
     }
-    return pdxType.getPdxField(fieldName).getFieldType().getDefaultValue();
+    return !getPdxType().getNoDomainClass();
   }
-
 }

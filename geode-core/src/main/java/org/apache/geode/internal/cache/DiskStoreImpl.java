@@ -24,6 +24,7 @@ import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.math.BigDecimal;
 import java.net.InetAddress;
 import java.nio.channels.ClosedByInterruptException;
 import java.nio.channels.FileChannel;
@@ -44,14 +45,13 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -74,6 +74,8 @@ import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.internal.MakeNotStatic;
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
@@ -83,14 +85,12 @@ import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.i18n.StringId;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.ExportDiskRegion.ExportWriter;
 import org.apache.geode.internal.cache.backup.BackupService;
 import org.apache.geode.internal.cache.backup.DiskStoreBackup;
+import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.internal.cache.entries.DiskEntry.Helper.ValueWrapper;
 import org.apache.geode.internal.cache.entries.DiskEntry.RecoveredEntry;
@@ -112,16 +112,17 @@ import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.concurrent.ConcurrentHashSet;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.util.BlobHelper;
+import org.apache.geode.logging.internal.executors.LoggingExecutors;
+import org.apache.geode.logging.internal.executors.LoggingThread;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.management.internal.ManagementConstants;
 import org.apache.geode.pdx.internal.EnumInfo;
 import org.apache.geode.pdx.internal.PdxField;
 import org.apache.geode.pdx.internal.PdxType;
 import org.apache.geode.pdx.internal.PeerTypeRegistration;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Represents a (disk-based) persistent store for region data. Used for both persistent recoverable
@@ -136,22 +137,24 @@ public class DiskStoreImpl implements DiskStore {
   public static final boolean KRF_DEBUG = Boolean.getBoolean("disk.KRF_DEBUG");
 
   public static final int MAX_OPEN_INACTIVE_OPLOGS =
-      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "MAX_OPEN_INACTIVE_OPLOGS", 7);
+      Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "MAX_OPEN_INACTIVE_OPLOGS", 7);
 
   /*
    * If less than 20MB (default - configurable through this property) of the available space is left
    * for logging and other misc stuff then it is better to bail out.
    */
   public static final int MIN_DISK_SPACE_FOR_LOGS =
-      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "MIN_DISK_SPACE_FOR_LOGS", 20);
+      Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "MIN_DISK_SPACE_FOR_LOGS", 20);
 
   /** Represents an invalid id of a key/value on disk */
   public static final long INVALID_ID = 0L; // must be zero
 
   public static final String COMPLETE_COMPACTION_BEFORE_TERMINATION_PROPERTY_NAME =
-      DistributionConfig.GEMFIRE_PREFIX + "disk.completeCompactionBeforeTermination";
+      GeodeGlossary.GEMFIRE_PREFIX + "disk.completeCompactionBeforeTermination";
 
   static final int MINIMUM_DIR_SIZE = 1024;
+
+  private DiskDirSizesUnit diskDirSizesUnit;
 
   /**
    * The static field delays the joining of the close/clear/destroy & forceFlush operation, with the
@@ -161,33 +164,34 @@ public class DiskStoreImpl implements DiskStore {
    * which destroy operation issued notification for release). The delay occurs iff the flag used
    * for enabling callbacks to CacheObserver is enabled true
    */
+  @MutableForTesting
   static volatile long DEBUG_DELAY_JOINING_WITH_COMPACTOR = 500;
 
   /**
    * Kept for backwards compat. Should use allowForceCompaction api/dtd instead.
    */
   private static final boolean ENABLE_NOTIFY_TO_ROLL =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "ENABLE_NOTIFY_TO_ROLL");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "ENABLE_NOTIFY_TO_ROLL");
 
   public static final String RECOVER_VALUE_PROPERTY_NAME =
-      DistributionConfig.GEMFIRE_PREFIX + "disk.recoverValues";
+      GeodeGlossary.GEMFIRE_PREFIX + "disk.recoverValues";
 
   public static final String RECOVER_VALUES_SYNC_PROPERTY_NAME =
-      DistributionConfig.GEMFIRE_PREFIX + "disk.recoverValuesSync";
+      GeodeGlossary.GEMFIRE_PREFIX + "disk.recoverValuesSync";
 
   /**
    * Allows recovering values for LRU regions. By default values are not recovered for LRU regions
    * during recovery.
    */
   public static final String RECOVER_LRU_VALUES_PROPERTY_NAME =
-      DistributionConfig.GEMFIRE_PREFIX + "disk.recoverLruValues";
+      GeodeGlossary.GEMFIRE_PREFIX + "disk.recoverLruValues";
 
   boolean RECOVER_VALUES = getBoolean(DiskStoreImpl.RECOVER_VALUE_PROPERTY_NAME, true);
 
   boolean RECOVER_VALUES_SYNC = getBoolean(DiskStoreImpl.RECOVER_VALUES_SYNC_PROPERTY_NAME, false);
 
   boolean FORCE_KRF_RECOVERY =
-      getBoolean(DistributionConfig.GEMFIRE_PREFIX + "disk.FORCE_KRF_RECOVERY", false);
+      getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "disk.FORCE_KRF_RECOVERY", false);
 
   final boolean RECOVER_LRU_VALUES =
       getBoolean(DiskStoreImpl.RECOVER_LRU_VALUES_PROPERTY_NAME, false);
@@ -214,12 +218,12 @@ public class DiskStoreImpl implements DiskStore {
    * static so tests can set it.
    */
   private final int MAX_OPLOGS_PER_COMPACTION = Integer.getInteger(
-      DistributionConfig.GEMFIRE_PREFIX + "MAX_OPLOGS_PER_COMPACTION",
-      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "MAX_OPLOGS_PER_ROLL", 1).intValue());
+      GeodeGlossary.GEMFIRE_PREFIX + "MAX_OPLOGS_PER_COMPACTION",
+      Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "MAX_OPLOGS_PER_ROLL", 1).intValue());
 
   public static final int MAX_CONCURRENT_COMPACTIONS = Integer.getInteger(
-      DistributionConfig.GEMFIRE_PREFIX + "MAX_CONCURRENT_COMPACTIONS",
-      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "MAX_CONCURRENT_ROLLS", 1).intValue());
+      GeodeGlossary.GEMFIRE_PREFIX + "MAX_CONCURRENT_COMPACTIONS",
+      Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "MAX_CONCURRENT_ROLLS", 1).intValue());
 
   /**
    * This system property indicates that maximum number of delayed write tasks that can be pending
@@ -227,7 +231,7 @@ public class DiskStoreImpl implements DiskStore {
    * delete oplogs, etc.
    */
   public static final int MAX_PENDING_TASKS =
-      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "disk.MAX_PENDING_TASKS", 6);
+      Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "disk.MAX_PENDING_TASKS", 6);
 
   /**
    * This system property indicates that IF should also be preallocated. This property will be used
@@ -235,7 +239,7 @@ public class DiskStoreImpl implements DiskStore {
    * by default be ON but in order to switch it off you need to explicitly
    */
   static final boolean PREALLOCATE_IF =
-      !System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "preAllocateIF", "true")
+      !System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + "preAllocateIF", "true")
           .equalsIgnoreCase("false");
 
   /**
@@ -243,24 +247,27 @@ public class DiskStoreImpl implements DiskStore {
    * specified for the disk store.
    */
   static final boolean PREALLOCATE_OPLOGS =
-      !System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "preAllocateDisk", "true")
+      !System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + "preAllocateDisk", "true")
           .equalsIgnoreCase("false");
 
   /**
    * For some testing purposes we would not consider top property if this flag is set to true
    **/
+  @MutableForTesting
   public static boolean SET_IGNORE_PREALLOCATE = false;
 
   /**
    * This system property turns on synchronous writes just the the init file.
    */
   static final boolean SYNC_IF_WRITES =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "syncMetaDataWrites");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "syncMetaDataWrites");
 
   /**
    * For testing - to keep track of files for which fallocate happened
    */
+  @MutableForTesting
   public static volatile HashSet<String> TEST_CHK_FALLOC_DIRS;
+  @MutableForTesting
   public static volatile HashSet<String> TEST_NO_FALLOC_DIRS;
 
   private final InternalCache cache;
@@ -286,6 +293,9 @@ public class DiskStoreImpl implements DiskStore {
 
   /** max of all the dir sizes given stored in bytes* */
   private final long maxDirSize;
+
+  /** total sum of dir sizes in bytes* */
+  private long totalDiskStoreSpace;
 
   /** disk dir to be used by info file * */
   private int infoFileDirIndex;
@@ -322,7 +332,7 @@ public class DiskStoreImpl implements DiskStore {
   private final AtomicReference<DiskAccessException> diskException =
       new AtomicReference<DiskAccessException>();
 
-  private PersistentOplogSet persistentOplogs = new PersistentOplogSet(this);
+  private PersistentOplogSet persistentOplogs = new PersistentOplogSet(this, System.out);
 
   OverflowOplogSet overflowOplogs = new OverflowOplogSet(this);
 
@@ -336,7 +346,7 @@ public class DiskStoreImpl implements DiskStore {
   /**
    * A set of overflow only regions that are using this disk store.
    */
-  private final Set<DiskRegion> overflowMap = new ConcurrentHashSet<DiskRegion>();
+  private final Set<DiskRegion> overflowMap = ConcurrentHashMap.newKeySet();
 
   /**
    * Contains all of the disk recovery stores for which we are recovering values asnynchronously.
@@ -357,9 +367,9 @@ public class DiskStoreImpl implements DiskStore {
 
   private final CountDownLatch _testHandleDiskAccessException = new CountDownLatch(1);
 
-  private final ThreadPoolExecutor diskStoreTaskPool;
+  private final ExecutorService diskStoreTaskPool;
 
-  private final ThreadPoolExecutor delayedWritePool;
+  private final ExecutorService delayedWritePool;
 
   private volatile Future lastDelayedWrite;
 
@@ -367,9 +377,9 @@ public class DiskStoreImpl implements DiskStore {
     if (ct == DiskStoreFactory.DEFAULT_COMPACTION_THRESHOLD) {
       // allow the old sys prop for backwards compat.
       if (System
-          .getProperty(DistributionConfig.GEMFIRE_PREFIX + "OVERFLOW_ROLL_PERCENTAGE") != null) {
+          .getProperty(GeodeGlossary.GEMFIRE_PREFIX + "OVERFLOW_ROLL_PERCENTAGE") != null) {
         ct = (int) (Double.parseDouble(System
-            .getProperty(DistributionConfig.GEMFIRE_PREFIX + "OVERFLOW_ROLL_PERCENTAGE", "0.50"))
+            .getProperty(GeodeGlossary.GEMFIRE_PREFIX + "OVERFLOW_ROLL_PERCENTAGE", "0.50"))
             * 100.0);
       }
     }
@@ -386,18 +396,23 @@ public class DiskStoreImpl implements DiskStore {
   DiskStoreImpl(InternalCache cache, DiskStoreAttributes props, boolean ownedByRegion,
       InternalRegionArguments internalRegionArgs) {
     this(cache, props.getName(), props, ownedByRegion, internalRegionArgs, false,
-        false/* upgradeVersionOnly */, false, false, true, false/* offlineModify */);
+        false/* upgradeVersionOnly */, false, false, true, false, /* offlineModify */
+        cache.getInternalDistributedSystem().getStatisticsManager(),
+        cache.getInternalResourceManager());
   }
 
   DiskStoreImpl(InternalCache cache, String name, DiskStoreAttributes props, boolean ownedByRegion,
-      InternalRegionArguments internalRegionArgs, boolean offline, boolean upgradeVersionOnly,
+      InternalRegionArguments internalRegionArgs, boolean offline,
+      boolean upgradeVersionOnly,
       boolean offlineValidating, boolean offlineCompacting, boolean needsOplogs,
-      boolean offlineModify) {
+      boolean offlineModify, StatisticsFactory statisticsFactory,
+      InternalResourceManager internalResourceManager) {
     this.offline = offline;
     this.upgradeVersionOnly = upgradeVersionOnly;
     this.validating = offlineValidating;
     this.offlineCompacting = offlineCompacting;
     this.offlineModify = offlineModify;
+    this.internalResourceManager = internalResourceManager;
 
     assert internalRegionArgs == null || ownedByRegion : "internalRegionArgs "
         + "should be non-null only if the DiskStore is owned by region";
@@ -414,12 +429,12 @@ public class DiskStoreImpl implements DiskStore {
     this.writeBufferSize = props.getWriteBufferSize();
     this.diskDirs = props.getDiskDirs();
     this.diskDirSizes = props.getDiskDirSizes();
+    this.diskDirSizesUnit = props.getDiskDirSizesUnit();
     this.warningPercent = props.getDiskUsageWarningPercentage();
     this.criticalPercent = props.getDiskUsageCriticalPercentage();
 
     this.cache = cache;
-    StatisticsFactory factory = cache.getDistributedSystem();
-    this.stats = new DiskStoreStats(factory, getName());
+    this.stats = new DiskStoreStats(statisticsFactory, getName());
 
     // start simple init
 
@@ -452,12 +467,20 @@ public class DiskStoreImpl implements DiskStore {
     int length = dirs.length;
     this.directories = new DirectoryHolder[length];
     long tempMaxDirSize = 0;
+    this.totalDiskStoreSpace = 0;
+
     for (int i = 0; i < length; i++) {
       directories[i] =
-          new DirectoryHolder(getName() + "_DIR#" + i, factory, dirs[i], dirSizes[i], i);
+          new DirectoryHolder(getName() + "_DIR#" + i, statisticsFactory, dirs[i], dirSizes[i], i,
+              this.diskDirSizesUnit);
 
       if (tempMaxDirSize < dirSizes[i]) {
         tempMaxDirSize = dirSizes[i];
+      }
+      if (dirSizes[i] == DiskStoreFactory.DEFAULT_DISK_DIR_SIZE) {
+        this.totalDiskStoreSpace = ManagementConstants.NOT_AVAILABLE_LONG;
+      } else if (this.totalDiskStoreSpace != ManagementConstants.NOT_AVAILABLE_LONG) {
+        this.totalDiskStoreSpace += dirSizes[i] * (1024 * 1024);
       }
     }
     // stored in bytes
@@ -483,25 +506,10 @@ public class DiskStoreImpl implements DiskStore {
       this.oplogCompactor = null;
     }
 
-    int MAXT = DiskStoreImpl.MAX_CONCURRENT_COMPACTIONS;
-    final ThreadGroup compactThreadGroup =
-        LoggingThreadGroup.createThreadGroup("Oplog Compactor Thread Group", logger);
-    final ThreadFactory compactThreadFactory =
-        GemfireCacheHelper.CreateThreadFactory(compactThreadGroup, "Idle OplogCompactor");
-    this.diskStoreTaskPool = new ThreadPoolExecutor(MAXT, MAXT, 10, TimeUnit.SECONDS,
-        new LinkedBlockingQueue(), compactThreadFactory);
-    this.diskStoreTaskPool.allowCoreThreadTimeOut(true);
-
-
-    final ThreadGroup deleteThreadGroup =
-        LoggingThreadGroup.createThreadGroup("Oplog Delete Thread Group", logger);
-
-    final ThreadFactory deleteThreadFactory =
-        GemfireCacheHelper.CreateThreadFactory(deleteThreadGroup, "Oplog Delete Task");
-    this.delayedWritePool = new ThreadPoolExecutor(1, 1, 10, TimeUnit.SECONDS,
-        new LinkedBlockingQueue(MAX_PENDING_TASKS), deleteThreadFactory,
-        new ThreadPoolExecutor.CallerRunsPolicy());
-    this.delayedWritePool.allowCoreThreadTimeOut(true);
+    this.diskStoreTaskPool = LoggingExecutors.newFixedThreadPoolWithFeedSize("Idle OplogCompactor",
+        MAX_CONCURRENT_COMPACTIONS, Integer.MAX_VALUE);
+    this.delayedWritePool =
+        LoggingExecutors.newFixedThreadPoolWithFeedSize("Oplog Delete Task", 1, MAX_PENDING_TASKS);
   }
 
   // //////////////////// Instance Methods //////////////////////
@@ -709,8 +717,7 @@ public class DiskStoreImpl implements DiskStore {
         if (dr.isRegionClosed()) {
           region.getCancelCriterion().checkCancelInProgress(null);
           throw new RegionDestroyedException(
-              LocalizedStrings.DiskRegion_THE_DISKREGION_HAS_BEEN_CLOSED_OR_DESTROYED
-                  .toLocalizedString(),
+              "The DiskRegion has been closed or destroyed",
               dr.getName());
         }
 
@@ -742,9 +749,10 @@ public class DiskStoreImpl implements DiskStore {
           }
         } else {
           throw new RegionClearedException(
-              LocalizedStrings.DiskRegion_CLEAR_OPERATION_ABORTING_THE_ONGOING_ENTRY_0_OPERATION_FOR_ENTRY_WITH_DISKID_1
-                  .toLocalizedString(
-                      new Object[] {((doingCreate) ? "creation" : "modification"), id}));
+              String.format(
+                  "Clear operation aborting the ongoing Entry %s operation for Entry with DiskId, %s",
+
+                  new Object[] {((doingCreate) ? "creation" : "modification"), id}));
         }
       } finally {
         if (!async) {
@@ -773,8 +781,7 @@ public class DiskStoreImpl implements DiskStore {
       if (dr.isRegionClosed()) {
         region.getCancelCriterion().checkCancelInProgress(null);
         throw new RegionDestroyedException(
-            LocalizedStrings.DiskRegion_THE_DISKREGION_HAS_BEEN_CLOSED_OR_DESTROYED
-                .toLocalizedString(),
+            "The DiskRegion has been closed or destroyed",
             dr.getName());
       }
 
@@ -810,8 +817,7 @@ public class DiskStoreImpl implements DiskStore {
         try {
           if (dr.isRegionClosed()) {
             throw new RegionDestroyedException(
-                LocalizedStrings.DiskRegion_THE_DISKREGION_HAS_BEEN_CLOSED_OR_DESTROYED
-                    .toLocalizedString(),
+                "The DiskRegion has been closed or destroyed",
                 dr.getName());
           }
           if (dr.didClearCountChange()) {
@@ -861,8 +867,7 @@ public class DiskStoreImpl implements DiskStore {
   Object getRaw(DiskRegionView dr, DiskId id) {
     if (dr.isRegionClosed()) {
       throw new RegionDestroyedException(
-          LocalizedStrings.DiskRegion_THE_DISKREGION_HAS_BEEN_CLOSED_OR_DESTROYED
-              .toLocalizedString(),
+          "The DiskRegion has been closed or destroyed",
           dr.getName());
     }
     if (dr.didClearCountChange()) {
@@ -943,8 +948,9 @@ public class DiskStoreImpl implements DiskStore {
         return CLEAR_BB;
       }
       throw new DiskAccessException(
-          LocalizedStrings.DiskRegion_DATA_FOR_DISKENTRY_HAVING_DISKID_AS_0_COULD_NOT_BE_OBTAINED_FROM_DISK_A_CLEAR_OPERATION_MAY_HAVE_DELETED_THE_OPLOGS
-              .toLocalizedString(id),
+          String.format(
+              "Data  for DiskEntry having DiskId as %s could not be obtained from Disk. A clear operation may have deleted the oplogs",
+              id),
           dr.getName());
     }
     return oplog.getBytesAndBits(dr, id, faultIn, bitOnly);
@@ -955,14 +961,12 @@ public class DiskStoreImpl implements DiskStore {
     try {
       if (dr.isRegionClosed()) {
         throw new RegionDestroyedException(
-            LocalizedStrings.DiskRegion_THE_DISKREGION_HAS_BEEN_CLOSED_OR_DESTROYED
-                .toLocalizedString(),
+            "The DiskRegion has been closed or destroyed",
             dr.getName());
       }
       if (dr.didClearCountChange()) {
         throw new DiskAccessException(
-            LocalizedStrings.DiskRegion_ENTRY_HAS_BEEN_CLEARED_AND_IS_NOT_PRESENT_ON_DISK
-                .toLocalizedString(),
+            "Entry has been cleared and is not present on disk",
             dr.getName());
       }
       BytesAndBits bb = getBytesAndBitsWithoutLock(dr, id, faultingIn, false /*
@@ -970,8 +974,7 @@ public class DiskStoreImpl implements DiskStore {
                                                                               */);
       if (bb == CLEAR_BB) {
         throw new DiskAccessException(
-            LocalizedStrings.DiskRegion_ENTRY_HAS_BEEN_CLEARED_AND_IS_NOT_PRESENT_ON_DISK
-                .toLocalizedString(),
+            "Entry has been cleared and is not present on disk",
             dr.getName());
       }
       return bb;
@@ -989,8 +992,7 @@ public class DiskStoreImpl implements DiskStore {
     try {
       if (dr.isRegionClosed()) {
         throw new RegionDestroyedException(
-            LocalizedStrings.DiskRegion_THE_DISKREGION_HAS_BEEN_CLOSED_OR_DESTROYED
-                .toLocalizedString(),
+            "The DiskRegion has been closed or destroyed",
             dr.getName());
       }
       if (dr.didClearCountChange()) {
@@ -1071,8 +1073,7 @@ public class DiskStoreImpl implements DiskStore {
     try {
       if (dr.isRegionClosed()) {
         throw new RegionDestroyedException(
-            LocalizedStrings.DiskRegion_THE_DISKREGION_HAS_BEEN_CLOSED_OR_DESTROYED
-                .toLocalizedString(),
+            "The DiskRegion has been closed or destroyed",
             dr.getName());
       }
 
@@ -1087,8 +1088,9 @@ public class DiskStoreImpl implements DiskStore {
         dr.getStats().endRemove(start, getStats().endRemove(start));
       } else {
         throw new RegionClearedException(
-            LocalizedStrings.DiskRegion_CLEAR_OPERATION_ABORTING_THE_ONGOING_ENTRY_DESTRUCTION_OPERATION_FOR_ENTRY_WITH_DISKID_0
-                .toLocalizedString(entry.getDiskId()));
+            String.format(
+                "Clear operation aborting the ongoing Entry destruction operation for Entry with DiskId, %s",
+                entry.getDiskId()));
       }
     } finally {
       if (!async) {
@@ -1189,6 +1191,7 @@ public class DiskStoreImpl implements DiskStore {
     }
   }
 
+  @Override
   public void forceRoll() {
     getPersistentOplogs().forceRoll(null);
   }
@@ -1211,6 +1214,7 @@ public class DiskStoreImpl implements DiskStore {
     }
   }
 
+  @Override
   public boolean forceCompaction() {
     return basicForceCompaction(null);
   }
@@ -1264,15 +1268,6 @@ public class DiskStoreImpl implements DiskStore {
       // Normally we flush before closing or destroying a region
       // but in some cases it is closed w/o flushing.
       // So just ignore it; see bug 41305.
-    }
-  }
-
-  public void addDiskRegionToQueue(LocalRegion lr) {
-    try {
-      addAsyncItem(lr, true);
-    } catch (InterruptedException ignore) {
-      // If it fail, that means the RVVTrusted is not written. It will
-      // automatically do full-GII
     }
   }
 
@@ -1469,12 +1464,8 @@ public class DiskStoreImpl implements DiskStore {
 
   private void startAsyncFlusher() {
     final String thName =
-        LocalizedStrings.DiskRegion_ASYNCHRONOUS_DISK_WRITER_0.toLocalizedString(getName());
-    this.flusherThread = new Thread(
-        LoggingThreadGroup.createThreadGroup(
-            LocalizedStrings.DiskRegion_DISK_WRITERS.toLocalizedString(), logger),
-        new FlusherThread(this), thName);
-    this.flusherThread.setDaemon(true);
+        String.format("Asynchronous disk writer for region %s", getName());
+    this.flusherThread = new LoggingThread(thName, new FlusherThread(this));
     this.flusherThread.start();
   }
 
@@ -1525,6 +1516,7 @@ public class DiskStoreImpl implements DiskStore {
     return this.cache;
   }
 
+  @Override
   public void flush() {
     forceFlush();
   }
@@ -1720,6 +1712,7 @@ public class DiskStoreImpl implements DiskStore {
       diskStore.getPersistentOplogs().flushChild();
     }
 
+    @Override
     public void run() {
       doAsyncFlush();
     }
@@ -1748,40 +1741,34 @@ public class DiskStoreImpl implements DiskStore {
                 ((FlushNotifier) o).doFlush();
               } else {
                 try {
-                  if (o != null && o instanceof LocalRegion) {
-                    LocalRegion lr = (LocalRegion) o;
-                    lr.getDiskRegion().writeRVV(null, true);
-                    lr.getDiskRegion().writeRVVGC(lr);
+                  AsyncDiskEntry ade = (AsyncDiskEntry) o;
+                  InternalRegion region = ade.region;
+                  VersionTag tag = ade.tag;
+                  if (ade.versionOnly) {
+                    DiskEntry.Helper.doAsyncFlush(tag, region);
                   } else {
-                    AsyncDiskEntry ade = (AsyncDiskEntry) o;
-                    InternalRegion region = ade.region;
-                    VersionTag tag = ade.tag;
-                    if (ade.versionOnly) {
-                      DiskEntry.Helper.doAsyncFlush(tag, region);
-                    } else {
-                      DiskEntry entry = ade.de;
-                      // We check isPendingAsync
-                      if (entry.getDiskId().isPendingAsync()) {
-                        if (LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER) {
-                          if (!doingFlush) {
-                            doingFlush = true;
-                            CacheObserverHolder.getInstance().goingToFlush();
-                          }
-                        }
-                        DiskEntry.Helper.doAsyncFlush(entry, region, tag);
-                      } else {
-                        // If it is no longer pending someone called
-                        // unscheduleAsyncWrite
-                        // so we don't need to write the entry, but
-                        // if we have a version tag we need to record the
-                        // operation
-                        // to update the RVV
-                        if (tag != null) {
-                          DiskEntry.Helper.doAsyncFlush(tag, region);
+                    DiskEntry entry = ade.de;
+                    // We check isPendingAsync
+                    if (entry.getDiskId().isPendingAsync()) {
+                      if (LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER) {
+                        if (!doingFlush) {
+                          doingFlush = true;
+                          CacheObserverHolder.getInstance().goingToFlush();
                         }
                       }
+                      DiskEntry.Helper.doAsyncFlush(entry, region, tag);
+                    } else {
+                      // If it is no longer pending someone called
+                      // unscheduleAsyncWrite
+                      // so we don't need to write the entry, but
+                      // if we have a version tag we need to record the
+                      // operation
+                      // to update the RVV
+                      if (tag != null) {
+                        DiskEntry.Helper.doAsyncFlush(tag, region);
+                      }
                     }
-                  } // else
+                  }
                 } catch (RegionDestroyedException ignore) {
                   // Normally we flush before closing or destroying a region
                   // but in some cases it is closed w/o flushing.
@@ -1811,10 +1798,10 @@ public class DiskStoreImpl implements DiskStore {
         }
       } catch (CancelException ignore) {
       } catch (Throwable t) {
-        logger.fatal(LocalizedMessage.create(LocalizedStrings.DiskStoreImpl_FATAL_ERROR_ON_FLUSH),
+        logger.fatal("Fatal error from asynchronous flusher thread",
             t);
         fatalDae = new DiskAccessException(
-            LocalizedStrings.DiskStoreImpl_FATAL_ERROR_ON_FLUSH.toLocalizedString(), t, diskStore);
+            "Fatal error from asynchronous flusher thread", t, diskStore);
       } finally {
         if (logger.isDebugEnabled()) {
           logger.debug("Async writer thread stopped. Pending opcount={}",
@@ -1858,8 +1845,8 @@ public class DiskStoreImpl implements DiskStore {
             fs.close();
           } catch (IOException ignore) {
           }
-          throw new IOException(LocalizedStrings.Oplog_THE_FILE_0_IS_BEING_USED_BY_ANOTHER_PROCESS
-              .toLocalizedString(f));
+          throw new IOException(String.format("The file %s is being used by another process.",
+              f));
         }
         f.deleteOnExit();
         dae = null;
@@ -1872,7 +1859,10 @@ public class DiskStoreImpl implements DiskStore {
           }
         }
         dae = new DiskAccessException(
-            LocalizedStrings.Oplog_COULD_NOT_LOCK_0.toLocalizedString(f.getPath()), ex, this);
+            String.format(
+                "Could not lock %s. Other JVMs might have created diskstore with same name using the same directory.",
+                f.getPath()),
+            ex, this);
       }
       cnt++;
       try {
@@ -1977,8 +1967,8 @@ public class DiskStoreImpl implements DiskStore {
               getCache().close();
             }
             throw new IllegalStateException("Recovered version = " + getRecoveredGFVersion() + ": "
-                + LocalizedStrings.DiskStoreAlreadyInVersion_0
-                    .toLocalizedString(getRecoveredGFVersionName()));
+                + String.format("This disk store is already at version %s.",
+                    getRecoveredGFVersionName()));
           }
         } else {
           if (Version.GFE_70.compareTo(getRecoveredGFVersion()) > 0) {
@@ -1988,8 +1978,8 @@ public class DiskStoreImpl implements DiskStore {
               getCache().close();
             }
             throw new IllegalStateException("Recovered version = " + getRecoveredGFVersion() + ": "
-                + LocalizedStrings.DiskStoreStillAtVersion_0
-                    .toLocalizedString(getRecoveredGFVersionName()));
+                + String.format("This disk store is still at version %s.",
+                    getRecoveredGFVersionName()));
           }
         }
       }
@@ -2009,12 +1999,12 @@ public class DiskStoreImpl implements DiskStore {
       // or created thi disk store.
       if (foundIfFile) {
         logger.info(
-            LocalizedMessage.create(LocalizedStrings.DiskStoreImpl_RecoveredDiskStore_0_With_Id_1,
-                new Object[] {getName(), getDiskStoreID()}));
+            "Recovered disk store {} with unique id {}",
+            getName(), getDiskStoreID());
       } else {
         logger.info(
-            LocalizedMessage.create(LocalizedStrings.DiskStoreImpl_CreatedDiskStore_0_With_Id_1,
-                new Object[] {getName(), getDiskStoreID()}));
+            "Created disk store {} with unique id {}",
+            getName(), getDiskStoreID());
       }
 
     } finally {
@@ -2035,7 +2025,7 @@ public class DiskStoreImpl implements DiskStore {
         try (Stream<Path> stream = Files.list(directoryHolder.getDir().toPath())) {
           backupDirectories = stream
               .filter((path) -> path.getFileName().toString()
-                  .startsWith(BackupService.DATA_STORES_TEMPORARY_DIRECTORY))
+                  .startsWith(BackupService.TEMPORARY_DIRECTORY_FOR_BACKUPS))
               .filter(p -> Files.isDirectory(p)).collect(Collectors.toList());
         }
         for (Path backupDirectory : backupDirectories) {
@@ -2068,7 +2058,7 @@ public class DiskStoreImpl implements DiskStore {
   }
 
   void initializeIfNeeded() {
-    if (!getPersistentOplogs().alreadyRecoveredOnce.get()) {
+    if (!getPersistentOplogs().getAlreadyRecoveredOnce().get()) {
       recoverRegionsThatAreReady();
     }
   }
@@ -2086,11 +2076,14 @@ public class DiskStoreImpl implements DiskStore {
 
   void scheduleValueRecovery(Set<Oplog> oplogsNeedingValueRecovery,
       Map<Long, DiskRecoveryStore> recoveredStores) {
-    ValueRecoveryTask task = new ValueRecoveryTask(oplogsNeedingValueRecovery, recoveredStores);
+    CompletableFuture<Void> startupTask = new CompletableFuture<>();
+    ValueRecoveryTask task =
+        new ValueRecoveryTask(oplogsNeedingValueRecovery, recoveredStores, startupTask);
     synchronized (currentAsyncValueRecoveryMap) {
-      DiskStoreImpl.this.currentAsyncValueRecoveryMap.putAll(recoveredStores);
+      currentAsyncValueRecoveryMap.putAll(recoveredStores);
     }
     executeDiskStoreTask(task);
+    internalResourceManager.addStartupTask(startupTask);
   }
 
   /**
@@ -2121,6 +2114,7 @@ public class DiskStoreImpl implements DiskStore {
     return getAutoCompact();
   }
 
+  @Override
   public int getCompactionThreshold() {
     return this.compactionThreshold;
   }
@@ -2239,8 +2233,7 @@ public class DiskStoreImpl implements DiskStore {
           try {
             if (dr.isRegionClosed()) {
               throw new RegionDestroyedException(
-                  LocalizedStrings.DiskRegion_THE_DISKREGION_HAS_BEEN_CLOSED_OR_DESTROYED
-                      .toLocalizedString(),
+                  "The DiskRegion has been closed or destroyed",
                   dr.getName());
             }
             basicClear(region, dr, rvv);
@@ -2340,10 +2333,6 @@ public class DiskStoreImpl implements DiskStore {
         currentAsyncValueRecoveryMap.notifyAll();
       }
 
-      // don't block the shutdown hook
-      if (Thread.currentThread() != InternalDistributedSystem.shutdownHook) {
-        waitForBackgroundTasks();
-      }
       try {
         overflowOplogs.closeOverflow();
       } catch (RuntimeException e) {
@@ -2369,6 +2358,34 @@ public class DiskStoreImpl implements DiskStore {
 
         getDiskInitFile().close();
       }
+
+      this.diskStoreTaskPool.shutdown();
+      this.delayedWritePool.shutdown();
+
+      final int secToWait = 60;
+      try {
+        this.diskStoreTaskPool.awaitTermination(secToWait, TimeUnit.SECONDS);
+      } catch (InterruptedException x) {
+        Thread.currentThread().interrupt();
+        logger.debug("Failed in interrupting the DiskStoreTask Thread due to interrupt");
+      }
+      try {
+        this.delayedWritePool.awaitTermination(secToWait, TimeUnit.SECONDS);
+      } catch (InterruptedException x) {
+        Thread.currentThread().interrupt();
+        logger.debug("Failed in interrupting the DelayedWrite Thread due to interrupt");
+      }
+      if (!this.diskStoreTaskPool.isTerminated()) {
+        logger.warn("Failed to stop DiskStoreTask threads in {} seconds", secToWait);
+      }
+      if (!this.delayedWritePool.isTerminated()) {
+        logger.warn("Failed to stop DelayedWrite threads in {} seconds", secToWait);
+      }
+      // don't block the shutdown hook
+      if (Thread.currentThread() != InternalDistributedSystem.shutdownHook) {
+        waitForBackgroundTasks();
+      }
+
       try {
         statsClose();
       } catch (RuntimeException e) {
@@ -2420,10 +2437,7 @@ public class DiskStoreImpl implements DiskStore {
           // the stopCompactor. Still not taking chance and ignoring it
 
         } catch (RuntimeException e) {
-          logger.warn(
-              LocalizedMessage.create(
-                  LocalizedStrings.DiskRegion_COMPLEXDISKREGION_CLOSE_EXCEPTION_IN_STOPPING_COMPACTOR),
-              e);
+          logger.warn("DiskRegion::close: Exception in stopping compactor", e);
           throw e;
           // } finally {
           // this.oplogCompactor.compactionCompletionRequired = orig;
@@ -2707,6 +2721,7 @@ public class DiskStoreImpl implements DiskStore {
     }
   }
 
+  @Override
   public void destroy() {
     Set<String> liveRegions = new TreeSet<String>();
     for (AbstractDiskRegion dr : getDiskRegions()) {
@@ -2763,7 +2778,7 @@ public class DiskStoreImpl implements DiskStore {
       return null;
     }
 
-    return l.toArray(new CompactableOplog[l.size()]);
+    return l.toArray(new CompactableOplog[0]);
   }
 
   /**
@@ -2878,20 +2893,17 @@ public class DiskStoreImpl implements DiskStore {
       long compactionStart = getStats().startCompaction();
       long start = System.nanoTime();
       try {
-        for (int i = 0; i < oplogs.length && keepCompactorRunning() /*
-                                                                     * @todo && !owner. isDestroyed
-                                                                     */; i++) {
+        for (int i = 0; i < oplogs.length && keepCompactorRunning(); i++) {
           totalCount += oplogs[i].compact(this);
         }
 
-        // TODO:Asif : DiskRegion: How do we tackle
       } finally {
         getStats().endCompaction(compactionStart);
       }
       long endTime = System.nanoTime();
-      logger.info(LocalizedMessage.create(LocalizedStrings.DiskRegion_COMPACTION_SUMMARY,
-          new Object[] {totalCount, ((endTime - start) / 1000000)}));
-      return true /* @todo !owner.isDestroyed */;
+      logger.info("compaction did {} creates and updates in {} ms",
+          totalCount, ((endTime - start) / 1000000));
+      return true;
     }
 
     private boolean isClosing() {
@@ -2908,6 +2920,7 @@ public class DiskStoreImpl implements DiskStore {
      * oplogIdToOplog object. This will ensure that an addition of an Oplog to the Map does not get
      * missed. Notifications need not be sent if the thread is already compaction
      */
+    @Override
     public void run() {
       if (!this.scheduled)
         return;
@@ -2934,8 +2947,8 @@ public class DiskStoreImpl implements DiskStore {
             }
           }
           String ids = buffer.toString();
-          logger.info(LocalizedMessage.create(LocalizedStrings.DiskRegion_COMPACTION_OPLOGIDS,
-              new Object[] {getName(), ids}));
+          logger.info("OplogCompactor for {} compaction oplog id(s): {}",
+              getName(), ids);
           if (LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER) {
             CacheObserverHolder.getInstance().beforeGoingToCompact();
           }
@@ -2945,8 +2958,8 @@ public class DiskStoreImpl implements DiskStore {
               CacheObserverHolder.getInstance().afterHavingCompacted();
             }
           } else {
-            logger.warn(LocalizedMessage.create(LocalizedStrings.DiskRegion_COMPACTION_FAILURE,
-                new Object[] {getName(), ids}));
+            logger.warn("OplogCompactor for {} did NOT complete compaction of oplog id(s): {}",
+                getName(), ids);
           }
         } catch (DiskAccessException dae) {
           handleDiskAccessException(dae);
@@ -3121,9 +3134,8 @@ public class DiskStoreImpl implements DiskStore {
                 }
               } // for
               if (this.entryOpsCount.get() > 0) {
-                logger.warn(LocalizedMessage.create(
-                    LocalizedStrings.DisKRegion_OUTSTANDING_OPS_REMAIN_AFTER_0_SECONDS_FOR_DISK_REGION_1,
-                    new Object[] {loopCount, dr.getName()}));
+                logger.warn("Outstanding ops remain after {} seconds for disk region {}",
+                    loopCount, dr.getName());
 
                 for (;;) {
                   if (this.entryOpsCount.get() == 0) {
@@ -3141,9 +3153,8 @@ public class DiskStoreImpl implements DiskStore {
                     }
                   }
                 } // for
-                logger.info(LocalizedMessage.create(
-                    LocalizedStrings.DisKRegion_OUTSTANDING_OPS_CLEARED_FOR_DISK_REGION_0,
-                    dr.getName()));
+                logger.info("Outstanding ops cleared for disk region {}",
+                    dr.getName());
               }
             } // synchronized
           }
@@ -3190,7 +3201,7 @@ public class DiskStoreImpl implements DiskStore {
     }
   }
 
-  public PersistentMemberID generatePersistentID(DiskRegionView dr) {
+  public PersistentMemberID generatePersistentID() {
     File firstDir = getInfoFileDir().getDir();
     InternalDistributedSystem ids = getCache().getInternalDistributedSystem();
     InternalDistributedMember memberId = ids.getDistributionManager().getDistributionManagerId();
@@ -3357,26 +3368,20 @@ public class DiskStoreImpl implements DiskStore {
     }
 
     // log the error
-    final StringId sid =
-        LocalizedStrings.LocalRegion_A_DISKACCESSEXCEPTION_HAS_OCCURRED_WHILE_WRITING_TO_THE_DISK_FOR_DISKSTORE_0_THE_CACHE_WILL_BE_CLOSED;
-    logger.error(LocalizedMessage.create(sid, DiskStoreImpl.this.getName()), dae);
+    final String message = String.format(
+        "A DiskAccessException has occurred while writing to the disk for disk store %s. The cache will be closed.",
+        getName());
+    logger.error(message, dae);
 
-    final ThreadGroup exceptionHandlingGroup =
-        LoggingThreadGroup.createThreadGroup("Disk Store Exception Handling Group", logger);
-
-    Thread thread = new Thread(exceptionHandlingGroup, "Disk store exception handler") {
-      public void run() {
-        try {
-          // now close the cache
-          getCache().close(sid.toLocalizedString(DiskStoreImpl.this.getName(), dae), dae);
-          _testHandleDiskAccessException.countDown();
-
-        } catch (Exception e) {
-          logger.error(LocalizedMessage.create(
-              LocalizedStrings.LocalRegion_AN_EXCEPTION_OCCURRED_WHILE_CLOSING_THE_CACHE), e);
-        }
+    Thread thread = new LoggingThread("Disk store exception handler", false, () -> {
+      try {
+        // now close the cache
+        getCache().close(message, dae);
+        _testHandleDiskAccessException.countDown();
+      } catch (Exception e) {
+        logger.error("An Exception occurred while closing the cache.", e);
       }
-    };
+    });
     thread.start();
   }
 
@@ -3393,18 +3398,22 @@ public class DiskStoreImpl implements DiskStore {
   private volatile float criticalPercent;
 
   // DiskStore interface methods
+  @Override
   public String getName() {
     return this.name;
   }
 
+  @Override
   public boolean getAutoCompact() {
     return this.autoCompact;
   }
 
+  @Override
   public boolean getAllowForceCompaction() {
     return this.allowForceCompaction;
   }
 
+  @Override
   public long getMaxOplogSize() {
     return this.maxOplogSizeInBytes / (1024 * 1024);
   }
@@ -3413,22 +3422,27 @@ public class DiskStoreImpl implements DiskStore {
     return this.maxOplogSizeInBytes;
   }
 
+  @Override
   public long getTimeInterval() {
     return this.timeInterval;
   }
 
+  @Override
   public int getQueueSize() {
     return this.queueSize;
   }
 
+  @Override
   public int getWriteBufferSize() {
     return this.writeBufferSize;
   }
 
+  @Override
   public File[] getDiskDirs() {
     return this.diskDirs;
   }
 
+  @Override
   public int[] getDiskDirSizes() {
     return this.diskDirSizes;
   }
@@ -3453,6 +3467,14 @@ public class DiskStoreImpl implements DiskStore {
   public void setDiskUsageCriticalPercentage(float criticalPercent) {
     DiskStoreMonitor.checkCritical(criticalPercent);
     this.criticalPercent = criticalPercent;
+  }
+
+  public DiskDirSizesUnit getDiskDirSizesUnit() {
+    return this.diskDirSizesUnit;
+  }
+
+  public void setDiskDirSizesUnit(DiskDirSizesUnit unit) {
+    this.diskDirSizesUnit = unit;
   }
 
   public static class AsyncDiskEntry {
@@ -3579,6 +3601,7 @@ public class DiskStoreImpl implements DiskStore {
 
   // Set to true if diskStore will be used by an offline tool that modifies the disk store.
   private final boolean offlineModify;
+  private final InternalResourceManager internalResourceManager;
 
   boolean isOfflineModify() {
     return this.offlineModify;
@@ -3902,7 +3925,9 @@ public class DiskStoreImpl implements DiskStore {
             for (Map.Entry<Object, RecoveredEntry> re : entries.entrySet()) {
               Object key = re.getKey();
               Object value = re.getValue().getValue();
-              writer.snapshotEntry(new SnapshotRecord(key, value));
+              if (!Token.isRemoved(value)) {
+                writer.snapshotEntry(new SnapshotRecord(key, value));
+              }
             }
           }
 
@@ -4101,7 +4126,9 @@ public class DiskStoreImpl implements DiskStore {
         false);
   }
 
+  @MakeNotStatic
   private static Cache offlineCache = null;
+  @MakeNotStatic
   private static DistributedSystem offlineDS = null;
 
   private static void cleanupOffline() {
@@ -4137,7 +4164,9 @@ public class DiskStoreImpl implements DiskStore {
     }
     DiskStoreImpl dsi = new DiskStoreImpl(cache, dsName,
         ((DiskStoreFactoryImpl) dsf).getDiskStoreAttributes(), false, null, true,
-        upgradeVersionOnly, offlineValidate, offlineCompacting, needsOplogs, offlineModify);
+        upgradeVersionOnly, offlineValidate, offlineCompacting, needsOplogs, offlineModify,
+        cache.getInternalDistributedSystem().getStatisticsManager(),
+        cache.getInternalResourceManager());
     cache.addDiskStore(dsi);
     return dsi;
   }
@@ -4283,6 +4312,7 @@ public class DiskStoreImpl implements DiskStore {
     return getPersistentOplogs().getChild() != null;
   }
 
+  @Override
   public UUID getDiskStoreUUID() {
     return this.diskStoreID.toUUID();
   }
@@ -4319,25 +4349,40 @@ public class DiskStoreImpl implements DiskStore {
   private class ValueRecoveryTask implements Runnable {
     private final Set<Oplog> oplogSet;
     private final Map<Long, DiskRecoveryStore> recoveredStores;
+    private final CompletableFuture<Void> startupTask;
 
-    public ValueRecoveryTask(Set<Oplog> oplogSet, Map<Long, DiskRecoveryStore> recoveredStores) {
+    ValueRecoveryTask(Set<Oplog> oplogSet, Map<Long, DiskRecoveryStore> recoveredStores,
+        CompletableFuture<Void> startupTask) {
       this.oplogSet = oplogSet;
-      this.recoveredStores = new HashMap<Long, DiskRecoveryStore>(recoveredStores);
+      this.recoveredStores = new HashMap<>(recoveredStores);
+      this.startupTask = startupTask;
     }
 
+    @Override
     public void run() {
+      try {
+        doAsyncValueRecovery();
+        startupTask.complete(null);
+        logger.info("Recovered values for disk store " + getName() + " with unique id "
+            + getDiskStoreUUID());
+      } catch (CancelException e) {
+        startupTask.completeExceptionally(e);
+      } catch (RuntimeException e) {
+        startupTask.completeExceptionally(e);
+        throw e;
+      }
+    }
+
+    private void doAsyncValueRecovery() {
       synchronized (asyncValueRecoveryLock) {
         DiskStoreObserver.startAsyncValueRecovery(DiskStoreImpl.this);
         try {
           for (Oplog oplog : oplogSet) {
             oplog.recoverValuesIfNeeded(currentAsyncValueRecoveryMap);
           }
-        } catch (CancelException ignore) {
-          // do nothing
         } finally {
           synchronized (currentAsyncValueRecoveryMap) {
-            DiskStoreImpl.this.currentAsyncValueRecoveryMap.keySet()
-                .removeAll(recoveredStores.keySet());
+            currentAsyncValueRecoveryMap.keySet().removeAll(recoveredStores.keySet());
             currentAsyncValueRecoveryMap.notifyAll();
           }
           DiskStoreObserver.endAsyncValueRecovery(DiskStoreImpl.this);
@@ -4383,7 +4428,7 @@ public class DiskStoreImpl implements DiskStore {
    * tasks may take a while.
    */
   public boolean executeDiskStoreTask(final Runnable runnable) {
-    return executeDiskStoreAsyncTask(runnable, this.diskStoreTaskPool);
+    return executeAsyncTask(runnable, this.diskStoreTaskPool);
   }
 
   /**
@@ -4393,7 +4438,7 @@ public class DiskStoreImpl implements DiskStore {
    * close, etc.
    */
   public boolean executeDelayedExpensiveWrite(Runnable task) {
-    Future<?> f = executeDiskStoreTask(task, this.delayedWritePool);
+    Future<?> f = executeTask(task, this.delayedWritePool);
     lastDelayedWrite = f;
     return f != null;
   }
@@ -4415,10 +4460,15 @@ public class DiskStoreImpl implements DiskStore {
     }
   }
 
-  private Future<?> executeDiskStoreTask(final Runnable runnable, ThreadPoolExecutor executor) {
+  private Future<?> executeTask(final Runnable runnable, ExecutorService executor) {
     // schedule another thread to do it
+    if (executor.isShutdown()) {
+      logger.warn("Submitting task to shutdown pool");
+      return null;
+    }
     incBackgroundTasks();
     Future<?> result = executeDiskStoreTask(new DiskStoreTask() {
+      @Override
       public void run() {
         try {
           markBackgroundTaskThread(); // for bug 42775
@@ -4429,6 +4479,7 @@ public class DiskStoreImpl implements DiskStore {
         }
       }
 
+      @Override
       public void taskCancelled() {
         decBackgroundTasks();
       }
@@ -4441,10 +4492,11 @@ public class DiskStoreImpl implements DiskStore {
     return result;
   }
 
-  private boolean executeDiskStoreAsyncTask(final Runnable runnable, ThreadPoolExecutor executor) {
+  private boolean executeAsyncTask(final Runnable runnable, ExecutorService executor) {
     // schedule another thread to do it
     incBackgroundTasks();
     boolean isTaskAccepted = executeDiskStoreAsyncTask(new DiskStoreTask() {
+      @Override
       public void run() {
         try {
           markBackgroundTaskThread(); // for bug 42775
@@ -4455,6 +4507,7 @@ public class DiskStoreImpl implements DiskStore {
         }
       }
 
+      @Override
       public void taskCancelled() {
         decBackgroundTasks();
       }
@@ -4467,7 +4520,7 @@ public class DiskStoreImpl implements DiskStore {
     return isTaskAccepted;
   }
 
-  private Future<?> executeDiskStoreTask(DiskStoreTask r, ThreadPoolExecutor executor) {
+  private Future<?> executeDiskStoreTask(DiskStoreTask r, ExecutorService executor) {
     try {
       return executor.submit(r);
     } catch (RejectedExecutionException ex) {
@@ -4478,7 +4531,7 @@ public class DiskStoreImpl implements DiskStore {
     return null;
   }
 
-  private boolean executeDiskStoreAsyncTask(DiskStoreTask r, ThreadPoolExecutor executor) {
+  private boolean executeDiskStoreAsyncTask(DiskStoreTask r, ExecutorService executor) {
     try {
       executor.execute(r);
       return true;
@@ -4496,8 +4549,7 @@ public class DiskStoreImpl implements DiskStore {
       if (dr.isRegionClosed()) {
         region.getCancelCriterion().checkCancelInProgress(null);
         throw new RegionDestroyedException(
-            LocalizedStrings.DiskRegion_THE_DISKREGION_HAS_BEEN_CLOSED_OR_DESTROYED
-                .toLocalizedString(),
+            "The DiskRegion has been closed or destroyed",
             dr.getName());
       }
 
@@ -4535,8 +4587,7 @@ public class DiskStoreImpl implements DiskStore {
       if (dr.isRegionClosed()) {
         dr.getCancelCriterion().checkCancelInProgress(null);
         throw new RegionDestroyedException(
-            LocalizedStrings.DiskRegion_THE_DISKREGION_HAS_BEEN_CLOSED_OR_DESTROYED
-                .toLocalizedString(),
+            "The DiskRegion has been closed or destroyed",
             dr.getName());
       }
 
@@ -4592,4 +4643,36 @@ public class DiskStoreImpl implements DiskStore {
     return this.cache.getDistributedSystem();
   }
 
+  public long getTotalBytesOnDisk() {
+    long diskSpace = 0;
+    for (DirectoryHolder dr : this.directories) {
+      diskSpace += dr.getDiskDirectoryStats().getDiskSpace();
+    }
+    return diskSpace;
+  }
+
+  /**
+   * Returns the disk usage percentage of the disk store, or -1 in case
+   * one or more directories have unlimited storage.
+   */
+  public float getDiskUsagePercentage() {
+    if (this.totalDiskStoreSpace == ManagementConstants.NOT_AVAILABLE_LONG) {
+      return ManagementConstants.NOT_AVAILABLE_FLOAT;
+    }
+    float totalDiskSpace = (float) getTotalBytesOnDisk();
+    float usage = totalDiskSpace * 100 / this.totalDiskStoreSpace;
+    usage = new BigDecimal(usage).setScale(2, BigDecimal.ROUND_FLOOR).floatValue();
+    return usage;
+  }
+
+  /**
+   * Returns the free space percentage of the disk store, or -1 in case
+   * one or more directories have unlimited storage.
+   */
+  public float getDiskFreePercentage() {
+    if (this.totalDiskStoreSpace == ManagementConstants.NOT_AVAILABLE_LONG) {
+      return ManagementConstants.NOT_AVAILABLE_FLOAT;
+    }
+    return (100 - getDiskUsagePercentage());
+  }
 }

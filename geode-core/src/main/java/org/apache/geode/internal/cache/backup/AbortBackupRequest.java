@@ -30,14 +30,14 @@ public class AbortBackupRequest extends CliLegacyMessage {
   private final transient AbortBackupFactory abortBackupFactory;
 
   public AbortBackupRequest() {
-    this.abortBackupFactory = new AbortBackupFactory();
+    abortBackupFactory = new AbortBackupFactory();
   }
 
   AbortBackupRequest(InternalDistributedMember sender, Set<InternalDistributedMember> recipients,
       int processorId, AbortBackupFactory abortBackupFactory) {
     setSender(sender);
     setRecipients(recipients);
-    this.msgId = processorId;
+    msgId = processorId;
     this.abortBackupFactory = abortBackupFactory;
   }
 

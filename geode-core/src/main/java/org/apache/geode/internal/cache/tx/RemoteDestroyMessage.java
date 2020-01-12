@@ -56,16 +56,18 @@ import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EntryEventImpl.OldValueImporter;
 import org.apache.geode.internal.cache.EventID;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RemoteOperationException;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.versions.DiskVersionTag;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Unretained;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * A class that specifies a destroy operation. Used by ReplicateRegions. Note: The reason for
@@ -154,7 +156,7 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
     this.versionTag = event.getVersionTag();
     Assert.assertTrue(this.eventId != null);
 
-    // added for old value if available sent over the wire for bridge servers.
+    // added for old value if available sent over the wire for cache servers.
     if (event.hasOldValue()) {
       this.hasOldValue = true;
       event.exportOldValue(this);
@@ -276,8 +278,8 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
         successful = true; // not a cancel-exception, so don't complain any more about it
 
       } catch (RegionDestroyedException | RemoteOperationException e) {
-        if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.trace(LogMarker.DM,
+        if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+          logger.trace(LogMarker.DM_VERBOSE,
               "RemoteDestroyMessage caught an exception during distribution; retrying to another member",
               e);
         }
@@ -295,7 +297,7 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
    * @param event the event causing this message
    * @return the processor used to await the potential {@link org.apache.geode.cache.CacheException}
    */
-  public static RemoteDestroyReplyProcessor send(DistributedMember recipient, LocalRegion r,
+  public static RemoteDestroyReplyProcessor send(DistributedMember recipient, InternalRegion r,
       EntryEventImpl event, Object expectedOldValue, boolean useOriginRemote,
       boolean possibleDuplicate) throws RemoteOperationException {
     RemoteDestroyReplyProcessor p =
@@ -306,7 +308,7 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
     Set<?> failures = r.getDistributionManager().putOutgoing(m);
     if (failures != null && failures.size() > 0) {
       throw new RemoteOperationException(
-          LocalizedStrings.RemoteDestroyMessage_FAILED_SENDING_0.toLocalizedString(m));
+          String.format("Failed sending < %s >", m));
     }
     return p;
   }
@@ -393,6 +395,7 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
     }
   }
 
+  @Override
   public int getDSFID() {
     return R_DESTROY_MESSAGE;
   }
@@ -402,8 +405,9 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     setKey(DataSerializer.readObject(in));
     this.cbArg = DataSerializer.readObject(in);
     this.op = Operation.fromOrdinal(in.readByte());
@@ -429,8 +433,9 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     DataSerializer.writeObject(getKey(), out);
     DataSerializer.writeObject(this.cbArg, out);
     out.writeByte(this.op.ordinal);
@@ -453,8 +458,9 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
   }
 
   @Override
-  protected void setFlags(short flags, DataInput in) throws IOException, ClassNotFoundException {
-    super.setFlags(flags, in);
+  protected void setFlags(short flags, DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.setFlags(flags, in, context);
     this.hasOldValue = (flags & HAS_OLD_VALUE) != 0;
     this.useOriginRemote = (flags & USE_ORIGIN_REMOTE) != 0;
     this.possibleDuplicate = (flags & POS_DUP) != 0;
@@ -593,14 +599,14 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
     @Override
     public void process(final DistributionManager dm, final ReplyProcessor21 rp) {
       final long startTime = getTimestamp();
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM,
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE,
             "DestroyReplyMessage process invoking reply processor with processorId:{}",
             this.processorId);
       }
       if (rp == null) {
-        if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.trace(LogMarker.DM, "DestroyReplyMessage processor not found");
+        if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+          logger.trace(LogMarker.DM_VERBOSE, "DestroyReplyMessage processor not found");
         }
         return;
       }
@@ -613,15 +619,16 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
       }
       rp.process(this);
 
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM, "{} processed {}", rp, this);
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE, "{} processed {}", rp, this);
       }
       dm.getStats().incReplyMessageTime(NanoTimer.getTime() - startTime);
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       byte b = 0;
       if (this.versionTag != null) {
         b |= HAS_VERSION;
@@ -636,8 +643,9 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       byte b = in.readByte();
       boolean hasTag = (b & HAS_VERSION) != 0;
       boolean persistentTag = (b & PERSISTENT) != 0;

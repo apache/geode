@@ -20,11 +20,14 @@ import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_E
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_PROTOCOLS;
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_REQUIRE_AUTHENTICATION;
 import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_AUTO_RECONNECT;
+import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_JMX;
 import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_TCP;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.TCP_PORT;
+import static org.apache.geode.internal.net.InetAddressUtils.toHostString;
+import static org.apache.geode.internal.net.InetAddressUtilsWithLogging.validateHost;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -48,12 +51,13 @@ import org.apache.geode.admin.DistributionLocator;
 import org.apache.geode.admin.DistributionLocatorConfig;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
-import org.apache.geode.internal.logging.LogConfig;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LogWriterImpl;
-import org.apache.geode.internal.logging.log4j.LogLevel;
+import org.apache.geode.internal.statistics.StatisticsConfig;
+import org.apache.geode.logging.internal.log4j.LogLevel;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.logging.internal.spi.LogConfig;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * An implementation of the configuration object for an <code>AdminDistributedSystem</code>. After a
@@ -79,6 +83,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
   private String serverBindAddress = DEFAULT_BIND_ADDRESS;
   private String remoteCommand = DEFAULT_REMOTE_COMMAND;
   private boolean disableTcp = DEFAULT_DISABLE_TCP;
+  private boolean disableJmx = DEFAULT_DISABLE_JMX;
   private boolean enableNetworkPartitionDetection = DEFAULT_ENABLE_NETWORK_PARTITION_DETECTION;
   private boolean disableAutoReconnect = DEFAULT_DISABLE_AUTO_RECONNECT;
   private int memberTimeout = DEFAULT_MEMBER_TIMEOUT;
@@ -158,11 +163,10 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
   public DistributedSystemConfigImpl(DistributionConfig distConfig, String remoteCommand) {
     if (distConfig == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DistributedSystemConfigImpl_DISTRIBUTIONCONFIG_MUST_NOT_BE_NULL
-              .toLocalizedString());
+          "DistributionConfig must not be null.");
     }
 
-    this.mcastAddress = InetAddressUtil.toString(distConfig.getMcastAddress());
+    this.mcastAddress = toHostString(distConfig.getMcastAddress());
     this.mcastPort = distConfig.getMcastPort();
     this.locators = distConfig.getLocators();
     this.membershipPortRange = getMembershipPortRangeString(distConfig.getMembershipPortRange());
@@ -238,8 +242,8 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
         this.refreshInterval = Integer.parseInt(refreshInterval);
       } catch (NumberFormatException nfEx) {
         throw new IllegalArgumentException(
-            LocalizedStrings.DistributedSystemConfigImpl_0_IS_NOT_A_VALID_INTEGER_1
-                .toLocalizedString(new Object[] {refreshInterval, REFRESH_INTERVAL_NAME}));
+            String.format("%s is not a valid integer for %s",
+                new Object[] {refreshInterval, REFRESH_INTERVAL_NAME}));
       }
     }
   }
@@ -284,6 +288,16 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
       }
 
       @Override
+      public File getSecurityLogFile() {
+        return null;
+      }
+
+      @Override
+      public int getSecurityLogLevel() {
+        return LogLevel.getLogWriterLevel(DistributedSystemConfigImpl.this.getLogLevel());
+      }
+
+      @Override
       public int getLogFileSizeLimit() {
         return DistributedSystemConfigImpl.this.getLogFileSizeLimit();
       }
@@ -301,6 +315,41 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
       @Override
       public String toLoggerString() {
         return DistributedSystemConfigImpl.this.toString();
+      }
+
+      @Override
+      public boolean isLoner() {
+        return false;
+      }
+    };
+  }
+
+  public StatisticsConfig createStatisticsConfig() {
+    return new StatisticsConfig() {
+
+      @Override
+      public File getStatisticArchiveFile() {
+        return null;
+      }
+
+      @Override
+      public int getArchiveFileSizeLimit() {
+        return 0;
+      }
+
+      @Override
+      public int getArchiveDiskSpaceLimit() {
+        return 0;
+      }
+
+      @Override
+      public int getStatisticSampleRate() {
+        return 0;
+      }
+
+      @Override
+      public boolean getStatisticSamplingEnabled() {
+        return false;
       }
     };
   }
@@ -324,15 +373,16 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
   protected void checkReadOnly() {
     if (this.system != null) {
       throw new IllegalStateException(
-          LocalizedStrings.DistributedSystemConfigImpl_A_DISTRIBUTEDSYSTEMCONFIG_OBJECT_CANNOT_BE_MODIFIED_AFTER_IT_HAS_BEEN_USED_TO_CREATE_AN_ADMINDISTRIBUTEDSYSTEM
-              .toLocalizedString());
+          "A DistributedSystemConfig object cannot be modified after it has been used to create an AdminDistributedSystem.");
     }
   }
 
+  @Override
   public String getEntityConfigXMLFile() {
     return this.entityConfigXMLFile;
   }
 
+  @Override
   public void setEntityConfigXMLFile(String xmlFile) {
     checkReadOnly();
     this.entityConfigXMLFile = xmlFile;
@@ -353,8 +403,8 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
         return;
       } else {
         throw new AdminXmlException(
-            LocalizedStrings.DistributedSystemConfigImpl_ENTITY_CONFIGURATION_XML_FILE_0_DOES_NOT_EXIST
-                .toLocalizedString(fileName));
+            String.format("Entity configuration XML file %s does not exist",
+                fileName));
       }
     }
 
@@ -367,15 +417,17 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
       }
     } catch (IOException ex) {
       throw new AdminXmlException(
-          LocalizedStrings.DistributedSystemConfigImpl_WHILE_PARSING_0.toLocalizedString(fileName),
+          String.format("While parsing %s", fileName),
           ex);
     }
   }
 
+  @Override
   public String getSystemId() {
     return this.systemId;
   }
 
+  @Override
   public void setSystemId(String systemId) {
     checkReadOnly();
     this.systemId = systemId;
@@ -385,10 +437,12 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
   /**
    * Returns the multicast address for the system
    */
+  @Override
   public String getMcastAddress() {
     return this.mcastAddress;
   }
 
+  @Override
   public void setMcastAddress(String mcastAddress) {
     checkReadOnly();
     this.mcastAddress = mcastAddress;
@@ -398,30 +452,36 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
   /**
    * Returns the multicast port for the system
    */
+  @Override
   public int getMcastPort() {
     return this.mcastPort;
   }
 
+  @Override
   public void setMcastPort(int mcastPort) {
     checkReadOnly();
     this.mcastPort = mcastPort;
     configChanged();
   }
 
+  @Override
   public int getAckWaitThreshold() {
     return this.ackWaitThreshold;
   }
 
+  @Override
   public void setAckWaitThreshold(int seconds) {
     checkReadOnly();
     this.ackWaitThreshold = seconds;
     configChanged();
   }
 
+  @Override
   public int getAckSevereAlertThreshold() {
     return this.ackSevereAlertThreshold;
   }
 
+  @Override
   public void setAckSevereAlertThreshold(int seconds) {
     checkReadOnly();
     this.ackSevereAlertThreshold = seconds;
@@ -431,10 +491,12 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
   /**
    * Returns the comma-delimited list of locators for the system
    */
+  @Override
   public String getLocators() {
     return this.locators;
   }
 
+  @Override
   public void setLocators(String locators) {
     checkReadOnly();
     if (locators == null) {
@@ -450,6 +512,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
    *
    * @return the value for the Distributed System property membership-port-range
    */
+  @Override
   public String getMembershipPortRange() {
     return this.membershipPortRange;
   }
@@ -460,6 +523,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
    * @param membershipPortRangeStr the value for membership-port-range given as two numbers
    *        separated by a minus sign.
    */
+  @Override
   public void setMembershipPortRange(String membershipPortRangeStr) {
     /*
      * FIXME: Setting attributes in DistributedSystemConfig has no effect on DistributionConfig
@@ -476,9 +540,10 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
           this.membershipPortRange = membershipPortRangeStr;
         } else {
           throw new IllegalArgumentException(
-              LocalizedStrings.DistributedSystemConfigImpl_INVALID_VALUE_FOR_MEMBERSHIP_PORT_RANGE
-                  .toLocalizedString(
-                      new Object[] {membershipPortRangeStr, MEMBERSHIP_PORT_RANGE_NAME}));
+              String.format(
+                  "The value specified %s is invalid for the property : %s. This range should be specified as min-max.",
+
+                  new Object[] {membershipPortRangeStr, MEMBERSHIP_PORT_RANGE_NAME}));
         }
       } catch (Exception e) {
         if (logger.isDebugEnabled()) {
@@ -488,12 +553,14 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
     }
   }
 
+  @Override
   public void setTcpPort(int port) {
     checkReadOnly();
     this.tcpPort = port;
     configChanged();
   }
 
+  @Override
   public int getTcpPort() {
     return this.tcpPort;
   }
@@ -536,60 +603,84 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
     return membershipPortRangeString;
   }
 
+  @Override
   public String getBindAddress() {
     return this.bindAddress;
   }
 
+  @Override
   public void setBindAddress(String bindAddress) {
     checkReadOnly();
     basicSetBindAddress(bindAddress);
     configChanged();
   }
 
+  @Override
   public String getServerBindAddress() {
     return this.serverBindAddress;
   }
 
+  @Override
   public void setServerBindAddress(String bindAddress) {
     checkReadOnly();
     basicSetServerBindAddress(bindAddress);
     configChanged();
   }
 
+  @Override
   public boolean getDisableTcp() {
     return this.disableTcp;
   }
 
+  @Override
   public void setDisableTcp(boolean flag) {
     checkReadOnly();
     disableTcp = flag;
     configChanged();
   }
 
+  @Override
+  public boolean getDisableJmx() {
+    return disableJmx;
+  }
+
+  @Override
+  public void setDisableJmx(boolean flag) {
+    checkReadOnly();
+    disableJmx = flag;
+    configChanged();
+  }
+
+  @Override
   public void setEnableNetworkPartitionDetection(boolean newValue) {
     checkReadOnly();
     this.enableNetworkPartitionDetection = newValue;
     configChanged();
   }
 
+  @Override
   public boolean getEnableNetworkPartitionDetection() {
     return this.enableNetworkPartitionDetection;
   }
 
+  @Override
   public void setDisableAutoReconnect(boolean newValue) {
     checkReadOnly();
     this.disableAutoReconnect = newValue;
     configChanged();
   }
 
+  @Override
   public boolean getDisableAutoReconnect() {
     return this.disableAutoReconnect;
   }
 
+  @Override
   public int getMemberTimeout() {
     return this.memberTimeout;
   }
 
+  @Override
   public void setMemberTimeout(int value) {
     checkReadOnly();
     this.memberTimeout = value;
@@ -599,8 +690,8 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
   private void basicSetBindAddress(String bindAddress) {
     if (!validateBindAddress(bindAddress)) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DistributedSystemConfigImpl_INVALID_BIND_ADDRESS_0
-              .toLocalizedString(bindAddress));
+          String.format("Invalid bind address: %s",
+              bindAddress));
     }
     this.bindAddress = bindAddress;
   }
@@ -608,8 +699,8 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
   private void basicSetServerBindAddress(String bindAddress) {
     if (!validateBindAddress(bindAddress)) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DistributedSystemConfigImpl_INVALID_BIND_ADDRESS_0
-              .toLocalizedString(bindAddress));
+          String.format("Invalid bind address: %s",
+              bindAddress));
     }
     this.serverBindAddress = bindAddress;
   }
@@ -617,6 +708,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
   /**
    * Returns the remote command setting to use for remote administration
    */
+  @Override
   public String getRemoteCommand() {
     return this.remoteCommand;
   }
@@ -625,6 +717,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
    * Sets the remote command for this config object. This attribute may be modified after this
    * config object has been used to create an admin distributed system.
    */
+  @Override
   public void setRemoteCommand(String remoteCommand) {
     if (!ALLOW_ALL_REMOTE_COMMANDS) {
       checkRemoteCommand(remoteCommand);
@@ -634,7 +727,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
   }
 
   private static final boolean ALLOW_ALL_REMOTE_COMMANDS =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "admin.ALLOW_ALL_REMOTE_COMMANDS");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "admin.ALLOW_ALL_REMOTE_COMMANDS");
   private static final String[] LEGAL_REMOTE_COMMANDS = {"rsh", "ssh"};
   private static final String ILLEGAL_REMOTE_COMMAND_RSH_OR_SSH =
       "Allowed remote commands include \"rsh {HOST} {CMD}\" or \"ssh {HOST} {CMD}\" with valid rsh or ssh switches. Invalid: ";
@@ -676,7 +769,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
         // {cmd}
         if (!isSwitch && !isHostOrCmd) {
           final String previous =
-              (array == null || array.isEmpty()) ? null : array.get(array.size() - 1);
+              array.isEmpty() ? null : array.get(array.size() - 1);
           final boolean isValueForSwitch = previous != null && previous.startsWith("-");
           final boolean isHostWithUser = string.contains("@") && string.endsWith("{host}");
 
@@ -689,10 +782,12 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
     }
   }
 
+  @Override
   public String getSystemName() {
     return this.systemName;
   }
 
+  @Override
   public void setSystemName(final String systemName) {
     checkReadOnly();
     this.systemName = systemName;
@@ -704,14 +799,16 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
    *
    * @since GemFire 4.0
    */
+  @Override
   public CacheServerConfig[] getCacheServerConfigs() {
     return (CacheServerConfig[]) this.cacheServerConfigs
-        .toArray(new CacheServerConfig[this.cacheServerConfigs.size()]);
+        .toArray(new CacheServerConfig[0]);
   }
 
+  @Override
   public CacheVmConfig[] getCacheVmConfigs() {
     return (CacheVmConfig[]) this.cacheServerConfigs
-        .toArray(new CacheVmConfig[this.cacheServerConfigs.size()]);
+        .toArray(new CacheVmConfig[0]);
   }
 
   /**
@@ -719,12 +816,14 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
    *
    * @since GemFire 4.0
    */
+  @Override
   public CacheServerConfig createCacheServerConfig() {
     CacheServerConfig config = new CacheServerConfigImpl();
     addCacheServerConfig(config);
     return config;
   }
 
+  @Override
   public CacheVmConfig createCacheVmConfig() {
     return (CacheVmConfig) createCacheServerConfig();
   }
@@ -754,10 +853,12 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
    *
    * @since GemFire 4.0
    */
+  @Override
   public void removeCacheServerConfig(CacheServerConfig managerConfig) {
     removeCacheVmConfig((CacheVmConfig) managerConfig);
   }
 
+  @Override
   public void removeCacheVmConfig(CacheVmConfig managerConfig) {
     checkReadOnly();
     this.cacheServerConfigs.remove(managerConfig);
@@ -767,6 +868,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
   /**
    * Returns the configurations of all managed distribution locators
    */
+  @Override
   public DistributionLocatorConfig[] getDistributionLocatorConfigs() {
     if (this.system != null) {
       DistributionLocator[] locators = this.system.getDistributionLocators();
@@ -785,6 +887,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
   /**
    * Creates the configuration for a DistributionLocator
    */
+  @Override
   public DistributionLocatorConfig createDistributionLocatorConfig() {
     checkReadOnly();
     DistributionLocatorConfig config = new DistributionLocatorConfigImpl();
@@ -804,6 +907,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
   /**
    * Removes the configuration for a DistributionLocator
    */
+  @Override
   public void removeDistributionLocatorConfig(DistributionLocatorConfig config) {
     checkReadOnly();
     this.locatorConfigs.remove(config);
@@ -818,10 +922,12 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
    * @param bindAddress host name or IP address to validate
    */
   public static boolean validateBindAddress(String bindAddress) {
-    if (bindAddress == null || bindAddress.length() == 0)
+    if (bindAddress == null || bindAddress.length() == 0) {
       return true;
-    if (InetAddressUtil.validateHost(bindAddress) == null)
+    }
+    if (validateHost(bindAddress) == null) {
       return false;
+    }
     return true;
   }
 
@@ -842,6 +948,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
   /**
    * Registers listener for notification of changes in this config.
    */
+  @Override
   public void addListener(ConfigListener listener) {
     synchronized (this.listeners) {
       this.listeners.add(listener);
@@ -851,6 +958,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
   /**
    * Removes previously registered listener of this config.
    */
+  @Override
   public void removeListener(ConfigListener listener) {
     synchronized (this.listeners) {
       this.listeners.remove(listener);
@@ -866,50 +974,60 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
   private boolean sslAuthenticationRequired = DistributionConfig.DEFAULT_SSL_REQUIRE_AUTHENTICATION;
   private Properties sslProperties = new Properties();
 
+  @Override
   public boolean isSSLEnabled() {
     return this.sslEnabled;
   }
 
+  @Override
   public void setSSLEnabled(boolean enabled) {
     checkReadOnly();
     this.sslEnabled = enabled;
     configChanged();
   }
 
+  @Override
   public String getSSLProtocols() {
     return this.sslProtocols;
   }
 
+  @Override
   public void setSSLProtocols(String protocols) {
     checkReadOnly();
     this.sslProtocols = protocols;
     configChanged();
   }
 
+  @Override
   public String getSSLCiphers() {
     return this.sslCiphers;
   }
 
+  @Override
   public void setSSLCiphers(String ciphers) {
     checkReadOnly();
     this.sslCiphers = ciphers;
     configChanged();
   }
 
+  @Override
   public boolean isSSLAuthenticationRequired() {
     return this.sslAuthenticationRequired;
   }
 
+  @Override
   public void setSSLAuthenticationRequired(boolean authRequired) {
     checkReadOnly();
     this.sslAuthenticationRequired = authRequired;
     configChanged();
   }
 
+  @Override
   public Properties getSSLProperties() {
     return this.sslProperties;
   }
 
+  @Override
   public void setSSLProperties(Properties sslProperties) {
     checkReadOnly();
     this.sslProperties = sslProperties;
@@ -919,12 +1037,14 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
     configChanged();
   }
 
+  @Override
   public void addSSLProperty(String key, String value) {
     checkReadOnly();
     this.sslProperties.put(key, value);
     configChanged();
   }
 
+  @Override
   public void removeSSLProperty(String key) {
     checkReadOnly();
     this.sslProperties.remove(key);
@@ -939,40 +1059,48 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
     return gfSecurityProperties;
   }
 
+  @Override
   public String getLogFile() {
     return this.logFile;
   }
 
+  @Override
   public void setLogFile(String logFile) {
     checkReadOnly();
     this.logFile = logFile;
     configChanged();
   }
 
+  @Override
   public String getLogLevel() {
     return this.logLevel;
   }
 
+  @Override
   public void setLogLevel(String logLevel) {
     checkReadOnly();
     this.logLevel = logLevel;
     configChanged();
   }
 
+  @Override
   public int getLogDiskSpaceLimit() {
     return this.logDiskSpaceLimit;
   }
 
+  @Override
   public void setLogDiskSpaceLimit(int limit) {
     checkReadOnly();
     this.logDiskSpaceLimit = limit;
     configChanged();
   }
 
+  @Override
   public int getLogFileSizeLimit() {
     return this.logFileSizeLimit;
   }
 
+  @Override
   public void setLogFileSizeLimit(int limit) {
     checkReadOnly();
     this.logFileSizeLimit = limit;
@@ -982,6 +1110,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
   /**
    * Returns the refreshInterval in seconds
    */
+  @Override
   public int getRefreshInterval() {
     return this.refreshInterval;
   }
@@ -989,6 +1118,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
   /**
    * Sets the refreshInterval in seconds
    */
+  @Override
   public void setRefreshInterval(int timeInSecs) {
     checkReadOnly();
     this.refreshInterval = timeInSecs;
@@ -1000,12 +1130,13 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
    *
    * @throws IllegalArgumentException If configuration is not valid
    */
+  @Override
   public void validate() {
     if (this.getMcastPort() < MIN_MCAST_PORT || this.getMcastPort() > MAX_MCAST_PORT) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DistributedSystemConfigImpl_MCASTPORT_MUST_BE_AN_INTEGER_INCLUSIVELY_BETWEEN_0_AND_1
-              .toLocalizedString(
-                  new Object[] {Integer.valueOf(MIN_MCAST_PORT), Integer.valueOf(MAX_MCAST_PORT)}));
+          String.format("mcastPort must be an integer inclusively between %s and %s",
+
+              new Object[] {Integer.valueOf(MIN_MCAST_PORT), Integer.valueOf(MAX_MCAST_PORT)}));
     }
 
     LogLevel.getLogWriterLevel(this.logLevel);
@@ -1013,16 +1144,16 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
     if (this.logFileSizeLimit < MIN_LOG_FILE_SIZE_LIMIT
         || this.logFileSizeLimit > MAX_LOG_FILE_SIZE_LIMIT) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DistributedSystemConfigImpl_LOGFILESIZELIMIT_MUST_BE_AN_INTEGER_BETWEEN_0_AND_1
-              .toLocalizedString(new Object[] {Integer.valueOf(MIN_LOG_FILE_SIZE_LIMIT),
+          String.format("LogFileSizeLimit must be an integer between %s and %s",
+              new Object[] {Integer.valueOf(MIN_LOG_FILE_SIZE_LIMIT),
                   Integer.valueOf(MAX_LOG_FILE_SIZE_LIMIT)}));
     }
 
     if (this.logDiskSpaceLimit < MIN_LOG_DISK_SPACE_LIMIT
         || this.logDiskSpaceLimit > MAX_LOG_DISK_SPACE_LIMIT) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DistributedSystemConfigImpl_LOGDISKSPACELIMIT_MUST_BE_AN_INTEGER_BETWEEN_0_AND_1
-              .toLocalizedString(new Object[] {Integer.valueOf(MIN_LOG_DISK_SPACE_LIMIT),
+          String.format("LogDiskSpaceLimit must be an integer between %s and %s",
+              new Object[] {Integer.valueOf(MIN_LOG_DISK_SPACE_LIMIT),
                   Integer.valueOf(MAX_LOG_DISK_SPACE_LIMIT)}));
     }
 
@@ -1085,6 +1216,9 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
     buf.append(lf);
     buf.append("  " + DISABLE_TCP + "=");
     buf.append(String.valueOf(this.disableTcp));
+    buf.append(lf);
+    buf.append("  " + DISABLE_JMX + "=");
+    buf.append(disableJmx);
     buf.append(lf);
     buf.append("  " + DISABLE_AUTO_RECONNECT + "=");
     buf.append(String.valueOf(this.disableAutoReconnect));

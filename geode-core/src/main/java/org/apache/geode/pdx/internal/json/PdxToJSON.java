@@ -27,9 +27,10 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonGenerator.Feature;
-import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.internal.EnumInfo;
@@ -39,6 +40,8 @@ import org.apache.geode.pdx.internal.EnumInfo.PdxInstanceEnumInfo;
  * This class converts a PdxInstance into a JSON document.
  */
 public class PdxToJSON {
+
+  @MutableForTesting
   public static boolean PDXTOJJSON_UNQUOTEFIELDNAMES =
       Boolean.getBoolean("pdxToJson.unQuoteFieldNames");
   private PdxInstance m_pdxInstance;
@@ -49,8 +52,7 @@ public class PdxToJSON {
 
   public String getJSON() {
     JsonFactory jf = new JsonFactory();
-    // OutputStream os = new ByteArrayOutputStream();
-    HeapDataOutputStream hdos = new HeapDataOutputStream(org.apache.geode.internal.Version.CURRENT);
+    HeapDataOutputStream hdos = new HeapDataOutputStream(Version.CURRENT);
     try {
       JsonGenerator jg = jf.createJsonGenerator(hdos, JsonEncoding.UTF8);
       enableDisableJSONGeneratorFeature(jg);
@@ -66,7 +68,7 @@ public class PdxToJSON {
 
   public byte[] getJSONByteArray() {
     JsonFactory jf = new JsonFactory();
-    HeapDataOutputStream hdos = new HeapDataOutputStream(org.apache.geode.internal.Version.CURRENT);
+    HeapDataOutputStream hdos = new HeapDataOutputStream(Version.CURRENT);
     try {
       JsonGenerator jg = jf.createJsonGenerator(hdos, JsonEncoding.UTF8);
       enableDisableJSONGeneratorFeature(jg);
@@ -83,7 +85,6 @@ public class PdxToJSON {
   private void enableDisableJSONGeneratorFeature(JsonGenerator jg) {
     jg.enable(Feature.ESCAPE_NON_ASCII);
     jg.disable(Feature.AUTO_CLOSE_TARGET);
-    jg.setPrettyPrinter(new DefaultPrettyPrinter());
     if (PDXTOJJSON_UNQUOTEFIELDNAMES)
       jg.disable(Feature.QUOTE_FIELD_NAMES);
   }
@@ -152,7 +153,7 @@ public class PdxToJSON {
 
     jg.writeStartObject();
 
-    Iterator iter = (Iterator) map.entrySet().iterator();
+    Iterator iter = map.entrySet().iterator();
     while (iter.hasNext()) {
       Map.Entry entry = (Map.Entry) iter.next();
 
@@ -224,20 +225,9 @@ public class PdxToJSON {
       jg.writeEndArray();
     } else {
       throw new IllegalStateException(
-          "PdxInstance returns unknwon pdxfield " + pf + " for type " + value);
+          "PdxInstance returns unknown pdxfield " + pf + " for type " + value);
     }
   }
-
-  private <T> void getJSONStringFromArray1(JsonGenerator jg, T[] array, String pf)
-      throws JsonGenerationException, IOException {
-    jg.writeStartArray();
-
-    for (T obj : array) {
-      writeValue(jg, obj, pf);
-    }
-    jg.writeEndArray();
-  }
-
 
   private void getJSONStringFromCollection(JsonGenerator jg, Collection<?> coll, String pf)
       throws JsonGenerationException, IOException {

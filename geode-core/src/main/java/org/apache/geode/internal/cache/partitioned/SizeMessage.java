@@ -40,10 +40,10 @@ import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegion.SizeEntry;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * This message is used to determine the number of Entries in a Region, or its size.
@@ -122,8 +122,9 @@ public class SizeMessage extends PartitionMessage {
   }
 
   @Override
-  protected void setBooleans(short s, DataInput in) throws ClassNotFoundException, IOException {
-    super.setBooleans(s, in);
+  protected void setBooleans(short s, DataInput in,
+      DeserializationContext context) throws ClassNotFoundException, IOException {
+    super.setBooleans(s, in, context);
     this.estimate = ((s & ESTIMATE) != 0);
   }
 
@@ -159,25 +160,22 @@ public class SizeMessage extends PartitionMessage {
         SizeReplyMessage.send(getSender(), getProcessorId(), dm, sizes);
       } // datastore exists
       else {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.SizeMessage_SIZEMESSAGE_DATA_STORE_NOT_CONFIGURED_FOR_THIS_MEMBER));
+        logger.warn("SizeMessage: data store not configured for this member");
         ReplyMessage.send(getSender(), getProcessorId(),
             new ReplyException(new ForceReattemptException(
-                LocalizedStrings.SizeMessage_0_1_NO_DATASTORE_HERE_2.toLocalizedString())),
+                "no datastore here")),
             dm, r.isInternalRegion());
       }
     } else {
       if (logger.isDebugEnabled()) {
         // Note that this is more likely to happen with this message
         // because of it returning false from failIfRegionMissing.
-        logger.debug(LocalizedMessage.create(
-            LocalizedStrings.SizeMessage_SIZEMESSAGE_REGION_NOT_FOUND_FOR_THIS_MEMBER, regionId));
+        logger.debug("SizeMessage: Region {} not found for this member", regionId);
       }
       ReplyMessage.send(getSender(), getProcessorId(),
           new ReplyException(new ForceReattemptException(
-              LocalizedStrings.SizeMessage_0_COULD_NOT_FIND_PARTITIONED_REGION_WITH_ID_1
-                  .toLocalizedString(
-                      new Object[] {dm.getDistributionManagerId(), Integer.valueOf(regionId)}))),
+              String.format("%s : could not find partitioned region with Id %s",
+                  dm.getDistributionManagerId(), Integer.valueOf(regionId)))),
           dm, r != null && r.isInternalRegion());
     }
     // Unless there was an exception thrown, this message handles sending the
@@ -191,19 +189,22 @@ public class SizeMessage extends PartitionMessage {
     buff.append("; bucketIds=").append(this.bucketIds);
   }
 
+  @Override
   public int getDSFID() {
     return PR_SIZE_MESSAGE;
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.bucketIds = DataSerializer.readArrayList(in);
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     DataSerializer.writeArrayList(this.bucketIds, out);
   }
 
@@ -238,28 +239,30 @@ public class SizeMessage extends PartitionMessage {
     @Override
     public void process(final DistributionManager dm, final ReplyProcessor21 processor) {
       final long startTime = getTimestamp();
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM, "{} process invoking reply processor with processorId: {}",
-            getClass().getName(), this.processorId);
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE,
+            "{} process invoking reply processor with processorId: {}", getClass().getName(),
+            this.processorId);
       }
 
       if (processor == null) {
-        if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.trace(LogMarker.DM, "{} processor not found", getClass().getName());
+        if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+          logger.trace(LogMarker.DM_VERBOSE, "{} processor not found", getClass().getName());
         }
         return;
       }
       processor.process(this);
 
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM, "{} processed {}", processor, this);
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE, "{} processed {}", processor, this);
       }
       dm.getStats().incReplyMessageTime(DistributionStats.getStatTime() - startTime);
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       DataSerializer.writeObject(this.bucketSizes, out);
     }
 
@@ -269,8 +272,9 @@ public class SizeMessage extends PartitionMessage {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.bucketSizes = DataSerializer.readObject(in);
     }
 

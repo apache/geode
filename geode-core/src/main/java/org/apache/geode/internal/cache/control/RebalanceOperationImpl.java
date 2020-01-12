@@ -36,12 +36,12 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.control.RebalanceOperation;
 import org.apache.geode.cache.control.RebalanceResults;
 import org.apache.geode.cache.partition.PartitionRebalanceInfo;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.partitioned.PartitionedRegionRebalanceOp;
 import org.apache.geode.internal.cache.partitioned.rebalance.CompositeDirector;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Implements {@code RebalanceOperation} for rebalancing Cache resources.
@@ -87,7 +87,7 @@ public class RebalanceOperationImpl implements RebalanceOperation {
 
             if (region.isFixedPartitionedRegion()) {
               if (Boolean.getBoolean(
-                  DistributionConfig.GEMFIRE_PREFIX + "DISABLE_MOVE_PRIMARIES_ON_STARTUP")) {
+                  GeodeGlossary.GEMFIRE_PREFIX + "DISABLE_MOVE_PRIMARIES_ON_STARTUP")) {
                 PartitionedRegionRebalanceOp prOp = new PartitionedRegionRebalanceOp(region,
                     simulation, new CompositeDirector(false, false, false, true), true, true,
                     cancelled, stats);
@@ -125,6 +125,7 @@ public class RebalanceOperationImpl implements RebalanceOperation {
 
       try {
         Future<RebalanceResults> future = ex.submit(new Callable<RebalanceResults>() {
+          @Override
           public RebalanceResults call() {
             try {
               RebalanceResultsImpl results = new RebalanceResultsImpl();
@@ -168,6 +169,7 @@ public class RebalanceOperationImpl implements RebalanceOperation {
     }
   }
 
+  @Override
   public boolean cancel() {
     cancelled.set(true);
 
@@ -185,6 +187,7 @@ public class RebalanceOperationImpl implements RebalanceOperation {
     return true;
   }
 
+  @Override
   public RebalanceResults getResults() throws CancellationException, InterruptedException {
     RebalanceResultsImpl results = new RebalanceResultsImpl();
     List<Future<RebalanceResults>> frlist = getFutureList();
@@ -206,6 +209,7 @@ public class RebalanceOperationImpl implements RebalanceOperation {
     return results;
   }
 
+  @Override
   public RebalanceResults getResults(long timeout, TimeUnit unit)
       throws CancellationException, TimeoutException, InterruptedException {
     long endTime = unit.toNanos(timeout) + System.nanoTime();
@@ -230,6 +234,7 @@ public class RebalanceOperationImpl implements RebalanceOperation {
     return results;
   }
 
+  @Override
   public boolean isCancelled() {
     return this.cancelled.get();
   }
@@ -242,6 +247,7 @@ public class RebalanceOperationImpl implements RebalanceOperation {
     return true;
   }
 
+  @Override
   public boolean isDone() {
     return this.cancelled.get() || isAllDone();
   }

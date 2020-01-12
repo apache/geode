@@ -19,12 +19,9 @@ import java.util.Optional;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.internal.cache.BucketRegion;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.lang.SystemPropertyHelper;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class LRUListWithSyncSorting extends AbstractEvictionList {
 
@@ -58,8 +55,8 @@ public class LRUListWithSyncSorting extends AbstractEvictionList {
     for (;;) {
       EvictionNode aNode = this.unlinkHeadEntry();
 
-      if (logger.isTraceEnabled(LogMarker.LRU_CLOCK)) {
-        logger.trace(LogMarker.LRU_CLOCK, "lru considering {}", aNode);
+      if (logger.isTraceEnabled(LogMarker.LRU_CLOCK_VERBOSE)) {
+        logger.trace(LogMarker.LRU_CLOCK_VERBOSE, "lru considering {}", aNode);
       }
 
       if (aNode == null) { // hit the end of the list
@@ -77,24 +74,21 @@ public class LRUListWithSyncSorting extends AbstractEvictionList {
       // use various criteria to determine if it's good enough
       // to return, or if we need to add it back to the list.
       if (maxEntries > 0 && numEvals > maxEntries) {
-        if (logger.isTraceEnabled(LogMarker.LRU_CLOCK)) {
-          logger.trace(LogMarker.LRU_CLOCK, LocalizedMessage
-              .create(LocalizedStrings.NewLRUClockHand_GREEDILY_PICKING_AN_AVAILABLE_ENTRY));
+        if (logger.isTraceEnabled(LogMarker.LRU_CLOCK_VERBOSE)) {
+          logger.trace(LogMarker.LRU_CLOCK_VERBOSE, "greedily picking an available entry");
         }
         getStatistics().incGreedyReturns(1);
         // fall through, return this node
       } else if (aNode.isRecentlyUsed()) {
-        if (logger.isTraceEnabled(LogMarker.LRU_CLOCK)) {
-          logger.trace(LogMarker.LRU_CLOCK, LocalizedMessage
-              .create(LocalizedStrings.NewLRUClockHand_SKIPPING_RECENTLY_USED_ENTRY, aNode));
+        if (logger.isTraceEnabled(LogMarker.LRU_CLOCK_VERBOSE)) {
+          logger.trace(LogMarker.LRU_CLOCK_VERBOSE, "skipping recently used entry {}", aNode);
         }
         aNode.unsetRecentlyUsed();
         appendEntry(aNode);
         continue; // keep looking
       } else {
-        if (logger.isTraceEnabled(LogMarker.LRU_CLOCK)) {
-          logger.trace(LogMarker.LRU_CLOCK, LocalizedMessage
-              .create(LocalizedStrings.NewLRUClockHand_RETURNING_UNUSED_ENTRY, aNode));
+        if (logger.isTraceEnabled(LogMarker.LRU_CLOCK_VERBOSE)) {
+          logger.trace(LogMarker.LRU_CLOCK_VERBOSE, "returning unused entry: {}", aNode);
         }
         // fall through, return this node
       }

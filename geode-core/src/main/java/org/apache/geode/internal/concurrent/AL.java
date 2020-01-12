@@ -117,7 +117,6 @@ public interface AL {
    * value. This could be sub-optimat when the update being done by multiple thread is not in in an
    * incremental fashion.
    *
-   * @param update
    */
   boolean setIfGreater(long update);
 }

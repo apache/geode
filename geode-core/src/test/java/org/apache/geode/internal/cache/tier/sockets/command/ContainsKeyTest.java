@@ -40,9 +40,9 @@ import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
-import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 
-@Category(UnitTest.class)
+@Category({ClientServerTest.class})
 public class ContainsKeyTest {
 
   private static final String REGION_NAME = "region1";
@@ -82,7 +82,7 @@ public class ContainsKeyTest {
     when(this.serverConnection.getErrorResponseMessage()).thenReturn(this.errorResponseMessage);
 
     Part regionNamePart = mock(Part.class);
-    when(regionNamePart.getString()).thenReturn(REGION_NAME);
+    when(regionNamePart.getCachedString()).thenReturn(REGION_NAME);
 
     Part keyPart = mock(Part.class);
     when(keyPart.getStringOrObject()).thenReturn(KEY);

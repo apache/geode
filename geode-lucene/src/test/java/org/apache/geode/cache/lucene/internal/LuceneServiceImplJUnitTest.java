@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.lucene.analysis.Analyzer;
@@ -52,13 +53,14 @@ import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueFactoryImpl;
 import org.apache.geode.cache.lucene.LuceneIndexFactory;
 import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.OperationExecutors;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.test.junit.categories.LuceneTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category({UnitTest.class, LuceneTest.class})
+@Category({LuceneTest.class})
 public class LuceneServiceImplJUnitTest {
   @Rule
   public ExpectedException thrown = ExpectedException.none();
@@ -123,6 +125,11 @@ public class LuceneServiceImplJUnitTest {
     when(((StatisticsFactory) ds).createAtomicStatistics(any(), anyString()))
         .thenReturn(luceneIndexStats);
     when(cache.getRegion(anyString())).thenReturn(region);
+    DistributionManager manager = mock(DistributionManager.class);
+    when(cache.getDistributionManager()).thenReturn(manager);
+    OperationExecutors executors = mock(OperationExecutors.class);
+    when(executors.getWaitingThreadPool()).thenReturn(Executors.newSingleThreadExecutor());
+    when(manager.getExecutors()).thenReturn(executors);
 
     RegionAttributes ratts = mock(RegionAttributes.class);
     when(region.getAttributes()).thenReturn(ratts);
@@ -157,6 +164,16 @@ public class LuceneServiceImplJUnitTest {
       PartitionedRegion userRegion =
           (PartitionedRegion) index.getCache().getRegion(index.getRegionPath());
       verify(userRegion, never()).addAsyncEventQueueId(anyString(), anyBoolean());
+    }
+
+    @Override
+    protected void validateLuceneIndexProfile(PartitionedRegion region) {
+
+    }
+
+    @Override
+    protected void validateAllMembersAreTheSameVersion(PartitionedRegion region) {
+
     }
   }
 }

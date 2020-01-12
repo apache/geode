@@ -25,10 +25,11 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.MEMBERSHIP_PORT_RANGE;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.TCP_PORT;
+import static org.apache.geode.internal.net.InetAddressUtils.toHostString;
 
 import java.util.Properties;
 
-import org.apache.geode.admin.internal.InetAddressUtil;
+import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.distributed.internal.DistributionConfig;
 
 
@@ -103,7 +104,7 @@ public interface DistributedSystemConfig extends Cloneable {
   String MCAST_ADDRESS_NAME = MCAST_ADDRESS;
 
   /** The default value of the "mcastAddress" property (239.192.81.1). */
-  String DEFAULT_MCAST_ADDRESS = InetAddressUtil.toString(DistributionConfig.DEFAULT_MCAST_ADDRESS);
+  String DEFAULT_MCAST_ADDRESS = toHostString(DistributionConfig.DEFAULT_MCAST_ADDRESS);
 
   /**
    * The name of the "membership-port-range" property
@@ -115,10 +116,11 @@ public interface DistributedSystemConfig extends Cloneable {
   /**
    * The default membership-port-range.
    * <p>
-   * Actual value is <code>[1024,65535]</code>.
+   * Actual value is <code>[41000,61000]</code>.
    *
    * @since GemFire 6.5
    */
+  @MakeImmutable
   int[] DEFAULT_MEMBERSHIP_PORT_RANGE = DistributionConfig.DEFAULT_MEMBERSHIP_PORT_RANGE;
 
   /**
@@ -196,6 +198,9 @@ public interface DistributedSystemConfig extends Cloneable {
 
   /** The default disable-tcp value (<code>false</code>) */
   boolean DEFAULT_DISABLE_TCP = DistributionConfig.DEFAULT_DISABLE_TCP;
+
+  /** The default disable-jmx value (<code>false</code>) */
+  boolean DEFAULT_DISABLE_JMX = DistributionConfig.DEFAULT_DISABLE_JMX;
 
   /** The default enable-network-partition-detection setting (<code>false</code>) */
   boolean DEFAULT_ENABLE_NETWORK_PARTITION_DETECTION =
@@ -367,6 +372,17 @@ public interface DistributedSystemConfig extends Cloneable {
    */
   boolean getDisableTcp();
 
+  /**
+   * Sets the disable-jmx property for the system. When JMX is disabled, Geode will not create
+   * MBeans.
+   */
+  void setDisableJmx(boolean flag);
+
+  /**
+   * Returns the disable-jmx property for the process. When JMX is disabled, Geode will not create
+   * MBeans.
+   */
+  boolean getDisableJmx();
 
   /**
    * Turns on network partition detection
@@ -478,14 +494,14 @@ public interface DistributedSystemConfig extends Cloneable {
   /**
    * Returns the name of the log file to which informational messages are written.
    *
-   * @see org.apache.geode.i18n.LogWriterI18n
+   * @see org.apache.geode.LogWriter
    */
   String getLogFile();
 
   /**
    * Sets the name of the log file to which informational messages are written.
    *
-   * @see org.apache.geode.i18n.LogWriterI18n
+   * @see org.apache.geode.LogWriter
    */
   void setLogFile(String logFile);
 

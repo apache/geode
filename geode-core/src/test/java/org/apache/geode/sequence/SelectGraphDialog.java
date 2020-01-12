@@ -14,14 +14,29 @@
  */
 package org.apache.geode.sequence;
 
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 
-import javax.swing.*;
+import javax.swing.AbstractListModel;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -48,6 +63,7 @@ public class SelectGraphDialog extends JDialog {
 
     JButton apply = new JButton("Apply");
     apply.addActionListener(new ActionListener() {
+      @Override
       public void actionPerformed(ActionEvent e) {
         selectedIds = (List) Arrays.asList(list.getSelectedValues());
         fireSelectionChanged();
@@ -57,6 +73,7 @@ public class SelectGraphDialog extends JDialog {
 
     JButton cancel = new JButton("Cancel");
     cancel.addActionListener(new ActionListener() {
+      @Override
       public void actionPerformed(ActionEvent e) {
         setVisible(false);
       }
@@ -71,14 +88,17 @@ public class SelectGraphDialog extends JDialog {
 
     final JTextField searchField = new JTextField(10);
     searchField.getDocument().addDocumentListener(new DocumentListener() {
+      @Override
       public void removeUpdate(DocumentEvent e) {
         doUpdate();
       }
 
+      @Override
       public void insertUpdate(DocumentEvent e) {
         doUpdate();
       }
 
+      @Override
       public void changedUpdate(DocumentEvent e) {
         doUpdate();
       }
@@ -126,10 +146,12 @@ public class SelectGraphDialog extends JDialog {
       this.filteredElements = new ArrayList<Object>(elements);
     }
 
+    @Override
     public int getSize() {
       return filteredElements.size();
     }
 
+    @Override
     public Object getElementAt(int index) {
       return filteredElements.get(index);
     }

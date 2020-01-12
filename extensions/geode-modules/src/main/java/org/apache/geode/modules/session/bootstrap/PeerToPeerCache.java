@@ -25,8 +25,7 @@ import org.apache.geode.modules.util.RegionHelper;
  */
 
 public class PeerToPeerCache extends AbstractCache {
-
-  protected static final String DEFAULT_CACHE_XML_FILE_NAME = "cache-peer.xml";
+  private static final String DEFAULT_CACHE_XML_FILE_NAME = "cache-peer.xml";
 
   static {
     instance = new PeerToPeerCache();
@@ -49,11 +48,11 @@ public class PeerToPeerCache extends AbstractCache {
     // Get the existing cache if any
     try {
       this.cache = CacheFactory.getAnyInstance();
-    } catch (CacheClosedException e) {
+    } catch (CacheClosedException ignored) {
     }
 
     // If no cache exists, create one
-    String message = null;
+    String message;
     if (this.cache == null || cache.isClosed()) {
       this.cache = new CacheFactory(createDistributedSystemProperties()).create();
       message = "Created ";

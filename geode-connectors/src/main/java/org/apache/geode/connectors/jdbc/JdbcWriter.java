@@ -15,6 +15,7 @@
 package org.apache.geode.connectors.jdbc;
 
 import java.sql.SQLException;
+import java.util.concurrent.atomic.LongAdder;
 
 import org.apache.geode.CopyHelper;
 import org.apache.geode.annotations.Experimental;
@@ -35,6 +36,8 @@ import org.apache.geode.pdx.PdxInstance;
  */
 @Experimental
 public class JdbcWriter<K, V> extends AbstractJdbcCallback implements CacheWriter<K, V> {
+
+  private final LongAdder totalEvents = new LongAdder();
 
   @SuppressWarnings("unused")
   public JdbcWriter() {
@@ -73,7 +76,11 @@ public class JdbcWriter<K, V> extends AbstractJdbcCallback implements CacheWrite
   }
 
   private void writeEvent(EntryEvent<K, V> event) {
-    checkInitialized((InternalCache) event.getRegion().getRegionService());
+    if (eventCanBeIgnored(event.getOperation())) {
+      return;
+    }
+    checkInitialized(event.getRegion());
+    totalEvents.add(1);
     try {
       getSqlHandler().write(event.getRegion(), event.getOperation(), event.getKey(),
           getPdxNewValue(event));
@@ -104,5 +111,9 @@ public class JdbcWriter<K, V> extends AbstractJdbcCallback implements CacheWrite
     } finally {
       cache.setPdxReadSerializedOverride(initialPdxReadSerialized);
     }
+  }
+
+  long getTotalEvents() {
+    return totalEvents.longValue();
   }
 }

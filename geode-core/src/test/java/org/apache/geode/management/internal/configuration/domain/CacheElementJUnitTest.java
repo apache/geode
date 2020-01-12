@@ -14,9 +14,10 @@
  */
 package org.apache.geode.management.internal.configuration.domain;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -25,7 +26,6 @@ import java.util.Map.Entry;
 import javax.xml.XMLConstants;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.XMLReader;
@@ -36,7 +36,6 @@ import org.apache.geode.internal.cache.xmlcache.CacheXmlParser;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlVersion;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils.XPathContext;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Test cases for {@link CacheElement}.
@@ -44,7 +43,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * @see CacheElement
  * @since GemFire 8.1
  */
-@Category(UnitTest.class)
 public class CacheElementJUnitTest {
 
   private Document loadSchema(final String schemaLocation) throws Exception {

@@ -15,29 +15,31 @@
 
 package org.apache.geode.cache.lucene.internal.xml;
 
-import static org.apache.geode.cache.lucene.internal.xml.LuceneXmlConstants.*;
-
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
+import static org.apache.geode.cache.lucene.internal.xml.LuceneXmlConstants.ANALYZER;
+import static org.apache.geode.cache.lucene.internal.xml.LuceneXmlConstants.FIELD;
+import static org.apache.geode.cache.lucene.internal.xml.LuceneXmlConstants.INDEX;
+import static org.apache.geode.cache.lucene.internal.xml.LuceneXmlConstants.NAME;
+import static org.apache.geode.cache.lucene.internal.xml.LuceneXmlConstants.NAMESPACE;
+import static org.apache.geode.cache.lucene.internal.xml.LuceneXmlConstants.PREFIX;
+import static org.apache.geode.cache.lucene.internal.xml.LuceneXmlConstants.SERIALIZER;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
-import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneSerializer;
-import org.apache.geode.internal.cache.xmlcache.*;
+import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
+import org.apache.geode.internal.cache.xmlcache.XmlGenerator;
+import org.apache.geode.internal.cache.xmlcache.XmlGeneratorUtils;
 
 public class LuceneIndexXmlGenerator implements XmlGenerator<Region<?, ?>> {
   private static final AttributesImpl EMPTY = new AttributesImpl();
 
-  private final LuceneIndex index;
+  private final LuceneIndexCreation index;
 
-  public LuceneIndexXmlGenerator(LuceneIndex index) {
+  public LuceneIndexXmlGenerator(LuceneIndexCreation index) {
     this.index = index;
   }
 

@@ -62,7 +62,6 @@ public interface FunctionContext<T1> {
    * The returned ResultSender is only valid for the duration of the function call. If the Function
    * needs to return a result, the result should be sent before the function exits.
    *
-   * @return ResultSender
    * @since GemFire 6.0
    */
 

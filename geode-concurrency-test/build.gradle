@@ -14,7 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
+
+apply from: "${project.projectDir}/../gradle/publish-java.gradle"
+
 dependencies {
-  compile 'junit:junit:' + project.'junit.version'
-  compile 'org.apache.logging.log4j:log4j-api:' + project.'log4j.version'
+  compile(platform(project(':boms:geode-all-bom')))
+  compile('junit:junit')
+  compile('org.apache.logging.log4j:log4j-api')
+  integrationTestCompile('org.assertj:assertj-core')
+}
+
+integrationTest {
+  // Some tests have inner tests that should be ignored
+  exclude "**/*\$*.class"
 }

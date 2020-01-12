@@ -32,14 +32,14 @@ public class FlushToDiskRequest extends CliLegacyMessage {
 
   public FlushToDiskRequest() {
     super();
-    this.flushToDiskFactory = new FlushToDiskFactory();
+    flushToDiskFactory = new FlushToDiskFactory();
   }
 
   FlushToDiskRequest(InternalDistributedMember sender, Set<InternalDistributedMember> recipients,
       int processorId, FlushToDiskFactory flushToDiskFactory) {
-    this.setSender(sender);
+    setSender(sender);
     setRecipients(recipients);
-    this.msgId = processorId;
+    msgId = processorId;
     this.flushToDiskFactory = flushToDiskFactory;
   }
 
@@ -53,5 +53,4 @@ public class FlushToDiskRequest extends CliLegacyMessage {
     flushToDiskFactory.createFlushToDisk(dm.getCache()).run();
     return flushToDiskFactory.createResponse(getSender());
   }
-
 }

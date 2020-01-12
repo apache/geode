@@ -41,4 +41,14 @@ public class ServerConnectionCollection {
   public void removeConnection(ServerConnection connection) {
     connectionSet.remove(connection);
   }
+
+  public boolean incrementConnectionsProcessing() {
+    if (!isTerminating) {
+      connectionsProcessing.incrementAndGet();
+
+      return true;
+    }
+
+    return false;
+  }
 }

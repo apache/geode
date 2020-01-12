@@ -14,8 +14,6 @@
  */
 package org.apache.geode.internal.datasource;
 
-/**
- */
 import java.sql.SQLException;
 
 import javax.sql.ConnectionEventListener;
@@ -24,8 +22,8 @@ import javax.sql.XADataSource;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * This class models a connection pool for transactional database connection. Extends the
@@ -49,9 +47,6 @@ public class TranxPoolCacheImpl extends AbstractPoolCache {
     initializePool();
   }
 
-  /**
-   *
-   */
   @Override
   void destroyPooledConnection(Object connectionObject) {
     try {
@@ -80,8 +75,7 @@ public class TranxPoolCacheImpl extends AbstractPoolCache {
         poolConn = m_xads.getXAConnection(configProps.getUser(), configProps.getPassword());
       } catch (SQLException sqx) {
         throw new PoolException(
-            LocalizedStrings.TranxPoolCacheImpl_TRANXPOOLCACHEIMPLGETNEWCONNECTION_EXCEPTION_IN_CREATING_NEW_TRANSACTION_POOLEDCONNECTION
-                .toLocalizedString(),
+            "TranxPoolCacheImpl::getNewConnection: Exception in creating new transaction PooledConnection",
             sqx);
       }
       poolConn.addConnectionEventListener((javax.sql.ConnectionEventListener) connEventListner);
@@ -92,8 +86,15 @@ public class TranxPoolCacheImpl extends AbstractPoolCache {
             "TranxPoolCacheImpl::getNewConnection: ConnectionPoolCache not intialized with XADatasource");
       }
       throw new PoolException(
-          LocalizedStrings.TranxPoolCacheImpl_TRANXPOOLCACHEIMPLGETNEWCONNECTION_CONNECTIONPOOLCACHE_NOT_INTIALIZED_WITH_XADATASOURCE
-              .toLocalizedString());
+          "TranxPoolCacheImpl::getNewConnection: ConnectionPoolCache not intialized with XADatasource");
     }
+  }
+
+  /**
+   * Used by unit tests
+   */
+  @VisibleForTesting
+  void setXADataSource(XADataSource xads) {
+    m_xads = xads;
   }
 }

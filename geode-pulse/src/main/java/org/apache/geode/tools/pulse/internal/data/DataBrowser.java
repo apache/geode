@@ -32,7 +32,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -87,7 +87,6 @@ public class DataBrowser {
    *
    * @param userId Logged in user's Unique Id
    * @param queryId Unique Id of Query to be deleted
-   * @return boolean
    */
   public boolean deleteQueryById(String userId, String queryId) {
 

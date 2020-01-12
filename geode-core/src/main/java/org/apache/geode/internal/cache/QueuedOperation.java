@@ -14,13 +14,17 @@
  */
 package org.apache.geode.internal.cache;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-import org.apache.geode.*;
-import org.apache.geode.cache.*;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.CacheWriterException;
+import org.apache.geode.cache.EntryNotFoundException;
+import org.apache.geode.cache.Operation;
+import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.offheap.annotations.Released;
 
 /**
@@ -71,8 +75,8 @@ public class QueuedOperation {
         lr.cmnClearRegion(re, false/* cacheWrite */, false/* useRVV */);
       } else {
         throw new IllegalStateException(
-            LocalizedStrings.QueuedOperation_THE_0_SHOULD_NOT_HAVE_BEEN_QUEUED
-                .toLocalizedString(this.op));
+            String.format("The %s should not have been queued.",
+                this.op));
       }
     } else {
       // it is an entry operation
@@ -106,11 +110,9 @@ public class QueuedOperation {
             // operation was rejected by the cache's concurrency control mechanism as being old
           } catch (EntryNotFoundException ignore) {
           } catch (CacheWriterException e) {
-            throw new Error(LocalizedStrings.QueuedOperation_CACHEWRITER_SHOULD_NOT_BE_CALLED
-                .toLocalizedString(), e);
+            throw new Error("CacheWriter should not be called", e);
           } catch (TimeoutException e) {
-            throw new Error(LocalizedStrings.QueuedOperation_DISTRIBUTEDLOCK_SHOULD_NOT_BE_ACQUIRED
-                .toLocalizedString(), e);
+            throw new Error("DistributedLock should not be acquired", e);
           }
         } else if (this.op.isInvalidate()) {
           ee.setOldValueFromRegion();
@@ -124,8 +126,8 @@ public class QueuedOperation {
           }
         } else {
           throw new IllegalStateException(
-              LocalizedStrings.QueuedOperation_THE_0_SHOULD_NOT_HAVE_BEEN_QUEUED
-                  .toLocalizedString(this.op));
+              String.format("The %s should not have been queued.",
+                  this.op));
         }
       } finally {
         ee.release();

@@ -15,30 +15,32 @@
 package org.apache.geode.internal.protocol.protobuf;
 
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.EOFException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.internal.protocol.TestExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufStreamProcessor;
-import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 
-@Category(UnitTest.class)
+@Category({ClientServerTest.class})
 public class ProtobufStreamProcessorTest {
-  @Test(expected = EOFException.class)
+  @Test(expected = IOException.class)
   public void receiveMessage() throws Exception {
     InputStream inputStream = new ByteArrayInputStream(new byte[0]);
     OutputStream outputStream = new ByteArrayOutputStream(2);
 
     ProtobufStreamProcessor protobufStreamProcessor = new ProtobufStreamProcessor();
-    InternalCache mockInternalCache = mock(InternalCache.class);
+    InternalCacheForClientAccess mockInternalCache = mock(InternalCacheForClientAccess.class);
+    when(mockInternalCache.getCacheForProcessingClientRequests()).thenReturn(mockInternalCache);
     protobufStreamProcessor.receiveMessage(inputStream, outputStream,
         TestExecutionContext.getNoAuthCacheExecutionContext(mockInternalCache));
   }

@@ -27,9 +27,9 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
-import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 
-@Category(UnitTest.class)
+@Category({ClientServerTest.class})
 public class ProtobufUtilitiesJUnitTest {
 
   private ProtobufSerializationService protobufSerializationService =

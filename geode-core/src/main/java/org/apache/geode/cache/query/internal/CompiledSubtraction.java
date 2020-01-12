@@ -22,6 +22,7 @@ public class CompiledSubtraction extends CompiledArithmetic implements OQLLexerT
     super(left, right, op);
   }
 
+  @Override
   public int getType() {
     return SUBTRACTION;
   }

@@ -81,7 +81,7 @@ To edit <%=vars.product_name%> cache properties such as the name and the charact
 
 ``` pre
 <Manager 
-  className="org.apache.geode.modules.session.catalina.Tomcat7DeltaSessionManager"
+  className="org.apache.geode.modules.session.catalina.Tomcat9DeltaSessionManager"
   name="value" 
   name="value" 
   ...
@@ -92,7 +92,7 @@ In the preceding code snippet, `name` is the property name and `value` is the pr
 
 ``` pre
 <Manager className="org.apache.geode.modules.session.catalina.
-      Tomcat7DeltaSessionManager" 
+      Tomcat9DeltaSessionManager" 
   regionAttributesId="PARTITION_REDUNDANT" 
   regionName="my_region" 
 /> 

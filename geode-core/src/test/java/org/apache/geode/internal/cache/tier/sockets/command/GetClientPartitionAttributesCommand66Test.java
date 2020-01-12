@@ -16,7 +16,9 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -31,9 +33,9 @@ import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 
-@Category(UnitTest.class)
+@Category({ClientServerTest.class})
 public class GetClientPartitionAttributesCommand66Test {
 
   private static final String REGION_NAME = "region1";
@@ -63,7 +65,7 @@ public class GetClientPartitionAttributesCommand66Test {
 
     when(this.message.getPart(eq(0))).thenReturn(this.regionNamePart);
 
-    when(this.regionNamePart.getString()).thenReturn(REGION_NAME);
+    when(this.regionNamePart.getCachedString()).thenReturn(REGION_NAME);
 
     when(this.serverConnection.getCache()).thenReturn(this.cache);
     when(this.serverConnection.getResponseMessage()).thenReturn(this.responseMessage);

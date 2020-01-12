@@ -23,7 +23,6 @@ import static org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes.TOK
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
@@ -57,12 +56,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.Region;
@@ -76,12 +69,7 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.pdx.internal.PdxInstanceEnum;
 import org.apache.geode.pdx.internal.PdxString;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
-@PowerMockIgnore("*.UnitTest")
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(TypeUtils.class)
 public class TypeUtilsJUnitTest {
   private final List<Integer> equalityOperators =
       Arrays.stream(new int[] {TOK_EQ, TOK_NE}).boxed().collect(Collectors.toList());
@@ -243,41 +231,31 @@ public class TypeUtilsJUnitTest {
 
   @Test
   public void isTypeConvertibleShouldDelegateToIsAssignableFromMethodForNonWrappedTypesAndNullSourceType() {
-    PowerMockito.spy(TypeUtils.class);
-
     // Special classes (Enum, Object, Class, Interface) and srcType as null.
     assertThat(TypeUtils.isTypeConvertible(null, Enum.class)).isTrue();
-    PowerMockito.verifyStatic(TypeUtils.class, times(1));
-    TypeUtils.isAssignableFrom(Enum.class, Object.class);
+    assertThat(TypeUtils.isAssignableFrom(Enum.class, Object.class)).isTrue();
 
     assertThat(TypeUtils.isTypeConvertible(null, Object.class)).isTrue();
-    PowerMockito.verifyStatic(TypeUtils.class, times(1));
-    TypeUtils.isAssignableFrom(Object.class, Object.class);
+    assertThat(TypeUtils.isAssignableFrom(Object.class, Object.class)).isTrue();
 
     assertThat(TypeUtils.isTypeConvertible(null, Class.class)).isTrue();
-    PowerMockito.verifyStatic(TypeUtils.class, times(1));
-    TypeUtils.isAssignableFrom(Class.class, Object.class);
+    assertThat(TypeUtils.isAssignableFrom(Class.class, Object.class)).isTrue();
 
     assertThat(TypeUtils.isTypeConvertible(null, TimeUnit.class)).isTrue();
-    PowerMockito.verifyStatic(TypeUtils.class, times(1));
-    TypeUtils.isAssignableFrom(TimeUnit.class, Object.class);
+    assertThat(TypeUtils.isAssignableFrom(TimeUnit.class, Object.class)).isTrue();
 
     assertThat(TypeUtils.isTypeConvertible(null, Serializable.class)).isTrue();
-    PowerMockito.verifyStatic(TypeUtils.class, times(1));
-    TypeUtils.isAssignableFrom(Serializable.class, Object.class);
+    assertThat(TypeUtils.isAssignableFrom(Serializable.class, Object.class)).isTrue();
 
     // Regular, non java wrapped classes.
     assertThat(TypeUtils.isTypeConvertible(AtomicInteger.class, Number.class)).isTrue();
-    PowerMockito.verifyStatic(TypeUtils.class, times(1));
-    TypeUtils.isAssignableFrom(AtomicInteger.class, Number.class);
+    assertThat(TypeUtils.isAssignableFrom(AtomicInteger.class, Number.class)).isTrue();
 
     assertThat(TypeUtils.isTypeConvertible(NumericComparator.class, Comparator.class)).isTrue();
-    PowerMockito.verifyStatic(TypeUtils.class, times(1));
-    TypeUtils.isAssignableFrom(NumericComparator.class, Comparator.class);
+    assertThat(TypeUtils.isAssignableFrom(NumericComparator.class, Comparator.class)).isTrue();
 
     assertThat(TypeUtils.isTypeConvertible(PartitionedRegion.class, LocalRegion.class)).isTrue();
-    PowerMockito.verifyStatic(TypeUtils.class, times(1));
-    TypeUtils.isAssignableFrom(PartitionedRegion.class, LocalRegion.class);
+    assertThat(TypeUtils.isAssignableFrom(PartitionedRegion.class, LocalRegion.class)).isTrue();
   }
 
   @Test
@@ -546,14 +524,7 @@ public class TypeUtilsJUnitTest {
   }
 
   @Test
-  public void comparingTemporalValuesShouldDelegateToTemporalComparator() {
-    // We use spies to track the execution of wanted and unwanted methods.
-    PowerMockito.spy(TypeUtils.class);
-    NumericComparator numericComparator = spy(NumericComparator.class);
-    TemporalComparator temporalComparator = spy(TemporalComparator.class);
-    PowerMockito.when(TypeUtils.getNumericComparator()).thenReturn(numericComparator);
-    PowerMockito.when(TypeUtils.getTemporalComparator()).thenReturn(temporalComparator);
-
+  public void comparingTemporalValuesIsEnabled() {
     // Spies to make sure that other comparison methods are not executed.
     Date beginningOfTimeAsDate = spy(new Date(0L));
     Date currentCalendarTimeAsDate = spy(Calendar.getInstance().getTime());
@@ -590,10 +561,6 @@ public class TypeUtilsJUnitTest {
             .isEqualTo(Boolean.TRUE);
         assertThat(TypeUtils.compare(originDate, originDate2, OQLLexerTokenTypes.TOK_NE))
             .isEqualTo(Boolean.FALSE);
-        verify((Comparable) originDate, times(0)).compareTo(any());
-        verify((Comparable) originDate2, times(0)).compareTo(any());
-        verify(temporalComparator, times(6)).compare(any(), any());
-        reset(temporalComparator);
       } catch (TypeMismatchException typeMismatchException) {
         throw new RuntimeException(typeMismatchException);
       }
@@ -613,10 +580,6 @@ public class TypeUtilsJUnitTest {
             .isEqualTo(Boolean.FALSE);
         assertThat(TypeUtils.compare(originDate, currentTime, OQLLexerTokenTypes.TOK_NE))
             .isEqualTo(Boolean.TRUE);
-        verify((Comparable) originDate, times(0)).compareTo(any());
-        verify((Comparable) currentTime, times(0)).compareTo(any());
-        verify(temporalComparator, times(6)).compare(any(), any());
-        reset(temporalComparator);
       } catch (TypeMismatchException typeMismatchException) {
         throw new RuntimeException(typeMismatchException);
       }
@@ -636,26 +599,14 @@ public class TypeUtilsJUnitTest {
             .isEqualTo(Boolean.TRUE);
         assertThat(TypeUtils.compare(currentTime, originDate, OQLLexerTokenTypes.TOK_NE))
             .isEqualTo(Boolean.TRUE);
-        verify((Comparable) originDate, times(0)).compareTo(any());
-        verify((Comparable) currentTime, times(0)).compareTo(any());
-        verify(temporalComparator, times(6)).compare(any(), any());
-        reset(temporalComparator);
       } catch (TypeMismatchException typeMismatchException) {
         throw new RuntimeException(typeMismatchException);
       }
     }));
-
-    // Extra check to verify that no other comparison methods were called.
-    verify(numericComparator, times(0)).compare(any(), any());
   }
 
   @Test
   public void comparingTemporalValuesShouldThrowExceptionWhenTheComparisonOperatorIsNotSupported() {
-    // We use spies to track the execution of wanted and unwanted methods.
-    PowerMockito.spy(TypeUtils.class);
-    TemporalComparator temporalComparator = spy(TemporalComparator.class);
-    PowerMockito.when(TypeUtils.getTemporalComparator()).thenReturn(temporalComparator);
-
     OQLLexerTokenTypes tempInstance = new OQLLexerTokenTypes() {};
     Field[] fields = OQLLexerTokenTypes.class.getDeclaredFields();
 
@@ -671,23 +622,14 @@ public class TypeUtilsJUnitTest {
         throw new RuntimeException(exception);
       }
     });
-
-    verify(temporalComparator, times(fields.length - comparisonOperators.size())).compare(any(),
-        any());
   }
 
   @Test
-  public void comparingTemporalValuesForWhichTheComparatorThrowsClassCastExceptionShouldReturnBooleanWhenTheComparisonOperatorIsSupported()
+  public void comparingTemporalValuesForWhichTheComparatorThrowsTypeMismatchExceptionShouldReturnBooleanWhenTheComparisonOperatorIsSupported()
       throws TypeMismatchException {
-    // We use spies to track the execution of wanted and unwanted methods.
-    PowerMockito.spy(TypeUtils.class);
-    TemporalComparator temporalComparator = mock(TemporalComparator.class);
-    PowerMockito.when(TypeUtils.getTemporalComparator()).thenReturn(temporalComparator);
-    when(temporalComparator.compare(any(), any())).thenThrow(new ClassCastException(""));
-
-    assertThat(TypeUtils.compare(new Date(), new Date(), OQLLexerTokenTypes.TOK_NE))
+    assertThat(TypeUtils.compare(new Date(12345), new Integer(12345), OQLLexerTokenTypes.TOK_NE))
         .isEqualTo(Boolean.TRUE);
-    assertThat(TypeUtils.compare(new Date(), new Date(), OQLLexerTokenTypes.TOK_EQ))
+    assertThat(TypeUtils.compare(new Date(12345), new Integer(12345), OQLLexerTokenTypes.TOK_EQ))
         .isEqualTo(Boolean.FALSE);
 
     OQLLexerTokenTypes tempInstance = new OQLLexerTokenTypes() {};
@@ -697,7 +639,7 @@ public class TypeUtilsJUnitTest {
       try {
         int token = field.getInt(tempInstance);
         if (!equalityOperators.contains(token)) {
-          assertThatThrownBy(() -> TypeUtils.compare(new Date(), new Date(), token))
+          assertThatThrownBy(() -> TypeUtils.compare(new Date(), new Integer(0), token))
               .isInstanceOf(TypeMismatchException.class).hasMessageMatching(
                   "^Unable to compare object of type ' (.*) ' with object of type ' (.*) '$");
         }
@@ -708,14 +650,7 @@ public class TypeUtilsJUnitTest {
   }
 
   @Test
-  public void comparingNumericValuesShouldDelegateToNumericComparator() {
-    // We use spies to track the execution of wanted and unwanted methods.
-    PowerMockito.spy(TypeUtils.class);
-    NumericComparator numericComparator = spy(NumericComparator.class);
-    TemporalComparator temporalComparator = spy(TemporalComparator.class);
-    PowerMockito.when(TypeUtils.getNumericComparator()).thenReturn(numericComparator);
-    PowerMockito.when(TypeUtils.getTemporalComparator()).thenReturn(temporalComparator);
-
+  public void comparingNumericValuesIsEnabled() {
     // Can't spy final classes, nor primitives.
     long lLong = Short.MIN_VALUE;
     long hLong = Short.MAX_VALUE;
@@ -768,8 +703,6 @@ public class TypeUtilsJUnitTest {
                 .isEqualTo(Boolean.FALSE);
             assertThat(TypeUtils.compare(lowest, lowest2, OQLLexerTokenTypes.TOK_GE))
                 .isEqualTo(Boolean.TRUE);
-            verify(numericComparator, times(6)).compare(any(), any());
-            reset(numericComparator);
           } catch (TypeMismatchException typeMismatchException) {
             throw new RuntimeException(typeMismatchException);
           }
@@ -790,8 +723,6 @@ public class TypeUtilsJUnitTest {
                 .isEqualTo(Boolean.FALSE);
             assertThat(TypeUtils.compare(lowestNumber, highestNumber, OQLLexerTokenTypes.TOK_NE))
                 .isEqualTo(Boolean.TRUE);
-            verify(numericComparator, times(6)).compare(any(), any());
-            reset(numericComparator);
           } catch (TypeMismatchException typeMismatchException) {
             throw new RuntimeException(typeMismatchException);
           }
@@ -812,24 +743,14 @@ public class TypeUtilsJUnitTest {
                 .isEqualTo(Boolean.TRUE);
             assertThat(TypeUtils.compare(highestNumber, lowestNumber, OQLLexerTokenTypes.TOK_GE))
                 .isEqualTo(Boolean.TRUE);
-            verify(numericComparator, times(6)).compare(any(), any());
-            reset(numericComparator);
           } catch (TypeMismatchException typeMismatchException) {
             throw new RuntimeException(typeMismatchException);
           }
         }));
-
-    // Extra check to verify that no other comparison methods were called.
-    verify(temporalComparator, times(0)).compare(any(), any());
   }
 
   @Test
   public void comparingNumericValuesShouldThrowExceptionWhenTheComparisonOperatorIsNotSupported() {
-    // We use spies to track the execution of wanted and unwanted methods.
-    PowerMockito.spy(TypeUtils.class);
-    NumericComparator numericComparator = spy(NumericComparator.class);
-    PowerMockito.when(TypeUtils.getNumericComparator()).thenReturn(numericComparator);
-
     OQLLexerTokenTypes tempInstance = new OQLLexerTokenTypes() {};
     Field[] fields = OQLLexerTokenTypes.class.getDeclaredFields();
 
@@ -845,20 +766,11 @@ public class TypeUtilsJUnitTest {
         throw new RuntimeException(exception);
       }
     });
-
-    verify(numericComparator, times(fields.length - comparisonOperators.size())).compare(any(),
-        any());
   }
 
   @Test
-  public void comparingNumericValuesForWhichTheComparatorThrowsClassCastExceptionShouldReturnBooleanWhenTheComparisonOperatorIsSupported()
+  public void comparingNumericValuesForWhichTheComparatorThrowsTypeMismatchExceptionShouldReturnBooleanWhenTheComparisonOperatorIsSupported()
       throws TypeMismatchException {
-    // We use spies to track the execution of wanted and unwanted methods.
-    PowerMockito.spy(TypeUtils.class);
-    NumericComparator numericComparator = mock(NumericComparator.class);
-    PowerMockito.when(TypeUtils.getNumericComparator()).thenReturn(numericComparator);
-    when(numericComparator.compare(any(), any())).thenThrow(new ClassCastException(""));
-
     assertThat(
         TypeUtils.compare(new Integer("20"), new BigDecimal("100"), OQLLexerTokenTypes.TOK_NE))
             .isEqualTo(Boolean.TRUE);
@@ -874,7 +786,7 @@ public class TypeUtilsJUnitTest {
         int token = field.getInt(tempInstance);
         if (!equalityOperators.contains(token)) {
           assertThatThrownBy(
-              () -> TypeUtils.compare(new Integer("20"), new BigDecimal("100"), token))
+              () -> TypeUtils.compare(new Integer("20"), new String("100"), token))
                   .isInstanceOf(TypeMismatchException.class).hasMessageMatching(
                       "^Unable to compare object of type ' (.*) ' with object of type ' (.*) '$");
         }
@@ -887,48 +799,30 @@ public class TypeUtilsJUnitTest {
   @Test
   public void comparingBooleanValuesShouldDelegateToBooleanCompareImplementation()
       throws TypeMismatchException {
-    // We use spies to track the execution of wanted and unwanted methods.
-    PowerMockito.spy(TypeUtils.class);
-    NumericComparator numericComparator = spy(NumericComparator.class);
-    TemporalComparator temporalComparator = spy(TemporalComparator.class);
-    PowerMockito.when(TypeUtils.getNumericComparator()).thenReturn(numericComparator);
-    PowerMockito.when(TypeUtils.getTemporalComparator()).thenReturn(temporalComparator);
-
     assertThat(TypeUtils.compare(true, Boolean.TRUE, OQLLexerTokenTypes.TOK_EQ))
         .isEqualTo(Boolean.TRUE);
-    PowerMockito.verifyStatic(TypeUtils.class, times(1));
-    TypeUtils.booleanCompare(true, Boolean.TRUE, OQLLexerTokenTypes.TOK_EQ);
+    assertThat(TypeUtils.booleanCompare(true, Boolean.TRUE, OQLLexerTokenTypes.TOK_EQ)).isTrue();
 
     assertThat(TypeUtils.compare(Boolean.TRUE, true, OQLLexerTokenTypes.TOK_NE))
         .isEqualTo(Boolean.FALSE);
-    PowerMockito.verifyStatic(TypeUtils.class, times(1));
-    TypeUtils.booleanCompare(true, Boolean.TRUE, OQLLexerTokenTypes.TOK_NE);
+    assertThat(TypeUtils.booleanCompare(true, Boolean.TRUE, OQLLexerTokenTypes.TOK_NE)).isFalse();
 
     assertThat(TypeUtils.compare(true, Boolean.FALSE, OQLLexerTokenTypes.TOK_EQ))
         .isEqualTo(Boolean.FALSE);
-    PowerMockito.verifyStatic(TypeUtils.class, times(1));
-    TypeUtils.booleanCompare(true, Boolean.FALSE, OQLLexerTokenTypes.TOK_EQ);
+    assertThat(TypeUtils.booleanCompare(true, Boolean.FALSE, OQLLexerTokenTypes.TOK_EQ)).isFalse();
 
     assertThat(TypeUtils.compare(Boolean.FALSE, true, OQLLexerTokenTypes.TOK_NE))
         .isEqualTo(Boolean.TRUE);
-    PowerMockito.verifyStatic(TypeUtils.class, times(1));
-    TypeUtils.booleanCompare(Boolean.FALSE, true, OQLLexerTokenTypes.TOK_NE);
-
-    // Extra check to verify that no other comparison methods were called.
-    verify(numericComparator, times(0)).compare(any(), any());
-    verify(temporalComparator, times(0)).compare(any(), any());
+    assertThat(TypeUtils.booleanCompare(Boolean.FALSE, true, OQLLexerTokenTypes.TOK_NE)).isTrue();
   }
 
   @Test
   public void comparingComparableInstancesShouldDelegateToDefaultCompareToMethod()
       throws TypeMismatchException {
-    PowerMockito.spy(TypeUtils.class);
     Comparable startValue = spy(new ComparableObject(0));
     Comparable finishValue = spy(new ComparableObject(10));
     NumericComparator numericComparator = spy(NumericComparator.class);
     TemporalComparator temporalComparator = spy(TemporalComparator.class);
-    PowerMockito.when(TypeUtils.getNumericComparator()).thenReturn(numericComparator);
-    PowerMockito.when(TypeUtils.getTemporalComparator()).thenReturn(temporalComparator);
 
     assertThat(TypeUtils.compare(startValue, startValue, OQLLexerTokenTypes.TOK_EQ))
         .isEqualTo(Boolean.TRUE);
@@ -1049,13 +943,10 @@ public class TypeUtilsJUnitTest {
   @Test
   public void comparingArbitraryObjectsShouldDelegateToDefaultEqualsMethod()
       throws TypeMismatchException {
-    PowerMockito.spy(TypeUtils.class);
     ArbitraryObject aValue = new ArbitraryObject("0");
     ArbitraryObject anotherValue = new ArbitraryObject("1");
     NumericComparator numericComparator = spy(NumericComparator.class);
     TemporalComparator temporalComparator = spy(TemporalComparator.class);
-    PowerMockito.when(TypeUtils.getNumericComparator()).thenReturn(numericComparator);
-    PowerMockito.when(TypeUtils.getTemporalComparator()).thenReturn(temporalComparator);
 
     assertThat(TypeUtils.compare(aValue, aValue, OQLLexerTokenTypes.TOK_EQ))
         .isEqualTo(Boolean.TRUE);

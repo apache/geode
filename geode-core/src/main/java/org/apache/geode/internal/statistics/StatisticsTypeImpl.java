@@ -14,11 +14,14 @@
  */
 package org.apache.geode.internal.statistics;
 
-import java.io.*;
-import java.util.*;
+import java.io.Reader;
+import java.util.HashMap;
 
-import org.apache.geode.*;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.StatisticDescriptor;
+import org.apache.geode.Statistics;
+import org.apache.geode.StatisticsType;
+import org.apache.geode.StatisticsTypeFactory;
+import org.apache.geode.annotations.Immutable;
 
 /**
  * Gathers together a number of {@link StatisticDescriptor statistics} into one logical type.
@@ -28,7 +31,8 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
  *
  * @since GemFire 3.0
  */
-public class StatisticsTypeImpl implements StatisticsType {
+@Immutable
+public class StatisticsTypeImpl implements ValidatingStatisticsType {
 
   /** The name of this statistics type */
   private final String name;
@@ -40,10 +44,7 @@ public class StatisticsTypeImpl implements StatisticsType {
   private final StatisticDescriptor[] stats;
 
   /** Maps a stat name to its StatisticDescriptor */
-  private final HashMap statsMap;
-
-  /** Contains the number of 32-bit statistics in this type. */
-  private final int intStatCount;
+  private final HashMap<String, StatisticDescriptor> statsMap;
 
   /** Contains the number of long statistics in this type. */
   private final int longStatCount;
@@ -56,8 +57,7 @@ public class StatisticsTypeImpl implements StatisticsType {
   /**
    * @see StatisticsTypeXml#read(Reader, StatisticsTypeFactory)
    */
-  public static StatisticsType[] fromXml(Reader reader, StatisticsTypeFactory factory)
-      throws IOException {
+  public static StatisticsType[] fromXml(Reader reader, StatisticsTypeFactory factory) {
     return (new StatisticsTypeXml()).read(reader, factory);
   }
 
@@ -76,116 +76,87 @@ public class StatisticsTypeImpl implements StatisticsType {
    *         <code>null</code>.
    */
   public StatisticsTypeImpl(String name, String description, StatisticDescriptor[] stats) {
-    this(name, description, stats, false);
-  }
-
-  /**
-   * Creates a new <code>StatisticsType</code> with the given name, description, and statistics.
-   *
-   * @param name The name of this statistics type (for example, <code>"DatabaseStatistics"</code>)
-   * @param description A description of this statistics type (for example, "Information about the
-   *        application's use of the database").
-   * @param stats Descriptions of the individual statistics grouped together in this statistics
-   *        type.
-   * @param wrapsSharedClass True if this type is a wrapper around a SharedClass??. False if its a
-   *        dynamic type created at run time.
-   *
-   * @throws NullPointerException If either <code>name</code> or <code>stats</code> is
-   *         <code>null</code>.
-   */
-  public StatisticsTypeImpl(String name, String description, StatisticDescriptor[] stats,
-      boolean wrapsSharedClass) {
     if (name == null) {
       throw new NullPointerException(
-          LocalizedStrings.StatisticsTypeImpl_CANNOT_HAVE_A_NULL_STATISTICS_TYPE_NAME
-              .toLocalizedString());
+          "Cannot have a null statistics type name.");
     }
 
     if (stats == null) {
       throw new NullPointerException(
-          LocalizedStrings.StatisticsTypeImpl_CANNOT_HAVE_A_NULL_STATISTIC_DESCRIPTORS
-              .toLocalizedString());
+          "Cannot have a null statistic descriptors.");
     }
     if (stats.length > StatisticsTypeFactory.MAX_DESCRIPTORS_PER_TYPE) {
       throw new IllegalArgumentException(
-          LocalizedStrings.StatisticsTypeImpl_THE_REQUESTED_DESCRIPTOR_COUNT_0_EXCEEDS_THE_MAXIMUM_WHICH_IS_1
-              .toLocalizedString(new Object[] {Integer.valueOf(stats.length),
+          String.format("The requested descriptor count %s exceeds the maximum which is  %s .",
+              new Object[] {Integer.valueOf(stats.length),
                   Integer.valueOf(StatisticsTypeFactory.MAX_DESCRIPTORS_PER_TYPE)}));
     }
 
     this.name = name;
     this.description = description;
     this.stats = stats;
-    this.statsMap = new HashMap(stats.length * 2);
-    int intCount = 0;
-    int longCount = 0;
-    int doubleCount = 0;
-    for (int i = 0; i < stats.length; i++) {
-      StatisticDescriptorImpl sd = (StatisticDescriptorImpl) stats[i];
-      if (sd.getTypeCode() == StatisticDescriptorImpl.INT) {
-        if (!wrapsSharedClass) {
-          sd.setId(intCount);
-        }
-        intCount++;
-      } else if (sd.getTypeCode() == StatisticDescriptorImpl.LONG) {
-        if (!wrapsSharedClass) {
-          sd.setId(longCount);
-        }
-        longCount++;
-      } else if (sd.getTypeCode() == StatisticDescriptorImpl.DOUBLE) {
-        if (!wrapsSharedClass) {
-          sd.setId(doubleCount);
-        }
-        doubleCount++;
-      }
-      Object previousValue = statsMap.put(stats[i].getName(), sd);
-      if (previousValue != null) {
-        throw new IllegalArgumentException(
-            LocalizedStrings.StatisticsTypeImpl_DUPLICATE_STATISTICDESCRIPTOR_NAMED_0
-                .toLocalizedString(stats[i].getName()));
+    this.statsMap = new HashMap<>(stats.length * 2);
+
+    longStatCount = addTypedDescriptorToMap(StatisticDescriptorImpl.LONG, 0);
+    doubleStatCount = addTypedDescriptorToMap(StatisticDescriptorImpl.DOUBLE, longStatCount);
+  }
+
+  private int addTypedDescriptorToMap(byte typeCode, int startOfSequentialIds) {
+    int count = 0;
+    for (StatisticDescriptor stat : stats) {
+      StatisticDescriptorImpl sd = (StatisticDescriptorImpl) stat;
+      if (sd.getTypeCode() == typeCode) {
+        sd.setId(startOfSequentialIds + count);
+        count++;
+        addDescriptorToMap(sd);
       }
     }
-    this.intStatCount = intCount;
-    this.longStatCount = longCount;
-    this.doubleStatCount = doubleCount;
+    return count;
+  }
+
+  private void addDescriptorToMap(StatisticDescriptor sd) {
+    Object previousValue = statsMap.put(sd.getName(), sd);
+    if (previousValue != null) {
+      throw new IllegalArgumentException(
+          String.format("Duplicate StatisticDescriptor named %s",
+              sd.getName()));
+    }
   }
 
   ////////////////////// StatisticsType Methods //////////////////////
 
+  @Override
   public String getName() {
     return this.name;
   }
 
+  @Override
   public String getDescription() {
     return this.description;
   }
 
+  @Override
   public StatisticDescriptor[] getStatistics() {
     return this.stats;
   }
 
+  @Override
   public int nameToId(String name) {
     return nameToDescriptor(name).getId();
   }
 
+  @Override
   public StatisticDescriptor nameToDescriptor(String name) {
-    StatisticDescriptorImpl stat = (StatisticDescriptorImpl) statsMap.get(name);
+    StatisticDescriptor stat = statsMap.get(name);
     if (stat == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.StatisticsTypeImpl_THERE_IS_NO_STATISTIC_NAMED_0
-              .toLocalizedString(name));
+          String.format("There is no statistic named %s",
+              name));
     }
     return stat;
   }
 
   ////////////////////// Instance Methods //////////////////////
-
-  /**
-   * Gets the number of statistics in this type that are ints.
-   */
-  public int getIntStatCount() {
-    return this.intStatCount;
-  }
 
   /**
    * Gets the number of statistics in this type that are longs.
@@ -248,5 +219,15 @@ public class StatisticsTypeImpl implements StatisticsType {
       }
     }
     return true;
+  }
+
+  @Override
+  public boolean isValidLongId(int id) {
+    return id < longStatCount;
+  }
+
+  @Override
+  public boolean isValidDoubleId(int id) {
+    return longStatCount <= id && id < longStatCount + doubleStatCount;
   }
 }

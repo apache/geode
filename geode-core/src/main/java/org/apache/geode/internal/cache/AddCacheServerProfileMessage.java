@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.BEFORE_INITIAL_IMAGE;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -27,7 +29,10 @@ import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.MessageWithReply;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.SerialDistributionMessage;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.cache.LocalRegion.InitializationLevel;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * OperationMessage synchronously propagates a change in the profile to another member. It is a
@@ -42,7 +47,8 @@ public class AddCacheServerProfileMessage extends SerialDistributionMessage
 
   @Override
   protected void process(ClusterDistributionManager dm) {
-    int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.BEFORE_INITIAL_IMAGE);
+    final InitializationLevel oldLevel =
+        LocalRegion.setThreadInitLevelRequirement(BEFORE_INITIAL_IMAGE);
     try {
       InternalCache cache = dm.getCache();
       // will be null if not initialized
@@ -93,7 +99,8 @@ public class AddCacheServerProfileMessage extends SerialDistributionMessage
 
   /** set the hasCacheServer flags for all regions in this cache */
   public void operateOnLocalCache(InternalCache cache) {
-    int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.BEFORE_INITIAL_IMAGE);
+    final InitializationLevel oldLevel =
+        LocalRegion.setThreadInitLevelRequirement(BEFORE_INITIAL_IMAGE);
     try {
       for (InternalRegion r : getAllRegions(cache)) {
         FilterProfile fp = r.getFilterProfile();
@@ -140,14 +147,16 @@ public class AddCacheServerProfileMessage extends SerialDistributionMessage
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     out.writeInt(this.processorId);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.processorId = in.readInt();
   }
 

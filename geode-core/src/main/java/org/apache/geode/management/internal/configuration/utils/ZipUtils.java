@@ -16,17 +16,14 @@ package org.apache.geode.management.internal.configuration.utils;
 
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Enumeration;
-import java.util.Stack;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
@@ -76,13 +73,16 @@ public class ZipUtils {
     try {
       while (zipEntries.hasMoreElements()) {
         ZipEntry zipEntry = zipEntries.nextElement();
-        String fileName = outputDirectoryPath + File.separator + zipEntry.getName();
+        File entryDestination = new File(outputDirectoryPath + File.separator + zipEntry.getName());
+
+        if (!entryDestination.toPath().normalize().startsWith(Paths.get(outputDirectoryPath))) {
+          throw new IOException("Zip entry contained path traversal");
+        }
 
         if (zipEntry.isDirectory()) {
-          FileUtils.forceMkdir(new File(fileName));
+          FileUtils.forceMkdir(entryDestination);
           continue;
         }
-        File entryDestination = new File(fileName);
         File parent = entryDestination.getParentFile();
         if (parent != null) {
           FileUtils.forceMkdir(parent);

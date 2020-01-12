@@ -16,11 +16,15 @@
 
 package org.apache.geode.internal.cache.tier.sockets;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 import org.apache.geode.cache.InterestResultPolicy;
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * Used to make InterestResultPolicy implement DataSerializableFixedID
@@ -33,19 +37,24 @@ public class InterestResultPolicyImpl extends InterestResultPolicy
   private static final long serialVersionUID = -7456596794818237831L;
 
   /** Should only be called by static field initialization in InterestResultPolicy */
-  public InterestResultPolicyImpl(String name) {
-    super(name);
+  public InterestResultPolicyImpl(String name, int ordinal) {
+    super(name, ordinal);
   }
 
+  @Override
   public int getDSFID() {
     return INTEREST_RESULT_POLICY;
   }
 
-  public void toData(DataOutput out) throws IOException {
+  @Override
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     out.writeByte(getOrdinal());
   }
 
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  @Override
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     // should never be called since DSFIDFactory.readInterestResultPolicy is used
     throw new UnsupportedOperationException();
   }

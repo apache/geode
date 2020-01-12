@@ -19,8 +19,8 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.admin.AdminDistributedSystem;
 import org.apache.geode.admin.ManagedEntity;
 import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Creates ManagedEntityController for administration (starting, stopping, etc.) of GemFire
@@ -37,11 +37,11 @@ public class ManagedEntityControllerFactory {
   static ManagedEntityController createManagedEntityController(
       final AdminDistributedSystem system) {
     if (isEnabledManagedEntityController()) {
-      logger.info(LogMarker.CONFIG,
+      logger.info(LogMarker.CONFIG_MARKER,
           "Local and remote OS command invocations are enabled for the Admin API.");
       return createEnabledManagedEntityController(system);
     } else {
-      logger.info(LogMarker.CONFIG,
+      logger.info(LogMarker.CONFIG_MARKER,
           "Local and remote OS command invocations are disabled for the Admin API.");
       return new DisabledManagedEntityController();
     }

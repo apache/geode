@@ -27,8 +27,7 @@ import org.apache.geode.admin.GemFireHealthConfig;
 import org.apache.geode.admin.RuntimeAdminException;
 import org.apache.geode.admin.internal.GemFireHealthImpl;
 import org.apache.geode.internal.admin.GfManagerAgent;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * The JMX "managed resource" that represents the health of GemFire. Basically, it provides the
@@ -110,8 +109,7 @@ public class GemFireHealthJmxImpl extends GemFireHealthImpl implements ManagedRe
 
     } catch (AdminException ex) {
       throw new RuntimeAdminException(
-          LocalizedStrings.GemFireHealthJmxImpl_WHILE_GETTING_THE_DISTRIBUTEDSYSTEMHEALTHCONFIG
-              .toLocalizedString(),
+          "While getting the DistributedSystemHealthConfig",
           ex);
     }
   }
@@ -127,8 +125,7 @@ public class GemFireHealthJmxImpl extends GemFireHealthImpl implements ManagedRe
 
     } catch (AdminException ex) {
       throw new RuntimeAdminException(
-          LocalizedStrings.GemFireHealthJmxImpl_WHILE_GETTING_THE_GEMFIREHEALTHCONFIG
-              .toLocalizedString(),
+          "While getting the GemFireHealthConfig",
           ex);
     }
   }
@@ -142,26 +139,32 @@ public class GemFireHealthJmxImpl extends GemFireHealthImpl implements ManagedRe
     MBeanUtil.ensureMBeanIsRegistered((ManagedResource) this.dsHealthConfig);
   }
 
+  @Override
   public String getMBeanName() {
     return this.mbeanName;
   }
 
+  @Override
   public ModelMBean getModelMBean() {
     return this.modelMBean;
   }
 
+  @Override
   public void setModelMBean(ModelMBean modelMBean) {
     this.modelMBean = modelMBean;
   }
 
+  @Override
   public ManagedResourceType getManagedResourceType() {
     return ManagedResourceType.GEMFIRE_HEALTH;
   }
 
+  @Override
   public ObjectName getObjectName() {
     return this.objectName;
   }
 
+  @Override
   public void cleanupResource() {
     close();
   }

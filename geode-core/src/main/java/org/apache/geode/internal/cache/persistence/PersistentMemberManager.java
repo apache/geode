@@ -28,13 +28,8 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.ProfileListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
-/**
- *
- */
 public class PersistentMemberManager {
   private static final Logger logger = LogService.getLogger();
 
@@ -53,8 +48,8 @@ public class PersistentMemberManager {
     cancelRevoke(pattern);
     synchronized (this) {
       if (revokedMembers.put(pattern, TOKEN) == null) {
-        logger.info(LocalizedMessage.create(LocalizedStrings.PersistenceAdvisorImpl_MEMBER_REVOKED,
-            pattern));
+        logger.info("The following persistent member has been revoked: {}",
+            pattern);
         for (MemberRevocationListener listener : revocationListeners) {
           listener.revoked(pattern);
         }
@@ -76,15 +71,17 @@ public class PersistentMemberManager {
       for (PersistentMemberPattern pattern : pendingRevokes.keySet()) {
         if (listener.matches(pattern)) {
           throw new RevokedPersistentDataException(
-              LocalizedStrings.PersistentMemberManager_Member_0_is_already_revoked
-                  .toLocalizedString(pattern));
+              String.format(
+                  "The persistent member id %s has been revoked in this distributed system. You cannot recover from disk files which have been revoked.",
+                  pattern));
         }
       }
       for (PersistentMemberPattern pattern : revokedMembers.keySet()) {
         if (listener.matches(pattern)) {
           throw new RevokedPersistentDataException(
-              LocalizedStrings.PersistentMemberManager_Member_0_is_already_revoked
-                  .toLocalizedString(pattern));
+              String.format(
+                  "The persistent member id %s has been revoked in this distributed system. You cannot recover from disk files which have been revoked.",
+                  pattern));
         }
       }
       for (PersistentMemberPattern pattern : recoveredRevokedMembers) {
@@ -129,20 +126,6 @@ public class PersistentMemberManager {
         }
       }
       return missingMemberIds;
-    }
-  }
-
-  /**
-   * Returns a set of the persistent ids that are running on this member.
-   */
-  public Set<PersistentMemberID> getPersistentIDs() {
-    synchronized (this) {
-      Set<PersistentMemberID> localData = new HashSet<PersistentMemberID>();
-      for (MemberRevocationListener listener : revocationListeners) {
-        String regionPath = listener.getRegionPath();
-        listener.addPersistentIDs(localData);
-      }
-      return localData;
     }
   }
 
@@ -209,11 +192,6 @@ public class PersistentMemberManager {
 
   public interface MemberRevocationListener {
     void revoked(PersistentMemberPattern pattern);
-
-    /**
-     * Add the persistent id(s) of this listener to the passed in set.
-     */
-    void addPersistentIDs(Set<PersistentMemberID> localData);
 
     /**
      * Return true if this is a listener for a resource that matches the persistent member pattern

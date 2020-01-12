@@ -15,12 +15,16 @@
 
 package org.apache.geode.internal.cache.tier.sockets;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.tier.MessageType;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * Class <code>ClientMarkerMessageImpl</code> is a marker message that is placed in the
@@ -53,6 +57,7 @@ public class ClientMarkerMessageImpl implements ClientMessage {
    */
   public ClientMarkerMessageImpl() {}
 
+  @Override
   public Message getMessage(CacheClientProxy proxy, boolean notify) throws IOException {
     Version clientVersion = proxy.getVersion();
     Message message = null;
@@ -74,42 +79,53 @@ public class ClientMarkerMessageImpl implements ClientMessage {
     return message;
   }
 
+  @Override
   public boolean shouldBeConflated() {
     return true;
   }
 
-  public void toData(DataOutput out) throws IOException {
+  @Override
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     DataSerializer.writeObject(this.eventId, out);
   }
 
+  @Override
   public int getDSFID() {
     return CLIENT_MARKER_MESSAGE_IMPL;
   }
 
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  @Override
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     this.eventId = (EventID) DataSerializer.readObject(in);
   }
 
+  @Override
   public EventID getEventId() {
     return this.eventId;
   }
 
+  @Override
   public String getRegionToConflate() {
     return "gemfire_reserved_region_name_for_durable_client_marker";
   }
 
+  @Override
   public Object getKeyToConflate() {
     // This method can be called by HARegionQueue.
     // Use this to identify the message type.
     return "marker";
   }
 
+  @Override
   public Object getValueToConflate() {
     // This method can be called by HARegionQueue
     // Use this to identify the message type.
     return "marker";
   }
 
+  @Override
   public void setLatestValue(Object value) {
     return;
   }

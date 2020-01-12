@@ -20,7 +20,7 @@
  * The container used must hava JAVA_HOME set in it's environment and must
  * have 'java' defined on the path. For example, the relevant Dockerfile
  * content could be:
- * 
+ *
  *   ENV JAVA_HOME=/opt/jdk1.8.0_u101
  *   ENV PATH=$PATH:$JAVA_HOME/bin
  *
@@ -38,7 +38,16 @@
  *                       The default is 'root'.
  */
 
-def dockerConfig = {
+apply plugin: 'com.github.pedjak.dockerized-test'
+
+
+if (project.hasProperty('parallelDunit')) {
+  def pwd = System.getenv('PWD')
+  def geodeDir = new File(pwd).getCanonicalPath()
+  project.ext.dunitDockerVolumes = ["${geodeDir}":geodeDir]
+}
+
+project.ext.dockerConfig = {
   maxParallelForks = dunitParallelForks.toInteger()
 
   docker {
@@ -79,6 +88,12 @@ def dockerConfig = {
         tmpEnv[pathIdx] = 'PATH_REMOVED='
       }
 
+      if (project.hasProperty('testJVM') && !testJVM.trim().isEmpty()) {
+        // Docker command is just 'java' so set to full path
+        tmpEnv << ("JAVA_HOME=${project.testJVM}" as String)
+      }
+
+
       // Unfortunately this snippet of code is here and is required by dev-tools/docker/base/entrypoint.sh.
       // This allows preserving the outer user inside the running container. Required for Jenkins
       // and other environments. There doesn't seem to be a way to pass this environment variable
@@ -93,21 +108,48 @@ def dockerConfig = {
 
       // Infer the index of this invocation
       def cmdList = cmd.getCmd()
+
+      if (project.hasProperty('testJVM') && !testJVM.trim().isEmpty()) {
+        // Docker command is just 'java' so set to full path
+        cmdList[0] = ("${project.testJVM}/bin/java" as String)
+      }
+
       def matcher = (cmdList[cmdList.length - 1] =~ /.*Executor (\d*).*/)
 
       def workdir = new File(cmd.getWorkingDir() + matcher[0][1])
       workdir.mkdirs()
       cmd.withWorkingDir(workdir.toString())
 
+      // copy the classpath file to the working dir
+      def classPathFileIndex = cmdList.findIndexOf { it =~ /^@.*gradle-worker-classpath.*txt$/ }
+      if (classPathFileIndex > 0) {
+        def dst = new File(workdir, "gradle-worker-classpath.txt")
+        if (!dst.exists()) {
+          def src = new File(cmdList[classPathFileIndex].substring(1))
+          dst.write(src.text)
+        }
+        cmdList[classPathFileIndex] = '@'+dst.toString()
+      }
+
       //println cmd
     }
   }
 }
-subprojects {
-  apply plugin: 'com.github.pedjak.dockerized-test'
 
-  if (project.hasProperty('parallelDunit')) {
-    distributedTest.configure(dockerConfig)
-    acceptanceTest.configure(dockerConfig)
-  }
+
+if (project.hasProperty('parallelDunit')) {
+  uiTest.configure(project.ext.dockerConfig)
+  repeatUnitTest.configure(project.ext.dockerConfig)
+
+  integrationTest.configure(project.ext.dockerConfig)
+  repeatIntegrationTest.configure(project.ext.dockerConfig)
+
+  distributedTest.configure(project.ext.dockerConfig)
+  repeatDistributedTest.configure(project.ext.dockerConfig)
+
+  upgradeTest.configure(project.ext.dockerConfig)
+  repeatUpgradeTest.configure(project.ext.dockerConfig)
+
+  acceptanceTest.configure(project.ext.dockerConfig)
+  repeatAcceptanceTest.configure(project.ext.dockerConfig)
 }

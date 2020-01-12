@@ -36,10 +36,10 @@ import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.InternalCacheEvent;
 import org.apache.geode.internal.cache.RegionQueue;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.offheap.annotations.Retained;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Handles distribution messaging for destroying a batch of entry in a queue region. In this message
@@ -102,7 +102,7 @@ public class BatchDestroyOperation extends DistributedCacheOperation {
         }
 
         // Optimized way
-        for (long k = (Long) this.key; k <= this.tailKey; k++) {
+        for (long k = (Long) this.key; k <= this.tailKey && this.tailKey != -1; k++) {
           try {
             for (GatewayEventFilter filter : rgn.getSerialGatewaySender()
                 .getGatewayEventFilters()) {
@@ -112,9 +112,10 @@ public class BatchDestroyOperation extends DistributedCacheOperation {
                   filter.afterAcknowledgement(eventForFilter);
                 }
               } catch (Exception e) {
-                logger.fatal(LocalizedMessage.create(
-                    LocalizedStrings.GatewayEventFilter_EXCEPTION_OCCURRED_WHILE_HANDLING_CALL_TO_0_AFTER_ACKNOWLEDGEMENT_FOR_EVENT_1,
-                    new Object[] {filter.toString(), eventForFilter}), e);
+                logger.fatal(String.format(
+                    "Exception occurred while handling call to %s.afterAcknowledgement for event %s:",
+                    new Object[] {filter.toString(), eventForFilter}),
+                    e);
               }
             }
             rgn.localDestroy(k, RegionQueue.WAN_QUEUE_TOKEN);
@@ -124,14 +125,41 @@ public class BatchDestroyOperation extends DistributedCacheOperation {
             }
           }
         }
+
+        // destroy dropped event from unprocessedKeys
+        if (this.tailKey == -1) {
+          SerialGatewaySenderEventProcessor ep = null;
+          int index = ((Long) this.key).intValue();
+          if (index == -1) {
+            // this is SerialGatewaySenderEventProcessor
+            ep = (SerialGatewaySenderEventProcessor) rgn.getSerialGatewaySender()
+                .getEventProcessor();
+          } else {
+            ConcurrentSerialGatewaySenderEventProcessor csgep =
+                (ConcurrentSerialGatewaySenderEventProcessor) rgn.getSerialGatewaySender()
+                    .getEventProcessor();
+            if (csgep != null && csgep.processors != null) {
+              ep = csgep.processors.get(index);
+            }
+          }
+          if (ep != null) {
+            // if sender is being shutdown, the ep could be null
+            boolean removed = ep.basicHandlePrimaryDestroy(ev.getEventId());
+            if (removed) {
+              if (isDebugEnabled) {
+                logger.debug("Removed a dropped event {} from unprocessedEvents.",
+                    (EntryEventImpl) event);
+              }
+            }
+          }
+        }
         this.appliedOperation = true;
       } catch (CacheWriterException e) {
         throw new Error(
-            LocalizedStrings.DestroyOperation_CACHEWRITER_SHOULD_NOT_BE_CALLED.toLocalizedString(),
+            "CacheWriter should not be called",
             e);
       } catch (TimeoutException e) {
-        throw new Error(LocalizedStrings.DestroyOperation_DISTRIBUTEDLOCK_SHOULD_NOT_BE_ACQUIRED
-            .toLocalizedString(), e);
+        throw new Error("DistributedLock should not be acquired", e);
       }
       return true;
     }
@@ -174,13 +202,15 @@ public class BatchDestroyOperation extends DistributedCacheOperation {
           .append(this.tailKey).append(" id=").append(this.eventId);
     }
 
+    @Override
     public int getDSFID() {
       return BATCH_DESTROY_MESSAGE;
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.eventId = (EventID) DataSerializer.readObject(in);
       this.key = DataSerializer.readObject(in);
       Boolean hasTailKey = DataSerializer.readBoolean(in);
@@ -190,8 +220,9 @@ public class BatchDestroyOperation extends DistributedCacheOperation {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       DataSerializer.writeObject(this.eventId, out);
       DataSerializer.writeObject(this.key, out);
       DataSerializer.writeBoolean(Boolean.TRUE, out);

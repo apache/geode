@@ -28,7 +28,8 @@ import java.util.AbstractQueue;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.concurrent.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
@@ -245,6 +246,7 @@ public class ForceableLinkedBlockingQueue<E> extends AbstractQueue<E>
    *
    * @return the number of elements in this queue
    */
+  @Override
   public int size() {
     return count.get();
   }
@@ -261,6 +263,7 @@ public class ForceableLinkedBlockingQueue<E> extends AbstractQueue<E>
    * inspecting {@code remainingCapacity} because it may be the case that another thread is about to
    * insert or remove an element.
    */
+  @Override
   public int remainingCapacity() {
     return capacity - count.get();
   }
@@ -272,6 +275,7 @@ public class ForceableLinkedBlockingQueue<E> extends AbstractQueue<E>
    * @throws InterruptedException {@inheritDoc}
    * @throws NullPointerException {@inheritDoc}
    */
+  @Override
   public void put(E e) throws InterruptedException {
     if (e == null)
       throw new NullPointerException();
@@ -336,6 +340,7 @@ public class ForceableLinkedBlockingQueue<E> extends AbstractQueue<E>
    * @throws InterruptedException {@inheritDoc}
    * @throws NullPointerException {@inheritDoc}
    */
+  @Override
   public boolean offer(E e, long timeout, TimeUnit unit) throws InterruptedException {
 
     if (e == null)
@@ -372,6 +377,7 @@ public class ForceableLinkedBlockingQueue<E> extends AbstractQueue<E>
    *
    * @throws NullPointerException if the specified element is null
    */
+  @Override
   public boolean offer(E e) {
     if (e == null)
       throw new NullPointerException();
@@ -397,6 +403,7 @@ public class ForceableLinkedBlockingQueue<E> extends AbstractQueue<E>
   }
 
 
+  @Override
   public E take() throws InterruptedException {
     E x;
     int c = -1;
@@ -419,6 +426,7 @@ public class ForceableLinkedBlockingQueue<E> extends AbstractQueue<E>
     return x;
   }
 
+  @Override
   public E poll(long timeout, TimeUnit unit) throws InterruptedException {
     E x = null;
     int c = -1;
@@ -444,6 +452,7 @@ public class ForceableLinkedBlockingQueue<E> extends AbstractQueue<E>
     return x;
   }
 
+  @Override
   public E poll() {
     final AtomicInteger count = this.count;
     if (count.get() == 0)
@@ -467,6 +476,7 @@ public class ForceableLinkedBlockingQueue<E> extends AbstractQueue<E>
     return x;
   }
 
+  @Override
   public E peek() {
     if (count.get() == 0)
       return null;
@@ -507,6 +517,7 @@ public class ForceableLinkedBlockingQueue<E> extends AbstractQueue<E>
    * @param o element to be removed from this queue, if present
    * @return {@code true} if this queue changed as a result of the call
    */
+  @Override
   public boolean remove(Object o) {
     if (o == null)
       return false;
@@ -537,6 +548,7 @@ public class ForceableLinkedBlockingQueue<E> extends AbstractQueue<E>
    *
    * @return an array containing all of the elements in this queue
    */
+  @Override
   public Object[] toArray() {
     fullyLock();
     try {
@@ -584,6 +596,7 @@ public class ForceableLinkedBlockingQueue<E> extends AbstractQueue<E>
    *         the runtime type of every element in this queue
    * @throws NullPointerException if the specified array is null
    */
+  @Override
   @SuppressWarnings("unchecked")
   public <T> T[] toArray(T[] a) {
     fullyLock();
@@ -616,6 +629,7 @@ public class ForceableLinkedBlockingQueue<E> extends AbstractQueue<E>
    * Atomically removes all of the elements from this queue. The queue will be empty after this call
    * returns.
    */
+  @Override
   public void clear() {
     fullyLock();
     try {
@@ -638,6 +652,7 @@ public class ForceableLinkedBlockingQueue<E> extends AbstractQueue<E>
    * @throws NullPointerException {@inheritDoc}
    * @throws IllegalArgumentException {@inheritDoc}
    */
+  @Override
   public int drainTo(Collection<? super E> c) {
     return drainTo(c, Integer.MAX_VALUE);
   }
@@ -648,6 +663,7 @@ public class ForceableLinkedBlockingQueue<E> extends AbstractQueue<E>
    * @throws NullPointerException {@inheritDoc}
    * @throws IllegalArgumentException {@inheritDoc}
    */
+  @Override
   public int drainTo(Collection<? super E> c, int maxElements) {
     if (c == null)
       throw new NullPointerException();
@@ -695,6 +711,7 @@ public class ForceableLinkedBlockingQueue<E> extends AbstractQueue<E>
    *
    * @return an iterator over the elements in this queue in proper sequence
    */
+  @Override
   public Iterator<E> iterator() {
     return new Itr();
   }
@@ -719,6 +736,7 @@ public class ForceableLinkedBlockingQueue<E> extends AbstractQueue<E>
       }
     }
 
+    @Override
     public boolean hasNext() {
       return current != null;
     }
@@ -740,6 +758,7 @@ public class ForceableLinkedBlockingQueue<E> extends AbstractQueue<E>
       }
     }
 
+    @Override
     public E next() {
       fullyLock();
       try {
@@ -755,6 +774,7 @@ public class ForceableLinkedBlockingQueue<E> extends AbstractQueue<E>
       }
     }
 
+    @Override
     public void remove() {
       if (lastRet == null)
         throw new IllegalStateException();

@@ -39,16 +39,20 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.MessageWithReply;
+import org.apache.geode.distributed.internal.OperationExecutors;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.execute.FunctionContextImpl;
-import org.apache.geode.internal.cache.execute.FunctionStats;
 import org.apache.geode.internal.cache.execute.MemberFunctionResultSender;
 import org.apache.geode.internal.cache.execute.MultiRegionFunctionContextImpl;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.cache.execute.metrics.FunctionStats;
+import org.apache.geode.internal.cache.execute.metrics.FunctionStatsManager;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class MemberFunctionStreamingMessage extends DistributionMessage
     implements TransactionMessage, MessageWithReply {
@@ -112,7 +116,7 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
   }
 
   public MemberFunctionStreamingMessage(DataInput in) throws IOException, ClassNotFoundException {
-    fromData(in);
+    fromData(in, InternalDataSerializer.createDeserializationContext(in));
   }
 
   private TXStateProxy prepForTransaction(ClusterDistributionManager dm)
@@ -148,18 +152,21 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
     ReplyException rex = null;
     if (this.functionObject == null) {
       rex = new ReplyException(
-          new FunctionException(LocalizedStrings.ExecuteFunction_FUNCTION_NAMED_0_IS_NOT_REGISTERED
-              .toLocalizedString(this.functionName)));
+          new FunctionException(
+              String.format("Function named %s is not registered to FunctionService",
+                  this.functionName)));
 
       replyWithException(dm, rex);
       return;
     }
 
     FunctionStats stats =
-        FunctionStats.getFunctionStats(this.functionObject.getId(), dm.getSystem());
+        FunctionStatsManager.getFunctionStats(this.functionObject.getId(), dm.getSystem());
     TXStateProxy tx = null;
     InternalCache cache = dm.getCache();
 
+    long start = 0;
+    boolean startedFunctionExecution = false;
     try {
       tx = prepForTransaction(dm);
       ResultSender resultSender = new MemberFunctionResultSender(dm, this, this.functionObject);
@@ -169,12 +176,12 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
           if (checkCacheClosing(dm) || checkDSClosing(dm)) {
             if (dm.getCache() == null) {
               thr = new CacheClosedException(
-                  LocalizedStrings.PartitionMessage_REMOTE_CACHE_IS_CLOSED_0
-                      .toLocalizedString(dm.getId()));
+                  String.format("Remote cache is closed: %s",
+                      dm.getId()));
             } else {
               dm.getCache().getCacheClosedException(
-                  LocalizedStrings.PartitionMessage_REMOTE_CACHE_IS_CLOSED_0
-                      .toLocalizedString(dm.getId()));
+                  String.format("Remote cache is closed: %s",
+                      dm.getId()));
             }
             return;
           }
@@ -184,8 +191,9 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
       FunctionContextImpl context = new MultiRegionFunctionContextImpl(cache,
           this.functionObject.getId(), this.args, resultSender, regions, isReExecute);
 
-      long start = stats.startTime();
-      stats.startFunctionExecution(this.functionObject.hasResult());
+      start = stats.startFunctionExecution(this.functionObject.hasResult());
+      startedFunctionExecution = true;
+
       if (logger.isDebugEnabled()) {
         logger.debug("Executing Function: {} on remote member with context: {}",
             this.functionObject.getId(), context.toString());
@@ -193,8 +201,8 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
       this.functionObject.execute(context);
       if (!this.replyLastMsg && this.functionObject.hasResult()) {
         throw new FunctionException(
-            LocalizedStrings.ExecuteFunction_THE_FUNCTION_0_DID_NOT_SENT_LAST_RESULT
-                .toString(functionObject.getId()));
+            String.format("The function, %s, did not send last result",
+                functionObject.getId()));
       }
       stats.endFunctionExecution(start, this.functionObject.hasResult());
     } catch (FunctionException functionException) {
@@ -202,7 +210,9 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
         logger.debug("FunctionException occurred on remote member while executing Function: {}",
             this.functionObject.getId(), functionException);
       }
-      stats.endFunctionExecutionWithException(this.functionObject.hasResult());
+      if (startedFunctionExecution) {
+        stats.endFunctionExecutionWithException(start, this.functionObject.hasResult());
+      }
       rex = new ReplyException(functionException);
       replyWithException(dm, rex);
       // thr = functionException.getCause();
@@ -211,7 +221,9 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
       // throw new CacheClosedException("remote system shutting down");
       // thr = se; cache is closed, no point trying to send a reply
       thr = new FunctionInvocationTargetException(exception);
-      stats.endFunctionExecutionWithException(this.functionObject.hasResult());
+      if (startedFunctionExecution) {
+        stats.endFunctionExecutionWithException(start, this.functionObject.hasResult());
+      }
       rex = new ReplyException(thr);
       replyWithException(dm, rex);
     } catch (Exception exception) {
@@ -219,7 +231,9 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
         logger.debug("Exception occurred on remote member while executing Function: {}",
             this.functionObject.getId(), exception);
       }
-      stats.endFunctionExecutionWithException(this.functionObject.hasResult());
+      if (startedFunctionExecution) {
+        stats.endFunctionExecutionWithException(start, this.functionObject.hasResult());
+      }
       rex = new ReplyException(exception);
       replyWithException(dm, rex);
       // thr = e.getCause();
@@ -254,13 +268,15 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
     return this.processorId;
   }
 
+  @Override
   public int getDSFID() {
     return MEMBER_FUNCTION_STREAMING_MESSAGE;
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
 
     short flags = in.readShort();
     if ((flags & HAS_PROCESSOR_ID) != 0) {
@@ -290,8 +306,9 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
 
     short flags = 0;
     if (this.processorId != 0)
@@ -354,7 +371,7 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
 
   @Override
   public int getProcessorType() {
-    return ClusterDistributionManager.REGION_FUNCTION_EXECUTION_EXECUTOR;
+    return OperationExecutors.REGION_FUNCTION_EXECUTION_EXECUTOR;
   }
 
   /**
@@ -375,14 +392,17 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
     return (ds == null || ds.isDisconnecting());
   }
 
+  @Override
   public boolean canStartRemoteTransaction() {
     return true;
   }
 
+  @Override
   public int getTXUniqId() {
     return this.txUniqId;
   }
 
+  @Override
   public InternalDistributedMember getMemberToMasqueradeAs() {
     if (txMemberId == null) {
       return getSender();
@@ -391,6 +411,7 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
     }
   }
 
+  @Override
   public InternalDistributedMember getTXOriginatorClient() {
     return null;
   }

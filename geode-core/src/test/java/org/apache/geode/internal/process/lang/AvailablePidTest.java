@@ -19,9 +19,9 @@ import static org.apache.geode.internal.process.ProcessUtils.identifyPid;
 import static org.apache.geode.internal.process.ProcessUtils.isProcessAlive;
 import static org.apache.geode.internal.process.lang.AvailablePid.DEFAULT_LOWER_BOUND;
 import static org.apache.geode.internal.process.lang.AvailablePid.DEFAULT_UPPER_BOUND;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.spy;
@@ -36,15 +36,12 @@ import com.google.common.base.Stopwatch;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.Timeout;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for {@link AvailablePid}.
  */
-@Category(UnitTest.class)
 public class AvailablePidTest {
 
   private AvailablePid availablePid;
@@ -131,14 +128,14 @@ public class AvailablePidTest {
   public void randomLowerBoundIsInclusive() throws Exception {
     availablePid = new AvailablePid(new AvailablePid.Bounds(1, 3));
 
-    await().atMost(10, SECONDS).until(() -> assertThat(availablePid.random()).isEqualTo(1));
+    await().untilAsserted(() -> assertThat(availablePid.random()).isEqualTo(1));
   }
 
   @Test
   public void randomUpperBoundIsInclusive() throws Exception {
     availablePid = new AvailablePid(new AvailablePid.Bounds(1, 3));
 
-    await().atMost(10, SECONDS).until(() -> assertThat(availablePid.random()).isEqualTo(3));
+    await().untilAsserted(() -> assertThat(availablePid.random()).isEqualTo(3));
   }
 
   @Test

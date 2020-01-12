@@ -28,9 +28,8 @@ import org.apache.geode.cache.DiskStore;
 import org.apache.geode.internal.cache.DirectoryHolder;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
-public class FileSystemBackupWriter implements BackupWriter {
+class FileSystemBackupWriter implements BackupWriter {
 
   private final Path backupDirectory;
   private final FileSystemIncrementalBackupLocation incrementalBaselineLocation;
@@ -72,6 +71,11 @@ public class FileSystemBackupWriter implements BackupWriter {
     return incrementalBaselineLocation.getMemberBackupLocationDir().getParent();
   }
 
+  @Override
+  public Path getBackupDirectory() {
+    return backupDirectory;
+  }
+
   private void backupAllFilesets(BackupDefinition backupDefinition) throws IOException {
     RestoreScript restoreScript = backupDefinition.getRestoreScript();
     backupDiskInitFiles(backupDefinition.getDiskInitFiles());
@@ -85,7 +89,8 @@ public class FileSystemBackupWriter implements BackupWriter {
   }
 
   private void writeReadMe() throws IOException {
-    String text = LocalizedStrings.BackupService_README.toLocalizedString();
+    String text =
+        "This directory contains a backup of the persistent data for a single gemfire VM. The layout is:diskstoresA backup of the persistent disk stores in the VMuserAny files specified by the backup element in the cache.xml file.configThe cache.xml and gemfire.properties for the backed up member.restore.[sh|bat]A script to restore the backup.Please note that the config is not restored, only the diskstores and user files.";
     Files.write(backupDirectory.resolve(README_FILE), text.getBytes());
   }
 
@@ -143,7 +148,7 @@ public class FileSystemBackupWriter implements BackupWriter {
       RestoreScript restoreScript) throws IOException {
     File storesDir = new File(backupDirectory.toFile(), DATA_STORES_DIRECTORY);
     for (Map.Entry<DiskStore, Collection<Path>> entry : oplogFiles.entrySet()) {
-      DiskStoreImpl diskStore = ((DiskStoreImpl) entry.getKey());
+      DiskStoreImpl diskStore = (DiskStoreImpl) entry.getKey();
       boolean diskstoreHasFilesInBackup = false;
       for (Path path : entry.getValue()) {
         if (filter.accept(diskStore, path)) {
@@ -175,7 +180,7 @@ public class FileSystemBackupWriter implements BackupWriter {
       name = GemFireCacheImpl.getDefaultDiskStoreName();
     }
     name = name + "_" + ((DiskStoreImpl) diskStore).getDiskStoreID().toString();
-    return this.backupDirectory.resolve(DATA_STORES_DIRECTORY).resolve(name)
+    return backupDirectory.resolve(DATA_STORES_DIRECTORY).resolve(name)
         .resolve(BACKUP_DIR_PREFIX + index);
   }
 
@@ -196,7 +201,7 @@ public class FileSystemBackupWriter implements BackupWriter {
       name = GemFireCacheImpl.getDefaultDiskStoreName();
     }
 
-    return (name + "_" + diskStore.getDiskStoreID().toString());
+    return name + "_" + diskStore.getDiskStoreID().toString();
   }
 
   private void backupOplog(Path targetDir, Path path) throws IOException {

@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.cache;
 
 import java.io.InputStream;
@@ -22,6 +21,7 @@ import java.util.Properties;
 import javax.naming.Context;
 
 import org.apache.geode.LogWriter;
+import org.apache.geode.SerializationException;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.control.ResourceManager;
@@ -170,8 +170,8 @@ public interface GemFireCache extends RegionService {
   /**
    * Returns whether { @link PdxInstance} is preferred for PDX types instead of Java object.
    *
-   * @see org.apache.geode.cache.CacheFactory#setPdxReadSerialized(boolean)
-   * @see org.apache.geode.cache.client.ClientCacheFactory#setPdxReadSerialized(boolean)
+   * @see CacheFactory#setPdxReadSerialized(boolean)
+   * @see ClientCacheFactory#setPdxReadSerialized(boolean)
    *
    * @since GemFire 6.6
    */
@@ -213,6 +213,30 @@ public interface GemFireCache extends RegionService {
    * @see ClientCacheFactory#setPdxIgnoreUnreadFields(boolean)
    */
   boolean getPdxIgnoreUnreadFields();
+
+  /**
+   * Registers PDX meta-data given an instance of a domain class that will be serialized
+   * with PDX.
+   *
+   * <p>
+   * Note that this method serializes the given instance so PDX must already be configured
+   * to do the serialization.
+   *
+   * <p>
+   * Note that if the instance is not of a class that will be serialized with PDX
+   * then no meta-data is registered.
+   *
+   * <p>
+   * Note that in most cases this method never needs to be called. Currently it is only
+   * needed by the JdbcLoader when gets are done for JDBC data that was not written to the
+   * table using geode.
+   *
+   * @param instance the instance of the domain class for which meta-data is to be registered
+   * @throws SerializationException if the instance can not be serialized or is not serialized with
+   *         PDX
+   * @since Geode 1.6
+   */
+  void registerPdxMetaData(Object instance);
 
   /**
    * Get the CacheTransactionManager instance for this Cache.

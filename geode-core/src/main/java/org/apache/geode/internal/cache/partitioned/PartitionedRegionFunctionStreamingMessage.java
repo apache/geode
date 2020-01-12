@@ -26,18 +26,21 @@ import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.OperationExecutors;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.FunctionStreamingOrderedReplyMessage;
 import org.apache.geode.internal.cache.FunctionStreamingReplyMessage;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.internal.cache.execute.FunctionRemoteContext;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class PartitionedRegionFunctionStreamingMessage extends PartitionMessage {
   private static final Logger logger = LogService.getLogger();
@@ -62,12 +65,12 @@ public class PartitionedRegionFunctionStreamingMessage extends PartitionMessage 
 
   public PartitionedRegionFunctionStreamingMessage(DataInput in)
       throws IOException, ClassNotFoundException {
-    fromData(in);
+    fromData(in, InternalDataSerializer.createDeserializationContext(in));
   }
 
   @Override
   public int getProcessorType() {
-    return ClusterDistributionManager.REGION_FUNCTION_EXECUTION_EXECUTOR;
+    return OperationExecutors.REGION_FUNCTION_EXECUTION_EXECUTOR;
   }
 
   /**
@@ -77,8 +80,8 @@ public class PartitionedRegionFunctionStreamingMessage extends PartitionMessage 
   @Override
   protected boolean operateOnPartitionedRegion(ClusterDistributionManager dm, PartitionedRegion r,
       long startTime) {
-    if (logger.isTraceEnabled(LogMarker.DM)) {
-      logger.trace(LogMarker.DM,
+    if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+      logger.trace(LogMarker.DM_VERBOSE,
           "PartitionedRegionFunctionResultStreamerMessage operateOnRegion: {}", r.getFullPath());
     }
 
@@ -86,8 +89,8 @@ public class PartitionedRegionFunctionStreamingMessage extends PartitionMessage 
     if (this.context.getFunction() == null) {
       sendReply(getSender(), getProcessorId(), dm,
           new ReplyException(new FunctionException(
-              LocalizedStrings.ExecuteFunction_FUNCTION_NAMED_0_IS_NOT_REGISTERED
-                  .toLocalizedString(this.context.getFunctionId()))),
+              String.format("Function named %s is not registered to FunctionService",
+                  this.context.getFunctionId()))),
           r, startTime);
       return false;
     }
@@ -96,14 +99,14 @@ public class PartitionedRegionFunctionStreamingMessage extends PartitionMessage 
       // check if the routingKeyorKeys is null
       // if null call executeOnDataStore otherwise execute on LocalBuckets
       ds.executeOnDataStore(context.getFilter(), context.getFunction(), context.getArgs(),
-          getProcessorId(), context.getBucketSet(), context.isReExecute(), this, startTime, null,
+          getProcessorId(), context.getBucketArray(), context.isReExecute(), this, startTime, null,
           0);
 
       if (!this.replyLastMsg && context.getFunction().hasResult()) {
         sendReply(getSender(), getProcessorId(), dm,
             new ReplyException(new FunctionException(
-                LocalizedStrings.ExecuteFunction_THE_FUNCTION_0_DID_NOT_SENT_LAST_RESULT
-                    .toString(context.getFunction().getId()))),
+                String.format("The function, %s, did not send last result",
+                    context.getFunction().getId()))),
             r, startTime);
         return false;
       }
@@ -165,6 +168,7 @@ public class PartitionedRegionFunctionStreamingMessage extends PartitionMessage 
     }
   }
 
+  @Override
   public int getDSFID() {
     return PR_FUNCTION_STREAMING_MESSAGE;
   }
@@ -175,14 +179,16 @@ public class PartitionedRegionFunctionStreamingMessage extends PartitionMessage 
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.context = DataSerializer.readObject(in);
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     DataSerializer.writeObject(this.context, out);
   }
 

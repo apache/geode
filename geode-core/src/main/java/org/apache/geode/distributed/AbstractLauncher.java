@@ -14,9 +14,9 @@
  */
 package org.apache.geode.distributed;
 
-import static org.apache.commons.lang.StringUtils.isNotBlank;
-import static org.apache.commons.lang.StringUtils.join;
-import static org.apache.commons.lang.StringUtils.lowerCase;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.join;
+import static org.apache.commons.lang3.StringUtils.lowerCase;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.internal.lang.ClassUtils.forName;
 import static org.apache.geode.internal.lang.StringUtils.defaultString;
@@ -41,18 +41,20 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.unsafe.RegisterSignalHandlerSupport;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.GemFireVersion;
-import org.apache.geode.internal.OSProcess;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.process.PidUnavailableException;
 import org.apache.geode.internal.process.ProcessUtils;
 import org.apache.geode.internal.util.ArgumentRedactor;
 import org.apache.geode.internal.util.SunAPINotFoundException;
-import org.apache.geode.management.internal.cli.json.GfJsonObject;
+import org.apache.geode.logging.internal.OSProcess;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * The AbstractLauncher class is a base class for implementing various launchers to construct and
@@ -65,6 +67,14 @@ import org.apache.geode.management.internal.cli.json.GfJsonObject;
  */
 public abstract class AbstractLauncher<T extends Comparable<T>> implements Runnable {
 
+  public static final String MEMBER_NAME_ERROR_MESSAGE =
+      "The member name of the %s must be provided as an argument to the launcher, or a path to gemfire.properties must be specified, which assumes the %s member name will be set using the name property.";
+  public static final String WORKING_DIRECTORY_OPTION_NOT_VALID_ERROR_MESSAGE =
+      "Specifying the --dir option is not valid when starting a %s with the %sLauncher.";
+  public static final String WORKING_DIRECTORY_NOT_FOUND_ERROR_MESSAGE =
+      "The working directory for the %s could not be found.";
+
+  @Immutable
   protected static final Boolean DEFAULT_FORCE = Boolean.FALSE;
 
   /**
@@ -76,7 +86,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
   public static final String DEFAULT_WORKING_DIRECTORY = CURRENT_DIRECTORY;
 
   public static final String SIGNAL_HANDLER_REGISTRATION_SYSTEM_PROPERTY =
-      DistributionConfig.GEMFIRE_PREFIX + "launcher.registerSignalHandlers";
+      GeodeGlossary.GEMFIRE_PREFIX + "launcher.registerSignalHandlers";
 
   protected static final String OPTION_PREFIX = "-";
 
@@ -86,7 +96,10 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
 
   protected final transient AtomicBoolean running = new AtomicBoolean(false);
 
-  // TODO: use log4j logger instead of JUL
+  /**
+   * @deprecated Please use Log4J 2 instead.
+   */
+  @Deprecated
   protected Logger logger = Logger.getLogger(getClass().getName());
 
   public AbstractLauncher() {
@@ -459,6 +472,14 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
     protected static final String JSON_UPTIME = "uptime";
     protected static final String JSON_WORKINGDIRECTORY = "workingDirectory";
 
+    static final String TO_STRING_PROCESS_ID = "Process ID: ";
+    static final String TO_STRING_JAVA_VERSION = "Java Version: ";
+    static final String TO_STRING_LOG_FILE = "Log File: ";
+    static final String TO_STRING_JVM_ARGUMENTS = "JVM Arguments: ";
+    static final String TO_STRING_CLASS_PATH = "Class-Path: ";
+    static final String TO_STRING_UPTIME = "Uptime: ";
+    static final String TO_STRING_GEODE_VERSION = "Geode Version: ";
+
     private static final String DATE_TIME_FORMAT_PATTERN = "MM/dd/yyyy hh:mm a";
 
     private final Integer pid;
@@ -581,7 +602,15 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
       map.put(JSON_TIMESTAMP, getTimestamp().getTime());
       map.put(JSON_UPTIME, getUptime());
       map.put(JSON_WORKINGDIRECTORY, getWorkingDirectory());
-      return new GfJsonObject(map).toString();
+
+      String jsonStatus = null;
+      try {
+        jsonStatus = new ObjectMapper().writeValueAsString(map);
+      } catch (JsonProcessingException e) {
+        // Ignored
+      }
+
+      return jsonStatus;
     }
 
     public static boolean isStartingNotRespondingOrNull(final ServiceState serviceState) {
@@ -758,24 +787,44 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
      */
     @Override
     public String toString() {
+      StringBuilder sb = new StringBuilder();
       switch (getStatus()) {
         case STARTING:
-          return LocalizedStrings.Launcher_ServiceStatus_STARTING_MESSAGE.toLocalizedString(
+          sb.append("Starting %s in %s on %s as %s at %s").append(System.lineSeparator());
+          sb.append(TO_STRING_PROCESS_ID).append("%s").append(System.lineSeparator());
+          sb.append(TO_STRING_JAVA_VERSION).append("%s").append(System.lineSeparator());
+          sb.append(TO_STRING_LOG_FILE).append("%s").append(System.lineSeparator());
+          sb.append(TO_STRING_JVM_ARGUMENTS).append("%s").append(System.lineSeparator());
+          sb.append(TO_STRING_CLASS_PATH).append("%s");
+          return String.format(sb.toString(),
               getServiceName(), getWorkingDirectory(), getServiceLocation(), getMemberName(),
               toString(getTimestamp()), toString(getPid()), toString(getGemFireVersion()),
               toString(getJavaVersion()), getLogFile(), ArgumentRedactor.redact(getJvmArguments()),
               toString(getClasspath()));
+
         case ONLINE:
-          return LocalizedStrings.Launcher_ServiceStatus_RUNNING_MESSAGE.toLocalizedString(
+          sb.append("%s in %s on %s as %s is currently %s.").append(System.lineSeparator());
+          sb.append(TO_STRING_PROCESS_ID).append("%s").append(System.lineSeparator());
+          sb.append(TO_STRING_UPTIME).append("%s").append(System.lineSeparator());
+          sb.append(TO_STRING_GEODE_VERSION).append("%s").append(System.lineSeparator());
+          sb.append(TO_STRING_JAVA_VERSION).append("%s").append(System.lineSeparator());
+          sb.append(TO_STRING_LOG_FILE).append("%s").append(System.lineSeparator());
+          sb.append(TO_STRING_JVM_ARGUMENTS).append("%s").append(System.lineSeparator());
+          sb.append(TO_STRING_CLASS_PATH).append("%s");
+          return String.format(sb.toString(),
               getServiceName(), getWorkingDirectory(), getServiceLocation(), getMemberName(),
               getStatus(), toString(getPid()), toDaysHoursMinutesSeconds(getUptime()),
               toString(getGemFireVersion()), toString(getJavaVersion()), getLogFile(),
               ArgumentRedactor.redact(getJvmArguments()), toString(getClasspath()));
+
         case STOPPED:
-          return LocalizedStrings.Launcher_ServiceStatus_STOPPED_MESSAGE
-              .toLocalizedString(getServiceName(), getWorkingDirectory(), getServiceLocation());
+          sb.append("%s in %s on %s has been requested to stop.");
+          return String.format(sb.toString(),
+              getServiceName(), getWorkingDirectory(), getServiceLocation());
+
         default: // NOT_RESPONDING
-          return LocalizedStrings.Launcher_ServiceStatus_MESSAGE.toLocalizedString(getServiceName(),
+          sb.append("%s in %s on %s is currently %s.");
+          return String.format(sb.toString(), getServiceName(),
               getWorkingDirectory(), getServiceLocation(), getStatus());
       }
     }
@@ -806,10 +855,10 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
    * as a Cache Server, a Locator or a Manager).
    */
   public enum Status {
-    NOT_RESPONDING(LocalizedStrings.Launcher_Status_NOT_RESPONDING.toLocalizedString()),
-    ONLINE(LocalizedStrings.Launcher_Status_ONLINE.toLocalizedString()),
-    STARTING(LocalizedStrings.Launcher_Status_STARTING.toLocalizedString()),
-    STOPPED(LocalizedStrings.Launcher_Status_STOPPED.toLocalizedString());
+    NOT_RESPONDING("not responding"),
+    ONLINE("online"),
+    STARTING("starting"),
+    STOPPED("stopped");
 
     private final String description;
 

@@ -62,12 +62,13 @@ import org.apache.geode.internal.cache.PrimaryBucketException;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tx.RemotePutMessage;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * A Partitioned Region update message. Meant to be sent only to a bucket's primary owner. In
@@ -293,8 +294,6 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
    * @param filterInfo all client routing information
    * @param r the region affected by the event
    * @param event the event that prompted this action
-   * @param ifNew
-   * @param ifOld
    * @param processor the processor to reply to
    * @return members that could not be notified
    */
@@ -311,10 +310,9 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
         processor);
   }
 
-
-  private PutMessage(Set recipients, boolean notifyOnly, int regionId,
-      DirectReplyProcessor processor, EntryEventImpl event, final long lastModified, boolean ifNew,
-      boolean ifOld, Object expectedOldValue, boolean requireOldValue) {
+  PutMessage(Set recipients, boolean notifyOnly, int regionId, DirectReplyProcessor processor,
+      EntryEventImpl event, final long lastModified, boolean ifNew, boolean ifOld,
+      Object expectedOldValue, boolean requireOldValue) {
     super(recipients, regionId, processor, event);
     this.processor = processor;
     this.notificationOnly = notifyOnly;
@@ -387,23 +385,14 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
     Set failures = r.getDistributionManager().putOutgoing(m);
     if (failures != null && failures.size() > 0) {
       throw new ForceReattemptException(
-          LocalizedStrings.PutMessage_FAILED_SENDING_0.toLocalizedString(m));
+          String.format("Failed sending < %s >", m));
     }
     return processor;
   }
 
-  // public final boolean needsDirectAck()
-  // {
-  // return this.directAck;
-  // }
-
-  // public final int getProcessorType() {
-  // return DistributionManager.PARTITIONED_REGION_EXECUTOR;
-  // }
-
 
   /**
-   * create a new EntryEvent to be used in notifying listeners, bridge servers, etc. Caller must
+   * create a new EntryEvent to be used in notifying listeners, cache servers, etc. Caller must
    * release result if it is != to sourceEvent
    */
   @Retained
@@ -489,29 +478,16 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
       this.filterInfo = filterInfo;
     }
   }
-  /*
-   * @Override public void appendOldValueToMessage(EntryEventImpl event) { if (event.hasOldValue())
-   * { this.hasOldValue = true; CachedDeserializable cd = (CachedDeserializable)
-   * event.getSerializedOldValue(); if (cd != null) { this.oldValueIsSerialized = true; Object o =
-   * cd.getValue(); if (o instanceof byte[]) { setOldValBytes((byte[])o); } else { // Defer
-   * serialization until toData is called. setOldValObj(o); } } else { Object old =
-   * event.getRawOldValue(); if (old instanceof byte[]) { this.oldValueIsSerialized = false;
-   * setOldValBytes((byte[]) old); } else { this.oldValueIsSerialized = true; setOldValObj(old); } }
-   * } }
-   */
-  /*
-   * private void setOldValBytes(byte[] valBytes){ this.oldValBytes = valBytes; } public final
-   * byte[] getOldValueBytes(){ return this.oldValBytes; } private Object getOldValObj(){ return
-   * this.oldValObj; } private void setOldValObj(Object o){ this.oldValObj = o; }
-   */
 
+  @Override
   public int getDSFID() {
     return PR_PUT_MESSAGE;
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
 
     final int extraFlags = in.readUnsignedByte();
     setKey(DataSerializer.readObject(in));
@@ -530,11 +506,6 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
     if ((flags & HAS_EXPECTED_OLD_VAL) != 0) {
       this.expectedOldValue = DataSerializer.readObject(in);
     }
-    /*
-     * this.hasOldValue = in.readBoolean(); if (this.hasOldValue){
-     * //out.writeBoolean(this.hasOldValue); this.oldValueIsSerialized = in.readBoolean();
-     * setOldValBytes(DataSerializer.readByteArray(in)); }
-     */
     if (this.hasFilterInfo) {
       this.filterInfo = new FilterRoutingInfo();
       InternalDataSerializer.invokeFromData(this.filterInfo, in);
@@ -560,15 +531,9 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
     return this.eventId;
   }
 
-  /*
-   * @Override public String toString() { StringBuilder buff = new StringBuilder(super.toString());
-   * buff.append("; has old value="+this.hasOldValue);
-   * buff.append("; isOldValueSerialized ="+this.oldValueIsSerialized);
-   * buff.append("; oldvalue bytes="+this.oldValBytes);
-   * buff.append("; oldvalue object="+this.oldValObj); buff.toString(); return buff.toString(); }
-   */
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     PartitionedRegion region = null;
     try {
       boolean flag = internalDs.getConfig().getDeltaPropagation();
@@ -581,7 +546,7 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
     } catch (RuntimeException re) {
       throw new InvalidDeltaException(re);
     }
-    super.toData(out);
+    super.toData(out, context);
 
     int extraFlags = this.deserializationPolicy;
     if (this.bridgeContext != null)
@@ -617,6 +582,10 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
         region = PartitionedRegion.getPRFromId(this.regionId);
       } catch (PRLocallyDestroyedException e) {
         throw new IOException("Delta can not be extracted as region is locally destroyed");
+      }
+      if (region == null || region.getCachePerfStats() == null) {
+        throw new IOException(
+            "Delta can not be extracted as region can't be found or is in an invalid state");
       }
       DataSerializer.writeByteArray(this.event.getDeltaBytes(), out);
       region.getCachePerfStats().incDeltasSent();
@@ -661,8 +630,9 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
   }
 
   @Override
-  protected void setBooleans(short s, DataInput in) throws IOException, ClassNotFoundException {
-    super.setBooleans(s, in);
+  protected void setBooleans(short s, DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.setBooleans(s, in, context);
     this.ifNew = ((s & IF_NEW) != 0);
     this.ifOld = ((s & IF_OLD) != 0);
     this.requireOldValue = ((s & REQUIRED_OLD_VAL) != 0);
@@ -737,9 +707,6 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
               "This process should have storage" + " for this operation: " + this.toString());
         }
         try {
-          // the event must show it's true origin for cachewriter invocation
-          // event.setOriginRemote(true);
-          // this.op = r.doCacheWriteBeforePut(event, ifNew); // TODO fix this for bug 37072
           ev.setOriginRemote(false);
           result =
               r.getDataView().putEntryOnRemote(ev, this.ifNew, this.ifOld, this.expectedOldValue,
@@ -747,30 +714,17 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
 
           if (!this.result) { // make sure the region hasn't gone away
             r.checkReadiness();
-            // sbawaska: I cannot see how ifOld and ifNew can both be false, hence removing
-            // if (!this.ifNew && !this.ifOld) {
-            // // no reason to be throwing an exception, so let's retry
-            // ForceReattemptException fre = new ForceReattemptException(
-            // LocalizedStrings.PutMessage_UNABLE_TO_PERFORM_PUT_BUT_OPERATION_SHOULD_NOT_FAIL_0.toLocalizedString());
-            // fre.setHash(key.hashCode());
-            // sendReply(getSender(), getProcessorId(), dm,
-            // new ReplyException(fre), r, startTime);
-            // sendReply = false;
-            // }
           }
-        } catch (CacheWriterException cwe) {
+        } catch (CacheWriterException | PrimaryBucketException cwe) {
           sendReply(getSender(), getProcessorId(), dm, new ReplyException(cwe), r, startTime);
-          return false;
-        } catch (PrimaryBucketException pbe) {
-          sendReply(getSender(), getProcessorId(), dm, new ReplyException(pbe), r, startTime);
           return false;
         } catch (InvalidDeltaException ide) {
           sendReply(getSender(), getProcessorId(), dm, new ReplyException(ide), r, startTime);
           r.getCachePerfStats().incDeltaFullValuesRequested();
           return false;
         }
-        if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.trace(LogMarker.DM, "PutMessage {} with key: {} val: {}",
+        if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+          logger.trace(LogMarker.DM_VERBOSE, "PutMessage {} with key: {} val: {}",
               (result ? "updated bucket" : "did not update bucket"), getKey(),
               (getValBytes() == null ? "null" : "(" + getValBytes().length + " bytes)"));
         }
@@ -874,8 +828,8 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
   }
 
   @Override
-  protected boolean mayAddToMultipleSerialGateways(ClusterDistributionManager dm) {
-    return _mayAddToMultipleSerialGateways(dm);
+  protected boolean mayNotifySerialGatewaySender(ClusterDistributionManager dm) {
+    return notifiesSerialGatewaySender(dm);
   }
 
   public static class PutReplyMessage extends ReplyMessage implements OldValueImporter {
@@ -944,14 +898,14 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
     @Override
     public void process(final DistributionManager dm, final ReplyProcessor21 rp) {
       final long startTime = getTimestamp();
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM,
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE,
             "PutReplyMessage process invoking reply processor with processorId: {}",
             this.processorId);
       }
       if (rp == null) {
-        if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.trace(LogMarker.DM, "PutReplyMessage processor not found");
+        if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+          logger.trace(LogMarker.DM_VERBOSE, "PutReplyMessage processor not found");
         }
         return;
       }
@@ -961,22 +915,15 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
       }
       rp.process(this);
 
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM, "{} processed {}", rp, this);
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE, "{} processed {}", rp, this);
       }
       dm.getStats().incReplyMessageTime(NanoTimer.getTime() - startTime);
     }
 
     /** Return oldValue in serialized form */
     public Object getOldValue() {
-      // to fix bug 42951 why not just return this.oldValue?
       return this.oldValue;
-      // // oldValue field is in serialized form, either a CachedDeserializable,
-      // // a byte[], or null if not set
-      // if (this.oldValue instanceof CachedDeserializable) {
-      // return ((CachedDeserializable)this.oldValue).getDeserializedValue(null, null);
-      // }
-      // return this.oldValue;
     }
 
     @Override
@@ -985,8 +932,9 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.result = in.readBoolean();
       this.op = Operation.fromOrdinal(in.readByte());
       this.oldValue = DataSerializer.readObject(in);
@@ -994,8 +942,9 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       out.writeBoolean(this.result);
       out.writeByte(this.op.ordinal);
       Object ov = getOldValue();
@@ -1093,7 +1042,7 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
       }
       if (this.op == null) {
         throw new ForceReattemptException(
-            LocalizedStrings.PutMessage_DID_NOT_RECEIVE_A_VALID_REPLY.toLocalizedString());
+            "did not receive a valid reply");
       }
       // try {
       // waitForRepliesUninterruptibly();
@@ -1120,13 +1069,14 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
           final PutMessage putMsg = new PutMessage(this.putMessage);
           final DistributionManager dm = getDistributionManager();
           Runnable sendFullObject = new Runnable() {
+            @Override
             public void run() {
               putMsg.resetRecipients();
               putMsg.setRecipient(msg.getSender());
               putMsg.setSendDelta(false);
               if (logger.isDebugEnabled()) {
                 logger.debug("Sending full object({}) to {}", putMsg,
-                    Arrays.toString(putMsg.getRecipients()));
+                    Arrays.toString(putMsg.getRecipientsArray()));
               }
               dm.putOutgoing(putMsg);
 
@@ -1146,7 +1096,7 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
           if (isExpectingDirectReply()) {
             sendFullObject.run();
           } else {
-            getDistributionManager().getWaitingThreadPool().execute(sendFullObject);
+            getDistributionManager().getExecutors().getWaitingThreadPool().execute(sendFullObject);
           }
           return;
         }

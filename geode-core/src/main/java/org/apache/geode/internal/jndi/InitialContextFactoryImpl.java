@@ -23,6 +23,8 @@ import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.naming.spi.InitialContextFactory;
 
+import org.apache.geode.annotations.internal.MakeNotStatic;
+
 /**
  * Factory class to creates ContextImpl. Provides implementation for InitialContextFactory.
  *
@@ -32,8 +34,10 @@ import javax.naming.spi.InitialContextFactory;
  */
 public class InitialContextFactoryImpl implements InitialContextFactory {
 
-  private static Map oldSystemProps = new HashMap();
+  @MakeNotStatic
+  private static final Map oldSystemProps = new HashMap();
   // private static Hashtable env;
+  @MakeNotStatic
   private static Context ctx;
 
   /**
@@ -46,6 +50,7 @@ public class InitialContextFactoryImpl implements InitialContextFactory {
    *        context.
    * @return ContextImpl object.
    */
+  @Override
   public synchronized Context getInitialContext(Hashtable environment) throws NamingException {
     if (ctx == null) {
       ctx = new ContextImpl();
@@ -61,7 +66,6 @@ public class InitialContextFactoryImpl implements InitialContextFactory {
    * application resource file (jndi.properties).
    * java.naming.factory.initial=org.apache.geode.internal.jndi.InitialContextFactoryImpl
    *
-   * @throws NamingException
    */
   public void setAsInitial() throws NamingException {
     // Preserve current set system props

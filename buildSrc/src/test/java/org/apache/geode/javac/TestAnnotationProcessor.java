@@ -16,24 +16,29 @@
 package org.apache.geode.javac;
 
 import org.junit.Test;
-import sun.tools.java.CompilerError;
 
 public class TestAnnotationProcessor {
   private static final String VALID_CLASS_TEMPLATE = "package org.apache.geode;\n"
-      + "import org.junit.runner.RunWith;\n" + "import org.junit.runners.Parameterized;\n"
+      + "import org.junit.runner.RunWith;\n"
+      + "import org.junit.runners.Parameterized;\n"
       + "import org.junit.experimental.categories.Category;\n"
       + "import org.apache.geode.test.junit.categories.UnitTest;\n"
       + "import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;\n"
       + "@Category(UnitTest.class)\n"
       + "@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)\n"
-      + "@RunWith(Parameterized.class)\n" + "public class Test {\n" + "}\n";
+      + "@RunWith(Parameterized.class)\n"
+      + "public class Test {\n"
+      + "}\n";
 
   private static final String INVALID_CLASS_TEMPLATE = "package org.apache.geode;\n"
-      + "import org.junit.runner.RunWith;\n" + "import org.junit.runners.Parameterized;\n"
+      + "import org.junit.runner.RunWith;\n"
+      + "import org.junit.runners.Parameterized;\n"
       + "import org.junit.experimental.categories.Category;\n"
       + "import org.apache.geode.test.junit.categories.UnitTest;\n"
       + "@Category(UnitTest.class)\n"
-      + "@RunWith(Parameterized.class)\n" + "public class Test {\n" + "}\n";
+      + "@RunWith(Parameterized.class)\n"
+      + "public class Test {\n"
+      + "}\n";
 
   private TestCompiler compiler = new TestCompiler();
 
@@ -43,7 +48,7 @@ public class TestAnnotationProcessor {
     compiler.compile(qualifiedClassName, VALID_CLASS_TEMPLATE);
   }
 
-  @Test (expected = CompilerError.class)
+  @Test (expected = CompilerException.class)
   public void checkInvalidAnnotations() {
     String qualifiedClassName = "org.apache.geode.Test";
     compiler.compile(qualifiedClassName, INVALID_CLASS_TEMPLATE);

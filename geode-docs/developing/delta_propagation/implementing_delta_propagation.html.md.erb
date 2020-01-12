@@ -19,10 +19,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-By default, delta propagation is enabled in your distributed system. When enabled, delta propagation is used for objects that implement `org.apache.geode.Delta`. You program the methods to store and extract delta information for your entries and to apply received delta information.
+By default, delta propagation is enabled in your cluster. When enabled, delta propagation is used for objects that implement `org.apache.geode.Delta`. You program the methods to store and extract delta information for your entries and to apply received delta information.
 
 <a id="implementing_delta_propagation__section_877AC61D691C44078A782683F90D169B"></a>
-Use the following procedure to implement delta propagation in your distributed system.
+Use the following procedure to implement delta propagation in your cluster.
 
 1.  Study your object types and expected application behavior to determine which regions can benefit from using delta propagation. Delta propagation does not improve performance for all data and data modification scenarios. See [When to Avoid Delta Propagation](when_to_use_delta_prop.html#when_to_use_delta_prop).
 2.  For each region where you are using delta propagation, choose whether to enable cloning using the delta propagation property `cloning-enabled`. Cloning is disabled by default. See [Delta Propagation Properties](delta_propagation_properties.html#delta_propagation_properties).

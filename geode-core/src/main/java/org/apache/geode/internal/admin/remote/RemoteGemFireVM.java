@@ -47,7 +47,7 @@ import org.apache.geode.internal.admin.Stat;
 import org.apache.geode.internal.admin.StatAlertDefinition;
 import org.apache.geode.internal.admin.StatListener;
 import org.apache.geode.internal.admin.StatResource;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.logging.internal.executors.LoggingThread;
 
 /**
  * Provides access to a remote gemfire VM for purposes of gathering statistics and other info
@@ -111,8 +111,7 @@ public abstract class RemoteGemFireVM implements GemFireVM {
     this.agent = agent;
     if (id == null) {
       throw new NullPointerException(
-          LocalizedStrings.RemoteGemFireVM_CANNOT_CREATE_A_REMOTEGEMFIREVM_WITH_A_NULL_ID
-              .toLocalizedString());
+          "Cannot create a RemoteGemFireVM with a null id.");
     }
     this.id = id;
     this.dispatcher = new StatDispatcher();
@@ -140,6 +139,17 @@ public abstract class RemoteGemFireVM implements GemFireVM {
     return vmName;
   }
 
+  @Override
+  public boolean equals(Object object) {
+    if (this == object) {
+      return true;
+    }
+    if (object instanceof RemoteGemFireVM) {
+      return this.id.equals(((RemoteGemFireVM) object).id);
+    }
+    return false;
+  }
+
   @Override // GemStoneAddition
   public int hashCode() {
     return this.id.hashCode();
@@ -150,6 +160,7 @@ public abstract class RemoteGemFireVM implements GemFireVM {
   /**
    * Returns the name of the remote system connection.
    */
+  @Override
   public String getName() {
     if (this.name == null) {
       initialize();
@@ -160,6 +171,7 @@ public abstract class RemoteGemFireVM implements GemFireVM {
   /**
    * Returns the host the manager is running on.
    */
+  @Override
   public InetAddress getHost() {
     if (this.host == null) {
       initialize();
@@ -167,6 +179,7 @@ public abstract class RemoteGemFireVM implements GemFireVM {
     return host;
   }
 
+  @Override
   public File getWorkingDirectory() {
     if (this.workingDir == null) {
       initialize();
@@ -174,6 +187,7 @@ public abstract class RemoteGemFireVM implements GemFireVM {
     return this.workingDir;
   }
 
+  @Override
   public File getGeodeHomeDir() {
     if (this.gemfireDir == null) {
       initialize();
@@ -181,6 +195,7 @@ public abstract class RemoteGemFireVM implements GemFireVM {
     return gemfireDir;
   }
 
+  @Override
   public Date getBirthDate() {
     if (this.birthDate == null) {
       initialize();
@@ -213,6 +228,7 @@ public abstract class RemoteGemFireVM implements GemFireVM {
    * @see FetchStatsRequest
    * @see FetchStatsResponse#getAllStats
    */
+  @Override
   public StatResource[] getAllStats() {
     FetchStatsResponse resp = (FetchStatsResponse) sendAndWait(FetchStatsRequest.create(null));
     return resp.getAllStats(this);
@@ -226,6 +242,7 @@ public abstract class RemoteGemFireVM implements GemFireVM {
    * @see FetchStatsRequest
    * @see FetchStatsResponse#getStats
    */
+  @Override
   public StatResource[] getStats(String statisticsTypeName) {
     FetchStatsResponse resp =
         (FetchStatsResponse) sendAndWait(FetchStatsRequest.create(statisticsTypeName));
@@ -237,6 +254,7 @@ public abstract class RemoteGemFireVM implements GemFireVM {
    *
    * @see FetchDistLockInfoRequest
    */
+  @Override
   public DLockInfo[] getDistributedLockInfo() {
     FetchDistLockInfoResponse resp =
         (FetchDistLockInfoResponse) sendAndWait(FetchDistLockInfoRequest.create());
@@ -253,6 +271,7 @@ public abstract class RemoteGemFireVM implements GemFireVM {
    *
    * @see AddStatListenerRequest
    */
+  @Override
   public void addStatListener(StatListener observer, StatResource observedResource,
       Stat observedStat) {
     AddStatListenerResponse resp = (AddStatListenerResponse) sendAndWait(
@@ -333,6 +352,7 @@ public abstract class RemoteGemFireVM implements GemFireVM {
   /**
    * Removes a <code>StatListener</code> that receives updates from the remote member VM.
    */
+  @Override
   public void removeStatListener(StatListener observer) {
     int listenerId = -1;
     boolean foundIt = false;
@@ -359,6 +379,7 @@ public abstract class RemoteGemFireVM implements GemFireVM {
    *
    * @see FetchSysCfgRequest
    */
+  @Override
   public void addHealthListener(HealthListener observer, GemFireHealthConfig cfg) {
     synchronized (this.healthLock) {
       this.healthListener = observer;
@@ -368,6 +389,7 @@ public abstract class RemoteGemFireVM implements GemFireVM {
     }
   }
 
+  @Override
   public void removeHealthListener() {
     synchronized (this.healthLock) {
       this.healthListener = null;
@@ -378,6 +400,7 @@ public abstract class RemoteGemFireVM implements GemFireVM {
     }
   }
 
+  @Override
   public void resetHealthStatus() {
     synchronized (this.healthLock) {
       if (this.healthListenerId != 0) {
@@ -386,6 +409,7 @@ public abstract class RemoteGemFireVM implements GemFireVM {
     }
   }
 
+  @Override
   public String[] getHealthDiagnosis(GemFireHealth.Health healthCode) {
     synchronized (this.healthLock) {
       if (this.healthListenerId != 0) {
@@ -417,6 +441,7 @@ public abstract class RemoteGemFireVM implements GemFireVM {
     }
   }
 
+  @Override
   public Config getConfig() {
     FetchSysCfgResponse response = (FetchSysCfgResponse) sendAndWait(FetchSysCfgRequest.create());
     return response.getConfig();
@@ -427,6 +452,7 @@ public abstract class RemoteGemFireVM implements GemFireVM {
    * this snapshot is similar to stats that represent the current state of a running VM. However,
    * this is a bit higher level than a stat
    */
+  @Override
   public GemFireMemberStatus getSnapshot() {
     RefreshMemberSnapshotResponse response =
         (RefreshMemberSnapshotResponse) sendAndWait(RefreshMemberSnapshotRequest.create());
@@ -437,6 +463,7 @@ public abstract class RemoteGemFireVM implements GemFireVM {
    * Returns the runtime {@link org.apache.geode.admin.RegionSubRegionSnapshot} from the vm The idea
    * is this snapshot is quickly salvageable to present a cache's region's info
    */
+  @Override
   public RegionSubRegionSnapshot getRegionSnapshot() {
     RegionSubRegionsSizeResponse response =
         (RegionSubRegionsSizeResponse) sendAndWait(RegionSubRegionSizeRequest.create());
@@ -448,6 +475,7 @@ public abstract class RemoteGemFireVM implements GemFireVM {
    *
    * @see StoreSysCfgRequest
    */
+  @Override
   public void setConfig(Config cfg) {
     /* StoreSysCfgResponse response = (StoreSysCfgResponse) */
     sendAndWait(StoreSysCfgRequest.create(cfg));
@@ -456,6 +484,7 @@ public abstract class RemoteGemFireVM implements GemFireVM {
   /**
    * Returns the agent for the distributed system to which this remote VM belongs.
    */
+  @Override
   public GfManagerAgent getManagerAgent() {
     return this.agent;
   }
@@ -466,6 +495,7 @@ public abstract class RemoteGemFireVM implements GemFireVM {
   // return resp.getTail();
   // }
 
+  @Override
   public String[] getSystemLogs() {
     TailLogResponse resp = (TailLogResponse) sendAndWait(TailLogRequest.create());
     String main = resp.getTail();
@@ -483,6 +513,7 @@ public abstract class RemoteGemFireVM implements GemFireVM {
     return retVal;
   }
 
+  @Override
   public String getVersionInfo() {
     VersionInfoResponse resp = (VersionInfoResponse) sendAndWait(VersionInfoRequest.create());
     return resp.getVersionInfo();
@@ -493,16 +524,19 @@ public abstract class RemoteGemFireVM implements GemFireVM {
    *
    * @see RootRegionRequest
    */
+  @Override
   public Region[] getRootRegions() {
     RootRegionResponse resp = (RootRegionResponse) sendAndWait(RootRegionRequest.create());
     return resp.getRegions(this);
   }
 
+  @Override
   public Region getRegion(CacheInfo c, String path) {
     RegionResponse resp = (RegionResponse) sendAndWait(RegionRequest.createForGet(c, path));
     return resp.getRegion(this);
   }
 
+  @Override
   public Region createVMRootRegion(CacheInfo c, String regionPath, RegionAttributes attrs)
       throws AdminException {
 
@@ -512,14 +546,15 @@ public abstract class RemoteGemFireVM implements GemFireVM {
     Exception ex = resp.getException();
     if (ex != null) {
       throw new AdminException(
-          LocalizedStrings.RemoteGemFireVM_AN_EXCEPTION_WAS_THROWN_WHILE_CREATING_VM_ROOT_REGION_0
-              .toLocalizedString(regionPath),
+          String.format("An Exception was thrown while creating VM root region %s",
+              regionPath),
           ex);
     } else {
       return resp.getRegion(this);
     }
   }
 
+  @Override
   public Region createSubregion(CacheInfo c, String parentPath, String regionPath,
       RegionAttributes attrs) throws AdminException {
 
@@ -528,17 +563,19 @@ public abstract class RemoteGemFireVM implements GemFireVM {
 
     Exception ex = resp.getException();
     if (ex != null) {
-      throw new AdminException(LocalizedStrings.RemoteGemFireVM_WHILE_CREATING_SUBREGION_0_OF_1
-          .toLocalizedString(new Object[] {regionPath, parentPath}), ex);
+      throw new AdminException(String.format("While creating subregion %s of %s",
+          new Object[] {regionPath, parentPath}), ex);
     } else {
       return resp.getRegion(this);
     }
   }
 
+  @Override
   public void setCacheInspectionMode(int mode) {
     this.cacheInspectionMode = mode;
   }
 
+  @Override
   public int getCacheInspectionMode() {
     return this.cacheInspectionMode;
   }
@@ -551,6 +588,7 @@ public abstract class RemoteGemFireVM implements GemFireVM {
    *
    * @see AppCacheSnapshotMessage
    */
+  @Override
   public void takeRegionSnapshot(String regionName, int snapshotId) {
     sendAsync(AppCacheSnapshotMessage.create(regionName, snapshotId));
   }
@@ -592,10 +630,12 @@ public abstract class RemoteGemFireVM implements GemFireVM {
   // }
   // }
 
+  @Override
   public InternalDistributedMember getId() {
     return this.id;
   }
 
+  @Override
   public CacheInfo getCacheInfo() {
     CacheInfoResponse resp = (CacheInfoResponse) sendAndWait(CacheInfoRequest.create());
     RemoteCacheInfo result = resp.getCacheInfo();
@@ -639,18 +679,22 @@ public abstract class RemoteGemFireVM implements GemFireVM {
     return result;
   }
 
+  @Override
   public CacheInfo setCacheLockTimeout(CacheInfo c, int v) throws AdminException {
     return setCacheConfigValue(c, LOCK_TIMEOUT_CODE, v);
   }
 
+  @Override
   public CacheInfo setCacheLockLease(CacheInfo c, int v) throws AdminException {
     return setCacheConfigValue(c, LOCK_LEASE_CODE, v);
   }
 
+  @Override
   public CacheInfo setCacheSearchTimeout(CacheInfo c, int v) throws AdminException {
     return setCacheConfigValue(c, SEARCH_TIMEOUT_CODE, v);
   }
 
+  @Override
   public AdminBridgeServer addCacheServer(CacheInfo cache) throws AdminException {
 
     BridgeServerRequest request = BridgeServerRequest.createForAdd(cache);
@@ -664,6 +708,7 @@ public abstract class RemoteGemFireVM implements GemFireVM {
     }
   }
 
+  @Override
   public AdminBridgeServer getBridgeInfo(CacheInfo cache, int bridgeRef) throws AdminException {
 
     BridgeServerRequest request = BridgeServerRequest.createForInfo(cache, bridgeRef);
@@ -677,6 +722,7 @@ public abstract class RemoteGemFireVM implements GemFireVM {
     }
   }
 
+  @Override
   public AdminBridgeServer startBridgeServer(CacheInfo cache, AdminBridgeServer bridge)
       throws AdminException {
 
@@ -692,6 +738,7 @@ public abstract class RemoteGemFireVM implements GemFireVM {
     }
   }
 
+  @Override
   public AdminBridgeServer stopBridgeServer(CacheInfo cache, AdminBridgeServer bridge)
       throws AdminException {
 
@@ -778,10 +825,12 @@ public abstract class RemoteGemFireVM implements GemFireVM {
   }
 
 
+  @Override
   public void setInspectionClasspath(String classpath) {
     this.inspectionClasspath = classpath;
   }
 
+  @Override
   public String getInspectionClasspath() {
     return this.inspectionClasspath;
   }
@@ -793,13 +842,12 @@ public abstract class RemoteGemFireVM implements GemFireVM {
    * off of a queue and delivers callbacks to the appropriate
    * {@link org.apache.geode.internal.admin.StatListener}.
    */
-  private class StatDispatcher extends Thread {
+  private class StatDispatcher extends LoggingThread {
     private BlockingQueue queue = new LinkedBlockingQueue();
     private volatile boolean stopped = false;
 
     protected StatDispatcher() {
-      super(RemoteGemFireVM.this.agent.getThreadGroup(), "StatDispatcher");
-      setDaemon(true);
+      super("StatDispatcher");
     }
 
     protected synchronized void stopDispatching() {
@@ -872,13 +920,12 @@ public abstract class RemoteGemFireVM implements GemFireVM {
   AdminResponse sendAndWait(AdminRequest msg) {
     if (unreachable) {
       throw new OperationCancelledException(
-          LocalizedStrings.RemoteGemFireVM_0_IS_UNREACHABLE_IT_HAS_EITHER_LEFT_OR_CRASHED
-              .toLocalizedString(this.name));
+          String.format("%s is unreachable. It has either left or crashed.",
+              this.name));
     }
     if (this.id == null) {
       throw new NullPointerException(
-          LocalizedStrings.RemoteGemFireVM_THE_ID_IF_THIS_REMOTEGEMFIREVM_IS_NULL
-              .toLocalizedString());
+          "The id of this RemoteGemFireVM is null!");
     }
     msg.setRecipient(this.id);
     msg.setModifiedClasspath(inspectionClasspath);
@@ -906,6 +953,7 @@ public abstract class RemoteGemFireVM implements GemFireVM {
    * @param refreshInterval refresh interval to be used by the Alerts Manager
    * @param setRemotely whether to be set on remote VM
    */
+  @Override
   public void setAlertsManager(StatAlertDefinition[] alertDefs, long refreshInterval,
       boolean setRemotely) {
     if (setRemotely) {
@@ -920,6 +968,7 @@ public abstract class RemoteGemFireVM implements GemFireVM {
    *
    * @param refreshInterval refresh interval to set (in milliseconds)
    */
+  @Override
   public void setRefreshInterval(long refreshInterval) {
     sendAsync(ChangeRefreshIntervalMessage.create(refreshInterval));
   }
@@ -934,6 +983,7 @@ public abstract class RemoteGemFireVM implements GemFireVM {
    *        UpdateAlertDefinitionRequestUPDATE_ALERT_DEFINITION,
    *        UpdateAlertDefinitionRequest.REMOVE_ALERT_DEFINITION
    */
+  @Override
   public void updateAlertDefinitions(StatAlertDefinition[] alertDefs, int actionCode) {
     // TODO: is the check for valid AdminResponse required
     sendAsync(UpdateAlertDefinitionMessage.create(alertDefs, actionCode));

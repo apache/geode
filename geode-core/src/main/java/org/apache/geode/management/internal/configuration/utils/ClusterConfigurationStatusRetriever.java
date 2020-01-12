@@ -14,6 +14,8 @@
  */
 package org.apache.geode.management.internal.configuration.utils;
 
+import static org.apache.geode.distributed.internal.membership.adapter.TcpSocketCreatorAdapter.asTcpSocketCreator;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Properties;
@@ -21,8 +23,11 @@ import java.util.Set;
 
 import org.apache.geode.distributed.LocatorLauncher;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
-import org.apache.geode.management.internal.cli.shell.Gfsh;
+import org.apache.geode.internal.net.SSLConfigurationFactory;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusRequest;
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusResponse;
 
@@ -33,88 +38,79 @@ public class ClusterConfigurationStatusRetriever {
       throws ClassNotFoundException, IOException {
     final StringBuilder buffer = new StringBuilder();
 
-    try {
-      final InetAddress networkAddress = InetAddress.getByName(locatorHostName);
+    final InetAddress networkAddress = InetAddress.getByName(locatorHostName);
 
-      TcpClient client = new TcpClient(configProps);
-      SharedConfigurationStatusResponse statusResponse =
-          (SharedConfigurationStatusResponse) client.requestToServer(networkAddress, locatorPort,
-              new SharedConfigurationStatusRequest(), 10000, true);
+    TcpClient client = new TcpClient(asTcpSocketCreator(
+        new SocketCreator(SSLConfigurationFactory.getSSLConfigForComponent(configProps,
+            SecurableCommunicationChannel.LOCATOR))),
+        InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
+        InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());
+    SharedConfigurationStatusResponse statusResponse =
+        (SharedConfigurationStatusResponse) client.requestToServer(networkAddress, locatorPort,
+            new SharedConfigurationStatusRequest(), 10000, true);
 
+    for (int i = 0; i < NUM_ATTEMPTS_FOR_SHARED_CONFIGURATION_STATUS; i++) {
+      if (statusResponse.getStatus().equals(
+          org.apache.geode.management.internal.configuration.domain.SharedConfigurationStatus.STARTED)
+          || statusResponse.getStatus().equals(
+              org.apache.geode.management.internal.configuration.domain.SharedConfigurationStatus.NOT_STARTED)) {
+        statusResponse =
+            (SharedConfigurationStatusResponse) client.requestToServer(networkAddress,
+                locatorPort, new SharedConfigurationStatusRequest(), 10000, true);
+        try {
+          Thread.sleep(5000);
+        } catch (InterruptedException e) {
+          // Swallow the exception
+        }
+      } else {
+        break;
+      }
+    }
 
+    switch (statusResponse.getStatus()) {
+      case RUNNING:
+        buffer.append("\nCluster configuration service is up and running.");
+        break;
+      case STOPPED:
+        buffer.append(
+            "\nCluster configuration service failed to start , please check the log file for errors.");
+        break;
+      case WAITING:
+        buffer.append(
+            "\nCluster configuration service is waiting for other locators with newer shared configuration data.");
+        Set<PersistentMemberPattern> pmpSet = statusResponse.getOtherLocatorInformation();
+        if (!pmpSet.isEmpty()) {
+          buffer.append("\nThis locator might have stale cluster configuration data.");
+          buffer.append(
+              "\nFollowing locators contain potentially newer cluster configuration data");
 
-      for (int i = 0; i < NUM_ATTEMPTS_FOR_SHARED_CONFIGURATION_STATUS; i++) {
-        if (statusResponse.getStatus().equals(
-            org.apache.geode.management.internal.configuration.domain.SharedConfigurationStatus.STARTED)
-            || statusResponse.getStatus().equals(
-                org.apache.geode.management.internal.configuration.domain.SharedConfigurationStatus.NOT_STARTED)) {
-          statusResponse =
-              (SharedConfigurationStatusResponse) client.requestToServer(networkAddress,
-                  locatorPort, new SharedConfigurationStatusRequest(), 10000, true);
-          try {
-            Thread.sleep(5000);
-          } catch (InterruptedException e) {
-            // Swallow the exception
+          for (PersistentMemberPattern pmp : pmpSet) {
+            buffer.append("\nHost : ").append(pmp.getHost());
+            buffer.append("\nDirectory : ").append(pmp.getDirectory());
           }
         } else {
-          break;
+          buffer.append("\nPlease check the log file for errors");
         }
-      }
-
-      switch (statusResponse.getStatus()) {
-        case RUNNING:
-          buffer.append("\nCluster configuration service is up and running.");
-          break;
-        case STOPPED:
-          buffer.append(
-              "\nCluster configuration service failed to start , please check the log file for errors.");
-          break;
-        case WAITING:
-          buffer.append(
-              "\nCluster configuration service is waiting for other locators with newer shared configuration data.");
-          Set<PersistentMemberPattern> pmpSet = statusResponse.getOtherLocatorInformation();
-          if (!pmpSet.isEmpty()) {
-            buffer.append("\nThis locator might have stale cluster configuration data.");
-            buffer.append(
-                "\nFollowing locators contain potentially newer cluster configuration data");
-
-            for (PersistentMemberPattern pmp : pmpSet) {
-              buffer.append("\nHost : ").append(pmp.getHost());
-              buffer.append("\nDirectory : ").append(pmp.getDirectory());
-            }
-          } else {
-            buffer.append("\nPlease check the log file for errors");
-          }
-          break;
-        case UNDETERMINED:
-          buffer.append(
-              "\nUnable to determine the status of shared configuration service, please check the log file");
-          break;
-        case NOT_STARTED:
-          buffer.append("\nCluster configuration service has not been started yet");
-          break;
-        case STARTED:
-          buffer
-              .append("\nCluster configuration service has been started, but its not running yet");
-          break;
-      }
-    } catch (Exception e) {
-      // TODO fix this once Trac Bug #50513 gets fixed
-      // NOTE this ClassCastException occurs if the a plain text TCP/IP connection is used to
-      // connect to a Locator
-      // configured with SSL.
-      Gfsh.getCurrentInstance()
-          .logToFile(String.format(
-              "Failed to get the status of the Shared Configuration Service running on Locator (%1$s[%2$d])!",
-              locatorHostName, locatorPort), e);
+        break;
+      case UNDETERMINED:
+        buffer.append(
+            "\nUnable to determine the status of shared configuration service, please check the log file");
+        break;
+      case NOT_STARTED:
+        buffer.append("\nCluster configuration service has not been started yet");
+        break;
+      case STARTED:
+        buffer
+            .append("\nCluster configuration service has been started, but its not running yet");
+        break;
     }
 
     return buffer.toString();
   }
 
-  public static String fromLocator(LocatorLauncher.LocatorState locatorState)
+  public static String fromLocator(LocatorLauncher.LocatorState locatorState, Properties properties)
       throws ClassNotFoundException, IOException {
     return fromLocator(locatorState.getHost(), Integer.parseInt(locatorState.getPort()),
-        new Properties());
+        properties);
   }
 }

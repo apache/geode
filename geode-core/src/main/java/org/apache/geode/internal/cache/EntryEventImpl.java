@@ -17,9 +17,7 @@ package org.apache.geode.internal.cache;
 import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_NEW_VALUE;
 import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_OLD_VALUE;
 
-import java.io.ByteArrayInputStream;
 import java.io.DataInput;
-import java.io.DataInputStream;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.function.Function;
@@ -47,17 +45,14 @@ import org.apache.geode.cache.query.internal.index.IndexUtils;
 import org.apache.geode.cache.util.TimestampedEntryEvent;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.ByteArrayDataInput;
 import org.apache.geode.internal.DSFIDFactory;
-import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Sendable;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.FilterRoutingInfo.FilterInfo;
 import org.apache.geode.internal.cache.entries.OffHeapRegionEntry;
 import org.apache.geode.internal.cache.partitioned.PartitionMessage;
@@ -69,10 +64,7 @@ import org.apache.geode.internal.cache.tx.RemoteOperationMessage;
 import org.apache.geode.internal.cache.tx.RemotePutMessage;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventCallbackArgument;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.lang.StringUtils;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.OffHeapHelper;
 import org.apache.geode.internal.offheap.OffHeapRegionEntryHelper;
@@ -82,10 +74,17 @@ import org.apache.geode.internal.offheap.StoredObject;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
+import org.apache.geode.internal.serialization.ByteArrayDataInput;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.size.Sizeable;
 import org.apache.geode.internal.util.ArrayUtils;
 import org.apache.geode.internal.util.BlobHelper;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.pdx.internal.PeerTypeRegistration;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Implementation of an entry event
@@ -97,7 +96,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
   private static final Logger logger = LogService.getLogger();
 
   // PACKAGE FIELDS //
-  private transient LocalRegion region;
+  private transient InternalRegion region;
 
   private transient RegionEntry re;
 
@@ -183,24 +182,28 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
 
   private transient boolean isPendingSecondaryExpireDestroy = false;
 
+  private transient boolean hasRetried = false;
+
   public static final Object SUSPECT_TOKEN = new Object();
 
   public EntryEventImpl() {
-    // do nothing
+    this.offHeapLock = null;
   }
 
   /**
    * Reads the contents of this message from the given input.
    */
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.eventID = (EventID) DataSerializer.readObject(in);
-    Object key = DataSerializer.readObject(in);
-    Object value = DataSerializer.readObject(in);
+  @Override
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    this.eventID = (EventID) context.getDeserializer().readObject(in);
+    Object key = context.getDeserializer().readObject(in);
+    Object value = context.getDeserializer().readObject(in);
     this.keyInfo = new KeyInfo(key, value, null);
     this.op = Operation.fromOrdinal(in.readByte());
     this.eventFlags = in.readShort();
-    this.keyInfo.setCallbackArg(DataSerializer.readObject(in));
-    this.txId = (TXId) DataSerializer.readObject(in);
+    this.keyInfo.setCallbackArg(context.getDeserializer().readObject(in));
+    this.txId = (TXId) context.getDeserializer().readObject(in);
 
     if (in.readBoolean()) { // isDelta
       assert false : "isDelta should never be true";
@@ -214,7 +217,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
       } else {
         this.newValueBytes = null;
         this.cachedSerializedNewValue = null;
-        this.newValue = DataSerializer.readObject(in);
+        this.newValue = context.getDeserializer().readObject(in);
       }
     }
 
@@ -225,7 +228,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
       this.oldValue = null; // set later in basicGetOldValue
     } else {
       this.oldValueBytes = null;
-      this.oldValue = DataSerializer.readObject(in);
+      this.oldValue = context.getDeserializer().readObject(in);
     }
     this.distributedMember = DSFIDFactory.readInternalDistributedMember(in);
     this.context = ClientProxyMembershipID.readCanonicalized(in);
@@ -233,9 +236,16 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
   }
 
   @Retained
-  protected EntryEventImpl(LocalRegion region, Operation op, Object key, boolean originRemote,
+  protected EntryEventImpl(InternalRegion region, Operation op, Object key, boolean originRemote,
       DistributedMember distributedMember, boolean generateCallbacks, boolean fromRILocalDestroy) {
     this.region = region;
+    InternalDistributedSystem ds =
+        (InternalDistributedSystem) region.getCache().getDistributedSystem();
+    if (ds.getOffHeapStore() != null) {
+      this.offHeapLock = new Object();
+    } else {
+      this.offHeapLock = null;
+    }
     this.op = op;
     this.keyInfo = region.getKeyInfo(key);
     setOriginRemote(originRemote);
@@ -249,11 +259,18 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
    * or lets it default to null.
    */
   @Retained
-  protected EntryEventImpl(final LocalRegion region, Operation op, Object key,
+  protected EntryEventImpl(final InternalRegion region, Operation op, Object key,
       @Retained(ENTRY_EVENT_NEW_VALUE) Object newVal, Object callbackArgument, boolean originRemote,
       DistributedMember distributedMember, boolean generateCallbacks, boolean initializeId) {
 
     this.region = region;
+    InternalDistributedSystem ds =
+        (InternalDistributedSystem) region.getCache().getDistributedSystem();
+    if (ds.getOffHeapStore() != null) {
+      this.offHeapLock = new Object();
+    } else {
+      this.offHeapLock = null;
+    }
     this.op = op;
     this.keyInfo = region.getKeyInfo(key, newVal, callbackArgument);
 
@@ -278,7 +295,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
    * Called by BridgeEntryEventImpl to use existing EventID
    */
   @Retained
-  protected EntryEventImpl(LocalRegion region, Operation op, Object key,
+  protected EntryEventImpl(InternalRegion region, Operation op, Object key,
       @Retained(ENTRY_EVENT_NEW_VALUE) Object newValue, Object callbackArgument,
       boolean originRemote, DistributedMember distributedMember, boolean generateCallbacks,
       EventID eventID) {
@@ -302,6 +319,11 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
       @Retained({ENTRY_EVENT_NEW_VALUE, ENTRY_EVENT_OLD_VALUE}) EntryEventImpl other,
       boolean setOldValue) {
     setRegion(other.getRegion());
+    if (other.offHeapLock != null) {
+      this.offHeapLock = new Object();
+    } else {
+      this.offHeapLock = null;
+    }
 
     this.eventID = other.eventID;
     basicSetNewValue(other.basicGetNewValue(), false);
@@ -333,8 +355,13 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
   }
 
   @Retained
-  public EntryEventImpl(Object key2) {
+  public EntryEventImpl(Object key2, boolean isOffHeap) {
     this.keyInfo = new KeyInfo(key2, null, null);
+    if (isOffHeap) {
+      this.offHeapLock = new Object();
+    } else {
+      this.offHeapLock = null;
+    }
   }
 
   /**
@@ -342,7 +369,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
    * if the region parameter is a PartitionedRegion.
    */
   @Retained
-  public static EntryEventImpl create(LocalRegion region, Operation op, Object key,
+  public static EntryEventImpl create(InternalRegion region, Operation op, Object key,
       @Retained(ENTRY_EVENT_NEW_VALUE) Object newValue, Object callbackArgument,
       boolean originRemote, DistributedMember distributedMember) {
     return create(region, op, key, newValue, callbackArgument, originRemote, distributedMember,
@@ -354,7 +381,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
    * if the region parameter is a PartitionedRegion.
    */
   @Retained
-  public static EntryEventImpl create(LocalRegion region, Operation op, Object key,
+  public static EntryEventImpl create(InternalRegion region, Operation op, Object key,
       @Retained(ENTRY_EVENT_NEW_VALUE) Object newValue, Object callbackArgument,
       boolean originRemote, DistributedMember distributedMember, boolean generateCallbacks) {
     return create(region, op, key, newValue, callbackArgument, originRemote, distributedMember,
@@ -366,11 +393,9 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
    * if the region parameter is a PartitionedRegion.
    *
    * Called by BridgeEntryEventImpl to use existing EventID
-   *
-   * {@link EntryEventImpl#EntryEventImpl(LocalRegion, Operation, Object, Object, Object, boolean, DistributedMember, boolean, EventID)}
    */
   @Retained
-  public static EntryEventImpl create(LocalRegion region, Operation op, Object key,
+  public static EntryEventImpl create(InternalRegion region, Operation op, Object key,
       @Retained(ENTRY_EVENT_NEW_VALUE) Object newValue, Object callbackArgument,
       boolean originRemote, DistributedMember distributedMember, boolean generateCallbacks,
       EventID eventID) {
@@ -381,11 +406,9 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
   /**
    * Creates and returns an EntryEventImpl. Generates and assigns a bucket id to the EntryEventImpl
    * if the region parameter is a PartitionedRegion.
-   *
-   * {@link EntryEventImpl#EntryEventImpl(LocalRegion, Operation, Object, boolean, DistributedMember, boolean, boolean)}
    */
   @Retained
-  public static EntryEventImpl create(LocalRegion region, Operation op, Object key,
+  public static EntryEventImpl create(InternalRegion region, Operation op, Object key,
       boolean originRemote, DistributedMember distributedMember, boolean generateCallbacks,
       boolean fromRILocalDestroy) {
     return new EntryEventImpl(region, op, key, originRemote, distributedMember, generateCallbacks,
@@ -398,11 +421,9 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
    *
    * This creator does not specify the oldValue as this will be filled in later as part of an
    * operation on the region, or lets it default to null.
-   *
-   * {@link EntryEventImpl#EntryEventImpl(LocalRegion, Operation, Object, Object, Object, boolean, DistributedMember, boolean, boolean)}
    */
   @Retained
-  public static EntryEventImpl create(final LocalRegion region, Operation op, Object key,
+  public static EntryEventImpl create(final InternalRegion region, Operation op, Object key,
       @Retained(ENTRY_EVENT_NEW_VALUE) Object newVal, Object callbackArgument, boolean originRemote,
       DistributedMember distributedMember, boolean generateCallbacks, boolean initializeId) {
     return new EntryEventImpl(region, op, key, newVal, callbackArgument, originRemote,
@@ -415,8 +436,9 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
    * @since GemFire 5.0
    */
   @Retained
-  static EntryEventImpl createPutAllEvent(DistributedPutAllOperation putAllOp, LocalRegion region,
-      Operation entryOp, Object entryKey, @Retained(ENTRY_EVENT_NEW_VALUE) Object entryNewValue) {
+  static EntryEventImpl createPutAllEvent(DistributedPutAllOperation putAllOp,
+      InternalRegion region, Operation entryOp, Object entryKey,
+      @Retained(ENTRY_EVENT_NEW_VALUE) Object entryNewValue) {
     @Retained
     EntryEventImpl e;
     if (putAllOp != null) {
@@ -442,7 +464,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
 
   @Retained
   protected static EntryEventImpl createRemoveAllEvent(DistributedRemoveAllOperation op,
-      LocalRegion region, Object entryKey) {
+      InternalRegion region, Object entryKey) {
     @Retained
     EntryEventImpl e;
     final Operation entryOp = Operation.REMOVEALL_DESTROY;
@@ -505,6 +527,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     this.eventFlags = EventFlags.set(this.eventFlags, mask, on);
   }
 
+  @Override
   public DistributedMember getDistributedMember() {
     return this.distributedMember;
   }
@@ -617,6 +640,14 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     return this.isEvicted;
   }
 
+  public boolean hasRetried() {
+    return hasRetried;
+  }
+
+  public void setRetried(boolean retried) {
+    hasRetried = retried;
+  }
+
   public boolean isPendingSecondaryExpireDestroy() {
     return this.isPendingSecondaryExpireDestroy;
   }
@@ -629,6 +660,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
   // was received from a peer. This is done to force distribution of the
   // message to peers and to cause concurrency version stamping to be performed.
   // This is done by all one-hop operations, like RemoteInvalidateMessage.
+  @Override
   public boolean isOriginRemote() {
     return testEventFlag(EventFlags.FLAG_ORIGIN_REMOTE);
   }
@@ -643,6 +675,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     return (this.context != null) && (this.versionTag != null);
   }
 
+  @Override
   public boolean isGenerateCallbacks() {
     return testEventFlag(EventFlags.FLAG_GENERATE_CALLBACKS);
   }
@@ -651,9 +684,9 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     Assert.assertTrue(this.eventID == null, "Double setting event id");
     EventID newID = new EventID(sys);
     if (this.eventID != null) {
-      if (logger.isTraceEnabled(LogMarker.BRIDGE_SERVER)) {
-        logger.trace(LogMarker.BRIDGE_SERVER, "Replacing event ID with {} in event {}", newID,
-            this);
+      if (logger.isTraceEnabled(LogMarker.BRIDGE_SERVER_VERBOSE)) {
+        logger.trace(LogMarker.BRIDGE_SERVER_VERBOSE, "Replacing event ID with {} in event {}",
+            newID, this);
       }
     }
     this.eventID = newID;
@@ -676,14 +709,17 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
    *
    * @return null if no event id has been set
    */
+  @Override
   public EventID getEventId() {
     return this.eventID;
   }
 
+  @Override
   public boolean isBridgeEvent() {
     return hasClientOrigin();
   }
 
+  @Override
   public boolean hasClientOrigin() {
     return getContext() != null;
   }
@@ -699,12 +735,12 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
   /**
    * gets the ID of the client that initiated this event. Null if a server-initiated event
    */
+  @Override
   public ClientProxyMembershipID getContext() {
     return this.context;
   }
 
-  // INTERNAL
-  boolean isLocalInvalid() {
+  public boolean isLocalInvalid() {
     return testEventFlag(EventFlags.FLAG_LOCAL_INVALID);
   }
 
@@ -715,6 +751,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
    *
    * @return the key.
    */
+  @Override
   public Object getKey() {
     return keyInfo.getKey();
   }
@@ -726,6 +763,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
    *
    * @return the value in the cache prior to this event.
    */
+  @Override
   public Object getOldValue() {
     try {
       if (isOriginRemote() && getRegion().isProxy()) {
@@ -753,8 +791,8 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
       }
       return null;
     } catch (IllegalArgumentException i) {
-      IllegalArgumentException iae = new IllegalArgumentException(LocalizedStrings.DONT_RELEASE
-          .toLocalizedString("Error while deserializing value for key=" + getKey()));
+      IllegalArgumentException iae = new IllegalArgumentException(String.format("%s",
+          "Error while deserializing value for key=" + getKey()));
       iae.initCause(i);
       throw iae;
     }
@@ -862,8 +900,9 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     }
   }
 
+  @Override
   @Unretained
-  protected Object basicGetNewValue() {
+  public Object basicGetNewValue() {
     generateNewValueFromBytesIfNeeded();
     Object result = this.newValue;
     if (!this.offHeapOk && isOffHeapReference(result)) {
@@ -1023,6 +1062,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
    *
    * @return the value in the cache after this event.
    */
+  @Override
   public Object getNewValue() {
 
     boolean doCopyOnRead = getRegion().isCopyOnRead();
@@ -1074,7 +1114,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     }
   }
 
-  private final Object offHeapLock = new Object();
+  private final Object offHeapLock;
 
   public String getNewValueStringForm() {
     return StringUtils.forceToString(basicGetNewValue());
@@ -1089,6 +1129,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     basicSetNewValue(obj, true);
   }
 
+  @Override
   public TransactionId getTransactionId() {
     return this.txId;
   }
@@ -1106,17 +1147,19 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     return this.op.isLoad();
   }
 
-  public void setRegion(LocalRegion r) {
+  public void setRegion(InternalRegion r) {
     this.region = r;
   }
 
   /**
    * @see org.apache.geode.cache.CacheEvent#getRegion()
    */
-  public LocalRegion getRegion() {
+  @Override
+  public InternalRegion getRegion() {
     return region;
   }
 
+  @Override
   public Operation getOperation() {
     return this.op;
   }
@@ -1132,6 +1175,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
   /**
    * @see org.apache.geode.cache.CacheEvent#getCallbackArgument()
    */
+  @Override
   public Object getCallbackArgument() {
     Object result = this.keyInfo.getCallbackArg();
     while (result instanceof WrappedCallbackArgument) {
@@ -1144,6 +1188,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     return result;
   }
 
+  @Override
   public boolean isCallbackArgumentAvailable() {
     return this.getRawCallbackArgument() != Token.NOT_AVAILABLE;
   }
@@ -1178,6 +1223,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
    * @return null if new value is not serialized; otherwise returns a SerializedCacheValueImpl
    *         containing the new value.
    */
+  @Override
   public SerializedCacheValue<?> getSerializedNewValue() {
     // In the case where there is a delta that has not been applied yet,
     // do not apply it here since it would not produce a serialized new
@@ -1503,10 +1549,12 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     return cd;
   }
 
+  @Override
   public void setCachedSerializedNewValue(byte[] v) {
     this.cachedSerializedNewValue = v;
   }
 
+  @Override
   public byte[] getCachedSerializedNewValue() {
     return this.cachedSerializedNewValue;
   }
@@ -1537,13 +1585,14 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
    * being NOT_AVAILABLE.
    */
   private static final boolean EVENT_OLD_VALUE =
-      !Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "disable-event-old-value");
+      !Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "disable-event-old-value");
 
   protected boolean areOldValuesEnabled() {
     return EVENT_OLD_VALUE;
   }
 
-  void putExistingEntry(final LocalRegion owner, RegionEntry entry) throws RegionClearedException {
+  void putExistingEntry(final InternalRegion owner, RegionEntry entry)
+      throws RegionClearedException {
     putExistingEntry(owner, entry, false, null);
   }
 
@@ -1553,8 +1602,8 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
    *
    * @param oldValueForDelta Used by Delta Propagation feature
    */
-  void putExistingEntry(final LocalRegion owner, final RegionEntry reentry, boolean requireOldValue,
-      Object oldValueForDelta) throws RegionClearedException {
+  public void putExistingEntry(final InternalRegion owner, final RegionEntry reentry,
+      boolean requireOldValue, Object oldValueForDelta) throws RegionClearedException {
     makeUpdate();
     // only set oldValue if it hasn't already been set to something
     if (this.oldValue == null && this.oldValueBytes == null) {
@@ -1596,7 +1645,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
    *
    * @since GemFire 5.0
    */
-  void makeUpdate() {
+  public void makeUpdate() {
     setOperation(this.op.getCorrespondingUpdateOp());
   }
 
@@ -1605,14 +1654,14 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
    *
    * @since GemFire 5.0
    */
-  void makeCreate() {
+  public void makeCreate() {
     setOperation(this.op.getCorrespondingCreateOp());
   }
 
   /**
    * Put a newValue into the given, write synced, new, region entry.
    */
-  void putNewEntry(final LocalRegion owner, final RegionEntry reentry)
+  public void putNewEntry(final InternalRegion owner, final RegionEntry reentry)
       throws RegionClearedException {
     if (!this.op.guaranteesOldValue()) { // preserves oldValue for CM ops in clients
       basicSetOldValue(null);
@@ -1621,6 +1670,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     setNewValueInRegion(owner, reentry, null);
   }
 
+  @Override
   public void setRegionEntry(RegionEntry re) {
     this.re = re;
   }
@@ -1630,7 +1680,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
   }
 
   @Retained(ENTRY_EVENT_NEW_VALUE)
-  private void setNewValueInRegion(final LocalRegion owner, final RegionEntry reentry,
+  private void setNewValueInRegion(final InternalRegion owner, final RegionEntry reentry,
       Object oldValueForDelta) throws RegionClearedException {
 
     boolean wasTombstone = reentry.isTombstone();
@@ -1654,7 +1704,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     if (v == null) {
       v = isLocalInvalid() ? Token.LOCAL_INVALID : Token.INVALID;
     } else {
-      getRegion().regionInvalid = false;
+      getRegion().setRegionInvalid(false);
     }
 
     reentry.setValueResultOfSearch(this.op.isNetSearch());
@@ -1718,7 +1768,11 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
       success = true;
     } finally {
       if (!success && reentry instanceof OffHeapRegionEntry && v instanceof StoredObject) {
-        OffHeapRegionEntryHelper.releaseEntry((OffHeapRegionEntry) reentry, (StoredObject) v);
+        if (!calledSetValue) {
+          OffHeapHelper.release(v);
+        } else {
+          OffHeapRegionEntryHelper.releaseEntry((OffHeapRegionEntry) reentry, (StoredObject) v);
+        }
       }
     }
     if (logger.isTraceEnabled()) {
@@ -1746,7 +1800,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     return this.newValueBucketSize;
   }
 
-  private void setNewValueBucketSize(LocalRegion lr, Object v) {
+  private void setNewValueBucketSize(InternalRegion lr, Object v) {
     if (lr == null) {
       lr = getRegion();
     }
@@ -1780,9 +1834,9 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
       }
       boolean deltaBytesApplied = false;
       try {
-        long start = CachePerfStats.getStatTime();
+        long start = getRegion().getCachePerfStats().getTime();
         ((org.apache.geode.Delta) value)
-            .fromDelta(new DataInputStream(new ByteArrayInputStream(getDeltaBytes())));
+            .fromDelta(new ByteArrayDataInput(getDeltaBytes()));
         getRegion().getCachePerfStats().endDeltaUpdate(start);
         deltaBytesApplied = true;
       } catch (RuntimeException rte) {
@@ -1890,7 +1944,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     return this.oldValue == Token.DESTROYED || this.oldValue == Token.TOMBSTONE;
   }
 
-  void setOldValueDestroyedToken() {
+  public void setOldValueDestroyedToken() {
     basicSetOldValue(Token.DESTROYED);
   }
 
@@ -1961,6 +2015,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     return this.oldValue instanceof Token;
   }
 
+  @Override
   public boolean isOldValueAvailable() {
     if (isOriginRemote() && getRegion().isProxy()) {
       return false;
@@ -1984,14 +2039,12 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
       return BlobHelper.deserializeBlob(bytes, version, in);
     } catch (IOException e) {
       throw new SerializationException(
-          LocalizedStrings.EntryEventImpl_AN_IOEXCEPTION_WAS_THROWN_WHILE_DESERIALIZING
-              .toLocalizedString(),
+          "An IOException was thrown while deserializing",
           e);
     } catch (ClassNotFoundException e) {
       // fix for bug 43602
       throw new SerializationException(
-          LocalizedStrings.EntryEventImpl_A_CLASSNOTFOUNDEXCEPTION_WAS_THROWN_WHILE_TRYING_TO_DESERIALIZE_CACHED_VALUE
-              .toLocalizedString(),
+          "A ClassNotFoundException was thrown while trying to deserialize cached value.",
           e);
     }
   }
@@ -2007,14 +2060,12 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
       return BlobHelper.deserializeOffHeapBlob(bytes);
     } catch (IOException e) {
       throw new SerializationException(
-          LocalizedStrings.EntryEventImpl_AN_IOEXCEPTION_WAS_THROWN_WHILE_DESERIALIZING
-              .toLocalizedString(),
+          "An IOException was thrown while deserializing",
           e);
     } catch (ClassNotFoundException e) {
       // fix for bug 43602
       throw new SerializationException(
-          LocalizedStrings.EntryEventImpl_A_CLASSNOTFOUNDEXCEPTION_WAS_THROWN_WHILE_TRYING_TO_DESERIALIZE_CACHED_VALUE
-              .toLocalizedString(),
+          "A ClassNotFoundException was thrown while trying to deserialize cached value.",
           e);
     }
   }
@@ -2036,14 +2087,13 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
   public static byte[] serialize(Object obj, Version version) {
     if (obj == null || obj == Token.NOT_AVAILABLE || Token.isInvalidOrRemoved(obj))
       throw new IllegalArgumentException(
-          LocalizedStrings.EntryEventImpl_MUST_NOT_SERIALIZE_0_IN_THIS_CONTEXT
-              .toLocalizedString(obj));
+          String.format("Must not serialize %s in this context.",
+              obj));
     try {
       return BlobHelper.serializeToBlob(obj, version);
     } catch (IOException e) {
       throw new SerializationException(
-          LocalizedStrings.EntryEventImpl_AN_IOEXCEPTION_WAS_THROWN_WHILE_SERIALIZING
-              .toLocalizedString(),
+          "An IOException was thrown while serializing.",
           e);
     }
   }
@@ -2063,7 +2113,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
       byte userBits) {
     if (obj == null || obj == Token.NOT_AVAILABLE || Token.isInvalidOrRemoved(obj))
       throw new IllegalArgumentException(
-          LocalizedStrings.EntryEvents_MUST_NOT_SERIALIZE_0_IN_THIS_CONTEXT.toLocalizedString(obj));
+          String.format("Must not serialize %s in this context.", obj));
     try {
       HeapDataOutputStream hdos = null;
       if (wrapper.getBytes().length < 32) {
@@ -2076,8 +2126,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
       hdos.sendTo(wrapper, userBits);
     } catch (IOException e) {
       RuntimeException e2 = new IllegalArgumentException(
-          LocalizedStrings.EntryEventImpl_AN_IOEXCEPTION_WAS_THROWN_WHILE_SERIALIZING
-              .toLocalizedString());
+          "An IOException was thrown while serializing.");
       e2.initCause(e);
       throw e2;
     }
@@ -2100,21 +2149,32 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     buf.append(getRegion().getFullPath());
     buf.append(";key=");
     buf.append(this.getKey());
-    buf.append(";oldValue=");
-    try {
-      synchronized (this.offHeapLock) {
+    if (Boolean.getBoolean("gemfire.insecure-logvalues")) {
+      buf.append(";oldValue=");
+      if (mayHaveOffHeapReferences()) {
+        synchronized (this.offHeapLock) {
+          try {
+            ArrayUtils.objectStringNonRecursive(basicGetOldValue(), buf);
+          } catch (IllegalStateException ignore) {
+            buf.append("OFFHEAP_VALUE_FREED");
+          }
+        }
+      } else {
         ArrayUtils.objectStringNonRecursive(basicGetOldValue(), buf);
       }
-    } catch (IllegalStateException ignore) {
-      buf.append("OFFHEAP_VALUE_FREED");
-    }
-    buf.append(";newValue=");
-    try {
-      synchronized (this.offHeapLock) {
+
+      buf.append(";newValue=");
+      if (mayHaveOffHeapReferences()) {
+        synchronized (this.offHeapLock) {
+          try {
+            ArrayUtils.objectStringNonRecursive(basicGetNewValue(), buf);
+          } catch (IllegalStateException ignore) {
+            buf.append("OFFHEAP_VALUE_FREED");
+          }
+        }
+      } else {
         ArrayUtils.objectStringNonRecursive(basicGetNewValue(), buf);
       }
-    } catch (IllegalStateException ignore) {
-      buf.append("OFFHEAP_VALUE_FREED");
     }
     buf.append(";callbackArg=");
     buf.append(this.getRawCallbackArgument());
@@ -2158,22 +2218,28 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     if (this.getInhibitDistribution()) {
       buf.append(";inhibitDistribution");
     }
+    if (this.tailKey != -1) {
+      buf.append(";tailKey=" + tailKey);
+    }
     buf.append("]");
     return buf.toString();
   }
 
+  @Override
   public int getDSFID() {
     return ENTRY_EVENT;
   }
 
-  public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeObject(this.eventID, out);
-    DataSerializer.writeObject(this.getKey(), out);
-    DataSerializer.writeObject(this.keyInfo.getValue(), out);
+  @Override
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    context.getSerializer().writeObject(this.eventID, out);
+    context.getSerializer().writeObject(this.getKey(), out);
+    context.getSerializer().writeObject(this.keyInfo.getValue(), out);
     out.writeByte(this.op.ordinal);
     out.writeShort(this.eventFlags & EventFlags.FLAG_TRANSIENT_MASK);
-    DataSerializer.writeObject(this.getRawCallbackArgument(), out);
-    DataSerializer.writeObject(this.txId, out);
+    context.getSerializer().writeObject(this.getRawCallbackArgument(), out);
+    context.getSerializer().writeObject(this.txId, out);
 
     {
       out.writeBoolean(false);
@@ -2194,7 +2260,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
             DataSerializer.writeObjectAsByteArray(cd.getValue(), out);
           }
         } else {
-          DataSerializer.writeObject(nv, out);
+          context.getSerializer().writeObject(nv, out);
         }
       }
     }
@@ -2215,11 +2281,11 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
         }
       } else {
         ov = AbstractRegion.handleNotAvailable(ov);
-        DataSerializer.writeObject(ov, out);
+        context.getSerializer().writeObject(ov, out);
       }
     }
     InternalDataSerializer.invokeToData((InternalDistributedMember) this.distributedMember, out);
-    DataSerializer.writeObject(getContext(), out);
+    context.getSerializer().writeObject(getContext(), out);
     DataSerializer.writeLong(tailKey, out);
   }
 
@@ -2261,6 +2327,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
    * @return null if old value is not serialized; otherwise returns a SerializedCacheValueImpl
    *         containing the old value.
    */
+  @Override
   public SerializedCacheValue<?> getSerializedOldValue() {
     @Unretained(ENTRY_EVENT_OLD_VALUE)
     final Object tmp = basicGetOldValue();
@@ -2289,9 +2356,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
         newSize = CachedDeserializableFactory.calcSerializedSize(v)
             + CachedDeserializableFactory.overhead();
       } catch (IllegalArgumentException iae) {
-        logger.warn(
-            LocalizedMessage.create(
-                LocalizedStrings.EntryEventImpl_DATASTORE_FAILED_TO_CALCULATE_SIZE_OF_NEW_VALUE),
+        logger.warn("DataStore failed to calculate size of new value",
             iae);
         newSize = 0;
       }
@@ -2310,9 +2375,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
       try {
         oldSize = CachedDeserializableFactory.calcMemSize(basicGetOldValue());
       } catch (IllegalArgumentException iae) {
-        logger.warn(
-            LocalizedMessage.create(
-                LocalizedStrings.EntryEventImpl_DATASTORE_FAILED_TO_CALCULATE_SIZE_OF_OLD_VALUE),
+        logger.warn("DataStore failed to calculate size of old value",
             iae);
         oldSize = 0;
       }
@@ -2320,6 +2383,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     return oldSize;
   }
 
+  @Override
   public EnumListenerEvent getEventType() {
     return this.eventType;
   }
@@ -2327,6 +2391,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
   /**
    * Sets the operation type.
    */
+  @Override
   public void setEventType(EnumListenerEvent eventType) {
     this.eventType = eventType;
   }
@@ -2472,6 +2537,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
   /**
    * sets the routing information for cache clients
    */
+  @Override
   public void setLocalFilterInfo(FilterInfo info) {
     this.filterInfo = info;
   }
@@ -2479,6 +2545,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
   /**
    * retrieves the routing information for cache clients in this VM
    */
+  @Override
   public FilterInfo getLocalFilterInfo() {
     return this.filterInfo;
   }
@@ -2530,7 +2597,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
    * establish the old value in this event as the current cache value, whether in memory or on disk
    */
   public void setOldValueForQueryProcessing() {
-    RegionEntry reentry = getRegion().entries.getEntry(this.getKey());
+    RegionEntry reentry = getRegion().getRegionMap().getEntry(this.getKey());
     if (reentry != null) {
       @Retained
       Object v = reentry.getValueOffHeapOrDiskWithoutFaultIn(getRegion());
@@ -2557,6 +2624,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
   /**
    * @return the concurrency versioning tag for this event, if any
    */
+  @Override
   public VersionTag getVersionTag() {
     return this.versionTag;
   }
@@ -2584,7 +2652,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
       }
     }
     if (result <= 0) {
-      LocalRegion region = this.getRegion();
+      InternalRegion region = this.getRegion();
       if (region != null) {
         result = region.cacheTimeMillis();
       } else {
@@ -2655,20 +2723,24 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
       return getDeserializedValue(this.r, this.re);
     }
 
+    @Override
     public Object getDeserializedForReading() {
       return getCd().getDeserializedForReading();
     }
 
+    @Override
     public Object getDeserializedWritableCopy(Region rgn, RegionEntry entry) {
       return getCd().getDeserializedWritableCopy(rgn, entry);
     }
 
+    @Override
     public Object getDeserializedValue(Region rgn, RegionEntry reentry) {
       return callWithOffHeapLock(cd -> {
         return cd.getDeserializedValue(rgn, reentry);
       });
     }
 
+    @Override
     public Object getValue() {
       if (this.serializedValue != null) {
         return this.serializedValue;
@@ -2676,6 +2748,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
       return getCd().getValue();
     }
 
+    @Override
     public void writeValueAsByteArray(DataOutput out) throws IOException {
       if (this.serializedValue != null) {
         DataSerializer.writeByteArray(this.serializedValue, out);
@@ -2684,6 +2757,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
       }
     }
 
+    @Override
     public void fillSerializedValue(BytesAndBitsForCompactor wrapper, byte userBits) {
       if (this.serializedValue != null) {
         wrapper.setData(this.serializedValue, userBits, this.serializedValue.length,
@@ -2693,14 +2767,17 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
       }
     }
 
+    @Override
     public int getValueSizeInBytes() {
       return getCd().getValueSizeInBytes();
     }
 
+    @Override
     public int getSizeInBytes() {
       return getCd().getSizeInBytes();
     }
 
+    @Override
     public String getStringForm() {
       return getCd().getStringForm();
     }
@@ -2832,7 +2909,11 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
    * Return true if this EntryEvent may have off-heap references.
    */
   private boolean mayHaveOffHeapReferences() {
-    LocalRegion lr = getRegion();
+    if (this.offHeapLock == null) {
+      return false;
+    }
+
+    InternalRegion lr = getRegion();
     if (lr != null) {
       return lr.getOffHeap();
     }
@@ -2848,13 +2929,19 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
    * Make sure that this event will never own an off-heap value. Once this is called on an event it
    * does not need to have release called.
    */
+  @Override
   public void disallowOffHeapValues() {
     if (isOffHeapReference(this.newValue) || isOffHeapReference(this.oldValue)) {
       throw new IllegalStateException("This event already has off-heap values");
     }
-    synchronized (this.offHeapLock) {
+    if (mayHaveOffHeapReferences()) {
+      synchronized (this.offHeapLock) {
+        this.offHeapOk = false;
+      }
+    } else {
       this.offHeapOk = false;
     }
+
   }
 
   /**
@@ -2895,5 +2982,16 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
 
   public boolean isOldValueOffHeap() {
     return isOffHeapReference(this.oldValue);
+  }
+
+  /**
+   * If region is currently a bucket
+   * then change it to be the partitioned region that owns that bucket.
+   * Otherwise do nothing.
+   */
+  public void changeRegionToBucketsOwner() {
+    if (getRegion().isUsedForPartitionedRegionBucket()) {
+      setRegion(getRegion().getPartitionedRegion());
+    }
   }
 }

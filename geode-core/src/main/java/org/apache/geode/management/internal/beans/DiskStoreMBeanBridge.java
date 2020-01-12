@@ -20,7 +20,6 @@ import org.apache.geode.cache.DiskStore;
 import org.apache.geode.internal.cache.DirectoryHolder;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.DiskStoreStats;
-import org.apache.geode.management.internal.ManagementStrings;
 import org.apache.geode.management.internal.beans.stats.MBeanStatsMonitor;
 import org.apache.geode.management.internal.beans.stats.StatType;
 import org.apache.geode.management.internal.beans.stats.StatsAverageLatency;
@@ -74,7 +73,7 @@ public class DiskStoreMBeanBridge {
   public DiskStoreMBeanBridge(DiskStore ds) {
     this.diskStore = (DiskStoreImpl) ds;
     initDiskData();
-    this.monitor = new MBeanStatsMonitor(ManagementStrings.DISKSTORE_MONITOR.toLocalizedString());
+    this.monitor = new MBeanStatsMonitor("DiskStoreMXBeanMonitor");
 
     this.diskStoreStats = diskStore.getStats();
 
@@ -182,7 +181,7 @@ public class DiskStoreMBeanBridge {
   /** Statistics **/
 
   public DiskStoreMBeanBridge() {
-    this.monitor = new MBeanStatsMonitor(ManagementStrings.DISKSTORE_MONITOR.toLocalizedString());
+    this.monitor = new MBeanStatsMonitor("DiskStoreMXBeanMonitor");
     initializeStats();
   }
 
@@ -237,11 +236,7 @@ public class DiskStoreMBeanBridge {
   }
 
   public long getTotalBytesOnDisk() {
-    long diskSpace = 0;
-    for (DirectoryHolder dr : this.directoryHolders) {
-      diskSpace += dr.getDiskDirectoryStats().getDiskSpace();
-    }
-    return diskSpace;
+    return diskStore.getTotalBytesOnDisk();
   }
 
   public int getTotalQueueSize() {
@@ -273,5 +268,13 @@ public class DiskStoreMBeanBridge {
 
   public void setDiskUsageCriticalPercentage(float criticalPercent) {
     diskStore.setDiskUsageCriticalPercentage(criticalPercent);
+  }
+
+  public float getDiskUsagePercentage() {
+    return diskStore.getDiskUsagePercentage();
+  }
+
+  public float getDiskFreePercentage() {
+    return diskStore.getDiskFreePercentage();
   }
 }

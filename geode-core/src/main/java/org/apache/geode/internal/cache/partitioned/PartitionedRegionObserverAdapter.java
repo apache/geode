@@ -15,7 +15,6 @@
 package org.apache.geode.internal.cache.partitioned;
 
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.cache.ProxyBucketRegion;
 
 /**
  * This class provides 'do-nothing' implementations of all of the methods of interface
@@ -30,6 +29,7 @@ public class PartitionedRegionObserverAdapter implements PartitionedRegionObserv
    * This callback is called just before calculating starting bucket id on datastore
    */
 
+  @Override
   public void beforeCalculatingStartingBucketId() {}
 
   @Override

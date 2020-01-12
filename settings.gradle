@@ -14,38 +14,85 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+import org.gradle.util.GradleVersion
+
 rootProject.name = 'geode'
 
-include 'geode-old-versions'
+// We want to see all test results.  This is equivalent to setting --continue on the command line.
+gradle.startParameter.continueOnFailure = true
+
 include 'geode-common'
-include 'geode-json'
+include 'geode-unsafe'
 include 'geode-junit'
+include 'geode-dunit'
+include 'geode-logging'
+include 'geode-serialization'
+include 'geode-tcp-server'
 include 'geode-core'
+include 'geode-log4j'
 include 'geode-web'
 include 'geode-web-api'
+include 'geode-web-management'
+include 'geode-management'
+include 'geode-gfsh'
 include 'geode-pulse'
+include 'geode-pulse:geode-pulse-test'
 include 'geode-assembly'
+include 'geode-assembly:geode-assembly-test'
 include 'geode-rebalancer'
 include 'geode-lucene'
+include 'geode-lucene:geode-lucene-test'
 include 'geode-old-client-support'
 include 'geode-wan'
 include 'geode-cq'
+include 'geode-redis'
+include 'geode-memcached'
 include 'geode-connectors'
-include 'extensions/geode-modules'
-include 'extensions/geode-modules-tomcat7'
-include 'extensions/geode-modules-tomcat8'
-include 'extensions/geode-modules-session-internal'
-include 'extensions/geode-modules-session'
-include 'extensions/geode-modules-assembly'
+include 'geode-http-service'
+include 'extensions:geode-modules'
+include 'extensions:geode-modules-test'
+include 'extensions:geode-modules-tomcat7'
+include 'extensions:geode-modules-tomcat8'
+include 'extensions:geode-modules-tomcat9'
+include 'extensions:geode-modules-session-internal'
+include 'extensions:geode-modules-session'
+include 'extensions:geode-modules-assembly'
 include 'geode-protobuf'
+include 'geode-protobuf:geode-protobuf-test'
 include 'geode-experimental-driver'
 include 'geode-protobuf-messages'
-include 'extensions/session-testing-war'
+include 'extensions:session-testing-war'
 include 'geode-concurrency-test'
+include 'boms:geode-client-bom'
+include 'boms:geode-all-bom'
+include 'static-analysis:pmd-rules'
 
+
+['1.0.0-incubating',
+ '1.1.0',
+ '1.1.1',
+ '1.2.0',
+ '1.3.0',
+ '1.4.0',
+ '1.5.0',
+ '1.6.0',
+ '1.7.0',
+ '1.8.0',
+ '1.9.0',
+ '1.9.1',
+ '1.9.2',
+ '1.10.0',
+ '1.11.0'].each {
+  include 'geode-old-versions:'.concat(it)
+}
 
 if (GradleVersion.current() < GradleVersion.version(minimumGradleVersion)) {
   throw new GradleException('Running with unsupported Gradle Version. Use Gradle Wrapper or with Gradle version >= ' + minimumGradleVersion)
 }
 
-
+buildCache {
+  local {
+    enabled = true
+  }
+}

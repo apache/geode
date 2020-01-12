@@ -31,7 +31,7 @@ import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Does a region get on a server
@@ -126,7 +126,7 @@ public class GetOp {
       this.key = key;
       this.callbackArg = callbackArg;
       this.clientEvent = clientEvent;
-      getMessage().addStringPart(region.getFullPath());
+      getMessage().addStringPart(region.getFullPath(), true);
       getMessage().addStringOrObjPart(key);
       if (callbackArg != null) {
         getMessage().addObjPart(callbackArg);

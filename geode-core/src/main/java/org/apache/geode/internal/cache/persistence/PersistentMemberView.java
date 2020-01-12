@@ -72,7 +72,6 @@ public interface PersistentMemberView {
    * Indicate that the member no longer persists the region and can be removed. This is only called
    * after this member is online.
    *
-   * @param persistentID
    */
   void memberRemoved(PersistentMemberID persistentID);
 

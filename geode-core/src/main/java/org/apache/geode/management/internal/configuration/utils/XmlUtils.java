@@ -46,7 +46,7 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -67,9 +67,6 @@ public class XmlUtils {
    *
    * @param reader to create document from.
    * @return {@link Document} if successful, otherwise false.
-   * @throws ParserConfigurationException
-   * @throws SAXException
-   * @throws IOException
    * @since GemFire 8.1
    */
   public static Document createDocumentFromReader(final Reader reader)
@@ -120,10 +117,6 @@ public class XmlUtils {
    *
    * @param doc Target document where the node will added
    * @param xmlEntity contains definition of the xml entity
-   * @throws IOException
-   * @throws ParserConfigurationException
-   * @throws SAXException
-   * @throws XPathExpressionException
    */
   public static void addNewNode(final Document doc, final XmlEntity xmlEntity)
       throws IOException, XPathExpressionException, SAXException, ParserConfigurationException {
@@ -185,9 +178,6 @@ public class XmlUtils {
   }
 
   /**
-   * @param elementOrderMap
-   * @param namespace
-   * @param type
    * @return <code>true</code> if element allows multiple, otherwise <code>false</code>.
    * @since GemFire 8.1
    */
@@ -207,9 +197,6 @@ public class XmlUtils {
   }
 
   /**
-   * @param elementOrderMap
-   * @param namespace
-   * @param type
    * @return position of the element if in map, otherwise {@link Integer#MAX_VALUE}.
    * @since GemFire 8.1
    */
@@ -230,12 +217,7 @@ public class XmlUtils {
   /****
    * Creates a node from the String xml definition
    *
-   * @param owner
-   * @param xmlDefinition
    * @return Node representing the xml definition
-   * @throws ParserConfigurationException
-   * @throws IOException
-   * @throws SAXException
    */
   private static Node createNode(Document owner, String xmlDefinition)
       throws SAXException, IOException, ParserConfigurationException {
@@ -295,9 +277,6 @@ public class XmlUtils {
   /*****
    * Deletes all the node from the document which match the definition provided by xmlEntity
    *
-   * @param doc
-   * @param xmlEntity
-   * @throws Exception
    */
   public static void deleteNode(Document doc, XmlEntity xmlEntity) throws Exception {
     NodeList nodes = getNodes(doc, xmlEntity);
@@ -314,10 +293,6 @@ public class XmlUtils {
   /****
    * Gets all the nodes matching the definition given by the xml entity
    *
-   * @param doc
-   * @param xmlEntity
-   * @return Nodes
-   * @throws XPathExpressionException
    */
   public static NodeList getNodes(Document doc, XmlEntity xmlEntity)
       throws XPathExpressionException {
@@ -371,11 +346,7 @@ public class XmlUtils {
   /****
    * Converts the document to a well formatted Xml string
    *
-   * @param doc
    * @return pretty xml string
-   * @throws IOException
-   * @throws TransformerException
-   * @throws TransformerFactoryConfigurationError
    */
   public static String prettyXml(Node doc)
       throws TransformerFactoryConfigurationError, TransformerException {
@@ -404,13 +375,7 @@ public class XmlUtils {
   /****
    * Convert the xmlString to pretty well formatted xmlString
    *
-   * @param xmlContent
    * @return pretty xml string
-   * @throws IOException
-   * @throws TransformerException
-   * @throws TransformerFactoryConfigurationError
-   * @throws ParserConfigurationException
-   * @throws SAXException
    */
   public static String prettyXml(String xmlContent)
       throws IOException, TransformerFactoryConfigurationError, TransformerException, SAXException,
@@ -422,11 +387,6 @@ public class XmlUtils {
   /***
    * Create a document from the xml
    *
-   * @param xmlContent
-   * @return Document
-   * @throws IOException
-   * @throws ParserConfigurationException
-   * @throws SAXException
    */
   public static Document createDocumentFromXml(String xmlContent)
       throws SAXException, ParserConfigurationException, IOException {
@@ -460,8 +420,6 @@ public class XmlUtils {
    * @param document Config XML {@link Document} to upgrade.
    * @param namespaceUri Namespace URI to upgrade to.
    * @param schemaLocation Schema location to upgrade to.
-   * @throws XPathExpressionException
-   * @throws ParserConfigurationException
    * @since GemFire 8.1
    */
   public static Document upgradeSchema(Document document, final String namespaceUri,
@@ -570,7 +528,6 @@ public class XmlUtils {
    * @param node {@link Node} to change namespace URI on.
    * @param oldNamespaceUri old namespace URI to change from.
    * @param newNamespaceUri new Namespace URI to change to.
-   * @throws XPathExpressionException
    * @return the modified version of the passed in node.
    * @since GemFire 8.1
    */
@@ -596,7 +553,6 @@ public class XmlUtils {
    *
    * @param doc Target document whose root attributes must be modified
    * @param xmlEntity xml entity for the root , it also contains the attributes
-   * @throws IOException
    */
   public static void modifyRootAttributes(Document doc, XmlEntity xmlEntity) {
     if (xmlEntity == null || xmlEntity.getAttributes() == null) {

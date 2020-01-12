@@ -17,8 +17,6 @@ package org.apache.geode.internal.cache;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.Hashtable;
-import java.util.Map;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.cache.CacheStatistics;
@@ -27,7 +25,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.StatisticsDisabledException;
 import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * A Region.Entry implementation for remote entries and all PR entries
@@ -84,6 +81,7 @@ public class EntrySnapshot implements Region.Entry, DataSerializable {
     return this.startedLocal;
   }
 
+  @Override
   public Object getKey() {
     checkEntryDestroyed();
     return regionEntry.getKey();
@@ -125,6 +123,7 @@ public class EntrySnapshot implements Region.Entry, DataSerializable {
     return v;
   }
 
+  @Override
   public Object getValue() {
     checkEntryDestroyed();
     return getRawValue();
@@ -139,23 +138,19 @@ public class EntrySnapshot implements Region.Entry, DataSerializable {
     return o;
   }
 
+  @Override
   public Object getUserAttribute() {
     checkEntryDestroyed();
-    Map userAttr = region.entryUserAttributes;
-    if (userAttr == null) {
-      return null;
-    }
-    return userAttr.get(this.regionEntry.getKey());
+    return region.getEntryUserAttributes().get(regionEntry.getKey());
   }
 
+  @Override
   public Object setUserAttribute(Object value) {
     checkEntryDestroyed();
-    if (region.entryUserAttributes == null) {
-      region.entryUserAttributes = new Hashtable();
-    }
-    return region.entryUserAttributes.put(this.regionEntry.getKey(), value);
+    return region.getEntryUserAttributes().put(regionEntry.getKey(), value);
   }
 
+  @Override
   public boolean isDestroyed() {
     if (this.entryDestroyed) {
       return true;
@@ -169,17 +164,19 @@ public class EntrySnapshot implements Region.Entry, DataSerializable {
     return this.entryDestroyed;
   }
 
+  @Override
   public Region getRegion() {
     checkEntryDestroyed();
     return region;
   }
 
+  @Override
   public CacheStatistics getStatistics() throws StatisticsDisabledException {
     checkEntryDestroyed();
     if (!regionEntry.hasStats() || !region.statisticsEnabled) {
       throw new StatisticsDisabledException(
-          LocalizedStrings.PartitionedRegion_STATISTICS_DISABLED_FOR_REGION_0
-              .toLocalizedString(region.getFullPath()));
+          String.format("Statistics disabled for region ' %s '",
+              region.getFullPath()));
     }
     return new CacheStatisticsImpl(this.regionEntry, region);
   }
@@ -198,6 +195,7 @@ public class EntrySnapshot implements Region.Entry, DataSerializable {
     return this.regionEntry.getKey().hashCode();
   }
 
+  @Override
   public Object setValue(Object arg) {
     Object returnValue = region.put(this.getKey(), arg);
     this.regionEntry.setCachedValue(arg);
@@ -209,6 +207,7 @@ public class EntrySnapshot implements Region.Entry, DataSerializable {
    *
    * @see org.apache.geode.cache.Region.Entry#isLocal()
    */
+  @Override
   public boolean isLocal() {
     // pr entries are always non-local to support the bucket being moved out
     // from under an entry
@@ -242,7 +241,7 @@ public class EntrySnapshot implements Region.Entry, DataSerializable {
   private void checkEntryDestroyed() throws EntryDestroyedException {
     if (isDestroyed()) {
       throw new EntryDestroyedException(
-          LocalizedStrings.PartitionedRegion_ENTRY_DESTROYED.toLocalizedString());
+          "entry destroyed");
     }
   }
 
@@ -265,11 +264,13 @@ public class EntrySnapshot implements Region.Entry, DataSerializable {
 
   // when externalized, we write the state of a non-local RegionEntry so it
   // can be reconstituted anywhere
+  @Override
   public void toData(DataOutput out) throws IOException {
     out.writeBoolean(this.regionEntry instanceof NonLocalRegionEntryWithStats);
     this.regionEntry.toData(out);
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.startedLocal = false;
     boolean hasStats = in.readBoolean();

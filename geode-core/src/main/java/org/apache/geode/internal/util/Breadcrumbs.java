@@ -14,9 +14,10 @@
  */
 package org.apache.geode.internal.util;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.i18n.StringId;
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.internal.cache.EventID;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Breadcrumbs establishes traces in thread names that are useful in figuring out what is going on
@@ -27,10 +28,11 @@ import org.apache.geode.internal.cache.EventID;
  */
 public class Breadcrumbs {
 
-  private static ThreadLocal<EventID> EventIDs = new ThreadLocal<EventID>();
+  private static final ThreadLocal<EventID> EventIDs = new ThreadLocal<EventID>();
 
+  @MutableForTesting
   public static boolean ENABLED =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "enable-breadcrumbs");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "enable-breadcrumbs");
 
 
   /** delimiter for crumb numbers */
@@ -45,15 +47,16 @@ public class Breadcrumbs {
   }
 
   /** crumb with the highest ordinal, for initialization of delimiter strings */
-  private static CrumbType Crumbiest = CrumbType.PROBLEM;
+  @Immutable
+  private static final CrumbType Crumbiest = CrumbType.PROBLEM;
 
-  private static String[] crumbLabels = new String[] {"rcv", "evt", "snd", "oops"};
+  private static final String[] crumbLabels = new String[] {"rcv", "evt", "snd", "oops"};
 
   /** strings that start a particular breadcrumb */
-  private static String[] crumbStarts = new String[Crumbiest.ordinal() + 1];
+  private static final String[] crumbStarts = new String[Crumbiest.ordinal() + 1];
 
   /** strings the terminate a particular breadcrumb */
-  private static String[] crumbEnds = new String[Crumbiest.ordinal() + 1];
+  private static final String[] crumbEnds = new String[Crumbiest.ordinal() + 1];
 
 
   static {
@@ -101,9 +104,9 @@ public class Breadcrumbs {
    * a problem crumb can be set using I18n message strings and arguments. Breadcrumb will localize
    * the string with the given args
    */
-  public static void setProblem(StringId msg, Object[] args) {
+  public static void setProblem(String msg, Object[] args) {
     if (ENABLED) {
-      setBreadcrumb(Thread.currentThread(), CrumbType.PROBLEM, msg.toLocalizedString(args));
+      setBreadcrumb(Thread.currentThread(), CrumbType.PROBLEM, String.format(msg, args));
     }
   }
 

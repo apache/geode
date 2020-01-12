@@ -47,6 +47,7 @@ public interface StatisticsNotification extends Iterable<StatisticId> {
   Type getType();
 
   /** Returns an iterator of all the stat instances that met the monitor's criteria */
+  @Override
   Iterator<StatisticId> iterator();
 
   /**

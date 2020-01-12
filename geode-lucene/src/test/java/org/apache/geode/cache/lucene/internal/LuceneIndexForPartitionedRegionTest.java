@@ -14,18 +14,27 @@
  */
 package org.apache.geode.cache.lucene.internal;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyBoolean;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-import java.util.Properties;
-
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentCaptor;
 
-import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.DataPolicy;
@@ -46,11 +55,11 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.extension.ExtensionPoint;
+import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
 import org.apache.geode.test.fake.Fakes;
 import org.apache.geode.test.junit.categories.LuceneTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category({UnitTest.class, LuceneTest.class})
+@Category({LuceneTest.class})
 public class LuceneIndexForPartitionedRegionTest {
 
   @Rule
@@ -88,6 +97,41 @@ public class LuceneIndexForPartitionedRegionTest {
     when(cache.getRegion(fileRegionName)).thenReturn(region);
 
     assertTrue(index.fileRegionExists(fileRegionName));
+  }
+
+  @Ignore // Enable the test when LuceneServiceImpl.LUCENE_REINDEX feature flag is removed.
+  @Test
+  public void indexIsAvailableReturnsFalseIfCompleteFileIsNotPresent() {
+    String name = "indexName";
+    String regionPath = "regionName";
+    InternalCache cache = Fakes.cache();
+    PartitionedRegion region = mock(PartitionedRegion.class);
+    PartitionedRegion mockFileRegion = mock(PartitionedRegion.class);
+    LuceneIndexForPartitionedRegion index =
+        new LuceneIndexForPartitionedRegion(name, regionPath, cache);
+    String fileRegionName = index.createFileRegionName();
+    when(cache.getRegion(fileRegionName)).thenReturn(region);
+    LuceneIndexForPartitionedRegion spy = spy(index);
+    when(spy.getFileAndChunkRegion()).thenReturn(mockFileRegion);
+    assertFalse(spy.isIndexAvailable(0));
+  }
+
+  @Test
+  public void indexIsAvailableReturnsTrueIfCompleteFileIsPresent() {
+    String name = "indexName";
+    String regionPath = "regionName";
+    InternalCache cache = Fakes.cache();
+    PartitionedRegion region = mock(PartitionedRegion.class);
+    PartitionedRegion mockFileRegion = mock(PartitionedRegion.class);
+    LuceneIndexForPartitionedRegion index =
+        new LuceneIndexForPartitionedRegion(name, regionPath, cache);
+    String fileRegionName = index.createFileRegionName();
+    when(cache.getRegion(fileRegionName)).thenReturn(region);
+    LuceneIndexForPartitionedRegion spy = spy(index);
+    when(spy.getFileAndChunkRegion()).thenReturn(mockFileRegion);
+    when(mockFileRegion.get(IndexRepositoryFactory.APACHE_GEODE_INDEX_COMPLETE, 1))
+        .thenReturn("SOMETHING IS PRESENT");
+    assertTrue(spy.isIndexAvailable(1));
   }
 
   @Test
@@ -178,15 +222,15 @@ public class LuceneIndexForPartitionedRegionTest {
 
   private RegionAttributes createRegionAttributes(final boolean withPersistence,
       PartitionAttributes partitionAttributes) {
-    AttributesFactory factory = new AttributesFactory();
+    RegionAttributesCreation regionAttributes = new RegionAttributesCreation();
     if (withPersistence) {
-      factory.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
+      regionAttributes.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
     } else {
-      factory.setDataPolicy(DataPolicy.PARTITION);
+      regionAttributes.setDataPolicy(DataPolicy.PARTITION);
     }
-    factory.setPartitionAttributes(partitionAttributes);
-    RegionAttributes ra = factory.create();
-    return ra;
+
+    regionAttributes.setPartitionAttributes(partitionAttributes);
+    return regionAttributes;
   }
 
   private Region initializeScenario(final boolean withPersistence, final String regionPath,
@@ -210,6 +254,7 @@ public class LuceneIndexForPartitionedRegionTest {
   private PartitionAttributes initializeAttributes(final Cache cache) {
     PartitionAttributes partitionAttributes = mock(PartitionAttributes.class);
     RegionAttributes attributes = mock(RegionAttributes.class);
+    when(attributes.getDataPolicy()).thenReturn(DataPolicy.PARTITION);
     when(attributes.getCacheListeners()).thenReturn(new CacheListener[0]);
     when(attributes.getRegionTimeToLive()).thenReturn(ExpirationAttributes.DEFAULT);
     when(attributes.getRegionIdleTimeout()).thenReturn(ExpirationAttributes.DEFAULT);

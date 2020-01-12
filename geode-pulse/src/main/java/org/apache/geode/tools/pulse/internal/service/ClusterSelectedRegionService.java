@@ -17,7 +17,9 @@
 
 package org.apache.geode.tools.pulse.internal.service;
 
-import java.text.DecimalFormat;
+import static org.apache.geode.tools.pulse.internal.data.PulseConstants.FOUR_PLACE_DECIMAL_FORMAT;
+import static org.apache.geode.tools.pulse.internal.data.PulseConstants.TWO_PLACE_DECIMAL_FORMAT;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -29,7 +31,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.annotation.Scope;
@@ -37,7 +39,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import org.apache.geode.tools.pulse.internal.data.Cluster;
-import org.apache.geode.tools.pulse.internal.data.PulseConstants;
 import org.apache.geode.tools.pulse.internal.data.Repository;
 import org.apache.geode.tools.pulse.internal.util.TimeUtils;
 
@@ -100,7 +101,6 @@ public class ClusterSelectedRegionService implements PulseService {
   /**
    * Create JSON for selected cluster region
    *
-   * @param cluster
    * @return ObjectNode Array List
    */
   private ObjectNode getSelectedRegionJson(Cluster cluster, String selectedRegionFullPath) {
@@ -123,7 +123,6 @@ public class ClusterSelectedRegionService implements PulseService {
       regionJSON.put("putsRate", reg.getPutsRate());
       regionJSON.put("lruEvictionRate", reg.getLruEvictionRate());
 
-      DecimalFormat df2 = new DecimalFormat(PulseConstants.DECIMAL_FORMAT_PATTERN);
       Cluster.Member[] clusterMembersList = cluster.getMembers();
 
       // collect members of this region
@@ -156,19 +155,19 @@ public class ClusterSelectedRegionService implements PulseService {
         long currentHeap = member.getCurrentHeapSize();
         if (usedHeapSize > 0) {
           double heapUsage = ((double) currentHeap / (double) usedHeapSize) * 100;
-          regionMember.put("heapUsage", Double.valueOf(df2.format(heapUsage)));
+          regionMember.put("heapUsage", TWO_PLACE_DECIMAL_FORMAT.format(heapUsage));
         } else {
           regionMember.put("heapUsage", 0);
         }
         double currentCPUUsage = member.getCpuUsage();
         double loadAvg = member.getLoadAverage();
 
-        regionMember.put("cpuUsage", Double.valueOf(df2.format(currentCPUUsage)));
+        regionMember.put("cpuUsage", TWO_PLACE_DECIMAL_FORMAT.format(currentCPUUsage));
         regionMember.put("currentHeapUsage", member.getCurrentHeapSize());
         regionMember.put("isManager", member.isManager());
         regionMember.put("uptime", TimeUtils.convertTimeSecondsToHMS(member.getUptime()));
 
-        regionMember.put("loadAvg", Double.valueOf(df2.format(loadAvg)));
+        regionMember.put("loadAvg", TWO_PLACE_DECIMAL_FORMAT.format(loadAvg));
         regionMember.put("sockets", member.getTotalFileDescriptorOpen());
         regionMember.put("threads", member.getNumThreads());
 
@@ -208,9 +207,8 @@ public class ClusterSelectedRegionService implements PulseService {
           reg.getRegionStatisticTrend(Cluster.Region.REGION_STAT_DISK_WRITES_PER_SEC_TREND)));
 
       regionJSON.put("emptyNodes", reg.getEmptyNode());
-      Long entrySize = reg.getEntrySize();
-      DecimalFormat form = new DecimalFormat(PulseConstants.DECIMAL_FORMAT_PATTERN_2);
-      String entrySizeInMB = form.format(entrySize / (1024f * 1024f));
+      long entrySize = reg.getEntrySize();
+      String entrySizeInMB = FOUR_PLACE_DECIMAL_FORMAT.format(entrySize / (1024f * 1024f));
       if (entrySize < 0) {
         regionJSON.put(this.ENTRY_SIZE, PulseService.VALUE_NA);
       } else {

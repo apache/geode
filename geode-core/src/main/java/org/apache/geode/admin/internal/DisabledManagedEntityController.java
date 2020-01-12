@@ -17,8 +17,8 @@ package org.apache.geode.admin.internal;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.admin.DistributedSystemConfig;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * This is a disabled implementation of ManagedEntityController for bug #47909.
@@ -40,8 +40,8 @@ class DisabledManagedEntityController implements ManagedEntityController {
 
   @Override
   public void start(InternalManagedEntity entity) {
-    if (logger.isTraceEnabled(LogMarker.MANAGED_ENTITY)) {
-      logger.warn(LogMarker.MANAGED_ENTITY, "DisabledManagedEntityController#start {}",
+    if (logger.isTraceEnabled(LogMarker.MANAGED_ENTITY_VERBOSE)) {
+      logger.trace(LogMarker.MANAGED_ENTITY_VERBOSE, "DisabledManagedEntityController#start {}",
           EXCEPTION_MESSAGE);
     }
     throw new UnsupportedOperationException(EXCEPTION_MESSAGE);
@@ -49,8 +49,8 @@ class DisabledManagedEntityController implements ManagedEntityController {
 
   @Override
   public void stop(InternalManagedEntity entity) {
-    if (logger.isTraceEnabled(LogMarker.MANAGED_ENTITY)) {
-      logger.warn(LogMarker.MANAGED_ENTITY, "DisabledManagedEntityController#stop {}",
+    if (logger.isTraceEnabled(LogMarker.MANAGED_ENTITY_VERBOSE)) {
+      logger.trace(LogMarker.MANAGED_ENTITY_VERBOSE, "DisabledManagedEntityController#stop {}",
           EXCEPTION_MESSAGE);
     }
     throw new UnsupportedOperationException(EXCEPTION_MESSAGE);
@@ -58,8 +58,8 @@ class DisabledManagedEntityController implements ManagedEntityController {
 
   @Override
   public boolean isRunning(InternalManagedEntity entity) {
-    if (logger.isTraceEnabled(LogMarker.MANAGED_ENTITY)) {
-      logger.warn(LogMarker.MANAGED_ENTITY, "DisabledManagedEntityController#isRunning {}",
+    if (logger.isTraceEnabled(LogMarker.MANAGED_ENTITY_VERBOSE)) {
+      logger.trace(LogMarker.MANAGED_ENTITY_VERBOSE, "DisabledManagedEntityController#isRunning {}",
           EXCEPTION_MESSAGE);
     }
     throw new UnsupportedOperationException(EXCEPTION_MESSAGE);
@@ -67,8 +67,8 @@ class DisabledManagedEntityController implements ManagedEntityController {
 
   @Override
   public String getLog(DistributionLocatorImpl locator) {
-    if (logger.isTraceEnabled(LogMarker.MANAGED_ENTITY)) {
-      logger.warn(LogMarker.MANAGED_ENTITY, "DisabledManagedEntityController#getLog {}",
+    if (logger.isTraceEnabled(LogMarker.MANAGED_ENTITY_VERBOSE)) {
+      logger.trace(LogMarker.MANAGED_ENTITY_VERBOSE, "DisabledManagedEntityController#getLog {}",
           EXCEPTION_MESSAGE);
     }
     throw new UnsupportedOperationException(EXCEPTION_MESSAGE);
@@ -76,17 +76,17 @@ class DisabledManagedEntityController implements ManagedEntityController {
 
   @Override
   public String buildSSLArguments(DistributedSystemConfig config) {
-    if (logger.isTraceEnabled(LogMarker.MANAGED_ENTITY)) {
-      logger.warn(LogMarker.MANAGED_ENTITY, "DisabledManagedEntityController#buildSSLArguments {}",
-          EXCEPTION_MESSAGE);
+    if (logger.isTraceEnabled(LogMarker.MANAGED_ENTITY_VERBOSE)) {
+      logger.trace(LogMarker.MANAGED_ENTITY_VERBOSE,
+          "DisabledManagedEntityController#buildSSLArguments {}", EXCEPTION_MESSAGE);
     }
     throw new UnsupportedOperationException(EXCEPTION_MESSAGE);
   }
 
   @Override
   public String getProductExecutable(InternalManagedEntity entity, String executable) {
-    if (logger.isTraceEnabled(LogMarker.MANAGED_ENTITY)) {
-      logger.warn(LogMarker.MANAGED_ENTITY,
+    if (logger.isTraceEnabled(LogMarker.MANAGED_ENTITY_VERBOSE)) {
+      logger.trace(LogMarker.MANAGED_ENTITY_VERBOSE,
           "DisabledManagedEntityController#getProductExecutable {}", EXCEPTION_MESSAGE);
     }
     throw new UnsupportedOperationException(EXCEPTION_MESSAGE);

@@ -35,9 +35,6 @@ public interface ServerCQ extends InternalCqQuery {
   /**
    * Register the Query on server.
    *
-   * @param p_clientProxyId
-   * @param p_ccn
-   * @throws CqException
    */
   void registerCq(ClientProxyMembershipID p_clientProxyId, CacheClientNotifier p_ccn, int p_cqState)
       throws CqException, RegionNotFoundException;
@@ -45,18 +42,23 @@ public interface ServerCQ extends InternalCqQuery {
   /**
    * Adds into the CQ Results key cache.
    *
-   * @param key
    */
   void addToCqResultKeys(Object key);
 
   /**
    * Removes the key from CQ Results key cache.
    *
-   * @param key
    * @param isTokenMode if true removes the key if its in destroy token mode if false removes the
    *        key without any check.
    */
   void removeFromCqResultKeys(Object key, boolean isTokenMode);
+
+  /**
+   * Invalidates the internal cache containing the keys that are part of the CQ query results.
+   * Once this method finishes, the CQ engine will not apply the internal optimization for already
+   * seen keys anymore, not until the cache is manually rebuilt.
+   */
+  void invalidateCqResultKeys();
 
   /**
    * Sets the CQ Results key cache state as initialized.
@@ -73,8 +75,8 @@ public interface ServerCQ extends InternalCqQuery {
    * care of repository cleanup.
    *
    * @param sendRequestToServer true to send the request to server.
-   * @throws CqException
    */
+  @Override
   void close(boolean sendRequestToServer) throws CqClosedException, CqException;
 
 
@@ -82,5 +84,6 @@ public interface ServerCQ extends InternalCqQuery {
 
   ClientProxyMembershipID getClientProxyId();
 
+  @Override
   void stop() throws CqClosedException, CqException;
 }

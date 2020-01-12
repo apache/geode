@@ -17,19 +17,28 @@ package org.apache.geode.cache.query.internal;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 import it.unimi.dsi.fastutil.objects.AbstractObjectIterator;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
 
-import org.apache.geode.DataSerializer;
-import org.apache.geode.cache.query.*;
-import org.apache.geode.cache.query.internal.types.*;
-import org.apache.geode.cache.query.types.*;
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.Version;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.cache.query.Struct;
+import org.apache.geode.cache.query.internal.types.CollectionTypeImpl;
+import org.apache.geode.cache.query.internal.types.StructTypeImpl;
+import org.apache.geode.cache.query.types.CollectionType;
+import org.apache.geode.cache.query.types.ObjectType;
+import org.apache.geode.cache.query.types.StructType;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * A Set constrained to contain Structs of all the same type. To conserve on objects, we store the
@@ -64,6 +73,7 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
   protected static class ObjectArrayHashingStrategy implements ObjectOpenCustomHashSet.Strategy {
     private static final long serialVersionUID = -6407549977968716071L;
 
+    @Override
     public int hashCode(Object o) {
       // throws ClassCastException if not Object[]
       // compute hash code based on all elements
@@ -77,6 +87,7 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
       return h;
     }
 
+    @Override
     public boolean equals(Object o1, Object o2) {
       // throws ClassCastException if not Object[]
       if (o1 == null)
@@ -93,7 +104,7 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
     this.contents = new ObjectOpenCustomHashSet(new ObjectArrayHashingStrategy());
     if (structType == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.StructSet_STRUCTTYPE_MUST_NOT_BE_NULL.toLocalizedString());
+          "structType must not be null");
     }
     this.structType = structType;
   }
@@ -103,7 +114,7 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
     this.contents = new ObjectOpenCustomHashSet(c, new ObjectArrayHashingStrategy());
     if (structType == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.StructSet_STRUCTTYPE_MUST_NOT_BE_NULL.toLocalizedString());
+          "structType must not be null");
     }
     this.structType = structType;
   }
@@ -139,7 +150,7 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
     this.contents = new ObjectOpenCustomHashSet(initialCapacity, new ObjectArrayHashingStrategy());
     if (structType == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.StructSet_STRUCTTYPE_MUST_NOT_BE_NULL.toLocalizedString());
+          "structType must not be null");
     }
     this.structType = structType;
   }
@@ -149,7 +160,7 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
         new ObjectOpenCustomHashSet(initialCapacity, loadFactor, new ObjectArrayHashingStrategy());
     if (structType == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.StructSet_STRUCTTYPE_MUST_NOT_BE_NULL.toLocalizedString());
+          "structType must not be null");
     }
     this.structType = structType;
   }
@@ -181,13 +192,13 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
   public boolean add(Object obj) {
     if (!(obj instanceof StructImpl)) {
       throw new IllegalArgumentException(
-          LocalizedStrings.StructSet_THIS_SET_ONLY_ACCEPTS_STRUCTIMPL.toLocalizedString());
+          "This set only accepts StructImpl");
     }
     StructImpl s = (StructImpl) obj;
     if (!s.getStructType().equals(this.structType)) {
       throw new IllegalArgumentException(
-          LocalizedStrings.StructSet_OBJ_DOES_NOT_HAVE_THE_SAME_STRUCTTYPE_REQUIRED_0_ACTUAL_1
-              .toLocalizedString(new Object[] {this.structType, s.getStructType()}));
+          String.format("obj does not have the same StructType: required: %s , actual: %s",
+              new Object[] {this.structType, s.getStructType()}));
     }
     return addFieldValues(s.getFieldValues());
   }
@@ -195,6 +206,7 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
   /**
    * For internal use. Just add the Object[] values for a struct with same type
    */
+  @Override
   public boolean addFieldValues(Object[] fieldValues) {
     return this.contents.add(fieldValues);
   }
@@ -215,6 +227,7 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
   /**
    * Does this set contain a Struct of the correct type with the specified values?
    */
+  @Override
   public boolean containsFieldValues(Object[] fieldValues) {
     return this.contents.contains(fieldValues);
   }
@@ -232,11 +245,13 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
   }
 
   /** Remove the field values from a struct of the correct type */
+  @Override
   public boolean removeFieldValues(Object[] fieldValues) {
     return this.contents.remove(fieldValues);
   }
 
   // downcast StructSets to call more efficient methods
+  @Override
   public boolean addAll(Collection c) {
     if (c instanceof StructSet) {
       return addAll((StructSet) c);
@@ -249,6 +264,7 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
     }
   }
 
+  @Override
   public boolean removeAll(Collection c) {
     if (c instanceof StructSet) {
       return removeAll((StructSet) c);
@@ -261,6 +277,7 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
     }
   }
 
+  @Override
   public boolean retainAll(Collection c) {
     if (c instanceof StructSet) {
       return retainAll((StructSet) c);
@@ -272,7 +289,7 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
     boolean modified = false;
     if (!this.structType.equals(ss.structType)) {
       throw new IllegalArgumentException(
-          LocalizedStrings.StructSet_TYPES_DONT_MATCH.toLocalizedString());
+          "types do not match");
     }
     for (Iterator itr = ss.fieldValuesIterator(); itr.hasNext();) {
       Object[] vals = (Object[]) itr.next();
@@ -328,10 +345,12 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
   }
 
   /** Returns an iterator over the fieldValues Object[] instances */
+  @Override
   public Iterator fieldValuesIterator() {
     return this.contents.iterator();
   }
 
+  @Override
   public CollectionType getCollectionType() {
     return new CollectionTypeImpl(StructSet.class, this.structType);
   }
@@ -340,18 +359,21 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
   // behavior if the new struct type is not compatible with the data.
   // For now just trust that the application knows what it is doing if it
   // is overriding the element type in a set of structs
+  @Override
   public void setElementType(ObjectType elementType) {
     if (!(elementType instanceof StructTypeImpl)) {
       throw new IllegalArgumentException(
-          LocalizedStrings.StructSet_ELEMENT_TYPE_MUST_BE_STRUCT.toLocalizedString());
+          "element type must be struct");
     }
     this.structType = (StructType) elementType;
   }
 
+  @Override
   public List asList() {
     return new ArrayList(this);
   }
 
+  @Override
   public Set asSet() {
     return this;
   }
@@ -361,10 +383,12 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
    *
    * @return Value of property modifiable.
    */
+  @Override
   public boolean isModifiable() {
     return this.modifiable;
   }
 
+  @Override
   public int occurrences(Object element) {
     return contains(element) ? 1 : 0;
   }
@@ -409,38 +433,46 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
       this.itr = itr;
     }
 
+    @Override
     public boolean hasNext() {
       return this.itr.hasNext();
     }
 
+    @Override
     public Object next() {
       return new StructImpl((StructTypeImpl) StructSet.this.structType, (Object[]) this.itr.next());
     }
 
+    @Override
     public void remove() {
       this.itr.remove();
     }
 
   }
 
+  @Override
   public int getDSFID() {
     return STRUCT_SET;
   }
 
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  @Override
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     this.contents = new ObjectOpenCustomHashSet(new ObjectArrayHashingStrategy());
     int size = in.readInt();
-    this.structType = (StructTypeImpl) DataSerializer.readObject(in);
+    this.structType = (StructTypeImpl) context.getDeserializer().readObject(in);
     for (int j = size; j > 0; j--) {
-      this.add(DataSerializer.readObject(in));
+      this.add(context.getDeserializer().readObject(in));
     }
   }
 
-  public void toData(DataOutput out) throws IOException {
+  @Override
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     out.writeInt(this.size());
-    DataSerializer.writeObject(this.structType, out);
+    context.getSerializer().writeObject(this.structType, out);
     for (Iterator i = this.iterator(); i.hasNext();) {
-      DataSerializer.writeObject(i.next(), out);
+      context.getSerializer().writeObject(i.next(), out);
     }
   }
 

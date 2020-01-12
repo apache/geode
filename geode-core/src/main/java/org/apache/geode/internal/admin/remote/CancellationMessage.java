@@ -15,11 +15,15 @@
 
 package org.apache.geode.internal.admin.remote;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-import org.apache.geode.distributed.internal.*;
-import org.apache.geode.distributed.internal.membership.*;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.PooledDistributionMessage;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * A message that is sent to a particular distribution manager to cancel an admin request
@@ -40,25 +44,28 @@ public class CancellationMessage extends PooledDistributionMessage {
     CancellationRegistry.getInstance().cancelMessage(this.getSender(), msgToCancel);
   }
 
+  @Override
   public int getDSFID() {
     return CANCELLATION_MESSAGE;
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     out.writeInt(msgToCancel);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     msgToCancel = in.readInt();
   }
 
   @Override
   public String toString() {
-    return LocalizedStrings.CancellationMessage_CANCELLATIONMESSAGE_FROM_0_FOR_MESSAGE_ID_1
-        .toLocalizedString(new Object[] {this.getSender(), Integer.valueOf(msgToCancel)});
+    return String.format("CancellationMessage from %s for message id %s",
+        new Object[] {this.getSender(), Integer.valueOf(msgToCancel)});
   }
 }

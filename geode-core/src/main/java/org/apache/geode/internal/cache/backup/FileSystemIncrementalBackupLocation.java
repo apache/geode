@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.backup;
 
+import static org.apache.geode.internal.util.TransformUtils.getFileNameTransformer;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -29,14 +31,14 @@ import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.util.TransformUtils;
 
-public class FileSystemIncrementalBackupLocation implements IncrementalBackupLocation {
+class FileSystemIncrementalBackupLocation implements IncrementalBackupLocation {
 
   private static final String INCOMPLETE_BACKUP_FILE = "INCOMPLETE_BACKUP_FILE";
 
   private final Path memberBackupLocationDir;
 
   FileSystemIncrementalBackupLocation(File backupLocationDir, String memberId) {
-    this.memberBackupLocationDir = new File(backupLocationDir, memberId).toPath();
+    memberBackupLocationDir = new File(backupLocationDir, memberId).toPath();
   }
 
   Path getMemberBackupLocationDir() {
@@ -53,7 +55,7 @@ public class FileSystemIncrementalBackupLocation implements IncrementalBackupLoc
     baselineOplogFiles.addAll(getPreviouslyBackedUpOpLogs(checkedBaselineDir));
 
     // Map of baseline oplog file name to oplog file
-    return TransformUtils.transformAndMap(baselineOplogFiles, TransformUtils.fileNameTransformer);
+    return TransformUtils.transformAndMap(baselineOplogFiles, getFileNameTransformer());
   }
 
   Collection<File> getBackedUpOplogs(File checkedBaselineDir, DiskStore diskStore) {
@@ -66,7 +68,7 @@ public class FileSystemIncrementalBackupLocation implements IncrementalBackupLoc
     BackupInspector inspector = createBackupInspector(checkedBaselineDir);
     HashSet<File> oplogs = new HashSet<>();
     if (inspector.isIncremental() && inspector.getIncrementalOplogFileNames() != null) {
-      inspector.getIncrementalOplogFileNames().forEach((oplog) -> {
+      inspector.getIncrementalOplogFileNames().forEach(oplog -> {
         oplog = inspector.getCopyFromForOplogFile(oplog);
         oplogs.add(new File(oplog));
       });
@@ -87,8 +89,7 @@ public class FileSystemIncrementalBackupLocation implements IncrementalBackupLoc
     File baselineDir = memberBackupLocationDir.toFile();
 
     if (!baselineDir.exists()) {
-      // hmmm, did this member have a restart?
-      // Determine which member dir might be a match for us
+      // hmmm, did this member have a restart? Determine which member dir might be a match for us
       baselineDir = findBaselineForThisMember(memberBackupLocationDir.getParent(), diskStore);
     }
 
@@ -102,7 +103,7 @@ public class FileSystemIncrementalBackupLocation implements IncrementalBackupLoc
     return baselineDir;
   }
 
-  File findBaselineForThisMember(Path baselineParentDir, DiskStore diskStore) {
+  private File findBaselineForThisMember(Path baselineParentDir, DiskStore diskStore) {
     File baselineDir = null;
 
     // Find the first matching DiskStoreId directory for this member.
@@ -126,7 +127,6 @@ public class FileSystemIncrementalBackupLocation implements IncrementalBackupLoc
     if (name == null) {
       name = GemFireCacheImpl.getDefaultDiskStoreName();
     }
-    return (name + "_" + diskStore.getDiskStoreID().toString());
+    return name + "_" + diskStore.getDiskStoreID().toString();
   }
-
 }

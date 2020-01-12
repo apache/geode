@@ -16,9 +16,10 @@
 
 package org.apache.geode.cache;
 
-import java.io.*;
+import java.io.ObjectStreamException;
 
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.annotations.Immutable;
+
 
 /**
  * Enumerated type for region data policy. The data policy specifies how this local cache will
@@ -50,9 +51,11 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
  *
  * @since GemFire 5.0
  */
+@Immutable
 public class DataPolicy implements java.io.Serializable {
   private static final long serialVersionUID = 2095573273889467233L;
 
+  @Immutable
   private static final DataPolicy[] VALUES = new DataPolicy[11];
 
   /**
@@ -60,6 +63,7 @@ public class DataPolicy implements java.io.Serializable {
    * to for zero footprint producers that only want to distribute their data to others and for zero
    * footprint consumers that only want to see events.
    */
+  @Immutable
   public static final DataPolicy EMPTY = new DataPolicy(0, "EMPTY");
 
   /**
@@ -67,6 +71,7 @@ public class DataPolicy implements java.io.Serializable {
    * <p>
    * Data that this region is interested in is stored in local memory.
    */
+  @Immutable
   public static final DataPolicy NORMAL = new DataPolicy(1, "NORMAL");
 
   /**
@@ -77,12 +82,14 @@ public class DataPolicy implements java.io.Serializable {
    * <p>
    * Data that this region is interested in is stored in local memory.
    */
+  @Immutable
   public static final DataPolicy REPLICATE = new DataPolicy(2, "REPLICATE");
 
   /**
    * In addition to <code>REPLICATE</code> also causes data to be stored to disk. The region
    * initialization may use the data stored on disk.
    */
+  @Immutable
   public static final DataPolicy PERSISTENT_REPLICATE = new DataPolicy(3, "PERSISTENT_REPLICATE");
 
 
@@ -90,12 +97,14 @@ public class DataPolicy implements java.io.Serializable {
    * Data in this region may be spread across a number of processes. This is further configured with
    * {@link PartitionAttributes partitioning attributes}
    */
+  @Immutable
   public static final DataPolicy PARTITION = new DataPolicy(4, "PARTITION");
 
   /**
    * In addition to <code>NORMAL</code>, contents inside of this cache are (partially) initialized
    * with data from other caches, if available.
    */
+  @Immutable
   public static final DataPolicy PRELOADED = new DataPolicy(5, "PRELOADED");
 
   /**
@@ -104,11 +113,13 @@ public class DataPolicy implements java.io.Serializable {
    *
    * @since GemFire 6.5
    */
+  @Immutable
   public static final DataPolicy PERSISTENT_PARTITION = new DataPolicy(6, "PERSISTENT_PARTITION");
 
   /**
    * The data policy used by default; it is {@link #NORMAL}.
    */
+  @Immutable
   public static final DataPolicy DEFAULT = NORMAL;
 
 
@@ -127,13 +138,13 @@ public class DataPolicy implements java.io.Serializable {
   private DataPolicy(int ordinal, String name) {
     if (ordinal >= VALUES.length) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DataPolicy_ONLY_0_DATAPOLICIES_MAY_BE_DEFINED
-              .toLocalizedString(Integer.valueOf(VALUES.length + 1)));
+          String.format("Only %s DataPolicies may be defined",
+              Integer.valueOf(VALUES.length + 1)));
     }
     if (VALUES[ordinal] != null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.DataPolicy_ORDINAL_0_IS_ALREADY_DEFINED_BY_1
-              .toLocalizedString(new Object[] {Integer.valueOf(ordinal), VALUES[ordinal]}));
+          String.format("Ordinal %s is already defined by %s",
+              new Object[] {Integer.valueOf(ordinal), VALUES[ordinal]}));
     }
     this.name = name;
     this.ordinal = (byte) (ordinal & 0xff);
@@ -289,5 +300,23 @@ public class DataPolicy implements java.io.Serializable {
   @Override
   public String toString() {
     return this.name;
+  }
+
+  public static DataPolicy fromString(String s) {
+    String[] allowedValues =
+        new String[] {"EMPTY", "NORMAL", "REPLICATE", "PERSISTENT_REPLICATE", "PARTITION",
+            "PRELOADED", "PERSISTENT_PARTITION"};
+    int valueIndex = -1;
+    for (int i = 0; i < allowedValues.length; i++) {
+      if (allowedValues[i].equals(s)) {
+        valueIndex = i;
+        break;
+      }
+    }
+
+    if (valueIndex != -1)
+      return VALUES[valueIndex];
+
+    return null;
   }
 }

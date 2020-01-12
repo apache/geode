@@ -14,16 +14,15 @@
  */
 package org.apache.geode.internal.cache.xmlcache;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.xml.sax.InputSource;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class DefaultEntityResolver2Test {
 
   @Test

@@ -15,9 +15,9 @@
 
 package org.apache.geode.distributed.internal;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.geode.distributed.internal.DistributionStats;
 
 /**
  * An instance of ThrottlingMemLinkedQueue allows the instantiator to specify a maximum queue
@@ -34,7 +34,7 @@ import org.apache.geode.distributed.internal.DistributionStats;
  *
  */
 
-public class ThrottlingMemLinkedQueueWithDMStats extends OverflowQueueWithDMStats {
+public class ThrottlingMemLinkedQueueWithDMStats<E> extends OverflowQueueWithDMStats<E> {
   private static final long serialVersionUID = 5425180246954573433L;
 
   /** The maximum size of the queue */
@@ -50,7 +50,7 @@ public class ThrottlingMemLinkedQueueWithDMStats extends OverflowQueueWithDMStat
   private final int startThrottleSize;
 
   /** The current memory footprint of the queue */
-  private volatile int memSize;
+  private final AtomicInteger memSize = new AtomicInteger();
 
   /** Creates a new instance of ThrottlingMessageQueue */
   public ThrottlingMemLinkedQueueWithDMStats(int maxMemSize, int startThrottleMemSize, int maxSize,
@@ -62,19 +62,10 @@ public class ThrottlingMemLinkedQueueWithDMStats extends OverflowQueueWithDMStat
     this.startThrottleSize = startThrottleSize;
   }
 
-  /** Check if the sender needs to be throttled. Returns the time the sender should sleep */
-  public int getThrottleTime() {
-    return calculateThrottleTime();
-  }
-
-  public int getMemSize() {
-    return memSize;
-  }
-
   private int calculateThrottleTime() {
     int sleep;
 
-    int myMemSize = memSize;
+    int myMemSize = memSize.get();
     if (myMemSize > startThrottleMemSize) {
       sleep = (int) (((float) (myMemSize - startThrottleMemSize)
           / (float) (maxMemSize - startThrottleMemSize)) * 100);
@@ -129,7 +120,7 @@ public class ThrottlingMemLinkedQueueWithDMStats extends OverflowQueueWithDMStat
           ((ThrottledMemQueueStatHelper) this.stats).throttleTime(endTime - startTime);
           startTime = endTime;
         }
-      } while (memSize >= maxMemSize || size() >= maxSize);
+      } while (memSize.get() >= maxMemSize || size() >= maxSize);
 
       ((ThrottledMemQueueStatHelper) this.stats).incThrottleCount();
     }
@@ -137,24 +128,23 @@ public class ThrottlingMemLinkedQueueWithDMStats extends OverflowQueueWithDMStat
     if (o instanceof Sizeable) {
       int mem = ((Sizeable) o).getSize();
       ((ThrottledMemQueueStatHelper) this.stats).addMem(mem);
-      this.memSize += mem;
+      this.memSize.addAndGet(mem);
     }
   }
 
   @Override
   protected void postRemove(Object o) {
-    if (o != null && (o instanceof Sizeable)) {
+    if (o instanceof Sizeable) {
       int mem = ((Sizeable) o).getSize();
-      this.memSize -= mem;
+      this.memSize.addAndGet(-mem);
       ((ThrottledMemQueueStatHelper) this.stats).removeMem(mem);
     }
   }
 
   @Override
   protected void postDrain(Collection c) {
-    Iterator it = c.iterator();
-    while (it.hasNext()) {
-      postRemove(it.next());
+    for (Object aC : c) {
+      postRemove(aC);
     }
   }
 }

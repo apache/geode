@@ -20,9 +20,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_SHIR
 
 import java.util.Properties;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.UnavailableSecurityManagerException;
+import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.internal.cache.CacheConfig;
 import org.apache.geode.internal.security.shiro.SecurityManagerProvider;
@@ -89,9 +87,11 @@ public class SecurityServiceFactory {
   }
 
   private static boolean isShiroInUse() {
+    // Don't import Shiro otherwise clients must include on classpath
     try {
-      return SecurityUtils.getSecurityManager() != null;
-    } catch (UnavailableSecurityManagerException ignore) {
+      return null != Class.forName("org.apache.shiro.SecurityUtils").getMethod("getSecurityManager")
+          .invoke(null);
+    } catch (Exception e) {
       return false;
     }
   }

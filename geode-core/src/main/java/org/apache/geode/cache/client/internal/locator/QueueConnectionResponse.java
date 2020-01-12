@@ -20,7 +20,10 @@ import java.io.IOException;
 import java.util.List;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * A response from locator to client indicating the servers to use to host the clients queue. The
@@ -30,12 +33,12 @@ import org.apache.geode.internal.DataSerializableFixedID;
 public class QueueConnectionResponse extends ServerLocationResponse {
 
   private boolean durableQueueFound;
-  private List servers;
+  private List<ServerLocation> servers;
   private boolean serversFound = false;
 
   public QueueConnectionResponse() {}
 
-  public QueueConnectionResponse(boolean durableQueueFound, List servers) {
+  public QueueConnectionResponse(boolean durableQueueFound, List<ServerLocation> servers) {
     this.durableQueueFound = durableQueueFound;
     this.servers = servers;
     if (servers != null && !servers.isEmpty()) {
@@ -43,7 +46,9 @@ public class QueueConnectionResponse extends ServerLocationResponse {
     }
   }
 
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  @Override
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     durableQueueFound = DataSerializer.readPrimitiveBoolean(in);
     servers = SerializationHelper.readServerLocationList(in);
     if (this.servers != null && !this.servers.isEmpty()) {
@@ -51,7 +56,9 @@ public class QueueConnectionResponse extends ServerLocationResponse {
     }
   }
 
-  public void toData(DataOutput out) throws IOException {
+  @Override
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     DataSerializer.writePrimitiveBoolean(durableQueueFound, out);
     SerializationHelper.writeServerLocationList(servers, out);
   }
@@ -60,7 +67,7 @@ public class QueueConnectionResponse extends ServerLocationResponse {
     return durableQueueFound;
   }
 
-  public List getServers() {
+  public List<ServerLocation> getServers() {
     return servers;
   }
 
@@ -70,6 +77,7 @@ public class QueueConnectionResponse extends ServerLocationResponse {
         + "}";
   }
 
+  @Override
   public int getDSFID() {
     return DataSerializableFixedID.QUEUE_CONNECTION_RESPONSE;
   }

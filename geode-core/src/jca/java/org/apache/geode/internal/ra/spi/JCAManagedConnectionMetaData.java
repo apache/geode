@@ -17,10 +17,6 @@ package org.apache.geode.internal.ra.spi;
 import javax.resource.ResourceException;
 import javax.resource.spi.ManagedConnectionMetaData;
 
-/**
- *
- *
- */
 public class JCAManagedConnectionMetaData implements ManagedConnectionMetaData {
   private final String prodName;
 
@@ -35,23 +31,27 @@ public class JCAManagedConnectionMetaData implements ManagedConnectionMetaData {
   }
 
 
+  @Override
   public String getEISProductName() throws ResourceException {
     return this.prodName;
   }
 
 
+  @Override
   public String getEISProductVersion() throws ResourceException {
 
     return this.version;
   }
 
 
+  @Override
   public int getMaxConnections() throws ResourceException {
 
     return 0;
   }
 
 
+  @Override
   public String getUserName() throws ResourceException {
     return this.user;
   }

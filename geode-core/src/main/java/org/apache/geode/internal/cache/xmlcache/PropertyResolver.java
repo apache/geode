@@ -12,9 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- *
- */
 package org.apache.geode.internal.cache.xmlcache;
 
 import java.util.IllegalFormatException;
@@ -36,8 +33,6 @@ public interface PropertyResolver {
    * is found then {@link IllegalFormatException} would be thrown based on
    * <code>ignoreUnresolvedProperties</code> flag being set by {@link CacheXmlParser}.
    *
-   * @param replaceString
-   * @return resolvedString
    */
   String resolveReplaceString(String replaceString);
 

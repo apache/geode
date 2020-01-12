@@ -18,7 +18,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.client.internal.LocatorDiscoveryCallback;
 import org.apache.geode.cache.wan.GatewayEventFilter;
@@ -35,9 +34,8 @@ import org.apache.geode.internal.cache.wan.serial.SerialGatewaySenderImpl;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.ParallelGatewaySenderCreation;
 import org.apache.geode.internal.cache.xmlcache.SerialGatewaySenderCreation;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.statistics.StatisticsClock;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * @since GemFire 7.0
@@ -46,96 +44,115 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
 
   private static final Logger logger = LogService.getLogger();
 
+  private static final AtomicBoolean GATEWAY_CONNECTION_READ_TIMEOUT_PROPERTY_CHECKED =
+      new AtomicBoolean(false);
+
   /**
    * Used internally to pass the attributes from this factory to the real GatewaySender it is
    * creating.
    */
-  private GatewaySenderAttributes attrs = new GatewaySenderAttributes();
+  private final GatewaySenderAttributes attrs = new GatewaySenderAttributes();
 
-  private InternalCache cache;
+  private final InternalCache cache;
 
-  private static final AtomicBoolean GATEWAY_CONNECTION_READ_TIMEOUT_PROPERTY_CHECKED =
-      new AtomicBoolean(false);
+  private final StatisticsClock statisticsClock;
 
-  public GatewaySenderFactoryImpl(InternalCache cache) {
+  public GatewaySenderFactoryImpl(InternalCache cache, StatisticsClock statisticsClock) {
     this.cache = cache;
+    this.statisticsClock = statisticsClock;
   }
 
+  @Override
   public GatewaySenderFactory setParallel(boolean isParallel) {
     this.attrs.isParallel = isParallel;
     return this;
   }
 
+  @Override
   public GatewaySenderFactory setForInternalUse(boolean isForInternalUse) {
     this.attrs.isForInternalUse = isForInternalUse;
     return this;
   }
 
+  @Override
   public GatewaySenderFactory addGatewayEventFilter(GatewayEventFilter filter) {
     this.attrs.addGatewayEventFilter(filter);
     return this;
   }
 
+  @Override
   public GatewaySenderFactory addGatewayTransportFilter(GatewayTransportFilter filter) {
     this.attrs.addGatewayTransportFilter(filter);
     return this;
   }
 
+  @Override
   public GatewaySenderFactory addAsyncEventListener(AsyncEventListener listener) {
     this.attrs.addAsyncEventListener(listener);
     return this;
   }
 
+  @Override
   public GatewaySenderFactory setSocketBufferSize(int socketBufferSize) {
     this.attrs.socketBufferSize = socketBufferSize;
     return this;
   }
 
+  @Override
   public GatewaySenderFactory setSocketReadTimeout(int socketReadTimeout) {
     this.attrs.socketReadTimeout = socketReadTimeout;
     return this;
   }
 
+  @Override
   public GatewaySenderFactory setDiskStoreName(String diskStoreName) {
     this.attrs.diskStoreName = diskStoreName;
     return this;
   }
 
+  @Override
   public GatewaySenderFactory setMaximumQueueMemory(int maximumQueueMemory) {
     this.attrs.maximumQueueMemory = maximumQueueMemory;
     return this;
   }
 
+  @Override
   public GatewaySenderFactory setBatchSize(int batchSize) {
     this.attrs.batchSize = batchSize;
     return this;
   }
 
+  @Override
   public GatewaySenderFactory setBatchTimeInterval(int batchTimeInterval) {
     this.attrs.batchTimeInterval = batchTimeInterval;
     return this;
   }
 
+  @Override
   public GatewaySenderFactory setBatchConflationEnabled(boolean enableBatchConflation) {
     this.attrs.isBatchConflationEnabled = enableBatchConflation;
     return this;
   }
 
+  @Override
   public GatewaySenderFactory setPersistenceEnabled(boolean enablePersistence) {
     this.attrs.isPersistenceEnabled = enablePersistence;
     return this;
   }
 
+  @Override
   public GatewaySenderFactory setAlertThreshold(int threshold) {
     this.attrs.alertThreshold = threshold;
     return this;
   }
 
+  @Override
   public GatewaySenderFactory setManualStart(boolean start) {
     this.attrs.manualStart = start;
     return this;
   }
 
+  @Override
   public GatewaySenderFactory setLocatorDiscoveryCallback(LocatorDiscoveryCallback locCallback) {
     this.attrs.locatorDiscoveryCallback = locCallback;
     return this;
@@ -156,6 +173,7 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
     return this;
   }
 
+  @Override
   public GatewaySenderFactory setParallelFactorForReplicatedRegion(int parallel) {
     this.attrs.parallelism = parallel;
     this.attrs.policy = GatewaySender.DEFAULT_ORDER_POLICY;
@@ -168,23 +186,26 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
     return this;
   }
 
+  @Override
   public GatewaySenderFactory setBucketSorted(boolean isBucketSorted) {
     this.attrs.isBucketSorted = isBucketSorted;
     return this;
   }
 
+  @Override
   public GatewaySender create(String id, int remoteDSId) {
     int myDSId = InternalDistributedSystem.getAnyInstance().getDistributionManager()
         .getDistributedSystemId();
     if (remoteDSId == myDSId) {
       throw new GatewaySenderException(
-          LocalizedStrings.GatewaySenderImpl_GATEWAY_0_CANNOT_BE_CREATED_WITH_REMOTE_SITE_ID_EQUAL_TO_THIS_SITE_ID
-              .toLocalizedString(id));
+          String.format(
+              "GatewaySender %s cannot be created with remote DS Id equal to this DS Id. ",
+              id));
     }
     if (remoteDSId < 0) {
       throw new GatewaySenderException(
-          LocalizedStrings.GatewaySenderImpl_GATEWAY_0_CANNOT_BE_CREATED_WITH_REMOTE_SITE_ID_LESS_THAN_ZERO
-              .toLocalizedString(id));
+          String.format("GatewaySender %s cannot be created with remote DS Id less than 0. ",
+              id));
     }
     this.attrs.id = id;
     this.attrs.remoteDs = remoteDSId;
@@ -192,8 +213,8 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
 
     if (this.attrs.getDispatcherThreads() <= 0) {
       throw new GatewaySenderException(
-          LocalizedStrings.GatewaySenderImpl_GATEWAY_SENDER_0_CANNOT_HAVE_DISPATCHER_THREADS_LESS_THAN_1
-              .toLocalizedString(id));
+          String.format("GatewaySender %s can not be created with dispatcher threads less than 1",
+              id));
     }
 
     // Verify socket read timeout if a proper logger is available
@@ -204,18 +225,19 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
       if (this.attrs.getSocketReadTimeout() != 0
           && this.attrs.getSocketReadTimeout() < GatewaySender.MINIMUM_SOCKET_READ_TIMEOUT) {
         logger.warn(
-            LocalizedMessage.create(LocalizedStrings.Gateway_CONFIGURED_SOCKET_READ_TIMEOUT_TOO_LOW,
-                new Object[] {"GatewaySender " + id, this.attrs.getSocketReadTimeout(),
-                    GatewaySender.MINIMUM_SOCKET_READ_TIMEOUT}));
+            "{} cannot configure socket read timeout of {} milliseconds because it is less than the minimum of {} milliseconds. The default will be used instead.",
+            new Object[] {"GatewaySender " + id, this.attrs.getSocketReadTimeout(),
+                GatewaySender.MINIMUM_SOCKET_READ_TIMEOUT});
         this.attrs.socketReadTimeout = GatewaySender.MINIMUM_SOCKET_READ_TIMEOUT;
       }
 
       // Log a warning if the old system property is set.
       if (GATEWAY_CONNECTION_READ_TIMEOUT_PROPERTY_CHECKED.compareAndSet(false, true)) {
         if (System.getProperty(GatewaySender.GATEWAY_CONNECTION_READ_TIMEOUT_PROPERTY) != null) {
-          logger.warn(LocalizedMessage.create(LocalizedStrings.Gateway_OBSOLETE_SYSTEM_POPERTY,
+          logger.warn(
+              "Obsolete java system property named {} was set to control {}. This property is no longer supported. Please use the GemFire API instead.",
               new Object[] {GatewaySender.GATEWAY_CONNECTION_READ_TIMEOUT_PROPERTY,
-                  "GatewaySender socket read timeout"}));
+                  "GatewaySender socket read timeout"});
         }
       }
     }
@@ -224,11 +246,11 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
       if ((this.attrs.getOrderPolicy() != null)
           && this.attrs.getOrderPolicy().equals(OrderPolicy.THREAD)) {
         throw new GatewaySenderException(
-            LocalizedStrings.GatewaySenderImpl_PARALLEL_GATEWAY_SENDER_0_CANNOT_BE_CREATED_WITH_ORDER_POLICY_1
-                .toLocalizedString(id, this.attrs.getOrderPolicy()));
+            String.format("Parallel Gateway Sender %s can not be created with OrderPolicy %s",
+                id, this.attrs.getOrderPolicy()));
       }
       if (this.cache instanceof GemFireCacheImpl) {
-        sender = new ParallelGatewaySenderImpl(this.cache, this.attrs);
+        sender = new ParallelGatewaySenderImpl(cache, statisticsClock, attrs);
         this.cache.addGatewaySender(sender);
 
         if (!this.attrs.isManualStart()) {
@@ -241,14 +263,15 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
     } else {
       if (this.attrs.getAsyncEventListeners().size() > 0) {
         throw new GatewaySenderException(
-            LocalizedStrings.SerialGatewaySenderImpl_GATEWAY_0_CANNOT_DEFINE_A_REMOTE_SITE_BECAUSE_AT_LEAST_ONE_LISTENER_IS_ALREADY_ADDED
-                .toLocalizedString(id));
+            String.format(
+                "SerialGatewaySender %s cannot define a remote site because at least AsyncEventListener is already added. Both listeners and remote site cannot be defined for the same gateway sender.",
+                id));
       }
       if (this.attrs.getOrderPolicy() == null && this.attrs.getDispatcherThreads() > 1) {
         this.attrs.policy = GatewaySender.DEFAULT_ORDER_POLICY;
       }
       if (this.cache instanceof GemFireCacheImpl) {
-        sender = new SerialGatewaySenderImpl(this.cache, this.attrs);
+        sender = new SerialGatewaySenderImpl(cache, statisticsClock, attrs);
         this.cache.addGatewaySender(sender);
 
         if (!this.attrs.isManualStart()) {
@@ -262,26 +285,28 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
     return sender;
   }
 
+  @Override
   public GatewaySender create(String id) {
     this.attrs.id = id;
     GatewaySender sender = null;
 
     if (this.attrs.getDispatcherThreads() <= 0) {
       throw new AsyncEventQueueConfigurationException(
-          LocalizedStrings.AsyncEventQueue_0_CANNOT_HAVE_DISPATCHER_THREADS_LESS_THAN_1
-              .toLocalizedString(id));
+          String.format("AsyncEventQueue %s can not be created with dispatcher threads less than 1",
+              id));
     }
 
     if (this.attrs.isParallel()) {
       if ((this.attrs.getOrderPolicy() != null)
           && this.attrs.getOrderPolicy().equals(OrderPolicy.THREAD)) {
         throw new AsyncEventQueueConfigurationException(
-            LocalizedStrings.AsyncEventQueue_0_CANNOT_BE_CREATED_WITH_ORDER_POLICY_1
-                .toLocalizedString(id, this.attrs.getOrderPolicy()));
+            String.format(
+                "AsyncEventQueue %s can not be created with OrderPolicy %s when it is set parallel",
+                id, this.attrs.getOrderPolicy()));
       }
 
       if (this.cache instanceof GemFireCacheImpl) {
-        sender = new ParallelGatewaySenderImpl(this.cache, this.attrs);
+        sender = new ParallelGatewaySenderImpl(cache, statisticsClock, attrs);
         this.cache.addGatewaySender(sender);
         if (!this.attrs.isManualStart()) {
           sender.start();
@@ -295,7 +320,7 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
         this.attrs.policy = GatewaySender.DEFAULT_ORDER_POLICY;
       }
       if (this.cache instanceof GemFireCacheImpl) {
-        sender = new SerialGatewaySenderImpl(this.cache, this.attrs);
+        sender = new SerialGatewaySenderImpl(cache, statisticsClock, attrs);
         this.cache.addGatewaySender(sender);
         if (!this.attrs.isManualStart()) {
           sender.start();
@@ -308,22 +333,26 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
     return sender;
   }
 
+  @Override
   public GatewaySenderFactory removeGatewayEventFilter(GatewayEventFilter filter) {
     this.attrs.eventFilters.remove(filter);
     return this;
   }
 
+  @Override
   public GatewaySenderFactory removeGatewayTransportFilter(GatewayTransportFilter filter) {
     this.attrs.transFilters.remove(filter);
     return this;
   }
 
+  @Override
   public GatewaySenderFactory setGatewayEventSubstitutionFilter(
       GatewayEventSubstitutionFilter filter) {
     this.attrs.eventSubstitutionFilter = filter;
     return this;
   }
 
+  @Override
   public void configureGatewaySender(GatewaySender senderCreation) {
     this.attrs.isParallel = senderCreation.isParallel();
     this.attrs.manualStart = senderCreation.isManualStart();

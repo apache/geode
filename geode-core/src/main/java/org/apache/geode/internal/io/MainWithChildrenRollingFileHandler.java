@@ -19,8 +19,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.regex.Pattern;
 
-import org.apache.geode.i18n.LogWriterI18n;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.LogWriter;
 
 /**
  * Extracted from ManagerLogWriter. MainWithChildrenRollingFileHandler is used for both rolling of
@@ -126,21 +125,23 @@ public class MainWithChildrenRollingFileHandler implements RollingFileHandler {
 
   @Override
   public void checkDiskSpace(final String type, final File newFile, final long spaceLimit,
-      final File dir, final LogWriterI18n logger) {
+      final File dir, final LogWriter logger) {
     checkDiskSpace(type, newFile, spaceLimit, dir, getFilePattern(newFile.getName()), logger);
   }
 
   private void checkDiskSpace(final String type, final File newFile, final long spaceLimit,
-      final File dir, final Pattern pattern, final LogWriterI18n logger) {
+      final File dir, final Pattern pattern, final LogWriter logger) {
     if (spaceLimit == 0 || pattern == null) {
       return;
     }
     File[] children = findChildrenExcept(dir, pattern, newFile);
+    LogWriter logWriter = logger;
     if (children == null) {
       if (dir.isDirectory()) {
-        logger.warning(
-            LocalizedStrings.ManagerLogWriter_COULD_NOT_CHECK_DISK_SPACE_ON_0_BECAUSE_JAVAIOFILELISTFILES_RETURNED_NULL_THIS_COULD_BE_CAUSED_BY_A_LACK_OF_FILE_DESCRIPTORS,
-            dir);
+        logWriter.warning(
+            String.format(
+                "Could not check disk space on %s because java.io.File.listFiles returned null. This could be caused by a lack of file descriptors.",
+                dir));
       }
       return;
     }
@@ -168,18 +169,19 @@ public class MainWithChildrenRollingFileHandler implements RollingFileHandler {
       long childSize = children[idx].length();
       if (delete(children[idx])) {
         spaceUsed -= childSize;
-        logger.info(LocalizedStrings.ManagerLogWriter_DELETED_INACTIVE__0___1_,
-            new Object[] {type, children[idx]});
+        logWriter.info(String.format("Deleted inactive %s %s.",
+            new Object[] {type, children[idx]}));
       } else {
-        logger.warning(LocalizedStrings.ManagerLogWriter_COULD_NOT_DELETE_INACTIVE__0___1_,
-            new Object[] {type, children[idx]});
+        logWriter.warning(String.format("Could not delete inactive %s %s.",
+            new Object[] {type, children[idx]}));
       }
       idx++;
     }
     if (spaceUsed > spaceLimit) {
-      logger.warning(
-          LocalizedStrings.ManagerLogWriter_COULD_NOT_FREE_SPACE_IN_0_DIRECTORY_THE_SPACE_USED_IS_1_WHICH_EXCEEDS_THE_CONFIGURED_LIMIT_OF_2,
-          new Object[] {type, Long.valueOf(spaceUsed), Long.valueOf(spaceLimit)});
+      logWriter.warning(
+          String.format(
+              "Could not free space in %s directory.  The space used is %s which exceeds the configured limit of %s.",
+              new Object[] {type, Long.valueOf(spaceUsed), Long.valueOf(spaceLimit)}));
     }
   }
 

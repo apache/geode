@@ -12,29 +12,25 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- *
- */
 package org.apache.geode.cache.query.internal;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Iterator;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.query.Struct;
 import org.apache.geode.cache.query.internal.types.ObjectTypeImpl;
 import org.apache.geode.cache.query.internal.types.StructTypeImpl;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.cache.query.types.StructType;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Test StructBag Limit behaviour
  */
-@Category(UnitTest.class)
 public class StructBagLimitBehaviourJUnitTest extends ResultsBagLimitBehaviourJUnitTest {
 
   public ResultsBag getBagObject(Class clazz) {

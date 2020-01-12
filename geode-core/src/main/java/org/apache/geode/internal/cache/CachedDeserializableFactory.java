@@ -18,14 +18,14 @@ package org.apache.geode.internal.cache;
 import java.io.IOException;
 
 import org.apache.geode.DataSerializer;
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.util.ObjectSizer;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.NullDataOutputStream;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.serialization.DSCODE;
 import org.apache.geode.internal.size.Sizeable;
 import org.apache.geode.pdx.PdxInstance;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Produces instances that implement CachedDeserializable.
@@ -34,10 +34,12 @@ import org.apache.geode.pdx.PdxInstance;
  *
  */
 public class CachedDeserializableFactory {
-  public static boolean PREFER_DESERIALIZED =
-      !Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "PREFER_SERIALIZED");
+  public static final boolean PREFER_DESERIALIZED =
+      !Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "PREFER_SERIALIZED");
+
+  @MutableForTesting
   public static boolean STORE_ALL_VALUE_FORMS =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "STORE_ALL_VALUE_FORMS");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "STORE_ALL_VALUE_FORMS");
 
   /**
    * Creates and returns an instance of CachedDeserializable that contains the specified byte array.
@@ -59,7 +61,7 @@ public class CachedDeserializableFactory {
   private static boolean isPdxEncoded(byte[] v) {
     // assert v != null;
     if (v.length > 0) {
-      return v[0] == DSCODE.PDX;
+      return v[0] == DSCODE.PDX.toByte();
     }
     return false;
   }
@@ -201,8 +203,7 @@ public class CachedDeserializableFactory {
         result += dos.size();
       } catch (IOException ex) {
         RuntimeException ex2 = new IllegalArgumentException(
-            LocalizedStrings.CachedDeserializableFactory_COULD_NOT_CALCULATE_SIZE_OF_OBJECT
-                .toLocalizedString());
+            "Could not calculate size of object");
         ex2.initCause(ex);
         throw ex2;
       }
@@ -216,7 +217,7 @@ public class CachedDeserializableFactory {
     }
     // GemFireCache.getInstance().getLogger().info("DEBUG calcMemSize: o=<" + o + "> o.class=" + (o
     // != null ? o.getClass() : "<null>") + " os=" + os + " result=" + result, new
-    // RuntimeException("STACK"));
+    // RuntimeException("STACK");
     return result;
   }
 
@@ -245,15 +246,14 @@ public class CachedDeserializableFactory {
         result += dos.size();
       } catch (IOException ex) {
         RuntimeException ex2 = new IllegalArgumentException(
-            LocalizedStrings.CachedDeserializableFactory_COULD_NOT_CALCULATE_SIZE_OF_OBJECT
-                .toLocalizedString());
+            "Could not calculate size of object");
         ex2.initCause(ex);
         throw ex2;
       }
     }
     // GemFireCache.getInstance().getLogger().info("DEBUG calcSerializedSize: o=<" + o + ">
     // o.class=" + (o != null ? o.getClass() : "<null>") + " result=" + result, new
-    // RuntimeException("STACK"));
+    // RuntimeException("STACK");
     return result;
   }
 

@@ -21,10 +21,12 @@ import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.cache.InternalCacheForClientAccess;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.ManagementService;
 
 /**
@@ -39,10 +41,12 @@ public abstract class BaseManagementService extends ManagementService {
   /**
    * The main mapping between different resources and Service instance Object can be Cache
    */
+  @MakeNotStatic
   protected static final Map<Object, BaseManagementService> instances =
       new HashMap<Object, BaseManagementService>();
 
   /** List of connected <code>DistributedSystem</code>s */
+  @MakeNotStatic
   private static final List<InternalDistributedSystem> systems =
       new ArrayList<InternalDistributedSystem>(1);
 
@@ -69,7 +73,7 @@ public abstract class BaseManagementService extends ManagementService {
    *
    * @param cache defines the scope of resources to be managed
    */
-  public static ManagementService getManagementService(InternalCache cache) {
+  public static ManagementService getManagementService(InternalCacheForClientAccess cache) {
     synchronized (instances) {
       BaseManagementService service = instances.get(cache);
       if (service == null) {
@@ -83,7 +87,7 @@ public abstract class BaseManagementService extends ManagementService {
 
   public static ManagementService getExistingManagementService(InternalCache cache) {
     synchronized (instances) {
-      BaseManagementService service = (BaseManagementService) instances.get(cache);
+      BaseManagementService service = instances.get(cache.getCacheForProcessingClientRequests());
       return service;
     }
   }
@@ -97,6 +101,7 @@ public abstract class BaseManagementService extends ManagementService {
       @SuppressWarnings("unchecked")
       List<InternalDistributedSystem> existingSystems = InternalDistributedSystem
           .addConnectListener(new InternalDistributedSystem.ConnectListener() {
+            @Override
             public void onConnect(InternalDistributedSystem sys) {
               addInternalDistributedSystem(sys);
             }
@@ -129,6 +134,7 @@ public abstract class BaseManagementService extends ManagementService {
           return "Disconnect listener for BaseManagementService";
         }
 
+        @Override
         public void onDisconnect(InternalDistributedSystem ss) {
           removeInternalDistributedSystem(ss);
         }

@@ -19,7 +19,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-Members in your <%=vars.product_name%> distributed system receive cache updates from other members through cache events. The other members can be peers to the member, clients or servers or other distributed systems.
+Members in your <%=vars.product_name%> cluster receive cache updates from other members through cache events. The other members can be peers to the member, clients or servers or other clusters.
 
 ## <a id="how_events_work__section_6C75098DDBB84944ADE57F2088330D5A" class="no-quick-link"></a>Events Features
 
@@ -91,21 +91,4 @@ During a cache operation, event handlers are called at various stages of the ope
 
 **Note:**
 An `EntryEvent` contains both the old value and the new value of the entry, which helps to indicate the value that was replaced by the cache operation on a particular key.
-
--   **[Peer-to-Peer Event Distribution](how_cache_events_work.html)**
-
-    When a region or entry operation is performed, <%=vars.product_name%> distributes the associated events in the distributed system according to system and cache configurations.
-
--   **[Client-to-Server Event Distribution](how_client_server_distribution_works.html)**
-
-    Clients and servers distribute events according to client activities and according to interest registered by the client in server-side cache changes.
-
--   **[Multi-Site (WAN) Event Distribution](how_multisite_distribution_works.html)**
-
-    <%=vars.product_name%> distributes a subset of cache events between distributed systems, with a minimum impact on each system's performance. Events are distributed only for regions that you configure to use a gateway sender for distribution.
-
--   **[List of Event Handlers and Events](list_of_event_handlers_and_events.html)**
-
-    <%=vars.product_name%> provides many types of events and event handlers to help you manage your different data and application needs.
-
 

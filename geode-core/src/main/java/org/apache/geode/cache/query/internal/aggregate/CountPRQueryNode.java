@@ -14,32 +14,33 @@
  */
 package org.apache.geode.cache.query.internal.aggregate;
 
+import static org.apache.geode.cache.query.internal.aggregate.AbstractAggregator.downCast;
+
 import org.apache.geode.cache.query.Aggregator;
 
 /**
  * Computes the count of the rows on the PR query node
- *
- *
  */
 public class CountPRQueryNode implements Aggregator {
-  private int count = 0;
+  private long count = 0;
 
-  /**
-   * Recieves the input of the individual counts from the bucket nodes.
-   */
-  @Override
-  public void accumulate(Object value) {
-    this.count += ((Integer) value).intValue();
+  long getCount() {
+    return count;
   }
 
   @Override
-  public void init() {
+  public void init() {}
 
+  /**
+   * Receives the input of the individual counts from the bucket nodes.
+   */
+  @Override
+  public void accumulate(Object value) {
+    this.count += ((Number) value).longValue();
   }
 
   @Override
   public Object terminate() {
-    return Integer.valueOf(count);
+    return downCast(count);
   }
-
 }

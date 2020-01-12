@@ -32,7 +32,7 @@ WAN deployments increase the messaging demands on a <%=vars.product_name%> syste
 Use the following steps to configure a multi-site system:
 
 1.  Plan the topology of your multi-site system. See [Multi-site (WAN) Topologies](multisite_topologies.html#multisite_topologies) for a description of different multi-site topologies.
-2.  Configure membership and communication for each distributed system in your multi-site system. You must use locators for peer discovery in a WAN configuration. See [Configuring Peer-to-Peer Discovery](../p2p_configuration/setting_up_a_p2p_system.html). Start each distributed system using a unique `distributed-system-id` and identify remote clusters using `remote-locators`. For example:
+2.  Configure membership and communication for each cluster in your multi-site system. You must use locators for peer discovery in a WAN configuration. See [Configuring Peer-to-Peer Discovery](../p2p_configuration/setting_up_a_p2p_system.html). Start each cluster using a unique `distributed-system-id` and identify remote clusters using `remote-locators`. For example:
 
     ``` pre
     mcast-port=0
@@ -44,7 +44,7 @@ Use the following steps to configure a multi-site system:
 3.  Configure the gateway senders that you will use to distribute region events to remote systems. See [Configure Gateway Senders](setting_up_a_multisite_system.html#setting_up_a_multisite_system__section_1500299A8F9A4C2385680E337F5D3DEC).
 4.  Create the data regions that you want to participate in the multi-site system, specifying the gateway sender(s) that each region should use for WAN distribution. Configure the same regions in the target clusters to apply the distributed events. See [Create Data Regions for Multi-site Communication](setting_up_a_multisite_system.html#setting_up_a_multisite_system__section_E1DEDD0743D54831AFFBCCDC750F8879).
 5.  Configure gateway receivers in each <%=vars.product_name%> cluster that will receive region events from another cluster. See [Configure Gateway Receivers](setting_up_a_multisite_system.html#setting_up_a_multisite_system__section_E3A44F85359046C7ADD12861D261637B).
-6.  Start distributed system member processes in the correct order (locators first, followed by data nodes) to ensure efficient discovery of WAN resources. See [Starting Up and Shutting Down Your System](../../configuring/running/starting_up_shutting_down.html).
+6.  Start cluster member processes in the correct order (locators first, followed by data nodes) to ensure efficient discovery of WAN resources. See [Starting Up and Shutting Down Your System](../../configuring/running/starting_up_shutting_down.html).
 7.  (Optional.) Deploy custom conflict resolvers to handle resolve potential conflicts that are detected when applying events from over a WAN. See [Resolving Conflicting Events](../../developing/events/resolving_multisite_conflicts.html#topic_E97BB68748F14987916CD1A50E4B4542).
 8.  (Optional.) Deploy WAN filters to determine which events are distributed over the WAN, or to modify events as they are distributed over the WAN. See [Filtering Events for Multi-Site (WAN) Distribution](../../developing/events/filtering_multisite_events.html#topic_E97BB68748F14987916CD1A50E4B4542).
 9.  (Optional.) Configure persistence, conflation, and/or dispatcher threads for gateway sender queues using the instructions in [Configuring Multi-Site (WAN) Event Queues](../../developing/events/configure_multisite_event_messaging.html#configure_multisite_event_messaging).
@@ -64,7 +64,7 @@ To configure a gateway sender that uses gfsh to create the cache.xml configurati
 See [WAN Configuration](../../reference/topics/elements_ref.html#topic_7B1CABCAD056499AA57AF3CFDBF8ABE3) for more information about individual configuration properties.
 
 1.  For each <%=vars.product_name%> system, choose the members that will host a gateway sender configuration and distribute region events to remote sites:
-    -   You must deploy a parallel gateway sender configuration on each <%=vars.product_name%> member that hosts a region that uses the sender.
+    -   You must deploy a parallel gateway sender configuration on each <%=vars.product_name%> member that hosts a region that uses the sender. Regions using the same parallel gateway sender ID must be colocated.
     -   You may choose to deploy a serial gateway sender configuration on one or more <%=vars.product_name%> members in order to provide high availability. However, only one instance of a given serial gateway sender configuration distributes region events at any given time.
 
 2.  Configure each gateway sender on a <%=vars.product_name%> member using gfsh, `cache.xml` or Java API:
@@ -160,7 +160,18 @@ The gateway sender configuration for a specific sender `id` must be identical on
 
 ## <a id="setting_up_a_multisite_system__section_E1DEDD0743D54831AFFBCCDC750F8879" class="no-quick-link"></a>Create Data Regions for Multi-site Communication
 
-When you are using a multi-site configuration, you choose which data regions to share between sites. Because of the high cost of distributing data between disparate geographical locations, not all changes are passed between sites. After you define gateway senders, configure regions to use the gateway sender to distribute region events.
+When using a multi-site configuration, you choose which data regions to share between sites. Because of the high cost of distributing data between disparate geographical locations, not all changes are passed between sites. 
+
+
+**Note these important restrictions on the regions:**
+
+- Replicated regions cannot use a parallel gateway sender. Use a serial gateway sender instead.
+
+- In addition to configuring regions with gateway senders to distribute events, you must configure the same regions in the target clusters to apply the distributed events. The region name in the receiving cluster must exactly match the region name in the sending cluster.
+
+- Regions using the same parallel gateway sender ID must be colocated.
+
+After you define gateway senders, configure regions to use the gateway senders to distribute region events.
 
 -   **gfsh Configuration**
 
@@ -198,12 +209,6 @@ When you are using a multi-site configuration, you choose which data regions to 
 
     **Note:**
     When using the Java API, you must configure a parallel gateway sender *before* you add its id to a region. This ensures that the sender distributes region events that were persisted before new cache operations take place. If the gateway sender id does not exist when you add it to a region, you receive an `IllegalStateException`.
-
-**Note:**
-Replicated regions cannot use a parallel gateway sender. Use a serial gateway sender instead.
-
-**Note:**
-In addition to configuring regions with gateway senders to distribute events, you must configure the same regions in the target clusters to apply the distributed events. The region name in the receiving cluster must exactly match the region name in the sending cluster.
 
 ## <a id="setting_up_a_multisite_system__section_E3A44F85359046C7ADD12861D261637B" class="no-quick-link"></a>Configure Gateway Receivers
 

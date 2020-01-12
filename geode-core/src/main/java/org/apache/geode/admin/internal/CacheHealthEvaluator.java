@@ -24,13 +24,12 @@ import org.apache.geode.admin.GemFireHealthConfig;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.cache.CacheLifecycleListener;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.OSProcess;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Contains the logic for evaluating the health of a GemFire {@code Cache} instance according to the
@@ -151,8 +150,9 @@ class CacheHealthEvaluator extends AbstractHealthEvaluator implements CacheLifec
 
       if (ratio > threshold) {
         String s =
-            LocalizedStrings.CacheHealthEvaluator_THE_AVERAGE_DURATION_OF_A_CACHE_NETSEARCH_0_MS_EXCEEDS_THE_THRESHOLD_1_MS
-                .toLocalizedString(ratio, threshold);
+            String.format(
+                "The average duration of a Cache netSearch (%s ms) exceeds the threshold (%s ms)",
+                ratio, threshold);
         status.add(okayHealth(s));
       }
     }
@@ -186,8 +186,9 @@ class CacheHealthEvaluator extends AbstractHealthEvaluator implements CacheLifec
 
         if (ratio > threshold) {
           String s =
-              LocalizedStrings.CacheHealthEvaluator_THE_AVERAGE_DURATION_OF_A_CACHE_LOAD_0_MS_EXCEEDS_THE_THRESHOLD_1_MS
-                  .toLocalizedString(ratio, threshold);
+              String.format(
+                  "The average duration of a Cache load (%s ms) exceeds the threshold (%s ms)",
+                  ratio, threshold);
           if (logger.isDebugEnabled()) {
             logger.debug(s);
           }
@@ -251,8 +252,8 @@ class CacheHealthEvaluator extends AbstractHealthEvaluator implements CacheLifec
     long threshold = this.config.getMaxEventQueueSize();
     if (eventQueueSize > threshold) {
       String s =
-          LocalizedStrings.CacheHealthEvaluator_THE_SIZE_OF_THE_CACHE_EVENT_QUEUE_0_MS_EXCEEDS_THE_THRESHOLD_1_MS
-              .toLocalizedString(eventQueueSize, threshold);
+          String.format("The size of the cache event queue (%s ms) exceeds the threshold (%s ms)",
+              eventQueueSize, threshold);
       status.add(okayHealth(s));
     }
   }

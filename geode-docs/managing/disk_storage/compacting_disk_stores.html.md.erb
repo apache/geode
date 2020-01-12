@@ -46,7 +46,7 @@ Old log files become eligible for online compaction when their garbage content s
             myCache.getDiskStore("myDiskStore").forceCompaction();
             ```
 
-        -   Using `gfsh`, compact a disk store in a distributed system with the [compact disk-store](../../tools_modules/gfsh/command-pages/compact.html#topic_F113C95C076F424E9AA8AC4F1F6324CC) command. Examples:
+        -   Using `gfsh`, compact a disk store with the [compact disk-store](../../tools_modules/gfsh/command-pages/compact.html#topic_F113C95C076F424E9AA8AC4F1F6324CC) command. Examples:
 
             ``` pre
             gfsh>compact disk-store --name=Disk1
@@ -85,7 +85,7 @@ To follow a strategy like this, you need to set aside enough disk space to accom
 
 ## <a id="compacting_disk_stores__section_A9EE86F662EE4D46A327C336E901A0F2" class="no-quick-link"></a>Directory Size Limits
 
-Reaching directory size limits during has different results depending on whether you are running an automatic or manual compaction:
+Reaching directory size limits during compaction has different results depending on whether you are running an automatic or manual compaction:
 
 -   For automatic compaction, the system logs a warning, but does not stop.
 -   For manual compaction, the operation stops and returns a `DiskAccessException` to the calling process, reporting that the system has run out of disk space.

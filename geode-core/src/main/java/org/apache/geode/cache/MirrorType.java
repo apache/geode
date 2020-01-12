@@ -16,7 +16,9 @@
 
 package org.apache.geode.cache;
 
-import java.io.*;
+import java.io.ObjectStreamException;
+
+import org.apache.geode.annotations.Immutable;
 
 /**
  * Enumerated type for region mirroring.
@@ -31,6 +33,7 @@ import java.io.*;
  * @since GemFire 3.0
  */
 @Deprecated
+@Immutable
 public class MirrorType implements java.io.Serializable {
   private static final long serialVersionUID = -6632651349646672540L;
 
@@ -41,7 +44,8 @@ public class MirrorType implements java.io.Serializable {
    * @deprecated as of GemFire 5.0, use {@link DataPolicy#NORMAL} instead.
    */
   @Deprecated
-  public static final MirrorType NONE = new MirrorType("NONE", DataPolicy.NORMAL);
+  @Immutable
+  public static final MirrorType NONE = new MirrorType("NONE", DataPolicy.NORMAL, 0);
 
   /**
    * New entries created in other caches for this region are propagated to this region in this
@@ -50,7 +54,8 @@ public class MirrorType implements java.io.Serializable {
    * @deprecated as of GemFire 5.0, use {@link DataPolicy#REPLICATE} instead.
    */
   @Deprecated
-  public static final MirrorType KEYS = new MirrorType("KEYS", DataPolicy.REPLICATE);
+  @Immutable
+  public static final MirrorType KEYS = new MirrorType("KEYS", DataPolicy.REPLICATE, 1);
 
   /**
    * New entries created in other caches for this region are propagated to this region in this cache
@@ -59,7 +64,9 @@ public class MirrorType implements java.io.Serializable {
    * @deprecated as of GemFire 5.0, use {@link DataPolicy#REPLICATE} instead.
    */
   @Deprecated
-  public static final MirrorType KEYS_VALUES = new MirrorType("KEYS_VALUES", DataPolicy.REPLICATE);
+  @Immutable
+  public static final MirrorType KEYS_VALUES = new MirrorType("KEYS_VALUES", DataPolicy.REPLICATE,
+      2);
 
 
   /** The name of this mirror type. */
@@ -72,10 +79,9 @@ public class MirrorType implements java.io.Serializable {
 
   // The 4 declarations below are necessary for serialization
   /** int used as ordinal to represent this Scope */
-  public final int ordinal = nextOrdinal++;
+  public final int ordinal;
 
-  private static int nextOrdinal = 0;
-
+  @Immutable
   private static final MirrorType[] VALUES = {NONE, KEYS, KEYS_VALUES};
 
   private Object readResolve() throws ObjectStreamException {
@@ -84,9 +90,10 @@ public class MirrorType implements java.io.Serializable {
 
 
   /** Creates a new instance of MirrorType. */
-  private MirrorType(String name, DataPolicy dataPolicy) {
+  private MirrorType(String name, DataPolicy dataPolicy, int ordinal) {
     this.name = name;
     this.dataPolicy = dataPolicy;
+    this.ordinal = ordinal;
   }
 
   /** Return the MirrorType represented by specified ordinal */

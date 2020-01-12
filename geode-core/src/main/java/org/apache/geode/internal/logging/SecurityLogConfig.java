@@ -16,48 +16,61 @@ package org.apache.geode.internal.logging;
 
 import java.io.File;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.logging.internal.spi.LogConfig;
 
 /**
- * LogConfig implementation for Security logging configuration that delegates to a
- * DistributionConfig.
- *
+ * Wraps a {@link LogConfig} and overrides configuration for Security.
  */
 public class SecurityLogConfig implements LogConfig {
 
-  private final DistributionConfig config;
+  private final LogConfig config;
 
-  public SecurityLogConfig(final DistributionConfig config) {
+  SecurityLogConfig(final LogConfig config) {
     this.config = config;
   }
 
   @Override
   public int getLogLevel() {
-    return this.config.getSecurityLogLevel();
+    return config.getSecurityLogLevel();
   }
 
   @Override
   public File getLogFile() {
-    return this.config.getSecurityLogFile();
+    return config.getSecurityLogFile();
+  }
+
+  @Override
+  public File getSecurityLogFile() {
+    return config.getSecurityLogFile();
+  }
+
+  @Override
+  public int getSecurityLogLevel() {
+    return config.getSecurityLogLevel();
   }
 
   @Override
   public int getLogFileSizeLimit() {
-    return this.config.getLogFileSizeLimit();
+    return config.getLogFileSizeLimit();
   }
 
   @Override
   public int getLogDiskSpaceLimit() {
-    return this.config.getLogDiskSpaceLimit();
-  }
-
-  @Override
-  public String toLoggerString() {
-    return this.config.toLoggerString();
+    return config.getLogDiskSpaceLimit();
   }
 
   @Override
   public String getName() {
-    return this.config.getName();
+    return config.getName();
+  }
+
+  @Override
+  public String toLoggerString() {
+    return config.toLoggerString();
+  }
+
+  @Override
+  public boolean isLoner() {
+    return config.isLoner();
   }
 }

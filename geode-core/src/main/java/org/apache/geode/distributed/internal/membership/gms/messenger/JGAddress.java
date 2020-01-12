@@ -14,7 +14,11 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.messenger;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
@@ -23,15 +27,14 @@ import org.jgroups.Global;
 import org.jgroups.stack.IpAddress;
 import org.jgroups.util.UUID;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.gms.GMSMember;
-import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.distributed.internal.membership.api.MemberData;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * This is a copy of JGroups 3.6.4 IpAddress (Apache 2.0 License) that is repurposed to be a Logical
  * address so that we can quickly pull a physical address out of the logical address set in a
- * message by JGroupsMessenger.
+ * message sent by JGroupsMessenger.
  */
 
 public class JGAddress extends UUID {
@@ -39,7 +42,7 @@ public class JGAddress extends UUID {
 
   // whether to show UUID info in toString()
   private static final boolean SHOW_UUIDS =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "show_UUIDs");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "show_UUIDs");
 
   private InetAddress ip_addr;
   private int port;
@@ -49,24 +52,14 @@ public class JGAddress extends UUID {
   // Used only by Externalization
   public JGAddress() {}
 
-  public JGAddress(InternalDistributedMember idm) {
+  public JGAddress(MemberIdentifier mbr) {
     super();
-    GMSMember mbr = (GMSMember) idm.getNetMember();
-    this.mostSigBits = mbr.getUuidMSBs();
-    this.leastSigBits = mbr.getUuidLSBs();
-    this.ip_addr = idm.getInetAddress();
-    this.port = idm.getPort();
-    this.vmViewId = idm.getVmViewId();
-  }
-
-
-  public JGAddress(GMSMember mbr) {
-    super();
-    this.mostSigBits = mbr.getUuidMSBs();
-    this.leastSigBits = mbr.getUuidLSBs();
     this.ip_addr = mbr.getInetAddress();
-    this.port = mbr.getPort();
-    this.vmViewId = mbr.getVmViewId();
+    this.port = mbr.getMembershipPort();
+    MemberData memberData = mbr.getMemberData();
+    this.mostSigBits = memberData.getUuidMostSignificantBits();
+    this.leastSigBits = memberData.getUuidLeastSignificantBits();
+    this.vmViewId = memberData.getVmViewId();
   }
 
 
@@ -102,11 +95,7 @@ public class JGAddress extends UUID {
     if (ip_addr == null)
       sb.append("<null>");
     else {
-      if (SocketCreator.resolve_dns) {
-        sb.append(SocketCreator.getHostName(ip_addr));
-      } else {
-        sb.append(ip_addr.getHostAddress());
-      }
+      sb.append(ip_addr.getHostName());
     }
     if (vmViewId >= 0) {
       sb.append("<v").append(vmViewId).append('>');

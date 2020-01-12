@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache;
 
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.query.internal.Support;
 
 /**
@@ -28,11 +30,13 @@ public class ClientServerObserverHolder {
   /**
    * The default 'do-nothing' bridge observer *
    */
+  @Immutable
   private static final ClientServerObserver NO_OBSERVER = new ClientServerObserverAdapter();
 
   /**
    * The current observer which will be notified of all query events.
    */
+  @MakeNotStatic
   private static ClientServerObserver _instance = NO_OBSERVER;
 
   /**
@@ -50,4 +54,9 @@ public class ClientServerObserverHolder {
     return _instance;
   }
 
+  public static ClientServerObserver clearInstance() {
+    ClientServerObserver oldObserver = _instance;
+    _instance = NO_OBSERVER;
+    return oldObserver;
+  }
 }

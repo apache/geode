@@ -19,10 +19,9 @@ package org.apache.geode.cache.query.internal.parse;
 import java.util.HashMap;
 import java.util.Map;
 
-import antlr.*;
-import antlr.collections.*;
+import antlr.Token;
+import antlr.collections.AST;
 
-import org.apache.geode.cache.query.internal.CompiledValue;
 import org.apache.geode.cache.query.internal.QCompiler;
 
 public class ASTSelect extends GemFireAST {

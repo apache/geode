@@ -52,7 +52,7 @@ public class UnregisterInterestOp {
     public UnregisterInterestOpImpl(String region, Object key, int interestType, boolean isClosing,
         boolean keepAlive) {
       super(MessageType.UNREGISTER_INTEREST, 5);
-      getMessage().addStringPart(region);
+      getMessage().addStringPart(region, true);
       getMessage().addIntPart(interestType);
       getMessage().addStringOrObjPart(key);
       {

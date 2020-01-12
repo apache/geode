@@ -27,37 +27,43 @@ public class ClientServerObserverAdapter implements ClientServerObserver {
   /**
    * This callback is called when now primary Ep is identified.
    */
+  @Override
   public void afterPrimaryIdentificationFromBackup(ServerLocation primaryEndpoint) {}
 
   /**
    * This callback is called just before interest registartion
    */
+  @Override
   public void beforeInterestRegistration() {}
 
   /**
    * This callback is called just after interest registartion
    */
+  @Override
   public void afterInterestRegistration() {}
 
   /**
    * This callback is called just before primary identification
    */
+  @Override
   public void beforePrimaryIdentificationFromBackup() {}
 
   /**
    * This callback is called just before Interest Recovery by DSM thread happens
    */
+  @Override
   public void beforeInterestRecovery() {
 
   }
 
+  @Override
   public void beforeFailoverByCacheClientUpdater(ServerLocation epFailed) {}
 
   /**
    * Invoked before sending an instantiator message to server
    *
-   * @param eventId
    */
+  @Override
   public void beforeSendingToServer(EventID eventId) {
 
   }
@@ -65,8 +71,8 @@ public class ClientServerObserverAdapter implements ClientServerObserver {
   /**
    * Invoked after sending an instantiator message to server
    *
-   * @param eventId
    */
+  @Override
   public void afterReceivingFromServer(EventID eventId) {
 
   }
@@ -74,6 +80,7 @@ public class ClientServerObserverAdapter implements ClientServerObserver {
   /**
    * This callback is called just before sending client ack to the primary servrer.
    */
+  @Override
   public void beforeSendingClientAck() {
 
   }
@@ -81,8 +88,8 @@ public class ClientServerObserverAdapter implements ClientServerObserver {
   /**
    * Invoked after Message is created
    *
-   * @param msg
    */
+  @Override
   public void afterMessageCreation(Message msg) {
 
   }
@@ -90,6 +97,7 @@ public class ClientServerObserverAdapter implements ClientServerObserver {
   /**
    * Invoked after Queue Destroy Message has been sent
    */
+  @Override
   public void afterQueueDestroyMessage() {
 
   }
@@ -97,5 +105,6 @@ public class ClientServerObserverAdapter implements ClientServerObserver {
   /**
    * Invoked after a primary is recovered from a backup or new connection.
    */
+  @Override
   public void afterPrimaryRecovered(ServerLocation location) {}
 }

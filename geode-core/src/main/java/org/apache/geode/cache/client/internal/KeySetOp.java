@@ -20,11 +20,11 @@ import java.util.Set;
 
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.client.ServerOperationException;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * Does a region keySet on a server
@@ -54,7 +54,7 @@ public class KeySetOp {
      */
     public KeySetOpImpl(String region) {
       super(MessageType.KEY_SET, 1);
-      getMessage().addStringPart(region);
+      getMessage().addStringPart(region, true);
     }
 
     @Override

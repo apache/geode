@@ -36,7 +36,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.rest.internal.web.controllers.support.JSONTypes;
 import org.apache.geode.rest.internal.web.controllers.support.RegionData;
 import org.apache.geode.rest.internal.web.controllers.support.RegionEntryData;
@@ -197,7 +197,7 @@ public class PdxBasedCrudController extends CommonCrudController {
    * Reading data for set of keys
    *
    * @param region gemfire region name
-   * @param keys string containing comma seperated keys
+   * @param keys string containing comma separated keys
    * @return JSON document
    */
   @RequestMapping(method = RequestMethod.GET, value = "/{region}/{keys}",

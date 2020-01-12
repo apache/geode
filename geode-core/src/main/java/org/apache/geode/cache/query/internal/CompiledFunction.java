@@ -15,10 +15,16 @@
 
 package org.apache.geode.cache.query.internal;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 
-import org.apache.geode.cache.query.*;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.cache.query.AmbiguousNameException;
+import org.apache.geode.cache.query.FunctionDomainException;
+import org.apache.geode.cache.query.NameResolutionException;
+import org.apache.geode.cache.query.QueryInvalidException;
+import org.apache.geode.cache.query.QueryInvocationTargetException;
+import org.apache.geode.cache.query.TypeMismatchException;
 
 
 /**
@@ -43,6 +49,7 @@ public class CompiledFunction extends AbstractCompiledValue {
   }
 
 
+  @Override
   public int getType() {
     return FUNCTION;
   }
@@ -51,6 +58,7 @@ public class CompiledFunction extends AbstractCompiledValue {
     return this._function;
   }
 
+  @Override
   public Object evaluate(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     if (this._function == LITERAL_element) {
@@ -62,8 +70,7 @@ public class CompiledFunction extends AbstractCompiledValue {
       return Functions.to_date(_args[0], _args[1], context);
     } else {
       throw new QueryInvalidException(
-          LocalizedStrings.CompiledFunction_UNSUPPORTED_FUNCTION_WAS_USED_IN_THE_QUERY
-              .toLocalizedString());
+          "UnSupported function was used in the query");
     }
   }
 

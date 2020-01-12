@@ -18,9 +18,6 @@ import java.io.Serializable;
 
 import org.apache.geode.internal.sequencelog.GraphType;
 
-/**
- *
- */
 public class GraphID implements Comparable<GraphID>, Serializable {
 
   public final GraphType type;
@@ -76,6 +73,7 @@ public class GraphID implements Comparable<GraphID>, Serializable {
     return true;
   }
 
+  @Override
   public int compareTo(GraphID o) {
     if (o == null) {
       return -1;

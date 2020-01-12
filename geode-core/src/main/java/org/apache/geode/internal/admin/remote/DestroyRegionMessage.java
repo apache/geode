@@ -25,9 +25,9 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.ExpirationAction;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * A message that is sent to a particular distribution manager to let it know that the sender is an
@@ -60,32 +60,34 @@ public class DestroyRegionMessage extends RegionAdminMessage {
           r.localInvalidateRegion();
         }
       } catch (Exception e) {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.DestroRegionMessage_FAILED_ATTEMPT_TO_DESTROY_OR_INVALIDATE_REGION_0_FROM_CONSOLE_AT_1,
-            new Object[] {r.getFullPath(), this.getSender()}));
+        logger.warn("Failed attempt to destroy or invalidate region {} from console at {}",
+            new Object[] {r.getFullPath(), this.getSender()});
       }
     }
   }
 
+  @Override
   public int getDSFID() {
     return ADMIN_DESTROY_REGION_MESSAGE;
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     DataSerializer.writeObject(this.action, out);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.action = (ExpirationAction) DataSerializer.readObject(in);
   }
 
   @Override
   public String toString() {
-    return LocalizedStrings.DestroyRegionMessage_DESTROYREGIONMESSAGE_FROM_0
-        .toLocalizedString(this.getSender());
+    return String.format("DestroyRegionMessage from %s",
+        this.getSender());
   }
 }

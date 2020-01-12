@@ -22,9 +22,6 @@ package org.apache.geode.cache.query.internal.index;
 
 import org.apache.geode.cache.query.QueryException;
 
-/**
- *
- */
 public class IMQException extends QueryException {
   private static final long serialVersionUID = -5012914292321850775L;
 

@@ -28,7 +28,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.internal.cache.DirectoryHolder;
 import org.apache.geode.internal.cache.Oplog;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Creates and keeps track of the temporary locations used during a backup. Most temporary files are
@@ -53,7 +53,7 @@ class TemporaryBackupFiles {
    */
   static TemporaryBackupFiles create() throws IOException {
     long currentTime = System.currentTimeMillis();
-    String diskStoreDirectoryName = BackupService.DATA_STORES_TEMPORARY_DIRECTORY + currentTime;
+    String diskStoreDirectoryName = BackupService.TEMPORARY_DIRECTORY_FOR_BACKUPS + currentTime;
     Path temporaryDirectory = Files.createTempDirectory("backup_" + currentTime);
     return new TemporaryBackupFiles(temporaryDirectory, diskStoreDirectoryName);
   }

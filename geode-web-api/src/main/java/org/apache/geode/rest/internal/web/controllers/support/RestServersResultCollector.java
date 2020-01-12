@@ -27,22 +27,27 @@ public class RestServersResultCollector<String, Object> implements ResultCollect
 
   private ArrayList resultList = new ArrayList();
 
+  @Override
   public void addResult(DistributedMember memberID, String result) {
     if (!StringUtils.isEmpty(result)) {
       this.resultList.add(result);
     }
   }
 
+  @Override
   public void endResults() {}
 
+  @Override
   public Object getResult() throws FunctionException {
     return (Object) resultList;
   }
 
+  @Override
   public Object getResult(long timeout, TimeUnit unit) throws FunctionException {
     return (Object) resultList;
   }
 
+  @Override
   public void clearResults() {
     resultList.clear();
   }

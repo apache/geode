@@ -47,19 +47,19 @@ public class RegionFunctionContextImpl extends FunctionContextImpl
 
   private final Map<String, LocalDataSet> colocatedLocalDataMap;
 
-  private final Set<Integer> localBucketSet;
+  private final int[] localBucketArray;
 
   private final boolean isPossibleDuplicate;
 
   public RegionFunctionContextImpl(final Cache cache, final String functionId, final Region dataSet,
       final Object args, final Set<?> routingObjects,
-      final Map<String, LocalDataSet> colocatedLocalDataMap, Set<Integer> localBucketSet,
+      final Map<String, LocalDataSet> colocatedLocalDataMap, int[] localBucketArray,
       ResultSender<?> resultSender, boolean isPossibleDuplicate) {
     super(cache, functionId, args, resultSender);
     this.dataSet = dataSet;
     this.filter = routingObjects;
     this.colocatedLocalDataMap = colocatedLocalDataMap;
-    this.localBucketSet = localBucketSet;
+    this.localBucketArray = localBucketArray;
     this.isPossibleDuplicate = isPossibleDuplicate;
     setFunctionContexts();
   }
@@ -79,6 +79,7 @@ public class RegionFunctionContextImpl extends FunctionContextImpl
    *
    * @return Returns the Region on which function is executed
    */
+  @Override
   public <K, V> Region<K, V> getDataSet() {
     return this.dataSet;
   }
@@ -91,6 +92,7 @@ public class RegionFunctionContextImpl extends FunctionContextImpl
    *
    * @return the objects should be local to this context
    */
+  @Override
   public Set<?> getFilter() {
     return this.filter;
   }
@@ -109,6 +111,7 @@ public class RegionFunctionContextImpl extends FunctionContextImpl
     return buf.toString();
   }
 
+  @Override
   public Region getLocalDataSet(Region r) {
     if (this.colocatedLocalDataMap != null) {
       return this.colocatedLocalDataMap.get(r.getFullPath());
@@ -117,6 +120,7 @@ public class RegionFunctionContextImpl extends FunctionContextImpl
     }
   }
 
+  @Override
   public Map<String, LocalDataSet> getColocatedLocalDataSets() {
     if (this.colocatedLocalDataMap != null) {
       HashMap<String, LocalDataSet> ret =
@@ -128,14 +132,16 @@ public class RegionFunctionContextImpl extends FunctionContextImpl
     }
   }
 
+  @Override
   public boolean isPossibleDuplicate() {
     return this.isPossibleDuplicate;
   }
 
-  public <K, V> Set<Integer> getLocalBucketSet(Region<K, V> region) {
+  @Override
+  public <K, V> int[] getLocalBucketArray(Region<K, V> region) {
     if (!region.getAttributes().getDataPolicy().withPartitioning()) {
       return null;
     }
-    return this.localBucketSet;
+    return this.localBucketArray;
   }
 }

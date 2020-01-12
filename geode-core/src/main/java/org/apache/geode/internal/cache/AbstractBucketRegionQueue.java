@@ -14,15 +14,24 @@
  */
 package org.apache.geode.internal.cache;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.cache.*;
-import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.cache.CacheWriterException;
+import org.apache.geode.cache.Operation;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionDestroyedException;
+import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
@@ -30,11 +39,10 @@ import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
 import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
-import org.apache.geode.internal.concurrent.ConcurrentHashSet;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.OffHeapRegionEntryHelper;
-import org.apache.geode.internal.offheap.annotations.Released;
+import org.apache.geode.internal.statistics.StatisticsClock;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 public abstract class AbstractBucketRegionQueue extends BucketRegion {
   protected static final Logger logger = LogService.getLogger();
@@ -44,9 +52,9 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
    * megabytes.
    */
   private final long maximumSize = 1024 * 1024
-      * Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "GATEWAY_QUEUE_THROTTLE_SIZE_MB", -1);
+      * Long.getLong(GeodeGlossary.GEMFIRE_PREFIX + "GATEWAY_QUEUE_THROTTLE_SIZE_MB", -1);
   private final long throttleTime =
-      Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "GATEWAY_QUEUE_THROTTLE_TIME_MS", 100);
+      Long.getLong(GeodeGlossary.GEMFIRE_PREFIX + "GATEWAY_QUEUE_THROTTLE_TIME_MS", 100);
 
   private final ReentrantReadWriteLock initializationLock = new ReentrantReadWriteLock();
 
@@ -58,18 +66,19 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
    * Holds keys for those events that were not found in BucketRegionQueue during processing of
    * ParallelQueueRemovalMessage. This can occur due to the scenario mentioned in #49196.
    */
-  private final ConcurrentHashSet<Object> failedBatchRemovalMessageKeys = new ConcurrentHashSet<>();
+  private final Set<Object> failedBatchRemovalMessageKeys = ConcurrentHashMap.newKeySet();
 
   AbstractBucketRegionQueue(String regionName, RegionAttributes attrs, LocalRegion parentRegion,
-      InternalCache cache, InternalRegionArguments internalRegionArgs) {
-    super(regionName, attrs, parentRegion, cache, internalRegionArgs);
+      InternalCache cache, InternalRegionArguments internalRegionArgs,
+      StatisticsClock statisticsClock) {
+    super(regionName, attrs, parentRegion, cache, internalRegionArgs, statisticsClock);
     this.gatewaySenderStats =
         this.getPartitionedRegion().getParallelGatewaySender().getStatistics();
   }
 
   // Prevent this region from using concurrency checks
   @Override
-  public boolean supportsConcurrencyChecks() {
+  protected boolean supportsConcurrencyChecks() {
     return false;
   }
 
@@ -126,12 +135,13 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
   // }
 
 
+  @Override
   protected boolean needWriteLock(EntryEventImpl event) {
     return false;
   }
 
   @Override
-  protected long basicPutPart2(EntryEventImpl event, RegionEntry entry, boolean isInitialized,
+  public long basicPutPart2(EntryEventImpl event, RegionEntry entry, boolean isInitialized,
       long lastModified, boolean clearConflict) {
     return System.currentTimeMillis();
   }
@@ -160,7 +170,7 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
    * proceeds smoothly.
    */
   @Override
-  protected void updateSizeOnClearRegion(int sizeBeforeClear) {
+  void updateSizeOnClearRegion(int sizeBeforeClear) {
 
   }
 
@@ -171,63 +181,14 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
     return initializationLock;
   }
 
-  /**
-   * Does a get that attempts to not fault values in from disk or make the entry the most recent in
-   * the LRU.
-   */
-  /*
-   * protected Object optimalGet(Object k) { // Get the object at that key (to remove the index).
-   * Object object = null; try { object = getValueInVM(k); // OFFHEAP deserialize if (object ==
-   * null) { // must be on disk // fault it in w/o putting it back in the region object =
-   * getValueOnDiskOrBuffer(k); if (object == null) { // try memory one more time in case it was
-   * already faulted back in object = getValueInVM(k); // OFFHEAP deserialize if (object == null) {
-   * // if we get this far give up and just do a get object = get(k); } else { if (object instanceof
-   * CachedDeserializable) { object = ((CachedDeserializable)object).getDeserializedValue( this,
-   * this.getRegionEntry(k)); } } } } else { if (object instanceof CachedDeserializable) { object =
-   * ((CachedDeserializable)object).getDeserializedValue(this, this.getRegionEntry(k)); } } } catch
-   * (EntryNotFoundException ok) { // just return null; } if (object == Token.TOMBSTONE) { object =
-   * null; }
-   *
-   * return object; }
-   */
-
-  public void destroyKey(Object key) throws ForceReattemptException {
-    if (logger.isDebugEnabled()) {
-      logger.debug(" destroying primary key {}", key);
-    }
-    @Released
-    EntryEventImpl event = getPartitionedRegion().newDestroyEntryEvent(key, null);
-    event.setEventId(new EventID(cache.getInternalDistributedSystem()));
-    try {
-      event.setRegion(this);
-      basicDestroy(event, true, null);
-      checkReadiness();
-    } catch (EntryNotFoundException enf) {
-      if (getPartitionedRegion().isDestroyed()) {
-        getPartitionedRegion().checkReadiness();
-        if (isBucketDestroyed()) {
-          throw new ForceReattemptException("Bucket moved",
-              new RegionDestroyedException(
-                  LocalizedStrings.PartitionedRegionDataStore_REGION_HAS_BEEN_DESTROYED
-                      .toLocalizedString(),
-                  getPartitionedRegion().getFullPath()));
-        }
-      }
-      throw enf;
-    } catch (RegionDestroyedException rde) {
-      getPartitionedRegion().checkReadiness();
-      if (isBucketDestroyed()) {
-        throw new ForceReattemptException("Bucket moved while destroying key " + key, rde);
-      }
-    } finally {
-      event.release();
-    }
-
-    this.notifyEntriesRemoved();
-  }
+  public abstract void destroyKey(Object key) throws ForceReattemptException;
 
   public void decQueueSize(int size) {
     this.gatewaySenderStats.decQueueSize(size);
+  }
+
+  public void decSecondaryQueueSize(int size) {
+    this.gatewaySenderStats.decSecondaryQueueSize(size);
   }
 
   public void decQueueSize() {
@@ -236,6 +197,14 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
 
   public void incQueueSize(int size) {
     this.gatewaySenderStats.incQueueSize(size);
+  }
+
+  public void incSecondaryQueueSize(int size) {
+    this.gatewaySenderStats.incSecondaryQueueSize(size);
+  }
+
+  public void incEventsProcessedByPQRM(int size) {
+    this.gatewaySenderStats.incEventsProcessedByPQRM(size);
   }
 
   public void incQueueSize() {
@@ -323,12 +292,13 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
   }
 
   @Override
-  protected boolean virtualPut(EntryEventImpl event, boolean ifNew, boolean ifOld,
+  public boolean virtualPut(EntryEventImpl event, boolean ifNew, boolean ifOld,
       Object expectedOldValue, boolean requireOldValue, long lastModified,
-      boolean overwriteDestroyed) throws TimeoutException, CacheWriterException {
+      boolean overwriteDestroyed, boolean invokeCallbacks, boolean throwConcurrentModificaiton)
+      throws TimeoutException, CacheWriterException {
     try {
       boolean success = super.virtualPut(event, ifNew, ifOld, expectedOldValue, requireOldValue,
-          lastModified, overwriteDestroyed);
+          lastModified, overwriteDestroyed, invokeCallbacks, throwConcurrentModificaiton);
       if (success) {
         if (logger.isDebugEnabled()) {
           logger.debug("Key : ----> {}", event.getKey());
@@ -342,18 +312,6 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
     }
 
   }
-
-  @Override
-  public void basicDestroy(final EntryEventImpl event, final boolean cacheWrite,
-      Object expectedOldValue)
-      throws EntryNotFoundException, CacheWriterException, TimeoutException {
-    try {
-      super.basicDestroy(event, cacheWrite, expectedOldValue);
-    } finally {
-      GatewaySenderEventImpl.release(event.getRawOldValue());
-    }
-  }
-
 
   /**
    * Return all of the user PR buckets for this bucket region queue.
@@ -382,10 +340,7 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
    * sure that the value is in the Bucket before the eventSeqNumQueue is available for
    * peek/remove/take from other thread.
    *
-   * @param key
-   * @param value
    * @return boolean which shows whether the operation was successful or not.
-   * @throws ForceReattemptException
    */
   public boolean addToQueue(Object key, Object value) throws ForceReattemptException {
 
@@ -396,7 +351,7 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
     }
 
     boolean didPut = false;
-    long startPut = CachePerfStats.getStatTime();
+    long startPut = getStatisticsClock().getTime();
     // Value will always be an instanceof GatewaySenderEventImpl which
     // is never stored offheap so this EntryEventImpl values will never be off-heap.
     // So the value that ends up being stored in this region is a GatewaySenderEventImpl
@@ -494,19 +449,28 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
     }
   }
 
+  @Override
   public boolean isInitialized() {
     return this.initialized;
   }
 
-  /**
-   *
-   * @param key
-   */
   public void addToFailedBatchRemovalMessageKeys(Object key) {
     failedBatchRemovalMessageKeys.add(key);
   }
 
-  public ConcurrentHashSet<Object> getFailedBatchRemovalMessageKeys() {
+  public boolean isFailedBatchRemovalMessageKeysClearedFlag() {
+    return failedBatchRemovalMessageKeysClearedFlag;
+  }
+
+  public void setFailedBatchRemovalMessageKeysClearedFlag(
+      boolean failedBatchRemovalMessageKeysClearedFlag) {
+    this.failedBatchRemovalMessageKeysClearedFlag = failedBatchRemovalMessageKeysClearedFlag;
+  }
+
+  private boolean failedBatchRemovalMessageKeysClearedFlag = false;
+
+
+  public Set<Object> getFailedBatchRemovalMessageKeys() {
     return this.failedBatchRemovalMessageKeys;
   }
 

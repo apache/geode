@@ -18,7 +18,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.cache.Region;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
@@ -29,7 +28,6 @@ import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
-import org.apache.geode.security.ResourcePermission;
 
 @Experimental
 public class RemoveRequestOperationHandler
@@ -42,27 +40,15 @@ public class RemoveRequestOperationHandler
       throws InvalidExecutionContextException, DecodingException {
 
     String regionName = request.getRegionName();
-    Region region = messageExecutionContext.getCache().getRegion(regionName);
-    if (region == null) {
-      logger.error("Received remove request for nonexistent region: {}", regionName);
-      return Failure.of(BasicTypes.ErrorCode.SERVER_ERROR,
-          "Region \"" + regionName + "\" not found");
-    }
 
     Object decodedKey = serializationService.decode(request.getKey());
     if (decodedKey == null) {
       return Failure.of(BasicTypes.ErrorCode.INVALID_REQUEST,
           "NULL is not a valid key for removal.");
     }
-    region.remove(decodedKey);
+
+    messageExecutionContext.getSecureCache().remove(regionName, decodedKey);
 
     return Success.of(RegionAPI.RemoveResponse.newBuilder().build());
-  }
-
-  public static ResourcePermission determineRequiredPermission(RegionAPI.RemoveRequest request,
-      ProtobufSerializationService serializer) throws DecodingException {
-    return new ResourcePermission(ResourcePermission.Resource.DATA,
-        ResourcePermission.Operation.WRITE, request.getRegionName(),
-        serializer.decode(request.getKey()).toString());
   }
 }

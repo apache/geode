@@ -14,7 +14,8 @@
  */
 package org.apache.geode.modules.util;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -27,26 +28,20 @@ import java.net.URL;
 import java.util.Enumeration;
 import java.util.Vector;
 
-import org.apache.bcel.Constants;
+import org.apache.bcel.Const;
 import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.generic.ClassGen;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 
-import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
-@SuppressWarnings("unused")
 public class ClassLoaderObjectInputStreamTest {
-
-  private ClassLoader originalTCCL;
-  private ClassLoader newTCCL;
   private String classToLoad;
+  private ClassLoader newTCCL;
+  private ClassLoader originalTCCL;
   private Object instanceOfTCCLClass;
 
   @Rule
@@ -61,7 +56,7 @@ public class ClassLoaderObjectInputStreamTest {
   }
 
   @After
-  public void unsetTCCL() throws Exception {
+  public void unsetTCCL() {
     Thread.currentThread().setContextClassLoader(this.originalTCCL);
   }
 
@@ -75,7 +70,7 @@ public class ClassLoaderObjectInputStreamTest {
     ObjectInputStream ois = new ClassLoaderObjectInputStream(
         new ByteArrayInputStream(baos.toByteArray()), getClass().getClassLoader());
 
-    assertThatThrownBy(() -> ois.readObject()).isExactlyInstanceOf(ClassNotFoundException.class);
+    assertThatThrownBy(ois::readObject).isExactlyInstanceOf(ClassNotFoundException.class);
   }
 
   @Test
@@ -115,6 +110,7 @@ public class ClassLoaderObjectInputStreamTest {
      *
      * @param parent the parent class loader to check with first
      */
+    @SuppressWarnings("unused")
     public GeneratingClassLoader(ClassLoader parent) {
       super(parent);
     }
@@ -122,15 +118,15 @@ public class ClassLoaderObjectInputStreamTest {
     /**
      * Specifies no parent to ensure that this loader generates the named class.
      */
-    public GeneratingClassLoader() {
+    GeneratingClassLoader() {
       super(null); // no parent
     }
 
     @Override
-    protected Class<?> findClass(String name) throws ClassNotFoundException {
+    protected Class<?> findClass(String name) {
       ClassGen cg = new ClassGen(name, Object.class.getName(), "<generated>",
-          Constants.ACC_PUBLIC | Constants.ACC_SUPER, new String[] {Serializable.class.getName()});
-      cg.addEmptyConstructor(Constants.ACC_PUBLIC);
+          Const.ACC_PUBLIC | Const.ACC_SUPER, new String[] {Serializable.class.getName()});
+      cg.addEmptyConstructor(Const.ACC_PUBLIC);
       JavaClass jClazz = cg.getJavaClass();
       byte[] bytes = jClazz.getBytes();
       return defineClass(jClazz.getClassName(), bytes, 0, bytes.length);
@@ -138,7 +134,7 @@ public class ClassLoaderObjectInputStreamTest {
 
     @Override
     protected URL findResource(String name) {
-      URL url = null;
+      URL url;
       try {
         url = getTempFile().getAbsoluteFile().toURI().toURL();
         System.out.println("GeneratingClassLoader#findResource returning " + url);
@@ -149,7 +145,7 @@ public class ClassLoaderObjectInputStreamTest {
     }
 
     @Override
-    protected Enumeration<URL> findResources(String name) throws IOException {
+    protected Enumeration<URL> findResources(String name) {
       URL url;
       try {
         url = getTempFile().getAbsoluteFile().toURI().toURL();
@@ -157,14 +153,13 @@ public class ClassLoaderObjectInputStreamTest {
       } catch (IOException e) {
         throw new Error(e);
       }
-      Vector<URL> urls = new Vector<URL>();
+      Vector<URL> urls = new Vector<>();
       urls.add(url);
       return urls.elements();
     }
 
-    protected File getTempFile() {
+    File getTempFile() {
       return null;
     }
   }
-
 }

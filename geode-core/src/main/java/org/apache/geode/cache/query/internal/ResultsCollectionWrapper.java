@@ -14,20 +14,33 @@
  */
 package org.apache.geode.cache.query.internal;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.lang.reflect.Array;
 import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.NoSuchElementException;
+import java.util.Set;
+import java.util.TreeSet;
 
-import org.apache.geode.*;
-import org.apache.geode.cache.query.*;
-import org.apache.geode.cache.query.internal.types.*;
-import org.apache.geode.cache.query.types.*;
-import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.InternalGemFireError;
+import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.cache.query.internal.types.CollectionTypeImpl;
+import org.apache.geode.cache.query.types.CollectionType;
+import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.EntriesSet;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * Implementation of SelectResults that wraps an existing java.util.Collection and optionally adds a
@@ -100,12 +113,11 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
   private void validateConstraint(ObjectType constraint) {
     if (constraint == null)
       throw new IllegalArgumentException(
-          LocalizedStrings.ResultsCollectionWrapper_CONSTRAINT_CANNOT_BE_NULL.toLocalizedString());
+          "constraint cannot be null");
     // must be public
     if (!Modifier.isPublic(constraint.resolveClass().getModifiers()))
       throw new IllegalArgumentException(
-          LocalizedStrings.ResultsCollectionWrapper_CONSTRAINT_CLASS_MUST_BE_PUBLIC
-              .toLocalizedString());
+          "constraint class must be public");
   }
 
   // @todo should we bother taking the performance hit to check the constraint?
@@ -113,8 +125,8 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
     ObjectType elementType = this.collectionType.getElementType();
     if (!elementType.resolveClass().isInstance(obj)) {
       throw new InternalGemFireError(
-          LocalizedStrings.ResultsCollectionWrapper_CONSTRAINT_VIOLATION_0_IS_NOT_A_1
-              .toLocalizedString(new Object[] {obj.getClass().getName(), elementType}));
+          String.format("Constraint Violation: %s is not a %s",
+              new Object[] {obj.getClass().getName(), elementType}));
     }
   }
 
@@ -141,6 +153,7 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
   }
 
   /// java.util.Collection interface
+  @Override
   public boolean add(Object o) {
     // checkConstraint(o);
     if (this.limitImposed) {
@@ -150,6 +163,7 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
     return this.base.add(o);
   }
 
+  @Override
   public boolean addAll(Collection c) {
     if (this.limitImposed) {
       throw new UnsupportedOperationException(
@@ -164,6 +178,7 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
     // return changed;
   }
 
+  @Override
   public int size() {
     // return this.limit == -1 ? this.base.size():this.limit;
     // Asif: If the number of elements in Collection is more than limit, size is
@@ -177,6 +192,7 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
     }
   }
 
+  @Override
   public Iterator iterator() {
     if (this.hasLimitIterator) {
       return new LimitIterator();
@@ -185,6 +201,7 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
     }
   }
 
+  @Override
   public void clear() {
     /*
      * if( this.limit > -1) { throw new
@@ -197,6 +214,7 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
   /*
    * Asif: May throw ConcurrentModificationException
    */
+  @Override
   public boolean contains(Object obj) {
     if (this.hasLimitIterator) {
       // Keith: Optimize case where contains is false, avoids iteration
@@ -220,6 +238,7 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
 
   // Asif :The limit case has a very inefficient implementation
   // May throw ConcurrentModificationException
+  @Override
   public boolean containsAll(Collection collection) {
     if (this.hasLimitIterator) {
       Iterator itr = collection.iterator();
@@ -233,6 +252,7 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
     }
   }
 
+  @Override
   public boolean isEmpty() {
     int size = -1;
     synchronized (this.limitLock) {
@@ -242,6 +262,7 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
   }
 
   // Asif: May throw ConucrrentModificationException
+  @Override
   public boolean remove(Object obj) {
     /*
      * if( this.limit > -1) { throw new UnsupportedOperationException("Removal from the
@@ -265,6 +286,7 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
     }
   }
 
+  @Override
   public boolean removeAll(Collection collection) {
     /*
      * if( this.limit > -1) { throw new UnsupportedOperationException("Removal from the
@@ -287,6 +309,7 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
     }
   }
 
+  @Override
   public boolean retainAll(Collection collection) {
     /*
      * if( this.limit > -1) { throw new UnsupportedOperationException("Modification of the
@@ -379,6 +402,7 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
     }
   }
 
+  @Override
   public Object[] toArray() {
     if (this.hasLimitIterator) {
       return collectionToArray(this);
@@ -387,6 +411,7 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
     }
   }
 
+  @Override
   public Object[] toArray(Object[] obj) {
     if (this.hasLimitIterator) {
       return collectionToArray(this, obj);
@@ -399,6 +424,7 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
   // when exposed by this method is modified externally
   // then the ResultsCollectionWrapper object's limit
   // functionality may not work correctly
+  @Override
   public List asList() {
     if (this.hasLimitIterator) {
       List returnList = null;
@@ -428,6 +454,7 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
   // then the ResultsCollectionWrapper object's limit
   // functionality may not work correctly
 
+  @Override
   public Set asSet() {
     if (this.hasLimitIterator) {
       Set returnSet = null;
@@ -451,10 +478,12 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
     }
   }
 
+  @Override
   public void setElementType(ObjectType elementType) {
     this.collectionType = new CollectionTypeImpl(getBaseClass(), elementType);
   }
 
+  @Override
   public CollectionType getCollectionType() {
     return this.collectionType;
   }
@@ -464,6 +493,7 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
    *
    * @return Value of property modifiable.
    */
+  @Override
   public boolean isModifiable() {
     return this.modifiable;
   }
@@ -479,10 +509,11 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
 
   // Asif : If the underlying collection is a ordered
   // one then it will allow duplicates. In such case , our
-  // limit iterator will correctly give the number of occurences
+  // limit iterator will correctly give the number of occurrences
   // but if the underlying collection is not ordered , it will
   // not allow duplicates, but then since we have already truncated
   // the unordered set, it will work correctly.
+  @Override
   public int occurrences(Object element) {
     if (!this.getCollectionType().allowsDuplicates() && !this.hasLimitIterator) {
       return this.base.contains(element) ? 1 : 0;
@@ -498,6 +529,7 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
     return count;
   }
 
+  @Override
   public int getDSFID() {
     return RESULTS_COLLECTION_WRAPPER;
   }
@@ -508,16 +540,18 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
    *
    * @throws IOException A problem occurs while writing to <code>out</code>
    */
-  public void toData(DataOutput out) throws IOException {
+  @Override
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     // special case when wrapping a ResultsBag.SetView
     boolean isBagSetView = this.base instanceof Bag.SetView;
     out.writeBoolean(isBagSetView);
     if (isBagSetView) {
       InternalDataSerializer.writeSet((Set) this.base, out);
     } else {
-      DataSerializer.writeObject(this.base, out);
+      context.getSerializer().writeObject(this.base, out);
     }
-    DataSerializer.writeObject(this.collectionType, out);
+    context.getSerializer().writeObject(this.collectionType, out);
     out.writeBoolean(this.modifiable);
   }
 
@@ -527,14 +561,16 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
    * @throws IOException A problem occurs while reading from <code>in</code>
    * @throws ClassNotFoundException A class could not be loaded while reading from <code>in</code>
    */
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  @Override
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     boolean isBagSetView = in.readBoolean();
     if (isBagSetView) {
       this.base = (Set) InternalDataSerializer.readSet(in);
     } else {
-      this.base = (Collection) DataSerializer.readObject(in);
+      this.base = (Collection) context.getDeserializer().readObject(in);
     }
-    this.collectionType = (CollectionType) DataSerializer.readObject(in);
+    this.collectionType = (CollectionType) context.getDeserializer().readObject(in);
     this.modifiable = in.readBoolean();
   }
 
@@ -558,10 +594,6 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
     }
   }
 
-  /**
-   *
-   *
-   */
   class LimitIterator implements Iterator {
     private final Iterator iter;
 
@@ -576,10 +608,12 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
       }
     }
 
+    @Override
     public boolean hasNext() {
       return this.currPos < this.localLimit;
     }
 
+    @Override
     public Object next() {
       if (this.currPos == this.localLimit) {
         throw new NoSuchElementException();
@@ -593,6 +627,7 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
     /**
      * No thread safe
      */
+    @Override
     public void remove() {
       if (currPos == 0) {
         throw new IllegalStateException("next() must be called before remove()");

@@ -279,6 +279,7 @@ public class IdentityArrayList<K> extends AbstractObjectList<K>
       assert size <= a.length;
   }
 
+  @Override
   public void add(final int index, final K k) {
     ensureIndex(index);
     grow(size + 1);
@@ -290,6 +291,7 @@ public class IdentityArrayList<K> extends AbstractObjectList<K>
       assert size <= a.length;
   }
 
+  @Override
   public boolean add(final K k) {
     grow(size + 1);
     a[size++] = k;
@@ -298,6 +300,7 @@ public class IdentityArrayList<K> extends AbstractObjectList<K>
     return true;
   }
 
+  @Override
   public K get(final int index) {
     if (index >= size)
       throw new IndexOutOfBoundsException(
@@ -305,6 +308,7 @@ public class IdentityArrayList<K> extends AbstractObjectList<K>
     return a[index];
   }
 
+  @Override
   public int indexOf(final Object k) {
     for (int i = 0; i < size; i++)
       if (((k) == null ? (a[i]) == null : (k) == (a[i])))
@@ -312,6 +316,7 @@ public class IdentityArrayList<K> extends AbstractObjectList<K>
     return -1;
   }
 
+  @Override
   public int lastIndexOf(final Object k) {
     for (int i = size; i-- != 0;)
       if (((k) == null ? (a[i]) == null : (k) == (a[i])))
@@ -319,6 +324,7 @@ public class IdentityArrayList<K> extends AbstractObjectList<K>
     return -1;
   }
 
+  @Override
   public K remove(final int index) {
     if (index >= size)
       throw new IndexOutOfBoundsException(
@@ -343,10 +349,12 @@ public class IdentityArrayList<K> extends AbstractObjectList<K>
     return true;
   }
 
+  @Override
   public boolean remove(final Object o) {
     return rem(o);
   }
 
+  @Override
   public K set(final int index, final K k) {
     if (index >= size)
       throw new IndexOutOfBoundsException(
@@ -356,6 +364,7 @@ public class IdentityArrayList<K> extends AbstractObjectList<K>
     return old;
   }
 
+  @Override
   public void clear() {
     Arrays.fill(a, 0, size, null);
     size = 0;
@@ -363,10 +372,12 @@ public class IdentityArrayList<K> extends AbstractObjectList<K>
       assert size <= a.length;
   }
 
+  @Override
   public int size() {
     return size;
   }
 
+  @Override
   public void size(final int size) {
     if (size > a.length)
       ensureCapacity(size);
@@ -377,6 +388,7 @@ public class IdentityArrayList<K> extends AbstractObjectList<K>
     this.size = size;
   }
 
+  @Override
   public boolean isEmpty() {
     return size == 0;
   }
@@ -425,6 +437,7 @@ public class IdentityArrayList<K> extends AbstractObjectList<K>
    * @param offset the offset into the destination array where to store the first element copied.
    * @param length the number of elements to be copied.
    */
+  @Override
   public void getElements(final int from, final Object[] a, final int offset, final int length) {
     ObjectArrays.ensureOffsetLength(a, offset, length);
     System.arraycopy(this.a, from, a, offset, length);
@@ -436,6 +449,7 @@ public class IdentityArrayList<K> extends AbstractObjectList<K>
    * @param from the start index (inclusive).
    * @param to the end index (exclusive).
    */
+  @Override
   public void removeElements(final int from, final int to) {
     it.unimi.dsi.fastutil.Arrays.ensureFromTo(size, from, to);
     System.arraycopy(a, to, a, from, size - to);
@@ -453,6 +467,7 @@ public class IdentityArrayList<K> extends AbstractObjectList<K>
    * @param offset the offset of the first element to add.
    * @param length the number of elements to add.
    */
+  @Override
   public void addElements(final int index, final K a[], final int offset, final int length) {
     ensureIndex(index);
     ObjectArrays.ensureOffsetLength(a, offset, length);
@@ -462,39 +477,47 @@ public class IdentityArrayList<K> extends AbstractObjectList<K>
     size += length;
   }
 
+  @Override
   public ObjectListIterator<K> listIterator(final int index) {
     ensureIndex(index);
     return new AbstractObjectListIterator<K>() {
       int pos = index, last = -1;
 
+      @Override
       public boolean hasNext() {
         return pos < size;
       }
 
+      @Override
       public boolean hasPrevious() {
         return pos > 0;
       }
 
+      @Override
       public K next() {
         if (!hasNext())
           throw new NoSuchElementException();
         return a[last = pos++];
       }
 
+      @Override
       public K previous() {
         if (!hasPrevious())
           throw new NoSuchElementException();
         return a[last = --pos];
       }
 
+      @Override
       public int nextIndex() {
         return pos;
       }
 
+      @Override
       public int previousIndex() {
         return pos - 1;
       }
 
+      @Override
       public void add(K k) {
         if (last == -1)
           throw new IllegalStateException();
@@ -502,12 +525,14 @@ public class IdentityArrayList<K> extends AbstractObjectList<K>
         last = -1;
       }
 
+      @Override
       public void set(K k) {
         if (last == -1)
           throw new IllegalStateException();
         IdentityArrayList.this.set(last, k);
       }
 
+      @Override
       public void remove() {
         if (last == -1)
           throw new IllegalStateException();
@@ -523,6 +548,7 @@ public class IdentityArrayList<K> extends AbstractObjectList<K>
     };
   }
 
+  @Override
   @SuppressWarnings("unchecked")
   public IdentityArrayList<K> clone() {
     IdentityArrayList<K> c = new IdentityArrayList<K>(size);

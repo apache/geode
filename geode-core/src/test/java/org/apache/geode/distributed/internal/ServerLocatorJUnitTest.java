@@ -14,20 +14,19 @@
  */
 package org.apache.geode.distributed.internal;
 
-import static org.junit.Assert.*;
+import static org.apache.geode.logging.internal.spi.LogWriterLevel.NONE;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.LogWriter;
 import org.apache.geode.cache.client.internal.locator.LocatorStatusRequest;
 import org.apache.geode.cache.client.internal.locator.LocatorStatusResponse;
-import org.apache.geode.i18n.LogWriterI18n;
-import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LocalLogWriter;
 import org.apache.geode.test.junit.categories.MembershipTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * The ServerLocatorJUnitTest class is a test suite of test cases testing the contract and
@@ -41,7 +40,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * @see org.junit.Test
  * @since GemFire 7.0
  */
-@Category({UnitTest.class, MembershipTest.class})
+@Category({MembershipTest.class})
 public class ServerLocatorJUnitTest {
 
   @Test
@@ -68,8 +67,8 @@ public class ServerLocatorJUnitTest {
     }
 
     @Override
-    LogWriterI18n getLogWriterI18n() {
-      return new LocalLogWriter(InternalLogWriter.NONE_LEVEL);
+    LogWriter getLogWriter() {
+      return new LocalLogWriter(NONE.intLevel());
     }
   }
 

@@ -14,7 +14,7 @@
  */
 package org.apache.geode.cache.lucene.internal.partition;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assume.assumeTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -34,9 +34,8 @@ import org.apache.geode.cache.Operation;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.test.junit.categories.LuceneTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category({UnitTest.class, LuceneTest.class})
+@Category({LuceneTest.class})
 @RunWith(JUnitQuickcheck.class)
 public class BucketTargetingFixedResolverTest {
 

@@ -14,7 +14,10 @@
  */
 package com.company.app;
 
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.CacheListener;
+import org.apache.geode.cache.Declarable;
+import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.RegionEvent;
 
 /**
  * com.company.app.OrdersCacheListener. Cache listener impl for CacheXmlxxTest
@@ -25,25 +28,36 @@ public class OrdersCacheListener implements CacheListener, Declarable {
 
   public OrdersCacheListener() {}
 
+  @Override
   public void afterCreate(EntryEvent event) {}
 
+  @Override
   public void afterUpdate(EntryEvent event) {}
 
+  @Override
   public void afterInvalidate(EntryEvent event) {}
 
+  @Override
   public void afterDestroy(EntryEvent event) {}
 
+  @Override
   public void afterRegionInvalidate(RegionEvent event) {}
 
+  @Override
   public void afterRegionDestroy(RegionEvent event) {}
 
+  @Override
   public void afterRegionClear(RegionEvent event) {}
 
+  @Override
   public void afterRegionCreate(RegionEvent event) {}
 
+  @Override
   public void afterRegionLive(RegionEvent event) {}
 
+  @Override
   public void close() {}
 
+  @Override
   public void init(java.util.Properties props) {}
 }

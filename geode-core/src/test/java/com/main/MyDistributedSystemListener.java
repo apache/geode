@@ -26,7 +26,7 @@ import org.apache.geode.internal.cache.wan.DistributedSystemListener;
 
 /**
  * This is an implementation of DistributedSystemListener. When a addedDistributedSystem is called a
- * Region is created on both sites and GatewaySender and GatewayReciever is started on site 1 and
+ * Region is created on both sites and GatewaySender and GatewayReceiver is started on site 1 and
  * site 2 respectively.
  *
  * When a removedDistributedSystem is called, GatewaySender and GatewayReceiver is stopped on site1
@@ -43,6 +43,7 @@ public class MyDistributedSystemListener implements DistributedSystemListener {
   /**
    * Please note that dynamic addition of the sender id to region is not yet available.
    */
+  @Override
   public void addedDistributedSystem(int remoteDsId) {
     cache = CacheFactory.getAnyInstance();
 
@@ -88,6 +89,7 @@ public class MyDistributedSystemListener implements DistributedSystemListener {
     }
   }
 
+  @Override
   public void removedDistributedSystem(int remoteDsId) {
     cache = CacheFactory.getAnyInstance();
     if (remoteDsId == 2) { // When a site with distributed-system-id = -2 joins, stop gatewaysender

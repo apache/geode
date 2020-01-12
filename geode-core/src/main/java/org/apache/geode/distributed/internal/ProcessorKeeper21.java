@@ -17,7 +17,8 @@ package org.apache.geode.distributed.internal;
 import java.lang.ref.WeakReference;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.geode.internal.*;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.ObjIdConcurrentMap;
 
 /**
  * A message processor class typically creates an instance of ProcessorKeeper and holds it in a

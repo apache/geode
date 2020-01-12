@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.tier.Command;
@@ -29,6 +30,7 @@ import org.apache.geode.internal.security.SecurityService;
 
 public class RegisterDataSerializers extends BaseCommand {
 
+  @Immutable
   private static final RegisterDataSerializers singleton = new RegisterDataSerializers();
 
   public static Command getCommand() {
@@ -37,6 +39,7 @@ public class RegisterDataSerializers extends BaseCommand {
 
   private RegisterDataSerializers() {}
 
+  @Override
   public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
       final SecurityService securityService, long start)
       throws IOException, ClassNotFoundException {

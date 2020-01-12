@@ -12,21 +12,14 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- *
- */
 package org.apache.geode.internal.cache;
 
 import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_NEW_VALUE;
 
 import org.apache.geode.cache.UnsupportedOperationInTransactionException;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 
-/**
- *
- */
 public class KeyInfo {
 
   // Rahul: This class should actually be renamed as RoutingInfo or BucketIdInfo
@@ -103,8 +96,8 @@ public class KeyInfo {
   public boolean isCheckPrimary() throws UnsupportedOperationInTransactionException {
     return true;
     // throw new UnsupportedOperationInTransactionException(
-    // LocalizedStrings.Dist_TX_PRECOMMIT_NOT_SUPPORTED_IN_A_TRANSACTION
-    // .toLocalizedString("isCheckPrimary"));
+    // String.format("precommit() operation %s meant for Dist Tx is not supported",
+    // "isCheckPrimary"));
   }
 
   /*
@@ -113,8 +106,8 @@ public class KeyInfo {
   public void setCheckPrimary(boolean checkPrimary)
       throws UnsupportedOperationInTransactionException {
     throw new UnsupportedOperationInTransactionException(
-        LocalizedStrings.Dist_TX_PRECOMMIT_NOT_SUPPORTED_IN_A_TRANSACTION
-            .toLocalizedString("setCheckPrimary"));
+        String.format("precommit() operation %s meant for Dist Tx is not supported",
+            "setCheckPrimary"));
   }
 
   public boolean isDistKeyInfo() {

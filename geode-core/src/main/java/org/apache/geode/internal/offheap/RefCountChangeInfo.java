@@ -17,7 +17,6 @@ package org.apache.geode.internal.offheap;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
-import org.apache.geode.internal.shared.StringPrintWriter;
 
 @SuppressWarnings("serial")
 /**

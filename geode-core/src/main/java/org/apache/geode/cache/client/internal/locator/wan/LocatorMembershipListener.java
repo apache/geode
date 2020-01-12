@@ -39,7 +39,6 @@ public interface LocatorMembershipListener {
    * When the new locator is added to remote locator metadata, inform all other locators in remote
    * locator metadata about the new locator so that they can update their remote locator metadata.
    *
-   * @param locator
    */
   void locatorJoined(int distributedSystemId, DistributionLocatorId locator,
       DistributionLocatorId sourceLocator);

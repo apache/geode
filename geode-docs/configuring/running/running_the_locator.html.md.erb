@@ -22,8 +22,8 @@ The locator is a <%=vars.product_name%> process that tells new, connecting membe
 <a id="running_the_locator__section_E9C98E8756524552BEA9B0CA49A2069E"></a>
 You can run locators as peer locators, server locators, or both:
 
--   Peer locators give joining members connection information to members already running in the locator's distributed system.
--   Server locators give clients connection information to servers running in the locator's distributed system. Server locators also monitor server load and send clients to the least-loaded servers.
+-   Peer locators give joining members connection information to members already running in the locator's cluster.
+-   Server locators give clients connection information to servers running in the locator's cluster. Server locators also monitor server load and send clients to the least-loaded servers.
 
 By default, locators run as peer and server locators.
 
@@ -33,15 +33,15 @@ You can run the locator standalone or embedded within another <%=vars.product_na
 
 Locator configuration and log files have the following properties:
 
--   When you start a standalone locator using `gfsh`, `gfsh` will automatically load the required JAR file `lib/geode-dependencies.jar` into the CLASSPATH of the JVM process. If you start a standalone locator using the `LocatorLauncher` API, you must specify this JAR file inside the command used to launch the locator process. For more information on CLASSPATH settings in <%=vars.product_name%>, see [CLASSPATH Settings for <%=vars.product_name%> Processes](../../getting_started/setup_classpath.html). You can modify the CLASSPATH by specifying the `--classpath` parameter.
--   Locators are members of the distributed system just like any other member. In terms of `mcast-port` and `locators` configuration, a locator should be configured in the same manner as a server. Therefore, if there are two other locators in the distributed system, each locator should reference the other locators (just like a server member would). For example:
+-   When you start a standalone locator using `gfsh`, `gfsh` will automatically load the required JAR file `lib/geode-dependencies.jar` into the CLASSPATH of the JVM process. If you start a standalone locator using the `LocatorLauncher` API, you must specify this JAR file inside the command used to launch the locator process. For more information on CLASSPATH settings in <%=vars.product_name%>, see [Setting Up the CLASSPATH](../../getting_started/setup_classpath.html). You can modify the CLASSPATH by specifying the `--classpath` parameter.
+-   Locators are members of the cluster just like any other member. In terms of `mcast-port` and `locators` configuration, a locator should be configured in the same manner as a server. Therefore, if there are two other locators in the cluster, each locator should reference the other locators (just like a server member would). For example:
 
     ``` pre
     gfsh> start locator --name=locator1 --port=9009 --mcast-port=0 \
     --locators='host1[9001],host2[9003]'
     ```
 
--   You can configure locators within the `gemfire.properties` file or by specifying start-up parameters on the command line. If you are specifying the locator's configuration in a properties file, locators require the same `gemfire.properties` settings as other members of the distributed system and the same `gfsecurity.properties` settings if you are using a separate, restricted access security settings file.
+-   You can configure locators within the `gemfire.properties` file or by specifying start-up parameters on the command line. If you are specifying the locator's configuration in a properties file, locators require the same `gemfire.properties` settings as other members of the cluster and the same `gfsecurity.properties` settings if you are using a separate, restricted access security settings file.
 
     For example, to configure both locators and a multicast port in `gemfire.properties:`
 
@@ -53,11 +53,11 @@ Locator configuration and log files have the following properties:
 -   There is no cache configuration specific to locators.
 -   For logging output, the locator creates a log file in its current working directory. Log file output defaults to `locator_name.log` in the locator's working directory. If you restart a locator with a previously used locator name, the existing *locator\_name*.log file is automatically renamed for you (for example, `locator1-01-01.log` or `locator1-02-01.log`). You can modify the level of logging details in this file by specifying a level in the `--log-level` argument when starting up the locator.
 -   By default, a locator will start in a subdirectory (named after the locator) under the directory where `gfsh` is executed. This subdirectory is considered the current working directory. You can also specify a different working directory when starting the locator in `gfsh`.
--   By default, a locator that has been shutdown and disconnected due to a network partition event or member unresponsiveness will restart itself and automatically try to reconnect to the existing distributed system. When a locator is in the reconnecting state, it provides no discovery services for the distributed system. See [Handling Forced Cache Disconnection Using Autoreconnect](../../managing/member-reconnect.html) for more details.
+-   By default, a locator that has been shutdown and disconnected due to a network partition event or member unresponsiveness will restart itself and automatically try to reconnect to the existing cluster. When a locator is in the reconnecting state, it provides no discovery services for the cluster. See [Handling Forced Cache Disconnection Using Autoreconnect](../../managing/member-reconnect.html) for more details.
 
 ## <a id="running_the_locator__section_wst_ykb_rr" class="no-quick-link"></a>Locators and the Cluster Configuration Service
 
-Locators use the cluster configuration service to save configurations that apply to all cluster members, or to members of a specified group. The configurations are saved in the Locator's directory and are propagated to all locators in a distributed system. When you start servers using `gfsh`, the servers receive the group-level and cluster-level configurations from the locators.
+Locators use the cluster configuration service to save configurations that apply to all cluster members, or to members of a specified group. The configurations are saved in the Locator's directory and are propagated to all locators in a cluster. When you start servers using `gfsh`, the servers receive the group-level and cluster-level configurations from the locators.
 
 See [Overview of the Cluster Configuration Service](../cluster_config/gfsh_persist.html).
 
@@ -169,13 +169,13 @@ Use the following guidelines to start the locator:
 
 ## <a id="running_the_locator__section_F58F229D5C7048E9915E0EC470F9A923" class="no-quick-link"></a>Check Locator Status
 
-If you are connected to the distributed system in `gfsh`, you can check the status of a running Locator by providing the Locator name. For example:
+If you are connected to the cluster with `gfsh`, you can check the status of a running locator by providing the locator name. For example:
 
 ``` pre
 gfsh>status locator --name=locator1
 ```
 
-If you are not connected to a distributed system, you can check the status of a local Locator by providing the process ID, the Locator's hostname and port, or the Locator's current working directory. For example:
+If you are not connected to a cluster, you can check the status of a local locator by providing the process ID, the Locator's host name and port, or the locator's current working directory. For example:
 
 ``` pre
 gfsh>status locator --pid=2986
@@ -203,7 +203,7 @@ Locator in /home/user/locator1 on ubuntu.local[10334] as locator1 is currently o
 Process ID: 2359
 Uptime: 17 minutes 3 seconds
 GemFire Version: 8.0.0
-Java Version: 1.8.0_<%=vars.min_java_update%>
+Java Version: 1.<%=vars.min_java_version%>.0_<%=vars.min_java_update%>
 Log File: /home/user/locator1/locator1.log
 JVM Arguments: -Dgemfire.enable-cluster-configuration=true -Dgemfire.load-cluster-configuration-from-dir=false
  -Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
@@ -214,13 +214,13 @@ Cluster configuration service is up and running.
 
 ## <a id="running_the_locator__section_0E4DDED6AB784B0CAFBAD538B227F487" class="no-quick-link"></a>Stop the Locator
 
-If you are connected to the distributed system in `gfsh`, you can stop a running locator by providing the locator name. For example:
+If you are connected to the cluster with `gfsh`, you can stop a running locator by providing the locator name. For example:
 
 ``` pre
 gfsh>stop locator --name=locator1
 ```
 
-If you are not connected to a distributed system, you can stop a local locator by specifying the locator's process ID or the locator's current working directory. For example:
+If you are not connected to a cluster, you can stop a local locator by specifying the locator's process ID or the locator's current working directory. For example:
 
 ``` pre
 gfsh>stop locator --pid=2986

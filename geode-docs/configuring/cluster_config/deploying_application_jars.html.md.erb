@@ -17,15 +17,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-You can dynamically deploy your application JAR files to specific members or to all members in your distributed system. <%=vars.product_name%> automatically keeps track of JAR file versions; autoloads the deployed JAR files to the CLASSPATH; and auto-registers any functions that the JAR contains.
+You can dynamically deploy your application JAR files to specific members or to all members in your cluster. <%=vars.product_name%> automatically keeps track of JAR file versions; autoloads the deployed JAR files to the CLASSPATH; and auto-registers any functions that the JAR contains.
 
-To deploy and undeploy application JAR files in <%=vars.product_name_long%>, use the `gfsh` `deploy` or `undeploy` command. You can deploy a single JAR or multiple JARs (by either specifying the JAR filenames or by specifying a directory that contains the JAR files), and you can also target the deployment to a member group or multiple member group. For example, after connecting to the distributed system where you want to deploy the JARs, you could type at the `gfsh` prompt:
+To deploy and undeploy application JAR files in <%=vars.product_name_long%>, use the `gfsh` `deploy` or `undeploy` command. You can deploy a single JAR or multiple JARs (by either specifying the JAR filenames or by specifying a directory that contains the JAR files), and you can also target the deployment to a member group or multiple member group. For example, after connecting to the cluster where you want to deploy the JAR files, you could type at the `gfsh` prompt:
 
 ``` pre
 gfsh> deploy --jars=group1_functions.jar
 ```
 
-This command deploys the `group1_functions.jar` file to all members in the distributed system.
+This command deploys the `group1_functions.jar` file to all members in the cluster.
 
 To deploy the JAR file to a subset of members, use the `--groups` argument. For example:
 
@@ -43,7 +43,7 @@ gfsh> deploy --dir=libs/group1-libs
 
 You can either provide a JAR file name or a directory of JARs for deployment, but you cannot specify both at once.
 
-To undeploy all previously deployed JAR files throughout the distributed system:
+To undeploy all previously deployed JAR files throughout the cluster:
 
 ``` pre
 gfsh> undeploy
@@ -63,7 +63,7 @@ gfsh> undeploy --groups=MemberGroup1
 
 Only JAR files that have been previously deployed on members in the MemberGroup1 group will be undeployed.
 
-To see a list of all deployed JARs in your distributed system:
+To see a list of all deployed JAR files in your cluster:
 
 ``` pre
 gfsh> list deployed
@@ -80,9 +80,9 @@ Sample output:
 ``` pre
  
  Member   |     Deployed JAR     |                JAR Location            
---------- | -------------------- | ---------------------------------------------------
-datanode1 | group1_functions.jar | /usr/local/gemfire/deploy/vf.gf#group1_functions.jar#1
-datanode2 | group1_functions.jar | /usr/local/gemfire/deploy/vf.gf#group1_functions.jar#1
+--------- | -------------------- | -------------------------------------------------
+datanode1 | group1_functions.jar | /usr/local/gemfire/deploy/group1_functions.v1.jar
+datanode2 | group1_functions.jar | /usr/local/gemfire/deploy/group1_functions.v1.jar
 ```
 
 For more information on `gfsh` usage, see [gfsh](../../tools_modules/gfsh/chapter_overview.html).
@@ -100,13 +100,13 @@ This deployment location can be local or a shared network resource (such as a mo
 
 ## About Deploying JAR Files and the Cluster Configuration Service
 
-By default, the cluster configuration service distributes deployed JAR files to all locators in the distributed system. When you start a new server using `gfsh`, the locator supplies configuration files and deployed jar files to the member and writes them to the server's directory.
+By default, the cluster configuration service distributes deployed JAR files to all locators in the cluster. When you start a new server using `gfsh`, the locator supplies configuration files and deployed jar files to the member and writes them to the server's directory.
 
 See [Overview of the Cluster Configuration Service](gfsh_persist.html).
 
 ## <a id="concept_4436C021FB934EC4A330D27BD026602C__section_D9219C5EEED64672930200677C2118C9" class="no-quick-link"></a>Versioning of JAR Files
 
-When you deploy JAR files to a distributed system or member group, the JAR file is modified to indicate version information in its name. Each JAR filename is prefixed with `vf.gf#` and contains a version number at the end of the filename. For example, if you deploy `MyClasses.jar` five times, the filename is displayed as `vf.gf#MyClasses.jar#5` when you list all deployed jars.
+When you deploy JAR files to a cluster or member group, the JAR file is modified to indicate version information in its name. Each JAR filename contains a version number inserted just before the `.jar` suffix. For example, if you deploy `MyClasses.jar` five times, the filename is displayed as `MyClasses.v5.jar` when you list all deployed jars.
 
 When you deploy a new JAR file, the member receiving the deployment checks whether the JAR file is a duplicate, either because the JAR file has already been deployed on that member or because the JAR file has already been deployed to a shared deployment working directory that other members are also using. If another member has already deployed this JAR file to the shared directory (determined by doing a byte-for-byte compare to the latest version in its directory), the member receiving the latest deployment does not write the file to disk. Instead, the member updates the ClassPathLoader to use the already deployed JAR file. If a newer version of the JAR file is detected on disk and is already in use, the deployment is canceled.
 

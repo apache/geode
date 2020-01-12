@@ -21,12 +21,12 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.rest.internal.web.exception.GemfireRestException;
-import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.categories.RestAPITest;
 
 /**
  * AbstractBaseController Tester.
  */
-@Category(UnitTest.class)
+@Category({RestAPITest.class})
 public class AbstractBaseControllerJUnitTest {
 
   AbstractBaseController abstractBaseController = new AbstractBaseController() {

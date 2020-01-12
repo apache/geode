@@ -17,6 +17,7 @@ package org.apache.geode.cache.server;
 import java.io.IOException;
 import java.util.Set;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.ClientSession;
 import org.apache.geode.cache.InterestRegistrationListener;
 import org.apache.geode.cache.client.Pool;
@@ -95,6 +96,7 @@ public interface CacheServer {
    * @since GemFire 5.7
    * @deprecated as of 7.0 use the groups gemfire property
    */
+  @Immutable
   String[] DEFAULT_GROUPS = new String[0];
 
   /**
@@ -104,6 +106,7 @@ public interface CacheServer {
    * @since GemFire 5.7
    *
    */
+  @Immutable
   ServerLoadProbe DEFAULT_LOAD_PROBE = new ConnectionCountProbe();
 
   /**
@@ -304,7 +307,7 @@ public interface CacheServer {
   int getMaxConnections();
 
   /**
-   * Sets the maxium number of client connections allowed. When the maximum is reached the cache
+   * Sets the maximum number of client connections allowed. When the maximum is reached the cache
    * server will stop accepting connections.
    *
    * @see #DEFAULT_MAX_CONNECTIONS
@@ -312,7 +315,7 @@ public interface CacheServer {
   void setMaxConnections(int maxCons);
 
   /**
-   * Returns the maxium number of threads allowed in this cache server to service client requests.
+   * Returns the maximum number of threads allowed in this cache server to service client requests.
    * The default of <code>0</code> causes the cache server to dedicate a thread for every client
    * connection.
    *
@@ -321,7 +324,7 @@ public interface CacheServer {
   int getMaxThreads();
 
   /**
-   * Sets the maxium number of threads allowed in this cache server to service client requests. The
+   * Sets the maximum number of threads allowed in this cache server to service client requests. The
    * default of <code>0</code> causes the cache server to dedicate a thread for every client
    * connection.
    *
@@ -431,7 +434,6 @@ public interface CacheServer {
    * Get the ClientSubscriptionConfig for this cache server. See {@link ClientSubscriptionConfig}
    * for details on the client subscription configuration.
    *
-   * @return ClientSubscriptionConfig
    * @since GemFire 5.7
    */
   ClientSubscriptionConfig getClientSubscriptionConfig();

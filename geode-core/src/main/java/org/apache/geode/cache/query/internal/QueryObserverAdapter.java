@@ -14,9 +14,12 @@
  */
 package org.apache.geode.cache.query.internal;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Set;
 
-import org.apache.geode.cache.query.*;
+import org.apache.geode.cache.query.Index;
+import org.apache.geode.cache.query.Query;
+import org.apache.geode.cache.query.SelectResults;
 
 /**
  * This class provides 'do-nothing' implementations of all of the methods of interface
@@ -30,6 +33,7 @@ public class QueryObserverAdapter implements QueryObserver {
    * Called when a query begins, after any mutex locks have been acquired, but before any other
    * processing has taken place.
    */
+  @Override
   public void startQuery(Query query) {}
 
   /**
@@ -38,6 +42,7 @@ public class QueryObserverAdapter implements QueryObserver {
    * @param expression The query Expression
    * @param context The execution context that will be used to evaluate the expression.
    */
+  @Override
   public void beforeQueryEvaluation(CompiledValue expression, ExecutionContext context) {}
 
   /**
@@ -46,6 +51,7 @@ public class QueryObserverAdapter implements QueryObserver {
    * @param collection The collection being iterated over
    * @param whereClause The 'where' clause of the select statement
    */
+  @Override
   public void startIteration(Collection collection, CompiledValue whereClause) {}
 
   /**
@@ -56,6 +62,7 @@ public class QueryObserverAdapter implements QueryObserver {
    * @param executer the object performing the iteration.
    * @param currentObject The current object in the iteration.
    */
+  @Override
   public void beforeIterationEvaluation(CompiledValue executer, Object currentObject) {}
 
   /**
@@ -65,6 +72,7 @@ public class QueryObserverAdapter implements QueryObserver {
    * @param result The result of evaluating the where clause. Should be either a Boolean, NULL, or
    *        UNDEFINED. If evaluating the where clause threw an exception, should be NULL.
    */
+  @Override
   public void afterIterationEvaluation(Object result) {}
 
   /**
@@ -72,6 +80,7 @@ public class QueryObserverAdapter implements QueryObserver {
    *
    * @param results The set of results returned so far by the iteration.
    */
+  @Override
   public void endIteration(SelectResults results) {}
 
   /**
@@ -81,6 +90,7 @@ public class QueryObserverAdapter implements QueryObserver {
    * @param index The index being used for the lookup
    * @param oper The operation being attemped on the index. AbstractIndex
    */
+  @Override
   public void beforeIndexLookup(Index index, int oper, Object key) {}
 
   /**
@@ -89,6 +99,7 @@ public class QueryObserverAdapter implements QueryObserver {
    *
    * @param results The results of the index lookup, or null if an exception was thrown.
    */
+  @Override
   public void afterIndexLookup(Collection results) {}
 
   /**
@@ -96,12 +107,14 @@ public class QueryObserverAdapter implements QueryObserver {
    *
    * @param result The results of the evaluation, or null if an exception was thrown.
    */
+  @Override
   public void afterQueryEvaluation(Object result) {}
 
   /**
    * Called when a query ends, after all processing has taken place but before any mutex locks have
    * been released.
    */
+  @Override
   public void endQuery() {}
 
   /**
@@ -110,6 +123,7 @@ public class QueryObserverAdapter implements QueryObserver {
    * the data maps null & re running the index creation query on the region. The method of Index
    * Manager gets executed from the clear function of the Region
    */
+  @Override
   public void beforeRerunningIndexCreationQuery() {}
 
   /**
@@ -121,6 +135,7 @@ public class QueryObserverAdapter implements QueryObserver {
    *        GroupJunctions
    *
    */
+  @Override
   public void beforeCartesianOfGroupJunctionsInAnAllGroupJunctionOfType_AND(
       Collection[] grpResults) {};
 
@@ -131,6 +146,7 @@ public class QueryObserverAdapter implements QueryObserver {
    *
    *
    */
+  @Override
   public void afterCartesianOfGroupJunctionsInAnAllGroupJunctionOfType_AND() {};
 
   /**
@@ -144,6 +160,7 @@ public class QueryObserverAdapter implements QueryObserver {
    *        GroupJunctions
    *
    */
+  @Override
   public void beforeCartesianOfGroupJunctionsInCompositeGroupJunctionOfType_AND(
       Collection[] grpResults) {};
 
@@ -154,6 +171,7 @@ public class QueryObserverAdapter implements QueryObserver {
    * evaluation of AND condition and only if there exists more than one GroupJunction objects in the
    * CompositeGroupJunction
    */
+  @Override
   public void afterCartesianOfGroupJunctionsInCompositeGroupJunctionOfType_AND() {}
 
   /**
@@ -164,6 +182,7 @@ public class QueryObserverAdapter implements QueryObserver {
    * @param initialResult The raw resultset obtained for the condition
    *
    */
+  @Override
   public void beforeCutDownAndExpansionOfSingleIndexResult(Index index, Collection initialResult) {}
 
   /**
@@ -173,6 +192,7 @@ public class QueryObserverAdapter implements QueryObserver {
    * @param finalResult The final conditioned resultset obtained from use of index on the condition
    *
    */
+  @Override
   public void afterCutDownAndExpansionOfSingleIndexResult(Collection finalResult) {}
 
   /**
@@ -192,6 +212,7 @@ public class QueryObserverAdapter implements QueryObserver {
    *        Object Array for each Index.
    *
    */
+  @Override
   public void beforeMergeJoinOfDoubleIndexResults(Index index1, Index index2,
       Collection initialResult) {}
 
@@ -210,6 +231,7 @@ public class QueryObserverAdapter implements QueryObserver {
    *        stage of evaluation it is in for an AND junction.
    *
    */
+  @Override
   public void afterMergeJoinOfDoubleIndexResults(Collection finalResult) {}
 
   /**
@@ -229,6 +251,7 @@ public class QueryObserverAdapter implements QueryObserver {
    *
    *
    */
+  @Override
   public void beforeIterJoinOfSingleIndexResults(Index usedIndex, Index unusedIndex) {}
 
   /**
@@ -250,23 +273,29 @@ public class QueryObserverAdapter implements QueryObserver {
    *        or CompositeGroupJunction iterators level.
    *
    */
+  @Override
   public void afterIterJoinOfSingleIndexResults(Collection finalResult) {}
 
   /**
    * @see org.apache.geode.cache.query.internal.QueryObserver#beforeIndexLookup(org.apache.geode.cache.query.Index,
    *      int, java.lang.Object, int, java.lang.Object, java.util.Set)
    */
+  @Override
   public void beforeIndexLookup(Index index, int lowerBoundOperator, Object lowerBoundKey,
       int upperBoundOperator, Object upperBoundKey, Set NotEqualKeys) {}
 
+  @Override
   public void beforeApplyingProjectionOnFilterEvaluatedResults(Object preProjectionApplied) {
 
   }
 
+  @Override
   public void invokedQueryUtilsIntersection(SelectResults sr1, SelectResults sr2) {}
 
+  @Override
   public void invokedQueryUtilsUnion(SelectResults sr1, SelectResults sr2) {}
 
+  @Override
   public void limitAppliedAtIndexLevel(Index index, int limit, Collection indexResult) {
 
   }

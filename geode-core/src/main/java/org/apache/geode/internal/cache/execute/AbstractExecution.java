@@ -16,15 +16,16 @@
 package org.apache.geode.internal.cache.execute;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.LowMemoryException;
 import org.apache.geode.cache.TransactionException;
 import org.apache.geode.cache.client.internal.ProxyCache;
@@ -36,13 +37,15 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.cache.query.QueryInvalidException;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.execute.metrics.FunctionStats;
+import org.apache.geode.internal.cache.execute.metrics.FunctionStatsManager;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Abstract implementation of InternalExecution interface.
@@ -51,10 +54,15 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
  *
  */
 public abstract class AbstractExecution implements InternalExecution {
-
   private static final Logger logger = LogService.getLogger();
 
-  protected boolean isMemberMappedArgument;
+  public static final int DEFAULT_CLIENT_FUNCTION_TIMEOUT = 0;
+  private static final String CLIENT_FUNCTION_TIMEOUT_SYSTEM_PROPERTY =
+      GeodeGlossary.GEMFIRE_PREFIX + "CLIENT_FUNCTION_TIMEOUT";
+  private static final Integer timeoutMsSystemProperty =
+      Integer.getInteger(CLIENT_FUNCTION_TIMEOUT_SYSTEM_PROPERTY, DEFAULT_CLIENT_FUNCTION_TIMEOUT);
+
+  boolean isMemberMappedArgument;
 
   protected MemberMappedArgument memberMappedArg;
 
@@ -64,13 +72,11 @@ public abstract class AbstractExecution implements InternalExecution {
 
   protected Set filter = new HashSet();
 
-  protected boolean hasRoutingObjects;
-
   protected volatile boolean isReExecute = false;
 
-  protected volatile boolean isClientServerMode = false;
+  volatile boolean isClientServerMode = false;
 
-  protected Set<String> failedNodes = new HashSet<String>();
+  Set<String> failedNodes = new HashSet<>();
 
   protected boolean isFnSerializationReqd;
 
@@ -78,7 +84,7 @@ public abstract class AbstractExecution implements InternalExecution {
    * yjing The following code is added to get a set of function executing nodes by the data aware
    * procedure
    */
-  protected Collection<InternalDistributedMember> executionNodes = null;
+  private Collection<InternalDistributedMember> executionNodes = null;
 
   public interface ExecutionNodesListener {
 
@@ -87,18 +93,21 @@ public abstract class AbstractExecution implements InternalExecution {
     void reset();
   }
 
-  protected ExecutionNodesListener executionNodesListener = null;
+  private ExecutionNodesListener executionNodesListener = null;
 
-  protected boolean waitOnException = false;
+  boolean waitOnException = false;
 
-  protected boolean forwardExceptions = false;
+  boolean forwardExceptions = false;
 
-  protected boolean ignoreDepartedMembers = false;
+  private boolean ignoreDepartedMembers = false;
 
   protected ProxyCache proxyCache;
 
+  private final int timeoutMs;
+
+  @MakeNotStatic
   private static final ConcurrentHashMap<String, byte[]> idToFunctionAttributes =
-      new ConcurrentHashMap<String, byte[]>();
+      new ConcurrentHashMap<>();
 
   public static final byte NO_HA_NO_HASRESULT_NO_OPTIMIZEFORWRITE = 0;
 
@@ -152,24 +161,28 @@ public abstract class AbstractExecution implements InternalExecution {
     throw new InternalGemFireException("Wrong fnState provided.");
   }
 
-  protected AbstractExecution() {}
+  protected AbstractExecution() {
+    timeoutMs =
+        timeoutMsSystemProperty >= 0 ? timeoutMsSystemProperty : DEFAULT_CLIENT_FUNCTION_TIMEOUT;
+  }
 
   protected AbstractExecution(AbstractExecution ae) {
     if (ae.args != null) {
-      this.args = ae.args;
+      args = ae.args;
     }
     if (ae.rc != null) {
-      this.rc = ae.rc;
+      rc = ae.rc;
     }
     if (ae.memberMappedArg != null) {
-      this.memberMappedArg = ae.memberMappedArg;
+      memberMappedArg = ae.memberMappedArg;
     }
-    this.isMemberMappedArgument = ae.isMemberMappedArgument;
-    this.isClientServerMode = ae.isClientServerMode;
+    isMemberMappedArgument = ae.isMemberMappedArgument;
+    isClientServerMode = ae.isClientServerMode;
     if (ae.proxyCache != null) {
-      this.proxyCache = ae.proxyCache;
+      proxyCache = ae.proxyCache;
     }
-    this.isFnSerializationReqd = ae.isFnSerializationReqd;
+    isFnSerializationReqd = ae.isFnSerializationReqd;
+    timeoutMs = ae.timeoutMs;
   }
 
   protected AbstractExecution(AbstractExecution ae, boolean isReExecute) {
@@ -177,38 +190,34 @@ public abstract class AbstractExecution implements InternalExecution {
     this.isReExecute = isReExecute;
   }
 
-  public boolean isMemberMappedArgument() {
-    return this.isMemberMappedArgument;
-  }
-
   public Object getArgumentsForMember(String memberId) {
     if (!isMemberMappedArgument) {
-      return this.args;
+      return args;
     } else {
-      return this.memberMappedArg.getArgumentsForMember(memberId);
+      return memberMappedArg.getArgumentsForMember(memberId);
     }
   }
 
   public MemberMappedArgument getMemberMappedArgument() {
-    return this.memberMappedArg;
+    return memberMappedArg;
   }
 
   public Object getArguments() {
-    return this.args;
+    return args;
   }
 
   public ResultCollector getResultCollector() {
-    return this.rc;
+    return rc;
   }
 
   public Set getFilter() {
-    return this.filter;
+    return filter;
   }
 
   public AbstractExecution setIsReExecute() {
-    this.isReExecute = true;
-    if (this.executionNodesListener != null) {
-      this.executionNodesListener.reset();
+    isReExecute = true;
+    if (executionNodesListener != null) {
+      executionNodesListener.reset();
     }
     return this;
   }
@@ -218,15 +227,15 @@ public abstract class AbstractExecution implements InternalExecution {
   }
 
   public Set<String> getFailedNodes() {
-    return this.failedNodes;
+    return failedNodes;
   }
 
   public void addFailedNode(String failedNode) {
-    this.failedNodes.add(failedNode);
+    failedNodes.add(failedNode);
   }
 
   public void clearFailedNodes() {
-    this.failedNodes.clear();
+    failedNodes.clear();
   }
 
   public boolean isClientServerMode() {
@@ -237,20 +246,11 @@ public abstract class AbstractExecution implements InternalExecution {
     return isFnSerializationReqd;
   }
 
-  public Collection<InternalDistributedMember> getExecutionNodes() {
-    return this.executionNodes;
-  }
-
-  public void setRequireExecutionNodes(ExecutionNodesListener listener) {
-    this.executionNodes = Collections.emptySet();
-    this.executionNodesListener = listener;
-  }
-
   public void setExecutionNodes(Set<InternalDistributedMember> nodes) {
-    if (this.executionNodes != null) {
-      this.executionNodes = nodes;
-      if (this.executionNodesListener != null) {
-        this.executionNodesListener.afterExecutionNodesSet(this);
+    if (executionNodes != null) {
+      executionNodes = nodes;
+      if (executionNodesListener != null) {
+        executionNodesListener.afterExecutionNodesSet(this);
       }
     }
   }
@@ -258,25 +258,23 @@ public abstract class AbstractExecution implements InternalExecution {
   public void executeFunctionOnLocalPRNode(final Function fn, final FunctionContext cx,
       final PartitionedRegionFunctionResultSender sender, DistributionManager dm, boolean isTx) {
     if (dm instanceof ClusterDistributionManager && !isTx) {
-      if (ServerConnection.isExecuteFunctionOnLocalNodeOnly().byteValue() == 1) {
+      if (ServerConnection.isExecuteFunctionOnLocalNodeOnly() == 1) {
         ServerConnection.executeFunctionOnLocalNodeOnly((byte) 3);// executed locally
         executeFunctionLocally(fn, cx, sender, dm);
         if (!sender.isLastResultReceived() && fn.hasResult()) {
           ((InternalResultSender) sender).setException(new FunctionException(
-              LocalizedStrings.ExecuteFunction_THE_FUNCTION_0_DID_NOT_SENT_LAST_RESULT
-                  .toString(fn.getId())));
+              String.format("The function, %s, did not send last result",
+                  fn.getId())));
         }
       } else {
 
         final ClusterDistributionManager newDM = (ClusterDistributionManager) dm;
-        newDM.getFunctionExecutor().execute(new Runnable() {
-          public void run() {
-            executeFunctionLocally(fn, cx, sender, newDM);
-            if (!sender.isLastResultReceived() && fn.hasResult()) {
-              ((InternalResultSender) sender).setException(new FunctionException(
-                  LocalizedStrings.ExecuteFunction_THE_FUNCTION_0_DID_NOT_SENT_LAST_RESULT
-                      .toString(fn.getId())));
-            }
+        newDM.getExecutors().getFunctionExecutor().execute(() -> {
+          executeFunctionLocally(fn, cx, sender, newDM);
+          if (!sender.isLastResultReceived() && fn.hasResult()) {
+            ((InternalResultSender) sender).setException(new FunctionException(
+                String.format("The function, %s, did not send last result",
+                    fn.getId())));
           }
         });
       }
@@ -284,8 +282,8 @@ public abstract class AbstractExecution implements InternalExecution {
       executeFunctionLocally(fn, cx, sender, dm);
       if (!sender.isLastResultReceived() && fn.hasResult()) {
         ((InternalResultSender) sender).setException(new FunctionException(
-            LocalizedStrings.ExecuteFunction_THE_FUNCTION_0_DID_NOT_SENT_LAST_RESULT
-                .toString(fn.getId())));
+            String.format("The function, %s, did not send last result",
+                fn.getId())));
       }
     }
   }
@@ -297,34 +295,31 @@ public abstract class AbstractExecution implements InternalExecution {
       final ResultSender sender, DistributionManager dm, final boolean isTx) {
     if (dm instanceof ClusterDistributionManager && !isTx) {
       final ClusterDistributionManager newDM = (ClusterDistributionManager) dm;
-      newDM.getFunctionExecutor().execute(new Runnable() {
-        public void run() {
-          executeFunctionLocally(fn, cx, sender, newDM);
-          if (!((InternalResultSender) sender).isLastResultReceived() && fn.hasResult()) {
-            ((InternalResultSender) sender).setException(new FunctionException(
-                LocalizedStrings.ExecuteFunction_THE_FUNCTION_0_DID_NOT_SENT_LAST_RESULT
-                    .toString(fn.getId())));
-          }
+      newDM.getExecutors().getFunctionExecutor().execute(() -> {
+        executeFunctionLocally(fn, cx, sender, newDM);
+        if (!((InternalResultSender) sender).isLastResultReceived() && fn.hasResult()) {
+          ((InternalResultSender) sender).setException(new FunctionException(
+              String.format("The function, %s, did not send last result",
+                  fn.getId())));
         }
       });
     } else {
       executeFunctionLocally(fn, cx, sender, dm);
       if (!((InternalResultSender) sender).isLastResultReceived() && fn.hasResult()) {
         ((InternalResultSender) sender).setException(new FunctionException(
-            LocalizedStrings.ExecuteFunction_THE_FUNCTION_0_DID_NOT_SENT_LAST_RESULT
-                .toString(fn.getId())));
+            String.format("The function, %s, did not send last result",
+                fn.getId())));
       }
     }
   }
 
-  public void executeFunctionLocally(final Function<?> fn, final FunctionContext cx,
+  private void executeFunctionLocally(final Function<?> fn, final FunctionContext cx,
       final ResultSender sender, DistributionManager dm) {
 
-    FunctionStats stats = FunctionStats.getFunctionStats(fn.getId(), dm.getSystem());
+    FunctionStats stats = FunctionStatsManager.getFunctionStats(fn.getId(), dm.getSystem());
 
+    long start = stats.startFunctionExecution(fn.hasResult());
     try {
-      long start = stats.startTime();
-      stats.startFunctionExecution(fn.hasResult());
       if (logger.isDebugEnabled()) {
         logger.debug("Executing Function: {} on local node with context: {}", fn.getId(),
             cx.toString());
@@ -333,80 +328,93 @@ public abstract class AbstractExecution implements InternalExecution {
       fn.execute(cx);
       stats.endFunctionExecution(start, fn.hasResult());
     } catch (FunctionInvocationTargetException fite) {
-      FunctionException functionException = null;
+      FunctionException functionException;
       if (fn.isHA()) {
         functionException =
             new FunctionException(new InternalFunctionInvocationTargetException(fite.getMessage()));
       } else {
         functionException = new FunctionException(fite);
       }
-      handleException(functionException, fn, cx, sender, dm);
+      handleException(functionException, fn, sender, dm, start);
     } catch (BucketMovedException bme) {
-      FunctionException functionException = null;
+      FunctionException functionException;
       if (fn.isHA()) {
         functionException =
             new FunctionException(new InternalFunctionInvocationTargetException(bme));
       } else {
         functionException = new FunctionException(bme);
       }
-      handleException(functionException, fn, cx, sender, dm);
+      handleException(functionException, fn, sender, dm, start);
     } catch (VirtualMachineError e) {
       SystemFailure.initiateFailure(e);
       throw e;
     } catch (Throwable t) {
       SystemFailure.checkFailure();
-      handleException(t, fn, cx, sender, dm);
+      handleException(t, fn, sender, dm, start);
     }
   }
 
+  @Override
   public ResultCollector execute(final String functionName) {
+    return execute(functionName, getTimeoutMs(), TimeUnit.MILLISECONDS);
+  }
+
+  @Override
+  public ResultCollector execute(final String functionName, long timeout, TimeUnit unit) {
     if (functionName == null) {
       throw new FunctionException(
-          LocalizedStrings.ExecuteFunction_THE_INPUT_FUNCTION_FOR_THE_EXECUTE_FUNCTION_REQUEST_IS_NULL
-              .toLocalizedString());
+          "The input function for the execute function request is null");
     }
-    this.isFnSerializationReqd = false;
+    isFnSerializationReqd = false;
     Function functionObject = FunctionService.getFunction(functionName);
     if (functionObject == null) {
       throw new FunctionException(
-          LocalizedStrings.ExecuteFunction_FUNCTION_NAMED_0_IS_NOT_REGISTERED
-              .toLocalizedString(functionName));
+          String.format("Function named %s is not registered to FunctionService",
+              functionName));
     }
 
-    return executeFunction(functionObject);
+    return executeFunction(functionObject, timeout, unit);
   }
 
-  public ResultCollector execute(Function function) throws FunctionException {
+  @Override
+  public ResultCollector execute(Function function, long timeout, TimeUnit unit)
+      throws FunctionException {
     if (function == null) {
       throw new FunctionException(
-          LocalizedStrings.ExecuteFunction_THE_INPUT_FUNCTION_FOR_THE_EXECUTE_FUNCTION_REQUEST_IS_NULL
-              .toLocalizedString());
+          "The input function for the execute function request is null");
     }
     if (function.isHA() && !function.hasResult()) {
       throw new FunctionException(
-          LocalizedStrings.FunctionService_FUNCTION_ATTRIBUTE_MISMATCH.toLocalizedString());
+          "For Functions with isHA true, hasResult must also be true.");
     }
 
     String id = function.getId();
     if (id == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.ExecuteFunction_THE_FUNCTION_GET_ID_RETURNED_NULL.toLocalizedString());
+          "The Function#getID() returned null");
     }
-    this.isFnSerializationReqd = true;
-    return executeFunction(function);
+    isFnSerializationReqd = true;
+    return executeFunction(function, timeout, unit);
   }
 
+  @Override
+  public ResultCollector execute(Function function) throws FunctionException {
+    return execute(function, getTimeoutMs(), TimeUnit.MILLISECONDS);
+  }
+
+  @Override
   public void setWaitOnExceptionFlag(boolean waitOnException) {
-    this.setForwardExceptions(waitOnException);
+    setForwardExceptions(waitOnException);
     this.waitOnException = waitOnException;
   }
 
   public boolean getWaitOnExceptionFlag() {
-    return this.waitOnException;
+    return waitOnException;
   }
 
+  @Override
   public void setForwardExceptions(boolean forward) {
-    this.forwardExceptions = forward;
+    forwardExceptions = forward;
   }
 
   public boolean isForwardExceptions() {
@@ -415,17 +423,17 @@ public abstract class AbstractExecution implements InternalExecution {
 
   @Override
   public void setIgnoreDepartedMembers(boolean ignore) {
-    this.ignoreDepartedMembers = ignore;
+    ignoreDepartedMembers = ignore;
     if (ignore) {
       setWaitOnExceptionFlag(true);
     }
   }
 
   public boolean isIgnoreDepartedMembers() {
-    return this.ignoreDepartedMembers;
+    return ignoreDepartedMembers;
   }
 
-  protected abstract ResultCollector executeFunction(Function fn);
+  protected abstract ResultCollector executeFunction(Function fn, long timeout, TimeUnit unit);
 
   /**
    * validates whether a function should execute in presence of transaction and HeapCritical
@@ -436,7 +444,8 @@ public abstract class AbstractExecution implements InternalExecution {
    * @throws TransactionException if more than one nodes are targeted within a transaction
    * @throws LowMemoryException if the set contains a heap critical member
    */
-  public abstract void validateExecution(Function function, Set targetMembers);
+  public abstract void validateExecution(Function function,
+      Set<? extends DistributedMember> targetMembers);
 
   public LocalResultCollector<?, ?> getLocalResultCollector(Function function,
       final ResultCollector<?, ?> rc) {
@@ -451,15 +460,14 @@ public abstract class AbstractExecution implements InternalExecution {
    * Returns the function attributes defined by the functionId, returns null if no function is found
    * for the specified functionId
    *
-   * @param functionId
    * @return byte[]
    * @throws FunctionException if functionID passed is null
    * @since GemFire 6.6
    */
   public byte[] getFunctionAttributes(String functionId) {
     if (functionId == null) {
-      throw new FunctionException(LocalizedStrings.FunctionService_0_PASSED_IS_NULL
-          .toLocalizedString("functionId instance "));
+      throw new FunctionException(String.format("%s passed is null",
+          "functionId instance "));
     }
     return idToFunctionAttributes.get(functionId);
   }
@@ -468,19 +476,19 @@ public abstract class AbstractExecution implements InternalExecution {
     idToFunctionAttributes.remove(functionId);
   }
 
-  public void addFunctionAttributes(String functionId, byte[] functionAttributes) {
+  void addFunctionAttributes(String functionId, byte[] functionAttributes) {
     idToFunctionAttributes.put(functionId, functionAttributes);
   }
 
   private void handleException(Throwable functionException, final Function fn,
-      final FunctionContext cx, final ResultSender sender, DistributionManager dm) {
-    FunctionStats stats = FunctionStats.getFunctionStats(fn.getId(), dm.getSystem());
+      final ResultSender sender, DistributionManager dm, long startTime) {
+    FunctionStats stats = FunctionStatsManager.getFunctionStats(fn.getId(), dm.getSystem());
 
     if (logger.isDebugEnabled()) {
       logger.debug("Exception occurred on local node while executing Function: {}", fn.getId(),
           functionException);
     }
-    stats.endFunctionExecutionWithException(fn.hasResult());
+    stats.endFunctionExecutionWithException(startTime, fn.hasResult());
     if (fn.hasResult()) {
       if (waitOnException || forwardExceptions) {
         if (functionException instanceof FunctionException
@@ -496,8 +504,17 @@ public abstract class AbstractExecution implements InternalExecution {
         ((InternalResultSender) sender).setException(functionException);
       }
     } else {
-      logger.warn(LocalizedMessage.create(LocalizedStrings.FunctionService_EXCEPTION_ON_LOCAL_NODE),
+      logger.warn("Exception occurred on local node while executing Function:",
           functionException);
     }
+  }
+
+  /**
+   * Get function timeout in milliseconds.
+   *
+   * @return timeout in milliseconds.
+   */
+  int getTimeoutMs() {
+    return timeoutMs;
   }
 }

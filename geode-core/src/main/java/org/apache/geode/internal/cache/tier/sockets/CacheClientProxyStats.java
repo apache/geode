@@ -20,6 +20,7 @@ import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 
@@ -34,6 +35,7 @@ import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 public class CacheClientProxyStats implements MessageStats {
 
   /** The <code>StatisticsType</code> of the statistics */
+  @Immutable
   private static final StatisticsType _type;
 
   /** Name of the messages received statistic */
@@ -367,18 +369,22 @@ public class CacheClientProxyStats implements MessageStats {
     this._stats.incInt(_deltaFullMessagesSentId, 1);
   }
 
+  @Override
   public void incReceivedBytes(long v) {
     // noop since we never receive
   }
 
+  @Override
   public void incSentBytes(long v) {
     this._stats.incLong(_sentBytesId, v);
   }
 
+  @Override
   public void incMessagesBeingReceived(int bytes) {
     // noop since we never receive
   }
 
+  @Override
   public void decMessagesBeingReceived(int bytes) {
     // noop since we never receive
   }

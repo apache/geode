@@ -15,7 +15,10 @@
 
 package org.apache.geode.cache.lucene.internal.xml;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.Map;
 import java.util.Stack;
@@ -36,9 +39,8 @@ import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
 import org.apache.geode.internal.cache.xmlcache.RegionCreation;
 import org.apache.geode.internal.cache.xmlcache.XmlGeneratorUtils;
 import org.apache.geode.test.junit.categories.LuceneTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category({UnitTest.class, LuceneTest.class})
+@Category({LuceneTest.class})
 public class LuceneIndexXmlParserJUnitTest {
 
   private LuceneXmlParser parser;

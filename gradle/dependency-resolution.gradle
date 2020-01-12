@@ -14,70 +14,68 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-subprojects {
-  //Task to dump all depencies of all projects, in a way
-  //that can be diffed before and after dependency changes
-  task dumpDependencies() {
-    doLast {
-      description "Dump all of the dependencies as a flat, sorted list"
 
-      project.configurations.each{ configuration ->
-        println( project.name + ":" + configuration.name )
-        println( '-------------------')
-        configuration.resolvedConfiguration.resolvedArtifacts.collect{dep -> dep.file.name}.unique().toSorted().each{dep ->
-          println(dep)
-        }
-        println()
+// Task to dump all dependencies of all projects, in a way
+// that can be diffed before and after dependency changes
+task dumpDependencies() {
+  doLast {
+    description "Dump all of the dependencies as a flat, sorted list"
+
+    project.configurations.each { configuration ->
+      println(project.name + ":" + configuration.name)
+      println('-------------------')
+      configuration.resolvedConfiguration.resolvedArtifacts.collect { dep -> dep.file.name }.unique().toSorted().each { dep ->
+        println(dep)
       }
+      println()
     }
   }
+}
 
-  //Task to find all of the jars in a compile task
-  //that are unused
-  task findUsage() {
-    doLast {
-      description "Find usages of a jar in the source code"
+//Task to find all of the jars in a compile task
+//that are unused
+task findUsage() {
+  doLast {
+    description "Find usages of a jar in the source code"
 
-      String jarName = System.getProperty("jar.name")
-      if(jar == null || jar == "")  {
-        println "You must specify a jar name: ./gradlew findUsage -Djar.name=commons-io"
-        return
+    String jarName = System.getProperty("jar.name")
+    if (jar == null || jar == "") {
+      println "You must specify a jar name: ./gradlew findUsage -Djar.name=commons-io"
+      return
+    }
+    FileTree sourceFiles = compileJava.source
+    FileCollection jars = compileJava.classpath
+
+    File jar = jars.find { file -> file.name.contains(jarName) }
+
+    FileTree jarContents = zipTree(jar)
+    Set packages = new HashSet()
+    jarContents.visit { file ->
+      if (!file.isDirectory() && !file.path.contains("META-INF")) {
+        packages.add(file.relativePath.parent.toString().replace('/', '.'))
       }
-      FileTree sourceFiles = compileJava.source
-      FileCollection jars = compileJava.classpath
+    }
 
-      File jar = jars.find{file -> file.name.contains(jarName)}
+    println("Packages")
+    println "========"
+    packages.each { p -> println p }
 
-      FileTree jarContents = zipTree(jar)
-      Set packages = new HashSet()
-      jarContents.visit{file ->
-        if(!file.isDirectory() && !file.path.contains("META-INF")) {
-          packages.add(file.relativePath.parent.toString().replace('/', '.'))
-        }
-      }
-
-      println("Packages")
-      println "========"
-      packages.each { p -> println p  }
-
-      println ""
-      println("Matches")
-      println "========"
-      sourceFiles.visit{ file ->
-        if(!file.isDirectory()) {
-          boolean matches = false;
-          file.file.eachLine { line ->
+    println ""
+    println("Matches")
+    println "========"
+    sourceFiles.visit { file ->
+      if (!file.isDirectory()) {
+        boolean matches = false
+        file.file.eachLine { line ->
           def matcher = line =~ /^import (.*)\..*;/
-            if(matcher) {
-              def pack = matcher[0][1]
-//              println pack
-              matches |= packages.contains(pack)
-            }
+          if (matcher) {
+            def pack = matcher[0][1]
+            matches |= packages.contains(pack)
           }
+        }
 
-          if(matches) {
-            println file.relativePath;
-          }
+        if (matches) {
+          println file.relativePath
         }
       }
     }

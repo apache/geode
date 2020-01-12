@@ -16,16 +16,17 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.GemFireSecurityException;
 
 public class PutUserCredentials extends BaseCommand {
 
+  @Immutable
   private static final PutUserCredentials singleton = new PutUserCredentials();
 
   public static Command getCommand() {
@@ -53,17 +54,18 @@ public class PutUserCredentials extends BaseCommand {
           writeResponse(uniqueId, null, clientMessage, false, serverConnection);
         } catch (GemFireSecurityException gfse) {
           if (serverConnection.getSecurityLogWriter().warningEnabled()) {
-            serverConnection.getSecurityLogWriter().warning(LocalizedStrings.ONE_ARG,
+            serverConnection.getSecurityLogWriter().warning(String.format("%s",
                 serverConnection.getName() + ": Security exception: " + gfse.toString()
                     + (gfse.getCause() != null ? ", caused by: " + gfse.getCause().toString()
-                        : ""));
+                        : "")));
           }
           writeException(clientMessage, gfse, false, serverConnection);
         } catch (Exception ex) {
           if (serverConnection.getLogWriter().warningEnabled()) {
             serverConnection.getLogWriter().warning(
-                LocalizedStrings.CacheClientNotifier_AN_EXCEPTION_WAS_THROWN_FOR_CLIENT_0_1,
-                new Object[] {serverConnection.getProxyID(), ""}, ex);
+                String.format("An exception was thrown for client [%s]. %s",
+                    serverConnection.getProxyID(), ""),
+                ex);
           }
           writeException(clientMessage, ex, false, serverConnection);
         } finally {

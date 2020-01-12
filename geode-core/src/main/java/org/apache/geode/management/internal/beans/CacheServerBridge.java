@@ -24,7 +24,6 @@ import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.CqClosedException;
 import org.apache.geode.cache.query.CqException;
@@ -38,21 +37,23 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.server.ServerLoad;
 import org.apache.geode.cache.server.ServerLoadProbe;
 import org.apache.geode.cache.server.internal.ServerMetricsImpl;
-import org.apache.geode.internal.Version;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.admin.ClientHealthMonitoringRegion;
 import org.apache.geode.internal.admin.remote.ClientHealthStats;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
+import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.InternalClientMembership;
 import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.process.PidUnavailableException;
 import org.apache.geode.internal.process.ProcessUtils;
+import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.ClientHealthStatus;
 import org.apache.geode.management.ClientQueueDetail;
 import org.apache.geode.management.ServerLoadData;
@@ -88,7 +89,7 @@ public class CacheServerBridge extends ServerBridge {
 
   private ClientMembershipListener membershipListener;
 
-  public static ThreadLocal<Version> clientVersion = new ThreadLocal<Version>();
+  public static final ThreadLocal<Version> clientVersion = new ThreadLocal<Version>();
 
   protected static int identifyPid() {
     try {
@@ -131,6 +132,7 @@ public class CacheServerBridge extends ServerBridge {
     this.memberMBeanBridge = memberMBeanBridge;
   }
 
+  @Override
   public void stopMonitor() {
     super.stopMonitor();
     monitor.stopListener();
@@ -202,7 +204,7 @@ public class CacheServerBridge extends ServerBridge {
   }
 
   /**
-   * Returns the maxium number of threads allowed in this server to service client requests.
+   * Returns the maximum number of threads allowed in this server to service client requests.
    **/
   public int getMaxThreads() {
     return cacheServer.getMaxThreads();
@@ -404,8 +406,6 @@ public class CacheServerBridge extends ServerBridge {
   }
 
   public Version getClientVersion(ClientConnInfo connInfo) {
-    InternalCache cache = (InternalCache) CacheFactory.getAnyInstance();
-
     if (cache.getCacheServers().size() == 0) {
       return null;
     }
@@ -416,12 +416,12 @@ public class CacheServerBridge extends ServerBridge {
       return null;
     }
 
-    AcceptorImpl acceptorImpl = server.getAcceptor();
-    if (acceptorImpl == null) {
+    Acceptor acceptor = server.getAcceptor();
+    if (acceptor == null) {
       return null;
     }
 
-    ServerConnection[] serverConnections = acceptorImpl.getAllServerConnectionList();
+    ServerConnection[] serverConnections = acceptor.getAllServerConnectionList();
 
     boolean flag = false;
     if (connInfo.toString().contains("primary=true")) {
@@ -501,6 +501,7 @@ public class CacheServerBridge extends ServerBridge {
 
     Region clientHealthMonitoringRegion = ClientHealthMonitoringRegion.getInstance(this.cache);
     String clientName = proxyId.getDSMembership();
+    DistributedMember clientMemberId = proxyId.getDistributedMember();
     status.setClientId(connInfo.toString());
     status.setName(clientName);
     status.setHostName(connInfo.getHostName());
@@ -517,14 +518,19 @@ public class CacheServerBridge extends ServerBridge {
       status.setSubscriptionEnabled(false);
     }
 
-    ClientHealthStats stats = (ClientHealthStats) clientHealthMonitoringRegion.get(clientName);
+    ClientHealthStats stats = (ClientHealthStats) clientHealthMonitoringRegion.get(clientMemberId);
+    if (stats == null) {
+      // Clients older than Geode 1.8 put strings in the region, rather than ids
+      // See GEODE-5157
+      stats = (ClientHealthStats) clientHealthMonitoringRegion.get(clientName);
+    }
 
     if (stats != null) {
       status.setCpus(stats.getCpus());
       status.setNumOfCacheListenerCalls(stats.getNumOfCacheListenerCalls());
-      status.setNumOfGets(stats.getNumOfGets());
-      status.setNumOfMisses(stats.getNumOfMisses());
-      status.setNumOfPuts(stats.getNumOfPuts());
+      status.setNumOfGets((int) stats.getNumOfGets());
+      status.setNumOfMisses((int) stats.getNumOfMisses());
+      status.setNumOfPuts((int) stats.getNumOfPuts());
       status.setNumOfThreads(stats.getNumOfThreads());
       status.setProcessCpuTime(stats.getProcessCpuTime());
       status.setPoolStats(stats.getPoolStats());
@@ -535,7 +541,6 @@ public class CacheServerBridge extends ServerBridge {
   /**
    * closes a continuous query and releases all the resources associated with it.
    *
-   * @param queryName
    */
   public void closeContinuousQuery(String queryName) throws Exception {
     CqService cqService = cache.getCqService();
@@ -559,7 +564,6 @@ public class CacheServerBridge extends ServerBridge {
   /**
    * Execute a continuous query
    *
-   * @param queryName
    */
   public void executeContinuousQuery(String queryName) throws Exception {
     CqService cqService = cache.getCqService();
@@ -581,7 +585,6 @@ public class CacheServerBridge extends ServerBridge {
   /**
    * Stops a given query witout releasing any of the resources associated with it.
    *
-   * @param queryName
    */
   public void stopContinuousQuery(String queryName) throws Exception {
     CqService cqService = cache.getCqService();
@@ -606,7 +609,6 @@ public class CacheServerBridge extends ServerBridge {
   /**
    * remove a given index
    *
-   * @param indexName
    */
   public void removeIndex(String indexName) throws Exception {
     try {

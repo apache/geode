@@ -25,15 +25,19 @@ import java.util.List;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
-import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.DMStats;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionMessage;
-import org.apache.geode.internal.*;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.ByteBufferWriter;
+import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.ObjToByteArraySerializer;
+import org.apache.geode.internal.net.BufferPool;
+import org.apache.geode.internal.serialization.StaticSerialization;
+import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * <p>
@@ -47,12 +51,12 @@ import org.apache.geode.internal.logging.LogService;
 public class MsgStreamer extends OutputStream
     implements ObjToByteArraySerializer, BaseMsgStreamer, ByteBufferWriter {
 
-  private static final Logger logger = LogService.getLogger();
-
   /**
    * List of connections to send this msg to.
    */
   private final List<?> cons;
+
+  private final BufferPool bufferPool;
 
   /**
    * Any exceptions that happen during sends
@@ -93,13 +97,14 @@ public class MsgStreamer extends OutputStream
     MsgIdGenerator.release(this.msgId);
     this.buffer.clear();
     this.overflowBuf = null;
-    Buffers.releaseSenderBuffer(this.buffer, this.stats);
+    bufferPool.releaseSenderBuffer(this.buffer);
   }
 
   /**
    * Returns an exception the describes which cons the message was not sent to. Call this after
    * {@link #writeMessage}.
    */
+  @Override
   public ConnectExceptions getConnectExceptions() {
     return this.ce;
   }
@@ -108,6 +113,7 @@ public class MsgStreamer extends OutputStream
    * Returns a list of the Connections that the message was sent to. Call this after
    * {@link #writeMessage}.
    */
+  @Override
   public List<?> getSentConnections() {
     return this.cons;
   }
@@ -119,15 +125,16 @@ public class MsgStreamer extends OutputStream
    * now be used.
    */
   MsgStreamer(List<?> cons, DistributionMessage msg, boolean directReply, DMStats stats,
-      int sendBufferSize) {
+      int sendBufferSize, BufferPool bufferPool) {
     this.stats = stats;
     this.msg = msg;
     this.cons = cons;
-    this.buffer = Buffers.acquireSenderBuffer(sendBufferSize, stats);
+    this.buffer = bufferPool.acquireDirectSenderBuffer(sendBufferSize);
     this.buffer.clear();
     this.buffer.position(Connection.MSG_HEADER_BYTES);
     this.msgId = MsgIdGenerator.NO_MSG_ID;
     this.directReply = directReply;
+    this.bufferPool = bufferPool;
     startSerialization();
   }
 
@@ -137,7 +144,7 @@ public class MsgStreamer extends OutputStream
    * List of MsgStreamer objects.
    */
   public static BaseMsgStreamer create(List<?> cons, final DistributionMessage msg,
-      final boolean directReply, final DMStats stats) {
+      final boolean directReply, final DMStats stats, BufferPool bufferPool) {
     final Connection firstCon = (Connection) cons.get(0);
     // split into different versions if required
     Version version;
@@ -163,7 +170,8 @@ public class MsgStreamer extends OutputStream
         }
       }
       if (versionToConnMap == null) {
-        return new MsgStreamer(cons, msg, directReply, stats, firstCon.getSendBufferSize());
+        return new MsgStreamer(cons, msg, directReply, stats, firstCon.getSendBufferSize(),
+            bufferPool);
       } else {
         // if there is a versioned stream created, then split remaining
         // connections to unversioned stream
@@ -180,7 +188,8 @@ public class MsgStreamer extends OutputStream
               unversionedCons.add(con);
             }
           }
-          streamers.add(new MsgStreamer(unversionedCons, msg, directReply, stats, sendBufferSize));
+          streamers.add(new MsgStreamer(unversionedCons, msg, directReply, stats, sendBufferSize,
+              bufferPool));
         }
         for (ObjectIterator<Object2ObjectMap.Entry> itr =
             versionToConnMap.object2ObjectEntrySet().fastIterator(); itr.hasNext();) {
@@ -188,15 +197,17 @@ public class MsgStreamer extends OutputStream
           Object ver = entry.getKey();
           Object l = entry.getValue();
           streamers.add(new VersionedMsgStreamer((List<?>) l, msg, directReply, stats,
-              sendBufferSize, (Version) ver));
+              bufferPool, sendBufferSize, (Version) ver));
         }
         return new MsgStreamerList(streamers);
       }
     } else if ((version = firstCon.getRemoteVersion()) == null) {
-      return new MsgStreamer(cons, msg, directReply, stats, firstCon.getSendBufferSize());
+      return new MsgStreamer(cons, msg, directReply, stats, firstCon.getSendBufferSize(),
+          bufferPool);
     } else {
       // create a single VersionedMsgStreamer
-      return new VersionedMsgStreamer(cons, msg, directReply, stats, firstCon.getSendBufferSize(),
+      return new VersionedMsgStreamer(cons, msg, directReply, stats, bufferPool,
+          firstCon.getSendBufferSize(),
           version);
     }
   }
@@ -204,10 +215,8 @@ public class MsgStreamer extends OutputStream
   /**
    * set connections to be "in use" and schedule alert tasks
    *
-   * @param startTime
-   * @param ackTimeout
-   * @param ackSDTimeout
    */
+  @Override
   public void reserveConnections(long startTime, long ackTimeout, long ackSDTimeout) {
     for (Iterator it = cons.iterator(); it.hasNext();) {
       Connection con = (Connection) it.next();
@@ -225,6 +234,7 @@ public class MsgStreamer extends OutputStream
   /**
    * @throws IOException if serialization failure
    */
+  @Override
   public int writeMessage() throws IOException {
     // if (logger.isTraceEnabled()) logger.trace(this.msg);
 
@@ -253,7 +263,7 @@ public class MsgStreamer extends OutputStream
       this.overflowBuf.write(b);
       return;
     }
-    this.buffer.put((byte) b);
+    this.buffer.put((byte) (b & 0xff));
   }
 
   private void ensureCapacity(int amount) {
@@ -319,14 +329,14 @@ public class MsgStreamer extends OutputStream
           this.ce = new ConnectExceptions();
         this.ce.addFailure(con.getRemoteAddress(), ex);
         con.closeForReconnect(
-            LocalizedStrings.MsgStreamer_CLOSING_DUE_TO_0.toLocalizedString("IOException"));
+            String.format("closing due to %s", "IOException"));
       } catch (ConnectionException ex) {
         it.remove();
         if (this.ce == null)
           this.ce = new ConnectExceptions();
         this.ce.addFailure(con.getRemoteAddress(), ex);
         con.closeForReconnect(
-            LocalizedStrings.MsgStreamer_CLOSING_DUE_TO_0.toLocalizedString("ConnectionException"));
+            String.format("closing due to %s", "ConnectionException"));
       }
       this.buffer.rewind();
     }
@@ -458,6 +468,7 @@ public class MsgStreamer extends OutputStream
    *
    * @param v the boolean to be written.
    */
+  @Override
   public void writeBoolean(boolean v) {
     write(v ? 1 : 0);
   }
@@ -471,6 +482,7 @@ public class MsgStreamer extends OutputStream
    *
    * @param v the byte value to be written.
    */
+  @Override
   public void writeByte(int v) {
     write(v);
   }
@@ -493,6 +505,7 @@ public class MsgStreamer extends OutputStream
    *
    * @param v the <code>short</code> value to be written.
    */
+  @Override
   public void writeShort(int v) {
     // if (logger.isTraceEnabled()) logger.trace(" short={}", v);
 
@@ -501,7 +514,7 @@ public class MsgStreamer extends OutputStream
       this.overflowBuf.writeShort(v);
       return;
     }
-    this.buffer.putShort((short) v);
+    this.buffer.putShort((short) (v & 0xffff));
   }
 
   /**
@@ -522,6 +535,7 @@ public class MsgStreamer extends OutputStream
    *
    * @param v the <code>char</code> value to be written.
    */
+  @Override
   public void writeChar(int v) {
     // if (logger.isTraceEnabled()) logger.trace(" char={}", v);
 
@@ -552,6 +566,7 @@ public class MsgStreamer extends OutputStream
    *
    * @param v the <code>int</code> value to be written.
    */
+  @Override
   public void writeInt(int v) {
     // if (logger.isTraceEnabled()) logger.trace(" int={}", v);
 
@@ -586,6 +601,7 @@ public class MsgStreamer extends OutputStream
    *
    * @param v the <code>long</code> value to be written.
    */
+  @Override
   public void writeLong(long v) {
     // if (logger.isTraceEnabled()) logger.trace(" long={}", v);
 
@@ -607,6 +623,7 @@ public class MsgStreamer extends OutputStream
    *
    * @param v the <code>float</code> value to be written.
    */
+  @Override
   public void writeFloat(float v) {
     // if (logger.isTraceEnabled()) logger.trace(" float={}", v);
 
@@ -628,6 +645,7 @@ public class MsgStreamer extends OutputStream
    *
    * @param v the <code>double</code> value to be written.
    */
+  @Override
   public void writeDouble(double v) {
     // if (logger.isTraceEnabled()) logger.trace(" double={}", v);
 
@@ -652,6 +670,7 @@ public class MsgStreamer extends OutputStream
    *
    * @param str the string of bytes to be written.
    */
+  @Override
   public void writeBytes(String str) {
     // if (logger.isTraceEnabled()) logger.trace(" bytes={}", str);
 
@@ -677,6 +696,7 @@ public class MsgStreamer extends OutputStream
    *
    * @param s the string value to be written.
    */
+  @Override
   public void writeChars(String s) {
     // if (logger.isTraceEnabled()) logger.trace(" chars={}", s);
 
@@ -713,7 +733,7 @@ public class MsgStreamer extends OutputStream
    * to true gives a performance improvement.
    */
   private static final boolean ASCII_STRINGS =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "ASCII_STRINGS");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "ASCII_STRINGS");
 
   /**
    * Writes two bytes of length information to the output stream, followed by the Java modified UTF
@@ -766,6 +786,7 @@ public class MsgStreamer extends OutputStream
    * @param str the string value to be written.
    * @exception IOException if an I/O error occurs.
    */
+  @Override
   public void writeUTF(String str) throws IOException {
     // if (logger.isTraceEnabled()) logger.trace(" utf={}", str);
 
@@ -889,6 +910,7 @@ public class MsgStreamer extends OutputStream
    * the contents of the HeapDataOutputStream to this streamer. All of this is done to prevent an
    * extra copy when the serialized form will all fit into our current buffer.
    */
+  @Override
   public void writeAsSerializedByteArray(Object v) throws IOException {
     if (v instanceof HeapDataOutputStream) {
       HeapDataOutputStream other = (HeapDataOutputStream) v;
@@ -927,8 +949,7 @@ public class MsgStreamer extends OutputStream
         DataSerializer.writeObject(v, this);
       } catch (IOException e) {
         RuntimeException e2 = new IllegalArgumentException(
-            LocalizedStrings.MsgStreamer_AN_EXCEPTION_WAS_THROWN_WHILE_SERIALIZING
-                .toLocalizedString());
+            "An Exception was thrown while serializing.");
         e2.initCause(e);
         throw e2;
       }
@@ -937,7 +958,7 @@ public class MsgStreamer extends OutputStream
       if (overBuf != null) {
         baLength += overBuf.size();
       }
-      this.buffer.put(lengthPos, InternalDataSerializer.INT_ARRAY_LEN);
+      this.buffer.put(lengthPos, StaticSerialization.INT_ARRAY_LEN);
       this.buffer.putInt(lengthPos + 1, baLength);
       disableOverflowMode();
       finished = true;

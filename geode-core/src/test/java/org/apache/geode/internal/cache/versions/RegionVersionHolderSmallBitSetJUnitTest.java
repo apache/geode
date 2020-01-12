@@ -14,15 +14,12 @@
  */
 package org.apache.geode.internal.cache.versions;
 
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * A test of the region version holder, but using a smaller bit set so that we test the merging of
  * exceptions functionality.
  */
-@Category(UnitTest.class)
 public class RegionVersionHolderSmallBitSetJUnitTest extends RegionVersionHolderJUnitTest {
 
   @Override

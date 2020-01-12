@@ -18,17 +18,17 @@ package org.apache.geode.internal.cache.wan;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.wan.GatewaySender;
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.WrappedCallbackArgument;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * Class <code>GatewayEventCallbackArgument</code> is a wrapper on a callback arg plus the id of the
@@ -137,12 +137,14 @@ public class GatewaySenderEventCallbackArgument extends WrappedCallbackArgument
     }
   }
 
+  @Override
   public int getDSFID() {
     return GATEWAY_SENDER_EVENT_CALLBACK_ARGUMENT;
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     super.toData(out);
     DataSerializer.writeInteger(this.originatingDSId, out);
     if (this.receipientDSIds != null) {
@@ -156,7 +158,8 @@ public class GatewaySenderEventCallbackArgument extends WrappedCallbackArgument
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in);
     this.originatingDSId = DataSerializer.readInteger(in);
     this.receipientDSIds = new IntOpenHashSet(2);

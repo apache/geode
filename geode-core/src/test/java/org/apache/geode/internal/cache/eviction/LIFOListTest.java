@@ -22,12 +22,9 @@ import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.cache.BucketRegion;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class LIFOListTest {
   private BucketRegion bucketRegion;
   private EvictionCounters stats;

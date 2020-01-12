@@ -22,12 +22,11 @@ import java.io.OutputStream;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.protocol.protobuf.statistics.ClientStatistics;
 import org.apache.geode.internal.protocol.protobuf.v1.registry.ProtobufOperationContextRegistry;
 import org.apache.geode.internal.protocol.protobuf.v1.serializer.ProtobufProtocolSerializer;
 import org.apache.geode.internal.protocol.protobuf.v1.serializer.exception.InvalidProtocolMessageException;
-import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufUtilities;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * This object handles an incoming stream containing protobuf messages. It parses the protobuf
@@ -42,8 +41,7 @@ public class ProtobufStreamProcessor {
 
   public ProtobufStreamProcessor() {
     protobufProtocolSerializer = new ProtobufProtocolSerializer();
-    protobufOpsProcessor = new ProtobufOpsProcessor(new ProtobufSerializationService(),
-        new ProtobufOperationContextRegistry());
+    protobufOpsProcessor = new ProtobufOpsProcessor(new ProtobufOperationContextRegistry());
   }
 
   public void receiveMessage(InputStream inputStream, OutputStream outputStream,
@@ -51,7 +49,7 @@ public class ProtobufStreamProcessor {
     try {
       processOneMessage(inputStream, outputStream, executionContext);
     } catch (InvalidProtocolMessageException e) {
-      logger.info(e);
+      logger.info("Invalid message", e);
       throw new IOException(e);
     }
   }
@@ -59,8 +57,8 @@ public class ProtobufStreamProcessor {
   private void processOneMessage(InputStream inputStream, OutputStream outputStream,
       MessageExecutionContext executionContext)
       throws InvalidProtocolMessageException, IOException {
-    if (executionContext.getConnectionStateProcessor().handleMessageIndependently(inputStream,
-        outputStream, executionContext)) {
+    if (executionContext.getConnectionState().handleMessageIndependently(inputStream, outputStream,
+        executionContext)) {
       return;
     }
 

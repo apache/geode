@@ -46,15 +46,15 @@ where:
 <col width="50%" />
 </colgroup>
 <tbody>
-<tr class="odd">
+<tr>
 <td>-c address</td>
 <td><p>Run in client mode and connect to a multicast address</p></td>
 </tr>
-<tr class="even">
+<tr>
 <td>-u</td>
 <td><p>Use UDP</p></td>
 </tr>
-<tr class="odd">
+<tr>
 <td>-T #</td>
 <td><p>Multicast time-to-live: number of subnets across which a multicast packet can travel before the routers drop the packet</p></td>
 </tr>
@@ -70,15 +70,15 @@ Do not set the -T parameter above 1 without consulting your network administrato
 <col width="50%" />
 </colgroup>
 <tbody>
-<tr class="odd">
+<tr>
 <td>-t</td>
 <td><p>Length of time to transmit, in seconds</p></td>
 </tr>
-<tr class="even">
+<tr>
 <td>-i</td>
 <td><p>Time between periodic bandwidth reports, in seconds</p></td>
 </tr>
-<tr class="odd">
+<tr>
 <td>-b</td>
 <td>Sending bandwidth, in bits per second</td>
 </tr>
@@ -99,19 +99,19 @@ where:
 <col width="50%" />
 </colgroup>
 <tbody>
-<tr class="odd">
+<tr>
 <td><p>-s</p></td>
 <td><p>Run in server mode</p></td>
 </tr>
-<tr class="even">
+<tr>
 <td><p>-u</p></td>
 <td><p>Use UDP</p></td>
 </tr>
-<tr class="odd">
+<tr>
 <td><p>-B address</p></td>
 <td><p>Bind to a multicast address</p></td>
 </tr>
-<tr class="even">
+<tr>
 <td>-i #</td>
 <td>Time between periodic bandwidth reports, in seconds</td>
 </tr>
@@ -119,7 +119,7 @@ where:
 </table>
 
 **Note:**
-If your <%=vars.product_name%> distributed system runs across several subnets, start a receiver on each subnet.
+If your <%=vars.product_name%> cluster runs across several subnets, start a receiver on each subnet.
 
 In the receiver’s output, look at the Lost/Total Datagrams columns for the number and percentage of lost packets out of the total sent.
 

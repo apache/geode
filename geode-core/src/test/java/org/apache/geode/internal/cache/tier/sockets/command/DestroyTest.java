@@ -14,6 +14,9 @@
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -29,8 +32,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import org.apache.geode.CancelCriterion;
+import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.operations.DestroyOperationContext;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
@@ -40,12 +43,13 @@ import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
-import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 
-@Category(UnitTest.class)
+@Category({ClientServerTest.class})
 public class DestroyTest {
 
   private static final String REGION_NAME = "region1";
@@ -111,7 +115,7 @@ public class DestroyTest {
 
     when(this.region.containsKey(eq(REGION_NAME))).thenReturn(true);
 
-    when(this.regionNamePart.getString()).thenReturn(REGION_NAME);
+    when(this.regionNamePart.getCachedString()).thenReturn(REGION_NAME);
 
     when(this.serverConnection.getCache()).thenReturn(this.cache);
     when(this.serverConnection.getCacheServerStats()).thenReturn(this.cacheServerStats);
@@ -179,4 +183,12 @@ public class DestroyTest {
     verify(this.errorResponseMessage).send(eq(this.serverConnection));
   }
 
+  @Test
+  public void destroyThrowsAndHandlesEntryNotFoundExceptionOnServer() {
+    doThrow(new EntryNotFoundException("")).when(region).basicBridgeDestroy(any(), any(), any(),
+        anyBoolean(), any());
+
+    assertThatCode(() -> destroy.cmdExecute(message, serverConnection, securityService, 0))
+        .doesNotThrowAnyException();
+  }
 }

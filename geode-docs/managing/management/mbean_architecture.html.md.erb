@@ -19,11 +19,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<%=vars.product_name%> uses MBeans to manage and monitor different parts of <%=vars.product_name%>. <%=vars.product_name%>'s federated MBean architecture is scalable and allows you to have a single-agent view of a <%=vars.product_name%> distributed system.
+<%=vars.product_name%> uses MBeans to manage and monitor different parts of <%=vars.product_name%>. <%=vars.product_name%>'s federated MBean architecture is scalable and allows you to have a single-agent view of a <%=vars.product_name%> cluster.
 
 ## <a id="concept_40A475F186E249C597681069C835CF65__section_19948055E4184110910B11CD979A923A" class="no-quick-link"></a>Federation of <%=vars.product_name%> MBeans and MBeanServers
 
-Federation of the MBeanServers means that one member, the JMX Manager Node, can provide a proxied view of all the MBeans that the MBeanServer hosts. Federation also means that operations and notifications are spread across the distributed system.
+Federation of the MBeanServers means that one member, the JMX Manager Node, can provide a proxied view of all the MBeans that the MBeanServer hosts. Federation also means that operations and notifications are spread across the cluster.
 
 <%=vars.product_name%> federation takes care of the following functionality:
 
@@ -60,17 +60,5 @@ In its Management API, <%=vars.product_name%> provides MXBeans to ensure that an
 
 **Note:**
 Aggregate MBeans on the JMX Manager node are not proxied.
-
--   **[List of <%=vars.product_name%> JMX MBeans](../../managing/management/list_of_mbeans.html)**
-
-    This topic provides descriptions for the various management and monitoring MBeans that are available in <%=vars.product_name%>.
-
--   **[Browsing <%=vars.product_name%> MBeans through JConsole](../../managing/management/mbeans_jconsole.html)**
-
-    You can browse all the <%=vars.product_name%> MBeans in your distributed system by using JConsole.
-
--   **[<%=vars.product_name%> JMX MBean Notifications](../../managing/management/mbean_notifications.html)**
-
-    Apache <%=vars.product_name%> MBeans emit notifications when specific events occur or if an alert is raised in the <%=vars.product_name%> system. Using standard JMX APIs, users can add notification handlers to listen for these events.
 
 

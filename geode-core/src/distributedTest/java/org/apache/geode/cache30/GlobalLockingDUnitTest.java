@@ -1,0 +1,422 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package org.apache.geode.cache30;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.util.concurrent.locks.Lock;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.CacheException;
+import org.apache.geode.cache.CacheLoader;
+import org.apache.geode.cache.CacheLoaderException;
+import org.apache.geode.cache.LoaderHelper;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionExistsException;
+import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.TimeoutException;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.LogWriterUtils;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.junit.categories.DLockTest;
+
+/**
+ * This class tests distributed locking of global region entries.
+ */
+@Category({DLockTest.class})
+public class GlobalLockingDUnitTest extends JUnit4CacheTestCase {
+
+  private static Region region_testBug32356;
+
+  public GlobalLockingDUnitTest() {
+    super();
+  }
+
+  /**
+   * Returns region attributes for a <code>GLOBAL</code> region
+   */
+  protected RegionAttributes getGlobalAttrs() {
+    AttributesFactory factory = new AttributesFactory();
+    factory.setScope(Scope.GLOBAL);
+    return factory.create();
+  }
+
+  protected Region getOrCreateRootRegion() {
+    Region root = getRootRegion();
+    if (root == null) {
+      try {
+        root = createRootRegion(getGlobalAttrs());
+      } catch (RegionExistsException ex) {
+        fail("Huh?");
+      } catch (TimeoutException ex) {
+        fail(ex.toString());
+      }
+    }
+    return root;
+  }
+
+  ////////////////////// Test Methods //////////////////////
+
+  /**
+   * Tests for 32356 R2 tryLock w/ 0 timeout broken in Distributed Lock Service
+   */
+  @Test
+  public void testBug32356() throws Exception {
+    LogWriterUtils.getLogWriter().fine("[testBug32356]");
+    Host host = Host.getHost(0);
+    final String name = this.getUniqueName();
+    final Object key = "32356";
+
+    // lock/unlock '32356' in all vms... (make all vms aware of token)
+    LogWriterUtils.getLogWriter().fine("[testBug32356] lock/unlock '32356' in all vms");
+    for (int i = 0; i < 4; i++) {
+      final int vm = i;
+      host.getVM(vm).invoke(new CacheSerializableRunnable("testBug32356_step1") {
+        @Override
+        public void run2() throws CacheException {
+          region_testBug32356 = getOrCreateRootRegion().createSubregion(name, getGlobalAttrs());
+          Lock lock = region_testBug32356.getDistributedLock(key);
+          lock.lock();
+          lock.unlock();
+        }
+      });
+    }
+
+    // attempt try-lock of zero wait time in all vms
+    LogWriterUtils.getLogWriter()
+        .fine("[testBug32356] attempt try-lock of zero wait time in all vms");
+    for (int i = 0; i < 4; i++) {
+      final int vm = i;
+      host.getVM(vm).invoke(new CacheSerializableRunnable("testBug32356_step2") {
+        @Override
+        public void run2() throws CacheException {
+          Lock lock = region_testBug32356.getDistributedLock(key);
+          // bug 32356 should cause this to fail...
+          assertTrue("Found bug 32356", lock.tryLock());
+          lock.unlock();
+        }
+      });
+    }
+  }
+
+  @Test
+  public void testNonGlobalRegion() throws CacheException {
+    String name = this.getUniqueName();
+    AttributesFactory factory = new AttributesFactory(getGlobalAttrs());
+    factory.setScope(Scope.LOCAL);
+    Region region = getOrCreateRootRegion().createSubregion(name + "LOCAL", factory.create());
+    try {
+      region.getDistributedLock("obj");
+      fail("Should have thrown an IllegalStateException");
+    } catch (IllegalStateException ex) {
+      // pass...
+    }
+    factory.setScope(Scope.DISTRIBUTED_ACK);
+    region = getOrCreateRootRegion().createSubregion(name + "DACK", factory.create());
+    try {
+      region.getDistributedLock("obj");
+      fail("Should have thrown an IllegalStateException");
+    } catch (IllegalStateException ex) {
+      // pass...
+    }
+    factory.setScope(Scope.DISTRIBUTED_NO_ACK);
+    region = getOrCreateRootRegion().createSubregion(name + "DNOACK", factory.create());
+    try {
+      region.getDistributedLock("obj");
+      fail("Should have thrown an IllegalStateException");
+    } catch (IllegalStateException ex) {
+      // pass...
+    }
+  }
+
+  @Test
+  public void testSingleVMLockUnlock() throws CacheException {
+    String name = this.getUniqueName() + "-GLOBAL";
+    Region region = getOrCreateRootRegion().createSubregion(name, getGlobalAttrs());
+
+    Lock lock = region.getDistributedLock("obj");
+    lock.lock();
+    lock.unlock();
+  }
+
+  @Test
+  public void testIsLockGrantorAttribute() throws Exception {
+    String name = this.getUniqueName() + "-testIsLockGrantorAttribute";
+    AttributesFactory factory = new AttributesFactory(getGlobalAttrs());
+    factory.setLockGrantor(true);
+    Region region = getOrCreateRootRegion().createSubregion(name, factory.create());
+    assertEquals("Setting isLockGrantor failed to result in becoming lock grantor", true,
+        ((org.apache.geode.internal.cache.DistributedRegion) region).getLockService()
+            .isLockGrantor());
+  }
+
+  /**
+   * Get the lock in one VM, try to create in other
+   */
+  @Test
+  public void testCreateLockTimeout() {
+    Host host = Host.getHost(0);
+    VM vm0 = host.getVM(0);
+    VM vm1 = host.getVM(1);
+    final String name = this.getUniqueName();
+    final Object key = new Integer(5);
+    vm0.invoke(new CacheSerializableRunnable("Get lock") {
+      @Override
+      public void run2() throws CacheException {
+        Region r = getOrCreateRootRegion().createSubregion(name, getGlobalAttrs());
+        Lock lock = r.getDistributedLock(key);
+        lock.lock();
+      }
+    });
+
+    vm1.invoke(new CacheSerializableRunnable("Lock timeout creating entry") {
+      @Override
+      public void run2() throws CacheException {
+        getOrCreateRootRegion().getCache().setLockTimeout(2);
+        Region r = getOrCreateRootRegion().createSubregion(name, getGlobalAttrs());
+        try {
+          r.create(key, "the value");
+          fail("create() should have thrown TimeoutException");
+        } catch (TimeoutException ex) {
+          // pass
+        }
+      }
+    });
+
+  }
+
+  /**
+   * get the lock in one VM, try to put() in other
+   */
+  @Test
+  public void testPutLockTimeout() {
+    Host host = Host.getHost(0);
+    VM vm0 = host.getVM(0);
+    VM vm1 = host.getVM(1);
+    final String name = this.getUniqueName();
+    final Object key = new Integer(5);
+    vm0.invoke(new CacheSerializableRunnable("Get lock") {
+      @Override
+      public void run2() throws CacheException {
+        Region r = getOrCreateRootRegion().createSubregion(name, getGlobalAttrs());
+        Lock lock = r.getDistributedLock(key);
+        lock.lock();
+      }
+    });
+
+    vm1.invoke(new CacheSerializableRunnable("Lock timeout putting entry") {
+      @Override
+      public void run2() throws CacheException {
+        getOrCreateRootRegion().getCache().setLockTimeout(2);
+        Region r = getOrCreateRootRegion().createSubregion(name, getGlobalAttrs());
+        try {
+          r.put(key, "the value");
+          fail("put() should have thrown TimeoutException");
+        } catch (TimeoutException ex) {
+          // pass
+        }
+      }
+    });
+  }
+
+  /**
+   * get lock in one VM, try to invoke loader in other
+   */
+  @Test
+  public void testLoadLockTimeout() {
+    Host host = Host.getHost(0);
+    VM vm0 = host.getVM(0);
+    VM vm1 = host.getVM(1);
+    final String name = this.getUniqueName();
+    final Object key = new Integer(5);
+
+    // In first VM, get a lock on the entry
+    vm0.invoke(new CacheSerializableRunnable("Get lock") {
+      @Override
+      public void run2() throws CacheException {
+        Region r = getOrCreateRootRegion().createSubregion(name, getGlobalAttrs());
+        Lock lock = r.getDistributedLock(key);
+        lock.lock();
+      }
+    });
+
+    // In second VM, do a get that tries to invoke a loader
+    vm1.invoke(new CacheSerializableRunnable("Lock timeout local loader") {
+      @Override
+      public void run2() throws CacheException {
+        getOrCreateRootRegion().getCache().setLockTimeout(2);
+        Region r = getOrCreateRootRegion().createSubregion(name, getGlobalAttrs());
+        r.getAttributesMutator().setCacheLoader(new CacheLoader() {
+          @Override
+          public Object load(LoaderHelper helper) throws CacheLoaderException {
+            throw new CacheLoaderException("Made it into the loader!");
+          }
+
+          @Override
+          public void close() {}
+        });
+        try {
+          r.get(key);
+          fail("get() should have thrown TimeoutException");
+        } catch (TimeoutException ex) {
+          // pass
+        }
+      }
+    });
+  }
+
+  /**
+   * get lock in one VM, try to invalidate in other
+   */
+  @Test
+  public void testInvalidateLockTimeout() {
+    Host host = Host.getHost(0);
+    VM vm0 = host.getVM(0);
+    VM vm1 = host.getVM(1);
+    final String name = this.getUniqueName();
+    final Object key = new Integer(5);
+    vm0.invoke(new CacheSerializableRunnable("Get lock") {
+      @Override
+      public void run2() throws CacheException {
+        Region r = getOrCreateRootRegion().createSubregion(name, getGlobalAttrs());
+        Lock lock = r.getDistributedLock(key);
+        lock.lock();
+      }
+    });
+
+    vm1.invoke(new CacheSerializableRunnable("Lock timeout invalidating entry") {
+      @Override
+      public void run2() throws CacheException {
+        getOrCreateRootRegion().getCache().setLockTimeout(2);
+        Region r = getOrCreateRootRegion().createSubregion(name, getGlobalAttrs());
+        try {
+          r.invalidate(key);
+          fail("invalidate() should have thrown TimeoutException");
+        } catch (TimeoutException ex) {
+          // pass
+        }
+      }
+    });
+  }
+
+  /**
+   * get lock in one VM, try to destroy in other
+   */
+  @Test
+  public void testDestroyLockTimeout() {
+    Host host = Host.getHost(0);
+    VM vm0 = host.getVM(0);
+    VM vm1 = host.getVM(1);
+    final String name = this.getUniqueName();
+    final Object key = new Integer(5);
+    vm0.invoke(new CacheSerializableRunnable("Get lock") {
+      @Override
+      public void run2() throws CacheException {
+        Region r = getOrCreateRootRegion().createSubregion(name, getGlobalAttrs());
+        Lock lock = r.getDistributedLock(key);
+        lock.lock();
+        r.put(key, "value");
+      }
+    });
+
+    vm1.invoke(new CacheSerializableRunnable("Lock timeout destroying entry") {
+      @Override
+      public void run2() throws CacheException {
+        getOrCreateRootRegion().getCache().setLockTimeout(2);
+        Region r = getOrCreateRootRegion().createSubregion(name, getGlobalAttrs());
+        r.get(key);
+        try {
+          r.destroy(key);
+          fail("destroy() should have thrown TimeoutException");
+        } catch (TimeoutException ex) {
+          // pass
+        }
+      }
+    });
+  }
+
+  /**
+   * get the lock, region.get(), region.put(), release lock
+   */
+  @Test
+  public void testLockGetPut() throws CacheException {
+    Host host = Host.getHost(0);
+    VM vm0 = host.getVM(0);
+    VM vm1 = host.getVM(1);
+    final String name = this.getUniqueName() + "-GLOBAL";
+    final Object key = new Integer(5);
+
+    // First, create region & entry, and lock the entry, in Master VM
+    Region r = getOrCreateRootRegion().createSubregion(name, getGlobalAttrs());
+    Lock lock = r.getDistributedLock(key);
+    lock.lock();
+    r.create(key, "value 1");
+    assertEquals("value 1", r.get(key));
+
+    // Now, make sure a locking operation times out in another VM
+    vm0.invoke(new CacheSerializableRunnable("Unsuccessful locking operation") {
+      @Override
+      public void run2() throws CacheException {
+        try {
+          getOrCreateRootRegion().getCache().setLockTimeout(2);
+          Region r2 = getOrCreateRootRegion().createSubregion(name, getGlobalAttrs());
+          assertEquals("value 1", r2.get(key));
+          r2.put(key, "wrong value");
+          fail("put() should have thrown TimeoutException");
+        } catch (TimeoutException ex) {
+          // pass
+        }
+      }
+    });
+
+    // Now, in Master, do another locking operation, then release the lock
+    r.put(key, "value 2");
+    lock.unlock();
+
+    // Finally, successfully perform a locking in other VM
+    vm1.invoke(new CacheSerializableRunnable("Successful locking operation") {
+      @Override
+      public void run2() throws CacheException {
+        getOrCreateRootRegion().getCache().setLockTimeout(2);
+        Region r2 = getOrCreateRootRegion().createSubregion(name, getGlobalAttrs());
+        assertEquals("value 2", r2.get(key));
+        r2.put(key, "value 3");
+      }
+    });
+
+    assertEquals("value 3", r.get(key));
+
+  }
+
+  /**
+   * Test Region.getRegionDistributedLock(), calling lock() and then unlock()
+   */
+  @Test
+  public void testRegionDistributedLockSimple() throws CacheException {
+    final String name = this.getUniqueName();
+    Region r = getOrCreateRootRegion().createSubregion(name, getGlobalAttrs());
+    Lock lock = r.getRegionDistributedLock();
+    lock.lock();
+    lock.unlock();
+  }
+
+}

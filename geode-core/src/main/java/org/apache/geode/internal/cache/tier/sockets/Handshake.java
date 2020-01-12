@@ -23,10 +23,12 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Properties;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
+import org.apache.geode.LogWriter;
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.ServerRefusedConnectionException;
 import org.apache.geode.cache.client.internal.ClientSideHandshakeImpl;
@@ -34,14 +36,13 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.ClassLoadUtil;
 import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.tier.ConnectionProxy;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.security.CallbackInstantiator;
 import org.apache.geode.internal.security.Credentials;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.security.AuthInitialize;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.AuthenticationRequiredException;
@@ -73,6 +74,7 @@ public abstract class Handshake {
    *
    * @since GemFire 5.7
    */
+  @MutableForTesting
   protected static Version currentClientVersion = ConnectionProxy.VERSION;
 
   protected SecurityService securityService;
@@ -132,8 +134,8 @@ public abstract class Handshake {
    *
    * @since GemFire 5.7
    */
-  public static byte clientConflationForTesting = 0;
-  public static boolean setClientConflationForTesting = false;
+  public static final byte clientConflationForTesting = 0;
+  public static final boolean setClientConflationForTesting = false;
 
   /** Constructor used for subclasses */
   protected Handshake() {}
@@ -276,7 +278,7 @@ public abstract class Handshake {
       boolean hasCredentials) {
     if (requireAuthentication && !hasCredentials) {
       throw new AuthenticationRequiredException(
-          LocalizedStrings.HandShake_NO_SECURITY_CREDENTIALS_ARE_PROVIDED.toLocalizedString());
+          "No security credentials are provided");
     }
   }
 
@@ -300,7 +302,7 @@ public abstract class Handshake {
       throw ex;
     } catch (Exception ex) {
       throw new AuthenticationFailedException(
-          LocalizedStrings.HandShake_FAILURE_IN_READING_CREDENTIALS.toLocalizedString(), ex);
+          "Failure in reading credentials", ex);
     }
     return credentials;
   }
@@ -389,8 +391,8 @@ public abstract class Handshake {
   }
 
   public static Properties getCredentials(String authInitMethod, Properties securityProperties,
-      DistributedMember server, boolean isPeer, InternalLogWriter logWriter,
-      InternalLogWriter securityLogWriter) throws AuthenticationRequiredException {
+      DistributedMember server, boolean isPeer, LogWriter logWriter,
+      LogWriter securityLogWriter) throws AuthenticationRequiredException {
 
     Properties credentials = null;
     // if no authInit, Try to extract the credentials directly from securityProps
@@ -412,8 +414,8 @@ public abstract class Handshake {
       throw ex;
     } catch (Exception ex) {
       throw new AuthenticationRequiredException(
-          LocalizedStrings.HandShake_FAILED_TO_ACQUIRE_AUTHINITIALIZE_METHOD_0
-              .toLocalizedString(authInitMethod),
+          String.format("Failed to acquire AuthInitialize method %s",
+              authInitMethod),
           ex);
     }
     return credentials;
@@ -460,7 +462,7 @@ public abstract class Handshake {
       throw ex;
     } catch (Exception ex) {
       throw new AuthenticationFailedException(
-          LocalizedStrings.HandShake_FAILURE_IN_READING_CREDENTIALS.toLocalizedString(), ex);
+          "Failure in reading credentials", ex);
     }
     return credentials;
   }

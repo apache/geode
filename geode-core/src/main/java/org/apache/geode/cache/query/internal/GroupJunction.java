@@ -43,6 +43,7 @@ public class GroupJunction extends AbstractGroupOrRangeJunction {
 
   }
 
+  @Override
   void addUnevaluatedFilterOperands(List unevaluatedFilterOps) {
     this.unevaluatedFilterOperands = unevaluatedFilterOps;
   }
@@ -177,6 +178,7 @@ public class GroupJunction extends AbstractGroupOrRangeJunction {
     return createOrganizedOperandsObject(indexCount, evalOperands);
   }
 
+  @Override
   public int getSizeEstimate(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     return 1;

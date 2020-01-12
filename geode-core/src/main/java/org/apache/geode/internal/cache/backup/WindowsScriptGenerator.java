@@ -50,13 +50,15 @@ class WindowsScriptGenerator implements ScriptGenerator {
   @Override
   public void writeCopyDirectoryContents(BufferedWriter writer, File backup, File original,
       boolean backupHasFiles) throws IOException {
-    writer.write(MKDIR + " \"" + original + "\"");
-    writer.newLine();
-    writer.write(ROBOCOPY_COMMAND + " \"" + backup + "\" \"" + original + "\" "
-        + ROBOCOPY_COPY_SUBDIRS + " " + ROBOCOPY_NO_JOB_HEADER + " " + ROBOCOPY_NO_JOB_SUMMARY);
-    writer.newLine();
-    writer.write(ERROR_CHECK);
-    writer.newLine();
+    if (backupHasFiles) {
+      writer.write(MKDIR + " \"" + original + "\"");
+      writer.newLine();
+      writer.write(ROBOCOPY_COMMAND + " \"" + backup + "\" \"" + original + "\" "
+          + ROBOCOPY_COPY_SUBDIRS + " " + ROBOCOPY_NO_JOB_HEADER + " " + ROBOCOPY_NO_JOB_SUMMARY);
+      writer.newLine();
+      writer.write(ERROR_CHECK);
+      writer.newLine();
+    }
   }
 
   @Override

@@ -212,6 +212,7 @@ public class RegionConfiguration implements DataSerializable {
     return this.enableDebugListener;
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeString(this.regionName, out);
     DataSerializer.writeString(this.regionAttributesId, out);
@@ -223,6 +224,7 @@ public class RegionConfiguration implements DataSerializable {
     DataSerializer.writeString(this.cacheWriterName, out);
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.regionName = DataSerializer.readString(in);
     this.regionAttributesId = DataSerializer.readString(in);
@@ -239,6 +241,7 @@ public class RegionConfiguration implements DataSerializable {
    */
   public static void registerInstantiator(int id) {
     Instantiator.register(new Instantiator(RegionConfiguration.class, id) {
+      @Override
       public DataSerializable newInstance() {
         return new RegionConfiguration();
       }

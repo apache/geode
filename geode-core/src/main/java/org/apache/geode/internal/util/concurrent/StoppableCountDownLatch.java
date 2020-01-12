@@ -14,11 +14,14 @@
  */
 package org.apache.geode.internal.util.concurrent;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
+import static org.apache.geode.util.internal.GeodeGlossary.GEMFIRE_PREFIX;
+
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.geode.CancelCriterion;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.Assert;
 
 /**
@@ -26,78 +29,101 @@ import org.apache.geode.internal.Assert;
  */
 public class StoppableCountDownLatch {
 
-  /**
-   * This is how often waiters will wake up to check for cancellation
-   */
-  static final long RETRY_TIME = Long
-      .getLong(DistributionConfig.GEMFIRE_PREFIX + "stoppable-retry-interval", 2000).longValue();
+  static final String RETRY_TIME_MILLIS_PROPERTY = GEMFIRE_PREFIX + "stoppable-retry-interval";
+  static final long RETRY_TIME_MILLIS_DEFAULT = 2000;
 
+  static final long RETRY_TIME_NANOS = MILLISECONDS.toNanos(
+      Long.getLong(RETRY_TIME_MILLIS_PROPERTY, RETRY_TIME_MILLIS_DEFAULT));
 
-  /**
-   * The underlying latch
-   */
-  private final CountDownLatch latch;
+  private final CountDownLatch delegate;
 
-  /**
-   * The cancellation criterion
-   */
   private final CancelCriterion stopper;
 
   /**
+   * This is how often waiters will wake up to check for cancellation
+   */
+  private final long retryIntervalNanos;
+
+  private final NanoTimer nanoTimer;
+
+  /**
+   * @param stopper the CancelCriterion to check before awaiting
    * @param count the number of times {@link #countDown} must be invoked before threads can pass
    *        through {@link #await()}
    *
    * @throws IllegalArgumentException if {@code count} is negative
    */
-  public StoppableCountDownLatch(CancelCriterion stopper, int count) {
+  public StoppableCountDownLatch(final CancelCriterion stopper, final int count) {
+    this(stopper, count, RETRY_TIME_NANOS, System::nanoTime);
+  }
+
+  StoppableCountDownLatch(final CancelCriterion stopper, final int count,
+      final long retryIntervalNanos, final NanoTimer nanoTimer) {
     Assert.assertTrue(stopper != null);
-    this.latch = new CountDownLatch(count);
+    delegate = new CountDownLatch(count);
     this.stopper = stopper;
+    this.retryIntervalNanos = retryIntervalNanos;
+    this.nanoTimer = nanoTimer;
   }
 
-  /**
-   * @throws InterruptedException
-   */
   public void await() throws InterruptedException {
-    for (;;) {
+    do {
       stopper.checkCancelInProgress(null);
-      if (latch.await(RETRY_TIME, TimeUnit.MILLISECONDS)) {
-        break;
-      }
-    }
-  }
-
-  /**
-   * @param msTimeout how long to wait in milliseconds
-   *
-   * @return true if it was unlatched
-   */
-  public boolean await(long msTimeout) throws InterruptedException {
-    stopper.checkCancelInProgress(null);
-    return latch.await(msTimeout, TimeUnit.MILLISECONDS);
+    } while (!delegate.await(retryIntervalNanos, NANOSECONDS));
   }
 
   public boolean await(final long timeout, final TimeUnit unit) throws InterruptedException {
     stopper.checkCancelInProgress(null);
-    return latch.await(timeout, unit);
-  }
-
-  public synchronized void countDown() {
-    latch.countDown();
+    long timeoutNanos = unit.toNanos(timeout);
+    if (timeoutNanos > retryIntervalNanos) {
+      return awaitWithCheck(timeoutNanos);
+    }
+    return delegate.await(timeoutNanos, NANOSECONDS);
   }
 
   /**
-   * @return the current count
+   * @param timeoutMillis how long to wait in milliseconds
+   *
+   * @return true if it was unlatched
    */
+  public boolean await(final long timeoutMillis) throws InterruptedException {
+    stopper.checkCancelInProgress(null);
+    long timeoutNanos = MILLISECONDS.toNanos(timeoutMillis);
+    if (timeoutNanos > retryIntervalNanos) {
+      return awaitWithCheck(timeoutNanos);
+    }
+    return delegate.await(timeoutNanos, NANOSECONDS);
+  }
+
+  public void countDown() {
+    delegate.countDown();
+  }
+
   public long getCount() {
-    return latch.getCount();
+    return delegate.getCount();
   }
 
-  /**
-   * @return a string identifying this latch, as well as its state
-   */
   @Override
   public String toString() {
-    return "(Stoppable) " + latch.toString();
+    return "(Stoppable) " + delegate;
+  }
+
+  long retryIntervalNanos() {
+    return retryIntervalNanos;
+  }
+
+  private boolean awaitWithCheck(final long timeoutNanos) throws InterruptedException {
+    long startNanos = nanoTimer.nanoTime();
+    boolean unlatched;
+    do {
+      stopper.checkCancelInProgress(null);
+      unlatched = delegate.await(retryIntervalNanos, NANOSECONDS);
+    } while (!unlatched && nanoTimer.nanoTime() - startNanos < timeoutNanos);
+    return unlatched;
+  }
+
+  @FunctionalInterface
+  interface NanoTimer {
+    long nanoTime();
   }
 }

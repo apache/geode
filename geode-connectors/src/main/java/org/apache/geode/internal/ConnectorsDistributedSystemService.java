@@ -20,8 +20,6 @@ import java.util.Collection;
 
 import org.apache.geode.distributed.internal.DistributedSystemService;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.InternalDataSerializer;
 
 public class ConnectorsDistributedSystemService implements DistributedSystemService {
   @Override
@@ -35,7 +33,7 @@ public class ConnectorsDistributedSystemService implements DistributedSystemServ
   }
 
   @Override
-  public Collection<String> getSerializationWhitelist() throws IOException {
+  public Collection<String> getSerializationAcceptlist() throws IOException {
     URL sanctionedSerializables = ClassPathLoader.getLatest().getResource(getClass(),
         "sanctioned-geode-connectors-serializables.txt");
     return InternalDataSerializer.loadClassNames(sanctionedSerializables);

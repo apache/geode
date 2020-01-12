@@ -16,6 +16,7 @@ package org.apache.geode.cache.query.internal;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -45,6 +46,9 @@ public class ResultsCollectionPdxDeserializerWrapper implements SelectResults {
 
   @Override
   public Iterator iterator() {
+    if (results == null) {
+      return new SelectResultsPdxInstanceIterator(Collections.emptyIterator());
+    }
     return new SelectResultsPdxInstanceIterator(results.iterator());
   }
 

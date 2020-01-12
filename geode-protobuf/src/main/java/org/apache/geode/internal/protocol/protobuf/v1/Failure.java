@@ -17,9 +17,7 @@ package org.apache.geode.internal.protocol.protobuf.v1;
 import java.util.function.Function;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ExceptionWithErrorCode;
-import org.apache.geode.internal.protocol.protobuf.v1.state.exception.OperationNotAuthorizedException;
 
 @Experimental
 public class Failure<SuccessType> implements Result<SuccessType> {

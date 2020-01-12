@@ -15,6 +15,7 @@
 package org.apache.geode.cache.query.internal;
 
 import java.util.Comparator;
+import java.util.Objects;
 
 import org.apache.geode.cache.query.SelectResults;
 
@@ -30,6 +31,7 @@ class SelectResultsComparator implements Comparator {
   /**
    * Sort the array in ascending order of collection sizes.
    */
+  @Override
   public int compare(Object obj1, Object obj2) {
     if (!(obj1 instanceof SelectResults) || !(obj2 instanceof SelectResults)) {
       Support.assertionFailed("The objects need to be of type SelectResults");
@@ -52,5 +54,10 @@ class SelectResultsComparator implements Comparator {
   @Override
   public boolean equals(Object o1) {
     return this == o1;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(this);
   }
 }

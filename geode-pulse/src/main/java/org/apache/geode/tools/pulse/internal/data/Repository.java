@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Properties;
 import java.util.ResourceBundle;
 
 import org.apache.logging.log4j.LogManager;
@@ -37,12 +38,13 @@ public class Repository {
   private static final Logger logger = LogManager.getLogger();
 
   private static Repository instance = new Repository();
-  private HashMap<String, Cluster> clusterMap = new HashMap<String, Cluster>();
+  private HashMap<String, Cluster> clusterMap = new HashMap<>();
   private Boolean jmxUseLocator;
   private String host;
   private String port;
   private boolean useSSLLocator = false;
   private boolean useSSLManager = false;
+  private Properties javaSslProperties;
 
   Locale locale =
       new Locale(PulseConstants.APPLICATION_LANGUAGE, PulseConstants.APPLICATION_COUNTRY);
@@ -104,6 +106,13 @@ public class Repository {
     return this.pulseConfig;
   }
 
+  public Properties getJavaSslProperties() {
+    return javaSslProperties;
+  }
+
+  public void setJavaSslProperties(Properties javaSslProperties) {
+    this.javaSslProperties = javaSslProperties;
+  }
 
   /**
    * this will return a cluster already connected to the geode jmx manager for the user in the
@@ -140,6 +149,7 @@ public class Repository {
     Cluster data = clusterMap.remove(username);
     if (data != null) {
       try {
+        data.setStopUpdates(true);
         data.getJMXConnector().close();
       } catch (Exception e) {
         // We're logging out so this can be ignored

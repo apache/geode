@@ -22,9 +22,7 @@ import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.internal.ByteArrayDataInput;
 import org.apache.geode.internal.InternalStatisticsDisabledException;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.InitialImageOperation.Entry;
 import org.apache.geode.internal.cache.eviction.EvictionList;
 import org.apache.geode.internal.cache.versions.VersionSource;
@@ -34,6 +32,8 @@ import org.apache.geode.internal.offheap.StoredObject;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
+import org.apache.geode.internal.serialization.ByteArrayDataInput;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * Internal interface for a region entry. Note that a region is implemented with a ConcurrentHashMap
@@ -146,7 +146,7 @@ public interface RegionEntry {
 
   /**
    * Returns true if this entry does not exist. This is true if removal has started (value ==
-   * Token.REMOVED_PHASE1) or has completed (value == Token.REMOVED_PHASE2).
+   * Token.REMOVED_PHASE1) or has completed (value == Token.REMOVED_PHASE2) or is a TOMBSTONE.
    */
   boolean isRemoved();
 
@@ -298,9 +298,9 @@ public interface RegionEntry {
    * getInitialImage.
    *
    * <p>
-   * put if LOCAL_INVALID and nonexistant<br>
-   * put if INVALID and nonexistant, recovered, or LOCAL_INVALID<br>
-   * put if valid and nonexistant, recovered, or LOCAL_INVALID
+   * put if LOCAL_INVALID and nonexistent<br>
+   * put if INVALID and nonexistent, recovered, or LOCAL_INVALID<br>
+   * put if valid and nonexistent, recovered, or LOCAL_INVALID
    *
    * <p>
    * REGION_INVALIDATED: (special case)<br>
@@ -461,4 +461,6 @@ public interface RegionEntry {
   @Retained(ABSTRACT_REGION_ENTRY_PREPARE_VALUE_FOR_CACHE)
   Object prepareValueForCache(RegionEntryContext context, Object value, EntryEventImpl event,
       boolean isEntryUpdate);
+
+  boolean isEvicted();
 }

@@ -19,11 +19,13 @@ import java.lang.reflect.Field;
 /**
  * Provides support for serialization of private fields by reflection.
  */
-public class FieldSerializationUtils {
+class FieldSerializationUtils {
 
-  protected FieldSerializationUtils() {}
+  FieldSerializationUtils() {
+    // nothing
+  }
 
-  public static Object readField(final Class targetClass, final Object targetInstance,
+  static Object readField(final Class targetClass, final Object targetInstance,
       final String fieldName) {
     try {
       Field field = targetClass.getDeclaredField(fieldName);
@@ -34,7 +36,7 @@ public class FieldSerializationUtils {
     }
   }
 
-  public static void writeField(final Class targetClass, final Object targetInstance,
+  static void writeField(final Class targetClass, final Object targetInstance,
       final String fieldName, final Object value) {
     try {
       Field field = targetClass.getDeclaredField(fieldName);

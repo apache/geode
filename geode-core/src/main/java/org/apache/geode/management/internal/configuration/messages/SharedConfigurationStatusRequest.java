@@ -20,10 +20,6 @@ import java.io.IOException;
 
 import org.apache.geode.DataSerializable;
 
-/****
- *
- *
- */
 public class SharedConfigurationStatusRequest implements DataSerializable {
 
   private static final long serialVersionUID = 1L;

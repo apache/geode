@@ -21,13 +21,10 @@ import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.CacheProfile;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class CacheProfileTest {
 
   private ClusterDistributionManager dm;
@@ -44,7 +41,7 @@ public class CacheProfileTest {
     region = mock(LocalRegion.class);
 
     when(dm.getCache()).thenReturn(cache);
-    when(cache.getRegionByPath(adviseePath)).thenReturn(region);
+    when(cache.getInternalRegionByPath(adviseePath)).thenReturn(region);
   }
 
   @Test
@@ -52,6 +49,6 @@ public class CacheProfileTest {
     CacheProfile profile = new CacheProfile();
     profile.processIncoming(dm, adviseePath, false, false, null);
     verify(dm, times(1)).getCache();
-    verify(cache, times(1)).getRegionByPath(adviseePath);
+    verify(cache, times(1)).getInternalRegionByPath(adviseePath);
   }
 }

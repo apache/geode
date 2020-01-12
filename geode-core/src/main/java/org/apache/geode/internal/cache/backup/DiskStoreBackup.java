@@ -31,8 +31,8 @@ public class DiskStoreBackup {
   private final Set<Oplog> deferredCrfDeletes = new HashSet<>();
   private final Set<Oplog> deferredDrfDeletes = new HashSet<>();
 
-  public DiskStoreBackup(Oplog[] allOplogs) {
-    this.pendingBackup = new HashSet<>(Arrays.asList(allOplogs));
+  DiskStoreBackup(Oplog[] allOplogs) {
+    pendingBackup = new HashSet<>(Arrays.asList(allOplogs));
   }
 
   /**
@@ -41,7 +41,7 @@ public class DiskStoreBackup {
    * @return true if the delete has been deferred. False if this oplog should be deleted
    *         immediately.
    */
-  public synchronized boolean deferCrfDelete(Oplog oplog) {
+  synchronized boolean deferCrfDelete(Oplog oplog) {
     if (pendingBackup.contains(oplog)) {
       deferredCrfDeletes.add(oplog);
       return true;
@@ -56,7 +56,7 @@ public class DiskStoreBackup {
    * @return true if the delete has been deferred. False if this oplog should be deleted
    *         immediately.
    */
-  public synchronized boolean deferDrfDelete(Oplog oplog) {
+  synchronized boolean deferDrfDelete(Oplog oplog) {
     if (pendingBackup.contains(oplog)) {
       deferredDrfDeletes.add(oplog);
       return true;
@@ -65,11 +65,11 @@ public class DiskStoreBackup {
     return false;
   }
 
-  public synchronized Set<Oplog> getPendingBackup() {
+  synchronized Set<Oplog> getPendingBackup() {
     return new HashSet<>(pendingBackup);
   }
 
-  public synchronized void backupFinished(Oplog oplog) {
+  synchronized void backupFinished(Oplog oplog) {
     pendingBackup.remove(oplog);
     if (deferredCrfDeletes.remove(oplog)) {
       oplog.deleteCRFFileOnly();
@@ -79,7 +79,7 @@ public class DiskStoreBackup {
     }
   }
 
-  public synchronized void cleanup() {
+  synchronized void cleanup() {
     for (Oplog oplog : getPendingBackup()) {
       backupFinished(oplog);
     }

@@ -14,14 +14,15 @@
  */
 package org.apache.geode.cache.query.internal;
 
-import java.util.*;
+import java.util.Set;
 
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.query.*;
+import org.apache.geode.cache.query.NameResolutionException;
+import org.apache.geode.cache.query.RegionNotFoundException;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 
 /**
@@ -39,6 +40,7 @@ public class CompiledRegion extends AbstractCompiledValue {
     this.regionPath = regionPath;
   }
 
+  @Override
   public int getType() {
     return RegionPath;
   }
@@ -47,6 +49,7 @@ public class CompiledRegion extends AbstractCompiledValue {
     return this.regionPath;
   }
 
+  @Override
   public Object evaluate(ExecutionContext context) throws RegionNotFoundException {
     Region rgn;
     Cache cache = context.getCache();
@@ -83,7 +86,7 @@ public class CompiledRegion extends AbstractCompiledValue {
         throw new CacheClosedException();
       }
       throw new RegionNotFoundException(
-          LocalizedStrings.CompiledRegion_REGION_NOT_FOUND_0.toLocalizedString(this.regionPath));
+          String.format("Region not found: %s", this.regionPath));
     }
 
     if (context.isCqQueryContext()) {

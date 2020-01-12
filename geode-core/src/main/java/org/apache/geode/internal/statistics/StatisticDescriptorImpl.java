@@ -14,8 +14,9 @@
  */
 package org.apache.geode.internal.statistics;
 
-import org.apache.geode.*;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.StatisticDescriptor;
+import org.apache.geode.Statistics;
+import org.apache.geode.StatisticsType;
 
 /**
  * Describes an individual statistic whose value is updated by an application and may be archived by
@@ -28,23 +29,11 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
  */
 public class StatisticDescriptorImpl implements StatisticDescriptor {
 
-  /** A constant for an <code>byte</code> type */
-  static final byte BYTE = (byte) 3;
-
-  /** A constant for an <code>short</code> type */
-  static final byte SHORT = (byte) 4;
-
-  /** A constant for an <code>int</code> type */
-  static final byte INT = (byte) 5;
-
   /** A constant for an <code>long</code> type */
-  static final byte LONG = (byte) 6;
-
-  /** A constant for an <code>float</code> type */
-  static final byte FLOAT = (byte) 7;
+  static final byte LONG = StatArchiveFormat.LONG_CODE;
 
   /** A constant for an <code>double</code> type */
-  static final byte DOUBLE = (byte) 8;
+  static final byte DOUBLE = StatArchiveFormat.DOUBLE_CODE;
 
   //////////////////// Instance Fields ////////////////////
 
@@ -84,48 +73,14 @@ public class StatisticDescriptorImpl implements StatisticDescriptor {
    */
   public static String getTypeCodeName(int code) {
     switch (code) {
-      case BYTE:
-        return "byte";
-      case SHORT:
-        return "short";
-      case FLOAT:
-        return "float";
-      case INT:
-        return "int";
       case LONG:
         return "long";
       case DOUBLE:
         return "double";
       default:
         throw new IllegalArgumentException(
-            LocalizedStrings.StatisticDescriptorImpl_UNKNOWN_TYPE_CODE_0
-                .toLocalizedString(Integer.valueOf(code)));
-    }
-  }
-
-  /**
-   * Returns the number of bits needed to represent a value of the given type
-   *
-   * @throws IllegalArgumentException <code>code</code> is an unknown type
-   */
-  public static int getTypeCodeBits(int code) {
-    switch (code) {
-      case BYTE:
-        return 8;
-      case SHORT:
-        return 16;
-      case FLOAT:
-        return 32;
-      case INT:
-        return 32;
-      case LONG:
-        return 64;
-      case DOUBLE:
-        return 64;
-      default:
-        throw new IllegalArgumentException(
-            LocalizedStrings.StatisticDescriptorImpl_UNKNOWN_TYPE_CODE_0
-                .toLocalizedString(Integer.valueOf(code)));
+            String.format("Unknown type code: %s",
+                Integer.valueOf(code)));
     }
   }
 
@@ -136,28 +91,20 @@ public class StatisticDescriptorImpl implements StatisticDescriptor {
    */
   public static Class<?> getTypeCodeClass(byte code) {
     switch (code) {
-      case BYTE:
-        return byte.class;
-      case SHORT:
-        return short.class;
-      case FLOAT:
-        return float.class;
-      case INT:
-        return int.class;
       case LONG:
         return long.class;
       case DOUBLE:
         return double.class;
       default:
         throw new IllegalArgumentException(
-            LocalizedStrings.StatisticDescriptorImpl_UNKNOWN_TYPE_CODE_0
-                .toLocalizedString(Integer.valueOf(code)));
+            String.format("Unknown type code: %s",
+                Integer.valueOf(code)));
     }
   }
 
   public static StatisticDescriptor createIntCounter(String name, String description, String units,
       boolean isLargerBetter) {
-    return new StatisticDescriptorImpl(name, INT, description, units, true, isLargerBetter);
+    return createLongCounter(name, description, units, isLargerBetter);
   }
 
   public static StatisticDescriptor createLongCounter(String name, String description, String units,
@@ -172,7 +119,7 @@ public class StatisticDescriptorImpl implements StatisticDescriptor {
 
   public static StatisticDescriptor createIntGauge(String name, String description, String units,
       boolean isLargerBetter) {
-    return new StatisticDescriptorImpl(name, INT, description, units, false, isLargerBetter);
+    return createLongGauge(name, description, units, isLargerBetter);
   }
 
   public static StatisticDescriptor createLongGauge(String name, String description, String units,
@@ -227,34 +174,37 @@ public class StatisticDescriptorImpl implements StatisticDescriptor {
 
   //////////////////// StatisticDescriptor Methods ////////////////////
 
+  @Override
   public String getName() {
     return this.name;
   }
 
+  @Override
   public String getDescription() {
     return this.description;
   }
 
+  @Override
   public Class<?> getType() {
     return getTypeCodeClass(this.typeCode);
   }
 
-  public int getStorageBits() {
-    return getTypeCodeBits(this.typeCode);
-  }
-
+  @Override
   public boolean isCounter() {
     return this.isCounter;
   }
 
+  @Override
   public boolean isLargerBetter() {
     return this.isLargerBetter;
   }
 
+  @Override
   public String getUnit() {
     return this.unit;
   }
 
+  @Override
   public int getId() {
     // if (this.id == INVALID_OFFSET) {
     // String s = "The id has not been initialized yet.";
@@ -267,16 +217,14 @@ public class StatisticDescriptorImpl implements StatisticDescriptor {
 
   public Number getNumberForRawBits(long bits) {
     switch (this.typeCode) {
-      case StatisticDescriptorImpl.INT:
-        return (int) bits;
       case StatisticDescriptorImpl.LONG:
         return bits;
       case StatisticDescriptorImpl.DOUBLE:
         return Double.longBitsToDouble(bits);
       default:
         throw new RuntimeException(
-            LocalizedStrings.StatisticsImpl_UNEXPECTED_STAT_DESCRIPTOR_TYPE_CODE_0
-                .toLocalizedString(Byte.valueOf(this.typeCode)));
+            String.format("unexpected stat descriptor type code: %s",
+                Byte.valueOf(this.typeCode)));
     }
   }
 
@@ -305,18 +253,9 @@ public class StatisticDescriptorImpl implements StatisticDescriptor {
    *
    * @see #getName
    */
+  @Override
   public int compareTo(StatisticDescriptor o) {
     return this.getName().compareTo(o.getName());
-  }
-
-  public int checkInt() {
-    if (this.typeCode != INT) {
-      throw new IllegalArgumentException(
-          LocalizedStrings.StatisticDescriptorImpl_THE_STATISTIC_0_WITH_ID_1_IS_OF_TYPE_2_AND_IT_WAS_EXPECTED_TO_BE_AN_INT
-              .toLocalizedString(new Object[] {getName(), Integer.valueOf(getId()),
-                  StatisticDescriptorImpl.getTypeCodeName(getTypeCode())}));
-    }
-    return this.id;
   }
 
   public int checkLong() {
@@ -336,8 +275,9 @@ public class StatisticDescriptorImpl implements StatisticDescriptor {
   public int checkDouble() {
     if (this.typeCode != DOUBLE) {
       throw new IllegalArgumentException(
-          LocalizedStrings.StatisticDescriptorImpl_THE_STATISTIC_0_WITH_ID_1_IS_OF_TYPE_2_AND_IT_WAS_EXPECTED_TO_BE_A_DOUBLE
-              .toLocalizedString(new Object[] {getName(), Integer.valueOf(getId()),
+          String.format(
+              "The statistic %s with id %s is of type %s and it was expected to be a double.",
+              new Object[] {getName(), Integer.valueOf(getId()),
                   StatisticDescriptorImpl.getTypeCodeName(getTypeCode())}));
     }
     return this.id;

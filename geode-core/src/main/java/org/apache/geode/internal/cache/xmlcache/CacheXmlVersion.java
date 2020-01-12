@@ -14,7 +14,11 @@
  */
 package org.apache.geode.internal.cache.xmlcache;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.geode.annotations.Immutable;
 
 /**
  * {@link Enum} for Cache XML versions. Resolves issues with old String based comparisons. Under the
@@ -48,11 +52,15 @@ public enum CacheXmlVersion {
   GEODE_1_0(CacheXml.VERSION_1_0, null, null, CacheXml.SCHEMA_1_0_LOCATION,
       CacheXml.GEODE_NAMESPACE);
 
-  private static final HashMap<String, CacheXmlVersion> valuesForVersion = new HashMap<>();
+  @Immutable
+  private static final Map<String, CacheXmlVersion> valuesForVersion;
   static {
+    HashMap<String, CacheXmlVersion> valuesForVersionMap = new HashMap<>();
     for (final CacheXmlVersion cacheXmlVersion : values()) {
-      valuesForVersion.put(cacheXmlVersion.getVersion(), cacheXmlVersion);
+      valuesForVersionMap.put(cacheXmlVersion.getVersion(), cacheXmlVersion);
     }
+
+    valuesForVersion = Collections.unmodifiableMap(valuesForVersionMap);
   }
 
   private final String version;

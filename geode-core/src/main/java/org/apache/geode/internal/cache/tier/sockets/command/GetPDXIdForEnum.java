@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.MessageType;
@@ -28,6 +29,7 @@ import org.apache.geode.pdx.internal.TypeRegistry;
 
 public class GetPDXIdForEnum extends BaseCommand {
 
+  @Immutable
   private static final GetPDXIdForEnum singleton = new GetPDXIdForEnum();
 
   public static Command getCommand() {
@@ -45,10 +47,6 @@ public class GetPDXIdForEnum extends BaseCommand {
       logger.debug("{}: Received get pdx id for enum request ({} parts) from {}",
           serverConnection.getName(), clientMessage.getNumberOfParts(),
           serverConnection.getSocketString());
-    }
-
-    if (!ServerConnection.allowInternalMessagesWithoutCredentials) {
-      serverConnection.getAuthzRequest();
     }
 
     EnumInfo enumInfo = (EnumInfo) clientMessage.getPart(0).getObject();

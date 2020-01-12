@@ -29,14 +29,14 @@ Use the following guidelines to create startup and shutdown procedures and scrip
 
 You should follow certain order guidelines when starting your <%=vars.product_name%> system.
 
-Start server-distributed systems before you start their client applications. In each distributed system, follow these guidelines for member startup:
+Start servers before you start their client applications. In each cluster, follow these guidelines for member startup:
 
 -   Start locators first. See [Running <%=vars.product_name%> Locator Processes](running_the_locator.html) for examples of locator start up commands.
 -   Start cache servers before the rest of your processes unless the implementation requires that other processes be started ahead of them. See [Running <%=vars.product_name%> Server Processes](running_the_cacheserver.html) for examples of server start up commands.
--   If your distributed system uses both persistent replicated and non-persistent replicated regions, you should start up all the persistent replicated members in parallel before starting the non-persistent regions. This way, persistent members will not delay their startup for other persistent members with later data.
+-   If your cluster uses both persistent replicated and non-persistent replicated regions, you should start up all the persistent replicated members in parallel before starting the non-persistent regions. This way, persistent members will not delay their startup for other persistent members with later data.
 -   For a system that includes persistent regions, see [Start Up and Shut Down with Disk Stores](../../managing/disk_storage/starting_system_with_disk_stores.html).
 -   If you are running producer processes and consumer or event listener processes, start the consumers first. This ensures the consumers and listeners do not miss any notifications or updates.
--   If you are starting up your locators and peer members all at once, you can use the `locator-wait-time` property (in seconds) upon process start up. This timeout allows peers to wait for the locators to finish starting up before attempting to join the distributed system. If a process has been configured to wait for a locator to start, it will log an info-level message
+-   If you are starting up your locators and peer members all at once, you can use the `locator-wait-time` property (in seconds) upon process start up. This timeout allows peers to wait for the locators to finish starting up before attempting to join the cluster. If a process has been configured to wait for a locator to start, it will log an info-level message
 
     > `GemFire startup was unable to contact a                             locator. Waiting for one to start. Configured locators are                             frodo[12345],pippin[12345]. `
 
@@ -60,7 +60,7 @@ gfsh>revoke missing-disk-store --id=60399215-532b-406f-b81f-9b5bd8d1b55a
 ```
 
 **Note:**
-This `gfsh` commands require that you are connected to the distributed system via a JMX Manager node.
+This `gfsh` commands require that you are connected to the cluster via a JMX Manager node.
 
 ## <a id="starting_up_shutting_down__section_mnx_4cp_cv" class="no-quick-link"></a>Shutting Down the System
 
@@ -68,7 +68,7 @@ Shut down your <%=vars.product_name%> system by using either the `gfsh` `shutdow
 
 ## <a id="starting_up_shutting_down__section_0EB4DDABB6A348BA83B786EEE7C84CF1" class="no-quick-link"></a>Using the shutdown Command
 
-If you are using persistent regions, (members are persisting data to disk), you should use the `gfsh` `shutdown` command to stop the running system in an orderly fashion. This command synchronizes persistent partitioned regions before shutting down, which makes the next startup of the distributed system as efficient as possible.
+If you are using persistent regions, (members are persisting data to disk), you should use the `gfsh` `shutdown` command to stop the running system in an orderly fashion. This command synchronizes persistent partitioned regions before shutting down, which makes the next startup of the cluster as efficient as possible.
 
 If possible, all members should be running before you shut them down so synchronization can occur. Shut down the system using the following `gfsh` command:
 
@@ -98,11 +98,11 @@ gfsh>shutdown --include-locators=true --time-out=60
 
 ## <a id="starting_up_shutting_down__section_A07D40BC118544D0984860A3B4A5CB29" class="no-quick-link"></a>Shutting Down System Members Individually
 
-If you are not using persistent regions, you can shut down the distributed system by shutting down each member in the reverse order of their startup. (See [Starting Up Your System](#starting_up_shutting_down__section_3D111558326D4A38BE48C17D44BB66DB) for the recommended order of member startup.)
+If you are not using persistent regions, you can shut down the cluster by shutting down each member in the reverse order of their startup. (See [Starting Up Your System](#starting_up_shutting_down__section_3D111558326D4A38BE48C17D44BB66DB) for the recommended order of member startup.)
 
-Shut down the distributed system members according to the type of member. For example, use the following mechanisms to shut down members:
+Shut down the cluster members according to the type of member. For example, use the following mechanisms to shut down members:
 
--   Use the appropriate mechanism to shut down any <%=vars.product_name%>-connected client applications that are running in the distributed system.
+-   Use the appropriate mechanism to shut down any <%=vars.product_name%>-connected client applications that are running in the cluster.
 -   Shut down any cache servers. To shut down a server, issue the following `gfsh` command:
 
     ``` pre
@@ -135,7 +135,7 @@ mechanism to place the system in an end state that will wait forever to
 reconnect to the killed server,
 and there will be no way to restart that killed server.
 If a `kill` command appears the only way to rid the system of a server,
-then `kill` *all* the processes of the distributed system
+then `kill` *all* the processes of the cluster
 or use `kill -INT`, which will allow an orderly shutdown of the process. 
 
 ## <a id="starting_up_shutting_down__section_7CF680CF8A924C57A7052AE2F975DA81" class="no-quick-link"></a>Option for System Member Shutdown Behavior

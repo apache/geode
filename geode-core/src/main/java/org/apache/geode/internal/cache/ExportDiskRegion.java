@@ -76,7 +76,6 @@ public class ExportDiskRegion extends ValidatingDiskRegion {
      * Write a batch of entries to the export system. The value in RecoveredEntry is will not be
      * null, so there is no need to fault in the value in the implementor
      *
-     * @throws IOException
      */
     void writeBatch(Map<Object, RecoveredEntry> entries) throws IOException;
   }

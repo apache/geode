@@ -15,8 +15,10 @@
 package org.apache.geode.cache.lucene.internal.repository.serializer;
 
 import static org.apache.geode.cache.lucene.internal.repository.serializer.SerializerTestHelper.invokeSerializer;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import org.apache.lucene.document.Document;
 import org.junit.Test;
@@ -24,12 +26,11 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.test.junit.categories.LuceneTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit test of the PdxFieldMapperJUnitTest. Tests that all field types are mapped correctly.
  */
-@Category({UnitTest.class, LuceneTest.class})
+@Category({LuceneTest.class})
 public class PdxFieldMapperJUnitTest {
 
   @Test

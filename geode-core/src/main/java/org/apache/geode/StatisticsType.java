@@ -15,6 +15,8 @@
 package org.apache.geode;
 
 
+import org.apache.geode.annotations.Immutable;
+
 /**
  * Used to describe a logical collection of statistics. These descriptions are used to create an
  * instance of {@link Statistics}.
@@ -25,6 +27,7 @@ package org.apache.geode;
  *
  * @since GemFire 3.0
  */
+@Immutable
 public interface StatisticsType {
 
   /**

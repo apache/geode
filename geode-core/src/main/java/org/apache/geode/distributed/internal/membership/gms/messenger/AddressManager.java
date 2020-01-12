@@ -34,8 +34,6 @@ import org.apache.geode.distributed.internal.membership.gms.Services;
  * "logical address" and requests physical addresses from the Discovery protocol that is normally in
  * a JGroups stack. We don't have one of these, so we need to maintain a mapping between logical and
  * physical addresses.
- *
- *
  */
 public class AddressManager extends Protocol {
 
@@ -81,7 +79,6 @@ public class AddressManager extends Protocol {
    * update the logical->physical address cache in UDP, which doesn't seem to be updated by UDP when
    * processing responses from FIND_MBRS
    *
-   * @param pd
    */
   private void updateUDPCache(PingData pd) {
     if (setPingData == null && !warningLogged) {
@@ -103,7 +100,7 @@ public class AddressManager extends Protocol {
    * find and initialize the method used to update UDP's address cache
    */
   private void findPingDataMethod() {
-    transport = (TP) getProtocolStack().getTransport();
+    transport = getProtocolStack().getTransport();
     try {
       setPingData = TP.class.getDeclaredMethod("setPingData", new Class<?>[] {PingData.class});
       setPingData.setAccessible(true);

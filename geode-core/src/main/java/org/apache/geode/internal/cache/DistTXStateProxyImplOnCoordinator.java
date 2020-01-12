@@ -35,8 +35,7 @@ import org.apache.geode.internal.cache.TXEntryState.DistTxThinEntryState;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.cache.tx.DistClientTXStateStub;
 import org.apache.geode.internal.cache.tx.DistTxEntryEvent;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.statistics.StatisticsClock;
 
 public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
 
@@ -47,20 +46,20 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
   private final HashMap<DistributedMember, DistTXCoordinatorInterface> target2realDeals =
       new HashMap<>();
 
-  private HashMap<LocalRegion, DistributedMember> rrTargets;
+  private HashMap<InternalRegion, DistributedMember> rrTargets;
 
   private Set<DistributedMember> txRemoteParticpants = null; // other than local
 
   private HashMap<String, ArrayList<DistTxThinEntryState>> txEntryEventMap = null;
 
   public DistTXStateProxyImplOnCoordinator(InternalCache cache, TXManagerImpl managerImpl, TXId id,
-      InternalDistributedMember clientMember) {
-    super(cache, managerImpl, id, clientMember);
+      InternalDistributedMember clientMember, StatisticsClock statisticsClock) {
+    super(cache, managerImpl, id, clientMember, statisticsClock);
   }
 
   public DistTXStateProxyImplOnCoordinator(InternalCache cache, TXManagerImpl managerImpl, TXId id,
-      boolean isjta) {
-    super(cache, managerImpl, id, isjta);
+      boolean isjta, StatisticsClock statisticsClock) {
+    super(cache, managerImpl, id, isjta, statisticsClock);
   }
 
   /*
@@ -99,7 +98,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
         }
         if (!phase2commitDone) {
           throw new TransactionInDoubtException(
-              LocalizedStrings.ClientTXStateStub_COMMIT_FAILED_ON_SERVER.toLocalizedString());
+              "Commit failed on cache server");
         }
       } else {
         if (logger.isDebugEnabled()) {
@@ -117,9 +116,6 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
       }
 
       inProgress = preserveTx;
-      if (this.synchRunnable != null) {
-        this.synchRunnable.abort();
-      }
     }
   }
 
@@ -140,17 +136,17 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
       ArrayList<DistTxEntryEvent> primaryTxOps =
           distPeerTxStateStub.getPrimaryTransactionalOperations();
       for (DistTxEntryEvent dtop : primaryTxOps) {
-        LocalRegion lr = dtop.getRegion();
+        InternalRegion internalRegion = dtop.getRegion();
         // replicas or secondaries
         Set<InternalDistributedMember> otherNodes = null;
-        if (lr instanceof PartitionedRegion) {
+        if (internalRegion instanceof PartitionedRegion) {
           Set<InternalDistributedMember> allNodes = ((PartitionedRegion) dtop.getRegion())
               .getRegionAdvisor().getBucketOwners(dtop.getKeyInfo().getBucketId());
           allNodes.remove(originalTarget);
           otherNodes = allNodes;
-        } else if (lr instanceof DistributedRegion) {
-          otherNodes =
-              ((DistributedRegion) lr).getCacheDistributionAdvisor().adviseInitializedReplicates();
+        } else if (internalRegion instanceof DistributedRegion) {
+          otherNodes = ((DistributedRegion) internalRegion).getCacheDistributionAdvisor()
+              .adviseInitializedReplicates();
           otherNodes.remove(originalTarget);
         }
 
@@ -164,7 +160,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
                 DistTXCoordinatorInterface newTxStub = null;
                 if (currentNode.equals(dm)) {
                   // [DISTTX] TODO add a test case for this condition?
-                  newTxStub = new DistTXStateOnCoordinator(this, false);
+                  newTxStub = new DistTXStateOnCoordinator(this, false, getStatisticsClock());
                 } else {
                   newTxStub = new DistPeerTXStateStub(this, dm, onBehalfOfClientMember);
                 }
@@ -209,7 +205,8 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
         DistTXCoordinatorInterface remoteTXStateStub = target2realDeals.get(remoteNode);
         if (remoteTXStateStub.isTxState()) {
           throw new UnsupportedOperationInTransactionException(
-              LocalizedStrings.DISTTX_TX_EXPECTED.toLocalizedString("DistPeerTXStateStub",
+              String.format("Expected %s during a distributed transaction but got %s",
+                  "DistPeerTXStateStub",
                   remoteTXStateStub.getClass().getSimpleName()));
         }
         try {
@@ -229,7 +226,8 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
       if (localTXState != null) {
         if (!localTXState.isTxState()) {
           throw new UnsupportedOperationInTransactionException(
-              LocalizedStrings.DISTTX_TX_EXPECTED.toLocalizedString("DistTXStateOnCoordinator",
+              String.format("Expected %s during a distributed transaction but got %s",
+                  "DistTXStateOnCoordinator",
                   localTXState.getClass().getSimpleName()));
         }
         localTXState.rollback();
@@ -281,9 +279,6 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
 
     } finally {
       inProgress = false;
-      if (this.synchRunnable != null) {
-        this.synchRunnable.abort();
-      }
     }
 
     /*
@@ -304,11 +299,11 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
    * {@inheritDoc}
    */
   @Override
-  public TXStateInterface getRealDeal(KeyInfo key, LocalRegion r) {
+  public TXStateInterface getRealDeal(KeyInfo key, InternalRegion r) {
     if (r != null) {
       target = null;
       // wait for the region to be initialized fixes bug 44652
-      r.waitOnInitialization(r.initializationLatchBeforeGetInitialImage);
+      r.waitOnInitialization(r.getInitializationLatchBeforeGetInitialImage());
       if (r instanceof PartitionedRegion) {
         target = getOwnerForKey(r, key);
       } else if (r instanceof BucketRegion) {
@@ -322,7 +317,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
     if (this.realDeal == null) {
       // assert (r != null);
       if (r == null) { // TODO: stop gap to get tests working
-        this.realDeal = new DistTXStateOnCoordinator(this, false);
+        this.realDeal = new DistTXStateOnCoordinator(this, false, getStatisticsClock());
         target = this.txMgr.getDM().getId();
       } else {
         // Code to keep going forward
@@ -330,17 +325,17 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
           // TODO [DISTTX] See what we need for client?
           this.realDeal =
               new DistClientTXStateStub(r.getCache(), r.getDistributionManager(), this, target, r);
-          if (r.scope.isDistributed()) {
+          if (r.getScope().isDistributed()) {
             if (txDistributedClientWarningIssued.compareAndSet(false, true)) {
-              logger.warn(LocalizedMessage.create(
-                  LocalizedStrings.TXStateProxyImpl_Distributed_Region_In_Client_TX,
-                  r.getFullPath()));
+              logger.warn(
+                  "Distributed region {} is being used in a client-initiated transaction.  The transaction will only affect servers and this client.  To keep from seeing this message use 'local' scope in client regions used in transactions.",
+                  r.getFullPath());
             }
           }
         } else {
           // (r != null) code block above
           if (target == null || target.equals(this.txMgr.getDM().getId())) {
-            this.realDeal = new DistTXStateOnCoordinator(this, false);
+            this.realDeal = new DistTXStateOnCoordinator(this, false, getStatisticsClock());
           } else {
             this.realDeal = new DistPeerTXStateStub(this, target, onBehalfOfClientMember);
           }
@@ -381,8 +376,9 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
       }
       if (!this.realDeal.isDistTx() || this.realDeal.isCreatedOnDistTxCoordinator()
           || !this.realDeal.isTxState()) {
-        throw new UnsupportedOperationInTransactionException(LocalizedStrings.DISTTX_TX_EXPECTED
-            .toLocalizedString("DistPeerTXStateStub", this.realDeal.getClass().getSimpleName()));
+        throw new UnsupportedOperationInTransactionException(
+            String.format("Expected %s during a distributed transaction but got %s",
+                "DistPeerTXStateStub", this.realDeal.getClass().getSimpleName()));
       }
       target2realDeals.put(target, (DistPeerTXStateStub) realDeal);
       if (logger.isDebugEnabled()) {
@@ -403,7 +399,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
   /*
    * [DISTTX] TODO Do some optimization
    */
-  private DistributedMember getRRTarget(KeyInfo key, LocalRegion r) {
+  private DistributedMember getRRTarget(KeyInfo key, InternalRegion r) {
     if (this.rrTargets == null) {
       this.rrTargets = new HashMap();
     }
@@ -449,7 +445,8 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
       DistTXCoordinatorInterface remoteTXStateStub = target2realDeals.get(remoteNode);
       if (remoteTXStateStub.isTxState()) {
         throw new UnsupportedOperationInTransactionException(
-            LocalizedStrings.DISTTX_TX_EXPECTED.toLocalizedString("DistPeerTXStateStub",
+            String.format("Expected %s during a distributed transaction but got %s",
+                "DistPeerTXStateStub",
                 remoteTXStateStub.getClass().getSimpleName()));
       }
       try {
@@ -470,7 +467,8 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
     if (localTXState != null) {
       if (!localTXState.isTxState()) {
         throw new UnsupportedOperationInTransactionException(
-            LocalizedStrings.DISTTX_TX_EXPECTED.toLocalizedString("DistTXStateOnCoordinator",
+            String.format("Expected %s during a distributed transaction but got %s",
+                "DistTXStateOnCoordinator",
                 localTXState.getClass().getSimpleName()));
       }
       localTXState.precommit();
@@ -576,7 +574,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
 
       if (sortedRegionName.size() != entryEventList.size()) {
         throw new UnsupportedOperationInTransactionException(
-            LocalizedStrings.DISTTX_TX_EXPECTED.toLocalizedString(
+            String.format("Expected %s during a distributed transaction but got %s",
                 "size of " + sortedRegionName.size() + " {" + sortedRegionName + "}"
                     + " for target=" + target,
                 entryEventList.size() + " {" + entryEventList + "}"));
@@ -604,8 +602,9 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
     for (String rName : sortedRegionMap) {
       ArrayList<DistTxThinEntryState> entryStates = this.txEntryEventMap.get(rName);
       if (entryStates == null) {
-        throw new UnsupportedOperationInTransactionException(LocalizedStrings.DISTTX_TX_EXPECTED
-            .toLocalizedString("entryStates for " + rName + " at target " + target, "null"));
+        throw new UnsupportedOperationInTransactionException(
+            String.format("Expected %s during a distributed transaction but got %s",
+                "entryStates for " + rName + " at target " + target, "null"));
       }
       entryEventList.add(entryStates);
     }
@@ -637,7 +636,8 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
       DistTXCoordinatorInterface remoteTXStateStub = target2realDeals.get(remoteNode);
       if (remoteTXStateStub.isTxState()) {
         throw new UnsupportedOperationInTransactionException(
-            LocalizedStrings.DISTTX_TX_EXPECTED.toLocalizedString("DistPeerTXStateStub",
+            String.format("Expected %s during a distributed transaction but got %s",
+                "DistPeerTXStateStub",
                 remoteTXStateStub.getClass().getSimpleName()));
       }
       try {
@@ -662,7 +662,8 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
     if (localTXState != null) {
       if (!localTXState.isTxState()) {
         throw new UnsupportedOperationInTransactionException(
-            LocalizedStrings.DISTTX_TX_EXPECTED.toLocalizedString("DistTXStateOnCoordinator",
+            String.format("Expected %s during a distributed transaction but got %s",
+                "DistTXStateOnCoordinator",
                 localTXState.getClass().getSimpleName()));
       }
       populateEntryEventList(dm.getId(), entryEventList, sortedRegionName);
@@ -740,21 +741,21 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
    */
   @Override
   public void postPutAll(DistributedPutAllOperation putallOp, VersionedObjectList successfulPuts,
-      LocalRegion region) {
+      InternalRegion reg) {
     if (putallOp.putAllData.length == 0) {
       return;
     }
-    if (region instanceof DistributedRegion) {
-      super.postPutAll(putallOp, successfulPuts, region);
+    if (reg instanceof DistributedRegion) {
+      super.postPutAll(putallOp, successfulPuts, reg);
     } else {
-      region.getCancelCriterion().checkCancelInProgress(null); // fix for bug
+      reg.getCancelCriterion().checkCancelInProgress(null); // fix for bug
       // #43651
 
       if (logger.isDebugEnabled()) {
         logger.debug(
             "DistTXStateProxyImplOnCoordinator.postPutAll "
                 + "processing putAll op for region {}, size of putAllOp " + "is {}",
-            region, putallOp.putAllData.length);
+            reg, putallOp.putAllData.length);
       }
 
 
@@ -774,8 +775,8 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
         DistributedPutAllOperation putAllForBucket = bucketToPutallMap.get(bucketId);;
         if (putAllForBucket == null) {
           // TODO DISTTX: event is never released
-          EntryEventImpl event = EntryEventImpl.createPutAllEvent(null, region,
-              Operation.PUTALL_CREATE, key, putallOp.putAllData[i].getValue(region.getCache()));
+          EntryEventImpl event = EntryEventImpl.createPutAllEvent(null, reg,
+              Operation.PUTALL_CREATE, key, putallOp.putAllData[i].getValue(reg.getCache()));
           event.setEventId(putallOp.putAllData[i].getEventID());
           putAllForBucket =
               new DistributedPutAllOperation(event, putallOp.putAllDataSize, putallOp.isBridgeOp);
@@ -785,7 +786,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
         putAllForBucket.addEntry(putallOp.putAllData[i]);
 
         KeyInfo ki = new KeyInfo(key, null, null);
-        DistTXCoordinatorInterface tsi = (DistTXCoordinatorInterface) getRealDeal(ki, region);
+        DistTXCoordinatorInterface tsi = (DistTXCoordinatorInterface) getRealDeal(ki, reg);
         bucketToTxStateStubMap.put(bucketId, tsi);
       }
 
@@ -807,7 +808,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
                   + " putAll for ##bucketId = {}, ##txStateStub = {}, " + "##putAllOp = {}",
               bucketId, dtsi, putAllForBucket);
         }
-        dtsi.postPutAll(putAllForBucket, successfulPuts, region);
+        dtsi.postPutAll(putAllForBucket, successfulPuts, reg);
       }
     }
   }
@@ -819,20 +820,20 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
    */
   @Override
   public void postRemoveAll(DistributedRemoveAllOperation op, VersionedObjectList successfulOps,
-      LocalRegion region) {
+      InternalRegion reg) {
     if (op.removeAllData.length == 0) {
       return;
     }
-    if (region instanceof DistributedRegion) {
-      super.postRemoveAll(op, successfulOps, region);
+    if (reg instanceof DistributedRegion) {
+      super.postRemoveAll(op, successfulOps, reg);
     } else {
-      region.getCancelCriterion().checkCancelInProgress(null); // fix for bug
+      reg.getCancelCriterion().checkCancelInProgress(null); // fix for bug
       // #43651
       if (logger.isDebugEnabled()) {
         logger.debug(
             "DistTXStateProxyImplOnCoordinator.postRemoveAll "
                 + "processing removeAll op for region {}, size of removeAll " + "is {}",
-            region, op.removeAllDataSize);
+            reg, op.removeAllDataSize);
       }
 
       // map of bucketId to removeAll op for this bucket
@@ -851,7 +852,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
         DistributedRemoveAllOperation removeAllForBucket = bucketToRemoveAllMap.get(bucketId);
         if (removeAllForBucket == null) {
           // TODO DISTTX: event is never released
-          EntryEventImpl event = EntryEventImpl.createRemoveAllEvent(op, region, key);
+          EntryEventImpl event = EntryEventImpl.createRemoveAllEvent(op, reg, key);
           event.setEventId(op.removeAllData[i].getEventID());
           removeAllForBucket =
               new DistributedRemoveAllOperation(event, op.removeAllDataSize, op.isBridgeOp);
@@ -861,7 +862,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
         removeAllForBucket.addEntry(op.removeAllData[i]);
 
         KeyInfo ki = new KeyInfo(key, null, null);
-        DistTXCoordinatorInterface tsi = (DistTXCoordinatorInterface) getRealDeal(ki, region);
+        DistTXCoordinatorInterface tsi = (DistTXCoordinatorInterface) getRealDeal(ki, reg);
         bucketToTxStateStubMap.put(bucketId, tsi);
       }
 
@@ -883,7 +884,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
                   + " removeAll for ##bucketId = {}, ##txStateStub = {}, " + "##removeAllOp = {}",
               bucketId, dtsi, removeAllForBucket);
         }
-        dtsi.postRemoveAll(removeAllForBucket, successfulOps, region);
+        dtsi.postRemoveAll(removeAllForBucket, successfulOps, reg);
       }
 
     }
@@ -929,7 +930,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
   /*
    * Do not return null
    */
-  public DistributedMember getOwnerForKey(LocalRegion r, KeyInfo key) {
+  public DistributedMember getOwnerForKey(InternalRegion r, KeyInfo key) {
     DistributedMember m = r.getOwnerForKey(key);
     if (m == null) {
       m = getCache().getDistributedSystem().getDistributedMember();

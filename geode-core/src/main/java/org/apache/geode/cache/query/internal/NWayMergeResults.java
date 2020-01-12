@@ -35,10 +35,12 @@ import org.apache.geode.cache.query.internal.types.StructTypeImpl;
 import org.apache.geode.cache.query.internal.utils.LimitIterator;
 import org.apache.geode.cache.query.types.CollectionType;
 import org.apache.geode.cache.query.types.ObjectType;
-import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.HeapDataOutputStream.LongUpdater;
-import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.BufferDataOutputStream.LongUpdater;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * The n - way merge results returns a sorted results on the cumulative sorted results for
@@ -436,8 +438,9 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered, DataSeria
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    ObjectType elementType = (ObjectType) DataSerializer.readObject(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    ObjectType elementType = (ObjectType) context.getDeserializer().readObject(in);
     this.collectionType = new CollectionTypeImpl(NWayMergeResults.class, elementType);
     boolean isStruct = elementType.isStructType();
     this.isDistinct = DataSerializer.readPrimitiveBoolean(in);
@@ -449,13 +452,14 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered, DataSeria
         Object[] fields = DataSerializer.readObjectArray(in);
         this.data.add((E) new StructImpl((StructTypeImpl) elementType, fields));
       } else {
-        E element = DataSerializer.readObject(in);
+        E element = context.getDeserializer().readObject(in);
         this.data.add(element);
       }
       --numLeft;
     }
   }
 
+  @Override
   public int getDSFID() {
     return NWAY_MERGE_RESULTS;
   }
@@ -464,9 +468,10 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered, DataSeria
   // instead
   // of struct
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     boolean isStruct = this.collectionType.getElementType().isStructType();
-    DataSerializer.writeObject(this.collectionType.getElementType(), out);
+    context.getSerializer().writeObject(this.collectionType.getElementType(), out);
     DataSerializer.writePrimitiveBoolean(this.isDistinct, out);
     HeapDataOutputStream hdos = new HeapDataOutputStream(1024, null);
     LongUpdater lu = hdos.reserveLong();
@@ -478,7 +483,7 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered, DataSeria
         Object[] fields = ((Struct) data).getFieldValues();
         DataSerializer.writeObjectArray(fields, out);
       } else {
-        DataSerializer.writeObject(data, hdos);
+        context.getSerializer().writeObject(data, hdos);
       }
       ++numElements;
     }

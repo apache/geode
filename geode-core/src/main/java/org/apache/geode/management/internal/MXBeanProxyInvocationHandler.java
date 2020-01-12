@@ -14,6 +14,9 @@
  */
 package org.apache.geode.management.internal;
 
+import static java.util.Arrays.asList;
+
+import java.io.InvalidObjectException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -21,68 +24,79 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.management.MBeanException;
 import javax.management.ObjectName;
+import javax.management.openmbean.OpenDataException;
 
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.i18n.LogWriterI18n;
+import org.apache.geode.annotations.Immutable;
 
 /**
  * This proxy handler handles all the method call invoked on an MXBean It follows same route as
  * MBeanProxyInvocationHandler Only difference is after obtaining the result it transforms the open
  * type to the actual java type
- *
- *
  */
 public class MXBeanProxyInvocationHandler {
 
-  private ObjectName objectName;
+  @Immutable
+  private static final Comparator<Method> METHOD_ORDER_COMPARATOR = new MethodOrder();
 
-  private MBeanProxyInvocationHandler proxyHandler;
+  private final ObjectName objectName;
+  private final MBeanProxyInvocationHandler proxyHandler;
+  private final Map<Method, MethodHandler> methodHandlerMap;
 
-  private final Map<Method, MethodHandler> methodHandlerMap = OpenTypeUtil.newMap();
-
-  private LogWriterI18n logger;
-
-  public MXBeanProxyInvocationHandler(ObjectName objectName, Class<?> mxbeanInterface,
-      MBeanProxyInvocationHandler proxyHandler) throws Exception {
-
-    if (mxbeanInterface == null)
-      throw new IllegalArgumentException("Null parameter");
-
-    this.objectName = objectName;
-
-    this.proxyHandler = proxyHandler;
-
-    this.logger = InternalDistributedSystem.getLoggerI18n();
-    this.initHandlers(mxbeanInterface);
+  MXBeanProxyInvocationHandler(ObjectName objectName, Class<?> mxbeanInterface,
+      MBeanProxyInvocationHandler proxyHandler) throws IllegalArgumentException {
+    this(objectName, mxbeanInterface, proxyHandler, OpenTypeUtil.newMap());
   }
 
-  // Introspect the mbeanInterface and initialize this object's maps.
-  //
-  private void initHandlers(Class<?> mbeanInterface) throws Exception {
-    final Method[] methodArray = mbeanInterface.getMethods();
+  private MXBeanProxyInvocationHandler(ObjectName objectName, Class<?> mxbeanInterface,
+      MBeanProxyInvocationHandler proxyHandler, Map<Method, MethodHandler> methodHandlerMap)
+      throws IllegalArgumentException {
+    if (mxbeanInterface == null) {
+      throw new IllegalArgumentException("mxbeanInterface must not be null");
+    }
 
-    final List<Method> methods = eliminateCovariantMethods(methodArray);
+    this.objectName = objectName;
+    this.proxyHandler = proxyHandler;
+    this.methodHandlerMap = methodHandlerMap;
 
-    for (Method m : methods) {
-      String name = m.getName();
+    initHandlers(mxbeanInterface);
+  }
 
-      String attrName = "";
+  public Object invoke(Object proxy, Method method, Object[] arguments)
+      throws InvalidObjectException, OpenDataException, MBeanException {
+    MethodHandler handler = methodHandlerMap.get(method);
+    OpenMethod convertingMethod = handler.getConvertingMethod();
+
+    Object[] openArgs = convertingMethod.toOpenParameters(arguments);
+    Object result = handler.invoke(proxy, method, openArgs);
+    return convertingMethod.fromOpenReturnValue(result);
+  }
+
+  private void initHandlers(Class<?> mxbeanInterface) {
+    Method[] methodArray = mxbeanInterface.getMethods();
+    List<Method> methods = eliminateCovariantMethods(methodArray);
+
+    for (Method method : methods) {
+      String name = method.getName();
+
+      String attributeName = "";
       if (name.startsWith("get")) {
-        attrName = name.substring(3);
-      } else if (name.startsWith("is") && m.getReturnType() == boolean.class) {
-        attrName = name.substring(2);
+        attributeName = name.substring(3);
+      } else if (name.startsWith("is") && method.getReturnType() == boolean.class) {
+        attributeName = name.substring(2);
       }
 
-      if (attrName.length() != 0 && m.getParameterTypes().length == 0
-          && m.getReturnType() != void.class) { // For Getters
-
-        methodHandlerMap.put(m, new GetterHandler(attrName, OpenMethod.from(m)));
-      } else if (name.startsWith("set") && name.length() > 3 && m.getParameterTypes().length == 1
-          && m.getReturnType() == void.class) { // For Setteres
-        methodHandlerMap.put(m, new SetterHandler(attrName, OpenMethod.from(m)));
+      if (!attributeName.isEmpty() && method.getParameterTypes().length == 0
+          && method.getReturnType() != void.class) {
+        // For Getters
+        methodHandlerMap.put(method, new GetterHandler(attributeName, OpenMethod.from(method)));
+      } else if (name.startsWith("set") && name.length() > 3
+          && method.getParameterTypes().length == 1 && method.getReturnType() == void.class) {
+        // For Setters
+        methodHandlerMap.put(method, new SetterHandler(attributeName, OpenMethod.from(method)));
       } else {
-        methodHandlerMap.put(m, new OpHandler(attrName, OpenMethod.from(m)));
+        methodHandlerMap.put(method, new OpHandler(attributeName, OpenMethod.from(method)));
       }
     }
   }
@@ -91,30 +105,113 @@ public class MXBeanProxyInvocationHandler {
    * Eliminate methods that are overridden with a covariant return type. Reflection will return both
    * the original and the overriding method but we need only the overriding one is of interest
    *
-   * @param methodArray
-   * @return the method after eliminating covariant menthods
+   * @return the method after eliminating covariant methods
    */
-  static List<Method> eliminateCovariantMethods(Method[] methodArray) {
+  private static List<Method> eliminateCovariantMethods(Method[] methodArray) {
+    int methodCount = methodArray.length;
+    Method[] sorted = methodArray.clone();
+    Arrays.sort(sorted, METHOD_ORDER_COMPARATOR);
+    Set<Method> overridden = OpenTypeUtil.newSet();
 
-    final int len = methodArray.length;
-    final Method[] sorted = methodArray.clone();
-    Arrays.sort(sorted, MethodOrder.instance);
-    final Set<Method> overridden = OpenTypeUtil.newSet();
-    for (int i = 1; i < len; i++) {
-      final Method m0 = sorted[i - 1];
-      final Method m1 = sorted[i];
+    for (int i = 1; i < methodCount; i++) {
+      Method m0 = sorted[i - 1];
+      Method m1 = sorted[i];
 
-      if (!m0.getName().equals(m1.getName()))
+      if (!m0.getName().equals(m1.getName())) {
         continue;
+      }
 
       if (Arrays.equals(m0.getParameterTypes(), m1.getParameterTypes())) {
         overridden.add(m0);
       }
     }
 
-    final List<Method> methods = OpenTypeUtil.newList(Arrays.asList(methodArray));
+    List<Method> methods = OpenTypeUtil.newList(asList(methodArray));
     methods.removeAll(overridden);
     return methods;
+  }
+
+  /**
+   * Handler for MXBean Proxy
+   */
+  private abstract static class MethodHandler {
+
+    private final String name;
+    private final OpenMethod convertingMethod;
+
+    MethodHandler(String name, OpenMethod convertingMethod) {
+      this.name = name;
+      this.convertingMethod = convertingMethod;
+    }
+
+    String getName() {
+      return name;
+    }
+
+    abstract Object invoke(Object proxy, Method method, Object[] arguments) throws MBeanException;
+
+    private OpenMethod getConvertingMethod() {
+      return convertingMethod;
+    }
+  }
+
+  private class GetterHandler extends MethodHandler {
+
+    private GetterHandler(String attributeName, OpenMethod convertingMethod) {
+      super(attributeName, convertingMethod);
+    }
+
+    @Override
+    Object invoke(Object proxy, Method method, Object[] arguments) throws MBeanException {
+      String methodName = method.getName();
+      String attributeName = "";
+      if (methodName.startsWith("get")) {
+        attributeName = methodName.substring(3);
+      } else if (methodName.startsWith("is") && method.getReturnType() == boolean.class) {
+        attributeName = methodName.substring(2);
+      }
+      return proxyHandler.delegateToObjectState(attributeName);
+    }
+  }
+
+  private class SetterHandler extends MethodHandler {
+
+    private SetterHandler(String attributeName, OpenMethod convertingMethod) {
+      super(attributeName, convertingMethod);
+    }
+
+    @Override
+    Object invoke(Object proxy, Method method, Object[] arguments) throws MBeanException {
+      String methodName = method.getName();
+      Class[] parameterTypes = method.getParameterTypes();
+      String[] signature = new String[parameterTypes.length];
+
+      for (int i = 0; i < parameterTypes.length; i++) {
+        signature[i] = parameterTypes[i].getName();
+      }
+
+      return proxyHandler.delegateToFunctionService(objectName, methodName, arguments, signature);
+    }
+  }
+
+  private class OpHandler extends MethodHandler {
+
+    private OpHandler(String operationName, OpenMethod convertingMethod) {
+      super(operationName, convertingMethod);
+    }
+
+    @Override
+    Object invoke(Object proxy, Method method, Object[] arguments) throws MBeanException {
+      String methodName = method.getName();
+      Class[] parameterTypes = method.getParameterTypes();
+      String[] signature = new String[parameterTypes.length];
+
+      for (int i = 0; i < parameterTypes.length; i++) {
+        signature[i] = parameterTypes[i].getName();
+      }
+
+      return proxyHandler.delegateToFunctionService(objectName, methodName, arguments, signature);
+    }
   }
 
   /**
@@ -126,118 +223,31 @@ public class MXBeanProxyInvocationHandler {
    * (see eliminateCovariantMethods).
    **/
   private static class MethodOrder implements Comparator<Method> {
+
+    @Override
     public int compare(Method a, Method b) {
-      final int cmp = a.getName().compareTo(b.getName());
-      if (cmp != 0)
+      int cmp = a.getName().compareTo(b.getName());
+      if (cmp != 0) {
         return cmp;
-      final Class<?>[] aparams = a.getParameterTypes();
-      final Class<?>[] bparams = b.getParameterTypes();
-      if (aparams.length != bparams.length)
+      }
+      Class<?>[] aparams = a.getParameterTypes();
+      Class<?>[] bparams = b.getParameterTypes();
+      if (aparams.length != bparams.length) {
         return aparams.length - bparams.length;
+      }
       if (!Arrays.equals(aparams, bparams)) {
         return Arrays.toString(aparams).compareTo(Arrays.toString(bparams));
       }
-      final Class<?> aret = a.getReturnType();
-      final Class<?> bret = b.getReturnType();
-      if (aret == bret)
+      Class<?> aret = a.getReturnType();
+      Class<?> bret = b.getReturnType();
+      if (aret == bret) {
         return 0;
+      }
 
-      if (aret.isAssignableFrom(bret))
+      if (aret.isAssignableFrom(bret)) {
         return -1;
+      }
       return +1;
     }
-
-    public static final MethodOrder instance = new MethodOrder();
   }
-
-  /**
-   * Hanlder for MXBean Proxy
-   *
-   *
-   */
-  private abstract class MethodHandler {
-    MethodHandler(String name, OpenMethod cm) {
-      this.name = name;
-      this.convertingMethod = cm;
-    }
-
-    String getName() {
-      return name;
-    }
-
-    OpenMethod getConvertingMethod() {
-      return convertingMethod;
-    }
-
-    abstract Object invoke(Object proxy, Method method, Object[] args) throws Throwable;
-
-    private final String name;
-    private final OpenMethod convertingMethod;
-  }
-
-  private class GetterHandler extends MethodHandler {
-    GetterHandler(String attributeName, OpenMethod cm) {
-      super(attributeName, cm);
-    }
-
-    @Override
-    Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-      assert (args == null || args.length == 0);
-      final String methodName = method.getName();
-      String attrName = "";
-      if (methodName.startsWith("get")) {
-        attrName = methodName.substring(3);
-      } else if (methodName.startsWith("is") && method.getReturnType() == boolean.class) {
-        attrName = methodName.substring(2);
-
-      }
-      return proxyHandler.delegateToObjectState(attrName);
-    }
-  }
-
-  private class SetterHandler extends MethodHandler {
-    SetterHandler(String attributeName, OpenMethod cm) {
-      super(attributeName, cm);
-    }
-
-    @Override
-    Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-      final String methodName = method.getName();
-      final Class[] paramTypes = method.getParameterTypes();
-      final String[] signature = new String[paramTypes.length];
-      for (int i = 0; i < paramTypes.length; i++)
-        signature[i] = paramTypes[i].getName();
-      return proxyHandler.delegateToFucntionService(objectName, methodName, args, signature);
-
-    }
-  }
-
-  private class OpHandler extends MethodHandler {
-
-    OpHandler(String operationName, OpenMethod cm) {
-      super(operationName, cm);
-
-    }
-
-    Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-      final String methodName = method.getName();
-      final Class[] paramTypes = method.getParameterTypes();
-      final String[] signature = new String[paramTypes.length];
-      for (int i = 0; i < paramTypes.length; i++)
-        signature[i] = paramTypes[i].getName();
-      return proxyHandler.delegateToFucntionService(objectName, methodName, args, signature);
-    }
-
-  }
-
-  public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-
-    MethodHandler handler = methodHandlerMap.get(method);
-    OpenMethod cm = handler.getConvertingMethod();
-
-    Object[] openArgs = cm.toOpenParameters(args);
-    Object result = handler.invoke(proxy, method, openArgs);
-    return cm.fromOpenReturnValue(result);
-  }
-
 }

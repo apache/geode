@@ -26,8 +26,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Vector;
 
 import org.apache.bcel.Constants;
@@ -38,18 +38,15 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.test.compiler.ClassBuilder;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for {@link ClassPathLoader}.
  *
  * @since GemFire 6.5.1.4
  */
-@Category(UnitTest.class)
 public class ClassPathLoaderTest {
 
   private static final int GENERATED_CLASS_BYTES_COUNT = 354;
@@ -78,27 +75,23 @@ public class ClassPathLoaderTest {
 
   @Test
   public void testZeroLengthFile() throws IOException {
-    File zeroFile = tempFolder.newFile();
+    File zeroFile = tempFolder.newFile("JarDeployerDUnitZLF.jar");
     zeroFile.createNewFile();
 
-    Map<String, File> jarFiles = new HashMap<>();
-    jarFiles.put("JarDeployerDUnitZLF.jar", zeroFile);
-
     assertThatThrownBy(() -> {
-      ClassPathLoader.getLatest().getJarDeployer().deploy(jarFiles);
+      ClassPathLoader.getLatest().getJarDeployer().deploy(zeroFile);
     }).isInstanceOf(IllegalArgumentException.class);
 
     byte[] validBytes = new ClassBuilder().createJarFromName("JarDeployerDUnitZLF1");
-    File validFile = tempFolder.newFile();
-
+    File validFile = tempFolder.newFile("JarDeployerDUnitZLF1.jar");
     IOUtils.copy(new ByteArrayInputStream(validBytes), new FileOutputStream(validFile));
 
-    jarFiles.put("JarDeployerDUnitZLF1.jar", validFile);
-
-    jarFiles.put("JarDeployerDUnitZLF2.jar", zeroFile);
+    Set<File> files = new HashSet<>();
+    files.add(validFile);
+    files.add(zeroFile);
 
     assertThatThrownBy(() -> {
-      ClassPathLoader.getLatest().getJarDeployer().deploy(jarFiles);
+      ClassPathLoader.getLatest().getJarDeployer().deploy(files);
     }).isInstanceOf(IllegalArgumentException.class);
   }
 

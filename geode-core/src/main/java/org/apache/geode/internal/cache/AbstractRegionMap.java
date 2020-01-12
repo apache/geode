@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -28,8 +27,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.InvalidDeltaException;
-import org.apache.geode.cache.CacheEvent;
-import org.apache.geode.cache.CacheWriter;
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.EntryNotFoundException;
@@ -41,30 +39,22 @@ import org.apache.geode.cache.query.IndexMaintenanceException;
 import org.apache.geode.cache.query.QueryException;
 import org.apache.geode.cache.query.internal.index.IndexManager;
 import org.apache.geode.cache.query.internal.index.IndexProtocol;
-import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.DiskInitFile.DiskRegionFlag;
-import org.apache.geode.internal.cache.FilterRoutingInfo.FilterInfo;
 import org.apache.geode.internal.cache.entries.AbstractOplogDiskRegionEntry;
 import org.apache.geode.internal.cache.entries.AbstractRegionEntry;
 import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.internal.cache.entries.OffHeapRegionEntry;
-import org.apache.geode.internal.cache.eviction.EvictableEntry;
-import org.apache.geode.internal.cache.eviction.EvictionController;
-import org.apache.geode.internal.cache.ha.HAContainerWrapper;
-import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.internal.cache.map.CacheModificationLock;
 import org.apache.geode.internal.cache.map.FocusedRegionMap;
+import org.apache.geode.internal.cache.map.RegionMapCommitPut;
 import org.apache.geode.internal.cache.map.RegionMapDestroy;
+import org.apache.geode.internal.cache.map.RegionMapPut;
 import org.apache.geode.internal.cache.persistence.DiskRegionView;
 import org.apache.geode.internal.cache.region.entry.RegionEntryFactoryBuilder;
-import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
-import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessageImpl;
-import org.apache.geode.internal.cache.tier.sockets.HAEventWrapper;
 import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionHolder;
@@ -72,32 +62,27 @@ import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
-import org.apache.geode.internal.concurrent.MapCallbackAdapter;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.OffHeapHelper;
 import org.apache.geode.internal.offheap.OffHeapRegionEntryHelper;
-import org.apache.geode.internal.offheap.ReferenceCountHelper;
 import org.apache.geode.internal.offheap.StoredObject;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
-import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.geode.internal.sequencelog.EntryLogger;
 import org.apache.geode.internal.size.ReflectionSingleObjectSizer;
-import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.internal.util.concurrent.ConcurrentMapWithReusableEntries;
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Abstract implementation of {@link RegionMap}that has all the common behavior.
  *
  * @since GemFire 3.5.1
  */
-public abstract class AbstractRegionMap
-    implements RegionMap, FocusedRegionMap, CacheModificationLock {
+public abstract class AbstractRegionMap extends BaseRegionMap
+    implements FocusedRegionMap, CacheModificationLock {
   private static final Logger logger = LogService.getLogger();
+  private final TxCallbackEventFactory txCallbackEventFactory = new TxCallbackEventFactoryImpl();
 
   /** The underlying map for this region. */
   protected ConcurrentMapWithReusableEntries<Object, Object> map;
@@ -106,7 +91,8 @@ public abstract class AbstractRegionMap
    * This test hook is used to force the conditions during entry destroy. This hook is used by
    * DestroyEntryWithConcurrentOperationJUnitTest.
    */
-  static Runnable testHookRunnableForConcurrentOperation = null;
+  @MutableForTesting
+  static final Runnable testHookRunnableForConcurrentOperation = null;
 
   private RegionEntryFactory entryFactory;
 
@@ -114,6 +100,8 @@ public abstract class AbstractRegionMap
 
   // the region that owns this map
   private RegionMapOwner owner;
+
+  private final EntryEventSerialization entryEventSerialization = new EntryEventSerialization();
 
   protected AbstractRegionMap(InternalRegionArguments internalRegionArgs) {
     // do nothing
@@ -282,7 +270,6 @@ public abstract class AbstractRegionMap
     return (RegionEntry) getEntryMap().get(key);
   }
 
-
   @Override
   public RegionEntry putEntryIfAbsent(Object key, RegionEntry regionEntry) {
     RegionEntry oldRe = (RegionEntry) getEntryMap().putIfAbsent(key, regionEntry);
@@ -311,7 +298,7 @@ public abstract class AbstractRegionMap
   public void removeEntry(Object key, RegionEntry regionEntry, boolean updateStat) {
     if (regionEntry.isTombstone() && getEntryMap().get(key) == regionEntry) {
       logger.fatal(
-          LocalizedMessage.create(LocalizedStrings.AbstractRegionMap_ATTEMPT_TO_REMOVE_TOMBSTONE),
+          "Internal product error: attempt to directly remove a versioned tombstone from region entry map",
           new Exception("stack trace"));
       return; // can't remove tombstones except from the tombstone sweeper
     }
@@ -329,7 +316,7 @@ public abstract class AbstractRegionMap
     boolean success = false;
     if (regionEntry.isTombstone() && getEntryMap().get(key) == regionEntry) {
       logger.fatal(
-          LocalizedMessage.create(LocalizedStrings.AbstractRegionMap_ATTEMPT_TO_REMOVE_TOMBSTONE),
+          "Internal product error: attempt to directly remove a versioned tombstone from region entry map",
           new Exception("stack trace"));
       return; // can't remove tombstones except from the tombstone sweeper
     }
@@ -342,7 +329,8 @@ public abstract class AbstractRegionMap
     }
   }
 
-  protected void incEntryCount(int delta) {
+  @Override
+  public void incEntryCount(int delta) {
     LocalRegion lr = _getOwner();
     if (lr != null) {
       CachePerfStats stats = lr.getCachePerfStats();
@@ -367,7 +355,7 @@ public abstract class AbstractRegionMap
     if (cache != null) {
       DistributionManager manager = cache.getDistributionManager();
       if (manager != null) {
-        executor = manager.getWaitingThreadPool();
+        executor = manager.getExecutors().getWaitingThreadPool();
       }
     }
     getCustomEntryConcurrentHashMap().clearWithExecutor(executor);
@@ -393,7 +381,7 @@ public abstract class AbstractRegionMap
       return null;
     }
     if (logger.isDebugEnabled()) {
-      logger.debug("Clearing entries for {} rvv={}", _getOwner(), " rvv=" + rvv);
+      logger.debug("Clearing entries for {} rvv={}", _getOwner(), rvv);
     }
     LocalRegion lr = _getOwner();
     RegionVersionVector localRvv = lr.getVersionVector();
@@ -483,35 +471,15 @@ public abstract class AbstractRegionMap
     return result;
   }
 
-  @Override
-  public void lruUpdateCallback() {
-    // By default do nothing; LRU maps needs to override this method
-  }
-
   public void lruUpdateCallback(boolean b) {
-    // By default do nothing; LRU maps needs to override this method
-  }
-
-  @Override
-  public boolean disableLruUpdateCallback() {
-    // By default do nothing; LRU maps needs to override this method
-    return false;
-  }
-
-  @Override
-  public void enableLruUpdateCallback() {
-    // By default do nothing; LRU maps needs to override this method
-  }
-
-  @Override
-  public void resetThreadLocals() {
     // By default do nothing; LRU maps needs to override this method
   }
 
   /**
    * Tell an LRU that a new entry has been created
    */
-  protected void lruEntryCreate(RegionEntry e) {
+  @Override
+  public void lruEntryCreate(RegionEntry e) {
     // do nothing by default
   }
 
@@ -526,7 +494,8 @@ public abstract class AbstractRegionMap
   /**
    * Tell an LRU that an existing entry has been modified
    */
-  protected void lruEntryUpdate(RegionEntry e) {
+  @Override
+  public void lruEntryUpdate(RegionEntry e) {
     // do nothing by default
   }
 
@@ -537,21 +506,6 @@ public abstract class AbstractRegionMap
       lr = _getOwner();
     }
     e.decRefCount(null, lr);
-  }
-
-  @Override
-  public boolean lruLimitExceeded(DiskRegionView diskRegionView) {
-    return false;
-  }
-
-  @Override
-  public void lruCloseStats() {
-    // do nothing by default
-  }
-
-  @Override
-  public void lruEntryFaultIn(EvictableEntry entry) {
-    // do nothing by default
   }
 
   /**
@@ -634,6 +588,10 @@ public abstract class AbstractRegionMap
             tombstones.put(tag, newRe);
           } else {
             _getOwner().updateSizeOnCreate(key, _getOwner().calculateRegionEntryValueSize(newRe));
+            if (_getOwner() instanceof BucketRegionQueue) {
+              BucketRegionQueue brq = (BucketRegionQueue) _getOwner();
+              brq.incSecondaryQueueSize(1);
+            }
           }
           incEntryCount(1);
           lruEntryUpdate(newRe);
@@ -659,6 +617,10 @@ public abstract class AbstractRegionMap
         } else {
           _getOwner().updateSizeOnCreate(re.getKey(),
               _getOwner().calculateRegionEntryValueSize(re));
+          if (_getOwner() instanceof BucketRegionQueue) {
+            BucketRegionQueue brq = (BucketRegionQueue) _getOwner();
+            brq.incSecondaryQueueSize(1);
+          }
         }
       }
       incEntryCount(size());
@@ -763,6 +725,7 @@ public abstract class AbstractRegionMap
       try {
         if (_isOwnerALocalRegion()) {
           boolean oldValueWasTombstone = re.isTombstone();
+          boolean oldIsDestroyedOrRemoved = re.isDestroyedOrRemoved();
           if (oldValueWasTombstone) {
             // when a tombstone is to be overwritten, unschedule it first
             _getOwner().unscheduleTombstone(re);
@@ -779,8 +742,10 @@ public abstract class AbstractRegionMap
                                            // value for the cache
           if (re.isTombstone()) {
             _getOwner().scheduleTombstone(re, re.getVersionStamp().asVersionTag());
-            _getOwner().updateSizeOnRemove(key, oldSize);
-          } else if (oldValueWasTombstone) {
+            if (!oldIsDestroyedOrRemoved) {
+              _getOwner().updateSizeOnRemove(key, oldSize);
+            }
+          } else if (oldIsDestroyedOrRemoved) {
             _getOwner().updateSizeOnCreate(key, _getOwner().calculateRegionEntryValueSize(re));
           } else {
             _getOwner().updateSizeOnPut(key, oldSize,
@@ -808,257 +773,182 @@ public abstract class AbstractRegionMap
 
   @Override
   public boolean initialImagePut(final Object key, final long lastModified, Object newValue,
-      final boolean wasRecovered, boolean deferLRUCallback, VersionTag entryVersion,
+      final boolean wasRecovered, boolean deferLRUCallback,
+      VersionTag entryVersion,
       InternalDistributedMember sender, boolean isSynchronizing) {
     boolean result = false;
     boolean done = false;
     boolean cleared = false;
     final LocalRegion owner = _getOwner();
+    boolean acceptedVersionTag = entryVersion != null && owner.getConcurrencyChecksEnabled();
 
     if (newValue == Token.TOMBSTONE && !owner.getConcurrencyChecksEnabled()) {
       return false;
     }
 
     if (owner instanceof HARegion && newValue instanceof CachedDeserializable) {
-      Object actualVal = null;
-      CachedDeserializable newValueCd = (CachedDeserializable) newValue;
-      try {
-        actualVal = BlobHelper.deserializeBlob(newValueCd.getSerializedValue(),
-            sender.getVersionObject(), null);
-        newValue = new VMCachedDeserializable(actualVal, newValueCd.getSizeInBytes());
-      } catch (IOException | ClassNotFoundException e) {
-        throw new RuntimeException("Unable to deserialize HA event for region " + owner);
-      }
-      if (actualVal instanceof HAEventWrapper) {
-        HAEventWrapper haEventWrapper = (HAEventWrapper) actualVal;
-        // Key was removed at sender side so not putting it into the HARegion
-        if (haEventWrapper.getClientUpdateMessage() == null) {
-          return false;
-        }
-        // Getting the instance from singleton CCN..This assumes only one bridge
-        // server in the VM
-        HAContainerWrapper haContainer =
-            (HAContainerWrapper) CacheClientNotifier.getInstance().getHaContainer();
-        if (haContainer == null) {
-          return false;
-        }
-        HAEventWrapper original = null;
-        // synchronized (haContainer) {
-        do {
-          ClientUpdateMessageImpl oldMsg = (ClientUpdateMessageImpl) haContainer
-              .putIfAbsent(haEventWrapper, haEventWrapper.getClientUpdateMessage());
-          if (oldMsg != null) {
-            original = (HAEventWrapper) haContainer.getKey(haEventWrapper);
-            if (original == null) {
-              continue;
-            }
-            synchronized (original) {
-              if ((HAEventWrapper) haContainer.getKey(original) != null) {
-                original.incAndGetReferenceCount();
-                HARegionQueue.addClientCQsAndInterestList(oldMsg, haEventWrapper, haContainer,
-                    owner.getName());
-                haEventWrapper.setClientUpdateMessage(null);
-                newValue = new VMCachedDeserializable(original, newValueCd.getSizeInBytes());
-              } else {
-                original = null;
-              }
-            }
-          } else { // putIfAbsent successful
-            synchronized (haEventWrapper) {
-              haEventWrapper.incAndGetReferenceCount();
-              haEventWrapper.setHAContainer(haContainer);
-              haEventWrapper.setClientUpdateMessage(null);
-              haEventWrapper.setIsRefFromHAContainer(true);
-            }
-            break;
-          }
-          // try until we either get a reference to HAEventWrapper from
-          // HAContainer or successfully put one into it.
-        } while (original == null);
-        /*
-         * entry = (Map.Entry)haContainer.getEntry(haEventWrapper); if (entry != null) { original =
-         * (HAEventWrapper)entry.getKey(); original.incAndGetReferenceCount(); } else {
-         * haEventWrapper.incAndGetReferenceCount(); haEventWrapper.setHAContainer(haContainer);
-         * haContainer.put(haEventWrapper, haEventWrapper .getClientUpdateMessage());
-         * haEventWrapper.setClientUpdateMessage(null);
-         * haEventWrapper.setIsRefFromHAContainer(true); } } if (entry != null) {
-         * HARegionQueue.addClientCQsAndInterestList(entry, haEventWrapper, haContainer,
-         * owner.getName()); haEventWrapper.setClientUpdateMessage(null); newValue =
-         * CachedDeserializableFactory.create(original,
-         * ((CachedDeserializable)newValue).getSizeInBytes()); }
-         */
+      newValue = ((HARegion) owner).updateHAEventWrapper(sender, (CachedDeserializable) newValue);
+      if (newValue == null) {
+        return false;
       }
     }
 
     try {
       RegionEntry newRe = getEntryFactory().createEntry(owner, key, Token.REMOVED_PHASE1);
-      EntryEventImpl event = null;
-
-      @Retained
-      @Released
-      Object oldValue = null;
-
-      try {
-        RegionEntry oldRe = null;
-        synchronized (newRe) {
-          try {
-            oldRe = putEntryIfAbsent(key, newRe);
-            while (!done && oldRe != null) {
-              synchronized (oldRe) {
-                if (oldRe.isRemovedPhase2()) {
-                  owner.getCachePerfStats().incRetries();
-                  getEntryMap().remove(key, oldRe);
-                  oldRe = putEntryIfAbsent(key, newRe);
-                } else {
-                  boolean acceptedVersionTag = false;
-                  if (entryVersion != null && owner.getConcurrencyChecksEnabled()) {
-                    Assert.assertTrue(entryVersion.getMemberID() != null,
-                        "GII entry versions must have identifiers");
-                    try {
-                      boolean isTombstone = (newValue == Token.TOMBSTONE);
-                      // don't reschedule the tombstone if it hasn't changed
-                      boolean isSameTombstone = oldRe.isTombstone() && isTombstone
-                          && oldRe.getVersionStamp().asVersionTag().equals(entryVersion);
-                      if (isSameTombstone) {
-                        return true;
-                      }
-                      processVersionTagForGII(oldRe, owner, entryVersion, isTombstone, sender,
-                          !wasRecovered || isSynchronizing);
-                      acceptedVersionTag = true;
-                    } catch (ConcurrentCacheModificationException e) {
-                      return false;
-                    }
-                  }
-                  final boolean oldIsTombstone = oldRe.isTombstone();
-                  final int oldSize = owner.calculateRegionEntryValueSize(oldRe);
-                  try {
-                    result = oldRe.initialImagePut(owner, lastModified, newValue, wasRecovered,
-                        acceptedVersionTag);
-                    if (result) {
-                      if (oldIsTombstone) {
-                        owner.unscheduleTombstone(oldRe);
-                        if (newValue != Token.TOMBSTONE) {
-                          lruEntryCreate(oldRe);
-                        } else {
-                          lruEntryUpdate(oldRe);
-                        }
-                      }
-                      if (newValue == Token.TOMBSTONE) {
-                        owner.updateSizeOnRemove(key, oldSize);
-                        if (owner.getServerProxy() == null
-                            && owner.getVersionVector().isTombstoneTooOld(
-                                entryVersion.getMemberID(), entryVersion.getRegionVersion())) {
-                          // the received tombstone has already been reaped, so don't retain it
-                          removeTombstone(oldRe, entryVersion, false, false);
-                          return false;
-                        } else {
-                          owner.scheduleTombstone(oldRe, entryVersion);
-                          lruEntryDestroy(oldRe);
-                        }
-                      } else {
-                        int newSize = owner.calculateRegionEntryValueSize(oldRe);
-                        if (!oldIsTombstone) {
-                          owner.updateSizeOnPut(key, oldSize, newSize);
-                        } else {
-                          owner.updateSizeOnCreate(key, newSize);
-                        }
-                        EntryLogger.logInitialImagePut(_getOwnerObject(), key, newValue);
-                      }
-                    }
-                    if (owner.getIndexManager() != null) {
-                      // Due to having no reverse map, we need to be able to generate the oldkey
-                      // before doing an update
-                      // Without the BEFORE_UPDATE_OP, we would see duplicate entries in the index
-                      // as the update could not locate the old key
-                      if (!oldRe.isRemoved()) {
-                        owner.getIndexManager().updateIndexes(oldRe, IndexManager.REMOVE_ENTRY,
-                            IndexProtocol.BEFORE_UPDATE_OP);
-                      }
-                      owner.getIndexManager().updateIndexes(oldRe,
-                          oldRe.isRemoved() ? IndexManager.ADD_ENTRY : IndexManager.UPDATE_ENTRY,
-                          oldRe.isRemoved() ? IndexProtocol.OTHER_OP
-                              : IndexProtocol.AFTER_UPDATE_OP);
-                    }
-                    done = true;
-                  } finally {
-                    if (event != null) {
-                      event.release();
-                      event = null;
-                    }
-                  }
-                }
-              }
-            }
-            if (!done) {
-              boolean versionTagAccepted = false;
-              if (entryVersion != null && owner.getConcurrencyChecksEnabled()) {
-                Assert.assertTrue(entryVersion.getMemberID() != null,
-                    "GII entry versions must have identifiers");
-                try {
+      RegionEntry oldRe = null;
+      synchronized (newRe) {
+        try {
+          oldRe = putEntryIfAbsent(key, newRe);
+          while (!done && oldRe != null) {
+            synchronized (oldRe) {
+              if (oldRe.isRemovedPhase2()) {
+                owner.getCachePerfStats().incRetries();
+                getEntryMap().remove(key, oldRe);
+                oldRe = putEntryIfAbsent(key, newRe);
+              } else {
+                if (acceptedVersionTag) {
+                  Assert.assertTrue(entryVersion.getMemberID() != null,
+                      "GII entry versions must have identifiers");
                   boolean isTombstone = (newValue == Token.TOMBSTONE);
-                  processVersionTagForGII(newRe, owner, entryVersion, isTombstone, sender,
-                      !wasRecovered || isSynchronizing);
-                  versionTagAccepted = true;
-                } catch (ConcurrentCacheModificationException e) {
-                  return false;
-                }
-              }
-              result = newRe.initialImageInit(owner, lastModified, newValue, true, wasRecovered,
-                  versionTagAccepted);
-              try {
-                if (result) {
-                  if (newValue == Token.TOMBSTONE) {
-                    owner.scheduleTombstone(newRe, entryVersion);
-                  } else {
-                    owner.updateSizeOnCreate(key, owner.calculateRegionEntryValueSize(newRe));
-                    EntryLogger.logInitialImagePut(_getOwnerObject(), key, newValue);
-                    lruEntryCreate(newRe);
+                  // don't reschedule the tombstone if it hasn't changed
+                  boolean isSameTombstone = oldRe.isTombstone() && isTombstone
+                      && oldRe.getVersionStamp().asVersionTag().equals(entryVersion);
+                  if (isSameTombstone) {
+                    return true;
                   }
-                  incEntryCount(1);
-                }
+                  processVersionTagForGII(oldRe, owner, entryVersion, isTombstone, sender,
+                      !wasRecovered || isSynchronizing);
 
-                // Update local indexes
+                }
+                final boolean oldIsTombstone = oldRe.isTombstone();
+                final boolean oldIsDestroyedOrRemoved = oldRe.isDestroyedOrRemoved();
+                final int oldSize = owner.calculateRegionEntryValueSize(oldRe);
                 if (owner.getIndexManager() != null) {
-                  // Due to having no reverse map, we need to be able to generate the oldkey before
-                  // doing an update
-                  // Without the BEFORE_UPDATE_OP, we would see duplicate entries in the index as
-                  // the update could not locate the old key
-                  if (oldRe != null && !oldRe.isRemoved()) {
+                  // Due to having no reverse map, we need to be able to generate the oldkey
+                  // before doing an update
+                  // Without the BEFORE_UPDATE_OP, we would see duplicate entries in the index
+                  // as the update could not locate the old key
+                  if (!oldRe.isRemoved()) {
                     owner.getIndexManager().updateIndexes(oldRe, IndexManager.REMOVE_ENTRY,
                         IndexProtocol.BEFORE_UPDATE_OP);
                   }
-                  owner.getIndexManager().updateIndexes(newRe,
-                      newRe.isRemoved() ? IndexManager.REMOVE_ENTRY : IndexManager.UPDATE_ENTRY,
-                      newRe.isRemoved() ? IndexProtocol.OTHER_OP : IndexProtocol.AFTER_UPDATE_OP);
+                }
+                result = oldRe.initialImagePut(owner, lastModified, newValue, wasRecovered,
+                    acceptedVersionTag);
+                if (result) {
+                  if (oldIsTombstone) {
+                    owner.unscheduleTombstone(oldRe);
+                    if (newValue != Token.TOMBSTONE) {
+                      lruEntryCreate(oldRe);
+                    } else {
+                      lruEntryUpdate(oldRe);
+                    }
+                  }
+                  if (newValue == Token.TOMBSTONE) {
+                    if (!oldIsDestroyedOrRemoved) {
+                      owner.updateSizeOnRemove(key, oldSize);
+                    }
+                    if (owner.getServerProxy() == null
+                        && owner.getVersionVector().isTombstoneTooOld(
+                            entryVersion.getMemberID(), entryVersion.getRegionVersion())) {
+                      // the received tombstone has already been reaped, so don't retain it
+                      if (owner.getIndexManager() != null) {
+                        owner.getIndexManager().updateIndexes(oldRe, IndexManager.REMOVE_ENTRY,
+                            IndexProtocol.REMOVE_DUE_TO_GII_TOMBSTONE_CLEANUP);
+                      }
+                      removeTombstone(oldRe, entryVersion, false, false);
+                      return false;
+                    } else {
+                      owner.scheduleTombstone(oldRe, entryVersion);
+                      lruEntryDestroy(oldRe);
+                    }
+                  } else {
+                    int newSize = owner.calculateRegionEntryValueSize(oldRe);
+                    if (!oldIsTombstone) {
+                      owner.updateSizeOnPut(key, oldSize, newSize);
+                    } else {
+                      owner.updateSizeOnCreate(key, newSize);
+                    }
+                    EntryLogger.logInitialImagePut(_getOwnerObject(), key, newValue);
+                  }
+                }
+                if (owner.getIndexManager() != null) {
+                  // if existing/current re is a tombstone - note oldRe at this point is currentRe
+                  if (oldRe.isRemoved()) {
+                    owner.getIndexManager().updateIndexes(oldRe, IndexManager.REMOVE_ENTRY,
+                        IndexProtocol.REMOVE_DUE_TO_GII_TOMBSTONE_CLEANUP);
+                  } else {
+                    owner.getIndexManager().updateIndexes(oldRe,
+                        oldIsDestroyedOrRemoved ? IndexManager.ADD_ENTRY
+                            : IndexManager.UPDATE_ENTRY,
+                        oldIsDestroyedOrRemoved ? IndexProtocol.OTHER_OP
+                            : IndexProtocol.AFTER_UPDATE_OP);
+                  }
                 }
                 done = true;
-              } finally {
-                if (event != null) {
-                  event.release();
-                  event = null;
-                }
-              }
-            }
-          } finally {
-            if (done && result) {
-              initialImagePutEntry(newRe);
-            }
-            if (!done) {
-              removeEntry(key, newRe, false);
-              if (owner.getIndexManager() != null) {
-                owner.getIndexManager().updateIndexes(newRe, IndexManager.REMOVE_ENTRY,
-                    IndexProtocol.OTHER_OP);
+
               }
             }
           }
-        } // synchronized
-      } finally {
-        if (event != null)
-          event.release();
-        OffHeapHelper.release(oldValue);
-      }
+          if (!done) {
+            if (acceptedVersionTag) {
+              Assert.assertTrue(entryVersion.getMemberID() != null,
+                  "GII entry versions must have identifiers");
+              boolean isTombstone = (newValue == Token.TOMBSTONE);
+              processVersionTagForGII(newRe, owner, entryVersion, isTombstone, sender,
+                  !wasRecovered || isSynchronizing);
+            }
+            result = newRe.initialImageInit(owner, lastModified, newValue, true, wasRecovered,
+                acceptedVersionTag);
+            if (result) {
+              if (newValue == Token.TOMBSTONE) {
+                owner.scheduleTombstone(newRe, entryVersion);
+              } else {
+                owner.updateSizeOnCreate(key, owner.calculateRegionEntryValueSize(newRe));
+                EntryLogger.logInitialImagePut(_getOwnerObject(), key, newValue);
+                lruEntryCreate(newRe);
+              }
+              incEntryCount(1);
+            }
+
+            // Update local indexes
+            if (owner.getIndexManager() != null && !newRe.isRemoved()) {
+              owner.getIndexManager().updateIndexes(newRe,
+                  IndexManager.ADD_ENTRY,
+                  IndexProtocol.OTHER_OP);
+            }
+            done = true;
+
+          }
+        } catch (ConcurrentCacheModificationException e) {
+          // We do not want to do any clean up of indexes because it is assumed that
+          // the cause of the concurrent modification would have updated the indexes appropriately
+          return false;
+        } finally {
+          if (done && result) {
+            if (owner instanceof BucketRegionQueue) {
+              BucketRegionQueue brq = (BucketRegionQueue) owner;
+              brq.addToEventQueue(key, done, null);
+            }
+          }
+          if (!done) {
+            removeEntry(key, newRe, false);
+            // Update local indexes
+            if (owner.getIndexManager() != null && !newRe.isRemoved()) {
+              // attempt to clean up any thread local state,
+              // not intended to actually do any removal
+              try {
+                owner.getIndexManager().updateIndexes(newRe,
+                    IndexManager.REMOVE_ENTRY,
+                    IndexProtocol.CLEAN_UP_THREAD_LOCALS);
+              } catch (QueryException qe) {
+                logger.info("Unable to clean up thread locals for indexes", qe);
+              }
+            }
+          }
+        }
+      } // synchronized
     } catch (RegionClearedException rce) {
-      // Asif: do not issue any sort of callbacks
       done = false;
       cleared = true;
     } catch (QueryException qe) {
@@ -1071,10 +961,9 @@ public abstract class AbstractRegionMap
         resetThreadLocals();
       }
     }
+
     return result;
   }
-
-  private void initialImagePutEntry(RegionEntry newRe) {}
 
   @Override
   public boolean confirmEvictionDestroy(RegionEntry regionEntry) {
@@ -1098,14 +987,16 @@ public abstract class AbstractRegionMap
       List<EntryEventImpl> pendingCallbacks, FilterRoutingInfo filterRoutingInfo,
       ClientProxyMembershipID bridgeContext, boolean isOriginRemote, TXEntryState txEntryState,
       VersionTag versionTag, long tailKey) {
+    assert pendingCallbacks != null;
     final boolean isDebugEnabled = logger.isDebugEnabled();
 
     final LocalRegion owner = _getOwner();
 
     final boolean isRegionReady = !inTokenMode;
-    final boolean hasRemoteOrigin = !((TXId) txId).getMemberId().equals(owner.getMyId());
-    boolean cbEventInPending = false;
+    final boolean hasRemoteOrigin = !txId.getMemberId().equals(owner.getMyId());
+    boolean callbackEventAddedToPending = false;
     IndexManager oqlIndexManager = owner.getIndexManager();
+    final boolean locked = owner.lockWhenRegionIsInitializing();
     try {
       RegionEntry re = getEntry(key);
       if (re != null) {
@@ -1120,23 +1011,24 @@ public abstract class AbstractRegionMap
             if (!re.isRemoved() || re.isTombstone()) {
               Object oldValue = re.getValueInVM(owner);
               final int oldSize = owner.calculateRegionEntryValueSize(re);
+              final boolean wasDestroyedOrRemoved = re.isDestroyedOrRemoved();
               // Create an entry event only if the calling context is
               // a receipt of a TXCommitMessage AND there are callbacks installed
               // for this region
-              boolean invokeCallbacks = shouldCreateCBEvent(owner, isRegionReady || inRI);
               @Released
-              EntryEventImpl cbEvent =
-                  createCBEvent(owner, op, key, null, txId, txEvent, eventId, aCallbackArgument,
-                      filterRoutingInfo, bridgeContext, txEntryState, versionTag, tailKey);
+              final EntryEventImpl callbackEvent = txCallbackEventFactory
+                  .createCallbackEvent(owner, op, key, null, txId,
+                      txEvent, eventId, aCallbackArgument, filterRoutingInfo, bridgeContext,
+                      txEntryState, versionTag, tailKey);
               try {
 
                 if (owner.isUsedForPartitionedRegionBucket()) {
-                  txHandleWANEvent(owner, cbEvent, txEntryState);
+                  txHandleWANEvent(owner, callbackEvent, txEntryState);
                 }
-                cbEvent.setRegionEntry(re);
-                cbEvent.setOldValue(oldValue);
+                callbackEvent.setRegionEntry(re);
+                callbackEvent.setOldValue(oldValue);
                 if (isDebugEnabled) {
-                  logger.debug("txApplyDestroy cbEvent={}", cbEvent);
+                  logger.debug("txApplyDestroy callbackEvent={}", callbackEvent);
                 }
 
                 txRemoveOldIndexEntry(Operation.DESTROY, re);
@@ -1145,7 +1037,7 @@ public abstract class AbstractRegionMap
                 }
                 boolean clearOccured = false;
                 try {
-                  processAndGenerateTXVersionTag(owner, cbEvent, re, txEntryState);
+                  processAndGenerateTXVersionTag(callbackEvent, re, txEntryState);
                   if (inTokenMode) {
                     if (oldValue == Token.TOMBSTONE) {
                       owner.unscheduleTombstone(re);
@@ -1154,9 +1046,9 @@ public abstract class AbstractRegionMap
                   } else {
                     if (!re.isTombstone()) {
                       {
-                        if (shouldPerformConcurrencyChecks(owner, cbEvent)
-                            && cbEvent.getVersionTag() != null) {
-                          re.makeTombstone(owner, cbEvent.getVersionTag());
+                        if (owner.getConcurrencyChecksEnabled()
+                            && callbackEvent.getVersionTag() != null) {
+                          re.makeTombstone(owner, callbackEvent.getVersionTag());
                         } else {
                           re.removePhase1(owner, false); // fix for bug 43063
                           re.removePhase2();
@@ -1168,32 +1060,30 @@ public abstract class AbstractRegionMap
                     }
                   }
                   EntryLogger.logTXDestroy(_getOwnerObject(), key);
-                  owner.updateSizeOnRemove(key, oldSize);
+                  if (!wasDestroyedOrRemoved) {
+                    owner.updateSizeOnRemove(key, oldSize);
+                  }
                 } catch (RegionClearedException rce) {
                   clearOccured = true;
                 }
                 owner.txApplyDestroyPart2(re, re.getKey(), inTokenMode,
-                    clearOccured /* Clear Conflciting with the operation */);
+                    clearOccured /* Clear Conflciting with the operation */,
+                    wasDestroyedOrRemoved);
+                boolean invokeCallbacks = shouldInvokeCallbacks(owner, isRegionReady || inRI);
                 if (invokeCallbacks) {
-                  switchEventOwnerAndOriginRemote(cbEvent, hasRemoteOrigin);
-                  if (pendingCallbacks == null) {
-                    owner.invokeTXCallbacks(EnumListenerEvent.AFTER_DESTROY, cbEvent,
-                        true/* callDispatchListenerEvent */);
-                  } else {
-                    pendingCallbacks.add(cbEvent);
-                    cbEventInPending = true;
-                  }
+                  switchEventOwnerAndOriginRemote(callbackEvent, hasRemoteOrigin);
+                  pendingCallbacks.add(callbackEvent);
+                  callbackEventAddedToPending = true;
                 }
                 if (!clearOccured) {
                   lruEntryDestroy(re);
                 }
-                if (owner.getConcurrencyChecksEnabled() && txEntryState != null
-                    && cbEvent != null) {
-                  txEntryState.setVersionTag(cbEvent.getVersionTag());
+                if (owner.getConcurrencyChecksEnabled() && txEntryState != null) {
+                  txEntryState.setVersionTag(callbackEvent.getVersionTag());
                 }
               } finally {
-                if (!cbEventInPending)
-                  cbEvent.release();
+                if (!callbackEventAddedToPending)
+                  releaseEvent(callbackEvent);
               }
             }
           }
@@ -1207,13 +1097,11 @@ public abstract class AbstractRegionMap
         // generate versions and Tombstones for destroys
         boolean dispatchListenerEvent = inTokenMode;
         boolean opCompleted = false;
-        // TODO: if inTokenMode then Token.DESTROYED is ok but what about !inTokenMode because
-        // owner.concurrencyChecksEnabled? In that case we do not want a DESTROYED token.
-        RegionEntry newRe = getEntryFactory().createEntry(owner, key, Token.DESTROYED);
+        RegionEntry newRe = getEntryFactory().createEntry(owner, key, Token.REMOVED_PHASE1);
         if (oqlIndexManager != null) {
           oqlIndexManager.waitForIndexInit();
         }
-        EntryEventImpl cbEvent = null;
+        EntryEventImpl callbackEvent = null;
         try {
           synchronized (newRe) {
             RegionEntry oldRe = putEntryIfAbsent(key, newRe);
@@ -1225,57 +1113,59 @@ public abstract class AbstractRegionMap
                   oldRe = putEntryIfAbsent(key, newRe);
                 } else {
                   try {
-                    boolean invokeCallbacks = shouldCreateCBEvent(owner, isRegionReady || inRI);
-                    cbEvent = createCBEvent(owner, op, key, null, txId, txEvent, eventId,
-                        aCallbackArgument, filterRoutingInfo, bridgeContext, txEntryState,
-                        versionTag, tailKey);
+                    boolean invokeCallbacks = shouldInvokeCallbacks(owner, isRegionReady || inRI);
+                    callbackEvent = txCallbackEventFactory
+                        .createCallbackEvent(owner, op, key, null, txId, txEvent,
+                            eventId, aCallbackArgument, filterRoutingInfo, bridgeContext,
+                            txEntryState,
+                            versionTag, tailKey);
                     try {
-                      cbEvent.setRegionEntry(oldRe);
-                      cbEvent.setOldValue(Token.NOT_AVAILABLE);
+                      callbackEvent.setRegionEntry(oldRe);
+                      callbackEvent.setOldValue(Token.NOT_AVAILABLE);
                       if (isDebugEnabled) {
-                        logger.debug("txApplyDestroy token mode cbEvent={}", cbEvent);
+                        logger.debug("txApplyDestroy token mode callbackEvent={}", callbackEvent);
                       }
                       if (owner.isUsedForPartitionedRegionBucket()) {
-                        txHandleWANEvent(owner, cbEvent, txEntryState);
+                        txHandleWANEvent(owner, callbackEvent, txEntryState);
                       }
-                      processAndGenerateTXVersionTag(owner, cbEvent, oldRe, txEntryState);
+                      processAndGenerateTXVersionTag(callbackEvent, oldRe, txEntryState);
                       if (invokeCallbacks) {
-                        switchEventOwnerAndOriginRemote(cbEvent, hasRemoteOrigin);
-                        if (pendingCallbacks == null) {
-                          owner.invokeTXCallbacks(EnumListenerEvent.AFTER_DESTROY, cbEvent,
-                              dispatchListenerEvent);
-                        } else {
-                          pendingCallbacks.add(cbEvent);
-                          cbEventInPending = true;
-                        }
+                        switchEventOwnerAndOriginRemote(callbackEvent, hasRemoteOrigin);
+                        pendingCallbacks.add(callbackEvent);
+                        callbackEventAddedToPending = true;
                       }
                       int oldSize = 0;
                       boolean wasTombstone = oldRe.isTombstone();
+                      boolean wasDestroyedOrRemoved = oldRe.isDestroyedOrRemoved();
                       {
                         if (!wasTombstone) {
                           oldSize = owner.calculateRegionEntryValueSize(oldRe);
                         }
                       }
+                      // TODO: Token.DESTROYED should only be used if "inTokenMode".
+                      // Otherwise this should be a TOMBSTONE
                       oldRe.setValue(owner, Token.DESTROYED);
                       EntryLogger.logTXDestroy(_getOwnerObject(), key);
                       if (wasTombstone) {
                         owner.unscheduleTombstone(oldRe);
                       }
-                      owner.updateSizeOnRemove(oldRe.getKey(), oldSize);
+                      if (!wasDestroyedOrRemoved) {
+                        owner.updateSizeOnRemove(oldRe.getKey(), oldSize);
+                      }
                       owner.txApplyDestroyPart2(oldRe, oldRe.getKey(), inTokenMode,
-                          false /* Clear Conflicting with the operation */);
+                          false /* Clear Conflicting with the operation */, wasDestroyedOrRemoved);
                       lruEntryDestroy(oldRe);
                     } finally {
-                      if (!cbEventInPending)
-                        cbEvent.release();
+                      if (!callbackEventAddedToPending)
+                        releaseEvent(callbackEvent);
                     }
                   } catch (RegionClearedException rce) {
                     owner.txApplyDestroyPart2(oldRe, oldRe.getKey(), inTokenMode,
-                        true /* Clear Conflicting with the operation */);
+                        true /* Clear Conflicting with the operation */, true);
                   }
-                  if (shouldPerformConcurrencyChecks(owner, cbEvent)
-                      && cbEvent.getVersionTag() != null) {
-                    oldRe.makeTombstone(owner, cbEvent.getVersionTag());
+                  if (owner.getConcurrencyChecksEnabled()
+                      && callbackEvent.getVersionTag() != null) {
+                    oldRe.makeTombstone(owner, callbackEvent.getVersionTag());
                   } else if (!inTokenMode) {
                     // only remove for NORMAL regions if they do not generate versions see 51781
                     oldRe.removePhase1(owner, false); // fix for bug 43063
@@ -1287,54 +1177,49 @@ public abstract class AbstractRegionMap
               }
             }
             if (!opCompleted) {
-              // already has value set to Token.DESTROYED
               opCompleted = true;
-              boolean invokeCallbacks = shouldCreateCBEvent(owner, isRegionReady || inRI);
-              cbEvent =
-                  createCBEvent(owner, op, key, null, txId, txEvent, eventId, aCallbackArgument,
-                      filterRoutingInfo, bridgeContext, txEntryState, versionTag, tailKey);
+              boolean invokeCallbacks = shouldInvokeCallbacks(owner, isRegionReady || inRI);
+              callbackEvent = txCallbackEventFactory
+                  .createCallbackEvent(owner, op, key, null, txId, txEvent, eventId,
+                      aCallbackArgument, filterRoutingInfo, bridgeContext, txEntryState, versionTag,
+                      tailKey);
               try {
-                cbEvent.setRegionEntry(newRe);
-                cbEvent.setOldValue(Token.NOT_AVAILABLE);
+                callbackEvent.setRegionEntry(newRe);
+                callbackEvent.setOldValue(Token.NOT_AVAILABLE);
                 if (isDebugEnabled) {
-                  logger.debug("txApplyDestroy token mode cbEvent={}", cbEvent);
+                  logger.debug("txApplyDestroy token mode callbackEvent={}", callbackEvent);
                 }
                 if (owner.isUsedForPartitionedRegionBucket()) {
-                  txHandleWANEvent(owner, cbEvent, txEntryState);
+                  txHandleWANEvent(owner, callbackEvent, txEntryState);
                 }
-                processAndGenerateTXVersionTag(owner, cbEvent, newRe, txEntryState);
+                processAndGenerateTXVersionTag(callbackEvent, newRe, txEntryState);
                 if (invokeCallbacks) {
-                  switchEventOwnerAndOriginRemote(cbEvent, hasRemoteOrigin);
-                  if (pendingCallbacks == null) {
-                    owner.invokeTXCallbacks(EnumListenerEvent.AFTER_DESTROY, cbEvent,
-                        dispatchListenerEvent);
-                  } else {
-                    pendingCallbacks.add(cbEvent);
-                    cbEventInPending = true;
-                  }
+                  switchEventOwnerAndOriginRemote(callbackEvent, hasRemoteOrigin);
+                  pendingCallbacks.add(callbackEvent);
+                  callbackEventAddedToPending = true;
                 }
                 EntryLogger.logTXDestroy(_getOwnerObject(), key);
-                owner.updateSizeOnCreate(newRe.getKey(), 0);
-                if (shouldPerformConcurrencyChecks(owner, cbEvent)
-                    && cbEvent.getVersionTag() != null) {
-                  newRe.makeTombstone(owner, cbEvent.getVersionTag());
+                if (owner.getConcurrencyChecksEnabled() && callbackEvent.getVersionTag() != null) {
+                  newRe.makeTombstone(owner, callbackEvent.getVersionTag());
                 } else if (!inTokenMode) {
                   // only remove for NORMAL regions if they do not generate versions see 51781
                   newRe.removePhase1(owner, false); // fix for bug 43063
                   newRe.removePhase2();
                   removeEntry(key, newRe, false);
+                } else {
+                  newRe.setValue(owner, Token.DESTROYED);
                 }
                 owner.txApplyDestroyPart2(newRe, newRe.getKey(), inTokenMode,
-                    false /* clearConflict */);
+                    false /* clearConflict */, true);
                 // Note no need for LRU work since the entry is destroyed
                 // and will be removed when gii completes
               } finally {
-                if (!cbEventInPending)
-                  cbEvent.release();
+                if (!callbackEventAddedToPending)
+                  releaseEvent(callbackEvent);
               }
             }
-            if (owner.getConcurrencyChecksEnabled() && txEntryState != null && cbEvent != null) {
-              txEntryState.setVersionTag(cbEvent.getVersionTag());
+            if (owner.getConcurrencyChecksEnabled() && txEntryState != null) {
+              txEntryState.setVersionTag(callbackEvent.getVersionTag());
             }
           }
         } catch (RegionClearedException e) {
@@ -1344,57 +1229,42 @@ public abstract class AbstractRegionMap
             oqlIndexManager.countDownIndexUpdaters();
           }
         }
-      } else if (re == null) {
+      } else { // re == null
         // Fix bug#43594
         // In cases where bucket region is re-created, it may so happen that
         // the destroy is already applied on the Initial image provider, thus
         // causing region entry to be absent.
         // Notify clients with client events.
         @Released
-        EntryEventImpl cbEvent = createCBEvent(owner, op, key, null, txId, txEvent, eventId,
-            aCallbackArgument, filterRoutingInfo, bridgeContext, txEntryState, versionTag, tailKey);
+        EntryEventImpl callbackEvent =
+            txCallbackEventFactory
+                .createCallbackEvent(owner, op, key, null, txId, txEvent, eventId,
+                    aCallbackArgument,
+                    filterRoutingInfo, bridgeContext, txEntryState, versionTag, tailKey);
         try {
           if (owner.isUsedForPartitionedRegionBucket()) {
-            txHandleWANEvent(owner, cbEvent, txEntryState);
+            txHandleWANEvent(owner, callbackEvent, txEntryState);
           }
-          switchEventOwnerAndOriginRemote(cbEvent, hasRemoteOrigin);
-          if (pendingCallbacks == null) {
-            owner.invokeTXCallbacks(EnumListenerEvent.AFTER_DESTROY, cbEvent, false);
-          } else {
-            pendingCallbacks.add(cbEvent);
-            cbEventInPending = true;
-          }
+          switchEventOwnerAndOriginRemote(callbackEvent, hasRemoteOrigin);
+          pendingCallbacks.add(callbackEvent);
+          callbackEventAddedToPending = true;
         } finally {
-          if (!cbEventInPending)
-            cbEvent.release();
+          if (!callbackEventAddedToPending)
+            releaseEvent(callbackEvent);
         }
       }
     } catch (DiskAccessException dae) {
       owner.handleDiskAccessException(dae);
       throw dae;
+    } finally {
+      if (locked) {
+        owner.unlockWhenRegionIsInitializing();
+      }
     }
   }
 
-  /**
-   * If true then invalidates that throw EntryNotFoundException or that are already invalid will
-   * first call afterInvalidate on CacheListeners. The old value on the event passed to
-   * afterInvalidate will be null. If the region is not initialized then callbacks will not be done.
-   * This property only applies to non-transactional invalidates. Transactional invalidates ignore
-   * this property. Note that empty "proxy" regions on a client will not be sent invalidates from
-   * the server unless they also set the proxy InterestPolicy to ALL. If the invalidate is not sent
-   * then this property will not cause a listener on that client to be notified of the invalidate. A
-   * non-empty "caching-proxy" will receive invalidates from the server.
-   */
-  public static boolean FORCE_INVALIDATE_EVENT =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "FORCE_INVALIDATE_EVENT");
-
-  /**
-   * If the FORCE_INVALIDATE_EVENT flag is true then invoke callbacks on the given event.
-   */
-  static void forceInvalidateEvent(EntryEventImpl event, LocalRegion owner) {
-    if (FORCE_INVALIDATE_EVENT) {
-      event.invokeCallbacks(owner, false, false);
-    }
+  void releaseEvent(final EntryEventImpl event) {
+    event.release();
   }
 
   @Override
@@ -1408,20 +1278,23 @@ public abstract class AbstractRegionMap
       Assert.assertTrue(false, "The owner for RegionMap " + this + " is null for event " + event);
 
     }
+    logger.debug("ARM.invalidate invoked for key {}", event.getKey());
     boolean didInvalidate = false;
     RegionEntry invalidatedRe = null;
     boolean clearOccured = false;
     DiskRegion dr = owner.getDiskRegion();
     boolean ownerIsInitialized = owner.isInitialized();
+
+    // Fix for Bug #44431. We do NOT want to update the region and wait
+    // later for index INIT as region.clear() can cause inconsistency if
+    // happened in parallel as it also does index INIT.
+    IndexManager oqlIndexManager = owner.getIndexManager();
+    if (oqlIndexManager != null) {
+      oqlIndexManager.waitForIndexInit();
+    }
+    lockForCacheModification(owner, event);
+    final boolean locked = owner.lockWhenRegionIsInitializing();
     try {
-      // Fix for Bug #44431. We do NOT want to update the region and wait
-      // later for index INIT as region.clear() can cause inconsistency if
-      // happened in parallel as it also does index INIT.
-      IndexManager oqlIndexManager = owner.getIndexManager();
-      if (oqlIndexManager != null) {
-        oqlIndexManager.waitForIndexInit();
-      }
-      lockForCacheModification(owner, event);
       try {
         try {
           if (forceNewEntry || forceCallbacks) {
@@ -1454,11 +1327,7 @@ public abstract class AbstractRegionMap
                       } else if (oldRe.isInvalid()) {
 
                         // was already invalid, do not invoke listeners or increment stat
-                        if (isDebugEnabled) {
-                          logger.debug("mapInvalidate: Entry already invalid: '{}'",
-                              event.getKey());
-                        }
-                        processVersionTag(oldRe, event);
+                        handleAlreadyInvalidEntry(event, owner, oldRe);
                         try {
                           oldRe.setValue(owner, oldRe.getValueInVM(owner)); // OFFHEAP noop setting
                                                                             // an already invalid to
@@ -1654,12 +1523,6 @@ public abstract class AbstractRegionMap
                       } else if (tombstone != null) {
                         processVersionTag(tombstone, event);
                         try {
-                          if (!tombstone.isTombstone()) {
-                            if (isDebugEnabled) {
-                              logger.debug("tombstone is no longer a tombstone. {}:event={}",
-                                  tombstone, event);
-                            }
-                          }
                           tombstone.setValue(owner, Token.TOMBSTONE);
                         } catch (RegionClearedException e) {
                           // that's okay - when writing a tombstone into a disk, the
@@ -1699,14 +1562,7 @@ public abstract class AbstractRegionMap
                     if (re.isInvalid()) {
                       // was already invalid, do not invoke listeners or increment
                       // stat
-                      if (isDebugEnabled) {
-                        logger.debug("Invalidate: Entry already invalid: '{}'", event.getKey());
-                      }
-                      if (event.getVersionTag() != null && owner.getVersionVector() != null) {
-                        owner.getVersionVector().recordVersion(
-                            (InternalDistributedMember) event.getDistributedMember(),
-                            event.getVersionTag());
-                      }
+                      handleAlreadyInvalidEntry(event, owner, re);
                     } else { // previous value not invalid
                       event.setRegionEntry(re);
                       owner.serverInvalidate(event);
@@ -1802,9 +1658,27 @@ public abstract class AbstractRegionMap
         }
       }
     } finally {
+      if (locked) {
+        owner.unlockWhenRegionIsInitializing();
+      }
       releaseCacheModificationLock(owner, event);
     }
 
+  }
+
+  /**
+   * If an entry is already invalid we still want to perform a conflict check, update
+   * the entry's version stamp and invoke listeners.
+   */
+  private void handleAlreadyInvalidEntry(EntryEventImpl event, LocalRegion owner, RegionEntry re) {
+    if (logger.isDebugEnabled()) {
+      logger.debug("Invalidate: Entry already invalid: '{}'", event.getKey());
+    }
+    processVersionTag(re, event);
+    if (owner.getConcurrencyChecksEnabled() && event.hasValidVersionTag()) {
+      // notify clients so they can update their version stamps
+      event.invokeCallbacks(owner, true, true);
+    }
   }
 
   private void invalidateNewEntry(EntryEventImpl event, final LocalRegion owner, RegionEntry newRe)
@@ -1848,6 +1722,7 @@ public abstract class AbstractRegionMap
     }
 
     lockForCacheModification(owner, event);
+    final boolean locked = owner.lockWhenRegionIsInitializing();
 
     try {
       RegionEntry re = getEntry(event.getKey());
@@ -1879,6 +1754,9 @@ public abstract class AbstractRegionMap
       this._getOwner().handleDiskAccessException(dae);
       throw dae;
     } finally {
+      if (locked) {
+        owner.unlockWhenRegionIsInitializing();
+      }
       releaseCacheModificationLock(owner, event);
       if (dr != null) {
         dr.removeClearCountReference();
@@ -1892,11 +1770,12 @@ public abstract class AbstractRegionMap
       List<EntryEventImpl> pendingCallbacks, FilterRoutingInfo filterRoutingInfo,
       ClientProxyMembershipID bridgeContext, TXEntryState txEntryState, VersionTag versionTag,
       long tailKey) {
+    assert pendingCallbacks != null;
     // boolean didInvalidate = false;
     final LocalRegion owner = _getOwner();
 
     @Released
-    EntryEventImpl cbEvent = null;
+    EntryEventImpl callbackEvent = null;
     boolean forceNewEntry = !owner.isInitialized() && owner.isAllEvents();
 
     final boolean hasRemoteOrigin = !((TXId) txId).getMemberId().equals(owner.getMyId());
@@ -1908,6 +1787,7 @@ public abstract class AbstractRegionMap
     if (oqlIndexManager != null) {
       oqlIndexManager.waitForIndexInit();
     }
+    final boolean locked = owner.lockWhenRegionIsInitializing();
     try {
       if (forceNewEntry) {
         boolean opCompleted = false;
@@ -1930,17 +1810,17 @@ public abstract class AbstractRegionMap
                   // a receipt of a TXCommitMessage AND there are callbacks
                   // installed
                   // for this region
-                  boolean invokeCallbacks = shouldCreateCBEvent(owner, owner.isInitialized());
-                  boolean cbEventInPending = false;
-                  cbEvent = createCBEvent(owner,
+                  boolean invokeCallbacks = shouldInvokeCallbacks(owner, owner.isInitialized());
+                  boolean callbackEventInPending = false;
+                  callbackEvent = txCallbackEventFactory.createCallbackEvent(owner,
                       localOp ? Operation.LOCAL_INVALIDATE : Operation.INVALIDATE, key, newValue,
                       txId, txEvent, eventId, aCallbackArgument, filterRoutingInfo, bridgeContext,
                       txEntryState, versionTag, tailKey);
                   try {
-                    cbEvent.setRegionEntry(oldRe);
-                    cbEvent.setOldValue(oldValue);
+                    callbackEvent.setRegionEntry(oldRe);
+                    callbackEvent.setOldValue(oldValue);
                     if (logger.isDebugEnabled()) {
-                      logger.debug("txApplyInvalidate cbEvent={}", cbEvent);
+                      logger.debug("txApplyInvalidate callbackEvent={}", callbackEvent);
                     }
 
                     txRemoveOldIndexEntry(Operation.INVALIDATE, oldRe);
@@ -1952,7 +1832,7 @@ public abstract class AbstractRegionMap
                           aCallbackArgument);
                     }
                     oldRe.setValueResultOfSearch(false);
-                    processAndGenerateTXVersionTag(owner, cbEvent, oldRe, txEntryState);
+                    processAndGenerateTXVersionTag(callbackEvent, oldRe, txEntryState);
                     boolean clearOccured = false;
                     try {
                       oldRe.setValue(owner, oldRe.prepareValueForCache(owner, newValue, true));
@@ -1967,42 +1847,38 @@ public abstract class AbstractRegionMap
                     owner.txApplyInvalidatePart2(oldRe, oldRe.getKey(), didDestroy, true);
                     // didInvalidate = true;
                     if (invokeCallbacks) {
-                      switchEventOwnerAndOriginRemote(cbEvent, hasRemoteOrigin);
-                      if (pendingCallbacks == null) {
-                        owner.invokeTXCallbacks(EnumListenerEvent.AFTER_INVALIDATE, cbEvent,
-                            true/* callDispatchListenerEvent */);
-                      } else {
-                        pendingCallbacks.add(cbEvent);
-                        cbEventInPending = true;
-                      }
+                      switchEventOwnerAndOriginRemote(callbackEvent, hasRemoteOrigin);
+                      pendingCallbacks.add(callbackEvent);
+                      callbackEventInPending = true;
                     }
                     if (!clearOccured) {
                       lruEntryUpdate(oldRe);
                     }
-                    if (shouldPerformConcurrencyChecks(owner, cbEvent) && txEntryState != null) {
-                      txEntryState.setVersionTag(cbEvent.getVersionTag());
+                    if (shouldPerformConcurrencyChecks(owner, callbackEvent)
+                        && txEntryState != null) {
+                      txEntryState.setVersionTag(callbackEvent.getVersionTag());
                     }
                   } finally {
-                    if (!cbEventInPending)
-                      cbEvent.release();
+                    if (!callbackEventInPending)
+                      releaseEvent(callbackEvent);
                   }
                 }
               }
             }
             if (!opCompleted) {
-              boolean invokeCallbacks = shouldCreateCBEvent(owner, owner.isInitialized());
-              boolean cbEventInPending = false;
-              cbEvent =
-                  createCBEvent(owner, localOp ? Operation.LOCAL_INVALIDATE : Operation.INVALIDATE,
-                      key, newValue, txId, txEvent, eventId, aCallbackArgument, filterRoutingInfo,
-                      bridgeContext, txEntryState, versionTag, tailKey);
+              boolean invokeCallbacks = shouldInvokeCallbacks(owner, owner.isInitialized());
+              boolean callbackEventInPending = false;
+              callbackEvent = txCallbackEventFactory.createCallbackEvent(owner,
+                  localOp ? Operation.LOCAL_INVALIDATE : Operation.INVALIDATE, key, newValue, txId,
+                  txEvent, eventId, aCallbackArgument, filterRoutingInfo, bridgeContext,
+                  txEntryState, versionTag, tailKey);
               try {
-                cbEvent.setRegionEntry(newRe);
+                callbackEvent.setRegionEntry(newRe);
                 txRemoveOldIndexEntry(Operation.INVALIDATE, newRe);
                 newRe.setValueResultOfSearch(false);
                 boolean clearOccured = false;
                 try {
-                  processAndGenerateTXVersionTag(owner, cbEvent, newRe, txEntryState);
+                  processAndGenerateTXVersionTag(callbackEvent, newRe, txEntryState);
                   newRe.setValue(owner, newRe.prepareValueForCache(owner, newValue, true));
                   EntryLogger.logTXInvalidate(_getOwnerObject(), key);
                   owner.updateSizeOnCreate(newRe.getKey(), 0);// we are putting in a new invalidated
@@ -2013,26 +1889,21 @@ public abstract class AbstractRegionMap
                 owner.txApplyInvalidatePart2(newRe, newRe.getKey(), didDestroy, true);
 
                 if (invokeCallbacks) {
-                  switchEventOwnerAndOriginRemote(cbEvent, hasRemoteOrigin);
-                  if (pendingCallbacks == null) {
-                    owner.invokeTXCallbacks(EnumListenerEvent.AFTER_INVALIDATE, cbEvent,
-                        true/* callDispatchListenerEvent */);
-                  } else {
-                    pendingCallbacks.add(cbEvent);
-                    cbEventInPending = true;
-                  }
+                  switchEventOwnerAndOriginRemote(callbackEvent, hasRemoteOrigin);
+                  pendingCallbacks.add(callbackEvent);
+                  callbackEventInPending = true;
                 }
                 opCompleted = true;
                 if (!clearOccured) {
                   lruEntryCreate(newRe);
                   incEntryCount(1);
                 }
-                if (shouldPerformConcurrencyChecks(owner, cbEvent) && txEntryState != null) {
-                  txEntryState.setVersionTag(cbEvent.getVersionTag());
+                if (shouldPerformConcurrencyChecks(owner, callbackEvent) && txEntryState != null) {
+                  txEntryState.setVersionTag(callbackEvent.getVersionTag());
                 }
               } finally {
-                if (!cbEventInPending)
-                  cbEvent.release();
+                if (!callbackEventInPending)
+                  releaseEvent(callbackEvent);
               }
             }
           } finally {
@@ -2053,15 +1924,15 @@ public abstract class AbstractRegionMap
               // a receipt of a TXCommitMessage AND there are callbacks
               // installed
               // for this region
-              boolean invokeCallbacks = shouldCreateCBEvent(owner, owner.isInitialized());
-              boolean cbEventInPending = false;
-              cbEvent =
-                  createCBEvent(owner, localOp ? Operation.LOCAL_INVALIDATE : Operation.INVALIDATE,
-                      key, newValue, txId, txEvent, eventId, aCallbackArgument, filterRoutingInfo,
-                      bridgeContext, txEntryState, versionTag, tailKey);
+              boolean invokeCallbacks = shouldInvokeCallbacks(owner, owner.isInitialized());
+              boolean callbackEventInPending = false;
+              callbackEvent = txCallbackEventFactory.createCallbackEvent(owner,
+                  localOp ? Operation.LOCAL_INVALIDATE : Operation.INVALIDATE, key, newValue, txId,
+                  txEvent, eventId, aCallbackArgument, filterRoutingInfo, bridgeContext,
+                  txEntryState, versionTag, tailKey);
               try {
-                cbEvent.setRegionEntry(re);
-                cbEvent.setOldValue(oldValue);
+                callbackEvent.setRegionEntry(re);
+                callbackEvent.setOldValue(oldValue);
                 txRemoveOldIndexEntry(Operation.INVALIDATE, re);
                 if (didDestroy) {
                   re.txDidDestroy(owner.cacheTimeMillis());
@@ -2070,7 +1941,7 @@ public abstract class AbstractRegionMap
                   txEvent.addInvalidate(owner, re, re.getKey(), newValue, aCallbackArgument);
                 }
                 re.setValueResultOfSearch(false);
-                processAndGenerateTXVersionTag(owner, cbEvent, re, txEntryState);
+                processAndGenerateTXVersionTag(callbackEvent, re, txEntryState);
                 boolean clearOccured = false;
                 try {
                   re.setValue(owner, re.prepareValueForCache(owner, newValue, true));
@@ -2082,24 +1953,19 @@ public abstract class AbstractRegionMap
                 owner.txApplyInvalidatePart2(re, re.getKey(), didDestroy, true);
                 // didInvalidate = true;
                 if (invokeCallbacks) {
-                  switchEventOwnerAndOriginRemote(cbEvent, hasRemoteOrigin);
-                  if (pendingCallbacks == null) {
-                    owner.invokeTXCallbacks(EnumListenerEvent.AFTER_INVALIDATE, cbEvent,
-                        true/* callDispatchListenerEvent */);
-                  } else {
-                    pendingCallbacks.add(cbEvent);
-                    cbEventInPending = true;
-                  }
+                  switchEventOwnerAndOriginRemote(callbackEvent, hasRemoteOrigin);
+                  pendingCallbacks.add(callbackEvent);
+                  callbackEventInPending = true;
                 }
                 if (!clearOccured) {
                   lruEntryUpdate(re);
                 }
-                if (shouldPerformConcurrencyChecks(owner, cbEvent) && txEntryState != null) {
-                  txEntryState.setVersionTag(cbEvent.getVersionTag());
+                if (shouldPerformConcurrencyChecks(owner, callbackEvent) && txEntryState != null) {
+                  txEntryState.setVersionTag(callbackEvent.getVersionTag());
                 }
               } finally {
-                if (!cbEventInPending)
-                  cbEvent.release();
+                if (!callbackEventInPending)
+                  releaseEvent(callbackEvent);
               }
               return;
             }
@@ -2111,22 +1977,18 @@ public abstract class AbstractRegionMap
           // that the invalidate is already applied on the Initial image
           // provider, thus causing region entry to be absent.
           // Notify clients with client events.
-          boolean cbEventInPending = false;
-          cbEvent =
-              createCBEvent(owner, localOp ? Operation.LOCAL_INVALIDATE : Operation.INVALIDATE, key,
-                  newValue, txId, txEvent, eventId, aCallbackArgument, filterRoutingInfo,
-                  bridgeContext, txEntryState, versionTag, tailKey);
+          boolean callbackEventInPending = false;
+          callbackEvent = txCallbackEventFactory.createCallbackEvent(owner,
+              localOp ? Operation.LOCAL_INVALIDATE : Operation.INVALIDATE, key, newValue, txId,
+              txEvent, eventId, aCallbackArgument, filterRoutingInfo, bridgeContext, txEntryState,
+              versionTag, tailKey);
           try {
-            switchEventOwnerAndOriginRemote(cbEvent, hasRemoteOrigin);
-            if (pendingCallbacks == null) {
-              owner.invokeTXCallbacks(EnumListenerEvent.AFTER_INVALIDATE, cbEvent, false);
-            } else {
-              pendingCallbacks.add(cbEvent);
-              cbEventInPending = true;
-            }
+            switchEventOwnerAndOriginRemote(callbackEvent, hasRemoteOrigin);
+            pendingCallbacks.add(callbackEvent);
+            callbackEventInPending = true;
           } finally {
-            if (!cbEventInPending)
-              cbEvent.release();
+            if (!callbackEventInPending)
+              releaseEvent(callbackEvent);
           }
         }
       }
@@ -2134,6 +1996,9 @@ public abstract class AbstractRegionMap
       owner.handleDiskAccessException(dae);
       throw dae;
     } finally {
+      if (locked) {
+        owner.unlockWhenRegionIsInitializing();
+      }
       if (oqlIndexManager != null) {
         oqlIndexManager.countDownIndexUpdaters();
       }
@@ -2163,790 +2028,72 @@ public abstract class AbstractRegionMap
     }
   }
 
-  private RegionEntry getOrCreateRegionEntry(Object ownerRegion, EntryEventImpl event, Object value,
-      MapCallbackAdapter<Object, Object, Object, Object> valueCreator, boolean onlyExisting,
-      boolean returnTombstone) {
-    Object key = event.getKey();
-    RegionEntry retVal = null;
-    retVal = getEntry(event);
-    if (onlyExisting) {
-      if (!returnTombstone && (retVal != null && retVal.isTombstone())) {
-        return null;
-      }
-      return retVal;
-    }
-    if (retVal != null) {
-      return retVal;
-    }
-    if (valueCreator != null) {
-      value = valueCreator.newValue(key, ownerRegion, value, null);
-    }
-    retVal = getEntryFactory().createEntry((RegionEntryContext) ownerRegion, key, value);
-    RegionEntry oldRe = putEntryIfAbsent(key, retVal);
-    if (oldRe != null) {
-      if (retVal instanceof OffHeapRegionEntry) {
-        ((OffHeapRegionEntry) retVal).release();
-      }
-      return oldRe;
-    }
-    return retVal;
-  }
-
   /*
    * returns null if the operation fails
    */
   @Override
-  public RegionEntry basicPut(EntryEventImpl event, final long lastModified, final boolean ifNew,
-      final boolean ifOld, Object expectedOldValue, // only non-null if ifOld
-      boolean requireOldValue, final boolean overwriteDestroyed)
+  public RegionEntry basicPut(EntryEventImpl event, final long unused, final boolean ifNew,
+      final boolean ifOld, final Object expectedOldValue, // only non-null if ifOld
+      final boolean requireOldValue, final boolean overwriteDestroyed)
       throws CacheWriterException, TimeoutException {
-    final LocalRegion owner = _getOwner();
-    boolean clearOccured = false;
-    if (owner == null) {
-      // "fix" for bug 32440
-      Assert.assertTrue(false, "The owner for RegionMap " + this + " is null for event " + event);
-    }
-    if (logger.isTraceEnabled(LogMarker.LRU_TOMBSTONE_COUNT) && !(owner instanceof HARegion)) {
-      logger.trace(LogMarker.LRU_TOMBSTONE_COUNT,
-          "ARM.basicPut called for {} expectedOldValue={} requireOldValue={} ifNew={} ifOld={} initialized={} overwriteDestroyed={}",
-          event, expectedOldValue, requireOldValue, ifNew, ifOld, owner.isInitialized(),
-          overwriteDestroyed);
-    }
 
-    RegionEntry result = null;
-    long lastModifiedTime = 0;
-    // copy into local var to prevent race condition with setter
-    final CacheWriter cacheWriter = owner.basicGetWriter();
-    final boolean cacheWrite =
-        !event.isOriginRemote() && !event.isNetSearch() && event.isGenerateCallbacks()
-            && (cacheWriter != null || owner.hasServerProxy() || owner.scope.isDistributed());
-    /*
-     * For performance reason, we try to minimize object creation and do as much work as we can
-     * outside of synchronization, especially getting distribution advice.
-     */
-    final Set netWriteRecipients;
-    if (cacheWrite) {
-      if (cacheWriter == null && owner.scope.isDistributed()) {
-        netWriteRecipients =
-            ((DistributedRegion) owner).getCacheDistributionAdvisor().adviseNetWrite();
-      } else {
-        netWriteRecipients = null;
-      }
-    } else {
-      netWriteRecipients = null;
-    }
+    final RegionMapPut regionMapPut =
+        new RegionMapPut(this, _getOwner(), this, entryEventSerialization, event, ifNew, ifOld,
+            overwriteDestroyed, requireOldValue, expectedOldValue);
 
-    // mbid: this has been added to maintain consistency between the disk region
-    // and the region map after clear() has been called. This will set the
-    // reference of the diskSegmentRegion as a ThreadLocal so that if the diskRegionSegment
-    // is later changed by another thread, we can do the necessary.
-    boolean uninitialized = !owner.isInitialized();
-    boolean retrieveOldValueForDelta =
-        event.getDeltaBytes() != null && event.getRawNewValue() == null;
-    IndexManager oqlIndexManager = null;
-    lockForCacheModification(owner, event);
-    try {
-      try {
-        // Fix for Bug #44431. We do NOT want to update the region and wait
-        // later for index INIT as region.clear() can cause inconsistency if
-        // happened in parallel as it also does index INIT.
-        oqlIndexManager = owner.getIndexManager();
-        if (oqlIndexManager != null) {
-          oqlIndexManager.waitForIndexInit();
-        }
-
-        // fix for bug #42169, replace must go to server if entry not on client
-        boolean replaceOnClient =
-            event.getOperation() == Operation.REPLACE && owner.getServerProxy() != null;
-        // Rather than having two different blocks for synchronizing oldRe
-        // and newRe, have only one block and synchronize re
-        RegionEntry re = null;
-        boolean eventRecorded = false;
-        boolean onlyExisting = ifOld && !replaceOnClient;
-
-        re = getOrCreateRegionEntry(owner, event,
-
-            Token.REMOVED_PHASE1, null, onlyExisting, false);
-        if (re == null) {
-          return null;
-        }
-        while (true) {
-          synchronized (re) {
-            // if the re goes into removed2 state, it will be removed
-            // from the map. otherwise we can append an event to it
-            // and change its state
-            if (re.isRemovedPhase2()) {
-              _getOwner().getCachePerfStats().incRetries();
-              getEntryMap().remove(event.getKey(), re);
-              re = getOrCreateRegionEntry(owner, event, Token.REMOVED_PHASE1, null, onlyExisting,
-                  false);
-              if (re == null) {
-                // this will happen when onlyExisting is true
-                return null;
-              }
-              continue;
-            } else {
-              @Released
-              Object oldValueForDelta = null;
-              if (retrieveOldValueForDelta) {
-                // defer the lruUpdateCallback to prevent a deadlock (see bug 51121).
-                final boolean disabled = disableLruUpdateCallback();
-                try {
-                  // Old value is faulted in from disk if not found in memory.
-                  oldValueForDelta = re.getValue(owner); // OFFHEAP: if we are synced on oldRe no
-                                                         // issue since we can use ARE's ref
-                } finally {
-                  if (disabled) {
-                    enableLruUpdateCallback();
-                  }
-                }
-              }
-
-              try {
-
-                event.setRegionEntry(re);
-                // set old value in event
-                setOldValueInEvent(event, re, cacheWrite, requireOldValue);
-                if (!continueUpdate(re, event, ifOld, replaceOnClient)) {
-                  return null;
-                }
-                // overwrite destroyed?
-                if (!continueOverwriteDestroyed(re, event, overwriteDestroyed, ifNew)) {
-                  return null;
-                }
-                // check expectedOldValue
-                if (!satisfiesExpectedOldValue(event, re, expectedOldValue, replaceOnClient)) {
-                  return null;
-                }
-                // invoke cacheWriter
-                invokeCacheWriter(re, event, cacheWrite, cacheWriter, netWriteRecipients,
-                    requireOldValue, expectedOldValue, replaceOnClient);
-
-                // notify index of an update
-                notifyIndex(re, true);
-                try {
-                  try {
-                    if ((cacheWrite && event.getOperation().isUpdate()) // if there is a
-                                                                        // cacheWriter, type of
-                                                                        // event has already been
-                                                                        // set
-                        || !re.isRemoved() || replaceOnClient) {
-                      // update
-                      updateEntry(event, requireOldValue, oldValueForDelta, re);
-                    } else {
-                      // create
-                      createEntry(event, owner, re);
-                    }
-                    owner.recordEvent(event);
-                    eventRecorded = true;
-                  } catch (RegionClearedException rce) {
-                    clearOccured = true;
-                    owner.recordEvent(event);
-                  } catch (ConcurrentCacheModificationException ccme) {
-                    VersionTag tag = event.getVersionTag();
-                    if (tag != null && tag.isTimeStampUpdated()) {
-                      // Notify gateways of new time-stamp.
-                      owner.notifyTimestampsToGateways(event);
-                    }
-                    throw ccme;
-                  }
-                  if (uninitialized) {
-                    event.inhibitCacheListenerNotification(true);
-                  }
-                  updateLru(clearOccured, re, event);
-
-                  lastModifiedTime = owner.basicPutPart2(event, re, !uninitialized,
-                      lastModifiedTime, clearOccured);
-                } finally {
-                  notifyIndex(re, false);
-                }
-                result = re;
-                break;
-              } finally {
-                OffHeapHelper.release(oldValueForDelta);
-                if (re != null && !onlyExisting && !isOpComplete(re, event)) {
-                  owner.cleanUpOnIncompleteOp(event, re);
-                } else if (re != null && owner.isUsedForPartitionedRegionBucket()) {
-                  BucketRegion br = (BucketRegion) owner;
-                  CachePerfStats stats = br.getPartitionedRegion().getCachePerfStats();
-                }
-              } // try
-            }
-          } // sync re
-        } // end while
-      } catch (DiskAccessException dae) {
-        // Asif:Feel that it is safe to destroy the region here as there appears
-        // to be no chance of deadlock during region destruction
-        result = null;
-        this._getOwner().handleDiskAccessException(dae);
-        throw dae;
-      } finally {
-        if (oqlIndexManager != null) {
-          oqlIndexManager.countDownIndexUpdaters();
-        }
-        if (result != null) {
-          try {
-            // Note we do distribution after releasing all sync to avoid deadlock
-            final boolean invokeListeners = event.basicGetNewValue() != Token.TOMBSTONE;
-            owner.basicPutPart3(event, result, !uninitialized, lastModifiedTime, invokeListeners,
-                ifNew, ifOld, expectedOldValue, requireOldValue);
-          } finally {
-            // bug 32589, post update may throw an exception if exception occurs
-            // for any recipients
-            if (!clearOccured) {
-              try {
-                lruUpdateCallback();
-              } catch (DiskAccessException dae) {
-                // Asif:Feel that it is safe to destroy the region here as there appears
-                // to be no chance of deadlock during region destruction
-                result = null;
-                this._getOwner().handleDiskAccessException(dae);
-                throw dae;
-              }
-            }
-          } // finally
-        } else {
-          resetThreadLocals();
-        }
-      }
-    } finally {
-      releaseCacheModificationLock(owner, event);
-    }
-    return result;
-  }
-
-  /**
-   * If the value in the VM is still REMOVED_PHASE1 Token, then the operation was not completed (due
-   * to cacheWriter exception, concurrentMap operation) etc.
-   */
-  private boolean isOpComplete(RegionEntry re, EntryEventImpl event) {
-    if (re.getValueAsToken() == Token.REMOVED_PHASE1) {
-      return false;
-    }
-    return true;
-  }
-
-  private boolean satisfiesExpectedOldValue(EntryEventImpl event, RegionEntry re,
-      Object expectedOldValue, boolean replaceOnClient) {
-    // replace is propagated to server, so no need to check
-    // satisfiesOldValue on client
-    if (expectedOldValue != null && !replaceOnClient) {
-      assert event.getOperation().guaranteesOldValue();
-      // We already called setOldValueInEvent so the event will have the old value.
-      @Unretained
-      Object v = event.getRawOldValue();
-      // Note that v will be null instead of INVALID because setOldValue
-      // converts INVALID to null.
-      // But checkExpectedOldValue handle this and says INVALID equals null.
-      if (!AbstractRegionEntry.checkExpectedOldValue(expectedOldValue, v, event.getRegion())) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  // PRECONDITION: caller must be synced on re
-  private void setOldValueInEvent(EntryEventImpl event, RegionEntry re, boolean cacheWrite,
-      boolean requireOldValue) {
-    boolean needToSetOldValue =
-        cacheWrite || requireOldValue || event.getOperation().guaranteesOldValue();
-    if (needToSetOldValue) {
-      if (event.getOperation().guaranteesOldValue()) {
-        // In these cases we want to even get the old value from disk if it is not in memory
-        ReferenceCountHelper.skipRefCountTracking();
-        @Released
-        Object oldValueInVMOrDisk = re.getValueOffHeapOrDiskWithoutFaultIn(event.getRegion());
-        ReferenceCountHelper.unskipRefCountTracking();
-        try {
-          event.setOldValue(oldValueInVMOrDisk, true);
-        } finally {
-          OffHeapHelper.releaseWithNoTracking(oldValueInVMOrDisk);
-        }
-      } else {
-        // In these cases only need the old value if it is in memory
-        ReferenceCountHelper.skipRefCountTracking();
-
-        @Retained
-        @Released
-        Object oldValueInVM = re.getValueRetain(event.getRegion(), true); // OFFHEAP: re
-                                                                          // synced so can use
-                                                                          // its ref.
-        if (oldValueInVM == null) {
-          oldValueInVM = Token.NOT_AVAILABLE;
-        }
-        ReferenceCountHelper.unskipRefCountTracking();
-        try {
-          event.setOldValue(oldValueInVM);
-        } finally {
-          OffHeapHelper.releaseWithNoTracking(oldValueInVM);
-        }
-      }
-    } else {
-      // if the old value is in memory then if it is a GatewaySenderEventImpl then
-      // we want to set the old value.
-      @Unretained
-      Object ov = re.getValue(); // OFFHEAP _getValue is ok since re is synced and we only use it
-                                 // if its a GatewaySenderEventImpl.
-      // Since GatewaySenderEventImpl is never stored in an off-heap region nor a compressed region
-      // we don't need to worry about ov being compressed.
-      if (ov instanceof GatewaySenderEventImpl) {
-        event.setOldValue(ov, true);
-      }
-    }
-  }
-
-  protected void createEntry(EntryEventImpl event, final LocalRegion owner, RegionEntry re)
-      throws RegionClearedException {
-    final boolean wasTombstone = re.isTombstone();
-    processVersionTag(re, event);
-    event.putNewEntry(owner, re);
-    updateSize(event, 0, false, wasTombstone);
-    if (!event.getRegion().isInitialized()) {
-      owner.getImageState().removeDestroyedEntry(event.getKey());
-    }
-  }
-
-  protected void updateEntry(EntryEventImpl event, boolean requireOldValue, Object oldValueForDelta,
-      RegionEntry re) throws RegionClearedException {
-    final int oldSize = event.getRegion().calculateRegionEntryValueSize(re);
-    final boolean wasTombstone = re.isTombstone();
-    processVersionTag(re, event);
-    event.putExistingEntry(event.getRegion(), re, requireOldValue, oldValueForDelta);
-    EntryLogger.logPut(event);
-    updateSize(event, oldSize, true/* isUpdate */, wasTombstone);
-  }
-
-  private void updateLru(boolean clearOccured, RegionEntry re, EntryEventImpl event) {
-    if (!clearOccured) {
-      if (event.getOperation().isCreate()) {
-        lruEntryCreate(re);
-      } else {
-        lruEntryUpdate(re);
-      }
-    }
-  }
-
-  private void updateSize(EntryEventImpl event, int oldSize, boolean isUpdate,
-      boolean wasTombstone) {
-    if (isUpdate && !wasTombstone) {
-      _getOwner().updateSizeOnPut(event.getKey(), oldSize, event.getNewValueBucketSize());
-    } else {
-      _getOwner().updateSizeOnCreate(event.getKey(), event.getNewValueBucketSize());
-      if (!wasTombstone) {
-        incEntryCount(1);
-      }
-    }
-  }
-
-  private void notifyIndex(RegionEntry re, boolean isUpdating) {
-    if (_getOwner().indexMaintenanceSynchronous) {
-      re.setUpdateInProgress(isUpdating);
-    }
-  }
-
-  private void invokeCacheWriter(RegionEntry re, EntryEventImpl event, boolean cacheWrite,
-      CacheWriter cacheWriter, Set netWriteRecipients, boolean requireOldValue,
-      Object expectedOldValue, boolean replaceOnClient) {
-    // invoke listeners only if region is initialized
-    if (_getOwner().isInitialized() && cacheWrite) {
-      // event.setOldValue already called in setOldValueInEvent
-
-      // bug #42638 for replaceOnClient, do not make the event create
-      // or update since replace must propagate to server
-      if (!replaceOnClient) {
-        if (re.isDestroyedOrRemoved()) {
-          event.makeCreate();
-        } else {
-          event.makeUpdate();
-        }
-      }
-      _getOwner().cacheWriteBeforePut(event, netWriteRecipients, cacheWriter, requireOldValue,
-          expectedOldValue);
-    }
-    if (!_getOwner().isInitialized() && !cacheWrite) {
-      // block setting of old value in putNewValueNoSync, don't
-      // need it
-      event.oldValueNotAvailable();
-    }
-  }
-
-  private boolean continueOverwriteDestroyed(RegionEntry re, EntryEventImpl event,
-      boolean overwriteDestroyed, boolean ifNew) {
-    Token oldValueInVM = re.getValueAsToken();
-    // if region is under GII, check if token is destroyed
-    if (!overwriteDestroyed) {
-      if (!_getOwner().isInitialized()
-          && (oldValueInVM == Token.DESTROYED || oldValueInVM == Token.TOMBSTONE)) {
-        event.setOldValueDestroyedToken();
-        return false;
-      }
-    }
-    if (ifNew && !Token.isRemoved(oldValueInVM)) {
-      return false;
-    }
-    return true;
-  }
-
-  private boolean continueUpdate(RegionEntry re, EntryEventImpl event, boolean ifOld,
-      boolean replaceOnClient) {
-    if (ifOld) {
-      // only update, so just do tombstone maintainence and exit
-      if (re.isTombstone() && event.getVersionTag() != null) {
-        // refresh the tombstone so it doesn't time out too soon
-        processVersionTag(re, event);
-        try {
-          re.setValue(_getOwner(), Token.TOMBSTONE);
-        } catch (RegionClearedException e) {
-          // that's okay - when writing a tombstone into a disk, the
-          // region has been cleared (including this tombstone)
-        }
-        _getOwner().rescheduleTombstone(re, re.getVersionStamp().asVersionTag());
-        return false;
-      }
-      if (re.isRemoved() && !replaceOnClient) {
-        return false;
-      }
-    }
-    return true;
+    return regionMapPut.put();
   }
 
   @Override
-  public void txApplyPut(Operation p_putOp, Object key, Object nv, boolean didDestroy,
+  public void runWhileEvictionDisabled(Runnable r) {
+    final boolean disabled = disableLruUpdateCallback();
+    try {
+      r.run();
+    } finally {
+      if (disabled) {
+        enableLruUpdateCallback();
+      }
+    }
+  }
+
+  @Override
+  public void txApplyPut(Operation putOp, Object key, Object nv, boolean didDestroy,
       TransactionId txId, TXRmtEvent txEvent, EventID eventId, Object aCallbackArgument,
       List<EntryEventImpl> pendingCallbacks, FilterRoutingInfo filterRoutingInfo,
       ClientProxyMembershipID bridgeContext, TXEntryState txEntryState, VersionTag versionTag,
       long tailKey) {
+    assert pendingCallbacks != null;
     final LocalRegion owner = _getOwner();
-    if (owner == null) {
-      // "fix" for bug 32440
-      Assert.assertTrue(false, "The owner for RegionMap " + this + " is null");
-    }
-
-    Operation putOp = p_putOp;
-
-    Object newValue = nv;
-
-    final boolean hasRemoteOrigin = !((TXId) txId).getMemberId().equals(owner.getMyId());
-    final boolean isTXHost = txEntryState != null;
-    final boolean isClientTXOriginator = owner.getCache().isClient() && !hasRemoteOrigin;
-    final boolean isRegionReady = owner.isInitialized();
     @Released
-    EntryEventImpl cbEvent = null;
-    boolean invokeCallbacks = shouldCreateCBEvent(owner, isRegionReady);
-    boolean cbEventInPending = false;
-    cbEvent = createCBEvent(owner, putOp, key, newValue, txId, txEvent, eventId, aCallbackArgument,
-        filterRoutingInfo, bridgeContext, txEntryState, versionTag, tailKey);
-    try {
-      if (logger.isDebugEnabled()) {
-        logger.debug("txApplyPut cbEvent={}", cbEvent);
-      }
-
-
-      if (owner.isUsedForPartitionedRegionBucket()) {
-        newValue = EntryEventImpl.getCachedDeserializable(nv, cbEvent);
-        txHandleWANEvent(owner, cbEvent, txEntryState);
-      }
-
-      boolean opCompleted = false;
-      // Fix for Bug #44431. We do NOT want to update the region and wait
-      // later for index INIT as region.clear() can cause inconsistency if
-      // happened in parallel as it also does index INIT.
-      IndexManager oqlIndexManager = owner.getIndexManager();
-      if (oqlIndexManager != null) {
-        oqlIndexManager.waitForIndexInit();
-      }
-      try {
-        if (hasRemoteOrigin && !isTXHost && !isClientTXOriginator) {
-          // If we are not a mirror then only apply the update to existing
-          // entries
-          //
-          // If we are a mirror then then only apply the update to
-          // existing entries when the operation is an update and we
-          // are initialized.
-          // Otherwise use the standard create/update logic
-          if (!owner.isAllEvents() || (!putOp.isCreate() && isRegionReady)) {
-            // At this point we should only apply the update if the entry exists
-            RegionEntry re = getEntry(key); // Fix for bug 32347.
-            if (re != null) {
-              synchronized (re) {
-                if (!re.isRemoved()) {
-                  opCompleted = true;
-                  putOp = putOp.getCorrespondingUpdateOp();
-                  // Net writers are not called for received transaction data
-                  final int oldSize = owner.calculateRegionEntryValueSize(re);
-                  if (cbEvent != null) {
-                    cbEvent.setRegionEntry(re);
-                    cbEvent.setOldValue(re.getValueInVM(owner)); // OFFHEAP eei
-                  }
-
-                  boolean clearOccured = false;
-                  // Set RegionEntry updateInProgress
-                  if (owner.indexMaintenanceSynchronous) {
-                    re.setUpdateInProgress(true);
-                  }
-                  try {
-                    txRemoveOldIndexEntry(putOp, re);
-                    if (didDestroy) {
-                      re.txDidDestroy(owner.cacheTimeMillis());
-                    }
-                    if (txEvent != null) {
-                      txEvent.addPut(putOp, owner, re, re.getKey(), newValue, aCallbackArgument);
-                    }
-                    re.setValueResultOfSearch(putOp.isNetSearch());
-                    try {
-                      processAndGenerateTXVersionTag(owner, cbEvent, re, txEntryState);
-                      {
-                        re.setValue(owner,
-                            re.prepareValueForCache(owner, newValue, cbEvent, !putOp.isCreate()));
-                      }
-                      if (putOp.isCreate()) {
-                        owner.updateSizeOnCreate(key, owner.calculateRegionEntryValueSize(re));
-                      } else if (putOp.isUpdate()) {
-                        // Rahul : fix for 41694. Negative bucket size can also be
-                        // an issue with normal GFE Delta and will have to be fixed
-                        // in a similar manner and may be this fix the the one for
-                        // other delta can be combined.
-                        {
-                          owner.updateSizeOnPut(key, oldSize,
-                              owner.calculateRegionEntryValueSize(re));
-                        }
-                      }
-                    } catch (RegionClearedException rce) {
-                      clearOccured = true;
-                    }
-                    {
-                      long lastMod = owner.cacheTimeMillis();
-                      EntryLogger.logTXPut(_getOwnerObject(), key, nv);
-                      re.updateStatsForPut(lastMod, lastMod);
-                      owner.txApplyPutPart2(re, re.getKey(), lastMod, false, didDestroy,
-                          clearOccured);
-                    }
-                  } finally {
-                    if (re != null && owner.indexMaintenanceSynchronous) {
-                      re.setUpdateInProgress(false);
-                    }
-                  }
-                  if (invokeCallbacks) {
-                    cbEvent.makeUpdate();
-                    switchEventOwnerAndOriginRemote(cbEvent, hasRemoteOrigin);
-                    if (pendingCallbacks == null) {
-                      owner.invokeTXCallbacks(EnumListenerEvent.AFTER_UPDATE, cbEvent,
-                          hasRemoteOrigin);
-                    } else {
-                      pendingCallbacks.add(cbEvent);
-                      cbEventInPending = true;
-                    }
-                  }
-                  if (!clearOccured) {
-                    lruEntryUpdate(re);
-                  }
-                }
-              }
-              if (didDestroy && !opCompleted) {
-                owner.txApplyInvalidatePart2(re, re.getKey(), true, false /* clear */);
-              }
-            }
-            if (owner.getConcurrencyChecksEnabled() && txEntryState != null && cbEvent != null) {
-              txEntryState.setVersionTag(cbEvent.getVersionTag());
-            }
-            return;
-          }
-        }
-        RegionEntry newRe = getEntryFactory().createEntry(owner, key, Token.REMOVED_PHASE1);
-        synchronized (newRe) {
-          try {
-            RegionEntry oldRe = putEntryIfAbsent(key, newRe);
-            while (!opCompleted && oldRe != null) {
-              synchronized (oldRe) {
-                if (oldRe.isRemovedPhase2()) {
-                  owner.getCachePerfStats().incRetries();
-                  getEntryMap().remove(key, oldRe);
-                  oldRe = putEntryIfAbsent(key, newRe);
-                } else {
-                  opCompleted = true;
-                  if (!oldRe.isRemoved()) {
-                    putOp = putOp.getCorrespondingUpdateOp();
-                  }
-                  // Net writers are not called for received transaction data
-                  final int oldSize = owner.calculateRegionEntryValueSize(oldRe);
-                  final boolean oldIsRemoved = oldRe.isDestroyedOrRemoved();
-                  if (cbEvent != null) {
-                    cbEvent.setRegionEntry(oldRe);
-                    cbEvent.setOldValue(oldRe.getValueInVM(owner)); // OFFHEAP eei
-                  }
-                  boolean clearOccured = false;
-                  // Set RegionEntry updateInProgress
-                  if (owner.indexMaintenanceSynchronous) {
-                    oldRe.setUpdateInProgress(true);
-                  }
-                  try {
-                    txRemoveOldIndexEntry(putOp, oldRe);
-                    if (didDestroy) {
-                      oldRe.txDidDestroy(owner.cacheTimeMillis());
-                    }
-                    if (txEvent != null) {
-                      txEvent.addPut(putOp, owner, oldRe, oldRe.getKey(), newValue,
-                          aCallbackArgument);
-                    }
-                    oldRe.setValueResultOfSearch(putOp.isNetSearch());
-                    try {
-                      processAndGenerateTXVersionTag(owner, cbEvent, oldRe, txEntryState);
-                      boolean wasTombstone = oldRe.isTombstone();
-                      {
-                        oldRe.setValue(owner, oldRe.prepareValueForCache(owner, newValue, cbEvent,
-                            !putOp.isCreate()));
-                        if (wasTombstone) {
-                          owner.unscheduleTombstone(oldRe);
-                        }
-                      }
-                      if (putOp.isCreate()) {
-                        owner.updateSizeOnCreate(key, owner.calculateRegionEntryValueSize(oldRe));
-                      } else if (putOp.isUpdate()) {
-                        // Rahul : fix for 41694. Negative bucket size can also be
-                        // an issue with normal GFE Delta and will have to be fixed
-                        // in a similar manner and may be this fix the the one for
-                        // other delta can be combined.
-                        {
-                          owner.updateSizeOnPut(key, oldSize,
-                              owner.calculateRegionEntryValueSize(oldRe));
-                        }
-                      }
-                    } catch (RegionClearedException rce) {
-                      clearOccured = true;
-                    }
-                    {
-                      long lastMod = owner.cacheTimeMillis();
-                      EntryLogger.logTXPut(_getOwnerObject(), key, nv);
-                      oldRe.updateStatsForPut(lastMod, lastMod);
-                      owner.txApplyPutPart2(oldRe, oldRe.getKey(), lastMod, false, didDestroy,
-                          clearOccured);
-                    }
-                  } finally {
-                    if (oldRe != null && owner.indexMaintenanceSynchronous) {
-                      oldRe.setUpdateInProgress(false);
-                    }
-                  }
-                  if (invokeCallbacks) {
-                    if (!oldIsRemoved) {
-                      cbEvent.makeUpdate();
-                    }
-                    switchEventOwnerAndOriginRemote(cbEvent, hasRemoteOrigin);
-                    if (pendingCallbacks == null) {
-                      owner.invokeTXCallbacks(
-                          cbEvent.op.isCreate() ? EnumListenerEvent.AFTER_CREATE
-                              : EnumListenerEvent.AFTER_UPDATE,
-                          cbEvent, true/* callDispatchListenerEvent */);
-                    } else {
-                      pendingCallbacks.add(cbEvent);
-                      cbEventInPending = true;
-                    }
-                  }
-                  if (!clearOccured) {
-                    lruEntryUpdate(oldRe);
-                  }
-                }
-              }
-            }
-            if (!opCompleted) {
-              putOp = putOp.getCorrespondingCreateOp();
-              if (cbEvent != null) {
-                cbEvent.setRegionEntry(newRe);
-                cbEvent.setOldValue(null);
-              }
-              boolean clearOccured = false;
-              // Set RegionEntry updateInProgress
-              if (owner.indexMaintenanceSynchronous) {
-                newRe.setUpdateInProgress(true);
-              }
-              try {
-                txRemoveOldIndexEntry(putOp, newRe);
-                // creating a new entry
-                if (didDestroy) {
-                  newRe.txDidDestroy(owner.cacheTimeMillis());
-                }
-                if (txEvent != null) {
-                  txEvent.addPut(putOp, owner, newRe, newRe.getKey(), newValue, aCallbackArgument);
-                }
-                newRe.setValueResultOfSearch(putOp.isNetSearch());
-                try {
-
-                  processAndGenerateTXVersionTag(owner, cbEvent, newRe, txEntryState);
-                  {
-                    newRe.setValue(owner,
-                        newRe.prepareValueForCache(owner, newValue, cbEvent, !putOp.isCreate()));
-                  }
-                  owner.updateSizeOnCreate(newRe.getKey(),
-                      owner.calculateRegionEntryValueSize(newRe));
-                } catch (RegionClearedException rce) {
-                  clearOccured = true;
-                }
-                {
-                  long lastMod = owner.cacheTimeMillis();
-                  EntryLogger.logTXPut(_getOwnerObject(), key, nv);
-                  newRe.updateStatsForPut(lastMod, lastMod);
-                  owner.txApplyPutPart2(newRe, newRe.getKey(), lastMod, true, didDestroy,
-                      clearOccured);
-                }
-              } finally {
-                if (newRe != null && owner.indexMaintenanceSynchronous) {
-                  newRe.setUpdateInProgress(false);
-                }
-              }
-              opCompleted = true;
-              if (invokeCallbacks) {
-                cbEvent.makeCreate();
-                cbEvent.setOldValue(null);
-                switchEventOwnerAndOriginRemote(cbEvent, hasRemoteOrigin);
-                if (pendingCallbacks == null) {
-                  owner.invokeTXCallbacks(EnumListenerEvent.AFTER_CREATE, cbEvent,
-                      true/* callDispatchListenerEvent */);
-                } else {
-                  pendingCallbacks.add(cbEvent);
-                  cbEventInPending = true;
-                }
-              }
-              if (!clearOccured) {
-                lruEntryCreate(newRe);
-                incEntryCount(1);
-              }
-            }
-          } finally {
-            if (!opCompleted) {
-              removeEntry(key, newRe, false);
-            }
-          }
-        }
-        if (owner.getConcurrencyChecksEnabled() && txEntryState != null && cbEvent != null) {
-          txEntryState.setVersionTag(cbEvent.getVersionTag());
-        }
-      } catch (DiskAccessException dae) {
-        owner.handleDiskAccessException(dae);
-        throw dae;
-      } finally {
-        if (oqlIndexManager != null) {
-          oqlIndexManager.countDownIndexUpdaters();
-        }
-      }
-    } finally {
-      if (!cbEventInPending)
-        cbEvent.release();
+    final EntryEventImpl callbackEvent =
+        createTransactionCallbackEvent(owner, putOp, key, nv, txId, txEvent, eventId,
+            aCallbackArgument, filterRoutingInfo, bridgeContext, txEntryState, versionTag, tailKey);
+    if (owner.isUsedForPartitionedRegionBucket()) {
+      callbackEvent.makeSerializedNewValue();
+      txHandleWANEvent(owner, callbackEvent, txEntryState);
     }
+
+    RegionMapCommitPut commitPut = new RegionMapCommitPut(this, owner, callbackEvent, putOp,
+        didDestroy, txId, txEvent, pendingCallbacks, txEntryState);
+    commitPut.put();
   }
 
-  private void txHandleWANEvent(final LocalRegion owner, EntryEventImpl cbEvent,
+  private void txHandleWANEvent(final LocalRegion owner, EntryEventImpl callbackEvent,
       TXEntryState txEntryState) {
-    ((BucketRegion) owner).handleWANEvent(cbEvent);
+    owner.handleWANEvent(callbackEvent);
     if (txEntryState != null) {
-      txEntryState.setTailKey(cbEvent.getTailKey());
+      txEntryState.setTailKey(callbackEvent.getTailKey());
     }
   }
 
   /**
    * called from txApply* methods to process and generate versionTags.
    */
-  private void processAndGenerateTXVersionTag(final LocalRegion owner, EntryEventImpl cbEvent,
-      RegionEntry re, TXEntryState txEntryState) {
-    if (shouldPerformConcurrencyChecks(owner, cbEvent)) {
+  @Override
+  public void processAndGenerateTXVersionTag(EntryEventImpl callbackEvent, RegionEntry re,
+      TXEntryState txEntryState) {
+    final LocalRegion owner = _getOwner();
+    if (shouldPerformConcurrencyChecks(owner, callbackEvent)) {
       try {
         if (txEntryState != null && txEntryState.getRemoteVersionTag() != null) {
           // to generate a version based on a remote VersionTag, we will
@@ -2957,43 +2104,29 @@ public abstract class AbstractRegionMap
             stamp.setVersions(remoteTag);
           }
         }
-        processVersionTag(re, cbEvent);
+        processVersionTag(re, callbackEvent);
       } catch (ConcurrentCacheModificationException ignore) {
-        // ignore this execption, however invoke callbacks for this operation
+        // ignore this exception, however invoke callbacks for this operation
       }
 
       // For distributed transactions, stuff the next region version generated
-      // in phase-1 commit into the cbEvent so that ARE.generateVersionTag can later
+      // in phase-1 commit into the callbackEvent so that ARE.generateVersionTag can later
       // just apply it and not regenerate it in phase-2 commit
-      if (cbEvent != null && txEntryState != null && txEntryState.getDistTxEntryStates() != null) {
-        cbEvent.setNextRegionVersion(txEntryState.getDistTxEntryStates().getRegionVersion());
+      if (txEntryState != null
+          && txEntryState.getDistTxEntryStates() != null) {
+        callbackEvent.setNextRegionVersion(txEntryState.getDistTxEntryStates().getRegionVersion());
       }
 
-      // cbEvent.setNextRegionVersion(txEntryState.getNextRegionVersion());
-      owner.generateAndSetVersionTag(cbEvent, re);
+      // callbackEvent.setNextRegionVersion(txEntryState.getNextRegionVersion());
+      owner.generateAndSetVersionTag(callbackEvent, re);
     }
   }
 
   /**
-   * Checks for concurrency checks enabled on Region and that cbEvent is not null.
+   * Checks for concurrency checks enabled on Region and that callbackEvent is not null.
    */
-  private boolean shouldPerformConcurrencyChecks(LocalRegion owner, EntryEventImpl cbEvent) {
-    return owner.getConcurrencyChecksEnabled() && cbEvent != null;
-  }
-
-  /**
-   * Switch the event's region from BucketRegion to owning PR and set originRemote to the given
-   * value
-   */
-  static EntryEventImpl switchEventOwnerAndOriginRemote(EntryEventImpl event,
-      boolean originRemote) {
-    assert event != null;
-    if (event.getRegion().isUsedForPartitionedRegionBucket()) {
-      LocalRegion pr = event.getRegion().getPartitionedRegion();
-      event.setRegion(pr);
-    }
-    event.setOriginRemote(originRemote);
-    return event;
+  private boolean shouldPerformConcurrencyChecks(LocalRegion owner, EntryEventImpl callbackEvent) {
+    return owner.getConcurrencyChecksEnabled() && callbackEvent != null;
   }
 
   /**
@@ -3002,7 +2135,8 @@ public abstract class AbstractRegionMap
    *
    * @param entry the RegionEntry that contains the value prior to applying the op
    */
-  private void txRemoveOldIndexEntry(Operation op, RegionEntry entry) {
+  @Override
+  public void txRemoveOldIndexEntry(Operation op, RegionEntry entry) {
     if ((op.isUpdate() && !entry.isInvalid()) || op.isInvalidate() || op.isDestroy()) {
       IndexManager idxManager = _getOwner().getIndexManager();
       if (idxManager != null) {
@@ -3024,125 +2158,14 @@ public abstract class AbstractRegionMap
     }
   }
 
-  static boolean shouldCreateCBEvent(final LocalRegion owner, final boolean isInitialized) {
-    LocalRegion lr = owner;
-    boolean isPartitioned = lr.isUsedForPartitionedRegionBucket();
-
-    if (isPartitioned) {
-      /*
-       * if(!((BucketRegion)lr).getBucketAdvisor().isPrimary()) {
-       * if(!BucketRegion.FORCE_LOCAL_LISTENERS_INVOCATION) { return false; } }
-       */
-      lr = owner.getPartitionedRegion();
-    }
-    return (isPartitioned || isInitialized) && (lr.shouldDispatchListenerEvent()
-        || lr.shouldNotifyBridgeClients() || lr.getConcurrencyChecksEnabled());
-  }
-
-  /** create a callback event for applying a transactional change to the local cache */
-  @Retained
-  public static EntryEventImpl createCBEvent(final LocalRegion re, Operation op, Object key,
+  EntryEventImpl createTransactionCallbackEvent(final LocalRegion re, Operation op, Object key,
       Object newValue, TransactionId txId, TXRmtEvent txEvent, EventID eventId,
       Object aCallbackArgument, FilterRoutingInfo filterRoutingInfo,
       ClientProxyMembershipID bridgeContext, TXEntryState txEntryState, VersionTag versionTag,
       long tailKey) {
-    DistributedMember originator = null;
-    // txId should not be null even on localOrigin
-    Assert.assertTrue(txId != null);
-    originator = ((TXId) txId).getMemberId();
-
-    LocalRegion eventRegion = re;
-    if (eventRegion.isUsedForPartitionedRegionBucket()) {
-      eventRegion = re.getPartitionedRegion();
-    }
-
-    @Retained
-    EntryEventImpl retVal = EntryEventImpl.create(re, op, key, newValue, aCallbackArgument,
-        txEntryState == null, originator);
-    boolean returnedRetVal = false;
-    try {
-
-
-      if (bridgeContext != null) {
-        retVal.setContext(bridgeContext);
-      }
-
-      if (eventRegion.generateEventID()) {
-        retVal.setEventId(eventId);
-      }
-
-      if (versionTag != null) {
-        retVal.setVersionTag(versionTag);
-      }
-
-      retVal.setTailKey(tailKey);
-
-      FilterInfo localRouting = null;
-      boolean computeFilterInfo = false;
-      if (filterRoutingInfo == null) {
-        computeFilterInfo = true;
-      } else {
-        localRouting = filterRoutingInfo.getLocalFilterInfo();
-        if (localRouting != null) {
-          // routing was computed in this VM but may need to perform local interest processing
-          computeFilterInfo = !filterRoutingInfo.hasLocalInterestBeenComputed();
-        } else {
-          // routing was computed elsewhere and is in the "remote" routing table
-          localRouting = filterRoutingInfo.getFilterInfo(re.getMyId());
-        }
-        if (localRouting != null) {
-          if (!computeFilterInfo) {
-            retVal.setLocalFilterInfo(localRouting);
-          }
-        } else {
-          computeFilterInfo = true;
-        }
-      }
-      if (logger.isTraceEnabled()) {
-        logger.trace("createCBEvent filterRouting={} computeFilterInfo={} local routing={}",
-            filterRoutingInfo, computeFilterInfo, localRouting);
-      }
-
-      if (re.isUsedForPartitionedRegionBucket()) {
-        BucketRegion bucket = (BucketRegion) re;
-        if (BucketRegion.FORCE_LOCAL_LISTENERS_INVOCATION
-            || bucket.getBucketAdvisor().isPrimary()) {
-          retVal.setInvokePRCallbacks(true);
-        } else {
-          retVal.setInvokePRCallbacks(false);
-        }
-
-        if (computeFilterInfo) {
-          if (bucket.getBucketAdvisor().isPrimary()) {
-            if (logger.isTraceEnabled()) {
-              logger.trace("createCBEvent computing routing for primary bucket");
-            }
-            FilterProfile fp = ((BucketRegion) re).getPartitionedRegion().getFilterProfile();
-            if (fp != null) {
-              FilterRoutingInfo fri = fp.getFilterRoutingInfoPart2(filterRoutingInfo, retVal);
-              if (fri != null) {
-                retVal.setLocalFilterInfo(fri.getLocalFilterInfo());
-              }
-            }
-          }
-        }
-      } else if (computeFilterInfo) { // not a bucket
-        if (logger.isTraceEnabled()) {
-          logger.trace("createCBEvent computing routing for non-bucket");
-        }
-        FilterProfile fp = re.getFilterProfile();
-        if (fp != null) {
-          retVal.setLocalFilterInfo(fp.getLocalFilterRouting(retVal));
-        }
-      }
-      retVal.setTransactionId(txId);
-      returnedRetVal = true;
-      return retVal;
-    } finally {
-      if (!returnedRetVal) {
-        retVal.release();
-      }
-    }
+    return txCallbackEventFactory
+        .createCallbackEvent(re, op, key, newValue, txId, txEvent, eventId, aCallbackArgument,
+            filterRoutingInfo, bridgeContext, txEntryState, versionTag, tailKey);
   }
 
   @Override
@@ -3235,7 +2258,7 @@ public abstract class AbstractRegionMap
   }
 
   @Override
-  public void lockRegionForAtomicTX(LocalRegion r) {
+  public void lockRegionForAtomicTX(InternalRegion r) {
     if (armLockTestHook != null)
       armLockTestHook.beforeLock(r, null);
 
@@ -3249,7 +2272,7 @@ public abstract class AbstractRegionMap
   }
 
   @Override
-  public void unlockRegionForAtomicTX(LocalRegion r) {
+  public void unlockRegionForAtomicTX(InternalRegion r) {
     if (armLockTestHook != null)
       armLockTestHook.beforeRelease(r, null);
 
@@ -3314,23 +2337,23 @@ public abstract class AbstractRegionMap
       synchronized (re) {
         int entryVersion = re.getVersionStamp().getEntryVersion();
         if (!re.isTombstone() || entryVersion > destroyedVersion) {
-          if (logger.isTraceEnabled(LogMarker.TOMBSTONE_COUNT)) {
-            logger.trace(LogMarker.TOMBSTONE_COUNT,
+          if (logger.isTraceEnabled(LogMarker.TOMBSTONE_COUNT_VERBOSE)) {
+            logger.trace(LogMarker.TOMBSTONE_COUNT_VERBOSE,
                 "tombstone for {} was resurrected with v{}; destroyed version was v{}; count is {}; entryMap size is {}",
                 re.getKey(), re.getVersionStamp().getEntryVersion(), destroyedVersion,
                 this._getOwner().getTombstoneCount(), size());
           }
         } else {
-          if (logger.isTraceEnabled(LogMarker.TOMBSTONE_COUNT)) {
+          if (logger.isTraceEnabled(LogMarker.TOMBSTONE_COUNT_VERBOSE)) {
             if (entryVersion == destroyedVersion) {
               // logging this can put tremendous pressure on the log writer in tests
               // that "wait for silence"
-              logger.trace(LogMarker.TOMBSTONE_COUNT,
+              logger.trace(LogMarker.TOMBSTONE_COUNT_VERBOSE,
                   "removing tombstone for {} with v{} rv{}; count is {}", re.getKey(),
                   destroyedVersion, version.getRegionVersion(),
                   (this._getOwner().getTombstoneCount() - 1));
             } else {
-              logger.trace(LogMarker.TOMBSTONE_COUNT,
+              logger.trace(LogMarker.TOMBSTONE_COUNT_VERBOSE,
                   "removing entry (v{}) that is older than an expiring tombstone (v{} rv{}) for {}",
                   entryVersion, destroyedVersion, version.getRegionVersion(), re.getKey());
             }
@@ -3398,60 +2421,8 @@ public abstract class AbstractRegionMap
   }
 
   @Override
-  public long getEvictions() {
-    return 0;
-  }
-
-  @Override
-  public void incRecentlyUsed() {
-    // nothing by default
-  }
-
-  @Override
-  public EvictionController getEvictionController() {
-    return null;
-  }
-
-  @Override
   public int getEntryOverhead() {
     return (int) ReflectionSingleObjectSizer.sizeof(getEntryFactory().getEntryClass());
-  }
-
-  @Override
-  public boolean beginChangeValueForm(EvictableEntry le,
-      CachedDeserializable vmCachedDeserializable, Object v) {
-    return false;
-  }
-
-  @Override
-  public void finishChangeValueForm() {}
-
-  @Override
-  public int centralizedLruUpdateCallback() {
-    return 0;
-  }
-
-  @Override
-  public void updateEvictionCounter() {}
-
-  public interface ARMLockTestHook {
-    void beforeBulkLock(InternalRegion region);
-
-    void afterBulkLock(InternalRegion region);
-
-    void beforeBulkRelease(InternalRegion region);
-
-    void afterBulkRelease(InternalRegion region);
-
-    void beforeLock(InternalRegion region, CacheEvent event);
-
-    void afterLock(InternalRegion region, CacheEvent event);
-
-    void beforeRelease(InternalRegion region, CacheEvent event);
-
-    void afterRelease(InternalRegion region, CacheEvent event);
-
-    void beforeStateFlushWait();
   }
 
   private ARMLockTestHook armLockTestHook;

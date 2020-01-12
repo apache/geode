@@ -23,7 +23,12 @@ The <%=vars.product_name_long%> cluster configuration service persists cluster c
 
 ## Why Use the Cluster Configuration Service
 
-We highly recommend that you use the `gfsh` command line and the cluster configuration service as the primary mechanism to manage your distributed system configuration. Using a common cluster configuration reduces the amount of time you spend configuring individual members and enforces consistent configurations when bringing up new members in your cluster. You no longer need to reconfigure each new member that you add to the cluster. You no longer need to worry about validating your cache.xml file. It also becomes easier to propagate configuration changes across your cluster and deploy your configuration changes to different environments.
+We highly recommend that you use the `gfsh` command line 
+and the cluster configuration service as the primary mechanism
+to manage your cluster configuration.
+Specify configuration within a `cache.xml` file for only those
+items that cannot be specified or altered using `gfsh`.
+Using a common cluster configuration reduces the amount of time you spend configuring individual members and enforces consistent configurations when bringing up new members in your cluster. You no longer need to reconfigure each new member that you add to the cluster. You no longer need to worry about validating your `cache.xml` file. It also becomes easier to propagate configuration changes across your cluster and deploy your configuration changes to different environments.
 
 You can use the cluster configuration service to:
 
@@ -42,13 +47,16 @@ The standalone locators distribute configuration to all locators in a cluster. E
 **Note:**
 The default behavior for `gfsh` is to create and save cluster configurations. You can disable the cluster configuration service by using the `--enable-cluster-configuration=false` option when starting locators.
 
-Subsequently, any servers that you start with `gfsh` that have `--use-cluster-configuration` set to `true` will pick up the cluster configuration from the locator as well as any appropriate group-level configurations (for member groups they belong to). To disable the cluster configuration service on a server, you must start the server with the `--use-cluster-configuration` parameter set to `false`. By default, the parameter is set to true.
+You can load existing configuration into
+the cluster by using the
+[`gfsh import cluster-configuration`](../../tools_modules/gfsh/command-pages/import.html#topic_vnv_grz_ck)
+command after starting up a locator.
 
-You can also load existing configuration files into the cluster configuration service by starting up a standalone locator with the parameter `--load-cluster-configuration-from-dir` set to true. See [Loading Existing Configuration Files into Cluster Configuration](gfsh_load_from_shared_dir.html).
+Subsequently, any servers that you start with `gfsh` that have `--use-cluster-configuration` set to `true` will pick up the cluster configuration from the locator as well as any appropriate group-level configurations (for member groups they belong to). To disable the cluster configuration service on a server, you must start the server with the `--use-cluster-configuration` parameter set to `false`. By default, the parameter is set to true.
 
 ## How the Cluster Configuration Service Works
 
-When you use `gfsh` commands to create <%=vars.product_name_long%> regions, disk-stores, and other objects, the cluster configuration service saves the configurations on each locator in the cluster (also called a <%=vars.product_name%> distributed system). If you specify a group when issuing these commands, a separate configuration is saved containing only configurations that apply to the group.
+When you use `gfsh` commands to create <%=vars.product_name_long%> regions, disk-stores, and other objects, the cluster configuration service saves the configurations on each locator in the cluster. If you specify a group when issuing these commands, a separate configuration is saved containing only configurations that apply to the group.
 
 When you use `gfsh` to start new <%=vars.product_name_long%> servers, the locator distributes the persisted configurations to the new server. If you specify a group when starting the server, the server receives the group-level configuration in addition to the cluster-level configuration. Group-level configurations are applied after cluster-wide configurations; therefore you can use group-level to override cluster-level settings.
 
@@ -68,27 +76,28 @@ The following `gfsh` commands cause the configuration to be written to all locat
 -   `create disk-store`
 -   `destroy disk-store`
 -   `create async-event-queue`
+-   `alter async-event-queue`
+-   `destroy async-event-queue`
 -   `deploy jar`
 -   `undeploy jar`
+-   `create gateway-sender`
+-   `destroy gateway-sender`
+-   `create gateway-receiver`
+-   `destroy gateway-receiver`
+-   `alter query-service`
 
 **\*** Note that the `configure pdx` command must be executed *before* starting your data members. This command does not affect any currently running members in the system. Data members (with cluster configuration enabled) that are started after running this command will pick up the new PDX configuration.
 
-The following gateway-related commands use the cluster configuration service, and their configuration is saved by locators:
-
--   `create gateway-sender`
--   `create gateway-receiver`
-
 ## <a id="concept_r22_hyw_bl__section_bn3_23p_y4" class="no-quick-link"></a>gfsh Limitations
 
-There are some configurations that you cannot create using `gfsh`, and that you must configure using cache.xml or the API:
+These are the configurations that you cannot create or alter using `gfsh`.
+These configurations must be within a `cache.xml` file or be applied
+by using the API:
 
 -   Client cache configuration
 -   You cannot directly modify the attributes of the following objects:
     -   `function`
     -   `custom-load-probe`
-    -   `cache-listener`
-    -   `cache-loader`
-    -   `cache-writer`
     -   `compressor`
     -   `serializer`
     -   `instantiator`
@@ -97,9 +106,7 @@ There are some configurations that you cannot create using `gfsh`, and that you 
         **Note:**
         The `configure pdx` command always specifies the `org.apache.geode.pdx.ReflectionBasedAutoSerializer` class. You cannot specify a custom PDX serializer in gfsh.
 
-    -   `custom-expiry`
     -   `initializer`
-    -   `declarable`
     -   `lru-heap-percentage`
     -   `lru-memory-size`
     -   `partition-resolver`
@@ -107,11 +114,6 @@ There are some configurations that you cannot create using `gfsh`, and that you 
     -   `transaction-listener`
     -   `transaction-writer`
 -   Adding or removing a `TransactionListener`
--   Adding JNDI bindings
--   Deleting an `AsyncEventQueue`
-
-In addition, there are some limitations on configuring gateways using `gfsh`. You must use cache.xml or the Java APIs to configure the following:
-
 -   Configuring a `GatewayConflictResolver`
 -   You cannot specify parameters and values for Java classes for the following:
     -   `gateway-listener`
@@ -122,4 +124,4 @@ In addition, there are some limitations on configuring gateways using `gfsh`. Yo
 
 ## <a id="concept_r22_hyw_bl__section_fh1_c3p_y4" class="no-quick-link"></a>Disabling the Cluster Configuration Service
 
-If you do not want to use the cluster configuration service, start up your locator with the `--enable-cluster-configuration` parameter set to false or do not use standalone locators. You will then need to configure the cache (via cache.xml or API) separately on all your distributed system members.
+If you do not want to use the cluster configuration service, start up your locator with the `--enable-cluster-configuration` parameter set to false or do not use standalone locators. You will then need to configure the cache (via cache.xml or API) separately on all your cluster members.

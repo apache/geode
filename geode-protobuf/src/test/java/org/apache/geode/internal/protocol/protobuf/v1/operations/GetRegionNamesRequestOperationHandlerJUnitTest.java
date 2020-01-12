@@ -16,6 +16,7 @@ package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
 import static org.apache.geode.internal.Assert.assertTrue;
 import static org.apache.geode.internal.protocol.TestExecutionContext.getNoAuthCacheExecutionContext;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -31,13 +32,14 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufRequestUtilities;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
-import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 
-@Category(UnitTest.class)
+@Category({ClientServerTest.class})
 public class GetRegionNamesRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTest {
   private final String TEST_REGION1 = "test region 1";
   private final String TEST_REGION2 = "test region 2";
@@ -46,11 +48,11 @@ public class GetRegionNamesRequestOperationHandlerJUnitTest extends OperationHan
   @Before
   public void setUp() throws Exception {
     Region<String, String> region1Stub = mock(Region.class);
-    when(region1Stub.getName()).thenReturn(TEST_REGION1);
+    when(region1Stub.getFullPath()).thenReturn(TEST_REGION1);
     Region<String, String> region2Stub = mock(Region.class);
-    when(region2Stub.getName()).thenReturn(TEST_REGION2);
+    when(region2Stub.getFullPath()).thenReturn(TEST_REGION2);
     Region<String, String> region3Stub = mock(Region.class);
-    when(region3Stub.getName()).thenReturn(TEST_REGION3);
+    when(region3Stub.getFullPath()).thenReturn(TEST_REGION3);
 
     when(cacheStub.rootRegions()).thenReturn(Collections
         .unmodifiableSet(new HashSet<>(Arrays.asList(region1Stub, region2Stub, region3Stub))));
@@ -86,7 +88,8 @@ public class GetRegionNamesRequestOperationHandlerJUnitTest extends OperationHan
 
   @Test
   public void processReturnsNoCacheRegions() throws Exception {
-    InternalCache emptyCache = mock(InternalCache.class);
+    InternalCache emptyCache = mock(InternalCacheForClientAccess.class);
+    doReturn(emptyCache).when(emptyCache).getCacheForProcessingClientRequests();
     when(emptyCache.rootRegions())
         .thenReturn(Collections.unmodifiableSet(new HashSet<Region<String, String>>()));
     Result result = operationHandler.process(serializationService,

@@ -38,10 +38,11 @@ import org.apache.geode.internal.cache.DirectoryHolder;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.Oplog;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.lang.SystemUtils;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
-public class BackupFileCopier {
-  Logger logger = LogService.getLogger();
+class BackupFileCopier {
+  private static final Logger logger = LogService.getLogger();
 
   private static final String CONFIG_DIRECTORY = "config";
   private static final String USER_FILES = "user";
@@ -64,13 +65,13 @@ public class BackupFileCopier {
   }
 
   void copyConfigFiles() throws IOException {
-    ensureExistance(configDirectory);
+    ensureExistence(configDirectory);
     addConfigFileToBackup(cache.getCacheXmlURL());
     addConfigFileToBackup(DistributedSystem.getPropertiesFileURL());
     // TODO: should the gfsecurity.properties file be backed up?
   }
 
-  private void ensureExistance(Path directory) throws IOException {
+  private void ensureExistence(Path directory) throws IOException {
     if (!Files.exists(directory)) {
       Files.createDirectories(directory);
     }
@@ -82,7 +83,7 @@ public class BackupFileCopier {
     }
 
     try {
-      Path source = Paths.get(fileUrl.toURI());
+      Path source = getSource(fileUrl);
       if (Files.notExists(source)) {
         return;
       }
@@ -96,9 +97,9 @@ public class BackupFileCopier {
   }
 
   Set<File> copyUserFiles() throws IOException {
-    Set<File> userFilesBackedUp = new HashSet<>();
-    ensureExistance(userDirectory);
+    ensureExistence(userDirectory);
     List<File> backupFiles = cache.getBackupFiles();
+    Set<File> userFilesBackedUp = new HashSet<>();
     for (File original : backupFiles) {
       if (original.exists()) {
         original = original.getAbsoluteFile();
@@ -116,10 +117,9 @@ public class BackupFileCopier {
   }
 
   Set<File> copyDeployedJars() throws IOException {
+    ensureExistence(userDirectory);
     Set<File> userJars = new HashSet<>();
     JarDeployer deployer = null;
-
-    ensureExistance(userDirectory);
     try {
       // Suspend any user deployed jar file updates during this backup.
       deployer = getJarDeployer();
@@ -167,19 +167,32 @@ public class BackupFileCopier {
     }
 
     Path tempDiskDir = temporaryFiles.getDiskStoreDirectory(diskStore, dirHolder);
-    try {
-      Files.createLink(tempDiskDir.resolve(file.getName()), file.toPath());
-    } catch (IOException e) {
-      logger.warn("Unable to create hard link for {}. Reverting to file copy",
-          tempDiskDir.toString());
+    if (!SystemUtils.isWindows()) {
+      try {
+        createLink(tempDiskDir.resolve(file.getName()), file.toPath());
+      } catch (IOException e) {
+        logger.warn("Unable to create hard link for {}. Reverting to file copy",
+            tempDiskDir.toString());
+        FileUtils.copyFileToDirectory(file, tempDiskDir.toFile());
+      }
+    } else {
+      // Hard links cannot be deleted on Windows if the process is still running, so prefer to
+      // actually copy the files.
       FileUtils.copyFileToDirectory(file, tempDiskDir.toFile());
     }
+
     backupDefinition.addOplogFileToBackup(diskStore, tempDiskDir.resolve(file.getName()));
   }
 
-  // package access for testing purposes only
   JarDeployer getJarDeployer() {
     return ClassPathLoader.getLatest().getJarDeployer();
   }
 
+  void createLink(Path link, Path existing) throws IOException {
+    Files.createLink(link, existing);
+  }
+
+  Path getSource(URL fileUrl) throws URISyntaxException {
+    return Paths.get(fileUrl.toURI());
+  }
 }

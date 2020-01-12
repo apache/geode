@@ -37,12 +37,8 @@ import org.apache.geode.internal.ExitCode;
 import org.apache.geode.modules.session.installer.args.Argument;
 import org.apache.geode.modules.session.installer.args.ArgumentProcessor;
 import org.apache.geode.modules.session.installer.args.ArgumentValues;
-import org.apache.geode.modules.session.installer.args.UnknownArgumentHandler;
 import org.apache.geode.modules.session.installer.args.UsageException;
 
-/**
- *
- */
 public class Installer {
 
   private static final String GEMFIRE_FILTER_CLASS =
@@ -53,16 +49,16 @@ public class Installer {
   private static final Argument ARG_HELP =
       new Argument("-h", false).setDescription("Displays this help message.");
 
-  private static Argument ARG_GEMFIRE_PARAMETERS = new Argument("-p", false, "param=value")
+  private static final Argument ARG_GEMFIRE_PARAMETERS = new Argument("-p", false, "param=value")
       .setDescription("Specific parameter for inclusion into the "
           + "session filter definition as a regular " + "init-param. Can be given multiple times.");
 
-  private static Argument ARG_CACHE_TYPE = new Argument("-t", false, "cache-type")
+  private static final Argument ARG_CACHE_TYPE = new Argument("-t", false, "cache-type")
       .setDescription("Type of cache. Must be one of 'peer-to-peer' or "
           + "'client-server'. Default is peer-to-peer.")
       .setDefaults("peer-to-peer");
 
-  private static Argument ARG_WEB_XML_FILE =
+  private static final Argument ARG_WEB_XML_FILE =
       new Argument("-w", true, "web.xml file").setDescription("The web.xml file to be modified.");
 
 
@@ -76,12 +72,12 @@ public class Installer {
     new Installer(args).process();
   }
 
-  public static void log(String message) {
+  private static void log(String message) {
     System.err.println(message);
   }
 
 
-  public Installer(String[] args) throws Exception {
+  public Installer(String[] args) {
     final ArgumentProcessor processor = new ArgumentProcessor("Installer");
 
     argValues = null;
@@ -92,12 +88,9 @@ public class Installer {
       processor.addArgument(ARG_CACHE_TYPE);
       processor.addArgument(ARG_WEB_XML_FILE);
 
-      processor.setUnknownArgumentHandler(new UnknownArgumentHandler() {
-        @Override
-        public void handleUnknownArgument(final String form, final String[] params) {
-          log("Unknown argument being ignored: " + form + " (" + params.length + " params)");
-          log("Use '-h' argument to display usage");
-        }
+      processor.setUnknownArgumentHandler((form, params) -> {
+        log("Unknown argument being ignored: " + form + " (" + params.length + " params)");
+        log("Use '-h' argument to display usage");
       });
       argValues = processor.process(args);
 
@@ -127,7 +120,7 @@ public class Installer {
    *
    * @throws Exception if any errors occur.
    */
-  public void process() throws Exception {
+  private void process() throws Exception {
     String argInputFile = argValues.getFirstResult(ARG_WEB_XML_FILE);
 
     ByteArrayOutputStream output = new ByteArrayOutputStream();

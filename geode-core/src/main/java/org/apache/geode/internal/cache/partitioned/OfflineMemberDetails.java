@@ -21,20 +21,22 @@ import java.util.Collections;
 import java.util.Set;
 
 import org.apache.geode.DataSerializable;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 
-/**
- *
- */
 public interface OfflineMemberDetails extends DataSerializable {
 
+  @Immutable
   OfflineMemberDetails EMPTY_DETAILS = new OfflineMemberDetails() {
+    @Override
     public Set<PersistentMemberID> getOfflineMembers(int bucketId) {
       return Collections.emptySet();
     }
 
+    @Override
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {}
 
+    @Override
     public void toData(DataOutput out) throws IOException {}
   };
 

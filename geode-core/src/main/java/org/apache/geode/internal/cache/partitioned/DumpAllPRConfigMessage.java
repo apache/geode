@@ -22,8 +22,8 @@ import org.apache.geode.cache.CacheException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * A message used for debugging purposes. For example if a test fails it can call
@@ -46,27 +46,26 @@ public class DumpAllPRConfigMessage extends PartitionMessage {
     DumpAllPRConfigMessage m = new DumpAllPRConfigMessage(recipients, r.getPRId(), p);
     m.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
 
-    /* Set failures = */r.getDistributionManager().putOutgoing(m);
-    // if (failures != null && failures.size() > 0) {
-    // throw new PartitionedRegionCommunicationException("Failed sending ", m);
-    // }
+    r.getDistributionManager().putOutgoing(m);
     return p;
   }
 
   @Override
   protected boolean operateOnPartitionedRegion(ClusterDistributionManager dm, PartitionedRegion pr,
       long startTime) throws CacheException {
-    if (logger.isTraceEnabled(LogMarker.DM)) {
-      logger.trace(LogMarker.DM, "DumpAllPRConfigMessage operateOnRegion: {}", pr.getFullPath());
+    if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+      logger.trace(LogMarker.DM_VERBOSE, "DumpAllPRConfigMessage operateOnRegion: {}",
+          pr.getFullPath());
     }
     pr.dumpSelfEntryFromAllPartitionedRegions();
 
-    if (logger.isTraceEnabled(LogMarker.DM)) {
-      logger.debug("{} dumped allPartitionedRegions", getClass().getName());
+    if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+      logger.trace(LogMarker.DM_VERBOSE, "{} dumped allPartitionedRegions", getClass().getName());
     }
     return true;
   }
 
+  @Override
   public int getDSFID() {
     return PR_DUMP_ALL_PR_CONFIG_MESSAGE;
   }

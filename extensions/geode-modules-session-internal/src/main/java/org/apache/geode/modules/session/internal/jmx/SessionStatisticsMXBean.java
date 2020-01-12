@@ -20,9 +20,12 @@ package org.apache.geode.modules.session.internal.jmx;
  */
 public interface SessionStatisticsMXBean {
 
+  @SuppressWarnings("unused")
   int getActiveSessions();
 
+  @SuppressWarnings("unused")
   int getTotalSessions();
 
+  @SuppressWarnings("unused")
   long getRegionUpdates();
 }

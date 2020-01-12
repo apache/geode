@@ -23,29 +23,30 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.internal.Connection;
 import org.apache.geode.cache.client.internal.pooling.ConnectionDestroyedException;
 import org.apache.geode.cache.wan.GatewaySender;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderConfigurationException;
-import org.apache.geode.internal.cache.wan.GatewaySenderEventCallbackDispatcher;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventDispatcher;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventRemoteDispatcher;
 import org.apache.geode.internal.cache.wan.GatewaySenderException;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.monitoring.ThreadsMonitoring;
+import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class RemoteParallelGatewaySenderEventProcessor extends ParallelGatewaySenderEventProcessor {
   private static final Logger logger = LogService.getLogger();
 
-  protected RemoteParallelGatewaySenderEventProcessor(AbstractGatewaySender sender) {
-    super(sender);
+  protected RemoteParallelGatewaySenderEventProcessor(AbstractGatewaySender sender,
+      ThreadsMonitoring tMonitoring) {
+    super(sender, tMonitoring);
   }
 
   /**
    * use in concurrent scenario where queue is to be shared among all the processors.
    */
   protected RemoteParallelGatewaySenderEventProcessor(AbstractGatewaySender sender,
-      Set<Region> userRegions, int id, int nDispatcher) {
-    super(sender, userRegions, id, nDispatcher);
+      Set<Region> userRegions, int id, int nDispatcher, ThreadsMonitoring tMonitoring) {
+    super(sender, userRegions, id, nDispatcher, tMonitoring);
   }
 
   @Override
@@ -66,6 +67,7 @@ public class RemoteParallelGatewaySenderEventProcessor extends ParallelGatewaySe
     }
   }
 
+  @Override
   public void initializeEventDispatcher() {
     if (logger.isDebugEnabled()) {
       logger.debug(" Creating the GatewayEventRemoteDispatcher");
@@ -78,7 +80,6 @@ public class RemoteParallelGatewaySenderEventProcessor extends ParallelGatewaySe
   /**
    * Returns if corresponding receiver WAN site of this GatewaySender has GemfireVersion > 7.0.1
    *
-   * @param disp
    * @return true if remote site Gemfire Version is >= 7.0.1
    */
   private boolean shouldSendVersionEvents(GatewaySenderEventDispatcher disp)

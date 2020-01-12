@@ -17,13 +17,15 @@ package org.apache.geode.pdx.internal.json;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.pdx.FieldType;
 import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxInstance;
@@ -39,17 +41,27 @@ public class PdxInstanceSortedHelper implements JSONToPdxMapper {
   LinkedList<JSONFieldHolder<?>> fieldList = new LinkedList<>();
   PdxInstance m_pdxInstance;
   String m_PdxName;// when pdx is member, else null if part of lists
+  private Set<String> identityFields;
 
   private InternalCache getCache() {
     return (InternalCache) CacheFactory.getAnyInstance();
   }
 
-  public PdxInstanceSortedHelper(String className, JSONToPdxMapper parent) {
+  public PdxInstanceSortedHelper(String className, JSONToPdxMapper parent,
+      String... identityFields) {
     if (logger.isTraceEnabled()) {
       logger.trace("ClassName {}", className);
     }
     m_PdxName = className;
     m_parent = parent;
+    initializeIdentityFields(identityFields);
+  }
+
+  public void initializeIdentityFields(String... identityFields) {
+    this.identityFields = new HashSet<>();
+    for (String identityField : identityFields) {
+      this.identityFields.add(identityField);
+    }
   }
 
   @Override
@@ -218,6 +230,7 @@ public class PdxInstanceSortedHelper implements JSONToPdxMapper {
     PdxInstanceFactory factory = createPdxInstanceFactory();
     for (JSONFieldHolder<?> f : fieldList) {
       filldata(factory, f);
+      addIdentityField(factory, f.fieldName);
     }
     return factory.create();
   }
@@ -250,8 +263,13 @@ public class PdxInstanceSortedHelper implements JSONToPdxMapper {
         factory.writeObject(key.fieldName, key.value);
         break;
       default:
-        new RuntimeException("Unable to convert json field " + key);
-        break;
+        throw new RuntimeException("Unable to convert json field " + key);
+    }
+  }
+
+  private void addIdentityField(PdxInstanceFactory factory, String fieldName) {
+    if (this.identityFields.contains(fieldName)) {
+      factory.markIdentityField(fieldName);
     }
   }
 

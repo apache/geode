@@ -20,13 +20,10 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.execute.Execution;
-import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
+import org.apache.geode.internal.protocol.protobuf.security.SecureFunctionService;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
-import org.apache.geode.internal.protocol.protobuf.v1.Failure;
 import org.apache.geode.internal.protocol.protobuf.v1.FunctionAPI.ExecuteFunctionOnRegionRequest;
 import org.apache.geode.internal.protocol.protobuf.v1.FunctionAPI.ExecuteFunctionOnRegionResponse;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
@@ -35,12 +32,39 @@ import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
+import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
-public class ExecuteFunctionOnRegionRequestOperationHandler extends
-    AbstractFunctionRequestOperationHandler<ExecuteFunctionOnRegionRequest, ExecuteFunctionOnRegionResponse> {
+public class ExecuteFunctionOnRegionRequestOperationHandler implements
+    ProtobufOperationHandler<ExecuteFunctionOnRegionRequest, ExecuteFunctionOnRegionResponse> {
   private static final Logger logger = LogService.getLogger();
 
-  protected Set<Object> parseFilter(ProtobufSerializationService serializationService,
+  @Override
+  public Result<ExecuteFunctionOnRegionResponse> process(
+      ProtobufSerializationService serializationService, ExecuteFunctionOnRegionRequest request,
+      MessageExecutionContext messageExecutionContext) throws InvalidExecutionContextException,
+      ConnectionStateException, EncodingException, DecodingException {
+
+    final String functionID = request.getFunctionID();
+    final String regionName = request.getRegion();
+    Object arguments = getFunctionArguments(request, serializationService);
+    Set<?> filter = parseFilter(serializationService, request);
+
+    SecureFunctionService functionService =
+        messageExecutionContext.getSecureCache().getFunctionService();
+
+    List<Object> results =
+        functionService.executeFunctionOnRegion(functionID, regionName, arguments, filter);
+
+    final ExecuteFunctionOnRegionResponse.Builder responseMessage =
+        ExecuteFunctionOnRegionResponse.newBuilder();
+    for (Object result : results) {
+      responseMessage.addResults(serializationService.encode(result));
+    }
+    return Success.of(responseMessage.build());
+  }
+
+  private Set<Object> parseFilter(ProtobufSerializationService serializationService,
       ExecuteFunctionOnRegionRequest request) throws DecodingException {
     List<BasicTypes.EncodedValue> encodedFilter = request.getKeyFilterList();
     Set<Object> filter = new HashSet<>();
@@ -51,31 +75,7 @@ public class ExecuteFunctionOnRegionRequestOperationHandler extends
     return filter;
   }
 
-  @Override
-  protected String getFunctionID(ExecuteFunctionOnRegionRequest request) {
-    return request.getFunctionID();
-  }
-
-  @Override
-  protected String getRegionName(ExecuteFunctionOnRegionRequest request) {
-    return request.getRegion();
-  }
-
-  @Override
-  protected Object getExecutionTarget(ExecuteFunctionOnRegionRequest request, String regionName,
-      MessageExecutionContext executionContext) throws InvalidExecutionContextException {
-    final Region<Object, Object> region = executionContext.getCache().getRegion(regionName);
-    if (region == null) {
-      logger.error("Received execute-function-on-region request for nonexistent region: {}",
-          regionName);
-      return Failure.of(BasicTypes.ErrorCode.SERVER_ERROR,
-          "Region \"" + regionName + "\" not found");
-    }
-    return region;
-  }
-
-  @Override
-  protected Object getFunctionArguments(ExecuteFunctionOnRegionRequest request,
+  private Object getFunctionArguments(ExecuteFunctionOnRegionRequest request,
       ProtobufSerializationService serializationService) throws DecodingException {
     if (request.hasArguments()) {
       return serializationService.decode(request.getArguments());
@@ -83,26 +83,4 @@ public class ExecuteFunctionOnRegionRequestOperationHandler extends
       return null;
     }
   }
-
-  @Override
-  protected Execution getFunctionExecutionObject(Object executionTarget) {
-    return FunctionService.onRegion((Region) executionTarget);
-  }
-
-  @Override
-  protected Result buildResultMessage(ProtobufSerializationService serializationService,
-      List<Object> results) throws EncodingException {
-    final ExecuteFunctionOnRegionResponse.Builder responseMessage =
-        ExecuteFunctionOnRegionResponse.newBuilder();
-    for (Object result : results) {
-      responseMessage.addResults(serializationService.encode(result));
-    }
-    return Success.of(responseMessage.build());
-  }
-
-  @Override
-  protected Result buildResultMessage(ProtobufSerializationService serializationService) {
-    return Success.of(ExecuteFunctionOnRegionResponse.newBuilder().build());
-  }
-
 }

@@ -14,30 +14,26 @@
  */
 package org.apache.geode.test.compiler;
 
-import static org.assertj.core.api.Assertions.*;
+import static java.lang.System.lineSeparator;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import org.apache.commons.lang.SystemUtils;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
-
-@Category(UnitTest.class)
 public class UncompiledSourceCodeTest {
+
   @Test
-  public void fromClassNameWithNoPackage() throws Exception {
+  public void fromClassNameWithNoPackage() {
     UncompiledSourceCode uncompiledSourceCode = UncompiledSourceCode.fromClassName("NoPackage");
-    assertThat(uncompiledSourceCode.simpleClassName).isEqualTo("NoPackage");
-    assertThat(uncompiledSourceCode.sourceCode).isEqualTo("public class NoPackage {}");
+    assertThat(uncompiledSourceCode.getSimpleClassName()).isEqualTo("NoPackage");
+    assertThat(uncompiledSourceCode.getSourceCode()).isEqualTo("public class NoPackage {}");
   }
 
   @Test
-  public void fromClassNameWithPackage() throws Exception {
+  public void fromClassNameWithPackage() {
     UncompiledSourceCode uncompiledSourceCode =
         UncompiledSourceCode.fromClassName("foo.bar.ClassName");
-    assertThat(uncompiledSourceCode.simpleClassName).isEqualTo("ClassName");
-    assertThat(uncompiledSourceCode.sourceCode)
-        .isEqualTo("package foo.bar;" + SystemUtils.LINE_SEPARATOR + "public class ClassName {}");
+    assertThat(uncompiledSourceCode.getSimpleClassName()).isEqualTo("ClassName");
+    assertThat(uncompiledSourceCode.getSourceCode())
+        .isEqualTo("package foo.bar;" + lineSeparator() + "public class ClassName {}");
   }
-
 }

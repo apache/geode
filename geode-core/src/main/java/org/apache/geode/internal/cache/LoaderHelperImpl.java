@@ -15,9 +15,11 @@
 
 package org.apache.geode.internal.cache;
 
-import org.apache.geode.cache.*;
-import org.apache.geode.i18n.StringId;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.cache.CacheLoader;
+import org.apache.geode.cache.CacheLoaderException;
+import org.apache.geode.cache.LoaderHelper;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.TimeoutException;
 
 /**
  * Provides a set of APIs to help the implementation of the <code>CacheLoader</code> load method. An
@@ -33,8 +35,8 @@ public class LoaderHelperImpl implements LoaderHelper {
    * The message issued when the user attempts to netSearch on a LOCAL Region. It is public for
    * testing purposes only.
    */
-  public static final StringId NET_SEARCH_LOCAL =
-      LocalizedStrings.LoaderHelperImpl_CANNOT_NETSEARCH_FOR_A_SCOPELOCAL_OBJECT;
+  public static final String NET_SEARCH_LOCAL =
+      "Cannot netSearch for a Scope.LOCAL object";
 
   private final Object key;
   private final boolean netSearchAllowed;
@@ -81,10 +83,11 @@ public class LoaderHelperImpl implements LoaderHelper {
    * @throws TimeoutException if the netSearch times out before getting a response from another
    *         cache
    */
+  @Override
   public Object netSearch(final boolean doNetLoad) throws CacheLoaderException, TimeoutException {
 
     if (this.region.getAttributes().getScope().isLocal()) {
-      throw new CacheLoaderException(NET_SEARCH_LOCAL.toLocalizedString());
+      throw new CacheLoaderException(NET_SEARCH_LOCAL);
     }
 
     boolean removeSearcher = false;
@@ -129,6 +132,7 @@ public class LoaderHelperImpl implements LoaderHelper {
    * @return The name Object for the object being loaded.
    * @see CacheLoader#load(LoaderHelper) load
    */
+  @Override
   public Object getKey() {
     return this.key;
   }
@@ -139,6 +143,7 @@ public class LoaderHelperImpl implements LoaderHelper {
    * @return The name of the region for the object being loaded.
    * @see CacheLoader#load(LoaderHelper) load
    */
+  @Override
   public Region getRegion() {
     return region;
   }
@@ -149,6 +154,7 @@ public class LoaderHelperImpl implements LoaderHelper {
    *
    * @return the argument or null if one was not supplied
    */
+  @Override
   public Object getArgument() {
     return aCallbackArgument;
   }

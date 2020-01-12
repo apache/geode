@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Collection;
@@ -34,7 +33,7 @@ public class WANDistributedSystemService implements DistributedSystemService {
   }
 
   @Override
-  public Collection<String> getSerializationWhitelist() throws IOException {
+  public Collection<String> getSerializationAcceptlist() throws IOException {
     URL sanctionedSerializables = ClassPathLoader.getLatest().getResource(getClass(),
         "sanctioned-geode-wan-serializables.txt");
     return InternalDataSerializer.loadClassNames(sanctionedSerializables);

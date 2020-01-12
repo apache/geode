@@ -50,6 +50,13 @@ class PrepareBackupFactory {
     return new BackupResponse(sender, persistentIds);
   }
 
+  PrepareBackupStep createPrepareBackupStep(DistributionManager dm,
+      InternalDistributedMember member,
+      InternalCache cache, Set<InternalDistributedMember> recipients,
+      PrepareBackupFactory prepareBackupFactory, Properties properties) {
+    return new PrepareBackupStep(dm, member, cache, recipients, prepareBackupFactory, properties);
+  }
+
   private String cleanSpecialCharacters(String string) {
     return string.replaceAll("[^\\w]+", "_");
   }

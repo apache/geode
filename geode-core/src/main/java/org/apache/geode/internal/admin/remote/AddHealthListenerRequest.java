@@ -16,12 +16,15 @@
 
 package org.apache.geode.internal.admin.remote;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-import org.apache.geode.*;
+import org.apache.geode.DataSerializer;
 import org.apache.geode.admin.GemFireHealthConfig;
-import org.apache.geode.distributed.internal.*;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * A message that is sent to a particular distribution manager to add a health listener.
@@ -40,7 +43,7 @@ public class AddHealthListenerRequest extends AdminRequest {
   public static AddHealthListenerRequest create(GemFireHealthConfig cfg) {
     if (cfg == null) {
       throw new NullPointerException(
-          LocalizedStrings.AddHealthListenerRequest_NULL_GEMFIREHEALTHCONFIG.toLocalizedString());
+          "Null GemFireHealthConfig");
     }
 
     AddHealthListenerRequest m = new AddHealthListenerRequest();
@@ -50,7 +53,7 @@ public class AddHealthListenerRequest extends AdminRequest {
 
   public AddHealthListenerRequest() {
     friendlyName =
-        LocalizedStrings.AddHealthListenerRequest_ADD_HEALTH_LISTENER.toLocalizedString();
+        "Add health listener";
   }
 
   /**
@@ -61,19 +64,22 @@ public class AddHealthListenerRequest extends AdminRequest {
     return AddHealthListenerResponse.create(dm, this.getSender(), this.cfg);
   }
 
+  @Override
   public int getDSFID() {
     return ADD_HEALTH_LISTENER_REQUEST;
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     DataSerializer.writeObject(this.cfg, out);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.cfg = (GemFireHealthConfig) DataSerializer.readObject(in);
   }
 

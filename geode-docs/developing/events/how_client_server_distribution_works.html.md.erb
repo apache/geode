@@ -67,17 +67,17 @@ This figure shows the complete event subscription event distribution for interes
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>Entry create/update</td>
 <td>For subscriptions with <code class="ph codeph">receiveValues</code> set to true, entry create or update.
 <p></p>
 For subscriptions with <code class="ph codeph">receiveValues</code> set to false, entry invalidate if the entry already exists in the client cache; otherwise, no effect. The next client get for the entry is forwarded to the server.</td>
 </tr>
-<tr class="even">
+<tr>
 <td>Entry invalidate/destroy (distributed only)</td>
 <td>Entry invalidate/destroy</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>Region destroy/clear (distributed only)</td>
 <td>Region destroy or local region clear</td>
 </tr>
@@ -91,7 +91,7 @@ To maintain a unified set of data in your servers, do not do local entry invalid
 
 ## <a id="how_client_server_distribution_works__section_34613292788D4FA4AB730045FB9A405A" class="no-quick-link"></a>Server-to-Client Message Tracking
 
-The server uses an asynchronous messaging queue to send events to its clients. Every event in the queue originates in an operation performed by a thread in a client, a server, or an application in the server’s or some other distributed system. The event message has a unique identifier composed of the originating thread’s ID combined with its member’s distributed system member ID, and the sequential ID of the operation. So the event messages originating in any single thread can be grouped and ordered by time from lowest sequence ID to highest. Servers and clients track the highest sequential ID for each member thread ID.
+The server uses an asynchronous messaging queue to send events to its clients. Every event in the queue originates in an operation performed by a thread in a client, a server, or an application in the server’s or some other cluster. The event message has a unique identifier composed of the originating thread’s ID combined with its member’s distributed system member ID, and the sequential ID of the operation. So the event messages originating in any single thread can be grouped and ordered by time from lowest sequence ID to highest. Servers and clients track the highest sequential ID for each member thread ID.
 
 A single client thread receives and processes messages from the server, tracking received messages to make sure it does not process duplicate sends. It does this using the process IDs from originating threads.
 

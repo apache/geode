@@ -29,16 +29,13 @@ import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.admin.remote.AdminFailureResponse;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class PrepareBackupRequestTest {
 
   private PrepareBackupRequest prepareBackupRequest;
@@ -69,8 +66,8 @@ public class PrepareBackupRequestTest {
     recipients = new HashSet<>();
     persistentIds = new HashSet<>();
 
-    backupProperties =
-        BackupUtil.createBackupProperties(targetDir.toString(), baselineDir.toString());
+    backupProperties = new BackupConfigFactory().withTargetDirPath(targetDir.toString())
+        .withBaselineDirPath(baselineDir.toString()).createBackupProperties();
 
     when(dm.getCache()).thenReturn(cache);
     when(dm.getDistributionManagerId()).thenReturn(sender);

@@ -23,12 +23,8 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import org.apache.geode.internal.sequencelog.GraphType;
-import org.apache.geode.internal.sequencelog.model.Graph;
 import org.apache.geode.internal.sequencelog.model.GraphReaderCallback;
 
-/**
- *
- */
 public class InputStreamReader {
 
   private DataInputStream input;

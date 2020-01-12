@@ -15,13 +15,18 @@
 
 package org.apache.geode.internal.cache;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.CacheLoader;
+import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.ExternalizableDSFID;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * Stores information about a PartitionedRegion singleton instance running inside a virtual machine.
@@ -67,7 +72,7 @@ public class Node extends ExternalizableDSFID {
   }
 
   public Node(DataInput in) throws IOException, ClassNotFoundException {
-    fromData(in);
+    fromData(in, InternalDataSerializer.createDeserializationContext(in));
   }
 
   // for Externalizable
@@ -104,10 +109,11 @@ public class Node extends ExternalizableDSFID {
     this.prType = type;
   }
 
-  public void setLoaderWriterByte(byte b) {
-    this.cacheLoaderWriterByte = b;
+  void setLoaderAndWriter(CacheLoader loader, CacheWriter writer) {
+    byte loaderByte = (byte) (loader != null ? 0x01 : 0x00);
+    byte writerByte = (byte) (writer != null ? 0x02 : 0x00);
+    this.cacheLoaderWriterByte = (byte) (loaderByte + writerByte);
   }
-
 
   public boolean isCacheLoaderAttached() {
     if (this.cacheLoaderWriterByte == 0x01 || this.cacheLoaderWriterByte == 0x03) {
@@ -145,7 +151,8 @@ public class Node extends ExternalizableDSFID {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     InternalDataSerializer.invokeToData(this.memberId, out);
     out.writeInt(this.prType);
     out.writeBoolean(this.isPersistent);
@@ -154,7 +161,8 @@ public class Node extends ExternalizableDSFID {
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     this.memberId = new InternalDistributedMember();
     InternalDataSerializer.invokeFromData(this.memberId, in);
     this.prType = in.readInt();

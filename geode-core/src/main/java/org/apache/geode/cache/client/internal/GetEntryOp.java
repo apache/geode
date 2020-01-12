@@ -27,9 +27,6 @@ public class GetEntryOp {
   /**
    * Does a region.getEntry on the server using the given pool
    *
-   * @param pool
-   * @param region
-   * @param key
    * @return an {@link EntrySnapshot} for the given key
    */
   public static Object execute(ExecutablePool pool, LocalRegion region, Object key) {
@@ -46,7 +43,7 @@ public class GetEntryOp {
       super(MessageType.GET_ENTRY, 2);
       this.region = region;
       this.key = key;
-      getMessage().addStringPart(region.getFullPath());
+      getMessage().addStringPart(region.getFullPath(), true);
       getMessage().addStringOrObjPart(key);
     }
 

@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.offheap;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,14 +23,11 @@ import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Tests LifecycleListener
  */
-@Category(UnitTest.class)
 public class LifecycleListenerJUnitTest {
 
   private final List<LifecycleListenerCallback> afterCreateCallbacks =

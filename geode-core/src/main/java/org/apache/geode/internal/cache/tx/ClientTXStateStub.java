@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.tx;
 
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -23,6 +24,7 @@ import javax.transaction.Status;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.GemFireException;
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.cache.TransactionDataNodeHasDepartedException;
 import org.apache.geode.cache.TransactionException;
@@ -30,11 +32,11 @@ import org.apache.geode.cache.TransactionInDoubtException;
 import org.apache.geode.cache.client.internal.ServerRegionDataAccess;
 import org.apache.geode.cache.client.internal.ServerRegionProxy;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.TXCommitMessage;
 import org.apache.geode.internal.cache.TXLockRequest;
@@ -43,20 +45,21 @@ import org.apache.geode.internal.cache.TXStateProxy;
 import org.apache.geode.internal.cache.TXStateStub;
 import org.apache.geode.internal.cache.locks.TXRegionLockRequest;
 import org.apache.geode.internal.cache.tx.TransactionalOperation.ServerRegionOperation;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 public class ClientTXStateStub extends TXStateStub {
   private static final Logger logger = LogService.getLogger();
 
   /** test hook - used to find out what operations were performed in the last tx */
+  @MutableForTesting
   private static ThreadLocal<List<TransactionalOperation>> recordedTransactionalOperations = null;
 
   /**
    * System property to disable conflict checks on clients.
    */
   private static final boolean DISABLE_CONFLICT_CHECK_ON_CLIENT =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "disableConflictChecksOnClient");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "disableConflictChecksOnClient");
 
   /**
    * @return true if transactional operation recording is enabled (test hook)
@@ -93,7 +96,7 @@ public class ClientTXStateStub extends TXStateStub {
   }
 
   public ClientTXStateStub(InternalCache cache, DistributionManager dm, TXStateProxy stateProxy,
-      DistributedMember target, LocalRegion firstRegion) {
+      DistributedMember target, InternalRegion firstRegion) {
     super(stateProxy, target);
     this.cache = cache;
     this.dm = dm;
@@ -108,13 +111,17 @@ public class ClientTXStateStub extends TXStateStub {
   public void commit() throws CommitConflictException {
     obtainLocalLocks();
     try {
-      TXCommitMessage txcm = firstProxy.commit(proxy.getTxId().getUniqId());
+      TXCommitMessage txcm = null;
+      try {
+        txcm = firstProxy.commit(proxy.getTxId().getUniqId());
+      } finally {
+        this.firstProxy.getPool().releaseServerAffinity();
+      }
       afterServerCommit(txcm);
     } catch (TransactionDataNodeHasDepartedException e) {
       throw new TransactionInDoubtException(e);
     } finally {
       lockReq.releaseLocal();
-      this.firstProxy.getPool().releaseServerAffinity();
     }
   }
 
@@ -138,14 +145,17 @@ public class ClientTXStateStub extends TXStateStub {
         TXRegionLockRequest rlr = lockReq.getRegionLockRequest(txOp.getRegionName());
         if (rlr == null) {
           rlr = createTXRegionLockRequestImpl(cache,
-              (LocalRegion) cache.getRegionByPath(txOp.getRegionName()));
+              (LocalRegion) cache.getInternalRegionByPath(txOp.getRegionName()));
           lockReq.addLocalRequest(rlr);
         }
         if (txOp.getOperation() == ServerRegionOperation.PUT_ALL
             || txOp.getOperation() == ServerRegionOperation.REMOVE_ALL) {
-          rlr.addEntryKeys(txOp.getKeys());
+          Iterator<Object> it = txOp.getKeys().iterator();
+          while (it.hasNext()) {
+            rlr.addEntryKey(it.next(), true);
+          }
         } else {
-          rlr.addEntryKey(txOp.getKey());
+          rlr.addEntryKey(txOp.getKey(), ServerRegionOperation.lockKeyForTx(txOp.getOperation()));
         }
       }
     }
@@ -185,12 +195,13 @@ public class ClientTXStateStub extends TXStateStub {
   }
 
   @Override
-  protected TXRegionStub generateRegionStub(LocalRegion region) {
+  protected TXRegionStub generateRegionStub(InternalRegion region) {
     return new ClientTXRegionStub(region);
   }
 
   @Override
-  protected void validateRegionCanJoinTransaction(LocalRegion region) throws TransactionException {
+  protected void validateRegionCanJoinTransaction(InternalRegion region)
+      throws TransactionException {
     if (!region.hasServerProxy()) {
       throw new TransactionException("Region " + region.getName()
           + " is local to this client and cannot be used in a transaction.");
@@ -224,7 +235,7 @@ public class ClientTXStateStub extends TXStateStub {
       if (status == Status.STATUS_COMMITTED) {
         if (txcm == null) {
           throw new TransactionInDoubtException(
-              LocalizedStrings.ClientTXStateStub_COMMIT_FAILED_ON_SERVER.toLocalizedString());
+              "Commit failed on cache server");
         } else {
           afterServerCommit(txcm);
         }
@@ -315,5 +326,9 @@ public class ClientTXStateStub extends TXStateStub {
    */
   public void setAfterLocalLocks(Runnable afterLocalLocks) {
     this.internalAfterLocalLocks = afterLocalLocks;
+  }
+
+  public ServerLocation getServerAffinityLocation() {
+    return serverAffinityLocation;
   }
 }

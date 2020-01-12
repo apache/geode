@@ -21,9 +21,9 @@ import static org.mockito.Mockito.verify;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.categories.MembershipTest;
 
-@Category(UnitTest.class)
+@Category({MembershipTest.class})
 public class DistributionMessageTest {
 
   @Test

@@ -14,11 +14,9 @@
  */
 package org.apache.geode.internal.cache.versions;
 
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
-@Category(UnitTest.class)
 public class VMVersionTagTest extends AbstractVersionTagTestBase {
 
   @SuppressWarnings("rawtypes")
@@ -27,4 +25,9 @@ public class VMVersionTagTest extends AbstractVersionTagTestBase {
     return new VMVersionTag();
   }
 
+  @Override
+  protected VersionSource createMemberID() {
+    int port = getRandomUnusedInt();
+    return new InternalDistributedMember("localhost", port);
+  }
 }

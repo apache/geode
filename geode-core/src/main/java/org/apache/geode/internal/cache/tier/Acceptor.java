@@ -15,24 +15,24 @@
 package org.apache.geode.internal.cache.tier;
 
 import java.io.IOException;
+import java.io.OutputStream;
+import java.net.InetAddress;
+import java.util.Set;
 
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
+import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
+import org.apache.geode.internal.cache.tier.sockets.ClientHealthMonitor;
+import org.apache.geode.internal.cache.tier.sockets.CommBufferPool;
+import org.apache.geode.internal.cache.tier.sockets.ConnectionListener;
+import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 
 /**
- * Defines the message listener/acceptor interface which is the GemFire Bridge Server. Multiple
+ * Defines the message listener/acceptor interface which is the GemFire cache server. Multiple
  * communication stacks may provide implementations for the interfaces defined in this package
  *
  * @since GemFire 2.0.2
  */
-public interface Acceptor {
-
-  /**
-   * The GFE version of the server.
-   *
-   * @since GemFire 5.7
-   */
-  Version VERSION = Version.CURRENT.getGemFireVersion();
+public interface Acceptor extends CommBufferPool {
 
   /**
    * Listens for a client to connect and establishes a connection to that client.
@@ -69,4 +69,40 @@ public interface Acceptor {
    * Returns the CacheClientNotifier used by this Acceptor.
    */
   CacheClientNotifier getCacheClientNotifier();
+
+  CacheServerStats getStats();
+
+  String getExternalAddress();
+
+  void emergencyClose();
+
+  ServerConnection[] getAllServerConnectionList();
+
+  int getClientServerConnectionCount();
+
+  Set<ServerConnection> getAllServerConnections();
+
+  CachedRegionHelper getCachedRegionHelper();
+
+  long getAcceptorId();
+
+  boolean isGatewayReceiver();
+
+  boolean isSelector();
+
+  InetAddress getServerInetAddress();
+
+  void notifyCacheMembersOfClose();
+
+  ClientHealthMonitor getClientHealthMonitor();
+
+  ConnectionListener getConnectionListener();
+
+  void refuseHandshake(OutputStream out, String message, byte exception) throws IOException;
+
+  void registerServerConnection(ServerConnection serverConnection);
+
+  void unregisterServerConnection(ServerConnection serverConnection);
+
+  void decClientServerConnectionCount();
 }

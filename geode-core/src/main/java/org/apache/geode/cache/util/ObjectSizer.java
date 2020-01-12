@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.util;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.internal.size.ReflectionObjectSizer;
 import org.apache.geode.internal.size.SizeClassOnceObjectSizer;
@@ -25,7 +26,7 @@ import org.apache.geode.internal.size.SizeClassOnceObjectSizer;
  *
  * You should use a sizer with a {@link EvictionAttributes#createLRUHeapAttributes(ObjectSizer)} or
  * {@link EvictionAttributes#createLRUMemoryAttributes(ObjectSizer)} if you want to use a faster or
- * more accurate method of sizing than provided by the default object sizer, which is {#link
+ * more accurate method of sizing than provided by the default object sizer, which is
  * {@link #SIZE_CLASS_ONCE}
  *
  *
@@ -47,6 +48,7 @@ public interface ObjectSizer {
    *
    * @since GemFire 6.5
    */
+  @Immutable
   ObjectSizer SIZE_CLASS_ONCE = SizeClassOnceObjectSizer.getInstance();
 
   /**
@@ -61,6 +63,7 @@ public interface ObjectSizer {
    *
    * @since GemFire 6.5
    */
+  @Immutable
   ObjectSizer REFLECTION_SIZE = ReflectionObjectSizer.getInstance();
 
 
@@ -69,6 +72,7 @@ public interface ObjectSizer {
    *
    * @since GemFire 6.5
    */
+  @Immutable
   ObjectSizer DEFAULT = SIZE_CLASS_ONCE;
 
   int sizeof(Object o);

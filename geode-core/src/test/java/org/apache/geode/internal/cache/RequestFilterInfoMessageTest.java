@@ -22,13 +22,10 @@ import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.internal.cache.InitialImageOperation.RequestFilterInfoMessage;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class RequestFilterInfoMessageTest {
 
   private ClusterDistributionManager dm;
@@ -45,7 +42,7 @@ public class RequestFilterInfoMessageTest {
     region = mock(LocalRegion.class);
 
     when(dm.getCache()).thenReturn(cache);
-    when(cache.getRegionByPath(path)).thenReturn(region);
+    when(cache.getInternalRegionByPath(path)).thenReturn(region);
   }
 
   @Test
@@ -61,6 +58,6 @@ public class RequestFilterInfoMessageTest {
     message.regionPath = path;
     message.process(dm);
     verify(dm, times(1)).getCache();
-    verify(cache, times(1)).getRegionByPath(path);
+    verify(cache, times(1)).getInternalRegionByPath(path);
   }
 }

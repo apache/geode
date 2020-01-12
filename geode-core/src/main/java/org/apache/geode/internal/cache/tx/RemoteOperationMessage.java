@@ -27,6 +27,7 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.RegionDestroyedException;
+import org.apache.geode.cache.TransactionException;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DirectReplyProcessor;
@@ -34,20 +35,24 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.MessageWithReply;
+import org.apache.geode.distributed.internal.OperationExecutors;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RemoteOperationException;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXStateProxy;
 import org.apache.geode.internal.cache.TransactionMessage;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * The base message type upon which other messages that need to be sent to a remote member that is
@@ -118,7 +123,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
 
   @Override
   public int getProcessorType() {
-    return ClusterDistributionManager.SERIAL_EXECUTOR;
+    return OperationExecutors.SERIAL_EXECUTOR;
   }
 
   /**
@@ -181,8 +186,8 @@ public abstract class RemoteOperationMessage extends DistributionMessage
       r = getRegionByPath(cache);
       if (r == null && failIfRegionMissing()) {
         thr = new RegionDestroyedException(
-            LocalizedStrings.RemoteOperationMessage_0_COULD_NOT_FIND_REGION_1
-                .toLocalizedString(dm.getDistributionManagerId(), regionPath),
+            String.format("%s : could not find region %s",
+                dm.getDistributionManagerId(), regionPath),
             regionPath);
         return; // reply sent in finally block below
       }
@@ -200,12 +205,19 @@ public abstract class RemoteOperationMessage extends DistributionMessage
           } else if (tx.isInProgress()) {
             sendReply = operateOnRegion(dm, r, startTime);
             tx.updateProxyServer(this.getSender());
+          } else {
+            /*
+             * This can occur when processing an in-flight message after the transaction has
+             * been failed over and committed.
+             */
+            throw new TransactionException("transactional operation elided because transaction {"
+                + tx.getTxId() + "} is closed");
           }
         } finally {
           txMgr.unmasquerade(tx);
         }
       }
-    } catch (RegionDestroyedException | RemoteOperationException ex) {
+    } catch (RegionDestroyedException | RemoteOperationException | TransactionException ex) {
       thr = ex;
     } catch (DistributedSystemDisconnectedException se) {
       // bug 37026: this is too noisy...
@@ -238,11 +250,11 @@ public abstract class RemoteOperationMessage extends DistributionMessage
         } else {
           // don't pass arbitrary runtime exceptions and errors back if this
           // cache/vm is closing
-          thr = new RemoteOperationException("cache is closing");
+          thr = new RemoteOperationException("cache is closing", new CacheClosedException());
         }
       }
-      if (logger.isTraceEnabled(LogMarker.DM) && (t instanceof RuntimeException)) {
-        logger.trace(LogMarker.DM, "Exception caught while processing message", t);
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE) && (t instanceof RuntimeException)) {
+        logger.trace(LogMarker.DM_VERBOSE, "Exception caught while processing message", t);
       }
     } finally {
       if (sendReply) {
@@ -281,7 +293,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
    * message type
    */
   protected void sendReply(InternalDistributedMember member, int procId, DistributionManager dm,
-      ReplyException ex, LocalRegion r, long startTime) {
+      ReplyException ex, InternalRegion r, long startTime) {
     ReplyMessage.send(member, procId, ex, getReplySender(dm), r != null && r.isInternalRegion());
   }
 
@@ -302,17 +314,19 @@ public abstract class RemoteOperationMessage extends DistributionMessage
   /**
    * Fill out this instance of the message using the <code>DataInput</code> Required to be a
    * {@link org.apache.geode.DataSerializable}Note: must be symmetric with
-   * {@link #toData(DataOutput)}in what it reads
+   * {@link DataSerializableFixedID#toData(DataOutput, SerializationContext)}in what it reads
    */
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.flags = in.readShort();
-    setFlags(this.flags, in);
+    setFlags(this.flags, in, context);
     this.regionPath = DataSerializer.readString(in);
     this.isTransactionDistributed = in.readBoolean();
   }
 
+  @Override
   public InternalDistributedMember getTXOriginatorClient() {
     return this.txMemberId;
   }
@@ -320,11 +334,12 @@ public abstract class RemoteOperationMessage extends DistributionMessage
   /**
    * Send the contents of this instance to the DataOutput Required to be a
    * {@link org.apache.geode.DataSerializable}Note: must be symmetric with
-   * {@link #fromData(DataInput)}in what it writes
+   * {@link DataSerializableFixedID#fromData(DataInput, DeserializationContext)}in what it writes
    */
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     short flags = computeCompressedShort();
     out.writeShort(flags);
     if (this.processorId != 0) {
@@ -337,7 +352,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
       out.writeInt(this.getTXUniqId());
     }
     if (this.getTXMemberId() != null) {
-      DataSerializer.writeObject(this.getTXMemberId(), out);
+      context.getSerializer().writeObject(this.getTXMemberId(), out);
     }
     DataSerializer.writeString(this.regionPath, out);
     out.writeBoolean(this.isTransactionDistributed);
@@ -356,7 +371,8 @@ public abstract class RemoteOperationMessage extends DistributionMessage
     return flags;
   }
 
-  protected void setFlags(short flags, DataInput in) throws IOException, ClassNotFoundException {
+  protected void setFlags(short flags, DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     if ((flags & HAS_PROCESSOR_ID) != 0) {
       this.processorId = in.readInt();
       ReplyProcessor21.setMessageRPId(this.processorId);
@@ -368,7 +384,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
       this.txUniqId = in.readInt();
     }
     if ((flags & HAS_TX_MEMBERID) != 0) {
-      this.txMemberId = DataSerializer.readObject(in);
+      this.txMemberId = context.getDeserializer().readObject(in);
     }
   }
 
@@ -401,7 +417,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
    */
   protected void appendFields(StringBuffer buff) {
     buff.append("; sender=").append(getSender()).append("; recipients=[");
-    InternalDistributedMember[] recips = getRecipients();
+    InternalDistributedMember[] recips = getRecipientsArray();
     for (int i = 0; i < recips.length - 1; i++) {
       buff.append(recips[i]).append(',');
     }
@@ -412,7 +428,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
   }
 
   public InternalDistributedMember getRecipient() {
-    return getRecipients()[0];
+    return getRecipientsArray()[0];
   }
 
   public void setOperation(Operation op) {
@@ -433,10 +449,12 @@ public abstract class RemoteOperationMessage extends DistributionMessage
   /**
    * @return the txUniqId
    */
+  @Override
   public int getTXUniqId() {
     return txUniqId;
   }
 
+  @Override
   public InternalDistributedMember getMemberToMasqueradeAs() {
     if (txMemberId == null) {
       return getSender();
@@ -444,6 +462,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
     return txMemberId;
   }
 
+  @Override
   public boolean canStartRemoteTransaction() {
     return true;
   }

@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import org.apache.geode.InvalidDeltaException;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.DynamicRegionFactory;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.ResourceException;
@@ -35,8 +36,6 @@ import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.GemFireSecurityException;
@@ -48,6 +47,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
  */
 public class Put61 extends BaseCommand {
 
+  @Immutable
   private static final Put61 singleton = new Put61();
 
   public static Command getCommand() {
@@ -98,7 +98,7 @@ public class Put61 extends BaseCommand {
         return;
       }
     }
-    regionName = regionNamePart.getString();
+    regionName = regionNamePart.getCachedString();
 
     try {
       key = keyPart.getStringOrObject();
@@ -175,7 +175,7 @@ public class Put61 extends BaseCommand {
       boolean isMetaRegion = region.isUsedForMetaRegion();
       clientMessage.setMetaRegion(isMetaRegion);
 
-      securityService.authorize(Resource.DATA, Operation.WRITE, regionName, key.toString());
+      securityService.authorize(Resource.DATA, Operation.WRITE, regionName, key);
 
       AuthorizeRequest authzRequest = null;
       if (!isMetaRegion) {
@@ -233,9 +233,8 @@ public class Put61 extends BaseCommand {
       serverConnection.setAsTrue(RESPONDED);
       return;
     } catch (InvalidDeltaException ide) {
-      logger.info(LocalizedMessage.create(
-          LocalizedStrings.UpdateOperation_ERROR_APPLYING_DELTA_FOR_KEY_0_OF_REGION_1,
-          new Object[] {key, regionName}));
+      logger.info("Error applying delta for key {} of region {}: {}",
+          key, regionName, ide.getMessage());
       writeException(clientMessage, MessageType.PUT_DELTA_ERROR, ide, false, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
       region.getCachePerfStats().incDeltaFullValuesRequested();

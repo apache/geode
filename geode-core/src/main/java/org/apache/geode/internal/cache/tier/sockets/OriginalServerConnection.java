@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache.tier.sockets;
 
 import java.io.IOException;
@@ -21,54 +20,41 @@ import java.net.Socket;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.SecurityService;
 
 /**
  * Handles everything but the new client protocol.
- *
- * Legacy is therefore a bit of a misnomer; do you have a better name?
  */
-public class OriginalServerConnection extends ServerConnection {
+class OriginalServerConnection extends ServerConnection {
+
   /**
    * Set to false once handshake has been done
    */
   private boolean doHandshake = true;
 
   /**
-   * Creates a new <code>ServerConnection</code> that processes messages received from an edge
-   * client over a given <code>Socket</code>.
-   *
-   * @param socket
-   * @param internalCache
-   * @param helper
-   * @param stats
-   * @param hsTimeout
-   * @param socketBufferSize
-   * @param communicationModeStr
-   * @param communicationMode
-   * @param acceptor
-   * @param securityService
+   * Creates a new {@code ServerConnection} that processes messages received from an edge
+   * client over a given {@code Socket}.
    */
-  public OriginalServerConnection(Socket socket, InternalCache internalCache,
-      CachedRegionHelper helper, CacheServerStats stats, int hsTimeout, int socketBufferSize,
-      String communicationModeStr, byte communicationMode, Acceptor acceptor,
-      SecurityService securityService) {
-    super(socket, internalCache, helper, stats, hsTimeout, socketBufferSize, communicationModeStr,
-        communicationMode, acceptor, securityService);
+  OriginalServerConnection(final Socket socket, final InternalCache internalCache,
+      final CachedRegionHelper cachedRegionHelper, final CacheServerStats stats,
+      final int hsTimeout, final int socketBufferSize, final String communicationModeStr,
+      final byte communicationMode, final Acceptor acceptor,
+      final SecurityService securityService) {
+    super(socket, internalCache, cachedRegionHelper, stats, hsTimeout, socketBufferSize,
+        communicationModeStr, communicationMode, acceptor, securityService);
+
+    initStreams(socket, socketBufferSize, stats);
   }
 
   @Override
   protected boolean doHandShake(byte endpointType, int queueSize) {
     try {
       handshake.handshakeWithClient(theSocket.getOutputStream(), theSocket.getInputStream(),
-          endpointType, queueSize, this.communicationMode, this.principal);
+          endpointType, queueSize, communicationMode, principal);
     } catch (IOException ioe) {
       if (!crHelper.isShutdown() && !isTerminated()) {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.ServerConnection_0_HANDSHAKE_ACCEPT_FAILED_ON_SOCKET_1_2,
-            new Object[] {this.name, this.theSocket, ioe}));
+        logger.warn("{}: Handshake accept failed on socket {}: {}", name, theSocket, ioe);
       }
       cleanup();
       return false;
@@ -76,13 +62,14 @@ public class OriginalServerConnection extends ServerConnection {
     return true;
   }
 
+  @Override
   protected void doOneMessage() {
-    if (this.doHandshake) {
+    if (doHandshake) {
       doHandshake();
-      this.doHandshake = false;
+      doHandshake = false;
     } else {
-      this.resetTransientData();
-      doNormalMsg();
+      resetTransientData();
+      doNormalMessage();
     }
   }
 }

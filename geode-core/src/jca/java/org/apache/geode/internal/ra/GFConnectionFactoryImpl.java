@@ -22,10 +22,6 @@ import javax.resource.spi.ManagedConnectionFactory;
 
 import org.apache.geode.ra.GFConnectionFactory;
 
-/**
- *
- *
- */
 public class GFConnectionFactoryImpl implements GFConnectionFactory {
   private final ConnectionManager cm;
 
@@ -43,15 +39,18 @@ public class GFConnectionFactoryImpl implements GFConnectionFactory {
     this.mcf = mcf;
   }
 
+  @Override
   public GFConnectionImpl getConnection() throws ResourceException {
     return (GFConnectionImpl) cm.allocateConnection(mcf, null);
   }
 
+  @Override
   public void setReference(Reference ref) {
     this.ref = ref;
 
   }
 
+  @Override
   public Reference getReference() throws NamingException {
     return this.ref;
   }

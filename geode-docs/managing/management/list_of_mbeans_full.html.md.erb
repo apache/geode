@@ -50,11 +50,11 @@ See the `org.apache.geode.management.ManagerMXBean` JavaDocs for information on 
 
 ## <a id="topic_14E3721DD0CF47D7AD8C742DFBE9FB9C__section_4D7A4C82DD974BB5A5E52B34A6D888B4" class="no-quick-link"></a>DistributedSystemMXBean
 
-System-wide aggregate MBean that provides a high-level view of the entire distributed system including all members (cache servers, peers, locators) and their caches. At any given point of time, it can provide a snapshot of the complete distributed system and its operations.
+System-wide aggregate MBean that provides a high-level view of the entire cluster including all members (cache servers, peers, locators) and their caches. At any given point of time, it can provide a snapshot of the complete cluster and its operations.
 
-The DistributedSystemMXBean provides APIs for performing distributed system-wide operations such as backing up all members, shutting down all members or showing various distributed system metrics.
+The DistributedSystemMXBean provides APIs for performing cluster-wide operations such as backing up all members, shutting down all members or showing various cluster metrics.
 
-You can attach a standard JMX NotificationListener to this MBean to listen for notifications throughout the distributed system. See [<%=vars.product_name%> JMX MBean Notifications](mbean_notifications.html) for more information.
+You can attach a standard JMX NotificationListener to this MBean to listen for notifications throughout the cluster. See [<%=vars.product_name%> JMX MBean Notifications](mbean_notifications.html) for more information.
 
 This MBean also provides some MBean model navigation APIS. These APIs should be used to navigate through all the MBeans exposed by a <%=vars.product_name%> System.
 
@@ -88,7 +88,7 @@ See the `org.apache.geode.management.DistributedRegionMXBean` JavaDocs for infor
 
 Represents a named instance of DistributedLockService . Any number of DistributedLockService can be created in a member.
 
-A named instance of DistributedLockService defines a space for locking arbitrary names across the distributed system defined by a specified distribution manager. Any number of DistributedLockService instances can be created with different service names. For all processes in the distributed system that have created an instance of DistributedLockService with the same name, no more than one thread is permitted to own the lock on a given name in that instance at any point in time. Additionally, a thread can lock the entire service, preventing any other threads in the system from locking the service or any names in the service.
+A named instance of DistributedLockService defines a space for locking arbitrary names across the cluster defined by a specified distribution manager. Any number of DistributedLockService instances can be created with different service names. For all processes in the cluster that have created an instance of DistributedLockService with the same name, no more than one thread is permitted to own the lock on a given name in that instance at any point in time. Additionally, a thread can lock the entire service, preventing any other threads in the system from locking the service or any names in the service.
 
 **MBean Details**
 
@@ -116,7 +116,7 @@ MBeans that are available on all managed nodes include:
 -   [LocatorMXBean](list_of_mbeans_full.html#topic_48194A5BDF3F40F68E95A114DD702413__section_BB83107990D346F39271ACCC14CB84A0)
 -   [LuceneServiceMXBean](list_of_mbeans_full.html#LuceneServiceMXBean_desc)
 
-JMX Manager nodes will have managed node MBeans for themselves since they are also manageable entities in the distributed system.
+JMX Manager nodes will have managed node MBeans for themselves since they are also manageable entities in the cluster.
 
 ## <a id="topic_48194A5BDF3F40F68E95A114DD702413__section_796A989549304BF7A536A33A913322A4" class="no-quick-link"></a>MemberMXBean
 
@@ -207,14 +207,14 @@ An AsyncEventQueueMXBean provides access to an AsyncEventQueue, which represent 
 |--------------------|------------------------------------------------------------------------------------------------------------|
 | Scope              | Local                                                                                                      |
 | Proxied            | Yes                                                                                                        |
-| Object Name        | GemFire:type=Member,service=AsyncEventQueue=&lt;AsyncEventQueue&gt; ,member=&lt;name-or-dist-member-id&gt; |
+| Object Name        | GemFire:type=Member,service=AsyncEventQueue,queue=&lt;queue-id&gt;,member=&lt;name-or-dist-member-id&gt; |
 | Instances Per Node | 0..N                                                                                                       |
 
 See the `org.apache.geode.management.AsyncEventQueueMXBean` JavaDocs for information on available MBean methods and attributes.
 
 ## <a id="topic_48194A5BDF3F40F68E95A114DD702413__section_BB83107990D346F39271ACCC14CB84A0" class="no-quick-link"></a>LocatorMXBean
 
-A LocatorMXBean represents a locator .
+A LocatorMXBean represents a locator.
 
 **MBean Details**
 
@@ -241,3 +241,34 @@ The member's local view of existing Lucene indexes.
 | Instances Per Node | 0..1                                                                                        |
 
 See the `org.apache.geode.cache.lucene.management.LuceneServiceMXBean` JavaDocs for information on available MBean methods and attributes.
+
+## <a id="GatewaySenderMXBean" class="no-quick-link"></a>GatewaySenderMXBean
+
+A GatewaySenderMXBean represents a gateway sender.
+
+**MBean Details**
+
+|                    |                                                                                             |
+|--------------------|---------------------------------------------------------------------------------------------|
+| Scope              | Local                                                                                       |
+| Proxied            | Yes                                                                                         |
+| Object Name        | GemFire:type=Member,service=GatewaySender,gatewaySender=&lt;sender-id&gt;,member=&lt;name-or-dist-member-id&gt;|
+| Instances Per Node | 0..1                                                                                        |
+
+See the `org.apache.geode.management.GatewaySenderMXBean` JavaDocs for information on available MBean methods and attributes.
+
+## <a id="GatewayReceiverMXBean" class="no-quick-link"></a>GatewayReceiverMXBean
+
+A GatewayReceiverMXBean represents a gateway receiver.
+
+**MBean Details**
+
+|                    |                                                                                             |
+|--------------------|---------------------------------------------------------------------------------------------|
+| Scope              | Local                                                                                       |
+| Proxied            | Yes                                                                                         |
+| Object Name        | GemFire:type=Member,service=GatewayReceiver,member=&lt;name-or-dist-member-id&gt;|
+| Instances Per Node | 0..1                                                                                        |
+
+See the `org.apache.geode.management.GatewayReceiverMXBean` JavaDocs for information on available MBean methods and attributes.
+

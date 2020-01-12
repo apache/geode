@@ -23,7 +23,27 @@ Program your applications to create, modify, and manage your cached data entries
 
 <a id="managing_data_entries__section_AACC36127F17411F86D1E409B86C6E5C"></a>
 **Note:**
-If you do not have the cache's `copy-on-read` attribute set to true, do not change the objects returned from the Java entry access methods. Instead, create a copy of the object, then modify the copy and pass it to the Java `put` method. Modifying a value in place bypasses the entire distribution framework provided by <%=vars.product_name%>, including cache listeners and expiration activities, and can produce undesired results.
+If you do not have the cache's `copy-on-read` attribute set to true, do not change the objects returned from the Java entry access methods. See [Safe Entry Modification](#managing_data_entries__section_A0E0F889AC344EFA8DF304FD64418809).
+
+## <a id="managing_data_entry_keys" class="no-quick-link"></a>Keys
+
+<%=vars.product_name%> calls `hashCode()` on the key
+to map an entry within the region.
+The `hashCode()` return value must be the same for
+a given key on every server that hosts the region.
+
+An `equals()` call return value on a given key also must be
+the same on every server that hosts the region.
+
+A key may be a primitive type or a custom class.
+For custom classes, see [Classes Used as Keys](using_custom_classes.html#using_custom_classes__section_CE776B94EDCB4D269A71C3C9CFEDD5FD).
+
+Do not use an enumerated type (`enum`) for a key.
+The `enum` `hashCode()` may not be overridden,
+and its hash code is based upon an address.
+Therefore, the return value for a `hashCode()` call can be different
+on each server, violating the restriction that it must return
+the same value on every server that hosts the region. 
 
 ## <a id="managing_data_entries__section_B095A4073EFB4A3C91AF7C03632EEBFB" class="no-quick-link"></a>Basic Create and Update
 

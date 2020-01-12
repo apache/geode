@@ -14,18 +14,15 @@
  */
 package org.apache.geode.distributed.internal.deadlock;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.util.concurrent.CountDownLatch;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class UnsafeThreadLocalJUnitTest {
 
   private static final long INTERVAL = 10;
@@ -51,6 +48,7 @@ public class UnsafeThreadLocalJUnitTest {
     final CountDownLatch localSet = new CountDownLatch(1);
 
     Thread test = new Thread() {
+      @Override
       public void run() {
         unsafeThreadLocal.set("hello");
         localSet.countDown();

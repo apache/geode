@@ -1,0 +1,82 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+---
+resource_types:
+- name: gce-instances
+  type: docker-image
+  source:
+    repository: registry:5000/gce-instances-resource
+    tag: latest
+    insecure_registries:
+    - "registry:5000"
+
+resources:
+- name: stopable-instance
+  type: gce-instances
+  source:
+    filter: 'labels.time-to-live:* AND labels.time-to-live<$(date +%s) AND status:RUNNING'
+
+- name: destroyable-instance
+  type: gce-instances
+  source:
+    filter: 'labels.time-to-live:* AND labels.time-to-live<$(($(date +%s) - 86400)) AND status:TERMINATED'
+
+jobs:
+- name: stop-instance
+  plan:
+  - get: stopable-instance
+    version: every
+    trigger: true
+  - task: stop-instances
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: google/cloud-sdk
+          tag: alpine
+      inputs:
+      - name: stopable-instance
+      run:
+        path: /bin/sh
+        args:
+        - -exc
+        - |
+          gcloud compute instances stop $(cat stopable-instance/selfLink) --quiet
+
+- name: destroy-instance
+  plan:
+  - get: destroyable-instance
+    version: every
+    trigger: true
+  - task: reap-destroyable
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: google/cloud-sdk
+          tag: alpine
+      inputs:
+      - name: destroyable-instance
+      run:
+        path: /bin/sh
+        args:
+        - -exc
+        - |
+          gcloud compute instances destroy $(cat destroyable-instance/selfLink) --quiet

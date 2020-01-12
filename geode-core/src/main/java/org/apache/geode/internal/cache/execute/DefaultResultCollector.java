@@ -41,22 +41,22 @@ public class DefaultResultCollector implements ResultCollector {
   /**
    * Adds a single function execution result from a remote node to the ResultCollector
    *
-   * @param distributedMember
-   * @param resultOfSingleExecution
    */
+  @Override
   public synchronized void addResult(DistributedMember distributedMember,
       Object resultOfSingleExecution) {
     this.resultList.add(resultOfSingleExecution);
   }
 
   /**
-   * Waits if necessary for the computation to complete, and then retrieves its result.<br>
+   * Returns the result of the execution if available.<br>
    * If {@link Function#hasResult()} is false, upon calling {@link ResultCollector#getResult()}
    * throws {@link FunctionException}.
    *
    * @return the Object computed result
    * @throws FunctionException if something goes wrong while retrieving the result
    */
+  @Override
   public Object getResult() throws FunctionException {
     return this.resultList; // this is full result
   }
@@ -66,19 +66,20 @@ public class DefaultResultCollector implements ResultCollector {
    * can retrieve results using {@link ResultCollector#getResult()}
    *
    */
+  @Override
   public void endResults() {}
 
   /**
-   * Waits if necessary for at most the given time for the computation to complete, and then
-   * retrieves its result, if available. <br>
+   * Returns the result of the execution if available.<br>
    * If {@link Function#hasResult()} is false, upon calling {@link ResultCollector#getResult()}
    * throws {@link FunctionException}.
    *
-   * @param timeout the maximum time to wait
+   * @param timeout the maximum time to wait (ignored)
    * @param unit the time unit of the timeout argument
    * @return Object computed result
    * @throws FunctionException if something goes wrong while retrieving the result
    */
+  @Override
   public Object getResult(long timeout, TimeUnit unit) throws FunctionException {
     return this.resultList;
   }
@@ -88,6 +89,7 @@ public class DefaultResultCollector implements ResultCollector {
    * This is to clear the previous execution results from the result collector
    *
    */
+  @Override
   public void clearResults() {
     this.resultList.clear();
   }

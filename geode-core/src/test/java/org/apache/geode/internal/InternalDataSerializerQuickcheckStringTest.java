@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -29,7 +29,7 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.categories.SerializationTest;
 
 /**
  * Tests the serialization and deserialization of randomly generated Strings.
@@ -38,7 +38,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * codepoints, and that it doesn't tend to test strings that are particularly long, though the more
  * trials you run, the longer they get.
  */
-@Category(UnitTest.class)
+@Category({SerializationTest.class})
 @RunWith(JUnitQuickcheck.class)
 public class InternalDataSerializerQuickcheckStringTest {
   @Property(trials = 1000)

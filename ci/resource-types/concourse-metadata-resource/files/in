@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+DEST_DIR=$1
+
+SCRIPT_INPUT='/tmp/input'
+cat > $SCRIPT_INPUT <&0 # STDIN params
+
+VERSION=$(jq -r '.version.ref // ""' < $SCRIPT_INPUT)
+
+OUTPUT_STRING=$(cat <<EOF
+{ "version": { "ref": "$VERSION" },
+  "metadata": [
+    { "name": "BUILD_ID", "value": "$BUILD_ID" },
+    { "name": "BUILD_NAME", "value": "$BUILD_NAME" },
+    { "name": "BUILD_JOB_NAME", "value": "$BUILD_JOB_NAME" },
+    { "name": "BUILD_PIPELINE_NAME", "value": "$BUILD_PIPELINE_NAME" },
+    { "name": "BUILD_TEAM_NAME", "value": "$BUILD_TEAM_NAME" },
+    { "name": "ATC_EXTERNAL_URL", "value": "$ATC_EXTERNAL_URL" }
+  ]
+}
+EOF
+)
+
+echo "export BUILD_ID=$BUILD_ID" > $DEST_DIR/concourse_metadata
+echo "export BUILD_NAME=$BUILD_NAME" >> $DEST_DIR/concourse_metadata
+echo "export BUILD_JOB_NAME=$BUILD_JOB_NAME" >> $DEST_DIR/concourse_metadata
+echo "export BUILD_PIPELINE_NAME=$BUILD_PIPELINE_NAME" >> $DEST_DIR/concourse_metadata
+echo "export BUILD_TEAM_NAME=$BUILD_TEAM_NAME" >> $DEST_DIR/concourse_metadata
+echo "export ATC_EXTERNAL_URL=$ATC_EXTERNAL_URL" >> $DEST_DIR/concourse_metadata
+
+echo $OUTPUT_STRING
+
+exit 0

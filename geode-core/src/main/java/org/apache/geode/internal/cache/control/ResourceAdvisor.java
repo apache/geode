@@ -38,9 +38,9 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.UpdateAttributesProcessor;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
 import org.apache.geode.internal.cache.control.MemoryThresholds.MemoryState;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * The advisor associated with a {@link ResourceManager}. Allows knowledge of remote
@@ -122,9 +122,9 @@ public class ResourceAdvisor extends DistributionAdvisor {
       } finally {
         if (thr != null) {
           dm.getCancelCriterion().checkCancelInProgress(null);
-          logger.info(LocalizedMessage.create(
-              LocalizedStrings.ResourceAdvisor_MEMBER_CAUGHT_EXCEPTION_PROCESSING_PROFILE,
-              new Object[] {p, toString()}), thr);
+          logger.info(String.format("This member caught exception processing profile %s %s",
+              new Object[] {p, toString()}),
+              thr);
         }
       }
     }
@@ -135,8 +135,9 @@ public class ResourceAdvisor extends DistributionAdvisor {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.processorId = in.readInt();
       final int l = in.readInt();
       if (l != -1) {
@@ -152,8 +153,9 @@ public class ResourceAdvisor extends DistributionAdvisor {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       out.writeInt(this.processorId);
       if (this.profiles != null) {
         out.writeInt(this.profiles.length);
@@ -362,8 +364,9 @@ public class ResourceAdvisor extends DistributionAdvisor {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
 
       final long heapBytesUsed = in.readLong();
       MemoryState heapState = MemoryState.fromData(in);
@@ -377,7 +380,8 @@ public class ResourceAdvisor extends DistributionAdvisor {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
       final long heapBytesUsed;
       final MemoryState heapState;
       final MemoryThresholds heapThresholds;
@@ -393,7 +397,7 @@ public class ResourceAdvisor extends DistributionAdvisor {
         offHeapState = this.offHeapState;
         offHeapThresholds = this.offHeapThresholds;
       }
-      super.toData(out);
+      super.toData(out, context);
 
       out.writeLong(heapBytesUsed);
       heapState.toData(out);
@@ -425,7 +429,7 @@ public class ResourceAdvisor extends DistributionAdvisor {
    *
    * @return a mutable set of members in the critical state otherwise {@link Collections#EMPTY_SET}
    */
-  public Set<InternalDistributedMember> adviseCritialMembers() {
+  public Set<InternalDistributedMember> adviseCriticalMembers() {
     return adviseFilter(new Filter() {
       @Override
       public boolean include(Profile profile) {

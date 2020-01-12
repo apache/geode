@@ -20,20 +20,17 @@ import java.io.IOException;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.admin.AlertLevel;
+import org.apache.geode.alerting.internal.spi.AlertLevel;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.SerialDistributionMessage;
-import org.apache.geode.internal.admin.Alert;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.AlertAppender;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * A message that is sent to make members of the distributed system aware that a manager agent wants
  * alerts at a new level.
- *
- * @see AlertLevel
  *
  * @since GemFire 3.5
  */
@@ -44,50 +41,48 @@ public class AlertLevelChangeMessage extends SerialDistributionMessage {
   /** The new alert level */
   private int newLevel;
 
-  /////////////////////// Static Methods ///////////////////////
-
   /**
-   * Creates a new <code>AlertLevelChangeMessage</code>
+   * Creates a new {@code AlertLevelChangeMessage}.
    */
   public static AlertLevelChangeMessage create(int newLevel) {
-    AlertLevelChangeMessage m = new AlertLevelChangeMessage();
-    m.newLevel = newLevel;
-    return m;
+    AlertLevelChangeMessage alertLevelChangeMessage = new AlertLevelChangeMessage();
+    alertLevelChangeMessage.newLevel = newLevel;
+    return alertLevelChangeMessage;
   }
-
-  ////////////////////// Instance Methods //////////////////////
 
   @Override
   public void process(ClusterDistributionManager dm) {
-    AlertAppender.getInstance().removeAlertListener(this.getSender());
+    dm.getAlertingService().removeAlertListener(getSender());
 
-    if (this.newLevel != Alert.OFF) {
-      AlertAppender.getInstance().addAlertListener(this.getSender(), this.newLevel);
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM, "Added new AlertListener to application log writer");
+    if (newLevel != AlertLevel.NONE.intLevel()) {
+      dm.getAlertingService().addAlertListener(getSender(), AlertLevel.find(newLevel));
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE, "Added new AlertListener");
       }
     }
   }
 
+  @Override
   public int getDSFID() {
     return ALERT_LEVEL_CHANGE_MESSAGE;
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
-    out.writeInt(this.newLevel);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
+    out.writeInt(newLevel);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
-    this.newLevel = in.readInt();
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
+    newLevel = in.readInt();
   }
 
   @Override
   public String toString() {
-    return LocalizedStrings.AlertLevelChangeMessage_CHANGING_ALERT_LEVEL_TO_0
-        .toLocalizedString(AlertLevel.forSeverity(this.newLevel));
+    return String.format("Changing alert level to %s", AlertLevel.find(newLevel));
   }
 }

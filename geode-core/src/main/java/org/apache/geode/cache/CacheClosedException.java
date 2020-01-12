@@ -15,8 +15,6 @@
 package org.apache.geode.cache;
 
 import org.apache.geode.CancelException;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.InternalCache;
 
 /**
  * Indicates that the caching system has been closed. Can be thrown from almost any method related

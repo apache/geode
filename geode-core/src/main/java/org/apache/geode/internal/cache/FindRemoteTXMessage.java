@@ -39,7 +39,9 @@ import org.apache.geode.distributed.internal.ReplySender;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.partitioned.PartitionMessage;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Message to all the peers to ask which member hosts the transaction for the given transaction id
@@ -83,6 +85,7 @@ public class FindRemoteTXMessage extends HighPriorityDistributionMessage
     return processor;
   }
 
+  @Override
   public int getDSFID() {
     return FIND_REMOTE_TX_MESSAGE;
   }
@@ -109,7 +112,7 @@ public class FindRemoteTXMessage extends HighPriorityDistributionMessage
             reply.isPartialCommitMessage = true;
           }
           // cleanup the local txStateProxy fixes bug 43069
-          mgr.removeHostedTXState(txId);
+          mgr.removeHostedTXState(txId, true);
         }
       }
       reply.setRecipient(getSender());
@@ -160,15 +163,17 @@ public class FindRemoteTXMessage extends HighPriorityDistributionMessage
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     DataSerializer.writeObject(this.txId, out);
     out.writeInt(this.processorId);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.txId = DataSerializer.readObject(in);
     this.processorId = in.readInt();
   }
@@ -253,8 +258,9 @@ public class FindRemoteTXMessage extends HighPriorityDistributionMessage
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       out.writeBoolean(this.isHostingTx);
       boolean sendTXCommitMessage = this.txCommitMessage != null;
       out.writeBoolean(sendTXCommitMessage);
@@ -267,8 +273,9 @@ public class FindRemoteTXMessage extends HighPriorityDistributionMessage
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.isHostingTx = in.readBoolean();
       if (in.readBoolean()) {
         this.isPartialCommitMessage = in.readBoolean();

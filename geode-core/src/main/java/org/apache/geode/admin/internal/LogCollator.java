@@ -20,7 +20,9 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.geode.internal.admin.ApplicationVM;
 import org.apache.geode.internal.admin.GemFireVM;
@@ -30,7 +32,7 @@ import org.apache.geode.internal.logging.MergeLogFiles;
 public class LogCollator {
 
   private GfManagerAgent system;
-  private List logTails;
+  private List<Loglet> logTails;
 
   public LogCollator() {}
 
@@ -40,7 +42,7 @@ public class LogCollator {
         return "";
       }
       this.system = system;
-      this.logTails = new ArrayList();
+      this.logTails = new ArrayList<>();
       gatherActiveLogs();
       gatherInactiveLogs();
       return mergeLogs();
@@ -54,18 +56,16 @@ public class LogCollator {
 
   private String mergeLogs() {
     // combine logs...
-    InputStream[] logFiles = new InputStream[this.logTails.size()];
-    String[] logFileNames = new String[logFiles.length];
+    Map<String, InputStream> logFiles = new HashMap<>();
     for (int i = 0; i < this.logTails.size(); i++) {
-      Loglet loglet = (Loglet) this.logTails.get(i);
-      logFiles[i] = new ByteArrayInputStream(loglet.tail.getBytes());
-      logFileNames[i] = loglet.name;
+      Loglet loglet = this.logTails.get(i);
+      logFiles.put(loglet.name, new ByteArrayInputStream(loglet.tail.getBytes()));
     }
 
     // delegate to MergeLogFiles...
     StringWriter writer = new StringWriter();
     PrintWriter mergedLog = new PrintWriter(writer);
-    if (!MergeLogFiles.mergeLogFiles(logFiles, logFileNames, mergedLog)) {
+    if (!MergeLogFiles.mergeLogFiles(logFiles, mergedLog)) {
       return writer.toString();
     } else {
       return "";

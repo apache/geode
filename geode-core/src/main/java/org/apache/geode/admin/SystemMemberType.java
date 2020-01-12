@@ -15,6 +15,8 @@
 package org.apache.geode.admin;
 
 
+import org.apache.geode.annotations.Immutable;
+
 /**
  * Type-safe definition for system members.
  *
@@ -24,17 +26,21 @@ package org.apache.geode.admin;
  *             "{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code>
  *             package instead
  */
+@Immutable
 public class SystemMemberType implements java.io.Serializable {
   private static final long serialVersionUID = 3284366994485749302L;
 
   /** GemFire shared-memory manager connected to the distributed system */
-  public static final SystemMemberType MANAGER = new SystemMemberType("GemFireManager");
+  @Immutable
+  public static final SystemMemberType MANAGER = new SystemMemberType("GemFireManager", 0);
 
   /** Application connected to the distributed system */
-  public static final SystemMemberType APPLICATION = new SystemMemberType("Application");
+  @Immutable
+  public static final SystemMemberType APPLICATION = new SystemMemberType("Application", 1);
 
   /** GemFire Cache VM connected to the distributed system */
-  public static final SystemMemberType CACHE_VM = new SystemMemberType("CacheVm");
+  @Immutable
+  public static final SystemMemberType CACHE_VM = new SystemMemberType("CacheVm", 2);
 
   /**
    * GemFire Cache Server connected to the distributed system
@@ -42,6 +48,7 @@ public class SystemMemberType implements java.io.Serializable {
    * @deprecated as of 5.7 use {@link #CACHE_VM} instead.
    */
   @Deprecated
+  @Immutable
   public static final SystemMemberType CACHE_SERVER = CACHE_VM;
 
 
@@ -50,10 +57,9 @@ public class SystemMemberType implements java.io.Serializable {
 
   // The 4 declarations below are necessary for serialization
   /** int used as ordinal to represent this Scope */
-  public final int ordinal = nextOrdinal++;
+  public final int ordinal;
 
-  private static int nextOrdinal = 0;
-
+  @Immutable
   private static final SystemMemberType[] VALUES = {MANAGER, APPLICATION, CACHE_VM};
 
   private Object readResolve() throws java.io.ObjectStreamException {
@@ -61,8 +67,9 @@ public class SystemMemberType implements java.io.Serializable {
   }
 
   /** Creates a new instance of SystemMemberType. */
-  private SystemMemberType(String name) {
+  private SystemMemberType(String name, int ordinal) {
     this.name = name;
+    this.ordinal = ordinal;
   }
 
   /** Return the SystemMemberType represented by specified ordinal */

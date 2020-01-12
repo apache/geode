@@ -16,9 +16,11 @@
 
 package org.apache.geode.cache;
 
-import java.io.*;
+import java.io.ObjectStreamException;
+import java.io.Serializable;
 
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.annotations.Immutable;
+
 
 /**
  * Enumerated type for region distribution scope.
@@ -29,6 +31,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
  * @see AttributesFactory#setScope
  * @since GemFire 3.0
  */
+@Immutable
 public class Scope implements Serializable {
   private static final long serialVersionUID = 5534399159504301602L;
 
@@ -36,36 +39,37 @@ public class Scope implements Serializable {
    * The region with this attribute is scoped to this JVM only. Operations and data are not
    * distributed to other caches.
    */
-  public static final Scope LOCAL = new Scope("LOCAL");
+  @Immutable
+  public static final Scope LOCAL = new Scope("LOCAL", 0);
 
   /**
    * The region or cached object with this attribute is scoped to the distributed cached system; any
    * distributed operation will return without waiting for the remote acknowledgment.
    */
-  public static final Scope DISTRIBUTED_NO_ACK = new Scope("DISTRIBUTED_NO_ACK");
+  @Immutable
+  public static final Scope DISTRIBUTED_NO_ACK = new Scope("DISTRIBUTED_NO_ACK", 1);
 
   /**
    * The region or cached object with this attribute is scoped to the distributed cached system; any
    * distributed operation will not return until all the remote acknowledgments come back.
    */
-  public static final Scope DISTRIBUTED_ACK = new Scope("DISTRIBUTED_ACK");
+  @Immutable
+  public static final Scope DISTRIBUTED_ACK = new Scope("DISTRIBUTED_ACK", 2);
 
   /**
    * The region or cached object with this attribute is scoped to the distributed cached system;
    * locking is used for all distributed operations on entries to guarantee consistency across the
    * distributed caches.
    */
-  public static final Scope GLOBAL = new Scope("GLOBAL");
+  @Immutable
+  public static final Scope GLOBAL = new Scope("GLOBAL", 3);
 
   /** The name of this scope. */
   private final transient String name;
 
-  // The 4 declarations below are necessary for serialization
-  /** int used as ordinal to represent this Scope */
-  public final int ordinal = nextOrdinal++;
+  public final int ordinal;
 
-  private static int nextOrdinal = 0;
-
+  @Immutable
   private static final Scope[] VALUES = {LOCAL, DISTRIBUTED_NO_ACK, DISTRIBUTED_ACK, GLOBAL};
 
   /*
@@ -83,8 +87,9 @@ public class Scope implements Serializable {
 
 
   /** Creates a new instance of Scope. */
-  private Scope(String name) {
+  private Scope(String name, int ordinal) {
     this.name = name;
+    this.ordinal = ordinal;
   }
 
   /** Return the Scope represented by specified ordinal */
@@ -157,6 +162,10 @@ public class Scope implements Serializable {
     return this.name;
   }
 
+  public String toConfigTypeString() {
+    return this.name.toLowerCase().replace("_", "-");
+  }
+
   /**
    * Parse the given string into a Scope
    *
@@ -170,8 +179,8 @@ public class Scope implements Serializable {
       }
     }
     throw new IllegalArgumentException(
-        LocalizedStrings.Scope_0_IS_NOT_A_VALID_STRING_REPRESENTATION_OF_1
-            .toLocalizedString(new Object[] {scope, Scope.class.getName()}));
+        String.format("%s is not a valid string representation of %s.",
+            new Object[] {scope, Scope.class.getName()}));
   }
 
 }

@@ -14,7 +14,9 @@
  */
 package org.apache.geode.cache.lucene.internal.distributed;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,9 +30,8 @@ import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.cache.lucene.internal.distributed.TopEntriesCollectorManager.ListScanner;
 import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
 import org.apache.geode.test.junit.categories.LuceneTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category({UnitTest.class, LuceneTest.class})
+@Category({LuceneTest.class})
 public class TopEntriesCollectorJUnitTest {
 
   private EntryScore<String> r1_1 = new EntryScore<>("1-1", .9f);

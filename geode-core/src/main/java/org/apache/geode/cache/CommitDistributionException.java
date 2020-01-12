@@ -14,7 +14,8 @@
  */
 package org.apache.geode.cache;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Set;
 
 /**
  * Indicates that an attempt to notify required participants of a transaction involving one or more

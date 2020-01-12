@@ -88,7 +88,6 @@ public interface CachedDeserializable extends Sizeable {
    * de-serialization until the last possible moment to provide better parallelism
    *
    * @param out the stream to write on
-   * @throws IOException
    */
   void writeValueAsByteArray(DataOutput out) throws IOException;
 

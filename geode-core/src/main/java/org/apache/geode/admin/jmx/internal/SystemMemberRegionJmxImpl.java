@@ -74,26 +74,32 @@ public class SystemMemberRegionJmxImpl
   /** The ModelMBean that is configured to manage this resource */
   private ModelMBean modelMBean;
 
+  @Override
   public String getMBeanName() {
     return this.mbeanName;
   }
 
+  @Override
   public ModelMBean getModelMBean() {
     return this.modelMBean;
   }
 
+  @Override
   public void setModelMBean(ModelMBean modelMBean) {
     this.modelMBean = modelMBean;
   }
 
+  @Override
   public ObjectName getObjectName() {
     return this.objectName;
   }
 
+  @Override
   public ManagedResourceType getManagedResourceType() {
     return ManagedResourceType.SYSTEM_MEMBER_REGION;
   }
 
+  @Override
   public void cleanupResource() {}
 
   /**

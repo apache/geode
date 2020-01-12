@@ -19,7 +19,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<%=vars.product_name_long%> provides various options for member discovery within a distributed system and between clients and servers.
+<%=vars.product_name_long%> provides various options for member discovery within a cluster and between clients and servers.
 
 -   [Peer Member Discovery](how_member_discovery_works.html#how_member_discovery_works__section_F2B8EBF2909440BD90B4CDEE0CAA0C2A)
 -   [Standalone Member](how_member_discovery_works.html#how_member_discovery_works__section_E26DFAFE9E994C0C9A489E325E345816)
@@ -27,25 +27,25 @@ limitations under the License.
 
 ## <a id="how_member_discovery_works__section_F2B8EBF2909440BD90B4CDEE0CAA0C2A" class="no-quick-link"></a>Peer Member Discovery
 
-Peer member discovery is what defines a distributed system. All applications and cache servers that use the same settings for peer discovery are members of the same distributed system. Each system member has a unique identity and knows the identities of the other members. A member can belong to only one distributed system at a time. Once they have found each other, members communicate directly, independent of the discovery mechanism. In peer discovery, <%=vars.product_name%> uses a membership coordinator to manage member joins and departures.
+Peer member discovery is what defines a cluster. All applications and cache servers that use the same settings for peer discovery are members of the same cluster. Each system member has a unique identity and knows the identities of the other members. A member can belong to only one cluster at a time. Once they have found each other, members communicate directly, independent of the discovery mechanism. In peer discovery, <%=vars.product_name%> uses a membership coordinator to manage member joins and departures.
 
-Members discover each other using one or more locators. A locator provides both discovery and load balancing services. Peer locators manage a dynamic list of distributed system members. New members connect to one of the locators to retrieve the member list, which it uses to join the system.
+Members discover each other using one or more locators. A locator provides both discovery and load balancing services. Peer locators manage a dynamic list of cluster members. New members connect to one of the locators to retrieve the member list, which it uses to join the system.
 
 <img src="../../images_svg/locator_discovery.svg" id="how_member_discovery_works__image_dm3_y3x_15" class="image" />
 
 **Note:**
-Multiple locators ensure the most stable start up and availability for your distributed system.
+Multiple locators ensure the most stable start up and availability for your cluster.
 
 ## <a id="how_member_discovery_works__section_E26DFAFE9E994C0C9A489E325E345816" class="no-quick-link"></a>Standalone Member
 
-The standalone member has no peers, does no peer discovery, and so does not use locators. It creates a distributed system connection only to access the <%=vars.product_name%> caching features. Running standalone has a faster startup and is appropriate for any member that is isolated from other applications. The primary use case is for client applications. Standalone members can be accessed and monitored if you enable the member to become a JMX Manager.
+The standalone member has no peers, does no peer discovery, and so does not use locators. It creates a cluster connection only to access the <%=vars.product_name%> caching features. Running standalone has a faster startup and is appropriate for any member that is isolated from other applications. The primary use case is for client applications. Standalone members can be accessed and monitored if you enable the member to become a JMX Manager.
 
 ## <a id="how_member_discovery_works__section_37DE53BDCDB541618C6DF4E47A1F2B73" class="no-quick-link"></a>Client Discovery of Servers
 
 Locators provide clients with dynamic server discovery and server load balancing. Clients are configured with locator information for the server system, and turn to the locators for directions to the servers to use. The servers can come and go and their capacity to service new client connections can vary. The locators continuously monitor server availability and server load information, providing clients with connection information for the server with the least load at any time.
 
 **Note:**
-For performance and cache coherency, clients must run as standalone members or in different distributed systems than their servers.
+For performance and cache coherency, clients must run as standalone members or in different clusters than their servers.
 
 You do not need to run any special processes to use locators for server discovery. The locators that provide peer discovery in the server system also provide server discovery for clients to the server system. This is the standard configuration.
 

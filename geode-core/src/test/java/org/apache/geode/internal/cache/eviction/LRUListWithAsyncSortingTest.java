@@ -14,8 +14,8 @@
  */
 package org.apache.geode.internal.cache.eviction;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -27,21 +27,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
 
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.RegionEntryContext;
 import org.apache.geode.internal.lang.SystemPropertyHelper;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class LRUListWithAsyncSortingTest {
 
   @Rule
@@ -181,8 +177,8 @@ public class LRUListWithAsyncSortingTest {
     list.incrementRecentlyUsed();
 
     // unsetRecentlyUsed() is called once during scan
-    await().atMost(10, TimeUnit.SECONDS)
-        .until(() -> verify(recentlyUsedNode, times(1)).unsetRecentlyUsed());
+    await()
+        .untilAsserted(() -> verify(recentlyUsedNode, times(1)).unsetRecentlyUsed());
     realExecutor.shutdown();
   }
 
@@ -200,8 +196,8 @@ public class LRUListWithAsyncSortingTest {
     list.incrementRecentlyUsed();
 
     // unsetRecentlyUsed() is called once during scan
-    await().atMost(10, TimeUnit.SECONDS)
-        .until(() -> verify(recentlyUsedNode, times(1)).unsetRecentlyUsed());
+    await()
+        .untilAsserted(() -> verify(recentlyUsedNode, times(1)).unsetRecentlyUsed());
     realExecutor.shutdown();
   }
 
@@ -229,10 +225,9 @@ public class LRUListWithAsyncSortingTest {
     when(recentlyUsedNode.isRecentlyUsed()).thenReturn(true);
     list.incrementRecentlyUsed();
 
-    // unsetRecentlyUsed() is called once during scan
-    await().atMost(10, TimeUnit.SECONDS)
-        .until(() -> verify(recentlyUsedNode, times(1)).unsetRecentlyUsed());
-    assertThat(list.tail.previous()).isEqualTo(recentlyUsedNode);
+    await().untilAsserted(() -> assertThat(list.tail.previous()).isEqualTo(recentlyUsedNode));
+    verify(recentlyUsedNode, times(1)).unsetRecentlyUsed();
+
     realExecutor.shutdown();
   }
 

@@ -14,26 +14,21 @@
  */
 package org.apache.geode.internal.offheap;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 
 import java.nio.ByteBuffer;
 
 import org.assertj.core.api.JUnitSoftAssertions;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
 
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.offheap.MemoryBlock.State;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class TinyMemoryBlockJUnitTest {
 
   private MemoryAllocatorImpl ma;

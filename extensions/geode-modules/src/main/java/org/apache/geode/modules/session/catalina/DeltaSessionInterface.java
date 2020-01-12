@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.util.List;
 
 import org.apache.catalina.Session;
-import org.apache.catalina.session.ManagerBase;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.modules.session.catalina.internal.DeltaSessionAttributeEvent;
@@ -31,6 +30,7 @@ public interface DeltaSessionInterface extends Session {
 
   void abort();
 
+  @Override
   boolean isValid();
 
   void localDestroyAttribute(String name);

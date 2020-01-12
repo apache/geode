@@ -20,7 +20,7 @@ import org.apache.geode.CancelException;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * Operation that determines the latest last access time for a given region and key
@@ -38,9 +38,9 @@ public class LatestLastAccessTimeOperation<K> {
 
   public long getLatestLastAccessTime() {
     final Set<InternalDistributedMember> recipients =
-        this.region.getCacheDistributionAdvisor().adviseInitializedReplicates();
+        this.region.getCacheDistributionAdvisor().adviseNetSearch();
     final DistributionManager dm = this.region.getDistributionManager();
-    dm.retainMembersWithSameOrNewerVersion(recipients, Version.GEODE_140);
+    dm.retainMembersWithSameOrNewerVersion(recipients, Version.GEODE_1_4_0);
     final LatestLastAccessTimeReplyProcessor replyProcessor =
         new LatestLastAccessTimeReplyProcessor(dm, recipients);
     dm.putOutgoing(

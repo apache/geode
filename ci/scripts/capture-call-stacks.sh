@@ -20,15 +20,34 @@
 
 export TERM=${TERM:-dumb}
 export PAGER=cat
-export BUILDROOT=$(pwd)
-export DEST_DIR=${BUILDROOT}/built-geode
-export GEODE_BUILD=${DEST_DIR}/test
+
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+  SCRIPTDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+done
+SCRIPTDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+
+
+export GEODE_BUILD=~/geode
 export CALLSTACKS_DIR=${GEODE_BUILD}/callstacks
 
 #SLEEP_TIME is in seconds
-SLEEP_TIME=${1}
+PARALLEL_DUNIT=${1}
+SLEEP_TIME=${2}
 COUNT=3
 STACK_INTERVAL=5
+
+if [[ -z "${PARALLEL_DUNIT}" ]]; then
+  echo "PARALLEL_DUNIT must be set. exiting..."
+  exit 1
+fi
+
+if [[ -z "${SLEEP_TIME}" ]]; then
+  echo "SLEEP_TIME must be set. exiting..."
+  exit 1
+fi
 
 
 mkdir -p ${CALLSTACKS_DIR}
@@ -45,19 +64,21 @@ for (( h=0; h<${COUNT}; h++)); do
 
         for (( i=0; i<${#containers[@]}; i++ )); do
             echo "Container: ${containers[i]}" | tee -a ${logfile};
-            mapfile -t processes < <(docker exec ${containers[i]} jps | grep ChildVM | cut -d ' ' -f 1)
+            [ -x $JAVA_HOME/bin/jps ] && JPS=$JAVA_HOME/bin/jps || JPS=jps
+            mapfile -t processes < <(docker exec ${containers[i]} ${JPS} | cut -d ' ' -f 1)
             echo "Got past processes."
             for ((j=0; j<${#processes[@]}; j++ )); do
                   echo "********* Dumping stack for process ${processes[j]}:" | tee -a ${logfile}
-                      docker exec ${containers[i]} jstack -l ${processes[j]} >> ${logfile}
+                      docker exec ${containers[i]} /bin/bash -c '[ -x $JAVA_HOME/bin/jstack ] && JSTACK=$JAVA_HOME/bin/jstack || JSTACK=jstack; $JSTACK -l '"${processes[j]}" >> ${logfile}
             done
         done
     else
-        mapfile -t processes < <(jps | grep ChildVM | cut -d ' ' -f 1)
+        mapfile -t processes < <(jps | cut -d ' ' -f 1)
         echo "Got past processes."
+        [ -x $JAVA_HOME/bin/jstack ] && JSTACK=$JAVA_HOME/bin/jstack || JSTACK=jstack
         for ((j=0; j<${#processes[@]}; j++ )); do
               echo "********* Dumping stack for process ${processes[j]}:" | tee -a ${logfile}
-                  jstack -l ${processes[j]} >> ${logfile}
+                  $JSTACK -l ${processes[j]} >> ${logfile}
         done
 
     fi

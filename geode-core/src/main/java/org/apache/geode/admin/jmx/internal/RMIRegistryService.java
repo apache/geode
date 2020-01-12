@@ -82,6 +82,7 @@ public class RMIRegistryService implements RMIRegistryServiceMBean {
    *
    * @return the host on which rmiregistry listens for incoming connections
    */
+  @Override
   public String getHost() {
     return host;
   }
@@ -103,6 +104,7 @@ public class RMIRegistryService implements RMIRegistryServiceMBean {
    *
    * @return the port on which rmiregistry listens for incoming connections
    */
+  @Override
   public int getPort() {
     return port;
   }
@@ -125,6 +127,7 @@ public class RMIRegistryService implements RMIRegistryServiceMBean {
    * @see #stop
    * @see #isRunning
    */
+  @Override
   public synchronized void start() throws RemoteException {
     if (!isRunning()) {
       if (ssf != null) {
@@ -144,6 +147,7 @@ public class RMIRegistryService implements RMIRegistryServiceMBean {
    * @return whether this MBean has been started and not yet stopped.
    * @see #start
    */
+  @Override
   public synchronized boolean isRunning() {
     return isRunning;
   }
@@ -153,6 +157,7 @@ public class RMIRegistryService implements RMIRegistryServiceMBean {
    *
    * @see #start
    */
+  @Override
   public synchronized void stop() throws NoSuchObjectException {
     if (isRunning()) {
       isRunning = !UnicastRemoteObject.unexportObject(registry, true);
@@ -165,6 +170,7 @@ public class RMIRegistryService implements RMIRegistryServiceMBean {
    * @return an array of the names bound in the rmiregistry
    * @see java.rmi.registry.Registry#list()
    */
+  @Override
   public String[] list() throws RemoteException {
     if (!isRunning()) {
       throw new IllegalStateException("RMIRegistryService is not running");
@@ -177,6 +183,7 @@ public class RMIRegistryService implements RMIRegistryServiceMBean {
    *
    * @see java.rmi.registry.Registry#unbind(String)
    */
+  @Override
   public void unbind(String name) throws RemoteException, NotBoundException {
     if (!isRunning()) {
       throw new IllegalStateException("RMIRegistryService is not running");
@@ -213,6 +220,7 @@ class RMIServerSocketFactoryImpl implements RMIServerSocketFactory {
    * @return the server socket on the specified port
    * @exception IOException if an I/O error occurs during server socket creation
    */
+  @Override
   public ServerSocket createServerSocket(int port) throws IOException {
     return new ServerSocket(port, 0/* backlog - for '0' internally uses the default */,
         bindAddress);

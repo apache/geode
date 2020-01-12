@@ -15,12 +15,12 @@
 
 package org.apache.geode.internal.statistics.platform;
 
-import org.apache.geode.*;
-import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.statistics.HostStatHelper;
-import org.apache.geode.internal.statistics.LocalStatisticsImpl;
+import org.apache.geode.StatisticDescriptor;
+import org.apache.geode.Statistics;
+import org.apache.geode.StatisticsType;
+import org.apache.geode.StatisticsTypeFactory;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
-import org.apache.geode.internal.statistics.platform.ProcessStats;
 
 /**
  * <P>
@@ -28,28 +28,23 @@ import org.apache.geode.internal.statistics.platform.ProcessStats;
  * using a GemFire system.
  */
 public class LinuxProcessStats {
-  static final int imageSizeINT = 0;
-  static final int rssSizeINT = 1;
+  static final int imageSizeLONG;
+  static final int rssSizeLONG;
 
+  @Immutable
   private static final StatisticsType myType;
-
-  private static void checkOffset(String name, int offset) {
-    int id = myType.nameToId(name);
-    Assert.assertTrue(offset == id,
-        "Expected the offset for " + name + " to be " + offset + " but it was " + id);
-  }
 
   static {
     StatisticsTypeFactory f = StatisticsTypeFactoryImpl.singleton();
     myType = f.createType("LinuxProcessStats", "Statistics on a Linux process.",
         new StatisticDescriptor[] {
-            f.createIntGauge("imageSize", "The size of the process's image in megabytes.",
+            f.createLongGauge("imageSize", "The size of the process's image in megabytes.",
                 "megabytes"),
-            f.createIntGauge("rssSize",
+            f.createLongGauge("rssSize",
                 "The size of the process's resident set size in megabytes. (assumes PAGESIZE=4096, specify -Dgemfire.statistics.linux.pageSize=<pagesize> to adjust)",
                 "megabytes"),});
-    checkOffset("imageSize", imageSizeINT);
-    checkOffset("rssSize", rssSizeINT);
+    imageSizeLONG = myType.nameToId("imageSize");
+    rssSizeLONG = myType.nameToId("rssSize");
   }
 
   private LinuxProcessStats() {
@@ -65,15 +60,11 @@ public class LinuxProcessStats {
    *
    * @since GemFire 3.5
    */
-  public static ProcessStats createProcessStats(final Statistics stats) { // TODO: was
-                                                                          // package-protected
-    if (stats instanceof LocalStatisticsImpl) {
-      HostStatHelper.refresh((LocalStatisticsImpl) stats);
-    } // otherwise its a Dummy implementation so do nothing
+  public static ProcessStats createProcessStats(final Statistics stats) {
     return new ProcessStats(stats) {
       @Override
       public long getProcessSize() {
-        return stats.getInt(rssSizeINT);
+        return stats.getLong(rssSizeLONG);
       }
     };
   }

@@ -14,19 +14,17 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.DiskWriteAttributes;
 import org.apache.geode.cache.DiskWriteAttributesFactory;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Tests if DiskWriteAttributeFactory returns the correct DWA object with the desired values
  */
-@Category(UnitTest.class)
 public class DiskWriteAttributesJUnitTest {
 
   /**

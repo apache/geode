@@ -30,6 +30,7 @@ import java.util.Set;
 
 import it.unimi.dsi.fastutil.HashCommon;
 
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 import org.apache.geode.cache.query.internal.types.TypeUtils;
@@ -107,6 +108,7 @@ public class HashIndexSet implements Set {
    */
   protected static final Object REMOVED = new Object();
 
+  @MutableForTesting
   static boolean TEST_ALWAYS_REHASH = false;
 
   /**
@@ -147,6 +149,7 @@ public class HashIndexSet implements Set {
    * @param obj an <code>Object</code> value
    * @return a <code>boolean</code> value
    */
+  @Override
   public boolean contains(Object obj) {
     return index(obj) >= 0;
   }
@@ -177,8 +180,6 @@ public class HashIndexSet implements Set {
   /**
    * Locates index slot of object using the provided key (in this case we are passing in old key)
    *
-   * @param key
-   * @param obj
    * @return the indexSlot of the given key/object combination
    */
   protected int index(Object key, Object obj, int ignoreThisSlot) {
@@ -253,6 +254,7 @@ public class HashIndexSet implements Set {
   /**
    * Unsupported, we do not use HashIndexSet as a general all purpose set
    */
+  @Override
   public synchronized boolean add(Object obj) {
     throw new UnsupportedOperationException(
         "add(Object) not supported, try add(Object key, Object obj) instead");
@@ -261,10 +263,8 @@ public class HashIndexSet implements Set {
   /**
    * Add an object using the hash value of the provided indexKey
    *
-   * @param indexKey
    * @param obj the object to add
    * @return true if object has been added
-   * @throws TypeMismatchException
    */
   public synchronized int add(Object indexKey, Object obj) throws TypeMismatchException {
     if (indexKey == null) {
@@ -314,7 +314,7 @@ public class HashIndexSet implements Set {
 
     long start = -1L;
     if (this.cacheStats != null) {
-      start = this.cacheStats.getStatTime();
+      start = this.cacheStats.getTime();
       this.cacheStats.incQueryResultsHashCollisions();
     }
     try {
@@ -411,6 +411,7 @@ public class HashIndexSet implements Set {
    *
    * @return an <code>Object[]</code> value
    */
+  @Override
   public Object[] toArray() {
     throw new UnsupportedOperationException("toArray not yet supported");
   }
@@ -421,6 +422,7 @@ public class HashIndexSet implements Set {
    * @param a an <code>Object[]</code> value
    * @return an <code>Object[]</code> value
    */
+  @Override
   public Object[] toArray(Object[] a) {
     throw new UnsupportedOperationException("toArray(Object[] a) not yet supported");
   }
@@ -428,6 +430,7 @@ public class HashIndexSet implements Set {
   /**
    * Empties the set.
    */
+  @Override
   public void clear() {
     HashIndexSetProperties metaData = hashIndexSetProperties;
     metaData.size = 0;
@@ -445,6 +448,7 @@ public class HashIndexSet implements Set {
   }
 
 
+  @Override
   public boolean remove(Object obj) {
     return remove(_imqEvaluator.evaluateKey(obj), obj);
   }
@@ -456,7 +460,6 @@ public class HashIndexSet implements Set {
   /**
    *
    * @param key assumed to not be null, rather needs to be NULL token
-   * @param obj
    * @param newIndexSlot if inplace modification occurs with out having a reversemap we end up
    *        scanning the entire index. We want to remove the region entry from the index slot but
    *        not the newly added (correct) slot. Rather only the "old/wrong" slot
@@ -501,6 +504,7 @@ public class HashIndexSet implements Set {
    *
    * @return an <code>Iterator</code> value
    */
+  @Override
   public Iterator iterator() {
     return getAll();
   }
@@ -511,6 +515,7 @@ public class HashIndexSet implements Set {
    * @param collection a <code>Collection</code> value
    * @return true if all elements are present.
    */
+  @Override
   public boolean containsAll(Collection collection) {
     for (Iterator i = collection.iterator(); i.hasNext();) {
       if (!contains(i.next())) {
@@ -523,6 +528,7 @@ public class HashIndexSet implements Set {
   /**
    * Unsupported because type mismatch exception cannot be thrown from Set interface
    */
+  @Override
   public boolean addAll(Collection collection) {
     throw new UnsupportedOperationException("Add all not implemented");
   }
@@ -533,6 +539,7 @@ public class HashIndexSet implements Set {
    * @param collection a <code>Collection</code> value
    * @return true if the set was modified by the remove all operation.
    */
+  @Override
   public boolean removeAll(Collection collection) {
     boolean changed = false;
     int size = collection.size();
@@ -552,6 +559,7 @@ public class HashIndexSet implements Set {
    * @param collection a <code>Collection</code> value
    * @return true if the set was modified by the retain all operation
    */
+  @Override
   public boolean retainAll(Collection collection) {
     boolean changed = false;
     int size = size();
@@ -581,6 +589,7 @@ public class HashIndexSet implements Set {
    *
    * @return an <code>int</code> value
    */
+  @Override
   public int size() {
     return hashIndexSetProperties.size;
   }

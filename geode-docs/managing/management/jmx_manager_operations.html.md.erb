@@ -22,9 +22,9 @@ limitations under the License.
 <a id="topic_686158E9AFBD47518BE1B4BEB232C190"></a>
 
 
-JMX Manager nodes are members that manage other <%=vars.product_name%> members (as well as themselves). A JMX Manager node can manage all other members in the distributed system. Typically a locator will function as the JMX Manager, but you can also turn any other distributed system member such as a server into a JMX Manager node as well.
+JMX Manager nodes are members that manage other <%=vars.product_name%> members (as well as themselves). A JMX Manager node can manage all other members in the cluster. Typically a locator will function as the JMX Manager, but you can also turn any other member such as a server into a JMX Manager node as well.
 
-To allow a server to become a JMX Manager you configure <%=vars.product_name%> property `jmx-manager=true`, in the server's`gemfire.properties` file. This property configures the node to become a JMX Manager node passively; if gfsh cannot locate a JMX Manager when connecting to the distributed system, the server node will be started as a JMX Manager node.
+To allow a server to become a JMX Manager you configure <%=vars.product_name%> property `jmx-manager=true`, in the server's`gemfire.properties` file. This property configures the node to become a JMX Manager node passively; if gfsh cannot locate a JMX Manager when connecting to the cluster, the server node will be started as a JMX Manager node.
 
 **Note:**
 The default property setting for all locators is `gemfire.jmx-manager=true`. For other members, the default property setting is `gemfire.jmx-manager=false`.
@@ -40,9 +40,9 @@ gfsh>start server --name=<server-name> --J=-Dgemfire.jmx-manager=true \
 --J=-Dgemfire.jmx-manager-start=true
 ```
 
-By default, any locator can become a JMX Manager when started. When you start up a locator, if no other JMX Manager is detected in the distributed system, the locator starts one automatically. If you start a second locator, it will detect the current JMX Manager and will not start up another JMX Manager unless the second locator's `gemfire.jmx-manager-start` property is set to true.
+By default, any locator can become a JMX Manager when started. When you start up a locator, if no other JMX Manager is detected in the cluster, the locator starts one automatically. If you start a second locator, it will detect the current JMX Manager and will not start up another JMX Manager unless the second locator's `gemfire.jmx-manager-start` property is set to true.
 
-For most deployments, you only need to have one JMX Manager per distributed system. However, you can run more than JMX Manager if necessary. If you want to provide high-availability and redundancy for the Pulse monitoring tool, or if you are running additional JMX clients other than gfsh, then use the `jmx-manager-start=true` property to force individual nodes (either locators or servers) to become JMX Managers at startup. Since there is some performance overhead to being a JMX Manager, we recommend using locators as JMX Managers. If you do not want a locator to become a JMX manager, then you must use the `jmx-manager=false` property when you start the locator.
+For most deployments, you only need to have one JMX Manager per cluster. However, you can run more than JMX Manager if necessary. If you want to provide high-availability and redundancy for the Pulse monitoring tool, or if you are running additional JMX clients other than gfsh, then use the `jmx-manager-start=true` property to force individual nodes (either locators or servers) to become JMX Managers at startup. Since there is some performance overhead to being a JMX Manager, we recommend using locators as JMX Managers. If you do not want a locator to become a JMX manager, then you must use the `jmx-manager=false` property when you start the locator.
 
 After the node becomes a JMX Manager, all other `jmx-manager-*` configuration properties listed in [Configuring a JMX Manager](jmx_manager_operations.html#topic_263072624B8D4CDBAD18B82E07AA44B6) are applied.
 
@@ -57,7 +57,7 @@ is currently online.
 Process ID: 27144
 Uptime: 5 seconds
 <%=vars.product_name%> Version: <%=vars.product_version%>
-Java Version: 1.8.0_<%=vars.min_java_update%>
+Java Version: 1.<%=vars.min_java_version%>.0_<%=vars.min_java_update%>
 Log File: /Users/username/apache-geode/locator1/locator1.log
 JVM Arguments: -Dgemfire.enable-cluster-configuration=true 
 -Dgemfire.load-cluster-configuration-from-dir=false 
@@ -100,58 +100,58 @@ In the `gemfire.properties` file, you configure a JMX manager as follows.
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>http-service-port</td>
 <td>If non-zero, then <%=vars.product_name%> starts an embedded HTTP service that listens on this port. The HTTP service is used to host the <%=vars.product_name%> Pulse Web application. If you are hosting the Pulse web app on your own Web server, then disable this embedded HTTP service by setting this property to zero. Ignored if <code class="ph codeph">jmx-manager</code> is false.</td>
 <td>7070</td>
 </tr>
-<tr class="even">
+<tr>
 <td>http-service-bind-address</td>
 <td>If set, then the <%=vars.product_name%> member binds the embedded HTTP service to the specified address. If this property is not set but the HTTP service is enabled using <code class="ph codeph">http-service-port</code>, then <%=vars.product_name%> binds the HTTP service to the member's local address.</td>
 <td><em>not set</em></td>
 </tr>
-<tr class="odd">
+<tr>
 <td>jmx-manager</td>
 <td><p>If <code class="ph codeph">true</code> then this member can become a JMX Manager. All other <code class="ph codeph">jmx-manager-*</code> properties are used when it does become a JMX Manager. If this property is false then all other <code class="ph codeph">jmx-manager-*</code> properties are ignored.</p>
 <p>The default value is <code class="ph codeph">true</code> on locators.</p></td>
 <td>false (with Locator exception)</td>
 </tr>
-<tr class="even">
+<tr>
 <td>jmx-manager-access-file</td>
 <td><p>By default the JMX Manager allows full access to all MBeans by any client. If this property is set to the name of a file, then it can restrict clients to only reading MBeans; they cannot modify MBeans. The access level can be configured differently in this file for each user name defined in the password file. For more information about the format of this file see Oracle's documentation of the <code class="ph codeph">com.sun.management.jmxremote.access.file</code> system property. Ignored if <code class="ph codeph">jmx-manager</code> is false or if <code class="ph codeph">jmx-manager-port</code> is zero.</p></td>
 <td><em>not set</em></td>
 </tr>
-<tr class="odd">
+<tr>
 <td>jmx-manager-bind-address</td>
 <td>By default, the JMX Manager when configured with a port listens on all the local host's addresses. You can use this property to configure which particular IP address or host name the JMX Manager will listen on. This property is ignored if <code class="ph codeph">jmx-manager</code> is false or <code class="ph codeph">jmx-manager-port</code> is zero. This address also applies to the <%=vars.product_name%> Pulse server if you are hosting a Pulse web application.</td>
 <td><em>not set</em></td>
 </tr>
-<tr class="even">
+<tr>
 <td>jmx-manager-hostname-for-clients</td>
 <td>Hostname given to clients that ask the locator for the location of a JMX Manager. By default the IP address of the JMX Manager is used. However, for clients on a different network, you can configure a different hostname to be given to clients. Ignored if <code class="ph codeph">jmx-manager</code> is false or if <code class="ph codeph">jmx-manager-port</code> is zero.</td>
 <td><em>not set</em></td>
 </tr>
-<tr class="odd">
+<tr>
 <td>jmx-manager-password-file</td>
 <td>By default the JMX Manager allows clients without credentials to connect. If this property is set to the name of a file, only clients that connect with credentials that match an entry in this file will be allowed. Most JVMs require that the file is only readable by the owner. For more information about the format of this file see Oracle's documentation of the com.sun.management.jmxremote.password.file system property. Ignored if jmx-manager is false or if jmx-manager-port is zero. </td>
 <td><em>not set</em></td>
 </tr>
-<tr class="even">
+<tr>
 <td>jmx-manager-port</td>
 <td>Port on which this JMX Manager listens for client connections. If this property is set to zero, <%=vars.product_name%> does not allow remote client connections. Alternatively, use the standard system properties supported by the JVM for configuring access from remote JMX clients. Ignored if jmx-manager is false. The Default RMI port is 1099.</td>
 <td>1099</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>jmx-manager-ssl</td>
 <td>If true and <code class="ph codeph">jmx-manager-port</code> is not zero, the JMX Manager accepts only SSL connections. The ssl-enabled property does not apply to the JMX Manager, but the other SSL properties do. This allows SSL to be configured for just the JMX Manager without needing to configure it for the other <%=vars.product_name%> connections. Ignored if <code class="ph codeph">jmx-manager</code> is false.</td>
 <td>false</td>
 </tr>
-<tr class="even">
+<tr>
 <td>jmx-manager-start</td>
 <td>If true, this member starts a JMX Manager when it creates a cache. In most cases you should not set this property to true because a JMX Manager is automatically started when needed on a member that sets <code class="ph codeph">jmx-manager</code> to true. Ignored if jmx-manager is false.</td>
 <td>false</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>jmx-manager-update-rate</td>
 <td>The rate, in milliseconds, at which this member pushes updates to any JMX Managers. Currently this value should be greater than or equal to the <code class="ph codeph">statistic-sample-rate</code>. Setting this value too high causes <code class="ph codeph">gfsh</code> and <%=vars.product_name%> Pulse to see stale values.</td>
 <td>2000</td>

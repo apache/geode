@@ -22,12 +22,12 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsType;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.statistics.StatisticId;
 import org.apache.geode.internal.statistics.StatisticNotFoundException;
 import org.apache.geode.internal.statistics.StatisticsListener;
 import org.apache.geode.internal.statistics.StatisticsNotification;
 import org.apache.geode.internal.statistics.ValueMonitor;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Class to get mappings of stats name to their values
@@ -41,9 +41,9 @@ public class MBeanStatsMonitor implements StatisticsListener {
   /**
    * Map which contains statistics with their name and value
    */
-  protected DefaultHashMap statsMap;
+  protected Map<String, Number> statsMap;
 
-  protected String monitorName;
+  private String monitorName;
 
   public MBeanStatsMonitor(final String name) {
     this(name, new ValueMonitor());
@@ -52,7 +52,7 @@ public class MBeanStatsMonitor implements StatisticsListener {
   MBeanStatsMonitor(final String name, final ValueMonitor monitor) {
     this.monitorName = name;
     this.monitor = monitor;
-    this.statsMap = new DefaultHashMap();
+    this.statsMap = new HashMap<>();
   }
 
   public void addStatisticsToMonitor(final Statistics stats) {
@@ -63,6 +63,7 @@ public class MBeanStatsMonitor implements StatisticsListener {
     for (StatisticDescriptor d : descriptors) {
       statsMap.put(d.getName(), stats.get(d));
     }
+
     monitor.addStatistics(stats);
   }
 
@@ -75,7 +76,7 @@ public class MBeanStatsMonitor implements StatisticsListener {
   }
 
   public Number getStatistic(final String statName) {
-    Number value = statsMap.get(statName);
+    Number value = statsMap.getOrDefault(statName, 0);
     return value != null ? value : 0;
   }
 
@@ -100,30 +101,4 @@ public class MBeanStatsMonitor implements StatisticsListener {
       logger.trace("Monitor = {} descriptor = {} And value = {}", monitorName, name, value);
     }
   }
-
-  public static class DefaultHashMap { // TODO: delete this class
-    private Map<String, Number> internalMap = new HashMap<>();
-
-    public DefaultHashMap() {}
-
-    public Number get(final String key) {
-      return internalMap.get(key) != null ? internalMap.get(key) : 0;
-    }
-
-    public void put(final String key, final Number value) {
-      internalMap.put(key, value);
-    }
-
-    public void clear() {
-      internalMap.clear();
-    }
-
-    /**
-     * For testing only
-     */
-    Map<String, Number> getInternalMap() {
-      return this.internalMap;
-    }
-  }
-
 }

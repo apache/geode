@@ -12,8 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
-
 package org.apache.geode.internal.admin.remote;
 
 import java.io.DataInput;
@@ -26,15 +24,14 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.PooledDistributionMessage;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.AlertAppender;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.statistics.GemFireStatSampler;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * A message that is sent to a particular distribution manager to let it know that the sender is an
- * administation console that just disconnected.
+ * administration console that just disconnected.
  */
 public class AdminConsoleDisconnectMessage extends PooledDistributionMessage {
   private static final Logger logger = LogService.getLogger();
@@ -64,7 +61,7 @@ public class AdminConsoleDisconnectMessage extends PooledDistributionMessage {
   }
 
   public void setIgnoreAlertListenerRemovalFailure(boolean ignore) {
-    this.ignoreAlertListenerRemovalFailure = ignore;
+    ignoreAlertListenerRemovalFailure = ignore;
   }
 
   /**
@@ -79,47 +76,46 @@ public class AdminConsoleDisconnectMessage extends PooledDistributionMessage {
   @Override
   public void process(ClusterDistributionManager dm) {
     InternalDistributedSystem sys = dm.getSystem();
-    // DistributionConfig config = sys.getConfig();
     if (alertListenerExpected) {
-      if (!AlertAppender.getInstance().removeAlertListener(this.getSender())
-          && !this.ignoreAlertListenerRemovalFailure) {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.ManagerLogWriter_UNABLE_TO_REMOVE_CONSOLE_WITH_ID_0_FROM_ALERT_LISTENERS,
-            this.getSender()));
+      if (!dm.getAlertingService().removeAlertListener(getSender())
+          && !ignoreAlertListenerRemovalFailure) {
+        logger.warn("Unable to remove console with id {} from alert listeners.",
+            getSender());
       }
     }
     GemFireStatSampler sampler = sys.getStatSampler();
     if (sampler != null) {
-      sampler.removeListenersByRecipient(this.getSender());
+      sampler.removeListenersByRecipient(getSender());
     }
-    dm.handleConsoleShutdown(this.getSender(), crashed,
-        LocalizedStrings.AdminConsoleDisconnectMessage_AUTOMATIC_ADMIN_DISCONNECT_0
-            .toLocalizedString(reason));
-    // AppCacheSnapshotMessage.flushSnapshots(this.getSender());
+    dm.handleConsoleShutdown(getSender(), crashed,
+        String.format("Reason for automatic admin disconnect : %s", reason));
   }
 
+  @Override
   public int getDSFID() {
     return ADMIN_CONSOLE_DISCONNECT_MESSAGE;
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     out.writeBoolean(alertListenerExpected);
     out.writeBoolean(crashed);
     DataSerializer.writeString(reason, out);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
-    this.alertListenerExpected = in.readBoolean();
-    this.crashed = in.readBoolean();
-    this.reason = DataSerializer.readString(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
+    alertListenerExpected = in.readBoolean();
+    crashed = in.readBoolean();
+    reason = DataSerializer.readString(in);
   }
 
   @Override
   public String toString() {
-    return "AdminConsoleDisconnectMessage from " + this.getSender();
+    return "AdminConsoleDisconnectMessage from " + getSender();
   }
 }

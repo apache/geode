@@ -14,11 +14,18 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -26,12 +33,9 @@ import java.util.stream.IntStream;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.query.MultithreadedTester;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class IndexElemArrayJUnitTest {
 
   private IndexElemArray list;
@@ -55,6 +59,63 @@ public class IndexElemArrayJUnitTest {
     iterate();
     clearAndAdd();
   }
+
+  @Test
+  public void overflowFromAddThrowsException() {
+    // no exception should be thrown by this loop
+    for (int i = 1; i < 256; i++) {
+      list.add(i);
+    }
+    try {
+      list.add(256);
+      fail("list should have thrown an exception when full");
+    } catch (IllegalStateException e) {
+      // expected
+    }
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void overflowFromAddAllThrowsException() {
+    Object[] array = new Object[256];
+    Arrays.fill(array, new Object());
+    List<Object> data = Arrays.asList(array);
+    list.addAll(data);
+  }
+
+  @Test
+  public void sizeAfterOverflowFromAddIsCorrect() {
+    for (int i = 1; i < 256; i++) {
+      list.add(i);
+    }
+    try {
+      list.add(256);
+    } catch (IllegalStateException e) {
+      assertThat(list.size()).isEqualTo(255);
+    }
+  }
+
+  @Test
+  public void sizeAfterOverflowFromAddAllIsCorrect() {
+    for (int i = 1; i < 256; i++) {
+      list.add(i);
+    }
+    try {
+      list.addAll(Collections.singleton(new Object()));
+    } catch (IllegalStateException e) {
+      assertThat(list.size()).isEqualTo(255);
+    }
+  }
+
+  @Test
+  public void listCanBeIteratedOverFullRange() {
+    for (int i = 1; i < 256; i++) {
+      list.add(i);
+    }
+    for (int i = 1; i < 256; i++) {
+      assertThat(list.get(i - 1)).isEqualTo(i);
+    }
+  }
+
 
   /**
    * This tests concurrent modification of IndexElemArray and to make sure elementData and size are

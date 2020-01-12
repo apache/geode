@@ -14,71 +14,54 @@
  */
 package org.apache.geode.connectors.jdbc.internal.xml;
 
-import static org.apache.geode.connectors.jdbc.internal.xml.ElementType.CONNECTION;
-import static org.apache.geode.connectors.jdbc.internal.xml.ElementType.CONNECTION_SERVICE;
 import static org.apache.geode.connectors.jdbc.internal.xml.ElementType.FIELD_MAPPING;
-import static org.apache.geode.connectors.jdbc.internal.xml.ElementType.REGION_MAPPING;
-import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.COLUMN_NAME;
-import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.CONNECTION_NAME;
-import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.FIELD_NAME;
-import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.PDX_CLASS;
-import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.PRIMARY_KEY_IN_VALUE;
-import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.REGION;
+import static org.apache.geode.connectors.jdbc.internal.xml.ElementType.JDBC_MAPPING;
+import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.CATALOG;
+import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.DATA_SOURCE;
+import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.IDS;
+import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.JDBC_NAME;
+import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.JDBC_NULLABLE;
+import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.JDBC_TYPE;
+import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.PDX_NAME;
+import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.PDX_TYPE;
+import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.SCHEMA;
 import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.TABLE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Arrays;
 import java.util.Stack;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.xml.sax.Attributes;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheXmlException;
-import org.apache.geode.connectors.jdbc.internal.ConnectionConfigBuilder;
-import org.apache.geode.connectors.jdbc.internal.ConnectionConfiguration;
-import org.apache.geode.connectors.jdbc.internal.RegionMapping;
-import org.apache.geode.connectors.jdbc.internal.RegionMappingBuilder;
+import org.apache.geode.cache.Region;
+import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
+import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.internal.cache.extension.ExtensionPoint;
-import org.apache.geode.internal.cache.xmlcache.CacheCreation;
-import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.internal.cache.xmlcache.RegionCreation;
 
-@Category(UnitTest.class)
 public class ElementTypeTest {
 
   private Attributes attributes;
-  private CacheCreation cacheCreation;
-  private ExtensionPoint<Cache> extensionPoint;
+  private RegionCreation regionCreation;
+  private ExtensionPoint<Region<?, ?>> extensionPoint;
   private Stack<Object> stack;
 
   @Before
   public void setup() {
     attributes = mock(Attributes.class);
-    cacheCreation = mock(CacheCreation.class);
+    regionCreation = mock(RegionCreation.class);
     extensionPoint = mock(ExtensionPoint.class);
 
-    when(cacheCreation.getExtensionPoint()).thenReturn(extensionPoint);
+    when(regionCreation.getExtensionPoint()).thenReturn(extensionPoint);
 
     stack = new Stack<>();
-  }
-
-  @Test
-  public void gettingElementTypeByNameReturnsCorrectType() {
-    assertThat(ElementType.getTypeFromName(CONNECTION_SERVICE.getTypeName()))
-        .isSameAs(CONNECTION_SERVICE);
-    assertThat(ElementType.getTypeFromName(CONNECTION.getTypeName())).isSameAs(CONNECTION);
-    assertThat(ElementType.getTypeFromName(REGION_MAPPING.getTypeName())).isSameAs(REGION_MAPPING);
-    assertThat(ElementType.getTypeFromName(FIELD_MAPPING.getTypeName())).isSameAs(FIELD_MAPPING);
   }
 
   @Test
@@ -88,165 +71,82 @@ public class ElementTypeTest {
   }
 
   @Test
-  public void startElementConnectionServiceThrowsWithoutCacheCreation() {
-    stack.push(new Object());
-
-    assertThatThrownBy(() -> CONNECTION_SERVICE.startElement(stack, attributes))
-        .isInstanceOf(CacheXmlException.class);
-  }
-
-  @Test
-  public void startElementConnectionService() {
-    stack.push(cacheCreation);
-
-    CONNECTION_SERVICE.startElement(stack, attributes);
-
-    verify(extensionPoint, times(1)).addExtension(any(JdbcServiceConfiguration.class));
-    assertThat(stack.peek()).isInstanceOf(JdbcServiceConfiguration.class);
-  }
-
-  @Test
-  public void endElementConnectionService() {
-    stack.push(new Object());
-
-    CONNECTION_SERVICE.endElement(stack);
-
-    assertThat(stack).isEmpty();
-  }
-
-  @Test
-  public void startElementConnectionThrowsWithoutJdbcServiceConfiguration() {
-    stack.push(new Object());
-
-    assertThatThrownBy(() -> CONNECTION.startElement(stack, attributes))
-        .isInstanceOf(CacheXmlException.class);
-  }
-
-  @Test
-  public void startElementConnection() {
-    JdbcServiceConfiguration serviceConfiguration = mock(JdbcServiceConfiguration.class);
-    stack.push(serviceConfiguration);
-    when(attributes.getValue(JdbcConnectorServiceXmlParser.NAME)).thenReturn("connectionName");
-    when(attributes.getValue(JdbcConnectorServiceXmlParser.URL)).thenReturn("url");
-    when(attributes.getValue(JdbcConnectorServiceXmlParser.USER)).thenReturn("username");
-    when(attributes.getValue(JdbcConnectorServiceXmlParser.PASSWORD)).thenReturn("secret");
-
-    CONNECTION.startElement(stack, attributes);
-
-    ConnectionConfiguration config = ((ConnectionConfigBuilder) stack.pop()).build();
-    assertThat(config.getName()).isEqualTo("connectionName");
-    assertThat(config.getUrl()).isEqualTo("url");
-    assertThat(config.getUser()).isEqualTo("username");
-    assertThat(config.getPassword()).isEqualTo("secret");
-    assertThat(config.getParameters()).isNull();
-  }
-
-  @Test
-  public void startElementConnectionWithParameters() {
-    JdbcServiceConfiguration serviceConfiguration = mock(JdbcServiceConfiguration.class);
-    stack.push(serviceConfiguration);
-    when(attributes.getValue(JdbcConnectorServiceXmlParser.NAME)).thenReturn("connectionName");
-    when(attributes.getValue(JdbcConnectorServiceXmlParser.URL)).thenReturn("url");
-    when(attributes.getValue(JdbcConnectorServiceXmlParser.PARAMETERS))
-        .thenReturn("key1:value1,key2:value2");
-
-    CONNECTION.startElement(stack, attributes);
-
-    ConnectionConfiguration config = ((ConnectionConfigBuilder) stack.pop()).build();
-    assertThat(config.getName()).isEqualTo("connectionName");
-    assertThat(config.getUrl()).isEqualTo("url");
-    assertThat(config.getUser()).isNull();
-    assertThat(config.getPassword()).isNull();
-    Map<String, String> expectedParams = new HashMap<>();
-    expectedParams.put("key1", "value1");
-    expectedParams.put("key2", "value2");
-    assertThat(config.getParameters()).isEqualTo(expectedParams);
-  }
-
-  @Test
-  public void endElementConnection() {
-    ConnectionConfigBuilder builder = mock(ConnectionConfigBuilder.class);
-    JdbcServiceConfiguration serviceConfiguration = mock(JdbcServiceConfiguration.class);
-    stack.push(serviceConfiguration);
-    stack.push(builder);
-
-    CONNECTION.endElement(stack);
-
-    assertThat(stack.size()).isEqualTo(1);
-    verify(serviceConfiguration, times(1)).addConnectionConfig(any());
-  }
-
-  @Test
   public void startElementRegionMappingThrowsWithoutJdbcServiceConfiguration() {
     stack.push(new Object());
 
-    assertThatThrownBy(() -> REGION_MAPPING.startElement(stack, attributes))
+    assertThatThrownBy(() -> JDBC_MAPPING.startElement(stack, attributes))
         .isInstanceOf(CacheXmlException.class);
   }
 
   @Test
   public void startElementRegionMapping() {
-    stack.push(mock(JdbcServiceConfiguration.class));
-    when(attributes.getValue(REGION)).thenReturn("region");
-    when(attributes.getValue(CONNECTION_NAME)).thenReturn("connectionName");
+    when(attributes.getValue(DATA_SOURCE)).thenReturn("connectionName");
     when(attributes.getValue(TABLE)).thenReturn("table");
-    when(attributes.getValue(PDX_CLASS)).thenReturn("pdxClass");
-    when(attributes.getValue(PRIMARY_KEY_IN_VALUE)).thenReturn("true");
+    when(attributes.getValue(PDX_NAME)).thenReturn("pdxClass");
+    when(attributes.getValue(IDS)).thenReturn("ids");
+    when(attributes.getValue(CATALOG)).thenReturn("catalog");
+    when(attributes.getValue(SCHEMA)).thenReturn("schema");
+    when(regionCreation.getFullPath()).thenReturn("/region");
+    stack.push(regionCreation);
 
-    ElementType.REGION_MAPPING.startElement(stack, attributes);
+    ElementType.JDBC_MAPPING.startElement(stack, attributes);
 
-    RegionMapping regionMapping = ((RegionMappingBuilder) stack.pop()).build();
+    RegionMapping regionMapping = (RegionMapping) stack.pop();
     assertThat(regionMapping.getRegionName()).isEqualTo("region");
-    assertThat(regionMapping.getConnectionConfigName()).isEqualTo("connectionName");
+    assertThat(regionMapping.getDataSourceName()).isEqualTo("connectionName");
     assertThat(regionMapping.getTableName()).isEqualTo("table");
-    assertThat(regionMapping.getPdxClassName()).isEqualTo("pdxClass");
-    assertThat(regionMapping.isPrimaryKeyInValue()).isEqualTo(true);
+    assertThat(regionMapping.getPdxName()).isEqualTo("pdxClass");
+    assertThat(regionMapping.getIds()).isEqualTo("ids");
+    assertThat(regionMapping.getCatalog()).isEqualTo("catalog");
+    assertThat(regionMapping.getSchema()).isEqualTo("schema");
   }
 
   @Test
   public void endElementRegionMapping() {
-    RegionMappingBuilder builder = mock(RegionMappingBuilder.class);
-    JdbcServiceConfiguration serviceConfiguration = mock(JdbcServiceConfiguration.class);
-    stack.push(serviceConfiguration);
-    stack.push(builder);
+    RegionMapping mapping = mock(RegionMapping.class);
+    stack.push(regionCreation);
+    stack.push(mapping);
 
-    ElementType.REGION_MAPPING.endElement(stack);
+    ElementType.JDBC_MAPPING.endElement(stack);
 
     assertThat(stack.size()).isEqualTo(1);
-    verify(serviceConfiguration, times(1)).addRegionMapping(any());
   }
 
   @Test
-  public void startElementFieldMappingThrowsWithoutRegionMappingBuilder() {
+  public void startElementFieldMappingThrowsWithoutRegionMapping() {
     stack.push(new Object());
 
     assertThatThrownBy(() -> FIELD_MAPPING.startElement(stack, attributes))
-        .isInstanceOf(CacheXmlException.class);
+        .isInstanceOf(CacheXmlException.class)
+        .hasMessage("<jdbc:field-mapping> elements must occur within <jdbc:mapping> elements");
   }
 
   @Test
   public void startElementFieldMapping() {
-    RegionMappingBuilder builder = new RegionMappingBuilder();
-    stack.push(builder);
-    when(attributes.getValue(FIELD_NAME)).thenReturn("fieldName");
-    when(attributes.getValue(COLUMN_NAME)).thenReturn("columnName");
+    RegionMapping mapping = new RegionMapping();
+    stack.push(mapping);
+    when(attributes.getValue(PDX_NAME)).thenReturn("myPdxName");
+    when(attributes.getValue(PDX_TYPE)).thenReturn("myPdxType");
+    when(attributes.getValue(JDBC_NAME)).thenReturn("myJdbcName");
+    when(attributes.getValue(JDBC_TYPE)).thenReturn("myJdbcType");
+    when(attributes.getValue(JDBC_NULLABLE)).thenReturn("true");
+    FieldMapping expected =
+        new FieldMapping("myPdxName", "myPdxType", "myJdbcName", "myJdbcType", true);
 
     ElementType.FIELD_MAPPING.startElement(stack, attributes);
 
-    RegionMapping regionMapping = ((RegionMappingBuilder) stack.pop()).build();
-    assertThat(regionMapping.getColumnNameForField("fieldName")).isEqualTo("columnName");
+    RegionMapping mapping1 = (RegionMapping) stack.pop();
+    assertThat(mapping1.getFieldMappings()).isEqualTo(Arrays.asList(expected));
   }
 
   @Test
   public void endElementFieldMapping() {
-    RegionMappingBuilder builder = mock(RegionMappingBuilder.class);
-    JdbcServiceConfiguration serviceConfiguration = mock(JdbcServiceConfiguration.class);
-    stack.push(serviceConfiguration);
-    stack.push(builder);
+    RegionMapping mapping = mock(RegionMapping.class);
+    stack.push(mapping);
 
     ElementType.FIELD_MAPPING.endElement(stack);
 
-    assertThat(stack.size()).isEqualTo(2);
-    verifyZeroInteractions(builder);
+    assertThat(stack.size()).isEqualTo(1);
+    verifyZeroInteractions(mapping);
   }
 }

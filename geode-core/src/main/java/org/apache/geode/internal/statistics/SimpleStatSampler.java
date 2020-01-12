@@ -20,10 +20,8 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.internal.NanoTimer;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * SimpleStatSampler is a functional implementation of HostStatSampler that samples statistics
@@ -63,10 +61,9 @@ public class SimpleStatSampler extends HostStatSampler {
   }
 
   public SimpleStatSampler(CancelCriterion stopper, StatisticsManager sm, NanoTimer timer) {
-    super(stopper, new StatSamplerStats(sm, sm.getId()), timer);
+    super(stopper, new StatSamplerStats(sm, 0), timer);
     this.sm = sm;
-    logger.info(LogMarker.STATISTICS, LocalizedMessage
-        .create(LocalizedStrings.SimpleStatSampler_STATSSAMPLERATE_0, getSampleRate()));
+    logger.info(LogMarker.STATISTICS_MARKER, "stats.sample-rate={}", getSampleRate());
   }
 
   @Override
@@ -95,6 +92,11 @@ public class SimpleStatSampler extends HostStatSampler {
     } else {
       return this.archiveDiskSpaceLimit;
     }
+  }
+
+  @Override
+  public long getSystemId() {
+    return 0;
   }
 
   @Override

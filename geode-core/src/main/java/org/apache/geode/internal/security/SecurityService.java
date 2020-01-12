@@ -29,69 +29,46 @@ import org.apache.geode.security.SecurityManager;
 
 public interface SecurityService {
 
-  default ThreadState bindSubject(Subject subject) {
-    return null;
-  }
+  ThreadState bindSubject(Subject subject);
 
-  default Subject getSubject() {
-    return null;
-  }
+  Subject getSubject();
 
-  default Subject login(Properties credentials) {
-    return null;
-  }
+  Subject login(Properties credentials);
 
-  default void logout() {}
+  void logout();
 
-  default Callable associateWith(Callable callable) {
-    return callable;
-  }
+  Callable associateWith(Callable callable);
 
-  default void authorize(Resource resource, Operation operation) {}
+  void authorize(Resource resource, Operation operation);
 
-  default void authorize(Resource resource, Operation operation, Target target) {}
+  void authorize(Resource resource, Operation operation, Target target);
 
-  default void authorize(Resource resource, Operation operation, String target) {}
+  void authorize(Resource resource, Operation operation, String target);
 
-  default void authorize(Resource resource, Operation operation, String target, String key) {}
+  void authorize(Resource resource, Operation operation, String target, Object key);
 
-  default void authorize(Resource resource, Operation operation, Target target, String key) {}
+  void authorize(Resource resource, Operation operation, Target target, String key);
 
-  default void authorize(ResourcePermission context) {}
+  void authorize(ResourcePermission context);
 
-  default void close() {}
+  void authorize(ResourcePermission context, Subject currentUser);
 
-  default boolean needPostProcess() {
-    return false;
-  }
+  void close();
 
-  default Object postProcess(String regionPath, Object key, Object value,
-      boolean valueIsSerialized) {
-    return value;
-  }
+  boolean needPostProcess();
 
-  default Object postProcess(Object principal, String regionPath, Object key, Object value,
-      boolean valueIsSerialized) {
-    return value;
-  }
+  Object postProcess(String regionPath, Object key, Object value, boolean valueIsSerialized);
 
-  default boolean isClientSecurityRequired() {
-    return false;
-  }
+  Object postProcess(Object principal, String regionPath, Object key, Object value,
+      boolean valueIsSerialized);
 
-  default boolean isIntegratedSecurity() {
-    return false;
-  }
+  boolean isClientSecurityRequired();
 
-  default boolean isPeerSecurityRequired() {
-    return false;
-  }
+  boolean isIntegratedSecurity();
 
-  default SecurityManager getSecurityManager() {
-    return null;
-  }
+  boolean isPeerSecurityRequired();
 
-  default PostProcessor getPostProcessor() {
-    return null;
-  }
+  SecurityManager getSecurityManager();
+
+  PostProcessor getPostProcessor();
 }

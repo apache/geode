@@ -20,15 +20,13 @@ import java.io.IOException;
 import java.util.Arrays;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.EnumListenerEvent;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.tier.MessageType;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
-/**
- *
- *
- */
 public class ClientDataSerializerMessage extends ClientUpdateMessageImpl {
   private byte[][] serializedDataSerializer;
 
@@ -62,7 +60,6 @@ public class ClientDataSerializerMessage extends ClientUpdateMessageImpl {
    *        if conflation is not enabled, or it could be a conflated value if conflation is enabled.
    * @return a <code>Message</code> generated from the fields of this
    *         <code>ClientDataSerializerMessage</code>
-   * @throws IOException
    * @see org.apache.geode.internal.cache.tier.sockets.Message
    */
   @Override
@@ -162,10 +159,11 @@ public class ClientDataSerializerMessage extends ClientUpdateMessageImpl {
    * Writes an object to a <code>Datautput</code>.
    *
    * @throws IOException If this serializer cannot write an object to <code>out</code>.
-   * @see #fromData
+   * @see DataSerializableFixedID#fromData
    */
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
 
     out.writeByte(_operation.getEventCode());
     int dataSerializerCount = this.serializedDataSerializer.length;
@@ -173,8 +171,8 @@ public class ClientDataSerializerMessage extends ClientUpdateMessageImpl {
     for (int i = 0; i < dataSerializerCount; i++) {
       DataSerializer.writeByteArray(this.serializedDataSerializer[i], out);
     }
-    DataSerializer.writeObject(_membershipId, out);
-    DataSerializer.writeObject(_eventIdentifier, out);
+    context.getSerializer().writeObject(_membershipId, out);
+    context.getSerializer().writeObject(_eventIdentifier, out);
   }
 
   /**
@@ -182,10 +180,11 @@ public class ClientDataSerializerMessage extends ClientUpdateMessageImpl {
    *
    * @throws IOException If this serializer cannot read an object from <code>in</code>.
    * @throws ClassNotFoundException If the class for an object being restored cannot be found.
-   * @see #toData
+   * @see DataSerializableFixedID#toData
    */
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     // Note: does not call super.fromData what a HACK
     _operation = EnumListenerEvent.getEnumListenerEvent(in.readByte());
     int dataSerializerCount = in.readInt();
@@ -194,7 +193,7 @@ public class ClientDataSerializerMessage extends ClientUpdateMessageImpl {
       this.serializedDataSerializer[i] = DataSerializer.readByteArray(in);
     }
     _membershipId = ClientProxyMembershipID.readCanonicalized(in);
-    _eventIdentifier = (EventID) DataSerializer.readObject(in);
+    _eventIdentifier = (EventID) context.getDeserializer().readObject(in);
   }
 
   @Override
@@ -217,7 +216,7 @@ public class ClientDataSerializerMessage extends ClientUpdateMessageImpl {
 
   @Override
   public boolean isClientInterested(ClientProxyMembershipID clientId) {
-    return AcceptorImpl.VERSION.compareTo(Version.GFE_61) >= 0;
+    return true;
   }
 
   @Override
@@ -227,9 +226,10 @@ public class ClientDataSerializerMessage extends ClientUpdateMessageImpl {
 
   @Override
   public String toString() {
-    StringBuffer buffer = new StringBuffer();
-    buffer.append("ClientDataSerializerMessage[").append(";value=")
-        .append((Arrays.toString(this.serializedDataSerializer))).append(";memberId=")
+    StringBuilder buffer = new StringBuilder();
+    buffer.append("ClientDataSerializerMessage[value=")
+        .append(Arrays.toString(this.serializedDataSerializer))
+        .append(";memberId=")
         .append(getMembershipId()).append(";eventId=").append(getEventId()).append("]");
     return buffer.toString();
   }

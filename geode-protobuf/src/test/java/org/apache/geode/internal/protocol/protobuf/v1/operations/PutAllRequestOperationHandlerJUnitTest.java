@@ -27,8 +27,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.ExpectedException;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.protocol.TestExecutionContext;
@@ -41,10 +43,9 @@ import org.apache.geode.internal.protocol.protobuf.v1.Success;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufUtilities;
-import org.apache.geode.test.dunit.Assert;
-import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 
-@Category(UnitTest.class)
+@Category({ClientServerTest.class})
 public class PutAllRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTest {
   private final String TEST_KEY1 = "my key1";
   private final String TEST_KEY2 = "my key2";
@@ -57,6 +58,9 @@ public class PutAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
   private final String TEST_REGION = "test region";
   private final String EXCEPTION_TEXT = "Simulating put failure";
   private Region regionMock;
+
+  @Rule
+  public ExpectedException expectedException = ExpectedException.none();
 
   @Before
   public void setUp() throws Exception {
@@ -91,27 +95,17 @@ public class PutAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
     RegionAPI.PutAllRequest putAllRequest =
         ProtobufRequestUtilities.createPutAllRequest(TEST_REGION, entries).getPutAllRequest();
 
+    expectedException.expect(DecodingException.class);
     Result response = operationHandler.process(serializationServiceStub, putAllRequest,
         TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
-
-    assertTrue("response was " + response, response instanceof Success);
-
-    RegionAPI.PutAllResponse message = (RegionAPI.PutAllResponse) response.getMessage();
-    assertEquals(1, message.getFailedKeysCount());
-
-    BasicTypes.KeyedError error = message.getFailedKeys(0);
-    assertEquals(BasicTypes.ErrorCode.INVALID_REQUEST, error.getError().getErrorCode());
-    assertTrue(error.getError().getMessage().contains("Encoding not supported"));
   }
-
-
 
   @Test
   public void processInsertsMultipleValidEntriesInCache() throws Exception {
     Result result = operationHandler.process(serializationService, generateTestRequest(false, true),
         getNoAuthCacheExecutionContext(cacheStub));
 
-    Assert.assertTrue(result instanceof Success);
+    assertTrue(result instanceof Success);
 
     verify(regionMock).put(TEST_KEY1, TEST_VALUE1);
     verify(regionMock).put(TEST_KEY2, TEST_VALUE2);

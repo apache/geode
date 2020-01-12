@@ -16,7 +16,9 @@
 
 package org.apache.geode.cache;
 
-import java.io.*;
+import java.io.ObjectStreamException;
+
+import org.apache.geode.annotations.Immutable;
 
 /**
  * Enumerated type for region subscription interest policy. The interest policy specifies what data
@@ -28,11 +30,11 @@ import java.io.*;
  *
  * @since GemFire 5.0
  */
+@Immutable
 public class InterestPolicy implements java.io.Serializable {
   private static final long serialVersionUID = 1567179436331385968L;
 
-  private static byte nextOrdinal = 0;
-
+  @Immutable
   private static final InterestPolicy[] VALUES = new InterestPolicy[2];
 
   /**
@@ -55,7 +57,8 @@ public class InterestPolicy implements java.io.Serializable {
    * listener in a VM using this policy will receive notification of all changes to the partitioned
    * region.
    */
-  public static final InterestPolicy ALL = new InterestPolicy("ALL");
+  @Immutable
+  public static final InterestPolicy ALL = new InterestPolicy("ALL", 0);
 
   /**
    * This subscriber is interested in data that is already in its cache. More specifically
@@ -75,11 +78,13 @@ public class InterestPolicy implements java.io.Serializable {
    * be notified in the VM holding the affected data. That is, listeners are only notified if the
    * affected* key-value pair is in the same process as the listener.
    */
-  public static final InterestPolicy CACHE_CONTENT = new InterestPolicy("CACHE_CONTENT");
+  @Immutable
+  public static final InterestPolicy CACHE_CONTENT = new InterestPolicy("CACHE_CONTENT", 1);
 
   /**
    * The interest policy used by default; it is {@link #CACHE_CONTENT}.
    */
+  @Immutable
   public static final InterestPolicy DEFAULT = CACHE_CONTENT;
 
 
@@ -95,9 +100,9 @@ public class InterestPolicy implements java.io.Serializable {
 
 
   /** Creates a new instance of InterestPolicy. */
-  private InterestPolicy(String name) {
+  private InterestPolicy(String name, int ordinal) {
     this.name = name;
-    this.ordinal = nextOrdinal++;
+    this.ordinal = (byte) ordinal;
     VALUES[this.ordinal] = this;
   }
 

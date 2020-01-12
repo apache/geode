@@ -14,12 +14,15 @@
  */
 package org.apache.geode.distributed.internal;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-import org.apache.geode.*;
-import org.apache.geode.distributed.internal.membership.*;
-import org.apache.geode.internal.*;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * A message that is sent to all other distribution manager when a distribution manager shuts down.
@@ -87,33 +90,36 @@ public class ShutdownMessage extends HighPriorityDistributionMessage
     // else {
     // dm.putOutgoing(reply);
     dm.shutdownMessageReceived(id,
-        LocalizedStrings.ShutdownMessage_SHUTDOWN_MESSAGE_RECEIVED.toLocalizedString());
+        "shutdown message received");
     // }
   }
 
+  @Override
   public int getDSFID() {
     return SHUTDOWN_MESSAGE;
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     out.writeInt(processorId);
     DataSerializer.writeObject(this.id, out);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
 
-    super.fromData(in);
+    super.fromData(in, context);
     processorId = in.readInt();
     this.id = (InternalDistributedMember) DataSerializer.readObject(in);
   }
 
   @Override
   public String toString() {
-    return LocalizedStrings.ShutdownMessage_SHUTDOWNMESSAGE_DM_0_HAS_SHUTDOWN
-        .toLocalizedString(this.id);
+    return String.format("ShutdownMessage DM %s has shutdown",
+        this.id);
   }
 
 }

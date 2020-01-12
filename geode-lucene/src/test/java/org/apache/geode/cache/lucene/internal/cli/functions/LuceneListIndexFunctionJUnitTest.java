@@ -14,11 +14,14 @@
  */
 package org.apache.geode.cache.lucene.internal.cli.functions;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -29,29 +32,32 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.internal.InternalLuceneService;
-import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
+import org.apache.geode.cache.lucene.internal.LuceneIndexForPartitionedRegion;
 import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.cache.lucene.internal.cli.LuceneIndexDetails;
+import org.apache.geode.cache.lucene.internal.cli.LuceneIndexStatus;
+import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.test.fake.Fakes;
 import org.apache.geode.test.junit.categories.LuceneTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category({UnitTest.class, LuceneTest.class})
+@Category({LuceneTest.class})
 
 public class LuceneListIndexFunctionJUnitTest {
 
+
   @Test
   @SuppressWarnings("unchecked")
-  public void testExecute() throws Throwable {
+  public void executeListLuceneIndexWhenReindexingInProgress() {
     GemFireCacheImpl cache = Fakes.cache();
-    final String serverName = "mockServer";
+    final String serverName = "mockedServer";
     LuceneServiceImpl service = mock(LuceneServiceImpl.class);
     when(cache.getService(InternalLuceneService.class)).thenReturn(service);
 
@@ -60,17 +66,36 @@ public class LuceneListIndexFunctionJUnitTest {
     when(context.getResultSender()).thenReturn(resultSender);
     when(context.getCache()).thenReturn(cache);
 
-    LuceneIndexImpl index1 = getMockLuceneIndex("index1");
-    LuceneIndexImpl index2 = getMockLuceneIndex("index2");
+    LuceneIndexForPartitionedRegion index1 = getMockLuceneIndex("index1");
 
-    TreeSet expectedResult = new TreeSet();
-    expectedResult.add(new LuceneIndexDetails(index1, serverName));
-    expectedResult.add(new LuceneIndexDetails(index2, serverName));
+    PartitionedRegion userRegion = mock(PartitionedRegion.class);
+    when(cache.getRegion(index1.getRegionPath())).thenReturn(userRegion);
+
+    PartitionedRegionDataStore userRegionDataStore = mock(PartitionedRegionDataStore.class);
+    when(userRegion.getDataStore()).thenReturn(userRegionDataStore);
+
+    BucketRegion userBucket = mock(BucketRegion.class);
+    when(userRegionDataStore.getLocalBucketById(1)).thenReturn(userBucket);
+
+    when(userBucket.isEmpty()).thenReturn(false);
 
     ArrayList<LuceneIndex> allIndexes = new ArrayList();
     allIndexes.add(index1);
-    allIndexes.add(index2);
     when(service.getAllIndexes()).thenReturn(allIndexes);
+
+    PartitionedRegion mockFileRegion = mock(PartitionedRegion.class);
+    when(index1.getFileAndChunkRegion()).thenReturn(mockFileRegion);
+
+    PartitionedRegionDataStore mockPartitionedRegionDataStore =
+        mock(PartitionedRegionDataStore.class);
+    when(mockFileRegion.getDataStore()).thenReturn(mockPartitionedRegionDataStore);
+
+    Set<Integer> bucketSet = new HashSet<>();
+    bucketSet.add(1);
+
+    when(mockPartitionedRegionDataStore.getAllLocalPrimaryBucketIds()).thenReturn(bucketSet);
+
+    when(index1.isIndexAvailable(1)).thenReturn(false);
 
     LuceneListIndexFunction function = new LuceneListIndexFunction();
     function.execute(context);
@@ -79,17 +104,21 @@ public class LuceneListIndexFunctionJUnitTest {
     verify(resultSender).lastResult(resultCaptor.capture());
     Set<String> result = resultCaptor.getValue();
 
-    assertEquals(2, result.size());
+    TreeSet expectedResult = new TreeSet();
+    expectedResult
+        .add(new LuceneIndexDetails(index1, serverName, LuceneIndexStatus.INDEXING_IN_PROGRESS));
+
+    assertEquals(1, result.size());
     assertEquals(expectedResult, result);
+
   }
 
-  private LuceneIndexImpl getMockLuceneIndex(final String indexName) {
+  private LuceneIndexForPartitionedRegion getMockLuceneIndex(final String indexName) {
+    LuceneIndexForPartitionedRegion index = mock(LuceneIndexForPartitionedRegion.class);
     String[] searchableFields = {"field1", "field2"};
     Map<String, Analyzer> fieldAnalyzers = new HashMap<>();
     fieldAnalyzers.put("field1", new StandardAnalyzer());
     fieldAnalyzers.put("field2", new KeywordAnalyzer());
-
-    LuceneIndexImpl index = mock(LuceneIndexImpl.class);
     when(index.getName()).thenReturn(indexName);
     when(index.getRegionPath()).thenReturn("/region");
     when(index.getFieldNames()).thenReturn(searchableFields);

@@ -22,7 +22,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * This listener is added to the cache when a node becomes Managing node. It then starts to listen
@@ -90,6 +90,7 @@ public class ManagementMembershipListener implements MembershipListener {
     }
   }
 
+  @Override
   public void quorumLost(DistributionManager distributionManager,
       Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {}
 }

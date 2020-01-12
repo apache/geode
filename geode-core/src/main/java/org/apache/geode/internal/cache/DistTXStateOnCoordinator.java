@@ -24,7 +24,7 @@ import org.apache.geode.cache.UnsupportedOperationInTransactionException;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.cache.tx.DistTxEntryEvent;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.statistics.StatisticsClock;
 
 /**
  * TxState on TX coordinator, created when coordinator is also a data node
@@ -39,12 +39,14 @@ public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoord
   private boolean preCommitResponse = false;
   private boolean rollbackResponse = false;
 
-  public DistTXStateOnCoordinator(TXStateProxy proxy, boolean onBehalfOfRemoteStub) {
-    super(proxy, onBehalfOfRemoteStub);
+  public DistTXStateOnCoordinator(TXStateProxy proxy, boolean onBehalfOfRemoteStub,
+      StatisticsClock statisticsClock) {
+    super(proxy, onBehalfOfRemoteStub, statisticsClock);
     primaryTransactionalOperations = new ArrayList<DistTxEntryEvent>();
     secondaryTransactionalOperations = new ArrayList<DistTxEntryEvent>();
   }
 
+  @Override
   public ArrayList<DistTxEntryEvent> getPrimaryTransactionalOperations()
       throws UnsupportedOperationInTransactionException {
     return primaryTransactionalOperations;
@@ -74,6 +76,7 @@ public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoord
     }
   }
 
+  @Override
   public void addSecondaryTransactionalOperations(DistTxEntryEvent dtop)
       throws UnsupportedOperationInTransactionException {
     secondaryTransactionalOperations.add(dtop);
@@ -97,6 +100,15 @@ public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoord
     // Cleanup is called next
   }
 
+  @Override
+  public boolean putEntry(EntryEventImpl event, boolean ifNew, boolean ifOld,
+      Object expectedOldValue, boolean requireOldValue, long lastModified,
+      boolean overwriteDestroyed) {
+    return this.putEntry(event, ifNew, ifOld, expectedOldValue, requireOldValue, lastModified,
+        overwriteDestroyed, true,
+        false);
+  }
+
   /*
    * (non-Javadoc)
    *
@@ -106,7 +118,7 @@ public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoord
   @Override
   public boolean putEntry(EntryEventImpl event, boolean ifNew, boolean ifOld,
       Object expectedOldValue, boolean requireOldValue, long lastModified,
-      boolean overwriteDestroyed) {
+      boolean overwriteDestroyed, boolean invokeCallbacks, boolean throwsConcurrentModification) {
     if (logger.isDebugEnabled()) {
       // [DISTTX] TODO Remove throwable
       logger.debug(
@@ -116,7 +128,7 @@ public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoord
     }
 
     boolean returnValue = super.putEntry(event, ifNew, ifOld, expectedOldValue, requireOldValue,
-        lastModified, overwriteDestroyed);
+        lastModified, overwriteDestroyed, invokeCallbacks, throwsConcurrentModification);
 
     // putAll event is already added in postPutAll, don't add individual events
     // from the putAll operation again
@@ -162,6 +174,7 @@ public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoord
    * @see org.apache.geode.internal.cache.TXStateInterface#destroyExistingEntry
    * (org.apache.geode.internal.cache.EntryEventImpl, boolean, java.lang.Object)
    */
+  @Override
   public void destroyExistingEntry(EntryEventImpl event, boolean cacheWrite,
       Object expectedOldValue) throws EntryNotFoundException {
     // logger.debug("DistTXStateOnCoordinator.destroyExistingEntry", new Throwable());
@@ -181,6 +194,7 @@ public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoord
    * @see org.apache.geode.internal.cache.InternalDataView#destroyOnRemote(java .lang.Integer,
    * org.apache.geode.internal.cache.EntryEventImpl, java.lang.Object)
    */
+  @Override
   public void destroyOnRemote(EntryEventImpl event, boolean cacheWrite, Object expectedOldValue)
       throws DataLocationException {
     // logger.debug("DistTXStateOnCoordinator.destroyOnRemote", new Throwable());
@@ -200,6 +214,7 @@ public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoord
    * @see org.apache.geode.internal.cache.TXStateInterface#invalidateExistingEntry
    * (org.apache.geode.internal.cache.EntryEventImpl, boolean, boolean)
    */
+  @Override
   public void invalidateExistingEntry(EntryEventImpl event, boolean invokeCallbacks,
       boolean forceNewEntry) {
     // logger
@@ -215,6 +230,7 @@ public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoord
    * @see org.apache.geode.internal.cache.InternalDataView#invalidateOnRemote
    * (org.apache.geode.internal.cache.EntryEventImpl, boolean, boolean)
    */
+  @Override
   public void invalidateOnRemote(EntryEventImpl event, boolean invokeCallbacks,
       boolean forceNewEntry) throws DataLocationException {
     // logger.debug("DistTXStateOnCoordinator.invalidateOnRemote", new Throwable());
@@ -223,25 +239,26 @@ public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoord
   }
 
 
+  @Override
   public void postPutAll(DistributedPutAllOperation putallOp, VersionedObjectList successfulPuts,
-      LocalRegion region) {
-    super.postPutAll(putallOp, successfulPuts, region);
+      InternalRegion reg) {
+    super.postPutAll(putallOp, successfulPuts, reg);
     // TODO DISTTX: event is never released
-    EntryEventImpl event =
-        EntryEventImpl.createPutAllEvent(putallOp, region, Operation.PUTALL_CREATE,
-            putallOp.getBaseEvent().getKey(), putallOp.getBaseEvent().getValue());
+    EntryEventImpl event = EntryEventImpl.createPutAllEvent(putallOp, reg, Operation.PUTALL_CREATE,
+        putallOp.getBaseEvent().getKey(), putallOp.getBaseEvent().getValue());
     event.setEventId(putallOp.getBaseEvent().getEventId());
     DistTxEntryEvent dtop = new DistTxEntryEvent(event);
     dtop.setPutAllOperation(putallOp);
     addPrimaryTransactionalOperations(dtop);
   }
 
+  @Override
   public void postRemoveAll(DistributedRemoveAllOperation removeAllOp,
-      VersionedObjectList successfulOps, LocalRegion region) {
-    super.postRemoveAll(removeAllOp, successfulOps, region);
+      VersionedObjectList successfulOps, InternalRegion reg) {
+    super.postRemoveAll(removeAllOp, successfulOps, reg);
     // TODO DISTTX: event is never released
-    EntryEventImpl event = EntryEventImpl.createRemoveAllEvent(removeAllOp, region,
-        removeAllOp.getBaseEvent().getKey());
+    EntryEventImpl event =
+        EntryEventImpl.createRemoveAllEvent(removeAllOp, reg, removeAllOp.getBaseEvent().getKey());
     event.setEventId(removeAllOp.getBaseEvent().getEventId());
     DistTxEntryEvent dtop = new DistTxEntryEvent(event);
     dtop.setRemoveAllOperation(removeAllOp);
@@ -262,29 +279,30 @@ public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoord
   public void setPrecommitMessage(DistTXPrecommitMessage precommitMsg, DistributionManager dm)
       throws UnsupportedOperationInTransactionException {
     throw new UnsupportedOperationInTransactionException(
-        LocalizedStrings.Dist_TX_PRECOMMIT_NOT_SUPPORTED_IN_A_TRANSACTION
-            .toLocalizedString("setPrecommitMessage"));
+        String.format("precommit() operation %s meant for Dist Tx is not supported",
+            "setPrecommitMessage"));
   }
 
   @Override
   public void setCommitMessage(DistTXCommitMessage commitMsg, DistributionManager dm)
       throws UnsupportedOperationInTransactionException {
     throw new UnsupportedOperationInTransactionException(
-        LocalizedStrings.Dist_TX_PRECOMMIT_NOT_SUPPORTED_IN_A_TRANSACTION
-            .toLocalizedString("setCommitMessage"));
+        String.format("precommit() operation %s meant for Dist Tx is not supported",
+            "setCommitMessage"));
   }
 
   @Override
   public void setRollbackMessage(DistTXRollbackMessage rollbackMsg, DistributionManager dm)
       throws UnsupportedOperationInTransactionException {
     throw new UnsupportedOperationInTransactionException(
-        LocalizedStrings.Dist_TX_ROLLBACK_NOT_SUPPORTED_IN_A_TRANSACTION
-            .toLocalizedString("setRollbackMessage"));
+        String.format("rollback() operation %s meant for Dist Tx is not supported",
+            "setRollbackMessage"));
   }
 
   @Override
-  public void gatherAffectedRegions(HashSet<LocalRegion> regionSet, boolean includePrimaryRegions,
-      boolean includeRedundantRegions) throws UnsupportedOperationInTransactionException {
+  public void gatherAffectedRegions(HashSet<InternalRegion> regionSet,
+      boolean includePrimaryRegions, boolean includeRedundantRegions)
+      throws UnsupportedOperationInTransactionException {
     if (includePrimaryRegions) {
       for (DistTxEntryEvent dtos : this.primaryTransactionalOperations) {
         regionSet.add(dtos.getRegion());
@@ -312,12 +330,12 @@ public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoord
   public static void gatherAffectedRegions(TreeSet<String> sortedRegionName,
       ArrayList<DistTxEntryEvent> regionOps) {
     for (DistTxEntryEvent dtos : regionOps) {
-      LocalRegion lr = dtos.getRegion();
-      if (lr instanceof PartitionedRegion) {
-        sortedRegionName.add(PartitionedRegionHelper.getBucketFullPath(lr.getFullPath(),
+      InternalRegion ir = dtos.getRegion();
+      if (ir instanceof PartitionedRegion) {
+        sortedRegionName.add(PartitionedRegionHelper.getBucketFullPath(ir.getFullPath(),
             dtos.getKeyInfo().getBucketId()));
       } else {
-        sortedRegionName.add(lr.getFullPath());
+        sortedRegionName.add(ir.getFullPath());
       }
     }
   }

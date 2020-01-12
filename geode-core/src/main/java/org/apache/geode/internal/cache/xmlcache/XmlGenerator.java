@@ -34,22 +34,10 @@ public interface XmlGenerator<T> {
    */
   String getNamespaceUri();
 
-  // TODO jbarrett - investigate new logging.
-  // /**
-  // * Sets the XML config {@link LogWriter} on this parser.
-  // *
-  // * @param logWriter
-  // * current XML config {@link LogWriter}.
-  // * @since GemFire 8.1
-  // */
-  // void setLogWriter(LogWriterI18n logWriter);
-  //
-
   /**
    * Generate XML configuration to the given {@link CacheXmlGenerator}.
    *
    * @param cacheXmlGenerator to generate configuration to.
-   * @throws SAXException
    * @since GemFire 8.1
    */
   void generate(CacheXmlGenerator cacheXmlGenerator) throws SAXException;

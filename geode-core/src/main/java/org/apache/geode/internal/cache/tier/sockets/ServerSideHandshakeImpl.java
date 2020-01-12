@@ -25,23 +25,24 @@ import java.security.Principal;
 import java.util.Properties;
 
 import org.apache.geode.DataSerializer;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.Version;
-import org.apache.geode.internal.VersionedDataInputStream;
-import org.apache.geode.internal.VersionedDataOutputStream;
-import org.apache.geode.internal.VersionedDataStream;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.Encryptor;
 import org.apache.geode.internal.cache.tier.ServerSideHandshake;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.VersionedDataInputStream;
+import org.apache.geode.internal.serialization.VersionedDataOutputStream;
+import org.apache.geode.internal.serialization.VersionedDataStream;
 import org.apache.geode.pdx.internal.PeerTypeRegistration;
 import org.apache.geode.security.AuthenticationRequiredException;
 
 public class ServerSideHandshakeImpl extends Handshake implements ServerSideHandshake {
+  @Immutable
   private static final Version currentServerVersion =
       ServerSideHandshakeFactory.currentServerVersion;
   private Version clientVersion;
@@ -73,13 +74,12 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
       int valRead = inputStream.read();
       if (valRead == -1) {
         throw new EOFException(
-            LocalizedStrings.HandShake_HANDSHAKE_EOF_REACHED_BEFORE_CLIENT_CODE_COULD_BE_READ
-                .toLocalizedString());
+            "HandShake: EOF reached before client code could be read");
       }
       this.replyCode = (byte) valRead;
       if (replyCode != REPLY_OK) {
         throw new IOException(
-            LocalizedStrings.HandShake_HANDSHAKE_REPLY_CODE_IS_NOT_OK.toLocalizedString());
+            "HandShake reply code is not ok");
       }
       try {
         DataInputStream dataInputStream = new DataInputStream(inputStream);
@@ -88,7 +88,8 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
         if (clientVersion.compareTo(Version.CURRENT) < 0) {
           // versioned streams allow object serialization code to deal with older clients
           dataInputStream = new VersionedDataInputStream(dataInputStream, clientVersion);
-          dataOutputStream = new VersionedDataOutputStream(dataOutputStream, clientVersion);
+          dataOutputStream =
+              new VersionedDataOutputStream(dataOutputStream, clientVersion);
         }
         this.id = ClientProxyMembershipID.readCanonicalized(dataInputStream);
         // Note: credentials should always be the last piece in handshake for
@@ -106,8 +107,7 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
         }
       } catch (ClassNotFoundException cnfe) {
         throw new IOException(
-            LocalizedStrings.HandShake_CLIENTPROXYMEMBERSHIPID_CLASS_COULD_NOT_BE_FOUND_WHILE_DESERIALIZING_THE_OBJECT
-                .toLocalizedString());
+            "ClientProxyMembershipID class could not be found while deserializing the object");
       }
     } finally {
       if (soTimeout != -1) {
@@ -123,6 +123,7 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
     return this.clientVersion;
   }
 
+  @Override
   public Version getVersion() {
     return this.clientVersion;
   }
@@ -159,7 +160,7 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
 
     Version v = Version.CURRENT;
     if (dos instanceof VersionedDataStream) {
-      v = ((VersionedDataStream) dos).getVersion();
+      v = (Version) ((VersionedDataStream) dos).getVersion();
     }
     HeapDataOutputStream hdos = new HeapDataOutputStream(v);
     DataSerializer.writeObject(member, hdos);
@@ -212,12 +213,13 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
     }
     // The exception while getting the credentials is just logged as severe
     catch (Exception e) {
-      this.system.getSecurityLogWriter().convertToLogWriterI18n().severe(
-          LocalizedStrings.HandShake_AN_EXCEPTION_WAS_THROWN_WHILE_SENDING_WAN_CREDENTIALS_0,
-          e.getLocalizedMessage());
+      this.system.getSecurityLogWriter().severe(
+          String.format("An exception was thrown while sending wan credentials: %s",
+              e.getLocalizedMessage()));
     }
   }
 
+  @Override
   public int getClientReadTimeout() {
     return this.clientReadTimeout;
   }

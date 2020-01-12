@@ -14,7 +14,8 @@
  */
 package org.apache.geode.internal.admin.remote;
 
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.CacheStatistics;
+import org.apache.geode.cache.Region;
 
 /**
  * This implementation of {@link org.apache.geode.cache.Region.Entry} does nothing but provide an
@@ -37,38 +38,47 @@ public class DummyEntry implements Region.Entry {
     this.stats = stats;
   }
 
+  @Override
   public boolean isLocal() {
     return false;
   }
 
+  @Override
   public Object getKey() {
     return this.key;
   }
 
+  @Override
   public Object getValue() {
     return this.value;
   }
 
+  @Override
   public Region getRegion() {
     return this.region;
   }
 
+  @Override
   public CacheStatistics getStatistics() {
     return this.stats;
   }
 
+  @Override
   public Object getUserAttribute() {
     return this.userAttribute;
   }
 
+  @Override
   public Object setUserAttribute(Object userAttribute) {
     throw new UnsupportedOperationException();
   }
 
+  @Override
   public boolean isDestroyed() {
     throw new UnsupportedOperationException();
   }
 
+  @Override
   public Object setValue(Object arg0) {
     throw new UnsupportedOperationException();
   }

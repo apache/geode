@@ -31,42 +31,15 @@ public class ProtobufOperationContext<OperationRequest, OperationResponse> {
   private final Function<ClientProtocol.Message, OperationRequest> fromRequest;
   private final Function<OperationResponse, ClientProtocol.Message.Builder> toResponse;
   private final Function<ClientProtocol.ErrorResponse, ClientProtocol.Message.Builder> toErrorResponse;
-  private final PermissionFunction<OperationRequest> accessPermissionRequired;
 
-  private class StaticResourcePermissionProvider implements PermissionFunction<OperationRequest> {
-    private final ResourcePermission permission;
-
-    StaticResourcePermissionProvider(ResourcePermission requiredPermission) {
-      permission = requiredPermission;
-    }
-
-    @Override
-    public ResourcePermission apply(OperationRequest request,
-        ProtobufSerializationService serializer) {
-      return permission;
-    }
-  }
 
   public ProtobufOperationContext(Function<ClientProtocol.Message, OperationRequest> fromRequest,
       ProtobufOperationHandler<OperationRequest, OperationResponse> operationHandler,
-      Function<OperationResponse, ClientProtocol.Message.Builder> toResponse,
-      ResourcePermission permissionRequired) {
+      Function<OperationResponse, ClientProtocol.Message.Builder> toResponse) {
     this.operationHandler = operationHandler;
     this.fromRequest = fromRequest;
     this.toResponse = toResponse;
     this.toErrorResponse = this::makeErrorBuilder;
-    accessPermissionRequired = new StaticResourcePermissionProvider(permissionRequired);
-  }
-
-  public ProtobufOperationContext(Function<ClientProtocol.Message, OperationRequest> fromRequest,
-      ProtobufOperationHandler<OperationRequest, OperationResponse> operationHandler,
-      Function<OperationResponse, ClientProtocol.Message.Builder> toResponse,
-      PermissionFunction<OperationRequest> permissionRequired) {
-    this.operationHandler = operationHandler;
-    this.fromRequest = fromRequest;
-    this.toResponse = toResponse;
-    this.toErrorResponse = this::makeErrorBuilder;
-    accessPermissionRequired = permissionRequired;
   }
 
 
@@ -89,10 +62,5 @@ public class ProtobufOperationContext<OperationRequest, OperationResponse> {
 
   public Function<ClientProtocol.ErrorResponse, ClientProtocol.Message.Builder> getToErrorResponse() {
     return toErrorResponse;
-  }
-
-  public ResourcePermission getAccessPermissionRequired(OperationRequest request,
-      ProtobufSerializationService serializer) throws DecodingException {
-    return accessPermissionRequired.apply(request, serializer);
   }
 }

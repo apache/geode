@@ -14,8 +14,8 @@
  */
 package org.apache.geode.admin;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.admin.Alert;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Type-safe enumeration for {@link org.apache.geode.admin.Alert Alert} level.
@@ -25,14 +25,19 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
  *             "{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code>
  *             package instead
  */
+@Immutable
 public class AlertLevel implements java.io.Serializable {
   private static final long serialVersionUID = -4752438966587392126L;
 
-  public static final AlertLevel WARNING = new AlertLevel(Alert.WARNING, "WARNING");
-  public static final AlertLevel ERROR = new AlertLevel(Alert.ERROR, "ERROR");
-  public static final AlertLevel SEVERE = new AlertLevel(Alert.SEVERE, "SEVERE");
+  @Immutable
+  public static final AlertLevel WARNING = new AlertLevel(Alert.WARNING, "WARNING", 0);
+  @Immutable
+  public static final AlertLevel ERROR = new AlertLevel(Alert.ERROR, "ERROR", 1);
+  @Immutable
+  public static final AlertLevel SEVERE = new AlertLevel(Alert.SEVERE, "SEVERE", 2);
 
-  public static final AlertLevel OFF = new AlertLevel(Alert.OFF, "OFF");
+  @Immutable
+  public static final AlertLevel OFF = new AlertLevel(Alert.OFF, "OFF", 3);
 
   /** The severity level of this AlertLevel. Greater is more severe. */
   private final transient int severity;
@@ -40,12 +45,10 @@ public class AlertLevel implements java.io.Serializable {
   /** The name of this AlertLevel. */
   private final transient String name;
 
-  // The 4 declarations below are necessary for serialization
-  /** int used as ordinal to represent this AlertLevel */
-  public final int ordinal = nextOrdinal++;
+  public final int ordinal;
 
-  private static int nextOrdinal = 0;
 
+  @Immutable
   private static final AlertLevel[] VALUES = {WARNING, ERROR, SEVERE, OFF};
 
   private Object readResolve() throws java.io.ObjectStreamException {
@@ -53,9 +56,10 @@ public class AlertLevel implements java.io.Serializable {
   }
 
   /** Creates a new instance of AlertLevel. */
-  private AlertLevel(int severity, String name) {
+  private AlertLevel(int severity, String name, int ordinal) {
     this.severity = severity;
     this.name = name;
+    this.ordinal = ordinal;
   }
 
   /** Return the AlertLevel represented by specified ordinal */
@@ -80,8 +84,8 @@ public class AlertLevel implements java.io.Serializable {
       case Alert.OFF:
         return AlertLevel.OFF;
       default:
-        throw new IllegalArgumentException(LocalizedStrings.AlertLevel_UNKNOWN_ALERT_SEVERITY_0
-            .toLocalizedString(Integer.valueOf(severity)));
+        throw new IllegalArgumentException(String.format("Unknown alert severity: %s",
+            Integer.valueOf(severity)));
     }
   }
 
@@ -99,7 +103,7 @@ public class AlertLevel implements java.io.Serializable {
     }
 
     throw new IllegalArgumentException(
-        LocalizedStrings.AlertLevel_THERE_IS_NO_ALERT_LEVEL_0.toLocalizedString(name));
+        String.format("There is no alert level %s", name));
   }
 
   public int getSeverity() {

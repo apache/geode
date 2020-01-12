@@ -29,17 +29,19 @@ public class ProtobufFunction<T> implements Function<T> {
   private final ProtobufChannel channel;
   private Set<String> members;
   private Set<String> groups;
+  private final ValueEncoder valueEncoder;
 
-  public ProtobufFunction(String functionId, ProtobufChannel channel) {
+  public ProtobufFunction(String functionId, ProtobufChannel channel, ValueEncoder valueEncoder) {
     this.functionId = functionId;
     this.channel = channel;
+    this.valueEncoder = valueEncoder;
   }
 
   @Override
   public List<T> executeOnRegion(Object arguments, String regionName, Object... keyFilters)
       throws IOException {
     List<BasicTypes.EncodedValue> encodedFilters = Arrays.asList(keyFilters).stream()
-        .map(ValueEncoder::encodeValue).collect(Collectors.toList());
+        .map(valueEncoder::encodeValue).collect(Collectors.toList());
     ClientProtocol.Message request = ClientProtocol.Message.newBuilder()
         .setExecuteFunctionOnRegionRequest(FunctionAPI.ExecuteFunctionOnRegionRequest.newBuilder()
             .setRegion(regionName).addAllKeyFilter(encodedFilters).setFunctionID(functionId))
@@ -48,7 +50,7 @@ public class ProtobufFunction<T> implements Function<T> {
         .sendRequest(request,
             ClientProtocol.Message.MessageTypeCase.EXECUTEFUNCTIONONREGIONRESPONSE)
         .getExecuteFunctionOnRegionResponse();
-    return response.getResultsList().stream().map(value -> (T) ValueEncoder.decodeValue(value))
+    return response.getResultsList().stream().map(value -> (T) valueEncoder.decodeValue(value))
         .collect(Collectors.toList());
   }
 
@@ -63,7 +65,7 @@ public class ProtobufFunction<T> implements Function<T> {
         .sendRequest(request,
             ClientProtocol.Message.MessageTypeCase.EXECUTEFUNCTIONONMEMBERRESPONSE)
         .getExecuteFunctionOnMemberResponse();
-    return response.getResultsList().stream().map(value -> (T) ValueEncoder.decodeValue(value))
+    return response.getResultsList().stream().map(value -> (T) valueEncoder.decodeValue(value))
         .collect(Collectors.toList());
   }
 
@@ -77,7 +79,7 @@ public class ProtobufFunction<T> implements Function<T> {
     final FunctionAPI.ExecuteFunctionOnGroupResponse response = channel
         .sendRequest(request, ClientProtocol.Message.MessageTypeCase.EXECUTEFUNCTIONONGROUPRESPONSE)
         .getExecuteFunctionOnGroupResponse();
-    return response.getResultsList().stream().map(value -> (T) ValueEncoder.decodeValue(value))
+    return response.getResultsList().stream().map(value -> (T) valueEncoder.decodeValue(value))
         .collect(Collectors.toList());
   }
 }

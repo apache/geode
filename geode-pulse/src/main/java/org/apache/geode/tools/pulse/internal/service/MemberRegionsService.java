@@ -17,9 +17,8 @@
 
 package org.apache.geode.tools.pulse.internal.service;
 
+import static org.apache.geode.tools.pulse.internal.data.PulseConstants.FOUR_PLACE_DECIMAL_FORMAT;
 import static org.apache.geode.tools.pulse.internal.util.NameUtil.makeCompliantName;
-
-import java.text.DecimalFormat;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -27,13 +26,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import org.apache.geode.tools.pulse.internal.data.Cluster;
-import org.apache.geode.tools.pulse.internal.data.PulseConstants;
 import org.apache.geode.tools.pulse.internal.data.Repository;
 
 /**
@@ -57,6 +55,7 @@ public class MemberRegionsService implements PulseService {
   private final String DISC_STORE_NAME = "diskStoreName";
   private final String DISC_SYNCHRONOUS = "diskSynchronous";
 
+  @Override
   public ObjectNode execute(final HttpServletRequest request) throws Exception {
 
     // get cluster object
@@ -86,10 +85,9 @@ public class MemberRegionsService implements PulseService {
 
         regionJSON.put("type", memberRegion.getRegionType());
         regionJSON.put("entryCount", memberRegion.getSystemRegionEntryCount());
-        Long entrySize = memberRegion.getEntrySize();
+        long entrySize = memberRegion.getEntrySize();
 
-        DecimalFormat form = new DecimalFormat(PulseConstants.DECIMAL_FORMAT_PATTERN_2);
-        String entrySizeInMB = form.format(entrySize / (1024f * 1024f));
+        String entrySizeInMB = FOUR_PLACE_DECIMAL_FORMAT.format(entrySize / (1024f * 1024f));
 
         if (entrySize < 0) {
           regionJSON.put(this.ENTRY_SIZE, VALUE_NA);

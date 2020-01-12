@@ -14,18 +14,22 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.interfaces;
 
-import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.NetMember;
-import org.apache.geode.distributed.internal.membership.NetView;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
+import org.apache.geode.distributed.internal.membership.api.MemberStartupException;
+import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 
-public interface JoinLeave extends Service {
+/**
+ * The JoinLeave service is responsible for joining and leaving the cluster. It must
+ * also fill the role of cluster coordinator and respond to join/leave/remove-member
+ * events by sending out new membership views when appropriate.
+ */
+public interface JoinLeave<ID extends MemberIdentifier> extends Service<ID> {
 
   /**
    * joins the distributed system and returns true if successful, false if not. Throws
-   * SystemConnectException and GemFireConfigException
+   * MemberStartupException and MemberConfigurationException
    */
-  boolean join();
+  boolean join() throws MemberStartupException;
 
   /**
    * leaves the distributed system. Should be invoked before stop()
@@ -35,40 +39,40 @@ public interface JoinLeave extends Service {
   /**
    * force another member out of the system
    */
-  void remove(InternalDistributedMember m, String reason);
+  void remove(ID m, String reason);
 
   /**
    * Invoked by the Manager, this notifies the HealthMonitor that a ShutdownMessage has been
    * received from the given member
    */
-  void memberShutdown(DistributedMember mbr, String reason);
+  void memberShutdown(ID mbr, String reason);
 
   /**
    * returns the local address
    */
-  InternalDistributedMember getMemberID();
+  ID getMemberID();
 
   /**
-   * Get "InternalDistributedMember" from current view or prepared view.
+   * Get canonical "GMSMember" from current view or prepared view.
    */
-  InternalDistributedMember getMemberID(NetMember m);
+  ID getMemberID(ID m);
 
   /**
    * returns the current membership view
    */
-  NetView getView();
+  GMSMembershipView<ID> getView();
 
 
   /**
    * returns the last known view prior to close - for reconnecting
    */
-  NetView getPreviousView();
+  GMSMembershipView<ID> getPreviousView();
 
   /**
    * check to see if a member is already in the process of leaving or being removed (in the next
    * view)
    */
-  boolean isMemberLeaving(DistributedMember mbr);
+  boolean isMemberLeaving(ID mbr);
 
   /**
    * test hook

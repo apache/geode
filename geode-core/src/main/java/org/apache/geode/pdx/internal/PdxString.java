@@ -21,8 +21,8 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.Sendable;
+import org.apache.geode.internal.serialization.DSCODE;
 import org.apache.geode.internal.tcp.ByteBufferInputStream;
 
 /**
@@ -58,12 +58,12 @@ public class PdxString implements Comparable<PdxString>, Sendable {
   private int calcOffset(int header, int offset) {
     offset++; // increment offset for the header byte
     // length is stored as short for small strings
-    if (header == DSCODE.STRING_BYTES || header == DSCODE.STRING) {
+    if (header == DSCODE.STRING_BYTES.toByte() || header == DSCODE.STRING.toByte()) {
       offset += 2; // position the offset to the start of the String
                    // (skipping header and length bytes)
     }
     // length is stored as int for huge strings
-    else if (header == DSCODE.HUGE_STRING_BYTES || header == DSCODE.HUGE_STRING) {
+    else if (header == DSCODE.HUGE_STRING_BYTES.toByte() || header == DSCODE.HUGE_STRING.toByte()) {
       offset += 4; // position the offset to the start of the String
                    // (skipping header and length bytes)
     }
@@ -73,14 +73,14 @@ public class PdxString implements Comparable<PdxString>, Sendable {
   private int getLength() {
     int length = 0;
     int lenOffset = this.offset;
-    if (header == DSCODE.STRING_BYTES || header == DSCODE.STRING) {
+    if (header == DSCODE.STRING_BYTES.toByte() || header == DSCODE.STRING.toByte()) {
       lenOffset -= 2;
       byte a = bytes[lenOffset];
       byte b = bytes[lenOffset + 1];
       length = ((a & 0xff) << 8) | (b & 0xff);
     }
     // length is stored as int for huge strings
-    else if (header == DSCODE.HUGE_STRING_BYTES || header == DSCODE.HUGE_STRING) {
+    else if (header == DSCODE.HUGE_STRING_BYTES.toByte() || header == DSCODE.HUGE_STRING.toByte()) {
       lenOffset -= 4;
       byte a = bytes[lenOffset];
       byte b = bytes[lenOffset + 1];
@@ -91,6 +91,7 @@ public class PdxString implements Comparable<PdxString>, Sendable {
     return length;
   }
 
+  @Override
   public int compareTo(PdxString o) {
     // not handling strings with different headers
     if (this.header != o.header) {
@@ -168,12 +169,13 @@ public class PdxString implements Comparable<PdxString>, Sendable {
     int headerOffset = this.offset;
     try {
       --headerOffset; // for header byte
-      if (header == DSCODE.STRING_BYTES || header == DSCODE.STRING) {
+      if (header == DSCODE.STRING_BYTES.toByte() || header == DSCODE.STRING.toByte()) {
         headerOffset -= 2; // position the offset to the start of the String (skipping
         // header and length bytes)
       }
       // length is stored as int for huge strings
-      else if (header == DSCODE.HUGE_STRING_BYTES || header == DSCODE.HUGE_STRING) {
+      else if (header == DSCODE.HUGE_STRING_BYTES.toByte()
+          || header == DSCODE.HUGE_STRING.toByte()) {
         headerOffset -= 4;
       }
       ByteBuffer stringByteBuffer =
@@ -195,10 +197,11 @@ public class PdxString implements Comparable<PdxString>, Sendable {
     int len = getLength();
     --offset; // for header byte
     len++;
-    if (header == DSCODE.STRING_BYTES || header == DSCODE.STRING) {
+    if (header == DSCODE.STRING_BYTES.toByte() || header == DSCODE.STRING.toByte()) {
       len += 2;
       offset -= 2;
-    } else if (header == DSCODE.HUGE_STRING_BYTES || header == DSCODE.HUGE_STRING) {
+    } else if (header == DSCODE.HUGE_STRING_BYTES.toByte()
+        || header == DSCODE.HUGE_STRING.toByte()) {
       len += 4;
       offset -= 4;
     }

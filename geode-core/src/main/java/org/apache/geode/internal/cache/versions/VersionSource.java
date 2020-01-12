@@ -17,7 +17,7 @@ package org.apache.geode.internal.cache.versions;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 
 /**
  * The member that originated an update that is stored in the version information of a region entry,
@@ -31,4 +31,8 @@ import org.apache.geode.internal.DataSerializableFixedID;
 public interface VersionSource<T> extends DataSerializableFixedID, Comparable<T> {
 
   void writeEssentialData(DataOutput out) throws IOException;
+
+  default boolean isDiskStoreId() {
+    return false;
+  }
 }

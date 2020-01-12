@@ -43,6 +43,7 @@ public class TableConverter extends OpenTypeConverter {
     this.valueConverter = valueConverter;
   }
 
+  @Override
   Object toNonNullOpenValue(Object value) throws OpenDataException {
     final Map<Object, Object> valueMap = (Map<Object, Object>) value;
     if (valueMap instanceof SortedMap) {
@@ -68,6 +69,7 @@ public class TableConverter extends OpenTypeConverter {
     return table;
   }
 
+  @Override
   public Object fromNonNullOpenValue(Object openValue) throws InvalidObjectException {
     final TabularData table = (TabularData) openValue;
     final Collection<CompositeData> rows = (Collection<CompositeData>) table.values();
@@ -84,6 +86,7 @@ public class TableConverter extends OpenTypeConverter {
     return valueMap;
   }
 
+  @Override
   void checkReconstructible() throws InvalidObjectException {
     keyConverter.checkReconstructible();
     valueConverter.checkReconstructible();

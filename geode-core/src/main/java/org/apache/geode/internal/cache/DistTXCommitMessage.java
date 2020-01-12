@@ -43,10 +43,12 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.ReplySender;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.TXEntryState.DistTxThinEntryState;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class DistTXCommitMessage extends TXMessage {
 
@@ -100,7 +102,7 @@ public class DistTXCommitMessage extends TXMessage {
            */
           if (!txStateProxy.isDistTx() || txStateProxy.isCreatedOnDistTxCoordinator()) {
             throw new UnsupportedOperationInTransactionException(
-                LocalizedStrings.DISTTX_TX_EXPECTED.toLocalizedString(
+                String.format("Expected %s during a distributed transaction but got %s",
                     "DistTXStateProxyImplOnDatanode", txStateProxy.getClass().getSimpleName()));
           }
           if (logger.isDebugEnabled()) {
@@ -141,14 +143,16 @@ public class DistTXCommitMessage extends TXMessage {
 
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.entryStateList = DataSerializer.readArrayList(in);
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     DataSerializer.writeArrayList(entryStateList, out);
   }
 
@@ -180,7 +184,7 @@ public class DistTXCommitMessage extends TXMessage {
     public DistTXCommitReplyMessage() {}
 
     public DistTXCommitReplyMessage(DataInput in) throws IOException, ClassNotFoundException {
-      fromData(in);
+      fromData(in, InternalDataSerializer.createDeserializationContext(in));
     }
 
     private DistTXCommitReplyMessage(int processorId, TXCommitMessage val) {
@@ -220,15 +224,16 @@ public class DistTXCommitMessage extends TXMessage {
     @Override
     public void process(final DistributionManager dm, ReplyProcessor21 processor) {
       final long startTime = getTimestamp();
-      if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM,
+      if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+        logger.trace(LogMarker.DM_VERBOSE,
             "DistTXCommitPhaseTwoReplyMessage process invoking reply processor with processorId:{}",
             this.processorId);
       }
 
       if (processor == null) {
-        if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.trace(LogMarker.DM, "DistTXCommitPhaseTwoReplyMessage processor not found");
+        if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
+          logger.trace(LogMarker.DM_VERBOSE,
+              "DistTXCommitPhaseTwoReplyMessage processor not found");
         }
         return;
       }
@@ -241,14 +246,16 @@ public class DistTXCommitMessage extends TXMessage {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       DataSerializer.writeObject(commitMessage, out);
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.commitMessage = (TXCommitMessage) DataSerializer.readObject(in);
     }
 

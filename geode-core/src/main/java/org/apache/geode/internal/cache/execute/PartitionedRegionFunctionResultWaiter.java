@@ -31,7 +31,7 @@ import org.apache.geode.internal.cache.partitioned.PartitionMessage;
 import org.apache.geode.internal.cache.partitioned.PartitionedRegionFunctionStreamingMessage;
 
 /**
- * ResultReciever (which could be resultCollector?)will be instantiated and will be used to send
+ * ResultReceiver (which could be resultCollector?)will be instantiated and will be used to send
  * messages and receive results from other nodes. It takes a set of nodes to which functionExecution
  * message has to be sent. Creates one message for each and sends it to each of them. Then it gets
  * result in processData where it adds them to the resultCollector.
@@ -105,12 +105,13 @@ public class PartitionedRegionFunctionResultWaiter extends StreamingFunctionOper
    * ResultSender.
    */
 
+  @Override
   public void processData(Object result, boolean lastMsg, DistributedMember memberID) {
     boolean completelyDone = false;
     if (lastMsg) {
-      this.totalLastMsgRecieved++;
+      this.totalLastMsgReceived++;
     }
-    if (this.totalLastMsgRecieved == this.recipients.size()) {
+    if (this.totalLastMsgReceived == this.recipients.size()) {
       completelyDone = true;
     }
     ((PartitionedRegionFunctionResultSender) resultSender).lastResult(result, completelyDone,

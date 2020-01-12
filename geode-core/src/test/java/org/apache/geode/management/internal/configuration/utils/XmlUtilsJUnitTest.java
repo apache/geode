@@ -34,7 +34,6 @@ import javax.xml.xpath.XPathExpressionException;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -43,7 +42,6 @@ import org.w3c.dom.NodeList;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils.XPathContext;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for {@link XmlUtils}. See Also {@link XmlUtilsAddNewNodeJUnitTest} for tests related
@@ -51,7 +49,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
  *
  * @since GemFire 8.1
  */
-@Category(UnitTest.class)
 public class XmlUtilsJUnitTest {
 
   private static final String GEODE_SCHEMA_LOCATION =
@@ -115,9 +112,6 @@ public class XmlUtilsJUnitTest {
     assertEquals(0, schemaLocationMap.size());
   }
 
-  /**
-   *
-   */
   @Test
   public void testQuerySingleElement() throws Exception {
     final Document doc = XmlUtils.createDocumentFromReader(new InputStreamReader(

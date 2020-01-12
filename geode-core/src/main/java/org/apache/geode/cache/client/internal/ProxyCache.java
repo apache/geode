@@ -14,10 +14,8 @@
  */
 package org.apache.geode.cache.client.internal;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -31,6 +29,7 @@ import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.internal.ProxyQueryService;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxInstanceFactory;
 import org.apache.geode.pdx.internal.PdxInstanceFactoryImpl;
@@ -114,6 +113,11 @@ public class ProxyCache implements RegionService {
   }
 
   @Override
+  public JSONFormatter getJsonFormatter() {
+    return new JSONFormatter(this);
+  }
+
+  @Override
   public <K, V> Region<K, V> getRegion(String path) {
     preOp();
     if (this.cache.getRegion(path) == null) {
@@ -123,7 +127,7 @@ public class ProxyCache implements RegionService {
         throw new IllegalStateException(
             "Region's data-policy must be EMPTY when multiuser-authentication is true");
       }
-      return new ProxyRegion(this, this.cache.getRegion(path));
+      return new ProxyRegion(this, this.cache.getRegion(path), cache.getStatisticsClock());
     }
   }
 
@@ -150,15 +154,6 @@ public class ProxyCache implements RegionService {
   public UserAttributes getUserAttributes() {
     preOp();
     return this.userAttributes;
-  }
-
-  public Object getUserId(Object key) {
-    preOp();
-    if (!(key instanceof ServerLocation)) {
-      throw new IllegalArgumentException(
-          "Key must be of type ServerLocation, but is " + key.getClass());
-    }
-    return this.userAttributes.getServerToId().get(key);
   }
 
   private void preOp() {
@@ -214,7 +209,7 @@ public class ProxyCache implements RegionService {
     Set<Region<?, ?>> rootRegions = new HashSet<>();
     for (Region<?, ?> region : this.cache.rootRegions()) {
       if (!region.getAttributes().getDataPolicy().withStorage()) {
-        rootRegions.add(new ProxyRegion(this, region));
+        rootRegions.add(new ProxyRegion(this, region, cache.getStatisticsClock()));
       }
     }
     return Collections.unmodifiableSet(rootRegions);

@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.ha.HAContainerWrapper;
@@ -30,8 +31,6 @@ import org.apache.geode.internal.cache.tier.sockets.HAEventWrapper;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.SecurityService;
 
 /**
@@ -42,6 +41,7 @@ import org.apache.geode.internal.security.SecurityService;
  */
 public class RequestEventValue extends BaseCommand {
 
+  @Immutable
   private static final RequestEventValue singleton = new RequestEventValue();
 
   public static Command getCommand() {
@@ -50,6 +50,7 @@ public class RequestEventValue extends BaseCommand {
 
   private RequestEventValue() {}
 
+  @Override
   public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
       final SecurityService securityService, long start) throws IOException {
     Part eventIDPart = null, valuePart = null;
@@ -65,9 +66,8 @@ public class RequestEventValue extends BaseCommand {
     eventIDPart = clientMessage.getPart(0);
 
     if (eventIDPart == null) {
-      logger.warn(LocalizedMessage.create(
-          LocalizedStrings.RequestEventValue_0_THE_EVENT_ID_FOR_THE_GET_EVENT_VALUE_REQUEST_IS_NULL,
-          serverConnection.getName()));
+      logger.warn("{}: The event id for the get event value request is null.",
+          serverConnection.getName());
       errMessage.append(" The event id for the get event value request is null.");
       writeErrorResponse(clientMessage, MessageType.REQUESTDATAERROR, errMessage.toString(),
           serverConnection);
@@ -110,9 +110,8 @@ public class RequestEventValue extends BaseCommand {
           Object data = haContainer.get(new HAEventWrapper(event));
 
           if (data == null) {
-            logger.warn(LocalizedMessage.create(
-                LocalizedStrings.RequestEventValue_UNABLE_TO_FIND_A_CLIENT_UPDATE_MESSAGE_FOR_0,
-                event));
+            logger.warn("Unable to find a client update message for {}",
+                event);
             String msgStr = "No value found for " + event + " in " + haContainer.getName();
             writeErrorResponse(clientMessage, MessageType.REQUEST_EVENT_VALUE_ERROR, msgStr,
                 serverConnection);

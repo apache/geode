@@ -27,8 +27,10 @@ import org.apache.geode.cache.RoleEvent;
 public abstract class RegionRoleListenerAdapter<K, V> extends RegionMembershipListenerAdapter<K, V>
     implements RegionRoleListener<K, V> {
 
+  @Override
   public void afterRoleGain(RoleEvent<K, V> event) {}
 
+  @Override
   public void afterRoleLoss(RoleEvent<K, V> event) {}
 
 }

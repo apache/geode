@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.AmbiguousNameException;
@@ -33,10 +34,9 @@ import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxSerializationException;
-import org.apache.geode.pdx.internal.PdxInstanceImpl;
+import org.apache.geode.pdx.internal.InternalPdxInstance;
 import org.apache.geode.pdx.internal.PdxString;
 
 /**
@@ -50,6 +50,7 @@ public class CompiledOperation extends AbstractCompiledValue {
   private final CompiledValue receiver; // may be null if implicit to scope
   private final String methodName;
   private final List args;
+  @MakeNotStatic
   private static final ConcurrentMap cache = new ConcurrentHashMap();
 
 
@@ -79,6 +80,7 @@ public class CompiledOperation extends AbstractCompiledValue {
   }
 
 
+  @Override
   public int getType() {
     return METHOD_INV;
   }
@@ -92,10 +94,20 @@ public class CompiledOperation extends AbstractCompiledValue {
   }
 
   @Override
+  public boolean hasIdentifierAtLeafNode() {
+    if (this.receiver.getType() == Identifier) {
+      return true;
+    } else {
+      return this.receiver.hasIdentifierAtLeafNode();
+    }
+  }
+
+  @Override
   public CompiledValue getReceiver() {
     return this.getReceiver(null);
   }
 
+  @Override
   public Object evaluate(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     CompiledValue rcvr = getReceiver(context);
@@ -113,8 +125,7 @@ public class CompiledOperation extends AbstractCompiledValue {
        * eval0(rcvrItr.evaluate(context), rcvrItr.getElementType().resolveClass(), context); }
        *
        * // function call: no functions implemented except keywords in the grammar throw new
-       * TypeMismatchException(LocalizedStrings.CompiledOperation_COULD_NOT_RESOLVE_METHOD_NAMED_0.
-       * toLocalizedString(this.methodName));
+       * TypeMismatchException("Could not resolve method named 'xyz'")
        */
     } else {
       // if not null, then explicit receiver
@@ -203,8 +214,8 @@ public class CompiledOperation extends AbstractCompiledValue {
       if (rcvrItr == null) { // no receiver resolved
         // function call: no functions implemented except keywords in the grammar
         throw new TypeMismatchException(
-            LocalizedStrings.CompiledOperation_COULD_NOT_RESOLVE_METHOD_NAMED_0
-                .toLocalizedString(this.methodName));
+            String.format("Could not resolve method named ' %s '",
+                this.methodName));
       }
       // cache the receiver so we don't have to resolve it again
       context.cachePut(this, rcvrItr);
@@ -258,9 +269,7 @@ public class CompiledOperation extends AbstractCompiledValue {
     methodDispatch = (MethodDispatch) CompiledOperation.cache.get(key);
     if (methodDispatch == null) {
       try {
-        methodDispatch =
-            new MethodDispatch(context.getCache().getQueryService().getMethodInvocationAuthorizer(),
-                resolutionType, this.methodName, argTypes);
+        methodDispatch = new MethodDispatch(resolutionType, this.methodName, argTypes);
       } catch (NameResolutionException nre) {
         if (!org.apache.geode.cache.query.Struct.class.isAssignableFrom(resolutionType)
             && (DefaultQueryService.QUERY_HETEROGENEOUS_OBJECTS
@@ -273,20 +282,17 @@ public class CompiledOperation extends AbstractCompiledValue {
       // cache
       CompiledOperation.cache.putIfAbsent(key, methodDispatch);
     }
-    if (receiver instanceof PdxInstance) {
+    if (receiver instanceof InternalPdxInstance) {
       try {
-        if (receiver instanceof PdxInstanceImpl) {
-          receiver = ((PdxInstanceImpl) receiver).getCachedObject();
-        } else {
-          receiver = ((PdxInstance) receiver).getObject();
-        }
+        receiver = ((InternalPdxInstance) receiver).getCachedObject();
       } catch (PdxSerializationException ex) {
         throw new QueryInvocationTargetException(ex);
       }
     } else if (receiver instanceof PdxString) {
       receiver = ((PdxString) receiver).toString();
     }
-    return methodDispatch.invoke(receiver, args);
+
+    return methodDispatch.invoke(receiver, args, context);
   }
 
   // Asif :Function for generating from clause

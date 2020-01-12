@@ -14,6 +14,8 @@
  */
 package org.apache.geode.distributed.internal;
 
+import static org.apache.geode.logging.internal.spi.LogWriterLevel.INFO;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -22,9 +24,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.geode.GemFireIOException;
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.MembershipManager;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.PureLogWriter;
 
@@ -39,6 +40,7 @@ import org.apache.geode.internal.logging.PureLogWriter;
  * @since GemFire 2013
  */
 public class ProductUseLog implements MembershipListener {
+  @MutableForTesting
   protected static long MAX_PRODUCT_USE_FILE_SIZE = Long.getLong("max_view_log_size", 5000000);
   private final int logLevel;
   private final File productUseLogFile;
@@ -54,8 +56,8 @@ public class ProductUseLog implements MembershipListener {
 
   public ProductUseLog(File productUseLogFile) {
     // GEODE-4180, use absolute paths
-    this.productUseLogFile = new File(productUseLogFile.getAbsolutePath());
-    this.logLevel = InternalLogWriter.INFO_LEVEL;
+    this.productUseLogFile = productUseLogFile.getAbsoluteFile();
+    this.logLevel = INFO.intLevel();
     createLogWriter();
   }
 
@@ -66,10 +68,10 @@ public class ProductUseLog implements MembershipListener {
     this.system = system;
     DistributionManager dmgr = system.getDistributionManager();
     dmgr.addMembershipListener(this);
-    MembershipManager mmgr = dmgr.getMembershipManager();
+    Distribution mmgr = dmgr.getDistribution();
     if (mmgr != null) {
       log("Log opened with new distributed system connection.  "
-          + system.getDM().getMembershipManager().getView());
+          + system.getDM().getDistribution().getView());
     } else { // membership manager not initialized?
       log("Log opened with new distributed system connection.  Membership view not yet available in this VM.");
     }
@@ -119,8 +121,8 @@ public class ProductUseLog implements MembershipListener {
     try {
       fos = new FileOutputStream(productUseLogFile, true);
     } catch (FileNotFoundException ex) {
-      String s = LocalizedStrings.InternalDistributedSystem_COULD_NOT_OPEN_LOG_FILE_0
-          .toLocalizedString(productUseLogFile.getAbsolutePath());
+      String s = String.format("Could not open log file %s.",
+          productUseLogFile.getAbsolutePath());
       throw new GemFireIOException(s, ex);
     }
     PrintStream out = new PrintStream(fos);
@@ -129,7 +131,7 @@ public class ProductUseLog implements MembershipListener {
 
   @Override
   public void memberJoined(DistributionManager distributionManager, InternalDistributedMember id) {
-    log("A new member joined: " + id + ".  " + system.getDM().getMembershipManager().getView());
+    log("A new member joined: " + id + ".  " + system.getDM().getDistribution().getView());
   }
 
   @Override

@@ -14,7 +14,10 @@
  */
 package com.company.data;
 
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.CacheLoader;
+import org.apache.geode.cache.CacheLoaderException;
+import org.apache.geode.cache.Declarable;
+import org.apache.geode.cache.LoaderHelper;
 
 /**
  * A <code>CacheLoader</code> that is <code>Declarable</code>
@@ -23,15 +26,18 @@ import org.apache.geode.cache.*;
  */
 public class DatabaseLoader implements CacheLoader, Declarable {
 
+  @Override
   public Object load(LoaderHelper helper) throws CacheLoaderException {
 
     throw new UnsupportedOperationException("I do NOTHING");
   }
 
+  @Override
   public void init(java.util.Properties props) {
 
   }
 
+  @Override
   public void close() {
 
   }

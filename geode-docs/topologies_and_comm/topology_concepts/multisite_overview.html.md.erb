@@ -21,11 +21,11 @@ limitations under the License.
 <a id="topic_70045702D3994BC692E75102CE01BD7C"></a>
 
 
-A multi-site installation consists of two or more distributed systems that are loosely coupled. Each site manages its own distributed system, but region data is distributed to remote sites using one or more logical connections.
+A multi-site installation consists of two or more loosely-coupled clusters. Each site manages its own cluster, but region data is distributed to remote sites using one or more logical connections.
 
 The logical connections consist of a gateway sender in the sending site, and a gateway receiver in the receiving site. In a client/server installation, gateway senders and gateway receivers are configured in the server layer.
 
-Gateway senders and receivers are defined at startup in the distributed system member caches. A site can use *serial* and/or *parallel* gateway sender configurations, as described in [Gateway Senders](multisite_overview.html#topic_9AA37B43642D4DE19072CA3367C849BA).
+Gateway senders and receivers are defined at startup in the member caches. A site can use *serial* and/or *parallel* gateway sender configurations, as described in [Gateway Senders](multisite_overview.html#topic_9AA37B43642D4DE19072CA3367C849BA).
 
 <img src="../../images/consistent_multisite.png" id="topic_70045702D3994BC692E75102CE01BD7C__image_BCD6320F34A645A7911AA25EDEA6D971" class="image" />
 
@@ -83,7 +83,7 @@ See [Configuring Multi-Site (WAN) Event Queues](../../developing/events/configur
 
 ## <a id="topic_9AA37B43642D4DE19072CA3367C849BA__section_70A4D850A5404429AD5CB483D2053F1A" class="no-quick-link"></a>High Availability for Gateway Senders
 
-When a serial gateway sender configuration is deployed to multiple Geode members, only one "primary" sender is active at a given time. All other serial gateway sender instances are inactive "secondaries" that are available as backups if the primary sender shuts down. Geode designates the first gateway sender to start up as the primary sender, and all other senders become secondaries. As gateway senders start and shut down in the distributed system, Geode ensures that the oldest running gateway sender operates as the primary.
+When a serial gateway sender configuration is deployed to multiple Geode members, only one "primary" sender is active at a given time. All other serial gateway sender instances are inactive "secondaries" that are available as backups if the primary sender shuts down. Geode designates the first gateway sender to start up as the primary sender, and all other senders become secondaries. As gateway senders start and shut down, Geode ensures that the oldest running gateway sender operates as the primary.
 
 A parallel gateway sender is deployed to multiple Geode members by default, and each member that hosts primary buckets for a partitioned region actively distributes data to the remote Geode site. When you use parallel gateway senders, high availability for WAN distribution is provided if you configure the partitioned region for redundancy. With a redundant partitioned region, if a member that hosts primary buckets fails or is shut down, then a Geode member that hosts a redundant copy of those buckets takes over WAN distribution for those buckets.
 

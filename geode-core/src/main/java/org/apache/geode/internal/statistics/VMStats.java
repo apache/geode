@@ -14,12 +14,18 @@
  */
 package org.apache.geode.internal.statistics;
 
-import org.apache.geode.*;
+import org.apache.geode.StatisticDescriptor;
+import org.apache.geode.Statistics;
+import org.apache.geode.StatisticsFactory;
+import org.apache.geode.StatisticsType;
+import org.apache.geode.StatisticsTypeFactory;
+import org.apache.geode.annotations.Immutable;
 
 /**
  * Statistics related to a Java VM. Currently they all come from {@link java.lang.Runtime}.
  */
 public class VMStats implements VMStatsContract {
+  @Immutable
   private static final StatisticsType vmType;
   private static final int cpusId;
   private static final int freeMemoryId;
@@ -32,7 +38,7 @@ public class VMStats implements VMStatsContract {
             f.createIntGauge("cpus", "Number of cpus available to the java VM on its machine.",
                 "cpus", true),
             f.createLongGauge("freeMemory",
-                "An approximation fo the total amount of memory currently available for future allocated objects, measured in bytes.",
+                "An approximation of the total amount of memory currently available for future allocated objects, measured in bytes.",
                 "bytes", true),
             f.createLongGauge("totalMemory",
                 "The total amount of memory currently available for current and future objects, measured in bytes.",
@@ -53,6 +59,7 @@ public class VMStats implements VMStatsContract {
     this.vmStats = f.createStatistics(vmType, "vmStats", id);
   }
 
+  @Override
   public void refresh() {
     Runtime rt = Runtime.getRuntime();
     this.vmStats.setInt(cpusId, rt.availableProcessors());
@@ -62,6 +69,7 @@ public class VMStats implements VMStatsContract {
 
   }
 
+  @Override
   public void close() {
     this.vmStats.close();
   }

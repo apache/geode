@@ -1,5 +1,5 @@
 ---
-title:  GET /gemfire-api/v1/{region}/keys
+title:  GET /geode/v1/{region}/keys
 ---
 
 <!--
@@ -24,7 +24,7 @@ List all keys for the specified region.
 ## Resource URL
 
 ``` pre
-http://<hostname_or_http-service-bind-address>:<http-service-port>/gemfire-api/v1/{region}/{keys}
+http://<hostname_or_http-service-bind-address>:<http-service-port>/geode/v1/{region}/{keys}
 ```
 
 ## Parameters
@@ -34,7 +34,7 @@ None.
 ## Example Request
 
 ``` pre
-GET /gemfire-api/v1/orders/keys
+GET /geode/v1/orders/keys
 ```
 
 ## Example Success Response
@@ -44,7 +44,7 @@ Response Payload: application/json
 
 200 OK
 Server: Apache-Coyote/1.1
-Location: http://localhost:8080/gemfire-api/v1/orders/keys
+Location: http://localhost:8080/geode/v1/orders/keys
 Content-Type: application/json
 Transfer-Encoding: chunked
 Date: Sat, 18 Jan 2014 21:20:05 GMT

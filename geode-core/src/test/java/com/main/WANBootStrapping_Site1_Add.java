@@ -26,8 +26,8 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.wan.GatewaySender;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.ExitCode;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * This is a member representing site 1 who wants to send data to site 2
@@ -57,7 +57,7 @@ public class WANBootStrapping_Site1_Add {
 
   public static void main(String[] args) {
 
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "DistributedSystemListener",
+    System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "DistributedSystemListener",
         "com.main.MyDistributedSystemListener");
 
     // Create a locator and a cache

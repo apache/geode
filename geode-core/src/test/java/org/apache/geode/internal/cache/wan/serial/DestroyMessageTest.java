@@ -14,18 +14,17 @@
  */
 package org.apache.geode.internal.cache.wan.serial;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.InternalCacheEvent;
 import org.apache.geode.internal.cache.wan.serial.BatchDestroyOperation.DestroyMessage;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class DestroyMessageTest {
 
   @Test

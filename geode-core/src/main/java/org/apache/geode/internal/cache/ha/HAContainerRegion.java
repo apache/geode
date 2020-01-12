@@ -15,8 +15,6 @@
 package org.apache.geode.internal.cache.ha;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -44,6 +42,7 @@ public class HAContainerRegion implements HAContainerWrapper {
     haRegionNameToProxy = new ConcurrentHashMap<String, CacheClientProxy>();
   }
 
+  @Override
   public ClientProxyMembershipID getProxyID(String haRegionName) {
     CacheClientProxy proxy = haRegionNameToProxy.get(haRegionName);
     if (proxy != null) {
@@ -58,18 +57,22 @@ public class HAContainerRegion implements HAContainerWrapper {
     return region;
   }
 
+  @Override
   public Object putProxy(String haName, CacheClientProxy proxy) {
     return haRegionNameToProxy.put(haName, proxy);
   }
 
+  @Override
   public CacheClientProxy getProxy(String haName) {
     return haRegionNameToProxy.get(haName);
   }
 
+  @Override
   public Object removeProxy(String haName) {
     return haRegionNameToProxy.remove(haName);
   }
 
+  @Override
   public Object getKey(Object key) {
     Map.Entry entry = ((Region) map).getEntry(key);
     if (entry != null) {
@@ -84,10 +87,12 @@ public class HAContainerRegion implements HAContainerWrapper {
     return null;
   }
 
+  @Override
   public String getName() {
     return ((Region) map).getName();
   }
 
+  @Override
   public void cleanUp() {
     try {
       ((Region) map).destroyRegion();
@@ -98,22 +103,27 @@ public class HAContainerRegion implements HAContainerWrapper {
     }
   }
 
+  @Override
   public void clear() {
     map.clear();
   }
 
+  @Override
   public boolean containsKey(Object key) {
     return map.containsKey(key);
   }
 
+  @Override
   public boolean containsValue(Object value) {
     return map.containsValue(value);
   }
 
+  @Override
   public Set entrySet() {
     return map.entrySet();
   }
 
+  @Override
   public Object get(Object key) {
     ClientUpdateMessageImpl msg = (ClientUpdateMessageImpl) map.get(key);
     if (msg != null) {
@@ -125,6 +135,7 @@ public class HAContainerRegion implements HAContainerWrapper {
     return msg;
   }
 
+  @Override
   public Object getEntry(Object key) {
     Region.Entry entry = ((Region) map).getEntry(key);
     if (entry != null) {
@@ -137,35 +148,43 @@ public class HAContainerRegion implements HAContainerWrapper {
     return entry;
   }
 
+  @Override
   public boolean isEmpty() {
     return map.isEmpty();
   }
 
+  @Override
   public Set keySet() {
     return map.keySet();
   }
 
+  @Override
   public Object put(Object key, Object value) {
     return map.put(key, value);
   }
 
+  @Override
   @SuppressWarnings("unchecked")
   public Object putIfAbsent(Object key, Object value) {
     return map.putIfAbsent(key, value);
   }
 
+  @Override
   public void putAll(Map t) {
     map.putAll(t);
   }
 
+  @Override
   public Object remove(Object key) {
     return map.remove(key);
   }
 
+  @Override
   public int size() {
     return map.size();
   }
 
+  @Override
   public Collection values() {
     return map.values();
   }

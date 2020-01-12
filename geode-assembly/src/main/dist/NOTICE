@@ -1,5 +1,5 @@
 Apache Geode
-Copyright 2016-2018 The Apache Software Foundation.
+Copyright 2016-2020 The Apache Software Foundation.
 
 This product includes software developed at
 The Apache Software Foundation (http://www.apache.org/).
@@ -17,6 +17,70 @@ Copyright 2016 AddThis
    Apache Solr (http://lucene.apache.org/solr/)
    Copyright 2014 The Apache Software Foundation
 
+commons-codec
+
+  src/test/org/apache/commons/codec/language/DoubleMetaphoneTest.java
+  contains test data from http://aspell.net/test/orig/batch0.tab.
+  Copyright (C) 2002 Kevin Atkinson (kevina@gnu.org)
+
+commons-math3
+
+  The inverse error function implementation in the Erf class is based on CUDA
+  code developed by Mike Giles, Oxford-Man Institute of Quantitative Finance,
+  and published in GPU Computing Gems, volume 2, 2010.
+  
+  The BracketFinder (package org.apache.commons.math3.optimization.univariate)
+  and PowellOptimizer (package org.apache.commons.math3.optimization.general)
+  classes are based on the Python code in module "optimize.py" (version 0.5)
+  developed by Travis E. Oliphant for the SciPy library (http://www.scipy.org/)
+  Copyright © 2003-2009 SciPy Developers.
+  
+  The LinearConstraint, LinearObjectiveFunction, LinearOptimizer,
+  RelationShip, SimplexSolver and SimplexTableau classes in package
+  org.apache.commons.math3.optimization.linear include software developed by
+  Benjamin McCann (http://www.benmccann.com) and distributed with
+  the following copyright: Copyright 2009 Google Inc.
+  
+  This product includes software developed by the
+  University of Chicago, as Operator of Argonne National
+  Laboratory.
+  The LevenbergMarquardtOptimizer class in package
+  org.apache.commons.math3.optimization.general includes software
+  translated from the lmder, lmpar and qrsolv Fortran routines
+  from the Minpack package
+  Minpack Copyright Notice (1999) University of Chicago.  All rights reserved
+  
+  The GraggBulirschStoerIntegrator class in package
+  org.apache.commons.math3.ode.nonstiff includes software translated
+  from the odex Fortran routine developed by E. Hairer and G. Wanner.
+  Original source copyright:
+  Copyright (c) 2004, Ernst Hairer
+  
+  The EigenDecompositionImpl class in package
+  org.apache.commons.math3.linear includes software translated
+  from some LAPACK Fortran routines.  Original source copyright:
+  Copyright (c) 1992-2008 The University of Tennessee.  All rights reserved.
+  
+  The MersenneTwister class in package org.apache.commons.math3.random
+  includes software translated from the 2002-01-26 version of
+  the Mersenne-Twister generator written in C by Makoto Matsumoto and Takuji
+  Nishimura. Original source copyright:
+  Copyright (C) 1997 - 2002, Makoto Matsumoto and Takuji Nishimura,
+  All rights reserved
+  
+  The LocalizedFormatsTest class in the unit tests is an adapted version of
+  the OrekitMessagesTest class from the orekit library distributed under the
+  terms of the Apache 2 licence. Original source copyright:
+  Copyright 2010 CS Systèmes d'Information
+  
+  The HermiteInterpolator class and its corresponding test have been imported from
+  the orekit library distributed under the terms of the Apache 2 licence. Original
+  source copyright:
+  Copyright 2010-2012 CS Systèmes d'Information
+  
+  The creation of the package "o.a.c.m.analysis.integration.gauss" was inspired
+  by an original code donated by Sébastien Brisard.
+
 This product includes software developed by the MX4J
 project (http://mx4j.sourceforge.net).
 
@@ -26,7 +90,7 @@ Java ClassMate library was originally written by Tatu Saloranta (tatu.saloranta@
   
   * Brian Langel
 
-Jackson Core 2.9.4
+Jackson Core
 
   # Jackson JSON processor
 
@@ -119,8 +183,8 @@ Apache Lucene
 Servlet-api.jar and javax.servlet-*.jar are under the CDDL license, the original
 source code for this can be found at http://www.eclipse.org/jetty/downloads.php
 
-Spring Framework 4.3.14.RELEASE
-Copyright (c) 2002-2017 Pivotal, Inc.
+Spring Framework
+Copyright (c) 2002-2018 Pivotal, Inc.
 
   This product is licensed to you under the Apache License, Version 2.0
   (the "License"). You may not use this product except in compliance with
@@ -131,7 +195,7 @@ Copyright (c) 2002-2017 Pivotal, Inc.
   these subcomponents is subject to the terms and conditions of the
   subcomponent's license, as noted in the license.txt file.
 
-Spring Hateoas 0.24.0.RELEASE
+Spring Hateoas 
 Copyright (c) [2012-2017] Pivotal Software, Inc.
 
   This product is licensed to you under the Apache License, Version 2.0 (the "License").  
@@ -142,12 +206,12 @@ Copyright (c) [2012-2017] Pivotal Software, Inc.
   code for the these subcomponents is subject to the terms and
   conditions of the subcomponent's license, as noted in the LICENSE file.
 
-Spring LDAP Core 2.3.2.RELEASE
+Spring LDAP Core 
 
    This product includes software developed by the Spring LDAP
    Project (http://www.springframework.org/ldap).
 
-Spring Shell 1.2.0.RELEASE
+Spring Shell
 
    This product includes software developed by the Spring Framework
    Project (http://www.springframework.org).

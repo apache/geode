@@ -14,7 +14,10 @@
  */
 package org.apache.geode.distributed.internal;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.DataInput;
 import java.io.DataOutputStream;
@@ -30,16 +33,15 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.ByteArrayData;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
-import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.test.junit.categories.MembershipTest;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Tests {@link StartupMessageData}.
  *
  * @since GemFire 7.0
  */
-@Category({UnitTest.class, MembershipTest.class})
+@Category({MembershipTest.class})
 public class StartupMessageDataJUnitTest {
 
   @Test
@@ -252,7 +254,7 @@ public class StartupMessageDataJUnitTest {
 
   private String createOneLocatorString() throws Exception {
     DistributionLocatorId locatorId =
-        new DistributionLocatorId(SocketCreator.getLocalHost(), 44556, "111.222.333.444", null);
+        new DistributionLocatorId(LocalHostUtil.getLocalHost(), 44556, "111.222.333.444", null);
     String locatorString = locatorId.marshal();
     assertEquals("" + locatorId.getHost().getAddress().getHostAddress() + ":111.222.333.444[44556]",
         locatorString);
@@ -265,7 +267,7 @@ public class StartupMessageDataJUnitTest {
       int j = i + 1;
       int k = j + 1;
       int l = k + 1;
-      DistributionLocatorId locatorId = new DistributionLocatorId(SocketCreator.getLocalHost(),
+      DistributionLocatorId locatorId = new DistributionLocatorId(LocalHostUtil.getLocalHost(),
           445566, "" + i + "" + i + "" + i + "." + j + "" + j + "" + j + "." + k + "" + k + "" + k
               + "." + l + "" + l + "" + l,
           null);

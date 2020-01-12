@@ -47,7 +47,6 @@ public interface AsyncEventQueueFactory {
   /**
    * Sets the disk store name for overflow or persistence.
    *
-   * @param name
    */
   AsyncEventQueueFactory setDiskStoreName(String name);
 
@@ -110,7 +109,6 @@ public interface AsyncEventQueueFactory {
   /**
    * Sets the number of dispatcher thread. Default is 5.
    *
-   * @param numThreads
    */
   AsyncEventQueueFactory setDispatcherThreads(int numThreads);
 
@@ -126,14 +124,12 @@ public interface AsyncEventQueueFactory {
    * Removes the provided <code>GatewayEventFilter</code> from the attributes of AsyncEventQueue
    * being created by factory.
    *
-   * @param filter
    */
   AsyncEventQueueFactory removeGatewayEventFilter(GatewayEventFilter filter);
 
   /**
    * Sets the order policy for multiple dispatchers. Default is KEY.
    *
-   * @param policy
    */
   AsyncEventQueueFactory setOrderPolicy(OrderPolicy policy);
 
@@ -154,6 +150,12 @@ public interface AsyncEventQueueFactory {
   AsyncEventQueueFactory setForwardExpirationDestroy(boolean forward);
 
   /**
+   * Pauses the dispatching of the queued events to the listener.
+   *
+   */
+  AsyncEventQueueFactory pauseEventDispatching();
+
+  /**
    * Creates the <code>AsyncEventQueue</code>. It accepts Id of AsyncEventQueue and instance of
    * AsyncEventListener. Multiple queues can be created using Same listener instance. So, the
    * instance of <code>AsyncEventListener</code> should be thread safe in that case. The
@@ -166,4 +168,6 @@ public interface AsyncEventQueueFactory {
    *        to use this queue.
    */
   AsyncEventQueue create(String id, AsyncEventListener listener);
+
+
 }

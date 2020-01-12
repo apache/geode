@@ -16,9 +16,8 @@ package org.apache.geode.management.internal.beans;
 
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.internal.cache.CacheServerImpl;
-import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
+import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
-import org.apache.geode.management.internal.ManagementStrings;
 import org.apache.geode.management.internal.beans.stats.MBeanStatsMonitor;
 import org.apache.geode.management.internal.beans.stats.StatType;
 import org.apache.geode.management.internal.beans.stats.StatsAverageLatency;
@@ -37,18 +36,18 @@ public class ServerBridge {
 
   protected StatsAverageLatency putRequestAvgLatency;
 
-  protected AcceptorImpl acceptor;
+  protected Acceptor acceptor;
 
   public ServerBridge(final CacheServer cacheServer) {
     this((CacheServerImpl) cacheServer,
-        new MBeanStatsMonitor(ManagementStrings.SERVER_MONITOR.toLocalizedString()));
+        new MBeanStatsMonitor("ServerMXBeanMonitor"));
   }
 
   public ServerBridge(final CacheServerImpl cacheServer, final MBeanStatsMonitor monitor) {
     this(cacheServer.getAcceptor(), monitor);
   }
 
-  public ServerBridge(final AcceptorImpl acceptor, final MBeanStatsMonitor monitor) {
+  public ServerBridge(final Acceptor acceptor, final MBeanStatsMonitor monitor) {
     this.monitor = monitor;
     this.acceptor = acceptor;
     initializeStats();
@@ -97,7 +96,7 @@ public class ServerBridge {
   }
 
   public ServerBridge() {
-    this.monitor = new MBeanStatsMonitor(ManagementStrings.SERVER_MONITOR.toLocalizedString());
+    this.monitor = new MBeanStatsMonitor("ServerMXBeanMonitor");
 
     initializeStats();
   }

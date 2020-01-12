@@ -16,15 +16,27 @@ package org.apache.geode.internal.cache.tx;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.anyLong;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.RegionDestroyedException;
+import org.apache.geode.cache.TransactionException;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -37,12 +49,9 @@ import org.apache.geode.internal.cache.RemoteOperationException;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXStateProxy;
 import org.apache.geode.internal.cache.TXStateProxyImpl;
-import org.apache.geode.internal.cache.tx.RemoteOperationMessage;
 import org.apache.geode.test.fake.Fakes;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 
-@Category(UnitTest.class)
 public class RemoteOperationMessageTest {
 
   private TestableRemoteOperationMessage msg; // the class under test
@@ -113,6 +122,23 @@ public class RemoteOperationMessageTest {
     verify(msg, times(0)).operateOnRegion(dm, r, startTime);
     // A reply is sent even though we do not call operationOnRegion
     verify(dm, times(1)).putOutgoing(any());
+  }
+
+  @Test
+  public void messageForFinishedTXRepliesWithException() throws Exception {
+    when(txMgr.masqueradeAs(msg)).thenReturn(tx);
+    when(tx.isInProgress()).thenReturn(false);
+    msg.setSender(sender);
+
+    msg.process(dm);
+
+    verify(msg, times(1)).sendReply(
+        eq(sender),
+        eq(0),
+        eq(dm),
+        argThat(ex -> ex != null && ex.getCause() instanceof TransactionException),
+        eq(r),
+        eq(startTime));
   }
 
   @Test

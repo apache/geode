@@ -31,7 +31,6 @@ public class UnsafeThreadLocal<T> extends ThreadLocal<T> {
    *
    * Unlike get(), this method does not set the initial value if none is found
    *
-   * @throws SecurityException
    */
   public T get(Thread thread) {
     return (T) get(this, thread);

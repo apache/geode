@@ -28,11 +28,10 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheRuntimeException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.server.CacheServer;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.admin.CacheInfo;
 import org.apache.geode.internal.admin.StatResource;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * This class is an implementation of the {@link CacheInfo} interface.
@@ -50,7 +49,7 @@ public class RemoteCacheInfo implements CacheInfo, DataSerializable {
   private String[] rootRegionNames;
   private RemoteStatResource perfStats;
 
-  /** The ids of the bridge servers associated with this cache */
+  /** The ids of the cache servers associated with this cache */
   private int[] bridgeServerIds;
 
   /** Is this is a cache server? */
@@ -63,7 +62,7 @@ public class RemoteCacheInfo implements CacheInfo, DataSerializable {
     this.lockTimeout = internalCache.getLockTimeout();
     this.lockLease = internalCache.getLockLease();
     this.searchTimeout = internalCache.getSearchTimeout();
-    this.upTime = internalCache.getUpTime();
+    this.upTime = (int) internalCache.getUpTime();
     if (this.closed) {
       this.rootRegionNames = null;
       this.perfStats = null;
@@ -72,7 +71,7 @@ public class RemoteCacheInfo implements CacheInfo, DataSerializable {
     } else {
       try {
         final Set roots;
-        if (!Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "PRDebug")) {
+        if (!Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "PRDebug")) {
           roots = internalCache.rootRegions();
         } else {
           roots = internalCache.rootRegions(true);
@@ -218,7 +217,7 @@ public class RemoteCacheInfo implements CacheInfo, DataSerializable {
 
   @Override
   public String toString() {
-    return LocalizedStrings.RemoteCacheInfo_INFORMATION_ABOUT_THE_CACHE_0_WITH_1_BRIDGE_SERVERS
-        .toLocalizedString(this.name, this.bridgeServerIds.length);
+    return String.format("Information about the cache %s with %s cache servers",
+        this.name, this.bridgeServerIds.length);
   }
 }

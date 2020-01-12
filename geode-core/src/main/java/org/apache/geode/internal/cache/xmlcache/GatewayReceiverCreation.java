@@ -15,7 +15,6 @@
 package org.apache.geode.internal.cache.xmlcache;
 
 import java.io.IOException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,10 +24,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
-import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class GatewayReceiverCreation implements GatewayReceiver {
   private static final Logger logger = LogService.getLogger();
@@ -57,7 +53,13 @@ public class GatewayReceiverCreation implements GatewayReceiver {
 
   private CacheServer receiver;
 
-  @SuppressWarnings("deprecation")
+  public GatewayReceiverCreation(Cache cache, GatewayReceiver gatewayReceiver) {
+    this(cache, gatewayReceiver.getStartPort(), gatewayReceiver.getEndPort(),
+        gatewayReceiver.getMaximumTimeBetweenPings(), gatewayReceiver.getSocketBufferSize(),
+        gatewayReceiver.getBindAddress(), gatewayReceiver.getGatewayTransportFilters(),
+        gatewayReceiver.getHostnameForSenders(), gatewayReceiver.isManualStart());
+  }
+
   public GatewayReceiverCreation(Cache cache, int startPort, int endPort, int timeBetPings,
       int buffSize, String bindAdd, List<GatewayTransportFilter> filters, String hostnameForSenders,
       boolean manualStart) {
@@ -73,14 +75,17 @@ public class GatewayReceiverCreation implements GatewayReceiver {
     this.manualStart = manualStart;
   }
 
+  @Override
   public List<GatewayTransportFilter> getGatewayTransportFilters() {
     return this.transFilter;
   }
 
+  @Override
   public int getMaximumTimeBetweenPings() {
     return this.maxTimeBetweenPings;
   }
 
+  @Override
   public int getPort() {
     return this.startPort;
   }
@@ -89,6 +94,7 @@ public class GatewayReceiverCreation implements GatewayReceiver {
     return this.portRange;
   }
 
+  @Override
   public int getSocketBufferSize() {
     return this.socketBufferSize;
   }
@@ -109,14 +115,17 @@ public class GatewayReceiverCreation implements GatewayReceiver {
     this.socketBufferSize = socketBufferSize;
   }
 
+  @Override
   public String getHostnameForSenders() {
     return this.hostnameForSenders;
   }
 
+  @Override
   public String getHost() {
     throw new IllegalStateException("getHost should not be invoked on GatewayReceiverCreation");
   }
 
+  @Override
   public String getBindAddress() {
     return this.bindAddress;
   }
@@ -125,22 +134,26 @@ public class GatewayReceiverCreation implements GatewayReceiver {
     this.bindAddress = address;
   }
 
+  @Override
   public void start() throws IOException {
     if (receiver == null) {
-      // add a cache server and set its port to random port. See defect 45630 for more details.
-      receiver = ((CacheCreation) this.cache).addCacheServer(true);
+      // add a cache server and set its port to random port
+      receiver = cache.addCacheServer();
       receiver.setPort(endPort + 1);
     }
   }
 
+  @Override
   public void stop() {
 
   }
 
+  @Override
   public void destroy() {
 
   }
 
+  @Override
   public boolean isRunning() {
     return false;
   }
@@ -154,6 +167,7 @@ public class GatewayReceiverCreation implements GatewayReceiver {
    *
    * @see org.apache.geode.cache.wan.GatewayReceiver#getStartPort()
    */
+  @Override
   public int getStartPort() {
     return this.startPort;
   }
@@ -163,10 +177,12 @@ public class GatewayReceiverCreation implements GatewayReceiver {
    *
    * @see org.apache.geode.cache.wan.GatewayReceiver#getEndPort()
    */
+  @Override
   public int getEndPort() {
     return this.endPort;
   }
 
+  @Override
   public boolean isManualStart() {
     return this.manualStart;
   }

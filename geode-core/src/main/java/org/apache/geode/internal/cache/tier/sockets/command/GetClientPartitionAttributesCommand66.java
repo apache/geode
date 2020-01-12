@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 import java.io.IOException;
 import java.util.Set;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.FixedPartitionAttributes;
 import org.apache.geode.cache.PartitionResolver;
@@ -29,8 +30,6 @@ import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.SecurityService;
 
 /**
@@ -40,6 +39,7 @@ import org.apache.geode.internal.security.SecurityService;
  */
 public class GetClientPartitionAttributesCommand66 extends BaseCommand {
 
+  @Immutable
   private static final GetClientPartitionAttributesCommand66 singleton =
       new GetClientPartitionAttributesCommand66();
 
@@ -55,13 +55,11 @@ public class GetClientPartitionAttributesCommand66 extends BaseCommand {
       final SecurityService securityService, long start)
       throws IOException, ClassNotFoundException, InterruptedException {
     String regionFullPath = null;
-    regionFullPath = clientMessage.getPart(0).getString();
+    regionFullPath = clientMessage.getPart(0).getCachedString();
     String errMessage = "";
     if (regionFullPath == null) {
-      logger.warn(LocalizedMessage
-          .create(LocalizedStrings.GetClientPartitionAttributes_THE_INPUT_REGION_PATH_IS_NULL));
-      errMessage = LocalizedStrings.GetClientPartitionAttributes_THE_INPUT_REGION_PATH_IS_NULL
-          .toLocalizedString();
+      logger.warn("The input region path for the GetClientPartitionAttributes request is null");
+      errMessage = "The input region path for the GetClientPartitionAttributes request is null";
       writeErrorResponse(clientMessage, MessageType.GET_CLIENT_PARTITION_ATTRIBUTES_ERROR,
           errMessage.toString(), serverConnection);
       serverConnection.setAsTrue(RESPONDED);
@@ -69,11 +67,11 @@ public class GetClientPartitionAttributesCommand66 extends BaseCommand {
     }
     Region region = serverConnection.getCache().getRegion(regionFullPath);
     if (region == null) {
-      logger.warn(LocalizedMessage.create(
-          LocalizedStrings.GetClientPartitionAttributes_REGION_NOT_FOUND_FOR_SPECIFIED_REGION_PATH,
-          regionFullPath));
+      logger.warn(
+          "Region was not found during GetClientPartitionAttributes request for region path : %s",
+          regionFullPath);
       errMessage =
-          LocalizedStrings.GetClientPartitionAttributes_REGION_NOT_FOUND.toLocalizedString()
+          "Region was not found during GetClientPartitionAttributes request for region path : "
               + regionFullPath;
       writeErrorResponse(clientMessage, MessageType.GET_CLIENT_PARTITION_ATTRIBUTES_ERROR,
           errMessage.toString(), serverConnection);

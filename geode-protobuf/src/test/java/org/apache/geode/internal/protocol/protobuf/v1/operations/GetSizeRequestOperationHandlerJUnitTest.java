@@ -15,6 +15,7 @@
 package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
 import static org.apache.geode.internal.protocol.TestExecutionContext.getNoAuthCacheExecutionContext;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -23,26 +24,30 @@ import java.util.HashSet;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.ExpectedException;
 
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
-import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
-import org.apache.geode.internal.protocol.protobuf.v1.Failure;
+import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageUtil;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
-import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 
-@Category(UnitTest.class)
+@Category({ClientServerTest.class})
 public class GetSizeRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTest {
   private final String TEST_REGION1 = "test region 1";
   private Region region1Stub;
+
+  @Rule
+  public ExpectedException expectedException = ExpectedException.none();
 
   @Before
   public void setUp() {
@@ -74,15 +79,14 @@ public class GetSizeRequestOperationHandlerJUnitTest extends OperationHandlerJUn
 
   @Test
   public void processReturnsNoCacheRegions() throws Exception {
-    InternalCache emptyCache = mock(InternalCache.class);
+    InternalCache emptyCache = mock(InternalCacheForClientAccess.class);
+    doReturn(emptyCache).when(emptyCache).getCacheForProcessingClientRequests();
     when(emptyCache.rootRegions())
         .thenReturn(Collections.unmodifiableSet(new HashSet<Region<String, String>>()));
     String unknownRegionName = "UNKNOWN_REGION";
-    Result result = operationHandler.process(serializationService,
+    expectedException.expect(RegionDestroyedException.class);
+    operationHandler.process(serializationService,
         MessageUtil.makeGetSizeRequest(unknownRegionName),
         getNoAuthCacheExecutionContext(emptyCache));
-    Assert.assertTrue(result instanceof Failure);
-    ClientProtocol.ErrorResponse errorMessage = result.getErrorMessage();
-    Assert.assertEquals(BasicTypes.ErrorCode.SERVER_ERROR, errorMessage.getError().getErrorCode());
   }
 }

@@ -18,7 +18,7 @@ package org.apache.geode.cache.lucene.internal.cli.functions;
 import static org.apache.geode.cache.lucene.internal.CreateLuceneCommandParametersValidator.validateLuceneIndexName;
 import static org.apache.geode.cache.lucene.internal.CreateLuceneCommandParametersValidator.validateRegionName;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 
@@ -37,9 +37,10 @@ import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.management.internal.cli.CliUtil;
-import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
+import org.apache.geode.management.internal.functions.CliFunctionResult;
+import org.apache.geode.management.internal.i18n.CliStrings;
+import org.apache.geode.management.internal.util.ManagementUtils;
 
 
 /**
@@ -58,10 +59,12 @@ public class LuceneCreateIndexFunction implements InternalFunction {
 
   private static final long serialVersionUID = 3061443846664615818L;
 
+  @Override
   public String getId() {
     return LuceneCreateIndexFunction.class.getName();
   }
 
+  @Override
   public void execute(final FunctionContext context) {
     String memberId = null;
     try {
@@ -103,7 +106,7 @@ public class LuceneCreateIndexFunction implements InternalFunction {
       if (LuceneServiceImpl.LUCENE_REINDEX) {
         indexFactory.create(indexName, regionPath, true);
         if (cache.getRegion(regionPath) != null) {
-          xmlEntity = getXmlEntity(indexName, regionPath);
+          xmlEntity = getXmlEntity(regionPath);
         }
       } else {
         indexFactory.create(indexName, regionPath, false);
@@ -117,7 +120,7 @@ public class LuceneCreateIndexFunction implements InternalFunction {
     }
   }
 
-  protected XmlEntity getXmlEntity(String indexName, String regionPath) {
+  protected XmlEntity getXmlEntity(String regionPath) {
     String regionName = StringUtils.stripStart(regionPath, "/");
     return new XmlEntity(CacheXml.REGION, "name", regionName);
   }
@@ -129,7 +132,7 @@ public class LuceneCreateIndexFunction implements InternalFunction {
       return null;
     }
     Class<? extends LuceneSerializer> clazz =
-        CliUtil.forName(serializerName, LuceneCliStrings.LUCENE_CREATE_INDEX__SERIALIZER);
+        ManagementUtils.forName(serializerName, LuceneCliStrings.LUCENE_CREATE_INDEX__SERIALIZER);
     return CliUtil.newInstance(clazz, LuceneCliStrings.LUCENE_CREATE_INDEX__SERIALIZER);
   }
 
@@ -145,7 +148,7 @@ public class LuceneCreateIndexFunction implements InternalFunction {
     }
 
     Class<? extends Analyzer> clazz =
-        CliUtil.forName(className, LuceneCliStrings.LUCENE_CREATE_INDEX__ANALYZER);
+        ManagementUtils.forName(className, LuceneCliStrings.LUCENE_CREATE_INDEX__ANALYZER);
     return CliUtil.newInstance(clazz, LuceneCliStrings.LUCENE_CREATE_INDEX__ANALYZER);
   }
 }

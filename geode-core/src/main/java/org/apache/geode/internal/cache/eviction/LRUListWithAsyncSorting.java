@@ -16,23 +16,21 @@ package org.apache.geode.internal.cache.eviction;
 
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.RegionEntryContext;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.lang.SystemPropertyHelper;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.logging.internal.executors.LoggingExecutors;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * LRUListWithAsyncSorting holds the eviction list, and the behavior for maintaining the list and
@@ -48,9 +46,11 @@ public class LRUListWithAsyncSorting extends AbstractEvictionList {
 
   private static final Logger logger = LogService.getLogger();
 
+  @Immutable
   private static final Optional<Integer> EVICTION_SCAN_MAX_THREADS = SystemPropertyHelper
       .getProductIntegerProperty(SystemPropertyHelper.EVICTION_SCAN_MAX_THREADS);
 
+  @MakeNotStatic
   private static final ExecutorService SINGLETON_EXECUTOR = createExecutor();
 
   private static final int DEFAULT_EVICTION_SCAN_THRESHOLD_PERCENT = 25;
@@ -71,19 +71,7 @@ public class LRUListWithAsyncSorting extends AbstractEvictionList {
     if (threads < 1) {
       threads = Math.max((Runtime.getRuntime().availableProcessors() / 4), 1);
     }
-    final LoggingThreadGroup group =
-        LoggingThreadGroup.createThreadGroup("LRUListWithAsyncSorting Threads", logger);
-    ThreadFactory threadFactory = new ThreadFactory() {
-      private final AtomicInteger threadId = new AtomicInteger();
-
-      public Thread newThread(final Runnable command) {
-        Thread thread = new Thread(group, command,
-            "LRUListWithAsyncSortingThread" + this.threadId.incrementAndGet());
-        thread.setDaemon(true);
-        return thread;
-      }
-    };
-    return Executors.newFixedThreadPool(threads, threadFactory);
+    return LoggingExecutors.newFixedThreadPool("LRUListWithAsyncSortingThread", true, threads);
   }
 
   LRUListWithAsyncSorting(EvictionController controller) {
@@ -131,8 +119,8 @@ public class LRUListWithAsyncSorting extends AbstractEvictionList {
         return null;
       }
 
-      if (logger.isTraceEnabled(LogMarker.LRU_CLOCK)) {
-        logger.trace(LogMarker.LRU_CLOCK, "lru considering {}", evictionNode);
+      if (logger.isTraceEnabled(LogMarker.LRU_CLOCK_VERBOSE)) {
+        logger.trace(LogMarker.LRU_CLOCK_VERBOSE, "lru considering {}", evictionNode);
       }
 
       if (!isEvictable(evictionNode)) {
@@ -146,9 +134,8 @@ public class LRUListWithAsyncSorting extends AbstractEvictionList {
         continue;
       }
 
-      if (logger.isTraceEnabled(LogMarker.LRU_CLOCK)) {
-        logger.trace(LogMarker.LRU_CLOCK, LocalizedMessage
-            .create(LocalizedStrings.NewLRUClockHand_RETURNING_UNUSED_ENTRY, evictionNode));
+      if (logger.isTraceEnabled(LogMarker.LRU_CLOCK_VERBOSE)) {
+        logger.trace(LogMarker.LRU_CLOCK_VERBOSE, "returning unused entry: {}", evictionNode);
       }
       if (evictionNode.isRecentlyUsed()) {
         scanIfNeeded();

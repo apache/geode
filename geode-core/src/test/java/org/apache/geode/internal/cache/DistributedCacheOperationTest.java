@@ -15,6 +15,8 @@
 package org.apache.geode.internal.cache;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -24,14 +26,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.CacheEvent;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.DistributedCacheOperation.CacheOperationMessage;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class DistributedCacheOperationTest {
 
   @Test
@@ -47,5 +47,63 @@ public class DistributedCacheOperationTest {
         persistentIds);
 
     assertThat(mockDistributedCacheOperation.supportsDirectAck()).isFalse();
+  }
+
+  /**
+   * The startOperation and endOperation methods of DistributedCacheOperation record the
+   * beginning and end of distribution of an operation. If startOperation is invoked it
+   * is essential that endOperation be invoked or the state-flush operation will hang.<br>
+   * This test ensures that if distribution of the operation throws an exception then
+   * endOperation is correctly invoked before allowing the exception to escape the startOperation
+   * method.
+   */
+  @Test
+  public void endOperationIsInvokedOnDistributionError() {
+    DistributedRegion region = mock(DistributedRegion.class);
+    CacheDistributionAdvisor advisor = mock(CacheDistributionAdvisor.class);
+    when(region.getDistributionAdvisor()).thenReturn(advisor);
+    TestOperation operation = new TestOperation(null);
+    operation.region = region;
+    try {
+      operation.startOperation();
+    } catch (RuntimeException e) {
+      assertEquals("boom", e.getMessage());
+    }
+    assertTrue(operation.endOperationInvoked);
+  }
+
+  static class TestOperation extends DistributedCacheOperation {
+    boolean endOperationInvoked;
+    DistributedRegion region;
+
+    public TestOperation(CacheEvent event) {
+      super(event);
+    }
+
+    @Override
+    public DistributedRegion getRegion() {
+      return region;
+    }
+
+    @Override
+    public boolean containsRegionContentChange() {
+      return true;
+    }
+
+    @Override
+    public void endOperation(long viewVersion) {
+      endOperationInvoked = true;
+      super.endOperation(viewVersion);
+    }
+
+    @Override
+    protected CacheOperationMessage createMessage() {
+      return null;
+    }
+
+    @Override
+    protected void _distribute() {
+      throw new RuntimeException("boom");
+    }
   }
 }

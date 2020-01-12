@@ -25,8 +25,7 @@ import javax.management.ObjectName;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 
 /**
@@ -83,8 +82,6 @@ public class MBeanProxyInfoRepository {
   /**
    * Finds the proxy instance by {@link javax.management.ObjectName}
    *
-   * @param objectName
-   * @param interfaceClass
    * @return instance of proxy
    */
   protected <T> T findProxyByName(ObjectName objectName, Class<T> interfaceClass) {
@@ -106,7 +103,6 @@ public class MBeanProxyInfoRepository {
   /**
    * Finds the proxy instance by {@link javax.management.ObjectName}
    *
-   * @param objectName
    * @return instance of proxy
    */
   protected ProxyInfo findProxyInfo(ObjectName objectName) {

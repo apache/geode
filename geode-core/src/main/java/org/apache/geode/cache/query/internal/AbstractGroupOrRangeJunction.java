@@ -18,26 +18,32 @@
  */
 package org.apache.geode.cache.query.internal;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 
-import org.apache.geode.cache.query.*;
+import org.apache.geode.cache.query.FunctionDomainException;
+import org.apache.geode.cache.query.NameResolutionException;
+import org.apache.geode.cache.query.QueryInvocationTargetException;
+import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.cache.query.Struct;
+import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 import org.apache.geode.cache.query.internal.types.StructTypeImpl;
 import org.apache.geode.cache.query.types.ObjectType;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.util.internal.GeodeGlossary;
 
-/**
- *
- */
 public abstract class AbstractGroupOrRangeJunction extends AbstractCompiledValue
     implements Filter, OQLLexerTokenTypes {
   /** left operand */
   final CompiledValue[] _operands;
   private static final int INDEX_RESULT_THRESHOLD_DEFAULT = 100;
   public static final String INDX_THRESHOLD_PROP_STR =
-      DistributionConfig.GEMFIRE_PREFIX + "Query.INDEX_THRESHOLD_SIZE";
+      GeodeGlossary.GEMFIRE_PREFIX + "Query.INDEX_THRESHOLD_SIZE";
   private static final int indexThresholdSize =
       Integer.getInteger(INDX_THRESHOLD_PROP_STR, INDEX_RESULT_THRESHOLD_DEFAULT).intValue();
   private int _operator = 0;
@@ -99,11 +105,13 @@ public abstract class AbstractGroupOrRangeJunction extends AbstractCompiledValue
     }
   }
 
+  @Override
   public Object evaluate(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     throw new AssertionError("Should not have come here");
   }
 
+  @Override
   public int getType() {
     return GROUPJUNCTION;
   }
@@ -357,8 +365,7 @@ public abstract class AbstractGroupOrRangeJunction extends AbstractCompiledValue
     // cannot be evaluated as a filter.
     if (intermediateResults == null)
       throw new RuntimeException(
-          LocalizedStrings.AbstractGroupOrRangeJunction_INTERMEDIATERESULTS_CAN_NOT_BE_NULL
-              .toLocalizedString());
+          "intermediateResults can not be null");
     if (intermediateResults.isEmpty()) // short circuit
       return intermediateResults;
     List currentIters = (this.completeExpansion) ? context.getCurrentIterators()
@@ -408,6 +415,7 @@ public abstract class AbstractGroupOrRangeJunction extends AbstractCompiledValue
   }
 
   /* Package methods */
+  @Override
   public int getOperator() {
     return _operator;
   }
@@ -515,8 +523,6 @@ public abstract class AbstractGroupOrRangeJunction extends AbstractCompiledValue
    * @param operator The junction type ( AND or OR ) of the old junction
    * @param indpndntItr Array of RuntimeIterator representing the Independent Iterator for the Group
    *        or Range Junction
-   * @param isCompleteExpansion
-   * @param operands
    * @return Object of type GroupJunction or RangeJunction depending on the type of the invoking
    *         Object
    */
@@ -530,10 +536,6 @@ public abstract class AbstractGroupOrRangeJunction extends AbstractCompiledValue
    *
    * @param context ExecutionContext object
    * @return Object of type OrganizedOperands
-   * @throws FunctionDomainException
-   * @throws TypeMismatchException
-   * @throws NameResolutionException
-   * @throws QueryInvocationTargetException
    */
   abstract OrganizedOperands organizeOperands(ExecutionContext context)
       throws FunctionDomainException, TypeMismatchException, NameResolutionException,

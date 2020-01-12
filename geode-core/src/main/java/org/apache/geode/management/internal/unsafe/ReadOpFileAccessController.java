@@ -21,7 +21,7 @@ import javax.management.MBeanException;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
 
-import com.sun.jmx.remote.security.MBeanServerFileAccessController;
+import org.apache.geode.unsafe.internal.com.sun.jmx.remote.security.MBeanServerFileAccessController;
 
 /**
  * This class extends existing properties file based accessController in order to implement read

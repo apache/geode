@@ -15,17 +15,14 @@
 package org.apache.geode.internal.cache.xmlcache;
 
 import org.junit.Before;
-import org.junit.experimental.categories.Category;
 import org.xml.sax.EntityResolver;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit test for {@link PivotalEntityResolver} and {@link DefaultEntityResolver2}.
  *
  * @since GemFire 8.1
  */
-@Category(UnitTest.class)
 public class PivotalEntityResolverJUnitTest extends AbstractEntityResolverTest {
 
   private EntityResolver entityResolver;

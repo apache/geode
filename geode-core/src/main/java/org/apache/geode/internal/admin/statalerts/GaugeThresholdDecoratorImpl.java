@@ -18,12 +18,13 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import org.apache.geode.DataSerializer;
 import org.apache.geode.StatisticsFactory;
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.admin.StatAlert;
 import org.apache.geode.internal.admin.StatAlertDefinition;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * Implementation of {@link StatAlertDefinition}, represents threshold as data range
@@ -40,9 +41,6 @@ public class GaugeThresholdDecoratorImpl extends BaseDecoratorImpl
 
   public GaugeThresholdDecoratorImpl() {}
 
-  /**
-   * @param definition
-   */
   public GaugeThresholdDecoratorImpl(StatAlertDefinition definition, Number lowerLimit,
       Number upperLimit) {
     super(definition);
@@ -50,6 +48,7 @@ public class GaugeThresholdDecoratorImpl extends BaseDecoratorImpl
     this.upperLimit = upperLimit;
   }
 
+  @Override
   public int getDSFID() {
     return DataSerializableFixedID.STAT_ALERT_DEFN_GAUGE_THRESHOLD;
   }
@@ -125,17 +124,19 @@ public class GaugeThresholdDecoratorImpl extends BaseDecoratorImpl
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     super.toData(out);
-    DataSerializer.writeObject(this.lowerLimit, out);
-    DataSerializer.writeObject(this.upperLimit, out);
+    context.getSerializer().writeObject(this.lowerLimit, out);
+    context.getSerializer().writeObject(this.upperLimit, out);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in);
-    this.lowerLimit = (Number) DataSerializer.readObject(in);
-    this.upperLimit = (Number) DataSerializer.readObject(in);
+    this.lowerLimit = (Number) context.getDeserializer().readObject(in);
+    this.upperLimit = (Number) context.getDeserializer().readObject(in);
   }
 
   public static final String ID = "GaugeThreshold";

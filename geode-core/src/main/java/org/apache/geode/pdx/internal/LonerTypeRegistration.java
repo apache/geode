@@ -15,6 +15,7 @@
 package org.apache.geode.pdx.internal;
 
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.internal.cache.InternalCache;
@@ -33,35 +34,36 @@ public class LonerTypeRegistration implements TypeRegistration {
     this.cache = cache;
   }
 
+  @Override
   public int defineType(PdxType newType) {
     initializeRegistry();
     return delegate.defineType(newType);
   }
 
+  @Override
   public PdxType getType(int typeId) {
     initializeRegistry();
     return delegate.getType(typeId);
   }
 
+  @Override
   public void addRemoteType(int typeId, PdxType type) {
     initializeRegistry();
     delegate.addRemoteType(typeId, type);
   }
 
-  public int getLastAllocatedTypeId() {
-    initializeRegistry();
-    return delegate.getLastAllocatedTypeId();
-  }
-
+  @Override
   public void initialize() {
     // do nothing. This type registry is initialized lazily.
   }
 
+  @Override
   public void gatewaySenderStarted(GatewaySender gatewaySender) {
     initializeRegistry(false);
     delegate.gatewaySenderStarted(gatewaySender);
   }
 
+  @Override
   public void creatingPersistentRegion() {
     if (delegate != null) {
       delegate.creatingPersistentRegion();
@@ -69,6 +71,7 @@ public class LonerTypeRegistration implements TypeRegistration {
 
   }
 
+  @Override
   public void creatingPool() {
     initializeRegistry(true);
     delegate.creatingPool();
@@ -86,15 +89,19 @@ public class LonerTypeRegistration implements TypeRegistration {
     if (delegate != null) {
       return;
     }
-    TypeRegistration delegateTmp;
+    final TypeRegistration delegateTmp = createTypeRegistration(client);
+    delegateTmp.initialize();
+    delegate = delegateTmp;
+  }
 
+  protected TypeRegistration createTypeRegistration(boolean client) {
+    TypeRegistration delegateTmp;
     if (client) {
       delegateTmp = new ClientTypeRegistration(cache);
     } else {
       delegateTmp = new PeerTypeRegistration(cache);
     }
-    delegateTmp.initialize();
-    delegate = delegateTmp;
+    return delegateTmp;
   }
 
   /**
@@ -103,27 +110,31 @@ public class LonerTypeRegistration implements TypeRegistration {
    *
    * @return true if this member is a loner and we can't determine what type of registry they want.
    */
-  public static boolean isIndeterminateLoner(InternalCache cache) {
+  static boolean isIndeterminateLoner(InternalCache cache) {
     boolean isLoner = cache.getInternalDistributedSystem().isLoner();
     boolean pdxConfigured = cache.getPdxPersistent();
     return isLoner && !pdxConfigured/* && !hasGateways */;
   }
 
+  @Override
   public int getEnumId(Enum<?> v) {
     initializeRegistry();
     return this.delegate.getEnumId(v);
   }
 
+  @Override
   public void addRemoteEnum(int enumId, EnumInfo newInfo) {
     initializeRegistry();
     this.delegate.addRemoteEnum(enumId, newInfo);
   }
 
+  @Override
   public int defineEnum(EnumInfo newInfo) {
     initializeRegistry();
     return delegate.defineEnum(newInfo);
   }
 
+  @Override
   public EnumInfo getEnumById(int enumId) {
     initializeRegistry();
     return delegate.getEnumById(enumId);
@@ -143,11 +154,15 @@ public class LonerTypeRegistration implements TypeRegistration {
 
   @Override
   public PdxType getPdxTypeForField(String fieldName, String className) {
+    initializeRegistry();
     return delegate.getPdxTypeForField(fieldName, className);
   }
 
   @Override
-  public void testClearRegistry() {}
+  public Set<PdxType> getPdxTypesForClassName(String className) {
+    initializeRegistry();
+    return delegate.getPdxTypesForClassName(className);
+  }
 
   @Override
   public boolean isClient() {

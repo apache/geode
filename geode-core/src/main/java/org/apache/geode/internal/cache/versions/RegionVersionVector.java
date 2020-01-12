@@ -34,23 +34,23 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
-import org.apache.geode.annotations.TestingOnly;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.persistence.DiskStoreID;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * RegionVersionVector tracks the highest region-level version number of operations applied to a
@@ -63,27 +63,26 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
 
   private static final Logger logger = LogService.getLogger();
 
-  public static boolean DEBUG =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "VersionVector.VERBOSE"); // TODO:LOG:CONVERT:
-                                                                                       // REMOVE
-                                                                                       // THIS
+  // TODO:LOG:CONVERT: REMOVE THIS
+  public static final boolean DEBUG =
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "VersionVector.VERBOSE");
 
 
 
   //////////////////// The following statics exist for unit testing. ////////////////////////////
 
   /** maximum ms wait time while waiting for dominance to be achieved */
-  public static long MAX_DOMINANCE_WAIT_TIME =
-      Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "max-dominance-wait-time", 5000);
+  public static final long MAX_DOMINANCE_WAIT_TIME =
+      Long.getLong(GeodeGlossary.GEMFIRE_PREFIX + "max-dominance-wait-time", 5000);
 
   /** maximum ms pause time while waiting for dominance to be achieved */
-  public static long DOMINANCE_PAUSE_TIME =
-      Math.min(Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "dominance-pause-time", 300),
+  public static final long DOMINANCE_PAUSE_TIME =
+      Math.min(Long.getLong(GeodeGlossary.GEMFIRE_PREFIX + "dominance-pause-time", 300),
           MAX_DOMINANCE_WAIT_TIME);
 
-  private static int INITIAL_CAPACITY = 2;
-  private static int CONCURRENCY_LEVEL = 2;
-  private static float LOAD_FACTOR = 0.75f;
+  private static final int INITIAL_CAPACITY = 2;
+  private static final int CONCURRENCY_LEVEL = 2;
+  private static final float LOAD_FACTOR = 0.75f;
   ////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -191,7 +190,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
     this(ownerId, owner, 0);
   }
 
-  @TestingOnly
+  @VisibleForTesting
   RegionVersionVector(T ownerId, LocalRegion owner, long version) {
     this.myId = ownerId;
     this.isLiveVector = true;
@@ -245,7 +244,14 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
     liveHolders = new HashMap<T, RegionVersionHolder<T>>(this.memberToVersion);
     RegionVersionHolder<T> holder = liveHolders.get(mbr);
     if (holder == null) {
-      holder = new RegionVersionHolder<T>(-1);
+      if (mbr.isDiskStoreId() && mbr.equals(myId)) {
+        // For region recovered from disk, we may have local exceptions needs to be
+        // brought back during region synchronization
+        holder = localExceptions.clone();
+        holder.setVersion(localVersion.get());
+      } else {
+        holder = new RegionVersionHolder<T>(-1);
+      }
     } else {
       holder = holder.clone();
     }
@@ -293,7 +299,6 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
   /**
    * locks against new version generation and returns the current region version number
    *
-   * @param regionPath
    */
   public long lockForClear(String regionPath, DistributionManager dm,
       InternalDistributedMember locker) {
@@ -323,7 +328,6 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
    * This schedules a thread that owns the version-generation write-lock for this vector. The method
    * unlockVersionGeneration notifies the thread to release the lock and terminate its run.
    *
-   * @param regionPath
    * @param dm the distribution manager - used to obtain an executor to hold the thread
    * @param locker the member requesting the lock (currently not used)
    */
@@ -335,7 +339,8 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
           System.identityHashCode(this));
     }
     // this could block for a while if a limit has been set on the waiting-thread-pool
-    dm.getWaitingThreadPool().execute(new Runnable() {
+    dm.getExecutors().getWaitingThreadPool().execute(new Runnable() {
+      @Override
       @edu.umd.cs.findbugs.annotations.SuppressWarnings(
           value = {"UL_UNRELEASED_LOCK", "IMSE_DONT_CATCH_IMSE"})
       public void run() {
@@ -365,8 +370,9 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
               acquiredLock.countDown();
             } catch (IllegalMonitorStateException e) {
               // dlock on the clear() operation should prevent this from happening
-              logger.fatal(LocalizedMessage.create(LocalizedStrings.RVV_LOCKING_CONFUSED,
-                  new Object[] {locker, lockOwner}));
+              logger.fatal(
+                  "Request from {} to block operations found that operations are already blocked by member {}.",
+                  new Object[] {locker, lockOwner});
               return;
             }
 
@@ -652,7 +658,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
       // the replayed event.
       synchronized (localExceptions) {
         if (this.localVersion.get() < tag.getRegionVersion() && region != null
-            && region.isInitialized()) {
+            && region.isInitialized() && region.getDataPolicy().withPersistence()) {
           Assert.fail(
               "recordVersion invoked for a local version tag that is higher than our local version. rvv="
                   + this + ", tag=" + tag + " " + region.getName());
@@ -712,8 +718,8 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
     }
 
     // Update the version holder
-    if (logger.isTraceEnabled(LogMarker.RVV)) {
-      logger.trace(LogMarker.RVV, "Recording rv{} for {}", version, mbr);
+    if (logger.isTraceEnabled(LogMarker.RVV_VERBOSE)) {
+      logger.trace(LogMarker.RVV_VERBOSE, "Recording rv{} for {}", version, mbr);
     }
     holder.recordVersion(version);
   }
@@ -725,7 +731,6 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
    * current version holder if it dominates the version holder we already have. This method will
    * called once for each oplog we recover.
    *
-   * @param latestOplog
    */
   @edu.umd.cs.findbugs.annotations.SuppressWarnings(
       value = "ML_SYNC_ON_FIELD_TO_GUARD_CHANGING_THAT_FIELD",
@@ -743,8 +748,8 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
         // case we want to end up with the last RVV from the latest oplog
         if (latestOplog || localVersion.get() == 0) {
           localExceptions = recovered;
-          if (logger.isTraceEnabled(LogMarker.RVV)) {
-            logger.trace(LogMarker.RVV, "initRecoveredVersion setting local version to {}",
+          if (logger.isTraceEnabled(LogMarker.RVV_VERBOSE)) {
+            logger.trace(LogMarker.RVV_VERBOSE, "initRecoveredVersion setting local version to {}",
                 recovered.version);
           }
           localVersion.set(recovered.version);
@@ -808,6 +813,25 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
    * @return true if this vector has seen the given version
    */
   public boolean contains(T id, long version) {
+    RegionVersionHolder<T> holder = this.memberToVersion.get(id);
+    // For region synchronization.
+    if (isForSynchronization()) {
+      if (holder == null) {
+        // we only care about missing changes from a particular member, and this
+        // vector is known to contain that member's version holder
+        return true;
+      }
+      if (id.equals(this.myId)) {
+        if (!myId.isDiskStoreId()) {
+          // a sync vector only has one holder if not recovered from persistence,
+          // no valid version for the vector's owner
+          return true;
+        }
+      }
+      return holder.contains(version);
+    }
+
+    // Regular GII
     if (id.equals(this.myId)) {
       if (getCurrentVersion() < version) {
         return false;
@@ -815,15 +839,8 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
         return !localExceptions.hasExceptionFor(version);
       }
     }
-    RegionVersionHolder<T> holder = this.memberToVersion.get(id);
     if (holder == null) {
-      if (this.singleMember) {
-        // we only care about missing changes from a particular member, and this
-        // vector is known to contain that member's version holder
-        return true;
-      } else {
-        return false;
-      }
+      return false;
     } else {
       return holder.contains(version);
     }
@@ -871,7 +888,6 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
    * This marks the given entry as departed, making it eligible to be removed during an operation
    * like DistributedRegion.synchronizeWith()
    *
-   * @param id
    */
   protected void markDepartedMember(T id) {
     synchronized (this.memberToVersion) {
@@ -887,7 +903,6 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
    * its Region that have not been removed from the argument's Region. If this is the case, then a
    * delta GII may leave entries in the other RVV's Region that should be deleted.
    *
-   * @param other
    * @return true if there have been tombstone removals in this vector's Region that were not done
    *         in the argument's region
    */
@@ -979,7 +994,8 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
     return false;
   }
 
-  private boolean isGCVersionDominatedByHolder(Long gcVersion, RegionVersionHolder<T> otherHolder) {
+  private boolean isGCVersionDominatedByOtherHolder(Long gcVersion,
+      RegionVersionHolder<T> otherHolder) {
     if (gcVersion == null || gcVersion.longValue() == 0) {
       return true;
     } else {
@@ -989,24 +1005,24 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
   }
 
   /**
-   * Test to see if this vector's rvvgc has updates that has not seen.
+   * See if this vector's rvvgc has updates that has not seen.
    */
-  public synchronized boolean isRVVGCDominatedBy(RegionVersionVector<T> other) {
-    if (other.singleMember) {
+  public synchronized boolean isRVVGCDominatedBy(RegionVersionVector<T> requesterRVV) {
+    if (requesterRVV.singleMember) {
       // do the diff for only a single member. This is typically a member that
       // recently crashed.
       Map.Entry<T, RegionVersionHolder<T>> entry =
-          other.memberToVersion.entrySet().iterator().next();
+          requesterRVV.memberToVersion.entrySet().iterator().next();
 
       Long gcVersion = this.memberToGCVersion.get(entry.getKey());
-      return isGCVersionDominatedByHolder(gcVersion, entry.getValue());
+      return isGCVersionDominatedByOtherHolder(gcVersion, entry.getValue());
     }
 
     boolean isDominatedByRemote = true;
     long localgcversion = this.localGCVersion.get();
     if (localgcversion > 0) {
-      RegionVersionHolder<T> otherHolder = other.memberToVersion.get(this.myId);
-      isDominatedByRemote = isGCVersionDominatedByHolder(localgcversion, otherHolder);
+      RegionVersionHolder<T> otherHolder = requesterRVV.memberToVersion.get(this.myId);
+      isDominatedByRemote = isGCVersionDominatedByOtherHolder(localgcversion, otherHolder);
       if (isDominatedByRemote == false) {
         return false;
       }
@@ -1016,12 +1032,12 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
       T mbr = entry.getKey();
       Long gcVersion = entry.getValue();
       RegionVersionHolder<T> otherHolder = null;
-      if (mbr.equals(other.getOwnerId())) {
-        otherHolder = localExceptions;
+      if (mbr.equals(requesterRVV.getOwnerId())) {
+        otherHolder = requesterRVV.localExceptions;
       } else {
-        otherHolder = other.memberToVersion.get(mbr);
+        otherHolder = requesterRVV.memberToVersion.get(mbr);
       }
-      isDominatedByRemote = isGCVersionDominatedByHolder(gcVersion, otherHolder);
+      isDominatedByRemote = isGCVersionDominatedByOtherHolder(gcVersion, otherHolder);
       if (isDominatedByRemote == false) {
         return false;
       }
@@ -1089,8 +1105,6 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
    * Remove any exceptions for the given member that are older than the given version. This is used
    * after a synchronization operation to get rid of unneeded history.
    *
-   * @param mbr
-   * @param version
    */
   public void removeExceptionsFor(DistributedMember mbr, long version) {
     RegionVersionHolder<T> holder = this.memberToVersion.get(mbr);
@@ -1141,7 +1155,6 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
    * after deserializing a version tag or RVV the IDs in it should be replaced with references to
    * IDs returned by this method. This vastly reduces the memory footprint of tags/stamps/rvvs
    *
-   * @param id
    * @return the canonical reference
    */
   public T getCanonicalId(T id) {
@@ -1155,7 +1168,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
       if (cId != null) {
         return cId;
       }
-      if (id instanceof InternalDistributedMember) {
+      if (!id.isDiskStoreId()) {
         InternalDistributedSystem system = InternalDistributedSystem.getConnectedInstance();
         if (system != null) {
           can = (T) system.getDistributionManager().getCanonicalId((InternalDistributedMember) id);
@@ -1173,9 +1186,11 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
   /*
    * (non-Javadoc)
    *
-   * @see org.apache.geode.internal.DataSerializableFixedID#toData(java.io.DataOutput)
+   * @see org.apache.geode.internal.serialization.DataSerializableFixedID#toData(java.io.DataOutput)
    */
-  public void toData(DataOutput out) throws IOException {
+  @Override
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     if (this.isLiveVector) {
       throw new IllegalStateException("serialization of this object is not allowed");
     }
@@ -1203,9 +1218,12 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
   /*
    * (non-Javadoc)
    *
-   * @see org.apache.geode.internal.DataSerializableFixedID#fromData(java.io.DataInput)
+   * @see
+   * org.apache.geode.internal.serialization.DataSerializableFixedID#fromData(java.io.DataInput)
    */
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  @Override
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     this.myId = readMember(in);
     int flags = in.readInt();
     this.singleMember = ((flags & 0x01) == 0x01);
@@ -1240,8 +1258,6 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
    * region-version of any tombstone reaped. Any older versions are then immediately eligible for
    * reaping.
    *
-   * @param mbr
-   * @param regionVersion
    */
   public void recordGCVersion(T mbr, long regionVersion) {
     if (mbr == null) {
@@ -1275,7 +1291,6 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
   /**
    * record all of the GC versions in the given vector
    *
-   * @param other
    */
   public void recordGCVersions(RegionVersionVector<T> other) {
     assert other.memberToGCVersion != null : "incoming gc version set is null";
@@ -1290,8 +1305,6 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
    * that a clear or GC has been received that should have wiped out the operation this version
    * stamp represents, but this operation had not yet been received
    *
-   * @param mbr
-   * @param gcVersion
    * @return true if the given version should be rejected
    */
   public boolean isTombstoneTooOld(T mbr, long gcVersion) {
@@ -1416,11 +1429,14 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
   }
 
 
+  @Override
   public void memberJoined(DistributionManager distributionManager, InternalDistributedMember id) {}
 
+  @Override
   public void memberSuspect(DistributionManager distributionManager, InternalDistributedMember id,
       InternalDistributedMember whoSuspected, String reason) {}
 
+  @Override
   public void quorumLost(DistributionManager distributionManager,
       Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {}
 
@@ -1430,12 +1446,14 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
    * @see org.apache.geode.distributed.internal.MembershipListener#memberDeparted(org.apache.geode.
    * distributed.internal.membership.InternalDistributedMember, boolean)
    */
+  @Override
   public void memberDeparted(DistributionManager distributionManager,
       final InternalDistributedMember id, boolean crashed) {
     // since unlockForClear uses synchronization we need to try to execute it in another
     // thread so that membership events aren't blocked
     if (distributionManager != null) {
-      distributionManager.getWaitingThreadPool().execute(new Runnable() {
+      distributionManager.getExecutors().getWaitingThreadPool().execute(new Runnable() {
+        @Override
         public void run() {
           unlockForClear(id);
         }
@@ -1458,7 +1476,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
   }
 
   public static RegionVersionVector<?> create(VersionSource<?> versionMember, LocalRegion owner) {
-    if (versionMember instanceof DiskStoreID) {
+    if (versionMember.isDiskStoreId()) {
       return new DiskRegionVersionVector((DiskStoreID) versionMember, owner);
     } else {
       return new VMRegionVersionVector((InternalDistributedMember) versionMember, owner);
@@ -1523,6 +1541,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
     return (h != null) && h.isDepartedMember;
   }
 
+  @Override
   public Version[] getSerializationVersions() {
     return null;
   }

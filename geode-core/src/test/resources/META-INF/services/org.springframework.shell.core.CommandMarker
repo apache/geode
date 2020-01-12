@@ -1,8 +1,0 @@
-# Mock command for org.apache.geode.management.internal.cli.CommandManagerJUnitTest.testLoadPluginCommands
-org.apache.geode.management.internal.cli.CommandManagerJUnitTest$MockPluginCommand
-# Should cause ServiceConfigurationException while iterating.
-#TODO jbarrett - causes tests to be marked as failed because of exception in log org.apache.geode.management.internal.cli.CommandManagerJUnitTest$MockPluginCommandNotFound
-
-
-# Mock Extension commands
-org.apache.geode.internal.cache.extension.mock.MockExtensionCommands

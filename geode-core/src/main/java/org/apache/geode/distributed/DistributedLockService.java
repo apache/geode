@@ -15,8 +15,8 @@
 
 package org.apache.geode.distributed;
 
-import org.apache.geode.distributed.internal.*;
-import org.apache.geode.distributed.internal.locks.*;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.locks.DLockService;
 
 /**
  * <p>

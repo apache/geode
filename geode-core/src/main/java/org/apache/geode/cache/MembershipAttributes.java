@@ -29,7 +29,6 @@ import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.Role;
 import org.apache.geode.distributed.internal.membership.InternalRole;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Configuration attributes for defining reliability requirements and behavior for a
@@ -114,8 +113,7 @@ public class MembershipAttributes implements DataSerializable, Externalizable {
     this.requiredRoles = toRoleSet(requiredRoles);
     if (this.requiredRoles.isEmpty()) {
       throw new IllegalArgumentException(
-          LocalizedStrings.MembershipAttributes_ONE_OR_MORE_REQUIRED_ROLES_MUST_BE_SPECIFIED
-              .toLocalizedString());
+          "One or more required roles must be specified.");
     }
     this.lossAction = lossAction;
     this.resumptionAction = resumptionAction;
@@ -236,6 +234,7 @@ public class MembershipAttributes implements DataSerializable, Externalizable {
     }
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     String[] names = new String[this.requiredRoles.size()];
     Iterator<Role> iter = this.requiredRoles.iterator();
@@ -247,17 +246,20 @@ public class MembershipAttributes implements DataSerializable, Externalizable {
     out.writeByte(this.resumptionAction.ordinal);
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.requiredRoles = toRoleSet(DataSerializer.readStringArray(in));
     this.lossAction = LossAction.fromOrdinal(in.readByte());
     this.resumptionAction = ResumptionAction.fromOrdinal(in.readByte());
   }
 
+  @Override
   public void writeExternal(ObjectOutput out) throws IOException {
     // added to fix bug 36619
     toData(out);
   }
 
+  @Override
   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
     // added to fix bug 36619
     fromData(in);

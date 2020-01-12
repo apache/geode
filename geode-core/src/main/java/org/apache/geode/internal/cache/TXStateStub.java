@@ -36,7 +36,6 @@ import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.cache.tx.TXRegionStub;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * TXStateStub lives on the accessor node when we are remoting a transaction. It is a stub for
@@ -62,8 +61,8 @@ public abstract class TXStateStub implements TXStateInterface {
   public void precommit()
       throws CommitConflictException, UnsupportedOperationInTransactionException {
     throw new UnsupportedOperationInTransactionException(
-        LocalizedStrings.Dist_TX_PRECOMMIT_NOT_SUPPORTED_IN_A_TRANSACTION
-            .toLocalizedString("precommit"));
+        String.format("precommit() operation %s meant for Dist Tx is not supported",
+            "precommit"));
   }
 
   /**
@@ -72,10 +71,10 @@ public abstract class TXStateStub implements TXStateInterface {
   @Override
   public abstract void commit() throws CommitConflictException;
 
-  protected abstract void validateRegionCanJoinTransaction(LocalRegion region)
+  protected abstract void validateRegionCanJoinTransaction(InternalRegion region)
       throws TransactionException;
 
-  protected abstract TXRegionStub generateRegionStub(LocalRegion region);
+  protected abstract TXRegionStub generateRegionStub(InternalRegion region);
 
   @Override
   public abstract void rollback();
@@ -105,7 +104,7 @@ public abstract class TXStateStub implements TXStateInterface {
    * @param region The region to involve in the tx.
    * @return existing or new stub for region
    */
-  protected TXRegionStub getTXRegionStub(LocalRegion region) {
+  protected TXRegionStub getTXRegionStub(InternalRegion region) {
     TXRegionStub stub = regionStubs.get(region);
     if (stub == null) {
       /*
@@ -143,8 +142,7 @@ public abstract class TXStateStub implements TXStateInterface {
       Object expectedOldValue) throws EntryNotFoundException {
     if (event.getOperation().isLocal()) {
       throw new UnsupportedOperationInTransactionException(
-          LocalizedStrings.TXStateStub_LOCAL_DESTROY_NOT_ALLOWED_IN_TRANSACTION
-              .toLocalizedString());
+          "localDestroy() is not allowed in a transaction");
     }
     TXRegionStub rs = getTXRegionStub(event.getRegion());
     rs.destroyExistingEntry(event, cacheWrite, expectedOldValue);
@@ -191,7 +189,7 @@ public abstract class TXStateStub implements TXStateInterface {
   @Override
   public Object getDeserializedValue(KeyInfo keyInfo, LocalRegion localRegion, boolean updateStats,
       boolean disableCopyOnRead, boolean preferCD, EntryEventImpl clientEvent,
-      boolean returnTombstones, boolean retainResult) {
+      boolean returnTombstones, boolean retainResult, boolean createIfAbsent) {
     // We never have a local value if we are a stub...
     return null;
   }
@@ -246,7 +244,7 @@ public abstract class TXStateStub implements TXStateInterface {
    * @see org.apache.geode.internal.cache.TXStateInterface#getRegions()
    */
   @Override
-  public Collection<LocalRegion> getRegions() {
+  public Collection<InternalRegion> getRegions() {
     throw new UnsupportedOperationException();
   }
 
@@ -271,8 +269,7 @@ public abstract class TXStateStub implements TXStateInterface {
       boolean forceNewEntry) {
     if (event.getOperation().isLocal()) {
       throw new UnsupportedOperationInTransactionException(
-          LocalizedStrings.TXStateStub_LOCAL_INVALIDATE_NOT_ALLOWED_IN_TRANSACTION
-              .toLocalizedString());
+          "localInvalidate() is not allowed in a transaction");
     }
     getTXRegionStub(event.getRegion()).invalidateExistingEntry(event, invokeCallbacks,
         forceNewEntry);
@@ -330,7 +327,7 @@ public abstract class TXStateStub implements TXStateInterface {
    * LocalRegion)
    */
   @Override
-  public TXRegionState readRegion(LocalRegion r) {
+  public TXRegionState readRegion(InternalRegion r) {
     throw new UnsupportedOperationException();
   }
 
@@ -392,7 +389,7 @@ public abstract class TXStateStub implements TXStateInterface {
    * LocalRegion)
    */
   @Override
-  public TXRegionState txReadRegion(LocalRegion localRegion) {
+  public TXRegionState txReadRegion(InternalRegion internalRegion) {
     // TODO Auto-generated method stub
     return null;
   }
@@ -405,7 +402,7 @@ public abstract class TXStateStub implements TXStateInterface {
    * LocalRegion, java.lang.Object)
    */
   @Override
-  public TXRegionState txWriteRegion(LocalRegion localRegion, KeyInfo entryKey) {
+  public TXRegionState txWriteRegion(InternalRegion internalRegion, KeyInfo entryKey) {
     // TODO Auto-generated method stub
     return null;
   }
@@ -418,7 +415,7 @@ public abstract class TXStateStub implements TXStateInterface {
    * LocalRegion)
    */
   @Override
-  public TXRegionState writeRegion(LocalRegion r) {
+  public TXRegionState writeRegion(InternalRegion r) {
     // TODO Auto-generated method stub
     return null;
   }
@@ -537,6 +534,15 @@ public abstract class TXStateStub implements TXStateInterface {
     return true;
   }
 
+  @Override
+  public boolean putEntry(EntryEventImpl event, boolean ifNew, boolean ifOld,
+      Object expectedOldValue, boolean requireOldValue, long lastModified,
+      boolean overwriteDestroyed) {
+    return putEntry(event, ifNew, ifOld, expectedOldValue, requireOldValue, lastModified,
+        overwriteDestroyed, true,
+        false);
+  }
+
   /*
    * (non-Javadoc)
    *
@@ -546,7 +552,7 @@ public abstract class TXStateStub implements TXStateInterface {
   @Override
   public boolean putEntry(EntryEventImpl event, boolean ifNew, boolean ifOld,
       Object expectedOldValue, boolean requireOldValue, long lastModified,
-      boolean overwriteDestroyed) {
+      boolean overwriteDestroyed, boolean invokeCallbacks, boolean throwConcurrentModification) {
     return getTXRegionStub(event.getRegion()).putEntry(event, ifNew, ifOld, expectedOldValue,
         requireOldValue, lastModified, overwriteDestroyed);
   }
@@ -612,20 +618,19 @@ public abstract class TXStateStub implements TXStateInterface {
   @Override
   public void checkSupportsRegionDestroy() throws UnsupportedOperationInTransactionException {
     throw new UnsupportedOperationInTransactionException(
-        LocalizedStrings.TXState_REGION_DESTROY_NOT_SUPPORTED_IN_A_TRANSACTION.toLocalizedString());
+        "destroyRegion() is not supported while in a transaction");
   }
 
   @Override
   public void checkSupportsRegionInvalidate() throws UnsupportedOperationInTransactionException {
     throw new UnsupportedOperationInTransactionException(
-        LocalizedStrings.TXState_REGION_INVALIDATE_NOT_SUPPORTED_IN_A_TRANSACTION
-            .toLocalizedString());
+        "invalidateRegion() is not supported while in a transaction");
   }
 
   @Override
   public void checkSupportsRegionClear() throws UnsupportedOperationInTransactionException {
     throw new UnsupportedOperationInTransactionException(
-        LocalizedStrings.TXState_REGION_CLEAR_NOT_SUPPORTED_IN_A_TRANSACTION.toLocalizedString());
+        "clear() is not supported while in a transaction");
   }
 
   /*
@@ -690,14 +695,14 @@ public abstract class TXStateStub implements TXStateInterface {
 
   @Override
   public void postPutAll(DistributedPutAllOperation putallOp, VersionedObjectList successfulPuts,
-      LocalRegion region) {
-    getTXRegionStub(region).postPutAll(putallOp, successfulPuts, region);
+      InternalRegion reg) {
+    getTXRegionStub(reg).postPutAll(putallOp, successfulPuts, reg);
   }
 
   @Override
   public void postRemoveAll(DistributedRemoveAllOperation op, VersionedObjectList successfulOps,
-      LocalRegion region) {
-    getTXRegionStub(region).postRemoveAll(op, successfulOps, region);
+      InternalRegion reg) {
+    getTXRegionStub(reg).postRemoveAll(op, successfulOps, reg);
   }
 
 

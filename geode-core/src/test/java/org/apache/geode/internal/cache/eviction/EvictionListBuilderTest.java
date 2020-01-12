@@ -15,7 +15,7 @@
 package org.apache.geode.internal.cache.eviction;
 
 import static org.apache.geode.internal.lang.SystemPropertyHelper.EVICTION_SCAN_ASYNC;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -23,12 +23,9 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ClearSystemProperties;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.EvictionAlgorithm;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class EvictionListBuilderTest {
   private static final String EVICTION_PROPERTY_NAME = "geode." + EVICTION_SCAN_ASYNC;
 

@@ -15,6 +15,7 @@
 
 package org.apache.geode.internal.cache;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -24,11 +25,8 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class PartitionedRegionRedundancyTrackerTest {
   private static final int TARGET_COPIES = 2;
   private static final int TOTAL_BUCKETS = 3;
@@ -120,8 +118,16 @@ public class PartitionedRegionRedundancyTrackerTest {
   }
 
   @Test
+  public void willSetActualRedundancyAndStoreStat() {
+    redundancyTracker.setActualRedundancy(7);
+    assertThat(redundancyTracker.getActualRedundancy()).isEqualTo(7);
+    verify(stats).setActualRedundantCopies(7);
+  }
+
+  @Test
   public void willNotSetActualRedundantCopiesStatBelowZero() {
     redundancyTracker.setActualRedundancy(-1);
-    assertEquals(0, stats.getActualRedundantCopies());
+    assertThat(redundancyTracker.getActualRedundancy()).isEqualTo(0);
+    verify(stats).setActualRedundantCopies(0);
   }
 }

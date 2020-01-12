@@ -18,11 +18,13 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.BucketAdvisor;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * A load probe which calculates the load of a pr using the just the number of buckets on a member.
@@ -31,6 +33,7 @@ import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 public class BucketCountLoadProbe implements LoadProbe, DataSerializableFixedID {
   private static final long serialVersionUID = 7040814060882774875L;
 
+  @Override
   public PRLoad getLoad(PartitionedRegion pr) {
     PartitionedRegionDataStore ds = pr.getDataStore();
     int configuredBucketCount = pr.getTotalNumberOfBuckets();
@@ -51,10 +54,15 @@ public class BucketCountLoadProbe implements LoadProbe, DataSerializableFixedID 
     return prLoad;
   }
 
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {}
+  @Override
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {}
 
-  public void toData(DataOutput out) throws IOException {}
+  @Override
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {}
 
+  @Override
   public int getDSFID() {
     return BUCKET_COUNT_LOAD_PROBE;
   }

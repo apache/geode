@@ -29,12 +29,12 @@ import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.Oplog;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * This class manages the state an logic to backup a single cache.
  */
-public class BackupTask {
+class BackupTask {
   private static final Logger logger = LogService.getLogger();
 
   private final Map<DiskStoreImpl, DiskStoreBackup> backupByDiskStore = new HashMap<>();
@@ -46,13 +46,13 @@ public class BackupTask {
   private final HashSet<PersistentID> diskStoresWithData = new HashSet<>();
   private final BackupWriter backupWriter;
 
-  private volatile boolean isCancelled = false;
+  private volatile boolean isCancelled;
 
   private TemporaryBackupFiles temporaryFiles;
   private BackupFileCopier fileCopier;
 
-  BackupTask(InternalCache gemFireCache, BackupWriter backupWriter) {
-    this.cache = gemFireCache;
+  BackupTask(InternalCache cache, BackupWriter backupWriter) {
+    this.cache = cache;
     this.backupWriter = backupWriter;
   }
 
@@ -87,6 +87,9 @@ public class BackupTask {
       DiskStoreImpl storeImpl = (DiskStoreImpl) store;
 
       storeImpl.lockStoreBeforeBackup();
+      if (logger.isDebugEnabled()) {
+        logger.debug("Acquired lock for backup on disk store {}", store.getName());
+      }
       if (storeImpl.hasPersistedData()) {
         diskStoresWithData.add(storeImpl.getPersistentID());
         storeImpl.getStats().startBackup();
@@ -148,6 +151,9 @@ public class BackupTask {
         }
       } finally {
         diskStore.releaseBackupLock();
+        if (logger.isDebugEnabled()) {
+          logger.debug("Released lock for backup on disk store {}", store.getName());
+        }
       }
     }
     return backupByDiskStore;
@@ -239,19 +245,22 @@ public class BackupTask {
         // Get an appropriate lock object for each set of oplogs.
         Object childLock = childOplog.getLock();
 
-        // TODO - We really should move this lock into the disk store, but
-        // until then we need to do this magic to make sure we're actually
-        // locking the latest child for both types of oplogs
+        // TODO: We really should move this lock into the disk store, but until then we need to do
+        // this magic to make sure we're actually locking the latest child for both types of oplogs
 
-        // This ensures that all writing to disk is blocked while we are
-        // creating the snapshot
+        // This ensures that all writing to disk is blocked while we are creating the snapshot
         synchronized (childLock) {
+          if (logger.isDebugEnabled()) {
+            logger.debug("Synchronized on lock for oplog {} on disk store {}",
+                childOplog.getOplogId(), diskStore.getName());
+          }
+
           if (diskStore.getPersistentOplogSet().getChild() != childOplog) {
             continue;
           }
 
           if (logger.isDebugEnabled()) {
-            logger.debug("snapshotting oplogs for disk store {}", diskStore.getName());
+            logger.debug("Creating snapshot of oplogs for disk store {}", diskStore.getName());
           }
 
           restoreScript.addExistenceTest(diskStore.getDiskInitFile().getIFFile());
@@ -265,7 +274,7 @@ public class BackupTask {
           diskStore.getPersistentOplogSet().forceRoll(null);
 
           if (logger.isDebugEnabled()) {
-            logger.debug("done backing up disk store {}", diskStore.getName());
+            logger.debug("Finished backup of disk store {}", diskStore.getName());
           }
           break;
         }
@@ -283,5 +292,4 @@ public class BackupTask {
   DiskStoreBackup getBackupForDiskStore(DiskStoreImpl diskStore) {
     return backupByDiskStore.get(diskStore);
   }
-
 }

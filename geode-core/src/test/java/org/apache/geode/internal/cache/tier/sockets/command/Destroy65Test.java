@@ -14,6 +14,9 @@
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -29,10 +32,11 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import org.apache.geode.CancelCriterion;
+import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.operations.DestroyOperationContext;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.OpType;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
 import org.apache.geode.internal.cache.tier.sockets.Message;
@@ -40,12 +44,13 @@ import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
-import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 
-@Category(UnitTest.class)
+@Category({ClientServerTest.class})
 public class Destroy65Test {
 
   private static final String REGION_NAME = "region1";
@@ -76,6 +81,8 @@ public class Destroy65Test {
   @Mock
   private Part keyPart;
   @Mock
+  private Part operationPart;
+  @Mock
   private Part eventPart;
   @Mock
   private Part callbackArgPart;
@@ -104,11 +111,11 @@ public class Destroy65Test {
     when(this.message.getNumberOfParts()).thenReturn(6);
     when(this.message.getPart(eq(0))).thenReturn(this.regionNamePart);
     when(this.message.getPart(eq(1))).thenReturn(this.keyPart);
-    when(this.message.getPart(eq(3))).thenReturn(mock(Part.class));
+    when(this.message.getPart(eq(3))).thenReturn(operationPart);
     when(this.message.getPart(eq(4))).thenReturn(this.eventPart);
     when(this.message.getPart(eq(5))).thenReturn(this.callbackArgPart);
 
-    when(this.regionNamePart.getString()).thenReturn(REGION_NAME);
+    when(this.regionNamePart.getCachedString()).thenReturn(REGION_NAME);
 
     when(this.serverConnection.getCache()).thenReturn(this.cache);
     when(this.serverConnection.getCacheServerStats()).thenReturn(this.cacheServerStats);
@@ -176,4 +183,77 @@ public class Destroy65Test {
     verify(this.errorResponseMessage).send(eq(this.serverConnection));
   }
 
+  @Test
+  public void destroyThrowsAndHandlesEntryNotFoundExceptionOnServer() {
+    doThrow(new EntryNotFoundException("")).when(region).basicBridgeDestroy(any(), any(), any(),
+        anyBoolean(), any());
+
+    assertThatCode(() -> destroy65.cmdExecute(message, serverConnection, securityService, 0))
+        .doesNotThrowAnyException();
+  }
+
+  @Test
+  public void cmdExecuteWhenOperationPartIsNotBytes_whenOperationPartGetObjectIsNull_thenCallsRegionBasicBridgeDestroy()
+      throws Exception {
+    when(operationPart.getObject()).thenReturn(null);
+
+    destroy65.cmdExecute(message, serverConnection, securityService, 0);
+
+    verify(region).basicBridgeDestroy(any(), any(), any(), anyBoolean(), any());
+  }
+
+  @Test
+  public void cmdExecuteWhenOperationPartIsNotBytes_whenOperationPartIsNotDestroyOrRemove_thenCallsRegionBasicBridgeRemove()
+      throws Exception {
+    when(operationPart.getObject()).thenReturn(org.apache.geode.cache.Operation.CREATE);
+
+    destroy65.cmdExecute(message, serverConnection, securityService, 0);
+
+    verify(region).basicBridgeRemove(any(), any(), any(), any(), anyBoolean(), any());
+  }
+
+  @Test
+  public void cmdExecuteWhenOperationPartIsBytes_whenOperationSerializedFormIsNull_thenCallsRegionBasicBridgeDestroy()
+      throws Exception {
+    when(operationPart.isBytes()).thenReturn(true);
+    when(operationPart.getSerializedForm()).thenReturn(null);
+
+    destroy65.cmdExecute(message, serverConnection, securityService, 0);
+
+    verify(region).basicBridgeDestroy(any(), any(), any(), anyBoolean(), any());
+  }
+
+  @Test
+  public void cmdExecuteWhenOperationPartIsBytes_whenOperationSerializedFormIsLengthZero_thenCallsRegionBasicBridgeDestroy()
+      throws Exception {
+    when(operationPart.isBytes()).thenReturn(true);
+    when(operationPart.getSerializedForm()).thenReturn(new byte[0]);
+
+    destroy65.cmdExecute(message, serverConnection, securityService, 0);
+
+    verify(region).basicBridgeDestroy(any(), any(), any(), anyBoolean(), any());
+  }
+
+  @Test
+  public void cmdExecuteWhenIsBytesIsTrue_whenOperationSerializedFormIsValidAndIsNotDestroyOrRemove_thenCallsRegionBasicBridgeRemove()
+      throws Exception {
+    when(operationPart.isBytes()).thenReturn(true);
+    byte[] serializedForm = {OpType.CREATE};
+    when(operationPart.getSerializedForm()).thenReturn(serializedForm);
+
+    destroy65.cmdExecute(message, serverConnection, securityService, 0);
+
+    verify(region).basicBridgeRemove(any(), any(), any(), any(), anyBoolean(), any());
+  }
+
+  @Test
+  public void cmdExecuteWhenIsBytesIsFalse_whenOperationPartIsByteAndOpTypeDestroy_thenCallsRegionBasicBridgeRemove()
+      throws Exception {
+    when(message.getPart(2)).thenReturn(mock(Part.class));
+    when(operationPart.getObject()).thenReturn(OpType.DESTROY);
+
+    destroy65.cmdExecute(message, serverConnection, securityService, 0);
+
+    verify(region).basicBridgeRemove(any(), any(), any(), any(), anyBoolean(), any());
+  }
 }

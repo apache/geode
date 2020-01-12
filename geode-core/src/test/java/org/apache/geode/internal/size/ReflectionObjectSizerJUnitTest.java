@@ -14,17 +14,15 @@
  */
 package org.apache.geode.internal.size;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.mockito.Mockito.mock;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
-@Category(UnitTest.class)
 public class ReflectionObjectSizerJUnitTest {
 
   @Test

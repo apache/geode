@@ -30,7 +30,7 @@ public class Fragment implements MemoryBlock {
   private final int size;
   @SuppressWarnings("unused")
   private volatile int freeIdx;
-  private static AtomicIntegerFieldUpdater<Fragment> freeIdxUpdater =
+  private static final AtomicIntegerFieldUpdater<Fragment> freeIdxUpdater =
       AtomicIntegerFieldUpdater.newUpdater(Fragment.class, "freeIdx");
 
   public Fragment(long addr, int size) {
@@ -56,6 +56,7 @@ public class Fragment implements MemoryBlock {
     return this.size;
   }
 
+  @Override
   public long getAddress() {
     return this.baseAddr;
   }

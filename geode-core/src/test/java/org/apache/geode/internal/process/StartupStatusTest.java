@@ -15,12 +15,11 @@
 package org.apache.geode.internal.process;
 
 import static java.util.Collections.synchronizedList;
-import static org.apache.geode.internal.process.StartupStatus.clearListener;
-import static org.apache.geode.internal.process.StartupStatus.getStartupListener;
-import static org.apache.geode.internal.process.StartupStatus.setListener;
-import static org.apache.geode.internal.process.StartupStatus.startup;
+import static org.apache.geode.internal.process.StartupStatusListenerRegistry.clearListener;
+import static org.apache.geode.internal.process.StartupStatusListenerRegistry.getStartupListener;
+import static org.apache.geode.internal.process.StartupStatusListenerRegistry.setListener;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.Mockito.mock;
 
 import java.util.ArrayList;
@@ -29,36 +28,32 @@ import java.util.List;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.i18n.StringId;
-import org.apache.geode.test.junit.categories.UnitTest;
-
-@Category(UnitTest.class)
 public class StartupStatusTest {
 
   private StartupStatusListener listener;
   private List<String> statusMessageList;
 
   @Before
-  public void before() throws Exception {
+  public void before() {
     listener = mock(StartupStatusListener.class);
     statusMessageList = synchronizedList(new ArrayList<>());
   }
 
   @After
-  public void after() throws Exception {
+  public void after() {
     clearListener();
   }
 
   @Test
-  public void getStartupListener_returnsNullByDefault() throws Exception {
+  public void getStartupListener_returnsNullByDefault() {
     // act/assert
-    assertThat(getStartupListener()).isNull();
+    assertThat(getStartupListener())
+        .isNull();
   }
 
   @Test
-  public void setListener_null_clearsStartupListener() throws Exception {
+  public void setListener_null_clearsStartupListener() {
     // arrange
     listener = null;
 
@@ -66,111 +61,133 @@ public class StartupStatusTest {
     setListener(listener);
 
     // assert
-    assertThat(getStartupListener()).isNull();
+    assertThat(getStartupListener())
+        .isNull();
   }
 
   @Test
-  public void getStartupListener_returnsSetListener() throws Exception {
+  public void getStartupListener_returnsSetListener() {
     // arrange
     setListener(listener);
 
     // act/assert
-    assertThat(getStartupListener()).isSameAs(listener);
+    assertThat(getStartupListener())
+        .isSameAs(listener);
   }
 
   @Test
-  public void clearListener_doesNothingIfNull() throws Exception {
+  public void clearListener_doesNothingIfNull() {
     // arrange
     listener = null;
     setListener(listener);
-    assertThat(getStartupListener()).isNull();
+    assertThat(getStartupListener())
+        .isNull();
 
     // act
     clearListener();
 
     // assert
-    assertThat(getStartupListener()).isNull();
+    assertThat(getStartupListener())
+        .isNull();
   }
 
   @Test
-  public void clearListener_unsetsListener() throws Exception {
+  public void clearListener_unsetsListener() {
     // arrange
     setListener(listener);
-    assertThat(getStartupListener()).isNotNull();
+    assertThat(getStartupListener())
+        .isNotNull();
 
     // act
     clearListener();
 
     // assert
-    assertThat(getStartupListener()).isNull();
+    assertThat(getStartupListener())
+        .isNull();
   }
 
   @Test
-  public void startup_nullStringId_throwsIllegalArgumentException() throws Exception {
+  public void startup_nullStringId_throwsIllegalArgumentException() {
     // arrange
-    StringId stringId = null;
+    String stringId = null;
     Object[] params = new Object[0];
-
-    // act/assert
-    assertThatThrownBy(() -> startup(stringId, params)).isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("Invalid msgId 'null' specified");
-  }
-
-  @Test
-  public void startup_emptyParams() throws Exception {
-    // arrange
-    StringId stringId = new StringId(1, "my string");
-    Object[] params = new Object[0];
+    StartupStatus startupStatus = new StartupStatus();
 
     // act
-    startup(stringId, params);
+    Throwable thrown = catchThrowable(() -> startupStatus.startup(stringId, params));
+
+    // assert
+    assertThat(thrown)
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("Invalid message 'null' specified");
+  }
+
+  @Test
+  public void startup_emptyParams() {
+    // arrange
+    String stringId = "my string";
+    Object[] params = new Object[0];
+    StartupStatus startupStatus = new StartupStatus();
+
+    // act
+    startupStatus.startup(stringId, params);
 
     // assert (does not throw)
-    assertThat(getStartupListener()).isNull();
+    assertThat(getStartupListener())
+        .isNull();
   }
 
   @Test
-  public void startup_doesNothingIfNoListener() throws Exception {
+  public void startup_doesNothingIfNoListener() {
     // arrange
-    StringId stringId = new StringId(1, "my string");
+    String stringId = "my string";
     Object[] params = new Object[0];
+    StartupStatus startupStatus = new StartupStatus();
 
     // act
-    startup(stringId, params);
+    startupStatus.startup(stringId, params);
 
     // assert (does nothing)
-    assertThat(getStartupListener()).isNull();
+    assertThat(getStartupListener())
+        .isNull();
   }
 
   @Test
-  public void startup_invokesListener() throws Exception {
+  public void startup_invokesListener() {
     // arrange
     listener = statusMessage -> statusMessageList.add(statusMessage);
-    StringId stringId = new StringId(1, "my string");
+    String stringId = "my string";
     Object[] params = new Object[0];
     setListener(listener);
+    StartupStatus startupStatus = new StartupStatus();
 
     // act
-    startup(stringId, params);
+    startupStatus.startup(stringId, params);
 
     // assert
-    assertThat(statusMessageList).hasSize(1).contains("my string");
+    assertThat(statusMessageList)
+        .hasSize(1)
+        .contains("my string");
   }
 
   @Test
-  public void startupTwice_invokesListenerTwice() throws Exception {
+  public void startupTwice_invokesListenerTwice() {
     // arrange
     listener = statusMessage -> statusMessageList.add(statusMessage);
-    StringId stringIdOne = new StringId(1, "my string");
-    StringId stringIdTwo = new StringId(2, "other string");
+    String stringIdOne = "my string";
+    String stringIdTwo = "other string";
     Object[] params = new Object[0];
     setListener(listener);
+    StartupStatus startupStatus = new StartupStatus();
 
     // act
-    startup(stringIdOne, params);
-    startup(stringIdTwo, params);
+    startupStatus.startup(stringIdOne, params);
+    startupStatus.startup(stringIdTwo, params);
 
     // assert
-    assertThat(statusMessageList).hasSize(2).contains("my string").contains("other string");
+    assertThat(statusMessageList)
+        .hasSize(2)
+        .contains("my string")
+        .contains("other string");
   }
 }

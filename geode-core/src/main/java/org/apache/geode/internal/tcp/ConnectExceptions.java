@@ -14,11 +14,11 @@
  */
 package org.apache.geode.internal.tcp;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.geode.GemFireCheckedException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * This exception is thrown as a result of one or more failed attempts to connect to a remote
@@ -32,10 +32,10 @@ public class ConnectExceptions extends GemFireCheckedException {
   private static final long serialVersionUID = -4173688946448867706L;
 
   /** The causes of this exception */
-  private List causes;
+  private List<Throwable> causes;
 
   /** The InternalDistributedMember's of the members we couldn't connect/send to */
-  private List members;
+  private List<InternalDistributedMember> members;
 
 
   //////////////////// Constructors ////////////////////
@@ -44,9 +44,9 @@ public class ConnectExceptions extends GemFireCheckedException {
    * Creates a new <code>ConnectExceptions</code>
    */
   public ConnectExceptions() {
-    super(LocalizedStrings.ConnectException_COULD_NOT_CONNECT.toLocalizedString());
-    this.causes = new ArrayList();
-    this.members = new ArrayList();
+    super("Could not connect");
+    this.causes = new ArrayList<>();
+    this.members = new ArrayList<>();
   }
 
 
@@ -61,28 +61,28 @@ public class ConnectExceptions extends GemFireCheckedException {
   /**
    * Returns a list of <code>InternalDistributedMember</code>s that couldn't be connected to.
    */
-  public List getMembers() {
+  public List<InternalDistributedMember> getMembers() {
     return this.members;
   }
 
   /**
    * Returns the causes of this exception
    */
-  public List getCauses() {
+  public List<Throwable> getCauses() {
     return this.causes;
   }
 
   @Override
   public String getMessage() {
     StringBuffer sb = new StringBuffer();
-    for (Iterator iter = this.members.iterator(); iter.hasNext();) {
-      sb.append(' ').append(iter.next());
+    for (InternalDistributedMember member : this.members) {
+      sb.append(' ').append(member);
     }
-    sb.append(" ").append(LocalizedStrings.ConnectException_CAUSES.toLocalizedString());
-    for (Iterator iter = this.causes.iterator(); iter.hasNext();) {
-      sb.append(" {").append(iter.next()).append("}");
+    sb.append(" ").append("Causes:");
+    for (Throwable cause : this.causes) {
+      sb.append(" {").append(cause).append("}");
     }
-    return LocalizedStrings.ConnectException_COULD_NOT_CONNECT_TO_0.toLocalizedString(sb);
+    return String.format("Could not connect to: %s", sb);
   }
 
 }

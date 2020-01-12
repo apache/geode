@@ -17,12 +17,12 @@ package org.apache.geode.cache;
 import java.io.File;
 import java.util.Properties;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.compression.Compressor;
 import org.apache.geode.distributed.LeaseExpiredException;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegion;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * {@code RegionFactory} is used to create {@link Region regions} in a {@link Cache cache}.
@@ -102,6 +102,17 @@ public class RegionFactory<K, V> {
   }
 
   /**
+   * Constructs a RegionFactory that is a copy of an existing RegionFactory
+   *
+   * @since Geode 1.12.0
+   */
+  @VisibleForTesting
+  protected RegionFactory(RegionFactory<K, V> regionFactory) {
+    this.attrsFactory = new AttributesFactory<>(regionFactory.attrsFactory.create());
+    this.cache = regionFactory.cache;
+  }
+
+  /**
    * For internal use only.
    *
    * @since GemFire 6.5
@@ -110,10 +121,10 @@ public class RegionFactory<K, V> {
     this.cache = cache;
     RegionAttributes<K, V> ra = getCache().getRegionAttributes(regionAttributesId);
     if (ra == null) {
-      throw new IllegalStateException(LocalizedStrings.RegionFactory_NO_ATTRIBUTES_ASSOCIATED_WITH_0
-          .toLocalizedString(regionAttributesId));
+      throw new IllegalStateException(String.format("No attributes associated with %s",
+          regionAttributesId));
     }
-    this.attrsFactory = new AttributesFactory<K, V>(ra);
+    this.attrsFactory = new AttributesFactory<>(ra);
   }
 
   /**
@@ -223,6 +234,7 @@ public class RegionFactory<K, V> {
     this((InternalCache) new CacheFactory(distributedSystemProperties).create(),
         regionAttributesId);
   }
+
 
   /**
    * Returns the cache used by this factory.

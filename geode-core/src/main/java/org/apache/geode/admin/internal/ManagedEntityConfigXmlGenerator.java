@@ -14,19 +14,42 @@
  */
 package org.apache.geode.admin.internal;
 
-import java.io.*;
-import java.util.*;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
 
-import javax.xml.transform.*;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.xml.sax.*;
+import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.DTDHandler;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
+import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.AttributesImpl;
 
-import org.apache.geode.admin.*;
+import org.apache.geode.admin.AdminDistributedSystem;
+import org.apache.geode.admin.AdminException;
+import org.apache.geode.admin.CacheServer;
+import org.apache.geode.admin.CacheServerConfig;
+import org.apache.geode.admin.DistributedSystemConfig;
+import org.apache.geode.admin.DistributionLocator;
+import org.apache.geode.admin.DistributionLocatorConfig;
+import org.apache.geode.admin.ManagedEntityConfig;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Generates XML data that represents the managed entities in an
@@ -37,7 +60,8 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 public class ManagedEntityConfigXmlGenerator extends ManagedEntityConfigXml implements XMLReader {
 
   /** An empty <code>Attributes</code> */
-  private static Attributes EMPTY = new AttributesImpl();
+  @Immutable
+  private static final Attributes EMPTY = new AttributesImpl();
 
   ///////////////////////// Instance Fields ////////////////////////
 
@@ -92,8 +116,7 @@ public class ManagedEntityConfigXmlGenerator extends ManagedEntityConfigXml impl
 
     } catch (Exception ex) {
       RuntimeException ex2 = new RuntimeException(
-          LocalizedStrings.ManagedEntityConfigXmlGenerator_EXCEPTION_THROWN_WHILE_GENERATING_XML
-              .toLocalizedString());
+          "Exception thrown while generating XML.");
       ex2.initCause(ex);
       throw ex2;
     }
@@ -103,6 +126,7 @@ public class ManagedEntityConfigXmlGenerator extends ManagedEntityConfigXml impl
    * Called by the transformer to parse the "input source". We ignore the input source and, instead,
    * generate SAX events to the {@link #setContentHandler ContentHandler}.
    */
+  @Override
   public void parse(InputSource input) throws SAXException {
     Assert.assertTrue(this.handler != null);
 
@@ -123,8 +147,7 @@ public class ManagedEntityConfigXmlGenerator extends ManagedEntityConfigXml impl
 
     } catch (AdminException ex) {
       throw new SAXException(
-          LocalizedStrings.ManagedEntityConfigXmlGenerator_AN_ADMINEXCEPTION_WAS_THROWN_WHILE_GENERATING_XML
-              .toLocalizedString(),
+          "An AdminException was thrown while generating XML.",
           ex);
     }
 
@@ -301,61 +324,74 @@ public class ManagedEntityConfigXmlGenerator extends ManagedEntityConfigXml impl
   /**
    * Keep track of the content handler for use during {@link #parse(String)}.
    */
+  @Override
   public void setContentHandler(ContentHandler handler) {
     this.handler = handler;
   }
 
+  @Override
   public ContentHandler getContentHandler() {
     return this.handler;
   }
 
+  @Override
   public ErrorHandler getErrorHandler() {
     return this;
   }
 
   ////////// Inherited methods that don't do anything //////////
 
+  @Override
   public boolean getFeature(String name)
       throws SAXNotRecognizedException, SAXNotSupportedException {
     return false;
   }
 
+  @Override
   public void setFeature(String name, boolean value)
       throws SAXNotRecognizedException, SAXNotSupportedException {
 
   }
 
+  @Override
   public Object getProperty(String name)
       throws SAXNotRecognizedException, SAXNotSupportedException {
 
     return null;
   }
 
+  @Override
   public void setProperty(String name, Object value)
       throws SAXNotRecognizedException, SAXNotSupportedException {
 
   }
 
+  @Override
   public void setEntityResolver(EntityResolver resolver) {
 
   }
 
+  @Override
   public EntityResolver getEntityResolver() {
     return this;
   }
 
+  @Override
   public void setDTDHandler(DTDHandler handler) {
 
   }
 
+  @Override
   public DTDHandler getDTDHandler() {
     return null;
   }
 
+  @Override
   public void setErrorHandler(ErrorHandler handler) {
 
   }
 
+  @Override
   public void parse(String systemId) throws IOException, SAXException {
 
   }

@@ -79,7 +79,7 @@ public interface CacheInfo {
   void setClosed();
 
   /**
-   * Returns the ids of all of the bridge servers that are associated with this cache.
+   * Returns the ids of all of the cache servers that are associated with this cache.
    *
    * @since GemFire 4.0
    */

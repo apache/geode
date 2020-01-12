@@ -20,19 +20,18 @@ import java.util.EnumSet;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.OSProcess;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.sequencelog.io.OutputStreamAppender;
+import org.apache.geode.logging.internal.OSProcess;
+import org.apache.geode.util.internal.GeodeGlossary;
 
-/**
- *
- */
 public class SequenceLoggerImpl implements SequenceLogger {
 
+  @Immutable
   private static final SequenceLoggerImpl INSTANCE;
 
   public static final String ENABLED_TYPES_PROPERTY =
-      DistributionConfig.GEMFIRE_PREFIX + "GraphLoggerImpl.ENABLED_TYPES";
+      GeodeGlossary.GEMFIRE_PREFIX + "GraphLoggerImpl.ENABLED_TYPES";
 
   private final EnumSet<GraphType> enabledTypes;
 
@@ -63,10 +62,12 @@ public class SequenceLoggerImpl implements SequenceLogger {
     }
   }
 
+  @Override
   public boolean isEnabled(GraphType type) {
     return enabledTypes.contains(type);
   }
 
+  @Override
   public void logTransition(GraphType type, Object graphName, Object edgeName, Object state,
       Object source, Object dest) {
     if (isEnabled(type)) {
@@ -75,6 +76,7 @@ public class SequenceLoggerImpl implements SequenceLogger {
     }
   }
 
+  @Override
   public void flush() throws InterruptedException {
     FlushToken token = new FlushToken();
     edges.add(token);

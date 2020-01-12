@@ -25,10 +25,6 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.MemberFunctionStreamingMessage;
 
-/**
- *
- *
- */
 public class MemberFunctionResultWaiter extends StreamingFunctionOperation {
 
   public MemberFunctionResultWaiter(InternalDistributedSystem sys, ResultCollector rc,
@@ -37,6 +33,7 @@ public class MemberFunctionResultWaiter extends StreamingFunctionOperation {
     super(sys, rc, function, memberArgs, recipients, rs);
   }
 
+  @Override
   protected DistributionMessage createRequestMessage(Set recipients,
       FunctionStreamingResultCollector processor, boolean isReExecute,
       boolean isFnSerializationReqd) {

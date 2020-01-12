@@ -15,11 +15,14 @@
 package org.apache.geode.internal.cache.tier.sockets.command;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import org.junit.Before;
@@ -27,43 +30,35 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.execute.Function;
-import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.operations.ExecuteFunctionOperationContext;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.control.HeapMemoryMonitor;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
+import org.apache.geode.internal.cache.execute.FunctionContextImpl;
+import org.apache.geode.internal.cache.execute.InternalFunctionExecutionService;
+import org.apache.geode.internal.cache.execute.ServerToClientFunctionResultSender;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.ServerSideHandshake;
 import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
 import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
-import org.apache.geode.internal.cache.tier.sockets.Handshake;
 import org.apache.geode.internal.cache.tier.sockets.Message;
+import org.apache.geode.internal.cache.tier.sockets.OldClientSupportService;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
+import org.apache.geode.internal.cache.tier.sockets.command.ExecuteFunction.FunctionContextImplFactory;
+import org.apache.geode.internal.cache.tier.sockets.command.ExecuteFunction.ServerToClientFunctionResultSenderFactory;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.internal.security.ResourcePermissions;
 import org.apache.geode.security.NotAuthorizedException;
-import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.categories.ClientServerTest;
+import org.apache.geode.util.internal.GeodeGlossary;
 
-@Category(UnitTest.class)
-@RunWith(PowerMockRunner.class)
-@PowerMockIgnore("*.UnitTest")
-@PrepareForTest({FunctionService.class})
+@Category(ClientServerTest.class)
 public class ExecuteFunctionTest {
   private static final String FUNCTION = "function";
   private static final String FUNCTION_ID = "function_id";
@@ -71,44 +66,14 @@ public class ExecuteFunctionTest {
   private static final Object CALLBACK_ARG = "arg";
   private static final byte[] RESULT = new byte[] {Integer.valueOf(1).byteValue()};
 
-  @Mock
-  private SecurityService securityService;
-  @Mock
-  private Message message;
-  @Mock
-  private ServerConnection serverConnection;
-  @Mock
-  private AuthorizeRequest authzRequest;
-  @Mock
-  private LocalRegion region;
-  @Mock
-  private GemFireCacheImpl cache;
-  @Mock
-  private ChunkedMessage functionResponseMessage;
-  @Mock
+  private AuthorizeRequest authorizeRequest;
   private ChunkedMessage chunkedResponseMessage;
-  @Mock
-  private Part hasResultPart;
-  @Mock
-  private Part functionPart;
-  @Mock
-  private Part argsPart;
-  @Mock
-  private Part partPart;
-  @Mock
-  private Part callbackArgPart;
-  @Mock
-  private Function functionObject;
-  @Mock
-  private AcceptorImpl acceptor;
-  @Mock
-  private ServerSideHandshake handshake;
-  @Mock
-  private InternalResourceManager internalResourceManager;
-  @Mock
-  private ExecuteFunctionOperationContext executeFunctionOperationContext;
+  private ChunkedMessage functionResponseMessage;
+  private Message message;
+  private SecurityService securityService;
+  private ServerConnection serverConnection;
+  private ServerToClientFunctionResultSenderFactory serverToClientFunctionResultSenderFactory;
 
-  @InjectMocks
   private ExecuteFunction executeFunction;
 
   @Rule
@@ -116,105 +81,145 @@ public class ExecuteFunctionTest {
 
   @Before
   public void setUp() throws Exception {
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "statsDisabled", "true");
+    System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "statsDisabled", "true");
 
-    this.executeFunction = new ExecuteFunction();
-    MockitoAnnotations.initMocks(this);
+    authorizeRequest = mock(AuthorizeRequest.class);
+    chunkedResponseMessage = mock(ChunkedMessage.class);
+    functionResponseMessage = mock(ChunkedMessage.class);
+    message = mock(Message.class);
+    securityService = mock(SecurityService.class);
+    serverConnection = mock(ServerConnection.class);
+    serverToClientFunctionResultSenderFactory =
+        mock(ServerToClientFunctionResultSenderFactory.class);
 
-    when(this.authzRequest.executeFunctionAuthorize(eq(FUNCTION_ID), eq(null), eq(null), eq(null),
-        eq(OPTIMIZE_FOR_WRITE))).thenReturn(this.executeFunctionOperationContext);
+    InternalCache cache = mock(InternalCache.class, RETURNS_DEEP_STUBS);
+    AcceptorImpl acceptor = mock(AcceptorImpl.class);
+    FunctionContextImplFactory functionContextImplFactory = mock(FunctionContextImplFactory.class);
+    ExecuteFunctionOperationContext executeFunctionOperationContext =
+        mock(ExecuteFunctionOperationContext.class);
+    Function functionObject = mock(Function.class);
+    FunctionContextImpl functionContextImpl = mock(FunctionContextImpl.class);
+    InternalFunctionExecutionService internalFunctionExecutionService =
+        mock(InternalFunctionExecutionService.class);
+    InternalResourceManager internalResourceManager =
+        mock(InternalResourceManager.class, RETURNS_DEEP_STUBS);
+    OldClientSupportService oldClientSupportService = mock(OldClientSupportService.class);
+    ServerSideHandshake handshake = mock(ServerSideHandshake.class);
+    ServerToClientFunctionResultSender serverToClientFunctionResultSender =
+        mock(ServerToClientFunctionResultSender.class);
 
-    when(this.cache.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
-    when(this.cache.getDistributedSystem()).thenReturn(mock(InternalDistributedSystem.class));
-    when(this.cache.getResourceManager()).thenReturn(this.internalResourceManager);
+    Part argsPart = mock(Part.class);
+    Part callbackArgPart = mock(Part.class);
+    Part functionPart = mock(Part.class);
+    Part hasResultPart = mock(Part.class);
+    Part partPart = mock(Part.class);
 
-    when(this.callbackArgPart.getObject()).thenReturn(CALLBACK_ARG);
+    when(authorizeRequest.executeFunctionAuthorize(eq(FUNCTION_ID), eq(null), eq(null), eq(null),
+        eq(OPTIMIZE_FOR_WRITE))).thenReturn(executeFunctionOperationContext);
 
-    when(this.functionObject.getId()).thenReturn(FUNCTION_ID);
-    doCallRealMethod().when(this.functionObject).getRequiredPermissions(any());
+    when(cache.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
+    when(cache.getDistributedSystem()).thenReturn(mock(InternalDistributedSystem.class));
+    when(cache.getResourceManager()).thenReturn(internalResourceManager);
+    when(cache.getService(eq(OldClientSupportService.class))).thenReturn(oldClientSupportService);
 
-    when(this.functionPart.getStringOrObject()).thenReturn(FUNCTION);
+    when(callbackArgPart.getObject()).thenReturn(CALLBACK_ARG);
 
-    when(this.hasResultPart.getSerializedForm()).thenReturn(RESULT);
+    when(functionContextImplFactory.create(any(), any(), any(), any())).thenReturn(
+        functionContextImpl);
 
-    when(this.internalResourceManager.getHeapMonitor()).thenReturn(mock(HeapMemoryMonitor.class));
+    when(functionObject.getId()).thenReturn(FUNCTION_ID);
+    doCallRealMethod().when(functionObject).getRequiredPermissions(any());
+    doCallRealMethod().when(functionObject).getRequiredPermissions(any(), any());
 
-    when(this.message.getNumberOfParts()).thenReturn(4);
-    when(this.message.getPart(eq(0))).thenReturn(this.hasResultPart);
-    when(this.message.getPart(eq(1))).thenReturn(this.functionPart);
-    when(this.message.getPart(eq(2))).thenReturn(this.argsPart);
-    when(this.message.getPart(eq(3))).thenReturn(this.partPart);
+    when(functionPart.getStringOrObject()).thenReturn(FUNCTION);
+    when(hasResultPart.getSerializedForm()).thenReturn(RESULT);
+    when(internalFunctionExecutionService.getFunction(eq(FUNCTION))).thenReturn(functionObject);
+    when(internalResourceManager.getHeapMonitor()).thenReturn(mock(HeapMemoryMonitor.class));
 
-    when(this.serverConnection.getCache()).thenReturn(this.cache);
-    when(this.serverConnection.getAuthzRequest()).thenReturn(this.authzRequest);
-    when(this.serverConnection.getCachedRegionHelper()).thenReturn(mock(CachedRegionHelper.class));
-    when(this.serverConnection.getFunctionResponseMessage())
-        .thenReturn(this.functionResponseMessage);
-    when(this.serverConnection.getChunkedResponseMessage()).thenReturn(this.chunkedResponseMessage);
-    when(this.serverConnection.getAcceptor()).thenReturn(this.acceptor);
-    when(this.serverConnection.getHandshake()).thenReturn(this.handshake);
+    when(message.getNumberOfParts()).thenReturn(4);
+    when(message.getPart(eq(0))).thenReturn(hasResultPart);
+    when(message.getPart(eq(1))).thenReturn(functionPart);
+    when(message.getPart(eq(2))).thenReturn(argsPart);
+    when(message.getPart(eq(3))).thenReturn(partPart);
 
-    PowerMockito.mockStatic(FunctionService.class);
-    PowerMockito.when(FunctionService.getFunction(eq(FUNCTION))).thenReturn(functionObject);
+    when(oldClientSupportService.getThrowable(any(), any())).thenReturn(mock(Throwable.class));
+
+    when(serverConnection.getAcceptor()).thenReturn(acceptor);
+    when(serverConnection.getAuthzRequest()).thenReturn(authorizeRequest);
+    when(serverConnection.getCache()).thenReturn(cache);
+    when(serverConnection.getCachedRegionHelper()).thenReturn(mock(CachedRegionHelper.class));
+    when(serverConnection.getChunkedResponseMessage()).thenReturn(chunkedResponseMessage);
+    when(serverConnection.getFunctionResponseMessage()).thenReturn(functionResponseMessage);
+    when(serverConnection.getHandshake()).thenReturn(handshake);
+
+    when(serverToClientFunctionResultSenderFactory.create(any(), anyInt(), any(), any(), any()))
+        .thenReturn(
+            serverToClientFunctionResultSender);
+
+    executeFunction = new ExecuteFunction(internalFunctionExecutionService,
+        serverToClientFunctionResultSenderFactory,
+        functionContextImplFactory);
   }
 
   @Test
   public void nonSecureShouldSucceed() throws Exception {
-    when(this.securityService.isClientSecurityRequired()).thenReturn(false);
+    when(securityService.isClientSecurityRequired()).thenReturn(false);
 
-    this.executeFunction.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
+    executeFunction.cmdExecute(message, serverConnection, securityService, 0);
 
-    // verify(this.functionResponseMessage).sendChunk(this.serverConnection); // TODO: why do none
-    // of the reply message types get sent?
+    verify(serverToClientFunctionResultSenderFactory).create(eq(functionResponseMessage), anyInt(),
+        any(), any(), any());
   }
 
   @Test
   public void withIntegratedSecurityShouldSucceedIfAuthorized() throws Exception {
-    when(this.securityService.isClientSecurityRequired()).thenReturn(true);
-    when(this.securityService.isIntegratedSecurity()).thenReturn(true);
-    this.executeFunction.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
+    when(securityService.isClientSecurityRequired()).thenReturn(true);
+    when(securityService.isIntegratedSecurity()).thenReturn(true);
 
-    verify(this.securityService).authorize(ResourcePermissions.DATA_WRITE);
-    // verify(this.replyMessage).send(this.serverConnection); TODO: why do none of the reply message
-    // types get sent?
+    executeFunction.cmdExecute(message, serverConnection, securityService, 0);
+
+    verify(securityService).authorize(ResourcePermissions.DATA_WRITE);
+    verify(serverToClientFunctionResultSenderFactory).create(eq(functionResponseMessage), anyInt(),
+        any(), any(), any());
   }
 
   @Test
   public void withIntegratedSecurityShouldThrowIfNotAuthorized() throws Exception {
-    when(this.securityService.isClientSecurityRequired()).thenReturn(true);
-    when(this.securityService.isIntegratedSecurity()).thenReturn(true);
-    doThrow(new NotAuthorizedException("")).when(this.securityService)
+    when(securityService.isClientSecurityRequired()).thenReturn(true);
+    when(securityService.isIntegratedSecurity()).thenReturn(true);
+    doThrow(new NotAuthorizedException("")).when(securityService)
         .authorize(ResourcePermissions.DATA_WRITE);
 
-    this.executeFunction.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
+    executeFunction.cmdExecute(message, serverConnection, securityService, 0);
 
-    verify(this.securityService).authorize(ResourcePermissions.DATA_WRITE);
-    verify(this.chunkedResponseMessage).sendChunk(this.serverConnection);
+    verify(securityService).authorize(ResourcePermissions.DATA_WRITE);
+    verify(chunkedResponseMessage).sendChunk(serverConnection);
+    verifyZeroInteractions(serverToClientFunctionResultSenderFactory);
   }
 
   @Test
   public void withOldSecurityShouldSucceedIfAuthorized() throws Exception {
-    when(this.securityService.isClientSecurityRequired()).thenReturn(true);
-    when(this.securityService.isIntegratedSecurity()).thenReturn(false);
+    when(securityService.isClientSecurityRequired()).thenReturn(true);
+    when(securityService.isIntegratedSecurity()).thenReturn(false);
 
-    this.executeFunction.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
+    executeFunction.cmdExecute(message, serverConnection, securityService, 0);
 
-    verify(this.authzRequest).executeFunctionAuthorize(eq(FUNCTION_ID), any(), any(), any(),
+    verify(authorizeRequest).executeFunctionAuthorize(eq(FUNCTION_ID), any(), any(), any(),
         eq(false));
-    // verify(this.replyMessage).send(this.serverConnection); TODO: why do none of the reply message
-    // types get sent?
+    verify(serverToClientFunctionResultSenderFactory).create(eq(functionResponseMessage), anyInt(),
+        any(), any(), any());
   }
 
   @Test
   public void withOldSecurityShouldThrowIfNotAuthorized() throws Exception {
-    when(this.securityService.isClientSecurityRequired()).thenReturn(true);
-    when(this.securityService.isIntegratedSecurity()).thenReturn(false);
-    doThrow(new NotAuthorizedException("")).when(this.authzRequest)
+    when(securityService.isClientSecurityRequired()).thenReturn(true);
+    when(securityService.isIntegratedSecurity()).thenReturn(false);
+    doThrow(new NotAuthorizedException("")).when(authorizeRequest)
         .executeFunctionAuthorize(eq(FUNCTION_ID), any(), any(), any(), eq(false));
 
-    this.executeFunction.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
+    executeFunction.cmdExecute(message, serverConnection, securityService, 0);
 
-    verify(this.chunkedResponseMessage).sendChunk(this.serverConnection);
+    verify(chunkedResponseMessage).sendChunk(serverConnection);
+    verifyZeroInteractions(serverToClientFunctionResultSenderFactory);
   }
-
 }

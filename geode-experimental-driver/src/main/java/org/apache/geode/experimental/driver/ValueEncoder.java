@@ -14,7 +14,11 @@
  */
 package org.apache.geode.experimental.driver;
 
+import java.io.IOException;
+import java.util.Objects;
+
 import com.google.protobuf.ByteString;
+import com.google.protobuf.NullValue;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
@@ -27,15 +31,30 @@ import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
  */
 @Experimental
 class ValueEncoder {
+
+  private final ValueSerializer valueSerializer;
+
+  public ValueEncoder(ValueSerializer valueSerializer) {
+    this.valueSerializer = valueSerializer;
+  }
+
   /**
    * Encodes a Java object into a Protobuf encoded value.
    *
    * @param unencodedValue Java object to encode.
    * @return Encoded value of the Java object.
    */
-  static BasicTypes.EncodedValue encodeValue(Object unencodedValue) {
+  BasicTypes.EncodedValue encodeValue(Object unencodedValue) {
     BasicTypes.EncodedValue.Builder builder = BasicTypes.EncodedValue.newBuilder();
-    if (Integer.class.equals(unencodedValue.getClass())) {
+
+    if (valueSerializer.supportsPrimitives()) {
+      ByteString customBytes = customSerialize(unencodedValue);
+      return builder.setCustomObjectResult(customBytes).build();
+    }
+
+    if (Objects.isNull(unencodedValue)) {
+      builder.setNullResult(NullValue.NULL_VALUE);
+    } else if (Integer.class.equals(unencodedValue.getClass())) {
       builder.setIntResult((Integer) unencodedValue);
     } else if (Long.class.equals(unencodedValue.getClass())) {
       builder.setLongResult((Long) unencodedValue);
@@ -56,11 +75,25 @@ class ValueEncoder {
     } else if (JSONWrapper.class.isAssignableFrom(unencodedValue.getClass())) {
       builder.setJsonObjectResult(((JSONWrapper) unencodedValue).getJSON());
     } else {
-      throw new IllegalStateException("We don't know how to handle an object of type "
-          + unencodedValue.getClass() + ": " + unencodedValue);
+      ByteString customBytes = customSerialize(unencodedValue);
+      if (customBytes != null) {
+        builder.setCustomObjectResult(customBytes);
+      } else {
+        throw new IllegalStateException("We don't know how to handle an object of type "
+            + unencodedValue.getClass() + ": " + unencodedValue);
+      }
     }
 
     return builder.build();
+  }
+
+  private ByteString customSerialize(Object unencodedValue) {
+    try {
+      ByteString customBytes = valueSerializer.serialize(unencodedValue);
+      return customBytes;
+    } catch (IOException e) {
+      throw new IllegalStateException(e);
+    }
   }
 
   /**
@@ -69,7 +102,7 @@ class ValueEncoder {
    * @param encodedValue Encoded value to decode.
    * @return Decoded Java object.
    */
-  static Object decodeValue(BasicTypes.EncodedValue encodedValue) {
+  Object decodeValue(BasicTypes.EncodedValue encodedValue) {
     switch (encodedValue.getValueCase()) {
       case BINARYRESULT:
         return encodedValue.getBinaryResult().toByteArray();
@@ -91,8 +124,14 @@ class ValueEncoder {
         return encodedValue.getStringResult();
       case JSONOBJECTRESULT:
         return JSONWrapper.wrapJSON(encodedValue.getJsonObjectResult());
-      case VALUE_NOT_SET:
+      case NULLRESULT:
         return null;
+      case CUSTOMOBJECTRESULT:
+        try {
+          return valueSerializer.deserialize(encodedValue.getCustomObjectResult());
+        } catch (IOException | ClassNotFoundException e) {
+          throw new IllegalStateException(e);
+        }
       default:
         throw new IllegalStateException(
             "Can't decode a value of type " + encodedValue.getValueCase() + ": " + encodedValue);
@@ -106,7 +145,7 @@ class ValueEncoder {
    * @param unencodedValue Java object value to encode.
    * @return Encoded entry of the Java object key and value.
    */
-  static BasicTypes.Entry encodeEntry(Object unencodedKey, Object unencodedValue) {
+  BasicTypes.Entry encodeEntry(Object unencodedKey, Object unencodedValue) {
     if (unencodedValue == null) {
       return BasicTypes.Entry.newBuilder().setKey(encodeValue(unencodedKey)).build();
     }

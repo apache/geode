@@ -15,23 +15,25 @@
 
 package org.apache.geode.internal.offheap;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.*;
+import org.powermock.modules.junit4.PowerMockRunner;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /*
  * This test simply verifies the static class delegates properly to the impl
@@ -41,7 +43,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * interfering with jacoco
  *
  */
-@Category(UnitTest.class)
 @RunWith(PowerMockRunner.class)
 @PowerMockIgnore({"*.UnitTest"})
 @PrepareForTest({ReferenceCountHelper.class})

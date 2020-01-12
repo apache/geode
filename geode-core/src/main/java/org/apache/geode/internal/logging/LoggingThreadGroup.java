@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.logging;
 
+import static org.apache.geode.logging.internal.spi.LogWriterLevel.ALL;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -21,11 +23,10 @@ import java.util.Iterator;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * A <code>ThreadGroup</code> that logs all {@linkplain #uncaughtException uncaught exceptions} to a
@@ -40,12 +41,12 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 public class LoggingThreadGroup extends ThreadGroup {
 
   /** A "local" log writer that logs exceptions to standard error */
-  private static final StandardErrorPrinter stderr =
-      new StandardErrorPrinter(InternalLogWriter.ALL_LEVEL);
+  @Immutable
+  private static final StandardErrorPrinter stderr = new StandardErrorPrinter(ALL.intLevel());
 
   /** A set of all created LoggingThreadGroups */
-  private static final Collection<LoggingThreadGroup> loggingThreadGroups =
-      new ArrayList<LoggingThreadGroup>();
+  @MakeNotStatic
+  private static final Collection<LoggingThreadGroup> loggingThreadGroups = new ArrayList<>();
 
   /**
    * Returns a <code>ThreadGroup</code> whose {@link ThreadGroup#uncaughtException} method logs to
@@ -65,7 +66,6 @@ public class LoggingThreadGroup extends ThreadGroup {
    * @param logWriter A <code>InternalLogWriter</code> to log uncaught exceptions to. It is okay for
    *        this argument to be <code>null</code>.
    *
-   *        author David Whitlock
    * @since GemFire 3.0
    */
   public static LoggingThreadGroup createThreadGroup(final String name,
@@ -76,9 +76,9 @@ public class LoggingThreadGroup extends ThreadGroup {
     synchronized (loggingThreadGroups) {
       for (Iterator<LoggingThreadGroup> iter = loggingThreadGroups.iterator(); iter.hasNext();) {
 
-        LoggingThreadGroup group2 = (LoggingThreadGroup) iter.next();
+        LoggingThreadGroup group2 = iter.next();
         if (group2.isDestroyed()) {
-          // Clean is this guy out
+          // Clean is this iterator out
           iter.remove();
           continue;
         }
@@ -116,7 +116,6 @@ public class LoggingThreadGroup extends ThreadGroup {
    * @param logger A <code>InternalLogWriter</code> to log uncaught exceptions to. It is okay for
    *        this argument to be <code>null</code>.
    *
-   *        author David Whitlock
    * @since GemFire 3.0
    */
   public static LoggingThreadGroup createThreadGroup(final String name, final Logger logger) {
@@ -126,9 +125,9 @@ public class LoggingThreadGroup extends ThreadGroup {
     synchronized (loggingThreadGroups) {
       for (Iterator<LoggingThreadGroup> iter = loggingThreadGroups.iterator(); iter.hasNext();) {
 
-        LoggingThreadGroup group2 = (LoggingThreadGroup) iter.next();
+        LoggingThreadGroup group2 = iter.next();
         if (group2.isDestroyed()) {
-          // Clean is this guy out
+          // Clean is this iterator out
           iter.remove();
           continue;
         }
@@ -158,36 +157,12 @@ public class LoggingThreadGroup extends ThreadGroup {
     return group;
   }
 
-  // /**
-  // * @deprecated Only for use by hydra for backwards compatability reasons.
-  // * Returns a <code>ThreadGroup</code> whose {@link
-  // * ThreadGroup#uncaughtException} method logs to both {#link
-  // * System#err} and the given <code>LogWriterI18n</code>.
-  // *
-  // * @param name
-  // * The name of the <code>ThreadGroup</code>
-  // * @param logger
-  // * A <code>LogWriter</code> to log uncaught exceptions to. It
-  // * is okay for this argument to be <code>null</code>.
-  // *
-  // * author kbanks
-  // * @since GemFire 6.0
-  // */
-  // @Deprecated public static LoggingThreadGroup createThreadGroup(final String name,
-  // final LogWriter logger) {
-  // return createThreadGroup(name,
-  // logger != null ? logger.convertToLogWriterI18n() : null);
-  // }
-
   public static void cleanUpThreadGroups() {
     synchronized (loggingThreadGroups) {
-      LoggingThreadGroup group;
-      Iterator<?> itr = loggingThreadGroups.iterator();
-      while (itr.hasNext()) {
-        group = (LoggingThreadGroup) itr.next();
-        if (!group.getName().equals(InternalDistributedSystem.SHUTDOWN_HOOK_NAME)
-            && !group.getName().equals("GemFireConnectionFactory Shutdown Hook")) {
-          group.cleanup();
+      for (LoggingThreadGroup loggingThreadGroup : loggingThreadGroups) {
+        if (!loggingThreadGroup.getName().equals(InternalDistributedSystem.SHUTDOWN_HOOK_NAME)
+            && !loggingThreadGroup.getName().equals("GemFireConnectionFactory Shutdown Hook")) {
+          loggingThreadGroup.cleanup();
         }
       }
     }
@@ -196,7 +171,6 @@ public class LoggingThreadGroup extends ThreadGroup {
   /**
    * Note: Must be used for test purposes ONLY.
    *
-   * @param threadGroupName
    * @return thread group with given name.
    */
   public static ThreadGroup getThreadGroup(final String threadGroupName) {
@@ -250,14 +224,14 @@ public class LoggingThreadGroup extends ThreadGroup {
     this.logger = logger;
   }
 
-  private Object dispatchLock = new Object();
+  private final Object dispatchLock = new Object();
 
   /**
    * Logs an uncaught exception to a log writer
    */
   @Override
   public void uncaughtException(final Thread t, final Throwable ex) {
-    synchronized (this.dispatchLock) {
+    synchronized (dispatchLock) {
       if (ex instanceof VirtualMachineError) {
         SystemFailure.setFailure((VirtualMachineError) ex); // don't throw
       }
@@ -266,32 +240,26 @@ public class LoggingThreadGroup extends ThreadGroup {
       String threadName = t.getName();
       if ((ex instanceof NoClassDefFoundError)
           && (threadName.equals(InternalDistributedSystem.SHUTDOWN_HOOK_NAME))) {
-        final StringId msg =
-            LocalizedStrings.UNCAUGHT_EXCEPTION_IN_THREAD_0_THIS_MESSAGE_CAN_BE_DISREGARDED_IF_IT_OCCURRED_DURING_AN_APPLICATION_SERVER_SHUTDOWN_THE_EXCEPTION_MESSAGE_WAS_1;
+        final String msg =
+            "Uncaught exception in thread %s this message can be disregarded if it occurred during an Application Server shutdown. The Exception message was: %s";
         final Object[] msgArgs = new Object[] {t, ex.getLocalizedMessage()};
-        stderr.info(msg, msgArgs);
-        if (this.logger != null) {
-          this.logger.info(LocalizedMessage.create(msg, msgArgs));
+        stderr.info(String.format(msg, msgArgs));
+        if (logger != null) {
+          logger.info(String.format(msg, msgArgs));
         }
-        if (this.logWriter != null) {
-          this.logWriter.info(msg, msgArgs);
+        if (logWriter != null) {
+          logWriter.info(String.format(msg, msgArgs));
         }
       } else {
-        stderr.severe(LocalizedStrings.UNCAUGHT_EXCEPTION_IN_THREAD_0, t, ex);
-        if (this.logger != null) {
-          this.logger.fatal(
-              LocalizedMessage.create(LocalizedStrings.UNCAUGHT_EXCEPTION_IN_THREAD_0, t), ex);
+        stderr.severe(String.format("Uncaught exception in thread %s", t), ex);
+        if (logger != null) {
+          logger.fatal(String.format("Uncaught exception in thread %s", t), ex);
         }
-        if (this.logWriter != null) {
-          this.logWriter.severe(LocalizedStrings.UNCAUGHT_EXCEPTION_IN_THREAD_0, t, ex);
+        if (logWriter != null) {
+          logWriter.severe(String.format("Uncaught exception in thread %s", t), ex);
         }
       }
-      // if (!(ex instanceof RuntimeException) && (ex instanceof Exception)) {
-      // something's fishy - checked exceptions shouldn't get here
-      // this.logger.severe("stack trace showing origin of uncaught checked exception", new
-      // Exception("stack trace"));
-      // }
-      this.uncaughtExceptionsCount++;
+      uncaughtExceptionsCount++;
     }
   }
 
@@ -300,8 +268,8 @@ public class LoggingThreadGroup extends ThreadGroup {
    * clear number of uncaught exceptions
    */
   public void clearUncaughtExceptionsCount() {
-    synchronized (this.dispatchLock) {
-      this.uncaughtExceptionsCount = 0;
+    synchronized (dispatchLock) {
+      uncaughtExceptionsCount = 0;
     }
   }
 
@@ -309,7 +277,7 @@ public class LoggingThreadGroup extends ThreadGroup {
    * Returns the number of uncaught exceptions that occurred in threads in this thread group.
    */
   public long getUncaughtExceptionsCount() {
-    synchronized (this.dispatchLock) {
+    synchronized (dispatchLock) {
       return uncaughtExceptionsCount;
     }
   }
@@ -323,7 +291,7 @@ public class LoggingThreadGroup extends ThreadGroup {
     // the logwriter holds onto a distribution config, which holds onto
     // the InternalDistributedSystem, which holds onto the
     // DistributionManager, which holds onto ... you get the idea
-    this.logger = null;
-    this.logWriter = null;
+    logger = null;
+    logWriter = null;
   }
 }

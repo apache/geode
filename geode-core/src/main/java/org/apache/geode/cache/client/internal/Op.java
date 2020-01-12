@@ -12,6 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.cache.client.internal;
 
 /**
@@ -33,8 +34,4 @@ public interface Op {
    */
   Object attempt(Connection cnx) throws Exception;
 
-  /**
-   * @return true if this Op should use a threadLocalConnection, false otherwise
-   */
-  boolean useThreadLocalConnection();
 }

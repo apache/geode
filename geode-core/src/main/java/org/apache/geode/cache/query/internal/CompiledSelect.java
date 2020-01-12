@@ -47,10 +47,8 @@ import org.apache.geode.cache.query.types.CollectionType;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.cache.query.types.StructType;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.internal.PdxString;
-import org.apache.geode.security.NotAuthorizedException;
 
 public class CompiledSelect extends AbstractCompiledValue {
 
@@ -151,6 +149,7 @@ public class CompiledSelect extends AbstractCompiledValue {
     this.count = count;
   }
 
+  @Override
   public int getType() {
     return LITERAL_select;
   }
@@ -256,8 +255,8 @@ public class CompiledSelect extends AbstractCompiledValue {
 
       if (projAttribs != null && projAttribs.size() != this.groupBy.size()) {
         throw new QueryInvalidException(
-            LocalizedStrings.DefaultQuery_PROJ_COL_ABSENT_IN_GROUP_BY.toLocalizedString() + " or "
-                + LocalizedStrings.DefaultQuery_GROUP_BY_COL_ABSENT_IN_PROJ.toLocalizedString());
+            "Query contains projected column not present in group by clause or "
+                + "Query contains group by columns not present in projected fields");
       }
 
       boolean shouldTransform = true;
@@ -301,8 +300,8 @@ public class CompiledSelect extends AbstractCompiledValue {
         this.modifyGroupByToOrderBy(true, context);
       } else {
         throw new QueryInvalidException(
-            LocalizedStrings.DefaultQuery_PROJ_COL_ABSENT_IN_GROUP_BY.toLocalizedString() + " or "
-                + LocalizedStrings.DefaultQuery_GROUP_BY_COL_ABSENT_IN_PROJ.toLocalizedString());
+            "Query contains projected column not present in group by clause or "
+                + "Query contains group by columns not present in projected fields");
       }
     }
   }
@@ -389,14 +388,16 @@ public class CompiledSelect extends AbstractCompiledValue {
     return this.cachedElementTypeForOrderBy;
   }
 
+  @Override
   public SelectResults evaluate(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     context.newScope((Integer) context.cacheGet(scopeID));
     context.pushExecCache((Integer) context.cacheGet(scopeID));
+    boolean prevDistinctState = context.isDistinct();
     context.setDistinct(this.distinct);
     if (this.hasUnmappedOrderByCols && context.getBucketList() != null) {
       throw new QueryInvalidException(
-          LocalizedStrings.DefaultQuery_ORDER_BY_ATTRIBS_NOT_PRESENT_IN_PROJ.toLocalizedString());
+          "Query contains atleast one order by field which is not present in projected fields.");
     }
     if (hints != null) {
       context.cachePut(QUERY_INDEX_HINTS, hints);
@@ -443,8 +444,8 @@ public class CompiledSelect extends AbstractCompiledValue {
             // return result;
           } else if (!(b instanceof Boolean)) {
             throw new TypeMismatchException(
-                LocalizedStrings.CompiledSelect_THE_WHERE_CLAUSE_WAS_TYPE_0_INSTEAD_OF_BOOLEAN
-                    .toLocalizedString(b.getClass().getName()));
+                String.format("The WHERE clause was type ' %s ' instead of boolean",
+                    b.getClass().getName()));
           } else if ((Boolean) b) {
             result = doIterationEvaluate(context, false);
           } else {
@@ -615,6 +616,7 @@ public class CompiledSelect extends AbstractCompiledValue {
       }
       return result;
     } finally {
+      context.setDistinct(prevDistinctState);
       context.popScope();
       context.popExecCache();
     }
@@ -662,7 +664,7 @@ public class CompiledSelect extends AbstractCompiledValue {
         throw new CacheClosedException();
       }
       throw new RegionNotFoundException(
-          LocalizedStrings.CompiledRegion_REGION_NOT_FOUND_0.toLocalizedString(regionPath));
+          String.format("Region not found: %s", regionPath));
     }
   }
 
@@ -789,8 +791,8 @@ public class CompiledSelect extends AbstractCompiledValue {
           }
         } else {
           throw new TypeMismatchException(
-              LocalizedStrings.CompiledSelect_THE_WHERE_CLAUSE_WAS_TYPE_0_INSTEAD_OF_BOOLEAN
-                  .toLocalizedString(result.getClass().getName()));
+              String.format("The WHERE clause was type ' %s ' instead of boolean",
+                  result.getClass().getName()));
         }
       }
       if (addToResults) {
@@ -833,7 +835,7 @@ public class CompiledSelect extends AbstractCompiledValue {
       // Iterate through the data set.
       for (Object aSr : sr) {
         // Check if query execution on this thread is canceled.
-        QueryMonitor.isQueryExecutionCanceled();
+        QueryMonitor.throwExceptionIfQueryOnCurrentThreadIsCanceled();
 
         Object currObj = aSr;
         rIter.setCurrent(currObj);
@@ -879,14 +881,14 @@ public class CompiledSelect extends AbstractCompiledValue {
         while (((this.orderByAttrs != null && !ignoreOrderBy) || limitValue < 0
             || (numElementsAdded < limitValue)) && resultsIter.hasNext()) {
           // Check if query execution on this thread is canceled
-          QueryMonitor.isQueryExecutionCanceled();
+          QueryMonitor.throwExceptionIfQueryOnCurrentThreadIsCanceled();
 
           Object values[] = ((Struct) resultsIter.next()).getFieldValues();
           for (int i = 0; i < values.length; i++) {
             ((RuntimeIterator) iterators.get(i)).setCurrent(values[i]);
           }
-          int occurence = applyProjectionAndAddToResultSet(context, pResultSet, ignoreOrderBy);
-          if (occurence == 1 || (occurence > 1 && !this.distinct)) {
+          int occurrence = applyProjectionAndAddToResultSet(context, pResultSet, ignoreOrderBy);
+          if (occurrence == 1 || (occurrence > 1 && !this.distinct)) {
             // (Unique i.e first time occurrence) or subsequent occurrence
             // for non distinct query
             ++numElementsAdded;
@@ -910,8 +912,7 @@ public class CompiledSelect extends AbstractCompiledValue {
         }
       } else {
         throw new RuntimeException(
-            LocalizedStrings.CompiledSelect_RESULT_SET_DOES_NOT_MATCH_WITH_ITERATOR_DEFINITIONS_IN_FROM_CLAUSE
-                .toLocalizedString());
+            "Result Set does not match with iterator definitions in from clause");
       }
       return pResultSet;
     }
@@ -1130,22 +1131,22 @@ public class CompiledSelect extends AbstractCompiledValue {
   // could be a distinct subquery)
   // in future, it would be good to simplify this to always work with a bag
   // (converting all sets to bags) until the end when we enforce distinct
-  // The number returned indicates the occurence of the data in the SelectResults
+  // The number returned indicates the occurrence of the data in the SelectResults
   // Thus if the SelectResults is of type ResultsSet or StructSet
   // then 1 will indicate that data was added to the results & that was the
-  // first occurence. For this 0 will indicate that the data was not added
+  // first occurrence. For this 0 will indicate that the data was not added
   // because it was a duplicate
   // If the SelectResults is an instance ResultsBag or StructsBag , the number will
-  // indicate the occurence. Thus 1 will indicate it being added for first time
+  // indicate the occurrence. Thus 1 will indicate it being added for first time
   // Currently orderBy is present only for StructSet & ResultSet which are
-  // unique object holders. So the occurence for them can be either 0 or 1 only
+  // unique object holders. So the occurrence for them can be either 0 or 1 only
 
   private int applyProjectionAndAddToResultSet(ExecutionContext context, SelectResults resultSet,
       boolean ignoreOrderBy) throws FunctionDomainException, TypeMismatchException,
       NameResolutionException, QueryInvocationTargetException {
     List currrentRuntimeIters = context.getCurrentIterators();
 
-    int occurence = 0;
+    int occurrence = 0;
     ObjectType elementType = resultSet.getCollectionType().getElementType();
     boolean isStruct = elementType != null && elementType.isStructType();
 
@@ -1194,7 +1195,7 @@ public class CompiledSelect extends AbstractCompiledValue {
         // until
         // the end of evaluate call to this CompiledSelect object.
         this.countStartQueryResult++;
-        occurence = 1;
+        occurrence = 1;
       } else {
         // if order by is present
         if (applyOrderBy) {
@@ -1204,10 +1205,10 @@ public class CompiledSelect extends AbstractCompiledValue {
               if (values.length == 1 && values[0] instanceof StructImpl) {
                 structImpl = (StructImpl) values[0];
                 comparator.addEvaluatedSortCriteria(structImpl.getFieldValues(), context);
-                occurence = resultSet.add(structImpl) ? 1 : 0;
+                occurrence = resultSet.add(structImpl) ? 1 : 0;
               } else {
                 comparator.addEvaluatedSortCriteria(values, context);
-                occurence = ((StructFields) resultSet).addFieldValues(values) ? 1 : 0;
+                occurrence = ((StructFields) resultSet).addFieldValues(values) ? 1 : 0;
               }
               // TODO:Instead of a normal Map containing which holds
               // StructImpl object
@@ -1216,22 +1217,22 @@ public class CompiledSelect extends AbstractCompiledValue {
               // creating objects of type Object[]
             } else {
               comparator.addEvaluatedSortCriteria(values[0], context);
-              occurence = resultSet.add(values[0]) ? 1 : 0;
+              occurrence = resultSet.add(values[0]) ? 1 : 0;
             }
           } else {
             if (isStruct) {
               if (values.length == 1 && values[0] instanceof StructImpl) {
                 structImpl = (StructImpl) values[0];
                 comparator.addEvaluatedSortCriteria(structImpl.getFieldValues(), context);
-                occurence = ((Bag) resultSet).addAndGetOccurence(structImpl.getFieldValues());
+                occurrence = ((Bag) resultSet).addAndGetOccurence(structImpl.getFieldValues());
               } else {
                 comparator.addEvaluatedSortCriteria(values, context);
-                occurence = ((Bag) resultSet).addAndGetOccurence(values);
+                occurrence = ((Bag) resultSet).addAndGetOccurence(values);
 
               }
             } else {
               comparator.addEvaluatedSortCriteria(values[0], context);
-              occurence = ((Bag) resultSet).addAndGetOccurence(values[0]);
+              occurrence = ((Bag) resultSet).addAndGetOccurence(values[0]);
             }
           }
         } else {
@@ -1244,28 +1245,28 @@ public class CompiledSelect extends AbstractCompiledValue {
                 structImpl = new StructImpl((StructTypeImpl) elementType, values);
               }
               if (this.distinct) {
-                occurence = resultSet.add(structImpl) ? 1 : 0;
+                occurrence = resultSet.add(structImpl) ? 1 : 0;
               } else {
-                occurence = ((Bag) resultSet).addAndGetOccurence(structImpl);
+                occurrence = ((Bag) resultSet).addAndGetOccurence(structImpl);
               }
             } else {
               if (this.distinct) {
-                occurence = resultSet.add(values[0]) ? 1 : 0;
+                occurrence = resultSet.add(values[0]) ? 1 : 0;
               } else {
-                occurence = ((Bag) resultSet).addAndGetOccurence(values[0]);
+                occurrence = ((Bag) resultSet).addAndGetOccurence(values[0]);
               }
 
             }
           } else {
             if (this.distinct) {
               if (isStruct) {
-                occurence = ((StructFields) resultSet).addFieldValues(values) ? 1 : 0;
+                occurrence = ((StructFields) resultSet).addFieldValues(values) ? 1 : 0;
               } else {
-                occurence = resultSet.add(values[0]) ? 1 : 0;
+                occurrence = resultSet.add(values[0]) ? 1 : 0;
               }
             } else {
               if (isStruct) {
-                occurence = ((Bag) resultSet).addAndGetOccurence(values);
+                occurrence = ((Bag) resultSet).addAndGetOccurence(values);
               } else {
                 boolean add = true;
                 if (context.isCqQueryContext()) {
@@ -1285,7 +1286,7 @@ public class CompiledSelect extends AbstractCompiledValue {
                   }
                 }
                 if (add) {
-                  occurence = ((Bag) resultSet).addAndGetOccurence(values[0]);
+                  occurrence = ((Bag) resultSet).addAndGetOccurence(values[0]);
                 }
               }
             }
@@ -1312,6 +1313,8 @@ public class CompiledSelect extends AbstractCompiledValue {
           } else if (values[i] instanceof PdxString) {
             values[i] = values[i].toString();
           }
+        } else if (values[i] instanceof PdxString) {
+          values[i] = values[i].toString();
         }
       }
       // if order by is present
@@ -1319,22 +1322,22 @@ public class CompiledSelect extends AbstractCompiledValue {
         if (distinct) {
           if (isStruct) {
             comparator.addEvaluatedSortCriteria(values, context);
-            // Occurence field is used to identify the corrcet number of
+            // Occurrence field is used to identify the corrcet number of
             // iterations
             // required to implement the limit based on the presence or absence
             // of distinct clause
-            occurence = ((StructFields) resultSet).addFieldValues(values) ? 1 : 0;
+            occurrence = ((StructFields) resultSet).addFieldValues(values) ? 1 : 0;
           } else {
             comparator.addEvaluatedSortCriteria(values[0], context);
-            occurence = resultSet.add(values[0]) ? 1 : 0;
+            occurrence = resultSet.add(values[0]) ? 1 : 0;
           }
         } else {
           if (isStruct) {
             comparator.addEvaluatedSortCriteria(values, context);
-            occurence = ((Bag) resultSet).addAndGetOccurence(values);
+            occurrence = ((Bag) resultSet).addAndGetOccurence(values);
           } else {
             comparator.addEvaluatedSortCriteria(values[0], context);
-            occurence = ((Bag) resultSet).addAndGetOccurence(values[0]);
+            occurrence = ((Bag) resultSet).addAndGetOccurence(values[0]);
           }
         }
       } else {
@@ -1342,36 +1345,36 @@ public class CompiledSelect extends AbstractCompiledValue {
           if (isStruct) {
             StructImpl structImpl = new StructImpl((StructTypeImpl) elementType, values);
             if (this.distinct) {
-              occurence = resultSet.add(structImpl) ? 1 : 0;
+              occurrence = resultSet.add(structImpl) ? 1 : 0;
             } else {
-              occurence = ((Bag) resultSet).addAndGetOccurence(structImpl);
+              occurrence = ((Bag) resultSet).addAndGetOccurence(structImpl);
             }
 
           } else {
             if (this.distinct) {
-              occurence = resultSet.add(values[0]) ? 1 : 0;
+              occurrence = resultSet.add(values[0]) ? 1 : 0;
             } else {
-              occurence = ((Bag) resultSet).addAndGetOccurence(values[0]);
+              occurrence = ((Bag) resultSet).addAndGetOccurence(values[0]);
             }
           }
         } else {
           if (this.distinct) {
             if (isStruct) {
-              occurence = ((StructFields) resultSet).addFieldValues(values) ? 1 : 0;
+              occurrence = ((StructFields) resultSet).addFieldValues(values) ? 1 : 0;
             } else {
-              occurence = resultSet.add(values[0]) ? 1 : 0;
+              occurrence = resultSet.add(values[0]) ? 1 : 0;
             }
           } else {
             if (isStruct) {
-              occurence = ((Bag) resultSet).addAndGetOccurence(values);
+              occurrence = ((Bag) resultSet).addAndGetOccurence(values);
             } else {
-              occurence = ((Bag) resultSet).addAndGetOccurence(values[0]);
+              occurrence = ((Bag) resultSet).addAndGetOccurence(values[0]);
             }
           }
         }
       }
     }
-    return occurence;
+    return occurrence;
   }
 
   private String generateProjectionName(CompiledValue projExpr, ExecutionContext context) {
@@ -1466,17 +1469,11 @@ public class CompiledSelect extends AbstractCompiledValue {
    *
    * It assumes the limit is either a CompiledBindArgument or a CompiledLiteral
    *
-   * @param bindArguments
    *
-   * @return
    *
-   * @throws FunctionDomainException
    *
-   * @throws TypeMismatchException
    *
-   * @throws NameResolutionException
    *
-   * @throws QueryInvocationTargetException
    */
   private Integer evaluateLimitValue(Object[] bindArguments) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {

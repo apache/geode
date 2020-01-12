@@ -14,12 +14,13 @@
  */
 package org.apache.geode.internal.process;
 
-import static org.apache.commons.lang.Validate.isTrue;
-import static org.apache.commons.lang.Validate.notNull;
+import static java.lang.System.lineSeparator;
+import static org.apache.commons.lang3.Validate.isTrue;
+import static org.apache.commons.lang3.Validate.notNull;
 
 import java.io.InputStream;
 
-import org.apache.commons.lang.SystemUtils;
+import org.apache.geode.logging.internal.executors.LoggingThread;
 
 /**
  * Reads the output stream of a Process.
@@ -39,11 +40,11 @@ public abstract class ProcessStreamReader implements Runnable {
   protected ProcessStreamReader(final Builder builder) {
     notNull(builder, "Invalid builder '" + builder + "' specified");
 
-    this.process = builder.process;
-    this.inputStream = builder.inputStream;
+    process = builder.process;
+    inputStream = builder.inputStream;
 
     if (builder.inputListener == null) {
-      this.inputListener = new InputListener() {
+      inputListener = new InputListener() {
         @Override
         public void notifyInputLine(String line) {
           // do nothing
@@ -55,15 +56,14 @@ public abstract class ProcessStreamReader implements Runnable {
         }
       };
     } else {
-      this.inputListener = builder.inputListener;
+      inputListener = builder.inputListener;
     }
   }
 
   public ProcessStreamReader start() {
     synchronized (this) {
       if (thread == null) {
-        thread = new Thread(this, createThreadName());
-        thread.setDaemon(true);
+        thread = new LoggingThread(createThreadName(), this);
         thread.start();
       } else if (thread.isAlive()) {
         throw new IllegalStateException(this + " has already started");
@@ -95,8 +95,7 @@ public abstract class ProcessStreamReader implements Runnable {
 
     String threadName =
         getClass().getSimpleName() + " stopAfterDelay Thread @" + Integer.toHexString(hashCode());
-    Thread thread = new Thread(delayedStop, threadName);
-    thread.setDaemon(true);
+    Thread thread = new LoggingThread(threadName, delayedStop);
     thread.start();
     return this;
   }
@@ -191,7 +190,7 @@ public abstract class ProcessStreamReader implements Runnable {
 
     InputListener inputListener = line -> {
       buffer.append(line);
-      buffer.append(SystemUtils.LINE_SEPARATOR);
+      buffer.append(lineSeparator());
     };
 
     ProcessStreamReader reader = new ProcessStreamReader.Builder(process)
@@ -222,11 +221,12 @@ public abstract class ProcessStreamReader implements Runnable {
    */
   public static class Builder {
 
-    final Process process;
-    InputStream inputStream;
-    InputListener inputListener;
-    long continueReadingMillis = 0;
-    ReadingMode readingMode = ReadingMode.BLOCKING;
+    private final Process process;
+
+    private InputStream inputStream;
+    private InputListener inputListener;
+    private long continueReadingMillis;
+    private ReadingMode readingMode = ReadingMode.BLOCKING;
 
     public Builder(final Process process) {
       this.process = process;
@@ -267,6 +267,10 @@ public abstract class ProcessStreamReader implements Runnable {
         default:
           return new BlockingProcessStreamReader(this);
       }
+    }
+
+    public long getContinueReadingMillis() {
+      return continueReadingMillis;
     }
   }
 }

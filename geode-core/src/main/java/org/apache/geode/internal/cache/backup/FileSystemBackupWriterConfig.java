@@ -16,9 +16,10 @@ package org.apache.geode.internal.cache.backup;
 
 import java.util.Properties;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 class FileSystemBackupWriterConfig extends AbstractBackupWriterConfig {
+
   static final String TARGET_DIR = "TARGET_DIRECTORY";
   static final String BASELINE_DIR = "BASELINE_DIRECTORY";
 
@@ -26,7 +27,7 @@ class FileSystemBackupWriterConfig extends AbstractBackupWriterConfig {
     super(properties);
   }
 
-  public String getTargetDirectory() {
+  String getTargetDirectory() {
     String value = getProperties().getProperty(TARGET_DIR);
     if (StringUtils.isBlank(value)) {
       throw new IllegalStateException("Target directory is missing");
@@ -34,7 +35,7 @@ class FileSystemBackupWriterConfig extends AbstractBackupWriterConfig {
     return value;
   }
 
-  public String getBaselineDirectory() {
+  String getBaselineDirectory() {
     return getProperties().getProperty(BASELINE_DIR);
   }
 }

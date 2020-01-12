@@ -18,12 +18,16 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
+import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAlgorithm;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.EvictionAttributesMutator;
+import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.util.ObjectSizer;
+import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.InternalDataSerializer;
 
 /**
@@ -40,7 +44,7 @@ import org.apache.geode.internal.InternalDataSerializer;
  *
  * @since GemFire 5.0
  */
-public class EvictionAttributesImpl extends EvictionAttributes {
+public class EvictionAttributesImpl extends EvictionAttributes implements DataSerializable {
   private static final long serialVersionUID = -6404395520499379715L;
 
   private EvictionAlgorithm algorithm = EvictionAlgorithm.NONE;
@@ -159,5 +163,68 @@ public class EvictionAttributesImpl extends EvictionAttributes {
     return this.algorithm == EvictionAlgorithm.LIFO_MEMORY;
   }
 
+  public static EvictionAttributesImpl fromConfig(
+      RegionAttributesType.EvictionAttributes configAttributes)
+      throws ClassCastException, InstantiationException,
+      IllegalAccessException {
+    EvictionAttributesImpl evictionAttributes = new EvictionAttributesImpl();
 
+    if (configAttributes.getLruHeapPercentage() != null) {
+      evictionAttributes.setAlgorithm(EvictionAlgorithm.LRU_HEAP);
+    } else if (configAttributes.getLruEntryCount() != null) {
+      evictionAttributes.setAlgorithm(EvictionAlgorithm.LRU_ENTRY);
+    } else if (configAttributes.getLruMemorySize() != null) {
+      evictionAttributes.setAlgorithm(EvictionAlgorithm.LRU_MEMORY);
+    } else {
+      evictionAttributes.setAlgorithm(EvictionAlgorithm.NONE);
+    }
+
+    String sizerClassName = null;
+    if (configAttributes.getLruHeapPercentage() != null) {
+      sizerClassName = configAttributes.getLruHeapPercentage().getClassName();
+    } else if (configAttributes.getLruMemorySize() != null) {
+      sizerClassName = configAttributes.getLruMemorySize().getClassName();
+    }
+
+    if (sizerClassName != null) {
+      ObjectSizer sizer;
+      try {
+        sizer = (ObjectSizer) ClassPathLoader.getLatest().forName(sizerClassName).newInstance();
+      } catch (ClassNotFoundException e) {
+        sizer = ObjectSizer.DEFAULT;
+      }
+      if (sizer != null && !(sizer instanceof Declarable)) {
+        throw new ClassCastException();
+      }
+      evictionAttributes.setObjectSizer(sizer);
+    }
+
+    if (configAttributes.getLruMemorySize() != null) {
+      evictionAttributes
+          .setMaximum(Integer.valueOf(configAttributes.getLruMemorySize().getMaximum()));
+    } else if (configAttributes.getLruEntryCount() != null) {
+      evictionAttributes
+          .setMaximum(Integer.valueOf(configAttributes.getLruEntryCount().getMaximum()));
+    } else {
+      evictionAttributes.setMaximum(0);
+    }
+
+    if (configAttributes.getLruMemorySize() != null) {
+      evictionAttributes
+          .setAction(EvictionAction.parseAction(configAttributes.getLruMemorySize().getAction()
+              .value()));
+    } else if (configAttributes.getLruEntryCount() != null) {
+      evictionAttributes
+          .setAction(EvictionAction.parseAction(configAttributes.getLruEntryCount().getAction()
+              .value()));
+    } else if (configAttributes.getLruHeapPercentage() != null) {
+      evictionAttributes
+          .setAction(EvictionAction.parseAction(configAttributes.getLruHeapPercentage().getAction()
+              .value()));
+    } else {
+      evictionAttributes.setAction(EvictionAction.NONE);
+    }
+
+    return evictionAttributes;
+  }
 }

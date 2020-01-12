@@ -14,7 +14,8 @@
  */
 package org.apache.geode.internal.cache.control;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -22,12 +23,9 @@ import java.lang.reflect.Proxy;
 import java.util.HashSet;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class FilterByPathJUnitTest {
 
   @Test

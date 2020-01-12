@@ -19,99 +19,55 @@ import java.util.Stack;
 import org.xml.sax.Attributes;
 
 import org.apache.geode.cache.CacheXmlException;
-import org.apache.geode.connectors.jdbc.internal.ConnectionConfigBuilder;
-import org.apache.geode.connectors.jdbc.internal.ConnectionConfiguration;
-import org.apache.geode.connectors.jdbc.internal.RegionMapping;
-import org.apache.geode.connectors.jdbc.internal.RegionMappingBuilder;
-import org.apache.geode.internal.cache.xmlcache.CacheCreation;
+import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
+import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
+import org.apache.geode.internal.cache.xmlcache.RegionCreation;
 
 public enum ElementType {
-  CONNECTION_SERVICE("connector-service") {
+  JDBC_MAPPING("mapping") {
     @Override
     void startElement(Stack<Object> stack, Attributes attributes) {
-      if (!(stack.peek() instanceof CacheCreation)) {
+      if (!(stack.peek() instanceof RegionCreation)) {
         throw new CacheXmlException(
-            "jdbc <connector-service> elements must occur within <cache> elements");
+            "<jdbc:mapping> elements must occur within <region> elements");
       }
-      CacheCreation cacheCreation = (CacheCreation) stack.peek();
-      JdbcServiceConfiguration serviceConfig = new JdbcServiceConfiguration();
-      cacheCreation.getExtensionPoint().addExtension(serviceConfig);
-      stack.push(serviceConfig);
-    }
-
-    @Override
-    void endElement(Stack<Object> stack) {
-      stack.pop();
-    }
-  },
-  CONNECTION("connection") {
-    @Override
-    void startElement(Stack<Object> stack, Attributes attributes) {
-      if (!(stack.peek() instanceof JdbcServiceConfiguration)) {
-        throw new CacheXmlException(
-            "jdbc <connection> elements must occur within <connector-service> elements");
-      }
-      ConnectionConfigBuilder connectionConfigBuilder = new ConnectionConfigBuilder()
-          .withName(attributes.getValue(JdbcConnectorServiceXmlParser.NAME))
-          .withUrl(attributes.getValue(JdbcConnectorServiceXmlParser.URL))
-          .withUser(attributes.getValue(JdbcConnectorServiceXmlParser.USER))
-          .withPassword(attributes.getValue(JdbcConnectorServiceXmlParser.PASSWORD))
-          .withParameters(parseParameters(attributes));
-      stack.push(connectionConfigBuilder);
-    }
-
-    private String[] parseParameters(Attributes attributes) {
-      String[] result = null;
-      String value = attributes.getValue(JdbcConnectorServiceXmlParser.PARAMETERS);
-      if (value != null) {
-        result = value.split(",");
-      }
-      return result;
-    }
-
-    @Override
-    void endElement(Stack<Object> stack) {
-      ConnectionConfiguration config = ((ConnectionConfigBuilder) stack.pop()).build();
-      JdbcServiceConfiguration connectorService = (JdbcServiceConfiguration) stack.peek();
-      connectorService.addConnectionConfig(config);
-    }
-  },
-  REGION_MAPPING("region-mapping") {
-    @Override
-    void startElement(Stack<Object> stack, Attributes attributes) {
-      if (!(stack.peek() instanceof JdbcServiceConfiguration)) {
-        throw new CacheXmlException(
-            "jdbc <region-mapping> elements must occur within <connector-service> elements");
-      }
-      RegionMappingBuilder mapping = new RegionMappingBuilder()
-          .withRegionName(attributes.getValue(JdbcConnectorServiceXmlParser.REGION))
-          .withConnectionConfigName(
-              attributes.getValue(JdbcConnectorServiceXmlParser.CONNECTION_NAME))
-          .withTableName(attributes.getValue(JdbcConnectorServiceXmlParser.TABLE))
-          .withPdxClassName(attributes.getValue(JdbcConnectorServiceXmlParser.PDX_CLASS))
-          .withPrimaryKeyInValue(
-              attributes.getValue(JdbcConnectorServiceXmlParser.PRIMARY_KEY_IN_VALUE));
+      RegionCreation regionCreation = (RegionCreation) stack.peek();
+      RegionMapping mapping = new RegionMapping();
+      mapping.setRegionName(regionCreation.getFullPath().substring(1));
+      mapping.setDataSourceName(
+          attributes.getValue(JdbcConnectorServiceXmlParser.DATA_SOURCE));
+      mapping.setTableName(attributes.getValue(JdbcConnectorServiceXmlParser.TABLE));
+      mapping.setPdxName(attributes.getValue(JdbcConnectorServiceXmlParser.PDX_NAME));
+      mapping.setIds(attributes.getValue(JdbcConnectorServiceXmlParser.IDS));
+      mapping.setCatalog(attributes.getValue(JdbcConnectorServiceXmlParser.CATALOG));
+      mapping.setSchema(attributes.getValue(JdbcConnectorServiceXmlParser.SCHEMA));
       stack.push(mapping);
     }
 
     @Override
     void endElement(Stack<Object> stack) {
-      RegionMapping mapping = ((RegionMappingBuilder) stack.pop()).build();
-      JdbcServiceConfiguration connectorService = (JdbcServiceConfiguration) stack.peek();
-      connectorService.addRegionMapping(mapping);
+      RegionMapping mapping = (RegionMapping) stack.pop();
+      RegionCreation regionCreation = (RegionCreation) stack.peek();
+      regionCreation.getExtensionPoint().addExtension(new RegionMappingConfiguration(mapping));
     }
   },
+
   FIELD_MAPPING("field-mapping") {
     @Override
     void startElement(Stack<Object> stack, Attributes attributes) {
-      if (!(stack.peek() instanceof RegionMappingBuilder)) {
+      if (!(stack.peek() instanceof RegionMapping)) {
         throw new CacheXmlException(
-            "jdbc <field-mapping> elements must occur within <region-mapping> elements");
+            "<jdbc:field-mapping> elements must occur within <jdbc:mapping> elements");
       }
-      RegionMappingBuilder mapping = (RegionMappingBuilder) stack.peek();
-      String fieldName = attributes.getValue(JdbcConnectorServiceXmlParser.FIELD_NAME);
-      String columnName = attributes.getValue(JdbcConnectorServiceXmlParser.COLUMN_NAME);
-      mapping.withFieldToColumnMapping(fieldName, columnName);
+      RegionMapping mapping = (RegionMapping) stack.peek();
+      String pdxName = attributes.getValue(JdbcConnectorServiceXmlParser.PDX_NAME);
+      String pdxType = attributes.getValue(JdbcConnectorServiceXmlParser.PDX_TYPE);
+      String jdbcName = attributes.getValue(JdbcConnectorServiceXmlParser.JDBC_NAME);
+      String jdbcType = attributes.getValue(JdbcConnectorServiceXmlParser.JDBC_TYPE);
+      String jdbcNullable = attributes.getValue(JdbcConnectorServiceXmlParser.JDBC_NULLABLE);
+      FieldMapping fieldMapping = new FieldMapping(pdxName, pdxType, jdbcName, jdbcType,
+          Boolean.parseBoolean(jdbcNullable));
+      mapping.addFieldMapping(fieldMapping);
     }
 
     @Override

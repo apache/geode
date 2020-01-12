@@ -12,14 +12,12 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- *
- */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalInstantiator;
@@ -33,13 +31,12 @@ import org.apache.geode.internal.cache.tier.sockets.ClientInstantiatorMessage;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.SecurityService;
 
 
 public class RegisterInstantiators extends BaseCommand {
 
+  @Immutable
   private static final RegisterInstantiators singleton = new RegisterInstantiators();
 
   public static Command getCommand() {
@@ -57,10 +54,6 @@ public class RegisterInstantiators extends BaseCommand {
       logger.debug("{}: Received register instantiator request ({} parts) from {}",
           serverConnection.getName(), clientMessage.getNumberOfParts(),
           serverConnection.getSocketString());
-    }
-
-    if (!ServerConnection.allowInternalMessagesWithoutCredentials) {
-      serverConnection.getAuthzRequest();
     }
 
     int noOfParts = clientMessage.getNumberOfParts();
@@ -111,8 +104,8 @@ public class RegisterInstantiators extends BaseCommand {
         }
       }
     } catch (Exception e) {
-      logger.warn(LocalizedMessage.create(LocalizedStrings.RegisterInstantiators_BAD_CLIENT,
-          new Object[] {serverConnection.getMembershipID(), e.getLocalizedMessage()}));
+      logger.warn("Client {} failed to register instantiators: {}",
+          new Object[] {serverConnection.getMembershipID(), e.getLocalizedMessage()});
       writeException(clientMessage, e, false, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
     }

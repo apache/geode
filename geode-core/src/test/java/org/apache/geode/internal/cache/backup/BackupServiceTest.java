@@ -26,15 +26,12 @@ import java.util.HashSet;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class BackupServiceTest {
 
   private BackupService backupService;
@@ -65,14 +62,14 @@ public class BackupServiceTest {
   @Test
   public void throwsExceptionWhenBackupRequesterHasLeftDistributedSystem() {
     InternalDistributedMember oldSender = new InternalDistributedMember("localhost", 5556);
-    assertThatThrownBy(() -> backupService.validateRequestingAdmin(oldSender))
+    assertThatThrownBy(() -> backupService.validateRequestingSender(oldSender))
         .isInstanceOf(IllegalStateException.class);
   }
 
   @Test
   public void startBackupThrowsExceptionWhenAnotherBackupInProgress() throws Exception {
     BackupTask backupTask = mock(BackupTask.class);
-    backupService.currentTask.set(backupTask);
+    backupService.setCurrentTask(backupTask);
     assertThatThrownBy(() -> backupService.prepareBackup(sender, null))
         .isInstanceOf(IOException.class);
   }

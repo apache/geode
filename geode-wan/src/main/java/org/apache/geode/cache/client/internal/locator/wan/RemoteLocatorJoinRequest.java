@@ -18,11 +18,11 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import org.apache.geode.DataSerializer;
-import org.apache.geode.cache.client.internal.locator.ServerLocationRequest;
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * Requests remote locators of a remote WAN site
@@ -47,13 +47,17 @@ public class RemoteLocatorJoinRequest implements DataSerializableFixedID {
     this.locator = locator;
   }
 
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.locator = DataSerializer.readObject(in);
+  @Override
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    this.locator = context.getDeserializer().readObject(in);
     this.distributedSystemId = in.readInt();
   }
 
-  public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeObject(locator, out);
+  @Override
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    context.getSerializer().writeObject(locator, out);
     out.writeInt(this.distributedSystemId);
   }
 
@@ -65,6 +69,7 @@ public class RemoteLocatorJoinRequest implements DataSerializableFixedID {
     return distributedSystemId;
   }
 
+  @Override
   public int getDSFID() {
     return DataSerializableFixedID.REMOTE_LOCATOR_JOIN_REQUEST;
   }

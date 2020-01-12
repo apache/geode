@@ -20,13 +20,14 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 
-import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.internal.ObjectIntHashMap.Entry;
 import org.apache.geode.cache.query.types.ObjectType;
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.CachePerfStats;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 public class ResultsBag extends Bag implements DataSerializableFixedID {
 
@@ -134,8 +135,10 @@ public class ResultsBag extends Bag implements DataSerializableFixedID {
     return new ObjectIntHashMap(this.size);
   }
 
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.elementType = (ObjectType) DataSerializer.readObject(in);
+  @Override
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    this.elementType = (ObjectType) context.getDeserializer().readObject(in);
     this.size = in.readInt();
     assert this.size >= 0 : this.size;
     this.map = createMapForFromData();
@@ -145,19 +148,22 @@ public class ResultsBag extends Bag implements DataSerializableFixedID {
     int numLeft = this.size - this.numNulls;
 
     while (numLeft > 0) {
-      Object key = DataSerializer.readObject(in);
-      int occurence = in.readInt();
-      this.map.put(key, occurence);
-      numLeft -= occurence;
+      Object key = context.getDeserializer().readObject(in);
+      int occurrence = in.readInt();
+      this.map.put(key, occurrence);
+      numLeft -= occurrence;
     }
   }
 
+  @Override
   public int getDSFID() {
     return RESULTS_BAG;
   }
 
-  public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeObject(this.elementType, out);
+  @Override
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    context.getSerializer().writeObject(this.elementType, out);
     out.writeInt(this.size());
     this.writeNumNulls(out);
     // TODO:Asif: Should we actually pass the limit in serialization?
@@ -168,18 +174,16 @@ public class ResultsBag extends Bag implements DataSerializableFixedID {
     for (Iterator<Entry> itr = this.map.entrySet().iterator(); itr.hasNext() && numLeft > 0;) {
       Entry entry = itr.next();
       Object key = entry.getKey();
-      DataSerializer.writeObject(key, out);
-      int occurence = entry.getValue();
-      if (numLeft < occurence) {
-        occurence = numLeft;
+      context.getSerializer().writeObject(key, out);
+      int occurrence = entry.getValue();
+      if (numLeft < occurrence) {
+        occurrence = numLeft;
       }
-      out.writeInt(occurence);
-      numLeft -= occurence;
+      out.writeInt(occurrence);
+      numLeft -= occurrence;
     }
   }
 
-  /**
-   */
   void createIntHashMap() {
     this.map = new ObjectIntHashMap(this.size - this.numNulls);
   }

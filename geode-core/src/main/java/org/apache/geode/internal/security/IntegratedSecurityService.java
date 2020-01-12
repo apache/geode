@@ -14,14 +14,17 @@
  */
 package org.apache.geode.internal.security;
 
+import static org.apache.geode.logging.internal.spi.LoggingProvider.SECURITY_LOGGER_NAME;
+
 import java.io.IOException;
 import java.security.AccessController;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.apache.commons.lang.SerializationException;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.SerializationException;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.ShiroException;
@@ -33,11 +36,11 @@ import org.apache.shiro.util.ThreadState;
 
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.internal.cache.EntryEventImpl;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.security.shiro.GeodeAuthenticationToken;
 import org.apache.geode.internal.security.shiro.SecurityManagerProvider;
 import org.apache.geode.internal.security.shiro.ShiroPrincipal;
 import org.apache.geode.internal.util.BlobHelper;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.GemFireSecurityException;
@@ -53,9 +56,11 @@ import org.apache.geode.security.SecurityManager;
  * Security service with SecurityManager and an optional PostProcessor.
  */
 public class IntegratedSecurityService implements SecurityService {
-  private static Logger logger = LogService.getLogger(LogService.SECURITY_LOGGER_NAME);
+  private static final Logger logger = LogService.getLogger(SECURITY_LOGGER_NAME);
+
   public static final String CREDENTIALS_SESSION_ATTRIBUTE = "credentials";
 
+  private final AtomicBoolean closed = new AtomicBoolean();
   private final PostProcessor postProcessor;
   private final SecurityManager securityManager;
 
@@ -71,18 +76,18 @@ public class IntegratedSecurityService implements SecurityService {
     assert provider.getShiroSecurityManager() != null;
     SecurityUtils.setSecurityManager(provider.getShiroSecurityManager());
 
-    this.securityManager = provider.getSecurityManager();
+    securityManager = provider.getSecurityManager();
     this.postProcessor = postProcessor;
   }
 
   @Override
   public PostProcessor getPostProcessor() {
-    return this.postProcessor;
+    return postProcessor;
   }
 
   @Override
   public SecurityManager getSecurityManager() {
-    return this.securityManager;
+    return securityManager;
   }
 
   /**
@@ -178,8 +183,9 @@ public class IntegratedSecurityService implements SecurityService {
    *   state = securityService.bindSubject(subject);
    *   // do the rest of the work as this subject
    * } finally {
-   *   if (state != null)
+   *   if (state != null) {
    *     state.clear();
+   *   }
    * }
    * </pre>
    */
@@ -215,8 +221,12 @@ public class IntegratedSecurityService implements SecurityService {
   }
 
   @Override
-  public void authorize(Resource resource, Operation operation, String target, String key) {
-    authorize(new ResourcePermission(resource, operation, target, key));
+  public void authorize(Resource resource, Operation operation, String target, Object key) {
+    String keystr = null;
+    if (key != null) {
+      keystr = key.toString();
+    }
+    authorize(new ResourcePermission(resource, operation, target, keystr));
   }
 
   @Override
@@ -232,23 +242,44 @@ public class IntegratedSecurityService implements SecurityService {
     try {
       currentUser.checkPermission(context);
     } catch (ShiroException e) {
-      String msg = currentUser.getPrincipal() + " not authorized for " + context;
-      logger.info("NotAuthorizedException: {}", msg);
-      throw new NotAuthorizedException(msg, e);
+      String message = currentUser.getPrincipal() + " not authorized for " + context;
+      logger.info("NotAuthorizedException: {}", message);
+      throw new NotAuthorizedException(message, e);
+    }
+  }
+
+  @Override
+  public void authorize(ResourcePermission context, Subject currentUser) {
+    if (context == null) {
+      return;
+    }
+    if (context.getResource() == Resource.NULL && context.getOperation() == Operation.NULL) {
+      return;
+    }
+
+    try {
+      currentUser.checkPermission(context);
+    } catch (ShiroException e) {
+      String message = currentUser.getPrincipal() + " not authorized for " + context;
+      logger.info("NotAuthorizedException: {}", message);
+      throw new NotAuthorizedException(message, e);
     }
   }
 
   @Override
   public void close() {
-    if (this.securityManager != null) {
-      this.securityManager.close();
-    }
-    if (this.postProcessor != null) {
-      this.postProcessor.close();
-    }
+    // subsequent calls to close are no-op
+    if (closed.compareAndSet(false, true)) {
+      if (securityManager != null) {
+        securityManager.close();
+      }
+      if (postProcessor != null) {
+        postProcessor.close();
+      }
 
-    ThreadContext.remove();
-    SecurityUtils.setSecurityManager(null);
+      ThreadContext.remove();
+      SecurityUtils.setSecurityManager(null);
+    }
   }
 
   /**
@@ -258,7 +289,7 @@ public class IntegratedSecurityService implements SecurityService {
    */
   @Override
   public boolean needPostProcess() {
-    return this.postProcessor != null;
+    return postProcessor != null;
   }
 
   @Override
@@ -286,13 +317,13 @@ public class IntegratedSecurityService implements SecurityService {
     if (valueIsSerialized && value instanceof byte[]) {
       try {
         Object oldObj = EntryEventImpl.deserialize((byte[]) value);
-        Object newObj = this.postProcessor.processRegionValue(principal, regionName, key, oldObj);
+        Object newObj = postProcessor.processRegionValue(principal, regionName, key, oldObj);
         newValue = BlobHelper.serializeToBlob(newObj);
       } catch (IOException | SerializationException e) {
         throw new GemFireIOException("Exception de/serializing entry value", e);
       }
     } else {
-      newValue = this.postProcessor.processRegionValue(principal, regionName, key, value);
+      newValue = postProcessor.processRegionValue(principal, regionName, key, value);
     }
 
     return newValue;

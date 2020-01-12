@@ -12,17 +12,14 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- *
- */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.DynamicRegionFactory;
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.operations.RegisterInterestOperationContext;
-import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.InterestType;
@@ -33,8 +30,6 @@ import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.ResourcePermission.Operation;
@@ -42,6 +37,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
 
 public class RegisterInterest extends BaseCommand {
 
+  @Immutable
   private static final RegisterInterest singleton = new RegisterInterest();
 
   public static Command getCommand() {
@@ -63,7 +59,7 @@ public class RegisterInterest extends BaseCommand {
     // start = DistributionStats.getStatTime();
     // Retrieve the data from the message parts
     regionNamePart = clientMessage.getPart(0);
-    regionName = regionNamePart.getString();
+    regionName = regionNamePart.getCachedString();
     InterestResultPolicy policy = null;
     // Retrieve the interest type
     int interestType = clientMessage.getPart(1).getInt();
@@ -88,7 +84,7 @@ public class RegisterInterest extends BaseCommand {
     }
     // Retrieve the key
     keyPart = clientMessage.getPart(4);
-    regionName = regionNamePart.getString();
+    regionName = regionNamePart.getCachedString();
     try {
       key = keyPart.getStringOrObject();
     } catch (Exception e) {
@@ -121,18 +117,18 @@ public class RegisterInterest extends BaseCommand {
 
     // Process the register interest request
     if (key == null || regionName == null) {
-      StringId message = null;
+      String message = null;
       if (key == null) {
         message =
-            LocalizedStrings.RegisterInterest_THE_INPUT_KEY_FOR_THE_REGISTER_INTEREST_REQUEST_IS_NULL;
+            "The input key for the register interest request is null";
       }
       if (regionName == null) {
         message =
-            LocalizedStrings.RegisterInterest_THE_INPUT_REGION_NAME_FOR_THE_REGISTER_INTEREST_REQUEST_IS_NULL;
+            "The input region name for the register interest request is null.";
       }
-      logger.warn("{}: {}", serverConnection.getName(), message.toLocalizedString());
+      logger.warn("{}: {}", serverConnection.getName(), message);
       writeChunkedErrorResponse(clientMessage, MessageType.REGISTER_INTEREST_DATA_ERROR,
-          message.toLocalizedString(), serverConnection);
+          message, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
       return;
     }
@@ -140,9 +136,8 @@ public class RegisterInterest extends BaseCommand {
     // input key not null
     LocalRegion region = (LocalRegion) serverConnection.getCache().getRegion(regionName);
     if (region == null) {
-      logger.info(LocalizedMessage.create(
-          LocalizedStrings.RegisterInterest_0_REGION_NAMED_1_WAS_NOT_FOUND_DURING_REGISTER_INTEREST_REQUEST,
-          new Object[] {serverConnection.getName(), regionName}));
+      logger.info("{}: Region named {} was not found during register interest request.",
+          new Object[] {serverConnection.getName(), regionName});
       // writeChunkedErrorResponse(msg,
       // MessageType.REGISTER_INTEREST_DATA_ERROR, message);
       // responded = true;
@@ -152,7 +147,7 @@ public class RegisterInterest extends BaseCommand {
       if (interestType == InterestType.REGULAR_EXPRESSION) {
         securityService.authorize(Resource.DATA, Operation.READ, regionName);
       } else {
-        securityService.authorize(Resource.DATA, Operation.READ, regionName, key.toString());
+        securityService.authorize(Resource.DATA, Operation.READ, regionName, key);
       }
 
       AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
@@ -187,8 +182,7 @@ public class RegisterInterest extends BaseCommand {
     if (ccp == null) {
       // fix for 37593
       IOException ioex = new IOException(
-          LocalizedStrings.RegisterInterest_CACHECLIENTPROXY_FOR_THIS_CLIENT_IS_NO_LONGER_ON_THE_SERVER_SO_REGISTERINTEREST_OPERATION_IS_UNSUCCESSFUL
-              .toLocalizedString());
+          "CacheClientProxy for this client is no longer on the server , so registerInterest operation is unsuccessful");
       writeChunkedException(clientMessage, ioex, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
       return;

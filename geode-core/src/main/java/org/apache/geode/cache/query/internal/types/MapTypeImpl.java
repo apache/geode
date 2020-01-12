@@ -15,10 +15,16 @@
 
 package org.apache.geode.cache.query.internal.types;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.cache.query.types.*;
+import org.apache.geode.cache.query.types.MapType;
+import org.apache.geode.cache.query.types.ObjectType;
+import org.apache.geode.cache.query.types.StructType;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 
 /**
@@ -69,10 +75,12 @@ public class MapTypeImpl extends CollectionTypeImpl implements MapType {
     return true;
   }
 
+  @Override
   public ObjectType getKeyType() {
     return this.keyType;
   }
 
+  @Override
   public StructType getEntryType() {
     ObjectType[] fieldTypes = new ObjectType[] {this.keyType, getElementType()};
     return new StructTypeImpl(new String[] {"key", "value"}, fieldTypes);
@@ -84,14 +92,16 @@ public class MapTypeImpl extends CollectionTypeImpl implements MapType {
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.keyType = (ObjectType) DataSerializer.readObject(in);
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     DataSerializer.writeObject(this.keyType, out);
   }
 }

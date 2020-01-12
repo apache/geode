@@ -30,8 +30,9 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
 import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * An instruction to all members that they should forget about the persistent member described by
@@ -99,8 +100,9 @@ public class PrepareRevokePersistentIDRequest extends CliLegacyMessage {
       } else {
         if (!mm.prepareRevoke(this.pattern, dm, getSender())) {
           throw new RevokeFailedException(
-              LocalizedStrings.RevokeFailedException_Member_0_is_already_running_1
-                  .toLocalizedString(dm.getId(), this.pattern));
+              String.format(
+                  "Member %s is already running with persistent files matching %s. You cannot revoke the disk store of a running member.",
+                  dm.getId(), this.pattern));
         }
       }
     }
@@ -114,16 +116,18 @@ public class PrepareRevokePersistentIDRequest extends CliLegacyMessage {
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.pattern = new PersistentMemberPattern();
     InternalDataSerializer.invokeFromData(this.pattern, in);
     this.cancel = in.readBoolean();
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     InternalDataSerializer.invokeToData(this.pattern, out);
     out.writeBoolean(this.cancel);
   }

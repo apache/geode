@@ -15,9 +15,16 @@
 
 package org.apache.geode.cache.query.internal;
 
-import java.util.*;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
-import org.apache.geode.cache.query.*;
+import org.apache.geode.cache.query.AmbiguousNameException;
+import org.apache.geode.cache.query.FunctionDomainException;
+import org.apache.geode.cache.query.NameResolutionException;
+import org.apache.geode.cache.query.QueryInvocationTargetException;
+import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.internal.Assert;
 
 
@@ -43,10 +50,12 @@ public class CompiledConstruction extends AbstractCompiledValue {
   }
 
 
+  @Override
   public int getType() {
     return CONSTRUCTION;
   }
 
+  @Override
   public Object evaluate(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     // we only support ResultsSet now

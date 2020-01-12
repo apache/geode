@@ -51,7 +51,6 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.extension.Extensible;
 import org.apache.geode.internal.cache.extension.ExtensionPoint;
 import org.apache.geode.internal.cache.extension.SimpleExtensionPoint;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Represents a {@link Region} that is created declaratively. Notice that it implements the
@@ -136,6 +135,7 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
     this(cache, null, name, null);
   }
 
+  @Override
   public Object put(Object key, Object value) throws TimeoutException, CacheWriterException {
     return this.values.put(key, value);
   }
@@ -144,9 +144,6 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
    * Fills in the state (that is, adds entries and creates subregions) of a given
    * <code>Region</code> based on the description provided by this <code>RegionCreation</code>.
    *
-   * @throws TimeoutException
-   * @throws CacheWriterException
-   * @throws RegionExistsException
    */
   private void fillIn(Region region)
       throws TimeoutException, CacheWriterException, RegionExistsException {
@@ -224,9 +221,6 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
    * Creates a root {@link Region} in a given <code>Cache</code> based on the description provided
    * by this <code>RegionCreation</code>.
    *
-   * @throws TimeoutException
-   * @throws CacheWriterException
-   * @throws RegionExistsException
    */
   void createRoot(Cache cache)
       throws TimeoutException, CacheWriterException, RegionExistsException {
@@ -247,8 +241,9 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
       setMutableAttributes(root);
     } catch (RegionDestroyedException ex) {
       // Region was concurrently destroyed.
-      cache.getLoggerI18n().warning(
-          LocalizedStrings.RegionCreation_REGION_DESTROYED_DURING_INITIALIZATION, this.name);
+      cache.getLogger().warning(
+          String.format("Region was globally destroyed during cache initialization: %s",
+              this.name));
       // do nothing
     }
     if (root != null) {
@@ -260,7 +255,6 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
    * Called by CacheXmlParser to add the IndexCreationData object to the list. It is called when
    * functional element is encounetered
    *
-   * @param icd
    */
   void addIndexData(IndexCreationData icd) {
     this.indexes.add(icd);
@@ -270,10 +264,6 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
    * Creates a {@link Region} with the given parent using the description provided by this
    * <code>RegionCreation</code>.
    *
-   * @throws TimeoutException
-   * @throws CacheWriterException
-   * @throws RegionExistsException
-   * @throws IllegalStateException
    */
   void create(Region parent) throws TimeoutException, CacheWriterException, RegionExistsException {
 
@@ -290,8 +280,9 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
       setMutableAttributes(me);
     } catch (RegionDestroyedException ex) {
       // Region was concurrently destroyed.
-      cache.getLoggerI18n().warning(
-          LocalizedStrings.RegionCreation_REGION_DESTROYED_DURING_INITIALIZATION, this.name);
+      cache.getLogger().warning(
+          String.format("Region was globally destroyed during cache initialization: %s",
+              this.name));
       // do nothing
     }
 
@@ -317,14 +308,14 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
     }
 
     if (!this.getName().equals(other.getName())) {
-      throw new RuntimeException(LocalizedStrings.RegionCreation_REGION_NAMES_DIFFER_THIS_0_OTHER_1
-          .toLocalizedString(new Object[] {this.getName(), other.getName()}));
+      throw new RuntimeException(String.format("region names differ: this: %s other: %s",
+          new Object[] {this.getName(), other.getName()}));
     }
 
     if (!this.attrs.sameAs(other.getAttributes())) {
       throw new RuntimeException(
-          LocalizedStrings.RegionCreation_REGION_ATTRIBUTES_DIFFER_THIS_0_OTHER_1
-              .toLocalizedString(new Object[] {this.attrs, other.getAttributes()}));
+          String.format("region attributes differ this: %s other: %s",
+              new Object[] {this.attrs, other.getAttributes()}));
     }
 
     Collection myEntries = this.basicEntries(false);
@@ -347,6 +338,7 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
     return true;
   }
 
+  @Override
   public String getName() {
     return this.name;
   }
@@ -375,9 +367,10 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
         && attrs.getEvictionAttributes().getAlgorithm().isLRUMemory()
         && attrs.getPartitionAttributes().getLocalMaxMemory() != 0 && attrs.getEvictionAttributes()
             .getMaximum() != attrs.getPartitionAttributes().getLocalMaxMemory()) {
-      getCache().getLoggerI18n().warning(LocalizedStrings.Mem_LRU_Eviction_Attribute_Reset,
+      getCache().getLogger().warning(String.format(
+          "For region %s with data policy PARTITION, memory LRU eviction attribute maximum has been reset from %sMB to local-max-memory %sMB",
           new Object[] {this.getName(), attrs.getEvictionAttributes().getMaximum(),
-              attrs.getPartitionAttributes().getLocalMaxMemory()});
+              attrs.getPartitionAttributes().getLocalMaxMemory()}));
       this.attrs.setEvictionAttributes(attrs.getEvictionAttributes().createLRUMemoryAttributes(
           attrs.getPartitionAttributes().getLocalMaxMemory(),
           attrs.getEvictionAttributes().getObjectSizer(),
@@ -385,12 +378,14 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
     }
   }
 
+  @Override
   public RegionAttributes getAttributes() {
     return this.attrs;
   }
 
 
 
+  @Override
   public Region getSubregion(String regionName) {
     return (Region) this.subregions.get(regionName);
   }
@@ -412,147 +407,165 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
     }
   }
 
+  @Override
   public Set subregions(boolean recursive) {
     if (recursive) {
       throw new UnsupportedOperationException(
-          LocalizedStrings.RegionCreation_GETTING_SUBREGIONS_RECURSIVELY_IS_NOT_SUPPORTED
-              .toLocalizedString());
+          "Getting subregions recursively is not supported.");
     }
 
     return new HashSet(this.subregions.values());
   }
 
+  @Override
   public void writeToDisk() {
     throw new UnsupportedOperationException(
-        LocalizedStrings.RegionCreation_WRITING_A_REGIONCREATION_TO_DISK_IS_NOT_SUPPORTED
-            .toLocalizedString());
+        "Writing a RegionCreation to disk is not supported.");
   }
 
+  @Override
   public void registerInterest(Object key) throws CacheWriterException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        "Unsupported at this time");
   }
 
+  @Override
   public void registerInterest(Object key, boolean isDurable) throws CacheWriterException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        "Unsupported at this time");
   }
 
+  @Override
   public void registerInterest(Object key, boolean isDurable, boolean receiveValues)
       throws CacheWriterException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        "Unsupported at this time");
   }
 
+  @Override
   public void registerInterestRegex(String regex) throws CacheWriterException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        "Unsupported at this time");
   }
 
+  @Override
   public void registerInterestRegex(String regex, boolean isDurable) throws CacheWriterException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        "Unsupported at this time");
   }
 
+  @Override
   public void registerInterestRegex(String regex, boolean isDurable, boolean receiveValues)
       throws CacheWriterException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        "Unsupported at this time");
   }
 
+  @Override
   public void registerInterest(Object key, InterestResultPolicy policy)
       throws CacheWriterException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        "Unsupported at this time");
   }
 
+  @Override
   public void registerInterest(Object key, InterestResultPolicy policy, boolean isDurable)
       throws CacheWriterException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        "Unsupported at this time");
   }
 
+  @Override
   public void registerInterest(Object key, InterestResultPolicy policy, boolean isDurable,
       boolean receiveValues) throws CacheWriterException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        "Unsupported at this time");
   }
 
 
+  @Override
   public void registerInterestRegex(String regex, InterestResultPolicy policy)
       throws CacheWriterException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        "Unsupported at this time");
   }
 
+  @Override
   public void registerInterestRegex(String regex, InterestResultPolicy policy, boolean isDurable)
       throws CacheWriterException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        "Unsupported at this time");
   }
 
+  @Override
   public void registerInterestRegex(String regex, InterestResultPolicy policy, boolean isDurable,
       boolean receiveValues) throws CacheWriterException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        "Unsupported at this time");
   }
 
+  @Override
   public void unregisterInterest(Object key) throws CacheWriterException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        "Unsupported at this time");
   }
 
   public void unregisterInterest(Object key, boolean isDurable) throws CacheWriterException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        "Unsupported at this time");
   }
 
+  @Override
   public void unregisterInterestRegex(String regex) throws CacheWriterException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        "Unsupported at this time");
   }
 
   public void unregisterInterestRegex(String regex, boolean isDurable) throws CacheWriterException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        "Unsupported at this time");
   }
 
 
+  @Override
   public List getInterestList() throws CacheWriterException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        "Unsupported at this time");
   }
 
   public List getDurableInterestList() throws CacheWriterException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        "Unsupported at this time");
   }
 
+  @Override
   public List getInterestListRegex() throws CacheWriterException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        "Unsupported at this time");
   }
 
+  @Override
   public Set keySetOnServer() throws CacheWriterException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        "Unsupported at this time");
   }
 
+  @Override
   public boolean containsKeyOnServer(Object key) throws CacheWriterException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        "Unsupported at this time");
   }
 
   @Override
   public int sizeOnServer() throws CacheWriterException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        "Unsupported at this time");
   }
 
   @Override
   public boolean isEmptyOnServer() throws CacheWriterException {
     throw new UnsupportedOperationException(
-        LocalizedStrings.UNSUPPORTED_AT_THIS_TIME.toLocalizedString());
+        "Unsupported at this time");
   }
 
   static class Entry implements Region.Entry {
@@ -564,43 +577,53 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
       this.value = value;
     }
 
+    @Override
     public boolean isLocal() {
       return false;
     }
 
+    @Override
     public Object getKey() {
       return key;
     }
 
+    @Override
     public Object getValue() {
       return value;
     }
 
+    @Override
     public Region getRegion() {
-      throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+      throw new UnsupportedOperationException("Should not be invoked");
     }
 
+    @Override
     public CacheStatistics getStatistics() {
-      throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+      throw new UnsupportedOperationException("Should not be invoked");
     }
 
+    @Override
     public Object getUserAttribute() {
-      throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+      throw new UnsupportedOperationException("Should not be invoked");
     }
 
+    @Override
     public Object setUserAttribute(Object userAttribute) {
-      throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+      throw new UnsupportedOperationException("Should not be invoked");
     }
 
+    @Override
     public boolean isDestroyed() {
-      throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+      throw new UnsupportedOperationException("Should not be invoked");
     }
 
+    @Override
     public Object setValue(Object arg0) {
-      throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+      throw new UnsupportedOperationException("Should not be invoked");
     }
   }
 
+  @Override
   public Region.Entry getEntry(Object key) {
     Object value = this.values.get(key);
     if (value == null) {
@@ -618,8 +641,7 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
   public Set basicEntries(boolean recursive) {
     if (recursive) {
       throw new UnsupportedOperationException(
-          LocalizedStrings.RegionCreation_GETTING_ENTRIES_RECURSIVELY_IS_NOT_SUPPORTED
-              .toLocalizedString());
+          "Getting entries recursively is not supported.");
     }
 
     Set set = new HashSet();
@@ -631,59 +653,73 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
     return set;
   }
 
+  @Override
   public String getFullPath() {
     return this.fullPath;
   }
 
+  @Override
   public Region getParentRegion() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
+  @Override
   public AttributesMutator getAttributesMutator() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
+  @Override
   public CacheStatistics getStatistics() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
+  @Override
   public void invalidateRegion() throws TimeoutException {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
+  @Override
   public void invalidateRegion(Object aCallbackArgument) throws TimeoutException {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
+  @Override
   public void localInvalidateRegion() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
+  @Override
   public void localInvalidateRegion(Object aCallbackArgument) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
+  @Override
   public void destroyRegion() throws CacheWriterException, TimeoutException {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
+  @Override
   public void destroyRegion(Object aCacheWriterParam)
       throws CacheWriterException, TimeoutException {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
+  @Override
   public void localDestroyRegion() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
+  @Override
   public void localDestroyRegion(Object aCallbackArgument) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
+  @Override
   public void close() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
+  @Override
   public Region createSubregion(String subregionName, RegionAttributes attrs)
       throws RegionExistsException, TimeoutException {
     RegionCreation subregion = new RegionCreation(this.cache, this, subregionName, null);
@@ -692,184 +728,223 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
     return subregion;
   }
 
+  @Override
   public Object get(Object key) throws CacheLoaderException, TimeoutException {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
+  @Override
   public Object get(Object key, Object aCallbackArgument)
       throws TimeoutException, CacheLoaderException {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
+  @Override
   public Object put(Object key, Object value, Object aCacheWriterParam)
       throws TimeoutException, CacheWriterException {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
+  @Override
   public void create(Object key, Object value)
       throws TimeoutException, EntryExistsException, CacheWriterException {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
+  @Override
   public void create(Object key, Object value, Object aCacheWriterParam)
       throws TimeoutException, EntryExistsException, CacheWriterException {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
+  @Override
   public void invalidate(Object key) throws TimeoutException, EntryNotFoundException {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
+  @Override
   public void invalidate(Object key, Object callbackArgument)
       throws TimeoutException, EntryNotFoundException {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
+  @Override
   public void localInvalidate(Object key) throws EntryNotFoundException {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
+  @Override
   public void localInvalidate(Object key, Object callbackArgument) throws EntryNotFoundException {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
+  @Override
   public Object destroy(Object key)
       throws TimeoutException, EntryNotFoundException, CacheWriterException {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
+  @Override
   public Object destroy(Object key, Object aCacheWriterParam)
       throws TimeoutException, EntryNotFoundException, CacheWriterException {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
+  @Override
   public void localDestroy(Object key) throws EntryNotFoundException {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
+  @Override
   public void localDestroy(Object key, Object callbackArgument) throws EntryNotFoundException {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   public Set keys() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
+  @Override
   public Collection values() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
+  @Override
   public Cache getCache() {
     return this.cache;
   }
 
+  @Override
   public RegionService getRegionService() {
     return this.cache;
   }
 
+  @Override
   public Object getUserAttribute() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
+  @Override
   public void setUserAttribute(Object value) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
+  @Override
   public boolean isDestroyed() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
+  @Override
   public boolean containsValueForKey(Object key) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
+  @Override
   public boolean containsKey(Object key) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
+  @Override
   public Lock getRegionDistributedLock() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
+  @Override
   public Lock getDistributedLock(Object key) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
+  @Override
   public boolean existsValue(String predicate) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
+  @Override
   public SelectResults query(String predicate) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
+  @Override
   public Object selectValue(String predicate) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
+  @Override
   public void loadSnapshot(InputStream inputStream)
       throws IOException, ClassNotFoundException, CacheWriterException, TimeoutException {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
+  @Override
   public void saveSnapshot(OutputStream outputStream) throws IOException {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
+  @Override
   public void becomeLockGrantor() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
+  @Override
   public int size() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
+  @Override
   public void clear() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
+  @Override
   public boolean isEmpty() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
+  @Override
   public boolean containsValue(Object arg0) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
+  @Override
   public void putAll(Map arg0) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public void putAll(Map arg0, Object callbackArg) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
+  @Override
   public Map getAll(Collection keys) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
+  @Override
   public Map getAll(Collection keys, Object callback) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
+  @Override
   public Set entrySet() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
+  @Override
   public Set keySet() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
+  @Override
   public Object remove(Object arg0) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
+  @Override
   public Set entrySet(boolean recursive) {
     if (recursive) {
       throw new UnsupportedOperationException(
-          LocalizedStrings.RegionCreation_GETTING_ENTRIES_RECURSIVELY_IS_NOT_SUPPORTED
-              .toLocalizedString());
+          "Getting entries recursively is not supported.");
     }
 
     Set set = new HashSet();
@@ -881,30 +956,36 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
     return set;
   }
 
+  @Override
   public void localClear() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
+  @Override
   public void forceRolling() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   public boolean forceCompaction() {
     throw new UnsupportedOperationException("Shouldn't be invoked");
   }
 
+  @Override
   public Object putIfAbsent(Object key, Object value) {
     throw new UnsupportedOperationException();
   }
 
+  @Override
   public boolean remove(Object key, Object value) {
     throw new UnsupportedOperationException();
   }
 
+  @Override
   public Object replace(Object key, Object value) {
     throw new UnsupportedOperationException();
   }
 
+  @Override
   public boolean replace(Object key, Object oldValue, Object newValue) {
     throw new UnsupportedOperationException();
   }
@@ -934,18 +1015,19 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
     return this.hasAttributes;
   }
 
+  @Override
   public RegionSnapshotService<?, ?> getSnapshotService() {
     throw new UnsupportedOperationException();
   }
 
   @Override
   public void removeAll(Collection keys) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   @Override
   public void removeAll(Collection keys, Object aCallbackArgument) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   /**

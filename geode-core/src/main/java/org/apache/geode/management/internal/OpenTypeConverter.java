@@ -61,6 +61,8 @@ import javax.management.openmbean.OpenDataException;
 import javax.management.openmbean.OpenType;
 import javax.management.openmbean.TabularType;
 
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.management.ManagementException;
 
 /**
@@ -93,14 +95,17 @@ public abstract class OpenTypeConverter {
   private static class ConverterMap extends WeakHashMap<Type, WeakReference<OpenTypeConverter>> {
   }
 
+  @MakeNotStatic
   private static final ConverterMap converterMap = new ConverterMap();
 
+  @MakeNotStatic
   private static final Map<Type, Type> inProgress = OpenTypeUtil.newIdentityHashMap();
 
   /**
    * Following List simply serves to keep a reference to predefined OpenConverters so they don't get
    * garbage collected.
    */
+  @MakeNotStatic
   private static final List<OpenTypeConverter> preDefinedConverters = OpenTypeUtil.newList();
 
   protected OpenTypeConverter(Type targetType, OpenType openType, Class openClass) {
@@ -326,8 +331,10 @@ public abstract class OpenTypeConverter {
     }
   }
 
+  @Immutable
   protected static final String[] keyArray = {"key"};
 
+  @Immutable
   protected static final String[] keyValueArray = {"key", "value"};
 
   private static OpenTypeConverter makeTabularConverter(Type objType, boolean sortedMap,
@@ -395,7 +402,7 @@ public abstract class OpenTypeConverter {
       if (propertyName == null)
         continue;
 
-      Method old = getterMap.put(OpenTypeUtil.decapitalize(propertyName), method);
+      Method old = getterMap.put(OpenTypeUtil.toCamelCase(propertyName), method);
       if (old != null) {
         final String msg = "Class " + c.getName() + " has method name clash: " + old.getName()
             + ", " + method.getName();
@@ -484,6 +491,7 @@ public abstract class OpenTypeConverter {
       super(targetClass, itemNames);
     }
 
+    @Override
     String applicable(Method[] getters) throws InvalidObjectException {
       // See if it has a method "T from(CompositeData)"
       // as is conventional for a CompositeDataView
@@ -511,6 +519,7 @@ public abstract class OpenTypeConverter {
       }
     }
 
+    @Override
     Object fromCompositeData(CompositeData cd, String[] itemNames, OpenTypeConverter[] converters)
         throws InvalidObjectException {
       try {
@@ -540,6 +549,7 @@ public abstract class OpenTypeConverter {
       this.getterConverters = getterConverters;
     }
 
+    @Override
     String applicable(Method[] getters) {
       for (int i = 0; i < getters.length; i++) {
         try {
@@ -558,6 +568,7 @@ public abstract class OpenTypeConverter {
       return possibleCause;
     }
 
+    @Override
     Object fromCompositeData(CompositeData cd, String[] itemNames, OpenTypeConverter[] converters) {
       throw new Error();
     }
@@ -575,6 +586,7 @@ public abstract class OpenTypeConverter {
       super(targetClass, itemNames);
     }
 
+    @Override
     String applicable(Method[] getters) {
       try {
         Constructor c = getTargetClass().getConstructor((Class[]) null);
@@ -602,6 +614,7 @@ public abstract class OpenTypeConverter {
       return null;
     }
 
+    @Override
     Object fromCompositeData(CompositeData cd, String[] itemNames, OpenTypeConverter[] converters)
         throws InvalidObjectException {
       Object o;
@@ -633,6 +646,7 @@ public abstract class OpenTypeConverter {
       super(targetClass, itemNames);
     }
 
+    @Override
     String applicable(Method[] getters) throws InvalidObjectException {
 
       final Class<ConstructorProperties> propertyNamesClass = ConstructorProperties.class;
@@ -741,6 +755,7 @@ public abstract class OpenTypeConverter {
       return null;
     }
 
+    @Override
     Object fromCompositeData(CompositeData cd, String[] itemNames, OpenTypeConverter[] converters)
         throws InvalidObjectException {
 
@@ -815,6 +830,7 @@ public abstract class OpenTypeConverter {
       super(targetClass, itemNames);
     }
 
+    @Override
     String applicable(Method[] getters) {
       Class targetClass = getTargetClass();
       if (!targetClass.isInterface())
@@ -840,6 +856,7 @@ public abstract class OpenTypeConverter {
       return null;
     }
 
+    @Override
     Object fromCompositeData(CompositeData cd, String[] itemNames, OpenTypeConverter[] converters) {
       final Class targetClass = getTargetClass();
       return Proxy.newProxyInstance(targetClass.getClassLoader(), new Class[] {targetClass},

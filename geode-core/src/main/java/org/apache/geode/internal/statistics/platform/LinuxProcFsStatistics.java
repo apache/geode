@@ -14,7 +14,11 @@
  */
 package org.apache.geode.internal.statistics.platform;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -23,9 +27,17 @@ import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.internal.MakeNotStatic;
+import org.apache.geode.internal.statistics.LocalStatisticsImpl;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 public class LinuxProcFsStatistics {
+  @MakeNotStatic
+  private static boolean soMaxConnProcessed;
+  @MakeNotStatic
+  private static int soMaxConn;
+
   private enum CPU {
     USER,
     NICE,
@@ -42,15 +54,22 @@ public class LinuxProcFsStatistics {
   private static final int DEFAULT_PAGESIZE = 4 * 1024;
   private static final int OneMeg = 1024 * 1024;
   private static final String pageSizeProperty =
-      DistributionConfig.GEMFIRE_PREFIX + "statistics.linux.pageSize";
+      GeodeGlossary.GEMFIRE_PREFIX + "statistics.linux.pageSize";
+  @MakeNotStatic
   private static CpuStat cpuStatSingleton;
-  private static int pageSize;
-  private static int sys_cpus;
+  @Immutable
+  private static final int pageSize = Integer.getInteger(pageSizeProperty, DEFAULT_PAGESIZE);
+  @Immutable
+  private static final int sys_cpus = Runtime.getRuntime().availableProcessors();
+  @MakeNotStatic
   private static boolean hasProcVmStat;
+  @MakeNotStatic
   private static boolean hasDiskStats;
-  static SpaceTokenizer st;
+  @MakeNotStatic
+  static SpaceTokenizer tokenizer;
 
   /** The number of non-process files in /proc */
+  @MakeNotStatic
   private static int nonPidFilesInProc;
 
   /** /proc/stat tokens */
@@ -71,18 +90,15 @@ public class LinuxProcFsStatistics {
 
   public static int init() { // TODO: was package-protected
     nonPidFilesInProc = getNumberOfNonProcessProcFiles();
-    sys_cpus = Runtime.getRuntime().availableProcessors();
-    pageSize = Integer.getInteger(pageSizeProperty, DEFAULT_PAGESIZE);
     cpuStatSingleton = new CpuStat();
     hasProcVmStat = new File("/proc/vmstat").exists();
     hasDiskStats = new File("/proc/diskstats").exists();
-    st = new SpaceTokenizer();
+    tokenizer = new SpaceTokenizer();
     return 0;
   }
 
   public static void close() { // TODO: was package-protected
     cpuStatSingleton = null;
-    st = null;
   }
 
   public static void readyRefresh() { // TODO: was package-protected
@@ -94,9 +110,7 @@ public class LinuxProcFsStatistics {
    * pageSize. This is the mem_unit member of the struct returned by sysinfo()
    *
    */
-  public static void refreshProcess(int pid, int[] ints, long[] longs, double[] doubles) { // TODO:
-                                                                                           // was
-                                                                                           // package-protected
+  public static void refreshProcess(int pid, LocalStatisticsImpl stats) {
     // Just incase a pid is not available
     if (pid == 0)
       return;
@@ -110,10 +124,11 @@ public class LinuxProcFsStatistics {
       if (line == null) {
         return;
       }
-      st.setString(line);
-      st.skipTokens(22);
-      ints[LinuxProcessStats.imageSizeINT] = (int) (st.nextTokenAsLong() / OneMeg);
-      ints[LinuxProcessStats.rssSizeINT] = (int) ((st.nextTokenAsLong() * pageSize) / OneMeg);
+      tokenizer.setString(line);
+      tokenizer.skipTokens(22);
+      stats.setLong(LinuxProcessStats.imageSizeLONG, tokenizer.nextTokenAsLong() / OneMeg);
+      stats.setLong(LinuxProcessStats.rssSizeLONG,
+          (tokenizer.nextTokenAsLong() * pageSize) / OneMeg);
     } catch (NoSuchElementException nsee) {
       // It might just be a case of the process going away while we
       // where trying to get its stats.
@@ -125,7 +140,7 @@ public class LinuxProcFsStatistics {
       // So for now lets just ignore the failure and leave the stats
       // as they are.
     } finally {
-      st.releaseResources();
+      tokenizer.releaseResources();
       if (br != null)
         try {
           br.close();
@@ -134,10 +149,13 @@ public class LinuxProcFsStatistics {
     }
   }
 
-  public static void refreshSystem(int[] ints, long[] longs, double[] doubles) { // TODO: was
-                                                                                 // package-protected
-    ints[LinuxSystemStats.processesINT] = getProcessCount();
-    ints[LinuxSystemStats.cpusINT] = sys_cpus;
+  public static void refreshSystem(LocalStatisticsImpl stats) {
+    if (cpuStatSingleton == null) {
+      // stats have been closed or haven't been properly initialized
+      return;
+    }
+    stats.setLong(LinuxSystemStats.processesLONG, getProcessCount());
+    stats.setLong(LinuxSystemStats.cpusLONG, sys_cpus);
     InputStreamReader isr = null;
     BufferedReader br = null;
     try {
@@ -148,36 +166,36 @@ public class LinuxProcFsStatistics {
         try {
           if (line.startsWith(CPU_TOKEN)) {
             int[] cpuData = cpuStatSingleton.calculateStats(line);
-            ints[LinuxSystemStats.cpuIdleINT] = cpuData[CPU.IDLE.ordinal()];
-            ints[LinuxSystemStats.cpuNiceINT] = cpuData[CPU.NICE.ordinal()];
-            ints[LinuxSystemStats.cpuSystemINT] = cpuData[CPU.SYSTEM.ordinal()];
-            ints[LinuxSystemStats.cpuUserINT] = cpuData[CPU.USER.ordinal()];
-            ints[LinuxSystemStats.cpuStealINT] = cpuData[CPU.STEAL.ordinal()];
-            ints[LinuxSystemStats.iowaitINT] = cpuData[CPU.IOWAIT.ordinal()];
-            ints[LinuxSystemStats.irqINT] = cpuData[CPU.IRQ.ordinal()];
-            ints[LinuxSystemStats.softirqINT] = cpuData[CPU.SOFTIRQ.ordinal()];
-            ints[LinuxSystemStats.cpuActiveINT] = 100 - cpuData[CPU.IDLE.ordinal()];
-            ints[LinuxSystemStats.cpuNonUserINT] = cpuData[CPU.OTHER.ordinal()]
+            stats.setLong(LinuxSystemStats.cpuIdleLONG, cpuData[CPU.IDLE.ordinal()]);
+            stats.setLong(LinuxSystemStats.cpuNiceLONG, cpuData[CPU.NICE.ordinal()]);
+            stats.setLong(LinuxSystemStats.cpuSystemLONG, cpuData[CPU.SYSTEM.ordinal()]);
+            stats.setLong(LinuxSystemStats.cpuUserLONG, cpuData[CPU.USER.ordinal()]);
+            stats.setLong(LinuxSystemStats.cpuStealLONG, cpuData[CPU.STEAL.ordinal()]);
+            stats.setLong(LinuxSystemStats.iowaitLONG, cpuData[CPU.IOWAIT.ordinal()]);
+            stats.setLong(LinuxSystemStats.irqLONG, cpuData[CPU.IRQ.ordinal()]);
+            stats.setLong(LinuxSystemStats.softirqLONG, cpuData[CPU.SOFTIRQ.ordinal()]);
+            stats.setLong(LinuxSystemStats.cpuActiveLONG, 100 - cpuData[CPU.IDLE.ordinal()]);
+            stats.setLong(LinuxSystemStats.cpuNonUserLONG, cpuData[CPU.OTHER.ordinal()]
                 + cpuData[CPU.SYSTEM.ordinal()] + cpuData[CPU.IOWAIT.ordinal()]
-                + cpuData[CPU.IRQ.ordinal()] + cpuData[CPU.SOFTIRQ.ordinal()];
+                + cpuData[CPU.IRQ.ordinal()] + cpuData[CPU.SOFTIRQ.ordinal()]);
           } else if (!hasProcVmStat && line.startsWith(PAGE)) {
             int secondIndex = line.indexOf(" ", PAGE.length());
-            longs[LinuxSystemStats.pagesPagedInLONG] =
-                SpaceTokenizer.parseAsLong(line.substring(PAGE.length(), secondIndex));
-            longs[LinuxSystemStats.pagesPagedOutLONG] =
-                SpaceTokenizer.parseAsLong(line.substring(secondIndex + 1));
+            stats.setLong(LinuxSystemStats.pagesPagedInLONG,
+                SpaceTokenizer.parseAsLong(line.substring(PAGE.length(), secondIndex)));
+            stats.setLong(LinuxSystemStats.pagesPagedOutLONG,
+                SpaceTokenizer.parseAsLong(line.substring(secondIndex + 1)));
           } else if (!hasProcVmStat && line.startsWith(SWAP)) {
             int secondIndex = line.indexOf(" ", SWAP.length());
-            longs[LinuxSystemStats.pagesSwappedInLONG] =
-                SpaceTokenizer.parseAsLong(line.substring(SWAP.length(), secondIndex));
-            longs[LinuxSystemStats.pagesSwappedOutLONG] =
-                SpaceTokenizer.parseAsLong(line.substring(secondIndex + 1));
+            stats.setLong(LinuxSystemStats.pagesSwappedInLONG,
+                SpaceTokenizer.parseAsLong(line.substring(SWAP.length(), secondIndex)));
+            stats.setLong(LinuxSystemStats.pagesSwappedOutLONG,
+                SpaceTokenizer.parseAsLong(line.substring(secondIndex + 1)));
           } else if (line.startsWith(CTXT)) {
-            longs[LinuxSystemStats.contextSwitchesLONG] =
-                SpaceTokenizer.parseAsLong(line.substring(CTXT.length()));
+            stats.setLong(LinuxSystemStats.contextSwitchesLONG,
+                SpaceTokenizer.parseAsLong(line.substring(CTXT.length())));
           } else if (line.startsWith(PROCESSES)) {
-            longs[LinuxSystemStats.processCreatesLONG] =
-                SpaceTokenizer.parseAsInt(line.substring(PROCESSES.length()));
+            stats.setLong(LinuxSystemStats.processCreatesLONG,
+                SpaceTokenizer.parseAsInt(line.substring(PROCESSES.length())));
           }
         } catch (NoSuchElementException nsee) {
           // this is the result of reading a partially formed file
@@ -192,19 +210,20 @@ public class LinuxProcFsStatistics {
         } catch (IOException ignore) {
         }
     }
-    getLoadAvg(doubles);
-    getMemInfo(ints);
-    getDiskStats(longs);
-    getNetStats(longs);
+    getLoadAvg(stats);
+    getMemInfo(stats);
+    getDiskStats(stats);
+    getNetStats(stats);
+    getNetStatStats(stats);
     if (hasProcVmStat) {
-      getVmStats(longs);
+      getVmStats(stats);
     }
-    st.releaseResources();
+    tokenizer.releaseResources();
   }
 
   // Example of /proc/loadavg
   // 0.00 0.00 0.07 1/218 7907
-  private static void getLoadAvg(double[] doubles) {
+  private static void getLoadAvg(LocalStatisticsImpl stats) {
     InputStreamReader isr = null;
     BufferedReader br = null;
     try {
@@ -214,14 +233,14 @@ public class LinuxProcFsStatistics {
       if (line == null) {
         return;
       }
-      st.setString(line);
-      doubles[LinuxSystemStats.loadAverage1DOUBLE] = st.nextTokenAsDouble();
-      doubles[LinuxSystemStats.loadAverage5DOUBLE] = st.nextTokenAsDouble();
-      doubles[LinuxSystemStats.loadAverage15DOUBLE] = st.nextTokenAsDouble();
+      tokenizer.setString(line);
+      stats.setDouble(LinuxSystemStats.loadAverage1DOUBLE, tokenizer.nextTokenAsDouble());
+      stats.setDouble(LinuxSystemStats.loadAverage5DOUBLE, tokenizer.nextTokenAsDouble());
+      stats.setDouble(LinuxSystemStats.loadAverage15DOUBLE, tokenizer.nextTokenAsDouble());
     } catch (NoSuchElementException nsee) {
     } catch (IOException ioe) {
     } finally {
-      st.releaseResources();
+      tokenizer.releaseResources();
       if (br != null)
         try {
           br.close();
@@ -268,7 +287,7 @@ public class LinuxProcFsStatistics {
   // total: used: free: shared: buffers: cached:
   // Mem: 4118380544 3816050688 302329856 0 109404160 3060326400
   // Swap: 4194881536 127942656 4066938880
-  private static void getMemInfo(int[] ints) {
+  private static void getMemInfo(LocalStatisticsImpl stats) {
     InputStreamReader isr = null;
     BufferedReader br = null;
     try {
@@ -279,41 +298,43 @@ public class LinuxProcFsStatistics {
       while ((line = br.readLine()) != null) {
         try {
           if (line.startsWith("MemTotal: ")) {
-            st.setString(line);
-            st.skipToken(); // Burn initial token
-            ints[LinuxSystemStats.physicalMemoryINT] = (int) (st.nextTokenAsLong() / 1024);
+            tokenizer.setString(line);
+            tokenizer.skipToken(); // Burn initial token
+            stats.setLong(LinuxSystemStats.physicalMemoryLONG,
+                (tokenizer.nextTokenAsLong() / 1024));
           } else if (line.startsWith("MemFree: ")) {
-            st.setString(line);
-            st.skipToken(); // Burn initial token
-            ints[LinuxSystemStats.freeMemoryINT] = (int) (st.nextTokenAsLong() / 1024);
+            tokenizer.setString(line);
+            tokenizer.skipToken(); // Burn initial token
+            stats.setLong(LinuxSystemStats.freeMemoryLONG, (tokenizer.nextTokenAsLong() / 1024));
           } else if (line.startsWith("SharedMem: ")) {
-            st.setString(line);
-            st.skipToken(); // Burn initial token
-            ints[LinuxSystemStats.sharedMemoryINT] = (int) (st.nextTokenAsLong() / 1024);
+            tokenizer.setString(line);
+            tokenizer.skipToken(); // Burn initial token
+            stats.setLong(LinuxSystemStats.sharedMemoryLONG, (tokenizer.nextTokenAsLong() / 1024));
           } else if (line.startsWith("Buffers: ")) {
-            st.setString(line);
-            st.nextToken(); // Burn initial token
-            ints[LinuxSystemStats.bufferMemoryINT] = (int) (st.nextTokenAsLong() / 1024);
+            tokenizer.setString(line);
+            tokenizer.nextToken(); // Burn initial token
+            stats.setLong(LinuxSystemStats.bufferMemoryLONG, (tokenizer.nextTokenAsLong() / 1024));
           } else if (line.startsWith("SwapTotal: ")) {
-            st.setString(line);
-            st.skipToken(); // Burn initial token
-            ints[LinuxSystemStats.allocatedSwapINT] = (int) (st.nextTokenAsLong() / 1024);
+            tokenizer.setString(line);
+            tokenizer.skipToken(); // Burn initial token
+            stats.setLong(LinuxSystemStats.allocatedSwapLONG, (tokenizer.nextTokenAsLong() / 1024));
           } else if (line.startsWith("SwapFree: ")) {
-            st.setString(line);
-            st.skipToken(); // Burn initial token
-            ints[LinuxSystemStats.unallocatedSwapINT] = (int) (st.nextTokenAsLong() / 1024);
+            tokenizer.setString(line);
+            tokenizer.skipToken(); // Burn initial token
+            stats.setLong(LinuxSystemStats.unallocatedSwapLONG,
+                (tokenizer.nextTokenAsLong() / 1024));
           } else if (line.startsWith("Cached: ")) {
-            st.setString(line);
-            st.skipToken(); // Burn initial token
-            ints[LinuxSystemStats.cachedMemoryINT] = (int) (st.nextTokenAsLong() / 1024);
+            tokenizer.setString(line);
+            tokenizer.skipToken(); // Burn initial token
+            stats.setLong(LinuxSystemStats.cachedMemoryLONG, (tokenizer.nextTokenAsLong() / 1024));
           } else if (line.startsWith("Dirty: ")) {
-            st.setString(line);
-            st.skipToken(); // Burn initial token
-            ints[LinuxSystemStats.dirtyMemoryINT] = (int) (st.nextTokenAsLong() / 1024);
+            tokenizer.setString(line);
+            tokenizer.skipToken(); // Burn initial token
+            stats.setLong(LinuxSystemStats.dirtyMemoryLONG, (tokenizer.nextTokenAsLong() / 1024));
           } else if (line.startsWith("Inact_dirty: ")) { // 2.4 kernels
-            st.setString(line);
-            st.skipToken(); // Burn initial token
-            ints[LinuxSystemStats.dirtyMemoryINT] = (int) (st.nextTokenAsLong() / 1024);
+            tokenizer.setString(line);
+            tokenizer.skipToken(); // Burn initial token
+            stats.setLong(LinuxSystemStats.dirtyMemoryLONG, (tokenizer.nextTokenAsLong() / 1024));
           }
         } catch (NoSuchElementException nsee) {
           // ignore and let that stat not to be updated this time
@@ -321,7 +342,7 @@ public class LinuxProcFsStatistics {
       }
     } catch (IOException ioe) {
     } finally {
-      st.releaseResources();
+      tokenizer.releaseResources();
       if (br != null)
         try {
           br.close();
@@ -331,12 +352,60 @@ public class LinuxProcFsStatistics {
   }
 
   /*
+   * TcpExt:=0 SyncookiesSent=1
+   * ListenOverflows=20 ListenDrops=21
+   */
+  private static void getNetStatStats(LocalStatisticsImpl stats) {
+    try (InputStreamReader isr = new InputStreamReader(new FileInputStream("/proc/net/netstat"))) {
+      BufferedReader br = new BufferedReader(isr);
+      String line;
+      do {
+        br.readLine(); // header
+        line = br.readLine();
+      } while (line != null && !line.startsWith("TcpExt:"));
+
+      tokenizer.setString(line);
+      tokenizer.skipTokens(1);
+      long tcpSyncookiesSent = tokenizer.nextTokenAsLong();
+      long tcpSyncookiesRecv = tokenizer.nextTokenAsLong();
+      tokenizer.skipTokens(17);
+      long tcpListenOverflows = tokenizer.nextTokenAsLong();
+      long tcpListenDrops = tokenizer.nextTokenAsLong();
+
+      stats.setLong(LinuxSystemStats.tcpExtSynCookiesRecvLONG, tcpSyncookiesRecv);
+      stats.setLong(LinuxSystemStats.tcpExtSynCookiesSentLONG, tcpSyncookiesSent);
+      stats.setLong(LinuxSystemStats.tcpExtListenDropsLONG, tcpListenDrops);
+      stats.setLong(LinuxSystemStats.tcpExtListenOverflowsLONG, tcpListenOverflows);
+
+      br.close();
+      br = null;
+      if (!soMaxConnProcessed) {
+        try (InputStreamReader soMaxConnIsr =
+            new InputStreamReader(new FileInputStream("/proc/sys/net/core/somaxconn"))) {
+          BufferedReader br2 = new BufferedReader(soMaxConnIsr);
+          line = br2.readLine();
+          tokenizer.setString(line);
+          soMaxConn = tokenizer.nextTokenAsInt();
+          soMaxConnProcessed = true;
+        }
+      }
+
+      stats.setLong(LinuxSystemStats.tcpSOMaxConnLONG, soMaxConn);
+
+    } catch (NoSuchElementException nsee) {
+    } catch (IOException ioe) {
+    } finally {
+      tokenizer.releaseResources();
+    }
+  }
+
+  /*
    * Inter-| Receive | Transmit face |bytes packets errs drop fifo frame compressed multicast|bytes
    * packets errs drop fifo colls carrier compressed lo:1908275823 326949246 0 0 0 0 0 0 1908275823
    * 326949246 0 0 0 0 0 0
    */
 
-  private static void getNetStats(long[] longs) {
+  private static void getNetStats(LocalStatisticsImpl stats) {
     InputStreamReader isr = null;
     BufferedReader br = null;
     try {
@@ -353,18 +422,18 @@ public class LinuxProcFsStatistics {
       while ((line = br.readLine()) != null) {
         int index = line.indexOf(":");
         boolean isloopback = (line.indexOf("lo:") != -1);
-        st.setString(line.substring(index + 1).trim());
-        long recv_bytes = st.nextTokenAsLong();
-        long recv_packets = st.nextTokenAsLong();
-        long recv_errs = st.nextTokenAsLong();
-        long recv_drop = st.nextTokenAsLong();
-        st.skipTokens(4); // fifo, frame, compressed, multicast
-        long xmit_bytes = st.nextTokenAsLong();
-        long xmit_packets = st.nextTokenAsLong();
-        long xmit_errs = st.nextTokenAsLong();
-        long xmit_drop = st.nextTokenAsLong();
-        st.skipToken(); // fifo
-        long xmit_colls = st.nextTokenAsLong();
+        tokenizer.setString(line.substring(index + 1).trim());
+        long recv_bytes = tokenizer.nextTokenAsLong();
+        long recv_packets = tokenizer.nextTokenAsLong();
+        long recv_errs = tokenizer.nextTokenAsLong();
+        long recv_drop = tokenizer.nextTokenAsLong();
+        tokenizer.skipTokens(4); // fifo, frame, compressed, multicast
+        long xmit_bytes = tokenizer.nextTokenAsLong();
+        long xmit_packets = tokenizer.nextTokenAsLong();
+        long xmit_errs = tokenizer.nextTokenAsLong();
+        long xmit_drop = tokenizer.nextTokenAsLong();
+        tokenizer.skipToken(); // fifo
+        long xmit_colls = tokenizer.nextTokenAsLong();
 
         if (isloopback) {
           lo_recv_packets = recv_packets;
@@ -387,21 +456,21 @@ public class LinuxProcFsStatistics {
         other_xmit_colls += xmit_colls;
       }
       // fix for bug 43860
-      longs[LinuxSystemStats.loopbackPacketsLONG] = lo_recv_packets;
-      longs[LinuxSystemStats.loopbackBytesLONG] = lo_recv_bytes;
-      longs[LinuxSystemStats.recvPacketsLONG] = other_recv_packets;
-      longs[LinuxSystemStats.recvBytesLONG] = other_recv_bytes;
-      longs[LinuxSystemStats.recvErrorsLONG] = other_recv_errs;
-      longs[LinuxSystemStats.recvDropsLONG] = other_recv_drop;
-      longs[LinuxSystemStats.xmitPacketsLONG] = other_xmit_packets;
-      longs[LinuxSystemStats.xmitBytesLONG] = other_xmit_bytes;
-      longs[LinuxSystemStats.xmitErrorsLONG] = other_xmit_errs;
-      longs[LinuxSystemStats.xmitDropsLONG] = other_xmit_drop;
-      longs[LinuxSystemStats.xmitCollisionsLONG] = other_xmit_colls;
+      stats.setLong(LinuxSystemStats.loopbackPacketsLONG, lo_recv_packets);
+      stats.setLong(LinuxSystemStats.loopbackBytesLONG, lo_recv_bytes);
+      stats.setLong(LinuxSystemStats.recvPacketsLONG, other_recv_packets);
+      stats.setLong(LinuxSystemStats.recvBytesLONG, other_recv_bytes);
+      stats.setLong(LinuxSystemStats.recvErrorsLONG, other_recv_errs);
+      stats.setLong(LinuxSystemStats.recvDropsLONG, other_recv_drop);
+      stats.setLong(LinuxSystemStats.xmitPacketsLONG, other_xmit_packets);
+      stats.setLong(LinuxSystemStats.xmitBytesLONG, other_xmit_bytes);
+      stats.setLong(LinuxSystemStats.xmitErrorsLONG, other_xmit_errs);
+      stats.setLong(LinuxSystemStats.xmitDropsLONG, other_xmit_drop);
+      stats.setLong(LinuxSystemStats.xmitCollisionsLONG, other_xmit_colls);
     } catch (NoSuchElementException nsee) {
     } catch (IOException ioe) {
     } finally {
-      st.releaseResources();
+      tokenizer.releaseResources();
       if (br != null)
         try {
           br.close();
@@ -436,7 +505,7 @@ public class LinuxProcFsStatistics {
   // 2024138028
   // 8 17 sdb1 12601113 213085114 216407197 1731257800
   // 3 0 hda 0 0 0 0 0 0 0 0 0 0 0
-  private static void getDiskStats(long[] longs) {
+  private static void getDiskStats(LocalStatisticsImpl stats) {
     InputStreamReader isr = null;
     BufferedReader br = null;
     String line = null;
@@ -461,22 +530,22 @@ public class LinuxProcFsStatistics {
         br.readLine(); // Discard header info
       }
       while ((line = br.readLine()) != null) {
-        st.setString(line);
+        tokenizer.setString(line);
         {
           // " 8 1 sdb" on 2.6
           // " 8 1 452145145 sdb" on 2.4
-          String tok = st.nextToken();
+          String tok = tokenizer.nextToken();
           if (tok.length() == 0 || Character.isWhitespace(tok.charAt(0))) {
             // skip over first token since it is whitespace
-            tok = st.nextToken();
+            tok = tokenizer.nextToken();
           }
           // skip first token it is some number
-          tok = st.nextToken();
+          tok = tokenizer.nextToken();
           // skip second token it is some number
-          tok = st.nextToken();
+          tok = tokenizer.nextToken();
           if (!hasDiskStats) {
             // skip third token it is some number
-            tok = st.nextToken();
+            tok = tokenizer.nextToken();
           }
           // Now tok should be the device name.
           if (Character.isDigit(tok.charAt(tok.length() - 1))) {
@@ -485,20 +554,20 @@ public class LinuxProcFsStatistics {
             continue;
           }
         }
-        long tmp_readsCompleted = st.nextTokenAsLong();
-        long tmp_readsMerged = st.nextTokenAsLong();
-        long tmp_sectorsRead = st.nextTokenAsLong();
-        long tmp_timeReading = st.nextTokenAsLong();
-        if (st.hasMoreTokens()) {
+        long tmp_readsCompleted = tokenizer.nextTokenAsLong();
+        long tmp_readsMerged = tokenizer.nextTokenAsLong();
+        long tmp_sectorsRead = tokenizer.nextTokenAsLong();
+        long tmp_timeReading = tokenizer.nextTokenAsLong();
+        if (tokenizer.hasMoreTokens()) {
           // If we are on 2.6 then we might only have 4 longs; if so ignore this line
           // Otherwise we should have 11 long tokens.
-          long tmp_writesCompleted = st.nextTokenAsLong();
-          long tmp_writesMerged = st.nextTokenAsLong();
-          long tmp_sectorsWritten = st.nextTokenAsLong();
-          long tmp_timeWriting = st.nextTokenAsLong();
-          long tmp_iosInProgress = st.nextTokenAsLong();
-          long tmp_timeIosInProgress = st.nextTokenAsLong();
-          long tmp_ioTime = st.nextTokenAsLong();
+          long tmp_writesCompleted = tokenizer.nextTokenAsLong();
+          long tmp_writesMerged = tokenizer.nextTokenAsLong();
+          long tmp_sectorsWritten = tokenizer.nextTokenAsLong();
+          long tmp_timeWriting = tokenizer.nextTokenAsLong();
+          long tmp_iosInProgress = tokenizer.nextTokenAsLong();
+          long tmp_timeIosInProgress = tokenizer.nextTokenAsLong();
+          long tmp_ioTime = tokenizer.nextTokenAsLong();
           readsCompleted += tmp_readsCompleted;
           readsMerged += tmp_readsMerged;
           sectorsRead += tmp_sectorsRead;
@@ -513,23 +582,23 @@ public class LinuxProcFsStatistics {
         }
       } // while
       final int SECTOR_SIZE = 512;
-      longs[LinuxSystemStats.readsCompletedLONG] = readsCompleted;
-      longs[LinuxSystemStats.readsMergedLONG] = readsMerged;
-      longs[LinuxSystemStats.bytesReadLONG] = sectorsRead * SECTOR_SIZE;
-      longs[LinuxSystemStats.timeReadingLONG] = timeReading;
-      longs[LinuxSystemStats.writesCompletedLONG] = writesCompleted;
-      longs[LinuxSystemStats.writesMergedLONG] = writesMerged;
-      longs[LinuxSystemStats.bytesWrittenLONG] = sectorsWritten * SECTOR_SIZE;
-      longs[LinuxSystemStats.timeWritingLONG] = timeWriting;
-      longs[LinuxSystemStats.iosInProgressLONG] = iosInProgress;
-      longs[LinuxSystemStats.timeIosInProgressLONG] = timeIosInProgress;
-      longs[LinuxSystemStats.ioTimeLONG] = ioTime;
+      stats.setLong(LinuxSystemStats.readsCompletedLONG, readsCompleted);
+      stats.setLong(LinuxSystemStats.readsMergedLONG, readsMerged);
+      stats.setLong(LinuxSystemStats.bytesReadLONG, sectorsRead * SECTOR_SIZE);
+      stats.setLong(LinuxSystemStats.timeReadingLONG, timeReading);
+      stats.setLong(LinuxSystemStats.writesCompletedLONG, writesCompleted);
+      stats.setLong(LinuxSystemStats.writesMergedLONG, writesMerged);
+      stats.setLong(LinuxSystemStats.bytesWrittenLONG, sectorsWritten * SECTOR_SIZE);
+      stats.setLong(LinuxSystemStats.timeWritingLONG, timeWriting);
+      stats.setLong(LinuxSystemStats.iosInProgressLONG, iosInProgress);
+      stats.setLong(LinuxSystemStats.timeIosInProgressLONG, timeIosInProgress);
+      stats.setLong(LinuxSystemStats.ioTimeLONG, ioTime);
     } catch (NoSuchElementException nsee) {
-      // org.apache.geode.distributed.internal.InternalDistributedSystem.getAnyInstance().getLoggerI18n().fine("unexpected
+      // org.apache.geode.distributed.internal.InternalDistributedSystem.getAnyInstance().getLogger().fine("unexpected
       // NoSuchElementException line=" + line, nsee);
     } catch (IOException ioe) {
     } finally {
-      st.releaseResources();
+      tokenizer.releaseResources();
       if (br != null)
         try {
           br.close();
@@ -544,7 +613,7 @@ public class LinuxProcFsStatistics {
   // pgpgout 1057420300
   // pswpin 19422
   // pswpout 14495
-  private static void getVmStats(long[] longs) {
+  private static void getVmStats(LocalStatisticsImpl stats) {
     assert hasProcVmStat != false : "getVmStats called when hasVmStat was false";
     InputStreamReader isr = null;
     BufferedReader br = null;
@@ -554,17 +623,17 @@ public class LinuxProcFsStatistics {
       String line = null;
       while ((line = br.readLine()) != null) {
         if (line.startsWith(PGPGIN)) {
-          longs[LinuxSystemStats.pagesPagedInLONG] =
-              SpaceTokenizer.parseAsLong(line.substring(PGPGIN.length()));
+          stats.setLong(LinuxSystemStats.pagesPagedInLONG,
+              SpaceTokenizer.parseAsLong(line.substring(PGPGIN.length())));
         } else if (line.startsWith(PGPGOUT)) {
-          longs[LinuxSystemStats.pagesPagedOutLONG] =
-              SpaceTokenizer.parseAsLong(line.substring(PGPGOUT.length()));
+          stats.setLong(LinuxSystemStats.pagesPagedOutLONG,
+              SpaceTokenizer.parseAsLong(line.substring(PGPGOUT.length())));
         } else if (line.startsWith(PSWPIN)) {
-          longs[LinuxSystemStats.pagesSwappedInLONG] =
-              SpaceTokenizer.parseAsLong(line.substring(PSWPIN.length()));
+          stats.setLong(LinuxSystemStats.pagesSwappedInLONG,
+              SpaceTokenizer.parseAsLong(line.substring(PSWPIN.length())));
         } else if (line.startsWith(PSWPOUT)) {
-          longs[LinuxSystemStats.pagesSwappedOutLONG] =
-              SpaceTokenizer.parseAsLong(line.substring(PSWPOUT.length()));
+          stats.setLong(LinuxSystemStats.pagesSwappedOutLONG,
+              SpaceTokenizer.parseAsLong(line.substring(PSWPOUT.length())));
         }
       }
     } catch (NoSuchElementException nsee) {
@@ -628,7 +697,9 @@ public class LinuxProcFsStatistics {
   // cpu 42813766 10844 8889075 1450764512 49963779 808244 3084872
   //
   private static class CpuStat {
+    @MakeNotStatic
     private static boolean lastCpuStatsInvalid;
+    @MakeNotStatic
     private static List<Long> lastCpuStats;
 
     public CpuStat() {
@@ -636,8 +707,8 @@ public class LinuxProcFsStatistics {
     }
 
     public int[] calculateStats(String newStatLine) {
-      st.setString(newStatLine);
-      st.skipToken(); // cpu name
+      tokenizer.setString(newStatLine);
+      tokenizer.skipToken(); // cpu name
       final int MAX_CPU_STATS = CPU.values().length;
       /*
        * newer kernels now have 10 columns for cpu in /proc/stat. This number may increase even
@@ -650,8 +721,8 @@ public class LinuxProcFsStatistics {
       int actualCpuStats = 0;
       long unaccountedCpuUtilization = 0;
 
-      while (st.hasMoreTokens()) {
-        newStats.add(st.nextTokenAsLong());
+      while (tokenizer.hasMoreTokens()) {
+        newStats.add(tokenizer.nextTokenAsLong());
         actualCpuStats++;
       }
 

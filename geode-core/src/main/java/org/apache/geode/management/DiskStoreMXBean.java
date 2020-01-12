@@ -15,6 +15,7 @@
 package org.apache.geode.management;
 
 import org.apache.geode.cache.DiskStore;
+import org.apache.geode.management.internal.ManagementConstants;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
@@ -190,6 +191,24 @@ public interface DiskStoreMXBean {
    * @since GemFire 8.0
    */
   float getDiskUsageCriticalPercentage();
+
+  /**
+   * Returns the usage percentage of this disk storage if directories where created with max size.
+   *
+   * @since Geode 1.10
+   */
+  default float getDiskUsagePercentage() {
+    return ManagementConstants.NOT_AVAILABLE_FLOAT;
+  }
+
+  /**
+   * Returns the free percentage of this disk storage if directories where created with max size.
+   *
+   * * @since Geode 1.11
+   */
+  default float getDiskFreePercentage() {
+    return ManagementConstants.NOT_AVAILABLE_FLOAT;
+  }
 
   /**
    * Sets the value of the disk usage warning percentage.

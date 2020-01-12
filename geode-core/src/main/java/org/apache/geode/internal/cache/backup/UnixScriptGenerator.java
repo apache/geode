@@ -22,8 +22,7 @@ class UnixScriptGenerator implements ScriptGenerator {
 
   private static final String SCRIPT_FILE_NAME = "restore.sh";
 
-  private final String separator = System.lineSeparator();
-
+  @Override
   public void writePreamble(final BufferedWriter writer) throws IOException {
     writer.write("#!/bin/bash -e");
     writer.newLine();
@@ -31,34 +30,41 @@ class UnixScriptGenerator implements ScriptGenerator {
     writer.newLine();
   }
 
+  @Override
   public void writeComment(final BufferedWriter writer, final String string) throws IOException {
     writer.write("# " + string);
     writer.newLine();
   }
 
+  @Override
   public void writeCopyDirectoryContents(final BufferedWriter writer, final File backup,
       final File original, final boolean backupHasFiles) throws IOException {
-    writer.write("mkdir -p '" + original + "'");
-    writer.newLine();
     if (backupHasFiles) {
+      writer.write("mkdir -p '" + original + "'");
+      writer.newLine();
       writer.write("cp -rp '" + backup + "'/* '" + original + "'");
       writer.newLine();
     }
   }
 
+  @Override
   public void writeCopyFile(final BufferedWriter writer, final File backup, final File original)
       throws IOException {
+    writer.write("mkdir -p '" + original.getParent() + "'");
+    writer.newLine();
     writer.write("cp -p '" + backup + "' '" + original + "'");
     writer.newLine();
   }
 
+  @Override
   public void writeExistenceTest(final BufferedWriter writer, final File file) throws IOException {
     writer.write("test -e '" + file + "' && echo '" + RestoreScript.REFUSE_TO_OVERWRITE_MESSAGE
         + file + "' && exit 1 ");
     writer.newLine();
   }
 
-  public void writeExit(final BufferedWriter writer) throws IOException {
+  @Override
+  public void writeExit(final BufferedWriter writer) {
     // do nothing
   }
 

@@ -24,6 +24,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.DataSerializer;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
@@ -35,12 +36,12 @@ import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.util.concurrent.StoppableCondition;
 import org.apache.geode.internal.util.concurrent.StoppableReentrantLock;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * A processor for sending a message to the elder asking it for the grantor of a dlock service.
@@ -67,6 +68,7 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
   private static final byte PEEK_OP = 3;
   private static final byte CLEAR_WITH_LOCKS_OP = 4;
 
+  @Immutable
   private static final GrantorInfo CLEAR_COMPLETE = new GrantorInfo(null, 0, 0, false);
 
   /**
@@ -183,21 +185,15 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
     }
   }
 
-  /**
-   * elderSyncWait
-   *
-   * @param newElder
-   * @param dls
-   */
   private static void elderSyncWait(InternalDistributedSystem sys,
       InternalDistributedMember newElder, DLockService dls) {
     GrantorRequestContext grc = sys.getGrantorRequestContext();
     grc.waitingToChangeElder = true;
-    final LocalizedMessage message = LocalizedMessage.create(
-        LocalizedStrings.GrantorRequestProcessor_GRANTORREQUESTPROCESSOR_ELDERSYNCWAIT_THE_CURRENT_ELDER_0_IS_WAITING_FOR_THE_NEW_ELDER_1,
+    final String message = String.format(
+        "GrantorRequestProcessor.elderSyncWait: The current Elder %s is waiting for the new Elder %s.",
         new Object[] {grc.currentElder, newElder});
     while (grc.waitingToChangeElder) {
-      logger.info(LogMarker.DLS, message);
+      logger.info(LogMarker.DLS_MARKER, message);
       boolean interrupted = Thread.interrupted();
       try {
         grc.elderLockCondition.await(sys.getConfig().getMemberTimeout());
@@ -213,10 +209,10 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
 
   /**
    * Sets currentElder to the memberId of the current elder if elder is remote; null if elder is in
-   * our vm. TODO: collaboration lock was removed
+   * our vm.
    */
-  private static ElderState startElderCall(InternalDistributedSystem sys, DLockService dls,
-      boolean usesElderCollaborationLock) {
+  private static ElderState startElderCall(InternalDistributedSystem sys, DLockService dls)
+      throws InterruptedException {
     InternalDistributedMember elder;
     ElderState es = null;
 
@@ -227,15 +223,11 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
       elder = dm.getElderId(); // call this before getElderState
       Assert.assertTrue(elder != null, "starting an elder call with no valid elder");
       if (dm.getId().equals(elder)) {
-        if (usesElderCollaborationLock) {
-          try {
-            es = dm.getElderState(false, true);
-          } catch (IllegalStateException e) {
-            // loop back around to reacquire Collaboration and try elder lock again
-            continue;
-          }
-        } else {
-          es = dm.getElderState(false, false);
+        try {
+          es = dm.getElderState(false);
+        } catch (IllegalStateException e) {
+          // loop back around to reacquire Collaboration and try elder lock again
+          continue;
         }
       } else {
         es = null;
@@ -285,11 +277,11 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
    * @param sys th distributed system
    * @return information describing the current grantor of this service and if recovery is needed
    */
-  public static GrantorInfo peekGrantor(DLockService service, InternalDistributedSystem sys) {
+  static GrantorInfo peekGrantor(DLockService service, InternalDistributedSystem sys) {
     return basicOp(-1, service, -1, sys, null, PEEK_OP);
   }
 
-  public static GrantorInfo peekGrantor(String serviceName, InternalDistributedSystem sys) {
+  static GrantorInfo peekGrantor(String serviceName, InternalDistributedSystem sys) {
     return basicOp(-1, serviceName, null, -1, sys, null, PEEK_OP);
   }
 
@@ -302,7 +294,7 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
    * @return information describing the previous grantor, if any, and if we need to do a grantor
    *         recovery
    */
-  public static GrantorInfo becomeGrantor(DLockService service, int dlsSerialNumber,
+  static GrantorInfo becomeGrantor(DLockService service, int dlsSerialNumber,
       InternalDistributedMember oldTurk, InternalDistributedSystem sys) {
     return basicOp(-1, service, dlsSerialNumber, sys, oldTurk, BECOME_OP);
   }
@@ -313,7 +305,7 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
    * @param service the service we are no longer the grantor of.
    * @param sys the distributed system
    */
-  public static void clearGrantor(long grantorVersion, DLockService service, int dlsSerialNumber,
+  static void clearGrantor(long grantorVersion, DLockService service, int dlsSerialNumber,
       InternalDistributedSystem sys, boolean withLocks) {
     basicOp(grantorVersion, service, dlsSerialNumber, sys, null,
         withLocks ? CLEAR_WITH_LOCKS_OP : CLEAR_OP);
@@ -339,12 +331,12 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
     try {
       do {
         tryNewElder = false;
-        final boolean usesElderCollaborationLock = opCode == GET_OP || opCode == BECOME_OP;
-        if (usesElderCollaborationLock) {
-          Assert.assertTrue(service != null,
-              "Attempting GrantorRequest without instance of DistributedLockService");
+        ElderState es = null;
+        try {
+          es = startElderCall(system, service);
+        } catch (InterruptedException e) {
+          interrupted = true;
         }
-        final ElderState es = startElderCall(system, service, usesElderCollaborationLock);
         dm.throwIfDistributionStopped();
         try {
           if (es != null) {
@@ -377,8 +369,8 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
             boolean sent = GrantorRequestMessage.send(grantorVersion, dlsSerialNumber, serviceName,
                 grc.currentElder, dm, processor, oldTurk, opCode);
             if (!sent) {
-              if (logger.isTraceEnabled(LogMarker.DLS)) {
-                logger.trace(LogMarker.DLS, "Unable to communicate with elder {}",
+              if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
+                logger.trace(LogMarker.DLS_VERBOSE, "Unable to communicate with elder {}",
                     grc.currentElder);
               }
             }
@@ -410,7 +402,7 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
               if (opCode != CLEAR_OP && opCode != CLEAR_WITH_LOCKS_OP) {
                 // Note we do not try a new elder if doing a clear because
                 // the new elder will not have anything for us to clear.
-                // He will have done an ElderInit.
+                // It will have done an ElderInit.
                 tryNewElder = true;
               }
             }
@@ -466,29 +458,11 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
     private InternalDistributedMember oldTurk;
 
     /**
-     *
-     * @param serviceName
-     * @param elder
-     * @param dm
-     * @param proc
-     * @param oldTurk
-     * @param opCode
      * @return true if the message was sent
      */
     protected static boolean send(long grantorVersion, int dlsSerialNumber, String serviceName,
         InternalDistributedMember elder, DistributionManager dm, ReplyProcessor21 proc,
         InternalDistributedMember oldTurk, byte opCode) {
-      // bug36361: the following assertion doesn't work, since the client that sent us
-      // the request might have a different notion of the elder (no view synchrony on the
-      // current notion of the elder).
-      // InternalDistributedMember moi = dm.getDistributionManagerId();
-      // Assert.assertTrue(!(
-      // // Sending a message to ourself is REALLY WEIRD, so
-      // // we make that the first test...
-      // moi.equals(dm.getElderId())
-      // && !moi.equals(elder)
-      // && dm.getDistributionManagerIds().contains(elder)
-      // ));
 
       GrantorRequestMessage msg = new GrantorRequestMessage();
       msg.grantorVersion = grantorVersion;
@@ -498,8 +472,8 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
       msg.opCode = opCode;
       msg.processorId = proc.getProcessorId();
       msg.setRecipient(elder);
-      if (logger.isTraceEnabled(LogMarker.DLS)) {
-        logger.trace(LogMarker.DLS, "GrantorRequestMessage sending {} to {}", msg, elder);
+      if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
+        logger.trace(LogMarker.DLS_VERBOSE, "GrantorRequestMessage sending {} to {}", msg, elder);
       }
       Set failures = dm.putOutgoing(msg);
       return failures == null || failures.size() == 0;
@@ -520,27 +494,18 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
 
     @Override
     protected void process(ClusterDistributionManager dm) {
-      // executeBasicProcess(dm); // TODO change to this after things are stable
       basicProcess(dm);
     }
 
-    // private void executeBasicProcess(final DM dm) {
-    // final GrantorRequestMessage msg = this;
-    // try {
-    // dm.getWaitingThreadPool().execute(new Runnable() {
-    // public void run() {
-    // basicProcess(dm);
-    // }
-    // });
-    // }
-    // catch (RejectedExecutionException e) { {
-    // logger.debug("Rejected processing of <{}>", this, e);
-    // }
-    // }
-
     protected void basicProcess(final DistributionManager dm) {
       // we should be in the elder
-      ElderState es = dm.getElderState(true, false);
+      final ElderState es;
+      try {
+        es = dm.getElderState(true);
+      } catch (InterruptedException e) {
+        logger.info("Interrupted while processing {}", this);
+        return;
+      }
       switch (this.opCode) {
         case GET_OP:
           replyGrantorInfo(dm, es.getGrantor(this.serviceName, getSender(), this.dlsSerialNumber));
@@ -567,13 +532,15 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
       }
     }
 
+    @Override
     public int getDSFID() {
       return GRANTOR_REQUEST_MESSAGE;
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.grantorVersion = in.readLong();
       this.dlsSerialNumber = in.readInt();
       this.serviceName = DataSerializer.readString(in);
@@ -585,8 +552,9 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       out.writeLong(this.grantorVersion);
       out.writeInt(this.dlsSerialNumber);
       DataSerializer.writeString(this.serviceName, out);
@@ -663,8 +631,9 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.grantor = (InternalDistributedMember) DataSerializer.readObject(in);
       this.elderVersionId = in.readLong();
       this.grantorSerialNumber = in.readInt();
@@ -672,8 +641,9 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       DataSerializer.writeObject(this.grantor, out);
       out.writeLong(this.elderVersionId);
       out.writeInt(this.grantorSerialNumber);

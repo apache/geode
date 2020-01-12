@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.offheap.annotations;
 
-import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.*;
+import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.DEFAULT;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;

@@ -34,8 +34,8 @@ public class RawIndexRepositoryFactory extends IndexRepositoryFactory {
 
   @Override
   public IndexRepository computeIndexRepository(final Integer bucketId, LuceneSerializer serializer,
-      InternalLuceneIndex index, PartitionedRegion userRegion, IndexRepository oldRepository)
-      throws IOException {
+      InternalLuceneIndex index, PartitionedRegion userRegion, IndexRepository oldRepository,
+      PartitionedRepositoryManager partitionedRepositoryManager) throws IOException {
     final IndexRepository repo;
     if (oldRepository != null) {
       oldRepository.cleanup();

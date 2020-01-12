@@ -14,27 +14,29 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.interfaces;
 
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.NetView;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
+import org.apache.geode.distributed.internal.membership.api.MemberStartupException;
+import org.apache.geode.distributed.internal.membership.api.MembershipConfigurationException;
+import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 
 /**
- * Services in GMS all implement this interface
+ * Membership services in GMS all implement this interface
  *
  */
-public interface Service {
-  void init(Services s);
+public interface Service<ID extends MemberIdentifier> {
+  void init(Services<ID> s) throws MembershipConfigurationException;
 
   /**
    * called after all services have been initialized with init() and all services are available via
    * Services
    */
-  void start();
+  void start() throws MemberStartupException;
 
   /**
    * called after all servers have been started
    */
-  void started();
+  void started() throws MemberStartupException;
 
   /**
    * called when the GMS is stopping
@@ -49,7 +51,7 @@ public interface Service {
   /**
    * called when a new view is installed by Membership
    */
-  void installView(NetView v);
+  void installView(GMSMembershipView<ID> v);
 
   /**
    * test method for simulating a sick/dead member
@@ -74,8 +76,9 @@ public interface Service {
   /**
    * a member is suspected of having crashed
    */
-  void memberSuspected(InternalDistributedMember initiator, InternalDistributedMember suspect,
+  void memberSuspected(ID initiator, ID suspect,
       String reason);
 
 
+  default void setLocalAddress(ID address) {}
 }

@@ -14,18 +14,31 @@
  */
 package org.apache.geode.internal.cache.xmlcache;
 
-import static org.apache.geode.internal.cache.xmlcache.CacheXmlVersion.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.internal.cache.xmlcache.CacheXmlVersion.GEMFIRE_3_0;
+import static org.apache.geode.internal.cache.xmlcache.CacheXmlVersion.GEMFIRE_4_0;
+import static org.apache.geode.internal.cache.xmlcache.CacheXmlVersion.GEMFIRE_4_1;
+import static org.apache.geode.internal.cache.xmlcache.CacheXmlVersion.GEMFIRE_5_0;
+import static org.apache.geode.internal.cache.xmlcache.CacheXmlVersion.GEMFIRE_5_1;
+import static org.apache.geode.internal.cache.xmlcache.CacheXmlVersion.GEMFIRE_5_5;
+import static org.apache.geode.internal.cache.xmlcache.CacheXmlVersion.GEMFIRE_5_7;
+import static org.apache.geode.internal.cache.xmlcache.CacheXmlVersion.GEMFIRE_5_8;
+import static org.apache.geode.internal.cache.xmlcache.CacheXmlVersion.GEMFIRE_6_0;
+import static org.apache.geode.internal.cache.xmlcache.CacheXmlVersion.GEMFIRE_6_1;
+import static org.apache.geode.internal.cache.xmlcache.CacheXmlVersion.GEMFIRE_6_5;
+import static org.apache.geode.internal.cache.xmlcache.CacheXmlVersion.GEMFIRE_6_6;
+import static org.apache.geode.internal.cache.xmlcache.CacheXmlVersion.GEMFIRE_7_0;
+import static org.apache.geode.internal.cache.xmlcache.CacheXmlVersion.GEMFIRE_8_0;
+import static org.apache.geode.internal.cache.xmlcache.CacheXmlVersion.GEMFIRE_8_1;
+import static org.apache.geode.internal.cache.xmlcache.CacheXmlVersion.GEODE_1_0;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * @since GemFire 8.1
  */
-@Category(UnitTest.class)
 public class CacheXmlVersionJUnitTest {
 
   /**

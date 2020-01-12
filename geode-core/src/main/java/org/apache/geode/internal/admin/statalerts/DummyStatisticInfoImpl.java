@@ -44,10 +44,6 @@ public class DummyStatisticInfoImpl implements StatisticInfo {
 
   public DummyStatisticInfoImpl() {}
 
-  /**
-   * @param statisticsTextId
-   * @param statisticName
-   */
   public DummyStatisticInfoImpl(String statisticsTypeName, String statisticsTextId,
       String statisticName) {
     super();
@@ -56,40 +52,49 @@ public class DummyStatisticInfoImpl implements StatisticInfo {
     this.statisticName = statisticName;
   }
 
+  @Override
   public String getStatisticName() {
     return statisticName;
   }
 
+  @Override
   public String getStatisticsTextId() {
     return statisticsTextId;
   }
 
+  @Override
   public void setStatisticName(String statisticName) {
     this.statisticName = statisticName;
   }
 
+  @Override
   public void setStatisticsTextId(String statisticsTextId) {
     this.statisticsTextId = statisticsTextId;
   }
 
+  @Override
   public StatisticDescriptor getStatisticDescriptor() {
     throw new UnsupportedOperationException(
         "DummyStatisticInfoImpl class does not support getStatisticDescriptor method.");
   }
 
+  @Override
   public Statistics getStatistics() {
     throw new UnsupportedOperationException(
         "DummyStatisticInfoImpl class does not support getStatistics method.");
   }
 
+  @Override
   public String getStatisticsTypeName() {
     return statisticsTypeName;
   }
 
+  @Override
   public void setStatisticsTypeName(String statisticsType) {
     this.statisticsTypeName = statisticsType;
   }
 
+  @Override
   public Number getValue() {
     throw new UnsupportedOperationException(
         "DummyStatisticInfoImpl class does not support getValue method.");
@@ -115,12 +120,14 @@ public class DummyStatisticInfoImpl implements StatisticInfo {
     return false;
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     out.writeUTF(this.statisticsTypeName);
     out.writeUTF(this.statisticsTextId);
     out.writeUTF(this.statisticName);
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.statisticsTypeName = in.readUTF();
     this.statisticsTextId = in.readUTF();

@@ -23,7 +23,7 @@ System logging messages typically pertain to startup; logging management; connec
 
 -   **Startup information**. Describe the Java version, the <%=vars.product_name%> native version, the host system, current working directory, and environment settings. These messages contain all information about the system and configuration the process is running with.
 -   **Logging management**. Pertain to the maintenance of the log files themselves. This information is always in the main log file (see the discussion at Log File Name).
--   **Connections and system membership**. Report on the arrival and departure of distributed system members (including the current member) and any information related to connection activities or failures. This includes information on communication between tiers in a hierarchical cache.
+-   **Connections and system membership**. Report on the arrival and departure of cluster members (including the current member) and any information related to connection activities or failures. This includes information on communication between tiers in a hierarchical cache.
 -   **Distribution**. Report on the distribution of data between system members. These messages include information about region configuration, entry creation and modification, and region and entry invalidation and destruction.
 -   **Cache, region, and entry management**. Cache initialization, listener activity, locking and unlocking, region initialization, and entry updates.
 
@@ -72,7 +72,7 @@ To figure out the member's most recent activities, look at the `meta-` log file 
 
 ## <a id="how_logging_works__section_D464FDFFC30141F385689A47CE5E8D38" class="no-quick-link"></a>How the System Renames Logs
 
-The log file that you specify is the base name used for all logging and logging archives. If a log file with the specified name already exists at startup, the distributed system automatically renames it before creating the current log file. This is a typical directory listing after a few runs with `log-file=system.log`:
+The log file that you specify is the base name used for all logging and logging archives. If a log file with the specified name already exists at startup, the cluster automatically renames it before creating the current log file. This is a typical directory listing after a few runs with `log-file=system.log`:
 
 ``` pre
 bash-2.05$ ls -tlra system*
@@ -84,7 +84,7 @@ bash-2.05$
 
 The first run created `system.log` with a timestamp of Nov 3 11:07. The second run renamed that file to `system-01-00.log` and created a new `system.log` with a timestamp of Nov 3 11:08. The third run renamed that file to `system-02-00.log` and created the file named `system.log` in this listing.
 
-When the distributed system renames the log file, it assigns the next available number to the new file, as XX of `filename-XX-YY.extension`. This next available number depends on existing old log files and also on any old statistics archives. The system assigns the next number that is higher than any in use for statistics or logging. This keeps current log files and statistics archives paired up regardless of the state of the older files in the directory. Thus, if an application is archiving statistics and logging to `system.log` and `statArchive.gfs`, and it runs in a Unix directory with these files:
+When the cluster renames the log file, it assigns the next available number to the new file, as XX of `filename-XX-YY.extension`. This next available number depends on existing old log files and also on any old statistics archives. The system assigns the next number that is higher than any in use for statistics or logging. This keeps current log files and statistics archives paired up regardless of the state of the older files in the directory. Thus, if an application is archiving statistics and logging to `system.log` and `statArchive.gfs`, and it runs in a Unix directory with these files:
 
 ``` pre
 bash-2.05$ ls -tlr stat* system*
@@ -164,7 +164,7 @@ These are the levels, in descending order, with sample output:
 
 -   **info**. This is for informational messages, typically geared to end users and system administrators.
 
-    This is a typical info message created at system member startup. This indicates that no other `DistributionManager`s are running in the distributed system, which means no other system members are running:
+    This is a typical info message created at system member startup. This indicates that no other `DistributionManager`s are running in the cluster, which means no other system members are running:
 
     ``` pre
     [info 2005/10/24 11:51:35.963 PDT CacheRunner main nid=0x1]
@@ -172,7 +172,7 @@ These are the levels, in descending order, with sample output:
     with id straw(7368):41714 (along with 0 other DMs)
     ```
 
-    When another system member joins the distributed system, these info messages are output by the members that are already running:
+    When another system member joins the cluster, these info messages are output by the members that are already running:
 
     ``` pre
     [info 2005/10/24 11:52:03.934 PDT CacheRunner P2P message reader for

@@ -17,7 +17,7 @@ package org.apache.geode.pdx;
 import org.apache.geode.GemFireException;
 
 /**
- * Thrown when a an attempt is made to reuse a PDX Type. This can occur if the PDX registry files
+ * Thrown when an attempt is made to reuse a PDX Type. This can occur if the PDX registry files
  * are deleted from the sending side of a WAN Gateway.
  */
 public class PdxRegistryMismatchException extends GemFireException {

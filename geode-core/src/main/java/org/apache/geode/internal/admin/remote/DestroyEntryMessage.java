@@ -25,9 +25,9 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.ExpirationAction;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * A message that is sent to a particular distribution manager to let it know that the sender is an
@@ -62,34 +62,36 @@ public class DestroyEntryMessage extends RegionAdminMessage {
           r.localInvalidate(key);
         }
       } catch (Exception e) {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.DestroEntryMessage_FAILED_ATTEMPT_TO_DESTROY_OR_INVALIDATE_ENTRY_0_1_FROM_CONSOLE_AT_2,
-            new Object[] {r.getFullPath(), key, this.getSender()}));
+        logger.warn("Failed attempt to destroy or invalidate entry {} {} from console at {}",
+            new Object[] {r.getFullPath(), key, this.getSender()});
       }
     }
   }
 
+  @Override
   public int getDSFID() {
     return DESTROY_ENTRY_MESSAGE;
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     DataSerializer.writeObject(this.action, out);
     DataSerializer.writeObject(this.key, out);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.action = (ExpirationAction) DataSerializer.readObject(in);
     this.key = DataSerializer.readObject(in);
   }
 
   @Override
   public String toString() {
-    return LocalizedStrings.DestroyEntryMessage_DESTROYENTRYMESSAGE_FROM_0
-        .toLocalizedString(this.getSender());
+    return String.format("DestroyEntryMessage from %s",
+        this.getSender());
   }
 }

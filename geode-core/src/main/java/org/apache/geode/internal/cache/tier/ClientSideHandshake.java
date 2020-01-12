@@ -30,6 +30,10 @@ public interface ClientSideHandshake {
 
   ClientProxyMembershipID getMembershipId();
 
+  default boolean isDurable() {
+    return getMembershipId().isDurable();
+  }
+
   ServerQueueStatus handshakeWithSubscriptionFeed(Socket socket, boolean isPrimary)
       throws IOException, AuthenticationRequiredException, AuthenticationFailedException,
       ServerRefusedConnectionException, ClassNotFoundException;

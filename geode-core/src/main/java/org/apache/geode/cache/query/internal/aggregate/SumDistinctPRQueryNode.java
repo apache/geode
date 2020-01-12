@@ -16,19 +16,21 @@ package org.apache.geode.cache.query.internal.aggregate;
 
 import java.util.Set;
 
+import org.apache.geode.cache.query.QueryService;
+
 /**
  * Computes the sum of distinct values on the PR query node.
- *
- *
  */
 public class SumDistinctPRQueryNode extends DistinctAggregator {
 
   /**
-   * The input data is the Set of values(distinct) receieved from each of the bucket nodes.
+   * The input data is the Set of values(distinct) received from each of the bucket nodes.
    */
   @Override
   public void accumulate(Object value) {
-    this.distinct.addAll((Set) value);
+    if (value != null && value != QueryService.UNDEFINED) {
+      this.distinct.addAll((Set) value);
+    }
   }
 
   @Override

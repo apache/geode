@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -22,14 +21,16 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.ExpectedException;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.internal.protocol.TestExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
-import org.apache.geode.internal.protocol.protobuf.v1.Failure;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufRequestUtilities;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
@@ -37,9 +38,9 @@ import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
-import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 
-@Category(UnitTest.class)
+@Category({ClientServerTest.class})
 public class RemoveRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTest {
   private final String TEST_KEY = "my key";
   private final String TEST_VALUE = "my value";
@@ -47,6 +48,9 @@ public class RemoveRequestOperationHandlerJUnitTest extends OperationHandlerJUni
   private final String MISSING_REGION = "missing region";
   private final String MISSING_KEY = "missing key";
   private Region regionStub;
+
+  @Rule
+  public ExpectedException expectedException = ExpectedException.none();
 
   @Before
   public void setUp() throws Exception {
@@ -73,13 +77,9 @@ public class RemoveRequestOperationHandlerJUnitTest extends OperationHandlerJUni
   @Test
   public void processReturnsUnsucessfulResponseForInvalidRegion() throws Exception {
     RegionAPI.RemoveRequest removeRequest = generateTestRequest(true, false).getRemoveRequest();
+    expectedException.expect(RegionDestroyedException.class);
     Result result = operationHandler.process(serializationService, removeRequest,
         TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
-
-    assertTrue(result instanceof Failure);
-    ClientProtocol.ErrorResponse errorMessage =
-        (ClientProtocol.ErrorResponse) result.getErrorMessage();
-    assertEquals(BasicTypes.ErrorCode.SERVER_ERROR, errorMessage.getError().getErrorCode());
   }
 
   @Test

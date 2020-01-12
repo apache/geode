@@ -17,18 +17,20 @@ package org.apache.geode.internal.cache;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Set;
+import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.annotations.TestingOnly;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.locks.TXRegionLockRequest;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * TXRegionLockRequest represents all the locks that need to be made for a single region.
@@ -41,18 +43,18 @@ public class TXRegionLockRequestImpl implements TXRegionLockRequest {
 
   private transient InternalCache cache;
 
-  private transient LocalRegion r;
+  private transient InternalRegion r;
 
   private String regionPath;
 
-  private Set<Object> entryKeys;
+  private Map<Object, Boolean> entryKeys;
 
   public TXRegionLockRequestImpl() {
     // for DataSerializer
     this.cache = null;
   }
 
-  public TXRegionLockRequestImpl(InternalCache cache, LocalRegion r) {
+  public TXRegionLockRequestImpl(InternalCache cache, InternalRegion r) {
     this.cache = cache;
     this.r = r;
     this.regionPath = null;
@@ -62,8 +64,8 @@ public class TXRegionLockRequestImpl implements TXRegionLockRequest {
   /**
    * Used by unit tests
    */
-  @TestingOnly
-  public TXRegionLockRequestImpl(String regionPath, Set<Object> entryKeys) {
+  @VisibleForTesting
+  public TXRegionLockRequestImpl(String regionPath, Map<Object, Boolean> entryKeys) {
     this.cache = null;
     this.regionPath = regionPath;
     this.entryKeys = entryKeys;
@@ -74,31 +76,36 @@ public class TXRegionLockRequestImpl implements TXRegionLockRequest {
   }
 
   @Override
-  public void addEntryKeys(Set<Object> s) {
-    if (s == null || s.isEmpty()) {
+  public void addEntryKeys(Map<Object, Boolean> map) {
+    if (map == null || map.isEmpty()) {
       return;
     }
     if (this.entryKeys == null) {
-      // Create new temporary HashSet. Fix for defect # 44472.
-      final HashSet<Object> tmp = new HashSet<Object>(s.size());
-      tmp.addAll(s);
+      // Create new temporary HashMap. Fix for defect # 44472.
+      final HashMap<Object, Boolean> tmp = new HashMap<Object, Boolean>(map.size());
+      tmp.putAll(map);
       this.entryKeys = tmp;
 
     } else {
       // Need to make a copy so we can do a union
-      final HashSet<Object> tmp = new HashSet<Object>(this.entryKeys.size() + s.size());
-      tmp.addAll(s);
-      tmp.addAll(this.entryKeys);
+      final HashMap<Object, Boolean> tmp =
+          new HashMap<Object, Boolean>(this.entryKeys.size() + map.size());
+      tmp.putAll(this.entryKeys);
       this.entryKeys = tmp;
+      for (Map.Entry<Object, Boolean> entry : map.entrySet()) {
+        addEntryKey(entry.getKey(), entry.getValue());
+      }
     }
   }
 
   @Override
-  public void addEntryKey(Object key) {
+  public void addEntryKey(Object key, Boolean isEvent) {
     if (this.entryKeys == null) {
-      this.entryKeys = new HashSet<Object>();
+      this.entryKeys = new HashMap<Object, Boolean>();
     }
-    this.entryKeys.add(key);
+    if (!this.entryKeys.getOrDefault(key, Boolean.FALSE)) {
+      this.entryKeys.put(key, isEvent);
+    }
   }
 
   @Override
@@ -111,38 +118,76 @@ public class TXRegionLockRequestImpl implements TXRegionLockRequest {
       if (cache != null && size > 0) {
         this.r = (LocalRegion) cache.getRegion(this.regionPath);
       }
-      this.entryKeys = readEntryKeySet(size, in);
+      if (InternalDataSerializer.getVersionForDataStream(in).compareTo(Version.GEODE_1_10_0) >= 0) {
+        this.entryKeys = readEntryKeyMap(size, in);
+      } else {
+        this.entryKeys = readEntryKeySet(size, in);
+      }
+
     } catch (CacheClosedException ignore) {
       // don't throw in deserialization
       this.entryKeys = null;
     }
   }
 
-  private Set<Object> readEntryKeySet(final int size, final DataInput in)
+  private Map<Object, Boolean> readEntryKeyMap(final int size, final DataInput in)
       throws IOException, ClassNotFoundException {
 
-    if (logger.isTraceEnabled()) {
-      logger.trace(LogMarker.SERIALIZER, "Reading HashSet with size {}", size);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Reading HashMap with size {}", size);
+    }
+    if (size == -1) {
+      return null;
     }
 
-    final HashSet<Object> set = new HashSet<Object>(size);
+    final HashMap<Object, Boolean> map = new HashMap<Object, Boolean>(size);
     Object key;
+    Boolean value;
     for (int i = 0; i < size; i++) {
       key = DataSerializer.readObject(in);
-      set.add(key);
+      value = DataSerializer.readObject(in);
+      map.put(key, value);
     }
 
     if (logger.isDebugEnabled()) {
-      logger.debug("Read HashSet with {} elements: {}", size, set);
+      logger.debug("Read HashMap with {} elements: {}", size, map);
     }
 
-    return set;
+    return map;
+  }
+
+  private Map<Object, Boolean> readEntryKeySet(final int size, final DataInput in)
+      throws IOException, ClassNotFoundException {
+
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Reading HashSet with size {}", size);
+    }
+
+    final HashMap<Object, Boolean> map = new HashMap<Object, Boolean>(size);
+    Object key;
+    Boolean value;
+    for (int i = 0; i < size; i++) {
+      key = DataSerializer.readObject(in);
+      value = true;
+      map.put(key, value);
+    }
+
+    if (logger.isDebugEnabled()) {
+      logger.debug("Read HashSet with {} elements: {}", size, map);
+    }
+
+    return map;
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeString(getRegionFullPath(), out);
-    InternalDataSerializer.writeSet(this.entryKeys, out);
+    if (InternalDataSerializer.getVersionForDataStream(out).compareTo(Version.GEODE_1_10_0) >= 0) {
+      InternalDataSerializer.writeHashMap(this.entryKeys, out);
+    } else {
+      HashSet hashset = new HashSet(this.entryKeys.keySet());
+      InternalDataSerializer.writeHashSet(hashset, out);
+    }
   }
 
   public static TXRegionLockRequestImpl createFromData(DataInput in)
@@ -161,7 +206,7 @@ public class TXRegionLockRequestImpl implements TXRegionLockRequest {
   }
 
   @Override
-  public Set<Object> getKeys() {
+  public Map<Object, Boolean> getKeys() {
     if (this.entryKeys == null) {
       // check for cache closed/closing
       cache.getCancelCriterion().checkCancelInProgress(null);
@@ -173,7 +218,7 @@ public class TXRegionLockRequestImpl implements TXRegionLockRequest {
    * Only safe to call in the vm that creates this request. Once it is serialized this method will
    * return null.
    */
-  public LocalRegion getLocalRegion() {
+  public InternalRegion getLocalRegion() {
     return this.r;
   }
 

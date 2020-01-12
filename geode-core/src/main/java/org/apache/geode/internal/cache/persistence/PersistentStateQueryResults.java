@@ -18,7 +18,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
@@ -27,15 +26,15 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
  *
  */
 class PersistentStateQueryResults {
-  public final Map<InternalDistributedMember, PersistentMemberState> stateOnPeers =
+  private final Map<InternalDistributedMember, PersistentMemberState> stateOnPeers =
       new HashMap<InternalDistributedMember, PersistentMemberState>();
-  public final Map<InternalDistributedMember, PersistentMemberID> initializingIds =
+  private final Map<InternalDistributedMember, PersistentMemberID> initializingIds =
       new HashMap<InternalDistributedMember, PersistentMemberID>();
-  public final Map<InternalDistributedMember, PersistentMemberID> persistentIds =
+  private final Map<InternalDistributedMember, PersistentMemberID> persistentIds =
       new HashMap<InternalDistributedMember, PersistentMemberID>();
-  public final Map<InternalDistributedMember, Set<PersistentMemberID>> onlineMemberMap =
+  private final Map<InternalDistributedMember, Set<PersistentMemberID>> onlineMemberMap =
       new HashMap<InternalDistributedMember, Set<PersistentMemberID>>();
-  public final Map<InternalDistributedMember, DiskStoreID> diskStoreIds =
+  private final Map<InternalDistributedMember, DiskStoreID> diskStoreIds =
       new HashMap<InternalDistributedMember, DiskStoreID>();
 
   public synchronized void addResult(PersistentMemberState persistedStateOfPeer,
@@ -57,4 +56,23 @@ class PersistentStateQueryResults {
     }
   }
 
+  Map<InternalDistributedMember, PersistentMemberState> getStateOnPeers() {
+    return stateOnPeers;
+  }
+
+  Map<InternalDistributedMember, PersistentMemberID> getInitializingIds() {
+    return initializingIds;
+  }
+
+  Map<InternalDistributedMember, PersistentMemberID> getPersistentIds() {
+    return persistentIds;
+  }
+
+  Map<InternalDistributedMember, Set<PersistentMemberID>> getOnlineMemberMap() {
+    return onlineMemberMap;
+  }
+
+  Map<InternalDistributedMember, DiskStoreID> getDiskStoreIds() {
+    return diskStoreIds;
+  }
 }

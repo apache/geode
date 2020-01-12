@@ -14,10 +14,14 @@
  */
 package org.apache.geode.internal.cache;
 
-import java.io.*;
-import java.util.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
-import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
@@ -25,6 +29,8 @@ import org.apache.geode.cache.RoleEvent;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.Role;
 import org.apache.geode.distributed.internal.membership.InternalRole;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * Implementation of a RoleEvent. Super class is DataSerializable but this class is probably never
@@ -32,7 +38,7 @@ import org.apache.geode.distributed.internal.membership.InternalRole;
  *
  * @since GemFire 5.0
  */
-public class RoleEventImpl extends RegionEventImpl implements RoleEvent, DataSerializable {
+public class RoleEventImpl extends RegionEventImpl implements RoleEvent {
 
   private static final long serialVersionUID = 1306615015229258945L;
 
@@ -54,6 +60,7 @@ public class RoleEventImpl extends RegionEventImpl implements RoleEvent, DataSer
     this.requiredRoles = Collections.unmodifiableSet(requiredRoles);
   }
 
+  @Override
   public Set getRequiredRoles() {
     return this.requiredRoles; // already unmodifiableSet
   }
@@ -64,8 +71,9 @@ public class RoleEventImpl extends RegionEventImpl implements RoleEvent, DataSer
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     String[] requiredRoleNames = new String[this.requiredRoles.size()];
     Iterator iter = this.requiredRoles.iterator();
     for (int i = 0; i < requiredRoleNames.length; i++) {
@@ -76,8 +84,9 @@ public class RoleEventImpl extends RegionEventImpl implements RoleEvent, DataSer
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     String[] requiredRoleNames = DataSerializer.readStringArray(in);
     Set requiredRolesSet = new HashSet(requiredRoleNames.length);
     for (int i = 0; i < requiredRoleNames.length; i++) {

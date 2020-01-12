@@ -1,0 +1,51 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+apply from: "${rootDir}/${scriptDir}/java.gradle"
+apply from: "${rootDir}/${scriptDir}/dependency-resolution.gradle"
+apply from: "${rootDir}/${scriptDir}/test.gradle"
+apply from: "${rootDir}/${scriptDir}/code-analysis.gradle"
+apply from: "${rootDir}/${scriptDir}/docker.gradle"
+apply from: "${rootDir}/${scriptDir}/spotless.gradle"
+apply from: "${rootDir}/${scriptDir}/ide.gradle"
+apply plugin: 'com.github.ben-manes.versions'
+
+// Within the configure block, 'project' refers to the task-owning project, in this case rootProject
+def thisProjectScoped = project
+
+['clean', 'check', 'test'].each { taskName ->
+  rootProject.tasks.named(taskName).configure {
+    dependsOn thisProjectScoped.tasks.named(taskName)
+  }
+}
+
+
+
+rootProject.tasks.named('classes').configure {
+  // This is a semi-lazy hook so that our test sources are compiled most of the time.
+  dependsOn(
+    [
+      thisProjectScoped.tasks.named('compileTestJava'),
+      thisProjectScoped.tasks.named('compileIntegrationTestJava'),
+      thisProjectScoped.tasks.named('compileDistributedTestJava'),
+      thisProjectScoped.tasks.named('compileAcceptanceTestJava'),
+      thisProjectScoped.tasks.named('compileUiTestJava'),
+      thisProjectScoped.tasks.named('compilePerformanceTestJava'),
+      thisProjectScoped.tasks.named('compileUpgradeTestJava'),
+    ]
+  )
+}

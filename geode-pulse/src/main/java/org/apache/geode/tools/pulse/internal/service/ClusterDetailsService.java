@@ -17,7 +17,7 @@
 
 package org.apache.geode.tools.pulse.internal.service;
 
-import java.text.DecimalFormat;
+import static org.apache.geode.tools.pulse.internal.data.PulseConstants.TWO_PLACE_DECIMAL_FORMAT;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -28,7 +28,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import org.apache.geode.tools.pulse.internal.data.Cluster;
-import org.apache.geode.tools.pulse.internal.data.PulseConstants;
 import org.apache.geode.tools.pulse.internal.data.Repository;
 
 /**
@@ -46,6 +45,7 @@ public class ClusterDetailsService implements PulseService {
 
   private final ObjectMapper mapper = new ObjectMapper();
 
+  @Override
   public ObjectNode execute(final HttpServletRequest request) throws Exception {
 
     String userName = request.getUserPrincipal().getName();
@@ -85,11 +85,10 @@ public class ClusterDetailsService implements PulseService {
     responseJSON.put("clients", cluster.getClientConnectionCount());
     responseJSON.put("locators", cluster.getLocatorCount());
     responseJSON.put("totalRegions", cluster.getTotalRegionCount());
-    Long heapSize = cluster.getTotalHeapSize();
+    long heapSize = cluster.getTotalHeapSize();
 
-    DecimalFormat df2 = new DecimalFormat(PulseConstants.DECIMAL_FORMAT_PATTERN);
-    Double heapS = heapSize.doubleValue() / 1024;
-    responseJSON.put("totalHeap", Double.valueOf(df2.format(heapS)));
+    Double heapS = heapSize / 1024D;
+    responseJSON.put("totalHeap", TWO_PLACE_DECIMAL_FORMAT.format(heapS));
     responseJSON.put("functions", cluster.getRunningFunctionCount());
     responseJSON.put("uniqueCQs", cluster.getRegisteredCQCount());
     responseJSON.put("subscriptions", cluster.getSubscriptionCount());

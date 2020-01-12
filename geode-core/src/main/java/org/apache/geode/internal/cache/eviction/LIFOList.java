@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache.eviction;
 
-import org.apache.geode.internal.cache.BucketRegion;
 
 /**
  * NewLIFOClockHand holds the behavior for LIFO logic , Overwriting getLRUEntry() to return most

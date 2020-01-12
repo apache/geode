@@ -15,14 +15,15 @@
 
 package org.apache.geode.internal.cache.xmlcache;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Helper class for CacheXmlPropertyResolver. Helps in parsing ${...${}..}..${} strings.
@@ -41,12 +42,15 @@ public class CacheXmlPropertyResolverHelper {
    * This <code>HashMap </code> contains valid suffixes and prefixes to be parsed by
    * {@link CacheXmlPropertyResolverHelper} like {}, [] or ().
    */
-  private static HashMap<String, String> validSuffixAndPrefixes = new HashMap<String, String>();
+  @Immutable
+  private static final Map<String, String> validSuffixAndPrefixes;
 
   static {
-    validSuffixAndPrefixes.put("}", "{");
-    validSuffixAndPrefixes.put("]", "[");
-    validSuffixAndPrefixes.put(")", "(");
+    Map<String, String> map = new HashMap<>();
+    map.put("}", "{");
+    map.put("]", "[");
+    map.put(")", "(");
+    validSuffixAndPrefixes = Collections.unmodifiableMap(map);
   }
   /* String specifying the suffice for property key prefix */
   private String propertyPrefix = DEFAULT_PROPERTY_STRING_PREFIX;
@@ -56,10 +60,6 @@ public class CacheXmlPropertyResolverHelper {
 
   private String prefixForSuffix = DEFAULT_PREFIX_FOR_SUFFIX;
 
-  /**
-   * @param propPrefix
-   * @param propSuffix
-   */
   public CacheXmlPropertyResolverHelper(String propPrefix, String propSuffix) {
     if (propPrefix != null && propSuffix != null) {
       String validPrefix = validSuffixAndPrefixes.get(propSuffix);
@@ -78,8 +78,6 @@ public class CacheXmlPropertyResolverHelper {
    * Parses the given string which are supposed to be like ${} for system and/or Gemfire properties
    * to be replaced. This will return property.name from ${property.name}.
    *
-   * @param unparsedString
-   * @return parsedString
    */
   protected String parseResolvablePropString(String unparsedString, PropertyResolver resolver,
       Set<String> visitedReplaceableStrings) {
@@ -93,9 +91,9 @@ public class CacheXmlPropertyResolverHelper {
             buf.substring(prefixIndex + propertyPrefix.length(), suffixIndex);
         // Check for circular references
         if (!visitedReplaceableStrings.add(replaceableString)) {
-          logger.info(LocalizedMessage.create(
-              LocalizedStrings.CacheXmlPropertyResolverHelper_SOME_UNRESOLVED_STRING_REPLACED_CIRCULAR_ERROR__0,
-              replaceableString));
+          logger.info(
+              "Some still unresolved string {} was replaced by resolver, leading to circular references.",
+              replaceableString);
           throw new IllegalArgumentException("Some still unresolved string " + replaceableString
               + " was replaced by resolver, leading to circular references.");
         }
@@ -135,9 +133,6 @@ public class CacheXmlPropertyResolverHelper {
    * Finds index of suffix in a string from a specified index. Like finds index of "}" in string
    * "${my.prop.name}" starting from index 2, which is 14.
    *
-   * @param buf
-   * @param index
-   * @return suffix
    */
   private int findSuffixIndex(StringBuilder buf, int index) {
     int inNestedProperty = 0;

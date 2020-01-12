@@ -42,10 +42,12 @@ public class MultiRegionFunctionContextImpl extends FunctionContextImpl
     this.isPossibleDuplicate = isPossibleDuplicate;
   }
 
+  @Override
   public Set<Region> getRegions() {
     return regions;
   }
 
+  @Override
   public boolean isPossibleDuplicate() {
     return isPossibleDuplicate;
   }

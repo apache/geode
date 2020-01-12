@@ -18,12 +18,22 @@ import org.springframework.stereotype.Component;
 
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 
 @Component("cacheProvider")
 public class CacheProviderImpl implements CacheProvider {
 
   @Override
-  public InternalCache getInternalCache() {
+  public InternalCacheForClientAccess getCache() {
+    final InternalCache result = getInternalCache();
+    if (result == null) {
+      return null;
+    }
+    return new InternalCacheForClientAccess(result);
+  }
+
+  @SuppressWarnings("deprecation")
+  private InternalCache getInternalCache() {
     return GemFireCacheImpl.getExisting();
   }
 }

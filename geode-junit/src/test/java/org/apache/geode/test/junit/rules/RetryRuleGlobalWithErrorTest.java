@@ -14,7 +14,7 @@
  */
 package org.apache.geode.test.junit.rules;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 
 import java.util.List;
@@ -22,12 +22,10 @@ import java.util.List;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 
 import org.apache.geode.test.junit.Retry;
-import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.runners.TestRunner;
 
 /**
@@ -36,7 +34,6 @@ import org.apache.geode.test.junit.runners.TestRunner;
  *
  * @see org.apache.geode.test.junit.rules.RetryRule
  */
-@Category(UnitTest.class)
 public class RetryRuleGlobalWithErrorTest {
 
   @Test

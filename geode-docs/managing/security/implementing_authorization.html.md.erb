@@ -44,7 +44,7 @@ A permission contains the `Resource` data member,
 which classifies whether the operation as working on
 
 - cache data; value is `DATA`
-- the distributed system; value is `CLUSTER`
+- the cluster; value is `CLUSTER`
 
 A permission also contains the `Operation` data member, 
 which classifies whether the operation as
@@ -104,14 +104,16 @@ a Client-Server interaction.
 | Region.put(key)                    | DATA:WRITE:RegionName:Key           |
 | Region.replace                     | DATA:WRITE:RegionName:Key           |
 | queryService.newCq                 | DATA:READ:RegionName                |
-| CqQuery.stop                       | DATA:READ                           |
+| CqQuery.stop                       | CLUSTER:MANAGE:QUERY                   |
 
 
 This table classifies the permissions assigned for `gfsh` operations.
 
 | `gfsh` Command                         | Assigned `ResourcePermission`
 |----------------------------------------|----------------------------------|
+| alter async-event-queue                | CLUSTER:MANAGE:DEPLOY            |
 | alter disk-store                       | CLUSTER:MANAGE:DISK              |
+| alter query-service                    | CLUSTER:MANAGE                   |
 | alter region                           | DATA:MANAGE:RegionName           |
 | alter runtime                          | CLUSTER:MANAGE                   |
 | backup disk-store                      | DATA:READ and CLUSTER:WRITE:DISK |
@@ -127,6 +129,7 @@ This table classifies the permissions assigned for `gfsh` operations.
 | create gateway-receiver                | CLUSTER:MANAGE:GATEWAY          |
 | create gateway-sender                  | CLUSTER:MANAGE:GATEWAY          |
 | create index                           | CLUSTER:MANAGE:QUERY            |
+| create jndi-binding                    | CLUSTER:MANAGE                  |
 | create lucene index                    | CLUSTER:MANAGE:LUCENE            |
 | create region                          | DATA:MANAGE, plus CLUSTER:WRITE:DISK if the associated region is persistent |
 | define index                           | CLUSTER:MANAGE:QUERY             |
@@ -134,13 +137,17 @@ This table classifies the permissions assigned for `gfsh` operations.
 | describe client                        | CLUSTER:READ                     |
 | describe config                        | CLUSTER:READ                     |
 | describe disk-store                    | CLUSTER:READ                     |
+| describe jndi-binding                  | CLUSTER:READ                     |
 | describe lucene index                  | CLUSTER:READ:LUCENE              |
 | describe member                        | CLUSTER:READ                     |
 | describe offline-disk-store            | CLUSTER:READ                     |
+| describe query-service                 | CLUSTER:READ                     |
 | describe region                        | CLUSTER:READ                     |
+| destroy async-event-queue              | CLUSTER:MANAGE                   |
 | destroy disk-store                     | CLUSTER:MANAGE:DISK              |
 | destroy function                       | CLUSTER:MANAGE:DEPLOY            |
 | destroy index                          | CLUSTER:MANAGE:QUERY             |
+| destroy jndi-binding                   | CLUSTER:MANAGE                   |
 | destroy lucene index                   | CLUSTER:MANAGE:LUCENE            |
 | destroy region                         | DATA:MANAGE                      |
 | execute function                       | Defaults to DATA:WRITE. Override `Function.getRequiredPermissions` to change the permission.   |
@@ -162,6 +169,7 @@ This table classifies the permissions assigned for `gfsh` operations.
 | list functions                         | CLUSTER:READ                     |
 | list gateways                          | CLUSTER:READ                     |
 | list indexes                           | CLUSTER:READ:QUERY               |
+| list jndi-binding                      | CLUSTER:READ                     |
 | list lucene indexes                    | CLUSTER:READ:LUCENE              |
 | list members                           | CLUSTER:READ                     |
 | list regions                           | CLUSTER:READ                     |
@@ -170,9 +178,10 @@ This table classifies the permissions assigned for `gfsh` operations.
 | netstat                                | CLUSTER:READ                     |
 | pause gateway-sender                   | CLUSTER:MANAGE:GATEWAY           |
 | put --key=key1 --region=region1        | DATA:WRITE:RegionName:Key        |
-| query                                  | DATA:READ                        
+| query                                  | DATA:READ:RegionName             |
 | rebalance                              | DATA:MANAGE                      |
 | remove                                 | DATA:WRITE:RegionName or DATA:WRITE:RegionName:Key |
+| resume async-event-queue-dispatcher    | CLUSTER:MANAGE                   |
 | resume gateway-sender                  | CLUSTER:MANAGE:GATEWAY           |
 | revoke mising-disk-store               | CLUSTER:MANAGE:DISK              |
 | search lucene                          | DATA:READ:RegionName             |
@@ -199,7 +208,7 @@ This table classifies the permissions assigned for `gfsh` operations.
 The `gfsh connect` does not have a permission,
 as it is the operation that invokes authentication. 
 These `gfsh` commands do not have permission defined,
-as they do not interact with the distributed system:
+as they do not interact with the cluster:
 
 -  `gfsh describe connection`, which describes the `gfsh` end of the connection
 -  `gfsh debug`, which toggles the mode within `gfsh`
@@ -292,6 +301,5 @@ required of the entity that invokes an execution of the function.
 
 ### <a id="AuthorizeMethodsInQueries" class="no-quick-link"></a>Authorization of Methods Invoked from Queries
 
-Enabling the `SecurityManager` affects queries
-by restricting the methods that a running query may invoke.
-See [Method Invocations](../../developing/query_select/the_where_clause.html#the_where_clause__section_D2F8D17B52B04895B672E2FCD675A676) for details.
+Enabling the `SecurityManager` affects queries by restricting the methods that a running query may invoke.
+See [Method Invocations](../../developing/query_select/the_where_clause.html#the_where_clause__section_D2F8D17B52B04895B672E2FCD675A676) and [Method Invocation Authorizers](method_invocation_authorizers.html) for details.

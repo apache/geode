@@ -18,6 +18,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -27,14 +28,16 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.SAXException;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
 
@@ -53,14 +56,16 @@ public class ConfigurationResponse implements DataSerializableFixedID {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     DataSerializer.writeHashMap(requestedConfiguration, out);
     DataSerializer.writeHashMap(jarNames, out);
     DataSerializer.writeBoolean(Boolean.valueOf(failedToGetSharedConfig), out);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     this.requestedConfiguration = DataSerializer.readHashMap(in);
     this.jarNames = DataSerializer.readHashMap(in);
     this.failedToGetSharedConfig = DataSerializer.readBoolean(in);
@@ -101,14 +106,13 @@ public class ConfigurationResponse implements DataSerializableFixedID {
         if (config != null) {
           sb.append("\n***************************************************************");
           sb.append("\nConfiguration for  '" + configType + "'");
-          sb.append("\n\nJar files to deployed");
+          sb.append("\n\nJar files to be deployed:");
 
           Set<String> jarNames = config.getJarNames();
-          Iterator<String> jarIter = jarNames.iterator();
-          int jarCounter = 0;
-
-          while (jarIter.hasNext()) {
-            sb.append("\n" + ++jarCounter + "." + jarIter.next());
+          if (jarNames.size() == 0) {
+            sb.append("\n  None");
+          } else {
+            jarNames.forEach(c -> sb.append("\n  " + c));
           }
 
           try {
@@ -128,7 +132,7 @@ public class ConfigurationResponse implements DataSerializableFixedID {
   }
 
   public void addJar(String group, Set<String> jarNames) {
-    this.jarNames.put(group, jarNames);
+    this.jarNames.put(group, new HashSet<>(jarNames));
   }
 
   public Map<String, Set<String>> getJarNames() {
@@ -143,7 +147,8 @@ public class ConfigurationResponse implements DataSerializableFixedID {
     this.member = member;
   }
 
+  @Override
   public Version[] getSerializationVersions() {
-    return new Version[] {Version.CURRENT};
+    return null;
   }
 }

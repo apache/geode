@@ -25,15 +25,12 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.GemFireException;
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.io.RollingFileHandler;
 import org.apache.geode.internal.logging.InternalLogWriter;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
-import org.apache.geode.internal.logging.log4j.LogWriterAppender;
-import org.apache.geode.internal.logging.log4j.LogWriterAppenders;
-import org.apache.geode.internal.logging.log4j.LogWriterLogger;
+import org.apache.geode.logging.internal.log4j.LogWriterLogger;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.logging.internal.spi.LogFile;
 
 /**
  * Extracted from {@link HostStatSampler} and {@link GemFireStatSampler}.
@@ -89,7 +86,6 @@ public class StatArchiveHandler implements SampleHandler {
   /**
    * Initializes the stat archiver with nanosTimeStamp.
    *
-   * @param nanosTimeStamp
    */
   public void initialize(long nanosTimeStamp) {
     changeArchiveFile(false, nanosTimeStamp);
@@ -99,7 +95,6 @@ public class StatArchiveHandler implements SampleHandler {
   /**
    * Closes any {@link StatArchiveWriter} currently in use by this handler.
    *
-   * @throws GemFireException
    */
   public void close() throws GemFireException {
     synchronized (this) {
@@ -113,17 +108,14 @@ public class StatArchiveHandler implements SampleHandler {
     if (this.archiver.getSampleCount() > 0) {
       StringWriter sw = new StringWriter();
       ex.printStackTrace(new PrintWriter(sw, true));
-      logger.warn(LogMarker.STATISTICS, LocalizedMessage.create(
-          LocalizedStrings.HostStatSampler_STATISTIC_ARCHIVER_SHUTTING_DOWN_BECAUSE__0, sw));
+      logger.warn(LogMarker.STATISTICS_MARKER, "Statistic archiver shutting down because: {}", sw);
     }
     try {
       this.archiver.close();
     } catch (GemFireException ignore) {
       if (this.archiver.getSampleCount() > 0) {
-        logger.warn(LogMarker.STATISTICS,
-            LocalizedMessage.create(
-                LocalizedStrings.HostStatSampler_STATISIC_ARCHIVER_SHUTDOWN_FAILED_BECAUSE__0,
-                ignore.getMessage()));
+        logger.warn(LogMarker.STATISTICS_MARKER, "Statistic archiver shutdown failed because: {}",
+            ignore.getMessage());
       }
     }
     if (this.archiver.getSampleCount() == 0 && this.archiveId != -1) {
@@ -136,21 +128,19 @@ public class StatArchiveHandler implements SampleHandler {
   @Override
   public void sampled(long nanosTimeStamp, List<ResourceInstance> resourceInstances) {
     synchronized (this) {
-      if (logger.isTraceEnabled(LogMarker.STATISTICS)) {
-        logger.trace(LogMarker.STATISTICS, "StatArchiveHandler#sampled resourceInstances={}",
-            resourceInstances);
+      if (logger.isTraceEnabled(LogMarker.STATISTICS_VERBOSE)) {
+        logger.trace(LogMarker.STATISTICS_VERBOSE,
+            "StatArchiveHandler#sampled resourceInstances={}", resourceInstances);
       }
       if (archiver != null) {
         try {
           archiver.sampled(nanosTimeStamp, resourceInstances);
           if (archiver.getSampleCount() == 1) {
-            logger.info(LogMarker.STATISTICS,
-                LocalizedMessage.create(
-                    LocalizedStrings.GemFireStatSampler_ARCHIVING_STATISTICS_TO__0_,
-                    archiver.getArchiveName()));
+            logger.info(LogMarker.STATISTICS_MARKER, "Archiving statistics to {}.",
+                archiver.getArchiveName());
           }
         } catch (IllegalArgumentException e) {
-          logger.warn(LogMarker.STATISTICS,
+          logger.warn(LogMarker.STATISTICS_MARKER,
               "Use of java.lang.System.nanoTime() resulted in a non-positive timestamp delta. Skipping archival of statistics sample.",
               e);
         } catch (GemFireException ex) {
@@ -193,9 +183,9 @@ public class StatArchiveHandler implements SampleHandler {
 
   @Override
   public void allocatedResourceType(ResourceType resourceType) {
-    if (logger.isTraceEnabled(LogMarker.STATISTICS)) {
-      logger.trace(LogMarker.STATISTICS, "StatArchiveHandler#allocatedResourceType resourceType={}",
-          resourceType);
+    if (logger.isTraceEnabled(LogMarker.STATISTICS_VERBOSE)) {
+      logger.trace(LogMarker.STATISTICS_VERBOSE,
+          "StatArchiveHandler#allocatedResourceType resourceType={}", resourceType);
     }
     if (archiver != null) {
       try {
@@ -208,8 +198,8 @@ public class StatArchiveHandler implements SampleHandler {
 
   @Override
   public void allocatedResourceInstance(ResourceInstance resourceInstance) {
-    if (logger.isTraceEnabled(LogMarker.STATISTICS)) {
-      logger.trace(LogMarker.STATISTICS,
+    if (logger.isTraceEnabled(LogMarker.STATISTICS_VERBOSE)) {
+      logger.trace(LogMarker.STATISTICS_VERBOSE,
           "StatArchiveHandler#allocatedResourceInstance resourceInstance={}", resourceInstance);
     }
     if (archiver != null) {
@@ -223,8 +213,8 @@ public class StatArchiveHandler implements SampleHandler {
 
   @Override
   public void destroyedResourceInstance(ResourceInstance resourceInstance) {
-    if (logger.isTraceEnabled(LogMarker.STATISTICS)) {
-      logger.trace(LogMarker.STATISTICS,
+    if (logger.isTraceEnabled(LogMarker.STATISTICS_VERBOSE)) {
+      logger.trace(LogMarker.STATISTICS_VERBOSE,
           "StatArchiveHandler#destroyedResourceInstance resourceInstance={}", resourceInstance);
     }
     if (archiver != null) {
@@ -266,7 +256,6 @@ public class StatArchiveHandler implements SampleHandler {
    * {@link StatArchiveHandlerConfig#getArchiveDiskSpaceLimit() disk space limit}.
    *
    * @param newFile the new archive file to use or "" to disable archiving
-   * @param nanosTimeStamp
    */
   protected void changeArchiveFile(File newFile, long nanosTimeStamp) {
     changeArchiveFile(newFile, true, nanosTimeStamp);
@@ -291,7 +280,6 @@ public class StatArchiveHandler implements SampleHandler {
    * @param resetHandler true if the handler should reset itself with the SampleCollector in order
    *        to receive allocation notifications about all resource types and instances
    *
-   * @param nanosTimeStamp
    */
   private void changeArchiveFile(boolean resetHandler, long nanosTimeStamp) {
     changeArchiveFile(this.config.getArchiveFileName(), resetHandler, nanosTimeStamp);
@@ -309,14 +297,11 @@ public class StatArchiveHandler implements SampleHandler {
    * removing and re-adding itself in order to receive allocation notifications about all resource
    * types and instances.
    *
-   * @param newFile
-   * @param resetHandler
-   * @param nanosTimeStamp
    */
   private void changeArchiveFile(File newFile, boolean resetHandler, long nanosTimeStamp) {
-    final boolean isDebugEnabled_STATISTICS = logger.isTraceEnabled(LogMarker.STATISTICS);
+    final boolean isDebugEnabled_STATISTICS = logger.isTraceEnabled(LogMarker.STATISTICS_VERBOSE);
     if (isDebugEnabled_STATISTICS) {
-      logger.trace(LogMarker.STATISTICS,
+      logger.trace(LogMarker.STATISTICS_VERBOSE,
           "StatArchiveHandler#changeArchiveFile newFile={}, nanosTimeStamp={}", newFile,
           nanosTimeStamp);
     }
@@ -326,8 +311,7 @@ public class StatArchiveHandler implements SampleHandler {
       // disable archiving
       if (!this.disabledArchiving) {
         this.disabledArchiving = true;
-        logger.info(LogMarker.STATISTICS, LocalizedMessage
-            .create(LocalizedStrings.GemFireStatSampler_DISABLING_STATISTIC_ARCHIVAL));
+        logger.info(LogMarker.STATISTICS_MARKER, "Disabling statistic archival.");
       }
     } else {
       this.disabledArchiving = false;
@@ -340,7 +324,7 @@ public class StatArchiveHandler implements SampleHandler {
           synchronized (this) {
             if (resetHandler) {
               if (isDebugEnabled_STATISTICS) {
-                logger.trace(LogMarker.STATISTICS,
+                logger.trace(LogMarker.STATISTICS_VERBOSE,
                     "StatArchiveHandler#changeArchiveFile removing handler");
               }
               this.collector.removeSampleHandler(this);
@@ -348,10 +332,9 @@ public class StatArchiveHandler implements SampleHandler {
             try {
               archiver.close();
             } catch (GemFireException ignore) {
-              logger.warn(LogMarker.STATISTICS,
-                  LocalizedMessage.create(
-                      LocalizedStrings.GemFireStatSampler_STATISTIC_ARCHIVE_CLOSE_FAILED_BECAUSE__0,
-                      ignore.getMessage()));
+              logger.warn(LogMarker.STATISTICS_MARKER,
+                  "Statistic archive close failed because: {}",
+                  ignore.getMessage());
             }
           }
         }
@@ -364,12 +347,11 @@ public class StatArchiveHandler implements SampleHandler {
           oldFile = getRenameArchiveName(newFile);
         }
         if (!newFile.renameTo(oldFile)) {
-          logger.warn(LogMarker.STATISTICS,
-              LocalizedMessage.create(LocalizedStrings.GemFireStatSampler_COULD_NOT_RENAME_0_TO_1,
-                  new Object[] {newFile, oldFile}));
+          logger.warn(LogMarker.STATISTICS_MARKER,
+              "Could not rename {} to {}.",
+              new Object[] {newFile, oldFile});
         } else {
-          logger.info(LogMarker.STATISTICS, LocalizedMessage.create(
-              LocalizedStrings.GemFireStatSampler_RENAMED_OLD_EXISTING_ARCHIVE_TO__0_, oldFile));
+          logger.info(LogMarker.STATISTICS_MARKER, "Renamed old existing archive to {}.", oldFile);
         }
       } else {
         if (!newFile.getAbsoluteFile().getParentFile().equals(archiveDir)) {
@@ -391,10 +373,9 @@ public class StatArchiveHandler implements SampleHandler {
         newArchiver = new StatArchiveWriter(archiveDescriptor);
         newArchiver.initialize(nanosTimeStamp);
       } catch (GemFireIOException ex) {
-        logger.warn(LogMarker.STATISTICS,
-            LocalizedMessage.create(
-                LocalizedStrings.GemFireStatSampler_COULD_NOT_OPEN_STATISTIC_ARCHIVE_0_CAUSE_1,
-                new Object[] {newFile, ex.getLocalizedMessage()}));
+        logger.warn(LogMarker.STATISTICS_MARKER,
+            "Could not open statistic archive {}. Cause: {}",
+            new Object[] {newFile, ex.getLocalizedMessage()});
         throw ex;
       }
     }
@@ -407,7 +388,7 @@ public class StatArchiveHandler implements SampleHandler {
       } else {
         if (resetHandler) {
           if (isDebugEnabled_STATISTICS) {
-            logger.trace(LogMarker.STATISTICS,
+            logger.trace(LogMarker.STATISTICS_VERBOSE,
                 "StatArchiveHandler#changeArchiveFile removing handler");
           }
           this.collector.removeSampleHandler(this);
@@ -416,10 +397,9 @@ public class StatArchiveHandler implements SampleHandler {
           try {
             archiver.close();
           } catch (GemFireException ignore) {
-            logger.warn(LogMarker.STATISTICS,
-                LocalizedMessage.create(
-                    LocalizedStrings.GemFireStatSampler_STATISTIC_ARCHIVE_CLOSE_FAILED_BECAUSE__0,
-                    ignore.getMessage()));
+            logger.warn(LogMarker.STATISTICS_MARKER,
+                "Statistic archive close failed because: {}",
+                ignore.getMessage());
           }
           removeOldArchives(newFile, this.config.getArchiveDiskSpaceLimit());
         }
@@ -427,7 +407,8 @@ public class StatArchiveHandler implements SampleHandler {
       archiver = newArchiver;
       if (resetHandler && newArchiver != null) {
         if (isDebugEnabled_STATISTICS) {
-          logger.trace(LogMarker.STATISTICS, "StatArchiveHandler#changeArchiveFile adding handler");
+          logger.trace(LogMarker.STATISTICS_VERBOSE,
+              "StatArchiveHandler#changeArchiveFile adding handler");
         }
         this.collector.addSampleHandler(this);
       }
@@ -452,13 +433,13 @@ public class StatArchiveHandler implements SampleHandler {
       // leave mainArchiveId as is. Bump archiveId.
     } else {
       archiveDir = archive.getAbsoluteFile().getParentFile();
-      LogWriterAppender lwa = LogWriterAppenders.getAppender(LogWriterAppenders.Identifier.MAIN);
       boolean mainArchiveIdCalculated = false;
-      if (lwa != null) {
-        File logDir = lwa.getLogDir();
+      if (config.getLogFile().isPresent()) {
+        LogFile logFile = config.getLogFile().get();
+        File logDir = logFile.getLogDir();
         if (archiveDir.equals(logDir)) {
-          mainArchiveId = lwa.getMainLogId();
-          if (mainArchiveId > 1 && lwa.useChildLogging()) {
+          mainArchiveId = logFile.getMainLogId();
+          if (mainArchiveId > 1 && logFile.useChildLogging()) {
             mainArchiveId--;
           }
           mainArchiveIdCalculated = true;
@@ -545,12 +526,12 @@ public class StatArchiveHandler implements SampleHandler {
       return;
     }
     archiveDir = archive.getAbsoluteFile().getParentFile();
-    LogWriterAppender lwa = LogWriterAppenders.getAppender(LogWriterAppenders.Identifier.MAIN);
     boolean mainArchiveIdCalculated = false;
-    if (lwa != null) {
-      File logDir = lwa.getLogDir();
+    if (config.getLogFile().isPresent()) {
+      LogFile logFile = config.getLogFile().get();
+      File logDir = logFile.getLogDir();
       if (archiveDir.equals(logDir)) {
-        mainArchiveId = lwa.getMainLogId();
+        mainArchiveId = logFile.getMainLogId();
         mainArchiveIdCalculated = true;
       }
     }

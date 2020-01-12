@@ -14,100 +14,99 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-subprojects {
-  if (project.hasProperty("staticAnalysis")) {
-    apply plugin: 'checkstyle'
-  
-    //Checkstyle configuration
-    configurations.checkstyle {
-      dependencies.all { dep ->
-        dep.transitive = true
-      }
-    }
-  
-    //Findbugs configuration
-    apply plugin: 'findbugs'
-  
-    // Switch default Findbugs report to HTML for developers
-    def findbugsXmlEnabled = false
-    def findbugsHtmlEnabled = true
-  
-    // Provide ability to change report type to XML for ingesting into other ap
-    if ( project.hasProperty("findbugsXmlReport") ) {
-      findbugsXmlEnabled = true
-      findbugsHtmlEnabled = false
-    }
-  
-    configurations.findbugs {
-      dependencies.all { dep ->
-        dep.transitive = true
-      }
-      findbugs.effort = 'max'
-      findbugs.reportLevel = 'low'
-    }
-  
-    tasks.withType(FindBugs) {
-      reports {
-        xml.enabled = findbugsXmlEnabled
-        html.enabled = findbugsHtmlEnabled
-      }
+
+if (project.hasProperty("staticAnalysis")) {
+  apply plugin: 'checkstyle'
+
+  //Checkstyle configuration
+  configurations.checkstyle {
+    dependencies.all { dep ->
+      dep.transitive = true
     }
   }
-  
-  // JaCoCo configuration
-  if (project.hasProperty("codeCoverage")) {
-    apply plugin: 'jacoco'
-  
-    configurations.jacocoAnt {
-      dependencies.all { dep ->
-        dep.transitive = true
-      }
+
+  //Findbugs configuration
+  apply plugin: 'findbugs'
+
+  // Switch default Findbugs report to HTML for developers
+  def findbugsXmlEnabled = false
+  def findbugsHtmlEnabled = true
+
+  // Provide ability to change report type to XML for ingesting into other ap
+  if (project.hasProperty("findbugsXmlReport")) {
+    findbugsXmlEnabled = true
+    findbugsHtmlEnabled = false
+  }
+
+  configurations.findbugs {
+    dependencies.all { dep ->
+      dep.transitive = true
     }
-  
-    task mergeIntegrationTestCoverage (type: JacocoMerge) {
-      description 'Merges Distributed and Integration test coverage results'
-  
-      destinationFile = file("${buildDir}/jacoco/mergedIntegrationTestCoverage.exec")
-      executionData = fileTree(dir: 'build/jacoco', include: [
+    findbugs.effort = 'max'
+    findbugs.reportLevel = 'low'
+  }
+
+  tasks.withType(FindBugs) {
+    reports {
+      xml.enabled = findbugsXmlEnabled
+      html.enabled = findbugsHtmlEnabled
+    }
+  }
+}
+
+// JaCoCo configuration
+if (project.hasProperty("codeCoverage")) {
+  apply plugin: 'jacoco'
+
+  configurations.jacocoAnt {
+    dependencies.all { dep ->
+      dep.transitive = true
+    }
+  }
+
+  task mergeIntegrationTestCoverage(type: JacocoMerge) {
+    description 'Merges Distributed and Integration test coverage results'
+
+    destinationFile = file("${buildDir}/jacoco/mergedIntegrationTestCoverage.exec")
+    executionData = fileTree(dir: 'build/jacoco', include: [
         '**/distributedTest.exec',
         '**/integrationTest.exec'
-      ])
-  
+    ])
+
+  }
+
+  jacocoTestReport {
+    reports {
+      csv.enabled false
+      sourceSets project.sourceSets.main
+      html.destination "${buildDir}/jacocoTestHtml"
     }
-  
-    jacocoTestReport {
-      reports {
-        csv.enabled false
-        sourceSets project.sourceSets.main
-        html.destination "${buildDir}/jacocoTestHtml"
-      }
+  }
+
+  task jacocoIntegrationTestReport(type: JacocoReport) {
+    reports {
+      csv.enabled false
+      sourceSets project.sourceSets.main
+      html.destination "${buildDir}/jacocoIntegrationTestHtml"
+      executionData = fileTree(dir: 'build/jacoco', include: '**/integrationTest.exec')
     }
-  
-    task jacocoIntegrationTestReport (type: JacocoReport) {
-      reports {
-        csv.enabled false
-        sourceSets project.sourceSets.main
-        html.destination "${buildDir}/jacocoIntegrationTestHtml"
-        executionData = fileTree(dir: 'build/jacoco', include: '**/integrationTest.exec')
-      }
+  }
+
+  task jacocoDistributedTestReport(type: JacocoReport) {
+    reports {
+      csv.enabled false
+      sourceSets project.sourceSets.main
+      html.destination "${buildDir}/jacocoDistributedTestHtml"
+      executionData = fileTree(dir: 'build/jacoco', include: '**/distributedTest.exec')
     }
-  
-    task jacocoDistributedTestReport (type: JacocoReport) {
-      reports {
-        csv.enabled false
-        sourceSets project.sourceSets.main
-        html.destination "${buildDir}/jacocoDistributedTestHtml"
-        executionData = fileTree(dir: 'build/jacoco', include: '**/distributedTest.exec')
-      }
-    }
-  
-    task jacocoOverallTestReport (type: JacocoReport) {
-      reports {
-        csv.enabled false
-        sourceSets project.sourceSets.main
-        html.destination "${buildDir}/jacocoOverallTestHtml"
-        executionData = fileTree(dir: 'build/jacoco', include: '**/*.exec')
-      }
+  }
+
+  task jacocoOverallTestReport(type: JacocoReport) {
+    reports {
+      csv.enabled false
+      sourceSets project.sourceSets.main
+      html.destination "${buildDir}/jacocoOverallTestHtml"
+      executionData = fileTree(dir: 'build/jacoco', include: '**/*.exec')
     }
   }
 }

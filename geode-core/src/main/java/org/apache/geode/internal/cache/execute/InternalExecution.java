@@ -50,7 +50,6 @@ public interface InternalExecution extends Execution {
    * If true, function execution waits for all exceptions from target nodes <br>
    * If false, function execution returns when first exception is occurred.
    *
-   * @param setWaitOnException
    */
   void setWaitOnExceptionFlag(boolean setWaitOnException);
 

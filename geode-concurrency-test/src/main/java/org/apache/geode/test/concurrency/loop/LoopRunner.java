@@ -12,17 +12,21 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.test.concurrency.loop;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.geode.test.concurrency.ParallelExecutor;
 import org.apache.geode.test.concurrency.Runner;
@@ -31,7 +35,7 @@ import org.apache.geode.test.concurrency.Runner;
  * Simple runner that just runs the test in a loop
  */
 public class LoopRunner implements Runner {
-  private static final int DEFAULT_COUNT = 1000;
+  private static final int DEFAULT_COUNT = 2000;
 
   @Override
   public List<Throwable> runTestMethod(Method child) {
@@ -44,6 +48,12 @@ public class LoopRunner implements Runner {
         try {
           Object test = child.getDeclaringClass().newInstance();
           child.invoke(test, executor);
+        } catch (InvocationTargetException ex) {
+          Throwable exceptionToReturn = ex.getCause();
+          if (exceptionToReturn == null) {
+            exceptionToReturn = ex;
+          }
+          return Collections.singletonList(ex.getCause());
         } catch (Exception e) {
           return Collections.singletonList(e);
         }
@@ -66,25 +76,37 @@ public class LoopRunner implements Runner {
 
   private static class DelegatingExecutor implements ParallelExecutor {
     private final ExecutorService executorService;
-    List<Future<?>> futures;
+    private List<Future<?>> futures;
+    private final AtomicInteger callablesStarting = new AtomicInteger(0);
+    private final CountDownLatch start = new CountDownLatch(1);
 
     public DelegatingExecutor(ExecutorService executorService) {
       this.executorService = executorService;
-      futures = new ArrayList<Future<?>>();
+      futures = new ArrayList<>();
     }
 
     @Override
     public <T> Future<T> inParallel(Callable<T> callable) {
-      Future<T> future = executorService.submit(callable);
+      callablesStarting.getAndIncrement();
+      Future<T> future = executorService.submit(() -> {
+        callablesStarting.getAndDecrement();
+        start.await();
+        return callable.call();
+      });
       futures.add(future);
       return future;
     }
 
     @Override
     public void execute() throws ExecutionException, InterruptedException {
+      while (callablesStarting.get() > 0);
+
+      start.countDown();
       for (Future future : futures) {
         future.get();
       }
+      futures.clear();
     }
+
   }
 }

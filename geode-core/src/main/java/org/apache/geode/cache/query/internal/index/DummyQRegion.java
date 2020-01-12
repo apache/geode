@@ -30,8 +30,8 @@ import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.HasCachePerfStats;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.NonTXEntry;
 import org.apache.geode.internal.cache.RegionEntry;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.offheap.StoredObject;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
@@ -197,7 +197,7 @@ public class DummyQRegion extends QRegion {
     while (!(rgn instanceof LocalRegion)) {
       rgn = ((QRegion) TypeUtils.checkCast(rgn, QRegion.class)).getRegion();
     }
-    entries.add(((LocalRegion) rgn).new NonTXEntry(entry));
+    entries.add(new NonTXEntry((LocalRegion) rgn, entry));
     return entries;
   }
 
@@ -213,7 +213,7 @@ public class DummyQRegion extends QRegion {
 
   @Override
   public Region.Entry getEntry(Object key) {
-    LocalRegion.NonTXEntry e = (LocalRegion.NonTXEntry) super.getEntry(key);
+    NonTXEntry e = (NonTXEntry) super.getEntry(key);
     Region.Entry retVal = null;
     if (e != null && this.entry == e.getRegionEntry()) {
       retVal = e;
@@ -234,7 +234,7 @@ public class DummyQRegion extends QRegion {
   @Override
   public Object[] toArray(Object[] obj) {
     throw new RuntimeException(
-        LocalizedStrings.DummyQRegion_NOT_YET_IMPLEMENTED.toLocalizedString());
+        "Not yet implemented");
   }
 
   @Override

@@ -1,0 +1,86 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package org.apache.geode.connectors.jdbc.internal.cli;
+
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+
+import java.io.File;
+
+import org.assertj.core.api.Assertions;
+import org.junit.After;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Test;
+
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
+import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
+import org.apache.geode.util.test.TestUtil;
+
+public class RegisterDriverCommandDUnitTest {
+
+  private static MemberVM locator, server1, server2;
+  final String JDBC_DRIVER_CLASS_NAME = "com.mysql.cj.jdbc.Driver";
+
+  @ClassRule
+  public static ClusterStartupRule cluster = new ClusterStartupRule();
+
+  @ClassRule
+  public static GfshCommandRule gfsh = new GfshCommandRule();
+
+
+  @BeforeClass
+  public static void before() throws Exception {
+    locator = cluster.startLocatorVM(0);
+    server1 = cluster.startServerVM(1, "group1", locator.getPort());
+    server2 = cluster.startServerVM(2, "group1", locator.getPort());
+
+    gfsh.connectAndVerify(locator);
+  }
+
+  @After
+  public void cleanUp() {
+    gfsh.executeAndAssertThat("deregister driver --driver-class=" + JDBC_DRIVER_CLASS_NAME)
+        .statusIsSuccess();
+  }
+
+  @Test
+  public void testRegisterDriverDoesNotThrowException() {
+
+    // aquire the jar to be used
+    final String jdbcJarName = "mysql-connector-java-8.0.17.jar";
+    File mySqlDriverFile = loadTestResource("/" + jdbcJarName);
+    assertThat(mySqlDriverFile).exists();
+    String jarFile = mySqlDriverFile.getAbsolutePath();
+
+    gfsh.executeAndAssertThat("deploy --jar=" + jarFile).statusIsSuccess();
+
+    gfsh.executeAndAssertThat("list drivers").statusIsSuccess()
+        .doesNotContainOutput(JDBC_DRIVER_CLASS_NAME);
+
+    gfsh.executeAndAssertThat("register driver --driver-class=" + JDBC_DRIVER_CLASS_NAME)
+        .statusIsSuccess();
+
+    gfsh.executeAndAssertThat("list drivers").statusIsSuccess()
+        .containsOutput(JDBC_DRIVER_CLASS_NAME);
+  }
+
+  private File loadTestResource(String fileName) {
+    String filePath = TestUtil.getResourcePath(this.getClass(), fileName);
+    Assertions.assertThat(filePath).isNotNull();
+
+    return new File(filePath);
+  }
+}

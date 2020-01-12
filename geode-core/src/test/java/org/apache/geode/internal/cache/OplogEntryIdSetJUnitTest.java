@@ -14,18 +14,16 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.cache.DiskStoreImpl.OplogEntryIdSet;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Tests DiskStoreImpl.OplogEntryIdSet
  */
-@Category(UnitTest.class)
 public class OplogEntryIdSetJUnitTest {
 
   @Test

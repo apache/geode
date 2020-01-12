@@ -18,8 +18,6 @@ package org.apache.geode.management.internal.configuration.functions;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.rmi.RemoteException;
 
 import com.healthmarketscience.rmiio.RemoteInputStream;
 import com.healthmarketscience.rmiio.RemoteInputStreamServer;
@@ -28,12 +26,12 @@ import com.healthmarketscience.rmiio.exporter.RemoteStreamExporter;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.distributed.Locator;
-import org.apache.geode.distributed.internal.ClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.execute.InternalFunction;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.management.internal.ManagementAgent;
 import org.apache.geode.management.internal.SystemManagementService;
 
 public class DownloadJarFunction implements InternalFunction<Object[]> {
@@ -43,44 +41,56 @@ public class DownloadJarFunction implements InternalFunction<Object[]> {
 
   @Override
   public void execute(FunctionContext<Object[]> context) {
-    InternalLocator locator = (InternalLocator) Locator.getLocator();
+    InternalLocator locator = getLocator();
     Object[] args = context.getArguments();
     String group = (String) args[0];
     String jarName = (String) args[1];
 
     RemoteInputStream result = null;
     if (locator != null && group != null && jarName != null) {
-      ClusterConfigurationService sharedConfig = locator.getSharedConfiguration();
+      InternalConfigurationPersistenceService sharedConfig =
+          locator.getConfigurationPersistenceService();
       if (sharedConfig != null) {
+        SystemManagementService managementService = getExistingManagementService(context);
+        ManagementAgent managementAgent = managementService.getManagementAgent();
+        if (managementAgent == null) {
+          throw new IllegalStateException(
+              "Failed to download jar because JMX Management agent is not available. Please ensure geode property jmx-manager is set to true.");
+        }
+
+        RemoteInputStreamServer istream = null;
         try {
           File jarFile = sharedConfig.getPathToJarOnThisLocator(group, jarName).toFile();
 
-          RemoteStreamExporter exporter = ((SystemManagementService) SystemManagementService
-              .getExistingManagementService(context.getCache())).getManagementAgent()
-                  .getRemoteStreamExporter();
-          RemoteInputStreamServer istream = null;
-          try {
-            istream =
-                new SimpleRemoteInputStream(new BufferedInputStream(new FileInputStream(jarFile)));
-            result = exporter.export(istream);
-            istream = null;
-          } catch (FileNotFoundException | RemoteException ex) {
-            throw new FunctionException(ex);
-          } finally {
-            // we will only close the stream here if the server fails before
-            // returning an exported stream
-            if (istream != null) {
-              istream.close();
-            }
-          }
+          RemoteStreamExporter exporter = managementAgent.getRemoteStreamExporter();
+          istream =
+              new SimpleRemoteInputStream(new BufferedInputStream(new FileInputStream(jarFile)));
+          result = exporter.export(istream);
+          istream = null;
+
         } catch (Exception e) {
           logger.error(e);
           throw new IllegalStateException(e.getMessage());
+        } finally {
+          // we will only close the stream here if the server fails before
+          // returning an exported stream
+          if (istream != null) {
+            istream.close();
+          }
         }
       }
     }
 
     context.getResultSender().lastResult(result);
+  }
+
+  InternalLocator getLocator() {
+    return (InternalLocator) Locator.getLocator();
+  }
+
+  SystemManagementService getExistingManagementService(FunctionContext<Object[]> context) {
+    return (SystemManagementService) SystemManagementService
+        .getExistingManagementService(context.getCache());
   }
 
   @Override

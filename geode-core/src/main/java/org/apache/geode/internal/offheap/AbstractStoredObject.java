@@ -19,11 +19,11 @@ import java.io.IOException;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Region;
-import org.apache.geode.internal.DSCODE;
-import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.lang.StringUtils;
+import org.apache.geode.internal.serialization.DSCODE;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 
 public abstract class AbstractStoredObject implements StoredObject {
   @Override
@@ -117,7 +117,8 @@ public abstract class AbstractStoredObject implements StoredObject {
       return false;
     }
     byte dsCode = this.readDataByte(0);
-    return dsCode == DSCODE.PDX || dsCode == DSCODE.PDX_ENUM || dsCode == DSCODE.PDX_INLINE_ENUM;
+    return dsCode == DSCODE.PDX.toByte() || dsCode == DSCODE.PDX_ENUM.toByte()
+        || dsCode == DSCODE.PDX_INLINE_ENUM.toByte();
   }
 
   @Override

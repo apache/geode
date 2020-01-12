@@ -14,7 +14,8 @@
  */
 package org.apache.geode.admin.internal;
 
-import org.apache.geode.admin.*;
+import org.apache.geode.admin.SystemMemberCacheListener;
+import org.apache.geode.admin.SystemMemberRegionEvent;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.distributed.DistributedMember;
 
@@ -44,6 +45,7 @@ public class SystemMemberRegionEventImpl extends SystemMemberCacheEventImpl
 
   ///////////////////// Instance Methods /////////////////////
 
+  @Override
   public String getRegionPath() {
     return this.regionPath;
   }

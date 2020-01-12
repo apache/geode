@@ -27,9 +27,7 @@ import org.apache.geode.distributed.internal.locks.DLockRemoteToken;
 import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.TXCommitMessage;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Provides processing of DLockRecoverGrantorProcessor. Reply will not be sent until all locks are
@@ -40,11 +38,13 @@ public class TXRecoverGrantorMessageProcessor
 
   private static final Logger logger = LogService.getLogger();
 
+  @Override
   public void process(final DistributionManager dm,
       final DLockRecoverGrantorProcessor.DLockRecoverGrantorMessage msg) {
 
     try {
-      dm.getWaitingThreadPool().execute(new Runnable() {
+      dm.getExecutors().getWaitingThreadPool().execute(new Runnable() {
+        @Override
         public void run() {
           processDLockRecoverGrantorMessage(dm, msg);
         }
@@ -86,22 +86,18 @@ public class TXRecoverGrantorMessageProcessor
       }
     } catch (InterruptedException t) {
       Thread.currentThread().interrupt();
-      logger.warn(
-          LocalizedMessage.create(
-              LocalizedStrings.TXRecoverGrantorMessageProcessor_TXRECOVERGRANTORMESSAGEPROCESSORPROCESS_THROWABLE),
+      logger.warn("[TXRecoverGrantorMessageProcessor.process] throwable:",
           t);
       replyException = new ReplyException(t);
     } catch (RuntimeException t) {
-      logger.warn(
-          LocalizedMessage.create(
-              LocalizedStrings.TXRecoverGrantorMessageProcessor_TXRECOVERGRANTORMESSAGEPROCESSORPROCESS_THROWABLE),
+      logger.warn("[TXRecoverGrantorMessageProcessor.process] throwable:",
           t);
       if (replyException == null) {
         replyException = new ReplyException(t);
       } else {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.TXRecoverGrantorMessageProcessor_MORE_THAN_ONE_EXCEPTION_THROWN_IN__0,
-            this), t);
+        logger.warn(String.format("More than one exception thrown in %s",
+            this),
+            t);
       }
     }
     // catch (VirtualMachineError err) {

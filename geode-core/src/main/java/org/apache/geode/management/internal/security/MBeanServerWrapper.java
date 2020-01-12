@@ -15,6 +15,7 @@
 package org.apache.geode.management.internal.security;
 
 import java.io.ObjectInputStream;
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.management.Attribute;
@@ -43,8 +44,9 @@ import javax.management.ReflectionException;
 import javax.management.loading.ClassLoaderRepository;
 import javax.management.remote.MBeanServerForwarder;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.internal.ManagementConstants;
 import org.apache.geode.security.GemFireSecurityException;
@@ -61,7 +63,6 @@ import org.apache.geode.security.ResourcePermission.Target;
  */
 public class MBeanServerWrapper implements MBeanServerForwarder {
 
-  // TODO: make volatile or verify this is thread-safe
   private MBeanServer mbs;
 
   private final SecurityService securityService;
@@ -127,7 +128,8 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
     return mbs.getObjectInstance(name);
   }
 
-  private static QueryExp notAccessControlMBean =
+  @Immutable
+  private static final QueryExp notAccessControlMBean =
       Query.not(Query.isInstanceOf(Query.value(AccessControlMXBean.class.getName())));
 
   @Override
@@ -174,18 +176,29 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
   @Override
   public AttributeList getAttributes(ObjectName name, String[] attributes)
       throws InstanceNotFoundException, ReflectionException {
-    AttributeList results = new AttributeList();
-    for (String attribute : attributes) {
-      try {
-        Object value = getAttribute(name, attribute);
-        Attribute att = new Attribute(attribute, value);
-        results.add(att);
-      } catch (Exception e) {
-        throw new GemFireSecurityException("error getting value of " + attribute + " from " + name,
-            e);
-      }
+    AttributeList results;
+    checkAuthorization(name, attributes);
+    try {
+      results = mbs.getAttributes(name, attributes);
+    } catch (Exception e) {
+      throw new GemFireSecurityException(
+          "error getting values of attributes :" + attributes + " from " + name,
+          e);
     }
     return results;
+  }
+
+  void checkAuthorization(ObjectName name, String[] attributes)
+      throws InstanceNotFoundException, ReflectionException {
+    Set<ResourcePermission> contextSet = new HashSet<>();
+    for (String attribute : attributes) {
+      ResourcePermission ctx = getOperationContext(name, attribute, false);
+      if (ctx != null) {
+        if (contextSet.add(ctx)) {
+          this.securityService.authorize(ctx);
+        }
+      }
+    }
   }
 
   @Override
@@ -201,13 +214,14 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
   public AttributeList setAttributes(ObjectName name, AttributeList attributes)
       throws InstanceNotFoundException, ReflectionException {
     // call setAttribute instead to use the authorization logic
-    for (Attribute attribute : attributes.asList()) {
-      try {
-        setAttribute(name, attribute);
-      } catch (Exception e) {
-        throw new GemFireSecurityException("error setting attribute " + attribute + " of " + name,
-            e);
-      }
+    checkAuthorization(name,
+        (String[]) attributes.parallelStream().map(attribute -> ((Attribute) attribute).getName())
+            .toArray());
+    try {
+      mbs.setAttributes(name, attributes);
+    } catch (Exception e) {
+      throw new GemFireSecurityException("error setting attributes :" + attributes + " of " + name,
+          e);
     }
     return attributes;
   }

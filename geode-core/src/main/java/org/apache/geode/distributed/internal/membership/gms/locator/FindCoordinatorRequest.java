@@ -20,30 +20,34 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import org.apache.geode.DataSerializer;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.Version;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
+import org.apache.geode.distributed.internal.membership.gms.messages.AbstractGMSMessage;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.StaticSerialization;
+import org.apache.geode.internal.serialization.Version;
 
-public class FindCoordinatorRequest extends HighPriorityDistributionMessage
+/**
+ * FindCoordinatorRequest is a message intended to be sent via a TcpClient to a Locator.
+ * It is used during startup to discover the cluster's membership coordinator.
+ */
+public class FindCoordinatorRequest<ID extends MemberIdentifier> extends AbstractGMSMessage<ID>
     implements PeerLocatorRequest {
 
-  private InternalDistributedMember memberID;
-  private Collection<InternalDistributedMember> rejectedCoordinators;
+  private ID memberID;
+  private Collection<ID> rejectedCoordinators;
   private int lastViewId;
   private byte[] myPublicKey;
   private int requestId;
   private String dhalgo;
 
-  public FindCoordinatorRequest(InternalDistributedMember myId) {
+  public FindCoordinatorRequest(ID myId) {
     this.memberID = myId;
     this.dhalgo = "";
   }
 
-  public FindCoordinatorRequest(InternalDistributedMember myId,
-      Collection<InternalDistributedMember> rejectedCoordinators, int lastViewId, byte[] pk,
+  public FindCoordinatorRequest(ID myId,
+      Collection<ID> rejectedCoordinators, int lastViewId, byte[] pk,
       int requestId, String dhalgo) {
     this.memberID = myId;
     this.rejectedCoordinators = rejectedCoordinators;
@@ -57,7 +61,7 @@ public class FindCoordinatorRequest extends HighPriorityDistributionMessage
     // no-arg constructor for serialization
   }
 
-  public InternalDistributedMember getMemberID() {
+  public ID getMemberID() {
     return memberID;
   }
 
@@ -69,7 +73,7 @@ public class FindCoordinatorRequest extends HighPriorityDistributionMessage
     return dhalgo;
   }
 
-  public Collection<InternalDistributedMember> getRejectedCoordinators() {
+  public Collection<ID> getRejectedCoordinators() {
     return rejectedCoordinators;
   }
 
@@ -101,40 +105,39 @@ public class FindCoordinatorRequest extends HighPriorityDistributionMessage
     return requestId;
   }
 
+  // TODO serialization not backward compatible with 1.9 - may need InternalDistributedMember, not
+  // GMSMember
   @Override
-  public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeObject(this.memberID, out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    context.getSerializer().writeObject(memberID, out);
     if (this.rejectedCoordinators != null) {
       out.writeInt(this.rejectedCoordinators.size());
-      for (InternalDistributedMember mbr : this.rejectedCoordinators) {
-        DataSerializer.writeObject(mbr, out);
+      for (ID mbr : this.rejectedCoordinators) {
+        context.getSerializer().writeObject(mbr, out);
       }
     } else {
       out.writeInt(0);
     }
     out.writeInt(lastViewId);
     out.writeInt(requestId);
-    InternalDataSerializer.writeString(dhalgo, out);
-    InternalDataSerializer.writeByteArray(this.myPublicKey, out);
+    StaticSerialization.writeString(dhalgo, out);
+    StaticSerialization.writeByteArray(this.myPublicKey, out);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.memberID = DataSerializer.readObject(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    this.memberID = context.getDeserializer().readObject(in);
     int size = in.readInt();
-    this.rejectedCoordinators = new ArrayList<InternalDistributedMember>(size);
+    this.rejectedCoordinators = new ArrayList<>(size);
     for (int i = 0; i < size; i++) {
-      this.rejectedCoordinators.add((InternalDistributedMember) DataSerializer.readObject(in));
+      this.rejectedCoordinators.add(context.getDeserializer().readObject(in));
     }
     this.lastViewId = in.readInt();
     this.requestId = in.readInt();
-    this.dhalgo = InternalDataSerializer.readString(in);
-    this.myPublicKey = InternalDataSerializer.readByteArray(in);
-  }
-
-  @Override
-  protected void process(ClusterDistributionManager dm) {
-    throw new IllegalStateException("this message should not be executed");
+    this.dhalgo = StaticSerialization.readString(in);
+    this.myPublicKey = StaticSerialization.readByteArray(in);
   }
 
   @Override
@@ -157,7 +160,7 @@ public class FindCoordinatorRequest extends HighPriorityDistributionMessage
       return false;
     if (getClass() != obj.getClass())
       return false;
-    FindCoordinatorRequest other = (FindCoordinatorRequest) obj;
+    FindCoordinatorRequest<ID> other = (FindCoordinatorRequest<ID>) obj;
     if (lastViewId != other.lastViewId)
       return false;
     if (!dhalgo.equals(other.dhalgo)) {

@@ -12,18 +12,12 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- *
- */
 package org.apache.geode.cache.query.internal.parse;
 
-import antlr.*;
+import antlr.Token;
 
 import org.apache.geode.cache.query.internal.QCompiler;
 
-/**
- *
- */
 public class ASTLike extends GemFireAST {
   private static final long serialVersionUID = 1171234838254852463L;
 

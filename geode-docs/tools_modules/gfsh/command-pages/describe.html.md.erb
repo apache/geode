@@ -37,6 +37,10 @@ Display details of a member's configuration, shell connection, disk-stores, memb
 
     Display information about a member's disk store.
 
+-   **[describe jndi-binding](#describe_jndi-binding)**
+
+    Display information about the configuration of a JNDI binding.
+
 -   **[describe lucene index](#describe_lucene_index)**
 
     Display information about a Lucene index.
@@ -48,6 +52,10 @@ Display details of a member's configuration, shell connection, disk-stores, memb
 -   **[describe offline-disk-store](#topic_kys_yvk_2l)**
 
     Display information about an offline member's disk store.
+
+-   **[describe query-service](#topic_describe_query_service)**
+
+    Display information about the configuration of the query service.
 
 -   **[describe region](#topic_DECF7D3D33F54071B6B8AD4EA7E3F90B)**
 
@@ -232,6 +240,44 @@ PDX Serialization Meta-Data Stored : No
 
 ```
 
+## <a id="describe_jndi-binding" class="no-quick-link"></a>describe jndi-binding
+
+Print the configuration information that describes a JDBC connection.
+
+**Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
+
+**Syntax:**
+
+``` pre
+describe jndi-binding --name=value
+```
+
+**Parameters, describe jndi-binding:**
+
+
+| Name                                               | Description                                                                  |
+|----------------------------------------------------|------------------------------------------------------------------------------|
+| <span class="keyword parmname">\\-\\-name</span>       | *Required.* Name of the JNDI binding to be described.                    |
+
+**Example Commands:**
+
+``` pre
+describe jndi-binding --name=jndi1
+```
+
+**Sample Output:**
+
+``` pre
+gfsh>describe jndi-binding --name=jndi1
+    Property      | Value
+----------------- | ------------------------------------
+type              | SimpleDataSource
+jndi-name         | jndi1
+jdbc-driver-class | org.apache.derby.jdbc.EmbeddedDriver
+user-name         |
+connection-url    | jdbc:derby:newDB
+```
+
 ## <a id="describe_lucene_index" class="no-quick-link"></a>describe lucene index
 
 Describe a Lucene index.
@@ -401,6 +447,31 @@ PDX Types:
     Date date;
 PDX Enums:
   com.app.data.StockPdx$Day.Monday
+```
+
+## <a id="topic_describe_query_service" class="no-quick-link"></a>describe query-service
+
+Print the information that describes the current configuration of the query service.
+
+**Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
+
+**Syntax:**
+
+``` pre
+describe query-service
+```
+
+**Example Commands:**
+
+``` pre
+describe query-service
+```
+
+**Sample Output:**
+
+``` pre
+gfsh>describe query-service
+Method Authorizer Class : org.apache.geode.cache.query.security.JavaBeanAccessorMethodAuthorizer
 ```
 
 ## <a id="topic_DECF7D3D33F54071B6B8AD4EA7E3F90B" class="no-quick-link"></a>describe region

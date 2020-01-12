@@ -20,7 +20,6 @@ import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.persistence.DiskRegionView;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 
 /**
@@ -43,7 +42,6 @@ public class MemoryLRUController extends SizeLRUController {
   /**
    * Create an instance of the capacity controller the given settings.
    *
-   * @param evictionCounters
    *
    * @param megabytes the amount of memory allowed in this region specified in megabytes.<br>
    *        <p>
@@ -72,8 +70,8 @@ public class MemoryLRUController extends SizeLRUController {
   private void setMaximumMegabytes(int megabytes) {
     if (megabytes <= 0) {
       throw new IllegalArgumentException(
-          LocalizedStrings.MemLRUCapacityController_MEMLRUCONTROLLER_LIMIT_MUST_BE_POSTIVE_0
-              .toLocalizedString(megabytes));
+          String.format("MemLRUController limit must be postive: %s",
+              megabytes));
     }
     this.limit = megabytes * ONE_MEG;
     getCounters().setLimit(this.limit);

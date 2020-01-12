@@ -22,7 +22,7 @@ import org.apache.geode.cache.UnsupportedOperationInTransactionException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.TXEntryState.DistTxThinEntryState;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.statistics.StatisticsClock;
 
 public class DistTXStateProxyImplOnDatanode extends DistTXStateProxyImpl {
 
@@ -30,22 +30,22 @@ public class DistTXStateProxyImplOnDatanode extends DistTXStateProxyImpl {
   private boolean preCommitResponse = false;
 
   public DistTXStateProxyImplOnDatanode(InternalCache cache, TXManagerImpl managerImpl, TXId id,
-      InternalDistributedMember clientMember) {
-    super(cache, managerImpl, id, clientMember);
+      InternalDistributedMember clientMember, StatisticsClock statisticsClock) {
+    super(cache, managerImpl, id, clientMember, statisticsClock);
   }
 
   public DistTXStateProxyImplOnDatanode(InternalCache cache, TXManagerImpl managerImpl, TXId id,
-      boolean isjta) {
-    super(cache, managerImpl, id, isjta);
+      boolean isjta, StatisticsClock statisticsClock) {
+    super(cache, managerImpl, id, isjta, statisticsClock);
   }
 
   @Override
-  public TXStateInterface getRealDeal(KeyInfo key, LocalRegion r) {
+  public TXStateInterface getRealDeal(KeyInfo key, InternalRegion r) {
     if (this.realDeal == null) {
-      this.realDeal = new DistTXState(this, false);
+      this.realDeal = new DistTXState(this, false, getStatisticsClock());
       if (r != null) {
         // wait for the region to be initialized fixes bug 44652
-        r.waitOnInitialization(r.initializationLatchBeforeGetInitialImage);
+        r.waitOnInitialization(r.getInitializationLatchBeforeGetInitialImage());
         target = r.getOwnerForKey(key);
       }
       if (logger.isDebugEnabled()) {
@@ -61,7 +61,7 @@ public class DistTXStateProxyImplOnDatanode extends DistTXStateProxyImpl {
     assert t != null;
     if (this.realDeal == null) {
       this.target = t;
-      this.realDeal = new DistTXState(this, false);
+      this.realDeal = new DistTXState(this, false, getStatisticsClock());
       if (logger.isDebugEnabled()) {
         logger.debug("Built a new DistTXState: {} me:{}", this.realDeal,
             this.txMgr.getDM().getId());
@@ -74,7 +74,8 @@ public class DistTXStateProxyImplOnDatanode extends DistTXStateProxyImpl {
     if (this.realDeal == null || !this.realDeal.isDistTx() || !this.realDeal.isTxState()
         || this.realDeal.isCreatedOnDistTxCoordinator()) {
       throw new UnsupportedOperationInTransactionException(
-          LocalizedStrings.DISTTX_TX_EXPECTED.toLocalizedString("DistTXStateOnDatanode",
+          String.format("Expected %s during a distributed transaction but got %s",
+              "DistTXStateOnDatanode",
               this.realDeal != null ? this.realDeal.getClass().getSimpleName() : "null"));
     }
     return (DistTXState) this.realDeal;

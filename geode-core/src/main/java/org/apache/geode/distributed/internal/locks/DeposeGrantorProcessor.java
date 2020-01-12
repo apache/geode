@@ -30,11 +30,13 @@ import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
- * A processor for telling the old grantor that he is deposed by a new grantor. Processor waits for
+ * A processor for telling the old grantor that it is deposed by a new grantor. Processor waits for
  * ack before completing.
  *
  * @since GemFire 4.0 (renamed from ExpectTransferProcessor)
@@ -47,7 +49,7 @@ public class DeposeGrantorProcessor extends ReplyProcessor21 {
 
 
   /**
-   * Send a message to oldGrantor telling him that he is deposed by newGrantor. Send does not
+   * Send a message to oldGrantor telling it that it is deposed by newGrantor. Send does not
    * complete until an ack is received or the oldGrantor leaves the system.
    */
   static void send(String serviceName, InternalDistributedMember oldGrantor,
@@ -117,8 +119,9 @@ public class DeposeGrantorProcessor extends ReplyProcessor21 {
       msg.newGrantorSerialNumber = newGrantorSerialNumber;
       msg.processorId = proc.getProcessorId();
       msg.setRecipient(oldGrantor);
-      if (logger.isTraceEnabled(LogMarker.DLS)) {
-        logger.trace(LogMarker.DLS, "DeposeGrantorMessage sending {} to {}", msg, oldGrantor);
+      if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
+        logger.trace(LogMarker.DLS_VERBOSE, "DeposeGrantorMessage sending {} to {}", msg,
+            oldGrantor);
       }
       dm.putOutgoing(msg);
     }
@@ -136,7 +139,7 @@ public class DeposeGrantorProcessor extends ReplyProcessor21 {
     protected void process(final ClusterDistributionManager dm) {
       // if we are currently the grantor then
       // mark it as being destroyed until we hear from this.newGrantor
-      // or he goes away or the grantor that sent us this message goes away.
+      // or it goes away or the grantor that sent us this message goes away.
 
       InternalDistributedMember elder = this.getSender();
       InternalDistributedMember youngTurk = this.newGrantor;
@@ -145,13 +148,15 @@ public class DeposeGrantorProcessor extends ReplyProcessor21 {
           this.newGrantorSerialNumber, dm, this);
     }
 
+    @Override
     public int getDSFID() {
       return DEPOSE_GRANTOR_MESSAGE;
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.processorId = in.readInt();
       this.serviceName = DataSerializer.readString(in);
       this.newGrantor = (InternalDistributedMember) DataSerializer.readObject(in);
@@ -160,8 +165,9 @@ public class DeposeGrantorProcessor extends ReplyProcessor21 {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       out.writeInt(this.processorId);
       DataSerializer.writeString(this.serviceName, out);
       DataSerializer.writeObject(this.newGrantor, out);

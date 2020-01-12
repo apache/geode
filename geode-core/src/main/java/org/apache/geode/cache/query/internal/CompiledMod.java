@@ -26,6 +26,7 @@ public class CompiledMod extends CompiledArithmetic implements OQLLexerTokenType
     super(left, right, op);
   }
 
+  @Override
   public int getType() {
     return MOD;
   }

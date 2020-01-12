@@ -27,7 +27,7 @@ import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.connectors.jdbc.internal.AbstractJdbcCallback;
 import org.apache.geode.connectors.jdbc.internal.SqlHandler;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.pdx.PdxInstance;
 
 /**
@@ -39,9 +39,10 @@ import org.apache.geode.pdx.PdxInstance;
 public class JdbcAsyncWriter extends AbstractJdbcCallback implements AsyncEventListener {
   private static final Logger logger = LogService.getLogger();
 
-  private LongAdder totalEvents = new LongAdder();
-  private LongAdder successfulEvents = new LongAdder();
-  private LongAdder failedEvents = new LongAdder();
+  private final LongAdder totalEvents = new LongAdder();
+  private final LongAdder successfulEvents = new LongAdder();
+  private final LongAdder failedEvents = new LongAdder();
+  private final LongAdder ignoredEvents = new LongAdder();
 
   @SuppressWarnings("unused")
   public JdbcAsyncWriter() {
@@ -58,14 +59,23 @@ public class JdbcAsyncWriter extends AbstractJdbcCallback implements AsyncEventL
     changeTotalEvents(events.size());
 
     if (!events.isEmpty()) {
-      checkInitialized((InternalCache) events.get(0).getRegion().getRegionService());
+      try {
+        checkInitialized(events.get(0).getRegion());
+      } catch (RuntimeException ex) {
+        changeFailedEvents(events.size());
+        logger.error("Exception initializing JdbcAsyncWriter", ex);
+        return true;
+      }
     }
 
     Boolean initialPdxReadSerialized = cache.getPdxReadSerializedOverride();
     cache.setPdxReadSerializedOverride(true);
     try {
       for (AsyncEvent event : events) {
-
+        if (eventCanBeIgnored(event.getOperation())) {
+          changeIgnoredEvents(1);
+          continue;
+        }
         try {
           getSqlHandler().write(event.getRegion(), event.getOperation(), event.getKey(),
               getPdxInstance(event));
@@ -93,6 +103,10 @@ public class JdbcAsyncWriter extends AbstractJdbcCallback implements AsyncEventL
     return failedEvents.longValue();
   }
 
+  long getIgnoredEvents() {
+    return ignoredEvents.longValue();
+  }
+
   private void changeSuccessfulEvents(long delta) {
     successfulEvents.add(delta);
   }
@@ -103,6 +117,10 @@ public class JdbcAsyncWriter extends AbstractJdbcCallback implements AsyncEventL
 
   private void changeTotalEvents(long delta) {
     totalEvents.add(delta);
+  }
+
+  private void changeIgnoredEvents(long delta) {
+    ignoredEvents.add(delta);
   }
 
   /**

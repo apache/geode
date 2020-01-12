@@ -15,7 +15,6 @@
 package org.apache.geode.modules.util;
 
 import java.io.Serializable;
-import java.util.Properties;
 
 import javax.servlet.http.HttpSession;
 
@@ -34,6 +33,7 @@ public class SessionCustomExpiry
   private static final ExpirationAttributes EXPIRE_NOW =
       new ExpirationAttributes(1, ExpirationAction.DESTROY);
 
+  @Override
   public ExpirationAttributes getExpiry(Region.Entry<String, HttpSession> entry) {
     HttpSession session = entry.getValue();
     if (session != null) {
@@ -44,9 +44,8 @@ public class SessionCustomExpiry
     }
   }
 
+  @Override
   public void close() {}
-
-  public void init(Properties props) {}
 
   public boolean equals(Object obj) {
     // This method is only implemented so that RegionCreator.validateRegion works properly.
@@ -55,10 +54,16 @@ public class SessionCustomExpiry
       return true;
     }
 
-    if (obj == null || !(obj instanceof SessionCustomExpiry)) {
-      return false;
-    }
+    return (obj instanceof SessionCustomExpiry);
+  }
 
-    return true;
+  @Override
+  public int hashCode() {
+    return getClass().hashCode();
+  }
+
+  @Override
+  public String toString() {
+    return this.getClass().toString();
   }
 }

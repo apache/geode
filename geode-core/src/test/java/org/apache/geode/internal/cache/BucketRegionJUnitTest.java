@@ -14,23 +14,26 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.anyLong;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-import java.io.IOException;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import org.junit.experimental.categories.Category;
-
 import org.apache.geode.cache.RegionAttributes;
-import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.internal.statistics.StatisticsClock;
 
-@Category(UnitTest.class)
 public class BucketRegionJUnitTest extends DistributedRegionJUnitTest {
 
   @Override
@@ -39,8 +42,8 @@ public class BucketRegionJUnitTest extends DistributedRegionJUnitTest {
     PartitionedRegion pr = mock(PartitionedRegion.class);
     BucketAdvisor ba = mock(BucketAdvisor.class);
     ReadWriteLock primaryMoveLock = new ReentrantReadWriteLock();
-    Lock activeWriteLock = primaryMoveLock.readLock();
-    when(ba.getActiveWriteLock()).thenReturn(activeWriteLock);
+    Lock primaryMoveReadLock = primaryMoveLock.readLock();
+    when(ba.getPrimaryMoveReadLock()).thenReturn(primaryMoveReadLock);
     when(ba.getProxyBucketRegion()).thenReturn(mock(ProxyBucketRegion.class));
     when(ba.isPrimary()).thenReturn(true);
 
@@ -49,8 +52,9 @@ public class BucketRegionJUnitTest extends DistributedRegionJUnitTest {
 
   @Override
   protected DistributedRegion createAndDefineRegion(boolean isConcurrencyChecksEnabled,
-      RegionAttributes ra, InternalRegionArguments ira, GemFireCacheImpl cache) {
-    BucketRegion br = new BucketRegion("testRegion", ra, null, cache, ira);
+      RegionAttributes ra, InternalRegionArguments ira, GemFireCacheImpl cache,
+      StatisticsClock statisticsClock) {
+    BucketRegion br = new BucketRegion("testRegion", ra, null, cache, ira, statisticsClock);
     // it is necessary to set the event tracker to initialized, since initialize() in not being
     // called on the instantiated region
     br.getEventTracker().setInitialized();

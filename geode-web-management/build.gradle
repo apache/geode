@@ -1,0 +1,165 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
+apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
+
+apply plugin: 'war'
+
+apply from: "${project.projectDir}/../gradle/publish-war.gradle"
+
+jar.enabled = false
+
+apply plugin: 'nebula.facet'
+facets {
+  commonTest {
+    testTaskName = 'commonTest'
+    includeInCheckLifecycle = false
+  }
+}
+
+sourceSets {
+  integrationTest {
+    resources {
+      srcDir "${projectDir}/src/main/webapp"
+    }
+  }
+
+  distributedTest {
+    resources {
+      srcDir "${projectDir}/src/main/webapp"
+    }
+  }
+}
+
+dependencies {
+  compile(platform(project(':boms:geode-all-bom'))) {
+    exclude module: "jackson-annotations"
+  }
+  compileOnly(project(':geode-logging'))
+  compileOnly(project(':geode-serialization'))
+  compileOnly(project(':geode-core'))
+
+  compileOnly('javax.servlet:javax.servlet-api')
+  // jackson-annotations must be accessed from the geode classloader and not the webapp
+  compileOnly('com.fasterxml.jackson.core:jackson-annotations')
+
+  compile('org.apache.commons:commons-lang3')
+  compile('commons-fileupload:commons-fileupload') {
+    exclude module: 'commons-io'
+  }
+  compile('com.fasterxml.jackson.core:jackson-core')
+  compile('com.fasterxml.jackson.core:jackson-databind') {
+    exclude module: 'jackson-annotations'
+  }
+
+  compileOnly('com.fasterxml.jackson.module:jackson-module-scala_2.10')
+  compileOnly('io.swagger:swagger-annotations')
+
+  compile('io.springfox:springfox-swagger2') {
+    exclude module: 'slf4j-api'
+    exclude module: 'jackson-annotations'
+    exclude module: 'swagger-annotations'
+  }
+  compile('io.springfox:springfox-swagger-ui') {
+    exclude module: 'slf4j-api'
+  }
+
+  compile('org.springframework:spring-beans')
+  compile('org.springframework.security:spring-security-core')
+  compile('org.springframework.security:spring-security-web')
+  compile('org.springframework.security:spring-security-config')
+  compile('org.springframework:spring-web')
+  compile('org.springframework:spring-webmvc')
+  compile('org.springframework.hateoas:spring-hateoas') {
+    exclude module: 'aopalliance'
+    exclude module: 'commons-logging'
+    exclude module: 'objenesis'
+    exclude module: 'slf4j-api'
+    exclude module: 'spring-core'
+    exclude module: 'spring-plugin-core'
+  }
+  compile('org.springframework:spring-aspects') {
+    exclude module: 'aopalliance'
+    exclude module: 'aspectjweaver'
+  }
+  compile('org.springframework:spring-oxm') {
+    exclude module: 'commons-logging'
+    exclude module: 'spring-core'
+    exclude module: 'spring-beans'
+  }
+  compileOnly('org.apache.logging.log4j:log4j-api')
+
+  commonTestCompile(project(':geode-core'))
+  commonTestCompile(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
+  commonTestCompile(project(':geode-dunit')) {
+    exclude module: 'geode-core'
+  }
+  commonTestCompile('org.springframework:spring-test')
+  commonTestCompile('org.springframework:spring-webmvc')
+  commonTestCompile('org.springframework.security:spring-security-test')
+  commonTestCompile(project(':geode-web-management'))
+
+  testCompile(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
+  testCompile(project(':geode-core'))
+  testCompile('javax.servlet:javax.servlet-api')
+
+  integrationTestCompile(sourceSets.commonTest.output)
+
+  integrationTestCompile(project(':geode-core'))
+  integrationTestCompile('org.springframework:spring-test')
+  integrationTestCompile('org.springframework:spring-webmvc')
+  integrationTestCompile('org.springframework.security:spring-security-test')
+
+  integrationTestCompile(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
+  integrationTestCompile(project(':geode-dunit')) {
+    exclude module: 'geode-core'
+  }
+  integrationTestRuntimeOnly('org.apache.logging.log4j:log4j-slf4j-impl') {
+    exclude module: 'slf4j-api'
+  }
+
+  distributedTestCompile(sourceSets.commonTest.output)
+
+  distributedTestCompile('org.springframework:spring-test')
+  distributedTestCompile('org.springframework:spring-webmvc')
+  distributedTestCompile('org.springframework.security:spring-security-test')
+
+  distributedTestCompile(project(':geode-core'))
+  distributedTestCompile(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
+  distributedTestCompile(project(':geode-dunit')) {
+    exclude module: 'geode-core'
+  }
+
+  distributedTestRuntimeOnly('org.apache.logging.log4j:log4j-slf4j-impl') {
+    exclude module: 'slf4j-api'
+  }
+}
+
+war {
+  enabled = true
+  rootSpec.exclude("**/*commons-logging-*.jar")
+  duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+  // this shouldn't be necessary but if it's not specified we're missing some of the jars
+  // from the runtime classpath
+  classpath configurations.runtimeClasspath
+}

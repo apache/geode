@@ -20,7 +20,7 @@ import javax.management.Notification;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.EntryEvent;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * This class actually distribute the notification with the help of the actual broadcaster proxy.
@@ -46,7 +46,6 @@ public class NotificationHubClient {
    *
    * it does not throw any exception. it will capture all exception and log a warning
    *
-   * @param event
    */
   public void sendNotification(EntryEvent<NotificationKey, Notification> event) {
 

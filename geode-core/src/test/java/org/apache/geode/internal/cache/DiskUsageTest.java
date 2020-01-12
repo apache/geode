@@ -23,13 +23,10 @@ import static org.mockito.Mockito.when;
 import java.io.File;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.cache.DiskStoreMonitor.DiskState;
 import org.apache.geode.internal.cache.DiskStoreMonitor.DiskUsage;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class DiskUsageTest {
 
   @Test
@@ -132,7 +129,7 @@ public class DiskUsageTest {
     assertThat(diskUsage.getNext()).isEqualTo(DiskState.CRITICAL);
     assertThat(diskUsage.getPct()).isEqualTo("2%");
     assertThat(diskUsage.getCriticalMessage())
-        .isEqualTo("the file system is 2% full, which exceeds the critical threshold of 1.9%.");
+        .isEqualTo("the file system is 2% full, which reached the critical threshold of 1.9%.");
   }
 
   @Test
@@ -164,6 +161,38 @@ public class DiskUsageTest {
     assertThat(diskUsage.getPct()).isEqualTo("2%");
     assertThat(diskUsage.getCriticalMessage())
         .isEqualTo("the file system only has 98 bytes free which is below the minimum of 1048576.");
+  }
+
+  @Test
+  public void criticalMessageStatesUsageExceedsCritical() {
+    File dir = mock(File.class);
+    when(dir.exists()).thenReturn(true);
+    when(dir.getTotalSpace()).thenReturn(1024L * 1024L * 3L);
+    when(dir.getUsableSpace()).thenReturn(1024L * 1024L * 2L);
+
+    TestableDiskUsage diskUsage = new TestableDiskUsage(dir, 1/* one megabyte */);
+
+    assertThat(diskUsage.update(0.0f, 33.2f)).isEqualTo(DiskState.CRITICAL);
+    assertThat(diskUsage.getNext()).isEqualTo(DiskState.CRITICAL);
+    assertThat(diskUsage.getPct()).isEqualTo("33.3%");
+    assertThat(diskUsage.getCriticalMessage())
+        .isEqualTo("the file system is 33.3% full, which reached the critical threshold of 33.2%.");
+  }
+
+  @Test
+  public void criticalMessageStatesUsageExceedsCriticalWithManyDigits() {
+    File dir = mock(File.class);
+    when(dir.exists()).thenReturn(true);
+    when(dir.getTotalSpace()).thenReturn(1024L * 1024L * 3L);
+    when(dir.getUsableSpace()).thenReturn(1024L * 1024L * 2L);
+
+    TestableDiskUsage diskUsage = new TestableDiskUsage(dir, 1/* one megabyte */);
+
+    assertThat(diskUsage.update(0.0f, 33.25783495783648593746336f)).isEqualTo(DiskState.CRITICAL);
+    assertThat(diskUsage.getNext()).isEqualTo(DiskState.CRITICAL);
+    assertThat(diskUsage.getPct()).isEqualTo("33.3%");
+    assertThat(diskUsage.getCriticalMessage())
+        .isEqualTo("the file system is 33.3% full, which reached the critical threshold of 33.3%.");
   }
 
   @Test

@@ -17,7 +17,6 @@ package org.apache.geode.internal.offheap;
 import org.apache.geode.internal.cache.CachedDeserializableFactory;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.offheap.annotations.Released;
-import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 
 /**

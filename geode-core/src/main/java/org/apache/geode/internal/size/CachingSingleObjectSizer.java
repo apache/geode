@@ -14,14 +14,10 @@
  */
 package org.apache.geode.internal.size;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.geode.internal.util.concurrent.CopyOnWriteWeakHashMap;
 
-/**
- *
- */
 public class CachingSingleObjectSizer implements SingleObjectSizer {
   private final Map<Class, Long> sizeCache = new CopyOnWriteWeakHashMap<Class, Long>();
   private final SingleObjectSizer wrappedSizer;
@@ -30,6 +26,7 @@ public class CachingSingleObjectSizer implements SingleObjectSizer {
     this.wrappedSizer = sizer;
   }
 
+  @Override
   public long sizeof(Object object) {
     Class clazz = object.getClass();
     if (clazz.isArray()) {

@@ -21,10 +21,9 @@ import java.nio.ByteBuffer;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.tier.MessageType;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Class <code>ChunkedMessage</code> is used to send messages from a server to a client divided into
@@ -202,8 +201,8 @@ public class ChunkedMessage extends Message {
         cb.clear();
         if (!MessageType.validate(type)) {
           throw new IOException(
-              LocalizedStrings.ChunkedMessage_INVALID_MESSAGE_TYPE_0_WHILE_READING_HEADER
-                  .toLocalizedString(Integer.valueOf(type)));
+              String.format("Invalid message type %s while reading header",
+                  Integer.valueOf(type)));
         }
 
         // Set the header and payload fields only after receiving all the
@@ -214,7 +213,7 @@ public class ChunkedMessage extends Message {
         this.transactionId = txid;
       }
     } else {
-      throw new IOException(LocalizedStrings.ChunkedMessage_DEAD_CONNECTION.toLocalizedString());
+      throw new IOException("Dead Connection");
     }
   }
 
@@ -227,7 +226,7 @@ public class ChunkedMessage extends Message {
         readChunk();
       }
     } else {
-      throw new IOException(LocalizedStrings.ChunkedMessage_DEAD_CONNECTION.toLocalizedString());
+      throw new IOException("Dead Connection");
     }
   }
 
@@ -245,7 +244,7 @@ public class ChunkedMessage extends Message {
           inputStream.read(cb.array(), totalBytesRead, CHUNK_HEADER_LENGTH - totalBytesRead);
       if (bytesRead == -1) {
         throw new EOFException(
-            LocalizedStrings.ChunkedMessage_CHUNK_READ_ERROR_CONNECTION_RESET.toLocalizedString());
+            "Chunk read error (connection reset)");
       }
       totalBytesRead += bytesRead;
       if (this.messageStats != null) {
@@ -282,7 +281,7 @@ public class ChunkedMessage extends Message {
   public void sendHeader() throws IOException {
     if (this.socket != null) {
       synchronized (getCommBuffer()) {
-        getHeaderBytesForWrite();
+        getDSCODEsForWrite();
         flushBuffer();
         // Darrel says: I see no need for the following os.flush() call
         // so I've deadcoded it for performance.
@@ -291,7 +290,7 @@ public class ChunkedMessage extends Message {
       this.currentPart = 0;
       this.headerSent = true;
     } else {
-      throw new IOException(LocalizedStrings.ChunkedMessage_DEAD_CONNECTION.toLocalizedString());
+      throw new IOException("Dead Connection");
     }
   }
 
@@ -353,7 +352,7 @@ public class ChunkedMessage extends Message {
   /**
    * Converts the header of this message into a <code>byte</code> array using a {@link ByteBuffer}.
    */
-  protected void getHeaderBytesForWrite() {
+  protected void getDSCODEsForWrite() {
     final ByteBuffer cb = getCommBuffer();
     cb.clear();
     cb.putInt(this.messageType);

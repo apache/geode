@@ -31,11 +31,9 @@ import javax.transaction.xa.XAResource;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.i18n.LogWriterI18n;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.jndi.JNDIInvoker;
-import org.apache.geode.internal.jta.TransactionUtils;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * GemFireTransactionDataSource extends AbstractDataSource. This is a datasource class which
@@ -59,9 +57,8 @@ public class GemFireTransactionDataSource extends AbstractDataSource
    * jdk 1.6
    *
    * @param iface - a Class defining an interface.
-   * @throws SQLException
-   * @return boolean
    */
+  @Override
   public boolean isWrapperFor(Class iface) throws SQLException {
     return true;
   }
@@ -71,10 +68,10 @@ public class GemFireTransactionDataSource extends AbstractDataSource
    * required by jdk 1.6
    *
    * @param iface - a Class defining an interface.
-   * @throws SQLException
    * @return java.lang.Object
    */
 
+  @Override
   public Object unwrap(Class iface) throws SQLException {
     return iface;
   }
@@ -84,15 +81,13 @@ public class GemFireTransactionDataSource extends AbstractDataSource
    *
    * @param xaDS The XADataSource object for the database driver.
    * @param configs - The ConfiguredDataSourceProperties containing the datasource properties.
-   * @throws SQLException
    */
   public GemFireTransactionDataSource(XADataSource xaDS, ConfiguredDataSourceProperties configs)
       throws SQLException {
     super(configs);
     if ((xaDS == null) || (configs == null)) {
       throw new SQLException(
-          LocalizedStrings.GemFireTransactionDataSource_GEMFIRETRANSACTIONDATASOURCEXADATASOURCE_CLASS_OBJECT_IS_NULL_OR_CONFIGUREDDATASOURCEPROPERTIES_OBJECT_IS_NULL
-              .toLocalizedString());
+          "GemFireTransactionDataSource::XADataSource class object is null or ConfiguredDataSourceProperties object is null");
     }
     try {
       provider = new GemFireConnectionPoolManager(xaDS, configs, this);
@@ -110,15 +105,13 @@ public class GemFireTransactionDataSource extends AbstractDataSource
    * Implementation of datasource function. This method is used to get the connection from the pool.
    * Default user name and password will be used.
    *
-   * @throws SQLException
    * @return ???
    */
   @Override
   public Connection getConnection() throws SQLException {
     if (!isActive) {
       throw new SQLException(
-          LocalizedStrings.GemFireTransactionDataSource_GEMFIRETRANSACTIONDATASOURCEGETCONNECTIONNO_VALID_CONNECTION_AVAILABLE
-              .toLocalizedString());
+          "GemFireTransactionDataSource::getConnection::No valid Connection available");
     }
     XAConnection xaConn = null;
     try {
@@ -139,7 +132,6 @@ public class GemFireTransactionDataSource extends AbstractDataSource
    *
    * @param clUsername The username for the database connection.
    * @param clPassword The password for the database connection.
-   * @throws SQLException
    * @return ???
    */
   @Override
@@ -154,6 +146,7 @@ public class GemFireTransactionDataSource extends AbstractDataSource
    *
    * @param event Connection event object
    */
+  @Override
   public void connectionClosed(ConnectionEvent event) {
     if (isActive) {
       try {
@@ -180,6 +173,7 @@ public class GemFireTransactionDataSource extends AbstractDataSource
    *
    * @param event Connection event object
    */
+  @Override
   public void connectionErrorOccurred(ConnectionEvent event) {
     if (isActive) {
       try {
@@ -196,9 +190,6 @@ public class GemFireTransactionDataSource extends AbstractDataSource
     }
   }
 
-  /**
-   *
-   */
   void registerTranxConnection(XAConnection xaConn) throws Exception {
     try {
       synchronized (this) {
@@ -214,9 +205,11 @@ public class GemFireTransactionDataSource extends AbstractDataSource
         this.xaResourcesMap.put(xaConn, xar);
       }
     } catch (Exception ex) {
+      provider.returnAndExpireConnection(xaConn);
       Exception e = new Exception(
-          LocalizedStrings.GemFireTransactionDataSource_GEMFIRETRANSACTIONDATASOURCEREGISTERTRANXCONNECTION_EXCEPTION_IN_REGISTERING_THE_XARESOURCE_WITH_THE_TRANSACTIONEXCEPTION_OCCURRED_0
-              .toLocalizedString(ex));
+          String.format(
+              "GemFireTransactionDataSource-registerTranxConnection(). Exception in registering the XAResource with the Transaction.Exception occurred= %s",
+              ex));
       e.initCause(ex);
       throw e;
     }
@@ -225,19 +218,23 @@ public class GemFireTransactionDataSource extends AbstractDataSource
   /**
    * gets the connection from the pool
    *
-   * @param poolC
    * @return ???
    */
   protected Connection getSQLConnection(PooledConnection poolC) throws SQLException {
-    Connection conn = poolC.getConnection();
-    boolean val = validateConnection(conn);
-    if (val)
-      return conn;
-    else {
+    Connection connection;
+    try {
+      connection = poolC.getConnection();
+    } catch (SQLException e) {
+      provider.returnAndExpireConnection(poolC);
+      throw e;
+    }
+    boolean val = validateConnection(connection);
+    if (val) {
+      return connection;
+    } else {
       provider.returnAndExpireConnection(poolC);
       throw new SQLException(
-          LocalizedStrings.GemFireTransactionDataSource_GEMFIRECONNPOOLEDDATASOURCEGETCONNFROMCONNPOOLJAVASQLCONNECTION_OBTAINED_IS_INVALID
-              .toLocalizedString());
+          "GemFireConnPooledDataSource::getConnFromConnPool:java.sql.Connection obtained is invalid");
     }
   }
 
@@ -254,8 +251,16 @@ public class GemFireTransactionDataSource extends AbstractDataSource
    * Clean up the resources before restart of Cache
    */
   @Override
-  public void clearUp() {
-    super.clearUp();
+  public void close() {
+    super.close();
     provider.clearUp();
+  }
+
+  /**
+   * Used by unit tests
+   */
+  @VisibleForTesting
+  void setTransactionManager(TransactionManager transManager) {
+    this.transManager = transManager;
   }
 }

@@ -18,19 +18,21 @@ import java.io.IOException;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.pdx.internal.EnumInfo;
 import org.apache.geode.pdx.internal.TypeRegistry;
 
 public class AddPdxEnum extends BaseCommand {
   private static final Logger logger = LogService.getLogger();
 
+  @Immutable
   private static final AddPdxEnum singleton = new AddPdxEnum();
 
   public static Command getCommand() {
@@ -49,12 +51,6 @@ public class AddPdxEnum extends BaseCommand {
           serverConnection.getName(), clientMessage.getNumberOfParts(),
           serverConnection.getSocketString());
     }
-
-    if (!ServerConnection.allowInternalMessagesWithoutCredentials) {
-      serverConnection.getAuthzRequest();
-    }
-
-    int noOfParts = clientMessage.getNumberOfParts();
 
     EnumInfo enumInfo = (EnumInfo) clientMessage.getPart(0).getObject();
     int enumId = clientMessage.getPart(1).getInt();

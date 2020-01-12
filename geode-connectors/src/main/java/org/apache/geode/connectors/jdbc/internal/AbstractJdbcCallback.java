@@ -14,17 +14,17 @@
  */
 package org.apache.geode.connectors.jdbc.internal;
 
-import java.util.Properties;
-
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.CacheCallback;
+import org.apache.geode.cache.Operation;
+import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.InternalCache;
 
 @Experimental
 public abstract class AbstractJdbcCallback implements CacheCallback {
 
   private volatile SqlHandler sqlHandler;
-  protected volatile InternalCache cache;
+  protected InternalCache cache;
 
   protected AbstractJdbcCallback() {
     // nothing
@@ -35,34 +35,31 @@ public abstract class AbstractJdbcCallback implements CacheCallback {
     this.cache = cache;
   }
 
-  @Override
-  public void close() {
-    if (sqlHandler != null) {
-      sqlHandler.close();
-    }
-  }
-
-  @Override
-  public void init(Properties props) {
-    // nothing
-  }
-
   protected SqlHandler getSqlHandler() {
     return sqlHandler;
   }
 
-  protected void checkInitialized(InternalCache cache) {
+  protected void checkInitialized(Region<?, ?> region) {
     if (sqlHandler == null) {
-      initialize(cache);
+      initialize(region);
     }
   }
 
-  private synchronized void initialize(InternalCache cache) {
+  protected boolean eventCanBeIgnored(Operation operation) {
+    return operation.isLoad();
+  }
+
+  private synchronized void initialize(Region<?, ?> region) {
     if (sqlHandler == null) {
-      this.cache = cache;
+      this.cache = (InternalCache) region.getRegionService();
       JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
-      DataSourceManager manager = new DataSourceManager(new HikariJdbcDataSourceFactory());
-      sqlHandler = new SqlHandler(manager, service);
+      TableMetaDataManager tableMetaDataManager = new TableMetaDataManager();
+      sqlHandler = createSqlHandler(cache, region.getName(), tableMetaDataManager, service);
     }
+  }
+
+  SqlHandler createSqlHandler(InternalCache cache, String regionName,
+      TableMetaDataManager tableMetaDataManager, JdbcConnectorService service) {
+    return new SqlHandler(cache, regionName, tableMetaDataManager, service);
   }
 }

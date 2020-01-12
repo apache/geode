@@ -19,10 +19,10 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 import org.apache.geode.DataSerializer;
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.LowMemoryException;
 import org.apache.geode.cache.control.ResourceManager;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Stores eviction and critical thresholds for memory as well as the logic for determining how
@@ -76,8 +76,9 @@ public class MemoryThresholds {
    * When this property is set to true, a {@link LowMemoryException} is not thrown, even when usage
    * crosses the critical threshold.
    */
-  private static final boolean DISABLE_LOW_MEM_EXCEPTION =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "disableLowMemoryException");
+  @MutableForTesting
+  private static boolean DISABLE_LOW_MEM_EXCEPTION =
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "disableLowMemoryException");
 
   /**
    * The default percent of memory at which the VM is considered in a critical state.
@@ -98,14 +99,14 @@ public class MemoryThresholds {
    * Memory usage must fall below THRESHOLD-THRESHOLD_THICKNESS before we deliver a down event
    */
   private static final double THRESHOLD_THICKNESS = Double.parseDouble(
-      System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "thresholdThickness", "2.00"));
+      System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + "thresholdThickness", "2.00"));
 
   /**
    * Memory usage must fall below THRESHOLD-THRESHOLD_THICKNESS_EVICT before we deliver an eviction
    * down event
    */
   private static final double THRESHOLD_THICKNESS_EVICT = Double.parseDouble(
-      System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "eviction-thresholdThickness",
+      System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + "eviction-thresholdThickness",
           Double.toString(THRESHOLD_THICKNESS)));
 
   private final long maxMemoryBytes;
@@ -128,6 +129,18 @@ public class MemoryThresholds {
   // Number of bytes used below which memory will leave the eviction state
   private final long evictionThresholdClearBytes;
 
+  /*
+   * Number of eviction or critical state changes that have to occur before the event is delivered.
+   * The default is 0 so we will change states immediately by default.
+   */
+  @MutableForTesting
+  private static int memoryStateChangeTolerance =
+      Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "memoryEventTolerance", 0);
+
+  // Only change state when these counters exceed {@link
+  // HeapMemoryMonitor#memoryStateChangeTolerance}
+  private transient int toleranceCounter;
+
   MemoryThresholds(long maxMemoryBytes) {
     this(maxMemoryBytes, DEFAULT_CRITICAL_PERCENTAGE, DEFAULT_EVICTION_PERCENTAGE);
   }
@@ -138,21 +151,18 @@ public class MemoryThresholds {
   public MemoryThresholds(long maxMemoryBytes, float criticalThreshold, float evictionThreshold) {
     if (criticalThreshold > 100.0f || criticalThreshold < 0.0f) {
       throw new IllegalArgumentException(
-          LocalizedStrings.MemoryThresholds_CRITICAL_PERCENTAGE_GT_ZERO_AND_LTE_100
-              .toLocalizedString());
+          "Critical percentage must be greater than 0.0 and less than or equal to 100.0.");
     }
 
     if (evictionThreshold > 100.0f || evictionThreshold < 0.0f) {
       throw new IllegalArgumentException(
-          LocalizedStrings.MemoryThresholds_EVICTION_PERCENTAGE_GT_ZERO_AND_LTE_100
-              .toLocalizedString());
+          "Eviction percentage must be greater than 0.0 and less than or equal to 100.0.");
     }
 
     if (evictionThreshold != 0 && criticalThreshold != 0
         && evictionThreshold >= criticalThreshold) {
       throw new IllegalArgumentException(
-          LocalizedStrings.MemoryThresholds_CRITICAL_PERCENTAGE_GTE_EVICTION_PERCENTAGE
-              .toLocalizedString());
+          "Critical percentage must be greater than the eviction percentage.");
     }
 
     this.maxMemoryBytes = maxMemoryBytes;
@@ -172,6 +182,10 @@ public class MemoryThresholds {
     return DISABLE_LOW_MEM_EXCEPTION;
   }
 
+  static void setLowMemoryExceptionDisabled(boolean toDisableLowMemoryException) {
+    DISABLE_LOW_MEM_EXCEPTION = toDisableLowMemoryException;
+  }
+
   public MemoryState computeNextState(final MemoryState oldState, final long bytesUsed) {
     assert oldState != null;
     assert bytesUsed >= 0;
@@ -180,13 +194,14 @@ public class MemoryThresholds {
     if (this.evictionThreshold != 0 && this.criticalThreshold != 0) {
       if (bytesUsed < this.evictionThresholdClearBytes
           || (!oldState.isEviction() && bytesUsed < this.evictionThresholdBytes)) {
+        toleranceCounter = 0;
         return MemoryState.NORMAL;
       }
       if (bytesUsed < this.criticalThresholdClearBytes
           || (!oldState.isCritical() && bytesUsed < this.criticalThresholdBytes)) {
-        return MemoryState.EVICTION;
+        return checkToleranceAndGetNextState(MemoryState.EVICTION, oldState);
       }
-      return MemoryState.EVICTION_CRITICAL;
+      return checkToleranceAndGetNextState(MemoryState.EVICTION_CRITICAL, oldState);
     }
 
     // Are both eviction and critical thresholds disabled?
@@ -198,18 +213,20 @@ public class MemoryThresholds {
     if (this.evictionThreshold == 0) {
       if (bytesUsed < this.criticalThresholdClearBytes
           || (!oldState.isCritical() && bytesUsed < this.criticalThresholdBytes)) {
+        toleranceCounter = 0;
         return MemoryState.EVICTION_DISABLED;
       }
-      return MemoryState.EVICTION_DISABLED_CRITICAL;
+      return checkToleranceAndGetNextState(MemoryState.EVICTION_DISABLED_CRITICAL, oldState);
     }
 
     // Just the eviction threshold is enabled
     if (bytesUsed < this.evictionThresholdClearBytes
         || (!oldState.isEviction() && bytesUsed < this.evictionThresholdBytes)) {
+      toleranceCounter = 0;
       return MemoryState.CRITICAL_DISABLED;
     }
 
-    return MemoryState.EVICTION_CRITICAL_DISABLED;
+    return checkToleranceAndGetNextState(MemoryState.EVICTION_CRITICAL_DISABLED, oldState);
   }
 
   @Override
@@ -261,12 +278,19 @@ public class MemoryThresholds {
     return this.evictionThreshold > 0.0f;
   }
 
+  void setMemoryStateChangeTolerance(int memoryStateChangeTolerance) {
+    MemoryThresholds.memoryStateChangeTolerance = memoryStateChangeTolerance;
+  }
+
+  int getMemoryStateChangeTolerance() {
+    return MemoryThresholds.memoryStateChangeTolerance;
+  }
+
   /**
    * Generate a Thresholds object from data available from the DataInput
    *
    * @param in DataInput from which to read the data
    * @return a new instance of Thresholds
-   * @throws IOException
    */
   public static MemoryThresholds fromData(DataInput in) throws IOException {
     long maxMemoryBytes = in.readLong();
@@ -279,11 +303,22 @@ public class MemoryThresholds {
    * Write the state of this to the DataOutput
    *
    * @param out DataOutput on which to write internal state
-   * @throws IOException
    */
   public void toData(DataOutput out) throws IOException {
     out.writeLong(this.maxMemoryBytes);
     out.writeFloat(this.criticalThreshold);
     out.writeFloat(this.evictionThreshold);
+  }
+
+  /**
+   * To avoid memory spikes in JVMs susceptible to bad heap memory
+   * reads/outliers, we only deliver events if we receive more than
+   * memoryStateChangeTolerance of the same state change.
+   *
+   * @return New state if above tolerance, old state if below
+   */
+  private MemoryState checkToleranceAndGetNextState(MemoryState newState, MemoryState oldState) {
+    return memoryStateChangeTolerance > 0
+        && toleranceCounter++ < memoryStateChangeTolerance ? oldState : newState;
   }
 }

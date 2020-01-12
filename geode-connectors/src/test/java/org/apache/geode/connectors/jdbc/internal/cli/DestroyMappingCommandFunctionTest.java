@@ -16,31 +16,38 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.Serializable;
+import java.util.Collections;
 
-import org.apache.commons.lang.SerializationUtils;
+import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
 
+import org.apache.geode.cache.AttributesMutator;
+import org.apache.geode.cache.CacheLoader;
+import org.apache.geode.cache.CacheWriter;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.asyncqueue.internal.InternalAsyncEventQueue;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
+import org.apache.geode.connectors.jdbc.JdbcLoader;
+import org.apache.geode.connectors.jdbc.JdbcWriter;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
-import org.apache.geode.connectors.jdbc.internal.RegionMapping;
-import org.apache.geode.connectors.jdbc.internal.RegionMappingBuilder;
+import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
-import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.management.internal.functions.CliFunctionResult;
 
-@Category(UnitTest.class)
 public class DestroyMappingCommandFunctionTest {
 
   private static final String regionName = "testRegion";
@@ -50,11 +57,23 @@ public class DestroyMappingCommandFunctionTest {
   private ResultSender<Object> resultSender;
   private RegionMapping mapping;
   private JdbcConnectorService service;
+  private InternalCache cache;
+  private Region region;
+  private RegionAttributes regionAttributes;
+  private AttributesMutator regionMutator;
 
   @Before
   public void setUp() {
-    InternalCache cache = mock(InternalCache.class);
+    cache = mock(InternalCache.class);
+    region = mock(Region.class);
+    when(region.getName()).thenReturn(regionName);
+    regionAttributes = mock(RegionAttributes.class);
+    regionMutator = mock(AttributesMutator.class);
+    when(region.getAttributes()).thenReturn(regionAttributes);
+    when(region.getAttributesMutator()).thenReturn(regionMutator);
+    when(cache.getRegion(regionName)).thenReturn(region);
     context = mock(FunctionContext.class);
+    when(context.getMemberName()).thenReturn("myMemberName");
     DistributedMember member = mock(DistributedMember.class);
     resultSender = mock(ResultSender.class);
     service = mock(JdbcConnectorService.class);
@@ -67,7 +86,7 @@ public class DestroyMappingCommandFunctionTest {
     when(context.getArguments()).thenReturn(regionName);
     when(cache.getService(eq(JdbcConnectorService.class))).thenReturn(service);
 
-    mapping = new RegionMappingBuilder().build();
+    mapping = new RegionMapping();
 
     function = new DestroyMappingFunction();
   }
@@ -92,22 +111,106 @@ public class DestroyMappingCommandFunctionTest {
   }
 
   @Test
-  public void destroyRegionMappingReturnsTrueIfConnectionDestroyed() {
+  public void executeFunctionGivenExistingMappingReturnsTrue() {
     when(service.getMappingForRegion(eq(regionName))).thenReturn(mapping);
 
-    assertThat(function.destroyRegionMapping(service, regionName)).isTrue();
+    CliFunctionResult result = function.executeFunction(context);
+
+    assertThat(result.isSuccessful()).isTrue();
+    assertThat(result.toString())
+        .contains("Destroyed JDBC mapping for region " + regionName + " on myMemberName");
   }
 
   @Test
-  public void destroyRegionMappingReturnsFalseIfMappingDoesNotExist() {
-    assertThat(function.destroyRegionMapping(service, regionName)).isFalse();
+  public void executeFunctionGivenNoExistingMappingReturnsFalse() {
+    CliFunctionResult result = function.executeFunction(context);
+
+    assertThat(result.isSuccessful()).isFalse();
+    assertThat(result.toString())
+        .contains("JDBC mapping for region \"" + regionName + "\" not found");
   }
 
   @Test
-  public void executeDestroysIfMappingFound() {
+  public void executeFunctionGivenARegionWithJdbcLoaderRemovesTheLoader() {
+    when(regionAttributes.getCacheLoader()).thenReturn(mock(JdbcLoader.class));
     when(service.getMappingForRegion(eq(regionName))).thenReturn(mapping);
 
-    function.execute(context);
+    function.executeFunction(context);
+
+    verify(regionMutator, times(1)).setCacheLoader(null);
+  }
+
+  @Test
+  public void executeFunctionGivenARegionWithNonJdbcLoaderDoesNotRemoveTheLoader() {
+    when(regionAttributes.getCacheLoader()).thenReturn(mock(CacheLoader.class));
+    when(service.getMappingForRegion(eq(regionName))).thenReturn(mapping);
+
+    function.executeFunction(context);
+
+    verify(regionMutator, never()).setCacheLoader(null);
+  }
+
+  @Test
+  public void executeFunctionGivenARegionWithJdbcWriterRemovesTheWriter() {
+    when(regionAttributes.getCacheWriter()).thenReturn(mock(JdbcWriter.class));
+    when(service.getMappingForRegion(eq(regionName))).thenReturn(mapping);
+
+    function.executeFunction(context);
+
+    verify(regionMutator, times(1)).setCacheWriter(null);
+  }
+
+  @Test
+  public void executeFunctionGivenARegionWithNonJdbcWriterDoesNotRemoveTheWriter() {
+    when(regionAttributes.getCacheWriter()).thenReturn(mock(CacheWriter.class));
+    when(service.getMappingForRegion(eq(regionName))).thenReturn(mapping);
+
+    function.executeFunction(context);
+
+    verify(regionMutator, never()).setCacheWriter(null);
+  }
+
+  @Test
+  public void executeFunctionGivenARegionWithJdbcAsyncEventQueueRemovesTheQueueName() {
+    String queueName = MappingCommandUtils.createAsyncEventQueueName(regionName);
+    when(regionAttributes.getAsyncEventQueueIds()).thenReturn(Collections.singleton(queueName));
+    when(service.getMappingForRegion(eq(regionName))).thenReturn(mapping);
+
+    function.executeFunction(context);
+
+    verify(regionMutator, times(1)).removeAsyncEventQueueId(queueName);
+  }
+
+  @Test
+  public void executeFunctionGivenARegionWithNonJdbcAsyncEventQueueDoesNotRemoveTheQueueName() {
+    when(regionAttributes.getAsyncEventQueueIds())
+        .thenReturn(Collections.singleton("nonJdbcQueue"));
+    when(service.getMappingForRegion(eq(regionName))).thenReturn(mapping);
+
+    function.executeFunction(context);
+
+    verify(regionMutator, never()).removeAsyncEventQueueId(any());
+  }
+
+  @Test
+  public void executeFunctionGivenAJdbcAsyncWriterQueueRemovesTheQueue() {
+    String queueName = MappingCommandUtils.createAsyncEventQueueName(regionName);
+    InternalAsyncEventQueue myQueue = mock(InternalAsyncEventQueue.class);
+    when(cache.getAsyncEventQueue(queueName)).thenReturn(myQueue);
+
+    when(service.getMappingForRegion(eq(regionName))).thenReturn(mapping);
+
+    function.executeFunction(context);
+
+    verify(myQueue, times(1)).stop();
+    verify(myQueue, times(1)).destroy();
+  }
+
+  @Test
+  public void executeFunctionGivenExistingMappingCallsDestroyRegionMapping() {
+    when(service.getMappingForRegion(eq(regionName))).thenReturn(mapping);
+
+    function.executeFunction(context);
 
     verify(service, times(1)).destroyRegionMapping(eq(regionName));
   }
@@ -118,7 +221,7 @@ public class DestroyMappingCommandFunctionTest {
 
     ArgumentCaptor<CliFunctionResult> argument = ArgumentCaptor.forClass(CliFunctionResult.class);
     verify(resultSender, times(1)).lastResult(argument.capture());
-    assertThat(argument.getValue().getStatus())
-        .contains("Region mapping for region \"" + regionName + "\" not found");
+    assertThat(argument.getValue().getStatusMessage())
+        .contains("JDBC mapping for region \"" + regionName + "\" not found");
   }
 }

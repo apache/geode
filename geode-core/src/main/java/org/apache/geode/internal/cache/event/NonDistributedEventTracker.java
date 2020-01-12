@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.event;
 import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.EventID;
@@ -25,6 +26,7 @@ import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.internal.cache.versions.VersionTag;
 
 public class NonDistributedEventTracker implements EventTracker {
+  @Immutable
   private static final NonDistributedEventTracker INSTANCE = new NonDistributedEventTracker();
 
   static final String NAME = "The NonDistributedEventTracker";
@@ -45,6 +47,11 @@ public class NonDistributedEventTracker implements EventTracker {
   @Override
   public void stop() {
 
+  }
+
+  @Override
+  public void clear() {
+    // nothing to clear
   }
 
   @Override

@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.xmlcache;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import org.apache.geode.cache.ClientSession;
 import org.apache.geode.cache.InterestRegistrationListener;
@@ -26,7 +27,14 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.AbstractCacheServer;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.Acceptor;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.cache.tier.OverflowAttributes;
+import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier.CacheClientNotifierProvider;
+import org.apache.geode.internal.cache.tier.sockets.ClientHealthMonitor.ClientHealthMonitorProvider;
+import org.apache.geode.internal.cache.tier.sockets.ConnectionListener;
+import org.apache.geode.internal.cache.tier.sockets.ServerConnectionFactory;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.internal.statistics.StatisticsClock;
 
 /**
  * Represents a {@link CacheServer} that is created declaratively.
@@ -51,10 +59,8 @@ public class CacheServerCreation extends AbstractCacheServer {
   }
 
   /**
-   * Constructor for retaining bridge server information during auto-reconnect
+   * Constructor for retaining cache server information during auto-reconnect
    *
-   * @param cache
-   * @param other
    */
   public CacheServerCreation(InternalCache cache, CacheServer other) {
     super(cache);
@@ -154,16 +160,18 @@ public class CacheServerCreation extends AbstractCacheServer {
     this.messageTimeToLive = messageTimeToLive;
   }
 
+  @Override
   public boolean isRunning() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
+  @Override
   public void stop() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   /**
-   * Returns whether or not this bridge server has the same configuration as another bridge server.
+   * Returns whether or not this cache server has the same configuration as another cache server.
    */
   @Override
   public boolean sameAs(CacheServer other) {
@@ -195,7 +203,6 @@ public class CacheServerCreation extends AbstractCacheServer {
    * compare returning <code>true</code>. If a port is specified, return the proper comparison.
    *
    * @param other CacheServer
-   * @return
    */
   private boolean isCacheServerPortEquals(CacheServer other) {
     return (this.getPort() == 0) ? true : this.getPort() == other.getPort();
@@ -213,37 +220,99 @@ public class CacheServerCreation extends AbstractCacheServer {
         + loadPollInterval + this.getClientSubscriptionConfig().toString();
   }
 
+  @Override
   public ClientSubscriptionConfig getClientSubscriptionConfig() {
     return this.clientSubscriptionConfig;
   }
 
+  @Override
   public Set getInterestRegistrationListeners() {
     // TODO Yogesh : implement me
     return null;
   }
 
+  @Override
   public void registerInterestRegistrationListener(InterestRegistrationListener listener) {
     // TODO Yogesh : implement me
   }
 
+  @Override
   public void unregisterInterestRegistrationListener(InterestRegistrationListener listener) {
     // TODO Yogesh : implement me
   }
 
+  @Override
   public Set getAllClientSessions() {
     throw new UnsupportedOperationException("Shouldn't be invoked");
   }
 
+  @Override
   public ClientSession getClientSession(DistributedMember member) {
     throw new UnsupportedOperationException("Shouldn't be invoked");
   }
 
+  @Override
   public ClientSession getClientSession(String durableClientId) {
     throw new UnsupportedOperationException("Shouldn't be invoked");
   }
 
   @Override
   public Acceptor getAcceptor() {
+    throw new UnsupportedOperationException("Shouldn't be invoked");
+  }
+
+  @Override
+  public Acceptor createAcceptor(OverflowAttributes overflowAttributes) throws IOException {
+    throw new UnsupportedOperationException("Shouldn't be invoked");
+  }
+
+  @Override
+  public String getExternalAddress() {
+    throw new UnsupportedOperationException("Shouldn't be invoked");
+  }
+
+  @Override
+  public ConnectionListener getConnectionListener() {
+    throw new UnsupportedOperationException("Shouldn't be invoked");
+  }
+
+  @Override
+  public ServerConnectionFactory getServerConnectionFactory() {
+    throw new UnsupportedOperationException("Shouldn't be invoked");
+  }
+
+  @Override
+  public long getTimeLimitMillis() {
+    throw new UnsupportedOperationException("Shouldn't be invoked");
+  }
+
+  @Override
+  public SecurityService getSecurityService() {
+    throw new UnsupportedOperationException("Shouldn't be invoked");
+  }
+
+  @Override
+  public Supplier<SocketCreator> getSocketCreatorSupplier() {
+    throw new UnsupportedOperationException("Shouldn't be invoked");
+  }
+
+  @Override
+  public CacheClientNotifierProvider getCacheClientNotifierProvider() {
+    throw new UnsupportedOperationException("Shouldn't be invoked");
+  }
+
+  @Override
+  public ClientHealthMonitorProvider getClientHealthMonitorProvider() {
+    throw new UnsupportedOperationException("Shouldn't be invoked");
+  }
+
+  @Override
+  public String[] getCombinedGroups() {
+    throw new UnsupportedOperationException("Shouldn't be invoked");
+  }
+
+  @Override
+  public StatisticsClock getStatisticsClock() {
     throw new UnsupportedOperationException("Shouldn't be invoked");
   }
 }

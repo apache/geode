@@ -14,20 +14,19 @@
  */
 package org.apache.geode.internal;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.NanoTimer.TimeService;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for NanoTimer.
  *
  * @since GemFire 7.0
  */
-@Category(UnitTest.class)
 public class NanoTimerJUnitTest {
 
   @Test

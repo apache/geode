@@ -14,97 +14,148 @@
  */
 package org.apache.geode.internal.logging.log4j;
 
-import java.io.DataOutput;
-
 import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.MarkerManager;
 
-import org.apache.geode.DataSerializable;
+import org.apache.geode.annotations.Immutable;
 
+/**
+ * This collection of {@link org.apache.logging.log4j.Marker} objects offer finer control of
+ * logging. The majority of these markers are concerned with TRACE level logging, the intent of
+ * which should be consistently clear by ending in *_VERBOSE. Additionally, these markers, even
+ * with the TRACE level active, will be disabled in the default Log4j2 configuration
+ * provided by {@code main/resources/log4j2.xml}
+ *
+ * <p>
+ * Some additional markers exist for log levels more coarse than TRACE or DEBUG.
+ * These markers end in *_MARKER for clear distinction from the *_VERBOSE markers.
+ */
 public interface LogMarker {
 
-  /**
-   * @deprecated GEMFIRE_VERBOSE is deprecated in favor of GEODE_VERBOSE
-   */
-  @Deprecated
-  Marker GEMFIRE_VERBOSE = MarkerManager.getMarker("GEMFIRE_VERBOSE");
+  // Non-verbose parent markers
+  @Immutable
+  Marker CONFIG_MARKER = MarkerManager.getMarker("CONFIG_MARKER");
+  @Immutable
+  Marker DISK_STORE_MONITOR_MARKER = MarkerManager.getMarker("DISK_STORE_MONITOR_MARKER");
+  @Immutable
+  Marker DISTRIBUTION_MARKER = MarkerManager.getMarker("DISTRIBUTION_MARKER");
+  @Immutable
+  Marker DLS_MARKER = MarkerManager.getMarker("DLS_MARKER");
+  @Immutable
+  Marker DM_MARKER = MarkerManager.getMarker("DM").addParents(DISTRIBUTION_MARKER);
+  @Immutable
+  Marker SERIALIZER_MARKER = MarkerManager.getMarker("SERIALIZER_MARKER");
+  @Immutable
+  Marker STATISTICS_MARKER = MarkerManager.getMarker("STATISTICS_MARKER");
 
-  /**
-   * GEODE_VERBOSE is a parent to all other markers so that they can all be turned off with<br>
-   * &ltMarkerFilter marker="GEODE_VERBOSE" onMatch="DENY" onMismatch="NEUTRAL"/&gt
-   */
+  // Verbose parent markers
+  /** @deprecated Use GEODE_VERBOSE */
+  @Immutable
+  Marker GEMFIRE_VERBOSE = MarkerManager.getMarker("GEMFIRE_VERBOSE");
+  @Immutable
   Marker GEODE_VERBOSE = MarkerManager.getMarker("GEODE_VERBOSE").setParents(GEMFIRE_VERBOSE);
 
-  Marker BRIDGE_SERVER = MarkerManager.getMarker("BRIDGE_SERVER").addParents(GEODE_VERBOSE);
-  Marker DLS = MarkerManager.getMarker("DLS").addParents(GEODE_VERBOSE);
+  // Verbose child markers. Every marker below should
+  // (a) end in *_VERBOSE and (b) have at least one *_VERBOSE parent
+  @Immutable
+  Marker BRIDGE_SERVER_VERBOSE =
+      MarkerManager.getMarker("BRIDGE_SERVER_VERBOSE").addParents(GEODE_VERBOSE);
 
-  Marker PERSIST = MarkerManager.getMarker("PERSIST").addParents(GEODE_VERBOSE);
-  Marker PERSIST_VIEW = MarkerManager.getMarker("PERSIST_VIEW").addParents(PERSIST);
-  Marker PERSIST_ADVISOR = MarkerManager.getMarker("PERSIST_ADVISOR").addParents(PERSIST);
-  Marker PERSIST_RECOVERY = MarkerManager.getMarker("PERSIST_RECOVERY").addParents(PERSIST);
-  Marker PERSIST_WRITES = MarkerManager.getMarker("PERSIST_WRITES").addParents(PERSIST);
+  @Immutable
+  Marker CACHE_XML_PARSER_VERBOSE =
+      MarkerManager.getMarker("CACHE_XML_PARSER_VERBOSE").addParents(GEODE_VERBOSE);
 
-  Marker TOMBSTONE = MarkerManager.getMarker("TOMBSTONE").addParents(GEODE_VERBOSE);
-  Marker TOMBSTONE_COUNT = MarkerManager.getMarker("TOMBSTONE_COUNT").addParents(TOMBSTONE);
+  @Immutable
+  Marker DISK_STORE_MONITOR_VERBOSE = MarkerManager.getMarker("DISK_STORE_MONITOR_VERBOSE")
+      .addParents(DISK_STORE_MONITOR_MARKER, GEODE_VERBOSE);
 
-  Marker LRU = MarkerManager.getMarker("LRU").addParents(GEODE_VERBOSE);
-  Marker LRU_TOMBSTONE_COUNT =
-      MarkerManager.getMarker("LRU_TOMBSTONE_COUNT").addParents(LRU, TOMBSTONE_COUNT);
-  Marker LRU_CLOCK = MarkerManager.getMarker("LRU_CLOCK").addParents(LRU);
+  @Immutable
+  Marker DLS_VERBOSE = MarkerManager.getMarker("DLS_VERBOSE").addParents(DLS_MARKER, GEODE_VERBOSE);
 
-  Marker RVV = MarkerManager.getMarker("RVV").addParents(GEODE_VERBOSE);
-  Marker VERSION_TAG = MarkerManager.getMarker("VERSION_TAG").addParents(GEODE_VERBOSE); // gemfire.VersionTag.DEBUG
-  Marker VERSIONED_OBJECT_LIST =
-      MarkerManager.getMarker("VERSIONED_OBJECT_LIST").addParents(GEODE_VERBOSE); // gemfire.VersionedObjectList.DEBUG
+  @Immutable
+  Marker PERSIST_VERBOSE = MarkerManager.getMarker("PERSIST_VERBOSE").addParents(GEODE_VERBOSE);
+  @Immutable
+  Marker PERSIST_ADVISOR_VERBOSE =
+      MarkerManager.getMarker("PERSIST_ADVISOR_VERBOSE").addParents(PERSIST_VERBOSE);
+  @Immutable
+  Marker PERSIST_RECOVERY_VERBOSE =
+      MarkerManager.getMarker("PERSIST_RECOVERY_VERBOSE").addParents(PERSIST_VERBOSE);
+  @Immutable
+  Marker PERSIST_WRITES_VERBOSE =
+      MarkerManager.getMarker("PERSIST_WRITES_VERBOSE").addParents(PERSIST_VERBOSE);
 
-  // cache.tier.sockets
-  Marker OBJECT_PART_LIST = MarkerManager.getMarker("OBJECT_PART_LIST").addParents(GEODE_VERBOSE); // gemfire.ObjectPartList.DEBUG
+  @Immutable
+  Marker RVV_VERBOSE = MarkerManager.getMarker("RVV_VERBOSE").addParents(GEODE_VERBOSE);
 
-  Marker SERIALIZER = MarkerManager.getMarker("SERIALIZER").addParents(GEODE_VERBOSE); // DataSerializer.DEBUG
-  /**
-   * If the <code>"DataSerializer.DUMP_SERIALIZED"</code> system property is set, the class names of
-   * the objects that are serialized by
-   * {@link org.apache.geode.DataSerializer#writeObject(Object, DataOutput)} using standard Java
-   * serialization are logged to {@linkplain System#out standard out}. This aids in determining
-   * which classes should implement {@link DataSerializable} (or should be special cased by a custom
-   * <code>DataSerializer</code>).
-   */
-  Marker DUMP_SERIALIZED = MarkerManager.getMarker("DUMP_SERIALIZED").addParents(SERIALIZER); // DataSerializer.DUMP_SERIALIZED
-  Marker TRACE_SERIALIZABLE = MarkerManager.getMarker("TRACE_SERIALIZABLE").addParents(SERIALIZER); // DataSerializer.TRACE_SERIALIZABLE
-  Marker DEBUG_DSFID = MarkerManager.getMarker("DEBUG_DSFID").addParents(SERIALIZER); // DataSerializer.DEBUG_DSFID
+  @Immutable
+  Marker TOMBSTONE_VERBOSE = MarkerManager.getMarker("TOMBSTONE_VERBOSE").addParents(GEODE_VERBOSE);
+  @Immutable
+  Marker TOMBSTONE_COUNT_VERBOSE =
+      MarkerManager.getMarker("TOMBSTONE_COUNT_VERBOSE").addParents(TOMBSTONE_VERBOSE);
 
-  Marker STATISTICS = MarkerManager.getMarker("STATISTICS").addParents(GEODE_VERBOSE);
-  Marker STATE_FLUSH_OP = MarkerManager.getMarker("STATE_FLUSH_OP").addParents(GEODE_VERBOSE);
+  @Immutable
+  Marker LRU_VERBOSE = MarkerManager.getMarker("LRU_VERBOSE").addParents(GEODE_VERBOSE);
+  @Immutable
+  Marker LRU_CLOCK_VERBOSE = MarkerManager.getMarker("LRU_CLOCK_VERBOSE").addParents(LRU_VERBOSE);
+  @Immutable
+  Marker LRU_TOMBSTONE_COUNT_VERBOSE = MarkerManager.getMarker("LRU_TOMBSTONE_COUNT_VERBOSE")
+      .addParents(LRU_VERBOSE, TOMBSTONE_COUNT_VERBOSE);
 
-  Marker DISTRIBUTION = MarkerManager.getMarker("DISTRIBUTION").addParents(GEODE_VERBOSE);
-  Marker DISTRIBUTION_STATE_FLUSH_OP = MarkerManager.getMarker("DISTRIBUTION_STATE_FLUSH_OP")
-      .addParents(DISTRIBUTION, STATE_FLUSH_OP);
-  Marker DISTRIBUTION_BRIDGE_SERVER =
-      MarkerManager.getMarker("DISTRIBUTION_BRIDGE_SERVER").addParents(DISTRIBUTION, BRIDGE_SERVER);
-  Marker DISTRIBUTION_VIEWS =
-      MarkerManager.getMarker("DISTRIBUTION_VIEWS").addParents(DISTRIBUTION);
-  Marker DM = MarkerManager.getMarker("DM").addParents(DISTRIBUTION);
-  Marker DM_BRIDGE_SERVER = MarkerManager.getMarker("DM_BRIDGE").addParents(BRIDGE_SERVER, DM);
-  Marker DA = MarkerManager.getMarker("DA").addParents(DISTRIBUTION);
+  @Immutable
+  Marker SERIALIZER_VERBOSE =
+      MarkerManager.getMarker("SERIALIZER_VERBOSE").addParents(SERIALIZER_MARKER, GEODE_VERBOSE);
+  @Immutable
+  Marker SERIALIZER_ANNOUNCE_TYPE_WRITTEN_VERBOSE = MarkerManager
+      .getMarker("SERIALIZER_ANNOUNCE_TYPE_WRITTEN_VERBOSE").addParents(SERIALIZER_VERBOSE);
+  @Immutable
+  Marker SERIALIZER_WRITE_DSFID_VERBOSE =
+      MarkerManager.getMarker("SERIALIZER_WRITE_DSFID_VERBOSE").addParents(SERIALIZER_VERBOSE);
 
-  Marker GII = MarkerManager.getMarker("GII").addParents(GEODE_VERBOSE);
-  Marker GII_VERSIONED_ENTRY = MarkerManager.getMarker("GII_VERSION_ENTRY").addParents(GII);
+  @Immutable
+  Marker STATISTICS_VERBOSE =
+      MarkerManager.getMarker("STATISTICS_VERBOSE").addParents(STATISTICS_MARKER, GEODE_VERBOSE);
 
-  Marker JGROUPS = MarkerManager.getMarker("JGROUPS").addParents(GEODE_VERBOSE);
+  @Immutable
+  Marker STATE_FLUSH_OP_VERBOSE =
+      MarkerManager.getMarker("STATE_FLUSH_OP_VERBOSE").addParents(GEODE_VERBOSE);
 
-  Marker QA = MarkerManager.getMarker("QA").addParents(GEODE_VERBOSE);
+  @Immutable
+  Marker DISTRIBUTION_STATE_FLUSH_VERBOSE =
+      MarkerManager.getMarker("DISTRIBUTION_STATE_FLUSH_VERBOSE").addParents(DISTRIBUTION_MARKER,
+          STATE_FLUSH_OP_VERBOSE);
+  @Immutable
+  Marker DISTRIBUTION_BRIDGE_SERVER_VERBOSE =
+      MarkerManager.getMarker("DISTRIBUTION_BRIDGE_SERVER_VERBOSE").addParents(DISTRIBUTION_MARKER,
+          BRIDGE_SERVER_VERBOSE);
+  @Immutable
+  Marker DISTRIBUTION_ADVISOR_VERBOSE = MarkerManager.getMarker("DISTRIBUTION_ADVISOR_VERBOSE")
+      .addParents(DISTRIBUTION_MARKER, GEODE_VERBOSE);
 
-  Marker P2P = MarkerManager.getMarker("P2P").addParents(GEODE_VERBOSE);
+  @Immutable
+  Marker DM_VERBOSE =
+      MarkerManager.getMarker("DM_VERBOSE").addParents(DISTRIBUTION_MARKER, GEODE_VERBOSE);
+  @Immutable
+  Marker DM_BRIDGE_SERVER_VERBOSE = MarkerManager.getMarker("DM_BRIDGE_SERVER_VERBOSE")
+      .addParents(DM_VERBOSE, BRIDGE_SERVER_VERBOSE);
+  @Immutable
+  Marker EVENT_ID_TO_STRING_VERBOSE =
+      MarkerManager.getMarker("EVENT_ID_TO_STRING_VERBOSE").addParents(DM_BRIDGE_SERVER_VERBOSE);
 
-  Marker CONFIG = MarkerManager.getMarker("CONFIG");
+  @Immutable
+  Marker INITIAL_IMAGE_VERBOSE =
+      MarkerManager.getMarker("INITIAL_IMAGE_VERBOSE").addParents(GEODE_VERBOSE);
+  @Immutable
+  Marker INITIAL_IMAGE_VERSIONED_VERBOSE =
+      MarkerManager.getMarker("INITIAL_IMAGE_VERSIONED_VERBOSE").addParents(INITIAL_IMAGE_VERBOSE);
 
-  Marker PERSISTENCE = MarkerManager.getMarker("PERSISTENCE").addParents(GEODE_VERBOSE);
-  Marker DISK_STORE_MONITOR = MarkerManager.getMarker("DISK_STORE_MONITOR").addParents(PERSISTENCE);
-  Marker SOPLOG = MarkerManager.getMarker("SOPLOG").addParents(PERSISTENCE);
+  @Immutable
+  Marker MANAGED_ENTITY_VERBOSE =
+      MarkerManager.getMarker("MANAGED_ENTITY_VERBOSE").addParents(GEODE_VERBOSE);
 
-  Marker MANAGED_ENTITY = MarkerManager.getMarker("MANAGED_ENTITY").addParents(GEODE_VERBOSE);
-
-  Marker CACHE_XML = MarkerManager.getMarker("CACHE_XML").addParents(GEODE_VERBOSE);
-  Marker CACHE_XML_PARSER =
-      MarkerManager.getMarker("CACHE_XML_PARSER").addParents(GEODE_VERBOSE, CACHE_XML);
+  @Immutable
+  Marker VERSION_TAG_VERBOSE =
+      MarkerManager.getMarker("VERSION_TAG_VERBOSE").addParents(GEODE_VERBOSE);
+  @Immutable
+  Marker VERSIONED_OBJECT_LIST_VERBOSE =
+      MarkerManager.getMarker("VERSIONED_OBJECT_LIST_VERBOSE").addParents(GEODE_VERBOSE);
 }

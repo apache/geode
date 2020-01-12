@@ -26,7 +26,7 @@ If you have a large installation with many clients, you may want to disable sing
 Without single hop, the client uses whatever server connection is available, the same as with all other operations. The server that receives the request determines the data location and contacts the host, which might be a different server. So more multiple-hop requests are made to the server system.
 
 **Note:**
-Single hop is used for the following operations: `put`, `get`, `destroy`, `putAll`, `getAll`, `removeAll` and `onRegion` function execution.
+Single hop is used for the following operations: `put`, `get`, `destroy`, `invalidate`, `putAll`, `getAll`, `removeAll` and `onRegion` function execution.
 
 Even with single hop access enabled, you will occasionally see some multiple-hop behavior. To perform single-hop data access, clients automatically get metadata from the servers about where the entry buckets are hosted. The metadata is maintained lazily. It is only updated after a single-hop operation ends up needing multiple hops, an indicator of stale metadata in the client.
 

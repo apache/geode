@@ -14,14 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
+
 apply plugin: 'war'
 
+
+
 dependencies {
-    provided 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
+  compile(platform(project(':boms:geode-all-bom')))
+  compile('javax.servlet:javax.servlet-api')
 }
 
 war {
     version = ''
 }
-
-disableMavenPublishing()

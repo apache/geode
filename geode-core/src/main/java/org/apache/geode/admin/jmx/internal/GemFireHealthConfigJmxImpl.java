@@ -97,22 +97,27 @@ public class GemFireHealthConfigJmxImpl
     }
   }
 
+  @Override
   public String getMBeanName() {
     return this.mbeanName;
   }
 
+  @Override
   public ModelMBean getModelMBean() {
     return this.modelMBean;
   }
 
+  @Override
   public ObjectName getObjectName() {
     return this.objectName;
   }
 
+  @Override
   public void setModelMBean(ModelMBean modelMBean) {
     this.modelMBean = modelMBean;
   }
 
+  @Override
   public ManagedResourceType getManagedResourceType() {
     return ManagedResourceType.GEMFIRE_HEALTH_CONFIG;
   }
@@ -126,86 +131,106 @@ public class GemFireHealthConfigJmxImpl
 
   ////////////////////// MemberHealthConfig //////////////////////
 
+  @Override
   public long getMaxVMProcessSize() {
     return delegate.getMaxVMProcessSize();
   }
 
+  @Override
   public void setMaxVMProcessSize(long size) {
     delegate.setMaxVMProcessSize(size);
   }
 
+  @Override
   public long getMaxMessageQueueSize() {
     return delegate.getMaxMessageQueueSize();
   }
 
+  @Override
   public void setMaxMessageQueueSize(long maxMessageQueueSize) {
     delegate.setMaxMessageQueueSize(maxMessageQueueSize);
   }
 
+  @Override
   public long getMaxReplyTimeouts() {
     return delegate.getMaxReplyTimeouts();
   }
 
+  @Override
   public void setMaxReplyTimeouts(long maxReplyTimeouts) {
     delegate.setMaxReplyTimeouts(maxReplyTimeouts);
   }
 
+  @Override
   public double getMaxRetransmissionRatio() {
     return delegate.getMaxRetransmissionRatio();
   }
 
+  @Override
   public void setMaxRetransmissionRatio(double ratio) {
     delegate.setMaxRetransmissionRatio(ratio);
   }
 
   ////////////////////// CacheHealthConfig //////////////////////
 
+  @Override
   public long getMaxNetSearchTime() {
     return delegate.getMaxNetSearchTime();
   }
 
+  @Override
   public void setMaxNetSearchTime(long maxNetSearchTime) {
     delegate.setMaxNetSearchTime(maxNetSearchTime);
   }
 
+  @Override
   public long getMaxLoadTime() {
     return delegate.getMaxLoadTime();
   }
 
+  @Override
   public void setMaxLoadTime(long maxLoadTime) {
     delegate.setMaxLoadTime(maxLoadTime);
   }
 
+  @Override
   public double getMinHitRatio() {
     return delegate.getMinHitRatio();
   }
 
+  @Override
   public void setMinHitRatio(double minHitRatio) {
     delegate.setMinHitRatio(minHitRatio);
   }
 
+  @Override
   public long getMaxEventQueueSize() {
     return delegate.getMaxEventQueueSize();
   }
 
+  @Override
   public void setMaxEventQueueSize(long maxEventQueueSize) {
     delegate.setMaxEventQueueSize(maxEventQueueSize);
   }
 
   ////////////////////// GemFireHealthConfig //////////////////////
 
+  @Override
   public String getHostName() {
     return delegate.getHostName();
   }
 
+  @Override
   public void setHealthEvaluationInterval(int interval) {
     delegate.setHealthEvaluationInterval(interval);
   }
 
+  @Override
   public int getHealthEvaluationInterval() {
     return delegate.getHealthEvaluationInterval();
   }
 
+  @Override
   public void cleanupResource() {}
 
 }

@@ -12,23 +12,25 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.internal.offheap;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.LogWriter;
 import org.apache.geode.OutOfOffHeapMemoryException;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class DisconnectingOutOfOffHeapMemoryListenerJUnitTest {
 
   private final InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
@@ -65,7 +67,7 @@ public class DisconnectingOutOfOffHeapMemoryListenerJUnitTest {
     DisconnectingOutOfOffHeapMemoryListener listener =
         new DisconnectingOutOfOffHeapMemoryListener(ids);
     listener.outOfOffHeapMemory(ex);
-    verify(ids, never()).disconnect(ex.getMessage(), ex, false);
+    verify(ids, never()).disconnect(ex.getMessage(), false);
   }
 
   @Test
@@ -74,7 +76,7 @@ public class DisconnectingOutOfOffHeapMemoryListenerJUnitTest {
         new DisconnectingOutOfOffHeapMemoryListener(ids);
     listener.close();
     listener.outOfOffHeapMemory(ex);
-    verify(ids, never()).disconnect(ex.getMessage(), ex, false);
+    verify(ids, never()).disconnect(ex.getMessage(), false);
   }
 
   @Test
@@ -100,7 +102,7 @@ public class DisconnectingOutOfOffHeapMemoryListenerJUnitTest {
     DisconnectingOutOfOffHeapMemoryListener listener =
         new DisconnectingOutOfOffHeapMemoryListener(ids);
     listener.outOfOffHeapMemory(ex);
-    verify(ids, timeout(5000).atLeastOnce()).disconnect(ex.getMessage(), ex, false);
+    verify(ids, timeout(5000).atLeastOnce()).disconnect(ex.getMessage(), false);
     verify(lw).info("OffHeapStorage about to invoke disconnect on " + ids);
   }
 

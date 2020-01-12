@@ -14,25 +14,28 @@
  */
 package org.apache.geode.cache;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.Set;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.cache.util.CacheWriterAdapter;
 import org.apache.geode.compression.SnappyCompressor;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Tests the functionality of the {@link AttributesFactory} class.
  *
  * @since GemFire 3.0
  */
-@Category(UnitTest.class)
 public class AttributesFactoryJUnitTest {
 
   @Test
@@ -263,6 +266,7 @@ public class AttributesFactoryJUnitTest {
     assertNotNull(diskSizes);
     assertEquals(1, diskSizes.length);
     assertEquals(DiskStoreFactory.DEFAULT_DISK_DIR_SIZE, diskSizes[0]);
+    assertTrue(attrs.getConcurrencyChecksEnabled());
   }
 
   @Test
@@ -389,10 +393,12 @@ public class AttributesFactoryJUnitTest {
   @Test
   public void testConnectionPool() {
     CacheLoader cl = new CacheLoader() {
+      @Override
       public Object load(LoaderHelper helper) throws CacheLoaderException {
         return null;
       }
 
+      @Override
       public void close() {}
     };
 
@@ -415,5 +421,37 @@ public class AttributesFactoryJUnitTest {
    */
   private static class MyCacheListener extends CacheListenerAdapter {
     // empty impl
+  }
+
+  @Test
+  public void addsGatewaySenderId() {
+    AttributesFactory factory = new AttributesFactory();
+    factory.addGatewaySenderId("someSenderId");
+    RegionAttributes regionAttributes = factory.create();
+    Set gatewaySenderIds = regionAttributes.getGatewaySenderIds();
+
+    assertTrue(gatewaySenderIds.contains("someSenderId"));
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void addingNullGatewaySenderIdThrowsException() {
+    AttributesFactory factory = new AttributesFactory();
+    factory.addGatewaySenderId(null);
+  }
+
+  @Test
+  public void addsAsyncEventQueueId() {
+    AttributesFactory factory = new AttributesFactory();
+    factory.addAsyncEventQueueId("someId");
+    RegionAttributes regionAttributes = factory.create();
+    Set asyncEventQueueIds = regionAttributes.getAsyncEventQueueIds();
+
+    assertTrue(asyncEventQueueIds.contains("someId"));
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void addingNullAsyncEventQueueIdThrowsException() {
+    AttributesFactory factory = new AttributesFactory();
+    factory.addAsyncEventQueueId(null);
   }
 }

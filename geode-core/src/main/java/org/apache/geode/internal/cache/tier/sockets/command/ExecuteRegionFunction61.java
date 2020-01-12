@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionException;
@@ -42,8 +43,6 @@ import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
 
@@ -54,6 +53,7 @@ import org.apache.geode.internal.security.SecurityService;
  */
 public class ExecuteRegionFunction61 extends BaseCommand {
 
+  @Immutable
   private static final ExecuteRegionFunction61 singleton = new ExecuteRegionFunction61();
 
   public static Command getCommand() {
@@ -82,7 +82,7 @@ public class ExecuteRegionFunction61 extends BaseCommand {
         serverConnection.setAsTrue(REQUIRES_RESPONSE);
         serverConnection.setAsTrue(REQUIRES_CHUNKED_RESPONSE);
       }
-      regionName = clientMessage.getPart(1).getString();
+      regionName = clientMessage.getPart(1).getCachedString();
       function = clientMessage.getPart(2).getStringOrObject();
       args = clientMessage.getPart(3).getObject();
       Part part = clientMessage.getPart(4);
@@ -115,9 +115,9 @@ public class ExecuteRegionFunction61 extends BaseCommand {
       }
 
     } catch (ClassNotFoundException exception) {
-      logger.warn(LocalizedMessage.create(
-          LocalizedStrings.ExecuteRegionFunction_EXCEPTION_ON_SERVER_WHILE_EXECUTIONG_FUNCTION_0,
-          function), exception);
+      logger.warn(String.format("Exception on server while executing function : %s",
+          function),
+          exception);
       if (hasResult == 1) {
         writeChunkedException(clientMessage, exception, serverConnection);
         serverConnection.setAsTrue(RESPONDED);
@@ -128,13 +128,13 @@ public class ExecuteRegionFunction61 extends BaseCommand {
       String message = null;
       if (function == null) {
         message =
-            LocalizedStrings.ExecuteRegionFunction_THE_INPUT_0_FOR_THE_EXECUTE_FUNCTION_REQUEST_IS_NULL
-                .toLocalizedString("function");
+            String.format("The input %s for the execute function request is null",
+                "function");
       }
       if (regionName == null) {
         message =
-            LocalizedStrings.ExecuteRegionFunction_THE_INPUT_0_FOR_THE_EXECUTE_FUNCTION_REQUEST_IS_NULL
-                .toLocalizedString("region");
+            String.format("The input %s for the execute function request is null",
+                "region");
       }
       logger.warn("{}: {}", serverConnection.getName(), message);
       sendError(hasResult, clientMessage, message, serverConnection);
@@ -143,8 +143,8 @@ public class ExecuteRegionFunction61 extends BaseCommand {
       Region region = crHelper.getRegion(regionName);
       if (region == null) {
         String message =
-            LocalizedStrings.ExecuteRegionFunction_THE_REGION_NAMED_0_WAS_NOT_FOUND_DURING_EXECUTE_FUNCTION_REQUEST
-                .toLocalizedString(regionName);
+            String.format("The region named %s was not found during execute Function request.",
+                regionName);
         logger.warn("{}: {}", serverConnection.getName(), message);
         sendError(hasResult, clientMessage, message, serverConnection);
         return;
@@ -159,8 +159,8 @@ public class ExecuteRegionFunction61 extends BaseCommand {
           functionObject = FunctionService.getFunction((String) function);
           if (functionObject == null) {
             String message =
-                LocalizedStrings.ExecuteRegionFunction_THE_FUNCTION_0_HAS_NOT_BEEN_REGISTERED
-                    .toLocalizedString(function);
+                String.format("The function, %s, has not been registered",
+                    function);
             logger.warn("{}: {}", serverConnection.getName(), message);
             sendError(hasResult, clientMessage, message, serverConnection);
             return;
@@ -169,7 +169,7 @@ public class ExecuteRegionFunction61 extends BaseCommand {
           functionObject = (Function) function;
         }
         // check if the caller is authorized to do this operation on server
-        functionObject.getRequiredPermissions(regionName).forEach(securityService::authorize);
+        functionObject.getRequiredPermissions(regionName, args).forEach(securityService::authorize);
 
         AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
         final String functionName = functionObject.getId();
@@ -218,12 +218,10 @@ public class ExecuteRegionFunction61 extends BaseCommand {
           }
         }
       } catch (IOException ioe) {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.ExecuteRegionFunction_EXCEPTION_ON_SERVER_WHILE_EXECUTIONG_FUNCTION_0,
-            function), ioe);
-        final String message =
-            LocalizedStrings.ExecuteRegionFunction_SERVER_COULD_NOT_SEND_THE_REPLY
-                .toLocalizedString();
+        logger.warn(String.format("Exception on server while executing function : %s",
+            function),
+            ioe);
+        final String message = "Server could not send the reply";
         sendException(hasResult, clientMessage, message, serverConnection, ioe);
       } catch (FunctionException fe) {
         String message = fe.getMessage();
@@ -241,33 +239,36 @@ public class ExecuteRegionFunction61 extends BaseCommand {
             // 3> Multiple target nodes found for single hop operation
             // 4> in case of HA member departed
             if (logger.isDebugEnabled()) {
-              logger.debug(LocalizedMessage.create(
-                  LocalizedStrings.ExecuteFunction_EXCEPTION_ON_SERVER_WHILE_EXECUTIONG_FUNCTION_0,
-                  new Object[] {function}), fe);
+              logger.debug(String.format("Exception on server while executing function: %s",
+                  new Object[] {function}),
+                  fe);
             }
           } else if (functionObject.isHA()) {
-            logger.warn(LocalizedMessage.create(
-                LocalizedStrings.ExecuteRegionFunction_EXCEPTION_ON_SERVER_WHILE_EXECUTIONG_FUNCTION_0,
-                function + " :" + message));
+            logger.warn("Exception on server while executing function : " +
+                function + " :" + message);
           } else {
-            logger.warn(LocalizedMessage.create(
-                LocalizedStrings.ExecuteRegionFunction_EXCEPTION_ON_SERVER_WHILE_EXECUTIONG_FUNCTION_0,
-                function), fe);
+            logger.warn(String.format("Exception on server while executing function : %s",
+                function),
+                fe);
           }
           resultSender.setException(fe);
         } else {
-          logger.warn(LocalizedMessage.create(
-              LocalizedStrings.ExecuteRegionFunction_EXCEPTION_ON_SERVER_WHILE_EXECUTIONG_FUNCTION_0,
-              function), fe);
-          sendException(hasResult, clientMessage, message, serverConnection, fe);
+          if (setLastResultReceived(resultSender)) {
+            logger.warn(String.format("Exception on server while executing function : %s",
+                function),
+                fe);
+            sendException(hasResult, clientMessage, message, serverConnection, fe);
+          }
         }
 
       } catch (Exception e) {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.ExecuteRegionFunction_EXCEPTION_ON_SERVER_WHILE_EXECUTIONG_FUNCTION_0,
-            function), e);
-        String message = e.getMessage();
-        sendException(hasResult, clientMessage, message, serverConnection, e);
+        if (setLastResultReceived(resultSender)) {
+          logger.warn(String.format("Exception on server while executing function : %s",
+              function),
+              e);
+          String message = e.getMessage();
+          sendException(hasResult, clientMessage, message, serverConnection, e);
+        }
       }
 
       finally {

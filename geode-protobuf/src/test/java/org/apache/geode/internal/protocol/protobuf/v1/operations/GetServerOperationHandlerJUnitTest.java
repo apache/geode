@@ -16,7 +16,6 @@ package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
 import static org.apache.geode.internal.protocol.protobuf.v1.BasicTypes.ErrorCode.NO_AVAILABLE_SERVER;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -40,9 +39,9 @@ import org.apache.geode.internal.protocol.protobuf.v1.LocatorAPI.GetServerRespon
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufRequestUtilities;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
-import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 
-@Category(UnitTest.class)
+@Category({ClientServerTest.class})
 public class GetServerOperationHandlerJUnitTest extends OperationHandlerJUnitTest {
   final String HOSTNAME = "hostname";
   final int PORT = 12345;

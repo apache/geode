@@ -15,16 +15,10 @@
 package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
 import java.util.List;
-import java.util.Set;
 
-import com.google.protobuf.ProtocolStringList;
-
-import org.apache.geode.cache.execute.Execution;
-import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
-import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
-import org.apache.geode.internal.protocol.protobuf.v1.Failure;
+import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
+import org.apache.geode.internal.protocol.protobuf.v1.FunctionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.FunctionAPI.ExecuteFunctionOnGroupRequest;
 import org.apache.geode.internal.protocol.protobuf.v1.FunctionAPI.ExecuteFunctionOnGroupResponse;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
@@ -34,84 +28,38 @@ import org.apache.geode.internal.protocol.protobuf.v1.Success;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 
-public class ExecuteFunctionOnGroupRequestOperationHandler extends
-    AbstractFunctionRequestOperationHandler<ExecuteFunctionOnGroupRequest, ExecuteFunctionOnGroupResponse> {
-
+public class ExecuteFunctionOnGroupRequestOperationHandler implements
+    ProtobufOperationHandler<ExecuteFunctionOnGroupRequest, ExecuteFunctionOnGroupResponse> {
 
   @Override
-  protected Set<?> parseFilter(ProtobufSerializationService serializationService,
-      ExecuteFunctionOnGroupRequest request) {
-    // filters are not allowed on functions not associated with regions
-    return null;
+  public Result<FunctionAPI.ExecuteFunctionOnGroupResponse> process(
+      ProtobufSerializationService serializationService,
+      FunctionAPI.ExecuteFunctionOnGroupRequest request,
+      MessageExecutionContext messageExecutionContext)
+      throws InvalidExecutionContextException, DecodingException, EncodingException {
+
+    final String functionID = request.getFunctionID();
+    List<String> memberNameList = request.getGroupNameList();
+    Object arguments = getFunctionArguments(request, serializationService);
+
+    List<Object> results = messageExecutionContext.getSecureCache().getFunctionService()
+        .executeFunctionOnGroups(functionID, arguments, memberNameList);
+
+    final FunctionAPI.ExecuteFunctionOnGroupResponse.Builder responseMessage =
+        FunctionAPI.ExecuteFunctionOnGroupResponse.newBuilder();
+
+    results.stream().map(serializationService::encode).forEach(responseMessage::addResults);
+
+    return Success.of(responseMessage.build());
   }
 
-  @Override
-  protected String getFunctionID(ExecuteFunctionOnGroupRequest request) {
-    return request.getFunctionID();
-  }
-
-  @Override
-  protected String getRegionName(ExecuteFunctionOnGroupRequest request) {
-    // region name is not allowed in onMember invocation
-    return null;
-  }
-
-  @Override
-  protected Object getExecutionTarget(ExecuteFunctionOnGroupRequest request, String regionName,
-      MessageExecutionContext executionContext) throws InvalidExecutionContextException {
-
-    ProtocolStringList groupList = request.getGroupNameList();
-
-    // unfortunately FunctionServiceManager throws a FunctionException if there are no
-    // servers matching any of the given groups. In order to distinguish between
-    // function execution failure and this condition we have to preprocess the groups
-    // and ensure that there is at least one server that has one of the given groups
-    DistributedSystem distributedSystem =
-        executionContext.getCache().getDistributionManager().getSystem();
-    boolean foundMatch = false;
-    for (String group : groupList) {
-      if (distributedSystem.getGroupMembers(group).size() > 0) {
-        foundMatch = true;
-        break;
-      }
-    }
-    if (!foundMatch) {
-      return Failure.of(BasicTypes.ErrorCode.NO_AVAILABLE_SERVER, "No server  in groups "
-          + groupList + " could be found to execute \"" + request.getFunctionID() + "\"");
-    }
-    return groupList;
-  }
-
-  @Override
-  protected Object getFunctionArguments(ExecuteFunctionOnGroupRequest request,
+  private Object getFunctionArguments(ExecuteFunctionOnGroupRequest request,
       ProtobufSerializationService serializationService) throws DecodingException {
     if (request.hasArguments()) {
       return serializationService.decode(request.getArguments());
     } else {
       return null;
     }
-  }
-
-  @Override
-  protected Execution getFunctionExecutionObject(Object executionTarget) {
-    ProtocolStringList groupList = (ProtocolStringList) executionTarget;
-    return FunctionService.onMember(groupList.toArray(new String[0]));
-  }
-
-  @Override
-  protected Result buildResultMessage(ProtobufSerializationService serializationService,
-      List<Object> results) throws EncodingException {
-    final ExecuteFunctionOnGroupResponse.Builder responseMessage =
-        ExecuteFunctionOnGroupResponse.newBuilder();
-    for (Object result : results) {
-      responseMessage.addResults(serializationService.encode(result));
-    }
-    return Success.of(responseMessage.build());
-  }
-
-  @Override
-  protected Result buildResultMessage(ProtobufSerializationService serializationService) {
-    return Success.of(ExecuteFunctionOnGroupResponse.newBuilder().build());
   }
 
 }

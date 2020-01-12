@@ -19,6 +19,7 @@ package org.apache.geode.cache;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.cache.tier.sockets.InterestResultPolicyImpl;
 
 /**
@@ -35,18 +36,21 @@ import org.apache.geode.internal.cache.tier.sockets.InterestResultPolicyImpl;
 public class InterestResultPolicy implements Serializable {
   private static final long serialVersionUID = -4993765891973030160L;
 
-  private static byte nextOrdinal = 0;
-
+  @Immutable
   private static final InterestResultPolicy[] VALUES = new InterestResultPolicy[3];
 
-  public static final InterestResultPolicy NONE = new InterestResultPolicyImpl("NONE");
-  public static final InterestResultPolicy KEYS = new InterestResultPolicyImpl("KEYS");
+  @Immutable
+  public static final InterestResultPolicy NONE = new InterestResultPolicyImpl("NONE", 0);
+  @Immutable
+  public static final InterestResultPolicy KEYS = new InterestResultPolicyImpl("KEYS", 1);
+  @Immutable
   public static final InterestResultPolicy KEYS_VALUES =
-      new InterestResultPolicyImpl("KEYS_VALUES");
+      new InterestResultPolicyImpl("KEYS_VALUES", 2);
 
   /**
    * The <code>InterestResultPolicy</code> used by default; it is {@link #KEYS_VALUES}.
    */
+  @Immutable
   public static final InterestResultPolicy DEFAULT = KEYS_VALUES;
 
 
@@ -62,9 +66,9 @@ public class InterestResultPolicy implements Serializable {
 
 
   /** should only be called from InterestResultPolicyImpl */
-  protected InterestResultPolicy(String name) {
+  protected InterestResultPolicy(String name, int ordinal) {
     this.name = name;
-    this.ordinal = nextOrdinal++;
+    this.ordinal = (byte) ordinal;
     VALUES[this.ordinal] = this;
   }
 

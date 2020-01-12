@@ -20,17 +20,12 @@ import static org.junit.Assert.assertFalse;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * DistributionLocatorId Tester.
  */
-@Category(UnitTest.class)
 public class DistributionLocatorIdJUnitTest {
 
   @Test

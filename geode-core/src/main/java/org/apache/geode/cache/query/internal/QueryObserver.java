@@ -14,9 +14,13 @@
  */
 package org.apache.geode.cache.query.internal;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Set;
 
-import org.apache.geode.cache.query.*;
+import org.apache.geode.cache.query.Aggregator;
+import org.apache.geode.cache.query.Index;
+import org.apache.geode.cache.query.Query;
+import org.apache.geode.cache.query.SelectResults;
 
 /**
  * This interface is used by testing/debugging code to be notified of query events. See the
@@ -265,24 +269,10 @@ public interface QueryObserver {
    */
   void afterIterJoinOfSingleIndexResults(Collection finalResult);
 
-  /**
-   *
-   * @param preProjectionAppliedResult
-   */
   void beforeApplyingProjectionOnFilterEvaluatedResults(Object preProjectionAppliedResult);
 
-  /**
-   *
-   * @param sr1
-   * @param sr2
-   */
   void invokedQueryUtilsUnion(SelectResults sr1, SelectResults sr2);
 
-  /**
-   *
-   * @param sr1
-   * @param sr2
-   */
   void invokedQueryUtilsIntersection(SelectResults sr1, SelectResults sr2);
 
   void limitAppliedAtIndexLevel(Index index, int limit, Collection indexResult);
@@ -293,4 +283,15 @@ public interface QueryObserver {
    */
   void orderByColumnsEqual();
 
+  /**
+   * Invoked after the CompiledSelect has been evaluated but before applying the aggregate
+   * functions and group by.
+   *
+   * @param selectResults The result set before applying the aggregations.
+   *
+   * @see Aggregator
+   * @see CompiledGroupBySelect
+   */
+  default void beforeAggregationsAndGroupBy(
+      @SuppressWarnings("unused") SelectResults selectResults) {}
 }

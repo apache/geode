@@ -14,7 +14,9 @@
  */
 package org.apache.geode.internal.util.concurrent;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -24,12 +26,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.Timeout;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
 public class ReentrantSemaphoreJUnitTest {
 
   private static final long OPERATION_TIMEOUT_MILLIS = 10 * 1000;
@@ -70,6 +69,7 @@ public class ReentrantSemaphoreJUnitTest {
     final AtomicReference<Throwable> failure = new AtomicReference<>();
 
     Thread t1 = new Thread() {
+      @Override
       public void run() {
         try {
           sem.acquire();
@@ -88,6 +88,7 @@ public class ReentrantSemaphoreJUnitTest {
     t1.start();
 
     Thread t2 = new Thread() {
+      @Override
       public void run() {
         try {
           sem.acquire();
@@ -106,6 +107,7 @@ public class ReentrantSemaphoreJUnitTest {
     t2.start();
 
     Thread t3 = new Thread() {
+      @Override
       public void run() {
         try {
           assertTrue(acquired.await(OPERATION_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS));

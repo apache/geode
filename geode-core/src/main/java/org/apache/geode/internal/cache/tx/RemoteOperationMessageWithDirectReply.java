@@ -45,14 +45,17 @@ public abstract class RemoteOperationMessageWithDirectReply extends RemoteOperat
     this.processor = processor;
   }
 
+  @Override
   public boolean supportsDirectAck() {
     return true;
   }
 
+  @Override
   public DirectReplyProcessor getDirectReplyProcessor() {
     return processor;
   }
 
+  @Override
   public void registerProcessor() {
     this.processorId = processor.register();
   }

@@ -16,13 +16,12 @@ package org.apache.geode.internal.sequencelog;
 
 import java.util.regex.Pattern;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
-/**
- *
- */
 public class MembershipLogger {
 
+  @Immutable
   private static final SequenceLogger GRAPH_LOGGER = SequenceLoggerImpl.getInstance();
   private static final Pattern ALL = Pattern.compile(".*");
 

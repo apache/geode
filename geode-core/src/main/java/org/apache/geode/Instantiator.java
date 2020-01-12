@@ -17,7 +17,6 @@ package org.apache.geode;
 import org.apache.geode.internal.InternalInstantiator;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * {@code Instantiator} allows classes that implement {@link DataSerializable} to be registered with
@@ -191,18 +190,18 @@ public abstract class Instantiator {
   public Instantiator(Class<? extends DataSerializable> c, int classId) {
     if (c == null) {
       throw new NullPointerException(
-          LocalizedStrings.Instantiator_CANNOT_REGISTER_A_NULL_CLASS.toLocalizedString());
+          "Cannot register a null class.");
     }
 
     if (!DataSerializable.class.isAssignableFrom(c)) {
       throw new IllegalArgumentException(
-          LocalizedStrings.Instantiator_CLASS_0_DOES_NOT_IMPLEMENT_DATASERIALIZABLE
-              .toLocalizedString(c.getName()));
+          String.format("Class %s does not implement DataSerializable",
+              c.getName()));
     }
 
     if (classId == 0) {
       throw new IllegalArgumentException(
-          LocalizedStrings.Instantiator_CLASS_ID_0_MUST_NOT_BE_0.toLocalizedString(classId));
+          String.format("Class id %s must not be 0.", classId));
     }
 
     this.clazz = c;
