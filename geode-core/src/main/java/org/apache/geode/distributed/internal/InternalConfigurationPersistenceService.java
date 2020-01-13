@@ -711,7 +711,7 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
     try {
       File[] groupNames = configDir.listFiles((FileFilter) DirectoryFileFilter.INSTANCE);
       boolean needToCopyJars = true;
-      if (configDir.getAbsolutePath().equals(configDirPath)) {
+      if (configDir.getAbsolutePath().equals(configDirPath.toAbsolutePath().toString())) {
         needToCopyJars = false;
       }
 
@@ -761,7 +761,7 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
     FileUtils.writeStringToFile(xmlFile, configuration.getCacheXmlContent(), "UTF-8");
 
     // copy the jars if the rootDir is different than the configDirPath
-    if (rootDir.getAbsolutePath().equals(configDirPath)) {
+    if (rootDir.getAbsolutePath().equals(configDirPath.toAbsolutePath().toString())) {
       return;
     }
 
