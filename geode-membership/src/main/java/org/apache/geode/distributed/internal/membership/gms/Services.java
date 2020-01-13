@@ -14,7 +14,6 @@
  */
 package org.apache.geode.distributed.internal.membership.gms;
 
-import static org.apache.geode.internal.serialization.DataSerializableFixedID.DISTRIBUTED_MEMBER;
 import static org.apache.geode.internal.serialization.DataSerializableFixedID.FINAL_CHECK_PASSED_MESSAGE;
 import static org.apache.geode.internal.serialization.DataSerializableFixedID.FIND_COORDINATOR_REQ;
 import static org.apache.geode.internal.serialization.DataSerializableFixedID.FIND_COORDINATOR_RESP;
@@ -37,7 +36,6 @@ import java.util.Timer;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.api.Authenticator;
 import org.apache.geode.distributed.internal.membership.api.MemberDisconnectedException;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
@@ -168,7 +166,6 @@ public class Services<ID extends MemberIdentifier> {
     serializer.registerDSFID(LEAVE_REQUEST_MESSAGE, LeaveRequestMessage.class);
     serializer.registerDSFID(VIEW_ACK_MESSAGE, ViewAckMessage.class);
     serializer.registerDSFID(INSTALL_VIEW_MESSAGE, InstallViewMessage.class);
-    serializer.registerDSFID(DISTRIBUTED_MEMBER, InternalDistributedMember.class);
     serializer.registerDSFID(NETVIEW, GMSMembershipView.class);
     serializer.registerDSFID(GET_VIEW_REQ, GetViewRequest.class);
     serializer.registerDSFID(GET_VIEW_RESP, GetViewResponse.class);

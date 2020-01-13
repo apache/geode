@@ -67,7 +67,7 @@ import org.jgroups.stack.IpAddress;
 import org.jgroups.util.Digest;
 import org.jgroups.util.UUID;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.membership.api.CacheOperationMessageMarker;
 import org.apache.geode.distributed.internal.membership.api.MemberData;
 import org.apache.geode.distributed.internal.membership.api.MemberDisconnectedException;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
@@ -89,7 +89,6 @@ import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordina
 import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordinatorResponse;
 import org.apache.geode.distributed.internal.membership.gms.messages.JoinRequestMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.JoinResponseMessage;
-import org.apache.geode.internal.cache.DistributedCacheOperation;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.serialization.BufferDataOutputStream;
 import org.apache.geode.internal.serialization.StaticSerialization;
@@ -268,12 +267,12 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
     }
 
     if (config.isMulticastEnabled() || config.getDisableTcp()
-        || (config.getUdpRecvBufferSize() != DistributionConfig.DEFAULT_UDP_RECV_BUFFER_SIZE)) {
+        || (config.getUdpRecvBufferSize() != MembershipConfig.DEFAULT_UDP_RECV_BUFFER_SIZE)) {
       properties =
           replaceStrings(properties, "UDP_RECV_BUFFER_SIZE", "" + config.getUdpRecvBufferSize());
     } else {
       properties = replaceStrings(properties, "UDP_RECV_BUFFER_SIZE",
-          "" + DistributionConfig.DEFAULT_UDP_RECV_BUFFER_SIZE_REDUCED);
+          "" + MembershipConfig.DEFAULT_UDP_RECV_BUFFER_SIZE_REDUCED);
     }
     properties =
         replaceStrings(properties, "UDP_SEND_BUFFER_SIZE", "" + config.getUdpSendBufferSize());
@@ -1307,7 +1306,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
         // problems
         if ((services.getConfig()
             .getVmKind() == MemberIdentifier.ADMIN_ONLY_DM_TYPE)
-            && (msg instanceof DistributedCacheOperation.CacheOperationMessage)) {
+            && (msg instanceof CacheOperationMessageMarker)) {
           return;
         }
 

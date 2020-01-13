@@ -52,7 +52,6 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.Logger;
 import org.jgroups.util.UUID;
 
-import org.apache.geode.GemFireConfigException;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.api.MemberStartupException;
 import org.apache.geode.distributed.internal.membership.api.MembershipClosedException;
@@ -582,7 +581,7 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
       } catch (IOException e) {
         // this is expected if it is a connection-timeout or other failure
         // to connect
-      } catch (IllegalStateException | GemFireConfigException e) {
+      } catch (IllegalStateException e) {
         if (!isStopping) {
           logger.trace("Unexpected exception", e);
         }

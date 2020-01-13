@@ -14,8 +14,6 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.membership;
 
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
 import static org.apache.geode.distributed.internal.membership.api.MembershipConfig.MEMBER_REQUEST_COLLECTION_INTERVAL;
 import static org.apache.geode.internal.serialization.DataSerializableFixedID.JOIN_REQUEST;
 import static org.apache.geode.internal.serialization.DataSerializableFixedID.LEAVE_REQUEST_MESSAGE;
@@ -44,7 +42,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.api.MemberStartupException;
 import org.apache.geode.distributed.internal.membership.api.MembershipClosedException;
@@ -1808,8 +1805,9 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
         && StringUtils.isBlank(config.getStartLocator())) {
       throw new MembershipConfigurationException(
           "Multicast cannot be configured for a non-distributed cache."
-              + "  Please configure the locator services for this cache using " + LOCATORS + " or "
-              + START_LOCATOR + ".");
+              + "  Please configure the locator services for this cache using "
+              + MembershipConfig.LOCATORS + " or "
+              + MembershipConfig.START_LOCATOR + ".");
     }
 
     services.getMessenger().addHandler(JoinRequestMessage.class, this::processMessage);
@@ -2578,9 +2576,9 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
             // if I am not a locator and the conflicting view is from a locator I should
             // let it take control and stop sending membership views
             if (localAddress.getMemberData()
-                .getVmKind() != ClusterDistributionManager.LOCATOR_DM_TYPE
+                .getVmKind() != MemberIdentifier.LOCATOR_DM_TYPE
                 && conflictingView.getCreator().getMemberData()
-                    .getVmKind() == ClusterDistributionManager.LOCATOR_DM_TYPE) {
+                    .getVmKind() == MemberIdentifier.LOCATOR_DM_TYPE) {
               logger.info("View preparation interrupted - a locator is taking over as "
                   + "membership coordinator in this view: {}", conflictingView);
               abandonedViews++;

@@ -5,6 +5,7 @@ geode-cq-0.0.0.jar
 geode-gfsh-0.0.0.jar
 geode-log4j-0.0.0.jar
 geode-logging-0.0.0.jar
+geode-membership-0.0.0.jar
 geode-lucene-0.0.0.jar
 geode-management-0.0.0.jar
 geode-memcached-0.0.0.jar
