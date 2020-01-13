@@ -105,12 +105,12 @@ public class ExecuteCQ61 extends BaseCQCommand {
       }
     }
 
-    DefaultQueryService qService = null;
-    CqServiceImpl cqServiceForExec = null;
-    Query query = null;
-    Set cqRegionNames = null;
+    DefaultQueryService qService;
+    CqServiceImpl cqServiceForExec;
+    Query query;
+    Set cqRegionNames;
     ExecuteCQOperationContext executeCQContext = null;
-    ServerCQImpl cqQuery = null;
+    ServerCQImpl cqQuery;
 
     try {
       qService = (DefaultQueryService) crHelper.getCache().getLocalQueryService();
@@ -135,7 +135,7 @@ public class ExecuteCQ61 extends BaseCQCommand {
 
       // auth check to see if user can create CQ or not
       ((DefaultQuery) query).getRegionsInQuery(null).forEach((regionName) -> securityService
-          .authorize(Resource.DATA, Operation.READ, (String) regionName));
+          .authorize(Resource.DATA, Operation.READ, regionName));
 
       // test hook to trigger vMotion during CQ registration
       if (CqServiceProvider.VMOTION_DURING_CQ_REGISTRATION_FLAG) {
