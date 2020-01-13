@@ -135,6 +135,9 @@ public class AvailableConnectionManager {
 
     @Override
     public boolean equals(Object o) {
+      if (!(o instanceof PooledConnection)) {
+        return false;
+      }
       PooledConnection pooledConnection = (PooledConnection) o;
       if (predicate.test(pooledConnection)) {
         this.connectionThatMatched = pooledConnection;

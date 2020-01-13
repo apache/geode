@@ -209,6 +209,9 @@ public class Part {
 
     @Override
     public boolean equals(Object obj) {
+      if (!(obj instanceof ByteArrayKey)) {
+        return false;
+      }
       ByteArrayKey other = (ByteArrayKey) obj;
       return Arrays.equals(bytes, other.bytes);
     }
