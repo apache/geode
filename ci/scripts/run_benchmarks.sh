@@ -37,7 +37,7 @@ RESULTS_DIR=$(pwd)/results/benchmarks-${CLUSTER_TAG}
 CLUSTER_COUNT=4
 BENCHMARKS_BRANCH=${BENCHMARKS_BRANCH:-develop}
 
-GEODE_REPO=${GEODE_REPO:-apache/geode}
+GEODE_REPO=${GEODE_REPO:-$(cd geode && git remote get-url origin)}
 BASELINE_REPO=${BASELINE_REPO:-${GEODE_REPO}}
 
 pushd geode
