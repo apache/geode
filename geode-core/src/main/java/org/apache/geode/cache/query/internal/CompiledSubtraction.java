@@ -18,8 +18,8 @@ import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 
 public class CompiledSubtraction extends CompiledArithmetic implements OQLLexerTokenTypes {
 
-  CompiledSubtraction(CompiledValue left, CompiledValue right, int op) {
-    super(left, right, op);
+  CompiledSubtraction(CompiledValue left, CompiledValue right) {
+    super(left, right);
   }
 
   @Override

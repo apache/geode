@@ -22,8 +22,8 @@ import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
  */
 public class CompiledMod extends CompiledArithmetic implements OQLLexerTokenTypes {
 
-  CompiledMod(CompiledValue left, CompiledValue right, int op) {
-    super(left, right, op);
+  CompiledMod(CompiledValue left, CompiledValue right) {
+    super(left, right);
   }
 
   @Override

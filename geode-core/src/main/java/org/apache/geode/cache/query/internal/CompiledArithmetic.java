@@ -37,13 +37,11 @@ public abstract class CompiledArithmetic extends AbstractCompiledValue
   // persistent inst vars
   public final CompiledValue _left;
   public final CompiledValue _right;
-  private int _operator;
 
-  CompiledArithmetic(CompiledValue left, CompiledValue right, int op) {
+  CompiledArithmetic(CompiledValue left, CompiledValue right) {
     // invariant:
     _left = left;
     _right = right;
-    _operator = op;
   }
 
   /* ******** CompiledValue Methods **************** */
