@@ -84,11 +84,11 @@ public class GfshCommandRule extends DescribedExternalResource {
   private CommandResult commandResult;
 
   public GfshCommandRule() {
-    createTempFolder();
+    this(null, null);
   }
 
   public GfshCommandRule(Supplier<Integer> portSupplier, PortType portType) {
-    this();
+    createTempFolder();
     this.portType = portType;
     this.portSupplier = portSupplier;
   }
