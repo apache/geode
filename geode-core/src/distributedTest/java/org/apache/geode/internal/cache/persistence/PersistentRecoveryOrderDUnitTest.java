@@ -1003,7 +1003,7 @@ public class PersistentRecoveryOrderDUnitTest extends CacheTestCase {
 
     vm1.invoke(() -> {
       SLEEP.get().countDown();
-      await().untilAsserted(() -> {
+      await().ignoreException(RegionDestroyedException.class).untilAsserted(() -> {
         assertThat(getCache().getRegion(regionName)).isNull();
       });
     });
