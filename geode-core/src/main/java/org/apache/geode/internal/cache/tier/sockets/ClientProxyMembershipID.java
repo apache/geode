@@ -36,6 +36,7 @@ import org.apache.geode.distributed.DurableClientAttributes;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
@@ -372,7 +373,7 @@ public class ClientProxyMembershipID
       memberIdAsString = idm.toString();
     } else {
       StringBuilder sb = new StringBuilder();
-      idm.addFixedToString(sb);
+      idm.addFixedToString(sb, !SocketCreator.resolve_dns);
       memberIdAsString = sb.toString();
     }
     return memberIdAsString;

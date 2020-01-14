@@ -394,7 +394,7 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
     String result = cachedToString;
     if (result == null) {
       final StringBuilder sb = new StringBuilder();
-      addFixedToString(sb);
+      addFixedToString(sb, false);
 
       // add version if not current
       short version = memberData.getVersionOrdinal();
@@ -410,13 +410,13 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
     return result;
   }
 
-  public void addFixedToString(StringBuilder sb) {
+  public void addFixedToString(StringBuilder sb, boolean useIpAddress) {
     // Note: This method is used to generate the HARegion name. If it is changed, memory and GII
     // issues will occur in the case of clients with subscriptions during rolling upgrade.
     String host;
 
     InetAddress add = getInetAddress();
-    if (add.isMulticastAddress())
+    if (add.isMulticastAddress() || useIpAddress)
       host = add.getHostAddress();
     else {
       String hostName = memberData.getHostName();
@@ -940,7 +940,7 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
 
   public String getUniqueId() {
     StringBuilder sb = new StringBuilder();
-    addFixedToString(sb);
+    addFixedToString(sb, false);
 
     // add version if not current
     short version = memberData.getVersionOrdinal();
