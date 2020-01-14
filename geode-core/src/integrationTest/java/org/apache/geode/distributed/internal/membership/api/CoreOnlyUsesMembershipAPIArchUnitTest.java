@@ -105,12 +105,10 @@ public class CoreOnlyUsesMembershipAPIArchUnitTest {
 
   private void checkMembershipAPIUse(JavaClasses importedClasses) {
     ArchRule myRule = layeredArchitecture()
-        .layer("adapter")
-        .definedBy(resideInAPackage("org.apache.geode.distributed.internal.membership.adapter"))
         .layer("internal")
         .definedBy(resideInAPackage("org.apache.geode.distributed.internal.membership.gms.."))
         .layer("api").definedBy("org.apache.geode.distributed.internal.membership.api")
-        .whereLayer("internal").mayOnlyBeAccessedByLayers("api", "adapter");
+        .whereLayer("internal").mayOnlyBeAccessedByLayers("api");
 
     myRule.check(importedClasses);
   }

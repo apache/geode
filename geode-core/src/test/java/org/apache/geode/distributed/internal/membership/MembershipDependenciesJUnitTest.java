@@ -20,13 +20,11 @@ import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 
 import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.junit.AnalyzeClasses;
-import com.tngtech.archunit.junit.ArchIgnore;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.junit.ArchUnitRunner;
 import com.tngtech.archunit.junit.CacheMode;
 import com.tngtech.archunit.lang.ArchRule;
 import org.junit.runner.RunWith;
-
 
 @RunWith(ArchUnitRunner.class)
 @AnalyzeClasses(packages = "org.apache.geode.distributed.internal.membership.gms..",
@@ -35,50 +33,16 @@ import org.junit.runner.RunWith;
 public class MembershipDependenciesJUnitTest {
 
   /*
-   * This test verifies that the membership component (which is currently made up of classes
-   * inside the geode-core module, but which may someday reside in a separate module)
-   * depends only on packages within itself (within the membership component) or packages
-   * outside apache.geode.
+   * This test verifies that packages defined in the geode-membership module depend only on
+   * packages defined within that module or on packages defined outside the geode-core module
+   * (org.apache.geode packages) or on packages defined in a handful of small "leaf" modules.
    *
-   * For purposes of this test, classes in the membership...adapter package are not considered.
-   * They will eventually become part of geode-core.
-   *
-   * While this rule is ignored, comment-out the ignore annotation to run it periodically to get
-   * the current count of deviations.
-   */
-  // TODO: remove ignore once membershipDoesntDependOnCoreProvisional matches this rule exactly
-  @ArchIgnore
-  @ArchTest
-  public static final ArchRule membershipDoesntDependOnCore = classes()
-      .that()
-      .resideInAPackage("org.apache.geode.distributed.internal.membership.gms..")
-      // .and()
-      // .resideOutsideOfPackage("org.apache.geode.distributed.internal.membership.adapter..")
-      .should()
-      .onlyDependOnClassesThat(
-          resideInAPackage("org.apache.geode.distributed.internal.membership.gms..")
-              .or(resideInAPackage("org.apache.geode.distributed.internal.membership.api.."))
-
-              // OK to depend on these "leaf" dependencies
-              .or(resideInAPackage("org.apache.geode.internal.serialization.."))
-              .or(resideInAPackage("org.apache.geode.logging.internal.log4j.api.."))
-              .or(resideInAPackage("org.apache.geode.logging.internal.executors.."))
-              .or(resideInAPackage("org.apache.geode.distributed.internal.tcpserver.."))
-              .or(resideInAPackage("org.apache.geode.distributed.internal.tcpserver.."))
-
-              .or(not(resideInAPackage("org.apache.geode.."))));
-
-  /*
-   * This test is a work-in-progress. It starts from the membershipDoesntDependOnCore rule
-   * and adds deviations. Each deviation has a comment like TODO:...
-   * Those deviations comprise a to do list for the membership team as it modularizes
-   * the membership component--severing its dependency on the geode-core component.
+   * The most important thing is to prevent geode-membership from depending on geode-core.
    */
   @ArchTest
   public static final ArchRule membershipDoesntDependOnCoreProvisional = classes()
       .that()
       .resideInAPackage("org.apache.geode.distributed.internal.membership.gms..")
-
       .should()
       .onlyDependOnClassesThat(
           resideInAPackage("org.apache.geode.distributed.internal.membership.gms..")
@@ -87,7 +51,6 @@ public class MembershipDependenciesJUnitTest {
               // OK to depend on these "leaf" dependencies
               .or(resideInAPackage("org.apache.geode.internal.serialization.."))
               .or(resideInAPackage("org.apache.geode.logging.internal.."))
-              .or(resideInAPackage("org.apache.geode.logging.internal.executors.."))
               .or(resideInAPackage("org.apache.geode.distributed.internal.tcpserver.."))
               .or(resideInAPackage("org.apache.geode.internal.inet.."))
               .or(resideInAPackage("org.apache.geode.internal.lang.."))
@@ -95,7 +58,5 @@ public class MembershipDependenciesJUnitTest {
               .or(not(resideInAPackage("org.apache.geode..")))
 
               // TODO: we dursn't depend on the test package cause it depends on pkgs in geode-core
-              .or(resideInAPackage("org.apache.geode.test.."))
-
-  );
+              .or(resideInAPackage("org.apache.geode.test..")));
 }
