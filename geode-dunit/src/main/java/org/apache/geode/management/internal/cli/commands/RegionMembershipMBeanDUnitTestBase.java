@@ -372,12 +372,10 @@ public class RegionMembershipMBeanDUnitTestBase {
   }
 
   private Properties locatorProperties() {
-    int jmxPort = AvailablePortHelper.getRandomAvailableTCPPort();
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOG_LEVEL, "fine");
     props.setProperty(ConfigurationProperties.JMX_MANAGER_HOSTNAME_FOR_CLIENTS, "localhost");
-    props.setProperty(ConfigurationProperties.JMX_MANAGER_PORT, "" + jmxPort);
 
     return props;
   }
