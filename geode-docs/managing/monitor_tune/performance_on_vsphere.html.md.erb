@@ -72,7 +72,7 @@ These guidelines help you reduce latency.
 
 
     **Note:**
-    Disabling interrupt coalescing can reduce latency in virtual machines; however, it can impact performance and cause higher CPU utilization. It can also defeat the benefits of Large Receive Offloads (LRO) because some physical NICs (such as Intel 10GbE NICs) automatically disable LRO when interrupt coalescing is disabled.
+    Disabling interrupt coalescing can reduce latency in virtual machines; however, it can impact performance and cause higher CPU utilization. It can also defeat the benefits of large receive offloads (LRO) because some physical NICs (such as Intel 10GbE NICs) automatically disable LRO when interrupt coalescing is disabled.
 This type of tuning benefits <%=vars.product_name%> workloads, but it can hurt other non-<%=vars.product_name_long%> workloads that are memory throughput-bound, as opposed to latency sensitive as in the case of <%=vars.product_name%> workloads.
 See [http://kb.vmware.com/kb/1027511](http://kb.vmware.com/kb/1027511) for more details.
 
