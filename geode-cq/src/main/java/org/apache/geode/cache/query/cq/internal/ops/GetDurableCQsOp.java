@@ -87,7 +87,7 @@ public class GetDurableCQsOp {
     protected Object processResponse(Message msg) throws Exception {
 
       ChunkedMessage getDurableCQsResponseMsg = (ChunkedMessage) msg;
-      final List<String> result = new LinkedList<String>();
+      final List<String> result = new LinkedList<>();
       final Exception[] exceptionRef = new Exception[1];
 
       getDurableCQsResponseMsg.readHeader();

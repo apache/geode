@@ -87,12 +87,11 @@ public class GetDurableCQs extends BaseCQCommand {
 
       List durableCqList = new ArrayList(MAXIMUM_CHUNK_SIZE);
       final boolean isTraceEnabled = logger.isTraceEnabled();
-      for (Iterator<String> it = durableCqs.iterator(); it.hasNext();) {
-        String durableCqName = it.next();
+      for (String durableCqName : durableCqs) {
         durableCqList.add(durableCqName);
         if (isTraceEnabled) {
           logger.trace("{}: getDurableCqsResponse <{}>; list size was {}",
-              serverConnection.getName(), durableCqName, durableCqList.size());
+                  serverConnection.getName(), durableCqName, durableCqList.size());
         }
         if (durableCqList.size() == MAXIMUM_CHUNK_SIZE) {
           // Send the chunk and clear the list
