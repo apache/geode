@@ -30,6 +30,6 @@ When Java applications and servers join a cluster, they can be configured via th
 **Note:**
 <%=vars.product_name%> statistics use the Java `System.nanoTimer` for nanosecond timing. This method provides nanosecond precision, but not necessarily nanosecond accuracy. For more information, see the online Java documentation for `System.nanoTimer` for the JRE you are using with <%=vars.product_name%>.
 
-Statistics sampling provides valuable information for ongoing system tuning and troubleshooting. Sampling statistics (not including time-based statistics) at the default sample rate does not impact overall cluster performance. We recommend enabling statistics sampling in production environments. We do not recommend enabling time-based statistics (configured with the enable-time-statistics property) in production environments.
+Statistics sampling provides valuable information for ongoing system tuning and troubleshooting. Sampling statistics at the default sample rate does not impact overall cluster performance. We recommend enabling statistics sampling in production environments.
 
 
