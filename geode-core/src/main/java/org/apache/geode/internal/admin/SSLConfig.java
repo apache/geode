@@ -23,10 +23,15 @@ import java.security.KeyStore;
 import java.util.Iterator;
 import java.util.Properties;
 
+import org.apache.commons.lang3.StringUtils;
+
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.security.CallbackInstantiator;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.management.internal.SSLUtil;
+import org.apache.geode.net.SSLParameterExtension;
 
 /**
  * The SSL configuration settings for a GemFire distributed system.
@@ -60,6 +65,9 @@ public class SSLConfig {
   @Immutable
   private final Properties properties;
 
+  @Immutable
+  private final SSLParameterExtension sslParameterExtension;
+
   private SSLConfig(boolean endpointIdentification,
       boolean useDefaultSSLContext,
       boolean enabled,
@@ -74,7 +82,8 @@ public class SSLConfig {
       String truststoreType,
       String alias,
       SecurableCommunicationChannel securableCommunicationChannel,
-      Properties properties) {
+      Properties properties,
+      SSLParameterExtension sslParameterExtension) {
     this.endpointIdentification = endpointIdentification;
     this.useDefaultSSLContext = useDefaultSSLContext;
     this.enabled = enabled;
@@ -90,6 +99,7 @@ public class SSLConfig {
     this.alias = alias;
     this.securableCommunicationChannel = securableCommunicationChannel;
     this.properties = properties;
+    this.sslParameterExtension = sslParameterExtension;
   }
 
   public String getAlias() {
@@ -160,6 +170,10 @@ public class SSLConfig {
     return securableCommunicationChannel;
   }
 
+  public SSLParameterExtension getSSLParameterExtension() {
+    return sslParameterExtension;
+  }
+
   @Override
   public String toString() {
     return "SSLConfig{" + "enabled=" + enabled + ", protocols='" + protocols + '\'' + ", ciphers='"
@@ -168,7 +182,8 @@ public class SSLConfig {
         + '\'' + ", truststore='" + truststore + '\'' + ", truststorePassword='"
         + truststorePassword + '\'' + ", truststoreType='" + truststoreType + '\'' + ", alias='"
         + alias + '\'' + ", securableCommunicationChannel=" + securableCommunicationChannel
-        + ", properties=" + properties + '}';
+        + ", properties=" + properties + '\'' + ", sslParameterExtension=" + sslParameterExtension
+        + '}';
   }
 
   /**
@@ -217,6 +232,7 @@ public class SSLConfig {
     private String alias = null;
     private SecurableCommunicationChannel securableCommunicationChannel = null;
     private Properties properties = new Properties();
+    private SSLParameterExtension sslParameterExtension = null;
 
     public Builder() {}
 
@@ -224,7 +240,7 @@ public class SSLConfig {
       return new SSLConfig(endpointIdentification, useDefaultSSLContext, enabled,
           protocols, ciphers, requireAuth, keystore, keystoreType, keystorePassword,
           truststore, truststorePassword, truststoreType, alias, securableCommunicationChannel,
-          properties);
+          properties, sslParameterExtension);
     }
 
     public Builder setAlias(final String alias) {
@@ -304,6 +320,26 @@ public class SSLConfig {
     public Builder setSecurableCommunicationChannel(
         final SecurableCommunicationChannel securableCommunicationChannel) {
       this.securableCommunicationChannel = securableCommunicationChannel;
+      return this;
+    }
+
+    public Builder setSSLParameterExtension(
+        final String sslParameterExtensionConfig) {
+      if (StringUtils.isBlank(sslParameterExtensionConfig)) {
+        this.sslParameterExtension = null;
+        return this;
+      }
+      SSLParameterExtension sslParameterExtension =
+          CallbackInstantiator.getObjectOfTypeFromClassName(sslParameterExtensionConfig,
+              SSLParameterExtension.class);
+      InternalDistributedSystem ids = InternalDistributedSystem.getAnyInstance();
+
+      if (ids == null) {
+        this.sslParameterExtension = null;
+        return this;
+      }
+      sslParameterExtension.init(ids.getConfig());
+      this.sslParameterExtension = sslParameterExtension;
       return this;
     }
 

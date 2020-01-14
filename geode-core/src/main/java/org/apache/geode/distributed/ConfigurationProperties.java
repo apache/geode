@@ -2155,6 +2155,22 @@ public interface ConfigurationProperties {
    * <U>Since</U>: Geode 1.0
    */
   String SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION = "ssl-web-require-authentication";
+
+  /**
+   * The static String definition of the <i>"ssl-parameter-extension"</i> property
+   *
+   * <U>Description</U>SSLParameterExtension module name for Clients that want to use SSL Parameter
+   * extensions.
+   * Module must implement SSLParameterExtension interface.
+   * </p>
+   * <U>Default</U>: ""
+   * </p>
+   * <U>Since</U>: Geode 1.12
+   * </p>
+   * <U>Allowed values</U>: class name
+   */
+  String SSL_PARAMETER_EXTENSION = "ssl-parameter-extension";
+
   /**
    * The static String definition of the <i>"validate-serializable-objects"</i> property
    *

@@ -628,6 +628,11 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
 
   private String sslDefaultAlias = DEFAULT_SSL_ALIAS;
 
+  /**
+   * The SSL Parameter Extension class name
+   */
+  private String sslParameterExtension = DEFAULT_SSL_PARAMETER_EXTENSION;
+
   private Map<String, ConfigSource> sourceMap =
       Collections.synchronizedMap(new HashMap<>());
 
@@ -867,6 +872,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     this.sslProperties = other.getSSLProperties();
     this.sslDefaultAlias = other.getSSLDefaultAlias();
     this.sslWebServiceRequireAuthentication = other.getSSLWebRequireAuthentication();
+    this.sslParameterExtension = other.getSSLParameterExtension();
 
     validateSerializableObjects = other.getValidateSerializableObjects();
     serializableObjectFilter = other.getSerializableObjectFilter();
@@ -3112,6 +3118,16 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   }
 
   @Override
+  public String getSSLParameterExtension() {
+    return sslParameterExtension;
+  }
+
+  @Override
+  public void setSSLParameterExtension(final String extension) {
+    sslParameterExtension = extension;
+  }
+
+  @Override
   public boolean getValidateSerializableObjects() {
     return validateSerializableObjects;
   }
@@ -3288,6 +3304,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
         .append(sslKeyStorePassword, that.sslKeyStorePassword)
         .append(sslTrustStore, that.sslTrustStore)
         .append(sslTrustStorePassword, that.sslTrustStorePassword)
+        .append(sslParameterExtension, that.sslParameterExtension)
         .append(locatorSSLAlias, that.locatorSSLAlias).append(sslDefaultAlias, that.sslDefaultAlias)
         .append(sourceMap, that.sourceMap).append(userCommandPackages, that.userCommandPackages)
         .append(offHeapMemorySize, that.offHeapMemorySize).append(shiroInit, that.shiroInit)
@@ -3360,7 +3377,8 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
         .append(httpServiceSSLAlias).append(securableCommunicationChannels).append(sslProtocols)
         .append(sslCiphers).append(sslRequireAuthentication).append(sslKeyStore)
         .append(sslKeyStoreType).append(sslKeyStorePassword).append(sslTrustStore)
-        .append(sslTrustStorePassword).append(sslWebServiceRequireAuthentication)
+        .append(sslTrustStorePassword).append(sslParameterExtension)
+        .append(sslWebServiceRequireAuthentication)
         .append(locatorSSLAlias).append(sslDefaultAlias).append(sourceMap)
         .append(userCommandPackages).append(offHeapMemorySize).append(lockMemory).append(shiroInit)
         .append(modifiable).append(threadMonitorEnabled).append(threadMonitorInterval)

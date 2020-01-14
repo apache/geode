@@ -58,6 +58,7 @@ public class SSLConfigurationFactory {
       configureLegacyClusterSSL(distributionConfig, sslConfigBuilder);
     }
     sslConfigBuilder.setSecurableCommunicationChannel(sslEnabledComponent);
+
     switch (sslEnabledComponent) {
       case ALL: {
         break;
@@ -140,6 +141,7 @@ public class SSLConfigurationFactory {
     sslConfigBuilder.setRequireAuth(distributionConfig.getSSLRequireAuthentication());
     sslConfigBuilder.setAlias(distributionConfig.getSSLDefaultAlias());
     sslConfigBuilder.setUseDefaultSSLContext(distributionConfig.getSSLUseDefaultContext());
+    sslConfigBuilder.setSSLParameterExtension(distributionConfig.getSSLParameterExtension());
 
     return sslConfigBuilder;
   }

@@ -84,7 +84,9 @@ import org.apache.geode.internal.util.ArgumentRedactor;
 import org.apache.geode.internal.util.PasswordUtil;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.SSLUtil;
+import org.apache.geode.net.SSLParameterExtension;
 import org.apache.geode.util.internal.GeodeGlossary;
+
 
 /**
  * Analyze configuration data (gemfire.properties) and configure sockets accordingly for SSL.
@@ -967,6 +969,14 @@ public class SocketCreator {
     if (!"any".equalsIgnoreCase(ciphers[0])) {
       serverSocket.setEnabledCipherSuites(ciphers);
     }
+
+    SSLParameterExtension sslParameterExtension = this.sslConfig.getSSLParameterExtension();
+    if (sslParameterExtension != null) {
+      SSLParameters modifiedParams =
+          sslParameterExtension.modifySSLServerSocketParameters(serverSocket.getSSLParameters());
+      serverSocket.setSSLParameters(modifiedParams);
+    }
+
   }
 
   /**
@@ -982,6 +992,12 @@ public class SocketCreator {
 
       SSLParameters modifiedParams =
           checkAndEnableHostnameValidation(sslSocket.getSSLParameters());
+
+      SSLParameterExtension sslParameterExtension = this.sslConfig.getSSLParameterExtension();
+      if (sslParameterExtension != null) {
+        modifiedParams =
+            sslParameterExtension.modifySSLClientSocketParameters(modifiedParams);
+      }
       sslSocket.setSSLParameters(modifiedParams);
 
       String[] protocols = this.sslConfig.getProtocolsAsStringArray();
