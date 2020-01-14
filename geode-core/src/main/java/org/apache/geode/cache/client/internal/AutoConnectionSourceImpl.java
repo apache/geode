@@ -28,6 +28,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -94,6 +95,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
         }
       };
   private final List<LocatorAddress> initialLocators;
+
   private final String serverGroup;
   private AtomicReference<LocatorList> locators = new AtomicReference<>();
   private AtomicReference<LocatorList> onlineLocators = new AtomicReference<>();
@@ -112,7 +114,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
       int handshakeTimeout) {
     this.locators.set(new LocatorList(new ArrayList<>(contacts)));
     this.onlineLocators.set(new LocatorList(Collections.emptyList()));
-    this.initialLocators = Collections.unmodifiableList(this.locators.get().getLocatorAddresses());
+    this.initialLocators = new CopyOnWriteArrayList<>(this.locators.get().getLocatorAddresses());
     this.connectionTimeout = handshakeTimeout;
     this.serverGroup = serverGroup;
     this.tcpClient = new TcpClient(
@@ -254,6 +256,10 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
               locator.getSocketInetAddressNoLookup().getPort());
           LocatorAddress hostAddress = new LocatorAddress(changeLoc, locator.getHostName());
           newLocatorsList.add(hostAddress);
+          int position = initialLocators.indexOf(tloc);
+          if (position != -1) {
+            initialLocators.set(position, hostAddress);
+          }
         } else {
           newLocatorsList.add(tloc);
         }
@@ -266,34 +272,6 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
       locators.set(newLocatorList);
     }
   }
-
-  /**
-   * Get Initial locators from current locator list
-   */
-  private Set<LocatorAddress> getInitLocators() {
-
-    Set<LocatorAddress> initLocators = new HashSet<>(initialLocators.size());
-    LocatorList locatorList = locators.get();
-
-    boolean locatorfound;
-    for (LocatorAddress initloc : initialLocators) {
-      locatorfound = false;
-      for (LocatorAddress currloc : locatorList.getLocatorAddresses()) {
-        if (initloc.getHostName().equals(currloc.getHostName())
-            && initloc.getPort() == currloc.getPort()) {
-          initLocators.add(currloc);
-          locatorfound = true;
-          break;
-        }
-      }
-      if (!locatorfound) {
-        initLocators.add(initloc);
-      }
-    }
-    return initLocators;
-
-  }
-
 
   protected List<InetSocketAddress> getCurrentLocators() {
     return locators.get().getLocators();
@@ -335,7 +313,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
     List<LocatorAddress> newLocatorAddresses = new ArrayList<>(locatorResponse.size());
     List<LocatorAddress> newOnlineLocators = new ArrayList<>(locatorResponse.size());
 
-    Set<LocatorAddress> badLocators = getInitLocators();
+    Set<LocatorAddress> badLocators = new HashSet<>(initialLocators);
 
     for (ServerLocation locator : locatorResponse) {
       InetSocketAddress address = new InetSocketAddress(locator.getHostName(), locator.getPort());
