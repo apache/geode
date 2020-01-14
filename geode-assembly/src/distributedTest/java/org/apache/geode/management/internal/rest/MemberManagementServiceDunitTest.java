@@ -90,9 +90,9 @@ public class MemberManagementServiceDunitTest {
     ClusterManagementGetResult<Member, MemberInformation> result = cmsClient.get(config);
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
-    assertThat(result.getRuntimeResult().size()).isEqualTo(1);
+    assertThat(result.getResult().getRuntimeInfos().size()).isEqualTo(1);
 
-    MemberInformation memberConfig = result.getRuntimeResult().get(0);
+    MemberInformation memberConfig = result.getResult().getRuntimeInfos().get(0);
     assertThat(memberConfig.isCoordinator()).isTrue();
     assertThat(memberConfig.isServer()).isFalse();
     assertThat(memberConfig.getLocatorPort()).isEqualTo(locator.getPort());

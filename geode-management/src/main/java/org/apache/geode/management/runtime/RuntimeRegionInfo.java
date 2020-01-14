@@ -51,4 +51,11 @@ public class RuntimeRegionInfo extends RuntimeInfo implements JsonSerializable {
   public int hashCode() {
     return Objects.hash(super.hashCode(), getEntryCount());
   }
+
+  @Override
+  public String toString() {
+    return "RuntimeRegionInfo{" +
+        "entryCount=" + entryCount +
+        "} " + super.toString();
+  }
 }

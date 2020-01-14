@@ -15,8 +15,11 @@
 
 package org.apache.geode.management.api;
 
+import static java.util.Collections.emptyList;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -46,7 +49,12 @@ public class ConfigurationResult<T extends AbstractConfiguration<R>, R extends R
    * for internal use only
    */
   public ConfigurationResult(T configuration) {
+    this(configuration, emptyList());
+  }
+
+  public ConfigurationResult(T configuration, List<R> runtimeInfo) {
     this.configuration = configuration;
+    this.runtimeInfo = runtimeInfo;
   }
 
   /**
@@ -80,5 +88,31 @@ public class ConfigurationResult<T extends AbstractConfiguration<R>, R extends R
   @JsonProperty(access = JsonProperty.Access.READ_ONLY)
   public Links getLinks() {
     return configuration.getLinks();
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    ConfigurationResult<?, ?> that = (ConfigurationResult<?, ?>) o;
+    return Objects.equals(configuration, that.configuration) &&
+        Objects.equals(runtimeInfo, that.runtimeInfo);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(configuration, runtimeInfo);
+  }
+
+  @Override
+  public String toString() {
+    return "ConfigurationResult{" +
+        "configuration=" + configuration +
+        ", runtimeInfo=" + runtimeInfo +
+        '}';
   }
 }

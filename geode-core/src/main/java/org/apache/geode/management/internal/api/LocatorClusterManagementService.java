@@ -57,6 +57,7 @@ import org.apache.geode.management.api.ClusterManagementRealizationResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementResult.StatusCode;
 import org.apache.geode.management.api.ClusterManagementService;
+import org.apache.geode.management.api.ConfigurationInfo;
 import org.apache.geode.management.api.ConfigurationResult;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.configuration.AbstractConfiguration;
@@ -375,7 +376,6 @@ public class LocatorClusterManagementService implements ClusterManagementService
       T config) {
     ClusterManagementListResult<T, R> list = list(config);
     List<ConfigurationResult<T, R>> result = list.getResult();
-
     int size = result.size();
     if (config instanceof Member) {
       size = result.get(0).getRuntimeInfo().size();
@@ -385,13 +385,8 @@ public class LocatorClusterManagementService implements ClusterManagementService
       raise(StatusCode.ENTITY_NOT_FOUND,
           config.getClass().getSimpleName() + " '" + config.getId() + "' does not exist.");
     }
-
-    if (size > 1) {
-      raise(StatusCode.ERROR,
-          "Expect only one matching " + config.getClass().getSimpleName() + ".");
-    }
-
-    return assertSuccessful(new ClusterManagementGetResult<>(list));
+    ConfigurationInfo<T, R> configurationInfo = new ConfigurationInfo<>(config.getId(), result);
+    return new ClusterManagementGetResult<>(configurationInfo);
   }
 
   @Override

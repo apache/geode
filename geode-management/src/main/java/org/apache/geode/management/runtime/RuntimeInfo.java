@@ -49,4 +49,11 @@ public abstract class RuntimeInfo implements Serializable, JsonSerializable {
   public int hashCode() {
     return Objects.hash(getMemberName());
   }
+
+  @Override
+  public String toString() {
+    return "RuntimeInfo{" +
+        "memberName='" + memberName + '\'' +
+        '}';
+  }
 }
