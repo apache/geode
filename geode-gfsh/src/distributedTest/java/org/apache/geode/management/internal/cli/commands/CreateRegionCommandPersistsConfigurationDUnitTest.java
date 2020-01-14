@@ -14,10 +14,13 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static java.lang.management.ManagementFactory.getPlatformMBeanServer;
+import static java.util.Arrays.asList;
+import static javax.management.ObjectName.getInstance;
 import static org.apache.geode.lang.Identifiable.find;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Before;
@@ -273,7 +276,7 @@ public class CreateRegionCommandPersistsConfigurationDUnitTest {
       assertThat(regions).isNotEmpty();
       assertThat(regions).hasSize(2);
 
-      List<String> regionNames = Arrays.asList(regionName, regionNameFromTemplate);
+      List<String> regionNames = asList(regionName, regionNameFromTemplate);
       regionNames.forEach(name -> {
         RegionConfig regionConfig = find(config.getRegions(), name);
         assertThat(regionConfig).isNotNull();
@@ -383,7 +386,7 @@ public class CreateRegionCommandPersistsConfigurationDUnitTest {
       assertThat(regions).isNotEmpty();
       assertThat(regions).hasSize(1);
 
-      List<String> regionNames = Arrays.asList(regionName);
+      List<String> regionNames = asList(regionName);
       regionNames.forEach(name -> {
         RegionConfig regionConfig = find(config.getRegions(), name);
         assertThat(regionConfig).isNotNull();
@@ -436,6 +439,17 @@ public class CreateRegionCommandPersistsConfigurationDUnitTest {
     gfsh.executeAndAssertThat("create region"
         + " --name=" + regionName
         + " --type=PARTITION_REDUNDANT").statusIsSuccess();
+
+    locator.invoke(() -> {
+      await().untilAsserted(() -> {
+        assertThat(getPlatformMBeanServer().queryNames(getInstance("GemFire:*"), null))
+            .contains(getInstance(
+                "GemFire:service=Region,name=/createRegionWithColocation,type=Distributed"))
+            .contains(getInstance(
+                "GemFire:service=Region,name=/createRegionWithColocation,type=Member,member=server-1"));
+      });
+    });
+
     gfsh.executeAndAssertThat("create region"
         + " --name=" + colocatedRegionName
         + " --colocated-with=" + regionName
@@ -499,7 +513,7 @@ public class CreateRegionCommandPersistsConfigurationDUnitTest {
       assertThat(regions).isNotEmpty();
       assertThat(regions).hasSize(2);
 
-      List<String> regionNames = Arrays.asList(regionName, regionNameFromTemplate);
+      List<String> regionNames = asList(regionName, regionNameFromTemplate);
       regionNames.forEach(name -> {
         RegionConfig regionConfig = find(config.getRegions(), name);
         assertThat(regionConfig.getName()).isEqualTo(name);
@@ -540,7 +554,7 @@ public class CreateRegionCommandPersistsConfigurationDUnitTest {
       assertThat(regions).isNotEmpty();
       assertThat(regions).hasSize(2);
 
-      List<String> regionNames = Arrays.asList(regionName, regionFromTemplateName);
+      List<String> regionNames = asList(regionName, regionFromTemplateName);
       regionNames.forEach(name -> {
         RegionConfig regionConfig = find(config.getRegions(), name);
         assertThat(regionConfig).isNotNull();
@@ -699,7 +713,7 @@ public class CreateRegionCommandPersistsConfigurationDUnitTest {
       assertThat(regions).isNotEmpty();
       assertThat(regions).hasSize(2);
 
-      List<String> regionNames = Arrays.asList(regionName, regionFromTemplateName);
+      List<String> regionNames = asList(regionName, regionFromTemplateName);
       regionNames.forEach(name -> {
         RegionConfig regionConfig = find(config.getRegions(), name);
         assertThat(regionConfig).isNotNull();
