@@ -54,7 +54,7 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
   /** The versions in which this message was modified */
   @Immutable
   private static final Version[] dsfidVersions = new Version[] {
-      Version.GFE_70, Version.GFE_90};
+      Version.GFE_71, Version.GFE_90};
   private MemberData memberData; // the underlying member object
   /**
    * whether this is a partial member ID (without roles, durable attributes). We use partial IDs in

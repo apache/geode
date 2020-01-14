@@ -15,6 +15,7 @@
 package org.apache.geode.distributed.internal.membership;
 
 import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.Externalizable;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -38,6 +39,8 @@ import org.apache.geode.distributed.internal.membership.api.MemberIdentifierImpl
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.logging.internal.OSProcess;
 
 /**
@@ -290,6 +293,30 @@ public class InternalDistributedMember extends MemberIdentifierImpl
     } catch (UnknownHostException ee) {
       throw new InternalGemFireError(ee);
     }
+  }
+
+  @Override
+  public void toDataPre_GFE_9_0_0_0(DataOutput out, SerializationContext context)
+      throws IOException {
+    super.toDataPre_GFE_9_0_0_0(out, context);
+  }
+
+  @Override
+  public void toDataPre_GFE_7_1_0_0(DataOutput out, SerializationContext context)
+      throws IOException {
+    super.toDataPre_GFE_7_1_0_0(out, context);
+  }
+
+  @Override
+  public void fromDataPre_GFE_9_0_0_0(DataInput in, DeserializationContext context)
+      throws IOException, ClassNotFoundException {
+    super.fromDataPre_GFE_9_0_0_0(in, context);
+  }
+
+  @Override
+  public void fromDataPre_GFE_7_1_0_0(DataInput in, DeserializationContext context)
+      throws IOException, ClassNotFoundException {
+    super.fromDataPre_GFE_7_1_0_0(in, context);
   }
 
   @FunctionalInterface
