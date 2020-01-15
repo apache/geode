@@ -39,44 +39,40 @@ import org.apache.geode.management.runtime.RebalanceResult;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.junit.rules.GfshCommandRule;
-import org.apache.geode.test.junit.rules.MemberStarterRule;
 
 public class RebalanceManagementDunitTest {
 
   @ClassRule
   public static ClusterStartupRule cluster = new ClusterStartupRule();
 
-  private static MemberVM locator, server1, server2;
+  private static MemberVM locator1, locator2, server1, server2;
 
   private static ClusterManagementService client;
 
-  @ClassRule
-  public static GfshCommandRule gfsh = new GfshCommandRule();
-
   @BeforeClass
   public static void beforeClass() throws Exception {
-    locator = cluster.startLocatorVM(0, MemberStarterRule::withHttpService);
-    server1 = cluster.startServerVM(1, "group1", locator.getPort());
-    server2 = cluster.startServerVM(2, "group2", locator.getPort());
+    locator1 = cluster.startLocatorVM(0, l -> l.withHttpService());
+    locator2 = cluster.startLocatorVM(1, l -> l.withHttpService());
+    server1 = cluster.startServerVM(2, "group1", locator1.getPort());
+    server2 = cluster.startServerVM(3, "group2", locator1.getPort());
 
     client = new ClusterManagementServiceBuilder()
-        .setPort(locator.getHttpPort())
+        .setHost("localhost")
+        .setPort(locator1.getHttpPort())
         .build();
-    gfsh.connect(locator);
 
     // create regions
     Region regionConfig = new Region();
     regionConfig.setName("customers1");
     regionConfig.setType(RegionType.PARTITION);
     client.create(regionConfig);
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/customers1", 2);
+    locator1.waitUntilRegionIsReadyOnExactlyThisManyServers("/customers1", 2);
 
     regionConfig = new Region();
     regionConfig.setName("customers2");
     regionConfig.setType(RegionType.PARTITION);
     client.create(regionConfig);
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/customers2", 2);
+    locator1.waitUntilRegionIsReadyOnExactlyThisManyServers("/customers2", 2);
   }
 
   @Test
