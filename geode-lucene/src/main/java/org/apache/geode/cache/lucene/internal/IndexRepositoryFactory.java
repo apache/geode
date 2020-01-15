@@ -41,7 +41,6 @@ import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class IndexRepositoryFactory {
-
   private static final Logger logger = LogService.getLogger();
   public static final String FILE_REGION_LOCK_FOR_BUCKET_ID = "FileRegionLockForBucketId:";
   public static final String APACHE_GEODE_INDEX_COMPLETE = "APACHE_GEODE_INDEX_COMPLETE";
@@ -74,9 +73,8 @@ public class IndexRepositoryFactory {
    * conditions.
    * This is a util function just to not let computeIndexRepository be a huge chunk of code.
    */
-  private IndexRepository finishComputingRepository(Integer bucketId, LuceneSerializer serializer,
-      PartitionedRegion userRegion, IndexRepository oldRepository, InternalLuceneIndex index)
-      throws IOException {
+  protected IndexRepository finishComputingRepository(Integer bucketId, LuceneSerializer serializer,
+      PartitionedRegion userRegion, IndexRepository oldRepository, InternalLuceneIndex index) {
     LuceneIndexForPartitionedRegion indexForPR = (LuceneIndexForPartitionedRegion) index;
     final PartitionedRegion fileRegion = indexForPR.getFileAndChunkRegion();
     BucketRegion fileAndChunkBucket = getMatchingBucket(fileRegion, bucketId);
@@ -115,15 +113,11 @@ public class IndexRepositoryFactory {
     boolean initialPdxReadSerializedFlag = cache.getPdxReadSerializedOverride();
     cache.setPdxReadSerializedOverride(true);
     try {
-      // bucketTargetingMap handles partition resolver (via bucketId as callbackArg)
-      Map bucketTargetingMap = getBucketTargetingMap(fileAndChunkBucket, bucketId);
-      RegionDirectory dir =
-          new RegionDirectory(bucketTargetingMap, indexForPR.getFileSystemStats());
-      IndexWriterConfig config = new IndexWriterConfig(indexForPR.getAnalyzer());
-      IndexWriter writer = new IndexWriter(dir, config);
+      IndexWriter writer = buildIndexWriter(bucketId, fileAndChunkBucket, indexForPR);
       repo = new IndexRepositoryImpl(fileAndChunkBucket, writer, serializer,
           indexForPR.getIndexStats(), dataBucket, lockService, lockName, indexForPR);
       success = false;
+
       // fileRegion ops (get/put) need bucketId as a callbackArg for PartitionResolver
       if (null != fileRegion.get(APACHE_GEODE_INDEX_COMPLETE, bucketId)) {
         success = true;
@@ -135,7 +129,7 @@ public class IndexRepositoryFactory {
     } catch (IOException e) {
       logger.info("Exception thrown while constructing Lucene Index for bucket:" + bucketId
           + " for file region:" + fileAndChunkBucket.getFullPath());
-      throw e;
+      return null;
     } catch (CacheClosedException e) {
       logger.info("CacheClosedException thrown while constructing Lucene Index for bucket:"
           + bucketId + " for file region:" + fileAndChunkBucket.getFullPath());
@@ -148,10 +142,20 @@ public class IndexRepositoryFactory {
     }
   }
 
+  protected IndexWriter buildIndexWriter(int bucketId, BucketRegion fileAndChunkBucket,
+      LuceneIndexForPartitionedRegion indexForPR) throws IOException {
+    // bucketTargetingMap handles partition resolver (via bucketId as callbackArg)
+    Map bucketTargetingMap = getBucketTargetingMap(fileAndChunkBucket, bucketId);
+    RegionDirectory dir = new RegionDirectory(bucketTargetingMap, indexForPR.getFileSystemStats());
+    IndexWriterConfig config = new IndexWriterConfig(indexForPR.getAnalyzer());
+
+    return new IndexWriter(dir, config);
+  }
+
   private boolean reindexUserDataRegion(Integer bucketId, PartitionedRegion userRegion,
       PartitionedRegion fileRegion, BucketRegion dataBucket, IndexRepository repo)
       throws IOException {
-    Set<IndexRepository> affectedRepos = new HashSet<IndexRepository>();
+    Set<IndexRepository> affectedRepos = new HashSet<>();
 
     for (Object key : dataBucket.keySet()) {
       Object value = getValue(userRegion.getEntry(key));
@@ -182,15 +186,15 @@ public class IndexRepositoryFactory {
     return value;
   }
 
-  private Map getBucketTargetingMap(BucketRegion region, int bucketId) {
+  protected Map getBucketTargetingMap(BucketRegion region, int bucketId) {
     return new BucketTargetingMap(region, bucketId);
   }
 
-  private String getLockName(final BucketRegion fileAndChunkBucket) {
+  protected String getLockName(final BucketRegion fileAndChunkBucket) {
     return FILE_REGION_LOCK_FOR_BUCKET_ID + fileAndChunkBucket.getFullPath();
   }
 
-  private DistributedLockService getLockService() {
+  protected DistributedLockService getLockService() {
     return DistributedLockService
         .getServiceNamed(PartitionedRegionHelper.PARTITION_LOCK_SERVICE_NAME);
   }
