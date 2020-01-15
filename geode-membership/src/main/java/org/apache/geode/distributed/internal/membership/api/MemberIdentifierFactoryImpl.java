@@ -21,7 +21,7 @@ public class MemberIdentifierFactoryImpl
 
   @Override
   public MemberIdentifierImpl create(MemberData memberInfo) {
-    return new MemberIdentifierImpl(memberInfo, null);
+    return new MemberIdentifierImpl(memberInfo);
   }
 
   @Override

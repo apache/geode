@@ -80,7 +80,7 @@ public class InternalDistributedMember extends MemberIdentifierImpl
         .setMembershipPort(membershipPort)
         .setNetworkPartitionDetectionEnabled(splitBrainEnabled)
         .setPreferredForCoordinator(canBeCoordinator)
-        .build(), null);
+        .build());
   }
 
   private static String getHostName(InetAddress i) {
@@ -92,7 +92,7 @@ public class InternalDistributedMember extends MemberIdentifierImpl
    *
    */
   public InternalDistributedMember(MemberData m) {
-    super(m, null);
+    super(m);
 
     if (getMemberData().getHostName() == null || getMemberData().isPartial()) {
       String hostName = getHostName(m.getInetAddress());
@@ -132,7 +132,7 @@ public class InternalDistributedMember extends MemberIdentifierImpl
         .setMembershipPort(location.getPort())
         .setNetworkPartitionDetectionEnabled(false)
         .setPreferredForCoordinator(true)
-        .build(), null);
+        .build());
   }
 
   private static InetAddress getInetAddress(ServerLocation location) {
@@ -167,14 +167,14 @@ public class InternalDistributedMember extends MemberIdentifierImpl
    */
   public InternalDistributedMember(String host, int p, String n, String u, int vmKind,
       String[] groups, DurableClientAttributes attr) throws UnknownHostException {
-    super(createMemberData(host, p, n, vmKind, groups, attr), u);
+    super(createMemberData(host, p, n, vmKind, groups, attr, u));
 
     defaultToCurrentHost();
   }
 
   private static MemberData createMemberData(String host, int p, String n, int vmKind,
       String[] groups,
-      DurableClientAttributes attr) {
+      DurableClientAttributes attr, String u) {
     InetAddress addr = LocalHostUtil.toInetAddress(host);
     MemberDataBuilder builder = MemberDataBuilder.newBuilder(addr, host)
         .setName(n)
@@ -183,6 +183,7 @@ public class InternalDistributedMember extends MemberIdentifierImpl
         .setPreferredForCoordinator(false)
         .setNetworkPartitionDetectionEnabled(true)
         .setVmKind(vmKind)
+        .setUniqueTag(u)
         .setGroups(groups);
     if (attr != null) {
       builder.setDurableId(attr.getId())
@@ -205,7 +206,7 @@ public class InternalDistributedMember extends MemberIdentifierImpl
   public InternalDistributedMember(InetAddress i, int p) {
     super(MemberDataBuilder.newBuilder(i, "localhost")
         .setMembershipPort(p)
-        .build(), null);
+        .build());
     defaultToCurrentHost();
   }
 
@@ -223,7 +224,7 @@ public class InternalDistributedMember extends MemberIdentifierImpl
    */
   public InternalDistributedMember(InetAddress addr, int p, boolean isCurrentHost) {
     super(MemberDataBuilder.newBuilder(addr, "localhost")
-        .setMembershipPort(p).build(), null);
+        .setMembershipPort(p).build());
     if (isCurrentHost) {
       defaultToCurrentHost();
     }

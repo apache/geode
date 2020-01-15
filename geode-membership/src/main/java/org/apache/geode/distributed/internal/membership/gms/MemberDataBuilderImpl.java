@@ -47,6 +47,8 @@ public class MemberDataBuilderImpl implements MemberDataBuilder {
   private short versionOrdinal = Version.CURRENT_ORDINAL;
   private long uuidMostSignificantBits = 0;
   private long uuidLeastSignificantBits = 0;
+  private boolean isPartial;
+  private String uniqueTag;
 
   public void setMemberWeight(byte memberWeight) {
     this.memberWeight = memberWeight;
@@ -153,12 +155,23 @@ public class MemberDataBuilderImpl implements MemberDataBuilder {
     return this;
   }
 
+  public MemberDataBuilderImpl setIsPartial(boolean partial) {
+    this.isPartial = partial;
+    return this;
+  }
+
+  @Override
+  public MemberDataBuilder setUniqueTag(String uniqueTag) {
+    this.uniqueTag = uniqueTag;
+    return this;
+  }
+
   public MemberData build() {
     return new GMSMemberData(inetAddress, hostName,
         membershipPort, vmPid, (byte) vmKind, directChannelPort,
         vmViewId, name, groups, durableId, durableTimeout,
         networkPartitionDetectionEnabled, preferredForCoordinator, versionOrdinal,
-        uuidMostSignificantBits, uuidLeastSignificantBits, memberWeight);
+        uuidMostSignificantBits, uuidLeastSignificantBits, memberWeight, isPartial, uniqueTag);
   }
 
 }

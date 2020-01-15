@@ -559,7 +559,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
         config.isNetworkPartitionDetectionEnabled(), isLocator,
         Version.getCurrentVersion().ordinal(),
         jgAddress.getUUIDMsbs(), jgAddress.getUUIDLsbs(),
-        (byte) (services.getConfig().getMemberWeight() & 0xff));
+        (byte) (services.getConfig().getMemberWeight() & 0xff), false, null);
     localAddress = services.getMemberFactory().create(gmsMember);
     logger.info("Established local address {}", localAddress);
     services.setLocalAddress(localAddress);
