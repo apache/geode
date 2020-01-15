@@ -47,6 +47,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.UpdateAttributesProcessor;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -556,7 +557,7 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
       this.senderEventListenerClassNames = DataSerializer.readArrayList(in);
       this.isDiskSynchronous = in.readBoolean();
       this.dispatcherThreads = in.readInt();
-      if (InternalDataSerializer.getVersionForDataStream(in).compareTo(Version.GFE_90) < 0) {
+      if (StaticSerialization.getVersionForDataStream(in).compareTo(Version.GFE_90) < 0) {
         Gateway.OrderPolicy oldOrderPolicy = DataSerializer.readObject(in);
         if (oldOrderPolicy != null) {
           if (oldOrderPolicy.name().equals(OrderPolicy.KEY.name())) {
@@ -598,7 +599,7 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
       DataSerializer.writeArrayList(senderEventListenerClassNames, out);
       out.writeBoolean(isDiskSynchronous);
       out.writeInt(dispatcherThreads);
-      if (InternalDataSerializer.getVersionForDataStream(out).compareTo(Version.GFE_90) < 0
+      if (StaticSerialization.getVersionForDataStream(out).compareTo(Version.GFE_90) < 0
           && this.orderPolicy != null) {
         String orderPolicyName = this.orderPolicy.name();
         if (orderPolicyName.equals(Gateway.OrderPolicy.KEY.name())) {

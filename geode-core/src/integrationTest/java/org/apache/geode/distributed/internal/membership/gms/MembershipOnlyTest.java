@@ -33,6 +33,8 @@ import org.junit.rules.TemporaryFolder;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.api.LifecycleListener;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifierFactoryImpl;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifierImpl;
 import org.apache.geode.distributed.internal.membership.api.MemberStartupException;
 import org.apache.geode.distributed.internal.membership.api.Membership;
 import org.apache.geode.distributed.internal.membership.api.MembershipBuilder;
@@ -115,10 +117,10 @@ public class MembershipOnlyTest {
     TcpClient locatorClient = new TcpClient(socketCreator, dsfidSerializer.getObjectSerializer(),
         dsfidSerializer.getObjectDeserializer());
 
-    LifecycleListener<InternalDistributedMember> lifeCycleListener = mock(LifecycleListener.class);
+    LifecycleListener<MemberIdentifierImpl> lifeCycleListener = mock(LifecycleListener.class);
 
-    final Membership<InternalDistributedMember> membership =
-        MembershipBuilder.<InternalDistributedMember>newMembershipBuilder(
+    final Membership<MemberIdentifierImpl> membership =
+        MembershipBuilder.<MemberIdentifierImpl>newMembershipBuilder(
             socketCreator, locatorClient, dsfidSerializer, memberIdFactory)
             .setConfig(config)
             .setLifecycleListener(lifeCycleListener)

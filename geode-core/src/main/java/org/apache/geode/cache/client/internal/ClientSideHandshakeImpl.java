@@ -61,6 +61,7 @@ import org.apache.geode.internal.cache.tier.sockets.Handshake;
 import org.apache.geode.internal.cache.tier.sockets.ServerQueueStatus;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
+import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.internal.serialization.VersionedDataOutputStream;
@@ -269,7 +270,7 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
   private InternalDistributedMember readServerMember(DataInputStream p_dis) throws IOException {
 
     byte[] memberBytes = DataSerializer.readByteArray(p_dis);
-    Version v = InternalDataSerializer.getVersionForDataStreamOrNull(p_dis);
+    Version v = StaticSerialization.getVersionForDataStreamOrNull(p_dis);
     ByteArrayDataInput dis = new ByteArrayDataInput(memberBytes, v);
     try {
       return DataSerializer.readObject(dis);

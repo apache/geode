@@ -37,7 +37,6 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
@@ -45,6 +44,7 @@ import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.util.Breadcrumbs;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -351,7 +351,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
   @Override
   public void toData(DataOutput dop,
       SerializationContext context) throws IOException {
-    Version version = InternalDataSerializer.getVersionForDataStream(dop);
+    Version version = StaticSerialization.getVersionForDataStream(dop);
     // if we are sending to old clients we need to reserialize the ID
     // using the client's version to ensure it gets the proper on-wire form
     // of the identifier

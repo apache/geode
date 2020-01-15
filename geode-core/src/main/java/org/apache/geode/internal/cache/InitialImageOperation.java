@@ -96,6 +96,7 @@ import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.util.ObjectIntProcedure;
 import org.apache.geode.logging.internal.executors.LoggingThread;
@@ -2899,7 +2900,7 @@ public class InitialImageOperation {
       this.numSeries = in.readInt();
       this.lastInSeries = in.readBoolean();
       this.flowControlId = in.readInt();
-      this.remoteVersion = InternalDataSerializer.getVersionForDataStreamOrNull(in);
+      this.remoteVersion = StaticSerialization.getVersionForDataStreamOrNull(in);
       this.isDeltaGII = in.readBoolean();
       this.hasHolderToSend = in.readBoolean();
       if (this.hasHolderToSend) {
