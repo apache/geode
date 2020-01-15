@@ -4011,6 +4011,14 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   @Override
+  public boolean hasMemberOlderThan(Version version) {
+    return getMembers().stream()
+        .map(InternalDistributedMember.class::cast)
+        .map(InternalDistributedMember::getVersionObject)
+        .anyMatch(v -> v.compareTo(version) < 0);
+  }
+
+  @Override
   public JSONFormatter getJsonFormatter() {
     // only ProxyCache implementation needs a JSONFormatter that has reference to userAttributes
     return new JSONFormatter();

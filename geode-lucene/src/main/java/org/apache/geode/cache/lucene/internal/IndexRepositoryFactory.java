@@ -32,7 +32,6 @@ import org.apache.geode.cache.lucene.internal.partition.BucketTargetingMap;
 import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
 import org.apache.geode.cache.lucene.internal.repository.IndexRepositoryImpl;
 import org.apache.geode.distributed.DistributedLockService;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.EntrySnapshot;
 import org.apache.geode.internal.cache.InternalCache;
@@ -106,15 +105,8 @@ public class IndexRepositoryFactory {
       oldRepository.cleanup();
     }
 
-    boolean hasOldMember = false;
-    if (userRegion.getCache() != null) {
-      hasOldMember = userRegion.getCache().getMembers().stream()
-          .map(InternalDistributedMember.class::cast)
-          .map(InternalDistributedMember::getVersionObject)
-          .anyMatch(version -> version.compareTo(Version.CURRENT) < 0);
-    }
-
-    if (hasOldMember) {
+    if (userRegion.getCache() != null
+        && userRegion.getCache().hasMemberOlderThan(Version.CURRENT)) {
       return null;
     }
 

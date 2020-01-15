@@ -32,7 +32,6 @@ import org.apache.geode.cache.asyncqueue.AsyncEvent;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
 import org.apache.geode.cache.lucene.internal.repository.RepositoryManager;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.BucketNotFoundException;
 import org.apache.geode.internal.cache.EntrySnapshot;
 import org.apache.geode.internal.cache.InternalCache;
@@ -83,15 +82,9 @@ public class LuceneEventListener implements AsyncEventListener {
     Boolean initialPdxReadSerialized = this.cache.getPdxReadSerializedOverride();
     cache.setPdxReadSerializedOverride(true);
 
-    boolean hasOldMember = cache.getMembers().stream()
-        .map(InternalDistributedMember.class::cast)
-        .map(InternalDistributedMember::getVersionObject)
-        .anyMatch(version -> version.compareTo(Version.CURRENT) < 0);
-
-    if (hasOldMember) {
+    if (cache.hasMemberOlderThan(Version.CURRENT)) {
       return false;
     }
-
     Set<IndexRepository> affectedRepos = new HashSet<>();
 
     try {
