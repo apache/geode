@@ -9555,10 +9555,8 @@ public class PartitionedRegion extends LocalRegion
           "Transactional data moved, due to rebalancing.",
           pbe);
     } catch (RegionDestroyedException ignore) {
-      // TODO: why is this purposely not wrapping the original cause?
-      throw new TransactionDataNotColocatedException(
-          String.format("Key %s is not colocated with transaction",
-              entryKey));
+      throw new TransactionDataRebalancedException(
+          "Transactional data moved, due to rebalancing.");
     }
     return br;
   }
