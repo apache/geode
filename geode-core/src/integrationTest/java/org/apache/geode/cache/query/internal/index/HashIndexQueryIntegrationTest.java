@@ -61,15 +61,17 @@ public class HashIndexQueryIntegrationTest {
     CacheUtils.startCache();
     qs = CacheUtils.getQueryService();
     observer = new MyQueryObserverAdapter();
-    QueryObserverHolder.setInstance(observer);
+    // QueryObserverHolder.setInstance(observer);
   }
 
   private void createJoinTable(int numEntries) throws Exception {
-    joinRegion = CacheUtils.createRegion("portfolios2", Portfolio.class);
+    joinRegion = createPartitionedRegion("portfolios2");// CacheUtils.createRegion("portfolios2",
+                                                        // Portfolio.class);
 
     for (int i = 0; i < numEntries; i++) {
       Portfolio p = new Portfolio(i);
-      joinRegion.put("" + i, p);
+      p.positions.put("IBM", "HELLO");
+      joinRegion.put(i, p);
     }
   }
 
@@ -94,12 +96,12 @@ public class HashIndexQueryIntegrationTest {
   private void helpTestHashIndexForQuery(String query, String indexedExpression, String regionPath)
       throws Exception {
     SelectResults nonIndexedResults = (SelectResults) qs.newQuery(query).execute();
-    assertFalse(observer.indexUsed);
+    // assertFalse(observer.indexUsed);
 
-    index = qs.createHashIndex("idHash", indexedExpression, regionPath);
+    // index = qs.createHashIndex("idHash", indexedExpression, regionPath);
     SelectResults indexedResults = (SelectResults) qs.newQuery(query).execute();
     assertEquals(nonIndexedResults.size(), indexedResults.size());
-    assertTrue(observer.indexUsed);
+    // assertTrue(observer.indexUsed);
     assertTrue(indexedResults.size() > 0);
   }
 
@@ -335,6 +337,20 @@ public class HashIndexQueryIntegrationTest {
     Index index = qs.createIndex("index2", "p2.ID", "/portfolios2 p2");
     helpTestHashIndexForQuery(
         "Select * FROM /portfolios p, /portfolios2 p2 where (p.ID = 1 or p.ID = 2 )and p.ID = p2.ID");
+  }
+
+  /**
+   * Tests that hash index is used and that it returns the correct result
+   */
+  @Test
+  public void testHashIndexAndEquiJoinForSingleResultQueryWithPrimaryKeyIndex() throws Exception {
+    region = createPartitionedRegion("portfolios");
+    createData(region, 200);
+    createJoinTable(400);
+    Index index = qs.createIndex("index2", "p.positions['IBM']", "/portfolios p");
+    // Index keyindex = qs.createKeyIndex("key", "p2.ID", "/portfolios2 p2");
+    helpTestHashIndexForQuery(
+        "<trace>select i,p from /portfolios i, /portfolios2 p where i.ID = p.ID and i.positions['IBM']='HELLO'");
   }
 
   /**
@@ -1259,18 +1275,18 @@ public class HashIndexQueryIntegrationTest {
     assertTrue(observer.indexUsed);
   }
 
-  private void createLocalRegion(String regionName) throws ParseException {
-    createLocalRegion(regionName, true);
+  private Region createLocalRegion(String regionName) throws ParseException {
+    return createLocalRegion(regionName, true);
   }
 
-  private void createLocalRegion(String regionName, boolean synchMaintenance)
+  private Region createLocalRegion(String regionName, boolean synchMaintenance)
       throws ParseException {
     Cache cache = CacheUtils.getCache();
     AttributesFactory attributesFactory = new AttributesFactory();
     attributesFactory.setDataPolicy(DataPolicy.NORMAL);
     attributesFactory.setIndexMaintenanceSynchronous(synchMaintenance);
     RegionAttributes regionAttributes = attributesFactory.create();
-    region = cache.createRegion(regionName, regionAttributes);
+    return cache.createRegion(regionName, regionAttributes);
   }
 
   private void createReplicatedRegion(String regionName) throws ParseException {
@@ -1297,8 +1313,8 @@ public class HashIndexQueryIntegrationTest {
     region = cache.createRegion(regionName, regionAttributes);
   }
 
-  private void createPartitionedRegion(String regionName) throws ParseException {
-    createLocalRegion(regionName, true);
+  private Region createPartitionedRegion(String regionName) throws ParseException {
+    return createLocalRegion(regionName, true);
   }
 
   private void createPartitionedRegion(String regionName, boolean synchMaintenance)
@@ -1315,7 +1331,8 @@ public class HashIndexQueryIntegrationTest {
   private void createData(Region region, int numEntries) {
     for (int i = 0; i < numEntries; i++) {
       Portfolio p = new Portfolio(i);
-      region.put("" + i, p);
+      p.positions.put("IBM", "HELLO");
+      region.put(i, p);
     }
   }
 

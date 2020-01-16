@@ -633,7 +633,8 @@ public class OffHeapStoredObject extends AbstractStoredObject
       if ((rawBits & MAGIC_MASK) != MAGIC_NUMBER) {
         // same as uc == 0
 
-        LogService.getLogger().info("JASON Magic number didn't match?!?!:" + Long.toHexString(memAddr));
+        LogService.getLogger()
+            .info("JASON Magic number didn't match?!?!:" + Long.toHexString(memAddr));
         // TODO MAGIC_NUMBER rethink its use and interaction with compactor fragments
         return false;
       }
