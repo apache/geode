@@ -16,6 +16,8 @@
 package org.apache.geode.management.internal.cli.commands;
 
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.File;
 import java.nio.file.Paths;
 
@@ -26,6 +28,8 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.test.compiler.ClassBuilder;
 import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -88,5 +92,16 @@ public class CommandOverHttpTest {
     gfshRule.executeAndAssertThat("export config --dir=" + dir).statusIsSuccess()
         .containsOutput("File saved to " + Paths.get(dir, "server-cache.xml").toString())
         .containsOutput("File saved to " + Paths.get(dir, "server-gf.properties").toString());
+  }
+
+  @Test
+  public void commandEncodeDecodeProperly() throws Exception {
+    Region<Object, Object> testRegion =
+        server.getCache().createRegionFactory(RegionShortcut.REPLICATE).create("test");
+    // this command would not fail because of parameter url encoding/decoding
+    gfshRule.executeAndAssertThat("put --region=test --key='k 1' --value=#abdf%dgadf")
+        .statusIsSuccess();
+
+    assertThat(testRegion.get("k 1")).isEqualTo("#abdf%dgadf");
   }
 }
