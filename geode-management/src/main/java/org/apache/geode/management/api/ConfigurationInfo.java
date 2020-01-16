@@ -28,17 +28,24 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.geode.management.configuration.AbstractConfiguration;
 import org.apache.geode.management.runtime.RuntimeInfo;
 
+/**
+ * This holds the configuration of a particular entity in the cluster. It includes the id of the
+ * entity and a list of configuration per group on the cluster
+ *
+ * @param <T> the config type
+ * @param <R> the runtimeInfo type
+ */
 public class ConfigurationInfo<T extends AbstractConfiguration<R>, R extends RuntimeInfo> {
   private String id;
   @JsonInclude
   @JsonProperty
-  private List<ConfigurationResult<T, R>> groupResults = new ArrayList<>();
+  private List<ConfigurationResult<T, R>> configurationByGroup = new ArrayList<>();
 
   public ConfigurationInfo() {}
 
-  public ConfigurationInfo(String id, List<ConfigurationResult<T, R>> groupResults) {
+  public ConfigurationInfo(String id, List<ConfigurationResult<T, R>> configurationByGroup) {
     this.id = id;
-    this.groupResults = groupResults;
+    this.configurationByGroup = configurationByGroup;
   }
 
   public String getId() {
@@ -49,24 +56,24 @@ public class ConfigurationInfo<T extends AbstractConfiguration<R>, R extends Run
     this.id = id;
   }
 
-  public List<ConfigurationResult<T, R>> getGroupResults() {
-    return groupResults;
+  public List<ConfigurationResult<T, R>> getConfigurationByGroup() {
+    return configurationByGroup;
   }
 
-  public void setGroupResults(List<ConfigurationResult<T, R>> groupResults) {
-    this.groupResults = groupResults;
+  public void setConfigurationByGroup(List<ConfigurationResult<T, R>> configurationByGroup) {
+    this.configurationByGroup = configurationByGroup;
   }
 
   @JsonIgnore
   public List<T> getConfigurations() {
-    return groupResults.stream()
+    return configurationByGroup.stream()
         .map(ConfigurationResult::getConfiguration)
         .collect(toList());
   }
 
   @JsonIgnore
   public List<R> getRuntimeInfos() {
-    return groupResults.stream()
+    return configurationByGroup.stream()
         .flatMap(r -> r.getRuntimeInfo().stream())
         .collect(toList());
   }
@@ -81,19 +88,19 @@ public class ConfigurationInfo<T extends AbstractConfiguration<R>, R extends Run
     }
     ConfigurationInfo<?, ?> that = (ConfigurationInfo<?, ?>) o;
     return Objects.equals(id, that.id) &&
-        Objects.equals(groupResults, that.groupResults);
+        Objects.equals(configurationByGroup, that.configurationByGroup);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, groupResults);
+    return Objects.hash(id, configurationByGroup);
   }
 
   @Override
   public String toString() {
     return "ConfigurationInfo{" +
         "id='" + id + '\'' +
-        ", groupResults=" + groupResults +
+        ", groupResults=" + configurationByGroup +
         '}';
   }
 }

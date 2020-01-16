@@ -32,6 +32,8 @@ import org.apache.geode.management.runtime.RuntimeInfo;
  * A simple object that holds a configuration object and its corresponding runtime info on each
  * member.
  *
+ * This represents the configuration per group and it's corresponding member runtimeInfo
+ *
  * @param <T> the config type
  * @param <R> the runtimeInfo type
  */

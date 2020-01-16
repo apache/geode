@@ -155,7 +155,7 @@ public class ListIndexManagementDUnitTest {
           .isEqualTo("/region1");
       softly.assertThat(indexConfig.getExpression()).as("get index: expression").isEqualTo("id");
       ConfigurationResult<Index, IndexInfo> configurationResult =
-          cms.get(this.indexConfig).getResult().getGroupResults().get(0);
+          cms.get(this.indexConfig).getResult().getConfigurationByGroup().get(0);
       Index indexConfigTwo = configurationResult.getConfiguration();
       softly.assertThat(indexConfigTwo.getLinks().getLinks()).as("get index: links key")
           .containsKey("region");

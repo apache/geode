@@ -92,14 +92,20 @@ public class MemberManagementServiceRestIntegrationTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.memberStatuses").doesNotExist())
         .andExpect(jsonPath("$.statusCode", is("OK")))
-        .andExpect(jsonPath("$.result.runtimeInfo[*].memberName", contains("locator-0")))
-        .andExpect(jsonPath("$.result.runtimeInfo[0].locatorPort", greaterThan(0)))
-        .andExpect(jsonPath("$.result.runtimeInfo[0].server", is(false)))
-        .andExpect(jsonPath("$.result.runtimeInfo[0].status", is("online")))
-        .andExpect(jsonPath("$.result.runtimeInfo[0].cacheServerInfo").doesNotExist())
-        .andExpect(jsonPath("$.result.runtimeInfo[0].logFilePath", endsWith("locator-0.log")))
-        .andExpect(jsonPath("$.result.runtimeInfo[0].workingDirPath", notNullValue()))
-        .andExpect(jsonPath("$.result.runtimeInfo[0].heapUsage", greaterThan(0)));
+        .andExpect(jsonPath("$.result.configurationByGroup[0].runtimeInfo[*].memberName",
+            contains("locator-0")))
+        .andExpect(
+            jsonPath("$.result.configurationByGroup[0].runtimeInfo[0].locatorPort", greaterThan(0)))
+        .andExpect(jsonPath("$.result.configurationByGroup[0].runtimeInfo[0].server", is(false)))
+        .andExpect(jsonPath("$.result.configurationByGroup[0].runtimeInfo[0].status", is("online")))
+        .andExpect(jsonPath("$.result.configurationByGroup[0].runtimeInfo[0].cacheServerInfo")
+            .doesNotExist())
+        .andExpect(jsonPath("$.result.configurationByGroup[0].runtimeInfo[0].logFilePath",
+            endsWith("locator-0.log")))
+        .andExpect(jsonPath("$.result.configurationByGroup[0].runtimeInfo[0].workingDirPath",
+            notNullValue()))
+        .andExpect(
+            jsonPath("$.result.configurationByGroup[0].runtimeInfo[0].heapUsage", greaterThan(0)));
   }
 
   @Test

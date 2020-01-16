@@ -88,7 +88,7 @@ public class RegionManagementController extends AbstractManagementController {
   @ApiOperation(value = "get region",
       extensions = {@Extension(properties = {
           @ExtensionProperty(name = "jqFilter",
-              value = ".result | .runtimeInfo[] + .configuration | {name:.name,type:.type,entryCount:.entryCount}")})})
+              value = ".result | .configurationByGroup[] | .runtimeInfo[] + .configuration | {name:.name,type:.type,entryCount:.entryCount}")})})
   @GetMapping(REGION_CONFIG_ENDPOINT + "/{id:.+}")
   public ClusterManagementGetResult<Region, RuntimeRegionInfo> getRegion(
       @PathVariable(name = "id") String id) {
@@ -148,7 +148,7 @@ public class RegionManagementController extends AbstractManagementController {
   @ApiOperation(value = "get index",
       extensions = {@Extension(properties = {
           @ExtensionProperty(name = "jqFilter",
-              value = ".result | .configuration | {name:.name,expression:.expression}")})})
+              value = ".result | .configurationByGroup[] | .configuration | {name:.name,expression:.expression}")})})
   @GetMapping(REGION_CONFIG_ENDPOINT + "/{regionName}" + INDEXES + "/{id:.+}")
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ', 'QUERY')")
   public ClusterManagementGetResult<Index, IndexInfo> getIndex(

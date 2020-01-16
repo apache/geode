@@ -434,7 +434,7 @@ public class LocatorClusterManagementServiceTest {
 
     ClusterManagementGetResult<Region, RuntimeRegionInfo> getResult = service.get(filter);
 
-    assertThat(getResult.getResult().getGroupResults()).isSameAs(configurationResults);
+    assertThat(getResult.getResult().getConfigurationByGroup()).isSameAs(configurationResults);
   }
 
   @Test

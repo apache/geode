@@ -27,20 +27,20 @@ import org.apache.geode.management.runtime.RuntimeInfo;
 @Experimental
 public class ClusterManagementGetResult<T extends AbstractConfiguration<R>, R extends RuntimeInfo>
     extends ClusterManagementResult {
-  private ConfigurationInfo<T, R> configurationInfo;
+  private ConfigurationInfo<T, R> configurationById;
 
   public ClusterManagementGetResult() {}
 
-  public ClusterManagementGetResult(ConfigurationInfo<T, R> configurationInfo) {
-    this.configurationInfo = configurationInfo;
+  public ClusterManagementGetResult(ConfigurationInfo<T, R> configurationById) {
+    this.configurationById = configurationById;
   }
 
   public ConfigurationInfo<T, R> getResult() {
-    return configurationInfo;
+    return configurationById;
   }
 
   public void setResult(ConfigurationInfo<T, R> configurationInfo) {
-    this.configurationInfo = configurationInfo;
+    this.configurationById = configurationInfo;
   }
 
   @Override
@@ -55,18 +55,18 @@ public class ClusterManagementGetResult<T extends AbstractConfiguration<R>, R ex
       return false;
     }
     ClusterManagementGetResult<?, ?> that = (ClusterManagementGetResult<?, ?>) o;
-    return Objects.equals(configurationInfo, that.configurationInfo);
+    return Objects.equals(configurationById, that.configurationById);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), configurationInfo);
+    return Objects.hash(super.hashCode(), configurationById);
   }
 
   @Override
   public String toString() {
     return "ClusterManagementGetResult{" +
-        "configurationInfo=" + configurationInfo +
+        "configurationInfo=" + configurationById +
         "} " + super.toString();
   }
 }
