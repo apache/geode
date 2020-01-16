@@ -11,6 +11,7 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
+ *
  */
 
 package org.apache.geode.management.internal.api;
@@ -22,13 +23,16 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.execute.FunctionException;
@@ -44,9 +48,8 @@ import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.management.api.ClusterManagementService;
-import org.apache.geode.management.builder.ClusterManagementServiceBuilder;
-import org.apache.geode.management.internal.PlainClusterManagementServiceBuilder;
+import org.apache.geode.management.api.ClusterManagementServiceConnectionConfig;
+import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.internal.SSLUtil;
 import org.apache.geode.management.internal.configuration.messages.ClusterManagementServiceInfo;
 import org.apache.geode.management.internal.configuration.messages.ClusterManagementServiceInfoRequest;
@@ -54,34 +57,32 @@ import org.apache.geode.management.internal.functions.GetMemberInformationFuncti
 import org.apache.geode.management.runtime.MemberInformation;
 import org.apache.geode.security.AuthInitialize;
 
+/**
+ * Concrete implementation of {@link ClusterManagementServiceConnectionConfig} which can be used
+ * to derive most (if not all) of the connection properties from an existing {@link Cache} or
+ * {@link ClientCache}.
+ *
+ * @see ClusterManagementServiceBuilder
+ */
+@Experimental
+public class GeodeClusterManagementServiceConnectionConfig
+    implements ClusterManagementServiceConnectionConfig {
 
-public class GeodeClusterManagementServiceBuilder implements
-    ClusterManagementServiceBuilder.GeodeBuilder {
+  private static final Logger logger = LogService.getLogger();
+
+  private String host;
+  private int port;
+  private String username;
+  private String password;
+  private HostnameVerifier hostnameVerifier = new NoopHostnameVerifier();
+  private SSLContext sslContext;
+  private String authToken;
 
   @Immutable
   private static final GetMemberInformationFunction MEMBER_INFORMATION_FUNCTION =
       new GetMemberInformationFunction();
 
-  private static final Logger logger = LogService.getLogger();
-
-  private GemFireCache cache;
-
-  private PlainClusterManagementServiceBuilder javaBuilder =
-      new PlainClusterManagementServiceBuilder();
-
-  public GeodeClusterManagementServiceBuilder setCredentials(String username,
-      String password) {
-    javaBuilder.setCredentials(username, password);
-    return this;
-  }
-
-  @Override
-  public ClusterManagementServiceBuilder.GeodeBuilder setAuthToken(String authToken) {
-    javaBuilder.setAuthToken(authToken);
-    return this;
-  }
-
-  public GeodeClusterManagementServiceBuilder setCache(GemFireCache cache) {
+  public GeodeClusterManagementServiceConnectionConfig(GemFireCache cache) {
     GemFireCacheImpl cacheImpl = (GemFireCacheImpl) cache;
     if (cacheImpl.isServer()) {
       setServerCache(cacheImpl);
@@ -90,16 +91,62 @@ public class GeodeClusterManagementServiceBuilder implements
     } else {
       throw new IllegalArgumentException("Need a cache instance in order to build the service.");
     }
+  }
 
-    this.cache = cache;
+  @Override
+  public String getHost() {
+    return host;
+  }
+
+  @Override
+  public int getPort() {
+    return port;
+  }
+
+  @Override
+  public String getAuthToken() {
+    return this.authToken;
+  }
+
+  public GeodeClusterManagementServiceConnectionConfig setAuthToken(String authToken) {
+    this.authToken = authToken;
     return this;
   }
 
-  public ClusterManagementService build() {
-    if (cache == null) {
-      throw new IllegalArgumentException("Need a cache instance in order to build the service.");
-    }
-    return javaBuilder.build();
+  @Override
+  public SSLContext getSslContext() {
+    return sslContext;
+  }
+
+  @Override
+  public String getUsername() {
+    return username;
+  }
+
+  public GeodeClusterManagementServiceConnectionConfig setUsername(String username) {
+    this.username = username;
+    return this;
+  }
+
+  @Override
+  public String getPassword() {
+    return password;
+  }
+
+  public GeodeClusterManagementServiceConnectionConfig setPassword(String password) {
+    this.password = password;
+    return this;
+  }
+
+  @Override
+  public HostnameVerifier getHostnameVerifier() {
+    return this.hostnameVerifier;
+  }
+
+  public GeodeClusterManagementServiceConnectionConfig setHostnameVerifier(
+      HostnameVerifier hostnameVerifier) {
+    this.hostnameVerifier = hostnameVerifier;
+    return this;
   }
 
   private void setServerCache(GemFireCacheImpl cache) {
@@ -114,24 +161,26 @@ public class GeodeClusterManagementServiceBuilder implements
   }
 
   private void setClientCache(ClientCache clientCache) {
+    DistributionConfig config;
+    ClusterManagementServiceInfo cmsInfo;
+
     List<InetSocketAddress> locators = clientCache.getDefaultPool().getLocators();
 
     if (locators.size() == 0) {
       throw new IllegalStateException(
           "the client needs to have a client pool connected with a locator.");
     }
-    DistributionConfig config = ((GemFireCacheImpl) clientCache).getSystem().getConfig();
+    config = ((GemFireCacheImpl) clientCache).getSystem().getConfig();
     TcpClient client =
         new TcpClient(asTcpSocketCreator(SocketCreatorFactory.setDistributionConfig(config)
             .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
             InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
             InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());
-    ClusterManagementServiceInfo cmsInfo = null;
+    cmsInfo = null;
     for (InetSocketAddress locator : locators) {
       try {
-        cmsInfo =
-            (ClusterManagementServiceInfo) client.requestToServer(locator,
-                new ClusterManagementServiceInfoRequest(), 1000, true);
+        cmsInfo = (ClusterManagementServiceInfo) client.requestToServer(locator,
+            new ClusterManagementServiceInfoRequest(), 1000, true);
 
         // do not try anymore if we found one that has cms running
         if (cmsInfo.isRunning()) {
@@ -149,15 +198,17 @@ public class GeodeClusterManagementServiceBuilder implements
       throw new IllegalStateException(
           "Unable to discover a locator that has ClusterManagementService running.");
     }
+
     configureBuilder(config, cmsInfo);
   }
 
   private void configureBuilder(DistributionConfig config,
       ClusterManagementServiceInfo cmsInfo) {
-    javaBuilder.setHostAddress(cmsInfo.getHostName(), cmsInfo.getHttpPort());
+    this.host = cmsInfo.getHostName();
+    this.port = cmsInfo.getHttpPort();
     // if user didn't pass in a username and the locator requires credentials, use the credentials
     // user used to create the client cache
-    if (cmsInfo.isSecured() && javaBuilder.getUsername() == null) {
+    if (cmsInfo.isSecured() && getUsername() == null) {
       Properties securityProps = config.getSecurityProps();
       String username = securityProps.getProperty(AuthInitialize.SECURITY_USERNAME);
       String password = securityProps.getProperty(AuthInitialize.SECURITY_PASSWORD);
@@ -166,7 +217,8 @@ public class GeodeClusterManagementServiceBuilder implements
             "You will need to set the buildWithHostAddress username and password or specify security-username and security-password in the properties when starting this geode server/client.";
         throw new IllegalStateException(message);
       }
-      javaBuilder.setCredentials(username, password);
+      this.username = username;
+      this.password = password;
     }
 
     if (cmsInfo.isSSL()) {
@@ -177,12 +229,9 @@ public class GeodeClusterManagementServiceBuilder implements
             "This server/client needs to have ssl-truststore or ssl-use-default-context specified in order to use cluster management service.");
       }
 
-      SSLContext sslContext = SSLUtil.createAndConfigureSSLContext(sslConfig, false);
-      javaBuilder.setSslContext(sslContext);
-      javaBuilder.setHostnameVerifier(new NoopHostnameVerifier());
+      this.sslContext = SSLUtil.createAndConfigureSSLContext(sslConfig, false);
     }
   }
-
 
   private ClusterManagementServiceInfo getClusterManagementServiceInfo(
       Set<InternalDistributedMember> locators) {
@@ -227,4 +276,5 @@ public class GeodeClusterManagementServiceBuilder implements
     }
     return host;
   }
+
 }

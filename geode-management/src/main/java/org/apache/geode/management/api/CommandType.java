@@ -11,29 +11,21 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
+ *
  */
 
-package org.apache.geode.management.builder;
+package org.apache.geode.management.api;
 
-import org.apache.geode.cache.GemFireCache;
-import org.apache.geode.management.internal.api.GeodeClusterManagementServiceBuilder;
+import org.apache.geode.annotations.Experimental;
 
 /**
- * this builder allows you to build a ClusterManagementService using a Geode Cache (either
- * ClientCache or server Cache)
+* Commands used by {@link ClusterManagementServiceTransport} which mimic HTTP verbs.
  */
-public class ClusterManagementServiceBuilder {
-
-  public static GeodeBuilder buildWithCache() {
-    return new GeodeClusterManagementServiceBuilder();
-  }
-
-  public interface GeodeBuilder extends
-      org.apache.geode.management.client.ClusterManagementServiceBuilder.Builder {
-    GeodeBuilder setCredentials(String username, String password);
-
-    GeodeBuilder setAuthToken(String authToken);
-
-    GeodeBuilder setCache(GemFireCache cache);
-  }
+@Experimental
+public enum CommandType {
+  CREATE,
+  READ,
+  LIST,
+  UPDATE,
+  DELETE
 }
