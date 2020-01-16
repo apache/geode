@@ -127,8 +127,8 @@ public class IndexRepositoryFactory {
       }
       return repo;
     } catch (IOException e) {
-      logger.info("Exception thrown while constructing Lucene Index for bucket:" + bucketId
-          + " for file region:" + fileAndChunkBucket.getFullPath());
+      logger.warn("Exception thrown while constructing Lucene Index for bucket:" + bucketId
+          + " for file region:" + fileAndChunkBucket.getFullPath(), e);
       return null;
     } catch (CacheClosedException e) {
       logger.info("CacheClosedException thrown while constructing Lucene Index for bucket:"
