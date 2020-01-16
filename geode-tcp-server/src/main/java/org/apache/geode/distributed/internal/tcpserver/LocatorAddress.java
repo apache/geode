@@ -20,7 +20,7 @@ import org.apache.commons.validator.routines.InetAddressValidator;
 
 public class LocatorAddress {
 
-  private final InetSocketAddress socketInetAddress;
+  private InetSocketAddress socketInetAddress;
   private final String hostname;
   private final int port;
   private final boolean isIpString;
@@ -44,7 +44,8 @@ public class LocatorAddress {
     if (this.isIpString) {
       return this.socketInetAddress;
     } else {
-      return new InetSocketAddress(hostname, this.socketInetAddress.getPort());
+      this.socketInetAddress = new InetSocketAddress(hostname, this.socketInetAddress.getPort());
+      return this.socketInetAddress;
     }
   }
 
@@ -64,6 +65,12 @@ public class LocatorAddress {
    */
   public InetSocketAddress getSocketInetAddressNoLookup() {
     return this.socketInetAddress;
+  }
+
+  public void updateSocketInetAddress() {
+    if (!this.isIpString) {
+      this.socketInetAddress = new InetSocketAddress(hostname, this.socketInetAddress.getPort());
+    }
   }
 
   @Override
