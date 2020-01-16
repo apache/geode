@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.internal.cache.RegionEntry;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * All access to this class should be done through the static methods of ReferenceCountHelper.
@@ -260,7 +260,8 @@ class ReferenceCountHelperImpl {
    * given address.
    */
   void freeRefCountInfo(Long address) {
-    LogService.getLogger().info("JASON free reference count:" + Long.toHexString(address) + " and is ref count tracked:" + trackReferenceCounts());
+    LogService.getLogger().info("JASON free reference count:" + Long.toHexString(address)
+        + " and is ref count tracked:" + trackReferenceCounts());
     if (!trackReferenceCounts())
       return;
     List<RefCountChangeInfo> freedInfo = stacktraces.remove(address);

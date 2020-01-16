@@ -197,8 +197,7 @@ public abstract class AbstractRegionMapPut {
     } else {
       try {
         r.run();
-      }
-      catch (Exception e ) {
+      } catch (Exception e) {
         logger.info("JASON exception thrown in doWithIndexInUpdateMode", e);
         throw e;
       }

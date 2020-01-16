@@ -1940,8 +1940,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
       } finally {
         if (mayHaveOffHeapReferences()) {
           OffHeapHelper.releaseWithNoTracking(v);
-        }
-        else {
+        } else {
           logger.info("JASON WHOOOOOOOOOOO we didn't release?!");
         }
       }

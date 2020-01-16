@@ -281,11 +281,10 @@ public abstract class AbstractRegionMap extends BaseRegionMap
           && ((StoredObject) v).hasRefCount()) {
         if (getEntryMap().remove(key, regionEntry)) {
           ((OffHeapRegionEntry) regionEntry).release();
-        }
-        else {
+        } else {
           logger.info("JASON WOOO should have released" + regionEntry);
         }
-        //JASON look here
+        // JASON look here
       }
     }
     return oldRe;

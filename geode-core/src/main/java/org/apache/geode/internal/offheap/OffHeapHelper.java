@@ -16,9 +16,9 @@ package org.apache.geode.internal.offheap;
 
 import org.apache.geode.internal.cache.CachedDeserializableFactory;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Unretained;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Utility class that provides static method to do some common tasks for off-heap references.

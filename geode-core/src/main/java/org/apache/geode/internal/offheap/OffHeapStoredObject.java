@@ -26,9 +26,9 @@ import org.apache.geode.internal.cache.EntryBits;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.RegionEntryContext;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.geode.internal.serialization.DSCODE;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * A class that stores a Java object in off-heap memory. See {@link AddressableMemoryManager} for
@@ -624,7 +624,7 @@ public class OffHeapStoredObject extends AbstractStoredObject
 
   public static boolean retain(long memAddr) {
     MemoryAllocatorImpl.validateAddress(memAddr);
-      LogService.getLogger().info("JASON retain for " + Long.toHexString(memAddr), new Exception());
+    LogService.getLogger().info("JASON retain for " + Long.toHexString(memAddr), new Exception());
     int uc;
     int rawBits;
     int retryCount = 0;

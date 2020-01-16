@@ -489,16 +489,16 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
     if (isOffHeapReference(ref) && isThisRegionBeingClosedOrDestroyed(context)) {
       ((Releasable) this).release();
     }
-//    try {
-//      Thread.sleep(1000);
-//      if (isOffHeapReference(ref) && isThisRegionBeingClosedOrDestroyed(context)) {
-//        ((Releasable) this).release();
-//        logger.info("JASON race condition???", new Exception());
-//      }
-//    } catch (InterruptedException e) {
-//
-//      e.printStackTrace();
-//    }
+    // try {
+    // Thread.sleep(1000);
+    // if (isOffHeapReference(ref) && isThisRegionBeingClosedOrDestroyed(context)) {
+    // ((Releasable) this).release();
+    // logger.info("JASON race condition???", new Exception());
+    // }
+    // } catch (InterruptedException e) {
+    //
+    // e.printStackTrace();
+    // }
 
   }
 
@@ -1065,7 +1065,7 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
   }
 
 
-  //JASON CHECK HERE
+  // JASON CHECK HERE
   @Override
   @Retained(ABSTRACT_REGION_ENTRY_PREPARE_VALUE_FOR_CACHE)
   public Object prepareValueForCache(RegionEntryContext r,

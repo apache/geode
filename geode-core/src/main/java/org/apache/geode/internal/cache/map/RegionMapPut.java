@@ -266,8 +266,7 @@ public class RegionMapPut extends AbstractRegionMapPut {
         getOwner().notifyTimestampsToGateways(event);
       }
       throw ccme;
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       logger.info("JASON exception during createOrUpdateEntryss", e);
       throw e;
     }

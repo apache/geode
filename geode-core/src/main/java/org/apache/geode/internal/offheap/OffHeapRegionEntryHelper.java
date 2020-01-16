@@ -22,11 +22,11 @@ import org.apache.geode.internal.cache.RegionEntryContext;
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.internal.cache.entries.OffHeapRegionEntry;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.geode.internal.serialization.DSCODE;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * The class just has static methods that operate on instances of {@link OffHeapRegionEntry}. It
@@ -196,13 +196,13 @@ public class OffHeapRegionEntryHelper {
     final long newAddress = objectToAddress(Token.REMOVED_PHASE2);
     if (re.setAddress(oldAddress, newAddress)) {
       releaseAddress(oldAddress);
-    }
-    else {
-      LogService.getLogger().info("JASON doooooooo re failed to release entty?!?" + Long.toHexString(oldAddress));
+    } else {
+      LogService.getLogger()
+          .info("JASON doooooooo re failed to release entty?!?" + Long.toHexString(oldAddress));
     }
     /*
-       * else { if (!calledSetValue || re.getAddress() != newAddress) { expectedValue.release(); } }
-       */
+     * else { if (!calledSetValue || re.getAddress() != newAddress) { expectedValue.release(); } }
+     */
 
   }
 
