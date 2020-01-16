@@ -5571,15 +5571,20 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
     validateValue(event.basicGetNewValue());
 
-    return getDataView().putEntry(event, ifNew, ifOld, null, false, lastModified,
-        overwriteDestroyed, invokeCallbacks, throwConcurrentModificationException);
-  }
+    boolean returned = false;
+    boolean returnValue;
+    try {
+      returnValue = getDataView().putEntry(event, ifNew, ifOld, null, false, lastModified,
+              overwriteDestroyed, true, false);
+      returned = true;
+    } finally {
+      if (!returned) {
+        event.release();
+      }
+    }
 
-  public boolean virtualPut(final EntryEventImpl event, final boolean ifNew, final boolean ifOld,
-      Object expectedOldValue, boolean requireOldValue, final long lastModified,
-      final boolean overwriteDestroyed) throws TimeoutException, CacheWriterException {
-    return this.virtualPut(event, ifNew, ifOld, expectedOldValue, requireOldValue, lastModified,
-        overwriteDestroyed, true, false);
+
+    return returnValue;
   }
 
   /**
@@ -5924,7 +5929,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       notifyGatewaySender(eventType, event);
     }
     if (callDispatchListenerEvent) {
-      logger.info("JASON calling LocalRegion.dispatchListenerEvent");
+      logger.info("JASON calling LocalRegion.dispatchListenerEvent", new Exception("JASON coming in from..."));
       dispatchListenerEvent(eventType, event);
       logger.info("JASON completed calling LocalRegion.dispatchListenerEvent");
 
