@@ -166,4 +166,33 @@ public class RegionTest {
     assertThat(regionConfig.getLinks().getSelf())
         .isEqualTo("/regions/regionA");
   }
+
+  @Test
+  public void equality() {
+    Region region1 = new Region();
+    Region region2 = new Region();
+
+    assertThat(region1).as("initial state").isEqualTo(region2);
+
+    region1.setName("region");
+    region2.setName("different-region");
+    assertThat(region1).as("with different names").isNotEqualTo(region2);
+
+    region1.setName("region");
+    region2.setName("region");
+    assertThat(region1).as("with same name and no group").isEqualTo(region2);
+
+    region1.setName("region");
+    region2.setName("region");
+    region1.setGroup("group");
+    region2.setGroup("group");
+    assertThat(region1).as("with same name and same group").isEqualTo(region2);
+
+
+    region1.setName("region");
+    region2.setName("region");
+    region1.setGroup("group");
+    region2.setGroup("different-group");
+    assertThat(region1).as("with same name and different group").isNotEqualTo(region2);
+  }
 }

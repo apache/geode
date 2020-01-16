@@ -46,7 +46,7 @@ public class ClusterManagementRealizationResult extends ClusterManagementResult 
     this.memberStatuses.add(result);
     // if any member failed, status code will be error
     if (!result.isSuccess()) {
-      statusCode = StatusCode.ERROR;
+      setStatus(StatusCode.ERROR, "");
     }
   }
 

@@ -702,6 +702,7 @@ javadoc/org/apache/geode/management/api/ClusterManagementRealizationResult.html
 javadoc/org/apache/geode/management/api/ClusterManagementResult.StatusCode.html
 javadoc/org/apache/geode/management/api/ClusterManagementResult.html
 javadoc/org/apache/geode/management/api/ClusterManagementService.html
+javadoc/org/apache/geode/management/api/ConfigurationInfo.html
 javadoc/org/apache/geode/management/api/ConfigurationResult.html
 javadoc/org/apache/geode/management/api/JsonSerializable.html
 javadoc/org/apache/geode/management/api/RealizationResult.html
@@ -967,7 +968,6 @@ lib/commons-digester-2.1.jar
 lib/commons-io-2.6.jar
 lib/commons-lang3-3.9.jar
 lib/commons-logging-1.2.jar
-lib/geode-membership-0.0.0.jar
 lib/commons-math3-3.2.jar
 lib/commons-modeler-2.0.1.jar
 lib/commons-validator-1.6.jar
@@ -986,6 +986,7 @@ lib/geode-log4j-0.0.0.jar
 lib/geode-logging-0.0.0.jar
 lib/geode-lucene-0.0.0.jar
 lib/geode-management-0.0.0.jar
+lib/geode-membership-0.0.0.jar
 lib/geode-memcached-0.0.0.jar
 lib/geode-old-client-support-0.0.0.jar
 lib/geode-protobuf-0.0.0.jar

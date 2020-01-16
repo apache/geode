@@ -16,6 +16,8 @@
  */
 package org.apache.geode.management.configuration;
 
+import java.util.Objects;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.apache.geode.management.runtime.RuntimeInfo;
@@ -33,5 +35,22 @@ public abstract class GroupableConfiguration<R extends RuntimeInfo>
 
   public void setGroup(String group) {
     this.group = group;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    GroupableConfiguration<?> that = (GroupableConfiguration<?>) o;
+    return Objects.equals(group, that.group);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(group);
   }
 }
