@@ -5575,7 +5575,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     boolean returnValue;
     try {
       returnValue = getDataView().putEntry(event, ifNew, ifOld, null, false, lastModified,
-              overwriteDestroyed, true, false);
+          overwriteDestroyed, true, false);
       returned = true;
     } finally {
       if (!returned) {
@@ -5585,6 +5585,13 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
 
     return returnValue;
+  }
+
+  public boolean virtualPut(EntryEventImpl event, boolean ifNew, boolean ifOld,
+      Object expectedOldValue,
+      boolean requireOldValue, long lastModified, boolean overwriteDestroyed) {
+    return virtualPut(event, ifNew, ifOld, expectedOldValue, requireOldValue, lastModified,
+        overwriteDestroyed, true, false);
   }
 
   /**
