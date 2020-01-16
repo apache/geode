@@ -1926,7 +1926,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     try {
       RegionEntry re = getRegion().getRegionEntry(getKey());
       if (re == null) {
-        logger.info("JASON we didn't release due to null");
+        logger.info("JASON we didn't release due to null for key:" + getKey());
         return;
       }
       ReferenceCountHelper.skipRefCountTracking();

@@ -1053,6 +1053,8 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
     return prepareValueForCache(r, val, null, isEntryUpdate);
   }
 
+
+  //JASON CHECK HERE
   @Override
   @Retained(ABSTRACT_REGION_ENTRY_PREPARE_VALUE_FOR_CACHE)
   public Object prepareValueForCache(RegionEntryContext r,

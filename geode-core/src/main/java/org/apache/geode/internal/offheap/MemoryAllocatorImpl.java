@@ -303,6 +303,7 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
     if (ReferenceCountHelper.trackReferenceCounts()) {
       ReferenceCountHelper.refCountChanged(result.getAddress(), false, 1);
     }
+    logger.info("", new Exception("JASON allocating:" + result + " ref count is:" + ReferenceCountHelper.getRefCountInfo(result.getAddress()).size()));
     return result;
   }
 

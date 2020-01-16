@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.geode.annotations.internal.MakeNotStatic;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
@@ -109,6 +110,7 @@ public class ReferenceCountHelper {
    * Used internally to report that a reference count has changed.
    */
   static void refCountChanged(Long address, boolean decRefCount, int rc) {
+    LogService.getLogger().info("", new Exception("JASON ref count changed"));
     getInstance().refCountChanged(address, decRefCount, rc);
   }
 
