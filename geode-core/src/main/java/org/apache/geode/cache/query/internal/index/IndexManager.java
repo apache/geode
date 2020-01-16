@@ -1566,8 +1566,7 @@ public class IndexManager {
 
     @Override
     public boolean equals(Object other) {
-      // TODO: equals should check the class of its parameter
-      if (other == null) {
+      if (!(other instanceof IndexTask)) {
         return false;
       }
       IndexTask otherIndexTask = (IndexTask) other;

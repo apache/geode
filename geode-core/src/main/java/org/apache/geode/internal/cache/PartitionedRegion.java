@@ -9663,8 +9663,7 @@ public class PartitionedRegion extends LocalRegion
 
     @Override
     public boolean equals(Object other) {
-      // TODO: equals should always check the class of other
-      if (other == null) {
+      if (!(other instanceof IndexTask)) {
         return false;
       }
       IndexTask otherIndexTask = (IndexTask) other;
