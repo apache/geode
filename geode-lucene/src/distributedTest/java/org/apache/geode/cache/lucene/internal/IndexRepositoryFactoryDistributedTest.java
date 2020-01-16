@@ -146,7 +146,7 @@ public class IndexRepositoryFactoryDistributedTest implements Serializable {
     dataStore2.invoke(() -> {
       BucketRegion fileAndChunkBucket = getFileAndChunkBucket();
       try {
-        await().atMost(30, TimeUnit.SECONDS).untilAsserted(
+        await().atMost(10, TimeUnit.SECONDS).untilAsserted(
             () -> assertThat(fileAndChunkBucket.getBucketAdvisor().becomePrimary(false)).isTrue());
         fail("Bucket must not become primary while other member holds the lock.");
       } catch (ConditionTimeoutException ignore) {
