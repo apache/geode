@@ -100,7 +100,7 @@ public class ConfigurationInfo<T extends AbstractConfiguration<R>, R extends Run
   public String toString() {
     return "ConfigurationInfo{" +
         "id='" + id + '\'' +
-        ", groupResults=" + configurationByGroup +
+        ", configurationByGroup=" + configurationByGroup +
         '}';
   }
 }

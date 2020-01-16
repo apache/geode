@@ -99,7 +99,7 @@ public class ConfigurationInfoTest {
 
     assertThat(json)
         .containsOnlyOnce("id")
-        .containsOnlyOnce("groupResult");
+        .containsOnlyOnce("configurationByGroup");
 
     System.out.println(json);
 
