@@ -210,12 +210,12 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
     Object returnObj = null;
     try {
       pool.getStats().incLocatorRequests();
-      returnObj = locatorConnection.requestToServer(locator.getSocketInetAddressNoLookup(), request,
+      returnObj = locatorConnection.requestToServer(locator.getSocketInetAddress(), request,
           connectionTimeout, true);
       ServerLocationResponse response = (ServerLocationResponse) returnObj;
       pool.getStats().incLocatorResponses();
       if (response != null) {
-        reportLiveLocator(locator.getSocketInetAddressNoLookup());
+        reportLiveLocator(locator.getSocketInetAddress());
       }
       return response;
     } catch (IOException | ToDataException ioe) {
@@ -223,8 +223,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
         logger.warn("Encountered ToDataException when communicating with a locator.  "
             + "This is expected if the locator is shutting down.", ioe);
       }
-      reportDeadLocator(locator.getSocketInetAddressNoLookup(), ioe);
-      updateLocatorInLocatorList(locator);
+      reportDeadLocator(locator.getSocketInetAddress(), ioe);
       return null;
     } catch (ClassNotFoundException e) {
       logger.warn("Received exception from locator {}", locator, e);
@@ -233,31 +232,9 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
       if (logger.isDebugEnabled()) {
         logger.debug("Received odd response object from the locator: {}", returnObj);
       }
-      reportDeadLocator(locator.getSocketInetAddressNoLookup(), e);
+      reportDeadLocator(locator.getSocketInetAddress(), e);
       return null;
     }
-  }
-
-  /**
-   * If connecting to the locator fails with an IOException, this may be because the locator's IP
-   * has changed. Add the locator back to the list of locators using host address rather than IP.
-   * This will cause another DNS lookup, hopefully finding the locator.
-   *
-   */
-  protected void updateLocatorInLocatorList(LocatorAddress locator) {
-    // deleted due to changes in LocatorAddress
-  }
-
-  protected List<InetSocketAddress> getCurrentLocators() {
-    return locators.get().getLocators();
-  }
-
-  protected List<LocatorAddress> getCurrentLocatorsAddresses() {
-    return locators.get().getLocatorAddresses();
-  }
-
-  protected void setPool(InternalPool pool) {
-    this.pool = pool;
   }
 
   private ServerLocationResponse queryLocators(ServerLocationRequest request) {
@@ -279,7 +256,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
     return response;
   }
 
-  protected void updateLocatorList(LocatorListResponse response) {
+  private void updateLocatorList(LocatorListResponse response) {
     if (response == null)
       return;
     isBalanced = response.isBalanced();

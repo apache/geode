@@ -61,18 +61,6 @@ public class LocatorAddress {
     return socketInetAddress.getPort();
   }
 
-  /**
-   * If component has retry logic then use this method to get the InetSocketAddress address
-   * AutoConnectionSourceImpl for client has retry logic; This way client will not make DNS query
-   * each time
-   *
-   * @deprecated Use {@link #getSocketInetAddress()}
-   */
-  @Deprecated
-  public InetSocketAddress getSocketInetAddressNoLookup() {
-    return getSocketInetAddress();
-  }
-
   @Override
   public int hashCode() {
     return socketInetAddress.hashCode();

@@ -170,41 +170,6 @@ public class AutoConnectionSourceImplJUnitTest {
   }
 
   /**
-   * This test validates the AutoConnectionSourceImpl.updateLocatorInLocatorList method. That method
-   * takes InetSocketAddres of locator which unable to connect to locator. And update that
-   * InetSocketAddres with hostaddress of locator in locatorlist.
-   *
-   * In this test we validate this using identityHashCode.
-   */
-  @Test
-  public void testLocatorIpChange() {
-    int port = 11011;
-    List<InetSocketAddress> locators = new ArrayList<>();
-    InetSocketAddress floc1 = new InetSocketAddress("fakeLocalHost1", port);
-    InetSocketAddress floc2 = new InetSocketAddress("fakeLocalHost2", port);
-
-    locators.add(floc1);
-    locators.add(floc2);
-
-    List<LocatorAddress> la = new ArrayList<>();
-    la.add(new LocatorAddress(floc1, floc1.getHostName()));
-    la.add(new LocatorAddress(floc2, floc2.getHostName()));
-
-    AutoConnectionSourceImpl src = new AutoConnectionSourceImpl(la, "", 60 * 1000);
-
-    // This method will create a new InetSocketAddress of floc1
-    src.updateLocatorInLocatorList(new LocatorAddress(floc1, floc1.getHostName()));
-
-    List<InetSocketAddress> cLocList = src.getCurrentLocators();
-
-    Assert.assertEquals(2, cLocList.size());
-
-    for (InetSocketAddress t : cLocList) {
-      Assert.assertNotSame("Should have replaced floc1 instance", t, floc1);
-    }
-  }
-
-  /**
    * This test validates the AutoConnectionSourceImpl.addbadLocators method. That method adds
    * badLocator from badLocator list to new Locator list. And it make sure that new locator list
    * doesn't have similar entry. For that it checks hostname and port only.
@@ -418,56 +383,6 @@ public class AutoConnectionSourceImplJUnitTest {
         String.valueOf(updateLocatorInterval));
     source.start(pool);
     assertEquals(updateLocatorInterval, source.getLocatorUpdateInterval());
-  }
-
-  /**
-   * This tests validates update of IP of locator from initialLocators list.
-   * In this test we validate this using identityHashCode.
-   */
-  @Test
-  public void testinitialLocatorIpChange() {
-    int port = 11011;
-    List<InetSocketAddress> locators = new ArrayList<>();
-    InetSocketAddress floc1 = InetSocketAddress.createUnresolved("localhost", port);
-    InetSocketAddress floc2 = new InetSocketAddress("fakeLocalHost2", port);
-
-    locators.add(floc1);
-    locators.add(floc2);
-
-    List<LocatorAddress> la = new ArrayList<>();
-    la.add(new LocatorAddress(floc1, floc1.getHostName()));
-    la.add(new LocatorAddress(floc2, floc2.getHostName()));
-
-    AutoConnectionSourceImpl src = new AutoConnectionSourceImpl(la, "", 60 * 1000);
-    src.setPool(pool);
-
-    // This method will create a new InetSocketAddress of floc1
-    src.updateLocatorInLocatorList(new LocatorAddress(floc1, floc1.getHostName()));
-
-    List<LocatorAddress> cLocList = src.getCurrentLocatorsAddresses();
-
-    Assert.assertEquals(2, cLocList.size());
-
-    for (LocatorAddress t : cLocList) {
-      Assert.assertNotSame("Should have replaced floc1 instance", t.getSocketInetAddressNoLookup(),
-          floc1);
-    }
-
-    ArrayList<ServerLocation> responseLocators = new ArrayList<>();
-    responseLocators.add(new ServerLocation(floc2.getHostName(), port));
-    LocatorListResponse response = new LocatorListResponse(responseLocators, true);
-
-    src.updateLocatorList(response);
-
-    List<LocatorAddress> cLocList2 = src.getCurrentLocatorsAddresses();
-
-    Assert.assertEquals(2, cLocList2.size());
-    for (LocatorAddress t : cLocList2) {
-      Assert.assertNotSame("Should have replaced floc1 instance", t.getSocketInetAddressNoLookup(),
-          floc1);
-    }
-
-
   }
 
   private void startFakeLocator() throws IOException, InterruptedException {
