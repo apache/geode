@@ -51,7 +51,8 @@ public class GeoRadiusParameters {
   }
 
   public GeoRadiusParameters(Region<ByteArrayWrapper, ByteArrayWrapper> keyRegion,
-      List<byte[]> commandElems, CommandType cmdType) throws IllegalArgumentException,
+      List<byte[]> commandElems, CommandType cmdType)
+      throws IllegalArgumentException,
       RedisCommandParserException, MemberNotFoundException {
     byte[] radArray;
 
@@ -94,12 +95,15 @@ public class GeoRadiusParameters {
     for (; i < commandElems.size() && (new String(commandElems.get(i))).contains("with"); i++) {
       String elem = new String(commandElems.get(i));
 
-      if (elem.equals("withdist"))
+      if (elem.equals("withdist")) {
         showDist = true;
-      if (elem.equals("withcoord"))
+      }
+      if (elem.equals("withcoord")) {
         showCoord = true;
-      if (elem.equals("withhash"))
+      }
+      if (elem.equals("withhash")) {
         showHash = true;
+      }
     }
     withDist = showDist;
     withCoord = showCoord;
@@ -115,12 +119,13 @@ public class GeoRadiusParameters {
     if (i < commandElems.size() && (new String(commandElems.get(i))).contains("sc")) {
       String elem = new String(commandElems.get(i++));
 
-      if (elem.equals("asc"))
+      if (elem.equals("asc")) {
         order = SortOrder.ASC;
-      else if (elem.equals("desc"))
+      } else if (elem.equals("desc")) {
         order = SortOrder.DESC;
-      else
+      } else {
         order = SortOrder.UNSORTED;
+      }
     } else {
       order = SortOrder.UNSORTED;
     }

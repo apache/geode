@@ -115,7 +115,8 @@ public class SetExecutor extends StringExecutor {
   }
 
   private boolean setNX(Region<ByteArrayWrapper, ByteArrayWrapper> r, Command command,
-      ByteArrayWrapper key, ByteArrayWrapper valueWrapper, ExecutionHandlerContext context) {
+      ByteArrayWrapper key, ByteArrayWrapper valueWrapper,
+      ExecutionHandlerContext context) {
     checkAndSetDataType(key, context);
     Object oldValue = r.putIfAbsent(key, valueWrapper);
     if (oldValue != null) {
@@ -128,7 +129,8 @@ public class SetExecutor extends StringExecutor {
   }
 
   private boolean setXX(Region<ByteArrayWrapper, ByteArrayWrapper> r, Command command,
-      ByteArrayWrapper key, ByteArrayWrapper valueWrapper, ExecutionHandlerContext context) {
+      ByteArrayWrapper key, ByteArrayWrapper valueWrapper,
+      ExecutionHandlerContext context) {
     if (r.containsKey(key)) {
       checkAndSetDataType(key, context);
       r.put(key, valueWrapper);

@@ -69,8 +69,10 @@ public class LIndexExecutor extends ListExecutor {
      */
 
     if (redisIndex < 0)
-      // Since the redisIndex is negative here, this will reset it to be a standard 0 based index
+    // Since the redisIndex is negative here, this will reset it to be a standard 0 based index
+    {
       redisIndex = listSize + redisIndex;
+    }
 
     /*
      * If the index is still less than 0 that means the index has shot off back past the beginning,
@@ -109,9 +111,10 @@ public class LIndexExecutor extends ListExecutor {
 
     SelectResults<?> results = (SelectResults<?>) query.execute(params);
 
-    if (results == null || results.size() == 0 || results.size() <= index)
+    if (results == null || results.size() == 0 || results.size() <= index) {
       return null;
-    else
+    } else {
       return (Struct) results.asList().get(index);
+    }
   }
 }

@@ -44,7 +44,7 @@ import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.KeyRegistrar;
 import org.apache.geode.redis.internal.RegionProvider;
 
-public class SetExecutorTest {
+public class StringSetExecutorJUnitTest {
 
   private Command command;
   private ExecutionHandlerContext context;

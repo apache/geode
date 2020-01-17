@@ -14,28 +14,72 @@
  */
 package org.apache.geode.redis.internal.executor.hash;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.TimeoutException;
+import org.apache.geode.redis.internal.AutoCloseableLock;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisDataType;
+import org.apache.geode.redis.internal.RedisLockService;
+import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 
+/**
+ * Executor for handling HASH datatypes
+ */
 public abstract class HashExecutor extends AbstractExecutor {
+
 
   protected final int FIELD_INDEX = 2;
 
-  @Override
-  @SuppressWarnings("unchecked")
-  protected Region<ByteArrayWrapper, ByteArrayWrapper> getOrCreateRegion(
-      ExecutionHandlerContext context, ByteArrayWrapper key, RedisDataType type) {
-    return (Region<ByteArrayWrapper, ByteArrayWrapper>) context.getRegionProvider()
-        .getOrCreateRegion(key, type, context);
-  }
-
-  @SuppressWarnings("unchecked")
-  protected Region<ByteArrayWrapper, ByteArrayWrapper> getRegion(ExecutionHandlerContext context,
+  /**
+   * Get the save map
+   *
+   * @param context the context
+   * @param key the region hash key region:<key>
+   * @return the map data
+   */
+  protected Map<ByteArrayWrapper, ByteArrayWrapper> getMap(ExecutionHandlerContext context,
       ByteArrayWrapper key) {
-    return (Region<ByteArrayWrapper, ByteArrayWrapper>) context.getRegionProvider().getRegion(key);
+    Region<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>> region =
+        context.getRegionProvider().getHashRegion();
+
+    Map<ByteArrayWrapper, ByteArrayWrapper> map = region.get(key);
+    if (map == null) {
+      map = new HashMap<>();
+    }
+
+    return map;
   }
 
+  protected AutoCloseableLock withRegionLock(ExecutionHandlerContext context, ByteArrayWrapper key)
+      throws InterruptedException, TimeoutException {
+    RedisLockService lockService = context.getHashLockService();
+
+    return lockService.lock(key);
+  }
+
+
+  /**
+   * Save the map information to a region
+   *
+   * @param map the map to save
+   * @param context the execution handler context
+   * @param key the raw HASH key
+   */
+  protected void saveMap(Map<ByteArrayWrapper, ByteArrayWrapper> map,
+      ExecutionHandlerContext context, ByteArrayWrapper key) {
+
+    if (map == null) {
+      return;
+    }
+
+    RegionProvider rp = context.getRegionProvider();
+
+    rp.getHashRegion().put(key, map);
+    context.getKeyRegistrar().register(key, RedisDataType.REDIS_HASH);
+  }
 }

@@ -43,16 +43,18 @@ public class PFMergeExecutor extends HllExecutor {
     Region<ByteArrayWrapper, HyperLogLogPlus> keyRegion =
         context.getRegionProvider().gethLLRegion();
     HyperLogLogPlus mergedHLL = keyRegion.get(destKey);
-    if (mergedHLL == null)
+    if (mergedHLL == null) {
       mergedHLL = new HyperLogLogPlus(DEFAULT_HLL_DENSE);
+    }
     List<HyperLogLogPlus> hlls = new ArrayList<HyperLogLogPlus>();
 
     for (int i = 2; i < commandElems.size(); i++) {
       ByteArrayWrapper k = new ByteArrayWrapper(commandElems.get(i));
       checkDataType(k, RedisDataType.REDIS_HLL, context);
       HyperLogLogPlus h = keyRegion.get(k);
-      if (h != null)
+      if (h != null) {
         hlls.add(h);
+      }
     }
     if (hlls.isEmpty()) {
       context.getRegionProvider().removeKey(destKey);

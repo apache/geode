@@ -15,6 +15,7 @@
 package org.apache.geode.redis.internal.executor.set;
 
 import java.util.List;
+import java.util.Set;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
@@ -26,37 +27,43 @@ import org.apache.geode.redis.internal.RedisDataType;
 
 public class SIsMemberExecutor extends SetExecutor {
 
-  private final int EXISTS = 1;
+  private static final int EXISTS = 1;
 
-  private final int NOT_EXISTS = 0;
+  private static final int NOT_EXISTS = 0;
 
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
-    if (commandElems.size() < 3) {
+    if (commandElems.size() != 3) {
       command
           .setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.SISMEMBER));
       return;
     }
 
     ByteArrayWrapper key = command.getKey();
-    ByteArrayWrapper member = new ByteArrayWrapper(commandElems.get(2));
-
-    checkDataType(key, RedisDataType.REDIS_SET, context);
-    @SuppressWarnings("unchecked")
-    Region<ByteArrayWrapper, Boolean> keyRegion =
-        (Region<ByteArrayWrapper, Boolean>) context.getRegionProvider().getRegion(key);
-
-    if (keyRegion == null) {
+    if (!context.getKeyRegistrar().isRegistered(key)) {
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_EXISTS));
       return;
     }
 
-    if (keyRegion.containsKey(member))
-      command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), EXISTS));
-    else
-      command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_EXISTS));
-  }
+    ByteArrayWrapper member = new ByteArrayWrapper(commandElems.get(2));
 
+    Region<ByteArrayWrapper, Set<ByteArrayWrapper>> region = this.getRegion(context);
+
+    Set<ByteArrayWrapper> set = region.get(key);
+
+    if (set == null) {
+      command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_EXISTS));
+      return;
+    }
+
+    if (set.contains(member)) {
+      command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), EXISTS));
+      // save key for next quick lookup
+      context.getKeyRegistrar().register(key, RedisDataType.REDIS_SET);
+    } else {
+      command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_EXISTS));
+    }
+  }
 }
