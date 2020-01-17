@@ -214,6 +214,7 @@ set -x
 cd ${GEODE_BENCHMARKS}
 BMTAR=apache-geode-benchmarks-${VERSION}-src.tgz
 git clean -dxf && tar czf ${BMTAR} .travis.yml *
+gpg --armor -u ${SIGNING_KEY} -b ${BMTAR}
 if which shasum >/dev/null; then
   SHASUM=shasum
   SHASUM_OPTS="-a 256"
