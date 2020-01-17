@@ -245,31 +245,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
    *
    */
   protected void updateLocatorInLocatorList(LocatorAddress locator) {
-    if (locator.getSocketInetAddressNoLookup().getHostName() != null && !locator.isIpString()) {
-      LocatorList locatorList = locators.get();
-      List<LocatorAddress> newLocatorsList = new ArrayList<>();
-
-      for (LocatorAddress tloc : locatorList.getLocatorAddresses()) {
-        if (tloc.equals(locator)) {
-          InetSocketAddress changeLoc = new InetSocketAddress(locator.getHostName(),
-              locator.getSocketInetAddressNoLookup().getPort());
-          LocatorAddress hostAddress = new LocatorAddress(changeLoc, locator.getHostName());
-          newLocatorsList.add(hostAddress);
-          int position = initialLocators.indexOf(tloc);
-          if (position != -1) {
-            initialLocators.get(position).updateSocketInetAddress();
-          }
-        } else {
-          newLocatorsList.add(tloc);
-        }
-      }
-
-      logger.debug("updateLocatorInLocatorList locator list from: {} to {}",
-          locatorList.getLocators(), newLocatorsList);
-
-      LocatorList newLocatorList = new LocatorList(newLocatorsList);
-      locators.set(newLocatorList);
-    }
+    // deleted due to changes in LocatorAddress
   }
 
   protected List<InetSocketAddress> getCurrentLocators() {
