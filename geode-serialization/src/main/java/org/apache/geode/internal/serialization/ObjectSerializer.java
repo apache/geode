@@ -17,6 +17,14 @@ package org.apache.geode.internal.serialization;
 import java.io.DataOutput;
 import java.io.IOException;
 
+/**
+ * An ObjectSerializer is held by a DSFIDSerializer serialization service. It
+ * is passed to the toData() method of a DataSerializableFixedID embedded in a
+ * SerializationContext for use in serializing data from an output data stream.
+ * The class StaticSerialization also provides helper methods for serializing
+ * data.
+ */
+
 public interface ObjectSerializer {
 
   /**

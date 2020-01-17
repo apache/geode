@@ -13,10 +13,17 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.serialization;
+package org.apache.geode.internal.serialization.internal;
 
 
-abstract class AbstractSerializationContext {
+import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.VersionedDataStream;
+
+/**
+ * Both Serialization and Deserialization contexts implement this interface to allow
+ * a toData or fromData method to determine the Geode Version of the data stream.
+ */
+public abstract class AbstractSerializationContext {
 
   <IO> Version getVersionForDataStream(final IO in) {
     // check if this is a versioned data input
