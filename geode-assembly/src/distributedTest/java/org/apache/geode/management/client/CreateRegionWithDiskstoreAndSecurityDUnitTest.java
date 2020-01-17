@@ -26,6 +26,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.examples.SimpleSecurityManager;
+import org.apache.geode.management.api.BasicClusterManagementServiceConnectionConfig;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.configuration.Region;
@@ -78,9 +79,11 @@ public class CreateRegionWithDiskstoreAndSecurityDUnitTest {
     regionConfig.setDiskStoreName("DISKSTORE");
 
     ClusterManagementService client =
-        ClusterManagementServiceBuilder.buildWithHostAddress()
-            .setHostAddress("localhost", locator.getHttpPort())
-            .setCredentials("user", "user").build();
+        new ClusterManagementServiceBuilder().setConnectionConfig(
+            new BasicClusterManagementServiceConnectionConfig("localhost", locator.getHttpPort())
+                .setUsername("user").setPassword("user"))
+            .build();
+
     assertThatThrownBy(() -> client.create(regionConfig))
         .hasMessageContaining("UNAUTHORIZED: User not authorized for DATA:MANAGE");
   }
@@ -98,9 +101,11 @@ public class CreateRegionWithDiskstoreAndSecurityDUnitTest {
     regionConfig.setDiskStoreName("DISKSTORE");
 
     ClusterManagementService client =
-        ClusterManagementServiceBuilder.buildWithHostAddress()
-            .setHostAddress("localhost", locator.getHttpPort())
-            .setCredentials("data", "data").build();
+        new ClusterManagementServiceBuilder().setConnectionConfig(
+            new BasicClusterManagementServiceConnectionConfig("localhost", locator.getHttpPort())
+                .setUsername("data").setPassword("data"))
+            .build();
+
     assertThatThrownBy(() -> client.create(regionConfig))
         .hasMessageContaining("UNAUTHORIZED: Data not authorized for CLUSTER:WRITE:DISK");
   }
@@ -119,9 +124,11 @@ public class CreateRegionWithDiskstoreAndSecurityDUnitTest {
     regionConfig.setDiskStoreName("DISKSTORE");
 
     ClusterManagementService client =
-        ClusterManagementServiceBuilder.buildWithHostAddress()
-            .setHostAddress("localhost", locator.getHttpPort())
-            .setCredentials("data,cluster", "data,cluster").build();
+        new ClusterManagementServiceBuilder().setConnectionConfig(
+            new BasicClusterManagementServiceConnectionConfig("localhost", locator.getHttpPort())
+                .setUsername("data,cluster").setPassword("data,cluster"))
+            .build();
+
     ClusterManagementResult result = client.create(regionConfig);
     assertThat(result.isSuccessful()).isTrue();
 
@@ -131,5 +138,4 @@ public class CreateRegionWithDiskstoreAndSecurityDUnitTest {
     gfsh.executeAndAssertThat("describe region --name=REGION1").statusIsSuccess()
         .hasTableSection().hasColumn("Value").contains("DISKSTORE");
   }
-
 }

@@ -35,11 +35,13 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.context.WebApplicationContext;
 
 import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
+import org.apache.geode.management.api.RestTemplateClusterManagementServiceTransport;
 import org.apache.geode.management.configuration.Member;
 import org.apache.geode.management.internal.rest.LocatorLauncherContextLoader;
 import org.apache.geode.management.internal.rest.LocatorWebContext;
@@ -66,8 +68,10 @@ public class MemberManagementServiceDUnitTest {
   public void before() {
     cluster.setSkipLocalDistributedSystemCleanup(true);
     webContext = new LocatorWebContext(webApplicationContext);
-    client = ClusterManagementServiceBuilder.buildWithRequestFactory()
-        .setRequestFactory(webContext.getRequestFactory()).build();
+    client = new ClusterManagementServiceBuilder().setTransport(
+        new RestTemplateClusterManagementServiceTransport(
+            new RestTemplate(webContext.getRequestFactory())))
+        .build();
     cluster.startServerVM(1, webContext.getLocator().getPort());
   }
 

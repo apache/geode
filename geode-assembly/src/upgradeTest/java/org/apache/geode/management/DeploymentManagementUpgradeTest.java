@@ -27,7 +27,9 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.management.api.BasicClusterManagementServiceConnectionConfig;
 import org.apache.geode.management.api.ClusterManagementService;
+import org.apache.geode.management.api.ClusterManagementServiceConnectionConfig;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.test.compiler.JarBuilder;
@@ -66,9 +68,12 @@ public class DeploymentManagementUpgradeTest {
     gfsh.execute("start locator --name=test --port=" + ports[0] + " --http-service-port=" + ports[1]
         + " --dir=" + workingDir.getAbsolutePath() + " --J=-Dgemfire.jmx-manager-port=" + ports[2]);
 
+    ClusterManagementServiceConnectionConfig connectionConfig =
+        new BasicClusterManagementServiceConnectionConfig("localhost", ports[1]);
     ClusterManagementService cms =
-        ClusterManagementServiceBuilder.buildWithHostAddress().setHostAddress("localhost", ports[1])
-            .build();
+        new ClusterManagementServiceBuilder().setConnectionConfig(connectionConfig).build();
+    // ClusterManagementServiceBuilder.buildWithHostAddress().setHostAddress("localhost", ports[1])
+    // .build();
     assertManagementListResult(cms.list(new Deployment())).isSuccessful()
         .hasConfigurations().hasSize(1);
   }

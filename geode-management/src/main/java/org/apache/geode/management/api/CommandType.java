@@ -19,7 +19,7 @@ package org.apache.geode.management.api;
 import org.apache.geode.annotations.Experimental;
 
 /**
-* Commands used by {@link ClusterManagementServiceTransport} which mimic HTTP verbs.
+ * Commands used by {@link ClusterManagementServiceTransport} which mimic HTTP verbs.
  */
 @Experimental
 public enum CommandType {

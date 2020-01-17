@@ -14,7 +14,8 @@
  */
 package org.apache.geode.management.internal;
 
-import static org.apache.geode.management.internal.ClientClusterManagementService.makeEntity;
+
+import static org.apache.geode.management.api.RestTemplateClusterManagementServiceTransport.makeEntity;
 
 import java.util.Date;
 import java.util.concurrent.CompletableFuture;

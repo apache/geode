@@ -33,6 +33,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.context.WebApplicationContext;
 
 import org.apache.geode.management.api.ClusterManagementListResult;
@@ -40,6 +41,7 @@ import org.apache.geode.management.api.ClusterManagementRealizationResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.RealizationResult;
+import org.apache.geode.management.api.RestTemplateClusterManagementServiceTransport;
 import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.configuration.RegionType;
 import org.apache.geode.management.internal.rest.LocatorWebContext;
@@ -68,8 +70,11 @@ public class ClientClusterManagementServiceDUnitTest {
     cluster.setSkipLocalDistributedSystemCleanup(true);
     webContext = new LocatorWebContext(webApplicationContext);
 
-    client = ClusterManagementServiceBuilder.buildWithRequestFactory()
-        .setRequestFactory(webContext.getRequestFactory()).build();
+    client = new ClusterManagementServiceBuilder().setTransport(
+        new RestTemplateClusterManagementServiceTransport(
+            new RestTemplate(webContext.getRequestFactory())))
+        .build();
+
     cluster.startServerVM(1, "group1", webContext.getLocator().getPort());
     cluster.startServerVM(2, "group2", webContext.getLocator().getPort());
     cluster.startServerVM(3, "group1,group2", webContext.getLocator().getPort());
