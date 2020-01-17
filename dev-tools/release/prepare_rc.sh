@@ -227,11 +227,12 @@ cp ${GEODE}/KEYS .
 mkdir ${FULL_VERSION}
 cp ${GEODE}/geode-assembly/build/distributions/* ${FULL_VERSION}
 cp ${GEODE_EXAMPLES}/build/distributions/* ${FULL_VERSION}
+rm ${FULL_VERSION}/apache-geode-examples-*.zip*
 cp ${GEODE_NATIVE}/build/apache-geode-native-${VERSION}* ${FULL_VERSION}
 set +x
 
 # verify all files are signed.  sometimes gradle "forgets" to make the .asc file
-for f in ${FULL_VERSION}/*.tgz ${FULL_VERSION}/*.tar.gz ${FULL_VERSION}/*.zip ; do
+for f in ${FULL_VERSION}/*.tgz ${FULL_VERSION}/*.tar.gz ; do
   if ! [ -r $f.sha256 ] && ! [ -r $f.sha512 ] ; then
     echo missing $f.sha256 or $f.sha512
     exit 1
