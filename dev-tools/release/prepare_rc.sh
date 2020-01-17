@@ -212,8 +212,13 @@ echo "Building geode-benchmarks..."
 echo "============================================================"
 set -x
 cd ${GEODE_BENCHMARKS}
-BMTAR=apache-geode-benchmarks-${VERSION}-src.tgz
-git clean -dxf && tar czf ${BMTAR} .travis.yml *
+BMDIR=apache-geode-benchmarks-${VERSION}-src
+BMTAR=${BMDIR}.tgz
+git clean -dxf
+mkdir ../${BMDIR}
+cp -r .travis.yml * ../${BMDIR}
+tar czf ${BMTAR} -C .. ${BMDIR}
+rm -Rf ../${BMDIR}
 gpg --armor -u ${SIGNING_KEY} -b ${BMTAR}
 if which shasum >/dev/null; then
   SHASUM=shasum
@@ -251,11 +256,10 @@ cp ${GEODE}/geode-assembly/build/distributions/* ${FULL_VERSION}
 cp ${GEODE_EXAMPLES}/build/distributions/* ${FULL_VERSION}
 cp ${GEODE_NATIVE}/build/apache-geode-native-${VERSION}* ${FULL_VERSION}
 cp ${GEODE_BENCHMARKS}/apache-geode-benchmarks-${VERSION}* ${FULL_VERSION}
-rm ${FULL_VERSION}/apache-geode-examples-*.zip*
 set +x
 
 # verify all files are signed.  sometimes gradle "forgets" to make the .asc file
-for f in ${FULL_VERSION}/*.tgz ${FULL_VERSION}/*.tar.gz ; do
+for f in ${FULL_VERSION}/*.tgz ${FULL_VERSION}/*.tar.gz ${FULL_VERSION}/*.zip ; do
   if ! [ -r $f.sha256 ] && ! [ -r $f.sha512 ] ; then
     echo missing $f.sha256 or $f.sha512
     exit 1

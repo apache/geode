@@ -73,6 +73,7 @@ resources:
   type: git
   source:
     branch: release/<VERSION>
+    tag_filter: rel/v<VERSION>.RC*
     uri: https://github.com/apache/geode-benchmarks.git
 - name: upthewaterspout-tests
   type: git
@@ -369,7 +370,11 @@ jobs:
             - -ec
             - |
               set -ex
-              cd geode-benchmarks
+              FULL_VERSION=$(cd geode-benchmarks && git describe --tags | sed -e 's#^rel/v##')
+              VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
+              curl -s https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/apache-geode-benchmarks-${VERSION}-src.tgz > src.tgz
+              tar xzf src.tgz
+              cd apache-geode-benchmarks-${VERSION}-src
               java -version
               ./gradlew build test
   - name: verify-keys
@@ -415,6 +420,7 @@ jobs:
               verifyArtifactSignature apache-geode-${VERSION}-src.tgz 256
               verifyArtifactSignature apache-geode-${VERSION}.tgz 256
               verifyArtifactSignature apache-geode-examples-${VERSION}.tar.gz 256
+              verifyArtifactSignature apache-geode-examples-${VERSION}.zip 256
               verifyArtifactSignature apache-geode-native-${VERSION}-src.tar.gz 512
               verifyArtifactSignature apache-geode-benchmarks-${VERSION}-src.tgz 256
 EOF
