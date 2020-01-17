@@ -25,14 +25,12 @@ import java.io.Serializable;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.awaitility.core.ConditionTimeoutException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.cache.Cache;
@@ -49,7 +47,6 @@ import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 
-@RunWith(JUnitParamsRunner.class)
 public class IndexRepositoryFactoryDistributedTest implements Serializable {
   private static final String INDEX_NAME = "index";
   private static final String REGION_NAME = "region";
@@ -75,12 +72,12 @@ public class IndexRepositoryFactoryDistributedTest implements Serializable {
     return cache;
   }
 
-  private void initDataStoreAndLuceneIndex(RegionShortcut regionShortcut) {
+  private void initDataStoreAndLuceneIndex() {
     Cache cache = getCache();
     LuceneService luceneService = LuceneServiceProvider.get(cache);
     luceneService.createIndexFactory().setFields(DEFAULT_FIELD).create(INDEX_NAME, REGION_NAME);
 
-    cache.<Integer, TestObject>createRegionFactory(regionShortcut)
+    cache.<Integer, TestObject>createRegionFactory(RegionShortcut.PARTITION_REDUNDANT)
         .setPartitionAttributes(new PartitionAttributesFactory<Integer, TestObject>()
             .setTotalNumBuckets(1).create())
         .create(REGION_NAME);
@@ -114,12 +111,12 @@ public class IndexRepositoryFactoryDistributedTest implements Serializable {
   }
 
   @Test
-  @Parameters({"PARTITION_REDUNDANT"})
-  public void lockedBucketShouldPreventPrimaryFromMoving(RegionShortcut regionShortcut) {
-    dataStore1.invoke(() -> initDataStoreAndLuceneIndex(regionShortcut));
+  @Parameters()
+  public void lockedBucketShouldPreventPrimaryFromMoving() {
+    dataStore1.invoke(this::initDataStoreAndLuceneIndex);
     dataStore1.invoke(() -> LuceneTestUtilities.pauseSender(getCache()));
     dataStore1.invoke(this::insertEntries);
-    dataStore2.invoke(() -> initDataStoreAndLuceneIndex(regionShortcut));
+    dataStore2.invoke(this::initDataStoreAndLuceneIndex);
     dataStore1.invoke(() -> LuceneTestUtilities.resumeSender(getCache()));
 
     dataStore1.invoke(() -> {
