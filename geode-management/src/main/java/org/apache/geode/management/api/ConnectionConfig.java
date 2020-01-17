@@ -27,7 +27,7 @@ import org.apache.geode.annotations.Experimental;
  * these properties should be general enough that they are relevant to any different implementation.
  * <p/>
  * Concrete implementations of this interface can be created through either the
- * {@link ConnectionConfigImpl} or
+ * {@link BaseConnectionConfig} or
  * {@code GeodeClusterManagementServiceConnectionConfig} classes.
  */
 @Experimental

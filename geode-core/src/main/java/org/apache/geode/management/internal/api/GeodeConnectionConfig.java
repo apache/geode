@@ -47,8 +47,8 @@ import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.management.api.BaseConnectionConfig;
 import org.apache.geode.management.api.ConnectionConfig;
-import org.apache.geode.management.api.ConnectionConfigImpl;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.internal.SSLUtil;
 import org.apache.geode.management.internal.configuration.messages.ClusterManagementServiceInfo;
@@ -70,7 +70,7 @@ public class GeodeConnectionConfig
 
   private static final Logger logger = LogService.getLogger();
 
-  private ConnectionConfigImpl connectionConfig;
+  private BaseConnectionConfig connectionConfig;
 
   @Immutable
   private static final GetMemberInformationFunction MEMBER_INFORMATION_FUNCTION =
@@ -198,7 +198,7 @@ public class GeodeConnectionConfig
 
   private void configureBuilder(DistributionConfig config,
       ClusterManagementServiceInfo cmsInfo) {
-    connectionConfig = new ConnectionConfigImpl(cmsInfo.getHostName(),
+    connectionConfig = new BaseConnectionConfig(cmsInfo.getHostName(),
         cmsInfo.getHttpPort());
 
     // if user didn't pass in a username and the locator requires credentials, use the credentials

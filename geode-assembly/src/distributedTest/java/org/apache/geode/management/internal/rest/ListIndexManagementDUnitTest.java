@@ -29,12 +29,12 @@ import org.junit.ClassRule;
 import org.junit.Test;
 
 import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.management.api.BaseConnectionConfig;
 import org.apache.geode.management.api.ClusterManagementGetResult;
 import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementRealizationResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.ConfigurationResult;
-import org.apache.geode.management.api.ConnectionConfigImpl;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.Index;
 import org.apache.geode.management.configuration.IndexType;
@@ -64,7 +64,7 @@ public class ListIndexManagementDUnitTest {
     MemberVM server3 = lsRule.startServerVM(3, "group1", locator.getPort());
 
     cms = new ClusterManagementServiceBuilder().setConnectionConfig(
-        new ConnectionConfigImpl("localhost", locator.getHttpPort()))
+        new BaseConnectionConfig("localhost", locator.getHttpPort()))
         .build();
 
     Region config = new Region();

@@ -39,10 +39,10 @@ import org.springframework.web.client.ResourceAccessException;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.management.api.BaseConnectionConfig;
 import org.apache.geode.management.api.ClusterManagementRealizationResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
-import org.apache.geode.management.api.ConnectionConfigImpl;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.Region;
@@ -103,7 +103,7 @@ public class ClientClusterManagementSSLTest {
       HostnameVerifier hostnameVerifier = new NoopHostnameVerifier();
       ClusterManagementService cmsClient =
           new ClusterManagementServiceBuilder().setConnectionConfig(
-              new ConnectionConfigImpl("localhost", httpPort)
+              new BaseConnectionConfig("localhost", httpPort)
                   .setSslContext(sslContext).setUsername("dataManage").setPassword("dataManage")
                   .setHostnameVerifier(hostnameVerifier))
               .build();
@@ -126,7 +126,7 @@ public class ClientClusterManagementSSLTest {
     client.invoke(() -> {
       ClusterManagementService cmsClient =
           new ClusterManagementServiceBuilder().setConnectionConfig(
-              new ConnectionConfigImpl("localhost", httpPort)
+              new BaseConnectionConfig("localhost", httpPort)
                   .setSslContext(null).setUsername("dataManage").setPassword("dataManage"))
               .build();
 
@@ -147,7 +147,7 @@ public class ClientClusterManagementSSLTest {
       HostnameVerifier hostnameVerifier = new NoopHostnameVerifier();
       ClusterManagementService cmsClient =
           new ClusterManagementServiceBuilder().setConnectionConfig(
-              new ConnectionConfigImpl("localhost", httpPort)
+              new BaseConnectionConfig("localhost", httpPort)
                   .setSslContext(sslContext).setUsername("dataManage").setPassword("wrongPassword")
                   .setHostnameVerifier(hostnameVerifier))
               .build();
@@ -169,7 +169,7 @@ public class ClientClusterManagementSSLTest {
 
       ClusterManagementService cmsClient =
           new ClusterManagementServiceBuilder().setConnectionConfig(
-              new ConnectionConfigImpl("localhost", httpPort)
+              new BaseConnectionConfig("localhost", httpPort)
                   .setSslContext(sslContext).setHostnameVerifier(hostnameVerifier))
               .build();
 
@@ -189,7 +189,7 @@ public class ClientClusterManagementSSLTest {
       HostnameVerifier hostnameVerifier = new NoopHostnameVerifier();
       ClusterManagementService cmsClient =
           new ClusterManagementServiceBuilder().setConnectionConfig(
-              new ConnectionConfigImpl("localhost", httpPort)
+              new BaseConnectionConfig("localhost", httpPort)
                   .setSslContext(sslContext).setUsername("dataManage").setPassword(null)
                   .setHostnameVerifier(hostnameVerifier))
               .build();
@@ -210,7 +210,7 @@ public class ClientClusterManagementSSLTest {
       HostnameVerifier hostnameVerifier = new NoopHostnameVerifier();
       ClusterManagementService cmsClient =
           new ClusterManagementServiceBuilder().setConnectionConfig(
-              new ConnectionConfigImpl("localhost", httpPort)
+              new BaseConnectionConfig("localhost", httpPort)
                   .setSslContext(sslContext).setUsername("dataRead").setPassword("dataRead")
                   .setHostnameVerifier(hostnameVerifier))
               .build();

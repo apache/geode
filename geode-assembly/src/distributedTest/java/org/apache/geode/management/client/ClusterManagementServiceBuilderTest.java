@@ -15,67 +15,80 @@
 
 package org.apache.geode.management.client;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.springframework.web.client.RestTemplate;
 
+import org.apache.geode.management.api.BaseConnectionConfig;
 import org.apache.geode.management.api.ConnectionConfig;
-import org.apache.geode.management.api.ConnectionConfigImpl;
 import org.apache.geode.management.api.RestTemplateClusterManagementServiceTransport;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
+import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.junit.rules.MemberStarterRule;
 
 public class ClusterManagementServiceBuilderTest {
 
-  private static ConnectionConfig connectionConfig;
+  @ClassRule
+  public static ClusterStartupRule cluster = new ClusterStartupRule(1);
 
   @BeforeClass
-  public static void setup() {
-    connectionConfig = new ConnectionConfigImpl("localhost", 7777);
+  public static void beforeClass() {
+
+    MemberVM locator = cluster.startLocatorVM(0, MemberStarterRule::withHttpService);
+    connectionConfig = new BaseConnectionConfig("localhost", locator.getHttpPort());
   }
+
+  private static ConnectionConfig connectionConfig;
 
   @Test
   public void buildWithTransportOnlyHavingConnectionConfig() {
-    new ClusterManagementServiceBuilder().setTransport(
-        new RestTemplateClusterManagementServiceTransport(connectionConfig)).build();
+    assertThat(new ClusterManagementServiceBuilder().setTransport(
+        new RestTemplateClusterManagementServiceTransport(connectionConfig)).build().isConnected())
+            .isTrue();
   }
 
   @Test
   public void buildWithTransportOnlyHavingRestTemplate() {
-    new ClusterManagementServiceBuilder().setTransport(
-        new RestTemplateClusterManagementServiceTransport(new RestTemplate())).build();
+    assertThat(new ClusterManagementServiceBuilder().setTransport(
+        new RestTemplateClusterManagementServiceTransport(new RestTemplate())).build()
+        .isConnected()).isFalse();
   }
 
   @Test
   public void buildWithTransportOnlyHavingRestTemplateAndConnectionConfig() {
-    new ClusterManagementServiceBuilder().setTransport(
+    assertThat(new ClusterManagementServiceBuilder().setTransport(
         new RestTemplateClusterManagementServiceTransport(new RestTemplate(), connectionConfig))
-        .build();
+        .build().isConnected()).isTrue();
   }
 
   @Test
   public void buildWithConnectionConfigOnly() {
-    new ClusterManagementServiceBuilder()
-        .setConnectionConfig(connectionConfig).build();
+    assertThat(new ClusterManagementServiceBuilder()
+        .setConnectionConfig(connectionConfig).build().isConnected()).isTrue();
   }
 
   @Test
   public void buildWithTransportHavingRestTemplateAndConnectionConfig() {
-    new ClusterManagementServiceBuilder().setTransport(
+    assertThat(new ClusterManagementServiceBuilder().setTransport(
         new RestTemplateClusterManagementServiceTransport(new RestTemplate()))
-        .setConnectionConfig(connectionConfig).build();
+        .setConnectionConfig(connectionConfig).build().isConnected()).isTrue();
   }
 
   @Test
   public void buildWithTransportHavingConnectionConfigAndConnectionConfig() {
-    new ClusterManagementServiceBuilder().setTransport(
+    assertThat(new ClusterManagementServiceBuilder().setTransport(
         new RestTemplateClusterManagementServiceTransport(connectionConfig))
-        .setConnectionConfig(connectionConfig).build();
+        .setConnectionConfig(connectionConfig).build().isConnected()).isTrue();
   }
 
   @Test
   public void buildWithTransportHavingConnectionConfigAndRestTemplateAndConnectionConfig() {
-    new ClusterManagementServiceBuilder().setTransport(
+    assertThat(new ClusterManagementServiceBuilder().setTransport(
         new RestTemplateClusterManagementServiceTransport(new RestTemplate(), connectionConfig))
-        .setConnectionConfig(connectionConfig).build();
+        .setConnectionConfig(connectionConfig).build().isConnected()).isTrue();
   }
 
   @Test(expected = IllegalStateException.class)

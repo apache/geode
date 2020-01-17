@@ -691,7 +691,7 @@ javadoc/org/apache/geode/management/PersistentMemberDetails.html
 javadoc/org/apache/geode/management/RegionAttributesData.html
 javadoc/org/apache/geode/management/RegionMXBean.html
 javadoc/org/apache/geode/management/ServerLoadData.html
-javadoc/org/apache/geode/management/api/BasicClusterManagementServiceConnectionConfig.html
+javadoc/org/apache/geode/management/api/BaseConnectionConfig.html
 javadoc/org/apache/geode/management/api/ClusterManagementException.html
 javadoc/org/apache/geode/management/api/ClusterManagementGetResult.html
 javadoc/org/apache/geode/management/api/ClusterManagementListOperationsResult.html
@@ -703,11 +703,11 @@ javadoc/org/apache/geode/management/api/ClusterManagementRealizationResult.html
 javadoc/org/apache/geode/management/api/ClusterManagementResult.StatusCode.html
 javadoc/org/apache/geode/management/api/ClusterManagementResult.html
 javadoc/org/apache/geode/management/api/ClusterManagementService.html
-javadoc/org/apache/geode/management/api/ClusterManagementServiceConnectionConfig.html
 javadoc/org/apache/geode/management/api/ClusterManagementServiceTransport.html
 javadoc/org/apache/geode/management/api/CommandType.html
 javadoc/org/apache/geode/management/api/ConfigurationInfo.html
 javadoc/org/apache/geode/management/api/ConfigurationResult.html
+javadoc/org/apache/geode/management/api/ConnectionConfig.html
 javadoc/org/apache/geode/management/api/JsonSerializable.html
 javadoc/org/apache/geode/management/api/RealizationResult.html
 javadoc/org/apache/geode/management/api/RestTemplateClusterManagementServiceTransport.html

@@ -25,10 +25,10 @@ import org.junit.Test;
 
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
+import org.apache.geode.management.api.BaseConnectionConfig;
 import org.apache.geode.management.api.ClusterManagementRealizationResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
-import org.apache.geode.management.api.ConnectionConfigImpl;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.Region;
@@ -55,7 +55,7 @@ public class ClientClusterManagementServiceDunitTest {
     server = cluster.startServerVM(1, locator.getPort());
     serverWithGroupA = cluster.startServerVM(2, groupA, locator.getPort());
     cmsClient = new ClusterManagementServiceBuilder().setConnectionConfig(
-        new ConnectionConfigImpl("localhost", locator.getHttpPort()))
+        new BaseConnectionConfig("localhost", locator.getHttpPort()))
         .build();
   }
 

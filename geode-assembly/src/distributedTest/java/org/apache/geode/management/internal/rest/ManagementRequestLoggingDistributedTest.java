@@ -37,9 +37,9 @@ import org.junit.Test;
 
 import org.apache.geode.distributed.LocatorLauncher;
 import org.apache.geode.distributed.ServerLauncher;
+import org.apache.geode.management.api.BaseConnectionConfig;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
-import org.apache.geode.management.api.ConnectionConfigImpl;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.configuration.RegionType;
@@ -86,7 +86,7 @@ public class ManagementRequestLoggingDistributedTest implements Serializable {
     serverVM.invoke(this::startServer);
 
     service = new ClusterManagementServiceBuilder().setConnectionConfig(
-        new ConnectionConfigImpl("localhost", httpPort)).build();
+        new BaseConnectionConfig("localhost", httpPort)).build();
   }
 
   @After

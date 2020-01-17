@@ -98,6 +98,13 @@ public interface ClusterManagementServiceTransport {
   boolean isConnected();
 
   /**
+   * Configure the transport with using connectionConfig.
+   *
+   * @param connectionConfig {@link ConnectionConfig} holding connection configuration information.
+   */
+  void configureConnection(ConnectionConfig connectionConfig);
+
+  /**
    * Close the transport.
    */
   void close();

@@ -61,6 +61,8 @@ public class ClusterManagementServiceBuilder {
 
     if (transport == null) {
       transport = new RestTemplateClusterManagementServiceTransport(connectionConfig);
+    } else if (connectionConfig != null) {
+      transport.configureConnection(connectionConfig);
     }
 
     return new ClientClusterManagementService(transport);

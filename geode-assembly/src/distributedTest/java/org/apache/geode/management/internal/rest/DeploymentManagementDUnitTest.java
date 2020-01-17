@@ -30,10 +30,10 @@ import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.examples.SimpleSecurityManager;
+import org.apache.geode.management.api.BaseConnectionConfig;
 import org.apache.geode.management.api.ClusterManagementGetResult;
 import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementService;
-import org.apache.geode.management.api.ConnectionConfigImpl;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.management.runtime.DeploymentInfo;
@@ -80,7 +80,7 @@ public class DeploymentManagementDUnitTest {
         DistributionConfig.GROUPS_NAME, "group2").withCredential("cluster", "cluster"));
 
     client = new ClusterManagementServiceBuilder().setConnectionConfig(
-        new ConnectionConfigImpl("localhost", locator.getHttpPort())
+        new BaseConnectionConfig("localhost", locator.getHttpPort())
             .setUsername("cluster").setPassword("cluster"))
         .build();
 

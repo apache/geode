@@ -33,7 +33,7 @@ import org.apache.geode.management.client.ClusterManagementServiceBuilder;
  * @see ClusterManagementServiceBuilder
  */
 @Experimental
-public class ConnectionConfigImpl
+public class BaseConnectionConfig
     implements ConnectionConfig {
 
   private final String host;
@@ -44,7 +44,7 @@ public class ConnectionConfigImpl
   private SSLContext sslContext;
   private String authToken;
 
-  public ConnectionConfigImpl(String host, int port) {
+  public BaseConnectionConfig(String host, int port) {
     this.host = host;
     this.port = port;
   }
@@ -64,12 +64,12 @@ public class ConnectionConfigImpl
     return authToken;
   }
 
-  public ConnectionConfigImpl setAuthToken(String authToken) {
+  public BaseConnectionConfig setAuthToken(String authToken) {
     this.authToken = authToken;
     return this;
   }
 
-  public ConnectionConfigImpl setSslContext(SSLContext sslContext) {
+  public BaseConnectionConfig setSslContext(SSLContext sslContext) {
     this.sslContext = sslContext;
     return this;
   }
@@ -79,7 +79,7 @@ public class ConnectionConfigImpl
     return sslContext;
   }
 
-  public ConnectionConfigImpl setUsername(String username) {
+  public BaseConnectionConfig setUsername(String username) {
     this.username = username;
     return this;
   }
@@ -89,7 +89,7 @@ public class ConnectionConfigImpl
     return username;
   }
 
-  public ConnectionConfigImpl setPassword(String password) {
+  public BaseConnectionConfig setPassword(String password) {
     this.password = password;
     return this;
   }
@@ -99,7 +99,7 @@ public class ConnectionConfigImpl
     return password;
   }
 
-  public ConnectionConfigImpl setHostnameVerifier(
+  public BaseConnectionConfig setHostnameVerifier(
       HostnameVerifier hostnameVerifier) {
     this.hostnameVerifier = hostnameVerifier;
     return this;
