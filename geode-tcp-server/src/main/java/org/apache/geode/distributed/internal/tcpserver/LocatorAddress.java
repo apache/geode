@@ -40,14 +40,14 @@ public class LocatorAddress {
   }
 
   /**
-   * If location is not litteral IP address a new unresolved {@link InetSocketAddress} is returned.
+   * If location is not litteral IP address a new resolved {@link InetSocketAddress} is returned.
    *
-   * @return unresolved {@link InetSocketAddress}, otherwise resolved {@link InetSocketAddress} if
+   * @return resolved {@link InetSocketAddress}, otherwise stored {@link InetSocketAddress} if
    *         literal IP address is used.
    */
   public InetSocketAddress getSocketInetAddress() {
     if (socketInetAddress.isUnresolved()) {
-      return cloneUnresolved(socketInetAddress);
+      return new InetSocketAddress(socketInetAddress.getHostString(), socketInetAddress.getPort());
     } else {
       return this.socketInetAddress;
     }
