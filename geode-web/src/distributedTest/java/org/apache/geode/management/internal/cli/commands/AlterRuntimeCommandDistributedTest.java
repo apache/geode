@@ -544,6 +544,54 @@ public class AlterRuntimeCommandDistributedTest {
 
   @Test
   @Parameters({"true", "false"})
+  public void alterStatArchiveFile_disableWritingToFile(boolean connectOverHttp)
+      throws Exception {
+    Properties props = new Properties();
+    props.setProperty(LOG_LEVEL, "error");
+
+    MemberVM locator = startupRule.startLocatorVM(0, l -> l.withHttpService());
+    MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
+    MemberVM server2 = startupRule.startServerVM(2, props, locator.getPort());
+
+    if (connectOverHttp) {
+      gfsh.connectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http);
+    } else {
+      gfsh.connectAndVerify(locator.getJmxPort(), GfshCommandRule.PortType.jmxManager);
+    }
+
+    String testName = "";
+
+    CommandStringBuilder setStatisticArchiveFile = new CommandStringBuilder(ALTER_RUNTIME_CONFIG)
+        .addOption(ALTER_RUNTIME_CONFIG__STATISTIC__ARCHIVE__FILE, testName);
+
+    gfsh.executeAndAssertThat(setStatisticArchiveFile.toString())
+        .statusIsSuccess();
+
+    for (MemberVM server : new MemberVM[] {server1, server2}) {
+      String expectedName = server == server2 ? testName : "";
+
+      server.invoke(() -> {
+        InternalCache cache = ClusterStartupRule.getCache();
+        DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
+
+        assertThat(config.getLogFileSizeLimit())
+            .isEqualTo(0);
+        assertThat(config.getArchiveDiskSpaceLimit())
+            .isEqualTo(0);
+        assertThat(config.getStatisticSampleRate())
+            .isEqualTo(1000);
+        assertThat(config.getStatisticArchiveFile().getName())
+            .isEqualTo(expectedName);
+        assertThat(config.getStatisticSamplingEnabled())
+            .isTrue();
+        assertThat(config.getLogDiskSpaceLimit())
+            .isEqualTo(0);
+      });
+    }
+  }
+
+  @Test
+  @Parameters({"true", "false"})
   public void alterStatArchiveFileWithGroup_updatesSelectedServerConfigs(boolean connectOverHttp)
       throws Exception {
     Properties props = new Properties();

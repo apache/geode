@@ -16,6 +16,7 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLING_ENABLED;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -135,6 +136,10 @@ public class AlterRuntimeConfigCommand extends GfshCommand {
     if (statisticArchiveFile != null && !statisticArchiveFile.isEmpty()) {
       runTimeDistributionConfigAttributes
           .put(CliStrings.ALTER_RUNTIME_CONFIG__STATISTIC__ARCHIVE__FILE, statisticArchiveFile);
+    } else {
+      runTimeDistributionConfigAttributes
+          .put(CliStrings.ALTER_RUNTIME_CONFIG__STATISTIC__ARCHIVE__FILE,
+              String.valueOf(new File("")));
     }
 
     if (statisticSampleRate != null) {
