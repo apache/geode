@@ -435,9 +435,8 @@ public class LocatorClusterManagementService implements ClusterManagementService
   private <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<V> toClusterManagementListOperationsResult(
       ClusterManagementResult status, OperationInstance<A, V> operationInstance) {
     ClusterManagementOperationResult<V> result = new ClusterManagementOperationResult<>(status,
-        operationInstance.getFutureResult(), operationInstance.getOperationStart(),
-        operationInstance.getFutureOperationEnded(), operationInstance.getOperator(),
-        operationInstance.getId());
+        operationInstance.getOperationStart(), operationInstance.getOperationEnd(),
+        operationInstance.getOperator(), operationInstance.getId());
     result.setLinks(
         new Links(operationInstance.getId(), operationInstance.getOperation().getEndpoint()));
     return result;
@@ -448,13 +447,11 @@ public class LocatorClusterManagementService implements ClusterManagementService
    */
   private <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<V> toClusterManagementListOperationsResult(
       OperationInstance<A, V> operationInstance) {
-    return toClusterManagementListOperationsResult(getStatus(operationInstance.getFutureResult()),
-        operationInstance);
+    return toClusterManagementListOperationsResult(checkStatus(operationInstance.getId()), operationInstance);
   }
 
   /**
    * this is intended for use by the REST controller. for Java usage, please use
-   * {@link ClusterManagementOperationResult#getFutureResult()}
    */
   public <V extends OperationResult> ClusterManagementOperationStatusResult<V> checkStatus(
       String opId) {
@@ -462,20 +459,22 @@ public class LocatorClusterManagementService implements ClusterManagementService
     if (operationInstance == null) {
       raise(StatusCode.ENTITY_NOT_FOUND, "Operation '" + opId + "' does not exist.");
     }
-    final CompletableFuture<V> status = operationInstance.getFutureResult();
-    ClusterManagementOperationStatusResult<V> result =
-        new ClusterManagementOperationStatusResult<>(getStatus(status));
-    result.setOperator(operationInstance.getOperator());
-    result.setOperationStart(operationInstance.getOperationStart());
-    if (status.isDone() && !status.isCompletedExceptionally()) {
-      try {
-        result.setOperationEnded(operationInstance.getFutureOperationEnded().get());
-        result.setResult(status.get());
-      } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
-      } catch (ExecutionException ignore) {
+
+    ClusterManagementOperationStatusResult<V> result;
+    if (operationInstance.getOperationEnd() == null) {
+      result = new ClusterManagementOperationStatusResult<>(new ClusterManagementResult(StatusCode.IN_PROGRESS, ""));
+    } else {
+      if (operationInstance.getException() != null) {
+        result = new ClusterManagementOperationStatusResult<>(new ClusterManagementResult(StatusCode.ERROR, operationInstance.getException().getMessage()));
+      } else {
+        result = new ClusterManagementOperationStatusResult<>(new ClusterManagementResult(StatusCode.OK, ""));
       }
     }
+    result.setOperator(operationInstance.getOperator());
+    result.setOperationStart(operationInstance.getOperationStart());
+    result.setResult((V)operationInstance.getResult());
+    result.setOperationEnded(operationInstance.getOperationEnd());
+
     return result;
   }
 

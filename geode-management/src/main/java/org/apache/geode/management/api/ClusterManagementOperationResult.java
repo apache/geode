@@ -37,13 +37,11 @@ import org.apache.geode.management.runtime.OperationResult;
 @Experimental
 public class ClusterManagementOperationResult<V extends OperationResult>
     extends ClusterManagementResult {
-  @JsonIgnore
-  private final CompletableFuture<V> operationResult;
-  @JsonIgnore
-  private final CompletableFuture<Date> futureOperationEnded;
 
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
   private Date operationStart;
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
+  private Date operationEnd;
   private String operationId;
   private String operator;
 
@@ -51,8 +49,6 @@ public class ClusterManagementOperationResult<V extends OperationResult>
    * for internal use only
    */
   public ClusterManagementOperationResult() {
-    this.operationResult = null;
-    this.futureOperationEnded = null;
     this.operator = null;
   }
 
@@ -60,58 +56,13 @@ public class ClusterManagementOperationResult<V extends OperationResult>
    * normally called by {@link ClusterManagementService#start(ClusterManagementOperation)}
    */
   public ClusterManagementOperationResult(ClusterManagementResult result,
-      CompletableFuture<V> operationResult, Date operationStart,
-      CompletableFuture<Date> futureOperationEnded, String operator, String operationId) {
+      Date operationStart, Date operationEnd,
+      String operator, String operationId) {
     super(result);
-    this.operationResult = operationResult;
     this.operationStart = operationStart;
-    this.futureOperationEnded = futureOperationEnded;
+    this.operationEnd = operationEnd;
     this.operator = operator;
     this.operationId = operationId;
-  }
-
-  /**
-   * Returns the future result of the async operation
-   */
-  @JsonIgnore
-  public CompletableFuture<V> getFutureResult() {
-    if (operationResult instanceof Dormant)
-      ((Dormant) operationResult).wakeUp();
-    return operationResult;
-  }
-
-  /**
-   * Returns the completed result of the async operation (blocks until complete, if necessary)
-   */
-  @JsonIgnore
-  public V getResult() throws ExecutionException, InterruptedException {
-    return getFutureResult().get();
-  }
-
-  /**
-   * Returns the time at which the async operation was requested
-   */
-  public Date getOperationStart() {
-    return operationStart;
-  }
-
-  /**
-   * Returns the future time the async operation completed. This is guaranteed to complete before
-   * {@link #getFutureResult()}. Note: subsequent stages must be chained to
-   * {@link #getFutureResult()}, not here.
-   */
-  @JsonIgnore
-  public CompletableFuture<Date> getFutureOperationEnded() {
-    return futureOperationEnded;
-  }
-
-  /**
-   * Returns the actual time the async operation completed, or null if not yet completed
-   */
-  @JsonProperty
-  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
-  public Date getOperationEnded() {
-    return futureOperationEnded.getNow(null);
   }
 
   /**
@@ -127,5 +78,13 @@ public class ClusterManagementOperationResult<V extends OperationResult>
    */
   public String getOperationId() {
     return operationId;
+  }
+
+  public Date getOperationStart() {
+    return this.operationStart;
+  }
+
+  public Date getOperationEnd() {
+    return this.operationEnd;
   }
 }
