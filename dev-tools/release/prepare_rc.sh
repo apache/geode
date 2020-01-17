@@ -227,7 +227,6 @@ cp ${GEODE}/KEYS .
 mkdir ${FULL_VERSION}
 cp ${GEODE}/geode-assembly/build/distributions/* ${FULL_VERSION}
 cp ${GEODE_EXAMPLES}/build/distributions/* ${FULL_VERSION}
-rm ${FULL_VERSION}/apache-geode-examples-*.zip*
 cp ${GEODE_NATIVE}/build/apache-geode-native-${VERSION}* ${FULL_VERSION}
 set +x
 
