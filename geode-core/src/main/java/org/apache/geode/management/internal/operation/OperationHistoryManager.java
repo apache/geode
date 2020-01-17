@@ -107,7 +107,7 @@ public class OperationHistoryManager {
     this.future.put(opId, future);
 
     future.whenComplete((result, exception) -> {
-      OperationInstance<?, ?> opInstance = historyPersistenceService.getOperationInstance(opId);
+      OperationInstance<A, V> opInstance = historyPersistenceService.getOperationInstance(opId);
       if (opInstance != null) {
         opInstance.setOperationEnd(new Date(), result, exception);
         historyPersistenceService.update(opInstance);

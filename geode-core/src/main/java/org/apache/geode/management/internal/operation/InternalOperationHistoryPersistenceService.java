@@ -17,27 +17,33 @@ package org.apache.geode.management.internal.operation;
 
 import java.util.List;
 
+import org.apache.geode.management.api.ClusterManagementOperation;
+import org.apache.geode.management.runtime.OperationResult;
+
 public class InternalOperationHistoryPersistenceService
     implements OperationHistoryPersistenceService {
 
   @Override
-  public OperationHistoryManager.OperationInstance<?, ?> getOperationInstance(String id) {
+  public <A extends ClusterManagementOperation<V>, V extends OperationResult> OperationHistoryManager.OperationInstance<A, V> getOperationInstance(
+      String id) {
     return null;
   }
 
   @Override
-  public List<OperationHistoryManager.OperationInstance> listOperationInstances() {
+  public <A extends ClusterManagementOperation<V>, V extends OperationResult> List<OperationHistoryManager.OperationInstance<A, V>> listOperationInstances() {
     return null;
   }
 
   @Override
-  public void create(OperationHistoryManager.OperationInstance<?, ?> operationInstance)
+  public <A extends ClusterManagementOperation<V>, V extends OperationResult> void create(
+      OperationHistoryManager.OperationInstance<A, V> operationInstance)
       throws IllegalStateException {
 
   }
 
   @Override
-  public void update(OperationHistoryManager.OperationInstance<?, ?> operationInstance) {
+  public <A extends ClusterManagementOperation<V>, V extends OperationResult> void update(
+      OperationHistoryManager.OperationInstance<A, V> operationInstance) {
 
   }
 
