@@ -99,6 +99,7 @@ GEODE=$WORKSPACE/geode
 GEODE_DEVELOP=$WORKSPACE/geode-develop
 GEODE_EXAMPLES=$WORKSPACE/geode-examples
 GEODE_NATIVE=$WORKSPACE/geode-native
+GEODE_BENCHMARKS=$WORKSPACE/geode-benchmarks
 BREW_DIR=$WORKSPACE/homebrew-core
 SVN_DIR=$WORKSPACE/dist/dev/geode
 set +x
@@ -123,6 +124,7 @@ git clone --branch release/${VERSION} git@github.com:apache/geode.git
 git clone --branch develop git@github.com:apache/geode.git geode-develop
 git clone --branch release/${VERSION} git@github.com:apache/geode-examples.git
 git clone --branch release/${VERSION} git@github.com:apache/geode-native.git
+git clone --branch release/${VERSION} git@github.com:apache/geode-benchmarks.git
 git clone --branch master git@github.com:Homebrew/homebrew-core.git
 
 svn checkout https://dist.apache.org/repos/dist --depth empty
@@ -206,9 +208,28 @@ set +x
 
 echo ""
 echo "============================================================"
+echo "Building geode-benchmarks..."
+echo "============================================================"
+set -x
+cd ${GEODE_BENCHMARKS}
+BMTAR=apache-geode-benchmarks-${VERSION}-src.tgz
+git clean -dxf && tar czf ${BMTAR} .travis.yml *
+if which shasum >/dev/null; then
+  SHASUM=shasum
+  SHASUM_OPTS="-a 256"
+else
+  SHASUM=sha256sum
+  SHASUM_OPTS=""
+fi
+${SHASUM} ${SHASUM_OPTS} ${BMTAR} > ${BMTAR}.sha256
+set +x
+
+
+echo ""
+echo "============================================================"
 echo "Tagging the release candidate in each repository. The tags will not be pushed yet..."
 echo "============================================================"
-for DIR in ${GEODE} ${GEODE_EXAMPLES} ${GEODE_NATIVE} ; do
+for DIR in ${GEODE} ${GEODE_EXAMPLES} ${GEODE_NATIVE} ${GEODE_BENCHMARKS} ; do
     set -x
     cd ${DIR}
     git tag -s -u ${SIGNING_KEY} rel/v${FULL_VERSION} -m "Release candidate ${FULL_VERSION}"
@@ -228,10 +249,12 @@ mkdir ${FULL_VERSION}
 cp ${GEODE}/geode-assembly/build/distributions/* ${FULL_VERSION}
 cp ${GEODE_EXAMPLES}/build/distributions/* ${FULL_VERSION}
 cp ${GEODE_NATIVE}/build/apache-geode-native-${VERSION}* ${FULL_VERSION}
+cp ${GEODE_BENCHMARKS}/apache-geode-benchmarks-${VERSION}* ${FULL_VERSION}
+rm ${FULL_VERSION}/apache-geode-examples-*.zip*
 set +x
 
 # verify all files are signed.  sometimes gradle "forgets" to make the .asc file
-for f in ${FULL_VERSION}/*.tgz ${FULL_VERSION}/*.tar.gz ${FULL_VERSION}/*.zip ; do
+for f in ${FULL_VERSION}/*.tgz ${FULL_VERSION}/*.tar.gz ; do
   if ! [ -r $f.sha256 ] && ! [ -r $f.sha512 ] ; then
     echo missing $f.sha256 or $f.sha512
     exit 1

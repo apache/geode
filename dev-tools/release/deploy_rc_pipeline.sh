@@ -69,6 +69,11 @@ resources:
     branch: release/<VERSION>
     tag_filter: rel/v<VERSION>.RC*
     uri: https://github.com/apache/geode-native.git
+- name: geode-benchmarks
+  type: git
+  source:
+    branch: release/<VERSION>
+    uri: https://github.com/apache/geode-benchmarks.git
 - name: upthewaterspout-tests
   type: git
   source:
@@ -342,6 +347,31 @@ jobs:
               gpg --import KEYS
               java -version
               ./gradlew build -PmavenURL=${STAGING_MAVEN} -PdownloadURL=https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/ -Pversion=${FULL_VERSION}
+  - name: benchmarks-test
+    serial: true
+    plan:
+      - get: geode-benchmarks
+        trigger: true
+      - task: validate
+        timeout: 1h
+        config:
+          image_resource:
+            type: docker-image
+            source:
+              repository: openjdk
+              tag: 8
+          inputs:
+            - name: geode-benchmarks
+          platform: linux
+          run:
+            path: /bin/sh
+            args:
+            - -ec
+            - |
+              set -ex
+              cd geode-benchmarks
+              java -version
+              ./gradlew build test
   - name: verify-keys
     serial: true
     plan:
