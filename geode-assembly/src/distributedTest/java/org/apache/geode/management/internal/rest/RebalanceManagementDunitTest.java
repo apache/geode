@@ -21,13 +21,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
+import org.apache.geode.management.api.ClusterManagementListOperationsResult;
 import org.apache.geode.management.api.ClusterManagementOperationResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
@@ -40,6 +41,7 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.junit.rules.MemberStarterRule;
 
 public class RebalanceManagementDunitTest {
 
@@ -51,9 +53,9 @@ public class RebalanceManagementDunitTest {
   private static ClusterManagementService client1, client2;
 
   @BeforeClass
-  public static void beforeClass() throws Exception {
-    locator1 = cluster.startLocatorVM(0, l -> l.withHttpService());
-    locator2 = cluster.startLocatorVM(1, l -> l.withHttpService());
+  public static void beforeClass() {
+    locator1 = cluster.startLocatorVM(0, MemberStarterRule::withHttpService);
+    locator2 = cluster.startLocatorVM(1, MemberStarterRule::withHttpService);
     server1 = cluster.startServerVM(2, "group1", locator1.getPort());
     server2 = cluster.startServerVM(3, "group2", locator1.getPort());
 
@@ -81,14 +83,14 @@ public class RebalanceManagementDunitTest {
   }
 
   @Test
-  public void rebalance() throws Exception {
+  public void rebalance() {
     ClusterManagementOperationResult<RebalanceResult> cmr =
         client1.start(new RebalanceOperation());
     assertThat(cmr.isSuccessful()).isTrue();
     long now = System.currentTimeMillis();
     assertThat(cmr.getOperationStart().getTime()).isBetween(now - 60000, now);
 
-    GeodeAwaitility.await().untilAsserted( () -> assertThat(cmr.getOperationEnd()).isNotNull());
+    GeodeAwaitility.await().untilAsserted(() -> assertThat(cmr.getOperationEnd()).isNotNull());
     long end = cmr.getOperationEnd().getTime();
     now = System.currentTimeMillis();
     assertThat(end).isBetween(now - 60000, now)
@@ -100,7 +102,7 @@ public class RebalanceManagementDunitTest {
   }
 
   @Test
-  public void rebalanceExistRegion() throws Exception {
+  public void rebalanceExistRegion() {
     List<String> includeRegions = new ArrayList<>();
     includeRegions.add("customers2");
     RebalanceOperation op = new RebalanceOperation();
@@ -121,7 +123,7 @@ public class RebalanceManagementDunitTest {
   }
 
   @Test
-  public void rebalanceExcludedRegion() throws Exception {
+  public void rebalanceExcludedRegion() {
     RebalanceOperation op = new RebalanceOperation();
     op.setExcludeRegions(Collections.singletonList("customers1"));
     ClusterManagementOperationResult<RebalanceResult> cmr = client1.start(op);
@@ -136,7 +138,7 @@ public class RebalanceManagementDunitTest {
   }
 
   @Test
-  public void rebalanceNonExistRegion() throws Exception {
+  public void rebalanceNonExistRegion() {
     IgnoredException.addIgnoredException(ExecutionException.class);
     IgnoredException.addIgnoredException(RuntimeException.class);
     RebalanceOperation op = new RebalanceOperation();
@@ -144,22 +146,30 @@ public class RebalanceManagementDunitTest {
     ClusterManagementOperationResult<RebalanceResult> cmr = client1.start(op);
     assertThat(cmr.isSuccessful()).isTrue();
     String id = cmr.getOperationId();
-    client1.list()
-    assertThat(client1.get(op))
 
-    CompletableFuture<RebalanceResult> future = cmr.getFutureResult();
-    CompletableFuture<String> message = new CompletableFuture<>();
-    future.exceptionally((ex) -> {
-      message.complete(ex.getMessage());
-      return null;
-    }).get();
+    ClusterManagementOperationResult<RebalanceResult>[] rebalanceResult = new ClusterManagementOperationResult[1];
+    GeodeAwaitility.await().untilAsserted(() -> {
+      rebalanceResult[0] = getRebalanceResult(op, id);
+      assertThat(rebalanceResult[0]).isNotNull();
+    });
 
-    assertThat(future.isCompletedExceptionally()).isTrue();
-    assertThat(message.get()).contains("For the region /nonexisting_region, no member was found");
+    assertThat(rebalanceResult[0].isSuccessful()).isFalse();
+    assertThat(rebalanceResult[0].getStatusMessage()).contains("For the region /nonexisting_region, no member was found");
+
+  }
+
+  private ClusterManagementOperationResult<RebalanceResult> getRebalanceResult(RebalanceOperation op, String id) {
+    ClusterManagementListOperationsResult<RebalanceResult> listOperationsResult = client1.list(op);
+    Optional<ClusterManagementOperationResult<RebalanceResult>> rebalanceResult =
+        listOperationsResult.getResult()
+            .stream()
+            .filter(rbalresult -> rbalresult.getOperationId().equals(id) && rbalresult.getOperationEnd() != null)
+            .findFirst();
+    return  rebalanceResult.orElse(null);
   }
 
   @Test
-  public void rebalanceOneExistingOneNonExistingRegion() throws Exception {
+  public void rebalanceOneExistingOneNonExistingRegion() {
     IgnoredException.addIgnoredException(ExecutionException.class);
     IgnoredException.addIgnoredException(RuntimeException.class);
     RebalanceOperation op = new RebalanceOperation();

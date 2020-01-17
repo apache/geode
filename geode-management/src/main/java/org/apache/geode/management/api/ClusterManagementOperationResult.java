@@ -86,5 +86,7 @@ public class ClusterManagementOperationResult<V extends OperationResult>
     return this.operationEnd;
   }
 
-  public V getOperationResult() { return this.operationResult; }
+  public V getOperationResult() {
+    return this.operationResult;
+  }
 }

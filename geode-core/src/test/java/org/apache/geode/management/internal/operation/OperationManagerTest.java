@@ -18,9 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -40,7 +38,8 @@ public class OperationManagerTest {
   @Before
   public void setUp() throws Exception {
     operationHistoryPersistenceService = mock(OperationHistoryPersistenceService.class);
-    executorManager = new OperationManager(null, new OperationHistoryManager(1, TimeUnit.MINUTES, operationHistoryPersistenceService));
+    executorManager = new OperationManager(null,
+        new OperationHistoryManager(1, TimeUnit.MINUTES, operationHistoryPersistenceService));
     executorManager.registerOperation(TestOperation.class, OperationManagerTest::perform);
   }
 
@@ -70,15 +69,13 @@ public class OperationManagerTest {
 
     operation.latch.countDown();
     GeodeAwaitility.await().untilAsserted(() -> {
-          assertThat(executorManager.getOperationInstance(id).getOperationEnd()).isNotNull();
-        }
-    );
+      assertThat(executorManager.getOperationInstance(id).getOperationEnd()).isNotNull();
+    });
 
     operation2.latch.countDown();
     GeodeAwaitility.await().untilAsserted(() -> {
-          assertThat(executorManager.getOperationInstance(id2).getOperationEnd()).isNotNull();
-        }
-    );
+      assertThat(executorManager.getOperationInstance(id2).getOperationEnd()).isNotNull();
+    });
   }
 
   @Test
