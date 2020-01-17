@@ -365,7 +365,7 @@ public class LocatorClusterManagementServiceTest {
     ClusterManagementOperation<OperationResult> operation = mock(ClusterManagementOperation.class);
     when(operation.getEndpoint()).thenReturn(URI);
     when(executorManager.submit(any()))
-        .thenReturn(new OperationInstance<>(null, "42", operation, new Date()));
+        .thenReturn(new OperationInstance<>("42", operation, new Date()));
     ClusterManagementOperationResult<?> result = service.start(operation);
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.ACCEPTED);
     assertThat(result.getStatusMessage()).contains("Operation started");
@@ -379,17 +379,13 @@ public class LocatorClusterManagementServiceTest {
 
   @Test
   public void checkStatus() {
-    CompletableFuture future = mock(CompletableFuture.class);
     OperationInstance operationInstance = mock(OperationInstance.class);
-    when(operationInstance.getFutureResult()).thenReturn(future);
-    when(operationInstance.getFutureOperationEnded()).thenReturn(future);
     when(executorManager.getOperationInstance(any())).thenReturn(operationInstance);
-    when(future.isDone()).thenReturn(false);
     ClusterManagementOperationStatusResult<OperationResult> result = service.checkStatus("456");
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.IN_PROGRESS);
     assertThat(result.getResult()).isNull();
 
-    when(future.isDone()).thenReturn(true);
+    when(operationInstance.getOperationEnd()).thenReturn(new Date());
     result = service.checkStatus("456");
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
   }

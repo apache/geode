@@ -16,7 +16,9 @@ package org.apache.geode.management.internal.operation;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
@@ -29,13 +31,16 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.management.api.ClusterManagementOperation;
 import org.apache.geode.management.internal.operation.OperationHistoryManager.OperationInstance;
 import org.apache.geode.management.runtime.OperationResult;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public class OperationManagerTest {
   private OperationManager executorManager;
+  private OperationHistoryPersistenceService operationHistoryPersistenceService;
 
   @Before
   public void setUp() throws Exception {
-    executorManager = new OperationManager(null, new OperationHistoryManager(1, TimeUnit.MINUTES));
+    operationHistoryPersistenceService = mock(OperationHistoryPersistenceService.class);
+    executorManager = new OperationManager(null, new OperationHistoryManager(1, TimeUnit.MINUTES, operationHistoryPersistenceService));
     executorManager.registerOperation(TestOperation.class, OperationManagerTest::perform);
   }
 
@@ -43,35 +48,48 @@ public class OperationManagerTest {
   public void submitAndComplete() throws Exception {
     TestOperation operation = new TestOperation();
     OperationInstance<TestOperation, TestOperationResult> inst = executorManager.submit(operation);
-    CompletableFuture<TestOperationResult> future1 = inst.getFutureResult();
     String id = inst.getId();
     assertThat(id).isNotBlank();
 
+    doReturn(inst).when(operationHistoryPersistenceService).getOperationInstance(id);
+
     assertThat(executorManager.getOperationInstance(id)).isNotNull();
+    assertThat(executorManager.getOperationInstance(id).getOperationStart()).isNotNull();
+    assertThat(executorManager.getOperationInstance(id).getOperationEnd()).isNull();
 
     TestOperation operation2 = new TestOperation();
     OperationInstance<TestOperation, TestOperationResult> inst2 =
         executorManager.submit(operation2);
-    CompletableFuture<TestOperationResult> future2 = inst2.getFutureResult();
     String id2 = inst2.getId();
     assertThat(id2).isNotBlank();
+    doReturn(inst2).when(operationHistoryPersistenceService).getOperationInstance(id2);
+
+    assertThat(executorManager.getOperationInstance(id2)).isNotNull();
+    assertThat(executorManager.getOperationInstance(id2).getOperationStart()).isNotNull();
+    assertThat(executorManager.getOperationInstance(id2).getOperationEnd()).isNull();
 
     operation.latch.countDown();
-    future1.get();
+    GeodeAwaitility.await().untilAsserted(() -> {
+          assertThat(executorManager.getOperationInstance(id).getOperationEnd()).isNotNull();
+        }
+    );
 
     operation2.latch.countDown();
-    future2.get();
-
-    // time-based expiry so nothing should be bumped yet
-    assertThat(executorManager.getOperationInstance(id)).isNotNull();
-    assertThat(executorManager.getOperationInstance(id2)).isNotNull();
+    GeodeAwaitility.await().untilAsserted(() -> {
+          assertThat(executorManager.getOperationInstance(id2).getOperationEnd()).isNotNull();
+        }
+    );
   }
 
   @Test
   public void submit() {
     TestOperation operation = new TestOperation();
-    String id = executorManager.submit(operation).getId();
+    OperationInstance<TestOperation, TestOperationResult> inst = executorManager.submit(operation);
+    String id = inst.getId();
     assertThat(id).isNotBlank();
+
+    doReturn(inst).when(operationHistoryPersistenceService).getOperationInstance(id);
+
 
     assertThat(executorManager.getOperationInstance(id)).isNotNull();
 

@@ -17,7 +17,6 @@ package org.apache.geode.management.api;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Date;
-import java.util.concurrent.CompletableFuture;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
@@ -37,13 +36,11 @@ public class ClusterManagementOperationResultTest {
 
   @Test
   public void serialize() throws Exception {
-    CompletableFuture<TestOperationResult> operationResult =
-        new CompletableFuture<>();
     ClusterManagementResult result1 = new ClusterManagementResult();
     result1.setStatus(StatusCode.OK, "Success!!");
     ClusterManagementOperationResult<TestOperationResult> result =
-        new ClusterManagementOperationResult<>(result1, operationResult, new Date(),
-            new CompletableFuture<>(), "operator", "id");
+        new ClusterManagementOperationResult<>(result1, new Date(), new Date(),
+            "operator", "id");
     String json = mapper.writeValueAsString(result);
     System.out.println(json);
     ClusterManagementOperationResult value =

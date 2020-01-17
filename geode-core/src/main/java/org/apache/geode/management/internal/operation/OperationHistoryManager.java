@@ -138,7 +138,7 @@ public class OperationHistoryManager {
     private final String operator;
     private final Date operationStart;
     private Date operationEnd;
-    private OperationResult result;
+    private V result;
     private Throwable exception;
 
     public OperationInstance(String opId, A operation,
@@ -170,7 +170,7 @@ public class OperationHistoryManager {
       return operator;
     }
 
-    public void setOperationEnd(Date operationEnd, OperationResult result, Throwable exception) {
+    public void setOperationEnd(Date operationEnd, V result, Throwable exception) {
       this.result = result;
       this.exception = exception;
       this.operationEnd = operationEnd;
@@ -180,7 +180,7 @@ public class OperationHistoryManager {
       return this.operationEnd;
     }
 
-    public OperationResult getResult() {
+    public V getResult() {
       return this.result;
     }
 

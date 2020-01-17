@@ -16,14 +16,10 @@ package org.apache.geode.management.api;
 
 import java.util.Date;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.management.internal.Dormant;
 import org.apache.geode.management.runtime.OperationResult;
 
 /**
@@ -44,6 +40,7 @@ public class ClusterManagementOperationResult<V extends OperationResult>
   private Date operationEnd;
   private String operationId;
   private String operator;
+  private V operationResult;
 
   /**
    * for internal use only
@@ -57,12 +54,13 @@ public class ClusterManagementOperationResult<V extends OperationResult>
    */
   public ClusterManagementOperationResult(ClusterManagementResult result,
       Date operationStart, Date operationEnd,
-      String operator, String operationId) {
+      String operator, String operationId, V operationResult) {
     super(result);
     this.operationStart = operationStart;
     this.operationEnd = operationEnd;
     this.operator = operator;
     this.operationId = operationId;
+    this.operationResult = operationResult;
   }
 
   /**
@@ -87,4 +85,6 @@ public class ClusterManagementOperationResult<V extends OperationResult>
   public Date getOperationEnd() {
     return this.operationEnd;
   }
+
+  public V getOperationResult() { return this.operationResult; }
 }

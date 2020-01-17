@@ -153,8 +153,6 @@ public class RebalanceIntegrationTest {
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusMessage())
         .isEqualTo("Operation started.  Use the URI to check its status.");
-    assertThat(result.getResult().getStatusMessage())
-        .isEqualTo("Distributed system has no regions that can be rebalanced.");
   }
 
   @Test

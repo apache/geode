@@ -436,7 +436,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
       ClusterManagementResult status, OperationInstance<A, V> operationInstance) {
     ClusterManagementOperationResult<V> result = new ClusterManagementOperationResult<>(status,
         operationInstance.getOperationStart(), operationInstance.getOperationEnd(),
-        operationInstance.getOperator(), operationInstance.getId());
+        operationInstance.getOperator(), operationInstance.getId(), operationInstance.getResult());
     result.setLinks(
         new Links(operationInstance.getId(), operationInstance.getOperation().getEndpoint()));
     return result;
@@ -447,7 +447,8 @@ public class LocatorClusterManagementService implements ClusterManagementService
    */
   private <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<V> toClusterManagementListOperationsResult(
       OperationInstance<A, V> operationInstance) {
-    return toClusterManagementListOperationsResult(checkStatus(operationInstance.getId()), operationInstance);
+    return toClusterManagementListOperationsResult(checkStatus(operationInstance.getId()),
+        operationInstance);
   }
 
   /**
@@ -462,17 +463,20 @@ public class LocatorClusterManagementService implements ClusterManagementService
 
     ClusterManagementOperationStatusResult<V> result;
     if (operationInstance.getOperationEnd() == null) {
-      result = new ClusterManagementOperationStatusResult<>(new ClusterManagementResult(StatusCode.IN_PROGRESS, ""));
+      result = new ClusterManagementOperationStatusResult<>(
+          new ClusterManagementResult(StatusCode.IN_PROGRESS, ""));
     } else {
       if (operationInstance.getException() != null) {
-        result = new ClusterManagementOperationStatusResult<>(new ClusterManagementResult(StatusCode.ERROR, operationInstance.getException().getMessage()));
+        result = new ClusterManagementOperationStatusResult<>(new ClusterManagementResult(
+            StatusCode.ERROR, operationInstance.getException().getMessage()));
       } else {
-        result = new ClusterManagementOperationStatusResult<>(new ClusterManagementResult(StatusCode.OK, ""));
+        result = new ClusterManagementOperationStatusResult<>(
+            new ClusterManagementResult(StatusCode.OK, ""));
       }
     }
     result.setOperator(operationInstance.getOperator());
     result.setOperationStart(operationInstance.getOperationStart());
-    result.setResult((V)operationInstance.getResult());
+    result.setResult((V) operationInstance.getResult());
     result.setOperationEnded(operationInstance.getOperationEnd());
 
     return result;
