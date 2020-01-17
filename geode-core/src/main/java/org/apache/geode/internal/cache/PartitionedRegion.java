@@ -288,6 +288,8 @@ public class PartitionedRegion extends LocalRegion
    * a primary in a different server group
    */
   public static final int NETWORK_HOP_TO_DIFFERENT_GROUP = 2;
+  public static final String DATA_MOVED_BY_REBALANCE =
+      "Transactional data moved, due to rebalancing.";
 
   private final DiskRegionStats diskRegionStats;
 
@@ -4154,26 +4156,7 @@ public class PartitionedRegion extends LocalRegion
           }
         } else {
           // with transaction
-          if (prce instanceof BucketNotFoundException) {
-            throw new TransactionDataRebalancedException(
-                "Transactional data moved, due to rebalancing.",
-                prce);
-          }
-          Throwable cause = prce.getCause();
-          if (cause instanceof PrimaryBucketException) {
-            throw (PrimaryBucketException) cause;
-          } else if (cause instanceof TransactionDataRebalancedException) {
-            throw (TransactionDataRebalancedException) cause;
-          } else if (cause instanceof RegionDestroyedException) {
-            throw new TransactionDataRebalancedException(
-                "Transactional data moved, due to rebalancing.",
-                cause);
-          } else {
-            // Make transaction fail so client could retry
-            // instead of returning null if ForceReattemptException is thrown.
-            // Should not see it currently, added to be protected against future changes.
-            throw new TransactionException("Failed to get key: " + key, prce);
-          }
+          handleForceReattemptExceptionWithTransaction(prce);
         }
       } catch (PrimaryBucketException notPrimary) {
         if (allowRetry) {
@@ -4214,6 +4197,25 @@ public class PartitionedRegion extends LocalRegion
     }
     logger.warn(String.format("No VM available for get in %s attempts", count), e);
     return null;
+  }
+
+  void handleForceReattemptExceptionWithTransaction(
+      ForceReattemptException forceReattemptException) {
+    if (forceReattemptException instanceof BucketNotFoundException) {
+      throw new TransactionDataRebalancedException(DATA_MOVED_BY_REBALANCE,
+          forceReattemptException);
+    }
+    Throwable cause = forceReattemptException.getCause();
+    if (cause instanceof PrimaryBucketException) {
+      throw (PrimaryBucketException) cause;
+    } else if (cause instanceof TransactionDataRebalancedException) {
+      throw (TransactionDataRebalancedException) cause;
+    } else if (cause instanceof RegionDestroyedException) {
+      throw new TransactionDataRebalancedException(DATA_MOVED_BY_REBALANCE, cause);
+    } else {
+      throw new TransactionDataRebalancedException(DATA_MOVED_BY_REBALANCE,
+          forceReattemptException);
+    }
   }
 
   /**
@@ -9497,9 +9499,7 @@ public class PartitionedRegion extends LocalRegion
         try {
           br.checkForPrimary();
         } catch (PrimaryBucketException pbe) {
-          throw new TransactionDataRebalancedException(
-              "Transactional data moved, due to rebalancing.",
-              pbe);
+          throw new TransactionDataRebalancedException(DATA_MOVED_BY_REBALANCE, pbe);
         }
       }
     } catch (RegionDestroyedException ignore) {
@@ -9550,13 +9550,8 @@ public class PartitionedRegion extends LocalRegion
       if (keyInfo.isCheckPrimary()) {
         br.checkForPrimary();
       }
-    } catch (PrimaryBucketException pbe) {
-      throw new TransactionDataRebalancedException(
-          "Transactional data moved, due to rebalancing.",
-          pbe);
-    } catch (RegionDestroyedException ignore) {
-      throw new TransactionDataRebalancedException(
-          "Transactional data moved, due to rebalancing.");
+    } catch (PrimaryBucketException | RegionDestroyedException exception) {
+      throw new TransactionDataRebalancedException(DATA_MOVED_BY_REBALANCE, exception);
     }
     return br;
   }
