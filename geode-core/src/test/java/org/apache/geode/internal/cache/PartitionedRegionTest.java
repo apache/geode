@@ -479,7 +479,7 @@ public class PartitionedRegionTest {
         catchThrowable(() -> spyPartitionedRegion.getDataRegionForWrite(keyInfo));
 
     assertThat(caughtException).isInstanceOf(TransactionDataRebalancedException.class)
-        .hasMessage("Transactional data moved, due to rebalancing.");
+        .hasMessage(PartitionedRegion.DATA_MOVED_BY_REBALANCE);
   }
 
   @Test
@@ -500,7 +500,77 @@ public class PartitionedRegionTest {
         catchThrowable(() -> spyPartitionedRegion.getDataRegionForWrite(keyInfo));
 
     assertThat(caughtException).isInstanceOf(TransactionDataRebalancedException.class)
-        .hasMessage("Transactional data moved, due to rebalancing.");
+        .hasMessage(PartitionedRegion.DATA_MOVED_BY_REBALANCE);
+  }
+
+  @Test
+  public void transactionThrowsTransactionDataRebalancedExceptionIfBucketNotFoundException() {
+    PartitionedRegion spyPartitionedRegion = spy(partitionedRegion);
+    ForceReattemptException exception = mock(BucketNotFoundException.class);
+
+    Throwable caughtException =
+        catchThrowable(
+            () -> spyPartitionedRegion.handleForceReattemptExceptionWithTransaction(exception));
+
+    assertThat(caughtException).isInstanceOf(TransactionDataRebalancedException.class)
+        .hasMessage(PartitionedRegion.DATA_MOVED_BY_REBALANCE);
+  }
+
+  @Test
+  public void transactionThrowsPrimaryBucketExceptionIfForceReattemptExceptionIsCausedByPrimaryBucketException() {
+    PartitionedRegion spyPartitionedRegion = spy(partitionedRegion);
+    ForceReattemptException exception = mock(ForceReattemptException.class);
+    PrimaryBucketException primaryBucketException = new PrimaryBucketException();
+    when(exception.getCause()).thenReturn(primaryBucketException);
+
+    Throwable caughtException =
+        catchThrowable(
+            () -> spyPartitionedRegion.handleForceReattemptExceptionWithTransaction(exception));
+
+    assertThat(caughtException).isSameAs(primaryBucketException);
+  }
+
+  @Test
+  public void transactionThrowsTransactionDataRebalancedExceptionIfForceReattemptExceptionIsCausedByTransactionDataRebalancedException() {
+    PartitionedRegion spyPartitionedRegion = spy(partitionedRegion);
+    ForceReattemptException exception = mock(ForceReattemptException.class);
+    TransactionDataRebalancedException transactionDataRebalancedException =
+        new TransactionDataRebalancedException("");
+    when(exception.getCause()).thenReturn(transactionDataRebalancedException);
+
+    Throwable caughtException =
+        catchThrowable(
+            () -> spyPartitionedRegion.handleForceReattemptExceptionWithTransaction(exception));
+
+    assertThat(caughtException).isSameAs(transactionDataRebalancedException);
+  }
+
+  @Test
+  public void transactionThrowsTransactionDataRebalancedExceptionIfForceReattemptExceptionIsCausedByRegionDestroyedException() {
+    PartitionedRegion spyPartitionedRegion = spy(partitionedRegion);
+    ForceReattemptException exception = mock(ForceReattemptException.class);
+    RegionDestroyedException regionDestroyedException = new RegionDestroyedException("", "");
+    when(exception.getCause()).thenReturn(regionDestroyedException);
+
+    Throwable caughtException =
+        catchThrowable(
+            () -> spyPartitionedRegion.handleForceReattemptExceptionWithTransaction(exception));
+
+    assertThat(caughtException).isInstanceOf(TransactionDataRebalancedException.class)
+        .hasMessage(PartitionedRegion.DATA_MOVED_BY_REBALANCE).hasCause(regionDestroyedException);
+  }
+
+  @Test
+  public void transactionThrowsTransactionDataRebalancedExceptionIfIsAForceReattemptException() {
+    PartitionedRegion spyPartitionedRegion = spy(partitionedRegion);
+    ForceReattemptException exception = mock(ForceReattemptException.class);
+
+    Throwable caughtException =
+        catchThrowable(
+            () -> spyPartitionedRegion.handleForceReattemptExceptionWithTransaction(exception));
+
+    assertThat(caughtException).isInstanceOf(TransactionDataRebalancedException.class)
+        .hasMessage(PartitionedRegion.DATA_MOVED_BY_REBALANCE).hasCause(exception);
   }
 
   private static <K> Set<K> asSet(K... values) {
