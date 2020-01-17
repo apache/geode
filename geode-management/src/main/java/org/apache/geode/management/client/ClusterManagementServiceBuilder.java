@@ -18,14 +18,14 @@ package org.apache.geode.management.client;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.management.api.ClusterManagementService;
-import org.apache.geode.management.api.ClusterManagementServiceConnectionConfig;
 import org.apache.geode.management.api.ClusterManagementServiceTransport;
+import org.apache.geode.management.api.ConnectionConfig;
 import org.apache.geode.management.api.RestTemplateClusterManagementServiceTransport;
 import org.apache.geode.management.internal.ClientClusterManagementService;
 
 /**
  * This builder facilitates creating a ClusterManagementService using either (or both) a {@link
- * ClusterManagementServiceConnectionConfig} or a {@link ClusterManagementServiceTransport}. For
+ * ConnectionConfig} or a {@link ClusterManagementServiceTransport}. For
  * typical usage it should be sufficient to only use a
  * {@code ClusterManagementServiceConnectionConfig}.
  * For example:
@@ -45,7 +45,7 @@ public class ClusterManagementServiceBuilder {
 
   private ClusterManagementServiceTransport transport;
 
-  private ClusterManagementServiceConnectionConfig connectionConfig;
+  private ConnectionConfig connectionConfig;
 
   /**
    * Build a new {@link ClusterManagementService} instance
@@ -73,7 +73,7 @@ public class ClusterManagementServiceBuilder {
   }
 
   public ClusterManagementServiceBuilder setConnectionConfig(
-      ClusterManagementServiceConnectionConfig connectionConfig) {
+      ConnectionConfig connectionConfig) {
     this.connectionConfig = connectionConfig;
     return this;
   }

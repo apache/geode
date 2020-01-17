@@ -19,17 +19,17 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.web.client.RestTemplate;
 
-import org.apache.geode.management.api.BasicClusterManagementServiceConnectionConfig;
-import org.apache.geode.management.api.ClusterManagementServiceConnectionConfig;
+import org.apache.geode.management.api.ConnectionConfig;
+import org.apache.geode.management.api.ConnectionConfigImpl;
 import org.apache.geode.management.api.RestTemplateClusterManagementServiceTransport;
 
 public class ClusterManagementServiceBuilderTest {
 
-  private static ClusterManagementServiceConnectionConfig connectionConfig;
+  private static ConnectionConfig connectionConfig;
 
   @BeforeClass
   public static void setup() {
-    connectionConfig = new BasicClusterManagementServiceConnectionConfig("localhost", 7777);
+    connectionConfig = new ConnectionConfigImpl("localhost", 7777);
   }
 
   @Test

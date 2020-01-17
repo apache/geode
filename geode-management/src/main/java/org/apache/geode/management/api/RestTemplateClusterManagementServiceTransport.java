@@ -73,17 +73,17 @@ public class RestTemplateClusterManagementServiceTransport
   }
 
   public RestTemplateClusterManagementServiceTransport(
-      ClusterManagementServiceConnectionConfig connectionConfig) {
+      ConnectionConfig connectionConfig) {
     this(new RestTemplate(), connectionConfig);
   }
 
   public RestTemplateClusterManagementServiceTransport(RestTemplate restTemplate,
-      ClusterManagementServiceConnectionConfig connectionConfig) {
+      ConnectionConfig connectionConfig) {
     this(restTemplate);
     configureTemplate(connectionConfig);
   }
 
-  private void configureTemplate(ClusterManagementServiceConnectionConfig connectionConfig) {
+  private void configureTemplate(ConnectionConfig connectionConfig) {
     if (connectionConfig == null) {
       throw new IllegalStateException(
           "ConnectionConfig cannot be null. Please use setConnectionConfig()");

@@ -27,12 +27,12 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-import org.apache.geode.management.api.BasicClusterManagementServiceConnectionConfig;
 import org.apache.geode.management.api.ClusterManagementGetResult;
 import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.ConfigurationInfo;
+import org.apache.geode.management.api.ConnectionConfigImpl;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.AbstractConfiguration;
 import org.apache.geode.management.configuration.Region;
@@ -67,7 +67,7 @@ public class ListRegionManagementDunitTest {
     server2 = cluster.startServerVM(2, "group2", locator.getPort());
 
     client = new ClusterManagementServiceBuilder().setConnectionConfig(
-        new BasicClusterManagementServiceConnectionConfig("localhost", locator.getHttpPort()))
+        new ConnectionConfigImpl("localhost", locator.getHttpPort()))
         .build();
     gfsh.connect(locator);
 

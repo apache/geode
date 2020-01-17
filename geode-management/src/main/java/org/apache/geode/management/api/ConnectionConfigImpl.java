@@ -19,11 +19,13 @@ package org.apache.geode.management.api;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 
 /**
- * Concrete implementation of {@link ClusterManagementServiceConnectionConfig} which can be used
+ * Concrete implementation of {@link ConnectionConfig} which can be used
  * where the various connection properties should be set directly as opposed to being derived from
  * another context such as a {@code Cache}. For example
  * {@code GeodeClusterManagementServiceConnectionConfig}.
@@ -31,18 +33,18 @@ import org.apache.geode.management.client.ClusterManagementServiceBuilder;
  * @see ClusterManagementServiceBuilder
  */
 @Experimental
-public class BasicClusterManagementServiceConnectionConfig
-    implements ClusterManagementServiceConnectionConfig {
+public class ConnectionConfigImpl
+    implements ConnectionConfig {
 
   private final String host;
   private final int port;
   private String username;
   private String password;
-  private HostnameVerifier hostnameVerifier;
+  private HostnameVerifier hostnameVerifier = new NoopHostnameVerifier();
   private SSLContext sslContext;
   private String authToken;
 
-  public BasicClusterManagementServiceConnectionConfig(String host, int port) {
+  public ConnectionConfigImpl(String host, int port) {
     this.host = host;
     this.port = port;
   }
@@ -62,12 +64,12 @@ public class BasicClusterManagementServiceConnectionConfig
     return authToken;
   }
 
-  public BasicClusterManagementServiceConnectionConfig setAuthToken(String authToken) {
+  public ConnectionConfigImpl setAuthToken(String authToken) {
     this.authToken = authToken;
     return this;
   }
 
-  public BasicClusterManagementServiceConnectionConfig setSslContext(SSLContext sslContext) {
+  public ConnectionConfigImpl setSslContext(SSLContext sslContext) {
     this.sslContext = sslContext;
     return this;
   }
@@ -77,7 +79,7 @@ public class BasicClusterManagementServiceConnectionConfig
     return sslContext;
   }
 
-  public BasicClusterManagementServiceConnectionConfig setUsername(String username) {
+  public ConnectionConfigImpl setUsername(String username) {
     this.username = username;
     return this;
   }
@@ -87,7 +89,7 @@ public class BasicClusterManagementServiceConnectionConfig
     return username;
   }
 
-  public BasicClusterManagementServiceConnectionConfig setPassword(String password) {
+  public ConnectionConfigImpl setPassword(String password) {
     this.password = password;
     return this;
   }
@@ -97,7 +99,7 @@ public class BasicClusterManagementServiceConnectionConfig
     return password;
   }
 
-  public BasicClusterManagementServiceConnectionConfig setHostnameVerifier(
+  public ConnectionConfigImpl setHostnameVerifier(
       HostnameVerifier hostnameVerifier) {
     this.hostnameVerifier = hostnameVerifier;
     return this;

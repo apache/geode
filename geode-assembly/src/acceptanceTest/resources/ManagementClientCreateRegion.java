@@ -17,6 +17,7 @@ import javax.net.ssl.SSLContext;
 
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
+import org.apache.geode.management.api.ConnectionConfigImpl;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.configuration.RegionType;
@@ -32,14 +33,13 @@ public class ManagementClientCreateRegion {
       // The default SSLContext will pull in all necessary javax.net.ssl properties
       cms =
           new ClusterManagementServiceBuilder().setConnectionConfig(
-              new BasicClusterManagementServiceConnectionConfig("localhost", port)
+              new ConnectionConfigImpl("localhost", httpPort)
                   .setSslContext(SSLContext.getDefault()))
-              .buildWithHostAddress();
+              .build();
 
     } else {
       cms = new ClusterManagementServiceBuilder().setConnectionConfig(
-          new BasicClusterManagementServiceConnectionConfig("localhost", httpPort))
-          .buildWithHostAddress();
+          new ConnectionConfigImpl("localhost", httpPort)).build();
     }
 
     // create region

@@ -33,13 +33,13 @@ import org.junit.Test;
 
 import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
-import org.apache.geode.management.api.ClusterManagementServiceConnectionConfig;
-import org.apache.geode.management.internal.api.GeodeClusterManagementServiceConnectionConfig;
+import org.apache.geode.management.api.ConnectionConfig;
+import org.apache.geode.management.internal.api.GeodeConnectionConfig;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 
-public class GeodeClusterManagementServiceConnectionConfigTest {
+public class GeodeConnectionConfigTest {
   @ClassRule
   public static ClusterStartupRule cluster = new ClusterStartupRule(3);
 
@@ -74,8 +74,8 @@ public class GeodeClusterManagementServiceConnectionConfigTest {
   public void connectionConfigPopulatesCorrectlyFromInternalCache() {
     int port = locator.getHttpPort();
     server.invoke(() -> {
-      ClusterManagementServiceConnectionConfig connectionConfig =
-          new GeodeClusterManagementServiceConnectionConfig(ClusterStartupRule.getCache());
+      ConnectionConfig connectionConfig =
+          new GeodeConnectionConfig(ClusterStartupRule.getCache());
       assertThat(connectionConfig.getPort()).isEqualTo(port);
       assertThat(connectionConfig.getHost()).isEqualTo("localhost");
       assertThat(connectionConfig.getSslContext()).isNotNull();
@@ -90,8 +90,8 @@ public class GeodeClusterManagementServiceConnectionConfigTest {
   public void invokeFromClientCacheWithLocatorPool() {
     int port = locator.getHttpPort();
     client.invoke(() -> {
-      ClusterManagementServiceConnectionConfig connectionConfig =
-          new GeodeClusterManagementServiceConnectionConfig(ClusterStartupRule.getClientCache());
+      ConnectionConfig connectionConfig =
+          new GeodeConnectionConfig(ClusterStartupRule.getClientCache());
       assertThat(connectionConfig.getPort()).isEqualTo(port);
       assertThat(connectionConfig.getHost()).isEqualTo("localhost");
       assertThat(connectionConfig.getSslContext()).isNotNull();

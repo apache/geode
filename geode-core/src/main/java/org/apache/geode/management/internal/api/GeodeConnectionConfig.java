@@ -27,7 +27,6 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Experimental;
@@ -48,7 +47,8 @@ import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.management.api.ClusterManagementServiceConnectionConfig;
+import org.apache.geode.management.api.ConnectionConfig;
+import org.apache.geode.management.api.ConnectionConfigImpl;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.internal.SSLUtil;
 import org.apache.geode.management.internal.configuration.messages.ClusterManagementServiceInfo;
@@ -58,31 +58,25 @@ import org.apache.geode.management.runtime.MemberInformation;
 import org.apache.geode.security.AuthInitialize;
 
 /**
- * Concrete implementation of {@link ClusterManagementServiceConnectionConfig} which can be used
+ * Concrete implementation of {@link ConnectionConfig} which can be used
  * to derive most (if not all) of the connection properties from an existing {@link Cache} or
  * {@link ClientCache}.
  *
  * @see ClusterManagementServiceBuilder
  */
 @Experimental
-public class GeodeClusterManagementServiceConnectionConfig
-    implements ClusterManagementServiceConnectionConfig {
+public class GeodeConnectionConfig
+    implements ConnectionConfig {
 
   private static final Logger logger = LogService.getLogger();
 
-  private String host;
-  private int port;
-  private String username;
-  private String password;
-  private HostnameVerifier hostnameVerifier = new NoopHostnameVerifier();
-  private SSLContext sslContext;
-  private String authToken;
+  private ConnectionConfigImpl connectionConfig;
 
   @Immutable
   private static final GetMemberInformationFunction MEMBER_INFORMATION_FUNCTION =
       new GetMemberInformationFunction();
 
-  public GeodeClusterManagementServiceConnectionConfig(GemFireCache cache) {
+  public GeodeConnectionConfig(GemFireCache cache) {
     GemFireCacheImpl cacheImpl = (GemFireCacheImpl) cache;
     if (cacheImpl.isServer()) {
       setServerCache(cacheImpl);
@@ -95,57 +89,57 @@ public class GeodeClusterManagementServiceConnectionConfig
 
   @Override
   public String getHost() {
-    return host;
+    return connectionConfig.getHost();
   }
 
   @Override
   public int getPort() {
-    return port;
+    return connectionConfig.getPort();
   }
 
   @Override
   public String getAuthToken() {
-    return this.authToken;
+    return connectionConfig.getAuthToken();
   }
 
-  public GeodeClusterManagementServiceConnectionConfig setAuthToken(String authToken) {
-    this.authToken = authToken;
+  public GeodeConnectionConfig setAuthToken(String authToken) {
+    connectionConfig.setAuthToken(authToken);
     return this;
   }
 
   @Override
   public SSLContext getSslContext() {
-    return sslContext;
+    return connectionConfig.getSslContext();
   }
 
   @Override
   public String getUsername() {
-    return username;
+    return connectionConfig.getUsername();
   }
 
-  public GeodeClusterManagementServiceConnectionConfig setUsername(String username) {
-    this.username = username;
+  public GeodeConnectionConfig setUsername(String username) {
+    connectionConfig.setUsername(username);
     return this;
   }
 
   @Override
   public String getPassword() {
-    return password;
+    return connectionConfig.getPassword();
   }
 
-  public GeodeClusterManagementServiceConnectionConfig setPassword(String password) {
-    this.password = password;
+  public GeodeConnectionConfig setPassword(String password) {
+    connectionConfig.setPassword(password);
     return this;
   }
 
   @Override
   public HostnameVerifier getHostnameVerifier() {
-    return this.hostnameVerifier;
+    return connectionConfig.getHostnameVerifier();
   }
 
-  public GeodeClusterManagementServiceConnectionConfig setHostnameVerifier(
+  public GeodeConnectionConfig setHostnameVerifier(
       HostnameVerifier hostnameVerifier) {
-    this.hostnameVerifier = hostnameVerifier;
+    connectionConfig.setHostnameVerifier(hostnameVerifier);
     return this;
   }
 
@@ -204,8 +198,9 @@ public class GeodeClusterManagementServiceConnectionConfig
 
   private void configureBuilder(DistributionConfig config,
       ClusterManagementServiceInfo cmsInfo) {
-    this.host = cmsInfo.getHostName();
-    this.port = cmsInfo.getHttpPort();
+    connectionConfig = new ConnectionConfigImpl(cmsInfo.getHostName(),
+        cmsInfo.getHttpPort());
+
     // if user didn't pass in a username and the locator requires credentials, use the credentials
     // user used to create the client cache
     if (cmsInfo.isSecured() && getUsername() == null) {
@@ -217,8 +212,8 @@ public class GeodeClusterManagementServiceConnectionConfig
             "You will need to set the buildWithHostAddress username and password or specify security-username and security-password in the properties when starting this geode server/client.";
         throw new IllegalStateException(message);
       }
-      this.username = username;
-      this.password = password;
+      connectionConfig.setUsername(username);
+      connectionConfig.setPassword(password);
     }
 
     if (cmsInfo.isSSL()) {
@@ -229,7 +224,7 @@ public class GeodeClusterManagementServiceConnectionConfig
             "This server/client needs to have ssl-truststore or ssl-use-default-context specified in order to use cluster management service.");
       }
 
-      this.sslContext = SSLUtil.createAndConfigureSSLContext(sslConfig, false);
+      connectionConfig.setSslContext(SSLUtil.createAndConfigureSSLContext(sslConfig, false));
     }
   }
 
@@ -276,5 +271,4 @@ public class GeodeClusterManagementServiceConnectionConfig
     }
     return host;
   }
-
 }

@@ -36,10 +36,10 @@ import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.EnumActionDestroyOverflow;
 import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.configuration.RegionConfig;
-import org.apache.geode.management.api.BasicClusterManagementServiceConnectionConfig;
 import org.apache.geode.management.api.ClusterManagementRealizationResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
+import org.apache.geode.management.api.ConnectionConfigImpl;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.Region;
@@ -70,7 +70,7 @@ public class RegionManagementDunitTest {
         new GeodeDevRestClient("/management/v1", "localhost", locator.getHttpPort(),
             false);
     cms = new ClusterManagementServiceBuilder().setConnectionConfig(
-        new BasicClusterManagementServiceConnectionConfig("localhost", locator.getHttpPort()))
+        new ConnectionConfigImpl("localhost", locator.getHttpPort()))
         .build();
   }
 

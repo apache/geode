@@ -25,15 +25,15 @@ import org.junit.Test;
 
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
-import org.apache.geode.management.api.BasicClusterManagementServiceConnectionConfig;
 import org.apache.geode.management.api.ClusterManagementRealizationResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
+import org.apache.geode.management.api.ConnectionConfigImpl;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.configuration.RegionType;
-import org.apache.geode.management.internal.api.GeodeClusterManagementServiceConnectionConfig;
+import org.apache.geode.management.internal.api.GeodeConnectionConfig;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -55,7 +55,7 @@ public class ClientClusterManagementServiceDunitTest {
     server = cluster.startServerVM(1, locator.getPort());
     serverWithGroupA = cluster.startServerVM(2, groupA, locator.getPort());
     cmsClient = new ClusterManagementServiceBuilder().setConnectionConfig(
-        new BasicClusterManagementServiceConnectionConfig("localhost", locator.getHttpPort()))
+        new ConnectionConfigImpl("localhost", locator.getHttpPort()))
         .build();
   }
 
@@ -131,7 +131,7 @@ public class ClientClusterManagementServiceDunitTest {
 
     client.invoke(() -> {
       ClusterManagementService service = new ClusterManagementServiceBuilder().setConnectionConfig(
-          new GeodeClusterManagementServiceConnectionConfig(ClusterStartupRule.getClientCache()))
+          new GeodeConnectionConfig(ClusterStartupRule.getClientCache()))
           .build();
       assertThat(service.isConnected()).isTrue();
     });
@@ -145,7 +145,7 @@ public class ClientClusterManagementServiceDunitTest {
 
     client.invoke(() -> {
       assertThatThrownBy(() -> new ClusterManagementServiceBuilder().setConnectionConfig(
-          new GeodeClusterManagementServiceConnectionConfig(ClusterStartupRule.getClientCache()))
+          new GeodeConnectionConfig(ClusterStartupRule.getClientCache()))
           .build())
               .isInstanceOf(IllegalStateException.class)
               .hasMessageContaining(
