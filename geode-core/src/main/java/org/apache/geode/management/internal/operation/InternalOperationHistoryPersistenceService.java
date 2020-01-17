@@ -17,7 +17,8 @@ package org.apache.geode.management.internal.operation;
 
 import java.util.List;
 
-public class InternalOperationHistoryPersistenceService implements OperationHistoryPersistenceService {
+public class InternalOperationHistoryPersistenceService
+    implements OperationHistoryPersistenceService {
 
   @Override
   public OperationHistoryManager.OperationInstance<?, ?> getOperationInstance(String id) {

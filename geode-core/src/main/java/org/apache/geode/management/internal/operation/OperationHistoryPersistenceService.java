@@ -29,9 +29,11 @@ import org.apache.geode.management.runtime.OperationResult;
  */
 public interface OperationHistoryPersistenceService {
   /**
-   * Returns a single instance of an {@link OperationHistoryManager.OperationInstance} for a given id.
+   * Returns a single instance of an {@link OperationHistoryManager.OperationInstance} for a given
+   * id.
    */
-  <A extends ClusterManagementOperation<V>, V extends OperationResult> OperationHistoryManager.OperationInstance<A, V> getOperationInstance(String id);
+  <A extends ClusterManagementOperation<V>, V extends OperationResult> OperationHistoryManager.OperationInstance<A, V> getOperationInstance(
+      String id);
 
   /**
    * Returns a list of all persisted {@link OperationHistoryManager.OperationInstance}.
@@ -40,15 +42,19 @@ public interface OperationHistoryPersistenceService {
 
   /**
    * Persists a new {@link OperationHistoryManager.OperationInstance}.
+   *
    * @throws IllegalStateException if the OperationInstance already exists
    */
-  <A extends ClusterManagementOperation<V>, V extends OperationResult> void create(OperationHistoryManager.OperationInstance<A, V> operationInstance) throws IllegalStateException;
+  <A extends ClusterManagementOperation<V>, V extends OperationResult> void create(
+      OperationHistoryManager.OperationInstance<A, V> operationInstance)
+      throws IllegalStateException;
 
   /**
    * Updates an existing {@link OperationHistoryManager.OperationInstance}.
    * If the instance is not found this is a no-op.
    */
-  <A extends ClusterManagementOperation<V>, V extends OperationResult> void update(OperationHistoryManager.OperationInstance<A, V> operationInstance);
+  <A extends ClusterManagementOperation<V>, V extends OperationResult> void update(
+      OperationHistoryManager.OperationInstance<A, V> operationInstance);
 
   /**
    * Removes an existing {@link OperationHistoryManager.OperationInstance}.

@@ -16,12 +16,10 @@ package org.apache.geode.management.internal.operation;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -38,7 +36,7 @@ import org.apache.geode.management.runtime.OperationResult;
  */
 @Experimental
 public class OperationHistoryManager {
-  private final ConcurrentMap<String, CompletableFuture<?>> history;
+  private final ConcurrentMap<String, CompletableFuture<?>> future;
   private final long keepCompletedMillis;
   private final OperationHistoryPersistenceService historyPersistenceService;
 
@@ -52,8 +50,9 @@ public class OperationHistoryManager {
   /**
    * set a custom retention policy to keep results for X amount of time after completion
    */
-  public OperationHistoryManager(long keepCompleted, TimeUnit timeUnit, OperationHistoryPersistenceService historyPersistenceService) {
-    history = new ConcurrentHashMap<>();
+  public OperationHistoryManager(long keepCompleted, TimeUnit timeUnit,
+      OperationHistoryPersistenceService historyPersistenceService) {
+    future = new ConcurrentHashMap<>();
     keepCompletedMillis = timeUnit.toMillis(keepCompleted);
     this.historyPersistenceService = historyPersistenceService;
   }
@@ -77,8 +76,8 @@ public class OperationHistoryManager {
         .map(OperationInstance::getId)
         .collect(Collectors.toSet());
 
-    expiredKeys.forEach( id -> {
-      history.remove(id);
+    expiredKeys.forEach(id -> {
+      future.remove(id);
       historyPersistenceService.remove(id);
     });
   }
@@ -90,8 +89,9 @@ public class OperationHistoryManager {
   private static boolean isExpired(long expirationDate, OperationInstance<?, ?> operationInstance) {
     Date operationEnd = operationInstance.getOperationEnd();
 
-    if (operationEnd == null)
+    if (operationEnd == null) {
       return false; // always keep while still in-progress
+    }
 
     return operationEnd.getTime() <= expirationDate;
   }
@@ -100,17 +100,19 @@ public class OperationHistoryManager {
    * Stores a new operation in the history and installs a trigger to record the operation end time.
    */
   public <A extends ClusterManagementOperation<V>, V extends OperationResult> OperationInstance<A, V> save(
-      OperationInstance<A, V> operationInstance) {
-    String opId = operationInstance.getId();
-    CompletableFuture<V> future = operationInstance.getFutureResult();
+      String opId, A op, Date start, CompletableFuture<V> future) {
+    OperationInstance<A, V> operationInstance = new OperationInstance<>(opId, op, start);
+
     historyPersistenceService.create(operationInstance);
-    history.put(opId, future);
+    this.future.put(opId, future);
 
     future.whenComplete((result, exception) -> {
       OperationInstance<?, ?> opInstance = historyPersistenceService.getOperationInstance(opId);
-      opInstance.setOperationEnd(new Date());
-      historyPersistenceService.update(opInstance);
-      history.remove(opId);
+      if (opInstance != null) {
+        opInstance.setOperationEnd(new Date(), result, exception);
+        historyPersistenceService.update(opInstance);
+      }
+      this.future.remove(opId);
     });
 
     expireHistory();
@@ -131,28 +133,29 @@ public class OperationHistoryManager {
    */
   public static class OperationInstance<A extends ClusterManagementOperation<V>, V extends OperationResult>
       implements Identifiable<String> {
-    private final CompletableFuture<V> future;
     private final String opId;
     private final A operation;
+    private final String operator;
     private final Date operationStart;
     private Date operationEnd;
-    private String operator;
+    private OperationResult result;
+    private Throwable exception;
 
-    public OperationInstance(CompletableFuture<V> future, String opId, A operation,
+    public OperationInstance(String opId, A operation,
         Date operationStart) {
-      this.future = future;
       this.opId = opId;
       this.operation = operation;
       this.operationStart = operationStart;
+      if (operation instanceof TaggedWithOperator) {
+        this.operator = ((TaggedWithOperator) operation).getOperator();
+      } else {
+        this.operator = null;
+      }
     }
 
     @Override
     public String getId() {
       return opId;
-    }
-
-    public CompletableFuture<V> getFutureResult() {
-      return future;
     }
 
     public A getOperation() {
@@ -167,16 +170,22 @@ public class OperationHistoryManager {
       return operator;
     }
 
-    public void setOperator(String operator) {
-      this.operator = operator;
-    }
-
-    public void setOperationEnd(Date operationEnd) {
+    public void setOperationEnd(Date operationEnd, OperationResult result, Throwable exception) {
+      this.result = result;
+      this.exception = exception;
       this.operationEnd = operationEnd;
     }
 
     public Date getOperationEnd() {
       return this.operationEnd;
+    }
+
+    public OperationResult getResult() {
+      return this.result;
+    }
+
+    public Throwable getException() {
+      return this.exception;
     }
   }
 }

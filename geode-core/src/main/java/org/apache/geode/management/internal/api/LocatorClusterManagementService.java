@@ -91,7 +91,6 @@ import org.apache.geode.management.internal.functions.CacheRealizationFunction;
 import org.apache.geode.management.internal.operation.OperationHistoryManager;
 import org.apache.geode.management.internal.operation.OperationHistoryManager.OperationInstance;
 import org.apache.geode.management.internal.operation.OperationManager;
-import org.apache.geode.management.internal.operation.TaggedWithOperator;
 import org.apache.geode.management.runtime.OperationResult;
 import org.apache.geode.management.runtime.RuntimeInfo;
 
@@ -393,9 +392,6 @@ public class LocatorClusterManagementService implements ClusterManagementService
   public <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<V> start(
       A op) {
     OperationInstance<A, V> operationInstance = operationManager.submit(op);
-    if (op instanceof TaggedWithOperator) {
-      operationInstance.setOperator(((TaggedWithOperator) op).getOperator());
-    }
 
     ClusterManagementResult result = new ClusterManagementResult(
         StatusCode.ACCEPTED, "Operation started.  Use the URI to check its status.");
