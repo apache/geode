@@ -24,7 +24,6 @@ import java.util.Optional;
 import javax.net.ssl.SSLContext;
 
 import org.apache.http.client.RedirectStrategy;
-import org.apache.http.impl.client.DefaultRedirectStrategy;
 import org.apache.http.impl.client.LaxRedirectStrategy;
 import org.junit.Test;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
@@ -118,6 +117,6 @@ public class ClusterManagementServiceBuilderTest {
     Object client = requestFactory.getHttpClient();
     Object execChain = getFieldValue(client, "execChain");
     RedirectStrategy redirectStrategy = getFieldValue(execChain, "redirectStrategy");
-    assertThat(redirectStrategy).isInstanceOf(DefaultRedirectStrategy.class);
+    assertThat(redirectStrategy).isNotInstanceOf(LaxRedirectStrategy.class);
   }
 }
