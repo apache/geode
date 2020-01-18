@@ -43,6 +43,7 @@ public class BaseConnectionConfig
   private HostnameVerifier hostnameVerifier = new NoopHostnameVerifier();
   private SSLContext sslContext;
   private String authToken;
+  private boolean followRedirects;
 
   public BaseConnectionConfig(String host, int port) {
     this.host = host;
@@ -108,5 +109,15 @@ public class BaseConnectionConfig
   @Override
   public HostnameVerifier getHostnameVerifier() {
     return hostnameVerifier;
+  }
+
+  public BaseConnectionConfig setFollowRedirects(boolean followRedirects) {
+    this.followRedirects = followRedirects;
+    return this;
+  }
+
+  @Override
+  public boolean getFollowRedirects() {
+    return followRedirects;
   }
 }

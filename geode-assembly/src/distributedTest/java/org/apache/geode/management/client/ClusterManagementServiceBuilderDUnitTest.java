@@ -29,7 +29,7 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.MemberStarterRule;
 
-public class ClusterManagementServiceBuilderTest {
+public class ClusterManagementServiceBuilderDUnitTest {
 
   @ClassRule
   public static ClusterStartupRule cluster = new ClusterStartupRule(1);

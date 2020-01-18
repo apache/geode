@@ -46,4 +46,6 @@ public interface ConnectionConfig {
   String getPassword();
 
   HostnameVerifier getHostnameVerifier();
+
+  boolean getFollowRedirects();
 }

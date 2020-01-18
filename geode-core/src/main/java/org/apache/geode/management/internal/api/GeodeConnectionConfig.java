@@ -137,6 +137,16 @@ public class GeodeConnectionConfig
     return connectionConfig.getHostnameVerifier();
   }
 
+  @Override
+  public boolean getFollowRedirects() {
+    return connectionConfig.getFollowRedirects();
+  }
+
+  public GeodeConnectionConfig setFollowRedirects(boolean followRedirects) {
+    connectionConfig.setFollowRedirects(followRedirects);
+    return this;
+  }
+
   public GeodeConnectionConfig setHostnameVerifier(
       HostnameVerifier hostnameVerifier) {
     connectionConfig.setHostnameVerifier(hostnameVerifier);

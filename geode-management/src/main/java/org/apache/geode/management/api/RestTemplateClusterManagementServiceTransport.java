@@ -33,6 +33,7 @@ import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.LaxRedirectStrategy;
 import org.apache.http.message.BasicHeader;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -107,6 +108,10 @@ public class RestTemplateClusterManagementServiceTransport
         new HttpComponentsClientHttpRequestFactory();
 
     HttpClientBuilder clientBuilder = HttpClientBuilder.create();
+
+    if (connectionConfig.getFollowRedirects()) {
+      clientBuilder.setRedirectStrategy(new LaxRedirectStrategy());
+    }
     // configures the clientBuilder
     if (connectionConfig.getAuthToken() != null) {
       List<Header> defaultHeaders = Arrays.asList(
