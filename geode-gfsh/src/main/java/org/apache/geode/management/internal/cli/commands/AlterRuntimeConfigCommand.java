@@ -133,13 +133,16 @@ public class AlterRuntimeConfigCommand extends GfshCommand {
           logLevel);
     }
 
+
     if (statisticArchiveFile != null && !statisticArchiveFile.isEmpty()) {
-      runTimeDistributionConfigAttributes
-          .put(CliStrings.ALTER_RUNTIME_CONFIG__STATISTIC__ARCHIVE__FILE, statisticArchiveFile);
-    } else {
-      runTimeDistributionConfigAttributes
-          .put(CliStrings.ALTER_RUNTIME_CONFIG__STATISTIC__ARCHIVE__FILE,
-              String.valueOf(new File("")));
+      if (!statisticArchiveFile.contains(".gfs")) {
+        runTimeDistributionConfigAttributes
+            .put(CliStrings.ALTER_RUNTIME_CONFIG__STATISTIC__ARCHIVE__FILE,
+                String.valueOf(new File("")));
+      } else {
+        runTimeDistributionConfigAttributes
+            .put(CliStrings.ALTER_RUNTIME_CONFIG__STATISTIC__ARCHIVE__FILE, statisticArchiveFile);
+      }
     }
 
     if (statisticSampleRate != null) {

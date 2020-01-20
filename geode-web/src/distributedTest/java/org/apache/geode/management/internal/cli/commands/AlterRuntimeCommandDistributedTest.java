@@ -57,7 +57,6 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 @Category(GfshTest.class)
 @RunWith(JUnitParamsRunner.class)
 public class AlterRuntimeCommandDistributedTest {
-
   @Rule
   public ClusterStartupRule startupRule = new ClusterStartupRule().withLogFile();
 
@@ -464,7 +463,7 @@ public class AlterRuntimeCommandDistributedTest {
       gfsh.connectAndVerify(locator.getJmxPort(), GfshCommandRule.PortType.jmxManager);
     }
 
-    String testName = "statisticsArchive";
+    String testName = "statisticsArchive.gfs";
 
     CommandStringBuilder setStatisticArchiveFile = new CommandStringBuilder(ALTER_RUNTIME_CONFIG)
         .addOption(ALTER_RUNTIME_CONFIG__STATISTIC__ARCHIVE__FILE, testName);
@@ -510,7 +509,7 @@ public class AlterRuntimeCommandDistributedTest {
       gfsh.connectAndVerify(locator.getJmxPort(), GfshCommandRule.PortType.jmxManager);
     }
 
-    String testName = "statisticsArchive";
+    String testName = "statisticsArchive.gfs";
 
     CommandStringBuilder setStatisticArchiveFile = new CommandStringBuilder(ALTER_RUNTIME_CONFIG)
         .addOption(MEMBER, server1.getName())
@@ -551,7 +550,6 @@ public class AlterRuntimeCommandDistributedTest {
 
     MemberVM locator = startupRule.startLocatorVM(0, l -> l.withHttpService());
     MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
-    MemberVM server2 = startupRule.startServerVM(2, props, locator.getPort());
 
     if (connectOverHttp) {
       gfsh.connectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http);
@@ -559,7 +557,7 @@ public class AlterRuntimeCommandDistributedTest {
       gfsh.connectAndVerify(locator.getJmxPort(), GfshCommandRule.PortType.jmxManager);
     }
 
-    String testName = "";
+    String testName = "statisticsArchive";
 
     CommandStringBuilder setStatisticArchiveFile = new CommandStringBuilder(ALTER_RUNTIME_CONFIG)
         .addOption(ALTER_RUNTIME_CONFIG__STATISTIC__ARCHIVE__FILE, testName);
@@ -567,27 +565,25 @@ public class AlterRuntimeCommandDistributedTest {
     gfsh.executeAndAssertThat(setStatisticArchiveFile.toString())
         .statusIsSuccess();
 
-    for (MemberVM server : new MemberVM[] {server1, server2}) {
-      String expectedName = server == server2 ? testName : "";
+    String expectedName = "";
 
-      server.invoke(() -> {
-        InternalCache cache = ClusterStartupRule.getCache();
-        DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
+    server1.invoke(() -> {
+      InternalCache cache = ClusterStartupRule.getCache();
+      DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
 
-        assertThat(config.getLogFileSizeLimit())
-            .isEqualTo(0);
-        assertThat(config.getArchiveDiskSpaceLimit())
-            .isEqualTo(0);
-        assertThat(config.getStatisticSampleRate())
-            .isEqualTo(1000);
-        assertThat(config.getStatisticArchiveFile().getName())
-            .isEqualTo(expectedName);
-        assertThat(config.getStatisticSamplingEnabled())
-            .isTrue();
-        assertThat(config.getLogDiskSpaceLimit())
-            .isEqualTo(0);
-      });
-    }
+      assertThat(config.getLogFileSizeLimit())
+          .isEqualTo(0);
+      assertThat(config.getArchiveDiskSpaceLimit())
+          .isEqualTo(0);
+      assertThat(config.getStatisticSampleRate())
+          .isEqualTo(1000);
+      assertThat(config.getStatisticArchiveFile().getName())
+          .isEqualTo(expectedName);
+      assertThat(config.getStatisticSamplingEnabled())
+          .isTrue();
+      assertThat(config.getLogDiskSpaceLimit())
+          .isEqualTo(0);
+    });
   }
 
   @Test
@@ -609,7 +605,7 @@ public class AlterRuntimeCommandDistributedTest {
       gfsh.connectAndVerify(locator.getJmxPort(), GfshCommandRule.PortType.jmxManager);
     }
 
-    String testName = "statisticsArchive";
+    String testName = "statisticsArchive.gfs";
 
     CommandStringBuilder setStatisticArchiveFile = new CommandStringBuilder(ALTER_RUNTIME_CONFIG)
         .addOption(GROUP, "G1")
