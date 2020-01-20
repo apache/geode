@@ -93,11 +93,11 @@ public class StopCQ extends BaseCQCommand {
       AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
       if (authzRequest != null) {
         String queryStr = null;
-        Set cqRegionNames = null;
+        Set<String> cqRegionNames = null;
 
         if (cqQuery != null) {
           queryStr = cqQuery.getQueryString();
-          cqRegionNames = new HashSet();
+          cqRegionNames = new HashSet<>();
           cqRegionNames.add(cqQuery.getRegionName());
         }
         authzRequest.stopCQAuthorize(cqName, queryStr, cqRegionNames);

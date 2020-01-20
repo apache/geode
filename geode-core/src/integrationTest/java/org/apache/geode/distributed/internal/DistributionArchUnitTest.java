@@ -27,7 +27,7 @@ import com.tngtech.archunit.lang.ArchRule;
 import org.junit.runner.RunWith;
 
 import org.apache.geode.distributed.internal.membership.MembershipJUnitTest;
-import org.apache.geode.distributed.internal.membership.gms.api.Membership;
+import org.apache.geode.distributed.internal.membership.api.Membership;
 
 @RunWith(ArchUnitRunner.class)
 @AnalyzeClasses(packages = "org.apache.geode", cacheMode = CacheMode.PER_CLASS,
@@ -42,6 +42,7 @@ public class DistributionArchUnitTest {
       .byClassesThat(type(Distribution.class)
           .or(type(MembershipJUnitTest.class)) // another integrationTest
           .or(type(DistributionImpl.MyDCReceiver.class))
+          .or(resideInAPackage("org.apache.geode.distributed.internal.membership.api.."))
           .or(resideInAPackage("org.apache.geode.distributed.internal.membership.gms.."))
           .or(resideInAPackage("org.apache.geode.internal.tcp.."))
           .or(resideInAPackage("org.apache.geode.distributed.internal.direct.."))

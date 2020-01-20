@@ -14,7 +14,7 @@
  */
 package org.apache.geode.management.internal.configuration.utils;
 
-import static org.apache.geode.distributed.internal.membership.adapter.SocketCreatorAdapter.asTcpSocketCreator;
+import static org.apache.geode.distributed.internal.membership.adapter.TcpSocketCreatorAdapter.asTcpSocketCreator;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -108,9 +108,9 @@ public class ClusterConfigurationStatusRetriever {
     return buffer.toString();
   }
 
-  public static String fromLocator(LocatorLauncher.LocatorState locatorState)
+  public static String fromLocator(LocatorLauncher.LocatorState locatorState, Properties properties)
       throws ClassNotFoundException, IOException {
     return fromLocator(locatorState.getHost(), Integer.parseInt(locatorState.getPort()),
-        new Properties());
+        properties);
   }
 }

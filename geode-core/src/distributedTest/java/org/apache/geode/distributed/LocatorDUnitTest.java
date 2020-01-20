@@ -91,10 +91,10 @@ import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.MembershipTestHook;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberDisconnectedException;
-import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfigurationException;
-import org.apache.geode.distributed.internal.membership.gms.api.MembershipView;
+import org.apache.geode.distributed.internal.membership.api.MemberDisconnectedException;
+import org.apache.geode.distributed.internal.membership.api.MembershipConfigurationException;
+import org.apache.geode.distributed.internal.membership.api.MembershipManagerHelper;
+import org.apache.geode.distributed.internal.membership.api.MembershipView;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.tcp.Connection;
@@ -809,11 +809,16 @@ public class LocatorDUnitTest implements Serializable {
         // throw DistributedSystemDisconnectedException which should have cause as
         // ForceDisconnectException.
         await().until(() -> !mmgr.getMembership().isConnected());
+        await().untilAsserted(() -> {
+          Throwable cause = mmgr.getShutdownCause();
+          assertThat(cause).isInstanceOf(ForcedDisconnectException.class);
+        });
         try (IgnoredException i = addIgnoredException("Membership: requesting removal of")) {
           mmgr.requestMemberRemoval((InternalDistributedMember) mem1, "test reasons");
           fail("It should have thrown exception in requestMemberRemoval");
         } catch (DistributedSystemDisconnectedException e) {
           // expected
+          assertThat(e.getCause()).isInstanceOf(ForcedDisconnectException.class);
         } finally {
           hook.reset();
         }

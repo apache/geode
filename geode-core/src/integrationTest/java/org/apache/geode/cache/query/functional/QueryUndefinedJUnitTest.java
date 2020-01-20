@@ -32,9 +32,9 @@ import org.apache.geode.cache.query.CacheUtils;
 import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.SelectResults;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 @Category({OQLQueryTest.class})
 public class QueryUndefinedJUnitTest implements Serializable {
@@ -43,7 +43,7 @@ public class QueryUndefinedJUnitTest implements Serializable {
 
   @Before
   public void setUp() throws Exception {
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "Query.VERBOSE", "true");
+    System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "Query.VERBOSE", "true");
     CacheUtils.startCache();
   }
 

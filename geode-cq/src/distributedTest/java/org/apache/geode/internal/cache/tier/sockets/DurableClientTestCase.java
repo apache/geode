@@ -38,6 +38,7 @@ import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 
 /**
@@ -71,7 +72,7 @@ public class DurableClientTestCase extends DurableClientTestBase {
   @Test
   public void testSpecialDurableProperty() throws InterruptedException {
     final Properties jp = new Properties();
-    jp.setProperty(DistributionConfig.GEMFIRE_PREFIX + "SPECIAL_DURABLE", "true");
+    jp.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "SPECIAL_DURABLE", "true");
 
 
 

@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.CacheService;
 import org.apache.geode.internal.cache.InternalCache;
@@ -28,6 +27,7 @@ import org.apache.geode.internal.cache.tier.sockets.OldClientSupportService;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionedDataOutputStream;
 import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 import com.gemstone.gemfire.cache.execute.EmtpyRegionFunctionException;
 
@@ -39,7 +39,7 @@ public class OldClientSupportProvider implements OldClientSupportService {
   static final String GEMFIRE = "com.gemstone.gemfire";
 
   static final String ALWAYS_CONVERT_CLASSES_NAME =
-      DistributionConfig.GEMFIRE_PREFIX + "old-client-support.convert-all";
+      GeodeGlossary.GEMFIRE_PREFIX + "old-client-support.convert-all";
 
   /** whether to always convert new package names to old on outgoing serialization */
   static final boolean ALWAYS_CONVERT_CLASSES = Boolean.getBoolean(ALWAYS_CONVERT_CLASSES_NAME);

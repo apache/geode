@@ -22,6 +22,7 @@ import java.util.Enumeration;
 
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.internal.inet.LocalHostUtil;
 
 /**
  * Provides static utilities for manipulating, validating, and converting InetAddresses and host
@@ -34,7 +35,7 @@ public class InetAddressUtils {
   private static final InetAddress LOCALHOST = getLocalHost();
 
   private static final String LOOPBACK_ADDRESS =
-      SocketCreator.preferIPv6Addresses() ? "::1" : "127.0.0.1";
+      LocalHostUtil.preferIPv6Addresses() ? "::1" : "127.0.0.1";
 
   @Immutable
   private static final InetAddress LOOPBACK = toInetAddress(LOOPBACK_ADDRESS);
@@ -221,7 +222,7 @@ public class InetAddressUtils {
    */
   private static InetAddress getLocalHost() {
     try {
-      return SocketCreator.getLocalHost();
+      return LocalHostUtil.getLocalHost();
     } catch (UnknownHostException e) {
       throw new AssertionError("Failed to get local host", e);
     }

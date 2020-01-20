@@ -14,10 +14,14 @@
  */
 package org.apache.geode.management.api;
 
+
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
+
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.management.configuration.AbstractConfiguration;
 
 @Experimental
 public class ClusterManagementRealizationResult extends ClusterManagementResult {
@@ -42,7 +46,7 @@ public class ClusterManagementRealizationResult extends ClusterManagementResult 
     this.memberStatuses.add(result);
     // if any member failed, status code will be error
     if (!result.isSuccess()) {
-      statusCode = StatusCode.ERROR;
+      setStatus(StatusCode.ERROR, "");
     }
   }
 
@@ -53,5 +57,10 @@ public class ClusterManagementRealizationResult extends ClusterManagementResult 
    */
   public List<RealizationResult> getMemberStatuses() {
     return memberStatuses;
+  }
+
+  @Override
+  public String toString() {
+    return super.toString() + " " + StringUtils.join(memberStatuses, "; ");
   }
 }

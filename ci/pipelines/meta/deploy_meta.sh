@@ -278,15 +278,17 @@ unpausePipeline ${PIPELINE_PREFIX}main
 
 if [[ "$GEODE_FORK" == "${UPSTREAM_FORK}" ]]; then
   exposePipelines ${PIPELINE_PREFIX}main ${PIPELINE_PREFIX}images
-  enableFeature metrics
-  enableFeature examples
+  if [[ "${PUBLIC}" == "true" ]]; then
+    enableFeature metrics
+    enableFeature examples
+  fi
   if [[ "$GEODE_BRANCH" == "develop" ]]; then
     enableFeature pr
   fi
 fi
 
-echo "Successfully deployed ${CONCOURSE_URL}/teams/main/pipelines/${PIPELINE_PREFIX}main"
+echo "Successfully deployed ${CONCOURSE_URL}/teams/${CONCOURSE_TEAM}/pipelines/${PIPELINE_PREFIX}main"
 
-rm ci/pipelines/meta/generated-pipeline.yml
-rm ci/pipelines/meta/pipelineProperties.yml
-rm ci/pipelines/meta/repository.yml
+rm -f ${SCRIPTDIR}/generated-pipeline.yml
+rm -f ${SCRIPTDIR}/pipelineProperties.yml
+rm -f ${SCRIPTDIR}/repository.yml

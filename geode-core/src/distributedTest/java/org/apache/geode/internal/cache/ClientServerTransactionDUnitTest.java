@@ -98,7 +98,6 @@ import org.apache.geode.cache.util.CacheWriterAdapter;
 import org.apache.geode.cache.util.TransactionListenerAdapter;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.AvailablePort;
@@ -120,6 +119,7 @@ import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.WaitCriterion;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Tests the basic client-server transaction functionality
@@ -329,7 +329,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
   }
 
   private void createClient(int port, String regionName) throws Exception {
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints",
+    System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints",
         "true");
     ClientCacheFactory ccf = new ClientCacheFactory();
     ccf.addPoolServer("localhost"/* getServerHostName(Host.getHost(0)) */, port);
@@ -393,7 +393,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
                            // tests uses
 
     final int port1 = createRegionsAndStartServer(datastore1, false);
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints",
+    System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints",
         "true");
     ClientCacheFactory ccf = new ClientCacheFactory();
     setCCF(port1, ccf);
@@ -450,7 +450,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     final int port1 = createRegionsAndStartServerWithTimeout(accessor, true, 5);
     createRegionOnServerWithTimeout(datastore, false, false, 5);
 
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints",
+    System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints",
         "true");
     ClientCacheFactory ccf = new ClientCacheFactory();
     setCCF(port1, ccf);
@@ -530,7 +530,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     final int port1 = createRegionsAndStartServerWithTimeout(accessor, true, 5);
     createRegionOnServerWithTimeout(datastore, false, false, 5);
 
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints",
+    System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints",
         "true");
     ClientCacheFactory ccf = new ClientCacheFactory();
     setCCF(port1, ccf);
@@ -610,7 +610,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     ports[1] = createRegionsAndStartServerWithTimeout(accessor2, true, 5);
     createRegionOnServerWithTimeout(datastore, false, false, 5);
 
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints",
+    System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints",
         "true");
     ClientCacheFactory ccf = new ClientCacheFactory();
     setCCF(ports, ccf);
@@ -2033,7 +2033,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     /* final TXId txid = (TXId) */client.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
-        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints",
+        System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints",
             "true");
         ClientCacheFactory ccf = new ClientCacheFactory();
         ccf.addPoolServer("localhost"/* getServerHostName(Host.getHost(0)) */, port1);
@@ -3006,7 +3006,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       @Override
       public Object call() throws Exception {
         disconnectFromDS();
-        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints",
+        System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints",
             "true");
         ClientCacheFactory ccf = new ClientCacheFactory();
         ccf.addPoolServer("localhost"/* getServerHostName(Host.getHost(0)) */, port1);
@@ -3064,13 +3064,13 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
           @Override
           public void run() {
             getCache().getLogger().info("SWAP:closing cache");
-            System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "no-flush-on-close", "true");
+            System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "no-flush-on-close", "true");
             try {
               mgr.removeHostedTXState((TXId) txState.getTransactionId());
               getCache().close();
             } finally {
               System.getProperties()
-                  .remove(DistributionConfig.GEMFIRE_PREFIX + "no-flush-on-close");
+                  .remove(GeodeGlossary.GEMFIRE_PREFIX + "no-flush-on-close");
             }
           }
         });
@@ -3113,7 +3113,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
 
     client.invoke("create client cache", () -> {
       disconnectFromDS();
-      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints",
+      System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints",
           "true");
       ClientCacheFactory ccf = new ClientCacheFactory();
       ccf.addPoolServer("localhost"/* getServerHostName(Host.getHost(0)) */, port1);
@@ -3158,13 +3158,13 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         @Override
         public void run() {
           getCache().getLogger().info("server is now closing its cache");
-          System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "no-flush-on-close", "true");
+          System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "no-flush-on-close", "true");
           try {
             mgr.removeHostedTXState((TXId) txState.getTransactionId());
             DistributedTestUtils.crashDistributedSystem(getCache().getDistributedSystem());
           } finally {
             System.getProperties()
-                .remove(DistributionConfig.GEMFIRE_PREFIX + "no-flush-on-close");
+                .remove(GeodeGlossary.GEMFIRE_PREFIX + "no-flush-on-close");
           }
         }
       });
@@ -3368,7 +3368,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         @Override
         public Object call() throws Exception {
           System.setProperty(
-              DistributionConfig.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints", "true");
+              GeodeGlossary.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints", "true");
           ClientCacheFactory ccf = new ClientCacheFactory(getDistributedSystemProperties());
           ccf.addPoolServer("localhost"/* getServerHostName(Host.getHost(0)) */, port);
           setCCF(port2, ccf);
@@ -3708,7 +3708,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     final TXId txid = (TXId) client.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
-        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints",
+        System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints",
             "true");
         ClientCacheFactory ccf = new ClientCacheFactory();
         ccf.addPoolServer("localhost"/* getServerHostName(Host.getHost(0)) */, port1);
@@ -3851,7 +3851,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     /* final TXId txid = (TXId) */client.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
-        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints",
+        System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints",
             "true");
         ClientCacheFactory ccf = new ClientCacheFactory();
         ccf.addPoolServer("localhost"/* getServerHostName(Host.getHost(0)) */, port1);
@@ -3942,7 +3942,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     /* final TXId txid = (TXId) */client.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
-        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints",
+        System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints",
             "true");
         ClientCacheFactory ccf = new ClientCacheFactory();
         ccf.addPoolServer("localhost"/* getServerHostName(Host.getHost(0)) */, port1);
@@ -4036,7 +4036,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     client2.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
-        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints",
+        System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints",
             "true");
         ClientCacheFactory ccf = new ClientCacheFactory();
         ccf.addPoolServer("localhost"/* getServerHostName(Host.getHost(0)) */, port2);
@@ -4055,7 +4055,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     client1.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
-        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints",
+        System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints",
             "true");
         ClientCacheFactory ccf = new ClientCacheFactory();
         ccf.addPoolServer("localhost"/* getServerHostName(Host.getHost(0)) */, port1);

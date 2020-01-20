@@ -25,7 +25,7 @@ import java.lang.reflect.Method;
 import java.util.ServiceConfigurationError;
 import java.util.concurrent.TimeoutException;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Manages which implementation of {@link ProcessController} will be used and constructs the
@@ -39,7 +39,7 @@ public class ProcessControllerFactory {
    * For testing only
    */
   public static final String PROPERTY_DISABLE_ATTACH_API =
-      DistributionConfig.GEMFIRE_PREFIX + "test.ProcessControllerFactory.DisableAttachApi";
+      GeodeGlossary.GEMFIRE_PREFIX + "test.ProcessControllerFactory.DisableAttachApi";
 
   private final boolean disableAttachApi;
 

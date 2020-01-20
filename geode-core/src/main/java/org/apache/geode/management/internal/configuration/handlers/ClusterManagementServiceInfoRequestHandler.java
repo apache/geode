@@ -19,12 +19,9 @@ import java.io.IOException;
 
 import org.apache.commons.lang3.StringUtils;
 
-import org.apache.geode.cache.GemFireCache;
-import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
-import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.distributed.internal.RestartableTcpHandler;
+import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
@@ -32,7 +29,7 @@ import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.management.internal.configuration.messages.ClusterManagementServiceInfo;
 import org.apache.geode.management.internal.configuration.messages.ClusterManagementServiceInfoRequest;
 
-public class ClusterManagementServiceInfoRequestHandler implements RestartableTcpHandler {
+public class ClusterManagementServiceInfoRequestHandler implements TcpHandler {
   @Override
   public Object processRequest(Object request) throws IOException {
     if (!(request instanceof ClusterManagementServiceInfoRequest)) {
@@ -89,12 +86,6 @@ public class ClusterManagementServiceInfoRequestHandler implements RestartableTc
 
   @Override
   public void init(TcpServer tcpServer) {
-
-  }
-
-  @Override
-  public void restarting(DistributedSystem system, GemFireCache cache,
-      InternalConfigurationPersistenceService sharedConfig) {
 
   }
 }

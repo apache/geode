@@ -28,7 +28,6 @@ import it.unimi.dsi.fastutil.objects.ObjectIterator;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.DMStats;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.ByteBufferWriter;
@@ -38,6 +37,7 @@ import org.apache.geode.internal.ObjToByteArraySerializer;
 import org.apache.geode.internal.net.BufferPool;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * <p>
@@ -733,7 +733,7 @@ public class MsgStreamer extends OutputStream
    * to true gives a performance improvement.
    */
   private static final boolean ASCII_STRINGS =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "ASCII_STRINGS");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "ASCII_STRINGS");
 
   /**
    * Writes two bytes of length information to the output stream, followed by the Java modified UTF

@@ -16,7 +16,7 @@
 package org.apache.geode.management.internal.rest;
 
 import static org.apache.geode.test.junit.assertions.ClusterManagementListResultAssert.assertManagementListResult;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 
@@ -26,7 +26,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import org.apache.geode.management.api.ClusterManagementException;
+import org.apache.geode.management.api.ClusterManagementGetResult;
 import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
@@ -118,7 +118,9 @@ public class DeployToMultiGroupDUnitTest {
   public void getById() throws Exception {
     Deployment filter = new Deployment();
     filter.setJarFileName("lib.jar");
-    assertThatThrownBy(() -> client.get(filter)).isInstanceOf(ClusterManagementException.class)
-        .hasMessageContaining("ERROR: Expect only one matching Deployment.");
+    ClusterManagementGetResult<Deployment, DeploymentInfo> getResult =
+        client.get(filter);
+    assertThat(getResult.getResult().getConfigurations()).extracting(Deployment::getGroup)
+        .containsExactlyInAnyOrder("group1", "group2");
   }
 }

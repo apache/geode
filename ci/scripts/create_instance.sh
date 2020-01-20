@@ -90,7 +90,7 @@ cp old/attempts new/
 echo attempt >> new/attempts
 attempts=$(cat new/attempts | wc -l)
 
-PERMITTED_ZONES=(us-central1-a us-central1-b us-central1-c us-central1-f)
+PERMITTED_ZONES=($(gcloud compute zones list --filter="name~'us-central.*'" --format=json | jq -r .[].name))
 if [ $attempts -eq 1 ]; then
   ZONE=${MY_ZONE}
 else
@@ -99,7 +99,7 @@ fi
 echo "Deploying to zone ${ZONE}"
 
 # Ensure no existing instance with this name in any zone
-for KILL_ZONE in "${PERMITTED_ZONES}"; do
+for KILL_ZONE in $(echo ${PERMITTED_ZONES[*]}); do
   gcloud compute instances delete ${INSTANCE_NAME} --zone=${KILL_ZONE} --quiet &>/dev/null || true
 done
 
@@ -127,7 +127,6 @@ INSTANCE_INFORMATION=$(gcloud compute --project=${GCP_PROJECT} instances create 
   --labels="${LABELS}" \
   --tags="heavy-lifter" \
   --scopes="default,storage-rw" \
-  --metadata="disable-agent-updates=true" \
   --format=json)
 
 CREATE_RC=$?
@@ -161,13 +160,25 @@ if [[ -z "${WINDOWS_PREFIX}" ]]; then
 else
   # Set up ssh access for Windows systems
   echo -n "Setting windows password via gcloud."
+  INSTANCE_AGENT_READY_LINE="GCEWindowsAgent: GCE Agent Started"
+  INSTANCE_SETUP_FINSHED_LINE="GCEInstanceSetup: Instance setup finished"
+  SCRAPE_COMMAND_INSTANCE_READY="gcloud compute instances get-serial-port-output ${INSTANCE_NAME} --zone=${ZONE} | grep \"${INSTANCE_AGENT_READY_LINE}\" | wc -l"
+  SCRAPE_COMMAND_SETUP_FINSHED="gcloud compute instances get-serial-port-output ${INSTANCE_NAME} --zone=${ZONE} | grep \"${INSTANCE_SETUP_FINSHED_LINE}\" | wc -l"
+
   while true; do
+    # Check that the instance agent has started at least 2x (first boot, plus activation)
+    # and that the "GCEInstanceSetup" script completed
+    echo -n "Waiting for startup scripts and windows activation to complete"
+    while [[ 2 -ne $(eval ${SCRAPE_COMMAND_INSTANCE_READY} 2> /dev/null) ]] || [[ 1 -ne $(eval ${SCRAPE_COMMAND_SETUP_FINSHED} 2> /dev/null) ]]; do
+      echo -n .
+      sleep 5
+    done
+    echo ""
+    # Get a password
     PASSWORD=$( yes | gcloud beta compute reset-windows-password ${INSTANCE_NAME} --user=geode --zone=${ZONE} --format json | jq -r .password )
     if [[ -n "${PASSWORD}" ]]; then
       break;
     fi
-    echo -n .
-    sleep 5
   done
 
   ssh-keygen -N "" -f ${SSHKEY_FILE}

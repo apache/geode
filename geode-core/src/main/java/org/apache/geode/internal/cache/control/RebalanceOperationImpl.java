@@ -36,12 +36,12 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.control.RebalanceOperation;
 import org.apache.geode.cache.control.RebalanceResults;
 import org.apache.geode.cache.partition.PartitionRebalanceInfo;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.partitioned.PartitionedRegionRebalanceOp;
 import org.apache.geode.internal.cache.partitioned.rebalance.CompositeDirector;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Implements {@code RebalanceOperation} for rebalancing Cache resources.
@@ -87,7 +87,7 @@ public class RebalanceOperationImpl implements RebalanceOperation {
 
             if (region.isFixedPartitionedRegion()) {
               if (Boolean.getBoolean(
-                  DistributionConfig.GEMFIRE_PREFIX + "DISABLE_MOVE_PRIMARIES_ON_STARTUP")) {
+                  GeodeGlossary.GEMFIRE_PREFIX + "DISABLE_MOVE_PRIMARIES_ON_STARTUP")) {
                 PartitionedRegionRebalanceOp prOp = new PartitionedRegionRebalanceOp(region,
                     simulation, new CompositeDirector(false, false, false, true), true, true,
                     cancelled, stats);

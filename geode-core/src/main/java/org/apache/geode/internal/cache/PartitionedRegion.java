@@ -157,7 +157,7 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.locks.DLockRemoteToken;
 import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberDataBuilder;
+import org.apache.geode.distributed.internal.membership.api.MemberDataBuilder;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.cache.BucketAdvisor.ServerBucketProfile;
@@ -254,6 +254,7 @@ import org.apache.geode.internal.util.TransformUtils;
 import org.apache.geode.internal.util.concurrent.StoppableCountDownLatch;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * A Region whose total storage is split into chunks of data (partitions) which are copied up to a
@@ -265,7 +266,7 @@ public class PartitionedRegion extends LocalRegion
 
   @Immutable
   public static final Random RANDOM =
-      new Random(Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "PartitionedRegionRandomSeed",
+      new Random(Long.getLong(GeodeGlossary.GEMFIRE_PREFIX + "PartitionedRegionRandomSeed",
           NanoTimer.getTime()));
 
   @MakeNotStatic
@@ -287,6 +288,8 @@ public class PartitionedRegion extends LocalRegion
    * a primary in a different server group
    */
   public static final int NETWORK_HOP_TO_DIFFERENT_GROUP = 2;
+  public static final String DATA_MOVED_BY_REBALANCE =
+      "Transactional data moved, due to rebalancing.";
 
   private final DiskRegionStats diskRegionStats;
 
@@ -294,7 +297,7 @@ public class PartitionedRegion extends LocalRegion
    * Changes scope of replication to secondary bucket to SCOPE.DISTRIBUTED_NO_ACK
    */
   static final boolean DISABLE_SECONDARY_BUCKET_ACK =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "disablePartitionedRegionBucketAck");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "disablePartitionedRegionBucketAck");
 
   /**
    * A debug flag used for testing calculation of starting bucket id
@@ -722,7 +725,7 @@ public class PartitionedRegion extends LocalRegion
   private final StoppableCountDownLatch initializationLatchAfterBucketIntialization;
 
   public static final String RETRY_TIMEOUT_PROPERTY =
-      DistributionConfig.GEMFIRE_PREFIX + "partitionedRegionRetryTimeout";
+      GeodeGlossary.GEMFIRE_PREFIX + "partitionedRegionRetryTimeout";
 
   private final PartitionRegionConfigValidator validator;
 
@@ -800,11 +803,11 @@ public class PartitionedRegion extends LocalRegion
 
     // No redundancy required for writes
     this.minimumWriteRedundancy = Integer.getInteger(
-        DistributionConfig.GEMFIRE_PREFIX + "mimimumPartitionedRegionWriteRedundancy", 0);
+        GeodeGlossary.GEMFIRE_PREFIX + "mimimumPartitionedRegionWriteRedundancy", 0);
 
     // No redundancy required for reads
     this.minimumReadRedundancy = Integer.getInteger(
-        DistributionConfig.GEMFIRE_PREFIX + "mimimumPartitionedRegionReadRedundancy", 0);
+        GeodeGlossary.GEMFIRE_PREFIX + "mimimumPartitionedRegionReadRedundancy", 0);
 
     this.haveCacheLoader = regionAttributes.getCacheLoader() != null;
 
@@ -2163,7 +2166,8 @@ public class PartitionedRegion extends LocalRegion
   @Override
   public boolean virtualPut(EntryEventImpl event, boolean ifNew, boolean ifOld,
       Object expectedOldValue, boolean requireOldValue, long lastModified,
-      boolean overwriteDestroyed) throws TimeoutException, CacheWriterException {
+      boolean overwriteDestroyed, boolean invokeCallbacks, boolean throwConcurrentModificaiton)
+      throws TimeoutException, CacheWriterException {
     final long startTime = prStats.getTime();
     boolean result = false;
     final DistributedPutAllOperation putAllOp_save = event.setPutAllOperation(null);
@@ -4152,26 +4156,7 @@ public class PartitionedRegion extends LocalRegion
           }
         } else {
           // with transaction
-          if (prce instanceof BucketNotFoundException) {
-            throw new TransactionDataRebalancedException(
-                "Transactional data moved, due to rebalancing.",
-                prce);
-          }
-          Throwable cause = prce.getCause();
-          if (cause instanceof PrimaryBucketException) {
-            throw (PrimaryBucketException) cause;
-          } else if (cause instanceof TransactionDataRebalancedException) {
-            throw (TransactionDataRebalancedException) cause;
-          } else if (cause instanceof RegionDestroyedException) {
-            throw new TransactionDataRebalancedException(
-                "Transactional data moved, due to rebalancing.",
-                cause);
-          } else {
-            // Make transaction fail so client could retry
-            // instead of returning null if ForceReattemptException is thrown.
-            // Should not see it currently, added to be protected against future changes.
-            throw new TransactionException("Failed to get key: " + key, prce);
-          }
+          handleForceReattemptExceptionWithTransaction(prce);
         }
       } catch (PrimaryBucketException notPrimary) {
         if (allowRetry) {
@@ -4212,6 +4197,25 @@ public class PartitionedRegion extends LocalRegion
     }
     logger.warn(String.format("No VM available for get in %s attempts", count), e);
     return null;
+  }
+
+  void handleForceReattemptExceptionWithTransaction(
+      ForceReattemptException forceReattemptException) {
+    if (forceReattemptException instanceof BucketNotFoundException) {
+      throw new TransactionDataRebalancedException(DATA_MOVED_BY_REBALANCE,
+          forceReattemptException);
+    }
+    Throwable cause = forceReattemptException.getCause();
+    if (cause instanceof PrimaryBucketException) {
+      throw (PrimaryBucketException) cause;
+    } else if (cause instanceof TransactionDataRebalancedException) {
+      throw (TransactionDataRebalancedException) cause;
+    } else if (cause instanceof RegionDestroyedException) {
+      throw new TransactionDataRebalancedException(DATA_MOVED_BY_REBALANCE, cause);
+    } else {
+      throw new TransactionDataRebalancedException(DATA_MOVED_BY_REBALANCE,
+          forceReattemptException);
+    }
   }
 
   /**
@@ -9495,9 +9499,7 @@ public class PartitionedRegion extends LocalRegion
         try {
           br.checkForPrimary();
         } catch (PrimaryBucketException pbe) {
-          throw new TransactionDataRebalancedException(
-              "Transactional data moved, due to rebalancing.",
-              pbe);
+          throw new TransactionDataRebalancedException(DATA_MOVED_BY_REBALANCE, pbe);
         }
       }
     } catch (RegionDestroyedException ignore) {
@@ -9548,15 +9550,8 @@ public class PartitionedRegion extends LocalRegion
       if (keyInfo.isCheckPrimary()) {
         br.checkForPrimary();
       }
-    } catch (PrimaryBucketException pbe) {
-      throw new TransactionDataRebalancedException(
-          "Transactional data moved, due to rebalancing.",
-          pbe);
-    } catch (RegionDestroyedException ignore) {
-      // TODO: why is this purposely not wrapping the original cause?
-      throw new TransactionDataNotColocatedException(
-          String.format("Key %s is not colocated with transaction",
-              entryKey));
+    } catch (PrimaryBucketException | RegionDestroyedException exception) {
+      throw new TransactionDataRebalancedException(DATA_MOVED_BY_REBALANCE, exception);
     }
     return br;
   }
@@ -9663,8 +9658,7 @@ public class PartitionedRegion extends LocalRegion
 
     @Override
     public boolean equals(Object other) {
-      // TODO: equals should always check the class of other
-      if (other == null) {
+      if (!(other instanceof IndexTask)) {
         return false;
       }
       IndexTask otherIndexTask = (IndexTask) other;

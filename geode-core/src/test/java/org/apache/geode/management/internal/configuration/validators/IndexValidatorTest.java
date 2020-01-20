@@ -16,6 +16,7 @@
 package org.apache.geode.management.internal.configuration.validators;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -28,7 +29,6 @@ import org.junit.Test;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
-import org.apache.geode.management.api.ClusterManagementException;
 import org.apache.geode.management.configuration.Index;
 import org.apache.geode.management.configuration.IndexType;
 import org.apache.geode.management.internal.CacheElementOperation;
@@ -45,7 +45,7 @@ public class IndexValidatorTest {
     configurationPersistenceService = mock(ConfigurationPersistenceService.class);
     cacheConfig = mock(CacheConfig.class);
     regionConfig = mock(RegionConfig.class);
-    indexValidator = new IndexValidator(configurationPersistenceService);
+    indexValidator = new IndexValidator();
     index = new Index();
     index.setName("testIndex");
     index.setExpression("testExpression");
@@ -61,17 +61,6 @@ public class IndexValidatorTest {
   }
 
   @Test
-  public void validate_regionMissing() {
-    when(configurationPersistenceService.getCacheConfig(any(), anyBoolean()))
-        .thenReturn(cacheConfig);
-    when(cacheConfig.findRegionConfiguration(anyString())).thenReturn(null);
-
-    assertThatThrownBy(() -> indexValidator.validate(CacheElementOperation.CREATE, index))
-        .isInstanceOf(ClusterManagementException.class)
-        .hasMessageContaining("Region provided does not exist: testRegion.");
-  }
-
-  @Test
   public void validate_missingExpression() {
     index.setExpression(null);
 
@@ -84,9 +73,15 @@ public class IndexValidatorTest {
   public void validate_hasRegionPath() {
     index.setRegionPath(null);
 
-    assertThatThrownBy(() -> indexValidator.validate(CacheElementOperation.CREATE, index))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("RegionPath is required");
+    assertSoftly(softly -> {
+      softly.assertThatThrownBy(() -> indexValidator.validate(CacheElementOperation.CREATE, index))
+          .isInstanceOf(IllegalArgumentException.class)
+          .hasMessageContaining("RegionPath is required");
+      softly.assertThatThrownBy(() -> indexValidator.validate(CacheElementOperation.DELETE, index))
+          .isInstanceOf(IllegalArgumentException.class)
+          .hasMessageContaining("RegionPath is required");
+    });
+
   }
 
   @Test
@@ -102,7 +97,12 @@ public class IndexValidatorTest {
   public void validate_IndexHasName() {
     index.setName(null);
 
-    assertThatThrownBy(() -> indexValidator.validate(CacheElementOperation.CREATE, index))
-        .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("Name is required");
+    assertSoftly(softly -> {
+      softly.assertThatThrownBy(() -> indexValidator.validate(CacheElementOperation.CREATE, index))
+          .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("Name is required");
+      softly.assertThatThrownBy(() -> indexValidator.validate(CacheElementOperation.DELETE, index))
+          .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("Name is required");
+    });
+
   }
 }

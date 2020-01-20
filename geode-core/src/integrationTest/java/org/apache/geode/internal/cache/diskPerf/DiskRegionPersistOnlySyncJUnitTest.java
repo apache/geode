@@ -24,11 +24,11 @@ import org.junit.Test;
 import org.apache.geode.LogWriter;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.DiskRegionHelperFactory;
 import org.apache.geode.internal.cache.DiskRegionProperties;
 import org.apache.geode.internal.cache.DiskRegionTestingBase;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Disk region perf test for Persist only with sync writes.
@@ -67,8 +67,8 @@ public class DiskRegionPersistOnlySyncJUnitTest extends DiskRegionTestingBase {
     Arrays.fill(value, (byte) 77);
     String config = "ENTRY_SIZE=" + ENTRY_SIZE + " OP_COUNT=" + OP_COUNT + " UNIQUE_KEYS="
         + UNIQUE_KEYS + " opLogEnabled="
-        + !Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "disableOpLog") + " syncWrites="
-        + Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "syncWrites");
+        + !Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "disableOpLog") + " syncWrites="
+        + Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "syncWrites");
     if (ra.getDiskStoreName() != null) {
       config += " diskStoreName=" + ra.getDiskStoreName();
     } else {
@@ -164,8 +164,8 @@ public class DiskRegionPersistOnlySyncJUnitTest extends DiskRegionTestingBase {
     Arrays.fill(value, (byte) 77);
     String config = "ENTRY_SIZE=" + ENTRY_SIZE + " OP_COUNT=" + OP_COUNT + " UNIQUE_KEYS="
         + UNIQUE_KEYS + " opLogEnabled="
-        + !Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "disableOpLog") + " syncWrites="
-        + Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "syncWrites");
+        + !Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "disableOpLog") + " syncWrites="
+        + Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "syncWrites");
     if (ra.getDiskStoreName() != null) {
       config += " diskStoreName=" + ra.getDiskStoreName();
     } else {

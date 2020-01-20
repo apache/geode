@@ -17,7 +17,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -e -o pipefail
+set -e -x -o pipefail
 
 BASE_DIR=$(pwd)
 
@@ -36,6 +36,9 @@ RESULTS_DIR=$(pwd)/results/benchmarks-${CLUSTER_TAG}
 
 CLUSTER_COUNT=4
 BENCHMARKS_BRANCH=${BENCHMARKS_BRANCH:-develop}
+
+GEODE_REPO=${GEODE_REPO:-$(cd geode && git remote get-url origin)}
+BASELINE_REPO=${BASELINE_REPO:-${GEODE_REPO}}
 
 pushd geode
 GEODE_SHA=$(git rev-parse --verify HEAD)
@@ -68,7 +71,7 @@ do
   fi
 
   if [ -z "${BASELINE_VERSION}" ]; then
-    BASELINE_OPTION="-B ${BASELINE_BRANCH}"
+    BASELINE_OPTION="-B ${BASELINE_BRANCH} -R ${BASELINE_REPO}"
     METADATA_BASELINE="'benchmark_branch':'${BASELINE_BRANCH}'"
   else
     BASELINE_OPTION="-V ${BASELINE_VERSION}"
@@ -77,7 +80,7 @@ do
 
   ./run_on_cluster.sh -t ${CLUSTER_TAG} -- pkill -9 java
   ./run_on_cluster.sh -t ${CLUSTER_TAG} -- rm /home/geode/locator10334view.dat;
-  ./run_against_baseline.sh -t ${CLUSTER_TAG} -b ${GEODE_SHA} ${BASELINE_OPTION} -e ${BENCHMARKS_BRANCH} -o ${RESULTS_DIR} -m "'source':'geode-ci',${METADATA_BASELINE},'baseline_branch':'${BASELINE_BRANCH}','geode_branch':'${GEODE_SHA}'" --ci -- ${FLAGS} ${TEST_OPTIONS}
+  ./run_against_baseline.sh -t ${CLUSTER_TAG} -b ${GEODE_SHA} -r ${GEODE_REPO} ${BASELINE_OPTION} -e ${BENCHMARKS_BRANCH} -o ${RESULTS_DIR} -m "'source':'geode-ci',${METADATA_BASELINE},'baseline_branch':'${BASELINE_BRANCH}','geode_branch':'${GEODE_SHA}'" --ci -- ${FLAGS} ${TEST_OPTIONS}
 
   if [[ $? -eq 0 ]]; then
     break;

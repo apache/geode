@@ -38,9 +38,9 @@ import org.apache.geode.cache.lucene.internal.LuceneIndexStats;
 import org.apache.geode.cache.lucene.internal.repository.serializer.SerializerUtil;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.LockNotHeldException;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * A repository that writes to a single lucene index writer
@@ -48,7 +48,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 public class IndexRepositoryImpl implements IndexRepository {
 
   private static final boolean APPLY_ALL_DELETES = System
-      .getProperty(DistributionConfig.GEMFIRE_PREFIX + "IndexRepository.APPLY_ALL_DELETES", "true")
+      .getProperty(GeodeGlossary.GEMFIRE_PREFIX + "IndexRepository.APPLY_ALL_DELETES", "true")
       .equalsIgnoreCase("true");
 
   private final IndexWriter writer;

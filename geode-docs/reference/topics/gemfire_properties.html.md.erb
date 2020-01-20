@@ -203,7 +203,7 @@ This setting must be the same for every member of a given cluster and unique to 
 </tr>
 <tr>
 <td>enable-time-statistics</td>
-<td>Boolean instructing the system to track time-based statistics for the cluster and caching. Disabled by default for performance reasons and not recommended for production environments. You must also configure <code class="ph codeph">statistics-sampling-enabled</code> to true and specify a <code class="ph codeph">statistics-archive-file</code>.</td>
+<td>Boolean instructing the system to track time-based statistics for the cluster and caching. Disabled by default for performance reasons and not recommended for production environments. You must also configure <code class="ph codeph">statistic-sampling-enabled</code> to true and specify a <code class="ph codeph">statistic-archive-file</code>.</td>
 <td>S, L</td>
 <td>false</td>
 </tr>
@@ -676,6 +676,13 @@ When enabled, also sets ssl-endpoint-identification-enabled to true.</td>
 <td>Comma-separated list of SSL ciphers or "any"</td>
 <td>S, L</td>
 <td>any</td>
+</tr>
+
+<tr>
+<td>ssl-parameter-extension</td>
+<td>Specifies the implementation of the <code>SSLParameterExtension</code> interface that implements the SSL parameter extensions.</td>
+<td>S, L</td>
+<td><em>not set</em></td>
 </tr>
 
 <tr>

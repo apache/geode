@@ -35,10 +35,10 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.ExpectedException;
 
 import org.apache.geode.cache.CacheClosedException;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.offheap.MemoryBlock.State;
 import org.apache.geode.internal.serialization.DSCODE;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 public class MemoryBlockNodeJUnitTest {
 
@@ -51,7 +51,7 @@ public class MemoryBlockNodeJUnitTest {
 
   @Rule
   public final ProvideSystemProperty myPropertyHasMyValue = new ProvideSystemProperty(
-      DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_DO_EXPENSIVE_VALIDATION", "true");
+      GeodeGlossary.GEMFIRE_PREFIX + "OFF_HEAP_DO_EXPENSIVE_VALIDATION", "true");
 
   @Rule
   public final RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();

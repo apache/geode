@@ -24,7 +24,7 @@ import java.util.Properties;
 
 import org.junit.Test;
 
-import org.apache.geode.distributed.internal.membership.gms.api.QuorumChecker;
+import org.apache.geode.distributed.internal.membership.api.QuorumChecker;
 
 /**
  * Unit tests for {@link ConnectionConfigImpl}.

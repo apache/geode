@@ -28,9 +28,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.client.internal.PoolImpl.PoolTask;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * This class is designed to prevent the client from spinning and reconnected to the same failed
@@ -57,7 +57,7 @@ public class ServerDenyList {
 
   // not final for tests.
   private static final int THRESHOLD =
-      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "ServerDenyList.THRESHOLD", 3);
+      Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "ServerDenyList.THRESHOLD", 3);
   protected final long pingInterval;
 
   public ServerDenyList(long pingInterval) {

@@ -43,7 +43,6 @@ import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.test.dunit.DistributedTestUtils;
@@ -52,6 +51,7 @@ import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 @Category({ClientSubscriptionTest.class})
 @SuppressWarnings("serial")
@@ -334,7 +334,7 @@ public class DurableClientQueueSizeDUnitTest extends JUnit4DistributedTestCase {
   }
 
   public static void setSpecialDurable(Boolean bool) {
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "SPECIAL_DURABLE", bool.toString());
+    System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "SPECIAL_DURABLE", bool.toString());
   }
 
   @SuppressWarnings("deprecation")

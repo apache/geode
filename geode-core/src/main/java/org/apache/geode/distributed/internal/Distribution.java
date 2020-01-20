@@ -20,13 +20,11 @@ import java.util.Set;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 
-import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
-import org.apache.geode.distributed.internal.membership.gms.api.Membership;
-import org.apache.geode.distributed.internal.membership.gms.api.MembershipView;
-import org.apache.geode.distributed.internal.membership.gms.api.QuorumChecker;
+import org.apache.geode.distributed.internal.membership.api.Membership;
+import org.apache.geode.distributed.internal.membership.api.MembershipView;
+import org.apache.geode.distributed.internal.membership.api.QuorumChecker;
 
 public interface Distribution {
   void start();
@@ -114,32 +112,6 @@ public interface Distribution {
 
   Set<InternalDistributedMember> getMembersNotShuttingDown();
 
-  // TODO - this method is only used by tests
-  @VisibleForTesting
-  void forceDisconnect(String reason);
-
-  // TODO - this method is only used by tests
-  @VisibleForTesting
-  void replacePartialIdentifierInMessage(DistributionMessage message);
-
-  // TODO - this method is only used by tests
-  @VisibleForTesting
-  boolean isCleanupTimerStarted();
-
-  // TODO - this method is only used by tests
-  @VisibleForTesting
-  long getSurpriseMemberTimeout();
-
-  // TODO - this method is only used by tests
-  @VisibleForTesting
-  void installView(GMSMembershipView<InternalDistributedMember> newView);
-
-  // TODO - this method is only used by tests
-  @VisibleForTesting
-  int getDirectChannelPort();
-
-  void disableDisconnectOnQuorumLossForTesting();
-
   boolean waitForDeparture(InternalDistributedMember mbr)
       throws TimeoutException, InterruptedException;
 
@@ -156,6 +128,6 @@ public interface Distribution {
    */
   void setCloseInProgress();
 
-  Membership getMembership();
+  Membership<InternalDistributedMember> getMembership();
 
 }

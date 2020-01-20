@@ -19,11 +19,8 @@ import java.io.Console;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.BindException;
-import java.net.Inet4Address;
-import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.NetworkInterface;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketAddress;
@@ -42,22 +39,12 @@ import java.security.PrivateKey;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 
-import javax.naming.Context;
-import javax.naming.NamingEnumeration;
-import javax.naming.directory.Attribute;
-import javax.naming.directory.Attributes;
-import javax.naming.directory.DirContext;
-import javax.naming.directory.InitialDirContext;
 import javax.net.ServerSocketFactory;
 import javax.net.SocketFactory;
 import javax.net.ssl.KeyManager;
@@ -87,16 +74,19 @@ import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.distributed.ClientSocketFactory;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.tcpserver.ConnectionWatcher;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.cache.wan.TransportFilterServerSocket;
 import org.apache.geode.internal.cache.wan.TransportFilterSocketFactory;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.util.ArgumentRedactor;
 import org.apache.geode.internal.util.PasswordUtil;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.SSLUtil;
+import org.apache.geode.net.SSLParameterExtension;
+import org.apache.geode.util.internal.GeodeGlossary;
+
 
 /**
  * Analyze configuration data (gemfire.properties) and configure sockets accordingly for SSL.
@@ -121,30 +111,6 @@ public class SocketCreator {
 
   private static final Logger logger = LogService.getLogger();
 
-  /**
-   * Optional system property to enable GemFire usage of link-local addresses
-   */
-  private static final String USE_LINK_LOCAL_ADDRESSES_PROPERTY =
-      DistributionConfig.GEMFIRE_PREFIX + "net.useLinkLocalAddresses";
-
-  /**
-   * True if GemFire should use link-local addresses
-   */
-  private static final boolean useLinkLocalAddresses =
-      Boolean.getBoolean(USE_LINK_LOCAL_ADDRESSES_PROPERTY);
-
-  /**
-   * we cache localHost to avoid bug #40619, access-violation in native code
-   */
-  private static final InetAddress localHost;
-
-  /**
-   * all classes should use this variable to determine whether to use IPv4 or IPv6 addresses
-   */
-  @MakeNotStatic
-  private static boolean useIPv6Addresses = !Boolean.getBoolean("java.net.preferIPv4Stack")
-      && Boolean.getBoolean("java.net.preferIPv6Addresses");
-
   @MakeNotStatic
   private static final ConcurrentHashMap<InetAddress, String> hostNames = new ConcurrentHashMap<>();
 
@@ -152,7 +118,7 @@ public class SocketCreator {
    * flag to force always using DNS (regardless of the fact that these lookups can hang)
    */
   public static final boolean FORCE_DNS_USE =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "forceDnsUse");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "forceDnsUse");
 
   /**
    * set this to false to inhibit host name lookup
@@ -183,57 +149,6 @@ public class SocketCreator {
 
   private final SSLConfig sslConfig;
 
-  static {
-    InetAddress inetAddress = null;
-    try {
-      inetAddress = InetAddress.getByAddress(InetAddress.getLocalHost().getAddress());
-      if (inetAddress.isLoopbackAddress()) {
-        InetAddress ipv4Fallback = null;
-        InetAddress ipv6Fallback = null;
-        // try to find a non-loopback address
-        Set<InetAddress> myInterfaces = getMyAddresses();
-        boolean preferIPv6 = SocketCreator.useIPv6Addresses;
-        String lhName = null;
-        for (InetAddress addr : myInterfaces) {
-          if (addr.isLoopbackAddress() || addr.isAnyLocalAddress() || lhName != null) {
-            break;
-          }
-          boolean ipv6 = addr instanceof Inet6Address;
-          boolean ipv4 = addr instanceof Inet4Address;
-          if ((preferIPv6 && ipv6) || (!preferIPv6 && ipv4)) {
-            String addrName = reverseDNS(addr);
-            if (inetAddress.isLoopbackAddress()) {
-              inetAddress = addr;
-              lhName = addrName;
-            } else if (addrName != null) {
-              inetAddress = addr;
-              lhName = addrName;
-            }
-          } else {
-            if (preferIPv6 && ipv4 && ipv4Fallback == null) {
-              ipv4Fallback = addr;
-            } else if (!preferIPv6 && ipv6 && ipv6Fallback == null) {
-              ipv6Fallback = addr;
-            }
-          }
-        }
-        // vanilla Ubuntu installations will have a usable IPv6 address when
-        // running as a guest OS on an IPv6-enabled machine. We also look for
-        // the alternative IPv4 configuration.
-        if (inetAddress.isLoopbackAddress()) {
-          if (ipv4Fallback != null) {
-            inetAddress = ipv4Fallback;
-            SocketCreator.useIPv6Addresses = false;
-          } else if (ipv6Fallback != null) {
-            inetAddress = ipv6Fallback;
-            SocketCreator.useIPv6Addresses = true;
-          }
-        }
-      }
-    } catch (UnknownHostException ignored) {
-    }
-    localHost = inetAddress;
-  }
 
   /**
    * A factory used to create client <code>Sockets</code>.
@@ -251,7 +166,7 @@ public class SocketCreator {
     // bug #49484 - customers want tcp/ip keep-alive turned on by default
     // to avoid dropped connections. It can be turned off by setting this
     // property to false
-    String str = System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "setTcpKeepAlive");
+    String str = System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + "setTcpKeepAlive");
     if (str != null) {
       ENABLE_TCP_KEEP_ALIVE = Boolean.valueOf(str);
     } else {
@@ -277,20 +192,10 @@ public class SocketCreator {
   // -------------------------------------------------------------------------
 
   /**
-   * All GemFire code should use this method instead of InetAddress.getLocalHost(). See bug #40619
+   * @deprecated use LocalHostUtil.getLocalHost()
    */
   public static InetAddress getLocalHost() throws UnknownHostException {
-    if (localHost == null) {
-      throw new UnknownHostException();
-    }
-    return localHost;
-  }
-
-  /**
-   * All classes should use this instead of relying on the JRE system property
-   */
-  public static boolean preferIPv6Addresses() {
-    return SocketCreator.useIPv6Addresses;
+    return LocalHostUtil.getLocalHost();
   }
 
   /**
@@ -1064,6 +969,14 @@ public class SocketCreator {
     if (!"any".equalsIgnoreCase(ciphers[0])) {
       serverSocket.setEnabledCipherSuites(ciphers);
     }
+
+    SSLParameterExtension sslParameterExtension = this.sslConfig.getSSLParameterExtension();
+    if (sslParameterExtension != null) {
+      SSLParameters modifiedParams =
+          sslParameterExtension.modifySSLServerSocketParameters(serverSocket.getSSLParameters());
+      serverSocket.setSSLParameters(modifiedParams);
+    }
+
   }
 
   /**
@@ -1079,6 +992,12 @@ public class SocketCreator {
 
       SSLParameters modifiedParams =
           checkAndEnableHostnameValidation(sslSocket.getSSLParameters());
+
+      SSLParameterExtension sslParameterExtension = this.sslConfig.getSSLParameterExtension();
+      if (sslParameterExtension != null) {
+        modifiedParams =
+            sslParameterExtension.modifySSLClientSocketParameters(modifiedParams);
+      }
       sslSocket.setSSLParameters(modifiedParams);
 
       String[] protocols = this.sslConfig.getProtocolsAsStringArray();
@@ -1145,7 +1064,7 @@ public class SocketCreator {
   protected void initializeClientSocketFactory() {
     this.clientSocketFactory = null;
     String className =
-        System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "clientSocketFactory");
+        System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + "clientSocketFactory");
     if (className != null) {
       Object o;
       try {
@@ -1170,153 +1089,4 @@ public class SocketCreator {
         .setGatewayTransportFilters(sender.getGatewayTransportFilters());
   }
 
-  /**
-   * returns a set of the non-loopback InetAddresses for this machine
-   */
-  public static Set<InetAddress> getMyAddresses() {
-    Set<InetAddress> result = new HashSet<>();
-    Set<InetAddress> locals = new HashSet<>();
-    Enumeration<NetworkInterface> interfaces;
-    try {
-      interfaces = NetworkInterface.getNetworkInterfaces();
-    } catch (SocketException e) {
-      throw new IllegalArgumentException(
-          "Unable to examine network interfaces",
-          e);
-    }
-    while (interfaces.hasMoreElements()) {
-      NetworkInterface face = interfaces.nextElement();
-      boolean faceIsUp = false;
-      try {
-        faceIsUp = face.isUp();
-      } catch (SocketException e) {
-        InternalDistributedSystem ids = InternalDistributedSystem.getAnyInstance();
-        if (ids != null) {
-          logger.info("Failed to check if network interface is up. Skipping {}", face, e);
-        }
-      }
-      if (faceIsUp) {
-        Enumeration<InetAddress> addrs = face.getInetAddresses();
-        while (addrs.hasMoreElements()) {
-          InetAddress addr = addrs.nextElement();
-          if (addr.isLoopbackAddress() || addr.isAnyLocalAddress()
-              || (!useLinkLocalAddresses && addr.isLinkLocalAddress())) {
-            locals.add(addr);
-          } else {
-            result.add(addr);
-          }
-        } // while
-      }
-    } // while
-    // fix for bug #42427 - allow product to run on a standalone box by using
-    // local addresses if there are no non-local addresses available
-    if (result.size() == 0) {
-      return locals;
-    } else {
-      return result;
-    }
-  }
-
-  /**
-   * This method uses JNDI to look up an address in DNS and return its name
-   *
-   *
-   * @return the host name associated with the address or null if lookup isn't possible or there is
-   *         no host name for this address
-   */
-  private static String reverseDNS(InetAddress addr) {
-    byte[] addrBytes = addr.getAddress();
-    // reverse the address suitable for reverse lookup
-    StringBuilder lookup = new StringBuilder();
-    for (int index = addrBytes.length - 1; index >= 0; index--) {
-      lookup.append(addrBytes[index] & 0xff).append('.');
-    }
-    lookup.append("in-addr.arpa");
-
-    try {
-      Hashtable<String, String> env = new Hashtable<>();
-      env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.dns.DnsContextFactory");
-      DirContext ctx = new InitialDirContext(env);
-      Attributes attrs = ctx.getAttributes(lookup.toString(), new String[] {"PTR"});
-      for (NamingEnumeration ae = attrs.getAll(); ae.hasMoreElements();) {
-        Attribute attr = (Attribute) ae.next();
-        for (Enumeration vals = attr.getAll(); vals.hasMoreElements();) {
-          Object elem = vals.nextElement();
-          if ("PTR".equals(attr.getID()) && elem != null) {
-            return elem.toString();
-          }
-        }
-      }
-      ctx.close();
-    } catch (Exception e) {
-      // ignored
-    }
-    return null;
-  }
-
-  /**
-   * Returns true if host matches the LOCALHOST.
-   */
-  public static boolean isLocalHost(Object host) {
-    if (host instanceof InetAddress) {
-      InetAddress inetAddress = (InetAddress) host;
-      if (isLocalHost(inetAddress)) {
-        return true;
-      } else if (inetAddress.isLoopbackAddress()) {
-        return true;
-      } else {
-        try {
-          Enumeration en = NetworkInterface.getNetworkInterfaces();
-          while (en.hasMoreElements()) {
-            NetworkInterface i = (NetworkInterface) en.nextElement();
-            for (Enumeration en2 = i.getInetAddresses(); en2.hasMoreElements();) {
-              InetAddress addr = (InetAddress) en2.nextElement();
-              if (inetAddress.equals(addr)) {
-                return true;
-              }
-            }
-          }
-          return false;
-        } catch (SocketException e) {
-          throw new IllegalArgumentException("Unable to query network interface", e);
-        }
-      }
-    } else {
-      return isLocalHost((Object) toInetAddress(host.toString()));
-    }
-  }
-
-  private static boolean isLocalHost(InetAddress host) {
-    try {
-      return SocketCreator.getLocalHost().equals(host);
-    } catch (UnknownHostException ignored) {
-      return false;
-    }
-  }
-
-  /**
-   * Converts the string host to an instance of InetAddress. Returns null if the string is empty.
-   * Fails Assertion if the conversion would result in <code>java.lang.UnknownHostException</code>.
-   * <p>
-   * Any leading slashes on host will be ignored.
-   *
-   * @param host string version the InetAddress
-   *
-   * @return the host converted to InetAddress instance
-   */
-  public static InetAddress toInetAddress(String host) {
-    if (host == null || host.length() == 0) {
-      return null;
-    }
-    try {
-      final int index = host.indexOf("/");
-      if (index > -1) {
-        return InetAddress.getByName(host.substring(index + 1));
-      } else {
-        return InetAddress.getByName(host);
-      }
-    } catch (java.net.UnknownHostException e) {
-      throw new IllegalArgumentException(e.getMessage());
-    }
-  }
 }

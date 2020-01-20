@@ -46,9 +46,10 @@ import org.apache.geode.distributed.DurableClientAttributes;
 import org.apache.geode.distributed.Role;
 import org.apache.geode.distributed.internal.locks.ElderState;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberDataBuilder;
+import org.apache.geode.distributed.internal.membership.api.MemberDataBuilder;
 import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.monitoring.ThreadsMonitoringImpl;
@@ -1204,7 +1205,7 @@ public class LonerDistributionManager implements DistributionManager {
 
       String name = this.system.getName();
 
-      InetAddress hostAddr = SocketCreator.getLocalHost();
+      InetAddress hostAddr = LocalHostUtil.getLocalHost();
       host = SocketCreator.use_client_host_name ? hostAddr.getCanonicalHostName()
           : hostAddr.getHostAddress();
       DistributionConfig config = system.getConfig();

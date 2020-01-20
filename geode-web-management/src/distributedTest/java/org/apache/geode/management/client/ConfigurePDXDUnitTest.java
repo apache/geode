@@ -107,13 +107,13 @@ public class ConfigurePDXDUnitTest {
     pdxType.setDiskStoreName("diskstore");
     assertThatThrownBy(() -> client.create(pdxType))
         .isInstanceOf(ClusterManagementException.class)
-        .hasMessageContaining("ENTITY_EXISTS: Pdx 'PDX' already exists in group cluster");
+        .hasMessageContaining("ENTITY_EXISTS: Pdx 'PDX' already exists");
 
     // verify the get
     ClusterManagementGetResult<Pdx, PdxInfo> getResult = client.get(new Pdx());
-    Pdx configResult = getResult.getConfigResult();
+    Pdx configResult = getResult.getResult().getConfigurations().get(0);
     assertThat(configResult.isReadSerialized()).isTrue();
-    assertThat(getResult.getRuntimeResult()).hasSize(0);
+    assertThat(getResult.getResult().getRuntimeInfos()).hasSize(0);
   }
 
   @Test
@@ -140,13 +140,13 @@ public class ConfigurePDXDUnitTest {
     pdxType.setDiskStoreName("diskstore");
     assertThatThrownBy(() -> client.create(pdxType))
         .isInstanceOf(ClusterManagementException.class)
-        .hasMessageContaining("ENTITY_EXISTS: Pdx 'PDX' already exists in group cluster");
+        .hasMessageContaining("ENTITY_EXISTS: Pdx 'PDX' already exists");
 
     // verify the get
     ClusterManagementGetResult<Pdx, PdxInfo> getResult = client.get(new Pdx());
-    Pdx configResult = getResult.getConfigResult();
+    Pdx configResult = getResult.getResult().getConfigurations().get(0);
     assertThat(configResult.isReadSerialized()).isTrue();
-    List<PdxInfo> runtimeResults = getResult.getRuntimeResult();
+    List<PdxInfo> runtimeResults = getResult.getResult().getRuntimeInfos();
     assertThat(runtimeResults).hasSize(1);
     assertThat(runtimeResults.get(0).isReadSerialized()).isFalse();
 

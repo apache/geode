@@ -135,6 +135,8 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
     try {
       boolean updated = false;
       boolean doUpdate = true; // start with assumption we have key and need value
+      boolean invokeCallbacks = true;
+
       if (shouldDoRemoteCreate(rgn, ev)) {
         if (logger.isDebugEnabled()) {
           logger.debug("doPutOrCreate: attempting to update or create entry");
@@ -149,14 +151,21 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
           // if the oldValue is the DESTROYED token and overwrite is disallowed,
           // then basicPut will set the blockedDestroyed flag in the event
           boolean overwriteDestroyed = ev.getOperation().isCreate();
-          if (rgn.basicUpdate(ev, true /* ifNew */, false/* ifOld */, lastMod,
-              overwriteDestroyed)) {
-            rgn.getCachePerfStats().endPut(startPut, ev.isOriginRemote());
-            // we did a create, or replayed a create event
-            doUpdate = false;
-            updated = true;
-          } else { // already exists. If it was blocked by the DESTROYED token, then
-            // do no update.
+          try {
+            boolean firstBasicUpdateSuccess =
+                rgn.basicUpdate(ev, true, false, lastMod, overwriteDestroyed, true, true);
+            if (firstBasicUpdateSuccess) {
+              rgn.getCachePerfStats().endPut(startPut, ev.isOriginRemote());
+              // we did a create, or replayed a create event
+              doUpdate = false;
+              updated = true;
+            } else {
+              // already exists. If it was blocked by the DESTROYED token, then
+              // do no update.
+              doUpdate = checkIfToUpdateAfterCreateFailed(rgn, ev);
+            }
+          } catch (ConcurrentCacheModificationException ex) {
+            invokeCallbacks = false;
             doUpdate = checkIfToUpdateAfterCreateFailed(rgn, ev);
           }
         } finally {
@@ -179,22 +188,33 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
             br.getPartitionedRegion().getPrStats().startApplyReplication();
           }
           try {
-            if (rgn.basicUpdate(ev, false/* ifNew */, true/* ifOld */, lastMod,
-                overwriteDestroyed)) {
+            boolean secondBasicUpdateSuccess;
+            try {
+              secondBasicUpdateSuccess =
+                  rgn.basicUpdate(ev, false, true, lastMod, overwriteDestroyed,
+                      invokeCallbacks, true);
+            } catch (ConcurrentCacheModificationException ex) {
+              secondBasicUpdateSuccess = false;
+              invokeCallbacks = false;
+            }
+            if (secondBasicUpdateSuccess) {
               rgn.getCachePerfStats().endPut(startPut, ev.isOriginRemote());
               if (logger.isTraceEnabled()) {
                 logger.trace("Processing put key {} in region {}", ev.getKey(), rgn.getFullPath());
               }
               updated = true;
-            } else { // key not here or blocked by DESTROYED token
+            } else {
+              // key not here, blocked by DESTROYED token or ConcurrentCacheModificationException
+              // thrown during second update attempt
               if (rgn.isUsedForPartitionedRegionBucket()
                   || (rgn.getDataPolicy().withReplication() && rgn.getConcurrencyChecksEnabled())) {
-                overwriteDestroyed = true;
                 ev.makeCreate();
-                rgn.basicUpdate(ev, false /* ifNew */, false/* ifOld */, lastMod,
-                    overwriteDestroyed);
-                rgn.getCachePerfStats().endPut(startPut, ev.isOriginRemote());
-                updated = true;
+                boolean thirdBasicUpdateSuccess =
+                    rgn.basicUpdate(ev, false, false, lastMod, true, invokeCallbacks, false);
+                if (thirdBasicUpdateSuccess) {
+                  rgn.getCachePerfStats().endPut(startPut, ev.isOriginRemote());
+                  updated = true;
+                }
               } else {
                 if (rgn.getVersionVector() != null && ev.getVersionTag() != null) {
                   rgn.getVersionVector().recordVersion(

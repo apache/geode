@@ -20,6 +20,8 @@ import java.io.IOException;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import org.apache.geode.util.internal.GeodeGlossary;
+
 /**
  * Used by build to generate a default configuration properties file for use by applications
  */
@@ -37,7 +39,7 @@ public class DefaultPropertiesGenerator {
   }
 
   static String getDefaultFileName() {
-    return DistributionConfig.GEMFIRE_PREFIX + "properties";
+    return GeodeGlossary.GEMFIRE_PREFIX + "properties";
   }
 
   void generateDefaultPropertiesFile(final String targetFileName) throws IOException {

@@ -38,13 +38,13 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.logging.internal.spi.LogConfig;
 import org.apache.geode.test.junit.categories.LoggingTest;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Integration tests for {@link ChangeLogLevelFunction}.
@@ -151,7 +151,7 @@ public class ChangeLogLevelFunctionIntegrationTest {
   public void changesGemFireLogLevelSystemProperty() {
     changeLogLevelFunction.execute(functionContext);
 
-    assertThat(System.getProperty(DistributionConfig.GEMFIRE_PREFIX + LOG_LEVEL))
+    assertThat(System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + LOG_LEVEL))
         .isEqualTo(Level.WARN.name());
   }
 
@@ -159,6 +159,6 @@ public class ChangeLogLevelFunctionIntegrationTest {
   public void doesNotChangeGemFireSecurityLogLevelSystemProperty() {
     changeLogLevelFunction.execute(functionContext);
 
-    assertThat(System.getProperty(DistributionConfig.GEMFIRE_PREFIX + SECURITY_LOG_LEVEL)).isNull();
+    assertThat(System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + SECURITY_LOG_LEVEL)).isNull();
   }
 }

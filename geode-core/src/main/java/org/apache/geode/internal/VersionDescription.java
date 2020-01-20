@@ -26,7 +26,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.TreeMap;
 
-import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.inet.LocalHostUtil;
 
 public class VersionDescription {
   public static final String RESOURCE_NAME = "GemFireVersion.properties";
@@ -138,7 +138,7 @@ public class VersionDescription {
 
   private static String getLocalHost() {
     try {
-      return SocketCreator.getLocalHost().toString();
+      return LocalHostUtil.getLocalHost().toString();
     } catch (UnknownHostException e) {
       return e.getMessage();
     }

@@ -19,20 +19,13 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 
-import org.apache.geode.cache.GemFireCache;
-import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.tcpserver.InfoResponse;
+import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
 import org.apache.geode.internal.GemFireVersion;
 
-public class InfoRequestHandler implements RestartableTcpHandler {
+public class InfoRequestHandler implements TcpHandler {
   public InfoRequestHandler() {}
-
-  @Override
-  public void restarting(final DistributedSystem ds, final GemFireCache cache,
-      final InternalConfigurationPersistenceService sharedConfig) {
-
-  }
 
   @Override
   public Object processRequest(final Object request) throws IOException {

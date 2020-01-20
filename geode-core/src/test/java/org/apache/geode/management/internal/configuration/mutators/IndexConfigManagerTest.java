@@ -16,15 +16,19 @@
 package org.apache.geode.management.internal.configuration.mutators;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 import java.util.List;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.management.configuration.Index;
+import org.apache.geode.management.configuration.IndexType;
 
 public class IndexConfigManagerTest {
 
@@ -40,43 +44,49 @@ public class IndexConfigManagerTest {
   }
 
   @Test
-  public void emptyConfig() throws Exception {
+  public void emptyConfig() {
     assertThat(manager.list(index, cacheConfig)).isEmpty();
   }
 
   @Test
-  public void listWithoutFilter() throws Exception {
+  public void listWithoutFilter() {
     setupCacheConfig();
     List<Index> list = manager.list(index, cacheConfig);
-    assertThat(list).hasSize(2)
-        .extracting(i -> i.getName())
-        .containsExactlyInAnyOrder("index1", "index2");
-    assertThat(list).extracting(i -> i.getRegionName())
-        .containsExactlyInAnyOrder("region1", "region2");
+    assertSoftly(softly -> {
+      softly.assertThat(list).hasSize(2)
+          .extracting(Index::getName)
+          .containsExactlyInAnyOrder("index1", "index2");
+      softly.assertThat(list).extracting(Index::getRegionName)
+          .containsExactlyInAnyOrder("region1", "region2");
+    });
   }
 
   @Test
-  public void listWithRegionName() throws Exception {
+  public void listWithRegionName() {
     setupCacheConfig();
     index.setRegionPath("region1");
     List<Index> list = manager.list(index, cacheConfig);
-    assertThat(list).hasSize(1);
-    assertThat(list.get(0).getName()).isEqualTo("index1");
-    assertThat(list.get(0).getRegionName()).isEqualTo("region1");
+    assertSoftly(softly -> {
+      softly.assertThat(list).hasSize(1);
+      softly.assertThat(list.get(0).getName()).isEqualTo("index1");
+      softly.assertThat(list.get(0).getRegionName()).isEqualTo("region1");
+    });
   }
 
   @Test
-  public void listWithIndexName() throws Exception {
+  public void listWithIndexName() {
     setupCacheConfig();
     index.setName("index2");
     List<Index> list = manager.list(index, cacheConfig);
-    assertThat(list).hasSize(1);
-    assertThat(list.get(0).getName()).isEqualTo("index2");
-    assertThat(list.get(0).getRegionName()).isEqualTo("region2");
+    assertSoftly(softly -> {
+      softly.assertThat(list).hasSize(1);
+      softly.assertThat(list.get(0).getName()).isEqualTo("index2");
+      softly.assertThat(list.get(0).getRegionName()).isEqualTo("region2");
+    });
   }
 
   @Test
-  public void listWithUnMatchingFilter() throws Exception {
+  public void listWithUnMatchingFilter() {
     setupCacheConfig();
     index.setName("index1");
     index.setRegionPath("region2");
@@ -85,14 +95,96 @@ public class IndexConfigManagerTest {
   }
 
   @Test
-  public void listWithRegionNameAndIndexName() throws Exception {
+  public void listWithRegionNameAndIndexName() {
     setupCacheConfig();
     index.setName("index2");
     index.setRegionPath("region2");
     List<Index> list = manager.list(index, cacheConfig);
-    assertThat(list).hasSize(1);
-    assertThat(list.get(0).getName()).isEqualTo("index2");
-    assertThat(list.get(0).getRegionName()).isEqualTo("region2");
+    assertSoftly(softly -> {
+      softly.assertThat(list).hasSize(1);
+      softly.assertThat(list.get(0).getName()).isEqualTo("index2");
+      softly.assertThat(list.get(0).getRegionName()).isEqualTo("region2");
+    });
+
+  }
+
+  @Test
+  public void add_regionExists() {
+    setupCacheConfig();
+    index.setName("index3");
+    index.setIndexType(IndexType.RANGE);
+    index.setRegionPath("region1");
+
+    manager.add(index, cacheConfig);
+    List<Index> indices = manager.list(index, cacheConfig);
+
+    assertSoftly(softly -> {
+      softly.assertThat(indices).hasSize(1);
+      softly.assertThat(indices.get(0).getName()).isEqualTo("index3");
+      softly.assertThat(indices.get(0).getRegionName()).isEqualTo("region1");
+    });
+  }
+
+  @Test
+  public void add_regionNotFound() {
+    setupCacheConfig();
+    index.setName("index3");
+    index.setIndexType(IndexType.RANGE);
+    index.setRegionPath("region3");
+
+    assertThatThrownBy(() -> manager.add(index, cacheConfig))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("Region provided does not exist: region3");
+  }
+
+  @Test
+  public void update_notImplemented() {
+    setupCacheConfig();
+    index.setName("index3");
+    index.setIndexType(IndexType.RANGE);
+    index.setRegionPath("region3");
+
+    assertThatThrownBy(() -> manager.update(index, cacheConfig))
+        .isInstanceOf(NotImplementedException.class)
+        .hasMessageContaining("Not implemented yet");
+  }
+
+  @Test
+  public void delete_regionNotFound() {
+    setupCacheConfig();
+    index.setName("index3");
+    index.setIndexType(IndexType.RANGE);
+    index.setRegionPath("region3");
+
+    assertThatThrownBy(() -> manager.delete(index, cacheConfig))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("Region provided does not exist: region3");
+  }
+
+  @Test
+  public void delete_indexNotFound() {
+    setupCacheConfig();
+    index.setName("index3");
+    index.setIndexType(IndexType.RANGE);
+    index.setRegionPath("region2");
+
+    assertThatThrownBy(() -> manager.delete(index, cacheConfig))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("Index provided does not exist on Region: region2, index3");
+  }
+
+  @Test
+  public void delete_indexDeleted() {
+    setupCacheConfig();
+    index.setName("index2");
+    index.setIndexType(IndexType.RANGE);
+    index.setRegionPath("region2");
+
+    assertSoftly(softly -> {
+      softly.assertThat(manager.list(index, cacheConfig)).hasSize(1);
+      manager.delete(index, cacheConfig);
+      softly.assertThat(manager.list(index, cacheConfig)).hasSize(0);
+    });
   }
 
   private void setupCacheConfig() {

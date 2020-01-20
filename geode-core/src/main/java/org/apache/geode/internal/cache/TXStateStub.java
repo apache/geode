@@ -534,6 +534,15 @@ public abstract class TXStateStub implements TXStateInterface {
     return true;
   }
 
+  @Override
+  public boolean putEntry(EntryEventImpl event, boolean ifNew, boolean ifOld,
+      Object expectedOldValue, boolean requireOldValue, long lastModified,
+      boolean overwriteDestroyed) {
+    return putEntry(event, ifNew, ifOld, expectedOldValue, requireOldValue, lastModified,
+        overwriteDestroyed, true,
+        false);
+  }
+
   /*
    * (non-Javadoc)
    *
@@ -543,7 +552,7 @@ public abstract class TXStateStub implements TXStateInterface {
   @Override
   public boolean putEntry(EntryEventImpl event, boolean ifNew, boolean ifOld,
       Object expectedOldValue, boolean requireOldValue, long lastModified,
-      boolean overwriteDestroyed) {
+      boolean overwriteDestroyed, boolean invokeCallbacks, boolean throwConcurrentModification) {
     return getTXRegionStub(event.getRegion()).putEntry(event, ifNew, ifOld, expectedOldValue,
         requireOldValue, lastModified, overwriteDestroyed);
   }

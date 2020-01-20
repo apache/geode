@@ -44,7 +44,6 @@ import org.apache.geode.cache.control.RebalanceOperation;
 import org.apache.geode.cache.control.ResourceManager;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.InternalCache;
@@ -56,6 +55,7 @@ import org.apache.geode.internal.logging.CoreLoggingExecutors;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Implementation of ResourceManager with additional internal-only methods.
@@ -66,7 +66,7 @@ public class InternalResourceManager implements ResourceManager {
   private static final Logger logger = LogService.getLogger();
 
   final int MAX_RESOURCE_MANAGER_EXE_THREADS =
-      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "resource.manager.threads", 1);
+      Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "resource.manager.threads", 1);
 
   private final Collection<CompletableFuture<Void>> startupTasks = new ArrayList<>();
 
@@ -104,7 +104,7 @@ public class InternalResourceManager implements ResourceManager {
   private static ResourceObserver observer = new ResourceObserverAdapter();
 
   private static final String PR_LOAD_PROBE_CLASS =
-      System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "ResourceManager.PR_LOAD_PROBE_CLASS",
+      System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + "ResourceManager.PR_LOAD_PROBE_CLASS",
           SizedBasedLoadProbe.class.getName());
 
   public static InternalResourceManager getInternalResourceManager(Cache cache) {
@@ -348,7 +348,7 @@ public class InternalResourceManager implements ResourceManager {
     }
     executor.shutdown();
     final int secToWait = Integer
-        .getInteger(DistributionConfig.GEMFIRE_PREFIX + "prrecovery-close-timeout", 5).intValue();
+        .getInteger(GeodeGlossary.GEMFIRE_PREFIX + "prrecovery-close-timeout", 5).intValue();
     try {
       executor.awaitTermination(secToWait, TimeUnit.SECONDS);
     } catch (InterruptedException x) {

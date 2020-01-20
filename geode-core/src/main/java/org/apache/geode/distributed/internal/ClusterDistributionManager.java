@@ -62,27 +62,28 @@ import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.Role;
 import org.apache.geode.distributed.internal.locks.ElderState;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberData;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifierFactory;
-import org.apache.geode.distributed.internal.membership.gms.api.Membership;
-import org.apache.geode.distributed.internal.membership.gms.api.MembershipView;
-import org.apache.geode.distributed.internal.membership.gms.api.Message;
+import org.apache.geode.distributed.internal.membership.api.MemberData;
+import org.apache.geode.distributed.internal.membership.api.MemberDisconnectedException;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifierFactory;
+import org.apache.geode.distributed.internal.membership.api.Membership;
+import org.apache.geode.distributed.internal.membership.api.MembershipView;
+import org.apache.geode.distributed.internal.membership.api.Message;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.NanoTimer;
-import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.admin.remote.AdminConsoleDisconnectMessage;
 import org.apache.geode.internal.admin.remote.RemoteGfManagerAgent;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.cache.InitialImageOperation;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
-import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.sequencelog.MembershipLogger;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.tcp.ConnectionTable;
 import org.apache.geode.internal.tcp.ReenteredConnectException;
+import org.apache.geode.logging.internal.OSProcess;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.logging.internal.executors.LoggingUncaughtExceptionHandler;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -1575,7 +1576,7 @@ public class ClusterDistributionManager implements DistributionManager {
       // no network interface
       equivs = new HashSet<>();
       try {
-        equivs.add(SocketCreator.getLocalHost());
+        equivs.add(LocalHostUtil.getLocalHost());
       } catch (UnknownHostException e) {
         // can't even get localhost
         if (getViewMembers().size() > 1) {
@@ -2284,7 +2285,7 @@ public class ClusterDistributionManager implements DistributionManager {
    *
    */
   private class DMListener implements
-      org.apache.geode.distributed.internal.membership.gms.api.MembershipListener<InternalDistributedMember> {
+      org.apache.geode.distributed.internal.membership.api.MembershipListener<InternalDistributedMember> {
     ClusterDistributionManager dm;
 
     DMListener(ClusterDistributionManager dm) {
@@ -2868,6 +2869,9 @@ public class ClusterDistributionManager implements DistributionManager {
       }
 
       if (e == null) {
+        if (rc instanceof MemberDisconnectedException) {
+          rc = new ForcedDisconnectException(rc.getMessage());
+        }
         // Caller did not specify any root cause, so just use our own.
         return new DistributedSystemDisconnectedException(reason, rc);
       }

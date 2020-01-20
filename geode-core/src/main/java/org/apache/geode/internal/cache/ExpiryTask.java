@@ -29,12 +29,12 @@ import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.ExpirationAction;
 import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.RegionDestroyedException;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.logging.CoreLoggingExecutors;
 import org.apache.geode.internal.tcp.ConnectionTable;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * ExpiryTask represents a timeout event for expiration
@@ -50,7 +50,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
 
   static {
     // default to inline expiry to fix bug 37115
-    int nThreads = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "EXPIRY_THREADS", 0);
+    int nThreads = Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "EXPIRY_THREADS", 0);
     if (nThreads > 0) {
       executor = CoreLoggingExecutors.newThreadPoolWithSynchronousFeed("Expiry ",
           (Runnable command) -> doExpiryThread(command),

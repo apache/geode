@@ -16,7 +16,7 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.locator;
 
-import static org.apache.geode.distributed.internal.membership.adapter.SocketCreatorAdapter.asTcpSocketCreator;
+import static org.apache.geode.distributed.internal.membership.adapter.TcpSocketCreatorAdapter.asTcpSocketCreator;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -32,10 +32,10 @@ import org.junit.rules.TemporaryFolder;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.LocatorStats;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.membership.api.MembershipConfigurationException;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembership;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.Services;
-import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfigurationException;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.JoinLeave;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Messenger;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
@@ -86,7 +86,9 @@ public class GMSLocatorIntegrationTest {
                     SocketCreatorFactory
                         .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
                 InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
-                InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer()));
+                InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer()),
+            InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
+            InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());
     GMSMembership membership = mock(GMSMembership.class);
     when(membership.getServices()).thenReturn(services);
     gmsLocator.setMembership(membership);
@@ -104,14 +106,14 @@ public class GMSLocatorIntegrationTest {
 
   @Test
   public void initDefinesViewFileInSpecifiedDirectory() {
-    gmsLocator.init(String.valueOf(tcpServer.getPort()));
+    gmsLocator.init(tcpServer);
 
     assertThat(gmsLocator.getViewFile()).isNotNull();
   }
 
   @Test
   public void installViewCreatesViewFileInSpecifiedDirectory() {
-    gmsLocator.init(String.valueOf(tcpServer.getPort()));
+    gmsLocator.init(tcpServer);
 
     gmsLocator.installView(view);
 

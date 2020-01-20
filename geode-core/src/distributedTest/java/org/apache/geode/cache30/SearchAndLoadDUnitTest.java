@@ -14,15 +14,15 @@
  */
 package org.apache.geode.cache30;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.cache.AttributesFactory;
@@ -37,162 +37,118 @@ import org.apache.geode.cache.LoaderHelper;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionEvent;
+import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.TimeoutException;
-import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 
 /**
  * This class tests various search load and write scenarios for distributed regions
  */
 
-@SuppressWarnings({"deprecation", "unchecked", "rawtypes", "serial"})
 public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
 
-  static boolean loaderInvoked;
-  static boolean remoteLoaderInvoked;
-  static int remoteLoaderInvokedCount;
-  static boolean netSearchCalled;
-  static boolean netSearchHit;
-  static boolean netWriteInvoked;
-  static boolean operationWasCreate;
-  static boolean originWasRemote;
-  static int writerInvocationCount;
+  private static boolean loaderInvoked;
+  private static boolean remoteLoaderInvoked;
+  private static int remoteLoaderInvokedCount;
+  private static boolean netWriteInvoked;
+  private static boolean operationWasCreate;
+  private static boolean originWasRemote;
+  private static int writerInvocationCount;
 
-  /** A <code>CacheListener</code> used by a test */
-  protected static TestCacheListener listener;
+  private static final CountDownLatch readyForExceptionLatch = new CountDownLatch(1);
+  private static final CountDownLatch loaderInvokedLatch = new CountDownLatch(1);
+  private VM vm0;
+  private VM vm1;
+  private VM vm2;
 
-  /** A <code>CacheLoader</code> used by a test */
-  protected static TestCacheLoader loader;
+  @Rule
+  public DistributedRule distributedRule = new DistributedRule();
 
-  /** A <code>CacheWriter</code> used by a test */
-  protected static TestCacheWriter writer;
-
-  static boolean exceptionThrown;
-  static final CountDownLatch readyForExceptionLatch = new CountDownLatch(1);
-  static final CountDownLatch loaderInvokedLatch = new CountDownLatch(1);
-
-  @Override
-  public final void preTearDownCacheTestCase() throws Exception {
-    for (int h = 0; h < Host.getHostCount(); h++) {
-      Host host = Host.getHost(h);
-      for (int v = 0; v < host.getVMCount(); v++) {
-        host.getVM(v).invoke(new SerializableRunnable("Clean up") {
-          @Override
-          public void run() {
-            cleanup();
-          }
-        });
-      }
-    }
-    cleanup();
+  @Before
+  public void setup() {
+    vm0 = VM.getVM(0);
+    vm1 = VM.getVM(1);
+    vm2 = VM.getVM(2);
   }
 
-  /**
-   * Clears fields used by a test
-   */
-  protected static void cleanup() {
-    listener = null;
-    loader = null;
-    writer = null;
-  }
 
   /**
    * Returns region attributes for a <code>GLOBAL</code> region
    */
-  protected RegionAttributes getRegionAttributes() {
-    AttributesFactory factory = new AttributesFactory();
+  protected <K, V> RegionAttributes<K, V> getRegionAttributes() {
+    AttributesFactory<K, V> factory = new AttributesFactory<>();
     factory.setScope(Scope.DISTRIBUTED_ACK);
-    factory.setEarlyAck(false);
     return factory.create();
   }
 
   @Test
-  public void testNetSearch() throws CacheException, InterruptedException {
-
-    Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
-    VM vm1 = host.getVM(1);
-    VM vm2 = host.getVM(2);
+  public void testNetSearch() throws CacheException {
     final String name = this.getUniqueName() + "-ACK";
     final String objectName = "NetSearchKey";
-    final Integer value = new Integer(440);
-    vm0.invoke(new SerializableRunnable("Create ACK Region") {
+    final Integer value = 440;
+
+    vm0.invoke("Create ACK Region", new SerializableRunnable() {
       @Override
       public void run() {
         try {
-
-          AttributesFactory factory = new AttributesFactory();
+          RegionFactory<Object, Object> factory = getCache().createRegionFactory();
           factory.setScope(Scope.DISTRIBUTED_ACK);
-          factory.setEarlyAck(false);
           factory.setStatisticsEnabled(true);
-          Region region = createRegion(name, factory.create());
+          Region<Object, Object> region = createRegion(name, factory);
           region.create(objectName, null);
         } catch (CacheException ex) {
-          Assert.fail("While creating ACK region", ex);
+          fail("While creating ACK region", ex);
         }
       }
     });
 
-    vm1.invoke(new SerializableRunnable("Create ACK Region") {
+    vm1.invoke("Create ACK Region", new SerializableRunnable() {
       @Override
       public void run() {
         try {
 
-          AttributesFactory factory = new AttributesFactory();
+          RegionFactory<Object, Object> factory = getCache().createRegionFactory();
           factory.setScope(Scope.DISTRIBUTED_ACK);
-          factory.setEarlyAck(false);
           factory.setStatisticsEnabled(true);
-          Region region = createRegion(name, factory.create());
+          Region<Object, Object> region = createRegion(name, factory);
           region.put(objectName, value);
-
         } catch (CacheException ex) {
-          Assert.fail("While creating ACK region", ex);
+          fail("While creating ACK region", ex);
         }
       }
     });
 
-    vm2.invoke(new SerializableRunnable("Create ACK Region") {
+    vm2.invoke("Create ACK Region", new SerializableRunnable() {
       @Override
       public void run() {
         try {
-
-          AttributesFactory factory = new AttributesFactory();
+          RegionFactory<Object, Object> factory = getCache().createRegionFactory();
           factory.setScope(Scope.DISTRIBUTED_ACK);
-          factory.setEarlyAck(false);
           factory.setStatisticsEnabled(true);
-          Region region = createRegion(name, factory.create());
+          Region<Object, Object> region = createRegion(name, factory);
           region.create(objectName, null);
-
         } catch (CacheException ex) {
-          Assert.fail("While creating ACK region", ex);
+          fail("While creating ACK region", ex);
         }
       }
     });
 
-    vm0.invoke(new SerializableRunnable("Get a value") {
+    vm0.invoke("Get a value", new SerializableRunnable() {
       @Override
       public void run() {
         try {
-          Object result = null;
-          result = getRootRegion().getSubregion(name).get(objectName);
-          assertEquals(value, result);
-
-          // System.err.println("Results is " + result.toString() + " Key is " +
-          // objectName.toString());
-        } catch (CacheLoaderException cle) {
-          Assert.fail("While Get a value", cle);
-        } catch (TimeoutException te) {
-          Assert.fail("While Get a value", te);
+          Object result = getRootRegion().getSubregion(name).get(objectName);
+          assertThat(value).isEqualTo(result);
+        } catch (CacheLoaderException | TimeoutException cle) {
+          fail("While Get a value", cle);
         }
       }
-
     });
   }
 
@@ -201,7 +157,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
    * This test is for a bug in which a cache loader threw an exception that caused the wrong value
    * to be put in a Future in nonTxnFindObject. This in turn caused a concurrent search for the
    * object to not invoke the loader a second time.
-   *
+   * <p>
    * VM0 is used to create a cache and a region having a loader that simulates the conditions that
    * caused the bug. One async thread then does a get() which invokes the loader. Another async
    * thread does a get() which reaches nonTxnFindObject and blocks waiting for the first thread's
@@ -211,27 +167,23 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void testConcurrentLoad() throws Throwable {
-
-    Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
-
     final String name = this.getUniqueName() + "Region";
     final String objectName = "theKey";
-    final Integer value = new Integer(44);
+    final Integer value = 44;
     final String exceptionString = "causing first cache-load to fail";
 
     remoteLoaderInvoked = false;
     loaderInvoked = false;
 
-    vm0.invoke(new CacheSerializableRunnable("create region " + name + " in vm0") {
+    vm0.invoke("create region " + name + " in vm0", new CacheSerializableRunnable() {
       @Override
       public void run2() {
         remoteLoaderInvoked = false;
         loaderInvoked = false;
-        AttributesFactory factory = new AttributesFactory();
+        RegionFactory<Object, Object> factory = getCache().createRegionFactory();
         factory.setScope(Scope.DISTRIBUTED_ACK);
         factory.setConcurrencyChecksEnabled(true);
-        factory.setCacheLoader(new CacheLoader() {
+        factory.setCacheLoader(new CacheLoader<Object, Object>() {
           boolean firstInvocation = true;
 
           @Override
@@ -251,7 +203,6 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
                 fail("interrupted");
               }
               System.out.println("throwing exception");
-              exceptionThrown = true;
               throw new RuntimeException(exceptionString);
             }
             System.out.println("returning value=" + value);
@@ -259,12 +210,10 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
           }
 
           @Override
-          public void close() {
-
-          }
+          public void close() {}
         });
 
-        Region region = createRegion(name, factory.create());
+        Region<Object, Object> region = createRegion(name, factory);
         region.create(objectName, null);
         IgnoredException.addIgnoredException(exceptionString);
       }
@@ -272,38 +221,39 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
 
     AsyncInvocation async1 = null;
     try {
-      async1 = vm0.invokeAsync(new CacheSerializableRunnable(
-          "Concurrently invoke the remote loader on the same key - t1") {
-        @Override
-        public void run2() {
-          Region region = getCache().getRegion("root/" + name);
-
-          LogWriterUtils.getLogWriter().info("t1 is invoking get(" + objectName + ")");
-          try {
-            LogWriterUtils.getLogWriter().info("t1 retrieved value " + region.get(objectName));
-            fail("first load should have triggered an exception");
-          } catch (RuntimeException e) {
-            if (!e.getMessage().contains(exceptionString)) {
-              throw e;
-            }
-          }
-        }
-      });
-      vm0.invoke(
-          new CacheSerializableRunnable("Concurrently invoke the loader on the same key - t2") {
+      async1 = vm0.invokeAsync("Concurrently invoke the remote loader on the same key - t1",
+          new CacheSerializableRunnable() {
             @Override
             public void run2() {
-              final Region region = getCache().getRegion("root/" + name);
+              Region<Object, Object> region = getCache().getRegion("root/" + name);
+
+              logger.info("t1 is invoking get(" + objectName + ")");
+              try {
+                logger.info("t1 retrieved value " + region.get(objectName));
+                fail("first load should have triggered an exception");
+              } catch (RuntimeException e) {
+                if (!e.getMessage().contains(exceptionString)) {
+                  throw e;
+                }
+              }
+            }
+          });
+
+      vm0.invoke(
+          "Concurrently invoke the loader on the same key - t2", new CacheSerializableRunnable() {
+            @Override
+            public void run2() {
+              final Region<Object, Object> region = getCache().getRegion("root/" + name);
               final Object[] valueHolder = new Object[1];
 
               // wait for vm1 to cause the loader to be invoked
-              LogWriterUtils.getLogWriter().info("t2 is waiting for loader to be invoked by t1");
+              logger.info("t2 is waiting for loader to be invoked by t1");
               try {
                 loaderInvokedLatch.await(30, TimeUnit.SECONDS);
               } catch (InterruptedException e) {
                 fail("interrupted");
               }
-              assertTrue(loaderInvoked);
+              await().until(() -> loaderInvoked);
 
               Thread t = new Thread("invoke get()") {
                 @Override
@@ -337,7 +287,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
                 fail("get() operation blocked for too long - test needs some work");
               }
 
-              LogWriterUtils.getLogWriter().info("t2 is invoking get(" + objectName + ")");
+              logger.info("t2 is invoking get(" + objectName + ")");
               Object value = valueHolder[0];
               if (value instanceof RuntimeException) {
                 if (((Exception) value).getMessage().contains(exceptionString)) {
@@ -346,152 +296,103 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
                   throw (RuntimeException) value;
                 }
               } else {
-                LogWriterUtils.getLogWriter().info("t2 retrieved value " + value);
-                assertNotNull(value);
+                logger.info("t2 retrieved value " + value);
+                assertThat(value).isNotNull();
               }
             }
           });
     } finally {
       if (async1 != null) {
-        async1.join();
-        if (async1.exceptionOccurred()) {
-          throw async1.getException();
-        }
+        async1.get();
       }
     }
   }
 
-
   @Test
-  public void testNetLoadNoLoaders() throws CacheException, InterruptedException {
-    Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
-    VM vm1 = host.getVM(1);
+  public void testNetLoadNoLoaders() throws CacheException {
     final String name = this.getUniqueName() + "-ACK";
     final String objectName = "B";
-    SerializableRunnable create = new CacheSerializableRunnable("Create Region") {
+    SerializableRunnable create = new CacheSerializableRunnable() {
       @Override
       public void run2() throws CacheException {
-        AttributesFactory factory = new AttributesFactory();
+        RegionFactory<Object, Object> factory = getCache().createRegionFactory();
         factory.setScope(Scope.DISTRIBUTED_ACK);
-        factory.setEarlyAck(false);
-        createRegion(name, factory.create());
-
+        createRegion(name, factory);
       }
     };
 
-    vm0.invoke(create);
-    vm1.invoke(create);
+    vm0.invoke("Create Region", create);
+    vm1.invoke("Create Region", create);
 
-    vm0.invoke(new SerializableRunnable("Get with No Loaders defined") {
+    vm0.invoke("Get with No Loaders defined", new SerializableRunnable() {
       @Override
       public void run() {
         try {
           Object result = getRootRegion().getSubregion(name).get(objectName);
-          assertNull(result);
-        } catch (CacheLoaderException cle) {
-          Assert.fail("While getting value for ACK region", cle);
-        } catch (TimeoutException te) {
-          Assert.fail("While getting value for ACK region", te);
+          assertThat(result).isNull();
+        } catch (CacheLoaderException | TimeoutException cle) {
+          fail("While getting value for ACK region", cle);
         }
-
       }
     });
-
-
   }
 
   @Test
-  public void testNetLoad() throws CacheException, InterruptedException {
+  public void testNetLoad() throws CacheException {
     disconnectAllFromDS();
-
-    Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
-    VM vm1 = host.getVM(1);
     final String name = this.getUniqueName() + "-ACK";
     final String objectName = "B";
-    final Integer value = new Integer(43);
+    final Integer value = 43;
     loaderInvoked = false;
     remoteLoaderInvoked = false;
-    vm0.invoke(new SerializableRunnable("Create ACK Region") {
-      @Override
-      public void run() {
-        try {
-          loaderInvoked = false;
-          AttributesFactory factory = new AttributesFactory();
-          factory.setScope(Scope.DISTRIBUTED_ACK);
-          factory.setEarlyAck(false);
-          // factory.setCacheLoader(new CacheLoader() {
-          // public Object load(LoaderHelper helper) {
-          /// loaderInvoked = true;
-          // return value;
-          // }
-          //
-          // public void close() {
-          //
-          // }
-          // });
+    vm0.invoke("Create ACK Region", () -> {
+      try {
+        loaderInvoked = false;
+        RegionFactory<Object, Object> factory = getCache().createRegionFactory();
+        factory.setScope(Scope.DISTRIBUTED_ACK);
 
-          Region region = createRegion(name, factory.create());
-          region.create(objectName, null);
+        Region<Object, Object> region = createRegion(name, factory);
+        region.create(objectName, null);
 
-        } catch (CacheException ex) {
-          Assert.fail("While creating ACK region", ex);
-        }
+      } catch (CacheException ex) {
+        fail("While creating ACK region", ex);
       }
     });
 
-    vm1.invoke(new SerializableRunnable("Create ACK Region") {
-      @Override
-      public void run() {
-        try {
-          AttributesFactory factory = new AttributesFactory();
-          factory.setScope(Scope.DISTRIBUTED_ACK);
-          factory.setEarlyAck(false);
-          factory.setCacheLoader(new CacheLoader() {
-            @Override
-            public Object load(LoaderHelper helper) {
-              remoteLoaderInvoked = true;
-              return value;
-            }
+    vm1.invoke("Create ACK Region", () -> {
+      try {
+        RegionFactory<Object, Object> factory = getCache().createRegionFactory();
+        factory.setScope(Scope.DISTRIBUTED_ACK);
+        factory.setCacheLoader(new CacheLoader<Object, Object>() {
+          @Override
+          public Object load(LoaderHelper helper) {
+            remoteLoaderInvoked = true;
+            return value;
+          }
 
-            @Override
-            public void close() {
+          @Override
+          public void close() {
 
-            }
-          });
-          createRegion(name, factory.create());
-        } catch (CacheException ex) {
-          Assert.fail("While creating ACK region", ex);
-        }
+          }
+        });
+        createRegion(name, factory);
+      } catch (CacheException ex) {
+        fail("While creating ACK region", ex);
       }
     });
-    vm0.invoke(new SerializableRunnable("Get a value from remote loader") {
-      @Override
-      public void run() {
-        for (int i = 0; i < 1; i++) {
-          try {
-            Object result = getRootRegion().getSubregion(name).get(objectName);
-            assertEquals(value, result);
-            assertEquals(new Boolean(loaderInvoked), Boolean.FALSE);
-            // getRootRegion().getSubregion(name).invalidate(objectName);
 
-          } catch (CacheLoaderException cle) {
-            Assert.fail("While getting value for ACK region", cle);
+    vm0.invoke("Get a value from remote loader", () -> {
+      for (int i = 0; i < 1; i++) {
+        try {
+          Object result = getRootRegion().getSubregion(name).get(objectName);
+          assertThat(value).isEqualTo(result);
+          assertThat(loaderInvoked).isEqualTo(Boolean.FALSE);
 
-          }
-          /*
-           * catch(EntryNotFoundException enfe) { fail("While getting value for ACK region", enfe);
-           *
-           * }
-           */
-          catch (TimeoutException te) {
-            Assert.fail("While getting value for ACK region", te);
+        } catch (CacheLoaderException | TimeoutException cle) {
+          fail("While getting value for ACK region", cle);
 
-          }
         }
       }
-
     });
   }
 
@@ -499,57 +400,39 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
    * Confirm that a netLoad that returns null will NOT allow other netLoad methods to be called.
    */
   @Test
-  public void testEmptyNetLoad() throws CacheException, InterruptedException {
+  public void testEmptyNetLoad() throws CacheException {
     disconnectAllFromDS();
 
-    Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
-    VM vm1 = host.getVM(1);
-    VM vm2 = host.getVM(2);
     final String name = this.getUniqueName() + "-ACK";
     final String objectName = "B";
     loaderInvoked = false;
     remoteLoaderInvoked = false;
     remoteLoaderInvokedCount = 0;
-    vm0.invoke(new SerializableRunnable("Create ACK Region") {
-      @Override
-      public void run() {
-        loaderInvoked = false;
-        remoteLoaderInvoked = false;
-        remoteLoaderInvokedCount = 0;
-        try {
-          AttributesFactory factory = new AttributesFactory();
-          factory.setScope(Scope.DISTRIBUTED_ACK);
-          factory.setEarlyAck(false);
-          // factory.setCacheLoader(new CacheLoader() {
-          // public Object load(LoaderHelper helper) {
-          /// loaderInvoked = true;
-          // return value;
-          // }
-          //
-          // public void close() {
-          //
-          // }
-          // });
-          Region region = createRegion(name, factory.create());
-          region.create(objectName, null);
-        } catch (CacheException ex) {
-          Assert.fail("While creating ACK region", ex);
-        }
+    vm0.invoke("Create ACK Region", () -> {
+      loaderInvoked = false;
+      remoteLoaderInvoked = false;
+      remoteLoaderInvokedCount = 0;
+      try {
+        RegionFactory<Object, Object> factory = getCache().createRegionFactory();
+        factory.setScope(Scope.DISTRIBUTED_ACK);
+
+        Region<Object, Object> region = createRegion(name, factory);
+        region.create(objectName, null);
+      } catch (CacheException ex) {
+        fail("While creating ACK region", ex);
       }
     });
 
-    SerializableRunnable installLoader = new SerializableRunnable("Create ACK Region") {
+    SerializableRunnable installLoader = new SerializableRunnable() {
       @Override
       public void run() {
         loaderInvoked = false;
         remoteLoaderInvoked = false;
         remoteLoaderInvokedCount = 0;
         try {
-          AttributesFactory factory = new AttributesFactory();
+          RegionFactory<Object, Object> factory = getCache().createRegionFactory();
           factory.setScope(Scope.DISTRIBUTED_ACK);
-          factory.setEarlyAck(false);
-          factory.setCacheLoader(new CacheLoader() {
+          factory.setCacheLoader(new CacheLoader<Object, Object>() {
             @Override
             public Object load(LoaderHelper helper) {
               remoteLoaderInvoked = true;
@@ -562,531 +445,423 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
 
             }
           });
-          createRegion(name, factory.create());
+          createRegion(name, factory);
         } catch (CacheException ex) {
-          Assert.fail("While creating ACK region", ex);
+          fail("While creating ACK region", ex);
         }
       }
     };
-    vm1.invoke(installLoader);
-    vm2.invoke(installLoader);
-    vm0.invoke(new SerializableRunnable("Get a value from remote loader") {
-      @Override
-      public void run() {
-        for (int i = 0; i < 1; i++) {
-          try {
-            Object result = getRootRegion().getSubregion(name).get(objectName);
-            assertEquals(null, result);
-            assertEquals(false, loaderInvoked);
-            // getRootRegion().getSubregion(name).invalidate(objectName);
 
-          } catch (CacheLoaderException cle) {
-            Assert.fail("While getting value for ACK region", cle);
-
-          }
-          /*
-           * catch(EntryNotFoundException enfe) { fail("While getting value for ACK region", enfe);
-           *
-           * }
-           */
-          catch (TimeoutException te) {
-            Assert.fail("While getting value for ACK region", te);
-
-          }
-        }
-      }
-
-    });
-    // we only invoke one netLoad loader even when they return null.
-    boolean xor = vmRemoteLoaderInvoked(vm1) ^ vmRemoteLoaderInvoked(vm2);
-    assertEquals(
-        "vm1=" + vmRemoteLoaderInvoked(vm1) + " vm2=" + vmRemoteLoaderInvoked(vm2) + " vm1Count="
-            + vmRemoteLoaderInvokedCount(vm1) + " vm2Count=" + vmRemoteLoaderInvokedCount(vm2),
-        true, xor);
-    int total = vmRemoteLoaderInvokedCount(vm1) + vmRemoteLoaderInvokedCount(vm2);
-    assertEquals(
-        "vm1=" + vmRemoteLoaderInvokedCount(vm1) + " vm2=" + vmRemoteLoaderInvokedCount(vm2), 1,
-        total);
-  }
-
-  public static boolean vmRemoteLoaderInvoked(VM vm) {
-    Boolean v = (Boolean) vm.invoke(() -> SearchAndLoadDUnitTest.fetchRemoteLoaderInvoked());
-    return v.booleanValue();
-  }
-
-  public static int vmRemoteLoaderInvokedCount(VM vm) {
-    Integer v = (Integer) vm.invoke(() -> SearchAndLoadDUnitTest.fetchRemoteLoaderInvokedCount());
-    return v.intValue();
-  }
-
-  public static Boolean fetchRemoteLoaderInvoked() {
-    return Boolean.valueOf(remoteLoaderInvoked);
-  }
-
-  public static Integer fetchRemoteLoaderInvokedCount() {
-    return new Integer(remoteLoaderInvokedCount);
-  }
-
-  @Test
-  public void testLocalLoad() throws CacheException, InterruptedException {
-
-    Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
-    VM vm1 = host.getVM(1);
-    final String name = this.getUniqueName() + "-ACK";
-    final String objectName = "C";
-    final Integer value = new Integer(44);
-    remoteLoaderInvoked = false;
-    loaderInvoked = false;
-    vm0.invoke(new SerializableRunnable("Create ACK Region") {
-      @Override
-      public void run() {
-        remoteLoaderInvoked = false;
-        loaderInvoked = false;
-        try {
-          AttributesFactory factory = new AttributesFactory();
-          factory.setScope(Scope.DISTRIBUTED_ACK);
-          factory.setEarlyAck(false);
-          factory.setCacheLoader(new CacheLoader() {
-            @Override
-            public Object load(LoaderHelper helper) {
-              loaderInvoked = true;
-              return value;
-            }
-
-            @Override
-            public void close() {
-
-            }
-          });
-
-          Region region = createRegion(name, factory.create());
-          region.create(objectName, null);
-
-        } catch (CacheException ex) {
-          Assert.fail("While creating ACK region", ex);
-        }
-      }
-    });
-
-    vm1.invoke(new SerializableRunnable("Create ACK Region") {
-      @Override
-      public void run() {
-        remoteLoaderInvoked = false;
-        loaderInvoked = false;
-        try {
-          AttributesFactory factory = new AttributesFactory();
-          factory.setScope(Scope.DISTRIBUTED_ACK);
-          factory.setEarlyAck(false);
-          factory.setCacheLoader(new CacheLoader() {
-            @Override
-            public Object load(LoaderHelper helper) {
-              remoteLoaderInvoked = true;
-              return value;
-            }
-
-            @Override
-            public void close() {
-
-            }
-          });
-          createRegion(name, factory.create());
-        } catch (CacheException ex) {
-          Assert.fail("While creating ACK region", ex);
-        }
-      }
-    });
-    vm0.invoke(new SerializableRunnable("Get a value from local loader") {
-      @Override
-      public void run() {
+    vm1.invoke("Create ACK Region", installLoader);
+    vm2.invoke("Create ACK Region", installLoader);
+    vm0.invoke("Get a value from remote loader", () -> {
+      for (int i = 0; i < 1; i++) {
         try {
           Object result = getRootRegion().getSubregion(name).get(objectName);
-          assertEquals(value, result);
-          assertEquals(new Boolean(loaderInvoked), Boolean.TRUE);
-          assertEquals(new Boolean(remoteLoaderInvoked), Boolean.FALSE);
+          assertThat(result).isNull();
+          assertThat(loaderInvoked).isFalse();
 
-        } catch (CacheLoaderException cle) {
-
-        } catch (TimeoutException te) {
+        } catch (CacheLoaderException | TimeoutException cle) {
+          fail("While getting value for ACK region", cle);
         }
       }
+    });
 
+    // we only invoke one netLoad loader even when they return null.
+    boolean xor = vmRemoteLoaderInvoked(vm1) ^ vmRemoteLoaderInvoked(vm2);
+    assertThat(xor).describedAs(
+        "vm1=" + vmRemoteLoaderInvoked(vm1) + " vm2=" + vmRemoteLoaderInvoked(vm2) + " vm1Count="
+            + vmRemoteLoaderInvokedCount(vm1) + " vm2Count=" + vmRemoteLoaderInvokedCount(vm2))
+        .isTrue();
+    int total = vmRemoteLoaderInvokedCount(vm1) + vmRemoteLoaderInvokedCount(vm2);
+    assertThat(total)
+        .describedAs(
+            "vm1=" + vmRemoteLoaderInvokedCount(vm1) + " vm2=" + vmRemoteLoaderInvokedCount(vm2))
+        .isEqualTo(1);
+  }
+
+  private static boolean vmRemoteLoaderInvoked(VM vm) {
+    return vm.invoke(SearchAndLoadDUnitTest::fetchRemoteLoaderInvoked);
+  }
+
+  private static int vmRemoteLoaderInvokedCount(VM vm) {
+    return vm.invoke(SearchAndLoadDUnitTest::fetchRemoteLoaderInvokedCount);
+  }
+
+  private static Boolean fetchRemoteLoaderInvoked() {
+    return remoteLoaderInvoked;
+  }
+
+  private static Integer fetchRemoteLoaderInvokedCount() {
+    return remoteLoaderInvokedCount;
+  }
+
+  @Test
+  public void testLocalLoad() throws CacheException {
+    final String name = this.getUniqueName() + "-ACK";
+    final String objectName = "C";
+    final Integer value = 44;
+    remoteLoaderInvoked = false;
+    loaderInvoked = false;
+    vm0.invoke("Create ACK Region", () -> {
+      remoteLoaderInvoked = false;
+      loaderInvoked = false;
+      try {
+        RegionFactory<Object, Object> factory = getCache().createRegionFactory();
+        factory.setScope(Scope.DISTRIBUTED_ACK);
+        factory.setCacheLoader(new CacheLoader<Object, Object>() {
+          @Override
+          public Object load(LoaderHelper helper) {
+            loaderInvoked = true;
+            return value;
+          }
+
+          @Override
+          public void close() {}
+        });
+
+        Region<Object, Object> region = createRegion(name, factory);
+        region.create(objectName, null);
+
+      } catch (CacheException ex) {
+        fail("While creating ACK region", ex);
+      }
+    });
+
+    vm1.invoke("Create ACK Region", () -> {
+      remoteLoaderInvoked = false;
+      loaderInvoked = false;
+      try {
+        RegionFactory<Object, Object> factory = getCache().createRegionFactory();
+        factory.setScope(Scope.DISTRIBUTED_ACK);
+        factory.setCacheLoader(new CacheLoader<Object, Object>() {
+          @Override
+          public Object load(LoaderHelper helper) {
+            remoteLoaderInvoked = true;
+            return value;
+          }
+
+          @Override
+          public void close() {}
+        });
+
+        createRegion(name, factory);
+      } catch (CacheException ex) {
+        fail("While creating ACK region", ex);
+      }
+    });
+
+    vm0.invoke("Get a value from local loader", () -> {
+      try {
+        Object result = getRootRegion().getSubregion(name).get(objectName);
+        assertThat(value).isEqualTo(result);
+        assertThat(loaderInvoked).isEqualTo(Boolean.TRUE);
+        assertThat(remoteLoaderInvoked).isEqualTo(Boolean.FALSE);
+
+      } catch (CacheLoaderException | TimeoutException ignored) {
+      }
     });
   }
 
-
   @Test
-  public void testNetWrite() throws CacheException, InterruptedException {
-
-    Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
-    VM vm1 = host.getVM(1);
+  public void testNetWrite() throws CacheException {
     final String name = this.getUniqueName() + "-ACK";
     final String objectName = "Gemfire7";
-    final Integer value = new Integer(483);
+    final Integer value = 483;
 
-    vm0.invoke(new SerializableRunnable("Create ACK Region with cacheWriter") {
-      @Override
-      public void run() {
-        netWriteInvoked = false;
-        try {
-          AttributesFactory factory = new AttributesFactory();
-          factory.setScope(Scope.DISTRIBUTED_ACK);
-          factory.setCacheWriter(new CacheWriter() {
-            @Override
-            public void beforeCreate(EntryEvent e) throws CacheWriterException {
-              netWriteInvoked = true;
-              return;
-            }
-
-            @Override
-            public void beforeUpdate(EntryEvent e) throws CacheWriterException {
-              netWriteInvoked = true;
-              return;
-            }
-
-            @Override
-            public void beforeDestroy(EntryEvent e) throws CacheWriterException {
-              return;
-            }
-
-            @Override
-            public void beforeRegionDestroy(RegionEvent e) throws CacheWriterException {
-              return;
-            }
-
-            @Override
-            public void beforeRegionClear(RegionEvent e) throws CacheWriterException {
-              return;
-            }
-
-            @Override
-            public void close() {}
-          });
-
-          createRegion(name, factory.create());
-
-        } catch (CacheException ex) {
-          Assert.fail("While creating ACK region", ex);
-        }
-      }
-    });
-    vm1.invoke(new SerializableRunnable("Create ACK Region") {
-      @Override
-      public void run() {
-        loaderInvoked = false;
-        remoteLoaderInvoked = false;
-        netWriteInvoked = false;
-        try {
-          AttributesFactory factory = new AttributesFactory();
-          factory.setScope(Scope.DISTRIBUTED_ACK);
-          createRegion(name, factory.create());
-        } catch (CacheException ex) {
-          Assert.fail("While creating ACK region", ex);
-        }
-      }
-    });
-
-    vm1.invoke(new SerializableRunnable(
-        "Do a put operation resulting in cache writer notification in other vm") {
-      @Override
-      public void run() {
-        try {
-          getRootRegion().getSubregion(name).put(objectName, value);
-          try {
-            Object result = getRootRegion().getSubregion(name).get(objectName);
-            assertEquals(result, value);
-          } catch (CacheLoaderException cle) {
-          } catch (TimeoutException te) {
+    vm0.invoke("Create ACK Region with cacheWriter", () -> {
+      netWriteInvoked = false;
+      try {
+        RegionFactory<Object, Object> factory = getCache().createRegionFactory();
+        factory.setScope(Scope.DISTRIBUTED_ACK);
+        factory.setCacheWriter(new CacheWriter<Object, Object>() {
+          @Override
+          public void beforeCreate(EntryEvent e) throws CacheWriterException {
+            netWriteInvoked = true;
           }
-        } catch (CacheWriterException cwe) {
 
-        } catch (TimeoutException te) {
-        }
+          @Override
+          public void beforeUpdate(EntryEvent e) throws CacheWriterException {
+            netWriteInvoked = true;
+          }
+
+          @Override
+          public void beforeDestroy(EntryEvent e) throws CacheWriterException {}
+
+          @Override
+          public void beforeRegionDestroy(RegionEvent e) throws CacheWriterException {}
+
+          @Override
+          public void beforeRegionClear(RegionEvent e) throws CacheWriterException {}
+
+          @Override
+          public void close() {}
+        });
+
+        createRegion(name, factory);
+
+      } catch (CacheException ex) {
+        fail("While creating ACK region", ex);
       }
-
     });
 
-    vm0.invoke(new SerializableRunnable("ensure that cache writer was invoked") {
+    vm1.invoke("Create ACK Region", () -> {
+      loaderInvoked = false;
+      remoteLoaderInvoked = false;
+      netWriteInvoked = false;
+      try {
+        RegionFactory<Object, Object> factory = getCache().createRegionFactory();
+        factory.setScope(Scope.DISTRIBUTED_ACK);
+        createRegion(name, factory);
+      } catch (CacheException ex) {
+        fail("While creating ACK region", ex);
+      }
+    });
+
+    vm1.invoke("Do a put operation resulting in cache writer notification in other vm",
+        () -> {
+          try {
+            getRootRegion().getSubregion(name).put(objectName, value);
+            try {
+              Object result = getRootRegion().getSubregion(name).get(objectName);
+              assertThat(result).isEqualTo(value);
+            } catch (CacheLoaderException | TimeoutException ignored) {
+            }
+          } catch (CacheWriterException | TimeoutException ignored) {
+
+          }
+        });
+
+    vm0.invoke("ensure that cache writer was invoked", new SerializableRunnable() {
       @Override
       public void run() {
-        assertTrue("expected cache writer to be invoked", netWriteInvoked);
+        assertThat(netWriteInvoked).describedAs("expected cache writer to be invoked").isTrue();
       }
     });
   }
 
-
   @Test
-  public void testOneHopNetWrite() throws CacheException, InterruptedException {
-
-    Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
-    VM vm1 = host.getVM(1);
+  public void testOneHopNetWrite() throws CacheException {
     final String name = this.getUniqueName() + "Region";
     final String objectName = "Object7";
-    final Integer value = new Integer(483);
-    final Integer updateValue = new Integer(484);
+    final Integer value = 483;
+    final Integer updateValue = 484;
 
-    vm0.invoke(new SerializableRunnable("Create replicated region with cacheWriter") {
-      @Override
-      public void run() {
-        netWriteInvoked = false;
-        operationWasCreate = false;
-        originWasRemote = false;
-        writerInvocationCount = 0;
-        try {
-          AttributesFactory factory = new AttributesFactory();
-          factory.setScope(Scope.DISTRIBUTED_ACK);
-          factory.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
-          factory.setCacheWriter(new CacheWriter() {
-            @Override
-            public void beforeCreate(EntryEvent e) throws CacheWriterException {
-              e.getRegion().getCache().getLogger()
-                  .info("cache writer beforeCreate invoked for " + e);
-              netWriteInvoked = true;
-              operationWasCreate = true;
-              originWasRemote = e.isOriginRemote();
-              writerInvocationCount++;
-              return;
-            }
+    vm0.invoke("Create replicated region with cacheWriter", () -> {
+      netWriteInvoked = false;
+      operationWasCreate = false;
+      originWasRemote = false;
+      writerInvocationCount = 0;
+      try {
+        RegionFactory<Object, Object> factory = getCache().createRegionFactory();
+        factory.setScope(Scope.DISTRIBUTED_ACK);
+        factory.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
+        factory.setCacheWriter(new CacheWriter<Object, Object>() {
+          @Override
+          public void beforeCreate(EntryEvent e) throws CacheWriterException {
+            logger
+                .info("cache writer beforeCreate invoked for " + e);
+            netWriteInvoked = true;
+            operationWasCreate = true;
+            originWasRemote = e.isOriginRemote();
+            writerInvocationCount++;
+          }
 
-            @Override
-            public void beforeUpdate(EntryEvent e) throws CacheWriterException {
-              e.getRegion().getCache().getLogger()
-                  .info("cache writer beforeUpdate invoked for " + e);
-              netWriteInvoked = true;
-              operationWasCreate = false;
-              originWasRemote = e.isOriginRemote();
-              writerInvocationCount++;
-              return;
-            }
+          @Override
+          public void beforeUpdate(EntryEvent e) throws CacheWriterException {
+            logger
+                .info("cache writer beforeUpdate invoked for " + e);
+            netWriteInvoked = true;
+            operationWasCreate = false;
+            originWasRemote = e.isOriginRemote();
+            writerInvocationCount++;
+          }
 
-            @Override
-            public void beforeDestroy(EntryEvent e) throws CacheWriterException {}
+          @Override
+          public void beforeDestroy(EntryEvent e) throws CacheWriterException {}
 
-            @Override
-            public void beforeRegionDestroy(RegionEvent e) throws CacheWriterException {}
+          @Override
+          public void beforeRegionDestroy(RegionEvent e) throws CacheWriterException {}
 
-            @Override
-            public void beforeRegionClear(RegionEvent e) throws CacheWriterException {}
+          @Override
+          public void beforeRegionClear(RegionEvent e) throws CacheWriterException {}
 
-            @Override
-            public void close() {}
-          });
+          @Override
+          public void close() {}
+        });
 
-          createRegion(name, factory.create());
+        createRegion(name, factory);
 
-        } catch (CacheException ex) {
-          Assert.fail("While creating replicated region", ex);
-        }
-      }
-    });
-    vm1.invoke(new SerializableRunnable("Create empty Region") {
-      @Override
-      public void run() {
-        try {
-          AttributesFactory factory = new AttributesFactory();
-          factory.setScope(Scope.DISTRIBUTED_ACK);
-          factory.setDataPolicy(DataPolicy.EMPTY);
-          createRegion(name, factory.create());
-        } catch (CacheException ex) {
-          Assert.fail("While creating empty region", ex);
-        }
+      } catch (CacheException ex) {
+        fail("While creating replicated region", ex);
       }
     });
 
-    vm1.invoke(new SerializableRunnable(
-        "do a put that should be proxied in the other vm and invoke its cache writer") {
-      @Override
-      public void run() {
-        try {
-          getRootRegion().getSubregion(name).put(objectName, value);
-        } catch (CacheWriterException cwe) {
-        } catch (TimeoutException te) {
-        }
+    vm1.invoke("Create empty Region", () -> {
+      try {
+        RegionFactory<Object, Object> factory = getCache().createRegionFactory();
+        factory.setScope(Scope.DISTRIBUTED_ACK);
+        factory.setDataPolicy(DataPolicy.EMPTY);
+        createRegion(name, factory);
+      } catch (CacheException ex) {
+        fail("While creating empty region", ex);
       }
     });
 
-    vm0.invoke(new SerializableRunnable(
-        "ensure that cache writer was invoked with correct settings in event") {
-      @Override
-      public void run() {
-        assertTrue("expected cache writer to be invoked", netWriteInvoked);
-        assertTrue("expected originRemote to be true", originWasRemote);
-        assertTrue("expected event to be create", operationWasCreate);
-        assertEquals("expected only one cache writer invocation", 1, writerInvocationCount);
-        // set flags for the next test - updating the same key
-        netWriteInvoked = false;
-        writerInvocationCount = 0;
-      }
-    });
+    vm1.invoke("do a put that should be proxied in the other vm and invoke its cache writer",
+        () -> {
+          try {
+            getRootRegion().getSubregion(name).put(objectName, value);
+          } catch (CacheWriterException | TimeoutException ignored) {
+          }
+        });
 
-    vm1.invoke(new SerializableRunnable(
-        "do an update that should be proxied in the other vm and invoke its cache writer") {
-      @Override
-      public void run() {
-        try {
-          getRootRegion().getSubregion(name).put(objectName, updateValue);
-        } catch (CacheWriterException cwe) {
-        } catch (TimeoutException te) {
-        }
-      }
-    });
+    vm0.invoke("ensure that cache writer was invoked with correct settings in event",
+        () -> {
+          assertThat(netWriteInvoked).describedAs("expected cache writer to be invoked").isTrue();
+          assertThat(originWasRemote).describedAs("expected originRemote to be true").isTrue();
+          assertThat(operationWasCreate).describedAs("expected event to be create").isTrue();
+          assertThat(writerInvocationCount)
+              .describedAs("expected only one cache writer invocation").isEqualTo(1);
+          // set flags for the next test - updating the same key
+          netWriteInvoked = false;
+          writerInvocationCount = 0;
+        });
 
-    vm0.invoke(new SerializableRunnable(
-        "ensure that cache writer was invoked with correct settings in event") {
-      @Override
-      public void run() {
-        assertTrue("expected cache writer to be invoked", netWriteInvoked);
-        assertTrue("expected originRemote to be true", originWasRemote);
-        assertTrue("expected event to be create", operationWasCreate);
-        assertEquals("expected only one cache writer invocation", 1, writerInvocationCount);
-      }
-    });
+    vm1.invoke("do an update that should be proxied in the other vm and invoke its cache writer",
+        () -> {
+          try {
+            getRootRegion().getSubregion(name).put(objectName, updateValue);
+          } catch (CacheWriterException | TimeoutException ignored) {
+          }
+        });
+
+    vm0.invoke("ensure that cache writer was invoked with correct settings in event",
+        () -> {
+          assertThat(netWriteInvoked).describedAs("expected cache writer to be invoked").isTrue();
+          assertThat(originWasRemote).describedAs("expected originRemote to be true").isTrue();
+          assertThat(operationWasCreate).describedAs("expected event to be create").isTrue();
+          assertThat(writerInvocationCount)
+              .describedAs("expected only one cache writer invocation").isEqualTo(1);
+        });
   }
 
 
-  /** same as the previous test but the cache writer is in a third, non-replicated, vm */
+  /**
+   * same as the previous test but the cache writer is in a third, non-replicated, vm
+   */
   @Test
-  public void testOneHopNetWriteRemoteWriter() throws CacheException, InterruptedException {
-
-    Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
-    VM vm1 = host.getVM(1);
-    VM vm2 = host.getVM(2);
+  public void testOneHopNetWriteRemoteWriter() throws CacheException {
     final String name = this.getUniqueName() + "Region";
     final String objectName = "Object7";
-    final Integer value = new Integer(483);
-    final Integer updateValue = new Integer(484);
+    final Integer value = 483;
+    final Integer updateValue = 484;
 
-    vm0.invoke(new SerializableRunnable("Create replicate Region") {
-      @Override
-      public void run() {
-        try {
-          AttributesFactory factory = new AttributesFactory();
-          factory.setScope(Scope.DISTRIBUTED_ACK);
-          factory.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
-          createRegion(name, factory.create());
-        } catch (CacheException ex) {
-          Assert.fail("While creating empty region", ex);
-        }
-      }
-    });
-    vm1.invoke(new SerializableRunnable("Create empty Region") {
-      @Override
-      public void run() {
-        try {
-          AttributesFactory factory = new AttributesFactory();
-          factory.setScope(Scope.DISTRIBUTED_ACK);
-          factory.setDataPolicy(DataPolicy.EMPTY);
-          createRegion(name, factory.create());
-        } catch (CacheException ex) {
-          Assert.fail("While creating empty region", ex);
-        }
-      }
-    });
-    vm2.invoke(new SerializableRunnable("Create replicated region with cacheWriter") {
-      @Override
-      public void run() {
-        netWriteInvoked = false;
-        operationWasCreate = false;
-        originWasRemote = false;
-        writerInvocationCount = 0;
-        try {
-          AttributesFactory factory = new AttributesFactory();
-          factory.setScope(Scope.DISTRIBUTED_ACK);
-          factory.setDataPolicy(DataPolicy.EMPTY);
-          factory.setCacheWriter(new CacheWriter() {
-            @Override
-            public void beforeCreate(EntryEvent e) throws CacheWriterException {
-              e.getRegion().getCache().getLogger()
-                  .info("cache writer beforeCreate invoked for " + e);
-              netWriteInvoked = true;
-              operationWasCreate = true;
-              originWasRemote = e.isOriginRemote();
-              writerInvocationCount++;
-              return;
-            }
-
-            @Override
-            public void beforeUpdate(EntryEvent e) throws CacheWriterException {
-              e.getRegion().getCache().getLogger()
-                  .info("cache writer beforeUpdate invoked for " + e);
-              netWriteInvoked = true;
-              operationWasCreate = false;
-              originWasRemote = e.isOriginRemote();
-              writerInvocationCount++;
-              return;
-            }
-
-            @Override
-            public void beforeDestroy(EntryEvent e) throws CacheWriterException {}
-
-            @Override
-            public void beforeRegionDestroy(RegionEvent e) throws CacheWriterException {}
-
-            @Override
-            public void beforeRegionClear(RegionEvent e) throws CacheWriterException {}
-
-            @Override
-            public void close() {}
-          });
-
-          createRegion(name, factory.create());
-
-        } catch (CacheException ex) {
-          Assert.fail("While creating replicated region", ex);
-        }
+    vm0.invoke("Create replicate Region", () -> {
+      try {
+        RegionFactory<Object, Object> factory = getCache().createRegionFactory();
+        factory.setScope(Scope.DISTRIBUTED_ACK);
+        factory.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
+        createRegion(name, factory);
+      } catch (CacheException ex) {
+        fail("While creating empty region", ex);
       }
     });
 
-    vm1.invoke(new SerializableRunnable(
-        "do a put that should be proxied in the other vm and invoke its cache writer") {
-      @Override
-      public void run() {
-        try {
-          getRootRegion().getSubregion(name).put(objectName, value);
-        } catch (CacheWriterException cwe) {
-        } catch (TimeoutException te) {
-        }
+    vm1.invoke("Create empty Region", () -> {
+      try {
+        RegionFactory<Object, Object> factory = getCache().createRegionFactory();
+        factory.setScope(Scope.DISTRIBUTED_ACK);
+        factory.setDataPolicy(DataPolicy.EMPTY);
+        createRegion(name, factory);
+      } catch (CacheException ex) {
+        fail("While creating empty region", ex);
       }
     });
 
-    vm2.invoke(new SerializableRunnable(
-        "ensure that cache writer was invoked with correct settings in event") {
-      @Override
-      public void run() {
-        assertTrue("expected cache writer to be invoked", netWriteInvoked);
-        assertTrue("expected originRemote to be true", originWasRemote);
-        assertTrue("expected event to be create", operationWasCreate);
-        assertEquals("expected only one cache writer invocation", 1, writerInvocationCount);
-        // set flags for the next test - updating the same key
-        netWriteInvoked = false;
-        writerInvocationCount = 0;
+    vm2.invoke("Create replicated region with cacheWriter", () -> {
+      netWriteInvoked = false;
+      operationWasCreate = false;
+      originWasRemote = false;
+      writerInvocationCount = 0;
+      try {
+        RegionFactory<Object, Object> factory = getCache().createRegionFactory();
+        factory.setScope(Scope.DISTRIBUTED_ACK);
+        factory.setDataPolicy(DataPolicy.EMPTY);
+        factory.setCacheWriter(new CacheWriter<Object, Object>() {
+          @Override
+          public void beforeCreate(EntryEvent e) throws CacheWriterException {
+            logger.info("cache writer beforeCreate invoked for " + e);
+            netWriteInvoked = true;
+            operationWasCreate = true;
+            originWasRemote = e.isOriginRemote();
+            writerInvocationCount++;
+          }
+
+          @Override
+          public void beforeUpdate(EntryEvent e) throws CacheWriterException {
+            logger.info("cache writer beforeUpdate invoked for " + e);
+            netWriteInvoked = true;
+            operationWasCreate = false;
+            originWasRemote = e.isOriginRemote();
+            writerInvocationCount++;
+          }
+
+          @Override
+          public void beforeDestroy(EntryEvent e) throws CacheWriterException {}
+
+          @Override
+          public void beforeRegionDestroy(RegionEvent e) throws CacheWriterException {}
+
+          @Override
+          public void beforeRegionClear(RegionEvent e) throws CacheWriterException {}
+
+          @Override
+          public void close() {}
+        });
+
+        createRegion(name, factory);
+
+      } catch (CacheException ex) {
+        fail("While creating replicated region", ex);
       }
     });
 
-    vm1.invoke(new SerializableRunnable(
-        "do an update that should be proxied in the other vm and invoke its cache writer") {
-      @Override
-      public void run() {
-        try {
-          getRootRegion().getSubregion(name).put(objectName, updateValue);
-        } catch (CacheWriterException cwe) {
-        } catch (TimeoutException te) {
-        }
-      }
-    });
+    vm1.invoke("do a put that should be proxied in the other vm and invoke its cache writer",
+        () -> {
+          try {
+            getRootRegion().getSubregion(name).put(objectName, value);
+          } catch (CacheWriterException | TimeoutException ignored) {
+          }
+        });
 
-    vm2.invoke(new SerializableRunnable(
-        "ensure that cache writer was invoked with correct settings in event") {
-      @Override
-      public void run() {
-        assertTrue("expected cache writer to be invoked", netWriteInvoked);
-        assertTrue("expected originRemote to be true", originWasRemote);
-        assertTrue("expected event to be create", operationWasCreate);
-        assertEquals("expected only one cache writer invocation", 1, writerInvocationCount);
-      }
-    });
+    vm2.invoke("ensure that cache writer was invoked with correct settings in event",
+        () -> {
+          assertThat(netWriteInvoked).describedAs("expected cache writer to be invoked").isTrue();
+          assertThat(originWasRemote).describedAs("expected originRemote to be true").isTrue();
+          assertThat(operationWasCreate).describedAs("expected event to be create").isTrue();
+          assertThat(writerInvocationCount)
+              .describedAs("expected only one cache writer invocation").isEqualTo(1);
+          // set flags for the next test - updating the same key
+          netWriteInvoked = false;
+          writerInvocationCount = 0;
+        });
+
+    vm1.invoke("do an update that should be proxied in the other vm and invoke its cache writer",
+        () -> {
+          try {
+            getRootRegion().getSubregion(name).put(objectName, updateValue);
+          } catch (CacheWriterException | TimeoutException ignored) {
+          }
+        });
+
+    vm2.invoke("ensure that cache writer was invoked with correct settings in event",
+        () -> {
+          assertThat(netWriteInvoked).describedAs("expected cache writer to be invoked").isTrue();
+          assertThat(originWasRemote).describedAs("expected originRemote to be true").isTrue();
+          assertThat(operationWasCreate).describedAs("expected event to be create").isTrue();
+          assertThat(writerInvocationCount)
+              .describedAs("expected only one cache writer invocation").isEqualTo(1);
+        });
   }
 }

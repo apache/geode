@@ -78,12 +78,12 @@ public class ExecuteCQ extends BaseCQCommand {
           serverConnection.getSocketString(), cqName, cqQueryString);
     }
 
-    DefaultQueryService qService = null;
-    CqService cqServiceForExec = null;
+    DefaultQueryService qService;
+    CqService cqServiceForExec;
     Query query = null;
     Set cqRegionNames = null;
     ExecuteCQOperationContext executeCQContext = null;
-    ServerCQ cqQuery = null;
+    ServerCQ cqQuery;
 
     try {
       qService = (DefaultQueryService) crHelper.getCache().getLocalQueryService();

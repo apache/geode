@@ -47,7 +47,6 @@ import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.cache30.CacheSerializableRunnable;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.test.dunit.Host;
@@ -56,6 +55,7 @@ import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Start client 1 Start client 2 Start Server 1 Start Server 2 Register interest for client 1 on
@@ -227,7 +227,7 @@ public class UpdatePropagationDUnitTest extends JUnit4CacheTestCase {
   private void createClientCache(String host, Integer port1, Integer port2) throws Exception {
     ClientCache cache;
     try {
-      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "PoolImpl.DISABLE_RANDOM", "true");
+      System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "PoolImpl.DISABLE_RANDOM", "true");
       int PORT1 = port1.intValue();
       int PORT2 = port2.intValue();
       Properties props = new Properties();
@@ -239,7 +239,7 @@ public class UpdatePropagationDUnitTest extends JUnit4CacheTestCase {
           .setPoolReadTimeout(2000).setPoolPingInterval(300);
       cache = getClientCache(cf);
     } finally {
-      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "PoolImpl.DISABLE_RANDOM", "false");
+      System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "PoolImpl.DISABLE_RANDOM", "false");
       CacheServerTestUtil.enableShufflingOfEndpoints();
     }
     cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY)

@@ -59,10 +59,9 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.Distribution;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberDisconnectedException;
+import org.apache.geode.distributed.internal.membership.api.MemberDisconnectedException;
+import org.apache.geode.distributed.internal.membership.api.MembershipManagerHelper;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Host;
@@ -75,6 +74,7 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * tests for the concurrentMapOperations. there are more tests in ClientServerMiscDUnitTest
@@ -104,7 +104,7 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
       System.setProperty(BYPASS_DISCOVERY_PROPERTY, "true");
       // set a big weight on the locator to prevent total shutdown when one server decides
       // to kill the other server
-      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "member-weight", "100");
+      System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "member-weight", "100");
       return Locator.startLocatorAndDS(0, new File(""), new Properties()).getPort();
     });
     Invoke.invokeInEveryVM(() -> locatorPort = port);

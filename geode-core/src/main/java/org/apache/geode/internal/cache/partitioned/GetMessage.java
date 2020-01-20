@@ -28,7 +28,6 @@ import org.apache.geode.InternalGemFireError;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DirectReplyProcessor;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionStats;
@@ -40,7 +39,6 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.ReplySender;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.BucketRegion.RawValue;
 import org.apache.geode.internal.cache.CachedDeserializableFactory;
@@ -61,9 +59,11 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.OffHeapHelper;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * This message is used as the request for a
@@ -110,7 +110,7 @@ public class GetMessage extends PartitionMessageWithDirectReply {
   }
 
   private static final boolean ORDER_PR_GETS =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "order-pr-gets");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "order-pr-gets");
 
   @Override
   public int getProcessorType() {
@@ -461,7 +461,7 @@ public class GetMessage extends PartitionMessageWithDirectReply {
       this.valueType = flags;
       this.valueInBytes = DataSerializer.readByteArray(in);
       if (flags != VALUE_IS_BYTES) {
-        this.remoteVersion = InternalDataSerializer.getVersionForDataStreamOrNull(in);
+        this.remoteVersion = StaticSerialization.getVersionForDataStreamOrNull(in);
       }
       if (hasVersionTag) {
         this.versionTag = (VersionTag) DataSerializer.readObject(in);

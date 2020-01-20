@@ -1235,7 +1235,7 @@ public abstract class DataSerializer {
       if (object instanceof HeapDataOutputStream) {
         hdos = (HeapDataOutputStream) object;
       } else {
-        Version v = InternalDataSerializer.getVersionForDataStreamOrNull(out);
+        Version v = StaticSerialization.getVersionForDataStreamOrNull(out);
         if (v == null) {
           v = Version.CURRENT;
         }

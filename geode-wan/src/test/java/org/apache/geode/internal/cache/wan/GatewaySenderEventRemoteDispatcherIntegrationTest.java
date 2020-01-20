@@ -41,7 +41,6 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.gms.membership.HostAddress;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PoolFactoryImpl;
 import org.apache.geode.internal.cache.PoolManagerImpl;
@@ -150,7 +149,7 @@ public class GatewaySenderEventRemoteDispatcherIntegrationTest {
 
     final ThreadsMonitoring tMonitoring = mock(ThreadsMonitoring.class);
 
-    return PoolImpl.create(poolManager, "pool", poolAttributes, new LinkedList<HostAddress>(),
+    return PoolImpl.create(poolManager, "pool", poolAttributes, new LinkedList<>(),
         internalDistributedSystem, internalCache, tMonitoring);
   }
 

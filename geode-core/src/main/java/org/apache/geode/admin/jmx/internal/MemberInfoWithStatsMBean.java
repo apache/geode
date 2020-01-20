@@ -65,10 +65,10 @@ import org.apache.geode.admin.jmx.Agent;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.InterestPolicy;
 import org.apache.geode.cache.SubscriptionAttributes;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.admin.remote.ClientHealthStats;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * This class uses the JMX Attributes/Operations that use (return/throw) GemFire types. This is the
@@ -564,83 +564,83 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
    * Cache.addCacheServer().
    */
 
-  private static final String MEMBER_ID = DistributionConfig.GEMFIRE_PREFIX + "member.id.string";
+  private static final String MEMBER_ID = GeodeGlossary.GEMFIRE_PREFIX + "member.id.string";
   private static final String MEMBER_NAME =
-      DistributionConfig.GEMFIRE_PREFIX + "member.name.string";
+      GeodeGlossary.GEMFIRE_PREFIX + "member.name.string";
   private static final String MEMBER_HOST =
-      DistributionConfig.GEMFIRE_PREFIX + "member.host.string";
-  private static final String MEMBER_PORT = DistributionConfig.GEMFIRE_PREFIX + "member.port.int";
+      GeodeGlossary.GEMFIRE_PREFIX + "member.host.string";
+  private static final String MEMBER_PORT = GeodeGlossary.GEMFIRE_PREFIX + "member.port.int";
   private static final String MEMBER_UPTIME =
-      DistributionConfig.GEMFIRE_PREFIX + "member.uptime.long";
+      GeodeGlossary.GEMFIRE_PREFIX + "member.uptime.long";
   private static final String MEMBER_CLIENTS =
-      DistributionConfig.GEMFIRE_PREFIX + "member.clients.map";
+      GeodeGlossary.GEMFIRE_PREFIX + "member.clients.map";
   private static final String MEMBER_REGIONS =
-      DistributionConfig.GEMFIRE_PREFIX + "member.regions.map";
+      GeodeGlossary.GEMFIRE_PREFIX + "member.regions.map";
   private static final String MEMBER_TYPE =
-      DistributionConfig.GEMFIRE_PREFIX + "member.type.string";
+      GeodeGlossary.GEMFIRE_PREFIX + "member.type.string";
   private static final String IS_SERVER =
-      DistributionConfig.GEMFIRE_PREFIX + "member.isserver.boolean";
+      GeodeGlossary.GEMFIRE_PREFIX + "member.isserver.boolean";
   private static final String IS_GATEWAY =
-      DistributionConfig.GEMFIRE_PREFIX + "member.isgateway.boolean";
+      GeodeGlossary.GEMFIRE_PREFIX + "member.isgateway.boolean";
 
   private static final String MEMBER_STATSAMPLING_ENABLED =
-      DistributionConfig.GEMFIRE_PREFIX + "member.config.statsamplingenabled.boolean";
+      GeodeGlossary.GEMFIRE_PREFIX + "member.config.statsamplingenabled.boolean";
   private static final String MEMBER_TIME_STATS_ENABLED =
-      DistributionConfig.GEMFIRE_PREFIX + "member.config.timestatsenabled.boolean";
+      GeodeGlossary.GEMFIRE_PREFIX + "member.config.timestatsenabled.boolean";
 
   private static final String STATS_PROCESSCPUTIME =
-      DistributionConfig.GEMFIRE_PREFIX + "member.stat.processcputime.long";
+      GeodeGlossary.GEMFIRE_PREFIX + "member.stat.processcputime.long";
   private static final String STATS_CPUS =
-      DistributionConfig.GEMFIRE_PREFIX + "member.stat.cpus.int";
+      GeodeGlossary.GEMFIRE_PREFIX + "member.stat.cpus.int";
   private static final String STATS_USEDMEMORY =
-      DistributionConfig.GEMFIRE_PREFIX + "member.stat.usedmemory.long";
+      GeodeGlossary.GEMFIRE_PREFIX + "member.stat.usedmemory.long";
   private static final String STATS_MAXMEMORY =
-      DistributionConfig.GEMFIRE_PREFIX + "member.stat.maxmemory.long";
+      GeodeGlossary.GEMFIRE_PREFIX + "member.stat.maxmemory.long";
   private static final String STATS_GETS =
-      DistributionConfig.GEMFIRE_PREFIX + "member.stat.gets.int";
+      GeodeGlossary.GEMFIRE_PREFIX + "member.stat.gets.int";
   private static final String STATS_GETTIME =
-      DistributionConfig.GEMFIRE_PREFIX + "member.stat.gettime.long";
+      GeodeGlossary.GEMFIRE_PREFIX + "member.stat.gettime.long";
   private static final String STATS_PUTS =
-      DistributionConfig.GEMFIRE_PREFIX + "member.stat.puts.int";
+      GeodeGlossary.GEMFIRE_PREFIX + "member.stat.puts.int";
   private static final String STATS_PUTTIME =
-      DistributionConfig.GEMFIRE_PREFIX + "member.stat.puttime.long";
+      GeodeGlossary.GEMFIRE_PREFIX + "member.stat.puttime.long";
 
   private static final String REGION_NAME =
-      DistributionConfig.GEMFIRE_PREFIX + "region.name.string";
+      GeodeGlossary.GEMFIRE_PREFIX + "region.name.string";
   private static final String REGION_PATH =
-      DistributionConfig.GEMFIRE_PREFIX + "region.path.string";
+      GeodeGlossary.GEMFIRE_PREFIX + "region.path.string";
   private static final String REGION_SCOPE =
-      DistributionConfig.GEMFIRE_PREFIX + "region.scope.string";
+      GeodeGlossary.GEMFIRE_PREFIX + "region.scope.string";
   private static final String REGION_DATAPOLICY =
-      DistributionConfig.GEMFIRE_PREFIX + "region.datapolicy.string";
+      GeodeGlossary.GEMFIRE_PREFIX + "region.datapolicy.string";
   private static final String REGION_INTERESTPOLICY =
-      DistributionConfig.GEMFIRE_PREFIX + "region.interestpolicy.string";
+      GeodeGlossary.GEMFIRE_PREFIX + "region.interestpolicy.string";
   private static final String REGION_ENTRYCOUNT =
-      DistributionConfig.GEMFIRE_PREFIX + "region.entrycount.int";
+      GeodeGlossary.GEMFIRE_PREFIX + "region.entrycount.int";
   private static final String REGION_DISKATTRS =
-      DistributionConfig.GEMFIRE_PREFIX + "region.diskattrs.string";
+      GeodeGlossary.GEMFIRE_PREFIX + "region.diskattrs.string";
 
-  private static final String CLIENT_ID = DistributionConfig.GEMFIRE_PREFIX + "client.id.string";
+  private static final String CLIENT_ID = GeodeGlossary.GEMFIRE_PREFIX + "client.id.string";
   private static final String CLIENT_NAME =
-      DistributionConfig.GEMFIRE_PREFIX + "client.name.string";
+      GeodeGlossary.GEMFIRE_PREFIX + "client.name.string";
   private static final String CLIENT_HOST =
-      DistributionConfig.GEMFIRE_PREFIX + "client.host.string";
+      GeodeGlossary.GEMFIRE_PREFIX + "client.host.string";
   private static final String CLIENT_QUEUESIZE =
-      DistributionConfig.GEMFIRE_PREFIX + "client.queuesize.int";
+      GeodeGlossary.GEMFIRE_PREFIX + "client.queuesize.int";
   private static final String CLIENT_STATS_GETS =
-      DistributionConfig.GEMFIRE_PREFIX + "client.stats.gets.int";
+      GeodeGlossary.GEMFIRE_PREFIX + "client.stats.gets.int";
   private static final String CLIENT_STATS_PUTS =
-      DistributionConfig.GEMFIRE_PREFIX + "client.stats.puts.int";
+      GeodeGlossary.GEMFIRE_PREFIX + "client.stats.puts.int";
   private static final String CLIENT_STATS_CACHEMISSES =
-      DistributionConfig.GEMFIRE_PREFIX + "client.stats.cachemisses.int";
+      GeodeGlossary.GEMFIRE_PREFIX + "client.stats.cachemisses.int";
   private static final String CLIENT_STATS_CPUUSAGE =
-      DistributionConfig.GEMFIRE_PREFIX + "client.stats.cpuusage.long";
+      GeodeGlossary.GEMFIRE_PREFIX + "client.stats.cpuusage.long";
   private static final String CLIENT_STATS_CPUS =
-      DistributionConfig.GEMFIRE_PREFIX + "client.stats.cpus.int";
+      GeodeGlossary.GEMFIRE_PREFIX + "client.stats.cpus.int";
   private static final String CLIENT_STATS_UPDATETIME =
-      DistributionConfig.GEMFIRE_PREFIX + "client.stats.updatetime.long";
+      GeodeGlossary.GEMFIRE_PREFIX + "client.stats.updatetime.long";
   private static final String CLIENT_STATS_THREADS =
-      DistributionConfig.GEMFIRE_PREFIX + "client.stats.threads.int";
+      GeodeGlossary.GEMFIRE_PREFIX + "client.stats.threads.int";
 
   /**
    *

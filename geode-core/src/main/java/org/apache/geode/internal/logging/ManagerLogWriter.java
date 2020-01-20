@@ -22,13 +22,13 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 
 import org.apache.geode.LogWriter;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.io.MainWithChildrenRollingFileHandler;
 import org.apache.geode.internal.io.RollingFileHandler;
 import org.apache.geode.internal.util.LogFileUtils;
+import org.apache.geode.logging.internal.OSProcess;
 import org.apache.geode.logging.internal.spi.LogConfig;
 import org.apache.geode.logging.internal.spi.LogFileDetails;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Implementation of {@link LogWriter} for distributed system members. It's just like {@link
@@ -39,7 +39,7 @@ import org.apache.geode.logging.internal.spi.LogFileDetails;
 public class ManagerLogWriter extends LocalLogWriter implements LogFileDetails {
 
   private static final String TEST_FILE_SIZE_LIMIT_IN_KB_PROPERTY =
-      DistributionConfig.GEMFIRE_PREFIX + "logging.test.fileSizeLimitInKB";
+      GeodeGlossary.GEMFIRE_PREFIX + "logging.test.fileSizeLimitInKB";
 
   private final boolean fileSizeLimitInKB;
 

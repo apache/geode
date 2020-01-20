@@ -76,6 +76,7 @@ import org.apache.geode.internal.ConfigSource;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.metrics.internal.MetricsService;
 import org.apache.geode.test.junit.categories.MembershipTest;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Tests the functionality of the {@link InternalDistributedSystem} class. Mostly checks
@@ -154,10 +155,10 @@ public class InternalDistributedSystemJUnitTest {
     assertEquals(DistributionConfig.DEFAULT_MEMBERSHIP_PORT_RANGE[1],
         config.getMembershipPortRange()[1]);
 
-    if (System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "mcast-address") == null) {
+    if (System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + "mcast-address") == null) {
       assertEquals(DistributionConfig.DEFAULT_MCAST_ADDRESS, config.getMcastAddress());
     }
-    if (System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "bind-address") == null) {
+    if (System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + "bind-address") == null) {
       assertEquals(DistributionConfig.DEFAULT_BIND_ADDRESS, config.getBindAddress());
     }
 
@@ -549,21 +550,21 @@ public class InternalDistributedSystemJUnitTest {
         return;
       }
     }
-    File propFile = new File(DistributionConfig.GEMFIRE_PREFIX + "properties");
+    File propFile = new File(GeodeGlossary.GEMFIRE_PREFIX + "properties");
     boolean propFileExisted = propFile.exists();
     File spropFile = new File("gfsecurity.properties");
     boolean spropFileExisted = spropFile.exists();
     try {
-      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + LOG_LEVEL, "finest");
+      System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + LOG_LEVEL, "finest");
       Properties apiProps = new Properties();
       apiProps.setProperty(GROUPS, "foo, bar");
       {
         if (propFileExisted) {
-          propFile.renameTo(new File(DistributionConfig.GEMFIRE_PREFIX + "properties.sav"));
+          propFile.renameTo(new File(GeodeGlossary.GEMFIRE_PREFIX + "properties.sav"));
         }
         Properties fileProps = new Properties();
         fileProps.setProperty("name", "myName");
-        FileWriter fw = new FileWriter(DistributionConfig.GEMFIRE_PREFIX + "properties");
+        FileWriter fw = new FileWriter(GeodeGlossary.GEMFIRE_PREFIX + "properties");
         fileProps.store(fw, null);
         fw.close();
       }
@@ -585,10 +586,10 @@ public class InternalDistributedSystemJUnitTest {
       assertEquals(ConfigSource.Type.SECURE_FILE,
           dci.getAttributeSource(STATISTIC_SAMPLE_RATE).getType());
     } finally {
-      System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "log-level");
+      System.clearProperty(GeodeGlossary.GEMFIRE_PREFIX + "log-level");
       propFile.delete();
       if (propFileExisted) {
-        new File(DistributionConfig.GEMFIRE_PREFIX + "properties.sav").renameTo(propFile);
+        new File(GeodeGlossary.GEMFIRE_PREFIX + "properties.sav").renameTo(propFile);
       }
       spropFile.delete();
       if (spropFileExisted) {

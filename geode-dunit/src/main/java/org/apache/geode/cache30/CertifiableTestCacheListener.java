@@ -19,29 +19,22 @@
  */
 package org.apache.geode.cache30;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 
-import org.apache.geode.LogWriter;
+import org.apache.geode.cache.CacheEvent;
 import org.apache.geode.cache.EntryEvent;
-import org.apache.geode.internal.cache.xmlcache.Declarable2;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.WaitCriterion;
 
-public class CertifiableTestCacheListener extends TestCacheListener implements Declarable2 {
-  public final Set destroys = Collections.synchronizedSet(new HashSet());
-  public final Set creates = Collections.synchronizedSet(new HashSet());
-  public final Set invalidates = Collections.synchronizedSet(new HashSet());
-  public final Set updates = Collections.synchronizedSet(new HashSet());
-
-  final LogWriter logger;
-
-  public CertifiableTestCacheListener(LogWriter l) {
-    this.logger = l;
-  }
+public class CertifiableTestCacheListener<K, V> extends TestCacheListener<K, V> {
+  public final Set<K> destroys = Collections.synchronizedSet(new HashSet<>());
+  public final Set<K> creates = Collections.synchronizedSet(new HashSet<>());
+  public final Set<K> invalidates = Collections.synchronizedSet(new HashSet<>());
+  public final Set<K> updates = Collections.synchronizedSet(new HashSet<>());
 
   /**
    * Clears the state of the listener, for consistent behavior this should only be called when there
@@ -55,7 +48,7 @@ public class CertifiableTestCacheListener extends TestCacheListener implements D
   }
 
   @Override
-  public List getEventHistory() {
+  public List<CacheEvent<K, V>> getEventHistory() {
     destroys.clear();
     creates.clear();
     invalidates.clear();
@@ -64,102 +57,53 @@ public class CertifiableTestCacheListener extends TestCacheListener implements D
   }
 
   @Override
-  public void afterCreate2(EntryEvent event) {
+  public void afterCreate2(EntryEvent<K, V> event) {
     this.creates.add(event.getKey());
   }
 
   @Override
-  public void afterDestroy2(EntryEvent event) {
+  public void afterDestroy2(EntryEvent<K, V> event) {
     this.destroys.add(event.getKey());
   }
 
   @Override
-  public void afterInvalidate2(EntryEvent event) {
-    Object key = event.getKey();
-    // logger.fine("got invalidate for " + key);
+  public void afterInvalidate2(EntryEvent<K, V> event) {
+    K key = event.getKey();
     this.invalidates.add(key);
   }
 
   @Override
-  public void afterUpdate2(EntryEvent event) {
+  public void afterUpdate2(EntryEvent<K, V> event) {
     this.updates.add(event.getKey());
   }
 
   private static final String WAIT_PROPERTY = "CertifiableTestCacheListener.maxWaitTime";
   private static final int WAIT_DEFAULT = 30000;
 
-  public static final long MAX_TIME = Integer.getInteger(WAIT_PROPERTY, WAIT_DEFAULT).intValue();;
+  private static final long MAX_TIME = Integer.getInteger(WAIT_PROPERTY, WAIT_DEFAULT);
 
 
-  public boolean waitForCreated(final Object key) {
-    WaitCriterion ev = new WaitCriterion() {
-      @Override
-      public boolean done() {
-        return CertifiableTestCacheListener.this.creates.contains(key);
-      }
-
-      @Override
-      public String description() {
-        return "Waiting for key creation: " + key;
-      }
-    };
-    GeodeAwaitility.await().untilAsserted(ev);
+  public boolean waitForCreated(final K key) {
+    GeodeAwaitility.await("Waiting for key creation: " + key).timeout(MAX_TIME, MILLISECONDS)
+        .until(() -> CertifiableTestCacheListener.this.creates.contains(key));
     return true;
   }
 
-  public boolean waitForDestroyed(final Object key) {
-    WaitCriterion ev = new WaitCriterion() {
-      @Override
-      public boolean done() {
-        return CertifiableTestCacheListener.this.destroys.contains(key);
-      }
-
-      @Override
-      public String description() {
-        return "Waiting for key destroy: " + key;
-      }
-    };
-    GeodeAwaitility.await().untilAsserted(ev);
+  public boolean waitForDestroyed(final K key) {
+    GeodeAwaitility.await("Waiting for key destroy: " + key).timeout(MAX_TIME, MILLISECONDS)
+        .until(() -> CertifiableTestCacheListener.this.destroys.contains(key));
     return true;
   }
 
-  public boolean waitForInvalidated(final Object key) {
-    WaitCriterion ev = new WaitCriterion() {
-      @Override
-      public boolean done() {
-        return CertifiableTestCacheListener.this.invalidates.contains(key);
-      }
-
-      @Override
-      public String description() {
-        return "Waiting for key invalidate: " + key;
-      }
-    };
-    GeodeAwaitility.await().untilAsserted(ev);
+  public boolean waitForInvalidated(final K key) {
+    GeodeAwaitility.await("Waiting for key invalidate: " + key).timeout(MAX_TIME, MILLISECONDS)
+        .until(() -> CertifiableTestCacheListener.this.invalidates.contains(key));
     return true;
   }
 
-  public boolean waitForUpdated(final Object key) {
-    WaitCriterion ev = new WaitCriterion() {
-      @Override
-      public boolean done() {
-        return CertifiableTestCacheListener.this.updates.contains(key);
-      }
-
-      @Override
-      public String description() {
-        return "Waiting for key update: " + key;
-      }
-    };
-    GeodeAwaitility.await().untilAsserted(ev);
+  public boolean waitForUpdated(final K key) {
+    GeodeAwaitility.await("Waiting for key update: " + key).timeout(MAX_TIME, MILLISECONDS)
+        .until(() -> CertifiableTestCacheListener.this.updates.contains(key));
     return true;
   }
-
-  @Override
-  public Properties getConfig() {
-    return null;
-  }
-
-  @Override
-  public void init(Properties props) {}
 }

@@ -66,7 +66,6 @@ import org.apache.geode.cache.query.internal.cq.CqService;
 import org.apache.geode.cache.query.internal.cq.InternalCqQuery;
 import org.apache.geode.cache.query.internal.cq.ServerCQ;
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.CacheProfile;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EventID;
@@ -79,8 +78,9 @@ import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.Part;
-import org.apache.geode.internal.util.JavaWorkarounds;
+import org.apache.geode.internal.lang.JavaWorkarounds;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Implements the CqService functionality.
@@ -100,7 +100,7 @@ public class CqServiceImpl implements CqService {
    * is executed using the execute() method.
    */
   public static boolean EXECUTE_QUERY_DURING_INIT = Boolean.valueOf(System
-      .getProperty(DistributionConfig.GEMFIRE_PREFIX + "cq.EXECUTE_QUERY_DURING_INIT", "true"));
+      .getProperty(GeodeGlossary.GEMFIRE_PREFIX + "cq.EXECUTE_QUERY_DURING_INIT", "true"));
 
   private static final String CQ_NAME_PREFIX = "GfCq";
 
@@ -129,7 +129,7 @@ public class CqServiceImpl implements CqService {
 
   // Map to manage the similar CQs (having same query - performance optimization).
   // With query as key and Set of CQs as values.
-  private final ConcurrentHashMap matchingCqMap;
+  private final ConcurrentHashMap<String, Set<String>> matchingCqMap;
 
   // CQ Service statistics
   private final CqServiceStatisticsImpl cqServiceStats;
@@ -164,7 +164,7 @@ public class CqServiceImpl implements CqService {
     this.cache = cache;
 
     // Initialize the Map which maintains the matching cqs.
-    this.matchingCqMap = new ConcurrentHashMap<String, HashSet<String>>();
+    this.matchingCqMap = new ConcurrentHashMap<>();
 
     // Initialize the VSD statistics
     StatisticsFactory factory = this.cache.getDistributedSystem();
@@ -448,8 +448,7 @@ public class CqServiceImpl implements CqService {
       return;
     }
     String cqName = null;
-    for (InternalCqQuery internalCq : cqs) {
-      CqQuery cq = internalCq;
+    for (CqQuery cq : cqs) {
       if (!cq.isClosed() && cq.isStopped()) {
         try {
           cqName = cq.getName();
@@ -490,8 +489,7 @@ public class CqServiceImpl implements CqService {
     }
 
     String cqName = null;
-    for (InternalCqQuery internalCqQuery : cqs) {
-      CqQuery cq = internalCqQuery;
+    for (CqQuery cq : cqs) {
       if (!cq.isClosed() && cq.isRunning()) {
         try {
           cqName = cq.getName();
@@ -1448,7 +1446,7 @@ public class CqServiceImpl implements CqService {
           // Get the matching CQs if any.
           // synchronized (this.matchingCqMap){
           String query = cQuery.getQueryString();
-          Set matchingCqs = (Set) matchingCqMap.get(query);
+          Set matchingCqs = matchingCqMap.get(query);
           if (matchingCqs != null) {
             Iterator iter = matchingCqs.iterator();
             while (iter.hasNext()) {
@@ -1551,11 +1549,11 @@ public class CqServiceImpl implements CqService {
       String cqQuery = cq.getQueryString();
       Set<String> matchingCQs;
       if (!matchingCqMap.containsKey(cqQuery)) {
-        matchingCQs = Collections.newSetFromMap(new ConcurrentHashMap());
+        matchingCQs = Collections.newSetFromMap(new ConcurrentHashMap<>());
         matchingCqMap.put(cqQuery, matchingCQs);
         this.stats.incUniqueCqQuery();
       } else {
-        matchingCQs = (Set) matchingCqMap.get(cqQuery);
+        matchingCQs = matchingCqMap.get(cqQuery);
       }
       matchingCQs.add(cq.getServerCqName());
       if (logger.isDebugEnabled()) {
@@ -1572,7 +1570,7 @@ public class CqServiceImpl implements CqService {
     synchronized (this.matchingCqMap) {
       String cqQuery = cq.getQueryString();
       if (matchingCqMap.containsKey(cqQuery)) {
-        Set matchingCQs = (Set) matchingCqMap.get(cqQuery);
+        Set matchingCQs = matchingCqMap.get(cqQuery);
         matchingCQs.remove(cq.getServerCqName());
         if (logger.isDebugEnabled()) {
           logger.debug(
@@ -1592,7 +1590,7 @@ public class CqServiceImpl implements CqService {
    *
    * @return HashMap matchingCqMap
    */
-  public Map<String, HashSet<String>> getMatchingCqMap() {
+  public Map<String, Set<String>> getMatchingCqMap() {
     return matchingCqMap;
   }
 
@@ -1658,7 +1656,7 @@ public class CqServiceImpl implements CqService {
       cqPoolsConnected.put(poolName, connected);
 
       Collection<? extends InternalCqQuery> cqs = this.getAllCqs();
-      String cqName = null;
+      String cqName;
       final boolean isDebugEnabled = logger.isDebugEnabled();
       for (InternalCqQuery query : cqs) {
         try {

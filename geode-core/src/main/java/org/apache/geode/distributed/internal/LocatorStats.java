@@ -25,6 +25,7 @@ import org.apache.geode.StatisticsFactory;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.distributed.internal.membership.api.MembershipLocatorStatistics;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 
 /**
@@ -32,7 +33,7 @@ import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
  *
  * @since GemFire 5.7
  */
-public class LocatorStats {
+public class LocatorStats implements MembershipLocatorStatistics {
   @Immutable
   private static final StatisticsType type;
 
@@ -117,6 +118,11 @@ public class LocatorStats {
     }
   }
 
+  @Override
+  public long getStatTime() {
+    return DistributionStats.getStatTime();
+  }
+
 
   public void setServerCount(int sc) {
     if (this._stats == null) {
@@ -134,6 +140,7 @@ public class LocatorStats {
     }
   }
 
+  @Override
   public void endLocatorRequest(long startTime) {
     long took = DistributionStats.getStatTime() - startTime;
     if (this._stats == null) {
@@ -149,6 +156,7 @@ public class LocatorStats {
     }
   }
 
+  @Override
   public void endLocatorResponse(long startTime) {
     long took = DistributionStats.getStatTime() - startTime;
     if (this._stats == null) {

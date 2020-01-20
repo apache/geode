@@ -41,7 +41,7 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionAdvisor;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberData;
+import org.apache.geode.distributed.internal.membership.api.MemberData;
 import org.apache.geode.internal.cache.DistributedCacheOperation;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.EntryEventImpl;
@@ -88,8 +88,8 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
    * Returns region attributes for a <code>GLOBAL</code> region
    */
   @Override
-  protected RegionAttributes getRegionAttributes() {
-    AttributesFactory factory = new AttributesFactory();
+  protected <K, V> RegionAttributes<K, V> getRegionAttributes() {
+    AttributesFactory<K, V> factory = new AttributesFactory<>();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(DataPolicy.REPLICATE);
     factory.setConcurrencyChecksEnabled(true);
@@ -97,12 +97,12 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
   }
 
   @Override
-  protected RegionAttributes getRegionAttributes(String type) {
-    RegionAttributes ra = getCache().getRegionAttributes(type);
+  protected <K, V> RegionAttributes<K, V> getRegionAttributes(String type) {
+    RegionAttributes<K, V> ra = getCache().getRegionAttributes(type);
     if (ra == null) {
       throw new IllegalStateException("The region shortcut " + type + " has been removed.");
     }
-    AttributesFactory factory = new AttributesFactory(ra);
+    AttributesFactory<K, V> factory = new AttributesFactory<>(ra);
     factory.setConcurrencyChecksEnabled(true);
     return factory.create();
   }
@@ -389,7 +389,7 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
     TombstoneService.REPLICATE_TOMBSTONE_TIMEOUT = 500;
     try {
       // create some destroyed entries so the GC service is populated
-      RegionFactory f = getCache().createRegionFactory(getRegionAttributes());
+      RegionFactory<Object, Object> f = getCache().createRegionFactory(getRegionAttributes());
       CCRegion = (LocalRegion) f.create(name);
       final long initialCount = CCRegion.getCachePerfStats().getTombstoneGCCount();
       for (int i = 0; i < 100; i++) {

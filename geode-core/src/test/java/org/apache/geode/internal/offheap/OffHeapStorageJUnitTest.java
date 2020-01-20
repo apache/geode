@@ -28,11 +28,11 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.apache.geode.OutOfOffHeapMemoryException;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.statistics.LocalStatisticsFactory;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 public class OffHeapStorageJUnitTest {
 
@@ -93,29 +93,29 @@ public class OffHeapStorageJUnitTest {
     assertEquals(100, OffHeapStorage.calcMaxSlabSize(100L));
     assertEquals(Integer.MAX_VALUE, OffHeapStorage.calcMaxSlabSize(Long.MAX_VALUE));
     try {
-      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_SLAB_SIZE", "99");
+      System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "OFF_HEAP_SLAB_SIZE", "99");
       assertEquals(99 * 1024 * 1024, OffHeapStorage.calcMaxSlabSize(100L * 1024 * 1024));
       assertEquals(88, OffHeapStorage.calcMaxSlabSize(88));
-      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_SLAB_SIZE", "88m");
+      System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "OFF_HEAP_SLAB_SIZE", "88m");
       assertEquals(88 * 1024 * 1024, OffHeapStorage.calcMaxSlabSize(100L * 1024 * 1024));
-      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_SLAB_SIZE", "77M");
+      System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "OFF_HEAP_SLAB_SIZE", "77M");
       assertEquals(77 * 1024 * 1024, OffHeapStorage.calcMaxSlabSize(100L * 1024 * 1024));
-      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_SLAB_SIZE", "1g");
+      System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "OFF_HEAP_SLAB_SIZE", "1g");
       assertEquals(1 * 1024 * 1024 * 1024, OffHeapStorage.calcMaxSlabSize(2L * 1024 * 1024 * 1024));
-      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_SLAB_SIZE", "1G");
+      System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "OFF_HEAP_SLAB_SIZE", "1G");
       assertEquals(1L * 1024 * 1024 * 1024,
           OffHeapStorage.calcMaxSlabSize(2L * 1024 * 1024 * 1024 + 1));
-      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_SLAB_SIZE", "foobarG");
+      System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "OFF_HEAP_SLAB_SIZE", "foobarG");
       try {
         OffHeapStorage.calcMaxSlabSize(100);
         fail("expected IllegalArgumentException");
       } catch (IllegalArgumentException expected) {
       }
-      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_SLAB_SIZE", "");
+      System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "OFF_HEAP_SLAB_SIZE", "");
       assertEquals(100, OffHeapStorage.calcMaxSlabSize(100L));
       assertEquals(Integer.MAX_VALUE, OffHeapStorage.calcMaxSlabSize(Long.MAX_VALUE));
     } finally {
-      System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_SLAB_SIZE");
+      System.clearProperty(GeodeGlossary.GEMFIRE_PREFIX + "OFF_HEAP_SLAB_SIZE");
     }
   }
 

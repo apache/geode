@@ -20,15 +20,15 @@ import java.net.UnknownHostException;
 
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.internal.DistributionLocator;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.lang.StringUtils;
-import org.apache.geode.internal.net.SocketCreator;
 
 public class HostUtils {
   private static final String LOCALHOST = "localhost";
 
   public static String getLocalHost() {
     try {
-      return SocketCreator.getLocalHost().getCanonicalHostName();
+      return LocalHostUtil.getLocalHost().getCanonicalHostName();
     } catch (UnknownHostException ignore) {
       return LOCALHOST;
     }

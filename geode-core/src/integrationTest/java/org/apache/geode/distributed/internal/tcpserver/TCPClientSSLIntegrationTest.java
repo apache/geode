@@ -14,7 +14,7 @@
  */
 package org.apache.geode.distributed.internal.tcpserver;
 
-import static org.apache.geode.distributed.internal.membership.adapter.SocketCreatorAdapter.asTcpSocketCreator;
+import static org.apache.geode.distributed.internal.membership.adapter.TcpSocketCreatorAdapter.asTcpSocketCreator;
 import static org.apache.geode.security.SecurableCommunicationChannels.LOCATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.security.GeneralSecurityException;
 import java.util.Properties;
+import java.util.concurrent.Executors;
 
 import javax.net.ssl.SSLHandshakeException;
 
@@ -41,11 +42,8 @@ import org.apache.geode.cache.ssl.CertificateBuilder;
 import org.apache.geode.cache.ssl.CertificateMaterial;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.DistributionStats;
-import org.apache.geode.distributed.internal.PoolStatHelper;
-import org.apache.geode.distributed.internal.RestartableTcpHandler;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.cache.tier.sockets.TcpServerFactory;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
@@ -113,7 +111,7 @@ public class TCPClientSSLIntegrationTest {
     localhost = InetAddress.getLocalHost();
     port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
 
-    RestartableTcpHandler tcpHandler = Mockito.mock(RestartableTcpHandler.class);
+    TcpHandler tcpHandler = Mockito.mock(TcpHandler.class);
     when(tcpHandler.processRequest(any())).thenReturn("Running!");
 
     server = new TcpServer(
@@ -123,7 +121,7 @@ public class TCPClientSSLIntegrationTest {
         "server thread",
         (socket, input, firstByte) -> false,
         DistributionStats::getStatTime,
-        TcpServerFactory.createExecutorServiceSupplier(Mockito.mock(PoolStatHelper.class)),
+        Executors::newCachedThreadPool,
         asTcpSocketCreator(
             new SocketCreator(
                 SSLConfigurationFactory.getSSLConfigForComponent(

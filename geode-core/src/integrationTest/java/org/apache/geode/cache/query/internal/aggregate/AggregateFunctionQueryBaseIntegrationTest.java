@@ -33,9 +33,9 @@ import org.junit.runner.RunWith;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 @Category(OQLQueryTest.class)
 @RunWith(JUnitParamsRunner.class)
@@ -53,7 +53,7 @@ public abstract class AggregateFunctionQueryBaseIntegrationTest {
 
   @Before
   public void setUp() throws Exception {
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "Query.VERBOSE", "true");
+    System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "Query.VERBOSE", "true");
   }
 
   static <T> Predicate<T> distinctByKey(Function<? super T, ?> keyExtractor) {

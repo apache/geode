@@ -69,7 +69,6 @@ import org.apache.geode.cache.query.internal.cq.ServerCQ;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.ClassLoadUtil;
@@ -111,6 +110,7 @@ import org.apache.geode.security.AccessControl;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.GemFireSecurityException;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Class {@code CacheClientNotifier} works on the server and manages client socket connections
@@ -1974,12 +1974,12 @@ public class CacheClientNotifier {
    * logged.
    */
   private static final String MAX_QUEUE_LOG_FREQUENCY =
-      DistributionConfig.GEMFIRE_PREFIX + "logFrequency.clientQueueReachedMaxLimit";
+      GeodeGlossary.GEMFIRE_PREFIX + "logFrequency.clientQueueReachedMaxLimit";
 
   public static final long DEFAULT_LOG_FREQUENCY = 1000;
 
   private static final String EVENT_ENQUEUE_WAIT_TIME_NAME =
-      DistributionConfig.GEMFIRE_PREFIX + "subscription.EVENT_ENQUEUE_WAIT_TIME";
+      GeodeGlossary.GEMFIRE_PREFIX + "subscription.EVENT_ENQUEUE_WAIT_TIME";
 
   private static final int DEFAULT_EVENT_ENQUEUE_WAIT_TIME = 100;
 
@@ -2009,10 +2009,10 @@ public class CacheClientNotifier {
   private final SocketCloser socketCloser;
 
   private static final int CLIENT_PING_TASK_PERIOD =
-      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "serverToClientPingPeriod", 60000);
+      Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "serverToClientPingPeriod", 60000);
 
   private static final long CLIENT_PING_TASK_COUNTER =
-      Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "serverToClientPingCounter", 3);
+      Long.getLong(GeodeGlossary.GEMFIRE_PREFIX + "serverToClientPingCounter", 3);
 
   public long getLogFrequency() {
     return logFrequency;

@@ -158,6 +158,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_TYPE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_LOCATOR_ALIAS;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_PARAMETER_EXTENSION;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_PROTOCOLS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_REQUIRE_AUTHENTICATION;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_SERVER_ALIAS;
@@ -207,11 +208,12 @@ import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.AbstractConfig;
 import org.apache.geode.internal.ConfigSource;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.logging.LogWriterImpl;
-import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.logging.internal.log4j.LogLevel;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Provides an implementation of <code>DistributionConfig</code> that knows how to read the
@@ -325,22 +327,22 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
 
   @ConfigAttributeChecker(name = BIND_ADDRESS)
   protected String checkBindAddress(String value) {
-    if (value != null && value.length() > 0 && !SocketCreator.isLocalHost(value)) {
+    if (value != null && value.length() > 0 && !LocalHostUtil.isLocalHost(value)) {
       throw new IllegalArgumentException(
           String.format(
               "The bind-address %s is not a valid address for this machine.  These are the valid addresses for this machine: %s",
-              value, SocketCreator.getMyAddresses()));
+              value, LocalHostUtil.getMyAddresses()));
     }
     return value;
   }
 
   @ConfigAttributeChecker(name = SERVER_BIND_ADDRESS)
   protected String checkServerBindAddress(String value) {
-    if (value != null && value.length() > 0 && !SocketCreator.isLocalHost(value)) {
+    if (value != null && value.length() > 0 && !LocalHostUtil.isLocalHost(value)) {
       throw new IllegalArgumentException(
           String.format(
               "The bind-address %s is not a valid address for this machine.  These are the valid addresses for this machine: %s",
-              value, SocketCreator.getMyAddresses()));
+              value, LocalHostUtil.getMyAddresses()));
     }
     return value;
   }
@@ -357,11 +359,11 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
 
   @ConfigAttributeChecker(name = HTTP_SERVICE_BIND_ADDRESS)
   protected String checkHttpServiceBindAddress(String value) {
-    if (value != null && value.length() > 0 && !SocketCreator.isLocalHost(value)) {
+    if (value != null && value.length() > 0 && !LocalHostUtil.isLocalHost(value)) {
       throw new IllegalArgumentException(
           String.format(
               "The bind-address %s is not a valid address for this machine.  These are the valid addresses for this machine: %s",
-              value, SocketCreator.getMyAddresses()));
+              value, LocalHostUtil.getMyAddresses()));
     }
     return value;
   }
@@ -369,7 +371,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
   @ConfigAttributeChecker(name = DISTRIBUTED_SYSTEM_ID)
   protected int checkDistributedSystemId(int value) {
     String distributedSystemListener =
-        System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "DistributedSystemListener");
+        System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + "DistributedSystemListener");
     // this check is specific for Jayesh's use case of WAN BootStrapping
     if (distributedSystemListener == null) {
       if (value < MIN_DISTRIBUTED_SYSTEM_ID) {
@@ -656,22 +658,22 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
 
   @ConfigAttributeChecker(name = MEMCACHED_BIND_ADDRESS)
   protected String checkMemcachedBindAddress(String value) {
-    if (value != null && value.length() > 0 && !SocketCreator.isLocalHost(value)) {
+    if (value != null && value.length() > 0 && !LocalHostUtil.isLocalHost(value)) {
       throw new IllegalArgumentException(
           String.format(
               "The memcached-bind-address %s is not a valid address for this machine.  These are the valid addresses for this machine: %s",
-              value, SocketCreator.getMyAddresses()));
+              value, LocalHostUtil.getMyAddresses()));
     }
     return value;
   }
 
   @ConfigAttributeChecker(name = REDIS_BIND_ADDRESS)
   protected String checkRedisBindAddress(String value) {
-    if (value != null && value.length() > 0 && !SocketCreator.isLocalHost(value)) {
+    if (value != null && value.length() > 0 && !LocalHostUtil.isLocalHost(value)) {
       throw new IllegalArgumentException(
           String.format(
               "The redis-bind-address %s is not a valid address for this machine.  These are the valid addresses for this machine: %s",
-              value, SocketCreator.getMyAddresses()));
+              value, LocalHostUtil.getMyAddresses()));
     }
     return value;
   }
@@ -1473,6 +1475,8 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
     m.put(SSL_DEFAULT_ALIAS, "The default certificate alias to be used in a multi-key keystore");
     m.put(SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION,
         "This property determines is the HTTP service with use mutual ssl authentication.");
+    m.put(SSL_PARAMETER_EXTENSION,
+        "User defined fully qualified class name implementing SSLParameterExtension interface for SSL parameter extensions. Defaults to \"{0}\". Legal values can be any \"class name\" implementing SSLParameterExtension that is present in the classpath.");
     m.put(VALIDATE_SERIALIZABLE_OBJECTS,
         "If true checks incoming java serializable objects against a filter");
     m.put(SERIALIZABLE_OBJECT_FILTER, "The filter to check incoming java serializables against");
@@ -1506,21 +1510,6 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
   @Override
   public boolean isLoner() {
     return getLocators().equals("") && getMcastPort() == 0;
-  }
-
-  static InetAddress _getDefaultMcastAddress() {
-    // Default MCast address can be just IPv4 address.
-    // On IPv6 machines, JGroups converts IPv4 address to equivalent IPv6 address.
-    try {
-      String ipLiteral = "239.192.81.1";
-      return InetAddress.getByName(ipLiteral);
-    } catch (UnknownHostException ex) {
-      // this should never happen
-      throw new Error(
-          String.format("Unexpected problem getting inetAddress: %s",
-              ex),
-          ex);
-    }
   }
 
   @Immutable

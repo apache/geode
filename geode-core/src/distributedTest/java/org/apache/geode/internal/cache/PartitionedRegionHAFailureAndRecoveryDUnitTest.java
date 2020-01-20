@@ -19,7 +19,6 @@ import static java.lang.Boolean.TRUE;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Host.getHost;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
-import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -362,7 +361,7 @@ public class PartitionedRegionHAFailureAndRecoveryDUnitTest extends CacheTestCas
   private void addConfigListener() {
     Region partitionedRootRegion = PartitionedRegionHelper.getPRRoot(getCache());
     partitionedRootRegion.getAttributesMutator()
-        .addCacheListener(new CertifiableTestCacheListener(getLogWriter()));
+        .addCacheListener(new CertifiableTestCacheListener());
   }
 
 }

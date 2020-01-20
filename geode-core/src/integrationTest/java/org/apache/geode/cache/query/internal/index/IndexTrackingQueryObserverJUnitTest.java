@@ -39,8 +39,8 @@ import org.apache.geode.cache.query.internal.IndexTrackingQueryObserver;
 import org.apache.geode.cache.query.internal.IndexTrackingQueryObserver.IndexInfo;
 import org.apache.geode.cache.query.internal.QueryObserver;
 import org.apache.geode.cache.query.internal.QueryObserverHolder;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 @Category({OQLIndexTest.class})
 public class IndexTrackingQueryObserverJUnitTest {
@@ -55,7 +55,7 @@ public class IndexTrackingQueryObserverJUnitTest {
 
   @Before
   public void setUp() throws Exception {
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "Query.VERBOSE", "true");
+    System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "Query.VERBOSE", "true");
     CacheUtils.startCache();
     QueryObserver observer = QueryObserverHolder.setInstance(new IndexTrackingQueryObserver());
   }
@@ -69,7 +69,7 @@ public class IndexTrackingQueryObserverJUnitTest {
   @Test
   public void testIndexInfoOnPartitionedRegion() throws Exception {
     // Query VERBOSE has to be true for the test
-    assertEquals("true", System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "Query.VERBOSE"));
+    assertEquals("true", System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + "Query.VERBOSE"));
 
     // Create Partition Region
     PartitionAttributesFactory paf = new PartitionAttributesFactory();
@@ -119,7 +119,7 @@ public class IndexTrackingQueryObserverJUnitTest {
   @Test
   public void testIndexInfoOnLocalRegion() throws Exception {
     // Query VERBOSE has to be true for the test
-    assertEquals("true", System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "Query.VERBOSE"));
+    assertEquals("true", System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + "Query.VERBOSE"));
 
     // Create Partition Region
     AttributesFactory af = new AttributesFactory();

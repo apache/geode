@@ -45,12 +45,12 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberShunnedException;
-import org.apache.geode.distributed.internal.membership.gms.api.Membership;
-import org.apache.geode.distributed.internal.membership.gms.api.MessageListener;
+import org.apache.geode.distributed.internal.membership.api.MemberShunnedException;
+import org.apache.geode.distributed.internal.membership.api.Membership;
+import org.apache.geode.distributed.internal.membership.api.MessageListener;
 import org.apache.geode.internal.cache.DirectReplyMessage;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.logging.log4j.LogMarker;
-import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.tcp.BaseMsgStreamer;
 import org.apache.geode.internal.tcp.ConnectExceptions;
 import org.apache.geode.internal.tcp.Connection;
@@ -718,15 +718,6 @@ public class DirectChannel {
   }
 
   /**
-   * Ensure that the TCPConduit class gets loaded.
-   *
-   * @see SystemFailure#loadEmergencyClasses()
-   */
-  public static void loadEmergencyClasses() {
-    TCPConduit.loadEmergencyClasses();
-  }
-
-  /**
    * Close the Conduit
    *
    * @see SystemFailure#emergencyClose()
@@ -795,7 +786,7 @@ public class DirectChannel {
         return InetAddress.getByName(bindAddress);
 
       } else {
-        return SocketCreator.getLocalHost();
+        return LocalHostUtil.getLocalHost();
       }
     } catch (java.net.UnknownHostException unhe) {
       throw new RuntimeException(unhe);

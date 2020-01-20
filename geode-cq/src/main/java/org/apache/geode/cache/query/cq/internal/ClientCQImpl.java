@@ -44,7 +44,7 @@ import org.apache.geode.security.GemFireSecurityException;
 public class ClientCQImpl extends CqQueryImpl implements ClientCQ {
   private static final Logger logger = LogService.getLogger();
 
-  private CqAttributes cqAttributes = null;
+  private CqAttributes cqAttributes;
 
   private volatile ServerCQProxyImpl cqProxy;
 
@@ -298,9 +298,9 @@ public class ClientCQImpl extends CqQueryImpl implements ClientCQ {
     // Send CQ request to servers.
     // If an exception is thrown, we need to clean up the queuedEvents
     // or else client will hang on next executeWithInitialResults
-    CqResults initialResults;
+    CqResults<E> initialResults;
     try {
-      initialResults = (CqResults) executeCqOnRedundantsAndPrimary(true);
+      initialResults = (CqResults<E>) executeCqOnRedundantsAndPrimary(true);
     } catch (RegionNotFoundException | CqException | RuntimeException e) {
       queuedEvents = null;
       throw e;
@@ -315,7 +315,7 @@ public class ClientCQImpl extends CqQueryImpl implements ClientCQ {
         if (!this.queuedEvents.isEmpty()) {
           try {
             Thread thread = new LoggingThread("CQEventHandler For " + cqName, () -> {
-              Object[] eventArray = null;
+              Object[] eventArray;
               if (CqQueryImpl.testHook != null) {
                 testHook.setEventCount(queuedEvents.size());
               }
@@ -481,10 +481,7 @@ public class ClientCQImpl extends CqQueryImpl implements ClientCQ {
     }
 
     String reason = cqProxy.getPool().getCancelCriterion().cancelInProgress();
-    if (reason != null) {
-      return true;
-    }
-    return false;
+    return reason != null;
   }
 
   /**

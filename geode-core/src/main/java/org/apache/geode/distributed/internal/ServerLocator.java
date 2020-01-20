@@ -49,13 +49,14 @@ import org.apache.geode.cache.server.ServerLoad;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
+import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
 import org.apache.geode.internal.cache.CacheServerAdvisor.CacheServerProfile;
 import org.apache.geode.internal.cache.ControllerAdvisor;
 import org.apache.geode.internal.cache.ControllerAdvisor.ControllerProfile;
 import org.apache.geode.internal.cache.FindDurableQueueProcessor;
 import org.apache.geode.internal.cache.GridAdvisor.GridProfile;
-import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
@@ -63,7 +64,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  *
  * @since GemFire 5.7
  */
-public class ServerLocator implements RestartableTcpHandler, DistributionAdvisee {
+public class ServerLocator implements TcpHandler, RestartHandler, DistributionAdvisee {
   private static final Logger logger = LogService.getLogger();
 
   private final int port;
@@ -94,7 +95,7 @@ public class ServerLocator implements RestartableTcpHandler, DistributionAdvisee
 
   ServerLocator() throws IOException {
     this.port = 10334;
-    this.hostName = SocketCreator.getLocalHost().getCanonicalHostName();
+    this.hostName = LocalHostUtil.getLocalHost().getCanonicalHostName();
     this.hostNameForClients = this.hostName;
     this.logFile = null;
     this.memberName = null;
@@ -113,7 +114,7 @@ public class ServerLocator implements RestartableTcpHandler, DistributionAdvisee
     this.port = port;
 
     if (bindAddress == null) {
-      this.hostName = SocketCreator.getLocalHost().getCanonicalHostName();
+      this.hostName = LocalHostUtil.getLocalHost().getCanonicalHostName();
     } else {
       this.hostName = bindAddress.getHostAddress();
     }

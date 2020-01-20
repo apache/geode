@@ -22,16 +22,15 @@ import java.net.UnknownHostException;
 
 import org.junit.Test;
 
-import org.apache.geode.distributed.internal.membership.gms.api.MemberData;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberDataBuilder;
-import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.distributed.internal.membership.api.MemberData;
+import org.apache.geode.distributed.internal.membership.api.MemberDataBuilder;
 import org.apache.geode.internal.serialization.Version;
 
 public class MemberDataBuilderImplTest {
 
   @Test
   public void testNewBuilder() throws UnknownHostException {
-    InetAddress localhost = SocketCreator.getLocalHost();
+    InetAddress localhost = InetAddress.getLocalHost();
     MemberData data = MemberDataBuilder.newBuilder(localhost, localhost.getHostName()).build();
     assertThat(data.getInetAddress()).isEqualTo(localhost);
     assertThat(data.getHostName()).isEqualTo(localhost.getHostName());
@@ -39,7 +38,7 @@ public class MemberDataBuilderImplTest {
 
   @Test
   public void testNewBuilderForLocalHost() throws UnknownHostException {
-    InetAddress localhost = SocketCreator.getLocalHost();
+    InetAddress localhost = InetAddress.getLocalHost();
     MemberData data = MemberDataBuilder.newBuilderForLocalHost("hostname").build();
     assertThat(data.getInetAddress()).isEqualTo(localhost);
     assertThat(data.getHostName()).isEqualTo("hostname");

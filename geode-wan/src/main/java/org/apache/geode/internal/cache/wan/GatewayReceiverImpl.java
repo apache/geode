@@ -35,7 +35,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheServer;
-import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
@@ -119,7 +119,7 @@ public class GatewayReceiverImpl implements GatewayReceiver {
     }
 
     try {
-      return SocketCreator.getLocalHost().getHostName();
+      return LocalHostUtil.getLocalHost().getHostName();
     } catch (UnknownHostException e) {
       throw new IllegalStateException("Could not get host name", e);
     }

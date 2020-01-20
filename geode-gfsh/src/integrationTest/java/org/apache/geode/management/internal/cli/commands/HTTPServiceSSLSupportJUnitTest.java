@@ -33,9 +33,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.internal.net.SocketCreatorFactory;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * @since GemFire 8.1
@@ -52,10 +52,10 @@ public class HTTPServiceSSLSupportJUnitTest {
 
   @After
   public void tearDown() throws Exception {
-    System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "javax.net.ssl.keyStore");
-    System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "javax.net.ssl.keyStorePassword");
-    System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "javax.net.ssl.trustStore");
-    System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "javax.net.ssl.trustStorePassword");
+    System.clearProperty(GeodeGlossary.GEMFIRE_PREFIX + "javax.net.ssl.keyStore");
+    System.clearProperty(GeodeGlossary.GEMFIRE_PREFIX + "javax.net.ssl.keyStorePassword");
+    System.clearProperty(GeodeGlossary.GEMFIRE_PREFIX + "javax.net.ssl.trustStore");
+    System.clearProperty(GeodeGlossary.GEMFIRE_PREFIX + "javax.net.ssl.trustStorePassword");
     System.clearProperty("gemfireSecurityPropertyFile");
     SocketCreatorFactory.close();
   }
@@ -108,16 +108,16 @@ public class HTTPServiceSSLSupportJUnitTest {
     Properties localProps = new Properties();
     localProps.setProperty(MCAST_PORT, "0");
     localProps.setProperty(CLUSTER_SSL_ENABLED, "true");
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "javax.net.ssl.keyStore",
+    System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "javax.net.ssl.keyStore",
         jks.getCanonicalPath());
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "javax.net.ssl.keyStorePassword",
+    System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "javax.net.ssl.keyStorePassword",
         "password");
 
     localProps.setProperty(CLUSTER_SSL_PROTOCOLS, "SSL");
     localProps.setProperty(CLUSTER_SSL_REQUIRE_AUTHENTICATION, "true");
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "javax.net.ssl.trustStore",
+    System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "javax.net.ssl.trustStore",
         jks.getCanonicalPath());
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "javax.net.ssl.trustStorePassword",
+    System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "javax.net.ssl.trustStorePassword",
         "password");
 
     DistributionConfigImpl config = new DistributionConfigImpl(localProps);

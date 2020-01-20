@@ -39,13 +39,13 @@ import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.cache.query.QueryInvalidException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.execute.metrics.FunctionStats;
 import org.apache.geode.internal.cache.execute.metrics.FunctionStatsManager;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Abstract implementation of InternalExecution interface.
@@ -58,7 +58,7 @@ public abstract class AbstractExecution implements InternalExecution {
 
   public static final int DEFAULT_CLIENT_FUNCTION_TIMEOUT = 0;
   private static final String CLIENT_FUNCTION_TIMEOUT_SYSTEM_PROPERTY =
-      DistributionConfig.GEMFIRE_PREFIX + "CLIENT_FUNCTION_TIMEOUT";
+      GeodeGlossary.GEMFIRE_PREFIX + "CLIENT_FUNCTION_TIMEOUT";
   private static final Integer timeoutMsSystemProperty =
       Integer.getInteger(CLIENT_FUNCTION_TIMEOUT_SYSTEM_PROPERTY, DEFAULT_CLIENT_FUNCTION_TIMEOUT);
 

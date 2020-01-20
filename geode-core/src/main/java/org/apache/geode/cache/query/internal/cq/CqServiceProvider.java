@@ -22,8 +22,8 @@ import java.util.ServiceLoader;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.query.internal.cq.spi.CqServiceFactory;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 public class CqServiceProvider {
 
@@ -36,7 +36,7 @@ public class CqServiceProvider {
    */
   @MutableForTesting
   public static boolean MAINTAIN_KEYS = Boolean
-      .valueOf(System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "cq.MAINTAIN_KEYS", "true"));
+      .valueOf(System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + "cq.MAINTAIN_KEYS", "true"));
 
   /**
    * A debug flag used for testing vMotion during CQ registration

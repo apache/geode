@@ -21,6 +21,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_TTL;
+import static org.apache.geode.distributed.internal.membership.adapter.TcpSocketCreatorAdapter.asTcpSocketCreator;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -75,15 +76,15 @@ import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.adapter.ServiceConfig;
+import org.apache.geode.distributed.internal.membership.api.MemberDisconnectedException;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifierFactoryImpl;
+import org.apache.geode.distributed.internal.membership.api.MembershipClosedException;
+import org.apache.geode.distributed.internal.membership.api.MembershipConfig;
+import org.apache.geode.distributed.internal.membership.api.Message;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
-import org.apache.geode.distributed.internal.membership.gms.MemberIdentifierFactoryImpl;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.Services.Stopper;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberDisconnectedException;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
-import org.apache.geode.distributed.internal.membership.gms.api.MembershipClosedException;
-import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
-import org.apache.geode.distributed.internal.membership.gms.api.Message;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.HealthMonitor;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.JoinLeave;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Manager;
@@ -96,11 +97,14 @@ import org.apache.geode.distributed.internal.membership.gms.messages.JoinRequest
 import org.apache.geode.distributed.internal.membership.gms.messages.JoinResponseMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.LeaveRequestMessage;
 import org.apache.geode.distributed.internal.membership.gms.messenger.JGroupsMessenger.JGroupsReceiver;
+import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
+import org.apache.geode.internal.net.SocketCreatorFactory;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.serialization.BufferDataOutputStream;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
-import org.apache.geode.internal.serialization.DSFIDSerializerImpl;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
@@ -123,6 +127,7 @@ public class JGroupsMessengerJUnitTest {
   private long statsId = 123;
   private MembershipConfig membershipConfig;
   private RemoteTransportConfig tconfig;
+  private TcpSocketCreator socketCreator;
 
   private void initMocks(boolean enableMcast) throws Exception {
     initMocks(enableMcast, new Properties());
@@ -167,7 +172,7 @@ public class JGroupsMessengerJUnitTest {
     when(services.getHealthMonitor()).thenReturn(healthMonitor);
     when(services.getManager()).thenReturn(manager);
     when(services.getJoinLeave()).thenReturn(joinLeave);
-    DSFIDSerializer serializer = new DSFIDSerializerImpl();
+    DSFIDSerializer serializer = InternalDataSerializer.getDSFIDSerializer();
     Services.registerSerializables(serializer);
     when(services.getSerializer()).thenReturn(serializer);
     Version current = Version.CURRENT; // force Version static initialization to set
@@ -175,7 +180,9 @@ public class JGroupsMessengerJUnitTest {
 
     when(services.getStatistics()).thenReturn(mock(DistributionStats.class));
 
-    messenger = new JGroupsMessenger();
+    socketCreator = asTcpSocketCreator(SocketCreatorFactory.setDistributionConfig(config)
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER));
+    messenger = new JGroupsMessenger<MemberIdentifier>();
     messenger.init(services);
 
     // if I do this earlier then test this return messenger as null

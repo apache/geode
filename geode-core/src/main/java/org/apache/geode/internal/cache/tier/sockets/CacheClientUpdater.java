@@ -54,7 +54,6 @@ import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.client.internal.QueueManager;
 import org.apache.geode.cache.query.internal.cq.CqService;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem.DisconnectListener;
@@ -89,6 +88,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.GemFireSecurityException;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * {@code CacheClientUpdater} is a thread that processes update messages from a cache server and
@@ -207,7 +207,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
   private Endpoint endpoint = null;
 
   private static final long MAX_CACHE_WAIT =
-      Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "CacheClientUpdater.MAX_WAIT", 120); // seconds
+      Long.getLong(GeodeGlossary.GEMFIRE_PREFIX + "CacheClientUpdater.MAX_WAIT", 120); // seconds
 
   /**
    * Return true if cache appears

@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.wan.serial;
 
+import static org.apache.geode.cache.wan.GatewaySender.DEFAULT_BATCH_SIZE;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -49,7 +51,6 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.asyncqueue.AsyncEvent;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.Conflatable;
@@ -74,6 +75,7 @@ import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.internal.beans.AsyncEventQueueMBean;
 import org.apache.geode.management.internal.beans.GatewaySenderMBean;
 import org.apache.geode.pdx.internal.PeerTypeRegistration;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * @since GemFire 7.0
@@ -162,7 +164,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
    * Whether the <code>Gateway</code> queue should be no-ack instead of ack.
    */
   private static final boolean NO_ACK =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "gateway-queue-no-ack");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "gateway-queue-no-ack");
 
   private volatile long lastDispatchedKey = -1;
 
@@ -367,9 +369,9 @@ public class SerialGatewaySenderQueue implements RegionQueue {
       logger.trace("{}: Peek start time={} end time={} time to wait={}", this, start, end,
           timeToWait);
     }
-    List<AsyncEvent> batch = new ArrayList<AsyncEvent>(size * 2); // why
-                                                                  // *2?
-    while (batch.size() < size) {
+    List<AsyncEvent> batch =
+        new ArrayList<AsyncEvent>(size == BATCH_BASED_ON_TIME_ONLY ? DEFAULT_BATCH_SIZE : size);
+    while (size == BATCH_BASED_ON_TIME_ONLY || batch.size() < size) {
       AsyncEvent object = peekAhead();
       // Conflate here
       if (object != null) {
@@ -1207,10 +1209,11 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     @Override
     public boolean virtualPut(EntryEventImpl event, boolean ifNew, boolean ifOld,
         Object expectedOldValue, boolean requireOldValue, long lastModified,
-        boolean overwriteDestroyed) throws TimeoutException, CacheWriterException {
+        boolean overwriteDestroyed, boolean invokeCallbacks, boolean throwConcurrentModificaiton)
+        throws TimeoutException, CacheWriterException {
       try {
         boolean success = super.virtualPut(event, ifNew, ifOld, expectedOldValue, requireOldValue,
-            lastModified, overwriteDestroyed);
+            lastModified, overwriteDestroyed, invokeCallbacks, throwConcurrentModificaiton);
         if (!success) {
           // release offheap reference if GatewaySenderEventImpl is not put into
           // the region queue

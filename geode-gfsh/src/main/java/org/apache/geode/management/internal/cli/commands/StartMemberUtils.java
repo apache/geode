@@ -32,12 +32,12 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.process.ProcessLauncherContext;
 import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.internal.cli.util.ThreePhraseGenerator;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Encapsulates methods used by StartServerCommand and StartLocatorCommand and their associated
@@ -109,7 +109,7 @@ public class StartMemberUtils {
       final String propertyValue = gemfireProperties.getProperty(propertyName);
       if (StringUtils.isNotBlank(propertyValue)) {
         commandLine.add(
-            "-D" + DistributionConfig.GEMFIRE_PREFIX + "" + propertyName + "=" + propertyValue);
+            "-D" + GeodeGlossary.GEMFIRE_PREFIX + "" + propertyName + "=" + propertyValue);
       }
     }
   }

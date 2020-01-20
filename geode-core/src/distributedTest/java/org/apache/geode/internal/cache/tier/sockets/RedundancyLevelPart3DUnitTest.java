@@ -17,12 +17,12 @@ package org.apache.geode.internal.cache.tier.sockets;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Disconnect.disconnectAllFromDS;
 import static org.apache.geode.test.dunit.VM.getController;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.apache.geode.test.dunit.VM.toArray;
+import static org.apache.geode.util.internal.GeodeGlossary.GEMFIRE_PREFIX;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
@@ -342,12 +342,10 @@ public class RedundancyLevelPart3DUnitTest implements Serializable {
   private void doPuts() {
     Region<String, String> region = cache.getRegion(REGION_NAME);
     assertThat(region).isNotNull();
-    // for (int i = 0; i < 4; i++) {
     region.put(K1, K1);
     region.put(K2, K2);
     assertThat(region.get(K1)).isEqualTo(K1);
     assertThat(region.get(K2)).isEqualTo(K2);
-    // }
   }
 
   private void verifyDispatcherIsAlive() {

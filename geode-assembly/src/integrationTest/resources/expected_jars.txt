@@ -23,6 +23,7 @@ commons-validator
 error_prone_annotations
 failureaccess
 fastutil
+findbugs-annotations
 geo
 gfsh-dependencies.jar
 grumpy-core
@@ -117,6 +118,5 @@ springfox-spring-web
 springfox-swagger
 springfox-swagger-common
 springfox-swagger-ui
-spring-jcl
 swagger-annotations
 swagger-models

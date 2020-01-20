@@ -23,6 +23,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_TTL;
 import static org.apache.geode.distributed.ConfigurationProperties.MEMBER_TIMEOUT;
+import static org.apache.geode.distributed.internal.membership.adapter.TcpSocketCreatorAdapter.asTcpSocketCreator;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -76,15 +77,15 @@ import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.adapter.ServiceConfig;
+import org.apache.geode.distributed.internal.membership.api.MemberData;
+import org.apache.geode.distributed.internal.membership.api.MemberDataBuilder;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifierFactoryImpl;
+import org.apache.geode.distributed.internal.membership.api.MemberStartupException;
+import org.apache.geode.distributed.internal.membership.api.MembershipConfig;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
-import org.apache.geode.distributed.internal.membership.gms.MemberIdentifierFactoryImpl;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.Services.Stopper;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberData;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberDataBuilder;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberStartupException;
-import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
 import org.apache.geode.distributed.internal.membership.gms.fd.GMSHealthMonitor.ClientSocketHandler;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.JoinLeave;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Manager;
@@ -97,6 +98,7 @@ import org.apache.geode.distributed.internal.membership.gms.messages.SuspectRequ
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.net.SocketCreatorFactory;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
@@ -120,7 +122,7 @@ public class GMSHealthMonitorJUnitTest {
   private final int myAddressIndex = 3;
 
   @Before
-  public void initMocks() throws UnknownHostException, MemberStartupException {
+  public void initMocks() throws MemberStartupException {
     // ensure that Geode's serialization and version are initialized
     Version currentVersion = Version.CURRENT;
     InternalDataSerializer.getDSFIDSerializer();
@@ -189,7 +191,7 @@ public class GMSHealthMonitorJUnitTest {
   }
 
   @Test
-  public void testHMServiceStarted() throws IOException {
+  public void testHMServiceStarted() throws Exception {
 
     MemberIdentifier mbr =
         new InternalDistributedMember("localhost", 12345);
@@ -206,12 +208,13 @@ public class GMSHealthMonitorJUnitTest {
   }
 
   @Test
-  public void testHMServiceHandlesShutdownRace() throws IOException {
+  public void testHMServiceHandlesShutdownRace() throws IOException, Exception {
     // The health monitor starts a thread to monitor the tcp socket, both that thread and the
     // stopServices call will attempt to shut down the socket during a normal close. This test tries
     // to create a problematic ordering to make sure we still shutdown properly.
     ((GMSHealthMonitorTest) gmsHealthMonitor).useBlockingSocket = true;
     gmsHealthMonitor.started();
+
     gmsHealthMonitor.stop();
   }
 
@@ -219,7 +222,7 @@ public class GMSHealthMonitorJUnitTest {
    * checks who is next neighbor
    */
   @Test
-  public void testHMNextNeighborVerify() throws IOException {
+  public void testHMNextNeighborVerify() throws Exception {
     installAView();
     assertEquals(mockMembers.get(myAddressIndex + 1), gmsHealthMonitor.getNextNeighbor());
   }
@@ -250,7 +253,7 @@ public class GMSHealthMonitorJUnitTest {
    */
 
   @Test
-  public void testHMNextNeighborBeforeTimeout() throws IOException {
+  public void testHMNextNeighborBeforeTimeout() throws Exception {
     long startTime = System.currentTimeMillis();
     installAView();
     final MemberIdentifier neighbor = gmsHealthMonitor.getNextNeighbor();
@@ -283,12 +286,13 @@ public class GMSHealthMonitorJUnitTest {
     System.out.println("testSuspectMembersCalledThroughMemberCheckThread ending");
   }
 
-  private GMSMembershipView installAView() {
+  private GMSMembershipView installAView() throws Exception {
     GMSMembershipView v = new GMSMembershipView(mockMembers.get(0), 2, mockMembers);
 
     // 3rd is current member
     when(messenger.getMemberID()).thenReturn(mockMembers.get(myAddressIndex));
     gmsHealthMonitor.started();
+
 
     gmsHealthMonitor.installView(v);
 
@@ -308,7 +312,7 @@ public class GMSHealthMonitorJUnitTest {
    * checks ping thread didn't sends suspectMembers message before timeout
    */
   @Test
-  public void testSuspectMembersNotCalledThroughPingThreadBeforeTimeout() {
+  public void testSuspectMembersNotCalledThroughPingThreadBeforeTimeout() throws Exception {
     long startTime = System.currentTimeMillis();
     installAView();
     MemberIdentifier neighbor = gmsHealthMonitor.getNextNeighbor();
@@ -340,7 +344,7 @@ public class GMSHealthMonitorJUnitTest {
    * Checks suspect thread doesn't sends suspectMembers message before timeout
    */
   @Test
-  public void testSuspectMembersNotCalledThroughSuspectThreadBeforeTimeout() {
+  public void testSuspectMembersNotCalledThroughSuspectThreadBeforeTimeout() throws Exception {
     installAView();
 
     gmsHealthMonitor.suspect(mockMembers.get(1), "Not responding");
@@ -385,7 +389,7 @@ public class GMSHealthMonitorJUnitTest {
    * Shouldn't send remove member message before doing final check, or before ping Timeout
    */
   @Test
-  public void testRemoveMemberNotCalledBeforeTimeout() {
+  public void testRemoveMemberNotCalledBeforeTimeout() throws Exception {
     System.out.println("testRemoveMemberNotCalledBeforeTimeout starting");
     GMSMembershipView v = new GMSMembershipView(mockMembers.get(0), 2, mockMembers);
 
@@ -452,7 +456,7 @@ public class GMSHealthMonitorJUnitTest {
   }
 
   @Test
-  public void testCheckIfAvailableWithSimulatedHeartBeat() {
+  public void testCheckIfAvailableWithSimulatedHeartBeat() throws Exception {
     GMSMembershipView v = installAView();
 
     MemberIdentifier memberToCheck = mockMembers.get(1);
@@ -471,7 +475,7 @@ public class GMSHealthMonitorJUnitTest {
   }
 
   @Test
-  public void testCheckIfAvailableWithSimulatedHeartBeatWithTcpCheck() {
+  public void testCheckIfAvailableWithSimulatedHeartBeatWithTcpCheck() throws Exception {
     System.out.println("testCheckIfAvailableWithSimulatedHeartBeatWithTcpCheck");
     useGMSHealthMonitorTestClass = true;
 
@@ -490,7 +494,7 @@ public class GMSHealthMonitorJUnitTest {
   }
 
   @Test
-  public void testMemberIsExaminedAgainAfterPassingAvailabilityCheck() {
+  public void testMemberIsExaminedAgainAfterPassingAvailabilityCheck() throws Exception {
     // use the test health monitor's availability check for the first round of suspect processing
     // but then turn it off so that a subsequent round is performed and fails to get a heartbeat
     useGMSHealthMonitorTestClass = true;
@@ -516,7 +520,7 @@ public class GMSHealthMonitorJUnitTest {
   }
 
   @Test
-  public void testNeighborRemainsSameAfterSuccessfulFinalCheck() {
+  public void testNeighborRemainsSameAfterSuccessfulFinalCheck() throws Exception {
     useGMSHealthMonitorTestClass = true;
 
     try {
@@ -542,7 +546,7 @@ public class GMSHealthMonitorJUnitTest {
 
 
   @Test
-  public void testNeighborChangesAfterFailedFinalCheck() {
+  public void testNeighborChangesAfterFailedFinalCheck() throws Exception {
     useGMSHealthMonitorTestClass = true;
     simulateHeartbeatInGMSHealthMonitorTestClass = false;
 
@@ -570,7 +574,7 @@ public class GMSHealthMonitorJUnitTest {
 
 
   @Test
-  public void testExonerationMessageIsSentAfterSuccessfulFinalCheck() {
+  public void testExonerationMessageIsSentAfterSuccessfulFinalCheck() throws Exception {
     useGMSHealthMonitorTestClass = true;
 
     try {
@@ -595,7 +599,7 @@ public class GMSHealthMonitorJUnitTest {
   }
 
   @Test
-  public void testExonerationMessageIsNotSentToVersion_1_3() {
+  public void testExonerationMessageIsNotSentToVersion_1_3() throws Exception {
     // versions older than 1.4 don't know about the FinalCheckPassedMessage class
     useGMSHealthMonitorTestClass = true;
 
@@ -638,7 +642,7 @@ public class GMSHealthMonitorJUnitTest {
 
 
   @Test
-  public void testInitiatorRewatchesSuspectAfterSuccessfulFinalCheck() {
+  public void testInitiatorRewatchesSuspectAfterSuccessfulFinalCheck() throws Exception {
     GMSMembershipView v = installAView();
 
     setFailureDetectionPorts(v);
@@ -652,7 +656,7 @@ public class GMSHealthMonitorJUnitTest {
 
 
   @Test
-  public void testFinalCheckFailureLeavesMemberAsSuspect() {
+  public void testFinalCheckFailureLeavesMemberAsSuspect() throws Exception {
     useGMSHealthMonitorTestClass = true;
     simulateHeartbeatInGMSHealthMonitorTestClass = false;
 
@@ -668,7 +672,7 @@ public class GMSHealthMonitorJUnitTest {
   }
 
   @Test
-  public void testFailedSelfCheckRemovesMemberAsSuspect() {
+  public void testFailedSelfCheckRemovesMemberAsSuspect() throws Exception {
     useGMSHealthMonitorTestClass = true;
     simulateHeartbeatInGMSHealthMonitorTestClass = false;
     allowSelfCheckToSucceed = false;
@@ -692,7 +696,7 @@ public class GMSHealthMonitorJUnitTest {
    * a failed availablility check should initiate suspect processing
    */
   @Test
-  public void testFailedCheckIfAvailableDoesNotRemoveMember() {
+  public void testFailedCheckIfAvailableDoesNotRemoveMember() throws Exception {
     useGMSHealthMonitorTestClass = true;
     simulateHeartbeatInGMSHealthMonitorTestClass = false;
 
@@ -712,7 +716,7 @@ public class GMSHealthMonitorJUnitTest {
    * Same test as above but with request to initiate removal
    */
   @Test
-  public void testFailedCheckIfAvailableRemovesMember() {
+  public void testFailedCheckIfAvailableRemovesMember() throws Exception {
     useGMSHealthMonitorTestClass = true;
     simulateHeartbeatInGMSHealthMonitorTestClass = false;
 
@@ -732,7 +736,8 @@ public class GMSHealthMonitorJUnitTest {
    */
 
   @Test
-  public void testFailedCheckIfAvailableWithoutFailureDetectionPortDoesNotRemoveMember() {
+  public void testFailedCheckIfAvailableWithoutFailureDetectionPortDoesNotRemoveMember()
+      throws Exception {
     useGMSHealthMonitorTestClass = true;
     simulateHeartbeatInGMSHealthMonitorTestClass = false;
 
@@ -751,7 +756,8 @@ public class GMSHealthMonitorJUnitTest {
   }
 
   @Test
-  public void testFailedCheckIfAvailableWithoutFailureDetectionPortRemovesMember() {
+  public void testFailedCheckIfAvailableWithoutFailureDetectionPortRemovesMember()
+      throws Exception {
     useGMSHealthMonitorTestClass = true;
     simulateHeartbeatInGMSHealthMonitorTestClass = false;
 
@@ -770,7 +776,7 @@ public class GMSHealthMonitorJUnitTest {
   }
 
   @Test
-  public void testShutdown() {
+  public void testShutdown() throws Exception {
 
     installAView();
 
@@ -882,7 +888,7 @@ public class GMSHealthMonitorJUnitTest {
   }
 
   @Test
-  public void testBeSickAndPlayDead() throws Exception {
+  public void testBeSickAndPlayDead() {
     GMSMembershipView v = new GMSMembershipView(mockMembers.get(0), 2, mockMembers);
     gmsHealthMonitor.installView(v);
     gmsHealthMonitor.beSick();
@@ -1016,6 +1022,11 @@ public class GMSHealthMonitorJUnitTest {
     public boolean useBlockingSocket = false;
     public Set<MemberIdentifier> availabilityCheckedMembers = new HashSet<>();
 
+    public GMSHealthMonitorTest() {
+      super(asTcpSocketCreator(SocketCreatorFactory
+          .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER)));
+    }
+
     @Override
     boolean doTCPCheckMember(MemberIdentifier suspectMember, int port,
         boolean retryIfConnectFails) {
@@ -1035,7 +1046,7 @@ public class GMSHealthMonitorJUnitTest {
     }
 
     @Override
-    ServerSocket createServerSocket(InetAddress socketAddress, int[] portRange) {
+    ServerSocket createServerSocket(InetAddress socketAddress, int[] portRange) throws IOException {
       final ServerSocket serverSocket = super.createServerSocket(socketAddress, portRange);
       if (useBlockingSocket) {
         try {

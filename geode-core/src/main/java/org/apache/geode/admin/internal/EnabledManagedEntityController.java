@@ -31,10 +31,10 @@ import org.apache.geode.admin.AdminDistributedSystem;
 import org.apache.geode.admin.DistributedSystemConfig;
 import org.apache.geode.admin.ManagedEntity;
 import org.apache.geode.admin.ManagedEntityConfig;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.ProcessOutputReader;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Implements the actual administration (starting, stopping, etc.) of GemFire
@@ -274,7 +274,7 @@ class EnabledManagedEntityController implements ManagedEntityController {
    * Builds optional SSL properties for DistributionLocator. Returns null if SSL is not enabled for
    * the distributed system.
    *
-   * @param forCommandLine true indicates that {@link DistributionConfig#GEMFIRE_PREFIX} should be
+   * @param forCommandLine true indicates that {@link GeodeGlossary#GEMFIRE_PREFIX} should be
    *        prepended so the argument will become -Dgemfire.xxxx
    */
   private Properties buildSSLProperties(DistributedSystemConfig config, boolean forCommandLine) {
@@ -283,7 +283,7 @@ class EnabledManagedEntityController implements ManagedEntityController {
 
     String prefix = "";
     if (forCommandLine)
-      prefix = DistributionConfig.GEMFIRE_PREFIX;
+      prefix = GeodeGlossary.GEMFIRE_PREFIX;
 
     Properties sslProps = (Properties) config.getSSLProperties().clone();
     // add ssl-enabled, etc...

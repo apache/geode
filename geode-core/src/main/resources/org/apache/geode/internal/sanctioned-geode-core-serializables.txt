@@ -259,11 +259,11 @@ org/apache/geode/distributed/internal/deadlock/MessageDependencyMonitor$MessageK
 org/apache/geode/distributed/internal/direct/ShunnedMemberException,true,-6455664684151074915
 org/apache/geode/distributed/internal/locks/DistributedMemberLock$LockReentryPolicy,false
 org/apache/geode/distributed/internal/locks/LockGrantorDestroyedException,true,-3540124531032570817
-org/apache/geode/distributed/internal/membership/gms/api/MemberDisconnectedException,true,-3649273301807236514
-org/apache/geode/distributed/internal/membership/gms/api/MemberShunnedException,true,-8453126202477831557
-org/apache/geode/distributed/internal/membership/gms/api/MemberStartupException,true,6610743861046044144
-org/apache/geode/distributed/internal/membership/gms/api/MembershipClosedException,true,6112938405434046127
-org/apache/geode/distributed/internal/membership/gms/api/MembershipConfigurationException,true,5633602142465129621
+org/apache/geode/distributed/internal/membership/api/MemberDisconnectedException,true,-3649273301807236514
+org/apache/geode/distributed/internal/membership/api/MemberShunnedException,true,-8453126202477831557
+org/apache/geode/distributed/internal/membership/api/MemberStartupException,true,6610743861046044144
+org/apache/geode/distributed/internal/membership/api/MembershipClosedException,true,6112938405434046127
+org/apache/geode/distributed/internal/membership/api/MembershipConfigurationException,true,5633602142465129621
 org/apache/geode/distributed/internal/membership/gms/membership/GMSJoinLeave$ViewAbandonedException,false
 org/apache/geode/distributed/internal/membership/gms/messages/InstallViewMessage$messageType,false
 org/apache/geode/internal/ConfigSource,true,-4097017272431018553,description:java/lang/String,type:org/apache/geode/internal/ConfigSource$Type

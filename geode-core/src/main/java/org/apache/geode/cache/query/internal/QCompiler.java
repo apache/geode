@@ -499,57 +499,55 @@ public class QCompiler implements OQLLexerTokenTypes {
     push(new CompiledComparison(v1, v2, opKind));
   }
 
-  public void mod(int opKind) {
+  public void mod() {
     CompiledValue v2 = (CompiledValue) pop();
     CompiledValue v1 = (CompiledValue) pop();
-    push(new CompiledMod(v1, v2, opKind));
+    push(new CompiledMod(v1, v2));
   }
 
   public void arithmetic(int opKind) {
     switch (opKind) {
       case TOK_PLUS:
-        addition(opKind);
+        addition();
         break;
       case TOK_MINUS:
-        subtraction(opKind);
+        subtraction();
         break;
       case TOK_SLASH:
-        division(opKind);
+        division();
         break;
       case TOK_STAR:
-        multiplication(opKind);
+        multiplication();
         break;
       case LITERAL_mod:
-        mod(opKind);
-        break;
       case TOK_PERCENTAGE:
-        mod(opKind);
+        mod();
         break;
     }
   }
 
-  private void addition(int opKind) {
+  private void addition() {
     CompiledValue v2 = (CompiledValue) pop();
     CompiledValue v1 = (CompiledValue) pop();
-    push(new CompiledAddition(v1, v2, opKind));
+    push(new CompiledAddition(v1, v2));
   }
 
-  private void subtraction(int opKind) {
+  private void subtraction() {
     CompiledValue v2 = (CompiledValue) pop();
     CompiledValue v1 = (CompiledValue) pop();
-    push(new CompiledSubtraction(v1, v2, opKind));
+    push(new CompiledSubtraction(v1, v2));
   }
 
-  private void division(int opKind) {
+  private void division() {
     CompiledValue v2 = (CompiledValue) pop();
     CompiledValue v1 = (CompiledValue) pop();
-    push(new CompiledDivision(v1, v2, opKind));
+    push(new CompiledDivision(v1, v2));
   }
 
-  private void multiplication(int opKind) {
+  private void multiplication() {
     CompiledValue v2 = (CompiledValue) pop();
     CompiledValue v1 = (CompiledValue) pop();
-    push(new CompiledMultiplication(v1, v2, opKind));
+    push(new CompiledMultiplication(v1, v2));
   }
 
 

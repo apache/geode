@@ -14,40 +14,26 @@
  */
 package org.apache.geode.cache;
 
-import static org.junit.runners.MethodSorters.NAME_ASCENDING;
-
-import org.junit.FixMethodOrder;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache30.ClientServerTestCase;
 import org.apache.geode.test.dunit.Invoke;
-import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
-@FixMethodOrder(NAME_ASCENDING)
 @Category({ClientServerTest.class})
 public class ConnectionPoolAutoDUnitTest extends ConnectionPoolDUnitTest {
 
-  @Override
-  protected final void postSetUpConnectionPoolDUnitTest() throws Exception {
+  @Before
+  public final void setUpConnectionPoolDUnitTest() {
     ClientServerTestCase.AUTO_LOAD_BALANCE = true;
-    Invoke.invokeInEveryVM(new SerializableRunnable("setupAutoMode") {
-      @Override
-      public void run() {
-        ClientServerTestCase.AUTO_LOAD_BALANCE = true;
-      }
-    });
+    Invoke.invokeInEveryVM("setupAutoMode", () -> ClientServerTestCase.AUTO_LOAD_BALANCE = true);
   }
 
-  @Override
-  protected final void postTearDownConnectionPoolDUnitTest() throws Exception {
+  @After
+  public final void tearDownConnectionPoolDUnitTest() {
     ClientServerTestCase.AUTO_LOAD_BALANCE = false;
-    Invoke.invokeInEveryVM(new SerializableRunnable("disableAutoMode") {
-      @Override
-      public void run() {
-        ClientServerTestCase.AUTO_LOAD_BALANCE = false;
-      }
-    });
+    Invoke.invokeInEveryVM("disableAutoMode", () -> ClientServerTestCase.AUTO_LOAD_BALANCE = false);
   }
-
 }

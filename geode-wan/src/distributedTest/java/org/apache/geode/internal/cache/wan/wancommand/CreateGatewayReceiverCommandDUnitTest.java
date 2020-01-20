@@ -44,7 +44,7 @@ import org.junit.runner.RunWith;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -683,7 +683,7 @@ public class CreateGatewayReceiverCommandDUnitTest {
   }
 
   private String getHostName() throws Exception {
-    return SocketCreator.getLocalHost().getCanonicalHostName();
+    return LocalHostUtil.getLocalHost().getCanonicalHostName();
   }
 
   private String getBindAddress() throws Exception {

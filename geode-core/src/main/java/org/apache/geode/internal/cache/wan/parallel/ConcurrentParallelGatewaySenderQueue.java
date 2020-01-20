@@ -83,32 +83,32 @@ public class ConcurrentParallelGatewaySenderQueue implements RegionQueue {
 
   @Override
   public Object take() throws CacheException, InterruptedException {
-    throw new UnsupportedOperationException("This method(take) is not suported");
+    throw new UnsupportedOperationException("This method(take) is not supported");
   }
 
   @Override
   public List take(int batchSize) throws CacheException, InterruptedException {
-    throw new UnsupportedOperationException("This method(take) is not suported");
+    throw new UnsupportedOperationException("This method(take) is not supported");
   }
 
   @Override
   public void remove() throws CacheException {
-    throw new UnsupportedOperationException("This method(remove) is not suported");
+    throw new UnsupportedOperationException("This method(remove) is not supported");
   }
 
   @Override
   public Object peek() throws InterruptedException, CacheException {
-    throw new UnsupportedOperationException("This method(peek) is not suported");
+    throw new UnsupportedOperationException("This method(peek) is not supported");
   }
 
   @Override
   public List peek(int batchSize) throws InterruptedException, CacheException {
-    throw new UnsupportedOperationException("This method(peek) is not suported");
+    throw new UnsupportedOperationException("This method(peek) is not supported");
   }
 
   @Override
   public List peek(int batchSize, int timeToWait) throws InterruptedException, CacheException {
-    throw new UnsupportedOperationException("This method(peek) is not suported");
+    throw new UnsupportedOperationException("This method(peek) is not supported");
   }
 
   @Override

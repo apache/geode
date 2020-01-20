@@ -17,7 +17,7 @@ package org.apache.geode.cache;
 import java.io.File;
 
 import org.apache.geode.annotations.internal.MakeImmutable;
-import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Factory for creating instances of {@link DiskStore}. To get an instance of this factory call
@@ -62,7 +62,7 @@ public interface DiskStoreFactory {
    * Current value: <code>1024</code> which is one gigabyte.
    */
   long DEFAULT_MAX_OPLOG_SIZE =
-      Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "DEFAULT_MAX_OPLOG_SIZE", 1024L).longValue();
+      Long.getLong(GeodeGlossary.GEMFIRE_PREFIX + "DEFAULT_MAX_OPLOG_SIZE", 1024L).longValue();
 
   /**
    * The default time interval in milliseconds.

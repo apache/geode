@@ -30,8 +30,8 @@ public class DistributedAckOverflowRegionCCEDUnitTest extends DistributedAckRegi
   }
 
   @Override
-  protected RegionAttributes getRegionAttributes() {
-    AttributesFactory factory = new AttributesFactory();
+  protected <K, V> RegionAttributes<K, V> getRegionAttributes() {
+    AttributesFactory<K, V> factory = new AttributesFactory<>();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(DataPolicy.REPLICATE);
     factory.setConcurrencyChecksEnabled(true);
@@ -41,12 +41,12 @@ public class DistributedAckOverflowRegionCCEDUnitTest extends DistributedAckRegi
   }
 
   @Override
-  protected RegionAttributes getRegionAttributes(String type) {
+  protected <K, V> RegionAttributes<K, V> getRegionAttributes(String type) {
     RegionAttributes ra = getCache().getRegionAttributes(type);
     if (ra == null) {
       throw new IllegalStateException("The region shortcut " + type + " has been removed.");
     }
-    AttributesFactory factory = new AttributesFactory(ra);
+    AttributesFactory<K, V> factory = new AttributesFactory<>(ra);
     factory.setConcurrencyChecksEnabled(true);
     if (!ra.getDataPolicy().isEmpty()) {
       factory.setEvictionAttributes(

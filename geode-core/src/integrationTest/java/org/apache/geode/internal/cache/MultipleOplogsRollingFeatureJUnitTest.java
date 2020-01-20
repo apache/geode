@@ -23,7 +23,7 @@ import static org.junit.Assert.fail;
 import org.junit.Test;
 
 import org.apache.geode.cache.Scope;
-import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * The test will verify <br>
@@ -47,7 +47,7 @@ public class MultipleOplogsRollingFeatureJUnitTest extends DiskRegionTestingBase
 
   @Override
   protected final void postTearDown() throws Exception {
-    System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "MAX_OPLOGS_PER_COMPACTION");
+    System.clearProperty(GeodeGlossary.GEMFIRE_PREFIX + "MAX_OPLOGS_PER_COMPACTION");
     diskProps.setDiskDirs(dirs);
   }
 
@@ -57,7 +57,7 @@ public class MultipleOplogsRollingFeatureJUnitTest extends DiskRegionTestingBase
    */
   @Test
   public void testMultipleRolling() throws Exception {
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "MAX_OPLOGS_PER_COMPACTION", "17");
+    System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "MAX_OPLOGS_PER_COMPACTION", "17");
 
     deleteFiles();
     diskProps.setMaxOplogSize(450);

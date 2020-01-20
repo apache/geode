@@ -27,7 +27,6 @@ import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.wan.GatewaySender;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.InternalCache;
@@ -37,12 +36,13 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.pdx.PdxSerializationException;
 import org.apache.geode.pdx.PdxSerializer;
 import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 public class TypeRegistry {
   private static final Logger logger = LogService.getLogger();
 
   private static final boolean DISABLE_TYPE_REGISTRY =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "TypeRegistry.DISABLE_PDX_REGISTRY");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "TypeRegistry.DISABLE_PDX_REGISTRY");
 
   private final Map<Integer, PdxType> idToType = new CopyOnWriteHashMap<>();
 

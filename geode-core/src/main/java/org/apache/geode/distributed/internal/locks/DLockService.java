@@ -46,7 +46,6 @@ import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.LeaseExpiredException;
 import org.apache.geode.distributed.LockNotHeldException;
 import org.apache.geode.distributed.LockServiceDestroyedException;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ResourceEvent;
@@ -54,7 +53,6 @@ import org.apache.geode.distributed.internal.deadlock.UnsafeThreadLocal;
 import org.apache.geode.distributed.internal.locks.DLockQueryProcessor.DLockQueryReplyMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
@@ -62,7 +60,9 @@ import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.util.StopWatch;
 import org.apache.geode.internal.util.concurrent.FutureResult;
+import org.apache.geode.logging.internal.OSProcess;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Implements the distributed locking service with distributed lock grantors.
@@ -73,18 +73,18 @@ public class DLockService extends DistributedLockService {
   private static final Logger logger = LogService.getLogger();
 
   private static final long NOT_GRANTOR_SLEEP = Long
-      .getLong(DistributionConfig.GEMFIRE_PREFIX + "DLockService.notGrantorSleep", 100).longValue();
+      .getLong(GeodeGlossary.GEMFIRE_PREFIX + "DLockService.notGrantorSleep", 100).longValue();
 
   private static final boolean DEBUG_NONGRANTOR_DESTROY_LOOP = Boolean
-      .getBoolean(DistributionConfig.GEMFIRE_PREFIX + "DLockService.debug.nonGrantorDestroyLoop");
+      .getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "DLockService.debug.nonGrantorDestroyLoop");
 
   private static final int DEBUG_NONGRANTOR_DESTROY_LOOP_COUNT = Integer
       .getInteger(
-          DistributionConfig.GEMFIRE_PREFIX + "DLockService.debug.nonGrantorDestroyLoopCount", 20)
+          GeodeGlossary.GEMFIRE_PREFIX + "DLockService.debug.nonGrantorDestroyLoopCount", 20)
       .intValue();
 
   private static final boolean AUTOMATE_FREE_RESOURCES =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "DLockService.automateFreeResources");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "DLockService.automateFreeResources");
 
   static final int INVALID_LEASE_ID = -1;
 
@@ -2623,7 +2623,7 @@ public class DLockService extends DistributedLockService {
    * Specifies the starting serial number for the serialNumberSequencer
    */
   public static final int START_SERIAL_NUMBER = Integer
-      .getInteger(DistributionConfig.GEMFIRE_PREFIX + "DistributedLockService.startSerialNumber", 1)
+      .getInteger(GeodeGlossary.GEMFIRE_PREFIX + "DistributedLockService.startSerialNumber", 1)
       .intValue();
 
   /**

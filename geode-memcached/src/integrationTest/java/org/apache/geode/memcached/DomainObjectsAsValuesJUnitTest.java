@@ -29,8 +29,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 public class DomainObjectsAsValuesJUnitTest {
 
@@ -40,7 +40,7 @@ public class DomainObjectsAsValuesJUnitTest {
 
   @Before
   public void setUp() throws Exception {
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + MCAST_PORT, "0");
+    System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + MCAST_PORT, "0");
     PORT = AvailablePortHelper.getRandomAvailableTCPPort();
     this.server = new GemFireMemcachedServer(PORT);
     server.start();
@@ -49,7 +49,7 @@ public class DomainObjectsAsValuesJUnitTest {
   @After
   public void tearDown() throws Exception {
     this.server.shutdown();
-    System.getProperties().remove(DistributionConfig.GEMFIRE_PREFIX + MCAST_PORT);
+    System.getProperties().remove(GeodeGlossary.GEMFIRE_PREFIX + MCAST_PORT);
   }
 
   private static class Customer implements java.io.Serializable {

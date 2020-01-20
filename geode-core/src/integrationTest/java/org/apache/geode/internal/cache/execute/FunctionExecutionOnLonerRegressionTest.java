@@ -15,71 +15,117 @@
 package org.apache.geode.internal.cache.execute;
 
 import static org.apache.geode.cache.RegionShortcut.PARTITION;
+import static org.apache.geode.cache.RegionShortcut.REPLICATE;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
+import static org.apache.geode.internal.cache.execute.FunctionExecutionOnLonerRegressionTest.UncheckedUtils.cast;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Function;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.execute.Execution;
-import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.RegionFunctionContext;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
-import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.LonerDistributionManager;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.junit.categories.FunctionServiceTest;
 
 /**
  * This tests make sure that, in case of LonerDistributedSystem we don't get ClassCast Exception.
- * Just making sure that the function executed on lonerDistributedSystem
+ * Just making sure that the function executed on lonerDistributedSystem.
  *
  * <p>
- * TRAC #41118: If invoked from LonerDistributedSystem, FunctionService.onMembers() throws
- * ClassCastException
- *
- * <p>
- * Extracted from {@link PRFunctionExecutionDUnitTest}.
+ * Regression test for bug: If invoked from LonerDistributedSystem, FunctionService.onMembers()
+ * throws ClassCastException
  */
-@Category({FunctionServiceTest.class})
+@Category(FunctionServiceTest.class)
+@SuppressWarnings("serial")
 public class FunctionExecutionOnLonerRegressionTest {
 
-  private Region<String, String> region;
+  private InternalCache cache;
+
   private Set<String> keysForGet;
   private Set<String> expectedValues;
 
   @Before
   public void setUp() {
+    cache = (InternalCache) new CacheFactory(getDistributedSystemProperties()).create();
+  }
+
+  @After
+  public void tearDown() {
+    cache.close();
+  }
+
+  @Test
+  public void precondition_isLonerDistributionManager() {
+    DistributionManager distributionManager = cache.getDistributionManager();
+
+    assertThat(distributionManager).isInstanceOf(LonerDistributionManager.class);
+  }
+
+  @Test
+  public void executeFunctionOnLonerWithPartitionedRegionShouldNotThrowClassCastException() {
+    Region<String, String> region = cache
+        .<String, String>createRegionFactory(PARTITION)
+        .create("region");
+
+    populateRegion(region);
+
+    ResultCollector<Collection<String>, Collection<String>> resultCollector = FunctionServiceCast
+        .<Void, Collection<String>, Collection<String>>onRegion(region)
+        .withFilter(keysForGet)
+        .execute(new TestFunction(DataSetSupplier.PARTITIONED));
+
+    assertThat(resultCollector.getResult())
+        .containsExactlyInAnyOrder(expectedValues.toArray(new String[0]));
+  }
+
+  @Test
+  public void executeFunctionOnLonerWithReplicateRegionShouldNotThrowClassCastException() {
+    Region<String, String> region = cache
+        .<String, String>createRegionFactory(REPLICATE)
+        .create("region");
+
+    populateRegion(region);
+
+    ResultCollector<Collection<String>, Collection<String>> resultCollector = FunctionServiceCast
+        .<Void, Collection<String>, Collection<String>>onRegion(region)
+        .withFilter(keysForGet)
+        .execute(new TestFunction(DataSetSupplier.REPLICATE));
+
+    assertThat(resultCollector.getResult())
+        .containsExactlyInAnyOrder(expectedValues.toArray(new String[0]));
+  }
+
+  private Properties getDistributedSystemProperties() {
+    Properties config = new Properties();
+    config.setProperty(MCAST_PORT, "0");
+    config.setProperty(LOCATORS, "");
+    config.setProperty(SERIALIZABLE_OBJECT_FILTER,
+        "org.apache.geode.test.junit.rules.**;org.apache.geode.internal.cache.execute.**;org.apache.geode.internal.cache.functions.**;org.apache.geode.test.dunit.**");
+    return config;
+  }
+
+  private void populateRegion(Region<String, String> region) {
     keysForGet = new HashSet<>();
     expectedValues = new HashSet<>();
-
-    Properties config = getDistributedSystemProperties();
-    InternalDistributedSystem ds = (InternalDistributedSystem) DistributedSystem.connect(config);
-
-    DistributionManager dm = ds.getDistributionManager();
-    assertThat(dm).isInstanceOf(LonerDistributionManager.class);
-
-    Cache cache = CacheFactory.create(ds);
-
-    RegionFactory<String, String> regionFactory = cache.createRegionFactory(PARTITION);
-    region = regionFactory.create("region");
 
     for (int i = 0; i < 20; i++) {
       String key = "KEY_" + i;
@@ -94,49 +140,65 @@ public class FunctionExecutionOnLonerRegressionTest {
     }
   }
 
-  private Properties getDistributedSystemProperties() {
-    Properties config = new Properties();
-    config.setProperty(MCAST_PORT, "0");
-    config.setProperty(LOCATORS, "");
-    config.put(SERIALIZABLE_OBJECT_FILTER,
-        "org.apache.geode.test.junit.rules.**;org.apache.geode.internal.cache.execute.**;org.apache.geode.internal.cache.functions.**;org.apache.geode.test.dunit.**");
-    return config;
+  private enum DataSetSupplier {
+    PARTITIONED(PartitionRegionHelper::getLocalDataForContext),
+    REPLICATE(RegionFunctionContext::getDataSet);
+
+    private final Function<RegionFunctionContext, Region<String, String>> dataSet;
+
+    DataSetSupplier(Function<RegionFunctionContext, Region<String, String>> dataSet) {
+
+      this.dataSet = dataSet;
+    }
+
+    Region<String, String> dataSet(RegionFunctionContext context) {
+      return dataSet.apply(context);
+    }
   }
 
-  @Test
-  public void executeFunctionOnLonerShouldNotThrowClassCastException() throws Exception {
-    Execution<Void, Collection<String>, Collection<String>> execution =
-        FunctionService.onRegion(region).withFilter(keysForGet);
-    ResultCollector<Collection<String>, Collection<String>> resultCollector =
-        execution.execute(new TestFunction());
-    assertThat(resultCollector.getResult())
-        .containsExactlyInAnyOrder(expectedValues.toArray(new String[0]));
-  }
+  private static class TestFunction implements org.apache.geode.cache.execute.Function<String> {
 
-  private static class TestFunction implements Function {
+    private final DataSetSupplier dataSetSupplier;
+
+    private TestFunction(DataSetSupplier dataSetSupplier) {
+      this.dataSetSupplier = dataSetSupplier;
+    }
 
     @Override
-    public void execute(final FunctionContext context) {
+    public void execute(FunctionContext<String> context) {
       RegionFunctionContext regionFunctionContext = (RegionFunctionContext) context;
-      Set keys = regionFunctionContext.getFilter();
-      Set keysTillSecondLast = new HashSet();
-      int setSize = keys.size();
-      Iterator keysIterator = keys.iterator();
-      for (int i = 0; i < (setSize - 1); i++) {
-        keysTillSecondLast.add(keysIterator.next());
+      Set<String> keys = cast(regionFunctionContext.getFilter());
+      String lastKey = keys.iterator().next();
+      keys.remove(lastKey);
+
+      Region<String, String> region = dataSetSupplier.dataSet(regionFunctionContext);
+
+      for (String key : keys) {
+        context.getResultSender().sendResult(region.get(key));
       }
-      for (Object k : keysTillSecondLast) {
-        context.getResultSender()
-            .sendResult(PartitionRegionHelper.getLocalDataForContext(regionFunctionContext).get(k));
-      }
-      Object lastResult = keysIterator.next();
-      context.getResultSender().lastResult(
-          PartitionRegionHelper.getLocalDataForContext(regionFunctionContext).get(lastResult));
+
+      context.getResultSender().lastResult(region.get(lastKey));
     }
 
     @Override
     public String getId() {
       return getClass().getName();
+    }
+  }
+
+  @SuppressWarnings({"unchecked", "WeakerAccess"})
+  private static class FunctionServiceCast {
+
+    static <IN, OUT, AGG> Execution<IN, OUT, AGG> onRegion(Region<?, ?> region) {
+      return FunctionService.onRegion(region);
+    }
+  }
+
+  @SuppressWarnings({"unchecked", "unused"})
+  static class UncheckedUtils {
+
+    static <T> T cast(Object object) {
+      return (T) object;
     }
   }
 }

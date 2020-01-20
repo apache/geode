@@ -58,6 +58,11 @@
     </dependency>
     <dependency>
       <groupId>org.apache.geode</groupId>
+      <artifactId>geode-membership</artifactId>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.geode</groupId>
       <artifactId>geode-serialization</artifactId>
       <scope>compile</scope>
     </dependency>

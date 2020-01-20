@@ -34,6 +34,8 @@ public interface RegionQueue {
    */
   String WAN_QUEUE_TOKEN = "WAN_QUEUE_TOKEN";
 
+  Integer BATCH_BASED_ON_TIME_ONLY = -1;
+
   /**
    * Puts an object onto the tail of the queue
    *

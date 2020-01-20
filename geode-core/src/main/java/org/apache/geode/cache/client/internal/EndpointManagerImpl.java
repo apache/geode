@@ -207,10 +207,6 @@ public class EndpointManagerImpl implements EndpointManager {
     return getEndpointMap().size();
   }
 
-  public static void loadEmergencyClasses() {
-    // do nothing
-  }
-
   protected static class EndpointListenerBroadcaster implements EndpointManager.EndpointListener {
 
     private volatile Set<EndpointListener> endpointListeners = Collections.emptySet();

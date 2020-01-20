@@ -34,8 +34,8 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.util.CollectionUtils;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * The delegating <tt>ClassLoader</tt> used by GemFire to load classes and other resources. This
@@ -73,7 +73,7 @@ public class ClassPathLoader {
   private static final Logger logger = LogManager.getLogger();
 
   static final String EXCLUDE_TCCL_PROPERTY =
-      DistributionConfig.GEMFIRE_PREFIX + "excludeThreadContextClassLoader";
+      GeodeGlossary.GEMFIRE_PREFIX + "excludeThreadContextClassLoader";
 
   @MakeNotStatic
   private static volatile ClassPathLoader latest;

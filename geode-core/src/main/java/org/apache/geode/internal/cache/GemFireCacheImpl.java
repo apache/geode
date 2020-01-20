@@ -31,7 +31,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST
 import static org.apache.geode.distributed.internal.ClusterDistributionManager.ADMIN_ONLY_DM_TYPE;
 import static org.apache.geode.distributed.internal.ClusterDistributionManager.LOCATOR_DM_TYPE;
 import static org.apache.geode.distributed.internal.DistributionConfig.DEFAULT_DURABLE_CLIENT_ID;
-import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
 import static org.apache.geode.distributed.internal.InternalDistributedSystem.getAnyInstance;
 import static org.apache.geode.internal.cache.ColocationHelper.getColocatedChildRegions;
 import static org.apache.geode.internal.cache.GemFireCacheImpl.UncheckedUtils.asDistributedMemberSet;
@@ -49,6 +48,7 @@ import static org.apache.geode.internal.cache.util.UncheckedUtils.uncheckedRegio
 import static org.apache.geode.internal.logging.CoreLoggingExecutors.newThreadPoolWithFixedFeed;
 import static org.apache.geode.internal.tcp.ConnectionTable.threadWantsSharedResources;
 import static org.apache.geode.logging.internal.executors.LoggingExecutors.newFixedThreadPool;
+import static org.apache.geode.util.internal.GeodeGlossary.GEMFIRE_PREFIX;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -227,7 +227,6 @@ import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
 import org.apache.geode.internal.cache.snapshot.CacheSnapshotServiceImpl;
 import org.apache.geode.internal.cache.tier.Acceptor;
-import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
 import org.apache.geode.internal.cache.tier.sockets.ClientHealthMonitor;
@@ -244,6 +243,7 @@ import org.apache.geode.internal.cache.xmlcache.CacheXmlParser;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlPropertyResolver;
 import org.apache.geode.internal.cache.xmlcache.PropertyResolver;
 import org.apache.geode.internal.config.ClusterConfigurationNotAvailableException;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.internal.jta.TransactionManagerImpl;
 import org.apache.geode.internal.lang.ThrowableUtils;
@@ -386,12 +386,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   @MakeNotStatic
   private static final Set<CacheLifecycleListener> cacheLifecycleListeners =
       new CopyOnWriteArraySet<>();
-
-  /**
-   * Break any potential circularity in {@link #loadEmergencyClasses()}.
-   */
-  @MakeNotStatic
-  private static volatile boolean emergencyClassesLoaded;
 
   /**
    * Property set to true if resource manager heap percentage is set and query monitor is required
@@ -1648,21 +1642,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   /**
-   * Ensure that all the necessary classes for closing the cache are loaded.
-   *
-   * @see SystemFailure#loadEmergencyClasses()
-   */
-  public static void loadEmergencyClasses() {
-    if (emergencyClassesLoaded) {
-      return;
-    }
-    emergencyClassesLoaded = true;
-    InternalDistributedSystem.loadEmergencyClasses();
-    AcceptorImpl.loadEmergencyClasses();
-    PoolManagerImpl.loadEmergencyClasses();
-  }
-
-  /**
    * Close the distributed system, cache servers, and gateways. Clears the rootRegions and
    * partitionedRegions map. Marks the cache as closed.
    *
@@ -2766,7 +2745,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   private PoolFactory createDefaultPF() {
     PoolFactory defaultPoolFactory = PoolManager.createFactory();
     try {
-      String localHostName = SocketCreator.getHostName(SocketCreator.getLocalHost());
+      String localHostName = SocketCreator.getHostName(LocalHostUtil.getLocalHost());
       defaultPoolFactory.addServer(localHostName, CacheServer.DEFAULT_PORT);
     } catch (UnknownHostException ex) {
       throw new IllegalStateException("Could not determine local host name", ex);
@@ -2791,7 +2770,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     if (poolFactoryImpl.getPoolAttributes().locators.isEmpty()
         && poolFactoryImpl.getPoolAttributes().servers.isEmpty()) {
       try {
-        String localHostName = SocketCreator.getHostName(SocketCreator.getLocalHost());
+        String localHostName = SocketCreator.getHostName(LocalHostUtil.getLocalHost());
         poolFactoryImpl.addServer(localHostName, CacheServer.DEFAULT_PORT);
       } catch (UnknownHostException ex) {
         throw new IllegalStateException("Could not determine local host name", ex);

@@ -21,7 +21,7 @@ import org.apache.geode.test.junit.categories.AEQTest;
 @SuppressWarnings("serial")
 @Category({AEQTest.class})
 public class CommonParallelAsyncEventQueueOffHeapDUnitTest
-    extends CommonParallelAsyncEventQueueDUnitTest {
+    extends CommonAsyncEventQueueDUnitTest {
 
   public CommonParallelAsyncEventQueueOffHeapDUnitTest() {
     super();

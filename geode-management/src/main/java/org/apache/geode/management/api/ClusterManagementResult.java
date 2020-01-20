@@ -16,6 +16,8 @@ package org.apache.geode.management.api;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
+import java.util.Objects;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -63,7 +65,7 @@ public class ClusterManagementResult {
   }
 
   // we will always have statusCode when the object is created
-  protected StatusCode statusCode = StatusCode.OK;
+  private StatusCode statusCode = StatusCode.OK;
   private String statusMessage;
   @JsonProperty(access = JsonProperty.Access.READ_ONLY)
   private Links links;
@@ -163,5 +165,23 @@ public class ClusterManagementResult {
     } else {
       return getStatusCode() + ": " + getStatusMessage();
     }
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    ClusterManagementResult that = (ClusterManagementResult) o;
+    return statusCode == that.statusCode &&
+        Objects.equals(statusMessage, that.statusMessage);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(statusCode, statusMessage);
   }
 }

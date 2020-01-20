@@ -16,12 +16,12 @@ package org.apache.geode;
 
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.annotations.internal.MutableForTesting;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.SystemFailureTestHook;
 import org.apache.geode.internal.admin.remote.RemoteGfManagerAgent;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.logging.internal.executors.LoggingThread;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  *
@@ -275,7 +275,7 @@ public final class SystemFailure {
    * sec.
    */
   private static final int WATCHDOG_WAIT =
-      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "WATCHDOG_WAIT", 15);
+      Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "WATCHDOG_WAIT", 15);
 
   /**
    * This is the watchdog thread
@@ -356,30 +356,6 @@ public final class SystemFailure {
     boolean warned = false;
 
     logFine(WATCHDOG_NAME, "Starting");
-    try {
-      basicLoadEmergencyClasses();
-    } catch (ExceptionInInitializerError e) {
-      // Determine if we're shutting down...
-      boolean noSurprise = false;
-      Throwable cause = e.getCause();
-      if (cause != null) {
-        if (cause instanceof IllegalStateException) {
-          String msg = cause.getMessage();
-          if (msg.contains("Shutdown in progress")) {
-            noSurprise = true;
-          }
-        }
-      }
-      if (!noSurprise) {
-        logWarning(WATCHDOG_NAME, "Unable to load GemFire classes: ", e);
-      }
-      return;
-    } catch (CancelException e) {
-      // ignore this because we are shutting down anyway
-    } catch (Throwable t) {
-      logWarning(WATCHDOG_NAME, "Unable to initialize watchdog", t);
-      return;
-    }
     while (!stopping) {
       try {
         if (isCacheClosing) {
@@ -487,7 +463,7 @@ public final class SystemFailure {
    */
   @MakeNotStatic
   private static long minimumMemoryThreshold = Long.getLong(
-      DistributionConfig.GEMFIRE_PREFIX + "SystemFailure.chronic_memory_threshold", 1048576);
+      GeodeGlossary.GEMFIRE_PREFIX + "SystemFailure.chronic_memory_threshold", 1048576);
 
   /**
    * This is the interval, in seconds, that the proctor thread will awaken and poll system free
@@ -499,7 +475,7 @@ public final class SystemFailure {
    * @see #setFailureMemoryThreshold(long)
    */
   private static final long MEMORY_POLL_INTERVAL =
-      Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "SystemFailure.MEMORY_POLL_INTERVAL", 1);
+      Long.getLong(GeodeGlossary.GEMFIRE_PREFIX + "SystemFailure.MEMORY_POLL_INTERVAL", 1);
 
   /**
    * This is the maximum amount of time, in seconds, that the proctor thread will tolerate seeing
@@ -512,7 +488,7 @@ public final class SystemFailure {
    * @see #setFailureMemoryThreshold(long)
    */
   public static final long MEMORY_MAX_WAIT =
-      Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "SystemFailure.MEMORY_MAX_WAIT", 15);
+      Long.getLong(GeodeGlossary.GEMFIRE_PREFIX + "SystemFailure.MEMORY_MAX_WAIT", 15);
 
   /**
    * Flag that determines whether or not we monitor memory on our own. If this flag is set, we will
@@ -525,7 +501,7 @@ public final class SystemFailure {
    * @since GemFire 6.5
    */
   private static final boolean MONITOR_MEMORY =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "SystemFailure.MONITOR_MEMORY");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "SystemFailure.MONITOR_MEMORY");
 
   /**
    * Start the proctor thread, if it isn't already running.
@@ -724,12 +700,6 @@ public final class SystemFailure {
   private static final String PROCTOR_NAME = "SystemFailure Proctor";
 
   /**
-   * break any potential circularity in {@link #loadEmergencyClasses()}
-   */
-  @MakeNotStatic
-  private static volatile boolean emergencyClassesLoaded = false;
-
-  /**
    * Since it requires object memory to unpack a jar file, make sure this JVM has loaded the classes
    * necessary for closure <em>before</em> it becomes necessary to use them.
    * <p>
@@ -739,15 +709,6 @@ public final class SystemFailure {
    */
   public static void loadEmergencyClasses() {
     startThreads();
-  }
-
-  private static void basicLoadEmergencyClasses() {
-    if (emergencyClassesLoaded)
-      return;
-    emergencyClassesLoaded = true;
-    SystemFailureTestHook.loadEmergencyClasses(); // bug 50516
-    GemFireCacheImpl.loadEmergencyClasses();
-    RemoteGfManagerAgent.loadEmergencyClasses();
   }
 
   /**

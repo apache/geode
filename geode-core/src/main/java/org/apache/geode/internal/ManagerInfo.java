@@ -36,6 +36,7 @@ import org.apache.geode.SystemIsRunningException;
 import org.apache.geode.UncreatedSystemException;
 import org.apache.geode.UnstartedSystemException;
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.logging.internal.OSProcess;
 
 /**
  * Represents the information about the manager that is stored in its SystemAdmin manager VM's main

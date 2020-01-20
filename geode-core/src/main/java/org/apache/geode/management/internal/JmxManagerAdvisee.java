@@ -25,8 +25,8 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.cache.InternalCacheForClientAccess;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
-import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.internal.JmxManagerAdvisor.JmxManagerProfile;
@@ -127,7 +127,7 @@ public class JmxManagerAdvisee implements DistributionAdvisee {
         }
         if (host == null || host.equals("")) {
           try {
-            host = SocketCreator.getLocalHost().getHostAddress(); // fixes 46317
+            host = LocalHostUtil.getLocalHost().getHostAddress(); // fixes 46317
           } catch (UnknownHostException ex) {
             host = "127.0.0.1";
           }

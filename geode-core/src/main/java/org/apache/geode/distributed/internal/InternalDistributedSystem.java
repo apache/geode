@@ -17,7 +17,7 @@ package org.apache.geode.distributed.internal;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
+import static org.apache.geode.util.internal.GeodeGlossary.GEMFIRE_PREFIX;
 
 import java.io.File;
 import java.io.IOException;
@@ -76,8 +76,8 @@ import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.DurableClientAttributes;
 import org.apache.geode.distributed.internal.locks.GrantorRequestProcessor;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.gms.api.MembershipInformation;
-import org.apache.geode.distributed.internal.membership.gms.api.QuorumChecker;
+import org.apache.geode.distributed.internal.membership.api.MembershipInformation;
+import org.apache.geode.distributed.internal.membership.api.QuorumChecker;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalInstantiator;
@@ -1439,25 +1439,6 @@ public class InternalDistributedSystem extends DistributedSystem
   }
 
   /**
-   * break any potential circularity in {@link #loadEmergencyClasses()}
-   */
-  @MakeNotStatic
-  private static volatile boolean emergencyClassesLoaded = false;
-
-  /**
-   * Ensure that the Distribution class gets loaded.
-   *
-   * @see SystemFailure#loadEmergencyClasses()
-   */
-  public static void loadEmergencyClasses() {
-    if (emergencyClassesLoaded) {
-      return;
-    }
-    emergencyClassesLoaded = true;
-    DistributionImpl.loadEmergencyClasses();
-  }
-
-  /**
    * Closes the membership manager
    *
    * @see SystemFailure#emergencyClose()
@@ -2231,7 +2212,9 @@ public class InternalDistributedSystem extends DistributedSystem
      * @param oldSystem the old DS, which is in a partially disconnected state and cannot be used
      *        for messaging
      */
-    void reconnecting(InternalDistributedSystem oldSystem);
+    default void reconnecting(InternalDistributedSystem oldSystem) {
+      // nothing
+    }
 
     /**
      * Invoked after a reconnect to the distributed system
@@ -2239,7 +2222,10 @@ public class InternalDistributedSystem extends DistributedSystem
      * @param oldSystem the old DS
      * @param newSystem the new DS
      */
-    void onReconnect(InternalDistributedSystem oldSystem, InternalDistributedSystem newSystem);
+    default void onReconnect(InternalDistributedSystem oldSystem,
+        InternalDistributedSystem newSystem) {
+      // nothing
+    }
   }
 
   /**

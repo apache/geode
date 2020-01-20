@@ -44,7 +44,7 @@ import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.TransactionId;
-import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * junit test for suspend and resume methods
@@ -322,7 +322,7 @@ public class TXManagerImplJUnitTest {
   @Test
   public void testSuspendTimeout() throws Exception {
     cache.close();
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "suspendedTxTimeout", "1");
+    System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "suspendedTxTimeout", "1");
     createCache();
     TXManagerImpl mgr = (TXManagerImpl) cache.getCacheTransactionManager();
     assertEquals(1, mgr.getSuspendedTransactionTimeout());
@@ -336,7 +336,7 @@ public class TXManagerImplJUnitTest {
     } catch (IllegalStateException expected) {
     }
     assertNull(region.get("key"));
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "suspendedTxTimeout", "");
+    System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "suspendedTxTimeout", "");
   }
 
   @Test

@@ -19,6 +19,7 @@ import static org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl.get
 import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -57,6 +58,9 @@ import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionDestroyedException;
+import org.apache.geode.cache.TransactionDataRebalancedException;
+import org.apache.geode.cache.TransactionException;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.DistributedLockService;
@@ -437,6 +441,136 @@ public class PartitionedRegionTest {
     // ACT/ASSERT
     assertThatCode(() -> spyPartitionedRegion.generatePRId(system))
         .doesNotThrowAnyException();
+  }
+
+  @Test
+  public void getDataRegionForWriteThrowsTransactionExceptionIfNotDataStore() {
+    PartitionedRegion spyPartitionedRegion = spy(partitionedRegion);
+
+    KeyInfo keyInfo = mock(KeyInfo.class);
+    when(keyInfo.getBucketId()).thenReturn(1);
+    doReturn(null).when(spyPartitionedRegion).getDataStore();
+
+    Throwable caughtException =
+        catchThrowable(() -> spyPartitionedRegion.getDataRegionForWrite(keyInfo));
+
+    assertThat(caughtException).isInstanceOf(TransactionException.class).hasMessage(
+        "PartitionedRegion Transactions cannot execute on nodes with local max memory zero");
+  }
+
+  @Test
+  public void getDataRegionForWriteThrowsTransactionDataRebalancedExceptionIfGetInitializedBucketThrowsForceReattemptException()
+      throws Exception {
+    PartitionedRegion spyPartitionedRegion = spy(partitionedRegion);
+
+    KeyInfo keyInfo = mock(KeyInfo.class);
+    Object key = new Object();
+    PartitionedRegionDataStore dataStore = mock(PartitionedRegionDataStore.class);
+    when(keyInfo.getBucketId()).thenReturn(1);
+    when(keyInfo.getKey()).thenReturn(key);
+    when(keyInfo.isCheckPrimary()).thenReturn(true);
+    doReturn(dataStore).when(spyPartitionedRegion).getDataStore();
+    doThrow(new ForceReattemptException("")).when(dataStore)
+        .getInitializedBucketWithKnownPrimaryForId(key, 1);
+    doReturn(mock(InternalDistributedMember.class)).when(spyPartitionedRegion).createBucket(1, 0,
+        null);
+
+    Throwable caughtException =
+        catchThrowable(() -> spyPartitionedRegion.getDataRegionForWrite(keyInfo));
+
+    assertThat(caughtException).isInstanceOf(TransactionDataRebalancedException.class)
+        .hasMessage(PartitionedRegion.DATA_MOVED_BY_REBALANCE);
+  }
+
+  @Test
+  public void getDataRegionForWriteThrowsTransactionDataRebalancedExceptionIfGetInitializedBucketThrowsRegionDestroyedException()
+      throws Exception {
+    PartitionedRegion spyPartitionedRegion = spy(partitionedRegion);
+
+    KeyInfo keyInfo = mock(KeyInfo.class);
+    Object key = new Object();
+    PartitionedRegionDataStore dataStore = mock(PartitionedRegionDataStore.class);
+    when(keyInfo.getBucketId()).thenReturn(1);
+    when(keyInfo.getKey()).thenReturn(key);
+    doReturn(dataStore).when(spyPartitionedRegion).getDataStore();
+    doThrow(new RegionDestroyedException("", "")).when(dataStore)
+        .getInitializedBucketWithKnownPrimaryForId(key, 1);
+
+    Throwable caughtException =
+        catchThrowable(() -> spyPartitionedRegion.getDataRegionForWrite(keyInfo));
+
+    assertThat(caughtException).isInstanceOf(TransactionDataRebalancedException.class)
+        .hasMessage(PartitionedRegion.DATA_MOVED_BY_REBALANCE);
+  }
+
+  @Test
+  public void transactionThrowsTransactionDataRebalancedExceptionIfBucketNotFoundException() {
+    PartitionedRegion spyPartitionedRegion = spy(partitionedRegion);
+    ForceReattemptException exception = mock(BucketNotFoundException.class);
+
+    Throwable caughtException =
+        catchThrowable(
+            () -> spyPartitionedRegion.handleForceReattemptExceptionWithTransaction(exception));
+
+    assertThat(caughtException).isInstanceOf(TransactionDataRebalancedException.class)
+        .hasMessage(PartitionedRegion.DATA_MOVED_BY_REBALANCE);
+  }
+
+  @Test
+  public void transactionThrowsPrimaryBucketExceptionIfForceReattemptExceptionIsCausedByPrimaryBucketException() {
+    PartitionedRegion spyPartitionedRegion = spy(partitionedRegion);
+    ForceReattemptException exception = mock(ForceReattemptException.class);
+    PrimaryBucketException primaryBucketException = new PrimaryBucketException();
+    when(exception.getCause()).thenReturn(primaryBucketException);
+
+    Throwable caughtException =
+        catchThrowable(
+            () -> spyPartitionedRegion.handleForceReattemptExceptionWithTransaction(exception));
+
+    assertThat(caughtException).isSameAs(primaryBucketException);
+  }
+
+  @Test
+  public void transactionThrowsTransactionDataRebalancedExceptionIfForceReattemptExceptionIsCausedByTransactionDataRebalancedException() {
+    PartitionedRegion spyPartitionedRegion = spy(partitionedRegion);
+    ForceReattemptException exception = mock(ForceReattemptException.class);
+    TransactionDataRebalancedException transactionDataRebalancedException =
+        new TransactionDataRebalancedException("");
+    when(exception.getCause()).thenReturn(transactionDataRebalancedException);
+
+    Throwable caughtException =
+        catchThrowable(
+            () -> spyPartitionedRegion.handleForceReattemptExceptionWithTransaction(exception));
+
+    assertThat(caughtException).isSameAs(transactionDataRebalancedException);
+  }
+
+  @Test
+  public void transactionThrowsTransactionDataRebalancedExceptionIfForceReattemptExceptionIsCausedByRegionDestroyedException() {
+    PartitionedRegion spyPartitionedRegion = spy(partitionedRegion);
+    ForceReattemptException exception = mock(ForceReattemptException.class);
+    RegionDestroyedException regionDestroyedException = new RegionDestroyedException("", "");
+    when(exception.getCause()).thenReturn(regionDestroyedException);
+
+    Throwable caughtException =
+        catchThrowable(
+            () -> spyPartitionedRegion.handleForceReattemptExceptionWithTransaction(exception));
+
+    assertThat(caughtException).isInstanceOf(TransactionDataRebalancedException.class)
+        .hasMessage(PartitionedRegion.DATA_MOVED_BY_REBALANCE).hasCause(regionDestroyedException);
+  }
+
+  @Test
+  public void transactionThrowsTransactionDataRebalancedExceptionIfIsAForceReattemptException() {
+    PartitionedRegion spyPartitionedRegion = spy(partitionedRegion);
+    ForceReattemptException exception = mock(ForceReattemptException.class);
+
+    Throwable caughtException =
+        catchThrowable(
+            () -> spyPartitionedRegion.handleForceReattemptExceptionWithTransaction(exception));
+
+    assertThat(caughtException).isInstanceOf(TransactionDataRebalancedException.class)
+        .hasMessage(PartitionedRegion.DATA_MOVED_BY_REBALANCE).hasCause(exception);
   }
 
   private static <K> Set<K> asSet(K... values) {

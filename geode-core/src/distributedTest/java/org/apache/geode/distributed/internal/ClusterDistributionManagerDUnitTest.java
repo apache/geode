@@ -19,13 +19,13 @@ import static org.apache.geode.distributed.ConfigurationProperties.ACK_WAIT_THRE
 import static org.apache.geode.distributed.ConfigurationProperties.BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
-import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
 import static org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
 import static org.apache.geode.test.dunit.NetworkUtils.getIPLiteral;
 import static org.apache.geode.test.dunit.Wait.pause;
+import static org.apache.geode.util.internal.GeodeGlossary.GEMFIRE_PREFIX;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -61,9 +61,10 @@ import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberDisconnectedException;
-import org.apache.geode.distributed.internal.membership.gms.api.MembershipView;
+import org.apache.geode.distributed.internal.membership.api.MemberDisconnectedException;
+import org.apache.geode.distributed.internal.membership.api.MembershipManagerHelper;
+import org.apache.geode.distributed.internal.membership.api.MembershipView;
+import org.apache.geode.distributed.internal.membership.gms.GMSMembership;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.SerializableRunnable;
@@ -171,7 +172,6 @@ public class ClusterDistributionManagerDUnitTest extends CacheTestCase {
     InternalDistributedSystem system = getSystem();
     Distribution membershipManager =
         MembershipManagerHelper.getDistribution(system);
-    assertThat(membershipManager.isCleanupTimerStarted()).isTrue();
 
     InternalDistributedMember member = new InternalDistributedMember(getIPLiteral(), 12345);
 
@@ -194,7 +194,7 @@ public class ClusterDistributionManagerDUnitTest extends CacheTestCase {
     // now forcibly add it as a surprise member and show that it is reaped
     long gracePeriod = 5000;
     long startTime = System.currentTimeMillis();
-    long timeout = membershipManager.getSurpriseMemberTimeout();
+    long timeout = ((GMSMembership) membershipManager.getMembership()).getSurpriseMemberTimeout();
     long birthTime = startTime - timeout + gracePeriod;
     MembershipManagerHelper.addSurpriseMember(system, member, birthTime);
     assertThat(membershipManager.isSurpriseMember(member)).as("Member was not a surprise member")

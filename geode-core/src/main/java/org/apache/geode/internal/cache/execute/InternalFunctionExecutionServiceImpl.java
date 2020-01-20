@@ -39,11 +39,11 @@ import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalRegion;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 public class InternalFunctionExecutionServiceImpl
     implements FunctionExecutionService, InternalFunctionExecutionService {
@@ -52,7 +52,7 @@ public class InternalFunctionExecutionServiceImpl
    * use when the optimization to execute onMember locally is not desired.
    */
   public static final boolean RANDOM_onMember =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "randomizeOnMember");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "randomizeOnMember");
 
   private static final String[] EMPTY_GROUPS = new String[0];
 

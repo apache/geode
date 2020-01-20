@@ -39,6 +39,7 @@ import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.util.Breadcrumbs;
 import org.apache.geode.internal.util.concurrent.StoppableCountDownLatch;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * This class processes responses to {@link DistributionMessage}s. It handles a the generic case of
@@ -173,7 +174,7 @@ public class ReplyProcessor21 implements MembershipListener {
 
   static {
     String str = System
-        .getProperty(DistributionConfig.GEMFIRE_PREFIX + "ack-severe-alert-reduction-ratio", ".80");
+        .getProperty(GeodeGlossary.GEMFIRE_PREFIX + "ack-severe-alert-reduction-ratio", ".80");
     double ratio;
     try {
       ratio = Double.parseDouble(str);

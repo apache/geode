@@ -55,7 +55,6 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.AtomicLongWithTerminalState;
 import org.apache.geode.distributed.internal.DirectReplyProcessor;
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
@@ -94,6 +93,7 @@ import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 
 /**
@@ -215,7 +215,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   private final HashMap<Object, LockObject> allKeysMap = new HashMap<>();
 
   static final boolean FORCE_LOCAL_LISTENERS_INVOCATION = Boolean
-      .getBoolean(DistributionConfig.GEMFIRE_PREFIX + "BucketRegion.alwaysFireLocalListeners");
+      .getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "BucketRegion.alwaysFireLocalListeners");
 
   private volatile AtomicLong5 eventSeqNum = null;
 
@@ -517,7 +517,8 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   @Override
   public boolean virtualPut(EntryEventImpl event, boolean ifNew, boolean ifOld,
       Object expectedOldValue, boolean requireOldValue, long lastModified,
-      boolean overwriteDestroyed) throws TimeoutException, CacheWriterException {
+      boolean overwriteDestroyed, boolean invokeCallbacks, boolean throwConcurrentModificaiton)
+      throws TimeoutException, CacheWriterException {
     boolean locked = lockKeysAndPrimary(event);
 
     try {

@@ -137,6 +137,7 @@ import org.apache.geode.pdx.internal.PdxReaderImpl;
 import org.apache.geode.pdx.internal.PdxType;
 import org.apache.geode.pdx.internal.PdxWriterImpl;
 import org.apache.geode.pdx.internal.TypeRegistry;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Contains static methods for data serializing instances of internal GemFire classes. It also
@@ -147,7 +148,7 @@ import org.apache.geode.pdx.internal.TypeRegistry;
  */
 public abstract class InternalDataSerializer extends DataSerializer {
   public static final boolean LOAD_CLASS_EACH_TIME =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "loadClassOnEveryDeserialization");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "loadClassOnEveryDeserialization");
   private static final Logger logger = LogService.getLogger();
   /**
    * Maps Class names to their DataSerializer. This is used to find a DataSerializer during
@@ -207,7 +208,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
           // geode-modules
           + ";org.apache.geode.modules.util.SessionCustomExpiry" + ";";
   private static final String serializationVersionTxt =
-      System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "serializationVersion");
+      System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + "serializationVersion");
   /**
    * Change this constant to be the last one in SERIALIZATION_VERSION
    */
@@ -2211,7 +2212,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
         return;
       }
       boolean invoked = false;
-      Version v = InternalDataSerializer.getVersionForDataStreamOrNull(out);
+      Version v = StaticSerialization.getVersionForDataStreamOrNull(out);
 
       if (Version.CURRENT != v && v != null) {
         // get versions where DataOutput was upgraded
@@ -2280,7 +2281,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
     }
     try {
       boolean invoked = false;
-      Version v = InternalDataSerializer.getVersionForDataStreamOrNull(in);
+      Version v = StaticSerialization.getVersionForDataStreamOrNull(in);
       if (Version.CURRENT != v && v != null) {
         // get versions where DataOutput was upgraded
         Version[] versions = null;
@@ -2343,66 +2344,6 @@ public abstract class InternalDataSerializer extends DataSerializer {
           String.format("Could not create an instance of %s .",
               c.getName()),
           ex);
-    }
-  }
-
-  /**
-   * Get the {@link Version} of the peer or disk store that created this
-   * {@link DataInput}.
-   */
-  public static Version getVersionForDataStream(DataInput in) {
-    // check if this is a versioned data input
-    if (in instanceof VersionedDataStream) {
-      final Version v = ((VersionedDataStream) in).getVersion();
-      return v != null ? v : Version.CURRENT;
-    } else {
-      // assume latest version
-      return Version.CURRENT;
-    }
-  }
-
-  /**
-   * Get the {@link Version} of the peer or disk store that created this
-   * {@link DataInput}. Returns
-   * null if the version is same as this member's.
-   */
-  public static Version getVersionForDataStreamOrNull(DataInput in) {
-    // check if this is a versioned data input
-    if (in instanceof VersionedDataStream) {
-      return ((VersionedDataStream) in).getVersion();
-    } else {
-      // assume latest version
-      return null;
-    }
-  }
-
-  /**
-   * Get the {@link Version} of the peer or disk store that created this
-   * {@link DataOutput}.
-   */
-  public static Version getVersionForDataStream(DataOutput out) {
-    // check if this is a versioned data output
-    if (out instanceof VersionedDataStream) {
-      final Version v = ((VersionedDataStream) out).getVersion();
-      return v != null ? v : Version.CURRENT;
-    } else {
-      // assume latest version
-      return Version.CURRENT;
-    }
-  }
-
-  /**
-   * Get the {@link Version} of the peer or disk store that created this
-   * {@link DataOutput}. Returns
-   * null if the version is same as this member's.
-   */
-  public static Version getVersionForDataStreamOrNull(DataOutput out) {
-    // check if this is a versioned data output
-    if (out instanceof VersionedDataStream) {
-      return ((VersionedDataStream) out).getVersion();
-    } else {
-      // assume latest version
-      return null;
     }
   }
 
@@ -3359,7 +3300,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
      */
     @MutableForTesting
     public static int WAIT_MS = Integer.getInteger(
-        DistributionConfig.GEMFIRE_PREFIX + "InternalDataSerializer.WAIT_MS", 60 * 1000);
+        GeodeGlossary.GEMFIRE_PREFIX + "InternalDataSerializer.WAIT_MS", 60 * 1000);
 
     /**
      * Returns the serializer associated with this marker. If the serializer has not been registered

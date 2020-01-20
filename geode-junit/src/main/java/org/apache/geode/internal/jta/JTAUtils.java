@@ -24,7 +24,6 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -32,7 +31,6 @@ import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
-import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.Region;
@@ -42,8 +40,6 @@ public class JTAUtils {
 
   public Region currRegion;
   public Cache cache;
-  /** This is used to store each Regions original attributes for reset purposes */
-  private HashMap regionDefaultAttrMap = new HashMap();
 
   public JTAUtils(Cache cache, Region region) {
     this.cache = cache;
@@ -51,17 +47,11 @@ public class JTAUtils {
   }
 
   public static long start() {
-    long beginTime = getCurrentTimeMillis();
-    return beginTime;
+    return getCurrentTimeMillis();
   }
 
   public static long stop() {
-    long endTime = getCurrentTimeMillis();
-    return endTime;
-  }
-
-  public static long elapsedTime(long endTime, long beginTime) {
-    return endTime - beginTime;
+    return getCurrentTimeMillis();
   }
 
   static long getCurrentTimeMillis() {
@@ -72,16 +62,12 @@ public class JTAUtils {
    * Calls the corresponding cache APIs to create a sub-region by name 'command' in the current
    * region.
    */
-  public void mkrgn(String command) throws Exception {
+  private void makeRegion(String command) throws Exception {
 
     try {
-      String name = command;
-      AttributesFactory fac = new AttributesFactory(this.currRegion.getAttributes());
-      Region nr = this.currRegion.createSubregion(name, fac.create());
-      regionDefaultAttrMap.put(nr.getFullPath(), fac.create());
+      cache.createRegionFactory(currRegion.getAttributes()).createSubregion(currRegion, command);
     } catch (Exception e) {
-      // fail (" unable to make region..." + e.getMessage ());
-      throw new Exception(" failed in mkrgn " + command);
+      throw new Exception(" failed in makeRegion " + command);
     }
 
   }
@@ -92,17 +78,16 @@ public class JTAUtils {
    */
   public void getRegionFromCache(String region) throws Exception {
     try {
-      Region subr = this.currRegion.getSubregion(region);
+      Region subregion = this.currRegion.getSubregion(region);
 
-      if (subr == null) {
-        mkrgn(region);
+      if (subregion == null) {
+        makeRegion(region);
         currRegion = this.currRegion.getSubregion(region);
       } else {
-        currRegion = subr;
+        currRegion = subregion;
       }
 
     } catch (Exception e) {
-      // fail (" unable to get sub-region...");
       System.out.println("err: " + e);
       e.printStackTrace();
       throw new Exception(" failed in getRegionFromCache ");
@@ -113,24 +98,16 @@ public class JTAUtils {
   /**
    * Parses a <code>command</code> and places each of its tokens in a <code>List</code>.
    */
-  public boolean parseCommand(String command, List list) {
-    // String strTemp = command;
-    boolean done = false;
-    boolean success = false;
-    int space = -1;
-    do {
-      space = command.indexOf(' ');
-      if (space < 0) {
-        done = true;
-        list.add(command);
-        break;
-      }
+  public List<String> parseCommand(String command) {
+    int space;
+    List<String> list = new LinkedList<>();
+    while ((space = command.indexOf(' ')) > 0) {
       String str = command.substring(0, space);
       list.add(str);
-      command = command.substring(space + 1, command.length());
-      success = true;
-    } while (!done);
-    return success;
+      command = command.substring(space + 1);
+    }
+    list.add(command);
+    return list;
   }
 
   /**
@@ -141,18 +118,8 @@ public class JTAUtils {
    */
 
   public String get(String command) throws CacheException {
-    String value = null;
-
-    // try {
-    String name = command;
-    Object valueBytes = this.currRegion.get(name);
-    value = printEntry(name, valueBytes);
-    // }
-    // catch (CacheException e) {
-    // //fail (" unable to get value..." + e.getMessage ());
-    // throw new CacheExistsException("failed getting region: " + command);
-    // }
-    return value;
+    Object valueBytes = this.currRegion.get(command);
+    return printEntry(command, valueBytes);
   }
 
   /**
@@ -162,17 +129,15 @@ public class JTAUtils {
    */
   public void put(String command, String val) throws Exception {
     try {
-      LinkedList list = new LinkedList();
-      // syntax of put from CacheRunner cli help-- prabir
       command = "put " + command + " " + val;
-      parseCommand(command, list);
+      List<String> list = parseCommand(command);
       if (list.size() < 3) {
         System.out.println("Error:put requires a name and a value");
       } else {
-        String name = (String) list.get(1);
-        String value = (String) list.get(2);
+        String name = list.get(1);
+        String value = list.get(2);
         if (list.size() > 3) {
-          String objectType = (String) list.get(3);
+          String objectType = list.get(3);
           if (objectType.equalsIgnoreCase("int")) {
             this.currRegion.put(name, Integer.valueOf(value));
           } else if (objectType.equalsIgnoreCase("str")) {
@@ -186,7 +151,6 @@ public class JTAUtils {
         }
       }
     } catch (Exception e) {
-      // fail (" unable to put..." + e.getMessage ());
       throw new Exception("unable to put: " + e);
     }
 
@@ -201,13 +165,13 @@ public class JTAUtils {
 
     if (valueBytes != null) {
       if (valueBytes instanceof byte[]) {
-        value = new String("byte[]: \"" + new String((byte[]) valueBytes) + "\"");
+        value = "byte[]: \"" + new String((byte[]) valueBytes) + "\"";
       } else if (valueBytes instanceof String) {
-        value = new String("String: \"" + valueBytes + "\"");
+        value = "String: \"" + valueBytes + "\"";
       } else if (valueBytes instanceof Integer) {
-        value = new String("Integer: \"" + valueBytes.toString() + "\"");
+        value = "Integer: \"" + valueBytes.toString() + "\"";
       } else {
-        value = new String("No value in cache.");
+        value = "No value in cache.";
       }
 
       System.out.print("     " + key + " -> " + value);
@@ -216,31 +180,14 @@ public class JTAUtils {
   }
 
   /**
-   * Returns a constant width space to stdout This method is used to print test pass/fail msg after
-   * a constant width from the test execution stage
-   */
-
-  public static String repeatChar(char character, int repeatCount) {
-
-    StringBuffer stringBuffer = new StringBuffer(repeatCount);
-    for (int i = 1; i <= repeatCount; i++) {
-      stringBuffer.append(character);
-    }
-    return stringBuffer.toString();
-  }
-
-  /**
-   * This method is used to parse the string with delimeter ':'returned by get(). The delimeter is
+   * This method is used to parse the string with delimiter ':'returned by get(). The delimiter is
    * appended by printEntry().
    */
   public String parseGetValue(String str) {
 
     String returnVal = null;
-    if (str == null) {
-      // returnVal = str; (redundant assignment)
-    }
     if (str.indexOf(':') != -1) {
-      String tokens[] = str.split(":");
+      String[] tokens = str.split(":");
       returnVal = tokens[1].trim();
     } else if (str.equals("No value in cache.")) { // dont change this string!!
       returnVal = str;
@@ -253,29 +200,25 @@ public class JTAUtils {
    * This method is used to delete all rows from the timestamped table created by createTable() in
    * CacheUtils class.
    */
-  public int deleteRows(String tableName) throws NamingException, SQLException {
+  public void deleteRows(String tableName) throws NamingException, SQLException {
 
     Context ctx = cache.getJNDIContext();
     DataSource da = (DataSource) ctx.lookup("java:/SimpleDataSource"); // doesn't req txn
 
     Connection conn = da.getConnection();
     Statement stmt = conn.createStatement();
-    int rowsDeleted = 0; // assume that rows are always inserted in CacheUtils
-    String sql = "";
-    sql = "select * from " + tableName;
+    String sql = "select * from " + tableName;
     ResultSet rs = stmt.executeQuery(sql);
     if (rs.next()) {
 
       sql = "delete from  " + tableName;
-      rowsDeleted = stmt.executeUpdate(sql);
+      stmt.executeUpdate(sql);
     }
 
     rs.close();
 
     stmt.close();
     conn.close();
-
-    return rowsDeleted;
   }
 
 
@@ -290,16 +233,14 @@ public class JTAUtils {
 
     String sql = "select * from " + tableName;
 
-    Connection conn = ds.getConnection();
-    Statement sm = conn.createStatement();
-    ResultSet rs = sm.executeQuery(sql);
     int counter = 0;
-    while (rs.next()) {
-      counter++;
-      // System.out.println("id "+rs.getString(1)+ " name "+rs.getString(2));
+    try (Connection conn = ds.getConnection();
+        Statement sm = conn.createStatement();
+        ResultSet rs = sm.executeQuery(sql)) {
+      while (rs.next()) {
+        counter++;
+      }
     }
-    rs.close();
-    conn.close();
 
     return counter;
   }
@@ -318,23 +259,20 @@ public class JTAUtils {
 
     String sql = "select * from " + tableName;
 
-    Connection conn = ds.getConnection();
-    Statement sm = conn.createStatement();
-    ResultSet rs = sm.executeQuery(sql);
-    while (rs.next()) {
-      System.out.println("id:" + rs.getString(1));
-      System.out.println("name:" + rs.getString(2));
-      id_str = rs.getString(1);
-      if (id_str.equals(pattern)) {
-        found = true;
-        break;
-      } else
-        continue;
+    try (Connection conn = ds.getConnection();
+        Statement sm = conn.createStatement();
+        ResultSet rs = sm.executeQuery(sql)) {
+      while (rs.next()) {
+        System.out.println("id:" + rs.getString(1));
+        System.out.println("name:" + rs.getString(2));
+        id_str = rs.getString(1);
+        if (id_str.equals(pattern)) {
+          found = true;
+          break;
+        }
+      }
     }
-    rs.close();
-    conn.close();
+
     return found;
   }
-
-
-} // end of class
+}

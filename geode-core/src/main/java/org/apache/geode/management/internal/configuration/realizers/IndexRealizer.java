@@ -20,7 +20,10 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.query.IndexExistsException;
+import org.apache.geode.cache.query.IndexNameConflictException;
 import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.RegionNotFoundException;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.api.RealizationResult;
@@ -48,10 +51,18 @@ public class IndexRealizer implements ConfigurationRealizer<Index, IndexInfo> {
       realizationResult.setSuccess(true);
       realizationResult.setMessage("Index " + indexName + " successfully created");
       return realizationResult;
-    } catch (Exception e) {
-      logger.error(e.getMessage(), e);
+    } catch (IndexNameConflictException | IndexExistsException e) {
+      // index creation is a distributed operation. sometimes the index might already be created
+      // via actions on another server.
+      realizationResult.setSuccess(true);
+      realizationResult.setMessage(e.getMessage());
+    } catch (RegionNotFoundException e) {
       realizationResult.setSuccess(false);
       realizationResult.setMessage(e.getMessage());
+    } catch (RuntimeException r) {
+      logger.error(r.getMessage(), r);
+      realizationResult.setSuccess(false);
+      realizationResult.setMessage(r.getMessage());
     }
 
     return realizationResult;
@@ -84,6 +95,37 @@ public class IndexRealizer implements ConfigurationRealizer<Index, IndexInfo> {
 
   @Override
   public RealizationResult delete(Index config, InternalCache cache) {
-    return null;
+    QueryService queryService = cache.getQueryService();
+    RealizationResult realizationResult = new RealizationResult();
+    Region<Object, Object> region = cache.getRegion("/" + config.getRegionName());
+    if (region == null) {
+      realizationResult.setSuccess(false);
+      realizationResult.setMessage("Region for index not found: " + config.getRegionName());
+      return realizationResult;
+    }
+    org.apache.geode.cache.query.Index index = queryService.getIndex(region, config.getName());
+    if (index == null) {
+      realizationResult.setSuccess(false);
+      realizationResult.setMessage("Index not found for Region: "
+          + config.getRegionName()
+          + ", "
+          + config.getName());
+      return realizationResult;
+    }
+    try {
+      queryService.removeIndex(index);
+      realizationResult.setSuccess(true);
+      realizationResult.setMessage("Index "
+          + config.getName()
+          + " successfully removed from "
+          + config.getRegionName());
+      return realizationResult;
+    } catch (RuntimeException e) {
+      logger.error(e.getMessage(), e);
+      realizationResult.setSuccess(false);
+      realizationResult.setMessage(e.getMessage());
+    }
+
+    return realizationResult;
   }
 }

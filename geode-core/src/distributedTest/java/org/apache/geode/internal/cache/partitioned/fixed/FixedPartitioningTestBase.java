@@ -52,7 +52,6 @@ import org.apache.geode.cache.control.ResourceManager;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.FixedPartitionAttributesImpl;
 import org.apache.geode.internal.cache.HARegion;
@@ -71,6 +70,7 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * This is the base class to do operations
@@ -132,7 +132,7 @@ public class FixedPartitioningTestBase extends JUnit4DistributedTestCase {
   }
 
   public static void createCacheOnMember_DisableMovePrimary() {
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "DISABLE_MOVE_PRIMARIES_ON_STARTUP",
+    System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "DISABLE_MOVE_PRIMARIES_ON_STARTUP",
         "true");
     new FixedPartitioningTestBase().createCache();
   }
@@ -1276,7 +1276,7 @@ public class FixedPartitioningTestBase extends JUnit4DistributedTestCase {
   }
 
   public static void closeCache() {
-    System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "DISABLE_MOVE_PRIMARIES_ON_STARTUP");
+    System.clearProperty(GeodeGlossary.GEMFIRE_PREFIX + "DISABLE_MOVE_PRIMARIES_ON_STARTUP");
     // System.setProperty("gemfire.DISABLE_MOVE_PRIMARIES_ON_STARTUP", "false");
     if (cache != null && !cache.isClosed()) {
       cache.close();

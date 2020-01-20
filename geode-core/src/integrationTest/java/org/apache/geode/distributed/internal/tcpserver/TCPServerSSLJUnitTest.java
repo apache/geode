@@ -22,7 +22,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_PROTOCOLS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
-import static org.apache.geode.distributed.internal.membership.adapter.SocketCreatorAdapter.asTcpSocketCreator;
+import static org.apache.geode.distributed.internal.membership.adapter.TcpSocketCreatorAdapter.asTcpSocketCreator;
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -31,6 +31,7 @@ import java.net.ConnectException;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Properties;
+import java.util.concurrent.Executors;
 
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
@@ -41,20 +42,17 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.DistributionStats;
-import org.apache.geode.distributed.internal.PoolStatHelper;
-import org.apache.geode.distributed.internal.RestartableTcpHandler;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.cache.tier.sockets.TcpServerFactory;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.net.SocketCreatorFailHandshake;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.junit.categories.MembershipTest;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 @Category({MembershipTest.class})
 public class TCPServerSSLJUnitTest {
@@ -76,7 +74,7 @@ public class TCPServerSSLJUnitTest {
 
     SocketCreatorFactory.setDistributionConfig(new DistributionConfigImpl(new Properties()));
 
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "TcpServer.READ_TIMEOUT",
+    System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "TcpServer.READ_TIMEOUT",
         expectedSocketTimeout);
 
     localhost = InetAddress.getLocalHost();
@@ -91,16 +89,15 @@ public class TCPServerSSLJUnitTest {
     server = new TcpServer(
         port,
         localhost,
-        Mockito.mock(RestartableTcpHandler.class),
+        Mockito.mock(TcpHandler.class),
         "server thread",
         (socket, input, firstByte) -> false, DistributionStats::getStatTime,
-        TcpServerFactory.createExecutorServiceSupplier(Mockito.mock(PoolStatHelper.class)),
-        asTcpSocketCreator(
-            socketCreator),
+        Executors::newCachedThreadPool,
+        asTcpSocketCreator(socketCreator),
         InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
         InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer(),
-        DistributionConfig.GEMFIRE_PREFIX + "TcpServer.READ_TIMEOUT",
-        DistributionConfig.GEMFIRE_PREFIX + "TcpServer.BACKLOG");
+        GeodeGlossary.GEMFIRE_PREFIX + "TcpServer.READ_TIMEOUT",
+        GeodeGlossary.GEMFIRE_PREFIX + "TcpServer.BACKLOG");
 
     server.start();
   }

@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.api;
 
+
 import java.io.Serializable;
 
 import org.apache.geode.annotations.Experimental;
@@ -80,5 +81,10 @@ public class RealizationResult implements Serializable {
   public RealizationResult setSuccess(boolean success) {
     this.success = success;
     return this;
+  }
+
+  @Override
+  public String toString() {
+    return memberName + ": " + success + ", " + message;
   }
 }

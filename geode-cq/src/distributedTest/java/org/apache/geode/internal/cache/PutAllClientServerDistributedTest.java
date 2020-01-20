@@ -91,6 +91,7 @@ import org.apache.geode.cache.query.Struct;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.cache.util.CacheWriterAdapter;
+import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
@@ -2431,6 +2432,8 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
    */
   @Test
   public void testHADRFailOver() throws Exception {
+    addIgnoredException(DistributedSystemDisconnectedException.class);
+
     // set notifyBySubscription=true to test register interest
     int serverPort1 = server1.invoke(() -> createServer(regionName, 0, false, 0, null));
     int serverPort2 = server2.invoke(() -> createServer(regionName, 0, false, 0, null));

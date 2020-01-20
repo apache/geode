@@ -35,7 +35,7 @@ import org.apache.geode.cache.query.NameNotFoundException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.internal.cache.Token;
-import org.apache.geode.internal.util.JavaWorkarounds;
+import org.apache.geode.internal.lang.JavaWorkarounds;
 import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxSerializationException;
 import org.apache.geode.pdx.internal.InternalPdxInstance;
