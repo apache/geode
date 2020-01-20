@@ -306,7 +306,6 @@ public abstract class LuceneSearchWithRollingUpgradeTestBase extends JUnit4Distr
       luceneQuery.getClass().getMethod("findKeys").invoke(luceneQuery);
       success = true;
     } catch (Exception ex) {
-      ex.printStackTrace();
       if (!ex.getCause().getMessage().contains("currently indexing")) {
         throw ex;
       } else {
