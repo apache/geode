@@ -26,7 +26,7 @@ import static org.mockito.Mockito.verify;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
@@ -65,12 +65,10 @@ public class OperationHistoryManagerTest {
     TestOperationResult testOperationResult = new TestOperationResult();
     TestOpType1 testOpType1 = new TestOpType1();
     BiFunction<Cache, TestOpType1, TestOperationResult> testOperation = (cache, testOpType) -> {
-      while (!testOpType.done) {
-        try {
-          Thread.sleep(100);
-        } catch (InterruptedException e) {
-          System.out.println(e.getMessage());
-        }
+      try {
+        testOpType.countDownLatch.await(10, TimeUnit.SECONDS);
+      } catch (InterruptedException e) {
+        System.out.println("Countdown interrupted");
       }
       return testOperationResult;
     };
@@ -88,7 +86,7 @@ public class OperationHistoryManagerTest {
           .isNull();
       assertThat(operationInstance.getResult()).as("result pre-completion").isNull();
 
-      testOpType1.setDone(true);
+      testOpType1.downLatch();
 
       GeodeAwaitility.await().untilAsserted(
           () -> softly.assertThat(operationInstance.getOperationEnd())
@@ -107,14 +105,12 @@ public class OperationHistoryManagerTest {
     TestOperationResult testOperationResult = new TestOperationResult();
     TestOpType1 testOpType1 = new TestOpType1();
     BiFunction<Cache, TestOpType1, TestOperationResult> testOperation = (cache, testOpType) -> {
-      while (!testOpType.done) {
-        try {
-          Thread.sleep(100);
-        } catch (InterruptedException e) {
-          System.out.println(e.getMessage());
-        }
+      try {
+        testOpType.countDownLatch.await(10, TimeUnit.SECONDS);
+      } catch (InterruptedException e) {
+        System.out.println("Countdown interrupted");
       }
-      if (testOpType.failed) {
+      if (testOpType.exceptionLatch.getCount() == 0) {
         throw new RuntimeException("Long running operation failed");
       }
       return testOperationResult;
@@ -133,8 +129,8 @@ public class OperationHistoryManagerTest {
           .isNull();
       assertThat(operationInstance.getResult()).as("result pre-completion").isNull();
 
-      testOpType1.setFailed(true);
-      testOpType1.setDone(true);
+      testOpType1.downException();
+      testOpType1.downLatch();
 
       GeodeAwaitility.await().untilAsserted(
           () -> softly.assertThat(operationInstance.getOperationEnd())
@@ -160,12 +156,10 @@ public class OperationHistoryManagerTest {
     TestOperationResult testOperationResult = new TestOperationResult();
     TestOpType1 testOpType1 = new TestOpType1();
     BiFunction<Cache, TestOpType1, TestOperationResult> testOperation = (cache, testOpType) -> {
-      while (!testOpType.done) {
-        try {
-          Thread.sleep(10);
-        } catch (InterruptedException e) {
-          System.out.println(e.getMessage());
-        }
+      try {
+        testOpType.countDownLatch.await(10, TimeUnit.SECONDS);
+      } catch (InterruptedException e) {
+        System.out.println("Countdown interrupted");
       }
       return testOperationResult;
     };
@@ -174,7 +168,7 @@ public class OperationHistoryManagerTest {
         testOpType1, testOperation, cache, executor);
     doReturn(operationInstance).when(operationHistoryPersistenceService)
         .getOperationInstance(operationInstance.getId());
-    testOpType1.setDone(true);
+    testOpType1.downLatch();
 
     assertSoftly(softly -> {
       softly.assertThat(operationInstance.getId()).as("id post-completion").isNotNull();
@@ -241,56 +235,47 @@ public class OperationHistoryManagerTest {
   }
 
   @Test
-  public void timestampsAreCorrectWhenFutureCompletesAfterSave() throws Exception {
-    CompletableFuture<OperationResult> future2 = new CompletableFuture<>();
-    Date start = new Date();
-    // history.save(op("2", future2, start));
-    // assertThat(history.getOperationInstance("2").getFutureOperationEnded().isDone()).isFalse();
-    // future2.complete(null);
-    // assertThat(history.getOperationInstance("2").getOperationStart()).isEqualTo(start);
-    // assertThat(history.getOperationInstance("2").getFutureOperationEnded().isDone()).isTrue();
-    // assertThat(history.getOperationInstance("2").getFutureOperationEnded().get().getTime())
-    // .isGreaterThanOrEqualTo(start.getTime());
-  }
-
-  @Test
-  public void onlyExpiresOldOperations() {
-    // make op1 one ended yesterday
-    // OperationInstance<?, ?> op1 = history.save(op("1", new CompletableFuture<>()));
-    // op1.getFutureOperationEnded().complete(new Date(System.currentTimeMillis() - 86400000));
-    // op1.getFutureResult().complete(null);
-
-    // op2 ended just now
-    // history.save(op("2", new CompletableFuture<>())).getFutureResult().complete(null);
-
-    assertThat(history.getOperationInstance("1")).isNull();
-    assertThat(history.getOperationInstance("2")).isNotNull();
-  }
-
-  @Test
   public void listOperationsFiltersByType() {
-    // OperationInstance<OpType1, OperationResult> op1a = history.save(op("1a", new OpType1()));
-    // OperationInstance<OpType1, OperationResult> op1b = history.save(op("1b", new OpType1()));
-    // OperationInstance<OpType2, OperationResult> op2a = history.save(op("2a", new OpType2()));
-    assertThat(history.listOperationInstances(new TestOpType1()).size()).isEqualTo(2);
-    assertThat(history.listOperationInstances(new TestOpType2()).size()).isEqualTo(1);
+    TestOpType1 opType1 = new TestOpType1();
+    TestOpType2 opType2 = new TestOpType2();
+
+    List<OperationInstance<?, TestOperationResult>> sampleOps = new ArrayList<>();
+    for (int i = 0; i < 9; i++) {
+      if (i%2 == 0) {
+        sampleOps.add(new OperationInstance<>("op-" + i, opType1, new Date()));
+      } else {
+        sampleOps.add(new OperationInstance<>("op-" + i, opType2, new Date()));
+      }
+    }
+
+    doReturn(sampleOps).when(operationHistoryPersistenceService).listOperationInstances();
+
+    List<OperationInstance<TestOpType1, TestOperationResult>> opList1 =
+        history.listOperationInstances(opType1);
+    List<OperationInstance<TestOpType2, TestOperationResult>> opList2 =
+        history.listOperationInstances(opType2);
+
+    assertThat(opList1.size()).isEqualTo(5);
+    assertThat(opList2.size()).isEqualTo(4);
+
+    verify(operationHistoryPersistenceService, never()).remove(any());
   }
 
   static class TestOpType1 implements ClusterManagementOperation<TestOperationResult> {
-    private boolean done = false;
-    private boolean failed = false;
+    private CountDownLatch exceptionLatch = new CountDownLatch(1);
+    private CountDownLatch countDownLatch = new CountDownLatch(1);
 
     @Override
     public String getEndpoint() {
       return null;
     }
 
-    public void setDone(boolean done) {
-      this.done = done;
+    public void downException() {
+      exceptionLatch.countDown();
     }
 
-    public void setFailed(boolean failed) {
-      this.failed = failed;
+    public void downLatch() {
+      countDownLatch.countDown();
     }
   }
 
