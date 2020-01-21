@@ -127,6 +127,7 @@ INSTANCE_INFORMATION=$(gcloud compute --project=${GCP_PROJECT} instances create 
   --labels="${LABELS}" \
   --tags="heavy-lifter" \
   --scopes="default,storage-rw" \
+ `[[ "${SANITIZED_BUILD_JOB_NAME}" =~ [Ww]indows  ]] && echo "--local-ssd interface=scsi"` \
   --format=json)
 
 CREATE_RC=$?
@@ -145,6 +146,7 @@ INSTANCE_ID=$(echo ${INSTANCE_INFORMATION} | jq -r '.[].id')
 echo "Heavy lifter's Instance ID is: ${INSTANCE_ID}"
 
 echo "${INSTANCE_IP_ADDRESS}" > "instance-data/instance-ip-address"
+echo "${INSTANCE_ID}" > "instance-data/instance-id"
 
 if [[ -z "${WINDOWS_PREFIX}" ]]; then
   SSH_TIME=$(($(date +%s) + 60))
