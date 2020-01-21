@@ -14,8 +14,10 @@
  */
 package org.apache.geode.internal.monitoring.executor;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertTrue;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
 import org.apache.geode.test.awaitility.GeodeAwaitility;
@@ -85,9 +87,9 @@ public class AbstractExecutorGroupJUnitTest {
       }
     };
     blockingThread.start();
-    GeodeAwaitility.await().until(() -> blockingThreadWaiting[0]);
+    await().until(() -> blockingThreadWaiting[0]);
     blockedThread.start();
-    GeodeAwaitility.await().until(() -> blockedThreadWaiting[0]);
+    await().until(() -> blockedThreadWaiting[0]);
     try {
       AbstractExecutor executor = new AbstractExecutor(null, blockedThread.getId()) {
         @Override
@@ -95,8 +97,10 @@ public class AbstractExecutorGroupJUnitTest {
           // no-op
         }
       };
-      String threadReport = executor.createThreadReport(60000);
-      assertTrue(threadReport.contains(AbstractExecutor.LOCK_OWNER_THREAD_STACK));
+      await().untilAsserted(() -> {
+        String threadReport = executor.createThreadReport(60000);
+        Assertions.assertThat(threadReport).contains(AbstractExecutor.LOCK_OWNER_THREAD_STACK);
+      });
     } finally {
       blockingThread.interrupt();
       blockedThread.interrupt();
