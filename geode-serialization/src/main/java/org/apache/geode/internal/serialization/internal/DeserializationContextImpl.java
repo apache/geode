@@ -12,9 +12,14 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.serialization;
+package org.apache.geode.internal.serialization.internal;
 
 import java.io.DataInput;
+
+import org.apache.geode.internal.serialization.DSFIDSerializer;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.ObjectDeserializer;
+import org.apache.geode.internal.serialization.Version;
 
 public class DeserializationContextImpl extends AbstractSerializationContext
     implements DeserializationContext {

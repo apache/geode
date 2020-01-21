@@ -19,6 +19,10 @@ import java.util.Arrays;
 
 import org.apache.geode.annotations.Immutable;
 
+/**
+ * DscodeHelper is used by advanced serialization code to convert between bytes and
+ * DSCODEs.
+ */
 public class DscodeHelper {
 
   @Immutable

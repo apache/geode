@@ -19,10 +19,9 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 /**
- * An interface that implements data serialization for internal GemFire product classes that have a
+ * An interface that implements data serialization for internal Geode product classes that have a
  * fixed id. The fixed id is used to represent the class, on the wire, at serialization time and
- * used in a switch statement at deserialization time. All the codes should be static final in this
- * class.
+ * used in locating the constructor code for the class at deserialization.
  * <p>
  * Implementors MUST have a public zero-arg constructor.
  *
@@ -32,16 +31,24 @@ import java.io.IOException;
  * <p>
  * To add a new DataSerializableFixedID do this following:
  * <ol>
- * <li>Define a constant with an id that is free and put it in <code>DataSerializableFixedID</code>
- * as a "byte". Make sure and update the "unused" comments to no longer mention your new id. If
- * implementing a class used only for tests then there is no need to consume a fixed id and you
- * should use {@link #NO_FIXED_ID}. In this case you can skip steps 3 and 4.
+ * <li>Define a constant with an id that is free and put it either
+ * in<code>DataSerializableFixedID</code>
+ * or in the DSFID registration code for your module (for instance, in Services in the geode-
+ * membership module). Make sure to update the "unused" comments to no longer mention your new id.
+ * If
+ * implementing a class used only for tests in geode-core and downstream modules then there is no
+ * need to consume a fixed id and you should use {@link #NO_FIXED_ID}. In this case you can skip
+ * steps 3 and 4.
+ * For modules below geode-core you may not use {@link #NO_FIXED_ID}.
  * <li>Define a method in the class that implements <code>DataSerializableFixedID</code> named
  * {@link #getDSFID} that returns the constant from step 1.
- * <li>Add registration of your class to DSFIDFactory's registration method.
+ * <li>Add registration of your class in your module using DSFIDFactory's registerDSFID() method.
  * <li>Implement {@link #toData} and {@link #fromData} just like you would on a
  * DataSerializable class. Make sure you follow the javadocs for these methods to add support
  * for rolling upgrades.
+ * <li>Implement the SerializationVersions API for backward-compatibility when necessary. This
+ * lets you implement multiple versions of toData and fromData based on the Geode version of
+ * the destination or source, respectively.
  * </ol>
  *
  */
@@ -50,16 +57,6 @@ public interface DataSerializableFixedID extends SerializationVersions, BasicSer
   // NOTE, codes < -65536 will take 4 bytes to serialize
   // NOTE, codes < -128 will take 2 bytes to serialize
 
-  /*
-   * In the class to be serialized, add public FOO(DataInput in) throws IOException,
-   * ClassNotFoundException { fromData(in); }
-   *
-   * public int getDSFID() { return FOO; }
-   *
-   * In DataSerializableFixedId, allocate an ID for the class byte FOO = -54;
-   *
-   * In DSFIDFactory, add a case for the new class case FOO: return new FOO(in);
-   */
   short CREATE_REGION_MESSAGE_LUCENE = -159;
   short FINAL_CHECK_PASSED_MESSAGE = -158;
   short NETWORK_PARTITION_MESSAGE = -157;
@@ -128,19 +125,17 @@ public interface DataSerializableFixedID extends SerializationVersions, BasicSer
   byte RESOURCE_MANAGER_PROFILE = -107;
   byte PR_CREATE_BUCKET_MESSAGE = -106;
   byte PR_CREATE_BUCKET_REPLY_MESSAGE = -105;
-  byte DISTRIBUTED_REGION_FUNCTION_MESSAGE = -104;
-  byte DISTRIBUTED_REGION_FUNCTION_REPLY_MESSAGE = -103;
 
-  byte MEMBER_FUNCTION_MESSAGE = -102;
-  byte MEMBER_FUNCTION_REPLY_MESSAGE = -101;
+  // -104 through -101 unused
+
   byte PARTITION_REGION_CONFIG = -100;
   byte PR_FETCH_KEYS_REPLY_MESSAGE = -99;
   byte PR_DUMP_B2N_REGION_MSG = -98;
   byte PR_DUMP_B2N_REPLY_MESSAGE = -97;
   byte PR_INVALIDATE_MESSAGE = -96;
   byte PR_INVALIDATE_REPLY_MESSAGE = -95;
-  byte PR_FUNCTION_MESSAGE = -94;
-  byte PR_FUNCTION_REPLY_MESSAGE = -93;
+
+  // -94 and -93 unused
 
   byte PROFILES_REPLY_MESSAGE = -92;
   byte CACHE_SERVER_PROFILE = -91;
@@ -178,7 +173,7 @@ public interface DataSerializableFixedID extends SerializationVersions, BasicSer
   byte COLLECTION_TYPE_IMPL = -59;
   byte TX_LOCK_BATCH = -58;
   byte STORE_ALL_CACHED_DESERIALIZABLE = -57;
-  byte GATEWAY_EVENT_CALLBACK_ARGUMENT = -56;
+  // -56 unused
   byte MAP_TYPE_IMPL = -55;
   byte LOCATOR_LIST_REQUEST = -54;
   byte CLIENT_CONNECTION_REQUEST = -53;
@@ -229,25 +224,9 @@ public interface DataSerializableFixedID extends SerializationVersions, BasicSer
 
   byte LATEST_LAST_ACCESS_TIME_MESSAGE = -20;
 
-  public static final byte REMOVE_CACHESERVER_PROFILE_UPDATE = -19;
+  byte REMOVE_CACHESERVER_PROFILE_UPDATE = -19;
 
-  // IDs -18 .. -16 are not used
-
-  /**
-   * A header byte meaning that the next element in the stream is a <code>VMIdProfile</code>.
-   */
-  byte VMID_PROFILE_MESSAGE = -15;
-
-  /**
-   * A header byte meaning that the next element in the stream is a
-   * <code>LocalRegion.UUIDProfile</code>.
-   */
-  byte REGION_UUID_PROFILE_MESSAGE = -14;
-
-  short TX_REMOTE_COMMIT_PHASE1_MESSAGE = -13;
-  short TX_BATCH_MESSAGE = -12;
-  short TX_CLEANUP_ENTRY_MESSAGE = -11;
-  short TX_BATCH_REPLY_MESSAGE = -10;
+  // IDs -18 through -10 unused
 
   byte PR_REMOVE_ALL_MESSAGE = -9;
   byte REMOVE_ALL_MESSAGE = -8;
@@ -261,11 +240,7 @@ public interface DataSerializableFixedID extends SerializationVersions, BasicSer
 
   byte ILLEGAL = 0;
 
-  // 1 available for reuse. Retired in Geode v1.0
-  // byte JGROUPS_VIEW = 1;
-
-  // 2 available for reuse. Retired in Geode v1.0
-  // byte JGROUPS_JOIN_RESP = 2;
+  // 1 through 2 unused
 
   byte PUTALL_VERSIONS_LIST = 3;
 
@@ -281,32 +256,12 @@ public interface DataSerializableFixedID extends SerializationVersions, BasicSer
   byte ENUM_INFO = 9;
 
 
-  /**
-   * A header byte meaning that the next element in the stream is a
-   * <code>InitialImageOperation.EventStateMessage</code>.
-   */
   byte REGION_STATE_MESSAGE = 10;
-
-  /**
-   * A header byte meaning that the next element in the stream is a
-   * <code>ClientInstantiatorMessage</code>.
-   */
   byte CLIENT_INSTANTIATOR_MESSAGE = 11;
-
-  /**
-   * A header byte meaning that the next element in the stream is a
-   * <code>InternalInstantiator.RegistrationMessage</code>.
-   */
   byte REGISTRATION_MESSAGE = 12;
-
-  /**
-   * A header byte meaning that the next element in the stream is a
-   * <code>InternalInstantiator.RegistrationContextMessage</code>.
-   */
   byte REGISTRATION_CONTEXT_MESSAGE = 13;
 
   /** More Query Result Classes */
-  // PRQueryProcessor.EndOfBucket
   byte END_OF_BUCKET = 14;
   byte RESULTS_BAG = 15;
   byte STRUCT_BAG = 16;
@@ -317,14 +272,12 @@ public interface DataSerializableFixedID extends SerializationVersions, BasicSer
   byte ROLE_EVENT = 19;
   byte CLIENT_REGION_EVENT = 20;
 
-  byte CONCURRENT_HASH_MAP = 21;
+  // 21 unused
+
   byte FIND_DURABLE_QUEUE = 22;
   byte FIND_DURABLE_QUEUE_REPLY = 23;
   byte CACHE_SERVER_LOAD_MESSAGE = 24;
 
-  /**
-   * A header byte meaning that the next element in the stream is a <code>ObjectPartList</code>.
-   */
   byte OBJECT_PART_LIST = 25;
 
   byte REGION = 26;
@@ -338,28 +291,13 @@ public interface DataSerializableFixedID extends SerializationVersions, BasicSer
   byte STRUCT_IMPL = 32;
   byte STRUCT_SET = 33;
 
-  /**
-   * A header byte meaning that the next element in the stream is a
-   * <code>ClearRegionWithContextMessage</code>.
-   */
   byte CLEAR_REGION_MESSAGE_WITH_CONTEXT = 34;
-
-  /**
-   * A header byte meaning that the next element in the stream is a
-   * <code>ClientUpdateMessage</code>.
-   */
   byte CLIENT_UPDATE_MESSAGE = 35;
 
-  /**
-   * A header byte meaning that the next element in the stream is a <code>EventID</code>.
-   */
   byte EVENT_ID = 36;
 
   byte INTEREST_RESULT_POLICY = 37;
-  /**
-   * A header byte meaning that the next element in the stream is a
-   * <code>ClientProxyMembershipID</code>.
-   */
+
   byte CLIENT_PROXY_MEMBERSHIPID = 38;
 
   byte PR_BUCKET_BACKUP_MESSAGE = 39;
@@ -394,29 +332,12 @@ public interface DataSerializableFixedID extends SerializationVersions, BasicSer
   byte PR_INDEX_CREATION_REPLY_MSG = 68;
   byte PR_MANAGE_BUCKET_REPLY_MESSAGE = 69;
 
-  // 70 available for reuse - retired in Geode v1.0
-  // byte IP_ADDRESS = 70;
+  // 70 unused
 
-  /**
-   * A header byte meaning that the next element in the stream is a
-   * <code>UpdateOperation.UpdateMessage</code>.
-   */
   byte UPDATE_MESSAGE = 71;
-
-  /**
-   * A header byte meaning that the next element in the stream is a <code>ReplyMessage</code>.
-   */
   byte REPLY_MESSAGE = 72;
-
-  /** <code>DestroyMessage</code> */
   byte PR_DESTROY = 73;
-
-  /**
-   * A header byte meaning that the next element in the stream is a
-   * <code>CreateRegionReplyMessage</code>.
-   */
   byte CREATE_REGION_REPLY_MESSAGE = 74;
-
   byte QUERY_MESSAGE = 75;
   byte RESPONSE_MESSAGE = 76;
   byte NET_SEARCH_REQUEST_MESSAGE = 77;
@@ -429,14 +350,8 @@ public interface DataSerializableFixedID extends SerializationVersions, BasicSer
   // DLockRequestProcessor
   byte DLOCK_REQUEST_MESSAGE = 83;
   byte DLOCK_RESPONSE_MESSAGE = 84;
-  // DLockReleaseMessage
   byte DLOCK_RELEASE_MESSAGE = 85;
 
-  /**
-   * A header byte meaning that the next element in the stream is a
-   * <code>SystemMemberCacheMessage</code>.
-   */
-  // added for feature requests #32887
   byte ADMIN_CACHE_EVENT_MESSAGE = 86;
 
   byte CQ_ENTRY_EVENT = 87;
@@ -446,104 +361,54 @@ public interface DataSerializableFixedID extends SerializationVersions, BasicSer
   byte IMAGE_REPLY_MESSAGE = 89;
   byte IMAGE_ENTRY = 90;
 
-  // CloseCacheMessage
   byte CLOSE_CACHE_MESSAGE = 91;
 
   byte DISTRIBUTED_MEMBER = 92;
 
-  /**
-   * A header byte meaning that the next element in the stream is a
-   * <code>UpdateOperation.UpdateWithContextMessage</code>.
-   */
   byte UPDATE_WITH_CONTEXT_MESSAGE = 93;
 
-  // GrantorRequestProcessor
   byte GRANTOR_REQUEST_MESSAGE = 94;
   byte GRANTOR_INFO_REPLY_MESSAGE = 95;
 
-  // StartupMessage
   byte STARTUP_MESSAGE = 96;
-
-  // StartupResponseMessage
   byte STARTUP_RESPONSE_MESSAGE = 97;
 
-  // ShutdownMessage
   byte SHUTDOWN_MESSAGE = 98;
-
-  // DestroyRegionOperation
   byte DESTROY_REGION_MESSAGE = 99;
-
   byte PR_PUT_MESSAGE = 100;
-
-  // InvalidateOperation
   byte INVALIDATE_MESSAGE = 101;
-
-  // DestroyOperation
   byte DESTROY_MESSAGE = 102;
-
-  // DistributionAdvisor
-  byte DA_PROFILE = 103;
-
-  // CacheDistributionAdvisor
-  byte CACHE_PROFILE = 104;
-
-  // EntryEventImpl
+  byte DA_PROFILE = 103; // DistributionAdvisor profile
+  byte CACHE_PROFILE = 104; // CacheDistributionAdvisor profile
   byte ENTRY_EVENT = 105;
-
-  // UpdateAttributesProcessor
   byte UPDATE_ATTRIBUTES_MESSAGE = 106;
   byte PROFILE_REPLY_MESSAGE = 107;
-
-  // RegionEventImpl
   byte REGION_EVENT = 108;
-
-  // TXId
   byte TRANSACTION_ID = 109;
-
   byte TX_COMMIT_MESSAGE = 110;
-
   byte HA_PROFILE = 111;
-
   byte ELDER_INIT_MESSAGE = 112;
   byte ELDER_INIT_REPLY_MESSAGE = 113;
   byte DEPOSE_GRANTOR_MESSAGE = 114;
 
-  /**
-   * A header byte meaning that the next element in the stream is a <code>HAEventWrapper</code>.
-   */
   byte HA_EVENT_WRAPPER = 115;
 
   byte DLOCK_RELEASE_REPLY = 116;
   byte DLOCK_REMOTE_TOKEN = 117;
 
-  // TXCommitMessage.CommitProcessForTXIdMessage
   byte COMMIT_PROCESS_FOR_TXID_MESSAGE = 118;
 
   byte FILTER_PROFILE = 119;
 
   byte PR_GET_MESSAGE = 120;
 
-  // TXLockIdImpl
   byte TRANSACTION_LOCK_ID = 121;
-  // TXCommitMessage.CommitProcessForLockIdMessage
   byte COMMIT_PROCESS_FOR_LOCKID_MESSAGE = 122;
-
-  // NonGrantorDestroyedProcessor.NonGrantorDestroyedMessage (dlock)
   byte NON_GRANTOR_DESTROYED_MESSAGE = 123;
-
-  // Token.EndOfStream
   byte END_OF_STREAM_TOKEN = 124;
-
-  /** {@link org.apache.geode.internal.cache.partitioned.GetMessage.GetReplyMessage} */
   byte PR_GET_REPLY_MESSAGE = 125;
-
-  /** {@link org.apache.geode.internal.cache.Node} */
   byte PR_NODE = 126;
 
-  /**
-   * A header byte meaning that the next element in the stream is a
-   * <code>DestroyOperation.DestroyWithContextMessage</code>.
-   */
   byte DESTROY_WITH_CONTEXT_MESSAGE = 127;
 
   // NOTE, CODES > 127 will take two bytes to serialize
@@ -591,20 +456,16 @@ public interface DataSerializableFixedID extends SerializationVersions, BasicSer
   short UPDATE_ENTRY_VERSION_MESSAGE = 158;
   short PR_UPDATE_ENTRY_VERSION_MESSAGE = 159;
 
-  short SHUTDOWN_ALL_GATEWAYSENDERS_REQUEST = 160;
-  short SHUTDOWN_ALL_GATEWAYSENDERS_RESPONSE = 161;
+  // 160 through 164 unused
 
-  short SHUTDOWN_ALL_GATEWAYRECEIVERS_REQUEST = 162;
-  short SHUTDOWN_ALL_GATEWAYRECEIVERS_RESPONSE = 163;
-
-  short TX_COMMIT_MESSAGE_701 = 164;
   short PR_FETCH_BULK_ENTRIES_MESSAGE = 165;
   short PR_FETCH_BULK_ENTRIES_REPLY_MESSAGE = 166;
   short NWAY_MERGE_RESULTS = 167;
   short CUMULATIVE_RESULTS = 168;
   short DISTTX_ROLLBACK_MESSAGE = 169;
   short DISTTX_ROLLBACK_REPLY_MESSAGE = 170;
-  // 171..999 unused
+
+  // 171 through 999 unused
 
   short ADD_HEALTH_LISTENER_REQUEST = 1000;
   short ADD_HEALTH_LISTENER_RESPONSE = 1001;
@@ -739,7 +600,8 @@ public interface DataSerializableFixedID extends SerializationVersions, BasicSer
 
   short CHECK_TYPE_REGISTRY_STATE = 2128;
   short PREPARE_REVOKE_PERSISTENT_ID_REQUEST = 2129;
-  short MISSING_PERSISTENT_IDS_RESPONSE_662 = 2130;
+
+  // 2130 unused
 
   short PERSISTENT_VERSION_TAG = 2131;
   short PERSISTENT_RVV = 2132;
@@ -754,10 +616,8 @@ public interface DataSerializableFixedID extends SerializationVersions, BasicSer
   short REMOTE_LOCATOR_RESPONSE = 2138;
   short LOCATOR_JOIN_MESSAGE = 2139;
 
-  short PARALLEL_QUEUE_BATCH_REMOVAL_MESSAGE = 2140;
-  short PARALLEL_QUEUE_BATCH_REMOVAL_REPLY = 2141;
+  // 2140 through 2141 unused
 
-  // 2141 unused
   short REMOTE_LOCATOR_PING_REQUEST = 2142;
   short REMOTE_LOCATOR_PING_RESPONSE = 2143;
   short GATEWAY_SENDER_PROFILE = 2144;
@@ -819,7 +679,7 @@ public interface DataSerializableFixedID extends SerializationVersions, BasicSer
   /**
    * This special code is a way for an implementor if this interface to say that it does not have a
    * fixed id. In that case its class name is serialized. Currently only test classes just return
-   * this code.
+   * this code and it is only available for use in geode-core and its downstream modules.
    */
   int NO_FIXED_ID = Integer.MAX_VALUE;
 

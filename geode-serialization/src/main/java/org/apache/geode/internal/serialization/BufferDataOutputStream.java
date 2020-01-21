@@ -24,6 +24,11 @@ import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 import java.util.LinkedList;
 
+/**
+ * BufferDataOutputStream is a stream for serializing to a Buffer. It supports holding
+ * of a Geode Version that can be obtained through the serialization context in a toData method
+ * in a DataSerializableFixedID implementation.
+ */
 public class BufferDataOutputStream extends OutputStream implements VersionedDataStream,
     DataOutput {
   /**

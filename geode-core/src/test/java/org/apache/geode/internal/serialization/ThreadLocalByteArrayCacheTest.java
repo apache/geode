@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal;
+package org.apache.geode.internal.serialization;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -20,7 +20,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Test;
 
-import org.apache.geode.internal.serialization.ThreadLocalByteArrayCache;
 
 public class ThreadLocalByteArrayCacheTest {
   private ThreadLocalByteArrayCache instance = new ThreadLocalByteArrayCache(2);

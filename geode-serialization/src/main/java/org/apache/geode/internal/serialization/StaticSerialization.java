@@ -24,6 +24,10 @@ import java.util.Map;
 
 import org.apache.geode.annotations.internal.MakeNotStatic;
 
+/**
+ * StaticSerialization provides a collection of serialization/deserialization methods that
+ * can be used in your toData/fromData methods in a DataSerializableFixedID implementation.
+ */
 public class StaticSerialization {
   // array is null
   public static final byte NULL_ARRAY = -1;

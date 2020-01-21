@@ -44,8 +44,8 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
-import org.apache.geode.internal.serialization.DSFIDSerializerImpl;
 import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.internal.DSFIDSerializerImpl;
 
 public class GMSLocatorIntegrationTest {
 
