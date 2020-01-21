@@ -16,12 +16,16 @@ package org.apache.geode.management.internal.operation;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
@@ -57,7 +61,7 @@ public class OperationHistoryManagerTest {
   }
 
   @Test
-  public void inProgressStatusIsConsistent() {
+  public void statusIsConsistentOnSuccess() {
     TestOperationResult testOperationResult = new TestOperationResult();
     TestOpType1 testOpType1 = new TestOpType1();
     BiFunction<Cache, TestOpType1, TestOperationResult> testOperation = (cache, testOpType) -> {
@@ -86,14 +90,12 @@ public class OperationHistoryManagerTest {
 
       testOpType1.setDone(true);
 
-      GeodeAwaitility.await().untilAsserted(() -> {
-        softly.assertThat(operationInstance.getOperationEnd()).as("operationEnd post-completion")
-            .isNotNull();
-      });
-      GeodeAwaitility.await().untilAsserted(() -> {
-        softly.assertThat(operationInstance.getResult()).as("result post-completion")
-            .isEqualTo(testOperationResult);
-      });
+      GeodeAwaitility.await().untilAsserted(
+          () -> softly.assertThat(operationInstance.getOperationEnd())
+              .as("operationEnd post-completion").isNotNull());
+      GeodeAwaitility.await().untilAsserted(
+          () -> softly.assertThat(operationInstance.getResult()).as("result post-completion")
+              .isEqualTo(testOperationResult));
     });
 
     verify(operationHistoryPersistenceService, times(1))
@@ -101,104 +103,141 @@ public class OperationHistoryManagerTest {
   }
 
   @Test
-  public void endDateIsNotSetBeforeOperationCompletedFires() {
-    CompletableFuture<TestOperationResult> future = new CompletableFuture<>();
-    Date operationStart = new Date();
-    String opId = "1";
-
-    // history.save(opId, new TestOpType1(), operationStart, future);
-
-    future.whenComplete(
-        (r, e) -> {
-          OperationInstance<TestOpType1, TestOperationResult> op =
-              history.getOperationInstance(opId);
-          assertThat(op).isNotNull();
-          assertThat(op.getOperationEnd()).isNull();
-        });
-    future.complete(null);
-  }
-
-  @Test
-  public void completedStatusIsConsistentOnSuccess() {
-    CompletableFuture<TestOperationResult> future = new CompletableFuture<>();
-    Date operationStart = new Date();
-    String opId = "1";
+  public void statusIsConsistentOnException() {
     TestOperationResult testOperationResult = new TestOperationResult();
+    TestOpType1 testOpType1 = new TestOpType1();
+    BiFunction<Cache, TestOpType1, TestOperationResult> testOperation = (cache, testOpType) -> {
+      while (!testOpType.done) {
+        try {
+          Thread.sleep(100);
+        } catch (InterruptedException e) {
+          System.out.println(e.getMessage());
+        }
+      }
+      if (testOpType.failed) {
+        throw new RuntimeException("Long running operation failed");
+      }
+      return testOperationResult;
+    };
 
-    // OperationInstance<TestOpType1, TestOperationResult> operationInstance = history.save(
-    // opId, new TestOpType1(), operationStart, future);
+    OperationInstance<TestOpType1, TestOperationResult> operationInstance = history.save(
+        testOpType1, testOperation, cache, executor);
 
-    // doReturn(operationInstance).when(operationHistoryPersistenceService).getOperationInstance(opId);
+    assertSoftly(softly -> {
+      softly.assertThat(operationInstance.getId()).as("id pre-completion").isNotNull();
 
-    future.complete(testOperationResult);
+      doReturn(operationInstance).when(operationHistoryPersistenceService)
+          .getOperationInstance(operationInstance.getId());
 
-    // assertThat(operationInstance.getOperationEnd()).isNotNull();
-    // assertThat(operationInstance.getResult()).isEqualTo(testOperationResult);
-  }
+      softly.assertThat(operationInstance.getOperationEnd()).as("operationEnd pre-completion")
+          .isNull();
+      assertThat(operationInstance.getResult()).as("result pre-completion").isNull();
 
-  @Test
-  public void completedStatusIsConsistentOnException() {
-    CompletableFuture<TestOperationResult> future = new CompletableFuture<>();
-    Date operationStart = new Date();
-    String opId = "1";
+      testOpType1.setFailed(true);
+      testOpType1.setDone(true);
 
-    // OperationInstance<TestOpType1, TestOperationResult> operationInstance = history.save(
-    // opId, new TestOpType1(), operationStart, future);
+      GeodeAwaitility.await().untilAsserted(
+          () -> softly.assertThat(operationInstance.getOperationEnd())
+              .as("operationEnd post-completion").isNotNull());
+      GeodeAwaitility.await().untilAsserted(
+          () -> softly.assertThat(operationInstance.getResult()).as("result post-completion")
+              .isNull());
+      GeodeAwaitility.await().untilAsserted(
+          () -> softly.assertThat(operationInstance.getThrowable()).as("throwable post-completion")
+              .isNotNull());
+      GeodeAwaitility.await().untilAsserted(
+          () -> softly.assertThat(operationInstance.getThrowable().getMessage())
+              .as("throwable message post-completion")
+              .contains("operation failed"));
+    });
 
-    // doReturn(operationInstance).when(operationHistoryPersistenceService).getOperationInstance(opId);
-
-    future.completeExceptionally(new Exception("An exceptional end to the operation"));
-    //
-    // assertThat(operationInstance.getOperationEnd()).isNotNull();
-    // assertThat(operationInstance.getResult()).isNull();
-    // assertThat(operationInstance.getThrowable()).isNotNull();
-    // assertThat(operationInstance.getThrowable().getMessage()).contains("exceptional end");
+    verify(operationHistoryPersistenceService, times(1))
+        .getOperationInstance(operationInstance.getId());
   }
 
   @Test
   public void completedStatusIsConsistentEvenWhenReallyFast() {
-    CompletableFuture<TestOperationResult> future = new CompletableFuture<>();
-    Date operationStart = new Date();
-    String opId = "1";
     TestOperationResult testOperationResult = new TestOperationResult();
+    TestOpType1 testOpType1 = new TestOpType1();
+    BiFunction<Cache, TestOpType1, TestOperationResult> testOperation = (cache, testOpType) -> {
+      while (!testOpType.done) {
+        try {
+          Thread.sleep(10);
+        } catch (InterruptedException e) {
+          System.out.println(e.getMessage());
+        }
+      }
+      return testOperationResult;
+    };
 
-    future.complete(testOperationResult);
+    OperationInstance<TestOpType1, TestOperationResult> operationInstance = history.save(
+        testOpType1, testOperation, cache, executor);
+    doReturn(operationInstance).when(operationHistoryPersistenceService)
+        .getOperationInstance(operationInstance.getId());
+    testOpType1.setDone(true);
 
-    // OperationInstance<TestOpType1, TestOperationResult> operationInstance = history.save(
-    // opId, new TestOpType1(), operationStart, future);
+    assertSoftly(softly -> {
+      softly.assertThat(operationInstance.getId()).as("id post-completion").isNotNull();
+      softly.assertThat(operationInstance.getOperationStart()).as("start post-completion")
+          .isNotNull();
 
-    // doReturn(operationInstance).when(operationHistoryPersistenceService).getOperationInstance(opId);
-    //
-    // assertThat(operationInstance.getOperationEnd()).isNotNull();
-    // assertThat(operationInstance.getResult()).isEqualTo(testOperationResult);
+      GeodeAwaitility.await().untilAsserted(
+          () -> softly.assertThat(operationInstance.getOperationEnd())
+              .as("operationEnd post-completion").isNotNull());
+      GeodeAwaitility.await().untilAsserted(
+          () -> softly.assertThat(operationInstance.getResult()).as("result post-completion")
+              .isNotNull());
+      GeodeAwaitility.await().untilAsserted(
+          () -> softly.assertThat(operationInstance.getThrowable()).as("throwable post-completion")
+              .isNull());
+    });
+
+    verify(operationHistoryPersistenceService, times(1))
+        .getOperationInstance(operationInstance.getId());
   }
 
   @Test
   public void retainsHistoryForAllInProgressOperations() {
-    // history = new OperationHistoryManager(0, TimeUnit.MILLISECONDS);
-    // history.save(op("1", new CompletableFuture<>()));
-    // history.save(op("2", new CompletableFuture<>()));
-    assertThat(history.getOperationInstance("1")).isNotNull();
-    assertThat(history.getOperationInstance("2")).isNotNull();
+    TestOpType1 opType1 = new TestOpType1();
+    List<OperationInstance<TestOpType1, TestOperationResult>> sampleOps = new ArrayList<>();
+    for (int i = 0; i < 3; i++) {
+      sampleOps.add(new OperationInstance<>("op-" + i, opType1, new Date()));
+    }
+
+    doReturn(sampleOps).when(operationHistoryPersistenceService).listOperationInstances();
+
+    List<OperationInstance<TestOpType1, TestOperationResult>> opList =
+        history.listOperationInstances(opType1);
+
+    assertThat(opList.size()).isEqualTo(3);
+
+    verify(operationHistoryPersistenceService, never()).remove(any());
   }
 
   @Test
   public void expiresHistoryForCompletedOperation() {
-    // history = new OperationHistoryManager(0, TimeUnit.MILLISECONDS);
-    // history.save(op("1", new CompletableFuture<>())).getFutureResult().complete(null);
-    assertThat(history.getOperationInstance("1")).isNull();
-  }
+    TestOpType1 opType1 = new TestOpType1();
+    TestOperationResult testOperationResult = new TestOperationResult();
+    long now = System.currentTimeMillis();
+    long threeHoursAgo = now - (3600 * 3 * 1000);
+    long twoAndAHalfHoursAgo = new Double(now - (3600 * 2.5 * 1000)).longValue();
 
-  @Test
-  public void timestampsAreCorrectWhenFutureIsAlreadyCompleteBeforeSave() throws Exception {
-    CompletableFuture<OperationResult> future1 = new CompletableFuture<>();
-    future1.complete(null);
-    Date start = new Date();
-    // history.save(op("1", future1, start));
-    assertThat(history.getOperationInstance("1").getOperationStart()).isEqualTo(start);
-    // assertThat(history.getOperationInstance("1").getFutureOperationEnded().isDone()).isTrue();
-    // assertThat(history.getOperationInstance("1").getFutureOperationEnded().get().getTime())
-    // .isGreaterThanOrEqualTo(start.getTime());
+    List<OperationInstance<TestOpType1, TestOperationResult>> sampleOps = new ArrayList<>();
+    for (int i = 0; i < 5; i++) {
+      sampleOps.add(new OperationInstance<>("op-" + i, opType1, new Date(threeHoursAgo)));
+      if (i % 2 != 0) {
+        sampleOps.get(i).setOperationEnd(new Date(twoAndAHalfHoursAgo), testOperationResult, null);
+      }
+    }
+
+    doReturn(sampleOps).when(operationHistoryPersistenceService).listOperationInstances();
+
+    List<OperationInstance<TestOpType1, TestOperationResult>> opList =
+        history.listOperationInstances(opType1);
+
+    assertThat(opList.size()).isEqualTo(5);
+
+    verify(operationHistoryPersistenceService, times(2)).remove(any());
   }
 
   @Test
@@ -260,21 +299,6 @@ public class OperationHistoryManagerTest {
     public String getEndpoint() {
       return null;
     }
-  }
-
-  private static <A extends ClusterManagementOperation<V>, V extends OperationResult> OperationInstance<A, V> op(
-      String id) {
-    return op(id, null, new Date());
-  }
-
-  private static <A extends ClusterManagementOperation<V>, V extends OperationResult> OperationInstance<A, V> op(
-      String id, A op, Date operationStart) {
-    return new OperationInstance<>(id, op, operationStart);
-  }
-
-  private static <A extends ClusterManagementOperation<V>, V extends OperationResult> OperationInstance<A, V> op(
-      String id, A op) {
-    return new OperationInstance<>(id, op, new Date());
   }
 
   private static class TestOperationResult implements OperationResult {
