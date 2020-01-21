@@ -436,7 +436,8 @@ public class LocatorClusterManagementService implements ClusterManagementService
       ClusterManagementResult status, OperationInstance<A, V> operationInstance) {
     ClusterManagementOperationResult<V> result = new ClusterManagementOperationResult<>(status,
         operationInstance.getOperationStart(), operationInstance.getOperationEnd(),
-        operationInstance.getOperator(), operationInstance.getId(), operationInstance.getResult());
+        operationInstance.getOperator(), operationInstance.getId(), operationInstance.getResult(),
+        operationInstance.getThrowable());
     result.setLinks(
         new Links(operationInstance.getId(), operationInstance.getOperation().getEndpoint()));
     return result;
@@ -466,9 +467,9 @@ public class LocatorClusterManagementService implements ClusterManagementService
       result = new ClusterManagementOperationStatusResult<>(
           new ClusterManagementResult(StatusCode.IN_PROGRESS, ""));
     } else {
-      if (operationInstance.getException() != null) {
+      if (operationInstance.getThrowable() != null) {
         result = new ClusterManagementOperationStatusResult<>(new ClusterManagementResult(
-            StatusCode.ERROR, operationInstance.getException().getMessage()));
+            StatusCode.ERROR, operationInstance.getThrowable().getMessage()));
       } else {
         result = new ClusterManagementOperationStatusResult<>(
             new ClusterManagementResult(StatusCode.OK, ""));

@@ -40,10 +40,10 @@ public class ClusterManagementOperationResultTest {
     result1.setStatus(StatusCode.OK, "Success!!");
     ClusterManagementOperationResult<TestOperationResult> result =
         new ClusterManagementOperationResult<>(result1, new Date(), new Date(),
-            "operator", "id");
+            "operator", "id", null, null);
     String json = mapper.writeValueAsString(result);
     System.out.println(json);
-    ClusterManagementOperationResult value =
+    ClusterManagementOperationResult<TestOperationResult> value =
         mapper.readValue(json, ClusterManagementOperationResult.class);
     assertThat(value.getStatusMessage()).isEqualTo("Success!!");
   }

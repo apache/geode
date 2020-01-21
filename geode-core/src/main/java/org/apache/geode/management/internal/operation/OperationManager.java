@@ -14,11 +14,9 @@
  */
 package org.apache.geode.management.internal.operation;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
@@ -68,10 +66,7 @@ public class OperationManager implements AutoCloseable {
           op.getClass().getSimpleName()));
     }
 
-    CompletableFuture<V> future =
-        CompletableFuture.supplyAsync(() -> performer.apply(cache, op), executor);
-
-    return historyManager.save(opId, op, new Date(), future);
+    return historyManager.save(op, performer, cache, executor);
   }
 
   @SuppressWarnings("unchecked")

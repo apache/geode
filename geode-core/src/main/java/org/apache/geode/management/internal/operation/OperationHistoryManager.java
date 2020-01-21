@@ -16,14 +16,18 @@ package org.apache.geode.management.internal.operation;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.cache.Cache;
 import org.apache.geode.lang.Identifiable;
 import org.apache.geode.management.api.ClusterManagementOperation;
 import org.apache.geode.management.runtime.OperationResult;
@@ -36,7 +40,7 @@ import org.apache.geode.management.runtime.OperationResult;
  */
 @Experimental
 public class OperationHistoryManager {
-  private final ConcurrentMap<String, CompletableFuture<?>> future;
+  private final Map<String, CompletableFuture<?>> futureMap;
   private final long keepCompletedMillis;
   private final OperationHistoryPersistenceService historyPersistenceService;
 
@@ -52,7 +56,7 @@ public class OperationHistoryManager {
    */
   public OperationHistoryManager(long keepCompleted, TimeUnit timeUnit,
       OperationHistoryPersistenceService historyPersistenceService) {
-    future = new ConcurrentHashMap<>();
+    futureMap = new ConcurrentHashMap<>();
     keepCompletedMillis = timeUnit.toMillis(keepCompleted);
     this.historyPersistenceService = historyPersistenceService;
   }
@@ -77,7 +81,7 @@ public class OperationHistoryManager {
         .collect(Collectors.toSet());
 
     expiredKeys.forEach(id -> {
-      future.remove(id);
+      futureMap.remove(id);
       historyPersistenceService.remove(id);
     });
   }
@@ -100,32 +104,39 @@ public class OperationHistoryManager {
    * Stores a new operation in the history and installs a trigger to record the operation end time.
    */
   public <A extends ClusterManagementOperation<V>, V extends OperationResult> OperationInstance<A, V> save(
-      String opId, A op, Date start, CompletableFuture<V> future) {
-    OperationInstance<A, V> operationInstance = new OperationInstance<>(opId, op, start);
-
+      A op, BiFunction<Cache, A, V> performer, Cache cache, Executor executor) {
+    String opId = UUID.randomUUID().toString();
+    OperationInstance<A, V> operationInstance = new OperationInstance<>(opId, op, new Date());
     historyPersistenceService.create(operationInstance);
-    this.future.put(opId, future);
 
-    future.whenComplete((result, exception) -> {
-      OperationInstance<A, V> opInstance = historyPersistenceService.getOperationInstance(opId);
-      if (opInstance != null) {
-        opInstance.setOperationEnd(new Date(), result, exception);
-        historyPersistenceService.update(opInstance);
-      }
-      this.future.remove(opId);
-    });
+    CompletableFuture<V> future =
+        CompletableFuture.supplyAsync(() -> performer.apply(cache, op), executor)
+            .whenComplete((result, exception) -> {
+              OperationInstance<A, V> opInstance =
+                  historyPersistenceService.getOperationInstance(opId);
+              if (opInstance != null) {
+                opInstance.setOperationEnd(new Date(), result, exception);
+                historyPersistenceService.update(opInstance);
+              }
+              this.futureMap.remove(opId);
+            });
+
+    this.futureMap.put(opId, future);
 
     expireHistory();
 
     return operationInstance;
   }
 
-  @SuppressWarnings("unchecked")
   <A extends ClusterManagementOperation<V>, V extends OperationResult> List<OperationInstance<A, V>> listOperationInstances(
       A opType) {
     expireHistory();
 
-    return historyPersistenceService.listOperationInstances();
+    return historyPersistenceService.listOperationInstances()
+        .stream()
+        .filter(instance -> instance.operation.getClass().equals(opType.getClass()))
+        .map(fi -> (OperationInstance<A, V>) fi)
+        .collect(Collectors.toList());
   }
 
   /**
@@ -139,7 +150,7 @@ public class OperationHistoryManager {
     private final Date operationStart;
     private Date operationEnd;
     private V result;
-    private Throwable exception;
+    private Throwable throwable;
 
     public OperationInstance(String opId, A operation,
         Date operationStart) {
@@ -172,7 +183,7 @@ public class OperationHistoryManager {
 
     public void setOperationEnd(Date operationEnd, V result, Throwable exception) {
       this.result = result;
-      this.exception = exception;
+      this.throwable = exception;
       this.operationEnd = operationEnd;
     }
 
@@ -184,8 +195,8 @@ public class OperationHistoryManager {
       return this.result;
     }
 
-    public Throwable getException() {
-      return this.exception;
+    public Throwable getThrowable() {
+      return this.throwable;
     }
   }
 }

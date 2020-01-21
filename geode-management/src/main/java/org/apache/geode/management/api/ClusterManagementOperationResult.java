@@ -41,6 +41,7 @@ public class ClusterManagementOperationResult<V extends OperationResult>
   private String operationId;
   private String operator;
   private V operationResult;
+  private Throwable throwable;
 
   /**
    * for internal use only
@@ -54,13 +55,15 @@ public class ClusterManagementOperationResult<V extends OperationResult>
    */
   public ClusterManagementOperationResult(ClusterManagementResult result,
       Date operationStart, Date operationEnd,
-      String operator, String operationId, V operationResult) {
+      String operator, String operationId, V operationResult,
+      Throwable throwable) {
     super(result);
     this.operationStart = operationStart;
     this.operationEnd = operationEnd;
     this.operator = operator;
     this.operationId = operationId;
     this.operationResult = operationResult;
+    this.throwable = throwable;
   }
 
   /**
@@ -78,15 +81,33 @@ public class ClusterManagementOperationResult<V extends OperationResult>
     return operationId;
   }
 
+  /**
+   * Returns the time the operation was started
+   */
   public Date getOperationStart() {
     return this.operationStart;
   }
 
+  /**
+   * Returns the time the operation was completed. This value is null while the operation is in
+   * process.
+   */
   public Date getOperationEnd() {
     return this.operationEnd;
   }
 
+  /**
+   * Returns the operation result as {@link V} extends {@link OperationResult}
+   */
   public V getOperationResult() {
     return this.operationResult;
+  }
+
+  /**
+   * Returns any exceptions that might be returned as a result of the operation. Null in case
+   * no exceptions occurred.
+   */
+  public Throwable getThrowable() {
+    return this.throwable;
   }
 }

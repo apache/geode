@@ -147,25 +147,29 @@ public class RebalanceManagementDunitTest {
     assertThat(cmr.isSuccessful()).isTrue();
     String id = cmr.getOperationId();
 
-    ClusterManagementOperationResult<RebalanceResult>[] rebalanceResult = new ClusterManagementOperationResult[1];
+    ClusterManagementOperationResult<RebalanceResult>[] rebalanceResult =
+        new ClusterManagementOperationResult[1];
     GeodeAwaitility.await().untilAsserted(() -> {
       rebalanceResult[0] = getRebalanceResult(op, id);
       assertThat(rebalanceResult[0]).isNotNull();
     });
 
     assertThat(rebalanceResult[0].isSuccessful()).isFalse();
-    assertThat(rebalanceResult[0].getStatusMessage()).contains("For the region /nonexisting_region, no member was found");
+    assertThat(rebalanceResult[0].getStatusMessage())
+        .contains("For the region /nonexisting_region, no member was found");
 
   }
 
-  private ClusterManagementOperationResult<RebalanceResult> getRebalanceResult(RebalanceOperation op, String id) {
+  private ClusterManagementOperationResult<RebalanceResult> getRebalanceResult(
+      RebalanceOperation op, String id) {
     ClusterManagementListOperationsResult<RebalanceResult> listOperationsResult = client1.list(op);
     Optional<ClusterManagementOperationResult<RebalanceResult>> rebalanceResult =
         listOperationsResult.getResult()
             .stream()
-            .filter(rbalresult -> rbalresult.getOperationId().equals(id) && rbalresult.getOperationEnd() != null)
+            .filter(rbalresult -> rbalresult.getOperationId().equals(id)
+                && rbalresult.getOperationEnd() != null)
             .findFirst();
-    return  rebalanceResult.orElse(null);
+    return rebalanceResult.orElse(null);
   }
 
   @Test
