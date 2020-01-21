@@ -34,7 +34,9 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
+import org.apache.geode.management.api.BaseConnectionConfig;
 import org.apache.geode.management.api.ClusterManagementService;
+import org.apache.geode.management.api.ConnectionConfig;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.Index;
 import org.apache.geode.management.configuration.IndexType;
@@ -66,8 +68,10 @@ public class JQFilterVerificationDUnitTest {
   public static void beforeClass() throws IOException {
     MemberVM locator = cluster.startLocatorVM(0, MemberStarterRule::withHttpService);
     cluster.startServerVM(1, locator.getPort());
-    ClusterManagementService cms = ClusterManagementServiceBuilder.buildWithHostAddress()
-        .setHostAddress("localhost", locator.getHttpPort()).build();
+    ConnectionConfig connectionConfig =
+        new BaseConnectionConfig("localhost", locator.getHttpPort());
+    ClusterManagementService cms =
+        new ClusterManagementServiceBuilder().setConnectionConfig(connectionConfig).build();
     Region region = new Region();
     region.setName("regionA");
     region.setType(RegionType.REPLICATE);

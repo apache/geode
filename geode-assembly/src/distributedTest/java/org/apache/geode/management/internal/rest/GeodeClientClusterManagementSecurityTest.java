@@ -15,7 +15,6 @@
 
 package org.apache.geode.management.internal.rest;
 
-import static org.apache.geode.management.builder.ClusterManagementServiceBuilder.buildWithCache;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.BeforeClass;
@@ -23,6 +22,8 @@ import org.junit.ClassRule;
 import org.junit.Test;
 
 import org.apache.geode.examples.SimpleSecurityManager;
+import org.apache.geode.management.client.ClusterManagementServiceBuilder;
+import org.apache.geode.management.internal.api.GeodeConnectionConfig;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.ClientCacheRule;
@@ -45,26 +46,27 @@ public class GeodeClientClusterManagementSecurityTest {
   }
 
   @Test
-  public void withClientConnectionCredential() throws Exception {
-    assertThat(buildWithCache()
-        .setCredentials(null, null)
-        .setCache(client.getCache())
-        .build()
-        .isConnected()).isTrue();
+  public void withClientConnectionCredential() {
+    assertThat(new ClusterManagementServiceBuilder().setConnectionConfig(
+        new GeodeConnectionConfig(client.getCache())).build().isConnected())
+            .isTrue();
   }
 
   @Test
-  public void withDifferentCredentials() throws Exception {
+  public void withDifferentCredentials() {
     assertThat(
-        buildWithCache().setCache(client.getCache())
-            .setCredentials("test", "test").build().isConnected()).isTrue();
+        new ClusterManagementServiceBuilder().setConnectionConfig(
+            new GeodeConnectionConfig(client.getCache())
+                .setUsername("test").setPassword("test"))
+            .build().isConnected()).isTrue();
   }
 
   @Test
-  public void withInvalidCredential() throws Exception {
+  public void withInvalidCredential() {
     assertThat(
-        buildWithCache().setCache(client.getCache())
-            .setCredentials("test", "wrong").build().isConnected())
-                .isFalse();
+        new ClusterManagementServiceBuilder().setConnectionConfig(
+            new GeodeConnectionConfig(client.getCache())
+                .setUsername("test").setPassword("wrong"))
+            .build().isConnected()).isFalse();
   }
 }

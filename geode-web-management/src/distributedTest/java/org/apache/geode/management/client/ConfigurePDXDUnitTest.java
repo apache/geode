@@ -31,6 +31,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.context.WebApplicationContext;
 
 import org.apache.geode.cache.configuration.CacheConfig;
@@ -43,6 +44,7 @@ import org.apache.geode.management.api.ClusterManagementRealizationResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.RealizationResult;
+import org.apache.geode.management.api.RestTemplateClusterManagementServiceTransport;
 import org.apache.geode.management.configuration.Pdx;
 import org.apache.geode.management.internal.rest.LocatorWebContext;
 import org.apache.geode.management.internal.rest.PlainLocatorContextLoader;
@@ -71,8 +73,10 @@ public class ConfigurePDXDUnitTest {
   public void before() {
     cluster.setSkipLocalDistributedSystemCleanup(true);
     webContext = new LocatorWebContext(webApplicationContext);
-    client = ClusterManagementServiceBuilder.buildWithRequestFactory()
-        .setRequestFactory(webContext.getRequestFactory()).build();
+    client = new ClusterManagementServiceBuilder().setTransport(
+        new RestTemplateClusterManagementServiceTransport(
+            new RestTemplate(webContext.getRequestFactory())))
+        .build();
     pdxType = new Pdx();
   }
 

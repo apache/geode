@@ -1,4 +1,5 @@
 org/apache/geode/management/api/ClusterManagementResult$StatusCode,false
+org/apache/geode/management/api/CommandType,false
 org/apache/geode/management/api/RealizationResult,false,memberName:java/lang/String,message:java/lang/String,success:boolean
 org/apache/geode/management/configuration/AbstractConfiguration,false
 org/apache/geode/management/configuration/AutoSerializer,true,1,patterns:java/util/List,portable:java/lang/Boolean

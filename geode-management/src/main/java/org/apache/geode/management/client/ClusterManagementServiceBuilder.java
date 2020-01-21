@@ -11,68 +11,72 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
+ *
  */
 
 package org.apache.geode.management.client;
 
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLContext;
-
-import org.springframework.http.client.ClientHttpRequestFactory;
-
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.management.api.ClusterManagementService;
-import org.apache.geode.management.internal.PlainClusterManagementServiceBuilder;
-import org.apache.geode.management.internal.SpringClusterManagemnetServiceBuilder;
+import org.apache.geode.management.api.ClusterManagementServiceTransport;
+import org.apache.geode.management.api.ConnectionConfig;
+import org.apache.geode.management.api.RestTemplateClusterManagementServiceTransport;
+import org.apache.geode.management.internal.ClientClusterManagementService;
 
 /**
- * this builder allows you to build a ClusterManagementService using host address or
- * an HttpRequestFactory
+ * This builder facilitates creating a ClusterManagementService using either (or both) a {@link
+ * ConnectionConfig} or a {@link ClusterManagementServiceTransport}. For
+ * typical usage it should be sufficient to only use a
+ * {@code ClusterManagementServiceConnectionConfig}.
+ * For example:
+ *
+ * <pre>
+ * ClusterManagementService service = new ClusterManagementServiceBuilder()
+ *     .setConnectionConfig(new BasicClusterManagementServiceConnectionConfig("localhost", 7070))
+ *     .build();
+ * </pre>
+ *
+ * If no transport is set a default transport of
+ * {@link RestTemplateClusterManagementServiceTransport}
+ * will be used and configured with the provided config.
  */
 @Experimental
 public class ClusterManagementServiceBuilder {
 
-  public static PlainBuilder buildWithHostAddress() {
-    return new PlainClusterManagementServiceBuilder();
+  private ClusterManagementServiceTransport transport;
+
+  private ConnectionConfig connectionConfig;
+
+  /**
+   * Build a new {@link ClusterManagementService} instance
+   *
+   * @return a ClusterManagementService
+   * @throws IllegalStateException if neither transport or config have been set
+   */
+  public ClusterManagementService build() {
+    if (transport == null && connectionConfig == null) {
+      throw new IllegalStateException(
+          "Both transportBuilder and connectionConfig are null. Please configure with at least one of setTransportBuilder() or setConnectionConfig()");
+    }
+
+    if (transport == null) {
+      transport = new RestTemplateClusterManagementServiceTransport(connectionConfig);
+    } else if (connectionConfig != null) {
+      transport.configureConnection(connectionConfig);
+    }
+
+    return new ClientClusterManagementService(transport);
   }
 
-  public static HttpRequestFactoryBuilder buildWithRequestFactory() {
-    return new SpringClusterManagemnetServiceBuilder();
+  public ClusterManagementServiceBuilder setTransport(
+      ClusterManagementServiceTransport transport) {
+    this.transport = transport;
+    return this;
   }
 
-  public interface Builder {
-    ClusterManagementService build();
-  }
-
-  public interface PlainBuilder extends Builder {
-    /**
-     * points to the locator address and http-service-port
-     */
-    PlainBuilder setHostAddress(String host, int port);
-
-    /**
-     * if the web component is ssl-enabled, need to set an SSLContext to connect
-     */
-    PlainBuilder setSslContext(SSLContext context);
-
-    PlainBuilder setHostnameVerifier(HostnameVerifier hostnameVerifier);
-
-    /**
-     * if the cluster has SecurityManager enabled, set the credentials to access the
-     * ClusterManagementService
-     */
-    PlainBuilder setCredentials(String username, String password);
-
-    /**
-     * If security-manager is enabled and auth-token-enabled-components includes "management",
-     * set the authToken to access the ClusterManagementService
-     *
-     * Note: if this is set, username/password will be ignored if set
-     */
-    PlainBuilder setAuthToken(String authToken);
-  }
-
-  public interface HttpRequestFactoryBuilder extends Builder {
-    HttpRequestFactoryBuilder setRequestFactory(ClientHttpRequestFactory httpRequestFactory);
+  public ClusterManagementServiceBuilder setConnectionConfig(
+      ConnectionConfig connectionConfig) {
+    this.connectionConfig = connectionConfig;
+    return this;
   }
 }
