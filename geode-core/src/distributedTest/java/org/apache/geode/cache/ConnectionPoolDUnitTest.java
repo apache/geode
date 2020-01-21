@@ -2677,10 +2677,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
     });
 
     vm2.invoke("Verify destroy propagate", () -> {
-      await().until(() -> {
-        logger.info("MLH region = " + getRootRegion().getSubregion(name));
-        return getRootRegion().getSubregion(name) == null;
-      });
+      await().until(() -> getRootRegion().getSubregion(name) == null);
     });
 
     vm0.invoke("Stop CacheServer", () -> stopBridgeServer(getCache()));
@@ -3149,8 +3146,8 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
       assertThat(r).isNotNull();
       String drName = r.getFullPath() + Region.SEPARATOR + dynFromServerName;
 
-      await().until(() -> getCache().getRegion(drName) == null);
-
+      await().ignoreException(RegionDestroyedException.class)
+          .until(() -> getCache().getRegion(drName) == null);
       assertThat(getCache().getRegion(drName)).isNull();
     });
 
@@ -3159,7 +3156,8 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
       Region<Object, Object> r = getRootRegion(name);
       assertThat(r).isNotNull();
       String drName = r.getFullPath() + Region.SEPARATOR + dynFromServerName;
-      await().until(() -> getCache().getRegion(drName) == null);
+      await().ignoreException(RegionDestroyedException.class)
+          .until(() -> getCache().getRegion(drName) == null);
 
       Throwable thrown =
           catchThrowable(() -> DynamicRegionFactory.get().destroyDynamicRegion(drName));

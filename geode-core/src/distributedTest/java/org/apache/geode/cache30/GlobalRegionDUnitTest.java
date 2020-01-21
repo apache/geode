@@ -27,7 +27,6 @@ import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheLoaderException;
-import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.LoaderHelper;
 import org.apache.geode.cache.Region;
@@ -77,52 +76,35 @@ public class GlobalRegionDUnitTest extends MultiVMRegionTestCase {
 
     final String name = this.getUniqueName() + "-GLOBAL";
     vm0.invoke("Create GLOBAL Region", () -> {
-      try {
-        createRegion(name, "INCOMPATIBLE_ROOT", getRegionAttributes());
-      } catch (CacheException ex) {
-        fail("While creating GLOBAL region", ex);
-      }
+      createRegion(name, "INCOMPATIBLE_ROOT", getRegionAttributes());
       assertThat(getRootRegion("INCOMPATIBLE_ROOT").getAttributes().getScope().isGlobal())
           .isTrue();
     });
 
     vm1.invoke("Create NO ACK Region", () -> {
+      RegionFactory<Object, Object> factory =
+          getCache().createRegionFactory(getRegionAttributes());
+      factory.setScope(Scope.DISTRIBUTED_NO_ACK);
       try {
-        RegionFactory<Object, Object> factory =
-            getCache().createRegionFactory(getRegionAttributes());
-        factory.setScope(Scope.DISTRIBUTED_NO_ACK);
-        try {
-          assertThat(getRootRegion("INCOMPATIBLE_ROOT")).isNull();
-          createRegion(name, "INCOMPATIBLE_ROOT", factory);
+        assertThat(getRootRegion("INCOMPATIBLE_ROOT")).isNull();
+        createRegion(name, "INCOMPATIBLE_ROOT", factory);
 
-          fail("Should have thrown an IllegalStateException");
-        } catch (IllegalStateException ignored) {
-          // pass...
-        }
-
-      } catch (CacheException ex) {
-        fail("While creating GLOBAL Region", ex);
+        fail("Should have thrown an IllegalStateException");
+      } catch (IllegalStateException ignored) {
+        // pass...
       }
     });
 
     vm1.invoke("Create ACK Region", () -> {
+      RegionFactory<Object, Object> factory =
+          getCache().createRegionFactory(getRegionAttributes());
+      factory.setScope(Scope.DISTRIBUTED_ACK);
       try {
-        RegionFactory<Object, Object> factory =
-            getCache().createRegionFactory(getRegionAttributes());
-        factory.setScope(Scope.DISTRIBUTED_ACK);
-        try {
-          Region<Object, Object> rootRegion = factory.create("INCOMPATIBLE_ROOT");
-          fail("Should have thrown an IllegalStateException");
-          factory.createSubregion(rootRegion, name);
-          fail("Should have thrown an IllegalStateException");
-
-        } catch (IllegalStateException ex) {
-          // pass...
-          assertThat(getRootRegion()).isNull();
-        }
-
-      } catch (CacheException ex) {
-        fail("While creating GLOBAL Region", ex);
+        Region<Object, Object> rootRegion = factory.create("INCOMPATIBLE_ROOT");
+        fail("Should have thrown an IllegalStateException");
+      } catch (IllegalStateException ex) {
+        // pass...
+        assertThat(getRootRegion()).isNull();
       }
     });
   }
@@ -210,41 +192,33 @@ public class GlobalRegionDUnitTest extends MultiVMRegionTestCase {
           Thread thread = new Thread(group, () -> {
             try {
               final Random rand = new Random(System.identityHashCode(this));
-              try {
-                Region<Object, Integer> region = getRootRegion().getSubregion(name);
-                for (int j = 0; j < incrementsPerThread; j++) {
-                  Thread.sleep(rand.nextInt(30) + 30);
+              Region<Object, Integer> region = getRootRegion().getSubregion(name);
+              for (int j = 0; j < incrementsPerThread; j++) {
+                Thread.sleep(rand.nextInt(30) + 30);
 
-                  Lock lock = region.getDistributedLock(key);
-                  assertThat(lock.tryLock(-1, TimeUnit.MILLISECONDS)).isTrue();
+                Lock lock = region.getDistributedLock(key);
+                assertThat(lock.tryLock(-1, TimeUnit.MILLISECONDS)).isTrue();
 
-                  Integer value = region.get(key);
-                  Integer oldValue = value;
-                  if (value == null) {
-                    value = 1;
+                Integer value = region.get(key);
+                Integer oldValue = value;
+                if (value == null) {
+                  value = 1;
 
-                  } else {
-                    Integer v = value;
-                    value = v + 1;
-                  }
-
-                  assertThat(oldValue).isEqualTo(region.get(key));
-                  region.put(key, value);
-                  assertThat(value).isEqualTo(region.get(key));
-
-                  lock.unlock();
+                } else {
+                  Integer v = value;
+                  value = v + 1;
                 }
 
-              } catch (IllegalStateException | InterruptedException | CacheLoaderException
-                  | CacheWriterException | TimeoutException ex) {
-                fail("While incrementing", ex);
+                assertThat(oldValue).isEqualTo(region.get(key));
+                region.put(key, value);
+                assertThat(value).isEqualTo(region.get(key));
+
+                lock.unlock();
               }
-            } catch (VirtualMachineError e) {
-              throw e;
-            } catch (Throwable t) {
-              logger
-                  .info("testSynchronousIncrements." + this + " caught Throwable", t);
+            } catch (InterruptedException interruptedException) {
+              fail("interrupted", interruptedException);
             }
+
           }, "Incrementer " + i1);
           threads[i1] = thread;
           thread.start();

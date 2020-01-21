@@ -23,7 +23,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.assertj.core.api.Assumptions.assumeThat;
 
-import java.net.UnknownHostException;
 import java.util.Properties;
 import java.util.Set;
 
@@ -32,10 +31,10 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
-import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
@@ -49,7 +48,6 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InitialImageOperation;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.LocalRegion.InitializationLevel;
-import org.apache.geode.internal.cache.RegionClearedException;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.TombstoneService;
 import org.apache.geode.internal.cache.UpdateOperation;
@@ -178,13 +176,8 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
               try {
                 // wait for the update op (sent below from vm1) to arrive, then allow the GII to
                 // happen
-                while (!ccregion.isDestroyed() && ccregion.getRegionEntry(key) == null) {
-                  try {
-                    Thread.sleep(1000);
-                  } catch (InterruptedException e) {
-                    return;
-                  }
-                }
+                await().ignoreException(RegionDestroyedException.class)
+                    .until(() -> ccregion.isDestroyed() || ccregion.getRegionEntry(key) != null);
               } finally {
                 LocalRegion.setThreadInitLevelRequirement(oldLevel);
               }
@@ -205,15 +198,9 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
 
     vm1.invoke("create conflicting events", () -> {
       // wait for the other to come on line
-      long waitEnd = System.currentTimeMillis() + 45000;
       DistributionAdvisor adv = ((DistributedRegion) CCRegion).getCacheDistributionAdvisor();
-      while (System.currentTimeMillis() < waitEnd && adv.adviseGeneric().isEmpty()) {
-        try {
-          Thread.sleep(1000);
-        } catch (InterruptedException e) {
-          return;
-        }
-      }
+
+      await().until(() -> !adv.adviseGeneric().isEmpty());
       assertThat(adv.adviseGeneric())
           .withFailMessage("other member never came on line")
           .isNotEmpty();
@@ -234,14 +221,12 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
       MemberData nm =
           CCRegion.getDistributionManager().getDistributionManagerId().getMemberData();
       InternalDistributedMember mbr = null;
-      try {
-        mbr = new InternalDistributedMember(nm.getInetAddress().getCanonicalHostName(),
-            nm.getMembershipPort() - 1, "fake_id", "fake_id_ustring",
-            ClusterDistributionManager.NORMAL_DM_TYPE, null, null);
-        tag.setMemberID(mbr);
-      } catch (UnknownHostException e) {
-        fail("could not create member id: ", e);
-      }
+
+      mbr = new InternalDistributedMember(nm.getInetAddress().getCanonicalHostName(),
+          nm.getMembershipPort() - 1, "fake_id", "fake_id_ustring",
+          ClusterDistributionManager.NORMAL_DM_TYPE, null, null);
+      tag.setMemberID(mbr);
+
 
       // generate an event to distribute that contains the fake version tag
       EntryEventImpl event =
@@ -321,12 +306,8 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
       tag.setVersionTimeStamp(
           System.currentTimeMillis() - TombstoneService.REPLICATE_TOMBSTONE_TIMEOUT - 1000);
       entry.getVersionStamp().setVersionTimeStamp(tag.getVersionTimeStamp());
-      try {
-        entry.makeTombstone(CCRegion, tag);
-      } catch (RegionClearedException e) {
+      entry.makeTombstone(CCRegion, tag);
 
-        fail("region was mysteriously cleared during unit testing ", e);
-      }
     });
     // now remove the entry on vm0, simulating that it initiated a GC, and perform a CREATE with a
     // new version number
@@ -414,18 +395,15 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
     SerializableRunnable createRegion = new SerializableRunnable() {
       @Override
       public void run() {
-        try {
-          RegionFactory f = getCache().createRegionFactory(getRegionAttributes());
-          CCRegion = (LocalRegion) f.create(name);
-          for (int i = 0; i < numEntries; i++) {
-            CCRegion.put("cckey" + i, "ccvalue");
-          }
-          assertThat(CCRegion.getCachePerfStats().getConflatedEventsCount())
-              .describedAs("conflated event count")
-              .isEqualTo(0);
-        } catch (CacheException ex) {
-          fail("Exception while creating region ", ex);
+        RegionFactory f = getCache().createRegionFactory(getRegionAttributes());
+        CCRegion = (LocalRegion) f.create(name);
+        for (int i = 0; i < numEntries; i++) {
+          CCRegion.put("cckey" + i, "ccvalue");
         }
+        assertThat(CCRegion.getCachePerfStats().getConflatedEventsCount())
+            .describedAs("conflated event count")
+            .isEqualTo(0);
+
       }
     };
     VM vm0 = VM.getVM(0);
