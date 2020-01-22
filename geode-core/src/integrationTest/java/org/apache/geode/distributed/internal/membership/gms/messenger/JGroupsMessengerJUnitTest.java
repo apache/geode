@@ -277,7 +277,7 @@ public class JGroupsMessengerJUnitTest {
     BufferDataOutputStream out =
         new BufferDataOutputStream(500, Version.getCurrentVersion());
     MemberIdentifier mbr = createAddress(8888);
-    mbr.getMemberData().setMemberWeight((byte) 40);
+    mbr.setMemberWeight((byte) 40);
     mbr.toData(out, mock(SerializationContext.class));
     DataInputStream in = new DataInputStream(new ByteArrayInputStream(out.toByteArray()));
     mbr = new InternalDistributedMember();
@@ -554,7 +554,7 @@ public class JGroupsMessengerJUnitTest {
     int seqno = 1;
     for (org.jgroups.Message m : messages) {
       if (jgroupsWillUseMulticast) {
-        m.setSrc(messenger.localAddress.getMemberData().getUUID());
+        m.setSrc(messenger.localAddress.getUUID());
       } else {
         m.setSrc(fakeMember);
         UNICAST3.Header oldHeader = (UNICAST3.Header) m.getHeader(unicastHeaderId);
@@ -1138,9 +1138,9 @@ public class JGroupsMessengerJUnitTest {
 
   private MemberIdentifier createAddress(int port) {
     MemberIdentifier gms = new InternalDistributedMember("localhost", port);
-    gms.getMemberData().setUUID(UUID.randomUUID());
+    gms.setUUID(UUID.randomUUID());
     gms.setVmKind(MemberIdentifier.NORMAL_DM_TYPE);
-    gms.getMemberData().setVersionOrdinal(Version.getCurrentVersion().ordinal());
+    gms.setVersionObjectForTest(Version.getCurrentVersion());
     return gms;
   }
 

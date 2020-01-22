@@ -1667,7 +1667,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
       boolean preferred = false;
       if (services.getLocator() != null || services.getConfig().getHasLocator()
           || !services.getConfig().getStartLocator().isEmpty()
-          || localAddress.getMemberData().getVmKind() == MemberIdentifier.LOCATOR_DM_TYPE) {
+          || localAddress.getVmKind() == MemberIdentifier.LOCATOR_DM_TYPE) {
         logger
             .info("This member is hosting a locator will be preferred as a membership coordinator");
         preferred = true;
@@ -2575,9 +2575,8 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
             lastConflictingView = conflictingView;
             // if I am not a locator and the conflicting view is from a locator I should
             // let it take control and stop sending membership views
-            if (localAddress.getMemberData()
-                .getVmKind() != MemberIdentifier.LOCATOR_DM_TYPE
-                && conflictingView.getCreator().getMemberData()
+            if (localAddress.getVmKind() != MemberIdentifier.LOCATOR_DM_TYPE
+                && conflictingView.getCreator()
                     .getVmKind() == MemberIdentifier.LOCATOR_DM_TYPE) {
               logger.info("View preparation interrupted - a locator is taking over as "
                   + "membership coordinator in this view: {}", conflictingView);

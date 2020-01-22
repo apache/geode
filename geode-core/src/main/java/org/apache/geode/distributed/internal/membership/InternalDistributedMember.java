@@ -28,6 +28,8 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.jgroups.util.UUID;
+
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MutableForTesting;
@@ -105,9 +107,9 @@ public class InternalDistributedMember
   public InternalDistributedMember(MemberData m) {
     memberIdentifier = new MemberIdentifierImpl(m);
 
-    if (getMemberData().getHostName() == null || getMemberData().isPartial()) {
+    if (getHostName() == null || isPartial()) {
       String hostName = getHostName(m.getInetAddress());
-      getMemberData().setHostName(hostName);
+      memberIdentifier.setHostName(hostName);
     }
   }
 
@@ -263,11 +265,11 @@ public class InternalDistributedMember
   @Override
   public DurableClientAttributes getDurableClientAttributes() {
     assert !this.isPartial();
-    String durableId = getMemberData().getDurableId();
+    String durableId = memberIdentifier.getDurableId();
     if (durableId == null || durableId.isEmpty()) {
       return new DurableClientAttributes("", 300);
     }
-    return new DurableClientAttributes(durableId, getMemberData().getDurableTimeout());
+    return new DurableClientAttributes(durableId, memberIdentifier.getDurableTimeout());
   }
 
   /**
@@ -276,7 +278,7 @@ public class InternalDistributedMember
   @Override
   public Set<Role> getRoles() {
 
-    if (getMemberData().getGroups() == null) {
+    if (getGroups() == null) {
       return Collections.emptySet();
     }
     return getGroups().stream().map(InternalRole::getRole).collect(Collectors.toSet());
@@ -307,12 +309,12 @@ public class InternalDistributedMember
   }
 
   private void defaultToCurrentHost() {
-    getMemberData().setProcessId(OSProcess.getId());
+    memberIdentifier.setProcessId(OSProcess.getId());
     try {
       if (SocketCreator.resolve_dns) {
-        getMemberData().setHostName(SocketCreator.getHostName(LocalHostUtil.getLocalHost()));
+        setHostName(SocketCreator.getHostName(LocalHostUtil.getLocalHost()));
       } else {
-        getMemberData().setHostName(LocalHostUtil.getLocalHost().getHostAddress());
+        setHostName(LocalHostUtil.getLocalHost().getHostAddress());
       }
     } catch (UnknownHostException ee) {
       throw new InternalGemFireError(ee);
@@ -562,6 +564,71 @@ public class InternalDistributedMember
   @Override
   public void setIsPartial(boolean value) {
     memberIdentifier.setIsPartial(value);
+  }
+
+  @Override
+  public void setName(String name) {
+    memberIdentifier.setName(name);
+  }
+
+  @Override
+  public String getDurableId() {
+    return memberIdentifier.getDurableId();
+  }
+
+  @Override
+  public int getDurableTimeout() {
+    return memberIdentifier.getDurableTimeout();
+  }
+
+  @Override
+  public void setHostName(String hostName) {
+    memberIdentifier.setHostName(hostName);
+  }
+
+  @Override
+  public void setProcessId(int id) {
+    memberIdentifier.setProcessId(id);
+  }
+
+  @Override
+  public boolean hasUUID() {
+    return memberIdentifier.hasUUID();
+  }
+
+  @Override
+  public long getUuidLeastSignificantBits() {
+    return memberIdentifier.getUuidLeastSignificantBits();
+  }
+
+  @Override
+  public long getUuidMostSignificantBits() {
+    return memberIdentifier.getUuidMostSignificantBits();
+  }
+
+  @Override
+  public boolean isNetworkPartitionDetectionEnabled() {
+    return memberIdentifier.isNetworkPartitionDetectionEnabled();
+  }
+
+  @Override
+  public void setUUID(UUID randomUUID) {
+    memberIdentifier.setUUID(randomUUID);
+  }
+
+  @Override
+  public void setMemberWeight(byte b) {
+    memberIdentifier.setMemberWeight(b);
+  }
+
+  @Override
+  public void setUdpPort(int i) {
+    memberIdentifier.setUdpPort(i);
+  }
+
+  @Override
+  public UUID getUUID() {
+    return memberIdentifier.getUUID();
   }
 
   @FunctionalInterface

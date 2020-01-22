@@ -34,6 +34,7 @@ import java.util.Objects;
 import java.util.function.Function;
 
 import org.apache.commons.validator.routines.InetAddressValidator;
+import org.jgroups.util.UUID;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.VisibleForTesting;
@@ -189,8 +190,40 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
   }
 
   @Override
+  public void setName(String name) {
+    memberData.setName(name);
+  }
+
+  @Override
   public String getUniqueTag() {
     return memberData.getUniqueTag();
+  }
+
+  @Override
+  public String getDurableId() {
+    return memberData.getDurableId();
+  }
+
+  @Override
+  public int getDurableTimeout() {
+    return memberData.getDurableTimeout();
+  }
+
+  @Override
+  public void setHostName(String hostName) {
+    memberData.setHostName(hostName);
+
+  }
+
+  @Override
+  public void setProcessId(int id) {
+    memberData.setProcessId(id);
+
+  }
+
+  @Override
+  public boolean hasUUID() {
+    return memberData.hasUUID();
   }
 
   public int compare(MemberIdentifier other) {
@@ -598,7 +631,7 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
       SerializationContext context) throws IOException {
     toDataPre_GFE_9_0_0_0(out, context);
     if (memberData.getVersionOrdinal() >= Version.GFE_90.ordinal()) {
-      getMemberData().writeAdditionalData(out);
+      memberData.writeAdditionalData(out);
     }
   }
 
@@ -700,7 +733,7 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
     fromDataPre_GFE_9_0_0_0(in, context);
     // just in case this is just a non-versioned read
     // from a file we ought to check the version
-    if (getMemberData().getVersionOrdinal() >= Version.GFE_90.ordinal()) {
+    if (memberData.getVersionOrdinal() >= Version.GFE_90.ordinal()) {
       try {
         memberData.readAdditionalData(in);
       } catch (EOFException e) {
@@ -964,4 +997,40 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
     memberData.setIsPartial(value);
   }
 
+  @Override
+  public long getUuidLeastSignificantBits() {
+    return memberData.getUuidLeastSignificantBits();
+  }
+
+  @Override
+  public long getUuidMostSignificantBits() {
+    return memberData.getUuidMostSignificantBits();
+  }
+
+  @Override
+  public boolean isNetworkPartitionDetectionEnabled() {
+    return memberData.isNetworkPartitionDetectionEnabled();
+  }
+
+  @Override
+  public void setUUID(UUID uuid) {
+    memberData.setUUID(uuid);
+
+  }
+
+  @Override
+  public void setMemberWeight(byte b) {
+    memberData.setMemberWeight(b);
+  }
+
+  @Override
+  public void setUdpPort(int port) {
+    memberData.setUdpPort(port);
+
+  }
+
+  @Override
+  public UUID getUUID() {
+    return memberData.getUUID();
+  }
 }

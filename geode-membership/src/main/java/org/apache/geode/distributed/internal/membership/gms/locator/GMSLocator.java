@@ -319,7 +319,7 @@ public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID>, Tcp
           if (mbr != coordinator && (coordinator == null || Objects.compare(mbr, coordinator,
               services.getMemberFactory().getComparator()) < 0)) {
             if (!rejections.contains(mbr) && (mbr.preferredForCoordinator()
-                || !mbr.getMemberData().isNetworkPartitionDetectionEnabled())) {
+                || !mbr.isNetworkPartitionDetectionEnabled())) {
               coordinator = mbr;
             }
           }

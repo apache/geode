@@ -68,7 +68,6 @@ import org.jgroups.util.Digest;
 import org.jgroups.util.UUID;
 
 import org.apache.geode.distributed.internal.membership.api.CacheOperationMessageMarker;
-import org.apache.geode.distributed.internal.membership.api.MemberData;
 import org.apache.geode.distributed.internal.membership.api.MemberDisconnectedException;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.api.MemberShunnedException;
@@ -494,10 +493,9 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
       List<ID> members = v.getMembers();
       ID recipient = null;
       for (ID gmsMbr : members) {
-        MemberData memberData = gmsMbr.getMemberData();
-        if (jgMbr.getUUIDLsbs() == memberData.getUuidLeastSignificantBits()
-            && jgMbr.getUUIDMsbs() == memberData.getUuidMostSignificantBits()
-            && jgMbr.getVmViewId() == memberData.getVmViewId()) {
+        if (jgMbr.getUUIDLsbs() == gmsMbr.getUuidLeastSignificantBits()
+            && jgMbr.getUUIDMsbs() == gmsMbr.getUuidMostSignificantBits()
+            && jgMbr.getVmViewId() == gmsMbr.getVmViewId()) {
           recipient = gmsMbr;
           break;
         }

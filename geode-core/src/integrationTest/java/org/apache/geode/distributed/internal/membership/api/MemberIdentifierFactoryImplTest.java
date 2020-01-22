@@ -93,7 +93,7 @@ public class MemberIdentifierFactoryImplTest {
     MemberData memberData = MemberDataBuilder.newBuilderForLocalHost("hostname")
         .setDurableId("myId").build();
     MemberIdentifier data = factory.create(memberData);
-    assertThat(data.getMemberData().getDurableId()).isEqualTo("myId");
+    assertThat(data.getDurableId()).isEqualTo("myId");
   }
 
   @Test

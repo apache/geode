@@ -23,6 +23,8 @@ import java.net.InetAddress;
 import java.util.List;
 import java.util.function.Function;
 
+import org.jgroups.util.UUID;
+
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
@@ -196,4 +198,30 @@ public interface MemberIdentifier extends DataSerializableFixedID {
       boolean compareViewIds);
 
   String getUniqueTag();
+
+  void setName(String name);
+
+  String getDurableId();
+
+  int getDurableTimeout();
+
+  void setHostName(String hostName);
+
+  void setProcessId(int id);
+
+  boolean hasUUID();
+
+  long getUuidLeastSignificantBits();
+
+  long getUuidMostSignificantBits();
+
+  boolean isNetworkPartitionDetectionEnabled();
+
+  void setUUID(UUID randomUUID);
+
+  void setMemberWeight(byte b);
+
+  void setUdpPort(int i);
+
+  UUID getUUID();
 }

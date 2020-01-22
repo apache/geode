@@ -181,7 +181,7 @@ public class MembershipView<ID extends MemberIdentifier> {
 
   public ID getCoordinator() {
     for (ID addr : members) {
-      if (addr.getMemberData().isPreferredForCoordinator()) {
+      if (addr.preferredForCoordinator()) {
         return addr;
       }
     }
