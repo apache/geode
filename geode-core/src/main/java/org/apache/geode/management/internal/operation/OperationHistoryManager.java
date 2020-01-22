@@ -115,7 +115,8 @@ public class OperationHistoryManager {
               OperationInstance<A, V> opInstance =
                   historyPersistenceService.getOperationInstance(opId);
               if (opInstance != null) {
-                opInstance.setOperationEnd(new Date(), result, exception);
+                Throwable cause = exception == null ? null : exception.getCause();
+                opInstance.setOperationEnd(new Date(), result, cause);
                 historyPersistenceService.update(opInstance);
               }
               this.futureMap.remove(opId);

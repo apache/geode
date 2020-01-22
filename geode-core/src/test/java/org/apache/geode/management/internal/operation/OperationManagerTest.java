@@ -91,10 +91,12 @@ public class OperationManagerTest {
     assertThat(executorManager.getOperationInstance(id)).isNotNull();
 
     TestOperation operation2 = new TestOperation();
-    String id2 = executorManager.submit(operation2).getId();
+    OperationInstance<TestOperation, TestOperationResult> inst2 = executorManager.submit(operation2);
+    String id2 = inst2.getId();
     assertThat(id2).isNotBlank();
+    doReturn(inst2).when(operationHistoryPersistenceService).getOperationInstance(id2);
 
-    // all in progress, none should be bumped
+    // all are still in progress
     assertThat(executorManager.getOperationInstance(id)).isNotNull();
     assertThat(executorManager.getOperationInstance(id2)).isNotNull();
 

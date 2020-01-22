@@ -14,13 +14,14 @@
  */
 package org.apache.geode.management.internal.operation;
 
-import static org.apache.geode.test.awaitility.GeodeAwaitility.*;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -43,7 +44,6 @@ import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.management.api.ClusterManagementOperation;
 import org.apache.geode.management.internal.operation.OperationHistoryManager.OperationInstance;
 import org.apache.geode.management.runtime.OperationResult;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public class OperationHistoryManagerTest {
   private OperationHistoryManager history;
@@ -110,7 +110,7 @@ public class OperationHistoryManagerTest {
   }
 
   @Test
-  public void saveUpdatesOperationStateWhenOperationCompletes() {
+  public void saveUpdatesOperationStateWhenOperationCompletesSuccessfully() {
     Cache cache = mock(Cache.class);
     TestOperation1 testOperation1 = new TestOperation1();
     OperationInstance<TestOperation1, TestOperationResult> operationInstance = mock(OperationInstance.class);
@@ -128,143 +128,62 @@ public class OperationHistoryManagerTest {
   }
 
   @Test
-  public void statusIsConsistentOnSuccess() {
-    TestOperationResult testOperationResult = new TestOperationResult();
+  public void saveUpdatesOperationStateWhenOperationCompletesExceptionally() {
+    Cache cache = mock(Cache.class);
     TestOperation1 testOperation1 = new TestOperation1();
-    BiFunction<Cache, TestOperation1, TestOperationResult> testOperation = (cache, testOpType) -> {
-      try {
-        testOpType.countDownLatch.await(10, TimeUnit.SECONDS);
-      } catch (InterruptedException e) {
-        System.out.println("Countdown interrupted");
-      }
-      return testOperationResult;
-    };
+    OperationInstance<TestOperation1, TestOperationResult> operationInstance = mock(OperationInstance.class);
+    BiFunction<Cache, TestOperation1, TestOperationResult> performer = mock(BiFunction.class);
 
-    OperationInstance<TestOperation1, TestOperationResult> operationInstance = history.save(
-        testOperation1, testOperation, null, executor);
+    RuntimeException thrownByPerformer = new RuntimeException();
+    doThrow(thrownByPerformer).when(performer).apply(any(), any());
+    doReturn(operationInstance).when(operationHistoryPersistenceService).getOperationInstance(any());
 
-    assertSoftly(softly -> {
-      softly.assertThat(operationInstance.getId()).as("id pre-completion").isNotNull();
+    history.save(testOperation1, performer, cache, executor);
 
-      doReturn(operationInstance).when(operationHistoryPersistenceService)
-          .getOperationInstance(operationInstance.getId());
-
-      softly.assertThat(operationInstance.getOperationEnd()).as("operationEnd pre-completion")
-          .isNull();
-      assertThat(operationInstance.getResult()).as("result pre-completion").isNull();
-
-      testOperation1.downLatch();
-
-      await().untilAsserted(
-          () -> softly.assertThat(operationInstance.getOperationEnd())
-              .as("operationEnd post-completion").isNotNull());
-      await().untilAsserted(
-          () -> softly.assertThat(operationInstance.getResult()).as("result post-completion")
-              .isEqualTo(testOperationResult));
+    await().untilAsserted(() -> {
+      verify(operationInstance).setOperationEnd(any(), isNull(), same(thrownByPerformer));
+      verify(operationHistoryPersistenceService).update(same(operationInstance));
     });
-
-    verify(operationHistoryPersistenceService, times(1))
-        .getOperationInstance(operationInstance.getId());
   }
-
+  
   @Test
-  public void statusIsConsistentOnException() {
-    TestOperationResult testOperationResult = new TestOperationResult();
-    TestOperation1 testOperation1 = new TestOperation1();
-    BiFunction<Cache, TestOperation1, TestOperationResult> testOperation = (cache, testOpType) -> {
+  public void callsUpdateOnlyAfterPerformerCompletes() throws InterruptedException {
+    CountDownLatch performerIsInProgress = new CountDownLatch(1);
+    CountDownLatch performerHasTestPermissionToComplete = new CountDownLatch(1);
+
+    when(operationHistoryPersistenceService.getOperationInstance(any()))
+        .thenReturn(mock(OperationInstance.class));
+
+    BiFunction<Cache, TestOperation1, TestOperationResult> performer = (cache, operation) -> {
       try {
-        testOpType.countDownLatch.await(10, TimeUnit.SECONDS);
+        performerIsInProgress.countDown();
+        performerHasTestPermissionToComplete.await(10, SECONDS);
       } catch (InterruptedException e) {
         System.out.println("Countdown interrupted");
       }
-      if (testOpType.exceptionLatch.getCount() == 0) {
-        throw new RuntimeException("Long running operation failed");
-      }
-      return testOperationResult;
+      return null;
     };
 
-    OperationInstance<TestOperation1, TestOperationResult> operationInstance = history.save(
-        testOperation1, testOperation, null, executor);
+    history.save(null, performer, null, executor);
 
-    assertSoftly(softly -> {
-      softly.assertThat(operationInstance.getId()).as("id pre-completion").isNotNull();
+    performerIsInProgress.await(10, SECONDS);
 
-      doReturn(operationInstance).when(operationHistoryPersistenceService)
-          .getOperationInstance(operationInstance.getId());
+    verify(operationHistoryPersistenceService, never()).update(any());
 
-      softly.assertThat(operationInstance.getOperationEnd()).as("operationEnd pre-completion")
-          .isNull();
-      assertThat(operationInstance.getResult()).as("result pre-completion").isNull();
+    performerHasTestPermissionToComplete.countDown();
 
-      testOperation1.downException();
-      testOperation1.downLatch();
-
-      await().untilAsserted(
-          () -> softly.assertThat(operationInstance.getOperationEnd())
-              .as("operationEnd post-completion").isNotNull());
-      await().untilAsserted(
-          () -> softly.assertThat(operationInstance.getResult()).as("result post-completion")
-              .isNull());
-      await().untilAsserted(
-          () -> softly.assertThat(operationInstance.getThrowable()).as("throwable post-completion")
-              .isNotNull());
-      await().untilAsserted(
-          () -> softly.assertThat(operationInstance.getThrowable().getMessage())
-              .as("throwable message post-completion")
-              .contains("operation failed"));
-    });
-
-    verify(operationHistoryPersistenceService, times(1))
-        .getOperationInstance(operationInstance.getId());
+    await().untilAsserted(() -> verify(operationHistoryPersistenceService).update(any()));
   }
-
-  @Test
-  public void completedStatusIsConsistentEvenWhenReallyFast() {
-    TestOperationResult testOperationResult = new TestOperationResult();
-    TestOperation1 testOperation1 = new TestOperation1();
-    BiFunction<Cache, TestOperation1, TestOperationResult> performer = (cache, testOpType) -> {
-      try {
-        testOpType.countDownLatch.await(10, TimeUnit.SECONDS);
-      } catch (InterruptedException e) {
-        System.out.println("Countdown interrupted");
-      }
-      return testOperationResult;
-    };
-
-    OperationInstance<TestOperation1, TestOperationResult> operationInstance = history.save(
-        testOperation1, performer, null, executor);
-    doReturn(operationInstance).when(operationHistoryPersistenceService)
-        .getOperationInstance(operationInstance.getId());
-    testOperation1.downLatch();
-
-    assertSoftly(softly -> {
-      softly.assertThat(operationInstance.getId()).as("id post-completion").isNotNull();
-      softly.assertThat(operationInstance.getOperationStart()).as("start post-completion")
-          .isNotNull();
-
-      await().untilAsserted(
-          () -> softly.assertThat(operationInstance.getOperationEnd())
-              .as("operationEnd post-completion").isNotNull());
-      await().untilAsserted(
-          () -> softly.assertThat(operationInstance.getResult()).as("result post-completion")
-              .isNotNull());
-      await().untilAsserted(
-          () -> softly.assertThat(operationInstance.getThrowable()).as("throwable post-completion")
-              .isNull());
-    });
-
-    verify(operationHistoryPersistenceService, times(1))
-        .getOperationInstance(operationInstance.getId());
-    verify(operationHistoryPersistenceService, times(1))
-        .update(operationInstance);
-  }
-
+  
   @Test
   public void retainsHistoryForAllInProgressOperations() {
     TestOperation1 testOperation1 = new TestOperation1();
     List<OperationInstance<TestOperation1, TestOperationResult>> sampleOps = new ArrayList<>();
     for (int i = 0; i < 3; i++) {
-      sampleOps.add(new OperationInstance<>("op-" + i, testOperation1, new Date()));
+      OperationInstance<TestOperation1, TestOperationResult> operationInstance =
+          new OperationInstance<>("op-" + i, testOperation1, new Date());
+      // Have not called operation end, so operation is still in progress.
+      sampleOps.add(operationInstance);
     }
 
     doReturn(sampleOps).when(operationHistoryPersistenceService).listOperationInstances();
@@ -332,7 +251,7 @@ public class OperationHistoryManagerTest {
 
   static class TestOperation1 implements ClusterManagementOperation<TestOperationResult> {
     private CountDownLatch exceptionLatch = new CountDownLatch(1);
-    private CountDownLatch countDownLatch = new CountDownLatch(1);
+    private CountDownLatch performerHasTestPermissionToComplete = new CountDownLatch(1);
 
     @Override
     public String getEndpoint() {
@@ -344,7 +263,7 @@ public class OperationHistoryManagerTest {
     }
 
     public void downLatch() {
-      countDownLatch.countDown();
+      performerHasTestPermissionToComplete.countDown();
     }
   }
 
