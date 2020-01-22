@@ -63,7 +63,6 @@ import org.apache.geode.distributed.internal.membership.api.MembershipView;
 import org.apache.geode.distributed.internal.membership.api.Message;
 import org.apache.geode.distributed.internal.membership.api.MessageListener;
 import org.apache.geode.distributed.internal.membership.api.QuorumChecker;
-import org.apache.geode.distributed.internal.membership.gms.GMSMembership;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
 import org.apache.geode.internal.InternalDataSerializer;
@@ -166,7 +165,7 @@ public class DistributionImpl implements Distribution {
     InternalLocator internalLocator = (InternalLocator) Locator.getLocator();
     if (internalLocator != null && internalLocator.getMembershipLocator() != null) {
       internalLocator.getMembershipLocator()
-          .setServices(((GMSMembership<InternalDistributedMember>) membership).getServices());
+          .setMembership(membership);
     }
   }
 

@@ -29,10 +29,12 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
+import org.apache.geode.distributed.internal.membership.api.Membership;
 import org.apache.geode.distributed.internal.membership.api.MembershipConfig;
 import org.apache.geode.distributed.internal.membership.api.MembershipConfigurationException;
 import org.apache.geode.distributed.internal.membership.api.MembershipLocator;
 import org.apache.geode.distributed.internal.membership.api.MembershipLocatorStatistics;
+import org.apache.geode.distributed.internal.membership.gms.GMSMembership;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Locator;
 import org.apache.geode.distributed.internal.tcpserver.ProtocolChecker;
@@ -147,8 +149,9 @@ public class MembershipLocatorImpl<ID extends MemberIdentifier> implements Membe
   }
 
   @Override
-  public void setServices(final Services<ID> services) {
-    gmsLocator.setServices(services, this);
+  public void setMembership(final Membership<ID> membership) {
+    final GMSMembership<ID> gmsMembership = (GMSMembership<ID>) membership;
+    setServices(gmsMembership.getServices());
   }
 
   @Override
@@ -164,6 +167,14 @@ public class MembershipLocatorImpl<ID extends MemberIdentifier> implements Membe
   @VisibleForTesting
   public GMSLocator getGMSLocator() {
     return this.gmsLocator;
+  }
+
+  /**
+   * Services is a class internal to the membership module. As such, the ability to setServices
+   * is available ony within the module. It's not part of the external API.
+   */
+  public void setServices(final Services<ID> services) {
+    gmsLocator.setServices(services, this);
   }
 
   public void stop() {

@@ -58,6 +58,7 @@ import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordina
 import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordinatorResponse;
 import org.apache.geode.distributed.internal.membership.gms.locator.GetViewRequest;
 import org.apache.geode.distributed.internal.membership.gms.locator.GetViewResponse;
+import org.apache.geode.distributed.internal.membership.gms.locator.MembershipLocatorImpl;
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
 import org.apache.geode.distributed.internal.membership.gms.messages.FinalCheckPassedMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.HeartbeatMessage;
@@ -218,7 +219,9 @@ public class Services<ID extends MemberIdentifier> {
          * about them. We must do this before telling the manager to joinDistributedSystem()
          * later in this method
          */
-        membershipLocator.setServices(this);
+        final MembershipLocatorImpl locatorImpl =
+            (MembershipLocatorImpl) this.membershipLocator;
+        locatorImpl.setServices(this);
       }
 
       logger.debug("All membership services have been started");
@@ -350,10 +353,6 @@ public class Services<ID extends MemberIdentifier> {
 
   public Locator<ID> getLocator() {
     return locator;
-  }
-
-  public MembershipLocator<ID> getMembershipLocator() {
-    return membershipLocator;
   }
 
   public JoinLeave<ID> getJoinLeave() {

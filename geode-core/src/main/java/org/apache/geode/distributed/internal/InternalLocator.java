@@ -70,7 +70,6 @@ import org.apache.geode.distributed.internal.membership.api.MembershipConfigurat
 import org.apache.geode.distributed.internal.membership.api.MembershipLocator;
 import org.apache.geode.distributed.internal.membership.api.MembershipLocatorBuilder;
 import org.apache.geode.distributed.internal.membership.api.QuorumChecker;
-import org.apache.geode.distributed.internal.membership.gms.GMSMembership;
 import org.apache.geode.distributed.internal.tcpserver.InfoRequest;
 import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
@@ -563,10 +562,8 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
 
     membershipLocator.addHandler(InfoRequest.class, new InfoRequestHandler());
     restartHandlers.add((ds, cache, sharedConfig) -> {
-      InternalDistributedSystem ids = (InternalDistributedSystem) ds;
-      Distribution distribution = ids.getDM().getDistribution();
-      membershipLocator.setServices(
-          ((GMSMembership<InternalDistributedMember>) distribution.getMembership()).getServices());
+      final InternalDistributedSystem ids = (InternalDistributedSystem) ds;
+      membershipLocator.setMembership(ids.getDM().getDistribution().getMembership());
     });
   }
 
@@ -745,9 +742,8 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
         // We've created a peer location message handler - it needs to be connected to
         // the membership service in order to get membership view notifications
         membershipLocator
-            .setServices(
-                ((GMSMembership<InternalDistributedMember>) internalDistributedSystem.getDM()
-                    .getDistribution().getMembership()).getServices());
+            .setMembership(internalDistributedSystem.getDM()
+                .getDistribution().getMembership());
       }
 
       internalDistributedSystem.addDisconnectListener(sys -> stop(false, false, false));
