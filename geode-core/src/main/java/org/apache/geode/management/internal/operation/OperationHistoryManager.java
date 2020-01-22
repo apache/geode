@@ -17,7 +17,6 @@ package org.apache.geode.management.internal.operation;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
@@ -97,9 +96,7 @@ public class OperationHistoryManager {
    */
   public <A extends ClusterManagementOperation<V>, V extends OperationResult> OperationState<A, V> save(
       A op, BiFunction<Cache, A, V> performer, Cache cache, Executor executor) {
-    String opId = UUID.randomUUID().toString();
-    OperationState<A, V> operationInstance = new OperationState<>(opId, op, new Date());
-    historyPersistenceService.create(operationInstance);
+    String opId = historyPersistenceService.create(op);
 
     CompletableFuture.supplyAsync(() -> performer.apply(cache, op), executor)
         .whenComplete((result, exception) -> {
@@ -112,10 +109,9 @@ public class OperationHistoryManager {
           }
         });
 
-
     expireHistory();
 
-    return operationInstance;
+    return historyPersistenceService.getOperationInstance(opId);
   }
 
   <A extends ClusterManagementOperation<V>, V extends OperationResult> List<OperationState<A, V>> listOperationInstances(

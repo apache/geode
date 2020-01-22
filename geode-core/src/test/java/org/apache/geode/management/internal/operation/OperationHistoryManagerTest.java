@@ -62,37 +62,17 @@ public class OperationHistoryManagerTest {
   }
 
   @Test
-  public void saveSetsId() {
+  public void saveCallsCreateAndReturnsGetResult() {
+    TestOperation1 op = mock(TestOperation1.class);
     BiFunction<Cache, TestOperation1, TestOperationResult> performer = (cache, testOpType) -> null;
+    OperationState operationState = mock(OperationState.class);
+    when(operationHistoryPersistenceService.getOperationInstance(any())).thenReturn(operationState);
 
     OperationState<TestOperation1, TestOperationResult> operationInstance = history.save(
-        null, performer, null, mock(Executor.class));
+        op, performer, null, mock(Executor.class));
 
-    assertThat(operationInstance).isNotNull();
-    assertThat(operationInstance.getId()).isNotNull();
-  }
-
-  @Test
-  public void saveSetsStartDate() {
-    BiFunction<Cache, TestOperation1, TestOperationResult> performer = (cache, testOpType) -> null;
-
-    OperationState<TestOperation1, TestOperationResult> operationInstance = history.save(
-        null, performer, null, mock(Executor.class));
-
-    assertThat(operationInstance).isNotNull();
-    assertThat(operationInstance.getOperationStart()).isNotNull();
-  }
-
-  @Test
-  public void saveSetsOperation() {
-    TestOperation1 testOperation1 = new TestOperation1();
-    BiFunction<Cache, TestOperation1, TestOperationResult> performer = (cache, testOpType) -> null;
-
-    OperationState<TestOperation1, TestOperationResult> operationInstance = history.save(
-        testOperation1, performer, null, mock(Executor.class));
-
-    assertThat(operationInstance).isNotNull();
-    assertThat(operationInstance.getOperation()).isEqualTo(testOperation1);
+    verify(operationHistoryPersistenceService).create(same(op));
+    assertThat(operationInstance).isSameAs(operationState);
   }
 
   @Test
