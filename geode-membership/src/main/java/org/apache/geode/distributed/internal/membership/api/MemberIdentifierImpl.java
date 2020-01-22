@@ -188,15 +188,17 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
     return result;
   }
 
-  private String getUniqueTag() {
+  @Override
+  public String getUniqueTag() {
     return memberData.getUniqueTag();
   }
 
-  public int compare(MemberIdentifierImpl other) {
+  public int compare(MemberIdentifier other) {
     return this.compareTo(other, false, true);
   }
 
-  public int compareTo(MemberIdentifierImpl other, boolean compareMemberData,
+  @Override
+  public int compareTo(MemberIdentifier other, boolean compareMemberData,
       boolean compareViewIds) {
     int myPort = getMembershipPort();
     int otherPort = other.getMembershipPort();
@@ -273,8 +275,8 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
       }
     }
 
-    if (compareMemberData && this.memberData != null && other.memberData != null) {
-      return this.memberData.compareAdditionalData(other.memberData);
+    if (compareMemberData && this.memberData != null && other.getMemberData() != null) {
+      return this.memberData.compareAdditionalData(other.getMemberData());
     } else {
       return 0;
     }

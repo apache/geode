@@ -62,7 +62,7 @@ public class InternalDistributedMember
   @MutableForTesting
   protected static HostnameResolver hostnameResolver =
       (location) -> InetAddress.getByName(location.getHostName());
-  private final MemberIdentifierImpl memberIdentifier;
+  private final MemberIdentifier memberIdentifier;
 
   /** lock object used when getting/setting roles/rolesSet fields */
 
@@ -297,7 +297,13 @@ public class InternalDistributedMember
           "InternalDistributedMember.compareTo(): comparison between different classes");
     InternalDistributedMember other = (InternalDistributedMember) o;
 
-    return memberIdentifier.compareTo(other.memberIdentifier, compareMemberData, compareViewIds);
+    return compareTo(other.memberIdentifier, compareMemberData, compareViewIds);
+  }
+
+  @Override
+  public int compareTo(
+      MemberIdentifier memberIdentifier, boolean compareMemberData, boolean compareViewIds) {
+    return this.memberIdentifier.compareTo(memberIdentifier, compareMemberData, compareViewIds);
   }
 
   private void defaultToCurrentHost() {
@@ -313,10 +319,12 @@ public class InternalDistributedMember
     }
   }
 
+  @Override
   public void setDurableTimeout(int newValue) {
     memberIdentifier.setDurableTimeout(newValue);
   }
 
+  @Override
   public void setDurableId(String id) {
     memberIdentifier.setDurableId(id);
   }
@@ -341,6 +349,7 @@ public class InternalDistributedMember
     return memberIdentifier.getVersionOrdinal();
   }
 
+  @Override
   public int getDirectChannelPort() {
     return memberIdentifier.getDirectChannelPort();
   }
@@ -467,19 +476,22 @@ public class InternalDistributedMember
     memberIdentifier.fromData(in, context);
   }
 
+  @Override
   public void fromDataPre_GFE_9_0_0_0(DataInput in,
       DeserializationContext context)
       throws IOException, ClassNotFoundException {
     memberIdentifier.fromDataPre_GFE_9_0_0_0(in, context);
   }
 
+  @Override
   public void fromDataPre_GFE_7_1_0_0(DataInput in,
       DeserializationContext context)
       throws IOException, ClassNotFoundException {
     memberIdentifier.fromDataPre_GFE_7_1_0_0(in, context);
   }
 
-  private void _readEssentialData(DataInput in,
+  @Override
+  public void _readEssentialData(DataInput in,
       Function<InetAddress, String> hostnameResolver)
       throws IOException, ClassNotFoundException {
     memberIdentifier._readEssentialData(in, hostnameResolver);
@@ -536,6 +548,11 @@ public class InternalDistributedMember
   @Override
   public Version[] getSerializationVersions() {
     return memberIdentifier.getSerializationVersions();
+  }
+
+  @Override
+  public String getUniqueTag() {
+    return memberIdentifier.getUniqueTag();
   }
 
   public void setUniqueTag(String tag) {

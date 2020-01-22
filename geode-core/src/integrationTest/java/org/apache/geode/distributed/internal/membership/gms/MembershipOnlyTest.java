@@ -21,6 +21,7 @@ import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.util.Comparator;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Supplier;
 
@@ -32,9 +33,9 @@ import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.api.LifecycleListener;
+import org.apache.geode.distributed.internal.membership.api.MemberData;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
-import org.apache.geode.distributed.internal.membership.api.MemberIdentifierFactoryImpl;
-import org.apache.geode.distributed.internal.membership.api.MemberIdentifierImpl;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifierFactory;
 import org.apache.geode.distributed.internal.membership.api.MemberStartupException;
 import org.apache.geode.distributed.internal.membership.api.Membership;
 import org.apache.geode.distributed.internal.membership.api.MembershipBuilder;
@@ -111,16 +112,27 @@ public class MembershipOnlyTest {
     };
 
     // TODO - using geode-core InternalDistributedMember
-    MemberIdentifierFactoryImpl memberIdFactory = new MemberIdentifierFactoryImpl();
+    MemberIdentifierFactory<InternalDistributedMember> memberIdFactory =
+        new MemberIdentifierFactory<InternalDistributedMember>() {
+          @Override
+          public InternalDistributedMember create(MemberData memberInfo) {
+            return new InternalDistributedMember(memberInfo);
+          }
+
+          @Override
+          public Comparator<InternalDistributedMember> getComparator() {
+            return InternalDistributedMember::compareTo;
+          }
+        };
 
 
     TcpClient locatorClient = new TcpClient(socketCreator, dsfidSerializer.getObjectSerializer(),
         dsfidSerializer.getObjectDeserializer());
 
-    LifecycleListener<MemberIdentifierImpl> lifeCycleListener = mock(LifecycleListener.class);
+    LifecycleListener<InternalDistributedMember> lifeCycleListener = mock(LifecycleListener.class);
 
-    final Membership<MemberIdentifierImpl> membership =
-        MembershipBuilder.<MemberIdentifierImpl>newMembershipBuilder(
+    final Membership<InternalDistributedMember> membership =
+        MembershipBuilder.<InternalDistributedMember>newMembershipBuilder(
             socketCreator, locatorClient, dsfidSerializer, memberIdFactory)
             .setConfig(config)
             .setLifecycleListener(lifeCycleListener)
