@@ -296,7 +296,7 @@ public class CompiledComparison extends AbstractCompiledValue
   public int getSizeEstimate(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     IndexInfo[] idxInfo = getIndexInfo(context);
-    if (idxInfo == null) {
+    if ((idxInfo == null) || (idxInfo.length > 1)) {
       // Asif: This implies it is an independent condition. So evaluate it first
       // in filter operand
       return 0;
