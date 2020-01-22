@@ -563,6 +563,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
     membershipLocator.addHandler(InfoRequest.class, new InfoRequestHandler());
     restartHandlers.add((ds, cache, sharedConfig) -> {
       final InternalDistributedSystem ids = (InternalDistributedSystem) ds;
+      // let old locator know about new membership object
       membershipLocator.setMembership(ids.getDM().getDistribution().getMembership());
     });
   }

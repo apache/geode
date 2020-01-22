@@ -174,7 +174,7 @@ public class MembershipLocatorImpl<ID extends MemberIdentifier> implements Membe
    * is available ony within the module. It's not part of the external API.
    */
   public void setServices(final Services<ID> services) {
-    gmsLocator.setServices(services, this);
+    gmsLocator.setServices(services);
   }
 
   public void stop() {

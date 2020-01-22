@@ -40,7 +40,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.api.MembershipConfigurationException;
-import org.apache.geode.distributed.internal.membership.api.MembershipLocator;
 import org.apache.geode.distributed.internal.membership.api.MembershipLocatorStatistics;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
@@ -137,8 +136,7 @@ public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID>, Tcp
    *
    */
   public synchronized boolean setServices(
-      final Services<ID> services,
-      final MembershipLocator<ID> membershipLocator) {
+      final Services<ID> services) {
     if (this.services == null || this.services.isStopped()) {
       this.services = services;
       localAddress = this.services.getMessenger().getMemberID();

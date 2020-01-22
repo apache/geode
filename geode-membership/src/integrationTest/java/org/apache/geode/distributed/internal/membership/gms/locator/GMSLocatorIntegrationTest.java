@@ -87,7 +87,7 @@ public class GMSLocatorIntegrationTest {
             services.getSerializer().getObjectDeserializer());
 
     final MembershipLocator membershipLocator = mock(MembershipLocator.class);
-    gmsLocator.setServices(services, membershipLocator);
+    gmsLocator.setServices(services);
   }
 
   @Test

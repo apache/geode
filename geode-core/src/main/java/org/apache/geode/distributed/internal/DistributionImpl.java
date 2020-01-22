@@ -160,15 +160,6 @@ public class DistributionImpl implements Distribution {
     }
   }
 
-  public static void connectLocatorToServices(Membership<InternalDistributedMember> membership) {
-    // see if a locator was started and put it in GMS Services
-    InternalLocator internalLocator = (InternalLocator) Locator.getLocator();
-    if (internalLocator != null && internalLocator.getMembershipLocator() != null) {
-      internalLocator.getMembershipLocator()
-          .setMembership(membership);
-    }
-  }
-
   @Override
   public Membership<InternalDistributedMember> getMembership() {
     return membership;
@@ -919,11 +910,6 @@ public class DistributionImpl implements Distribution {
     @Override
     public void destroyMember(InternalDistributedMember member, String reason) {
       distribution.destroyMember(member, reason);
-    }
-
-    @Override
-    public void started() {
-      connectLocatorToServices(distribution.getMembership());
     }
 
     @Override

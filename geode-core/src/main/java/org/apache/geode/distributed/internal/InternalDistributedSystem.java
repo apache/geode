@@ -283,6 +283,7 @@ public class InternalDistributedSystem extends DistributedSystem
       // Make a new connection to the distributed system
       InternalDistributedSystem newSystem = new Builder(config, metricsSessionBuilder)
           .setSecurityConfig(securityConfig)
+          .setLocator(locator)
           .build();
       addSystem(newSystem);
       return newSystem;
