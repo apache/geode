@@ -16,19 +16,38 @@ package org.apache.geode.cache.client.internal;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 import org.apache.geode.cache.Operation;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EventID;
+import org.apache.geode.internal.cache.RegionEntry;
+import org.apache.geode.internal.cache.versions.VersionStamp;
+import org.apache.geode.internal.cache.versions.VersionTag;
 
 public class PutOpJUnitTest {
+  private final EntryEventImpl event = mock(EntryEventImpl.class);
+  private final VersionTag versionTag = mock(VersionTag.class);
+  private final RegionEntry entry = mock(RegionEntry.class);
+  private final VersionStamp versionStamp = mock(VersionStamp.class);
+  private final Connection connection = mock(Connection.class);
+
+  @Before
+  public void setup() {
+    when(event.getEventId()).thenReturn(new EventID());
+    when(entry.getVersionStamp()).thenReturn(versionStamp);
+  }
 
   private EntryEventImpl getEntryEvent() {
-    EntryEventImpl entryEvent = Mockito.mock(EntryEventImpl.class);
-    Mockito.when(entryEvent.getEventId()).thenReturn(new EventID());
+    EntryEventImpl entryEvent = mock(EntryEventImpl.class);
+    when(entryEvent.getEventId()).thenReturn(new EventID());
     return entryEvent;
   }
 
@@ -57,4 +76,58 @@ public class PutOpJUnitTest {
     assertTrue(putOp.getMessage().isRetry());
   }
 
+  @Test
+  public void putOpSetVersionTagIfRegionEntryInEntryEventIsNull() throws Exception {
+    PutOp.PutOpImpl putOp = new PutOp.PutOpImpl("testRegion", "testKey", "testValue", new byte[10],
+        event, Operation.UPDATE,
+        false, false, null, false, false);
+    when(event.getRegionEntry()).thenReturn(null);
+
+    putOp.checkForDeltaConflictAndSetVersionTag(versionTag, null);
+
+    verify(event).setVersionTag(versionTag);
+  }
+
+  @Test
+  public void putOpSetVersionTagIfNotADeltaUpdate() throws Exception {
+    PutOp.PutOpImpl putOp = new PutOp.PutOpImpl("testRegion", "testKey", "testValue", new byte[10],
+        event, Operation.UPDATE,
+        false, false, null, true, false);
+    when(event.getRegionEntry()).thenReturn(entry);
+
+    putOp.checkForDeltaConflictAndSetVersionTag(versionTag, null);
+
+    verify(event).setVersionTag(versionTag);
+  }
+
+  @Test
+  public void putOpSetVersionTagIfDeltaUpdateVersionInOrder() throws Exception {
+    PutOp.PutOpImpl putOp = new PutOp.PutOpImpl("testRegion", "testKey", "testValue", new byte[10],
+        event, Operation.UPDATE,
+        false, false, null, false, false);
+    when(event.getRegionEntry()).thenReturn(entry);
+    when(versionTag.getEntryVersion()).thenReturn(2);
+    when(versionStamp.getEntryVersion()).thenReturn(1);
+
+    putOp.checkForDeltaConflictAndSetVersionTag(versionTag, null);
+
+    verify(event).setVersionTag(versionTag);
+  }
+
+  @Test
+  public void putOpGetFullValueIfDeltaUpdateVersionOutOfOrder() throws Exception {
+    Object object = new Object();
+    PutOp.PutOpImpl putOp =
+        spy(new PutOp.PutOpImpl("testRegion", "testKey", "testValue", new byte[10],
+            event, Operation.UPDATE,
+            false, false, null, false, false));
+    when(event.getRegionEntry()).thenReturn(entry);
+    when(versionTag.getEntryVersion()).thenReturn(3);
+    when(versionStamp.getEntryVersion()).thenReturn(1);
+    doReturn(object).when(putOp).getFullValue(connection);
+
+    putOp.checkForDeltaConflictAndSetVersionTag(versionTag, connection);
+
+    verify(event).setNewValue(object);
+  }
 }

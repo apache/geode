@@ -30,9 +30,11 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
+import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -266,7 +268,6 @@ public class PutOp {
     @Override
     protected Object processResponse(Message msg, Connection con) throws Exception {
       processAck(msg, con);
-
       if (prSingleHopEnabled) {
         Part part = msg.getPart(0);
         byte[] bytesReceived = part.getSerializedForm();
@@ -299,11 +300,37 @@ public class PutOp {
           VersionTag tag = (VersionTag) msg.getPart(partIdx).getObject();
           // we use the client's ID since we apparently don't track the server's ID in connections
           tag.replaceNullIDs((InternalDistributedMember) con.getEndpoint().getMemberId());
-          event.setVersionTag(tag);
+          checkForDeltaConflictAndSetVersionTag(tag, con);
         }
         return oldValue;
       }
       return null;
+    }
+
+    void checkForDeltaConflictAndSetVersionTag(VersionTag versionTag, Connection connection)
+        throws Exception {
+      RegionEntry regionEntry = ((EntryEventImpl) event).getRegionEntry();
+      if (regionEntry == null) {
+        event.setVersionTag(versionTag);
+        return;
+      }
+      VersionStamp versionStamp = regionEntry.getVersionStamp();
+      if (deltaSent && versionTag.getEntryVersion() != versionStamp.getEntryVersion() + 1) {
+        // Delta can't be applied, need to get full value.
+        if (logger.isDebugEnabled()) {
+          logger.debug("Version is out of order. Need to get from server to perform delta update.");
+        }
+        Object object = getFullValue(connection);
+        event.setNewValue(object);
+      } else {
+        event.setVersionTag(versionTag);
+      }
+    }
+
+    Object getFullValue(Connection connection) throws Exception {
+      GetOp.GetOpImpl getOp =
+          new GetOp.GetOpImpl(region, key, callbackArg, prSingleHopEnabled, event);
+      return getOp.attempt(connection);
     }
 
     /**
