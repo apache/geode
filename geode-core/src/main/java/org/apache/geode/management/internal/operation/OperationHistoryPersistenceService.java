@@ -61,4 +61,6 @@ public interface OperationHistoryPersistenceService {
    * If the instance is not found this is a no-op.
    */
   void remove(String id);
+
+  <A extends ClusterManagementOperation<V>, V extends OperationResult> String create(A operation);
 }

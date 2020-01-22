@@ -45,7 +45,7 @@ public class OperationHistoryManager {
    * set a default retention policy to keep results for 2 hours after completion
    */
   public OperationHistoryManager() {
-    this(2, TimeUnit.HOURS, new InternalOperationHistoryPersistenceService());
+    this(2, TimeUnit.HOURS, new RegionOperationHistoryPersistenceService());
   }
 
   /**
