@@ -15,6 +15,7 @@
 package org.apache.geode.distributed.internal.membership.gms;
 
 import static org.apache.geode.distributed.internal.membership.adapter.TcpSocketCreatorAdapter.asTcpSocketCreator;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -72,7 +73,7 @@ public class MembershipOnlyTest {
     membershipLocator = MembershipLocatorBuilder.<MemberIdentifierImpl>newLocatorBuilder(
         socketCreator,
         dsfidSerializer,
-        temporaryFolder.newFile("locator").toPath(),
+        temporaryFolder.newFolder("locator").toPath(),
         executorServiceSupplier)
         .create();
 
@@ -91,7 +92,22 @@ public class MembershipOnlyTest {
 
   @Test
   public void memberCanConnectToSelfHostedLocator() throws MemberStartupException {
+    Membership<MemberIdentifierImpl> membership = startMember("member", membershipLocator);
+    assertThat(membership.getView().getMembers()).hasSize(1);
+  }
 
+
+  @Test
+  public void twoMembersCanConnect() throws MemberStartupException {
+    Membership<MemberIdentifierImpl> member1 = startMember("member1", membershipLocator);
+    Membership<MemberIdentifierImpl> member2 = startMember("member2", null);
+    await().untilAsserted(() -> assertThat(member1.getView().getMembers()).hasSize(2));
+    await().untilAsserted(() -> assertThat(member2.getView().getMembers()).hasSize(2));
+  }
+
+  private Membership<MemberIdentifierImpl> startMember(String name,
+      final MembershipLocator embeddedLocator)
+      throws MemberStartupException {
     MembershipConfig config = new MembershipConfig() {
       public String getLocators() {
         return localHost.getHostName() + '[' + membershipLocator.getPort() + ']';
@@ -102,7 +118,13 @@ public class MembershipOnlyTest {
       // being associated with a locator
       @Override
       public int getVmKind() {
-        return MemberIdentifier.LOCATOR_DM_TYPE;
+        return embeddedLocator != null ? MemberIdentifier.LOCATOR_DM_TYPE
+            : MemberIdentifier.NORMAL_DM_TYPE;
+      }
+
+      @Override
+      public String getName() {
+        return name;
       }
     };
 
@@ -120,16 +142,17 @@ public class MembershipOnlyTest {
             .setLifecycleListener(lifeCycleListener)
             .create();
 
-
     // TODO - the membership *must* be installed in the locator at this special
     // point during membership startup for the start to succeed
-    doAnswer(invocation -> {
-      membershipLocator.setMembership(membership);
-      return null;
-    }).when(lifeCycleListener).started();
-
+    if (embeddedLocator != null) {
+      doAnswer(invocation -> {
+        embeddedLocator.setMembership(membership);
+        return null;
+      }).when(lifeCycleListener).started();
+    }
 
     membership.start();
-    assertThat(membership.getView().getMembers()).hasSize(1);
+    membership.startEventProcessing();
+    return membership;
   }
 }
