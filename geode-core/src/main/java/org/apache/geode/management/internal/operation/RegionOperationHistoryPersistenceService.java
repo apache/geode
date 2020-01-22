@@ -28,18 +28,18 @@ import org.apache.geode.management.runtime.OperationResult;
 public class RegionOperationHistoryPersistenceService
     implements OperationHistoryPersistenceService {
   private final Supplier<String> uniqueIdSupplier;
-  private final Supplier<Region<String, OperationState>> regionSupplier;
+  private final Region<String, OperationState> region;
 
   @VisibleForTesting
   RegionOperationHistoryPersistenceService(
       Supplier<String> uniqueIdSupplier,
-      Supplier<Region<String, OperationState>> regionSupplier) {
+      Region<String, OperationState> region) {
     this.uniqueIdSupplier = uniqueIdSupplier;
-    this.regionSupplier = regionSupplier;
+    this.region = region;
   }
 
   public RegionOperationHistoryPersistenceService() {
-    this(() -> UUID.randomUUID().toString(), () -> null);
+    this(() -> UUID.randomUUID().toString(), null);
   }
 
   @Override
@@ -74,7 +74,6 @@ public class RegionOperationHistoryPersistenceService
   @Override
   public <A extends ClusterManagementOperation<V>, V extends OperationResult> String create(
       A operation) {
-    Region<String, OperationState> region = regionSupplier.get();
     String opId = uniqueIdSupplier.get();
 
     OperationState<A, V> operationInstance = new OperationState<>(opId, operation, new Date());

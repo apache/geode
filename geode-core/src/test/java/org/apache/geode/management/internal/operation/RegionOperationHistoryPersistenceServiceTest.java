@@ -43,10 +43,8 @@ public class RegionOperationHistoryPersistenceServiceTest {
     uniqueIdSupplier = mock(Supplier.class);
     when(uniqueIdSupplier.get()).thenReturn("defaultId");
     region = mock(Region.class);
-    regionSupplier = mock(Supplier.class);
-    when(regionSupplier.get()).thenReturn(region);
     historyPersistenceService =
-        new RegionOperationHistoryPersistenceService(uniqueIdSupplier, regionSupplier);
+        new RegionOperationHistoryPersistenceService(uniqueIdSupplier, region);
   }
 
   @Test
@@ -61,7 +59,7 @@ public class RegionOperationHistoryPersistenceServiceTest {
   }
 
   @Test
-  public void createStoresOperationStatusInSuppliedRegion() {
+  public void createStoresOperationStatusInGivenRegion() {
     ClusterManagementOperation<OperationResult> operation = mock(ClusterManagementOperation.class);
     String opId = historyPersistenceService.create(operation);
 
