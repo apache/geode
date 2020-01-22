@@ -108,7 +108,7 @@ public class LocatorLoadSnapshotJUnitTest {
 
     assertEquals(l1, sn.getServerForConnection(null, Collections.EMPTY_SET));
     assertEquals(l1, sn.getServerForConnection(null, Collections.EMPTY_SET));
-    sn.updateLoad(l1, new ServerLoad(200, 1, 1, 1));
+    sn.updateLoad(l1, "", new ServerLoad(200, 1, 1, 1));
     assertEquals(l2, sn.getServerForConnection(null, Collections.EMPTY_SET));
     assertEquals(l2, sn.getServerForConnection(null, Collections.EMPTY_SET));
   }
@@ -128,7 +128,7 @@ public class LocatorLoadSnapshotJUnitTest {
     assertEquals(l1, sn.getServerForConnection(null, Collections.EMPTY_SET));
     assertEquals(Arrays.asList(new ServerLocation[] {l1, l2}),
         sn.getServersForQueue(null, Collections.EMPTY_SET, -1));
-    sn.removeServer(l1);
+    sn.removeServer(l1, "");
     assertEquals(l2, sn.getServerForConnection(null, Collections.EMPTY_SET));
     assertEquals(Collections.singletonList(l2),
         sn.getServersForQueue(null, Collections.EMPTY_SET, -1));
@@ -147,9 +147,9 @@ public class LocatorLoadSnapshotJUnitTest {
     assertNotNull(sn.getServerForConnection(null, Collections.EMPTY_SET));
     assertEquals(l1, sn.getServerForConnection("a", Collections.EMPTY_SET));
     assertEquals(l2, sn.getServerForConnection("c", Collections.EMPTY_SET));
-    sn.updateLoad(l1, new ServerLoad(10, 1, 1, 1));
+    sn.updateLoad(l1, "", new ServerLoad(10, 1, 1, 1));
     assertEquals(l2, sn.getServerForConnection("b", Collections.EMPTY_SET));
-    sn.updateLoad(l2, new ServerLoad(100, 1, 1, 1));
+    sn.updateLoad(l2, "", new ServerLoad(100, 1, 1, 1));
     assertEquals(l1, sn.getServerForConnection("b", Collections.EMPTY_SET));
     assertEquals(Arrays.asList(new ServerLocation[] {l1}),
         sn.getServersForQueue("a", Collections.EMPTY_SET, -1));
@@ -162,7 +162,7 @@ public class LocatorLoadSnapshotJUnitTest {
     assertEquals(Arrays.asList(new ServerLocation[] {l1, l2}),
         sn.getServersForQueue("b", Collections.EMPTY_SET, 5));
 
-    sn.removeServer(l1);
+    sn.removeServer(l1, "");
     assertEquals(l2, sn.getServerForConnection("b", Collections.EMPTY_SET));
     assertEquals(l2, sn.getServerForConnection("b", Collections.EMPTY_SET));
     assertNull(sn.getServerForConnection("a", Collections.EMPTY_SET));
@@ -201,9 +201,9 @@ public class LocatorLoadSnapshotJUnitTest {
     expected.put(l3, expectedLoad);
     assertEquals(expected, sn.getLoadMap());
 
-    sn.updateLoad(l1, new ServerLoad(0, 1, 0, 1));
-    sn.updateLoad(l2, new ServerLoad(0, 1, 0, 1));
-    sn.updateLoad(l3, new ServerLoad(0, 1, 0, 1));
+    sn.updateLoad(l1, "", new ServerLoad(0, 1, 0, 1));
+    sn.updateLoad(l2, "", new ServerLoad(0, 1, 0, 1));
+    sn.updateLoad(l3, "", new ServerLoad(0, 1, 0, 1));
 
 
     // Now do the same test, but make all the requests for one group first,
@@ -280,12 +280,12 @@ public class LocatorLoadSnapshotJUnitTest {
     assertTrue(sn.hasBalancedConnections("a"));
     assertTrue(sn.hasBalancedConnections("b"));
 
-    sn.updateLoad(l1, new ServerLoad(1, 1, 0, 1));
+    sn.updateLoad(l1, "", new ServerLoad(1, 1, 0, 1));
     assertTrue(sn.hasBalancedConnections(null));
     assertTrue(sn.hasBalancedConnections("a"));
     assertTrue(sn.hasBalancedConnections("b"));
 
-    sn.updateLoad(l2, new ServerLoad(2, 1, 0, 1));
+    sn.updateLoad(l2, "", new ServerLoad(2, 1, 0, 1));
     assertFalse(sn.hasBalancedConnections(null));
     assertTrue(sn.hasBalancedConnections("a"));
     assertFalse(sn.hasBalancedConnections("b"));
@@ -305,7 +305,8 @@ public class LocatorLoadSnapshotJUnitTest {
     float l2ConnectionLoad = 50;
     float l3ConnectionLoad = 50 - defaultLoadImbalanceThreshold;
     loadSnapshot.addServer(l1, new String[] {"a"}, new ServerLoad(l1ConnectionLoad, 1, 0, 1));
-    loadSnapshot.addServer(l2, new String[] {"a", "b"}, new ServerLoad(l2ConnectionLoad, 1, 0, 1));
+    loadSnapshot.addServer(l2, new String[] {"a", "b"},
+        new ServerLoad(l2ConnectionLoad, 1, 0, 1));
     loadSnapshot.addServer(l3, new String[] {"b"}, new ServerLoad(l3ConnectionLoad, 1, 0, 1));
 
     // a new server should be selected until the load-imbalance-threshold is reached
@@ -347,7 +348,8 @@ public class LocatorLoadSnapshotJUnitTest {
     float l2ConnectionLoad = 50;
     float l3ConnectionLoad = 50 + (defaultLoadImbalanceThreshold / 2);
     loadSnapshot.addServer(l1, new String[] {"a"}, new ServerLoad(l1ConnectionLoad, 1, 0, 1));
-    loadSnapshot.addServer(l2, new String[] {"a", "b"}, new ServerLoad(l2ConnectionLoad, 1, 0, 1));
+    loadSnapshot.addServer(l2, new String[] {"a", "b"},
+        new ServerLoad(l2ConnectionLoad, 1, 0, 1));
     loadSnapshot.addServer(l3, new String[] {"b"}, new ServerLoad(l3ConnectionLoad, 1, 0, 1));
 
     ServerLocation newServer =
