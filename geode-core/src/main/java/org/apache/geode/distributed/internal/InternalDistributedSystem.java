@@ -672,7 +672,7 @@ public class InternalDistributedSystem extends DistributedSystem
    */
   private void initialize(SecurityManager securityManager, PostProcessor postProcessor,
       MetricsService.Builder metricsServiceBuilder,
-      final MembershipLocator<InternalDistributedMember> membershipLocator) {
+      final MembershipLocator<InternalDistributedMember> membershipLocatorArg) {
     if (originalConfig.getLocators().equals("")) {
       if (originalConfig.getMcastPort() != 0) {
         throw new GemFireConfigException("The " + LOCATORS + " attribute can not be empty when the "
@@ -760,8 +760,9 @@ public class InternalDistributedSystem extends DistributedSystem
         lockMemory(avail, size);
       }
 
+      final MembershipLocator<InternalDistributedMember> membershipLocator;
       try {
-        startInitLocator();
+        membershipLocator = startInitLocator(membershipLocatorArg);
       } catch (InterruptedException e) {
         throw new SystemConnectException("Startup has been interrupted", e);
       }
@@ -802,7 +803,7 @@ public class InternalDistributedSystem extends DistributedSystem
       }
       if (attemptingToReconnect && (startedLocator == null)) {
         try {
-          startInitLocator();
+          startInitLocator(membershipLocatorArg);
         } catch (InterruptedException e) {
           throw new SystemConnectException("Startup has been interrupted", e);
         }
@@ -875,12 +876,35 @@ public class InternalDistributedSystem extends DistributedSystem
   }
 
   /**
+   * Starts a locator in this JVM iff the distribution config wants one started.
+   *
+   * @return the membershipLocatorArg if the distribution config has no locator specified;
+   *         otherwise starts a new InternalLocator and returns its associated MembershipLocator
+   *
    * @since GemFire 5.7
+   * @param membershipLocatorArg an already-running MembershipLocator, or null if none is known
    */
-  private void startInitLocator() throws InterruptedException {
-    String locatorString = originalConfig.getStartLocator();
-    if (locatorString.length() == 0) {
-      return;
+  private MembershipLocator startInitLocator(
+      final MembershipLocator<InternalDistributedMember> membershipLocatorArg)
+      throws InterruptedException {
+
+    final String locatorString = originalConfig.getStartLocator();
+    final boolean shouldStartLocator = locatorString.length() > 0;
+
+    if (!shouldStartLocator) {
+      return membershipLocatorArg;
+    }
+
+    /*
+     * Defensive coding here. InternalLocator's constructor is keeping track of a singleton instance
+     * and that constructor will throw an exception if we try to have more than one
+     * InternalLocator in existence at the same time. So in that sense we shouldn't need this check.
+     * Nevertheless, we'd like the code over here to not rely on that singleton bookkeeping over
+     * there. So if that singleton logic goes away, this code here might save us.
+     */
+    if (membershipLocatorArg != null && shouldStartLocator) {
+      throw new IllegalStateException("Internal error: trying to start a second locator "
+          + "in this JVM");
     }
 
     // when reconnecting we don't want to join with a colocated locator unless
@@ -890,7 +914,7 @@ public class InternalDistributedSystem extends DistributedSystem
         logger.info("performing a quorum check to see if location services can be started early");
         if (!quorumChecker.checkForQuorum(3L * config.getMemberTimeout())) {
           logger.info("quorum check failed - not allowing location services to start early");
-          return;
+          return membershipLocatorArg;
         }
         logger.info("Quorum check passed - allowing location services to start early");
       }
@@ -919,6 +943,7 @@ public class InternalDistributedSystem extends DistributedSystem
           "Problem starting a locator service",
           e);
     }
+    return startedLocator.getMembershipLocator();
   }
 
   /**
