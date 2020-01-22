@@ -187,13 +187,9 @@ public class OperationHistoryManagerTest {
       // Have not called operation end, so operation is still in progress.
       sampleOps.add(operationInstance);
     }
-
     doReturn(sampleOps).when(operationHistoryPersistenceService).listOperationInstances();
 
-    List<OperationInstance<TestOperation1, TestOperationResult>> opList =
-        history.listOperationInstances(testOperation1);
-
-    assertThat(opList.size()).isEqualTo(3);
+    history.listOperationInstances(testOperation1);
 
     verify(operationHistoryPersistenceService, never()).remove(any());
   }
@@ -211,15 +207,15 @@ public class OperationHistoryManagerTest {
       sampleOps.add(new OperationInstance<>("op-" + i, opType1, new Date(threeHoursAgo)));
       if (i % 2 != 0) {
         sampleOps.get(i).setOperationEnd(new Date(twoAndAHalfHoursAgo), testOperationResult, null);
+      } else {
+        // set the others to have ended now which should not expire
+        sampleOps.get(i).setOperationEnd(new Date(), testOperationResult, null);
       }
     }
 
     doReturn(sampleOps).when(operationHistoryPersistenceService).listOperationInstances();
 
-    List<OperationInstance<TestOperation1, TestOperationResult>> opList =
-        history.listOperationInstances(opType1);
-
-    assertThat(opList.size()).isEqualTo(5);
+    history.listOperationInstances(opType1);
 
     verify(operationHistoryPersistenceService, times(2)).remove(any());
   }
@@ -247,8 +243,6 @@ public class OperationHistoryManagerTest {
 
     assertThat(opList1.size()).isEqualTo(5);
     assertThat(opList2.size()).isEqualTo(4);
-
-    verify(operationHistoryPersistenceService, never()).remove(any());
   }
 
   static class TestOperation1 implements ClusterManagementOperation<TestOperationResult> {

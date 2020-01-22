@@ -69,10 +69,10 @@ public class OperationHistoryManager {
   }
 
   private void expireHistory() {
-    final long expirationDate = now() - keepCompletedMillis;
+    final long expirationTime = now() - keepCompletedMillis;
     Set<String> expiredKeys = historyPersistenceService.listOperationInstances()
         .stream()
-        .filter(operationInstance -> isExpired(expirationDate, operationInstance))
+        .filter(operationInstance -> isExpired(expirationTime, operationInstance))
         .map(OperationInstance::getId)
         .collect(Collectors.toSet());
 
@@ -83,14 +83,14 @@ public class OperationHistoryManager {
     return System.currentTimeMillis();
   }
 
-  private static boolean isExpired(long expirationDate, OperationInstance<?, ?> operationInstance) {
+  private static boolean isExpired(long expirationTime, OperationInstance<?, ?> operationInstance) {
     Date operationEnd = operationInstance.getOperationEnd();
 
     if (operationEnd == null) {
       return false; // always keep while still in-progress
     }
 
-    return operationEnd.getTime() <= expirationDate;
+    return operationEnd.getTime() <= expirationTime;
   }
 
   /**
