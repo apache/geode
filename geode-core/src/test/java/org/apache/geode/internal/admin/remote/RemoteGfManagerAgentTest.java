@@ -16,7 +16,6 @@ package org.apache.geode.internal.admin.remote;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.mockito.quality.Strictness.STRICT_STUBS;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -47,7 +46,7 @@ public class RemoteGfManagerAgentTest {
   public ExecutorServiceRule executorServiceRule = new ExecutorServiceRule();
 
   @Rule
-  public MockitoRule mockitoRule = MockitoJUnit.rule().strictness(STRICT_STUBS);
+  public MockitoRule mockitoRule = MockitoJUnit.rule();
 
   @Before
   public void setUp() {
