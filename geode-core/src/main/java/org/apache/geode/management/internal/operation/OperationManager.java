@@ -27,7 +27,6 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.management.api.ClusterManagementOperation;
-import org.apache.geode.management.internal.operation.OperationHistoryManager.OperationInstance;
 import org.apache.geode.management.operation.RebalanceOperation;
 import org.apache.geode.management.runtime.OperationResult;
 
@@ -56,7 +55,7 @@ public class OperationManager implements AutoCloseable {
     performers.put(operationClass, operationPerformer);
   }
 
-  public <A extends ClusterManagementOperation<V>, V extends OperationResult> OperationInstance<A, V> submit(
+  public <A extends ClusterManagementOperation<V>, V extends OperationResult> OperationState<A, V> submit(
       A op) {
     String opId = UUID.randomUUID().toString();
 
@@ -85,12 +84,12 @@ public class OperationManager implements AutoCloseable {
   /**
    * looks up the future for an async operation by id
    */
-  public <A extends ClusterManagementOperation<V>, V extends OperationResult> OperationInstance<A, V> getOperationInstance(
+  public <A extends ClusterManagementOperation<V>, V extends OperationResult> OperationState<A, V> getOperationInstance(
       String opId) {
     return historyManager.getOperationInstance(opId);
   }
 
-  public <A extends ClusterManagementOperation<V>, V extends OperationResult> List<OperationInstance<A, V>> listOperationInstances(
+  public <A extends ClusterManagementOperation<V>, V extends OperationResult> List<OperationState<A, V>> listOperationInstances(
       A opType) {
     return historyManager.listOperationInstances(opType);
   }

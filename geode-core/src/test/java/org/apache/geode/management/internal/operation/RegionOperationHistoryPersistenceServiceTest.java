@@ -24,21 +24,19 @@ import static org.mockito.Mockito.when;
 
 import java.util.function.Supplier;
 
-import org.assertj.core.api.SoftAssertions;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.management.api.ClusterManagementOperation;
-import org.apache.geode.management.internal.operation.OperationHistoryManager.OperationInstance;
 import org.apache.geode.management.runtime.OperationResult;
 
 public class RegionOperationHistoryPersistenceServiceTest {
   private OperationHistoryPersistenceService historyPersistenceService;
   private Supplier<String> uniqueIdSupplier;
-  private Region<String, OperationInstance> region;
-  private Supplier<Region<String, OperationInstance>> regionSupplier;
+  private Region<String, OperationState> region;
+  private Supplier<Region<String, OperationState>> regionSupplier;
 
   @Before
   public void init() {
@@ -47,7 +45,8 @@ public class RegionOperationHistoryPersistenceServiceTest {
     region = mock(Region.class);
     regionSupplier = mock(Supplier.class);
     when(regionSupplier.get()).thenReturn(region);
-    historyPersistenceService = new RegionOperationHistoryPersistenceService(uniqueIdSupplier, regionSupplier);
+    historyPersistenceService =
+        new RegionOperationHistoryPersistenceService(uniqueIdSupplier, regionSupplier);
   }
 
   @Test
@@ -66,9 +65,10 @@ public class RegionOperationHistoryPersistenceServiceTest {
     ClusterManagementOperation<OperationResult> operation = mock(ClusterManagementOperation.class);
     String opId = historyPersistenceService.create(operation);
 
-    ArgumentCaptor<OperationInstance> capturedOperationInstance = ArgumentCaptor.forClass(OperationInstance.class);
+    ArgumentCaptor<OperationState> capturedOperationInstance = ArgumentCaptor.forClass(
+        OperationState.class);
     verify(region).put(eq(opId), capturedOperationInstance.capture());
-    OperationInstance operationInstance = capturedOperationInstance.getValue();
+    OperationState operationInstance = capturedOperationInstance.getValue();
 
     assertThat(operationInstance).as("operationInstance").isNotNull();
 

@@ -77,8 +77,8 @@ import org.apache.geode.management.internal.configuration.validators.CommonConfi
 import org.apache.geode.management.internal.configuration.validators.ConfigurationValidator;
 import org.apache.geode.management.internal.configuration.validators.MemberValidator;
 import org.apache.geode.management.internal.configuration.validators.RegionConfigValidator;
-import org.apache.geode.management.internal.operation.OperationHistoryManager.OperationInstance;
 import org.apache.geode.management.internal.operation.OperationManager;
+import org.apache.geode.management.internal.operation.OperationState;
 import org.apache.geode.management.runtime.IndexInfo;
 import org.apache.geode.management.runtime.MemberInformation;
 import org.apache.geode.management.runtime.OperationResult;
@@ -364,7 +364,7 @@ public class LocatorClusterManagementServiceTest {
     ClusterManagementOperation<OperationResult> operation = mock(ClusterManagementOperation.class);
     when(operation.getEndpoint()).thenReturn(URI);
     when(executorManager.submit(any()))
-        .thenReturn(new OperationInstance<>("42", operation, new Date()));
+        .thenReturn(new OperationState<>("42", operation, new Date()));
     ClusterManagementOperationResult<?> result = service.start(operation);
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.ACCEPTED);
     assertThat(result.getStatusMessage()).contains("Operation started");
@@ -378,7 +378,7 @@ public class LocatorClusterManagementServiceTest {
 
   @Test
   public void checkStatus() {
-    OperationInstance operationInstance = mock(OperationInstance.class);
+    OperationState operationInstance = mock(OperationState.class);
     when(executorManager.getOperationInstance(any())).thenReturn(operationInstance);
     ClusterManagementOperationStatusResult<OperationResult> result = service.checkStatus("456");
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.IN_PROGRESS);

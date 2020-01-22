@@ -89,8 +89,8 @@ import org.apache.geode.management.internal.configuration.validators.RegionConfi
 import org.apache.geode.management.internal.exceptions.EntityExistsException;
 import org.apache.geode.management.internal.functions.CacheRealizationFunction;
 import org.apache.geode.management.internal.operation.OperationHistoryManager;
-import org.apache.geode.management.internal.operation.OperationHistoryManager.OperationInstance;
 import org.apache.geode.management.internal.operation.OperationManager;
+import org.apache.geode.management.internal.operation.OperationState;
 import org.apache.geode.management.runtime.OperationResult;
 import org.apache.geode.management.runtime.RuntimeInfo;
 
@@ -391,7 +391,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
   @Override
   public <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<V> start(
       A op) {
-    OperationInstance<A, V> operationInstance = operationManager.submit(op);
+    OperationState<A, V> operationInstance = operationManager.submit(op);
 
     ClusterManagementResult result = new ClusterManagementResult(
         StatusCode.ACCEPTED, "Operation started.  Use the URI to check its status.");
@@ -433,7 +433,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
    * builds a result object from a base status and an operation instance
    */
   private <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<V> toClusterManagementListOperationsResult(
-      ClusterManagementResult status, OperationInstance<A, V> operationInstance) {
+      ClusterManagementResult status, OperationState<A, V> operationInstance) {
     ClusterManagementOperationResult<V> result = new ClusterManagementOperationResult<>(status,
         operationInstance.getOperationStart(), operationInstance.getOperationEnd(),
         operationInstance.getOperator(), operationInstance.getId(), operationInstance.getResult(),
@@ -447,7 +447,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
    * builds a result object from an operation instance
    */
   private <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<V> toClusterManagementListOperationsResult(
-      OperationInstance<A, V> operationInstance) {
+      OperationState<A, V> operationInstance) {
     return toClusterManagementListOperationsResult(checkStatus(operationInstance.getId()),
         operationInstance);
   }
@@ -457,7 +457,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
    */
   public <V extends OperationResult> ClusterManagementOperationStatusResult<V> checkStatus(
       String opId) {
-    final OperationInstance<?, V> operationInstance = operationManager.getOperationInstance(opId);
+    final OperationState<?, V> operationInstance = operationManager.getOperationInstance(opId);
     if (operationInstance == null) {
       raise(StatusCode.ENTITY_NOT_FOUND, "Operation '" + opId + "' does not exist.");
     }

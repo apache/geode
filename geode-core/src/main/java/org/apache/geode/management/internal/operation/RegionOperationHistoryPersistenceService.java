@@ -23,17 +23,17 @@ import java.util.function.Supplier;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Region;
 import org.apache.geode.management.api.ClusterManagementOperation;
-import org.apache.geode.management.internal.operation.OperationHistoryManager.OperationInstance;
 import org.apache.geode.management.runtime.OperationResult;
 
-public class RegionOperationHistoryPersistenceService implements OperationHistoryPersistenceService {
+public class RegionOperationHistoryPersistenceService
+    implements OperationHistoryPersistenceService {
   private final Supplier<String> uniqueIdSupplier;
-  private final Supplier<Region<String, OperationInstance>> regionSupplier;
+  private final Supplier<Region<String, OperationState>> regionSupplier;
 
   @VisibleForTesting
   RegionOperationHistoryPersistenceService(
       Supplier<String> uniqueIdSupplier,
-      Supplier<Region<String, OperationInstance>> regionSupplier) {
+      Supplier<Region<String, OperationState>> regionSupplier) {
     this.uniqueIdSupplier = uniqueIdSupplier;
     this.regionSupplier = regionSupplier;
   }
@@ -43,26 +43,26 @@ public class RegionOperationHistoryPersistenceService implements OperationHistor
   }
 
   @Override
-  public <A extends ClusterManagementOperation<V>, V extends OperationResult> OperationInstance<A, V> getOperationInstance(
+  public <A extends ClusterManagementOperation<V>, V extends OperationResult> OperationState<A, V> getOperationInstance(
       String id) {
     return null;
   }
 
   @Override
-  public <A extends ClusterManagementOperation<V>, V extends OperationResult> List<OperationInstance<A, V>> listOperationInstances() {
+  public <A extends ClusterManagementOperation<V>, V extends OperationResult> List<OperationState<A, V>> listOperationInstances() {
     return null;
   }
 
   @Override
   public <A extends ClusterManagementOperation<V>, V extends OperationResult> void create(
-      OperationInstance<A, V> operationInstance)
+      OperationState<A, V> operationInstance)
       throws IllegalStateException {
 
   }
 
   @Override
   public <A extends ClusterManagementOperation<V>, V extends OperationResult> void update(
-      OperationInstance<A, V> operationInstance) {
+      OperationState<A, V> operationInstance) {
 
   }
 
@@ -74,10 +74,10 @@ public class RegionOperationHistoryPersistenceService implements OperationHistor
   @Override
   public <A extends ClusterManagementOperation<V>, V extends OperationResult> String create(
       A operation) {
-    Region<String, OperationInstance> region = regionSupplier.get();
+    Region<String, OperationState> region = regionSupplier.get();
     String opId = uniqueIdSupplier.get();
 
-    OperationInstance<A, V> operationInstance = new OperationInstance<>(opId, operation, new Date());
+    OperationState<A, V> operationInstance = new OperationState<>(opId, operation, new Date());
     region.put(opId, operationInstance);
 
     return opId;

@@ -42,7 +42,6 @@ import org.junit.Test;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.management.api.ClusterManagementOperation;
-import org.apache.geode.management.internal.operation.OperationHistoryManager.OperationInstance;
 import org.apache.geode.management.runtime.OperationResult;
 
 public class OperationHistoryManagerTest {
@@ -66,7 +65,7 @@ public class OperationHistoryManagerTest {
   public void saveSetsId() {
     BiFunction<Cache, TestOperation1, TestOperationResult> performer = (cache, testOpType) -> null;
 
-    OperationInstance<TestOperation1, TestOperationResult> operationInstance = history.save(
+    OperationState<TestOperation1, TestOperationResult> operationInstance = history.save(
         null, performer, null, mock(Executor.class));
 
     assertThat(operationInstance).isNotNull();
@@ -77,7 +76,7 @@ public class OperationHistoryManagerTest {
   public void saveSetsStartDate() {
     BiFunction<Cache, TestOperation1, TestOperationResult> performer = (cache, testOpType) -> null;
 
-    OperationInstance<TestOperation1, TestOperationResult> operationInstance = history.save(
+    OperationState<TestOperation1, TestOperationResult> operationInstance = history.save(
         null, performer, null, mock(Executor.class));
 
     assertThat(operationInstance).isNotNull();
@@ -89,7 +88,7 @@ public class OperationHistoryManagerTest {
     TestOperation1 testOperation1 = new TestOperation1();
     BiFunction<Cache, TestOperation1, TestOperationResult> performer = (cache, testOpType) -> null;
 
-    OperationInstance<TestOperation1, TestOperationResult> operationInstance = history.save(
+    OperationState<TestOperation1, TestOperationResult> operationInstance = history.save(
         testOperation1, performer, null, mock(Executor.class));
 
     assertThat(operationInstance).isNotNull();
@@ -111,8 +110,8 @@ public class OperationHistoryManagerTest {
   public void saveUpdatesOperationStateWhenOperationCompletesSuccessfully() {
     Cache cache = mock(Cache.class);
     TestOperation1 testOperation1 = new TestOperation1();
-    OperationInstance<TestOperation1, TestOperationResult> operationInstance =
-        mock(OperationInstance.class);
+    OperationState<TestOperation1, TestOperationResult> operationInstance =
+        mock(OperationState.class);
     TestOperationResult testOperationResult = new TestOperationResult();
     BiFunction<Cache, TestOperation1, TestOperationResult> performer = mock(BiFunction.class);
 
@@ -131,8 +130,8 @@ public class OperationHistoryManagerTest {
   public void saveUpdatesOperationStateWhenOperationCompletesExceptionally() {
     Cache cache = mock(Cache.class);
     TestOperation1 testOperation1 = new TestOperation1();
-    OperationInstance<TestOperation1, TestOperationResult> operationInstance =
-        mock(OperationInstance.class);
+    OperationState<TestOperation1, TestOperationResult> operationInstance =
+        mock(OperationState.class);
     BiFunction<Cache, TestOperation1, TestOperationResult> performer = mock(BiFunction.class);
 
     RuntimeException thrownByPerformer = new RuntimeException();
@@ -154,7 +153,7 @@ public class OperationHistoryManagerTest {
     CountDownLatch performerHasTestPermissionToComplete = new CountDownLatch(1);
 
     when(operationHistoryPersistenceService.getOperationInstance(any()))
-        .thenReturn(mock(OperationInstance.class));
+        .thenReturn(mock(OperationState.class));
 
     BiFunction<Cache, TestOperation1, TestOperationResult> performer = (cache, operation) -> {
       try {
@@ -180,10 +179,10 @@ public class OperationHistoryManagerTest {
   @Test
   public void retainsHistoryForAllInProgressOperations() {
     TestOperation1 testOperation1 = new TestOperation1();
-    List<OperationInstance<TestOperation1, TestOperationResult>> sampleOps = new ArrayList<>();
+    List<OperationState<TestOperation1, TestOperationResult>> sampleOps = new ArrayList<>();
     for (int i = 0; i < 3; i++) {
-      OperationInstance<TestOperation1, TestOperationResult> operationInstance =
-          new OperationInstance<>("op-" + i, testOperation1, new Date());
+      OperationState<TestOperation1, TestOperationResult> operationInstance =
+          new OperationState<>("op-" + i, testOperation1, new Date());
       // Have not called operation end, so operation is still in progress.
       sampleOps.add(operationInstance);
     }
@@ -202,9 +201,9 @@ public class OperationHistoryManagerTest {
     long threeHoursAgo = now - (3600 * 3 * 1000);
     long twoAndAHalfHoursAgo = new Double(now - (3600 * 2.5 * 1000)).longValue();
 
-    List<OperationInstance<TestOperation1, TestOperationResult>> sampleOps = new ArrayList<>();
+    List<OperationState<TestOperation1, TestOperationResult>> sampleOps = new ArrayList<>();
     for (int i = 0; i < 5; i++) {
-      sampleOps.add(new OperationInstance<>("op-" + i, opType1, new Date(threeHoursAgo)));
+      sampleOps.add(new OperationState<>("op-" + i, opType1, new Date(threeHoursAgo)));
       if (i % 2 != 0) {
         sampleOps.get(i).setOperationEnd(new Date(twoAndAHalfHoursAgo), testOperationResult, null);
       } else {
@@ -225,20 +224,20 @@ public class OperationHistoryManagerTest {
     TestOperation1 opType1 = new TestOperation1();
     TestOperation2 opType2 = new TestOperation2();
 
-    List<OperationInstance<?, TestOperationResult>> sampleOps = new ArrayList<>();
+    List<OperationState<?, TestOperationResult>> sampleOps = new ArrayList<>();
     for (int i = 0; i < 9; i++) {
       if (i % 2 == 0) {
-        sampleOps.add(new OperationInstance<>("op-" + i, opType1, new Date()));
+        sampleOps.add(new OperationState<>("op-" + i, opType1, new Date()));
       } else {
-        sampleOps.add(new OperationInstance<>("op-" + i, opType2, new Date()));
+        sampleOps.add(new OperationState<>("op-" + i, opType2, new Date()));
       }
     }
 
     doReturn(sampleOps).when(operationHistoryPersistenceService).listOperationInstances();
 
-    List<OperationInstance<TestOperation1, TestOperationResult>> opList1 =
+    List<OperationState<TestOperation1, TestOperationResult>> opList1 =
         history.listOperationInstances(opType1);
-    List<OperationInstance<TestOperation2, TestOperationResult>> opList2 =
+    List<OperationState<TestOperation2, TestOperationResult>> opList2 =
         history.listOperationInstances(opType2);
 
     assertThat(opList1.size()).isEqualTo(5);

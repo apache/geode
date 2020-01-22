@@ -27,7 +27,6 @@ import org.junit.Test;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.management.api.ClusterManagementOperation;
-import org.apache.geode.management.internal.operation.OperationHistoryManager.OperationInstance;
 import org.apache.geode.management.runtime.OperationResult;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
@@ -46,7 +45,7 @@ public class OperationManagerTest {
   @Test
   public void submitAndComplete() throws Exception {
     TestOperation operation = new TestOperation();
-    OperationInstance<TestOperation, TestOperationResult> inst = executorManager.submit(operation);
+    OperationState<TestOperation, TestOperationResult> inst = executorManager.submit(operation);
     String id = inst.getId();
     assertThat(id).isNotBlank();
 
@@ -57,7 +56,7 @@ public class OperationManagerTest {
     assertThat(executorManager.getOperationInstance(id).getOperationEnd()).isNull();
 
     TestOperation operation2 = new TestOperation();
-    OperationInstance<TestOperation, TestOperationResult> inst2 =
+    OperationState<TestOperation, TestOperationResult> inst2 =
         executorManager.submit(operation2);
     String id2 = inst2.getId();
     assertThat(id2).isNotBlank();
@@ -81,7 +80,7 @@ public class OperationManagerTest {
   @Test
   public void submit() {
     TestOperation operation = new TestOperation();
-    OperationInstance<TestOperation, TestOperationResult> inst = executorManager.submit(operation);
+    OperationState<TestOperation, TestOperationResult> inst = executorManager.submit(operation);
     String id = inst.getId();
     assertThat(id).isNotBlank();
 
@@ -91,7 +90,7 @@ public class OperationManagerTest {
     assertThat(executorManager.getOperationInstance(id)).isNotNull();
 
     TestOperation operation2 = new TestOperation();
-    OperationInstance<TestOperation, TestOperationResult> inst2 =
+    OperationState<TestOperation, TestOperationResult> inst2 =
         executorManager.submit(operation2);
     String id2 = inst2.getId();
     assertThat(id2).isNotBlank();
