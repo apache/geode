@@ -18,6 +18,7 @@
 package org.apache.geode.cache.query.internal;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.geode.cache.query.FunctionDomainException;
@@ -53,12 +54,12 @@ public class GroupJunction extends AbstractGroupOrRangeJunction {
   }
 
   private GroupJunction(AbstractGroupOrRangeJunction oldGJ, boolean completeExpansion,
-      RuntimeIterator indpnds[], CompiledValue iterOp) {
+      RuntimeIterator[] indpnds, CompiledValue iterOp) {
     super(oldGJ, completeExpansion, indpnds, iterOp);
   }
 
   @Override
-  AbstractGroupOrRangeJunction recreateFromOld(boolean completeExpansion, RuntimeIterator indpnds[],
+  AbstractGroupOrRangeJunction recreateFromOld(boolean completeExpansion, RuntimeIterator[] indpnds,
       CompiledValue iterOp) {
     return new GroupJunction(this, completeExpansion, indpnds, iterOp);
   }
@@ -75,19 +76,19 @@ public class GroupJunction extends AbstractGroupOrRangeJunction {
     // get the list of operands to evaluate,
     // and evaluate operands that can use indexes first
 
-    List evalOperands = new ArrayList(_operands.length);
+    List<Object> evalOperands = new ArrayList<>(_operands.length);
     int indexCount = 0;
     boolean foundPreferredCondition = false;
     if (this.getOperator() == LITERAL_and) {
       if (context instanceof QueryExecutionContext && ((QueryExecutionContext) context).hasHints()
           && ((QueryExecutionContext) context).hasMultiHints()) {
         // Hint was provided, so allow multi index usage
-        for (int i = 0; i < _operands.length; i++) {
-          if (_operands[i].getPlanInfo(context).evalAsFilter) {
+        for (CompiledValue operand : _operands) {
+          if (operand.getPlanInfo(context).evalAsFilter) {
             indexCount++;
-            evalOperands.add(0, _operands[i]);
+            evalOperands.add(0, operand);
           } else {
-            evalOperands.add(_operands[i]);
+            evalOperands.add(operand);
           }
         }
       } else {
@@ -107,7 +108,7 @@ public class GroupJunction extends AbstractGroupOrRangeJunction {
         int currentBestFilterSize = -1;
         indexCount = 1;
 
-        for (int i = 0; i < _operands.length; i++) {
+        for (CompiledValue operand : _operands) {
           // Asif : If we are inside this function this iteslf indicates
           // that there exists atleast on operand which can be evalauted
           // as an auxFilterEvaluate. If any operand even if its flag of
@@ -125,7 +126,7 @@ public class GroupJunction extends AbstractGroupOrRangeJunction {
           // We are here itself implies, that any independent operand can be
           // either tru or false for an AND junction but always false for an
           // OR Junction.
-          PlanInfo pi = _operands[i].getPlanInfo(context);
+          PlanInfo pi = operand.getPlanInfo(context);
           // we check for size == 1 now because of the join optimization can
           // leave an operand with two indexes, but the key element is not set
           // this will throw an npe
@@ -135,52 +136,64 @@ public class GroupJunction extends AbstractGroupOrRangeJunction {
                 evalOperands.add(currentBestFilter);
               }
               // new best
-              currentBestFilter = (Filter) _operands[i];
-              currentBestFilterSize = ((Filter) _operands[i]).getSizeEstimate(context);
+              currentBestFilter = (Filter) operand;
+              currentBestFilterSize = ((Filter) operand).getSizeEstimate(context);
               foundPreferredCondition = true;
               continue;
             }
             if (currentBestFilter == null) {
-              currentBestFilter = (Filter) _operands[i];
-              currentBestFilterSize = ((Filter) _operands[i]).getSizeEstimate(context);
-            } else if (foundPreferredCondition || currentBestFilter
-                .isBetterFilter((Filter) _operands[i], context, currentBestFilterSize)) {
-              evalOperands.add(_operands[i]);
+              currentBestFilter = (Filter) operand;
+              currentBestFilterSize = ((Filter) operand).getSizeEstimate(context);
+            } else if (foundPreferredCondition || currentBestFilter.isBetterFilter((Filter) operand,
+                context, currentBestFilterSize)) {
+              evalOperands.add(operand);
             } else {
               evalOperands.add(currentBestFilter);
-              currentBestFilter = (Filter) _operands[i];
+              currentBestFilter = (Filter) operand;
               // TODO:Asif: Avoid this call. Let the function which is doing the
               // comparison return some how the size of comparedTo operand.
-              currentBestFilterSize = ((Filter) _operands[i]).getSizeEstimate(context);
+              currentBestFilterSize = ((Filter) operand).getSizeEstimate(context);
 
             }
-          } else if (!_operands[i].isDependentOnCurrentScope(context)) {
+          } else if (!operand.isDependentOnCurrentScope(context)) {
             // TODO: Asif :Remove this Assert & else if condition after successful
             // testing of the build
             Support.assertionFailed(
                 "An independentoperand should not ever be present as operand inside a GroupJunction as it should always be present only in CompiledJunction");
           } else {
-            evalOperands.add(_operands[i]);
+            evalOperands.add(operand);
           }
         }
-        evalOperands.add(0, currentBestFilter);
+
+        // If we didn't find a filter, back off and allow multiple index usage.
+        if (currentBestFilter != null) {
+          evalOperands.add(0, currentBestFilter);
+        } else {
+          indexCount = 0;
+          for (CompiledValue operand : _operands) {
+            if (operand.getPlanInfo(context).evalAsFilter) {
+              indexCount++;
+              evalOperands.add(0, operand);
+            } else {
+              evalOperands.add(operand);
+            }
+          }
+        }
       }
     } else {
       indexCount = _operands.length;
-      for (int i = 0; i < indexCount; i++) {
-        evalOperands.add(_operands[i]);
-      }
+      evalOperands.addAll(Arrays.asList(_operands).subList(0, indexCount));
     }
 
     if (getIterOperands() != null) {
       evalOperands.add(getIterOperands());
     }
+
     return createOrganizedOperandsObject(indexCount, evalOperands);
   }
 
   @Override
-  public int getSizeEstimate(ExecutionContext context) throws FunctionDomainException,
-      TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
+  public int getSizeEstimate(ExecutionContext context) {
     return 1;
   }
 }
