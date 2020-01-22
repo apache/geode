@@ -135,9 +135,6 @@ public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID>, Tcp
    * Called initially and after each auto-reconnect. See restart handlers in InternalLocator
    * up in geode-core. Services must be started before this call.
    *
-   * @param services
-   * @param membershipLocator
-   * @return
    */
   public synchronized boolean setServices(
       final Services<ID> services,

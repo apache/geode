@@ -746,7 +746,8 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
         // the membership service in order to get membership view notifications
         membershipLocator
             .setServices(
-                ((GMSMembership<InternalDistributedMember>) internalDistributedSystem.getDM().getDistribution().getMembership()).getServices());
+                ((GMSMembership<InternalDistributedMember>) internalDistributedSystem.getDM()
+                    .getDistribution().getMembership()).getServices());
       }
 
       internalDistributedSystem.addDisconnectListener(sys -> stop(false, false, false));

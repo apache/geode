@@ -214,9 +214,9 @@ public class Services<ID extends MemberIdentifier> {
 
       if (membershipLocator != null) {
         /*
-         Now that all the services have started we can let the membership locator know
-         about them. We must do this before telling the manager to joinDistributedSystem()
-         later in this method
+         * Now that all the services have started we can let the membership locator know
+         * about them. We must do this before telling the manager to joinDistributedSystem()
+         * later in this method
          */
         membershipLocator.setServices(this);
       }
@@ -343,7 +343,7 @@ public class Services<ID extends MemberIdentifier> {
   }
 
   public void setLocators(final Locator<ID> locator,
-                          final MembershipLocator<ID> membershipLocator) {
+      final MembershipLocator<ID> membershipLocator) {
     this.locator = locator;
     this.membershipLocator = membershipLocator;
   }

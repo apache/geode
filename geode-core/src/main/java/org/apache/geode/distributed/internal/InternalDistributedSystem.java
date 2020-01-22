@@ -289,7 +289,7 @@ public class InternalDistributedSystem extends DistributedSystem
     }
   }
 
-    public GrantorRequestProcessor.GrantorRequestContext getGrantorRequestContext() {
+  public GrantorRequestProcessor.GrantorRequestContext getGrantorRequestContext() {
     return grc;
   }
 
@@ -670,8 +670,8 @@ public class InternalDistributedSystem extends DistributedSystem
    * Initializes this connection to a distributed system with the current configuration state.
    */
   private void initialize(SecurityManager securityManager, PostProcessor postProcessor,
-                          MetricsService.Builder metricsServiceBuilder,
-                          final MembershipLocator<InternalDistributedMember> membershipLocator) {
+      MetricsService.Builder metricsServiceBuilder,
+      final MembershipLocator<InternalDistributedMember> membershipLocator) {
     if (originalConfig.getLocators().equals("")) {
       if (originalConfig.getMcastPort() != 0) {
         throw new GemFireConfigException("The " + LOCATORS + " attribute can not be empty when the "
@@ -776,7 +776,8 @@ public class InternalDistributedSystem extends DistributedSystem
           if (InternalLocator.hasLocator()) {
             InternalLocator internalLocator = InternalLocator.getLocator();
             getDistributionManager().addHostedLocators(getDistributedMember(),
-                InternalLocator.getLocatorStrings(), internalLocator.isSharedConfigurationEnabled());
+                InternalLocator.getLocatorStrings(),
+                internalLocator.isSharedConfigurationEnabled());
           }
         } finally {
           if (dm == null && quorumChecker != null) {

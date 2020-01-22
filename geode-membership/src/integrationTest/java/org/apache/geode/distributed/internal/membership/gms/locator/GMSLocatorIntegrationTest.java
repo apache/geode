@@ -31,7 +31,6 @@ import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifierFactoryImpl;
 import org.apache.geode.distributed.internal.membership.api.MembershipConfigurationException;
 import org.apache.geode.distributed.internal.membership.api.MembershipLocator;
-import org.apache.geode.distributed.internal.membership.gms.GMSMembership;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.MembershipLocatorStatisticsNoOp;
 import org.apache.geode.distributed.internal.membership.gms.Services;

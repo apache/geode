@@ -26,7 +26,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -50,7 +49,6 @@ import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
-import org.apache.geode.distributed.internal.DistributionImpl;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.SerialAckedMessage;
@@ -142,8 +140,9 @@ public class MembershipJUnitTest {
 
       // this locator will hook itself up with the first Membership
       // to be created
-      internalLocator = InternalLocator.startLocator(port, new File(""), null, null, localHost, false,
-          new Properties(), null, temporaryFolder.getRoot().toPath());
+      internalLocator =
+          InternalLocator.startLocator(port, new File(""), null, null, localHost, false,
+              new Properties(), null, temporaryFolder.getRoot().toPath());
 
       // create configuration objects
       Properties nonDefault = new Properties();
@@ -159,8 +158,7 @@ public class MembershipJUnitTest {
           new RemoteTransportConfig(config, ClusterDistributionManager.LOCATOR_DM_TYPE);
 
       // start the first membership manager
-      final MembershipLocator<InternalDistributedMember>
-          membershipLocator =
+      final MembershipLocator<InternalDistributedMember> membershipLocator =
           internalLocator.getMembershipLocator();
 
       m1 = createMembershipManager(config, transport, membershipLocator).getLeft();
@@ -333,8 +331,9 @@ public class MembershipJUnitTest {
       p.setProperty(ConfigurationProperties.SECURITY_UDP_DHALGO, "AES:128");
       // this locator will hook itself up with the first Membership
       // to be created
-      internalLocator = InternalLocator.startLocator(port, new File(""), null, null, localHost, false, p, null,
-          temporaryFolder.getRoot().toPath());
+      internalLocator =
+          InternalLocator.startLocator(port, new File(""), null, null, localHost, false, p, null,
+              temporaryFolder.getRoot().toPath());
 
       // create configuration objects
       Properties nonDefault = new Properties();
@@ -351,8 +350,7 @@ public class MembershipJUnitTest {
           new RemoteTransportConfig(config, ClusterDistributionManager.LOCATOR_DM_TYPE);
 
       // start the first membership manager
-      final MembershipLocator<InternalDistributedMember>
-          membershipLocator =
+      final MembershipLocator<InternalDistributedMember> membershipLocator =
           internalLocator.getMembershipLocator();
 
       m1 = createMembershipManager(config, transport, membershipLocator).getLeft();

@@ -111,11 +111,11 @@ public class DistributionImpl implements Distribution {
 
 
   public DistributionImpl(final ClusterDistributionManager clusterDistributionManager,
-                          final RemoteTransportConfig transport,
-                          final InternalDistributedSystem system,
-                          final MembershipListener<InternalDistributedMember> listener,
-                          final MessageListener<InternalDistributedMember> messageListener,
-                          final MembershipLocator<InternalDistributedMember> locator) {
+      final RemoteTransportConfig transport,
+      final InternalDistributedSystem system,
+      final MembershipListener<InternalDistributedMember> listener,
+      final MessageListener<InternalDistributedMember> messageListener,
+      final MembershipLocator<InternalDistributedMember> locator) {
     this.clusterDistributionManager = clusterDistributionManager;
     this.transportConfig = transport;
     this.tcpDisabled = transportConfig.isTcpDisabled();
@@ -140,8 +140,7 @@ public class DistributionImpl implements Distribution {
           socketCreator,
           locatorClient,
           InternalDataSerializer.getDSFIDSerializer(),
-          new ClusterDistributionManager.ClusterDistributionManagerIDFactory()
-      )
+          new ClusterDistributionManager.ClusterDistributionManagerIDFactory())
           .setMembershipLocator(locator)
           .setAuthenticator(
               new GMSAuthenticator(system.getSecurityProperties(), system.getSecurityService(),
@@ -166,7 +165,8 @@ public class DistributionImpl implements Distribution {
     // see if a locator was started and put it in GMS Services
     InternalLocator internalLocator = (InternalLocator) Locator.getLocator();
     if (internalLocator != null && internalLocator.getMembershipLocator() != null) {
-      internalLocator.getMembershipLocator().setServices(((GMSMembership<InternalDistributedMember>) membership).getServices());
+      internalLocator.getMembershipLocator()
+          .setServices(((GMSMembership<InternalDistributedMember>) membership).getServices());
     }
   }
 

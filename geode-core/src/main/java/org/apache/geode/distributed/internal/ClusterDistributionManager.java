@@ -295,10 +295,9 @@ public class ClusterDistributionManager implements DistributionManager {
    * Note that it does not check to see whether or not this VM already has a distribution manager.
    *
    * @param system The distributed system to which this distribution manager will send messages.
-   * @param membershipLocator
    */
   static ClusterDistributionManager create(InternalDistributedSystem system,
-                                           final MembershipLocator<InternalDistributedMember> membershipLocator) {
+      final MembershipLocator<InternalDistributedMember> membershipLocator) {
 
     ClusterDistributionManager distributionManager = null;
     boolean beforeJoined = true;
@@ -325,7 +324,8 @@ public class ClusterDistributionManager implements DistributionManager {
       long start = System.currentTimeMillis();
 
       distributionManager =
-          new ClusterDistributionManager(system, transport, system.getAlertingService(), membershipLocator);
+          new ClusterDistributionManager(system, transport, system.getAlertingService(),
+              membershipLocator);
       distributionManager.assertDistributionManagerType();
 
       beforeJoined = false; // we have now joined the system
@@ -490,12 +490,11 @@ public class ClusterDistributionManager implements DistributionManager {
    * Creates a new distribution manager
    *
    * @param system The distributed system to which this distribution manager will send messages.
-   * @param membershipLocator
    */
   private ClusterDistributionManager(InternalDistributedSystem system,
-                                     RemoteTransportConfig transport,
-                                     AlertingService alertingService,
-                                     final MembershipLocator<InternalDistributedMember> membershipLocator) {
+      RemoteTransportConfig transport,
+      AlertingService alertingService,
+      final MembershipLocator<InternalDistributedMember> membershipLocator) {
     this(transport, system, alertingService, membershipLocator);
 
     boolean finishedConstructor = false;

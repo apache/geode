@@ -138,8 +138,7 @@ public class MembershipOnlyTest {
             socketCreator,
             locatorClient,
             dsfidSerializer,
-            memberIdFactory
-        )
+            memberIdFactory)
             .setMembershipLocator(membershipLocator)
             .setConfig(config)
             .setLifecycleListener(lifeCycleListener)
