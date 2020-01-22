@@ -59,4 +59,5 @@ PACKER_LOG=1 packer build \
   --var "gcp_network=${GCP_NETWORK}" \
   --var "gcp_subnetwork=${GCP_SUBNETWORK}" \
   --var "use_internal_ip=true" \
+  --var "packer_ttl=$(($(date +%s) + 60 * 60 * 12))" \
   packer.json
