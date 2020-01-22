@@ -24,6 +24,7 @@ import org.apache.geode.distributed.internal.membership.api.MembershipBuilder;
 import org.apache.geode.distributed.internal.membership.api.MembershipConfig;
 import org.apache.geode.distributed.internal.membership.api.MembershipConfigurationException;
 import org.apache.geode.distributed.internal.membership.api.MembershipListener;
+import org.apache.geode.distributed.internal.membership.api.MembershipLocator;
 import org.apache.geode.distributed.internal.membership.api.MembershipStatistics;
 import org.apache.geode.distributed.internal.membership.api.MessageListener;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
@@ -46,6 +47,8 @@ public class MembershipBuilderImpl<ID extends MemberIdentifier> implements Membe
   private final DSFIDSerializer serializer;
   private final MemberIdentifierFactory<ID> memberFactory;
   private LifecycleListener<ID> lifecycleListener = new LifecycleListenerNoOp();
+
+  private MembershipLocator<ID> membershipLocator;
 
   public MembershipBuilderImpl(
       final TcpSocketCreator socketCreator,
@@ -76,6 +79,12 @@ public class MembershipBuilderImpl<ID extends MemberIdentifier> implements Membe
     return this;
   }
 
+  public MembershipBuilder<ID> setMembershipLocator(
+      final MembershipLocator<ID> membershipLocator) {
+    this.membershipLocator = membershipLocator;
+    return this;
+  }
+
   @Override
   public MembershipBuilder<ID> setMessageListener(MessageListener<ID> messageListener) {
     this.messageListener = messageListener;
@@ -99,9 +108,13 @@ public class MembershipBuilderImpl<ID extends MemberIdentifier> implements Membe
   public Membership<ID> create() throws MembershipConfigurationException {
     GMSMembership<ID> gmsMembership =
         new GMSMembership<>(membershipListener, messageListener, lifecycleListener);
-    Services<ID> services =
+    final Services<ID>
+        services =
         new Services<>(gmsMembership.getGMSManager(), statistics, authenticator,
             membershipConfig, serializer, memberFactory, locatorClient, socketCreator);
+    if (membershipLocator != null) {
+      services.setLocators(membershipLocator.getLocator(), membershipLocator);
+    }
     services.init();
     return gmsMembership;
   }

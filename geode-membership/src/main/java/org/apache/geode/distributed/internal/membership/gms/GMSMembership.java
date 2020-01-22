@@ -650,7 +650,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
 
 
   public GMSMembership(MembershipListener<ID> listener, MessageListener<ID> messageListener,
-      LifecycleListener<ID> lifecycleListener) {
+                       LifecycleListener<ID> lifecycleListener) {
     this.lifecycleListener = lifecycleListener;
     this.listener = listener;
     this.messageListener = messageListener;

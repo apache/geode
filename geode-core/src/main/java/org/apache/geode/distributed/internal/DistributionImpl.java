@@ -57,11 +57,13 @@ import org.apache.geode.distributed.internal.membership.api.MembershipBuilder;
 import org.apache.geode.distributed.internal.membership.api.MembershipClosedException;
 import org.apache.geode.distributed.internal.membership.api.MembershipConfigurationException;
 import org.apache.geode.distributed.internal.membership.api.MembershipListener;
+import org.apache.geode.distributed.internal.membership.api.MembershipLocator;
 import org.apache.geode.distributed.internal.membership.api.MembershipStatistics;
 import org.apache.geode.distributed.internal.membership.api.MembershipView;
 import org.apache.geode.distributed.internal.membership.api.Message;
 import org.apache.geode.distributed.internal.membership.api.MessageListener;
 import org.apache.geode.distributed.internal.membership.api.QuorumChecker;
+import org.apache.geode.distributed.internal.membership.gms.GMSMembership;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
 import org.apache.geode.internal.InternalDataSerializer;
@@ -109,9 +111,11 @@ public class DistributionImpl implements Distribution {
 
 
   public DistributionImpl(final ClusterDistributionManager clusterDistributionManager,
-      final RemoteTransportConfig transport, final InternalDistributedSystem system,
-      final MembershipListener<InternalDistributedMember> listener,
-      final MessageListener<InternalDistributedMember> messageListener) {
+                          final RemoteTransportConfig transport,
+                          final InternalDistributedSystem system,
+                          final MembershipListener<InternalDistributedMember> listener,
+                          final MessageListener<InternalDistributedMember> messageListener,
+                          final MembershipLocator<InternalDistributedMember> locator) {
     this.clusterDistributionManager = clusterDistributionManager;
     this.transportConfig = transport;
     this.tcpDisabled = transportConfig.isTcpDisabled();
@@ -136,7 +140,9 @@ public class DistributionImpl implements Distribution {
           socketCreator,
           locatorClient,
           InternalDataSerializer.getDSFIDSerializer(),
-          new ClusterDistributionManager.ClusterDistributionManagerIDFactory())
+          new ClusterDistributionManager.ClusterDistributionManagerIDFactory()
+      )
+          .setMembershipLocator(locator)
           .setAuthenticator(
               new GMSAuthenticator(system.getSecurityProperties(), system.getSecurityService(),
                   system.getSecurityLogWriter(), system.getInternalLogWriter()))
@@ -158,9 +164,9 @@ public class DistributionImpl implements Distribution {
 
   public static void connectLocatorToServices(Membership<InternalDistributedMember> membership) {
     // see if a locator was started and put it in GMS Services
-    InternalLocator l = (InternalLocator) Locator.getLocator();
-    if (l != null && l.getMembershipLocator() != null) {
-      l.getMembershipLocator().setMembership(membership);
+    InternalLocator internalLocator = (InternalLocator) Locator.getLocator();
+    if (internalLocator != null && internalLocator.getMembershipLocator() != null) {
+      internalLocator.getMembershipLocator().setServices(((GMSMembership<InternalDistributedMember>) membership).getServices());
     }
   }
 
@@ -217,11 +223,12 @@ public class DistributionImpl implements Distribution {
       ClusterDistributionManager clusterDistributionManager, RemoteTransportConfig transport,
       InternalDistributedSystem system,
       MembershipListener<InternalDistributedMember> listener,
-      MessageListener<InternalDistributedMember> messageListener) {
+      MessageListener<InternalDistributedMember> messageListener,
+      final MembershipLocator<InternalDistributedMember> locator) {
 
     DistributionImpl distribution =
         new DistributionImpl(clusterDistributionManager, transport, system, listener,
-            messageListener);
+            messageListener, locator);
     distribution.start();
     return distribution;
   }

@@ -16,7 +16,6 @@ package org.apache.geode.distributed.internal.membership.gms;
 
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
@@ -96,7 +95,6 @@ public class MembershipOnlyTest {
     assertThat(membership.getView().getMembers()).hasSize(1);
   }
 
-
   @Test
   public void twoMembersCanConnect() throws MemberStartupException {
     Membership<MemberIdentifierImpl> member1 = startMember("member1", membershipLocator);
@@ -137,19 +135,15 @@ public class MembershipOnlyTest {
 
     final Membership<MemberIdentifierImpl> membership =
         MembershipBuilder.<MemberIdentifierImpl>newMembershipBuilder(
-            socketCreator, locatorClient, dsfidSerializer, memberIdFactory)
+            socketCreator,
+            locatorClient,
+            dsfidSerializer,
+            memberIdFactory
+        )
+            .setMembershipLocator(membershipLocator)
             .setConfig(config)
             .setLifecycleListener(lifeCycleListener)
             .create();
-
-    // TODO - the membership *must* be installed in the locator at this special
-    // point during membership startup for the start to succeed
-    if (embeddedLocator != null) {
-      doAnswer(invocation -> {
-        embeddedLocator.setMembership(membership);
-        return null;
-      }).when(lifeCycleListener).started();
-    }
 
     membership.start();
     membership.startEventProcessing();
