@@ -104,21 +104,21 @@ public class OperationHistoryManagerTest {
 
     history.save(testOperation1, performer, cache, executor);
 
-    await().untilAsserted(() -> {
-      verify(performer).apply(same(cache), same(testOperation1));
-    });
+    await().untilAsserted(() -> verify(performer).apply(same(cache), same(testOperation1)));
   }
 
   @Test
   public void saveUpdatesOperationStateWhenOperationCompletesSuccessfully() {
     Cache cache = mock(Cache.class);
     TestOperation1 testOperation1 = new TestOperation1();
-    OperationInstance<TestOperation1, TestOperationResult> operationInstance = mock(OperationInstance.class);
+    OperationInstance<TestOperation1, TestOperationResult> operationInstance =
+        mock(OperationInstance.class);
     TestOperationResult testOperationResult = new TestOperationResult();
     BiFunction<Cache, TestOperation1, TestOperationResult> performer = mock(BiFunction.class);
 
     when(performer.apply(any(), any())).thenReturn(testOperationResult);
-    doReturn(operationInstance).when(operationHistoryPersistenceService).getOperationInstance(any());
+    doReturn(operationInstance).when(operationHistoryPersistenceService)
+        .getOperationInstance(any());
     history.save(testOperation1, performer, cache, executor);
 
     await().untilAsserted(() -> {
@@ -131,12 +131,14 @@ public class OperationHistoryManagerTest {
   public void saveUpdatesOperationStateWhenOperationCompletesExceptionally() {
     Cache cache = mock(Cache.class);
     TestOperation1 testOperation1 = new TestOperation1();
-    OperationInstance<TestOperation1, TestOperationResult> operationInstance = mock(OperationInstance.class);
+    OperationInstance<TestOperation1, TestOperationResult> operationInstance =
+        mock(OperationInstance.class);
     BiFunction<Cache, TestOperation1, TestOperationResult> performer = mock(BiFunction.class);
 
     RuntimeException thrownByPerformer = new RuntimeException();
     doThrow(thrownByPerformer).when(performer).apply(any(), any());
-    doReturn(operationInstance).when(operationHistoryPersistenceService).getOperationInstance(any());
+    doReturn(operationInstance).when(operationHistoryPersistenceService)
+        .getOperationInstance(any());
 
     history.save(testOperation1, performer, cache, executor);
 
@@ -145,7 +147,7 @@ public class OperationHistoryManagerTest {
       verify(operationHistoryPersistenceService).update(same(operationInstance));
     });
   }
-  
+
   @Test
   public void callsUpdateOnlyAfterPerformerCompletes() throws InterruptedException {
     CountDownLatch performerIsInProgress = new CountDownLatch(1);
@@ -174,7 +176,7 @@ public class OperationHistoryManagerTest {
 
     await().untilAsserted(() -> verify(operationHistoryPersistenceService).update(any()));
   }
-  
+
   @Test
   public void retainsHistoryForAllInProgressOperations() {
     TestOperation1 testOperation1 = new TestOperation1();
@@ -229,7 +231,7 @@ public class OperationHistoryManagerTest {
 
     List<OperationInstance<?, TestOperationResult>> sampleOps = new ArrayList<>();
     for (int i = 0; i < 9; i++) {
-      if (i%2 == 0) {
+      if (i % 2 == 0) {
         sampleOps.add(new OperationInstance<>("op-" + i, opType1, new Date()));
       } else {
         sampleOps.add(new OperationInstance<>("op-" + i, opType2, new Date()));
@@ -250,20 +252,9 @@ public class OperationHistoryManagerTest {
   }
 
   static class TestOperation1 implements ClusterManagementOperation<TestOperationResult> {
-    private CountDownLatch exceptionLatch = new CountDownLatch(1);
-    private CountDownLatch performerHasTestPermissionToComplete = new CountDownLatch(1);
-
     @Override
     public String getEndpoint() {
       return null;
-    }
-
-    public void downException() {
-      exceptionLatch.countDown();
-    }
-
-    public void downLatch() {
-      performerHasTestPermissionToComplete.countDown();
     }
   }
 

@@ -16,11 +16,9 @@ package org.apache.geode.management.internal.operation;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
@@ -40,7 +38,6 @@ import org.apache.geode.management.runtime.OperationResult;
  */
 @Experimental
 public class OperationHistoryManager {
-  private final Map<String, CompletableFuture<?>> futureMap;
   private final long keepCompletedMillis;
   private final OperationHistoryPersistenceService historyPersistenceService;
 
@@ -56,7 +53,6 @@ public class OperationHistoryManager {
    */
   public OperationHistoryManager(long keepCompleted, TimeUnit timeUnit,
       OperationHistoryPersistenceService historyPersistenceService) {
-    futureMap = new ConcurrentHashMap<>();
     keepCompletedMillis = timeUnit.toMillis(keepCompleted);
     this.historyPersistenceService = historyPersistenceService;
   }
@@ -80,10 +76,7 @@ public class OperationHistoryManager {
         .map(OperationInstance::getId)
         .collect(Collectors.toSet());
 
-    expiredKeys.forEach(id -> {
-      futureMap.remove(id);
-      historyPersistenceService.remove(id);
-    });
+    expiredKeys.forEach(historyPersistenceService::remove);
   }
 
   private long now() {
@@ -109,20 +102,17 @@ public class OperationHistoryManager {
     OperationInstance<A, V> operationInstance = new OperationInstance<>(opId, op, new Date());
     historyPersistenceService.create(operationInstance);
 
-    CompletableFuture<V> future =
-        CompletableFuture.supplyAsync(() -> performer.apply(cache, op), executor)
-            .whenComplete((result, exception) -> {
-              OperationInstance<A, V> opInstance =
-                  historyPersistenceService.getOperationInstance(opId);
-              if (opInstance != null) {
-                Throwable cause = exception == null ? null : exception.getCause();
-                opInstance.setOperationEnd(new Date(), result, cause);
-                historyPersistenceService.update(opInstance);
-              }
-              this.futureMap.remove(opId);
-            });
+    CompletableFuture.supplyAsync(() -> performer.apply(cache, op), executor)
+        .whenComplete((result, exception) -> {
+          OperationInstance<A, V> opInstance =
+              historyPersistenceService.getOperationInstance(opId);
+          if (opInstance != null) {
+            Throwable cause = exception == null ? null : exception.getCause();
+            opInstance.setOperationEnd(new Date(), result, cause);
+            historyPersistenceService.update(opInstance);
+          }
+        });
 
-    this.futureMap.put(opId, future);
 
     expireHistory();
 

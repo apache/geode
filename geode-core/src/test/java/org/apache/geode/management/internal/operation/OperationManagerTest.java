@@ -91,7 +91,8 @@ public class OperationManagerTest {
     assertThat(executorManager.getOperationInstance(id)).isNotNull();
 
     TestOperation operation2 = new TestOperation();
-    OperationInstance<TestOperation, TestOperationResult> inst2 = executorManager.submit(operation2);
+    OperationInstance<TestOperation, TestOperationResult> inst2 =
+        executorManager.submit(operation2);
     String id2 = inst2.getId();
     assertThat(id2).isNotBlank();
     doReturn(inst2).when(operationHistoryPersistenceService).getOperationInstance(id2);
