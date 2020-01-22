@@ -47,7 +47,6 @@ import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
 import org.apache.geode.internal.serialization.DSFIDSerializerFactory;
-import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 
 public class MembershipOnlyTest {
@@ -64,11 +63,6 @@ public class MembershipOnlyTest {
     localHost = InetAddress.getLocalHost();
 
     dsfidSerializer = new DSFIDSerializerFactory().create();
-
-    // TODO - MemberIdentiferImpl probably needs it's own DSFID, or it should be BasicSerializable
-    // Or ... ? Right now it has the same ID as InternalDistributedMember
-    dsfidSerializer.registerDSFID(DataSerializableFixedID.DISTRIBUTED_MEMBER,
-        MemberIdentifierImpl.class);
 
     // TODO - using geode-core socket creator
     socketCreator = asTcpSocketCreator(new SocketCreator(new SSLConfig.Builder().build()));

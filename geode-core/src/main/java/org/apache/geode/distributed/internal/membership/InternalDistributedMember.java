@@ -60,11 +60,6 @@ public class InternalDistributedMember extends MemberIdentifierImpl
   // Used only by deserialization
   public InternalDistributedMember() {}
 
-  @Override
-  public int getDSFID() {
-    return DISTRIBUTED_MEMBER;
-  }
-
   /**
    * Construct a InternalDistributedMember
    * <p>
@@ -298,6 +293,11 @@ public class InternalDistributedMember extends MemberIdentifierImpl
     } catch (UnknownHostException ee) {
       throw new InternalGemFireError(ee);
     }
+  }
+
+  @Override
+  public int getDSFID() {
+    return DISTRIBUTED_MEMBER;
   }
 
   @Override
