@@ -171,7 +171,7 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
     cachedToString = null;
   }
 
-  protected void setGroups(String[] newGroups) {
+  public void setGroups(String[] newGroups) {
     this.memberData.setGroups(newGroups);
     cachedToString = null;
   }
@@ -196,7 +196,7 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
     return this.compareTo(other, false, true);
   }
 
-  protected int compareTo(MemberIdentifierImpl other, boolean compareMemberData,
+  public int compareTo(MemberIdentifierImpl other, boolean compareMemberData,
       boolean compareViewIds) {
     int myPort = getMembershipPort();
     int otherPort = other.getMembershipPort();
