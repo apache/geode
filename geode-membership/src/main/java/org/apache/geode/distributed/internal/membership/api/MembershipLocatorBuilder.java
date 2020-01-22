@@ -24,8 +24,7 @@ import org.apache.geode.distributed.internal.membership.gms.MembershipLocatorBui
 import org.apache.geode.distributed.internal.tcpserver.ProtocolChecker;
 import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
-import org.apache.geode.internal.serialization.ObjectDeserializer;
-import org.apache.geode.internal.serialization.ObjectSerializer;
+import org.apache.geode.internal.serialization.DSFIDSerializer;
 
 public interface MembershipLocatorBuilder<ID extends MemberIdentifier> {
   MembershipLocatorBuilder<ID> setPort(int port);
@@ -47,11 +46,10 @@ public interface MembershipLocatorBuilder<ID extends MemberIdentifier> {
 
   static <ID extends MemberIdentifier> MembershipLocatorBuilder<ID> newLocatorBuilder(
       final TcpSocketCreator socketCreator,
-      final ObjectSerializer objectSerializer,
-      final ObjectDeserializer objectDeserializer,
+      final DSFIDSerializer serializer,
       final Path workingDirectory,
       final Supplier<ExecutorService> executorServiceSupplier) {
-    return new MembershipLocatorBuilderImpl<ID>(socketCreator, objectSerializer, objectDeserializer,
+    return new MembershipLocatorBuilderImpl<ID>(socketCreator, serializer,
         workingDirectory, executorServiceSupplier);
   }
 }

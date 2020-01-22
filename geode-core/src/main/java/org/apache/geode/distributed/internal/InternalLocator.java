@@ -546,8 +546,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
       membershipLocator =
           MembershipLocatorBuilder.<InternalDistributedMember>newLocatorBuilder(
               socketCreator,
-              InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
-              InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer(),
+              InternalDataSerializer.getDSFIDSerializer(),
               workingDirectory,
               executor)
               .setConfig(config)

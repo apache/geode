@@ -65,11 +65,6 @@ public class MembershipOnlyTest {
 
     dsfidSerializer = new DSFIDSerializerFactory().create();
 
-    // TODO -if we don't do this, the serializer doesn't know how to deserialize
-    // membership classes. Seems like this should happen during membership initialization
-    // or using a ServiceLoader?
-    Services.registerSerializables(dsfidSerializer);
-
     // TODO - MemberIdentiferImpl probably needs it's own DSFID, or it should be BasicSerializable
     // Or ... ? Right now it has the same ID as InternalDistributedMember
     dsfidSerializer.registerDSFID(DataSerializableFixedID.DISTRIBUTED_MEMBER,
@@ -82,8 +77,7 @@ public class MembershipOnlyTest {
         () -> LoggingExecutors.newCachedThreadPool("membership", false);
     membershipLocator = MembershipLocatorBuilder.<MemberIdentifierImpl>newLocatorBuilder(
         socketCreator,
-        dsfidSerializer.getObjectSerializer(),
-        dsfidSerializer.getObjectDeserializer(),
+        dsfidSerializer,
         temporaryFolder.newFile("locator").toPath(),
         executorServiceSupplier)
         .create();
