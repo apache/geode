@@ -30,7 +30,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.api.LifecycleListener;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifierFactoryImpl;
@@ -44,10 +43,11 @@ import org.apache.geode.distributed.internal.membership.api.MembershipLocator;
 import org.apache.geode.distributed.internal.membership.api.MembershipLocatorBuilder;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
+import org.apache.geode.internal.serialization.DSFIDSerializerFactory;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 
 public class MembershipOnlyTest {
@@ -63,16 +63,24 @@ public class MembershipOnlyTest {
   public void before() throws IOException, MembershipConfigurationException {
     localHost = InetAddress.getLocalHost();
 
-    // TODO - using geode-core serializer. This is needed to have be able to
-    // read InternalDistributedMember.
-    dsfidSerializer = InternalDataSerializer.getDSFIDSerializer();
+    dsfidSerializer = new DSFIDSerializerFactory().create();
+
+    // TODO -if we don't do this, the serializer doesn't know how to deserialize
+    // membership classes. Seems like this should happen during membership initialization
+    // or using a ServiceLoader?
+    Services.registerSerializables(dsfidSerializer);
+
+    // TODO - MemberIdentiferImpl probably needs it's own DSFID, or it should be BasicSerializable
+    // Or ... ? Right now it has the same ID as InternalDistributedMember
+    dsfidSerializer.registerDSFID(DataSerializableFixedID.DISTRIBUTED_MEMBER,
+        MemberIdentifierImpl.class);
 
     // TODO - using geode-core socket creator
     socketCreator = asTcpSocketCreator(new SocketCreator(new SSLConfig.Builder().build()));
 
     final Supplier<ExecutorService> executorServiceSupplier =
         () -> LoggingExecutors.newCachedThreadPool("membership", false);
-    membershipLocator = MembershipLocatorBuilder.<InternalDistributedMember>newLocatorBuilder(
+    membershipLocator = MembershipLocatorBuilder.<MemberIdentifierImpl>newLocatorBuilder(
         socketCreator,
         dsfidSerializer.getObjectSerializer(),
         dsfidSerializer.getObjectDeserializer(),
@@ -110,9 +118,7 @@ public class MembershipOnlyTest {
       }
     };
 
-    // TODO - using geode-core InternalDistributedMember
     MemberIdentifierFactoryImpl memberIdFactory = new MemberIdentifierFactoryImpl();
-
 
     TcpClient locatorClient = new TcpClient(socketCreator, dsfidSerializer.getObjectSerializer(),
         dsfidSerializer.getObjectDeserializer());
