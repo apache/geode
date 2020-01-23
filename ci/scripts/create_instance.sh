@@ -192,6 +192,8 @@ else
     "powershell -command \"&{ mkdir c:\users\geode\.ssh -force; set-content -path c:\users\geode\.ssh\authorized_keys -encoding utf8 -value '${KEY}' }\""
 
   if [[ ${USE_SCRATCH_SSD} == "true" ]]; then
+    #  Give it another minute for the scratch drive setup
+    sleep 60
     set +e
     echo "Setting up local scratch SSD on drive Z"
     winrm -hostname ${INSTANCE_IP_ADDRESS} -username geode -password "${PASSWORD}" \
