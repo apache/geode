@@ -176,11 +176,6 @@ else
       sleep 5
     done
     echo ""
-    if [[ ${USE_SCRATCH_SSD} == "true" ]]; then
-      #  Give it a few minutes for the scratch drive setup
-#      echo "Waiting a few minutes for scratch drive to be set up."
-#      sleep 180
-    fi
     # Get a password
     PASSWORD=$( yes | gcloud beta compute reset-windows-password ${INSTANCE_NAME} --user=geode --zone=${ZONE} --format json | jq -r .password )
     if [[ -n "${PASSWORD}" ]]; then
