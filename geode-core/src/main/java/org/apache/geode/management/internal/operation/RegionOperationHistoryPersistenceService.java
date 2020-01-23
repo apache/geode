@@ -71,11 +71,6 @@ public class RegionOperationHistoryPersistenceService
   }
 
   @Override
-  public <A extends ClusterManagementOperation<V>, V extends OperationResult> void update(
-      OperationState<A, V> operationInstance) {
-  }
-
-  @Override
   public void remove(String id) {
 
   }

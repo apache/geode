@@ -100,13 +100,8 @@ public class OperationHistoryManager {
 
     CompletableFuture.supplyAsync(() -> performer.apply(cache, op), executor)
         .whenComplete((result, exception) -> {
-          OperationState<A, V> opInstance =
-              historyPersistenceService.getOperationInstance(opId);
-          if (opInstance != null) {
-            Throwable cause = exception == null ? null : exception.getCause();
-            opInstance.setOperationEnd(new Date(), result, cause);
-            historyPersistenceService.update(opInstance);
-          }
+          Throwable cause = exception == null ? null : exception.getCause();
+          historyPersistenceService.recordEnd(opId, result, cause);
         });
 
     expireHistory();

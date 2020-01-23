@@ -22,6 +22,7 @@ import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.function.Supplier;
@@ -85,7 +86,7 @@ public class RegionOperationHistoryPersistenceServiceTest {
 
   @Test
   public void recordEndRecordsSuccessfulCompletion() {
-    String opId = "my-operation";
+    String opId = "my-id";
     OperationState operationState = mock(OperationState.class);
     when(region.get(opId)).thenReturn(operationState);
 
@@ -93,9 +94,11 @@ public class RegionOperationHistoryPersistenceServiceTest {
     Throwable thrownByOperation = new RuntimeException();
 
     historyPersistenceService.recordEnd(opId, operationResult, thrownByOperation);
-    
-    verify(operationState).setOperationEnd(notNull(), same(operationResult), same(thrownByOperation));
-    
+
+    verify(operationState).setOperationEnd(notNull(), same(operationResult),
+        same(thrownByOperation));
+    verifyNoMoreInteractions(operationState);
+
     verify(region).put(eq(opId), same(operationState));
   }
 }

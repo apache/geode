@@ -30,6 +30,7 @@ import org.apache.geode.management.runtime.OperationResult;
 public interface OperationHistoryPersistenceService {
   /**
    * Records the state of the given in-progress operation.
+   *
    * @return an identifier for the state of the operation
    */
   <A extends ClusterManagementOperation<?>> String recordStart(A operation);
@@ -46,14 +47,10 @@ public interface OperationHistoryPersistenceService {
    */
   <A extends ClusterManagementOperation<V>, V extends OperationResult> List<OperationState<A, V>> listOperationInstances();
 
-  <V extends OperationResult> void recordEnd(String opId, V result, Throwable exception);
-
   /**
-   * Updates an existing {@link OperationState}.
-   * If the instance is not found this is a no-op.
+   * Records that the given operation has completed with the given result or exception.
    */
-  <A extends ClusterManagementOperation<V>, V extends OperationResult> void update(
-      OperationState<A, V> operationInstance);
+  <V extends OperationResult> void recordEnd(String opId, V result, Throwable exception);
 
   /**
    * Removes an existing {@link OperationState}.

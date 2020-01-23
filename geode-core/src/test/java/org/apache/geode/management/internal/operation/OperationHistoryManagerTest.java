@@ -18,6 +18,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.doReturn;
@@ -96,13 +97,15 @@ public class OperationHistoryManagerTest {
     BiFunction<Cache, TestOperation1, TestOperationResult> performer = mock(BiFunction.class);
 
     when(performer.apply(any(), any())).thenReturn(testOperationResult);
+    String opId = "my-op-id";
+    when(operationHistoryPersistenceService.recordStart(any())).thenReturn(opId);
     doReturn(operationInstance).when(operationHistoryPersistenceService)
         .getOperationInstance(any());
     history.save(testOperation1, performer, cache, executor);
 
     await().untilAsserted(() -> {
-      verify(operationInstance).setOperationEnd(any(), same(testOperationResult), isNull());
-      verify(operationHistoryPersistenceService).update(same(operationInstance));
+      verify(operationHistoryPersistenceService)
+          .recordEnd(eq(opId), same(testOperationResult), isNull());
     });
   }
 
@@ -116,14 +119,17 @@ public class OperationHistoryManagerTest {
 
     RuntimeException thrownByPerformer = new RuntimeException();
     doThrow(thrownByPerformer).when(performer).apply(any(), any());
+    String opId = "my-op-id";
+    when(operationHistoryPersistenceService.recordStart(any())).thenReturn(opId);
+
     doReturn(operationInstance).when(operationHistoryPersistenceService)
         .getOperationInstance(any());
 
     history.save(testOperation1, performer, cache, executor);
 
     await().untilAsserted(() -> {
-      verify(operationInstance).setOperationEnd(any(), isNull(), same(thrownByPerformer));
-      verify(operationHistoryPersistenceService).update(same(operationInstance));
+      verify(operationHistoryPersistenceService)
+          .recordEnd(eq(opId), isNull(), same(thrownByPerformer));
     });
   }
 
@@ -132,8 +138,14 @@ public class OperationHistoryManagerTest {
     CountDownLatch performerIsInProgress = new CountDownLatch(1);
     CountDownLatch performerHasTestPermissionToComplete = new CountDownLatch(1);
 
+    OperationState initialOperationState = mock(OperationState.class);
+    String opId = "my-op-id";
+    when(initialOperationState.getId()).thenReturn(opId);
+    when(operationHistoryPersistenceService.recordStart(any())).thenReturn(opId);
     when(operationHistoryPersistenceService.getOperationInstance(any()))
-        .thenReturn(mock(OperationState.class));
+        .thenReturn(initialOperationState);
+
+    TestOperationResult operationResult = mock(TestOperationResult.class);
 
     BiFunction<Cache, TestOperation1, TestOperationResult> performer = (cache, operation) -> {
       try {
@@ -142,18 +154,21 @@ public class OperationHistoryManagerTest {
       } catch (InterruptedException e) {
         System.out.println("Countdown interrupted");
       }
-      return null;
+      return operationResult;
     };
 
     history.save(null, performer, null, executor);
 
     performerIsInProgress.await(10, SECONDS);
 
-    verify(operationHistoryPersistenceService, never()).update(any());
+    verify(operationHistoryPersistenceService, never()).recordEnd(any(), any(), any());
 
     performerHasTestPermissionToComplete.countDown();
 
-    await().untilAsserted(() -> verify(operationHistoryPersistenceService).update(any()));
+    await().untilAsserted(() -> {
+      verify(operationHistoryPersistenceService)
+          .recordEnd(eq(opId), same(operationResult), isNull());
+    });
   }
 
   @Test
