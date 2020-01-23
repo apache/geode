@@ -193,10 +193,12 @@ else
 
   if [[ ${USE_SCRATCH_SSD} == "true" ]]; then
     echo "Setting up local scratch SSD on drive Z"
-    winrm -hostname ${INSTANCE_IP_ADDRESS} -username build -password "${PASSWORD}" \
-      -https -insecure -port 5986 "powershell -command \"Get-Disk | Where partitionstyle -eq 'raw' | Initialize-Disk -PartitionStyle MBR -PassThru | New-Partition -DriveLetter Z -UseMaximumSize | Format-Volume -FileSystem NTFS -NewFileSystemLabel \“disk2scratch\” -Confirm:\$false\""
+    winrm -hostname ${INSTANCE_IP_ADDRESS} -username geode -password "${PASSWORD}" \
+      -https -insecure -port 5986 \ \
+      "powershell -command \"Get-Disk | Where partitionstyle -eq 'raw' | Initialize-Disk -PartitionStyle MBR -PassThru | New-Partition -DriveLetter Z -UseMaximumSize | Format-Volume -FileSystem NTFS -NewFileSystemLabel \“disk2scratch\” -Confirm:\$false\""
 
-    winrm -hostname ${INSTANCE_IP_ADDRESS} -username build -password "${PASSWORD}" \
-      -https -insecure -port 5986 "powershell -command \"Get-PSDrive\""
+    winrm -hostname ${INSTANCE_IP_ADDRESS} -username geode -password "${PASSWORD}" \
+      -https -insecure -port 5986 \
+      "powershell -command \"Get-PSDrive\""
   fi
 fi
