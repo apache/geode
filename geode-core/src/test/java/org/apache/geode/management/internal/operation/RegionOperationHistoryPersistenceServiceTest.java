@@ -18,6 +18,8 @@ package org.apache.geode.management.internal.operation;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.notNull;
+import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -48,20 +50,21 @@ public class RegionOperationHistoryPersistenceServiceTest {
   }
 
   @Test
-  public void createReturnsAnIdFromProvidedSupplier() {
+  public void recordStartReturnsAnIdFromProvidedSupplier() {
     ClusterManagementOperation<OperationResult> operation = mock(ClusterManagementOperation.class);
     String uniqueId = ";lkajdfa;ldkjfppoiuqe.,.,mnavc098";
     when(uniqueIdSupplier.get()).thenReturn(uniqueId);
-    String opId = historyPersistenceService.create(operation);
+    String opId = historyPersistenceService.recordStart(operation);
 
     assertThat(opId).isSameAs(uniqueId);
     verify(uniqueIdSupplier).get();
   }
 
   @Test
-  public void createStoresOperationStatusInGivenRegion() {
+  public void recordStartRecordsOperationStatusInGivenRegion() {
     ClusterManagementOperation<OperationResult> operation = mock(ClusterManagementOperation.class);
-    String opId = historyPersistenceService.create(operation);
+
+    String opId = historyPersistenceService.recordStart(operation);
 
     ArgumentCaptor<OperationState> capturedOperationInstance = ArgumentCaptor.forClass(
         OperationState.class);
@@ -74,10 +77,25 @@ public class RegionOperationHistoryPersistenceServiceTest {
       softly.assertThat(operationInstance.getId()).as("id").isEqualTo(opId);
       softly.assertThat(operationInstance.getOperation()).as("operation").isSameAs(operation);
       softly.assertThat(operationInstance.getOperationStart()).as("start").isNotNull();
-      softly.assertThat(operationInstance.getOperator()).as("operator").isNull();
       softly.assertThat(operationInstance.getThrowable()).as("throwable").isNull();
       softly.assertThat(operationInstance.getOperationEnd()).as("end").isNull();
       softly.assertThat(operationInstance.getResult()).as("result").isNull();
     });
+  }
+
+  @Test
+  public void recordEndRecordsSuccessfulCompletion() {
+    String opId = "my-operation";
+    OperationState operationState = mock(OperationState.class);
+    when(region.get(opId)).thenReturn(operationState);
+
+    OperationResult operationResult = mock(OperationResult.class);
+    Throwable thrownByOperation = new RuntimeException();
+
+    historyPersistenceService.recordEnd(opId, operationResult, thrownByOperation);
+    
+    verify(operationState).setOperationEnd(notNull(), same(operationResult), same(thrownByOperation));
+    
+    verify(region).put(eq(opId), same(operationState));
   }
 }

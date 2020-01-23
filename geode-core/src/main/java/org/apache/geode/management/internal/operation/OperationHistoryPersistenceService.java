@@ -29,6 +29,12 @@ import org.apache.geode.management.runtime.OperationResult;
  */
 public interface OperationHistoryPersistenceService {
   /**
+   * Records the state of the given in-progress operation.
+   * @return an identifier for the state of the operation
+   */
+  <A extends ClusterManagementOperation<?>> String recordStart(A operation);
+
+  /**
    * Returns a single instance of an {@link OperationState} for a given
    * id.
    */
@@ -40,14 +46,7 @@ public interface OperationHistoryPersistenceService {
    */
   <A extends ClusterManagementOperation<V>, V extends OperationResult> List<OperationState<A, V>> listOperationInstances();
 
-  /**
-   * Persists a new {@link OperationState}.
-   *
-   * @throws IllegalStateException if the OperationInstance already exists
-   */
-  <A extends ClusterManagementOperation<V>, V extends OperationResult> void create(
-      OperationState<A, V> operationInstance)
-      throws IllegalStateException;
+  <V extends OperationResult> void recordEnd(String opId, V result, Throwable exception);
 
   /**
    * Updates an existing {@link OperationState}.
@@ -61,6 +60,4 @@ public interface OperationHistoryPersistenceService {
    * If the instance is not found this is a no-op.
    */
   void remove(String id);
-
-  <A extends ClusterManagementOperation<V>, V extends OperationResult> String create(A operation);
 }

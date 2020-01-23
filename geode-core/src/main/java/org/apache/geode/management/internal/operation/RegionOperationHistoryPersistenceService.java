@@ -43,6 +43,16 @@ public class RegionOperationHistoryPersistenceService
   }
 
   @Override
+  public <A extends ClusterManagementOperation<?>> String recordStart(A operation) {
+    String opId = uniqueIdSupplier.get();
+
+    OperationState operationInstance = new OperationState(opId, operation, new Date());
+    region.put(opId, operationInstance);
+
+    return opId;
+  }
+
+  @Override
   public <A extends ClusterManagementOperation<V>, V extends OperationResult> OperationState<A, V> getOperationInstance(
       String id) {
     return null;
@@ -54,31 +64,19 @@ public class RegionOperationHistoryPersistenceService
   }
 
   @Override
-  public <A extends ClusterManagementOperation<V>, V extends OperationResult> void create(
-      OperationState<A, V> operationInstance)
-      throws IllegalStateException {
-
+  public <V extends OperationResult> void recordEnd(String opId, V result, Throwable exception) {
+    OperationState operationState = region.get(opId);
+    operationState.setOperationEnd(new Date(), result, exception);
+    region.put(opId, operationState);
   }
 
   @Override
   public <A extends ClusterManagementOperation<V>, V extends OperationResult> void update(
       OperationState<A, V> operationInstance) {
-
   }
 
   @Override
   public void remove(String id) {
 
-  }
-
-  @Override
-  public <A extends ClusterManagementOperation<V>, V extends OperationResult> String create(
-      A operation) {
-    String opId = uniqueIdSupplier.get();
-
-    OperationState<A, V> operationInstance = new OperationState<>(opId, operation, new Date());
-    region.put(opId, operationInstance);
-
-    return opId;
   }
 }

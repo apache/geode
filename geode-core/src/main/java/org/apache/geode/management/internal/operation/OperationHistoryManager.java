@@ -96,7 +96,7 @@ public class OperationHistoryManager {
    */
   public <A extends ClusterManagementOperation<V>, V extends OperationResult> OperationState<A, V> save(
       A op, BiFunction<Cache, A, V> performer, Cache cache, Executor executor) {
-    String opId = historyPersistenceService.create(op);
+    String opId = historyPersistenceService.recordStart(op);
 
     CompletableFuture.supplyAsync(() -> performer.apply(cache, op), executor)
         .whenComplete((result, exception) -> {

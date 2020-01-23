@@ -35,8 +35,7 @@ public class OperationState<A extends ClusterManagementOperation<V>, V extends O
   private V result;
   private Throwable throwable;
 
-  public OperationState(String opId, A operation,
-      Date operationStart) {
+  public OperationState(String opId, A operation, Date operationStart) {
     this.opId = opId;
     this.operation = operation;
     this.operationStart = operationStart;

@@ -71,7 +71,7 @@ public class OperationHistoryManagerTest {
     OperationState<TestOperation1, TestOperationResult> operationInstance = history.save(
         op, performer, null, mock(Executor.class));
 
-    verify(operationHistoryPersistenceService).create(same(op));
+    verify(operationHistoryPersistenceService).recordStart(same(op));
     assertThat(operationInstance).isSameAs(operationState);
   }
 
