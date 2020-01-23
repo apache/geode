@@ -92,6 +92,7 @@ import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.MembershipTestHook;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.api.MemberDisconnectedException;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.api.MembershipConfigurationException;
 import org.apache.geode.distributed.internal.membership.api.MembershipManagerHelper;
 import org.apache.geode.distributed.internal.membership.api.MembershipView;
@@ -99,7 +100,6 @@ import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.tcp.Connection;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.DUnitBlackboard;
 import org.apache.geode.test.dunit.DistributedTestUtils;
@@ -1314,17 +1314,21 @@ public class LocatorDUnitTest implements Serializable {
     vm1.invoke("waitUntilLocatorBecomesCoordinator", this::waitUntilLocatorBecomesCoordinator);
     vm2.invoke("waitUntilLocatorBecomesCoordinator", this::waitUntilLocatorBecomesCoordinator);
 
-    if (vm1.invoke(() -> system.getDistributedMember().equals(getView().getCreator()))) {
-      vm2.invoke(() -> {
-        GeodeAwaitility.await()
-            .until(() -> !system.getDistributedMember().equals(getView().getCreator()));
-      });
-    } else {
-      vm2.invoke(() -> {
-        GeodeAwaitility.await()
-            .until(() -> system.getDistributedMember().equals(getView().getCreator()));
-      });
-    }
+    await().untilAsserted(() -> {
+      MemberIdentifier viewCreator = vm1.invoke(() -> getView().getCreator());
+      MemberIdentifier viewCreator2 = vm1.invoke(() -> getView().getCreator());
+
+      if (isSystemConnected()) {
+        InternalDistributedMember member1 = vm1.invoke(system::getDistributedMember);
+        InternalDistributedMember member2 = vm2.invoke(system::getDistributedMember);
+
+        assertThat(viewCreator2).isEqualTo(viewCreator);
+        assertThat(viewCreator).isIn(member1, member2);
+        assertThat(member1).isNotEqualTo(member2);
+      }
+
+    });
+
   }
 
   /**
