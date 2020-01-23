@@ -1140,13 +1140,18 @@ public class LocatorDUnitTest implements Serializable {
 
   private void waitUntilLocatorBecomesCoordinator() {
     await().until(() -> system != null && system.isConnected() &&
-        getCoordinator()
+        getCreator()
             .getVmKind() == ClusterDistributionManager.LOCATOR_DM_TYPE);
   }
 
-  private InternalDistributedMember getCoordinator() {
-    return (InternalDistributedMember) MembershipManagerHelper.getCoordinator(system);
+  private InternalDistributedMember getMember() {
+    return MembershipManagerHelper.getDistribution(system).getLocalMember();
   }
+
+  private InternalDistributedMember getCreator() {
+    return (InternalDistributedMember) MembershipManagerHelper.getCreator(system);
+  }
+
 
   private MembershipView getView() {
     return system.getDistributionManager().getDistribution().getView();
@@ -1199,7 +1204,7 @@ public class LocatorDUnitTest implements Serializable {
     String newLocators = hostName + "[" + port2 + "]," + hostName + "[" + port3 + "]";
     dsProps.setProperty(LOCATORS, newLocators);
 
-    InternalDistributedMember currentCoordinator = getCoordinator();
+    InternalDistributedMember currentCoordinator = getCreator();
     DistributedMember vm3ID = vm3.invoke(() -> system.getDM().getDistributionManagerId());
     assertEquals(
         "View is " + system.getDM().getDistribution().getView() + " and vm3's ID is "
@@ -1211,7 +1216,7 @@ public class LocatorDUnitTest implements Serializable {
     startLocator(vm2, dsProps, port3);
 
     await()
-        .until(() -> !getCoordinator().equals(currentCoordinator)
+        .until(() -> !getCreator().equals(currentCoordinator)
             && system.getDM().getAllHostedLocators().size() == 2);
 
     vm1.invoke("waitUntilLocatorBecomesCoordinator", this::waitUntilLocatorBecomesCoordinator);
@@ -1318,14 +1323,13 @@ public class LocatorDUnitTest implements Serializable {
       MemberIdentifier viewCreator = vm1.invoke(() -> getView().getCreator());
       MemberIdentifier viewCreator2 = vm1.invoke(() -> getView().getCreator());
 
-      if (isSystemConnected()) {
-        InternalDistributedMember member1 = vm1.invoke(system::getDistributedMember);
-        InternalDistributedMember member2 = vm2.invoke(system::getDistributedMember);
+      // return (InternalDistributedMember) MembershipManagerHelper.getCreator(system);
+      InternalDistributedMember member1 = vm1.invoke(this::getMember);
+      InternalDistributedMember member2 = vm2.invoke(this::getMember);
 
-        assertThat(viewCreator2).isEqualTo(viewCreator);
-        assertThat(viewCreator).isIn(member1, member2);
-        assertThat(member1).isNotEqualTo(member2);
-      }
+      assertThat(viewCreator2).isEqualTo(viewCreator);
+      assertThat(viewCreator).isIn(member1, member2);
+      assertThat(member1).isNotEqualTo(member2);
 
     });
 
