@@ -178,8 +178,8 @@ else
     echo ""
     if [[ ${USE_SCRATCH_SSD} == "true" ]]; then
       #  Give it a few minutes for the scratch drive setup
-      echo "Waiting a few minutes for scratch drive to be set up."
-      sleep 180
+#      echo "Waiting a few minutes for scratch drive to be set up."
+#      sleep 180
     fi
     # Get a password
     PASSWORD=$( yes | gcloud beta compute reset-windows-password ${INSTANCE_NAME} --user=geode --zone=${ZONE} --format json | jq -r .password )
@@ -200,11 +200,11 @@ else
     set +e
     echo "Setting up local scratch SSD on drive Z"
     winrm -hostname ${INSTANCE_IP_ADDRESS} -username geode -password "${PASSWORD}" \
-      -https -insecure -port 5986 \ \
+      -https -insecure -port 5986 \
       "powershell -command \"Get-Disk\""
 
     winrm -hostname ${INSTANCE_IP_ADDRESS} -username geode -password "${PASSWORD}" \
-      -https -insecure -port 5986 \ \
+      -https -insecure -port 5986 \
       "powershell -command \"Get-Disk | Where partitionstyle -eq 'raw' | Initialize-Disk -PartitionStyle MBR -PassThru | New-Partition -DriveLetter Z -UseMaximumSize | Format-Volume -FileSystem NTFS -NewFileSystemLabel \“disk2\” -Confirm:\$false\""
 
     winrm -hostname ${INSTANCE_IP_ADDRESS} -username geode -password "${PASSWORD}" \
