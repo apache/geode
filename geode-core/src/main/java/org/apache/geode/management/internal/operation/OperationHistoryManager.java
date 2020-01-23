@@ -63,7 +63,7 @@ public class OperationHistoryManager {
       String opId) {
     expireHistory();
 
-    return (OperationState<A, V>) historyPersistenceService.getOperationInstance(opId);
+    return (OperationState<A, V>) historyPersistenceService.get(opId);
   }
 
   private void expireHistory() {
@@ -106,7 +106,7 @@ public class OperationHistoryManager {
 
     expireHistory();
 
-    return historyPersistenceService.getOperationInstance(opId);
+    return historyPersistenceService.get(opId);
   }
 
   <A extends ClusterManagementOperation<V>, V extends OperationResult> List<OperationState<A, V>> listOperationInstances(

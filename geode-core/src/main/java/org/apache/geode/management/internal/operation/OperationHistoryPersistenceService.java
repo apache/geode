@@ -39,7 +39,7 @@ public interface OperationHistoryPersistenceService {
    * Returns a single instance of an {@link OperationState} for a given
    * id.
    */
-  <A extends ClusterManagementOperation<V>, V extends OperationResult> OperationState<A, V> getOperationInstance(
+  <A extends ClusterManagementOperation<V>, V extends OperationResult> OperationState<A, V> get(
       String id);
 
   /**
@@ -56,5 +56,5 @@ public interface OperationHistoryPersistenceService {
    * Removes an existing {@link OperationState}.
    * If the instance is not found this is a no-op.
    */
-  void remove(String id);
+  void remove(String opId);
 }

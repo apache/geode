@@ -67,7 +67,7 @@ public class OperationHistoryManagerTest {
     TestOperation1 op = mock(TestOperation1.class);
     BiFunction<Cache, TestOperation1, TestOperationResult> performer = (cache, testOpType) -> null;
     OperationState operationState = mock(OperationState.class);
-    when(operationHistoryPersistenceService.getOperationInstance(any())).thenReturn(operationState);
+    when(operationHistoryPersistenceService.get(any())).thenReturn(operationState);
 
     OperationState<TestOperation1, TestOperationResult> operationInstance = history.save(
         op, performer, null, mock(Executor.class));
@@ -100,7 +100,7 @@ public class OperationHistoryManagerTest {
     String opId = "my-op-id";
     when(operationHistoryPersistenceService.recordStart(any())).thenReturn(opId);
     doReturn(operationInstance).when(operationHistoryPersistenceService)
-        .getOperationInstance(any());
+        .get(any());
     history.save(testOperation1, performer, cache, executor);
 
     await().untilAsserted(() -> {
@@ -123,7 +123,7 @@ public class OperationHistoryManagerTest {
     when(operationHistoryPersistenceService.recordStart(any())).thenReturn(opId);
 
     doReturn(operationInstance).when(operationHistoryPersistenceService)
-        .getOperationInstance(any());
+        .get(any());
 
     history.save(testOperation1, performer, cache, executor);
 
@@ -142,7 +142,7 @@ public class OperationHistoryManagerTest {
     String opId = "my-op-id";
     when(initialOperationState.getId()).thenReturn(opId);
     when(operationHistoryPersistenceService.recordStart(any())).thenReturn(opId);
-    when(operationHistoryPersistenceService.getOperationInstance(any()))
+    when(operationHistoryPersistenceService.get(any()))
         .thenReturn(initialOperationState);
 
     TestOperationResult operationResult = mock(TestOperationResult.class);

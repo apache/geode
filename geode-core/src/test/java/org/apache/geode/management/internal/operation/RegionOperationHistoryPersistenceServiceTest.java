@@ -16,7 +16,6 @@
 package org.apache.geode.management.internal.operation;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.ArgumentMatchers.same;
@@ -74,14 +73,12 @@ public class RegionOperationHistoryPersistenceServiceTest {
 
     assertThat(operationInstance).as("operationInstance").isNotNull();
 
-    assertSoftly(softly -> {
-      softly.assertThat(operationInstance.getId()).as("id").isEqualTo(opId);
-      softly.assertThat(operationInstance.getOperation()).as("operation").isSameAs(operation);
-      softly.assertThat(operationInstance.getOperationStart()).as("start").isNotNull();
-      softly.assertThat(operationInstance.getThrowable()).as("throwable").isNull();
-      softly.assertThat(operationInstance.getOperationEnd()).as("end").isNull();
-      softly.assertThat(operationInstance.getResult()).as("result").isNull();
-    });
+    assertThat(operationInstance.getId()).as("id").isEqualTo(opId);
+    assertThat(operationInstance.getOperation()).as("operation").isSameAs(operation);
+    assertThat(operationInstance.getOperationStart()).as("start").isNotNull();
+    assertThat(operationInstance.getThrowable()).as("throwable").isNull();
+    assertThat(operationInstance.getOperationEnd()).as("end").isNull();
+    assertThat(operationInstance.getResult()).as("result").isNull();
   }
 
   @Test
@@ -100,5 +97,26 @@ public class RegionOperationHistoryPersistenceServiceTest {
     verifyNoMoreInteractions(operationState);
 
     verify(region).put(eq(opId), same(operationState));
+  }
+
+  @Test
+  public void removeRemovesIdentifiedOperationStateFromRegion() {
+    String opId = "doomed-operation";
+
+    historyPersistenceService.remove(opId);
+
+    verify(region).remove(opId);
+  }
+
+  @Test
+  public void getReturnsOperationFromRegion() {
+    String opId = "doomed-operation";
+    OperationState recordedOperationState = mock(OperationState.class);
+
+    when(region.get(opId)).thenReturn(recordedOperationState);
+
+    OperationState operationState = historyPersistenceService.get(opId);
+
+    assertThat(operationState).isSameAs(recordedOperationState);
   }
 }

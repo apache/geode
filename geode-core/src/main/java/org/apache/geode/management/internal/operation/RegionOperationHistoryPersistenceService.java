@@ -53,9 +53,9 @@ public class RegionOperationHistoryPersistenceService
   }
 
   @Override
-  public <A extends ClusterManagementOperation<V>, V extends OperationResult> OperationState<A, V> getOperationInstance(
-      String id) {
-    return null;
+  public <A extends ClusterManagementOperation<V>, V extends OperationResult> OperationState<A, V> get(
+      String opId) {
+    return region.get(opId);
   }
 
   @Override
@@ -71,7 +71,7 @@ public class RegionOperationHistoryPersistenceService
   }
 
   @Override
-  public void remove(String id) {
-
+  public void remove(String opId) {
+    region.remove(opId);
   }
 }

@@ -49,7 +49,7 @@ public class OperationManagerTest {
     String id = inst.getId();
     assertThat(id).isNotBlank();
 
-    doReturn(inst).when(operationHistoryPersistenceService).getOperationInstance(id);
+    doReturn(inst).when(operationHistoryPersistenceService).get(id);
 
     assertThat(executorManager.getOperationInstance(id)).isNotNull();
     assertThat(executorManager.getOperationInstance(id).getOperationStart()).isNotNull();
@@ -60,7 +60,7 @@ public class OperationManagerTest {
         executorManager.submit(operation2);
     String id2 = inst2.getId();
     assertThat(id2).isNotBlank();
-    doReturn(inst2).when(operationHistoryPersistenceService).getOperationInstance(id2);
+    doReturn(inst2).when(operationHistoryPersistenceService).get(id2);
 
     assertThat(executorManager.getOperationInstance(id2)).isNotNull();
     assertThat(executorManager.getOperationInstance(id2).getOperationStart()).isNotNull();
@@ -84,7 +84,7 @@ public class OperationManagerTest {
     String id = inst.getId();
     assertThat(id).isNotBlank();
 
-    doReturn(inst).when(operationHistoryPersistenceService).getOperationInstance(id);
+    doReturn(inst).when(operationHistoryPersistenceService).get(id);
 
 
     assertThat(executorManager.getOperationInstance(id)).isNotNull();
@@ -94,7 +94,7 @@ public class OperationManagerTest {
         executorManager.submit(operation2);
     String id2 = inst2.getId();
     assertThat(id2).isNotBlank();
-    doReturn(inst2).when(operationHistoryPersistenceService).getOperationInstance(id2);
+    doReturn(inst2).when(operationHistoryPersistenceService).get(id2);
 
     // all are still in progress
     assertThat(executorManager.getOperationInstance(id)).isNotNull();
