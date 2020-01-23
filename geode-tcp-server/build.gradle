@@ -28,6 +28,7 @@ dependencies {
     //Commons validator is used to validate inet addresses
     implementation('commons-validator:commons-validator')
 
+    testCompile('org.assertj:assertj-core')
 
     testImplementation('com.tngtech.archunit:archunit-junit4')
 
