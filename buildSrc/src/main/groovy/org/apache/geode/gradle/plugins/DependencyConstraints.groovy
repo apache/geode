@@ -124,7 +124,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'junit', name: 'junit', version: get('junit.version'))
         api(group: 'mx4j', name: 'mx4j-tools', version: '3.0.1')
         api(group: 'mysql', name: 'mysql-connector-java', version: '5.1.46')
-        api(group: 'net.java.dev.jna', name: 'jna', version: '4.1.0')
+        api(group: 'net.java.dev.jna', name: 'jna', version: '5.5.0')
         api(group: 'net.openhft', name: 'compiler', version: '2.3.4')
         api(group: 'net.sf.jopt-simple', name: 'jopt-simple', version: '5.0.4')
         api(group: 'net.spy', name: 'spymemcached', version: '2.12.3')
