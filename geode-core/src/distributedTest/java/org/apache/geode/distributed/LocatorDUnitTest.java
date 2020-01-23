@@ -1323,7 +1323,6 @@ public class LocatorDUnitTest implements Serializable {
       MemberIdentifier viewCreator = vm1.invoke(() -> getView().getCreator());
       MemberIdentifier viewCreator2 = vm1.invoke(() -> getView().getCreator());
 
-      // return (InternalDistributedMember) MembershipManagerHelper.getCreator(system);
       InternalDistributedMember member1 = vm1.invoke(this::getMember);
       InternalDistributedMember member2 = vm2.invoke(this::getMember);
 
