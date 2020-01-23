@@ -54,6 +54,7 @@ jetty-xml
 jgroups
 jline
 jna
+jna-platform
 jopt-simple
 json-path
 json-smart

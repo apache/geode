@@ -25,21 +25,20 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import com.sun.jna.Callback;
 import com.sun.jna.LastErrorException;
-import com.sun.jna.Library;
 import com.sun.jna.Native;
-import com.sun.jna.NativeLibrary;
 import com.sun.jna.NativeLong;
 import com.sun.jna.Platform;
 import com.sun.jna.Pointer;
 import com.sun.jna.Structure;
+import com.sun.jna.platform.win32.Kernel32;
+import com.sun.jna.platform.win32.WinBase;
+import com.sun.jna.platform.win32.WinNT.HANDLE;
 import com.sun.jna.ptr.IntByReference;
-import com.sun.jna.win32.StdCallLibrary;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.SystemFailure;
@@ -885,45 +884,6 @@ public class NativeCallsJNAImpl {
     static final int WSAENOPROTOOPT = 10042;
     static final int SIO_KEEPALIVE_VALS = -1744830460;
 
-    private static class Kernel32 {
-
-      static {
-        // kernel32 requires stdcall calling convention
-        Map<String, Object> kernel32Options = new HashMap<String, Object>();
-        kernel32Options.put(Library.OPTION_CALLING_CONVENTION, StdCallLibrary.STDCALL_CONVENTION);
-        kernel32Options.put(Library.OPTION_FUNCTION_MAPPER, StdCallLibrary.FUNCTION_MAPPER);
-        final NativeLibrary kernel32Lib = NativeLibrary.getInstance("kernel32", kernel32Options);
-        Native.register(kernel32Lib);
-      }
-
-      // Values below from windows.h header are hard-coded since there
-      // does not seem any simple way to get those at build or run time.
-      // Hopefully these will never change else all hell will break
-      // loose in Windows world ...
-      static final int PROCESS_QUERY_INFORMATION = 0x0400;
-      static final int PROCESS_TERMINATE = 0x0001;
-      static final int STILL_ACTIVE = 259;
-      static final int INVALID_HANDLE = -1;
-
-      public static native boolean SetEnvironmentVariableA(String name, String value)
-          throws LastErrorException;
-
-      public static native int GetEnvironmentVariableA(String name, byte[] pvalue, int psize);
-
-      public static native int GetCurrentProcessId();
-
-      public static native Pointer OpenProcess(int desiredAccess, boolean inheritHandle,
-          int processId) throws LastErrorException;
-
-      public static native boolean TerminateProcess(Pointer processHandle, int exitCode)
-          throws LastErrorException;
-
-      public static native boolean GetExitCodeProcess(Pointer processHandle,
-          IntByReference exitCode) throws LastErrorException;
-
-      public static native boolean CloseHandle(Pointer handle) throws LastErrorException;
-    }
-
     /**
      * @see NativeCalls#getOSType()
      */
@@ -940,11 +900,11 @@ public class NativeCallsJNAImpl {
       if (name == null) {
         throw new UnsupportedOperationException("getEnvironment() for name=NULL");
       }
-      int psize = Kernel32.GetEnvironmentVariableA(name, null, 0);
+      int psize = Kernel32.INSTANCE.GetEnvironmentVariable(name, null, 0);
       if (psize > 0) {
         for (;;) {
-          byte[] result = new byte[psize];
-          psize = Kernel32.GetEnvironmentVariableA(name, result, psize);
+          char[] result = new char[psize];
+          psize = Kernel32.INSTANCE.GetEnvironmentVariable(name, result, psize);
           if (psize == (result.length - 1)) {
             return new String(result, 0, psize);
           } else if (psize <= 0) {
@@ -961,7 +921,7 @@ public class NativeCallsJNAImpl {
      */
     @Override
     public int getProcessId() {
-      return Kernel32.GetCurrentProcessId();
+      return Kernel32.INSTANCE.GetCurrentProcessId();
     }
 
     /**
@@ -970,18 +930,15 @@ public class NativeCallsJNAImpl {
     @Override
     public boolean isProcessActive(final int processId) {
       try {
-        final Pointer procHandle =
-            Kernel32.OpenProcess(Kernel32.PROCESS_QUERY_INFORMATION, false, processId);
-        final long hval;
-        if (procHandle == null
-            || (hval = Pointer.nativeValue(procHandle)) == Kernel32.INVALID_HANDLE || hval == 0) {
+        final HANDLE procHandle =
+            Kernel32.INSTANCE.OpenProcess(Kernel32.PROCESS_QUERY_INFORMATION, false, processId);
+        if (procHandle == null || WinBase.INVALID_HANDLE_VALUE.equals(procHandle)) {
           return false;
         } else {
           final IntByReference status = new IntByReference();
-          final boolean result =
-              Kernel32.GetExitCodeProcess(procHandle, status)
-                  && status.getValue() == Kernel32.STILL_ACTIVE;
-          Kernel32.CloseHandle(procHandle);
+          final boolean result = Kernel32.INSTANCE.GetExitCodeProcess(procHandle, status)
+              && status.getValue() == Kernel32.STILL_ACTIVE;
+          Kernel32.INSTANCE.CloseHandle(procHandle);
           return result;
         }
       } catch (LastErrorException le) {
@@ -996,15 +953,13 @@ public class NativeCallsJNAImpl {
     @Override
     public boolean killProcess(final int processId) {
       try {
-        final Pointer procHandle =
-            Kernel32.OpenProcess(Kernel32.PROCESS_TERMINATE, false, processId);
-        final long hval;
-        if (procHandle == null
-            || (hval = Pointer.nativeValue(procHandle)) == Kernel32.INVALID_HANDLE || hval == 0) {
+        final HANDLE procHandle =
+            Kernel32.INSTANCE.OpenProcess(Kernel32.PROCESS_TERMINATE, false, processId);
+        if (procHandle == null || Kernel32.INVALID_HANDLE_VALUE.equals(procHandle)) {
           return false;
         } else {
-          final boolean result = Kernel32.TerminateProcess(procHandle, -1);
-          Kernel32.CloseHandle(procHandle);
+          final boolean result = Kernel32.INSTANCE.TerminateProcess(procHandle, -1);
+          Kernel32.INSTANCE.CloseHandle(procHandle);
           return result;
         }
       } catch (LastErrorException le) {
