@@ -20,6 +20,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.DELTA_PROPAGA
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.internal.cache.CacheServerImpl.generateNameForClientMsgsRegion;
+import static org.apache.geode.internal.lang.SystemPropertyHelper.GEMFIRE_PREFIX;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.NetworkUtils.getServerHostName;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -49,7 +50,6 @@ import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.server.CacheServer;
@@ -58,8 +58,8 @@ import org.apache.geode.cache30.ClientServerTestCase;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.CacheServerImpl;
+import org.apache.geode.internal.cache.InternalCacheServer;
 import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil;
 import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessage;
 import org.apache.geode.internal.cache.tier.sockets.ConflationDUnitTestHelper;
 import org.apache.geode.internal.cache.tier.sockets.HAEventWrapper;
@@ -209,7 +209,8 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
 
   public static void createClientCache(String host, Integer port1, Integer port2, String rLevel,
       Boolean addListener) throws Exception {
-    CacheServerTestUtil.disableShufflingOfEndpoints();
+    System.setProperty(GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints",
+        "true");
 
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
@@ -220,7 +221,7 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
         .configureConnectionPool(factory, host, port1, port2, true,
             Integer.parseInt(rLevel),
             2, null, 1000, 250,
-            -2/* lifetimeTimeout */);
+            -2);
 
     factory.setScope(Scope.LOCAL);
 
@@ -246,8 +247,7 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
       });
     }
 
-    RegionAttributes<Object, Object> attrs = factory.create();
-    cache.createRegion(regionName, attrs);
+    cache.createRegion(regionName, factory.create());
   }
 
   public static void createClientCache(String host, Integer port1, Integer port2, String rLevel)
@@ -645,9 +645,9 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
     serverVM0.invoke(() -> HARQueueNewImplDUnitTest.waitTillMessagesAreDispatched(port3));
 
     // expect updates
-    verifyUpdatesReceived(true);
+    verifyUpdatesReceived();
     // expect invalidates
-    clientVM1.invoke(() -> verifyUpdatesReceived(false));
+    clientVM1.invoke(HARQueueNewImplDUnitTest::verifyUpdatesReceived);
   }
 
   /**
@@ -865,7 +865,7 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
         assertThat(((Region) region).isDestroyed()).isTrue();
       }
     } else {
-      region = ((CacheServerImpl) cache.getCacheServers().toArray()[0]).getAcceptor()
+      region = ((InternalCacheServer) cache.getCacheServers().toArray()[0]).getAcceptor()
           .getCacheClientNotifier().getHaContainer();
       if (region != null) {
         assertThat(region.isEmpty()).isTrue();
@@ -875,88 +875,61 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
 
   private static Long getUsedMemoryAndVerifyRegionSize(Integer haContainerSize,
       Integer port) {
-    Long retVal = null;
-    try {
-      retVal = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-      if (port != -1) {
-        verifyRegionSize(1, haContainerSize);
-      } else {
-        verifyRegionSize(haContainerSize);
-      }
-    } catch (GemFireException e) {
-      fail("failed in getUsedMemory()" + e);
+    Long retVal;
+    retVal = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+    if (port != -1) {
+      verifyRegionSize(1, haContainerSize);
+    } else {
+      verifyRegionSize(haContainerSize);
     }
     return retVal;
   }
 
   private static void stopOneBridgeServer(Integer port) {
-    try {
-      Iterator iterator = cache.getCacheServers().iterator();
-      if (iterator.hasNext()) {
-        CacheServer server = (CacheServer) iterator.next();
-        if (server.getPort() == port) {
-          server.stop();
-        }
+    Iterator iterator = cache.getCacheServers().iterator();
+    if (iterator.hasNext()) {
+      CacheServer server = (CacheServer) iterator.next();
+      if (server.getPort() == port) {
+        server.stop();
       }
-    } catch (GemFireException e) {
-      fail("failed in stopOneBridgeServer()" + e);
     }
   }
 
   public static void stopServer() {
-    try {
-      Iterator iterator = cache.getCacheServers().iterator();
-      if (iterator.hasNext()) {
-        CacheServer server = (CacheServer) iterator.next();
-        server.stop();
-      }
-    } catch (GemFireException e) {
-      fail("failed in stopServer()" + e);
+    Iterator iterator = cache.getCacheServers().iterator();
+    if (iterator.hasNext()) {
+      CacheServer server = (CacheServer) iterator.next();
+      server.stop();
     }
   }
 
   private static void updateMapForVM0() {
-    try {
-      map.put("k1", 3L);
-      map.put("k2", 1L);
-      map.put("k3", 3L);
-      map.put("k4", 1L);
-      map.put("k5", 3L);
-    } catch (GemFireException e) {
-      fail("failed in updateMapForVM0()" + e);
-    }
+    map.put("k1", 3L);
+    map.put("k2", 1L);
+    map.put("k3", 3L);
+    map.put("k4", 1L);
+    map.put("k5", 3L);
   }
 
   private static void updateMap1() {
-    try {
-      map.put("k1", 2L);
-      map.put("k2", 1L);
-      map.put("k3", 2L);
-      map.put("k4", 1L);
-      map.put("k5", 2L);
-    } catch (GemFireException e) {
-      fail("failed in updateMap1()" + e);
-    }
+    map.put("k1", 2L);
+    map.put("k2", 1L);
+    map.put("k3", 2L);
+    map.put("k4", 1L);
+    map.put("k5", 2L);
   }
 
   private static void updateMap2() {
-    try {
-      map.put("k1", 1L);
-      map.put("k2", 1L);
-      map.put("k3", 1L);
-      map.put("k4", 1L);
-      map.put("k5", 1L);
-    } catch (GemFireException e) {
-      fail("failed in updateMap2()" + e);
-    }
+    map.put("k1", 1L);
+    map.put("k2", 1L);
+    map.put("k3", 1L);
+    map.put("k4", 1L);
+    map.put("k5", 1L);
+
   }
 
   private static void updateMapForVM1() {
-    try {
-      updateMapForVM0();
-    } catch (GemFireException e) {
-      fail("failed in updateMapForVM1()" + e);
-    }
+    updateMapForVM0();
   }
 
   private static void verifyNullValuesInCMR(final Integer port,
@@ -1010,67 +983,57 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
-  public static void startServer() {
-    try {
-      Iterator iterator = cache.getCacheServers().iterator();
-      if (iterator.hasNext()) {
-        CacheServer server = (CacheServer) iterator.next();
-        server.start();
-      }
-    } catch (GemFireException | IOException e) {
-      fail("failed in startServer()" + e);
+  public static void startServer() throws IOException {
+
+    Iterator iterator = cache.getCacheServers().iterator();
+    if (iterator.hasNext()) {
+      CacheServer server = (CacheServer) iterator.next();
+      server.start();
     }
+
   }
 
   private static void verifyQueueData(Integer port) {
-    try {
-      // Get the clientMessagesRegion and check the size.
-      Region<Object, Object> msgsRegion =
-          cache.getRegion(CacheServerImpl.generateNameForClientMsgsRegion(port));
-      Region region = cache.getRegion("/" + regionName);
-      logger.debug(
-          "size<serverRegion, clientMsgsRegion>: " + region.size() + ", " + msgsRegion.size());
-      assertThat(region.size()).isEqualTo(((Integer) 5).intValue());
-      assertThat(msgsRegion.size()).isEqualTo(((Integer) 5).intValue());
+    // Get the clientMessagesRegion and check the size.
+    Region<Object, Object> msgsRegion =
+        cache.getRegion(CacheServerImpl.generateNameForClientMsgsRegion(port));
+    Region region = cache.getRegion("/" + regionName);
+    logger.debug(
+        "size<serverRegion, clientMsgsRegion>: " + region.size() + ", " + msgsRegion.size());
+    assertThat(region.size()).isEqualTo(((Integer) 5).intValue());
+    assertThat(msgsRegion.size()).isEqualTo(((Integer) 5).intValue());
 
-      for (Object o : msgsRegion.entrySet()) {
-        await().untilAsserted(() -> {
-          Entry entry = (Entry) o;
-          HAEventWrapper wrapper = (HAEventWrapper) entry.getKey();
-          ClientUpdateMessage cum = (ClientUpdateMessage) entry.getValue();
-          Object key = cum.getKeyOfInterest();
-          logger.debug("key<feedCount, regionCount>: " + key + "<"
-              + map.get(key) + ", " + wrapper.getReferenceCount() + ">");
-          assertThat(wrapper.getReferenceCount()).isEqualTo(((Long) map.get(key)).longValue());
-        });
-      }
-    } catch (GemFireException e) {
-      fail("failed in verifyQueueData()" + e);
+    for (Object o : msgsRegion.entrySet()) {
+      await().untilAsserted(() -> {
+        Entry entry = (Entry) o;
+        HAEventWrapper wrapper = (HAEventWrapper) entry.getKey();
+        ClientUpdateMessage cum = (ClientUpdateMessage) entry.getValue();
+        Object key = cum.getKeyOfInterest();
+        logger.debug("key<feedCount, regionCount>: " + key + "<"
+            + map.get(key) + ", " + wrapper.getReferenceCount() + ">");
+        assertThat(wrapper.getReferenceCount()).isEqualTo(((Long) map.get(key)).longValue());
+      });
     }
   }
 
   private static void verifyRegionSize(final Integer regionSize, final Integer msgsRegionSize) {
     GeodeAwaitility.await().until(() -> {
-      try {
-        // Get the clientMessagesRegion and check the size.
-        Region<Object, Object> region = cache.getRegion("/" + regionName);
-        int sz = region.size();
-        if (regionSize != sz) {
-          return false;
-        }
-
-        Iterator iterator = cache.getCacheServers().iterator();
-        if (iterator.hasNext()) {
-          CacheServerImpl server = (CacheServerImpl) iterator.next();
-          Map msgsRegion = server.getAcceptor().getCacheClientNotifier().getHaContainer();
-
-          sz = msgsRegion.size();
-          return msgsRegionSize == sz;
-        }
-        return true;
-      } catch (GemFireException e) {
+      // Get the clientMessagesRegion and check the size.
+      Region<Object, Object> region = cache.getRegion("/" + regionName);
+      int sz = region.size();
+      if (regionSize != sz) {
         return false;
       }
+
+      Iterator iterator = cache.getCacheServers().iterator();
+      if (iterator.hasNext()) {
+        InternalCacheServer server = (InternalCacheServer) iterator.next();
+        Map msgsRegion = server.getAcceptor().getCacheClientNotifier().getHaContainer();
+
+        sz = msgsRegion.size();
+        return msgsRegionSize == sz;
+      }
+      return true;
     });
   }
 
@@ -1088,7 +1051,7 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
         if (!iterator.hasNext()) {
           return true;
         }
-        CacheServerImpl server = (CacheServerImpl) iterator.next();
+        InternalCacheServer server = (InternalCacheServer) iterator.next();
         sz = server.getAcceptor().getCacheClientNotifier().getHaContainer().size();
         return sz == msgsRegionSize;
       } catch (Exception e) {
@@ -1098,91 +1061,62 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
   }
 
   private static void verifyHaContainerType(Boolean isRegion, Integer port) {
-    try {
-      Map<Object, Object> haMap =
-          cache.getRegion(CacheServerImpl.generateNameForClientMsgsRegion(port));
-      if (isRegion) {
-        assertThat(haMap).isNotNull();
-        assertThat(haMap instanceof LocalRegion).isTrue();
-        haMap = (Map<Object, Object>) ((CacheServerImpl) cache.getCacheServers().toArray()[0])
-            .getAcceptor()
-            .getCacheClientNotifier().getHaContainer();
-        assertThat(haMap).isNotNull();
-        assertThat(haMap instanceof HAContainerRegion).isTrue();
-      } else {
-        assertThat(haMap).isNull();
-        haMap = (Map<Object, Object>) ((CacheServerImpl) cache.getCacheServers().toArray()[0])
-            .getAcceptor()
-            .getCacheClientNotifier().getHaContainer();
-        assertThat(haMap).isNotNull();
-        assertThat(haMap instanceof HAContainerMap).isTrue();
-      }
-      logger.debug("haContainer: " + haMap);
-    } catch (GemFireException e) {
-      fail("failed in verifyHaContainerType()" + e);
+    Map<Object, Object> haMap =
+        cache.getRegion(CacheServerImpl.generateNameForClientMsgsRegion(port));
+    if (isRegion) {
+      assertThat(haMap).isNotNull();
+      assertThat(haMap instanceof LocalRegion).isTrue();
+      haMap = (Map<Object, Object>) ((InternalCacheServer) cache.getCacheServers().toArray()[0])
+          .getAcceptor()
+          .getCacheClientNotifier().getHaContainer();
+      assertThat(haMap).isNotNull();
+      assertThat(haMap instanceof HAContainerRegion).isTrue();
+    } else {
+      assertThat(haMap).isNull();
+      haMap = (Map<Object, Object>) ((InternalCacheServer) cache.getCacheServers().toArray()[0])
+          .getAcceptor()
+          .getCacheClientNotifier().getHaContainer();
+      assertThat(haMap).isNotNull();
+      assertThat(haMap instanceof HAContainerMap).isTrue();
     }
   }
 
   private static void verifyRootRegionsDoesNotReturnCMR(Integer port) {
-    try {
-      String cmrName = CacheServerImpl.generateNameForClientMsgsRegion(port);
-      Map<Object, Object> haMap = cache.getRegion(cmrName);
-      assertThat(haMap).isNotNull();
-      String rName;
+    String cmrName = CacheServerImpl.generateNameForClientMsgsRegion(port);
+    Map<Object, Object> haMap = cache.getRegion(cmrName);
+    assertThat(haMap).isNotNull();
+    String rName;
 
-      for (Region<?, ?> region : cache.rootRegions()) {
-        rName = region.getName();
-        if (cmrName.equals(rName)) {
-          throw new AssertionError(
-              "Cache.rootRegions() method should not return the client_messages_region.");
-        }
-        logger.debug("Region name returned from cache.rootRegions(): " + rName);
+    for (Region<?, ?> region : cache.rootRegions()) {
+      rName = region.getName();
+      if (cmrName.equals(rName)) {
+        throw new AssertionError(
+            "Cache.rootRegions() method should not return the client_messages_region.");
       }
-    } catch (GemFireException e) {
-      fail("failed in verifyRootRegionsDoesNotReturnCMR()" + e);
+      logger.debug("Region name returned from cache.rootRegions(): " + rName);
     }
   }
 
-  private static void verifyUpdatesReceived(Boolean isUpdates) {
-    try {
-      if (true) {
-
-        GeodeAwaitility.await().until(() -> {
-          logger.info("MLH number of updates = " + numOfUpdates);
-          return 5 == numOfUpdates;
-        });
-      } else {
-        GeodeAwaitility.await().until(() -> {
-          logger.info("MLH number of invalidates = " + numOfInvalidates);
-          return 5 == numOfInvalidates;
-        });
-
-      }
-    } catch (GemFireException e) {
-      fail("failed in verifyUpdatesReceived()" + e);
-    }
+  private static void verifyUpdatesReceived() {
+    GeodeAwaitility.await().until(() -> 5 == numOfUpdates);
   }
 
   private static void waitTillMessagesAreDispatched(Integer port) {
-    try {
-      Map haContainer;
-      haContainer = cache.getRegion(
-          SEPARATOR + generateNameForClientMsgsRegion(port));
-      if (haContainer == null) {
-        Object[] servers = cache.getCacheServers().toArray();
-        for (Object server : servers) {
-          if (port == ((CacheServerImpl) server).getPort()) {
-            haContainer = ((CacheServerImpl) server).getAcceptor().getCacheClientNotifier()
-                .getHaContainer();
-            break;
-          }
+    Map haContainer;
+    haContainer = cache.getRegion(
+        SEPARATOR + generateNameForClientMsgsRegion(port));
+    if (haContainer == null) {
+      Object[] servers = cache.getCacheServers().toArray();
+      for (Object server : servers) {
+        if (port == ((InternalCacheServer) server).getPort()) {
+          haContainer = ((InternalCacheServer) server).getAcceptor().getCacheClientNotifier()
+              .getHaContainer();
+          break;
         }
       }
-      final Map m = haContainer;
-      GeodeAwaitility.await().until(() -> m.size() == 0);
-    } catch (GemFireException e) {
-      fail("failed in waitTillMessagesAreDispatched()" + e);
     }
+    final Map m = haContainer;
+    GeodeAwaitility.await().until(() -> m.size() == 0);
   }
 
   public static void closeCache() {

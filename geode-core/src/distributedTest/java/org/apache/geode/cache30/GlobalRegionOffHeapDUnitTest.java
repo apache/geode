@@ -18,15 +18,13 @@ import static org.apache.geode.distributed.ConfigurationProperties.OFF_HEAP_MEMO
 
 import java.util.Properties;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.After;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.internal.cache.OffHeapTestUtil;
 import org.apache.geode.test.dunit.Invoke;
-import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.junit.categories.OffHeapTest;
 
 /**
@@ -35,29 +33,20 @@ import org.apache.geode.test.junit.categories.OffHeapTest;
  * @since Geode 1.0
  */
 @Category({OffHeapTest.class})
-@SuppressWarnings({"deprecation", "serial", "rawtypes", "unchecked"})
+@SuppressWarnings({"serial"})
 public class GlobalRegionOffHeapDUnitTest extends GlobalRegionDUnitTest {
 
-  @Override
-  public final void preTearDownAssertions() throws Exception {
-    SerializableRunnable checkOrphans = new SerializableRunnable() {
-
-      @Override
-      public void run() {
-        if (hasCache()) {
-          OffHeapTestUtil.checkOrphans(getCache());
-        }
+  @After
+  public final void tearDown() {
+    Invoke.invokeInEveryVM(() -> {
+      if (hasCache()) {
+        OffHeapTestUtil.checkOrphans(getCache());
       }
-    };
-    Invoke.invokeInEveryVM(checkOrphans);
-    checkOrphans.run();
-  }
+    });
 
-  @Ignore("TODO: DISABLED due to bug 47951")
-  @Override
-  @Test
-  public void testNBRegionInvalidationDuringGetInitialImage() throws Exception {
-    // DISABLED - bug 47951
+    if (hasCache()) {
+      OffHeapTestUtil.checkOrphans(getCache());
+    }
   }
 
   @Override
