@@ -1454,6 +1454,8 @@ public class Connection implements Runnable {
         }
         asyncClose(false);
         owner.removeAndCloseThreadOwnedSockets();
+      } else {
+        asyncClose(false);
       }
       releaseInputBuffer();
 
@@ -1593,20 +1595,21 @@ public class Connection implements Runnable {
             }
             return;
           }
+          if (!isHandShakeReader) {
+            processInputBuffer();
 
-          processInputBuffer();
-
-          if (!isReceiver && (handshakeRead || handshakeCancelled)) {
-            if (logger.isDebugEnabled()) {
-              if (handshakeRead) {
-                logger.debug("handshake has been read {}", this);
-              } else {
-                logger.debug("handshake has been cancelled {}", this);
+            if (!isReceiver && (handshakeRead || handshakeCancelled)) {
+              if (logger.isDebugEnabled()) {
+                if (handshakeRead) {
+                  logger.debug("handshake has been read {}", this);
+                } else {
+                  logger.debug("handshake has been cancelled {}", this);
+                }
               }
+              isHandShakeReader = true;
+              notifyHandshakeWaiter(false);
+              // Once we have read the handshake the reader can skip processing messages
             }
-            isHandShakeReader = true;
-            // Once we have read the handshake the reader can go away
-            break;
           }
         } catch (CancelException e) {
           if (logger.isDebugEnabled()) {
@@ -1660,10 +1663,8 @@ public class Connection implements Runnable {
         }
       }
     } finally {
-      if (!isHandShakeReader) {
-        synchronized (stateLock) {
-          connectionState = STATE_IDLE;
-        }
+      synchronized (stateLock) {
+        connectionState = STATE_IDLE;
       }
       if (logger.isDebugEnabled()) {
         logger.debug("readMessages terminated id={} from {} isHandshakeReader={}", conduitIdStr,
