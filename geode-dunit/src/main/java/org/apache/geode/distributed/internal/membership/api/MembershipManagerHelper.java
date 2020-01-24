@@ -72,6 +72,11 @@ public class MembershipManagerHelper {
     return getDistribution(sys).getView().getCoordinator();
   }
 
+  /** returns the current coordinator address */
+  public static DistributedMember getCreator(DistributedSystem sys) {
+    return getDistribution(sys).getView().getCreator();
+  }
+
   /** returns the current lead member address */
   public static DistributedMember getLeadMember(DistributedSystem sys) {
     return getDistribution(sys).getView().getLeadMember();
