@@ -205,9 +205,9 @@ public class ClientCQImpl extends CqQueryImpl implements ClientCQ {
               "Invoking CqListeners close() api for the CQ, CqName: {} Number of CqListeners: {}",
               cqName, cqListeners.length);
         }
-        for (int lCnt = 0; lCnt < cqListeners.length; lCnt++) {
+        for (CqListener cqListener : cqListeners) {
           try {
-            cqListeners[lCnt].close();
+            cqListener.close();
             // Handle client side exceptions.
           } catch (Exception ex) {
             logger.warn("Exception occurred in the CqListener of the CQ, CqName : {} Error : {}",
@@ -289,7 +289,7 @@ public class ClientCQImpl extends CqQueryImpl implements ClientCQ {
         }
       }
       // At this point we know queuedEvents is null and no one is adding to queuedEvents yet.
-      this.queuedEvents = new ConcurrentLinkedQueue<CqEventImpl>();
+      this.queuedEvents = new ConcurrentLinkedQueue<>();
     }
 
     if (CqQueryImpl.testHook != null) {
@@ -454,10 +454,10 @@ public class ClientCQImpl extends CqQueryImpl implements ClientCQ {
     if (!cqService.isServer()) {
       connected = true;
       CqListener[] cqListeners = getCqAttributes().getCqListeners();
-      for (int lCnt = 0; lCnt < cqListeners.length; lCnt++) {
-        if (cqListeners[lCnt] != null) {
-          if (cqListeners[lCnt] instanceof CqStatusListener) {
-            CqStatusListener listener = (CqStatusListener) cqListeners[lCnt];
+      for (CqListener cqListener : cqListeners) {
+        if (cqListener != null) {
+          if (cqListener instanceof CqStatusListener) {
+            CqStatusListener listener = (CqStatusListener) cqListener;
             listener.onCqConnected();
           }
         }

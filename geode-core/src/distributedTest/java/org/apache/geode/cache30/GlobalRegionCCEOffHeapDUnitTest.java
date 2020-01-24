@@ -18,6 +18,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.OFF_HEAP_MEMO
 
 import java.util.Properties;
 
+import org.junit.After;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
@@ -33,11 +34,11 @@ import org.apache.geode.test.junit.categories.OffHeapTest;
  * @since Geode 1.0
  */
 @Category({OffHeapTest.class})
-@SuppressWarnings({"deprecation", "serial"})
+@SuppressWarnings({"serial"})
 public class GlobalRegionCCEOffHeapDUnitTest extends GlobalRegionCCEDUnitTest {
 
-  @Override
-  public final void preTearDownAssertions() throws Exception {
+  @After
+  public void tearDown() throws Exception {
     SerializableRunnable checkOrphans = new SerializableRunnable() {
 
       @Override
@@ -61,7 +62,7 @@ public class GlobalRegionCCEOffHeapDUnitTest extends GlobalRegionCCEDUnitTest {
   private <K, V> RegionAttributes<K, V> getBasicAttributes(
       RegionAttributes<K, V> regionAttributes) {
     AttributesFactory<K, V> factory = new AttributesFactory<>(regionAttributes);
-    if (!regionAttributes.getDataPolicy().isEmpty()) {
+    if (!regionAttributes.getDataPolicy().withStorage()) {
       factory.setOffHeap(true);
     }
     return factory.create();

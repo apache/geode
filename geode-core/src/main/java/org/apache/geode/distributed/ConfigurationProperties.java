@@ -1175,10 +1175,15 @@ public interface ConfigurationProperties {
    * The static String definition of the <i>"locators"</i> property <a name="locators"/a>
    * <p>
    * <U>Description</U>: A list of locators (host and port) that are used to find other member of
-   * the distributed system. This attribute's value is a possibly empty comma separated list. Each
-   * element must be of the form "hostName[portNum]" and may be of the form "host:bindAddress[port]"
-   * if a specific bind address is to be used on the locator machine. The square brackets around the
-   * portNum are literal character and must be specified.
+   * the distributed system. This attribute's value may be empty or contain one or more comma
+   * separated elements. Each element must be of the form "hostname[portNumber]" or
+   * "hostname:bindAddress[portNumber]" if a specific bind address is to be used on the locator
+   * machine. The square brackets around the portNumber are literal characters and must be
+   * specified. The hostname may be a name from DNS or the local hosts file or a literal IP address.
+   * <p>
+   * For example, "locator1[10334]" specifies a locator running on "locator1" on port 10334, while
+   * "locator1[10334],locator2:204.44.44.1[11336]" specifies two locators; one running on "locator1"
+   * on port 10334, and another running on "locator2" and bound to 204.44.44.1 on port 11336.
    * <p>
    * Since IPv6 bind addresses may contain colons, you may use an at symbol instead of a colon to
    * separate the host name and bind address. For example, "server1@fdf0:76cf:a0ed:9449::5[12233]"
@@ -1186,7 +1191,6 @@ public interface ConfigurationProperties {
    * <p>
    * If "locators" is empty then this distributed system will be isolated from all other GemFire
    * processes.
-   * <p>
    * <p>
    * <U>Default</U>: ""
    */
