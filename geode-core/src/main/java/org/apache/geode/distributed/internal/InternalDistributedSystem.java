@@ -198,6 +198,7 @@ public class InternalDistributedSystem extends DistributedSystem
 
   private final AtomicReference<ClusterAlertMessaging> clusterAlertMessaging =
       new AtomicReference<>();
+  private MembershipLocator<InternalDistributedMember> membershipLocator;
 
   /**
    * If the experimental multiple-system feature is enabled, always create a new system.
@@ -673,6 +674,11 @@ public class InternalDistributedSystem extends DistributedSystem
   private void initialize(SecurityManager securityManager, PostProcessor postProcessor,
       MetricsService.Builder metricsServiceBuilder,
       final MembershipLocator<InternalDistributedMember> membershipLocatorArg) {
+
+    if (membershipLocatorArg != null) {
+      membershipLocator = membershipLocatorArg;
+    }
+
     if (originalConfig.getLocators().equals("")) {
       if (originalConfig.getMcastPort() != 0) {
         throw new GemFireConfigException("The " + LOCATORS + " attribute can not be empty when the "
@@ -760,9 +766,9 @@ public class InternalDistributedSystem extends DistributedSystem
         lockMemory(avail, size);
       }
 
-      final MembershipLocator<InternalDistributedMember> membershipLocator;
+      final MembershipLocator<InternalDistributedMember> membershipLocatorX;
       try {
-        membershipLocator = startInitLocator(membershipLocatorArg);
+        membershipLocatorX = startInitLocator(membershipLocatorArg);
       } catch (InterruptedException e) {
         throw new SystemConnectException("Startup has been interrupted", e);
       }
@@ -773,7 +779,7 @@ public class InternalDistributedSystem extends DistributedSystem
 
       if (!isLoner) {
         try {
-          dm = ClusterDistributionManager.create(this, membershipLocator);
+          dm = ClusterDistributionManager.create(this, membershipLocatorX);
           // fix bug #46324
           if (InternalLocator.hasLocator()) {
             InternalLocator internalLocator = InternalLocator.getLocator();
@@ -2615,7 +2621,8 @@ public class InternalDistributedSystem extends DistributedSystem
 
           try {
 
-            newDS = connectInternal(configProps, null, metricsService.getRebuilder());
+            newDS = connectInternal(configProps, null, metricsService.getRebuilder(),
+                membershipLocator);
 
           } catch (CancelException e) {
             if (isReconnectCancelled()) {

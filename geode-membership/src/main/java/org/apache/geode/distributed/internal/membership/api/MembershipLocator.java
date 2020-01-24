@@ -41,7 +41,7 @@ public interface MembershipLocator<ID extends MemberIdentifier> {
 
   SocketAddress getBindAddress();
 
-  void setMembership(final Membership<ID> membership);
+  void setMembership(Membership<ID> membership);
 
   void addHandler(Class<?> clazz, TcpHandler handler);
 
