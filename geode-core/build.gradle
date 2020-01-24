@@ -255,6 +255,7 @@ dependencies {
 
   //JNA is used for locking memory and preallocating disk files.
   implementation('net.java.dev.jna:jna')
+  implementation('net.java.dev.jna:jna-platform')
 
   //JOptSimple is used by gfsh. A couple of usages have leaked into DiskStore
   implementation('net.sf.jopt-simple:jopt-simple')
