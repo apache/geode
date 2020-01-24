@@ -56,7 +56,7 @@ public class ParallelGatewaySenderAlertThresholdDUnitTest extends WANTestBase {
     vm7.invoke(createSenderAlertThresholdWithoutDiskStoreRunnable);
 
     SerializableRunnableIF createPartitionedRegionRunnableln =
-        () -> WANTestBase.createPartitionedRegion(getTestMethodName(), "ln", 1, 100, isOffHeap());
+        () -> WANTestBase.createPartitionedRegion(getUniqueName(), "ln", 1, 100, isOffHeap());
     vm4.invoke(createPartitionedRegionRunnableln);
     vm5.invoke(createPartitionedRegionRunnableln);
     vm6.invoke(createPartitionedRegionRunnableln);
@@ -70,12 +70,12 @@ public class ParallelGatewaySenderAlertThresholdDUnitTest extends WANTestBase {
     vm7.invoke(() -> WANTestBase.pauseSender("ln"));
 
     SerializableRunnableIF createPartitionedRegionRunnable =
-        () -> WANTestBase.createPartitionedRegion(getTestMethodName(), null, 1, 100, isOffHeap());
+        () -> WANTestBase.createPartitionedRegion(getUniqueName(), null, 1, 100, isOffHeap());
     vm2.invoke(createPartitionedRegionRunnable);
     vm3.invoke(createPartitionedRegionRunnable);
 
     int numEventPuts = 50;
-    vm4.invoke(() -> WANTestBase.doHeavyPuts(getTestMethodName(), numEventPuts));
+    vm4.invoke(() -> WANTestBase.doHeavyPuts(getUniqueName(), numEventPuts));
 
 
     vm4.invoke(() -> WANTestBase.resumeSender("ln"));
@@ -84,7 +84,7 @@ public class ParallelGatewaySenderAlertThresholdDUnitTest extends WANTestBase {
     vm7.invoke(() -> WANTestBase.resumeSender("ln"));
 
     SerializableRunnableIF serializableRunnableIF =
-        () -> WANTestBase.validateRegionSize(getTestMethodName(), 50, 240000);
+        () -> WANTestBase.validateRegionSize(getUniqueName(), 50);
     vm2.invoke(serializableRunnableIF);
     vm3.invoke(serializableRunnableIF);
 
@@ -142,7 +142,7 @@ public class ParallelGatewaySenderAlertThresholdDUnitTest extends WANTestBase {
     vm7.invoke(createSenderAlertThresholdWithoutDiskStoreRunnable);
 
     SerializableRunnableIF createPartitionedRegionRunnableln =
-        () -> WANTestBase.createPartitionedRegion(getTestMethodName(), "ln", 1, 100, isOffHeap());
+        () -> WANTestBase.createPartitionedRegion(getUniqueName(), "ln", 1, 100, isOffHeap());
     vm4.invoke(createPartitionedRegionRunnableln);
     vm5.invoke(createPartitionedRegionRunnableln);
     vm6.invoke(createPartitionedRegionRunnableln);
@@ -151,15 +151,15 @@ public class ParallelGatewaySenderAlertThresholdDUnitTest extends WANTestBase {
     startSenderInVMs("ln", vm4, vm5, vm6, vm7);
 
     SerializableRunnableIF createPartitionedRegionRunnable =
-        () -> WANTestBase.createPartitionedRegion(getTestMethodName(), null, 1, 100, isOffHeap());
+        () -> WANTestBase.createPartitionedRegion(getUniqueName(), null, 1, 100, isOffHeap());
     vm2.invoke(createPartitionedRegionRunnable);
     vm3.invoke(createPartitionedRegionRunnable);
 
     int numEventPuts = 50;
-    vm4.invoke(() -> WANTestBase.doHeavyPuts(getTestMethodName(), numEventPuts));
+    vm4.invoke(() -> WANTestBase.doHeavyPuts(getUniqueName(), numEventPuts));
 
     SerializableRunnableIF serializableRunnableIF =
-        () -> WANTestBase.validateRegionSize(getTestMethodName(), 50, 240000);
+        () -> WANTestBase.validateRegionSize(getUniqueName(), 50);
     vm2.invoke(serializableRunnableIF);
     vm3.invoke(serializableRunnableIF);
 
