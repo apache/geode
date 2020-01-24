@@ -77,21 +77,21 @@ public abstract class AbstractExecutor implements Executor {
   }
 
   /**
-   * Checks if the given key is associated with the passed data type. If there is a mismatch, a
+   * Checks if the given key is associated with the passed expectedDataType. If there is a mismatch, a
    * {@link RuntimeException} is thrown
    *
    * @param key Key to check
-   * @param type Type to check to
+   * @param expectedDataType Type to check to
    * @param context context
    */
-  protected void checkDataType(ByteArrayWrapper key, RedisDataType type,
+  protected void checkDataType(ByteArrayWrapper key, RedisDataType expectedDataType,
       ExecutionHandlerContext context) {
     RedisDataType currentType = context.getRegionProvider().getRedisDataType(key);
     if (currentType == null)
       return;
     if (currentType == RedisDataType.REDIS_PROTECTED)
       throw new RedisDataTypeMismatchException("The key name \"" + key + "\" is protected");
-    if (currentType != type)
+    if (currentType != expectedDataType)
       throw new RedisDataTypeMismatchException(
           "The key name \"" + key + "\" is already used by a " + currentType.toString());
   }

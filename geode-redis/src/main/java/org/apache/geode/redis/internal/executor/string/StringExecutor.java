@@ -22,24 +22,31 @@ import org.apache.geode.redis.internal.executor.AbstractExecutor;
 
 public abstract class StringExecutor extends AbstractExecutor {
 
-  protected void checkAndSetDataType(ByteArrayWrapper key, ExecutionHandlerContext context) {
-    Object oldVal = context.getRegionProvider().metaPutIfAbsent(key, RedisDataType.REDIS_STRING);
-    if (oldVal == RedisDataType.REDIS_PROTECTED)
-      throw new RedisDataTypeMismatchException("The key name \"" + key + "\" is protected");
-    if (oldVal != null && oldVal != RedisDataType.REDIS_STRING)
-      throw new RedisDataTypeMismatchException(
-          "The key name \"" + key + "\" is already used by a " + oldVal.toString());
+  protected void checkDataType(ByteArrayWrapper key, ExecutionHandlerContext context) {
+    super.checkDataType(key, RedisDataType.REDIS_STRING, context);
   }
 
-  protected void checkDataType(ByteArrayWrapper key, ExecutionHandlerContext context) {
-    RedisDataType currentType = context.getRegionProvider().getRedisDataType(key);
-    if (currentType == null)
-      return;
-    if (currentType == RedisDataType.REDIS_PROTECTED)
+  protected void checkAndSetDataType(ByteArrayWrapper key, ExecutionHandlerContext context) {
+    RedisDataType dataTypeOfOldValue = context.getRegionProvider().metaPutIfAbsent(key, RedisDataType.REDIS_STRING);
+    if (!isValidDataType(dataTypeOfOldValue)) {
+      throwDataTypeException(key, dataTypeOfOldValue);
+    }
+  }
+
+  private boolean isValidDataType(RedisDataType dataType) {
+    return isKeyUnused(dataType) || dataType == RedisDataType.REDIS_STRING;
+  }
+
+  private boolean isKeyUnused(RedisDataType dataType) {
+    return dataType == null;
+  }
+
+  private void throwDataTypeException(ByteArrayWrapper key, RedisDataType dataType) {
+    if (dataType == RedisDataType.REDIS_PROTECTED)
       throw new RedisDataTypeMismatchException("The key name \"" + key + "\" is protected");
-    if (currentType != RedisDataType.REDIS_STRING)
+    else
       throw new RedisDataTypeMismatchException(
-          "The key name \"" + key + "\" is already used by a " + currentType.toString());
+        "The key name \"" + key + "\" is already used by a " + dataType.toString());
   }
 
 }
