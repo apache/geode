@@ -66,4 +66,5 @@ PACKER_LOG=1 ${PACKER} build ${PACKER_ARGS} \
   --var "gcp_network=${GCP_NETWORK}" \
   --var "gcp_subnetwork=${GCP_SUBNETWORK}" \
   --var "use_internal_ip=${INTERNAL}" \
+  --var "packer_ttl=$(($(date +%s) + 60 * 60 * 12))" \
   windows-packer.json

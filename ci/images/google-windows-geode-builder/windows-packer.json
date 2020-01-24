@@ -7,7 +7,8 @@
     "gcp_network": "default",
     "gcp_subnetwork": "default",
     "use_internal_ip": "false",
-    "java_build_version": "8"
+    "java_build_version": "8",
+    "packer_ttl": ""
   },
   "builders": [
     {
@@ -31,7 +32,11 @@
       "zone": "us-central1-a",
       "tags": ["packer"],
       "omit_external_ip": false,
-      "use_internal_ip": "{{user `use_internal_ip`}}"
+      "use_internal_ip": "{{user `use_internal_ip`}}",
+      "labels": {
+        "time-to-live": "{{user `packer_ttl`}}",
+        "instance_type": "packer"
+      }
     }
   ],
   "provisioners": [
