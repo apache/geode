@@ -16,6 +16,7 @@
 package org.apache.geode.management.internal.operation;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.ArgumentMatchers.same;
@@ -30,6 +31,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
+import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.management.api.ClusterManagementOperation;
 import org.apache.geode.management.runtime.OperationResult;
@@ -37,8 +39,9 @@ import org.apache.geode.management.runtime.OperationResult;
 public class RegionOperationHistoryPersistenceServiceTest {
   private OperationHistoryPersistenceService historyPersistenceService;
   private Supplier<String> uniqueIdSupplier;
-  private Region<String, OperationState> region;
+  private Region<String, OperationState<ClusterManagementOperation<OperationResult>, OperationResult>> region;
   private Supplier<Region<String, OperationState>> regionSupplier;
+  private Cache cache;
 
   @Before
   public void init() {
@@ -47,6 +50,7 @@ public class RegionOperationHistoryPersistenceServiceTest {
     region = mock(Region.class);
     historyPersistenceService =
         new RegionOperationHistoryPersistenceService(uniqueIdSupplier, region);
+    cache = mock(Cache.class);
   }
 
   @Test
@@ -118,5 +122,12 @@ public class RegionOperationHistoryPersistenceServiceTest {
     OperationState operationState = historyPersistenceService.get(opId);
 
     assertThat(operationState).isSameAs(recordedOperationState);
+  }
+
+  @Test
+  public void publicConstructorCreatesRegion() {
+    RegionOperationHistoryPersistenceService regionOperationHistoryPersistenceService = new RegionOperationHistoryPersistenceService(cache);
+
+    verify(cache).getRegion(eq(RegionOperationHistoryPersistenceService.OPERATION_HISTORY_REGION_NAME));
   }
 }

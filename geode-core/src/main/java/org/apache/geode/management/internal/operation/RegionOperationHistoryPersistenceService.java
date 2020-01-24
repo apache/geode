@@ -21,6 +21,7 @@ import java.util.UUID;
 import java.util.function.Supplier;
 
 import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.management.api.ClusterManagementOperation;
 import org.apache.geode.management.runtime.OperationResult;
@@ -28,18 +29,29 @@ import org.apache.geode.management.runtime.OperationResult;
 public class RegionOperationHistoryPersistenceService
     implements OperationHistoryPersistenceService {
   private final Supplier<String> uniqueIdSupplier;
-  private final Region<String, OperationState> region;
+  private final Region<String, OperationState<ClusterManagementOperation<OperationResult>, OperationResult>>
+      region;
+
+  public static final String OPERATION_HISTORY_REGION_NAME = "OperationHistoryRegion";
 
   @VisibleForTesting
   RegionOperationHistoryPersistenceService(
       Supplier<String> uniqueIdSupplier,
-      Region<String, OperationState> region) {
+      Region<String, OperationState<ClusterManagementOperation<OperationResult>, OperationResult>> region) {
     this.uniqueIdSupplier = uniqueIdSupplier;
     this.region = region;
   }
 
-  public RegionOperationHistoryPersistenceService() {
-    this(() -> UUID.randomUUID().toString(), null);
+  public RegionOperationHistoryPersistenceService(Cache cache) {
+    this(() -> UUID.randomUUID().toString(), getRegion(cache));
+  }
+
+  private static Region<String, OperationState<ClusterManagementOperation<OperationResult>, OperationResult>> getRegion(
+      Cache cache) {
+    Region<String, OperationState<ClusterManagementOperation<OperationResult>, OperationResult>>
+        region = cache.getRegion(OPERATION_HISTORY_REGION_NAME);
+
+    return region;
   }
 
   @Override
@@ -55,7 +67,7 @@ public class RegionOperationHistoryPersistenceService
   @Override
   public <A extends ClusterManagementOperation<V>, V extends OperationResult> OperationState<A, V> get(
       String opId) {
-    return region.get(opId);
+    return (OperationState<A, V>) region.get(opId);
   }
 
   @Override
@@ -65,7 +77,9 @@ public class RegionOperationHistoryPersistenceService
 
   @Override
   public <V extends OperationResult> void recordEnd(String opId, V result, Throwable exception) {
-    OperationState operationState = region.get(opId);
+    OperationState<ClusterManagementOperation<OperationResult>, OperationResult>
+        operationState =
+        region.get(opId);
     operationState.setOperationEnd(new Date(), result, exception);
     region.put(opId, operationState);
   }
