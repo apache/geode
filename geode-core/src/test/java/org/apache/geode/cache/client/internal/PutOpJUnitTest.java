@@ -45,17 +45,10 @@ public class PutOpJUnitTest {
     when(entry.getVersionStamp()).thenReturn(versionStamp);
   }
 
-  private EntryEventImpl getEntryEvent() {
-    EntryEventImpl entryEvent = mock(EntryEventImpl.class);
-    when(entryEvent.getEventId()).thenReturn(new EventID());
-    return entryEvent;
-  }
-
   @Test
   public void regularDeltaPutShouldNotRetryFlagInMessage() {
     PutOp.PutOpImpl putOp = new PutOp.PutOpImpl("testRegion", "testKey", "testValue", new byte[10],
-        getEntryEvent(), Operation.UPDATE,
-        false, false, null, false, false);
+        event, Operation.UPDATE, false, false, null, false, false);
     assertFalse(putOp.getMessage().isRetry());
   }
 
@@ -63,16 +56,14 @@ public class PutOpJUnitTest {
   public void regularPutShouldNotRetryFlagInMessage() {
 
     PutOp.PutOpImpl putOp = new PutOp.PutOpImpl("testRegion", "testKey", "testValue", null,
-        getEntryEvent(), Operation.UPDATE,
-        false, false, null, false, false);
+        event, Operation.UPDATE, false, false, null, false, false);
     assertFalse(putOp.getMessage().isRetry());
   }
 
   @Test
   public void failedDeltaPutShouldSetRetryFlagInMessage() {
     PutOp.PutOpImpl putOp = new PutOp.PutOpImpl("testRegion", "testKey", "testValue", new byte[10],
-        getEntryEvent(), Operation.UPDATE,
-        false, false, null, true, false);
+        event, Operation.UPDATE, false, false, null, true, false);
     assertTrue(putOp.getMessage().isRetry());
   }
 

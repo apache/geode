@@ -315,7 +315,7 @@ public class PutOp {
         return;
       }
       VersionStamp versionStamp = regionEntry.getVersionStamp();
-      if (deltaSent && versionTag.getEntryVersion() != versionStamp.getEntryVersion() + 1) {
+      if (deltaSent && versionTag.getEntryVersion() > versionStamp.getEntryVersion() + 1) {
         // Delta can't be applied, need to get full value.
         if (logger.isDebugEnabled()) {
           logger.debug("Version is out of order. Need to get from server to perform delta update.");
