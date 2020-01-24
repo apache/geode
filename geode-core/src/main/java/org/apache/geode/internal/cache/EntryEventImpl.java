@@ -1675,7 +1675,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     this.re = re;
   }
 
-  RegionEntry getRegionEntry() {
+  public RegionEntry getRegionEntry() {
     return this.re;
   }
 
