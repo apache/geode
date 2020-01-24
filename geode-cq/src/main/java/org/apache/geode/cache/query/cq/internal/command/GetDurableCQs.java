@@ -16,7 +16,6 @@ package org.apache.geode.cache.query.cq.internal.command;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.geode.cache.query.CqException;
@@ -87,8 +86,7 @@ public class GetDurableCQs extends BaseCQCommand {
 
       List durableCqList = new ArrayList(MAXIMUM_CHUNK_SIZE);
       final boolean isTraceEnabled = logger.isTraceEnabled();
-      for (Iterator<String> it = durableCqs.iterator(); it.hasNext();) {
-        Object durableCqName = it.next();
+      for (String durableCqName : durableCqs) {
         durableCqList.add(durableCqName);
         if (isTraceEnabled) {
           logger.trace("{}: getDurableCqsResponse <{}>; list size was {}",

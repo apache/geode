@@ -102,6 +102,7 @@ public class CqServiceImpl implements CqService {
   public static boolean EXECUTE_QUERY_DURING_INIT = Boolean.valueOf(System
       .getProperty(GeodeGlossary.GEMFIRE_PREFIX + "cq.EXECUTE_QUERY_DURING_INIT", "true"));
 
+
   private static final String CQ_NAME_PREFIX = "GfCq";
 
   private final InternalCache cache;
@@ -421,8 +422,8 @@ public class CqServiceImpl implements CqService {
     }
 
     ArrayList<InternalCqQuery> cQueryList = new ArrayList<>();
-    for (int cqCnt = 0; cqCnt < cqNames.length; cqCnt++) {
-      InternalCqQuery cq = getCq(cqNames[cqCnt]);
+    for (String cqName : cqNames) {
+      InternalCqQuery cq = getCq(cqName);
       if (cq != null) {
         cQueryList.add(cq);
       }
@@ -944,7 +945,7 @@ public class CqServiceImpl implements CqService {
         Integer cqOp = entry.getValue();
 
         // If Region destroy event, close the cq.
-        if (cqOp.intValue() == MessageType.DESTROY_REGION) {
+        if (cqOp == MessageType.DESTROY_REGION) {
           // The close will also invoke the listeners close().
           try {
             cQuery.close(false);
@@ -1016,17 +1017,17 @@ public class CqServiceImpl implements CqService {
           cqListeners.length, cqEvent);
     }
 
-    for (int lCnt = 0; lCnt < cqListeners.length; lCnt++) {
+    for (CqListener cqListener : cqListeners) {
       try {
         // Check if the listener is not null, it could have been changed/reset
         // by the CqAttributeMutator.
-        if (cqListeners[lCnt] != null) {
+        if (cqListener != null) {
           cQuery.getVsdStats().incNumCqListenerInvocations();
           try {
             if (cqEvent.getThrowable() != null) {
-              cqListeners[lCnt].onError(cqEvent);
+              cqListener.onError(cqEvent);
             } else {
-              cqListeners[lCnt].onEvent(cqEvent);
+              cqListener.onEvent(cqEvent);
             }
           } catch (InvalidDeltaException ide) {
             if (isDebugEnabled) {
@@ -1052,9 +1053,9 @@ public class CqServiceImpl implements CqService {
                   cqEvent.getQueryOperation(), cqEvent.getKey(), newVal, cqEvent.getDeltaValue(),
                   cqEvent.getQueueManager(), cqEvent.getEventID());
               if (cqEvent.getThrowable() != null) {
-                cqListeners[lCnt].onError(cqEvent);
+                cqListener.onError(cqEvent);
               } else {
-                cqListeners[lCnt].onEvent(cqEvent);
+                cqListener.onEvent(cqEvent);
               }
               if (fullValue != null) {
                 fullValue[0] = newVal;
@@ -1105,11 +1106,11 @@ public class CqServiceImpl implements CqService {
           cqListeners.length);
     }
 
-    for (int lCnt = 0; lCnt < cqListeners.length; lCnt++) {
+    for (CqListener cqListener : cqListeners) {
       try {
-        if (cqListeners[lCnt] != null) {
-          if (cqListeners[lCnt] instanceof CqStatusListener) {
-            CqStatusListener listener = (CqStatusListener) cqListeners[lCnt];
+        if (cqListener != null) {
+          if (cqListener instanceof CqStatusListener) {
+            CqStatusListener listener = (CqStatusListener) cqListener;
             if (connected) {
               listener.onCqConnected();
             } else {
@@ -1309,10 +1310,9 @@ public class CqServiceImpl implements CqService {
       }
 
       HashMap<Long, Integer> cqInfo = new HashMap<>();
-      Iterator cqIter = cqs.entrySet().iterator();
 
-      while (cqIter.hasNext()) {
-        Map.Entry cqEntry = (Map.Entry) cqIter.next();
+      for (Object o : cqs.entrySet()) {
+        Map.Entry cqEntry = (Map.Entry) o;
         ServerCQImpl cQuery = (ServerCQImpl) cqEntry.getValue();
         b_cqResults_newValue = false;
         b_cqResults_oldValue = false;
@@ -1337,10 +1337,10 @@ public class CqServiceImpl implements CqService {
             continue;
           }
           // Update the Cache Results for this CQ.
-          if (cqEvent.intValue() == MessageType.LOCAL_CREATE
-              || cqEvent.intValue() == MessageType.LOCAL_UPDATE) {
+          if (cqEvent == MessageType.LOCAL_CREATE
+              || cqEvent == MessageType.LOCAL_UPDATE) {
             cQuery.addToCqResultKeys(eventKey);
-          } else if (cqEvent.intValue() == MessageType.LOCAL_DESTROY) {
+          } else if (cqEvent == MessageType.LOCAL_DESTROY) {
             cQuery.markAsDestroyedInCqResultKeys(eventKey);
           }
         } else {
@@ -1448,9 +1448,8 @@ public class CqServiceImpl implements CqService {
           String query = cQuery.getQueryString();
           Set matchingCqs = matchingCqMap.get(query);
           if (matchingCqs != null) {
-            Iterator iter = matchingCqs.iterator();
-            while (iter.hasNext()) {
-              String matchingCqName = (String) iter.next();
+            for (Object matchingCq : matchingCqs) {
+              String matchingCqName = (String) matchingCq;
               if (!matchingCqName.equals(cqName)) {
                 matchedCqs.put(matchingCqName, cqEvent);
                 if (isDebugEnabled) {
