@@ -44,5 +44,5 @@
       "execute_command": "sudo -u geode -S sh -c '{{ .Vars }} {{ .Path }}'",
       "script": "scripts/cache_dependencies.sh"
     }
-  ],
+  ]
 }
