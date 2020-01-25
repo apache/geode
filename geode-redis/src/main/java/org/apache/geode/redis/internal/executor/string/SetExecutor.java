@@ -17,10 +17,7 @@ package org.apache.geode.redis.internal.executor.string;
 import java.util.List;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.redis.internal.ByteArrayWrapper;
-import org.apache.geode.redis.internal.Coder;
-import org.apache.geode.redis.internal.Command;
-import org.apache.geode.redis.internal.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.*;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 
@@ -42,7 +39,7 @@ public class SetExecutor extends StringExecutor {
     }
 
     ByteArrayWrapper key = command.getKey();
-    checkDataType(key, context);
+    checkDataType(key, RedisDataType.REDIS_STRING, context);
     byte[] value = commandElems.get(VALUE_INDEX);
     ByteArrayWrapper valueWrapper = new ByteArrayWrapper(value);
 

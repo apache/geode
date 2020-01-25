@@ -17,36 +17,11 @@ package org.apache.geode.redis.internal.executor.string;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisDataType;
-import org.apache.geode.redis.internal.RedisDataTypeMismatchException;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 
 public abstract class StringExecutor extends AbstractExecutor {
 
-  protected void checkDataType(ByteArrayWrapper key, ExecutionHandlerContext context) {
-    super.checkDataType(key, RedisDataType.REDIS_STRING, context);
-  }
-
   protected void checkAndSetDataType(ByteArrayWrapper key, ExecutionHandlerContext context) {
-    RedisDataType dataTypeOfOldValue = context.getRegionProvider().metaPutIfAbsent(key, RedisDataType.REDIS_STRING);
-    if (!isValidDataType(dataTypeOfOldValue)) {
-      throwDataTypeException(key, dataTypeOfOldValue);
-    }
+    context.getRegionProvider().addToMetadataRegion(key, RedisDataType.REDIS_STRING);
   }
-
-  private boolean isValidDataType(RedisDataType dataType) {
-    return isKeyUnused(dataType) || dataType == RedisDataType.REDIS_STRING;
-  }
-
-  private boolean isKeyUnused(RedisDataType dataType) {
-    return dataType == null;
-  }
-
-  private void throwDataTypeException(ByteArrayWrapper key, RedisDataType dataType) {
-    if (dataType == RedisDataType.REDIS_PROTECTED)
-      throw new RedisDataTypeMismatchException("The key name \"" + key + "\" is protected");
-    else
-      throw new RedisDataTypeMismatchException(
-        "The key name \"" + key + "\" is already used by a " + dataType.toString());
-  }
-
 }

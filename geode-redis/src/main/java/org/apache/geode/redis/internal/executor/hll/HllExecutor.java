@@ -27,11 +27,7 @@ public abstract class HllExecutor extends AbstractExecutor {
   public static final Integer DEFAULT_HLL_SPARSE = 32;
 
   protected void checkAndSetDataType(ByteArrayWrapper key, ExecutionHandlerContext context) {
-    Object oldVal = context.getRegionProvider().metaPutIfAbsent(key, RedisDataType.REDIS_HLL);
-    if (oldVal == RedisDataType.REDIS_PROTECTED)
-      throw new RedisDataTypeMismatchException("The key name \"" + key + "\" is protected");
-    if (oldVal != null && oldVal != RedisDataType.REDIS_HLL)
-      throw new RedisDataTypeMismatchException(
-          "The key name \"" + key + "\" is already used by a " + oldVal.toString());
+    context.getRegionProvider().addToMetadataRegion(key, RedisDataType.REDIS_HLL);
+
   }
 }

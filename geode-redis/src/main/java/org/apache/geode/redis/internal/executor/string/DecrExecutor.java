@@ -59,7 +59,6 @@ public class DecrExecutor extends StringExecutor {
     if (valueWrapper == null) {
       byte[] newValue = INIT_VALUE_BYTES;
       r.put(key, new ByteArrayWrapper(newValue));
-      rC.metaPut(key, RedisDataType.REDIS_STRING);
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), INIT_VALUE_INT));
       return;
     }

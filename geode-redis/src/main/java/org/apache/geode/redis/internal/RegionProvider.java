@@ -128,16 +128,8 @@ public class RegionProvider implements Closeable {
     return this.redisMetaRegion.remove(key.toString()) != null;
   }
 
-  public RedisDataType metaPutIfAbsent(ByteArrayWrapper key, RedisDataType value) {
+  private RedisDataType metaPutIfAbsent(ByteArrayWrapper key, RedisDataType value) {
     return this.redisMetaRegion.putIfAbsent(key.toString(), value);
-  }
-
-  public RedisDataType metaPut(ByteArrayWrapper key, RedisDataType value) {
-    return this.redisMetaRegion.put(key.toString(), value);
-  }
-
-  public RedisDataType metaGet(ByteArrayWrapper key) {
-    return this.redisMetaRegion.get(key.toString());
   }
 
   public Region<?, ?> getRegion(ByteArrayWrapper key) {
@@ -306,10 +298,7 @@ public class RegionProvider implements Closeable {
             } while (concurrentCreateDestroyException != null);
             this.regions.put(key, r);
             if (addToMeta) {
-              RedisDataType existingType = metaPutIfAbsent(key, type);
-              if (existingType != null && existingType != type)
-                throw new RedisDataTypeMismatchException(
-                    "The key name \"" + key + "\" is already used by a " + existingType.toString());
+              addToMetadataRegion(key, type);
             }
           } finally {
             if (hasTransaction)
@@ -433,13 +422,38 @@ public class RegionProvider implements Closeable {
    */
   protected void checkDataType(ByteArrayWrapper key, RedisDataType type) {
     RedisDataType currentType = redisMetaRegion.get(key.toString());
-    if (currentType == null)
-      return;
-    if (currentType == RedisDataType.REDIS_PROTECTED)
+    if (!isValidDataType(currentType, type)) {
+      throwDataTypeException(key, currentType);
+    }
+  }
+
+  /**
+   * Checks if the givenKey is associated with the passed data type. If an entry doesn't exist,
+   * store the key:datatype association in the metadataRegion
+   * @param key
+   * @param type
+   */
+  public void addToMetadataRegion(ByteArrayWrapper key, RedisDataType type) {
+    RedisDataType existingType = metaPutIfAbsent(key, type);
+    if (!isValidDataType(existingType, type)) {
+      throwDataTypeException(key, existingType);
+    }
+  }
+
+  private boolean isValidDataType(RedisDataType actualDataType, RedisDataType expectedDataType) {
+    return isKeyUnused(actualDataType) || actualDataType == expectedDataType;
+  }
+
+  private boolean isKeyUnused(RedisDataType dataType) {
+    return dataType == null;
+  }
+
+  private void throwDataTypeException(ByteArrayWrapper key, RedisDataType dataType) {
+    if (dataType == RedisDataType.REDIS_PROTECTED)
       throw new RedisDataTypeMismatchException("The key name \"" + key + "\" is protected");
-    if (currentType != type)
+    else
       throw new RedisDataTypeMismatchException(
-          "The key name \"" + key + "\" is already used by a " + currentType.toString());
+              "The key name \"" + key + "\" is already used by a " + dataType.toString());
   }
 
   public boolean regionExists(ByteArrayWrapper key) {
