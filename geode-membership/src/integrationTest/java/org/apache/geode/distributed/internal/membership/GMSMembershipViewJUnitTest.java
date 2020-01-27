@@ -97,8 +97,9 @@ public class GMSMembershipViewJUnitTest {
     assertFalse(view.shouldBeCoordinator(members.get(1)));
     assertTrue(view.shouldBeCoordinator(members.get(0)));
     System.out.println("view is " + view + " and members are " + members);
-    assertEquals(members.get(1),
+    assertEquals(members.get(numMembers - 1),
         view.getCoordinator(Collections.singletonList(members.get(0))));
+
     members.get(numMembers - 1).setPreferredForCoordinator(false);
     assertEquals(members.get(1), view.getCoordinator(Collections.singletonList(members.get(0))));
 
