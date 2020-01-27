@@ -14,7 +14,6 @@
  */
 package org.apache.geode.distributed.internal.membership.gms;
 
-import static org.apache.geode.distributed.internal.membership.adapter.TcpSocketCreatorAdapter.asTcpSocketCreator;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doAnswer;
@@ -44,6 +43,7 @@ import org.apache.geode.distributed.internal.membership.api.MembershipLocator;
 import org.apache.geode.distributed.internal.membership.api.MembershipLocatorBuilder;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
+import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreatorImpl;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
@@ -66,12 +66,12 @@ public class MembershipOnlyTest {
     dsfidSerializer = new DSFIDSerializerFactory().create();
 
     // TODO - using geode-core socket creator
-    socketCreator = asTcpSocketCreator(new SocketCreator(new SSLConfig.Builder().build()));
+    socketCreator = new SocketCreator(new SSLConfig.Builder().build());
 
     final Supplier<ExecutorService> executorServiceSupplier =
         () -> LoggingExecutors.newCachedThreadPool("membership", false);
     membershipLocator = MembershipLocatorBuilder.<MemberIdentifierImpl>newLocatorBuilder(
-        socketCreator,
+        new TcpSocketCreatorImpl(),
         dsfidSerializer,
         temporaryFolder.newFolder("locator").toPath(),
         executorServiceSupplier)

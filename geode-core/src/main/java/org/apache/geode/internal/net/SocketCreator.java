@@ -28,7 +28,6 @@ import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
-import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
@@ -43,7 +42,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ThreadLocalRandom;
 
 import javax.net.ServerSocketFactory;
 import javax.net.SocketFactory;
@@ -75,6 +73,7 @@ import org.apache.geode.distributed.ClientSocketFactory;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.tcpserver.ConnectionWatcher;
+import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreatorImpl;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.cache.wan.TransportFilterServerSocket;
@@ -107,7 +106,7 @@ import org.apache.geode.util.internal.GeodeGlossary;
  * Additional properties will be set as System properties to be available as needed by other
  * provider implementations.
  */
-public class SocketCreator {
+public class SocketCreator extends TcpSocketCreatorImpl {
 
   private static final Logger logger = LogService.getLogger();
 
@@ -160,19 +159,7 @@ public class SocketCreator {
    * gemfire.setTcpKeepAlive java system property. If not set then GemFire will enable keep-alive on
    * server->client and p2p connections.
    */
-  public static final boolean ENABLE_TCP_KEEP_ALIVE;
-
-  static {
-    // bug #49484 - customers want tcp/ip keep-alive turned on by default
-    // to avoid dropped connections. It can be turned off by setting this
-    // property to false
-    String str = System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + "setTcpKeepAlive");
-    if (str != null) {
-      ENABLE_TCP_KEEP_ALIVE = Boolean.valueOf(str);
-    } else {
-      ENABLE_TCP_KEEP_ALIVE = true;
-    }
-  }
+  public static final boolean ENABLE_TCP_KEEP_ALIVE = TcpSocketCreatorImpl.ENABLE_TCP_KEEP_ALIVE;
 
   // -------------------------------------------------------------------------
   // Constructor
@@ -539,16 +526,9 @@ public class SocketCreator {
   /**
    * Returns true if this SocketCreator is configured to use SSL.
    */
+  @Override
   public boolean useSSL() {
     return this.sslConfig.isEnabled();
-  }
-
-  /**
-   * Return a ServerSocket possibly configured for SSL. SSL configuration is left up to JSSE
-   * properties in java.security file.
-   */
-  public ServerSocket createServerSocket(int nport, int backlog) throws IOException {
-    return createServerSocket(nport, backlog, null);
   }
 
   public ServerSocket createServerSocket(int nport, int backlog, InetAddress bindAddr,
@@ -575,62 +555,34 @@ public class SocketCreator {
     }
   }
 
-  /**
-   * Return a ServerSocket possibly configured for SSL. SSL configuration is left up to JSSE
-   * properties in java.security file.
-   */
-  public ServerSocket createServerSocket(int nport, int backlog, InetAddress bindAddr)
-      throws IOException {
-    return createServerSocket(nport, backlog, bindAddr, -1, sslConfig.isEnabled());
-  }
-
   public ServerSocket createServerSocket(int nport, int backlog, InetAddress bindAddr,
       int socketBufferSize) throws IOException {
     return createServerSocket(nport, backlog, bindAddr, socketBufferSize, sslConfig.isEnabled());
   }
 
-  private ServerSocket createServerSocket(int nport, int backlog, InetAddress bindAddr,
+  @Override
+  protected ServerSocket createServerSocket(int nport, int backlog, InetAddress bindAddr,
       int socketBufferSize, boolean sslConnection) throws IOException {
     printConfig();
-    if (sslConnection) {
-      if (this.sslContext == null) {
-        throw new GemFireConfigException(
-            "SSL not configured correctly, Please look at previous error");
-      }
-      ServerSocketFactory ssf = this.sslContext.getServerSocketFactory();
-      SSLServerSocket serverSocket = (SSLServerSocket) ssf.createServerSocket();
-      serverSocket.setReuseAddress(true);
-      // If necessary, set the receive buffer size before binding the socket so
-      // that large buffers will be allocated on accepted sockets (see
-      // java.net.ServerSocket.setReceiverBufferSize javadocs)
-      if (socketBufferSize != -1) {
-        serverSocket.setReceiveBufferSize(socketBufferSize);
-      }
-      serverSocket.bind(new InetSocketAddress(bindAddr, nport), backlog);
-      finishServerSocket(serverSocket);
-      return serverSocket;
-    } else {
-      // log.info("Opening server socket on " + nport, new Exception("SocketCreation"));
-      ServerSocket result = new ServerSocket();
-      result.setReuseAddress(true);
-      // If necessary, set the receive buffer size before binding the socket so
-      // that large buffers will be allocated on accepted sockets (see
-      // java.net.ServerSocket.setReceiverBufferSize javadocs)
-      if (socketBufferSize != -1) {
-        result.setReceiveBufferSize(socketBufferSize);
-      }
-      try {
-        result.bind(new InetSocketAddress(bindAddr, nport), backlog);
-      } catch (BindException e) {
-        BindException throwMe =
-            new BindException(String.format("Failed to create server socket on %s[%s]",
-                bindAddr == null ? InetAddress.getLocalHost() : bindAddr,
-                String.valueOf(nport)));
-        throwMe.initCause(e);
-        throw throwMe;
-      }
-      return result;
+    if (!sslConnection) {
+      return super.createServerSocket(nport, backlog, bindAddr, socketBufferSize, sslConnection);
     }
+    if (this.sslContext == null) {
+      throw new GemFireConfigException(
+          "SSL not configured correctly, Please look at previous error");
+    }
+    ServerSocketFactory ssf = this.sslContext.getServerSocketFactory();
+    SSLServerSocket serverSocket = (SSLServerSocket) ssf.createServerSocket();
+    serverSocket.setReuseAddress(true);
+    // If necessary, set the receive buffer size before binding the socket so
+    // that large buffers will be allocated on accepted sockets (see
+    // java.net.ServerSocket.setReceiverBufferSize javadocs)
+    if (socketBufferSize != -1) {
+      serverSocket.setReceiveBufferSize(socketBufferSize);
+    }
+    serverSocket.bind(new InetSocketAddress(bindAddr, nport), backlog);
+    finishServerSocket(serverSocket);
+    return serverSocket;
   }
 
   /**
@@ -648,60 +600,14 @@ public class SocketCreator {
         tcpPortRange, sslConfig.isEnabled());
   }
 
-  /**
-   * Creates or bind server socket to a random port selected from tcp-port-range which is same as
-   * membership-port-range.
-   *
-   * @param sslConnection whether to connect using SSL
-   *
-   * @return Returns the new server socket.
-   *
-   */
-  public ServerSocket createServerSocketUsingPortRange(InetAddress ba, int backlog,
-      boolean isBindAddress, boolean useNIO, int tcpBufferSize, int[] tcpPortRange,
-      boolean sslConnection) {
+  @Override
+  protected RuntimeException problemCreatingSocketInPortRangeException(String s, IOException e) {
+    return new SystemConnectException(s, e);
+  }
 
-    try {
-      // Get a random port from range.
-      int startingPort = tcpPortRange[0]
-          + ThreadLocalRandom.current().nextInt(tcpPortRange[1] - tcpPortRange[0] + 1);
-      int localPort = startingPort;
-      int portLimit = tcpPortRange[1];
-
-      while (true) {
-        if (localPort > portLimit) {
-          if (startingPort != 0) {
-            localPort = tcpPortRange[0];
-            portLimit = startingPort - 1;
-            startingPort = 0;
-          } else {
-            throw new SystemConnectException(
-                "Unable to find a free port in the membership-port-range");
-          }
-        }
-        ServerSocket socket = null;
-        try {
-          if (useNIO) {
-            ServerSocketChannel channel = ServerSocketChannel.open();
-            socket = channel.socket();
-
-            InetSocketAddress address = new InetSocketAddress(isBindAddress ? ba : null, localPort);
-            socket.bind(address, backlog);
-          } else {
-            socket = this.createServerSocket(localPort, backlog, isBindAddress ? ba : null,
-                tcpBufferSize, sslConnection);
-          }
-          return socket;
-        } catch (java.net.SocketException ex) {
-          if (socket != null && !socket.isClosed()) {
-            socket.close();
-          }
-          localPort++;
-        }
-      }
-    } catch (IOException e) {
-      throw new GemFireConfigException("unable to create a socket in the membership-port range", e);
-    }
+  @Override
+  protected RuntimeException noFreePortException(String reason) {
+    return new GemFireConfigException(reason);
   }
 
   /**
@@ -732,16 +638,6 @@ public class SocketCreator {
    * socket factory
    */
   public Socket connect(InetAddress inetadd, int port, int timeout,
-      ConnectionWatcher optionalWatcher, boolean clientSide) throws IOException {
-    return connect(inetadd, port, timeout, optionalWatcher, clientSide, -1);
-  }
-
-  /**
-   * Return a client socket, timing out if unable to connect and timeout > 0 (millis). The parameter
-   * <i>timeout</i> is ignored if SSL is being used, as there is no timeout argument in the ssl
-   * socket factory
-   */
-  public Socket connect(InetAddress inetadd, int port, int timeout,
       ConnectionWatcher optionalWatcher, boolean clientSide, int socketBufferSize)
       throws IOException {
     return connect(inetadd, port, timeout, optionalWatcher, clientSide, socketBufferSize,
@@ -753,60 +649,47 @@ public class SocketCreator {
    * <i>timeout</i> is ignored if SSL is being used, as there is no timeout argument in the ssl
    * socket factory
    */
+  @Override
   public Socket connect(InetAddress inetadd, int port, int timeout,
       ConnectionWatcher optionalWatcher, boolean clientSide, int socketBufferSize,
       boolean sslConnection) throws IOException {
-    Socket socket = null;
-    SocketAddress sockaddr = new InetSocketAddress(inetadd, port);
+
     printConfig();
+
+    if (!sslConnection) {
+      return super.connect(inetadd, port, timeout, optionalWatcher, clientSide, socketBufferSize,
+          sslConnection);
+    }
+
+    // create an SSL connection
+
+    Socket socket;
+    SocketAddress sockaddr = new InetSocketAddress(inetadd, port);
+    if (this.sslContext == null) {
+      throw new GemFireConfigException(
+          "SSL not configured correctly, Please look at previous error");
+    }
+    SocketFactory sf = this.sslContext.getSocketFactory();
+    socket = sf.createSocket();
+
+    // Optionally enable SO_KEEPALIVE in the OS network protocol.
+    socket.setKeepAlive(ENABLE_TCP_KEEP_ALIVE);
+
+    // If necessary, set the receive buffer size before connecting the
+    // socket so that large buffers will be allocated on accepted sockets
+    // (see java.net.Socket.setReceiverBufferSize javadocs for details)
+    if (socketBufferSize != -1) {
+      socket.setReceiveBufferSize(socketBufferSize);
+    }
+
     try {
-      if (sslConnection) {
-        if (this.sslContext == null) {
-          throw new GemFireConfigException(
-              "SSL not configured correctly, Please look at previous error");
-        }
-        SocketFactory sf = this.sslContext.getSocketFactory();
-        socket = sf.createSocket();
-
-        // Optionally enable SO_KEEPALIVE in the OS network protocol.
-        socket.setKeepAlive(ENABLE_TCP_KEEP_ALIVE);
-
-        // If necessary, set the receive buffer size before connecting the
-        // socket so that large buffers will be allocated on accepted sockets
-        // (see java.net.Socket.setReceiverBufferSize javadocs for details)
-        if (socketBufferSize != -1) {
-          socket.setReceiveBufferSize(socketBufferSize);
-        }
-
-        if (optionalWatcher != null) {
-          optionalWatcher.beforeConnect(socket);
-        }
-        socket.connect(sockaddr, Math.max(timeout, 0));
-        configureClientSSLSocket(socket, timeout);
-        return socket;
-      } else {
-        if (clientSide && this.clientSocketFactory != null) {
-          socket = this.clientSocketFactory.createSocket(inetadd, port);
-        } else {
-          socket = new Socket();
-
-          // Optionally enable SO_KEEPALIVE in the OS network protocol.
-          socket.setKeepAlive(ENABLE_TCP_KEEP_ALIVE);
-
-          // If necessary, set the receive buffer size before connecting the
-          // socket so that large buffers will be allocated on accepted sockets
-          // (see java.net.Socket.setReceiverBufferSize javadocs for details)
-          if (socketBufferSize != -1) {
-            socket.setReceiveBufferSize(socketBufferSize);
-          }
-
-          if (optionalWatcher != null) {
-            optionalWatcher.beforeConnect(socket);
-          }
-          socket.connect(sockaddr, Math.max(timeout, 0));
-        }
-        return socket;
+      if (optionalWatcher != null) {
+        optionalWatcher.beforeConnect(socket);
       }
+      socket.connect(sockaddr, Math.max(timeout, 0));
+      configureClientSSLSocket(socket, timeout);
+      return socket;
+
     } finally {
       if (optionalWatcher != null) {
         optionalWatcher.afterConnect(socket);
@@ -913,33 +796,34 @@ public class SocketCreator {
    * @param timeout the number of milliseconds allowed for the handshake to complete
    */
   public void handshakeIfSocketIsSSL(Socket socket, int timeout) throws IOException {
-    if (socket instanceof SSLSocket) {
-      int oldTimeout = socket.getSoTimeout();
-      socket.setSoTimeout(timeout);
-      SSLSocket sslSocket = (SSLSocket) socket;
-      try {
-        sslSocket.startHandshake();
-      } catch (SSLPeerUnverifiedException ex) {
-        if (this.sslConfig.isRequireAuth()) {
-          logger.fatal(String.format("SSL Error in authenticating peer %s[%s].",
-              socket.getInetAddress(), socket.getPort()), ex);
-          throw ex;
-        }
+    if (!(socket instanceof SSLSocket)) {
+      return;
+    }
+    int oldTimeout = socket.getSoTimeout();
+    socket.setSoTimeout(timeout);
+    SSLSocket sslSocket = (SSLSocket) socket;
+    try {
+      sslSocket.startHandshake();
+    } catch (SSLPeerUnverifiedException ex) {
+      if (this.sslConfig.isRequireAuth()) {
+        logger.fatal(String.format("SSL Error in authenticating peer %s[%s].",
+            socket.getInetAddress(), socket.getPort()), ex);
+        throw ex;
       }
-      // Pre jkd11, startHandshake is throwing SocketTimeoutException.
-      // in jdk 11 it is throwing SSLProtocolException with a cause of SocketTimeoutException.
-      // this is to keep the exception consistent across jdk
-      catch (SSLProtocolException ex) {
-        if (ex.getCause() instanceof SocketTimeoutException) {
-          throw (SocketTimeoutException) ex.getCause();
-        } else {
-          throw ex;
-        }
-      } finally {
-        try {
-          socket.setSoTimeout(oldTimeout);
-        } catch (SocketException ignored) {
-        }
+    }
+    // Pre jkd11, startHandshake is throwing SocketTimeoutException.
+    // in jdk 11 it is throwing SSLProtocolException with a cause of SocketTimeoutException.
+    // this is to keep the exception consistent across jdk
+    catch (SSLProtocolException ex) {
+      if (ex.getCause() instanceof SocketTimeoutException) {
+        throw (SocketTimeoutException) ex.getCause();
+      } else {
+        throw ex;
+      }
+    } finally {
+      try {
+        socket.setSoTimeout(oldTimeout);
+      } catch (SocketException ignored) {
       }
     }
   }

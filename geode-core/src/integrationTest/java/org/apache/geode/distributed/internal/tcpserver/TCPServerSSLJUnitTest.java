@@ -22,7 +22,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_PROTOCOLS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
-import static org.apache.geode.distributed.internal.membership.adapter.TcpSocketCreatorAdapter.asTcpSocketCreator;
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -93,7 +92,7 @@ public class TCPServerSSLJUnitTest {
         "server thread",
         (socket, input, firstByte) -> false, DistributionStats::getStatTime,
         Executors::newCachedThreadPool,
-        asTcpSocketCreator(socketCreator),
+        socketCreator,
         InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
         InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer(),
         GeodeGlossary.GEMFIRE_PREFIX + "TcpServer.READ_TIMEOUT",
@@ -156,12 +155,10 @@ public class TCPServerSSLJUnitTest {
   }
 
   private TcpClient getTcpClient() {
-    return new TcpClient(
-        asTcpSocketCreator(
-            SocketCreatorFactory
-                .getSocketCreatorForComponent(
-                    new DistributionConfigImpl(getSSLConfigurationProperties()),
-                    SecurableCommunicationChannel.LOCATOR)),
+    return new TcpClient(SocketCreatorFactory
+        .getSocketCreatorForComponent(
+            new DistributionConfigImpl(getSSLConfigurationProperties()),
+            SecurableCommunicationChannel.LOCATOR),
         InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
         InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());
   }

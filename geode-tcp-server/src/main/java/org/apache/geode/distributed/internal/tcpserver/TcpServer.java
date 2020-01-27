@@ -149,7 +149,11 @@ public class TcpServer {
     this.executor = executorServiceSupplier.get();
     this.threadName = threadName;
     this.nanoTimeSupplier = nanoTimeSupplier;
-    this.socketCreator = socketCreator;
+    if (socketCreator == null) {
+      this.socketCreator = new TcpSocketCreatorImpl();
+    } else {
+      this.socketCreator = socketCreator;
+    }
     this.objectSerializer = objectSerializer;
     this.objectDeserializer = objectDeserializer;
     readTimeout = Integer.getInteger(readTimeoutPropertyName, 60 * 1000);

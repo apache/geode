@@ -103,11 +103,16 @@ public final class MembershipLocatorBuilderImpl<ID extends MemberIdentifier> imp
   public MembershipLocator<ID> create()
       throws UnknownHostException, MembershipConfigurationException {
     Services.registerSerializables(serializer);
-    return new MembershipLocatorImpl<ID>(port, bindAddress, protocolChecker,
+    MembershipLocator locator = new MembershipLocatorImpl<ID>(port, bindAddress, protocolChecker,
         executorServiceSupplier,
-        socketCreator, serializer.getObjectSerializer(), serializer.getObjectDeserializer(),
+        serializer.getObjectSerializer(), serializer.getObjectDeserializer(),
         fallbackHandler,
+        objectSerializer, objectDeserializer, fallbackHandler,
         locatorsAreCoordinators, locatorStats, workingDirectory, config);
+    if (socketCreator != null) {
+      locator.setSocketCreator(socketCreator);
+    }
+    return locator;
   }
 
 }

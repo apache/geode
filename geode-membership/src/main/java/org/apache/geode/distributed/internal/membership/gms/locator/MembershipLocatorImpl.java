@@ -56,10 +56,12 @@ public class MembershipLocatorImpl<ID extends MemberIdentifier> implements Membe
   private final GMSLocator<ID> gmsLocator;
   private final TcpClient locatorClient;
 
+  private TcpSocketCreator socketCreator;
+
   public MembershipLocatorImpl(int port, InetAddress bindAddress,
       ProtocolChecker protocolChecker,
       Supplier<ExecutorService> executorServiceSupplier,
-      TcpSocketCreator socketCreator, ObjectSerializer objectSerializer,
+      ObjectSerializer objectSerializer,
       ObjectDeserializer objectDeserializer,
       TcpHandler fallbackHandler,
       boolean locatorsAreCoordinators,
@@ -157,6 +159,11 @@ public class MembershipLocatorImpl<ID extends MemberIdentifier> implements Membe
   @VisibleForTesting
   public GMSLocator getGMSLocator() {
     return this.gmsLocator;
+  }
+
+  @Override
+  public void setSocketCreator(TcpSocketCreator socketCreator) {
+    this.socketCreator = socketCreator;
   }
 
   public void stop() {

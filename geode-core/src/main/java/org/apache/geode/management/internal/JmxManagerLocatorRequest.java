@@ -14,8 +14,6 @@
  */
 package org.apache.geode.management.internal;
 
-import static org.apache.geode.distributed.internal.membership.adapter.TcpSocketCreatorAdapter.asTcpSocketCreator;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -86,7 +84,7 @@ public class JmxManagerLocatorRequest implements DataSerializableFixedID {
     SSLConfig sslConfig = SSLConfigurationFactory.getSSLConfigForComponent(sslConfigProps,
         SecurableCommunicationChannel.LOCATOR);
     SocketCreator socketCreator = new SocketCreator(sslConfig);
-    TcpClient client = new TcpClient(asTcpSocketCreator(socketCreator),
+    TcpClient client = new TcpClient(socketCreator,
         InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
         InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());
     Object responseFromServer = client.requestToServer(inetSockAddr, SINGLETON, msTimeout, true);
