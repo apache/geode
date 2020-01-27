@@ -37,6 +37,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.InternalGemFireException;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.AttributesMutator;
 import org.apache.geode.cache.Cache;
@@ -2616,18 +2617,15 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
 
   /**
    * <i>Test Method</i> Return the list of all the primary bucket ids in this data store.
-   *
    */
-  public List getLocalPrimaryBucketsListTestOnly() {
-    final List primaryBucketList = new ArrayList();
-    visitBuckets(new BucketVisitor() {
-      @Override
-      public void visit(Integer bucketId, Region r) {
-        BucketRegion br = (BucketRegion) r;
-        BucketAdvisor ba = (BucketAdvisor) br.getDistributionAdvisor();
-        if (ba.isPrimary()) {
-          primaryBucketList.add(bucketId);
-        }
+  @VisibleForTesting
+  public List<Integer> getLocalPrimaryBucketsListTestOnly() {
+    List<Integer> primaryBucketList = new ArrayList<>();
+    visitBuckets((bucketId, region) -> {
+      BucketRegion bucketRegion = (BucketRegion) region;
+      BucketAdvisor bucketAdvisor = (BucketAdvisor) bucketRegion.getDistributionAdvisor();
+      if (bucketAdvisor.isPrimary()) {
+        primaryBucketList.add(bucketId);
       }
     });
     return primaryBucketList;
