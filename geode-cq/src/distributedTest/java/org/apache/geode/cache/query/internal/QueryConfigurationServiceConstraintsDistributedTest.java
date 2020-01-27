@@ -14,26 +14,33 @@
  */
 package org.apache.geode.cache.query.internal;
 
+import static java.util.stream.Collectors.toSet;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
+import static org.apache.geode.security.templates.UserPasswordAuthInit.PASSWORD;
+import static org.apache.geode.security.templates.UserPasswordAuthInit.USER_NAME;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.test.dunit.VM.getController;
+import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import junitparams.naming.TestCaseName;
-import org.assertj.core.api.ThrowableAssert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -43,18 +50,24 @@ import org.junit.runner.RunWith;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.query.CqAttributesFactory;
+import org.apache.geode.cache.query.CqEvent;
+import org.apache.geode.cache.query.CqException;
+import org.apache.geode.cache.query.CqListener;
 import org.apache.geode.cache.query.CqQuery;
 import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.RegionNotFoundException;
 import org.apache.geode.cache.query.security.MethodInvocationAuthorizer;
 import org.apache.geode.cache.query.security.RestrictedMethodAuthorizer;
+import org.apache.geode.distributed.ServerLauncher;
 import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.security.query.TestCqListener;
+import org.apache.geode.security.templates.UserPasswordAuthInit;
 import org.apache.geode.test.assertj.LogFileAssert;
-import org.apache.geode.test.dunit.rules.ClientVM;
-import org.apache.geode.test.dunit.rules.ClusterStartupRule;
-import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
@@ -62,7 +75,12 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 @RunWith(JUnitParamsRunner.class)
 @Category({OQLQueryTest.class, SecurityTest.class})
+@SuppressWarnings("serial")
 public class QueryConfigurationServiceConstraintsDistributedTest implements Serializable {
+
+  private static final String GET_ID_METHOD = "getId";
+  private static final String GET_NAME_METHOD = "getName";
+
   private static final int ENTRIES = 300;
   private static final int PUT_KEY = ENTRIES + 1;
   private static final int CREATE_KEY = ENTRIES + 2;
@@ -72,13 +90,19 @@ public class QueryConfigurationServiceConstraintsDistributedTest implements Seri
   private static final int REPLACE_KEY = ENTRIES - 4;
   private static final int INVALIDATE_KEY = ENTRIES - 5;
   private static final QueryObject TEST_VALUE = new QueryObject(999, "name_999");
-  private File logFile;
-  protected MemberVM server;
-  protected ClientVM client;
-  private static TestCqListener cqListener = null;
+
+  private static volatile CountingCqListener cqListener;
+  private static volatile ServerLauncher serverLauncher;
+  private static volatile ClientCache clientCache;
+
+  private VM serverVM;
+  private VM clientVM;
+
+  private String regionName;
+  private String queryString;
 
   @Rule
-  public ClusterStartupRule cluster = new ClusterStartupRule();
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
   public SerializableTestName testName = new SerializableTestName();
@@ -86,144 +110,54 @@ public class QueryConfigurationServiceConstraintsDistributedTest implements Seri
   @Rule
   public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
 
-  @SuppressWarnings("unused")
-  private Object[] getRegionTypeOperationsAndCqExecutionType() {
-    return new Object[] {
-        new Object[] {"REPLICATE", "PUT", true},
-        new Object[] {"REPLICATE", "PUT", false},
-        new Object[] {"REPLICATE", "CREATE", true},
-        new Object[] {"REPLICATE", "CREATE", false},
-        new Object[] {"REPLICATE", "REMOVE", true},
-        new Object[] {"REPLICATE", "REMOVE", false},
-        new Object[] {"REPLICATE", "DESTROY", true},
-        new Object[] {"REPLICATE", "DESTROY", false},
-        new Object[] {"REPLICATE", "UPDATE", true},
-        new Object[] {"REPLICATE", "UPDATE", false},
-        new Object[] {"REPLICATE", "REPLACE", true},
-        new Object[] {"REPLICATE", "REPLACE", false},
-        new Object[] {"REPLICATE", "INVALIDATE", true},
-        new Object[] {"REPLICATE", "INVALIDATE", false},
-
-        new Object[] {"PARTITION", "PUT", true},
-        new Object[] {"PARTITION", "PUT", false},
-        new Object[] {"PARTITION", "CREATE", true},
-        new Object[] {"PARTITION", "CREATE", false},
-        new Object[] {"PARTITION", "REMOVE", true},
-        new Object[] {"PARTITION", "REMOVE", false},
-        new Object[] {"PARTITION", "DESTROY", true},
-        new Object[] {"PARTITION", "DESTROY", false},
-        new Object[] {"PARTITION", "UPDATE", true},
-        new Object[] {"PARTITION", "UPDATE", false},
-        new Object[] {"PARTITION", "REPLACE", true},
-        new Object[] {"PARTITION", "REPLACE", false},
-        new Object[] {"PARTITION", "INVALIDATE", true},
-        new Object[] {"PARTITION", "INVALIDATE", false},
-    };
-  }
-
   @Before
-  public void setUp() throws Exception {
-    logFile = temporaryFolder.newFile(testName.getMethodName());
+  public void setUp() {
+    serverVM = getVM(0);
+    clientVM = getController();
 
-    server = cluster.startServerVM(1, cf -> cf
-        .withProperty(SECURITY_MANAGER, SimpleSecurityManager.class.getName())
-        .withProperty(SERIALIZABLE_OBJECT_FILTER, "org.apache.geode.cache.query.internal.*")
-        .withProperty("security-username", "cluster").withProperty("security-password", "cluster")
-        .withProperty("log-file", logFile.getAbsolutePath()));
+    regionName = testName.getMethodName();
+    queryString = String.join(" ",
+        "SELECT * FROM /" + regionName + " object",
+        "WHERE object." + GET_ID_METHOD + " > -1");
 
-    server.invoke(() -> {
-      InternalCache internalCache = ClusterStartupRule.getCache();
+    int serverPort = getRandomAvailableTCPPort();
+
+    serverVM.invoke(() -> {
+      createServer(serverPort);
+
+      InternalCache internalCache = (InternalCache) serverLauncher.getCache();
       assertThat(internalCache).isNotNull();
-      internalCache.getService(QueryConfigurationService.class).updateMethodAuthorizer(
-          internalCache, true, TestMethodAuthorizer.class.getName(),
-          Stream.of(QueryObject.GET_ID_METHOD, QueryObject.GET_NAME_METHOD)
-              .collect(Collectors.toSet()));
+
+      internalCache
+          .getService(QueryConfigurationService.class)
+          .updateMethodAuthorizer(internalCache, true, TestMethodAuthorizer.class.getName(),
+              Stream.of(GET_ID_METHOD, GET_NAME_METHOD).collect(toSet()));
     });
 
-    client = cluster.startClientVM(2, ccf -> ccf
-        .withCredential("data", "data")
-        .withPoolSubscription(true)
-        .withServerConnection(server.getPort())
-        .withProperty(SERIALIZABLE_OBJECT_FILTER, "org.apache.geode.cache.query.internal.*"));
-  }
-
-  private void createAndPopulateRegion(String regionName, RegionShortcut shortcut) {
-    server.invoke(() -> {
-      InternalCache internalCache = ClusterStartupRule.getCache();
-      assertThat(internalCache).isNotNull();
-      Region<Integer, QueryObject> region =
-          internalCache.<Integer, QueryObject>createRegionFactory(shortcut).create(regionName);
-      IntStream.range(0, ENTRIES).forEach(id -> region.put(id, new QueryObject(id, "name_" + id)));
-      await().untilAsserted(() -> assertThat(region.size()).isEqualTo(ENTRIES));
+    clientVM.invoke(() -> {
+      clientCache = new ClientCacheFactory()
+          .set(SERIALIZABLE_OBJECT_FILTER, "org.apache.geode.cache.query.internal.*")
+          .set(SECURITY_CLIENT_AUTH_INIT, UserPasswordAuthInit.class.getName())
+          .set(USER_NAME, "data")
+          .set(PASSWORD, "data")
+          .setPoolSubscriptionEnabled(true)
+          .addPoolServer("localhost", serverPort)
+          .create();
     });
   }
 
-  private ThrowableAssert.ThrowingCallable getRegionOperation(Operation operation,
-      Region<Integer, QueryObject> region) {
-    switch (operation) {
-      case PUT:
-        return () -> region.put(PUT_KEY, TEST_VALUE);
-      case CREATE:
-        return () -> region.create(CREATE_KEY, TEST_VALUE);
-      case REMOVE:
-        return () -> region.remove(REMOVE_KEY);
-      case DESTROY:
-        return () -> region.destroy(DESTROY_KEY);
-      case UPDATE:
-        return () -> region.put(UPDATE_KEY, TEST_VALUE);
-      case REPLACE:
-        return () -> region.replace(REPLACE_KEY, TEST_VALUE);
-      case INVALIDATE:
-        return () -> region.invalidate(INVALIDATE_KEY);
-      default:
-        return () -> {
-        };
-    }
-  }
+  private void createServer(int port) throws IOException {
+    serverLauncher = new ServerLauncher.Builder()
+        .setMemberName("server")
+        .setWorkingDirectory(temporaryFolder.newFolder("server").getAbsolutePath())
+        .setServerPort(port)
+        .set(SERIALIZABLE_OBJECT_FILTER, "org.apache.geode.cache.query.internal.*")
+        .set(SECURITY_MANAGER, SimpleSecurityManager.class.getName())
+        .set(USER_NAME, "cluster")
+        .set(PASSWORD, "cluster")
+        .build();
 
-  private void executeOperationsAndAssertResults(String regionName, Operation operation) {
-    // Execute operation that would cause the CQ to process the event.
-    InternalCache internalCache = ClusterStartupRule.getCache();
-    assertThat(internalCache).isNotNull();
-    Region<Integer, QueryObject> region = internalCache.getRegion(regionName);
-
-    // The initial operation should fail, every later one should fail as well.
-    ThrowableAssert.ThrowingCallable operationCallable =
-        getRegionOperation(operation, region);
-    assertThatCode(operationCallable).doesNotThrowAnyException();
-
-    // Execute all operations after the initial one.
-    Arrays.stream(Operation.values())
-        .filter(op -> !operation.equals(op))
-        .forEach(op -> assertThatCode(getRegionOperation(op, region))
-            .doesNotThrowAnyException());
-
-    // Assert results from operations.
-    assertThat(region.get(PUT_KEY)).isEqualTo(TEST_VALUE);
-    assertThat(region.get(CREATE_KEY)).isEqualTo(TEST_VALUE);
-    assertThat(region.get(REMOVE_KEY)).isNull();
-    assertThat(region.get(DESTROY_KEY)).isNull();
-    assertThat(region.get(UPDATE_KEY)).isEqualTo(TEST_VALUE);
-    assertThat(region.get(REPLACE_KEY)).isEqualTo(TEST_VALUE);
-    assertThat(region.get(INVALIDATE_KEY)).isNull();
-  }
-
-  private void createClientCq(String queryString, boolean executeWithInitialResults) {
-    client.invoke(() -> {
-      QueryConfigurationServiceConstraintsDistributedTest.cqListener = new TestCqListener();
-      assertThat(ClusterStartupRule.getClientCache()).isNotNull();
-      QueryService queryService = ClusterStartupRule.getClientCache().getQueryService();
-      CqAttributesFactory cqAttributesFactory = new CqAttributesFactory();
-      cqAttributesFactory
-          .addCqListener(QueryConfigurationServiceConstraintsDistributedTest.cqListener);
-
-      CqQuery cq = queryService.newCq(queryString, cqAttributesFactory.create());
-      if (!executeWithInitialResults) {
-        cq.execute();
-      } else {
-        assertThat(cq.executeWithInitialResults().size()).isEqualTo(ENTRIES);
-      }
-    });
+    serverLauncher.start();
   }
 
   /**
@@ -233,41 +167,57 @@ public class QueryConfigurationServiceConstraintsDistributedTest implements Seri
    * The operations should succeed, the CQ should fire 'onEvent' and no errors should be logged.
    */
   @Test
-  @Parameters(method = "getRegionTypeOperationsAndCqExecutionType")
-  @TestCaseName("[{index}] {method}(RegionType:{0};Operation:{1},ExecuteWithInitialResults:{2})")
+  @Parameters({
+      "REPLICATE, PUT, true", "REPLICATE, PUT, false",
+      "REPLICATE, CREATE, true", "REPLICATE, CREATE, false",
+      "REPLICATE, REMOVE, true", "REPLICATE, REMOVE, false",
+      "REPLICATE, DESTROY, true", "REPLICATE, DESTROY, false",
+      "REPLICATE, UPDATE, true", "REPLICATE, UPDATE, false",
+      "REPLICATE, REPLACE, true", "REPLICATE, REPLACE, false",
+      "REPLICATE, INVALIDATE, true", "REPLICATE, INVALIDATE, false",
+      "PARTITION, PUT, true", "REPLICATE, PUT, false",
+      "PARTITION, CREATE, true", "REPLICATE, CREATE, false",
+      "PARTITION, REMOVE, true", "REPLICATE, REMOVE, false",
+      "PARTITION, DESTROY, true", "REPLICATE, DESTROY, false",
+      "PARTITION, UPDATE, true", "REPLICATE, UPDATE, false",
+      "PARTITION, REPLACE, true", "REPLICATE, REPLACE, false",
+      "PARTITION, INVALIDATE, true", "REPLICATE, INVALIDATE, false"})
+  @TestCaseName("{method}(regionShortcut={0}, operation={1}, executeWithInitialResults={2})")
   public void cqsShouldSucceedDuringEventProcessingAfterRegionOperationWhenMethodAuthorizerIsChangedAndQueryContainsMethodsAllowedByTheNewAuthorizer(
       RegionShortcut regionShortcut, Operation operation, boolean executeWithInitialResults) {
-    String regionName = testName.getMethodName();
-    createAndPopulateRegion(regionName, regionShortcut);
-    String queryString = "SELECT * FROM /" + regionName + " object WHERE object."
-        + QueryObject.GET_ID_METHOD + " > -1";
-    createClientCq(queryString, executeWithInitialResults);
+    serverVM.invoke(() -> {
+      createRegion(regionShortcut);
+      populateRegion();
+    });
 
-    server.invoke(() -> {
-      InternalCache internalCache = ClusterStartupRule.getCache();
-      assertThat(internalCache).isNotNull();
-      assertThat(internalCache.getCqService().getAllCqs().size()).isEqualTo(1);
+    clientVM.invoke(() -> createClientCq(queryString, executeWithInitialResults));
+
+    serverVM.invoke(() -> {
+      InternalCache internalCache = (InternalCache) serverLauncher.getCache();
+      assertThat(internalCache.getCqService().getAllCqs()).hasSize(1);
 
       // Change the authorizer (still allow 'getId' to be executed)
       internalCache.getService(QueryConfigurationService.class).updateMethodAuthorizer(
           internalCache, true, TestMethodAuthorizer.class.getName(),
-          Stream.of(QueryObject.GET_ID_METHOD).collect(Collectors.toSet()));
+          Stream.of(GET_ID_METHOD).collect(toSet()));
 
       // Execute operations that would cause the CQ to process the event.
-      executeOperationsAndAssertResults(regionName, operation);
+      doOperations(operation);
+
+      validateRegionValues();
     });
 
-    client.invoke(() -> {
-      await().untilAsserted(() -> assertThat(
-          QueryConfigurationServiceConstraintsDistributedTest.cqListener.getNumErrors())
-              .isEqualTo(0));
-      await().untilAsserted(() -> assertThat(
-          QueryConfigurationServiceConstraintsDistributedTest.cqListener.getNumEvents())
-              .isEqualTo(Operation.values().length));
+    clientVM.invoke(() -> {
+      await().untilAsserted(() -> {
+        assertThat(cqListener.getEventCount()).isEqualTo(Operation.values().length);
+      });
+      assertThat(cqListener.getErrorCount()).isEqualTo(0);
     });
 
     // No errors logged on server side.
-    LogFileAssert.assertThat(logFile)
+    File logFile = new File(new File(temporaryFolder.getRoot(), "server"), "server.log");
+    LogFileAssert
+        .assertThat(logFile)
         .doesNotContain(RestrictedMethodAuthorizer.UNAUTHORIZED_STRING);
   }
 
@@ -278,49 +228,138 @@ public class QueryConfigurationServiceConstraintsDistributedTest implements Seri
    * The operations should succeed, the CQ should fire 'onError' and the issues should be logged.
    */
   @Test
-  @Parameters(method = "getRegionTypeOperationsAndCqExecutionType")
-  @TestCaseName("[{index}] {method}(RegionType:{0};Operation:{1},ExecuteWithInitialResults:{2})")
+  @Parameters({
+      "REPLICATE, PUT, true", "REPLICATE, PUT, false",
+      "REPLICATE, CREATE, true", "REPLICATE, CREATE, false",
+      "REPLICATE, REMOVE, true", "REPLICATE, REMOVE, false",
+      "REPLICATE, DESTROY, true", "REPLICATE, DESTROY, false",
+      "REPLICATE, UPDATE, true", "REPLICATE, UPDATE, false",
+      "REPLICATE, REPLACE, true", "REPLICATE, REPLACE, false",
+      "REPLICATE, INVALIDATE, true", "REPLICATE, INVALIDATE, false",
+      "PARTITION, PUT, true", "REPLICATE, PUT, false",
+      "PARTITION, CREATE, true", "REPLICATE, CREATE, false",
+      "PARTITION, REMOVE, true", "REPLICATE, REMOVE, false",
+      "PARTITION, DESTROY, true", "REPLICATE, DESTROY, false",
+      "PARTITION, UPDATE, true", "REPLICATE, UPDATE, false",
+      "PARTITION, REPLACE, true", "REPLICATE, REPLACE, false",
+      "PARTITION, INVALIDATE, true", "REPLICATE, INVALIDATE, false"})
+  @TestCaseName("{method}(regionShortcut={0}, operation={1}, executeWithInitialResults={2})")
   public void cqsShouldFailDuringEventProcessingAfterRegionOperationWhenMethodAuthorizerIsChangedAndQueryContainsMethodsNotAllowedByTheNewAuthorizer(
       RegionShortcut regionShortcut, Operation operation, boolean executeWithInitialResults) {
-    String regionName = testName.getMethodName();
-    createAndPopulateRegion(regionName, regionShortcut);
-    String queryString = "SELECT * FROM /" + regionName + " object WHERE object."
-        + QueryObject.GET_ID_METHOD + " > -1";
-    createClientCq(queryString, executeWithInitialResults);
+    serverVM.invoke(() -> {
+      createRegion(regionShortcut);
+      populateRegion();
+    });
 
-    server.invoke(() -> {
-      InternalCache internalCache = ClusterStartupRule.getCache();
-      assertThat(internalCache).isNotNull();
-      assertThat(internalCache.getCqService().getAllCqs().size()).isEqualTo(1);
+    clientVM.invoke(() -> createClientCq(queryString, executeWithInitialResults));
+
+    serverVM.invoke(() -> {
+      InternalCache internalCache = (InternalCache) serverLauncher.getCache();
+      assertThat(internalCache.getCqService().getAllCqs()).hasSize(1);
 
       // Change the authorizer (deny everything not allowed by default).
       internalCache.getService(QueryConfigurationService.class).updateMethodAuthorizer(
           internalCache, true, RestrictedMethodAuthorizer.class.getName(), Collections.emptySet());
 
       // Execute operations that would cause the CQ to process the event.
-      executeOperationsAndAssertResults(regionName, operation);
+      doOperations(operation);
+
+      validateRegionValues();
     });
 
-    client.invoke(() -> {
-      await().untilAsserted(() -> assertThat(
-          QueryConfigurationServiceConstraintsDistributedTest.cqListener.getNumEvents())
-              .isEqualTo(0));
-      await().untilAsserted(() -> assertThat(
-          QueryConfigurationServiceConstraintsDistributedTest.cqListener.getNumErrors())
-              .isEqualTo(Operation.values().length));
+    clientVM.invoke(() -> {
+      await().untilAsserted(() -> {
+        assertThat(cqListener.getErrorCount()).isEqualTo(Operation.values().length);
+      });
+      assertThat(cqListener.getEventCount()).isEqualTo(0);
     });
 
     // No errors logged on server side.
-    LogFileAssert.assertThat(logFile).contains(RestrictedMethodAuthorizer.UNAUTHORIZED_STRING);
+    File logFile = new File(new File(temporaryFolder.getRoot(), "server"), "server.log");
+    LogFileAssert
+        .assertThat(logFile)
+        .contains(RestrictedMethodAuthorizer.UNAUTHORIZED_STRING);
   }
 
-  public enum Operation {
-    PUT, CREATE, REMOVE, DESTROY, UPDATE, REPLACE, INVALIDATE
+  private void createRegion(RegionShortcut shortcut) {
+    serverLauncher.getCache()
+        .<Integer, QueryObject>createRegionFactory(shortcut)
+        .create(regionName);
+  }
+
+  private void populateRegion() {
+    Region<Integer, QueryObject> region = serverLauncher.getCache().getRegion(regionName);
+
+    IntStream
+        .range(0, ENTRIES)
+        .forEach(id -> {
+          region.put(id, new QueryObject(id, "name_" + id));
+        });
+
+    await().untilAsserted(() -> assertThat(region.size()).isEqualTo(ENTRIES));
+  }
+
+  private void doOperations(Operation operation) {
+    Region<Integer, QueryObject> region = serverLauncher.getCache().getRegion(regionName);
+
+    operation.operate(region);
+
+    Arrays.stream(Operation.values())
+        .filter(op -> !operation.equals(op))
+        .forEach(op -> {
+          op.operate(region);
+        });
+  }
+
+  private void validateRegionValues() {
+    Region<Integer, QueryObject> region = serverLauncher.getCache().getRegion(regionName);
+
+    assertThat(region.get(PUT_KEY)).isEqualTo(TEST_VALUE);
+    assertThat(region.get(CREATE_KEY)).isEqualTo(TEST_VALUE);
+    assertThat(region.get(REMOVE_KEY)).isNull();
+    assertThat(region.get(DESTROY_KEY)).isNull();
+    assertThat(region.get(UPDATE_KEY)).isEqualTo(TEST_VALUE);
+    assertThat(region.get(REPLACE_KEY)).isEqualTo(TEST_VALUE);
+    assertThat(region.get(INVALIDATE_KEY)).isNull();
+  }
+
+  private void createClientCq(String queryString, boolean executeWithInitialResults)
+      throws CqException, RegionNotFoundException {
+    cqListener = new CountingCqListener();
+
+    QueryService queryService = clientCache.getQueryService();
+    CqAttributesFactory cqAttributesFactory = new CqAttributesFactory();
+    cqAttributesFactory.addCqListener(cqListener);
+
+    CqQuery cq = queryService.newCq(queryString, cqAttributesFactory.create());
+    if (executeWithInitialResults) {
+      assertThat(cq.executeWithInitialResults()).hasSize(ENTRIES);
+    } else {
+      cq.execute();
+    }
+  }
+
+  private enum Operation {
+    PUT(region -> region.put(PUT_KEY, TEST_VALUE)),
+    CREATE(region -> region.create(CREATE_KEY, TEST_VALUE)),
+    REMOVE(region -> region.remove(REMOVE_KEY)),
+    DESTROY(region -> region.destroy(DESTROY_KEY)),
+    UPDATE(region -> region.put(UPDATE_KEY, TEST_VALUE)),
+    REPLACE(region -> region.replace(REPLACE_KEY, TEST_VALUE)),
+    INVALIDATE(region -> region.invalidate(INVALIDATE_KEY));
+
+    private final Consumer<Region<Integer, QueryObject>> regionConsumer;
+
+    Operation(Consumer<Region<Integer, QueryObject>> regionConsumer) {
+      this.regionConsumer = regionConsumer;
+    }
+
+    void operate(Region<Integer, QueryObject> region) {
+      regionConsumer.accept(region);
+    }
   }
 
   private static class QueryObject implements Serializable {
-    static final String GET_ID_METHOD = "getId";
-    static final String GET_NAME_METHOD = "getName";
 
     private final int id;
     private final String name;
@@ -333,7 +372,7 @@ public class QueryConfigurationServiceConstraintsDistributedTest implements Seri
       return name;
     }
 
-    QueryObject(int id, String name) {
+    private QueryObject(int id, String name) {
       this.id = id;
       this.name = name;
     }
@@ -360,13 +399,14 @@ public class QueryConfigurationServiceConstraintsDistributedTest implements Seri
   }
 
   public static class TestMethodAuthorizer implements MethodInvocationAuthorizer {
+
     private Set<String> authorizedMethods;
     private RestrictedMethodAuthorizer restrictedMethodAuthorizer;
 
     @Override
     public void initialize(Cache cache, Set<String> parameters) {
-      this.authorizedMethods = parameters;
-      this.restrictedMethodAuthorizer = new RestrictedMethodAuthorizer(cache);
+      authorizedMethods = parameters;
+      restrictedMethodAuthorizer = new RestrictedMethodAuthorizer(cache);
     }
 
     @Override
@@ -376,6 +416,30 @@ public class QueryConfigurationServiceConstraintsDistributedTest implements Seri
       }
 
       return authorizedMethods.contains(method.getName());
+    }
+  }
+
+  private static class CountingCqListener implements CqListener {
+
+    private final AtomicInteger eventCount = new AtomicInteger();
+    private final AtomicInteger errorCount = new AtomicInteger();
+
+    private int getEventCount() {
+      return eventCount.get();
+    }
+
+    private int getErrorCount() {
+      return errorCount.get();
+    }
+
+    @Override
+    public void onEvent(CqEvent aCqEvent) {
+      eventCount.incrementAndGet();
+    }
+
+    @Override
+    public void onError(CqEvent aCqEvent) {
+      errorCount.incrementAndGet();
     }
   }
 }
