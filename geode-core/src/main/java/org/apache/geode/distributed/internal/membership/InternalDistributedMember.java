@@ -60,6 +60,11 @@ public class InternalDistributedMember extends MemberIdentifierImpl
   // Used only by deserialization
   public InternalDistributedMember() {}
 
+  @Override
+  public int getDSFID() {
+    return DISTRIBUTED_MEMBER;
+  }
+
   /**
    * Construct a InternalDistributedMember
    * <p>

@@ -27,6 +27,7 @@ import java.util.function.Supplier;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.api.Membership;
 import org.apache.geode.distributed.internal.membership.api.MembershipConfig;
@@ -151,6 +152,11 @@ public class MembershipLocatorImpl<ID extends MemberIdentifier> implements Membe
   @Override
   public boolean isHandled(Class<?> clazz) {
     return this.handler.isHandled(clazz);
+  }
+
+  @VisibleForTesting
+  public GMSLocator getGMSLocator() {
+    return this.gmsLocator;
   }
 
   public void stop() {

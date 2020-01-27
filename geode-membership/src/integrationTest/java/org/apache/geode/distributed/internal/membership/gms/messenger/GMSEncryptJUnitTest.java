@@ -14,13 +14,13 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.messenger;
 
+import static org.apache.geode.distributed.internal.membership.gms.util.MembershipAddressUtil.createMemberID;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Properties;
 import java.util.concurrent.Callable;
 
 import org.junit.Assert;
@@ -28,16 +28,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.DistributionConfigImpl;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.adapter.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.api.MembershipConfig;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.Services;
-import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.test.junit.categories.MembershipTest;
 import org.apache.geode.test.junit.rules.ConcurrencyRule;
 
@@ -61,20 +55,19 @@ public class GMSEncryptJUnitTest {
   }
 
   private void initMocks(String algo) throws Exception {
-    Properties nonDefault = new Properties();
-    nonDefault.put(ConfigurationProperties.SECURITY_UDP_DHALGO, algo);
-    DistributionConfigImpl config = new DistributionConfigImpl(nonDefault);
-    RemoteTransportConfig tconfig =
-        new RemoteTransportConfig(config, ClusterDistributionManager.NORMAL_DM_TYPE);
-
-    MembershipConfig membershipConfig = new ServiceConfig(tconfig, config);
+    MembershipConfig membershipConfig = new MembershipConfig() {
+      @Override
+      public String getSecurityUDPDHAlgo() {
+        return algo;
+      }
+    };
 
     services = mock(Services.class);
     when(services.getConfig()).thenReturn(membershipConfig);
 
     mockMembers = new MemberIdentifier[4];
     for (int i = 0; i < mockMembers.length; i++) {
-      mockMembers[i] = new InternalDistributedMember("localhost", 8888 + i);
+      mockMembers[i] = createMemberID(8888 + i);
     }
     int viewId = 1;
     List<MemberIdentifier> mbrs = new LinkedList<>();

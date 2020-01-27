@@ -23,6 +23,7 @@ import java.net.InetAddress;
 import org.jgroups.util.UUID;
 
 import org.apache.geode.distributed.internal.membership.api.MemberData;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
@@ -120,6 +121,8 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
     this.uuidMSBs = msbs;
     this.uuidLSBs = lsbs;
     this.vmViewId = viewId;
+    this.vmKind = MemberIdentifier.NORMAL_DM_TYPE;
+    this.preferredForCoordinator = true;
   }
 
 
