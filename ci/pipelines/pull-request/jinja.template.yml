@@ -98,7 +98,9 @@ jobs:
       - get: geode
         trigger: true
         version: every
+        attempts: 2
       - get: geode-ci
+        attempts: 2
       - get: {{ build_test.PLATFORM }}-builder-image-family
     - aggregate:
       - do:
@@ -254,7 +256,9 @@ jobs:
       - get: geode
         trigger: true
         version: every
+        attempts: 2
       - get: geode-ci
+        attempts: 2
       - get: {{ test.PLATFORM }}-builder-image-family
     - aggregate:
       - do:
