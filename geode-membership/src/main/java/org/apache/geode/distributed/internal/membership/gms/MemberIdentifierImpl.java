@@ -148,7 +148,9 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
 
   @Override
   public List<String> getGroups() {
-    return Collections.unmodifiableList(Arrays.asList(memberData.getGroups()));
+    String[] groups = memberData.getGroups();
+    return groups == null ? Collections.emptyList()
+        : Collections.unmodifiableList(Arrays.asList(groups));
   }
 
   @Override
