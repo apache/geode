@@ -108,10 +108,10 @@ public class MemberIdentifierFactoryImplTest {
   public void membersAreEqual() {
     MemberData memberData = MemberDataBuilder.newBuilderForLocalHost("hostname")
         .setMembershipPort(1).build();
-    MemberIdentifierImpl member1 = factory.create(memberData);
+    MemberIdentifier member1 = factory.create(memberData);
     memberData = MemberDataBuilder.newBuilderForLocalHost("hostname")
         .setMembershipPort(1).build();
-    MemberIdentifierImpl member2 = factory.create(memberData);
+    MemberIdentifier member2 = factory.create(memberData);
     assertThat(factory.getComparator().compare(member1, member2)).isZero();
   }
 
@@ -119,10 +119,10 @@ public class MemberIdentifierFactoryImplTest {
   public void membersAreNotEqual() {
     MemberData memberData = MemberDataBuilder.newBuilderForLocalHost("hostname")
         .setMembershipPort(1).build();
-    MemberIdentifierImpl member1 = factory.create(memberData);
+    MemberIdentifier member1 = factory.create(memberData);
     memberData = MemberDataBuilder.newBuilderForLocalHost("hostname")
         .setMembershipPort(2).build();
-    MemberIdentifierImpl member2 = factory.create(memberData);
+    MemberIdentifier member2 = factory.create(memberData);
     assertThat(factory.getComparator().compare(member1, member2)).isLessThan(0);
     assertThat(factory.getComparator().compare(member2, member1)).isGreaterThan(0);
   }

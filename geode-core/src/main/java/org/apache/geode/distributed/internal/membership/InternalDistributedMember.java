@@ -42,7 +42,7 @@ import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.membership.api.MemberData;
 import org.apache.geode.distributed.internal.membership.api.MemberDataBuilder;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
-import org.apache.geode.distributed.internal.membership.api.MemberIdentifierImpl;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifierFactoryImpl;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.net.SocketCreator;
@@ -59,6 +59,8 @@ public class InternalDistributedMember
     implements DistributedMember, Externalizable, ProfileId, VersionSource<DistributedMember>,
     MemberIdentifier, DataSerializableFixedID {
   private static final long serialVersionUID = -2785249969777296507L;
+  public static final MemberIdentifierFactoryImpl MEMBER_IDENTIFIER_FACTORY =
+      new MemberIdentifierFactoryImpl();
 
   /** Retrieves an InetAddress given the provided hostname */
   @MutableForTesting
@@ -70,7 +72,7 @@ public class InternalDistributedMember
 
   // Used only by deserialization
   public InternalDistributedMember() {
-    memberIdentifier = new MemberIdentifierImpl();
+    memberIdentifier = MEMBER_IDENTIFIER_FACTORY.create(null);
   }
 
   /**
@@ -89,11 +91,12 @@ public class InternalDistributedMember
   public InternalDistributedMember(InetAddress i, int membershipPort, boolean splitBrainEnabled,
       boolean canBeCoordinator) {
 
-    memberIdentifier = new MemberIdentifierImpl(MemberDataBuilder.newBuilder(i, getHostName(i))
-        .setMembershipPort(membershipPort)
-        .setNetworkPartitionDetectionEnabled(splitBrainEnabled)
-        .setPreferredForCoordinator(canBeCoordinator)
-        .build());
+    memberIdentifier =
+        MEMBER_IDENTIFIER_FACTORY.create(MemberDataBuilder.newBuilder(i, getHostName(i))
+            .setMembershipPort(membershipPort)
+            .setNetworkPartitionDetectionEnabled(splitBrainEnabled)
+            .setPreferredForCoordinator(canBeCoordinator)
+            .build());
   }
 
   private static String getHostName(InetAddress i) {
@@ -105,7 +108,7 @@ public class InternalDistributedMember
    *
    */
   public InternalDistributedMember(MemberData m) {
-    memberIdentifier = new MemberIdentifierImpl(m);
+    memberIdentifier = MEMBER_IDENTIFIER_FACTORY.create(m);
 
     if (getHostName() == null || isPartial()) {
       String hostName = getHostName(m.getInetAddress());
@@ -142,7 +145,7 @@ public class InternalDistributedMember
 
   public InternalDistributedMember(ServerLocation location) {
     memberIdentifier =
-        new MemberIdentifierImpl(
+        MEMBER_IDENTIFIER_FACTORY.create(
             MemberDataBuilder.newBuilder(getInetAddress(location), location.getHostName())
                 .setMembershipPort(location.getPort())
                 .setNetworkPartitionDetectionEnabled(false)
@@ -183,7 +186,7 @@ public class InternalDistributedMember
   public InternalDistributedMember(String host, int p, String n, String u, int vmKind,
       String[] groups, DurableClientAttributes attr) throws UnknownHostException {
     memberIdentifier =
-        new MemberIdentifierImpl(createMemberData(host, p, n, vmKind, groups, attr, u));
+        MEMBER_IDENTIFIER_FACTORY.create(createMemberData(host, p, n, vmKind, groups, attr, u));
 
     defaultToCurrentHost();
   }
@@ -220,7 +223,7 @@ public class InternalDistributedMember
    * @param p the membership listening port
    */
   public InternalDistributedMember(InetAddress i, int p) {
-    memberIdentifier = new MemberIdentifierImpl(MemberDataBuilder.newBuilder(i, "localhost")
+    memberIdentifier = MEMBER_IDENTIFIER_FACTORY.create(MemberDataBuilder.newBuilder(i, "localhost")
         .setMembershipPort(p)
         .build());
     defaultToCurrentHost();
@@ -239,8 +242,9 @@ public class InternalDistributedMember
    *        false to create a temporary id for the OTHER side of a connection)
    */
   public InternalDistributedMember(InetAddress addr, int p, boolean isCurrentHost) {
-    memberIdentifier = new MemberIdentifierImpl(MemberDataBuilder.newBuilder(addr, "localhost")
-        .setMembershipPort(p).build());
+    memberIdentifier =
+        MEMBER_IDENTIFIER_FACTORY.create(MemberDataBuilder.newBuilder(addr, "localhost")
+            .setMembershipPort(p).build());
     if (isCurrentHost) {
       defaultToCurrentHost();
     }

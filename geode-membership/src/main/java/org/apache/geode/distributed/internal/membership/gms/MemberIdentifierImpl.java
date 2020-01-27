@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.distributed.internal.membership.api;
+package org.apache.geode.distributed.internal.membership.gms;
 
 import static org.apache.geode.distributed.internal.membership.gms.GMSMemberData.COORD_ENABLED_BIT;
 import static org.apache.geode.distributed.internal.membership.gms.GMSMemberData.NPD_ENABLED_BIT;
@@ -38,6 +38,9 @@ import org.jgroups.util.UUID;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.distributed.internal.membership.api.MemberData;
+import org.apache.geode.distributed.internal.membership.api.MemberDataBuilder;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
