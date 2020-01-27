@@ -31,7 +31,8 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.VMProvider;
 
 
-public class RemoveCommandDUnitTest {
+public class ClearCommandDUnitTest {
+  private static final String commandString = CliStrings.CLEAR_REGION;
   private static final String REPLICATE_REGION_NAME = "replicateRegion";
   private static final String PARTITIONED_REGION_NAME = "partitionedRegion";
   private static final String EMPTY_STRING = "";
@@ -42,12 +43,13 @@ public class RemoveCommandDUnitTest {
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();
 
+  private MemberVM locator;
   private MemberVM server1;
   private MemberVM server2;
 
   @Before
   public void setup() throws Exception {
-    MemberVM locator = clusterStartupRule.startLocatorVM(0);
+    locator = clusterStartupRule.startLocatorVM(0);
     server1 = clusterStartupRule.startServerVM(1, locator.getPort());
     server2 = clusterStartupRule.startServerVM(2, locator.getPort());
 
@@ -60,7 +62,7 @@ public class RemoveCommandDUnitTest {
     locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/" + REPLICATE_REGION_NAME, 2);
     locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/" + PARTITIONED_REGION_NAME, 2);
 
-    VMProvider.invokeInEveryMember(RemoveCommandDUnitTest::populateTestRegions, server1, server2);
+    VMProvider.invokeInEveryMember(ClearCommandDUnitTest::populateTestRegions, server1, server2);
   }
 
   private static void populateTestRegions() {
@@ -77,59 +79,21 @@ public class RemoveCommandDUnitTest {
   }
 
   @Test
-  public void removeFromInvalidRegion() {
-    String command = "remove --all --region=NotAValidRegion";
+  public void clearInvalidRegion() {
+    String command = commandString + " --region=NotAValidRegion";
 
     gfsh.executeAndAssertThat(command).statusIsError()
         .containsOutput(String.format(REGION_NOT_FOUND, "/NotAValidRegion"));
   }
 
   @Test
-  public void removeWithNoKeyOrAllSpecified() {
-    String command = "remove --region=" + REPLICATE_REGION_NAME;
-
-    gfsh.executeAndAssertThat(command).statusIsError().containsOutput("Key is Null");
-  }
-
-  @Test
-  @SuppressWarnings("deprecation")
-  public void removeKeyFromReplicateRegion() {
-    String command = "remove --key=key1 --region=" + REPLICATE_REGION_NAME;
-
-    gfsh.executeAndAssertThat(command).statusIsSuccess().containsKeyValuePair("Result", "true")
-        .containsKeyValuePair("Key Class", "java.lang.String").containsKeyValuePair("Key", "key1");
-
-    server1.invoke(() -> verifyKeyIsRemoved(REPLICATE_REGION_NAME, "key1"));
-    server2.invoke(() -> verifyKeyIsRemoved(REPLICATE_REGION_NAME, "key1"));
-
-    server1.invoke(() -> verifyKeyIsPresent(REPLICATE_REGION_NAME, "key2"));
-    server2.invoke(() -> verifyKeyIsPresent(REPLICATE_REGION_NAME, "key2"));
-  }
-
-  @Test
-  @SuppressWarnings("deprecation")
-  public void removeKeyFromPartitionedRegion() {
-    String command = "remove --key=key1 --region=" + PARTITIONED_REGION_NAME;
-
-    gfsh.executeAndAssertThat(command).statusIsSuccess().containsKeyValuePair("Result", "true")
-        .containsKeyValuePair("Key Class", "java.lang.String").containsKeyValuePair("Key", "key1");
-
-    server1.invoke(() -> verifyKeyIsRemoved(PARTITIONED_REGION_NAME, "key1"));
-    server2.invoke(() -> verifyKeyIsRemoved(PARTITIONED_REGION_NAME, "key1"));
-
-    server1.invoke(() -> verifyKeyIsPresent(PARTITIONED_REGION_NAME, "key2"));
-    server2.invoke(() -> verifyKeyIsPresent(PARTITIONED_REGION_NAME, "key2"));
-  }
-
-  @Test
-  public void removeAllFromReplicateRegion() {
-    String command = "remove --all --region=" + REPLICATE_REGION_NAME;
+  public void clearReplicateRegion() {
+    String command = commandString + " --region=" + REPLICATE_REGION_NAME;
 
     gfsh.executeAndAssertThat("list regions").statusIsSuccess();
     gfsh.executeAndAssertThat(command).statusIsSuccess();
 
-    assertThat(gfsh.getGfshOutput()).contains("Cleared all keys in the region")
-        .contains(CliStrings.REMOVE__MSG__CLEARALL_DEPRECATION_WARNING);
+    assertThat(gfsh.getGfshOutput()).contains("Cleared all keys in the region");
 
     server1.invoke(() -> verifyAllKeysAreRemoved(REPLICATE_REGION_NAME));
     server2.invoke(() -> verifyAllKeysAreRemoved(REPLICATE_REGION_NAME));
@@ -137,49 +101,23 @@ public class RemoveCommandDUnitTest {
 
 
   @Test
-  public void removeAllFromPartitionedRegion() {
-    String command = "remove --all --region=" + PARTITIONED_REGION_NAME;
+  public void clearPartitionedRegion() {
+    String command = commandString + " --all --region=" + PARTITIONED_REGION_NAME;
 
     gfsh.executeAndAssertThat(command).statusIsSuccess();
 
-    assertThat(gfsh.getGfshOutput()).contains("Cleared all keys in the region")
-        .contains(CliStrings.REMOVE__MSG__CLEARALL_DEPRECATION_WARNING);;
+    assertThat(gfsh.getGfshOutput()).contains("Cleared all keys in the region");
 
     server1.invoke(() -> verifyAllKeysAreRemoved(REPLICATE_REGION_NAME));
     server2.invoke(() -> verifyAllKeysAreRemoved(REPLICATE_REGION_NAME));
-  }
-
-  /**
-   * Test remove from a region with a zero-length string key (GEODE-2269)
-   */
-  @Test
-  public void removeEmptyKey() {
-    server1.invoke(() -> verifyKeyIsPresent(REPLICATE_REGION_NAME, EMPTY_STRING));
-    server2.invoke(() -> verifyKeyIsPresent(REPLICATE_REGION_NAME, EMPTY_STRING));
-
-    String command = "remove --key=\"\" --region=" + REPLICATE_REGION_NAME;
-    gfsh.executeAndAssertThat(command).statusIsSuccess();
-
-    server1.invoke(() -> verifyKeyIsRemoved(REPLICATE_REGION_NAME, EMPTY_STRING));
-    server2.invoke(() -> verifyKeyIsRemoved(REPLICATE_REGION_NAME, EMPTY_STRING));
   }
 
   private static void verifyAllKeysAreRemoved(String regionName) {
-    Region<?, ?> region = getRegion(regionName);
+    Region region = getRegion(regionName);
     assertThat(region.size()).isEqualTo(0);
   }
 
-  private static void verifyKeyIsRemoved(String regionName, String key) {
-    Region<?, ?> region = getRegion(regionName);
-    assertThat(region.get(key)).isNull();
-  }
-
-  private static void verifyKeyIsPresent(String regionName, String key) {
-    Region<?, ?> region = getRegion(regionName);
-    assertThat(region.get(key)).isNotNull();
-  }
-
-  private static Region<?, ?> getRegion(String regionName) {
+  private static Region getRegion(String regionName) {
     return CacheFactory.getAnyInstance().getRegion(regionName);
   }
 }
