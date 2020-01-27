@@ -14,6 +14,7 @@
  */
 package org.apache.geode.distributed.internal.membership;
 
+import static org.apache.geode.distributed.internal.membership.gms.util.MembershipAddressUtil.createMemberID;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -32,7 +33,6 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
-import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 @Category({MembershipTest.class})
@@ -45,7 +45,7 @@ public class GMSMembershipViewJUnitTest {
     int numMembers = 10;
     members = new ArrayList<>(numMembers);
     for (int i = 0; i < numMembers; i++) {
-      members.add(new InternalDistributedMember(LocalHostUtil.getLocalHost(), 1000 + i));
+      members.add(createMemberID(1000 + i));
     }
     // view creator is a locator
     members.get(0).setVmKind(MemberIdentifier.LOCATOR_DM_TYPE);
@@ -96,7 +96,8 @@ public class GMSMembershipViewJUnitTest {
 
     assertFalse(view.shouldBeCoordinator(members.get(1)));
     assertTrue(view.shouldBeCoordinator(members.get(0)));
-    assertEquals(members.get(numMembers - 1),
+    System.out.println("view is " + view + " and members are " + members);
+    assertEquals(members.get(1),
         view.getCoordinator(Collections.singletonList(members.get(0))));
     members.get(numMembers - 1).setPreferredForCoordinator(false);
     assertEquals(members.get(1), view.getCoordinator(Collections.singletonList(members.get(0))));
@@ -182,7 +183,7 @@ public class GMSMembershipViewJUnitTest {
 
     int oldSize = view.size();
     for (int i = 0; i < 100; i++) {
-      MemberIdentifier mbr = new InternalDistributedMember(LocalHostUtil.getLocalHost(), 2000 + i);
+      MemberIdentifier mbr = createMemberID(2000 + i);
       mbr.setVmKind(MemberIdentifier.NORMAL_DM_TYPE);
       mbr.setVmViewId(2);
       view.add(mbr);
@@ -224,12 +225,12 @@ public class GMSMembershipViewJUnitTest {
     // in the previous view-weight, causing a spurious network partition to be declared
     MemberIdentifier members[] =
         new MemberIdentifier[] {
-            new InternalDistributedMember("localhost", 1),
-            new InternalDistributedMember("localhost", 2),
-            new InternalDistributedMember("localhost", 3),
-            new InternalDistributedMember("localhost", 4),
-            new InternalDistributedMember("localhost", 5),
-            new InternalDistributedMember("localhost", 6)};
+            createMemberID(1),
+            createMemberID(2),
+            createMemberID(3),
+            createMemberID(4),
+            createMemberID(5),
+            createMemberID(6)};
     int i = 0;
     // weight 3
     members[i].setVmKind(MemberIdentifier.LOCATOR_DM_TYPE);
@@ -260,7 +261,7 @@ public class GMSMembershipViewJUnitTest {
     MemberIdentifier leader = (MemberIdentifier) members[2];
     assertTrue(!leader.preferredForCoordinator());
 
-    MemberIdentifier joiningMember = new InternalDistributedMember("localhost", 7);
+    MemberIdentifier joiningMember = createMemberID(7);
     joiningMember.setVmKind(MemberIdentifier.NORMAL_DM_TYPE);
     joiningMember.setPreferredForCoordinator(false);
 

@@ -24,6 +24,7 @@ import org.junit.Test;
 
 import org.apache.geode.distributed.internal.membership.api.MemberData;
 import org.apache.geode.distributed.internal.membership.api.MemberDataBuilder;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.serialization.Version;
 
 public class MemberDataBuilderImplTest {
@@ -38,7 +39,7 @@ public class MemberDataBuilderImplTest {
 
   @Test
   public void testNewBuilderForLocalHost() throws UnknownHostException {
-    InetAddress localhost = InetAddress.getLocalHost();
+    InetAddress localhost = LocalHostUtil.getLocalHost();
     MemberData data = MemberDataBuilder.newBuilderForLocalHost("hostname").build();
     assertThat(data.getInetAddress()).isEqualTo(localhost);
     assertThat(data.getHostName()).isEqualTo("hostname");

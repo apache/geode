@@ -70,7 +70,7 @@ public interface DataSerializableFixedID extends SerializationVersions, BasicSer
 
   short VIEW_ACK_MESSAGE = -151;
   short INSTALL_VIEW_MESSAGE = -150;
-  // -149 is unused;
+  short DEFAULT_MEMBER_ID = -149; // membership module's default identifier
   short NETVIEW = -148;
   short GET_VIEW_REQ = -147;
   short GET_VIEW_RESP = -146;

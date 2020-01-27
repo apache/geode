@@ -20,6 +20,7 @@ import java.net.UnknownHostException;
 import org.apache.geode.distributed.internal.membership.api.MemberData;
 import org.apache.geode.distributed.internal.membership.api.MemberDataBuilder;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.serialization.Version;
 
 /**
@@ -75,7 +76,7 @@ public class MemberDataBuilderImpl implements MemberDataBuilder {
 
   private MemberDataBuilderImpl(String fakeHostName) {
     try {
-      inetAddress = InetAddress.getLocalHost();
+      inetAddress = LocalHostUtil.getLocalHost();
     } catch (UnknownHostException e2) {
       throw new RuntimeException("Unable to resolve local host address", e2);
     }

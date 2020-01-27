@@ -608,7 +608,7 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
 
   @Override
   public int getDSFID() {
-    return DISTRIBUTED_MEMBER;
+    return DEFAULT_MEMBER_ID;
   }
 
   @Override

@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.distributed.internal.membership.api;
+package org.apache.geode.distributed.internal.membership;
 
 import static com.tngtech.archunit.base.DescribedPredicate.not;
 import static com.tngtech.archunit.core.domain.JavaClass.Predicates.resideInAPackage;
@@ -27,29 +27,40 @@ import com.tngtech.archunit.junit.CacheMode;
 import com.tngtech.archunit.lang.ArchRule;
 import org.junit.runner.RunWith;
 
-import org.apache.geode.distributed.internal.membership.gms.MemberDataBuilderImpl;
-import org.apache.geode.distributed.internal.membership.gms.MembershipBuilderImpl;
-import org.apache.geode.distributed.internal.membership.gms.MembershipLocatorBuilderImpl;
+import org.apache.geode.internal.AvailablePortHelper;
 
 @RunWith(ArchUnitRunner.class)
-@AnalyzeClasses(packages = "org.apache.geode.distributed.internal.membership.api",
+@AnalyzeClasses(packages = "org.apache.geode.distributed.internal.membership.gms..",
     cacheMode = CacheMode.PER_CLASS,
     importOptions = ImportOption.DoNotIncludeArchives.class)
-public class MembershipAPIArchUnitTest {
+public class MembershipDependenciesJUnitTest {
 
+  /*
+   * This test verifies that packages defined in the geode-membership module depend only on
+   * packages defined within that module or on packages defined outside the geode-core module
+   * (org.apache.geode packages) or on packages defined in a handful of small "leaf" modules.
+   *
+   * The most important thing is to prevent geode-membership from depending on geode-core.
+   */
   @ArchTest
-  public static final ArchRule membershipAPIDoesntDependOnMembershipORCore = classes()
+  public static final ArchRule membershipDoesntDependOnCoreProvisional = classes()
       .that()
-      .resideInAPackage("org.apache.geode.distributed.internal.membership.api")
+      .resideInAPackage("org.apache.geode.distributed.internal.membership.gms..")
       .should()
       .onlyDependOnClassesThat(
-          resideInAPackage("org.apache.geode.distributed.internal.membership.api")
-              .or(not(resideInAPackage("org.apache.geode..")))
-              // Serialization is a dependency of membership
+          resideInAPackage("org.apache.geode.distributed.internal.membership.gms..")
+              .or(resideInAPackage("org.apache.geode.distributed.internal.membership.api.."))
+
+              // OK to depend on these "leaf" dependencies
               .or(resideInAPackage("org.apache.geode.internal.serialization.."))
+              .or(resideInAPackage("org.apache.geode.logging.internal.."))
               .or(resideInAPackage("org.apache.geode.distributed.internal.tcpserver.."))
-              // allowed
-              .or(type(MembershipBuilderImpl.class))
-              .or(type(MembershipLocatorBuilderImpl.class))
-              .or(type(MemberDataBuilderImpl.class)));
+              .or(resideInAPackage("org.apache.geode.internal.inet.."))
+              .or(resideInAPackage("org.apache.geode.internal.lang.."))
+
+              .or(not(resideInAPackage("org.apache.geode..")))
+              .or(type(AvailablePortHelper.class))
+
+              // TODO: we dursn't depend on the test package cause it depends on pkgs in geode-core
+              .or(resideInAPackage("org.apache.geode.test..")));
 }
