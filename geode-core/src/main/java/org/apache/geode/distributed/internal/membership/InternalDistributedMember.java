@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 import org.jgroups.util.UUID;
 
 import org.apache.geode.InternalGemFireError;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.client.ServerConnectivityException;
@@ -59,6 +60,8 @@ public class InternalDistributedMember
     implements DistributedMember, Externalizable, ProfileId, VersionSource<DistributedMember>,
     MemberIdentifier, DataSerializableFixedID {
   private static final long serialVersionUID = -2785249969777296507L;
+
+  @Immutable
   public static final MemberIdentifierFactoryImpl MEMBER_IDENTIFIER_FACTORY =
       new MemberIdentifierFactoryImpl();
 
