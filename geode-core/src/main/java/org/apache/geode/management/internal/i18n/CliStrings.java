@@ -818,7 +818,8 @@ public class CliStrings {
 
   /* clear region */
   public static final String CLEAR_REGION = "clear region";
-  public static final String CLEAR_REGION_HELP = "Clears/Removes all keys from the specified region.";
+  public static final String CLEAR_REGION_HELP =
+      "Clears/Removes all keys from the specified region.";
   public static final String CLEAR_REGION_REGION_NAME = "region";
   public static final String CLEAR_REGION_REGION_NAME_HELP = "Region to clear keys from.";
 
@@ -1921,8 +1922,9 @@ public class CliStrings {
   public static final String REMOVE__MSG__REGION_NOT_FOUND = "Region <{0}> Not Found";
   public static final String REMOVE__MSG__KEY_NOT_FOUND_REGION = "Key is not present in the region";
   public static final String REMOVE__MSG__CLEARED_ALL_CLEARS = "Cleared all keys in the region";
-  public static final String REMOVE__MSG__CLEARALL_DEPRECATION_WARNING = "Warning: The --all option for the 'remove' command is deprecated. Please"
-      + " use the 'clear region' command instead.";
+  public static final String REMOVE__MSG__CLEARALL_DEPRECATION_WARNING =
+      "Warning: The --all option for the 'remove' command is deprecated. Please"
+          + " use the 'clear region' command instead.";
   public static final String REMOVE__MSG__CLEARALL_NOT_SUPPORTED_FOR_PARTITIONREGION =
       "Option --" + REMOVE__ALL + " is not supported on partitioned region";
 

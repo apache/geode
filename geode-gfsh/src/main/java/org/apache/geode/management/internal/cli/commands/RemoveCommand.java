@@ -30,8 +30,6 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
-import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
-import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.domain.DataCommandRequest;
 import org.apache.geode.management.internal.cli.domain.DataCommandResult;
 import org.apache.geode.management.internal.cli.functions.DataCommandFunction;
@@ -94,7 +92,7 @@ public class RemoveCommand extends GfshCommand {
     dataResult.setKeyClass(keyClass);
     ResultModel result = null;
 
-    if(removeAllKeys) {
+    if (removeAllKeys) {
       result = dataResult.toResultModel(CliStrings.REMOVE__MSG__CLEARALL_DEPRECATION_WARNING);
     } else {
       result = dataResult.toResultModel();

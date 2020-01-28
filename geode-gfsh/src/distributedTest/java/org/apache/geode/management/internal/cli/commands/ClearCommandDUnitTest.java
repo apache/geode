@@ -102,14 +102,14 @@ public class ClearCommandDUnitTest {
 
   @Test
   public void clearPartitionedRegion() {
-    String command = commandString + " --all --region=" + PARTITIONED_REGION_NAME;
+    String command = commandString + " --region=" + PARTITIONED_REGION_NAME;
 
     gfsh.executeAndAssertThat(command).statusIsSuccess();
 
     assertThat(gfsh.getGfshOutput()).contains("Cleared all keys in the region");
 
-    server1.invoke(() -> verifyAllKeysAreRemoved(REPLICATE_REGION_NAME));
-    server2.invoke(() -> verifyAllKeysAreRemoved(REPLICATE_REGION_NAME));
+    server1.invoke(() -> verifyAllKeysAreRemoved(PARTITIONED_REGION_NAME));
+    server2.invoke(() -> verifyAllKeysAreRemoved(PARTITIONED_REGION_NAME));
   }
 
   private static void verifyAllKeysAreRemoved(String regionName) {

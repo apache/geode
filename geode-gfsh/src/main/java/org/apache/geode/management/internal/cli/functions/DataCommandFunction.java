@@ -322,10 +322,12 @@ public class DataCommandFunction implements InternalFunction<DataCommandRequest>
           return DataCommandResult.createRemoveInfoResult(key, null, null,
               CliStrings.format(CliStrings.REMOVE__MSG__CLEARED_ALL_CLEARS, regionName), true);
         } else {
-          //BR: CHANGE HERE - this may end up being the same as the replicated region case above,
-          //in which case the if/else on the region policy can be removed. If there are custom steps
-          //involved with launching clear once the API call is finished, we can modify the copy below
-          //to create a funcitonal PR case.
+          // BR: CHANGE HERE - this may end up being the same as the replicated region case above,
+          // in which case the if/else on the region policy can be removed. If there are custom
+          // steps
+          // involved with launching clear once the API call is finished, we can modify the copy
+          // below
+          // to create a funcitonal PR case.
 
           region.clear();
           if (logger.isDebugEnabled()) {
@@ -335,8 +337,8 @@ public class DataCommandFunction implements InternalFunction<DataCommandRequest>
               CliStrings.format(CliStrings.REMOVE__MSG__CLEARED_ALL_CLEARS, regionName), true);
 
 
-          //return DataCommandResult.createRemoveInfoResult(key, null, null,
-          //    CliStrings.REMOVE__MSG__CLEARALL_NOT_SUPPORTED_FOR_PARTITIONREGION, false);
+          // return DataCommandResult.createRemoveInfoResult(key, null, null,
+          // CliStrings.REMOVE__MSG__CLEARALL_NOT_SUPPORTED_FOR_PARTITIONREGION, false);
         }
       }
     }

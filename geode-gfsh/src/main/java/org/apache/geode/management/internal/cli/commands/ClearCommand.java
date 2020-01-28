@@ -69,11 +69,11 @@ public class ClearCommand extends GfshCommand {
       request.setRegionName(regionPath);
       dataResult = callFunctionForRegion(request, removefn, memberList);
     } else {
-      dataResult = removefn.remove(null, null, regionPath,"ALL",
+      dataResult = removefn.remove(null, null, regionPath, "ALL",
           (InternalCache) cache);
     }
 
-    //BR: is this needed?
+    // BR: is this needed?
     dataResult.setKeyClass(null);
 
     return dataResult.toResultModel();
