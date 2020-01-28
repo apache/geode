@@ -112,7 +112,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
   @Before
   public void setup() {
     vm0 = VM.getVM(0);
-    vm1 = VM.getVM(-1);
+    vm1 = VM.getVM(1);
     vm2 = VM.getVM(2);
     vm3 = VM.getVM(3);
   }
