@@ -560,6 +560,36 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     }
   }
 
+  @Override
+  public void cmnClearRegion(RegionEventImpl regionEvent, boolean cacheWrite, boolean useRVV) {
+    if (!getBucketAdvisor().isPrimary()) {
+      if (logger.isDebugEnabled()) {
+        logger.debug("Not primary bucket when doing clear, do nothing");
+      }
+      return;
+    }
+
+    boolean enableRVV = useRVV && getConcurrencyChecksEnabled();
+    RegionVersionVector rvv = null;
+    if (enableRVV) {
+      rvv = getVersionVector().getCloneForTransmission();
+    }
+
+    // get rvvLock
+    Set<InternalDistributedMember> participants =
+        getCacheDistributionAdvisor().adviseInvalidateRegion();
+    try {
+      obtainWriteLocksForClear(regionEvent, participants);
+      // no need to dominate my own rvv.
+      // Clear is on going here, there won't be GII for this member
+      clearRegionLocally(regionEvent, cacheWrite, null);
+      distributeClearOperation(regionEvent, rvv, participants);
+
+      // TODO: call reindexUserDataRegion if there're lucene indexes
+    } finally {
+      releaseWriteLocksForClear(regionEvent, participants);
+    }
+  }
 
   long generateTailKey() {
     long key = eventSeqNum.addAndGet(partitionedRegion.getTotalNumberOfBuckets());
@@ -2110,8 +2140,8 @@ public class BucketRegion extends DistributedRegion implements Bucket {
       // counters to 0.
       oldMemValue = bytesInMemory.getAndSet(0);
     } else {
-      throw new InternalGemFireError(
-          "Trying to clear a bucket region that was not destroyed or in initialization.");
+      // BucketRegion's clear is supported now
+      oldMemValue = bytesInMemory.getAndSet(0);
     }
     if (oldMemValue != BUCKET_DESTROYED) {
       partitionedRegion.getPrStats().incDataStoreEntryCount(-sizeBeforeClear);
