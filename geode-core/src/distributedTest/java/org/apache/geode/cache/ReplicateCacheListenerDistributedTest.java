@@ -51,13 +51,15 @@ public class ReplicateCacheListenerDistributedTest implements Serializable {
   private static final String UPDATES = "UPDATES";
   private static final String INVALIDATES = "INVALIDATES";
   private static final String DESTROYS = "DESTROYS";
+  private static final String CLEAR = "CLEAR";
+  private static final String REGION_DESTROY = "REGION_DESTROY";
 
   private static final int ENTRY_VALUE = 0;
   private static final int UPDATED_ENTRY_VALUE = 1;
 
   private static final String KEY = "key-1";
 
-  private String regionName;
+  protected String regionName;
 
   @Rule
   public DistributedRule distributedRule = new DistributedRule();
@@ -82,6 +84,8 @@ public class ReplicateCacheListenerDistributedTest implements Serializable {
     distributedCounters.initialize(DESTROYS);
     distributedCounters.initialize(INVALIDATES);
     distributedCounters.initialize(UPDATES);
+    distributedCounters.initialize(CLEAR);
+    distributedCounters.initialize(REGION_DESTROY);
   }
 
   @Test
@@ -148,6 +152,36 @@ public class ReplicateCacheListenerDistributedTest implements Serializable {
     assertThat(distributedCounters.getTotal(DESTROYS)).isEqualTo(expectedDestroys());
   }
 
+  @Test
+  public void afterClearIsInvokedInEveryMember() {
+    CacheListener<String, Integer> listener = new ClearCountingCacheListener();
+    Region<String, Integer> region = createRegion(regionName, listener);
+    for (int i = 0; i < getVMCount(); i++) {
+      getVM(i).invoke(() -> {
+        createRegion(regionName, listener);
+      });
+    }
+
+    region.clear();
+
+    assertThat(distributedCounters.getTotal(CLEAR)).isEqualTo(expectedClears());
+  }
+
+  @Test
+  public void afterRegionDestroyIsInvokedInEveryMember() {
+    CacheListener<String, Integer> listener = new RegionDestroyCountingCacheListener();
+    Region<String, Integer> region = createRegion(regionName, listener);
+    for (int i = 0; i < getVMCount(); i++) {
+      getVM(i).invoke(() -> {
+        createRegion(regionName, listener);
+      });
+    }
+
+    region.destroyRegion();
+
+    assertThat(distributedCounters.getTotal(REGION_DESTROY)).isEqualTo(expectedRegionDestroys());
+  }
+
   protected Region<String, Integer> createRegion(final String name,
       final CacheListener<String, Integer> listener) {
     RegionFactory<String, Integer> regionFactory = cacheRule.getCache().createRegionFactory();
@@ -171,6 +205,14 @@ public class ReplicateCacheListenerDistributedTest implements Serializable {
   }
 
   protected int expectedDestroys() {
+    return getVMCount() + 1;
+  }
+
+  protected int expectedClears() {
+    return getVMCount() + 1;
+  }
+
+  protected int expectedRegionDestroys() {
     return getVMCount() + 1;
   }
 
@@ -283,7 +325,12 @@ public class ReplicateCacheListenerDistributedTest implements Serializable {
 
     @Override
     public void afterCreate(final EntryEvent<String, Integer> event) {
-      // ignore
+      distributedCounters.increment(CREATES);
+    }
+
+    @Override
+    public void afterUpdate(final EntryEvent<String, Integer> event) {
+      distributedCounters.increment(UPDATES);
     }
 
     @Override
@@ -300,6 +347,66 @@ public class ReplicateCacheListenerDistributedTest implements Serializable {
       errorCollector.checkThat(event.getOperation(), equalTo(Operation.DESTROY));
       errorCollector.checkThat(event.getOldValue(), anyOf(equalTo(ENTRY_VALUE), nullValue()));
       errorCollector.checkThat(event.getNewValue(), nullValue());
+    }
+  }
+
+  protected class ClearCountingCacheListener extends BaseCacheListener {
+
+    @Override
+    public void afterCreate(final EntryEvent<String, Integer> event) {
+      distributedCounters.increment(CREATES);
+    }
+
+    @Override
+    public void afterUpdate(final EntryEvent<String, Integer> event) {
+      distributedCounters.increment(UPDATES);
+    }
+
+    @Override
+    public void afterRegionClear(RegionEvent<String, Integer> event) {
+
+      distributedCounters.increment(CLEAR);
+      if (!event.getRegion().getAttributes().getDataPolicy().withPartitioning()) {
+        if (event.isOriginRemote()) {
+          errorCollector.checkThat(event.getDistributedMember(),
+              not(cacheRule.getSystem().getDistributedMember()));
+        } else {
+          errorCollector.checkThat(event.getDistributedMember(),
+              equalTo(cacheRule.getSystem().getDistributedMember()));
+        }
+      }
+      errorCollector.checkThat(event.getOperation(), equalTo(Operation.REGION_CLEAR));
+      errorCollector.checkThat(event.getRegion().getName(), equalTo(regionName));
+    }
+  }
+
+  protected class RegionDestroyCountingCacheListener extends BaseCacheListener {
+
+    @Override
+    public void afterCreate(final EntryEvent<String, Integer> event) {
+      distributedCounters.increment(CREATES);
+    }
+
+    @Override
+    public void afterUpdate(final EntryEvent<String, Integer> event) {
+      distributedCounters.increment(UPDATES);
+    }
+
+    @Override
+    public void afterRegionDestroy(final RegionEvent<String, Integer> event) {
+      distributedCounters.increment(REGION_DESTROY);
+
+      if (!event.getRegion().getAttributes().getDataPolicy().withPartitioning()) {
+        if (event.isOriginRemote()) {
+          errorCollector.checkThat(event.getDistributedMember(),
+              not(cacheRule.getSystem().getDistributedMember()));
+        } else {
+          errorCollector.checkThat(event.getDistributedMember(),
+              equalTo(cacheRule.getSystem().getDistributedMember()));
+        }
+      }
+      errorCollector.checkThat(event.getOperation(), equalTo(Operation.REGION_DESTROY));
+      errorCollector.checkThat(event.getRegion().getName(), equalTo(regionName));
     }
   }
 }

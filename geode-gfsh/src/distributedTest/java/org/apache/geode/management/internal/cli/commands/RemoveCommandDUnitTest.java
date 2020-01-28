@@ -16,6 +16,7 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.management.internal.cli.commands.RemoveCommand.REGION_NOT_FOUND;
+import static org.apache.geode.management.internal.i18n.CliStrings.CLEAR_REGION_CLEARED_ALL_KEYS;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Before;
@@ -25,6 +26,7 @@ import org.junit.Test;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
+import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -128,7 +130,8 @@ public class RemoveCommandDUnitTest {
     gfsh.executeAndAssertThat("list regions").statusIsSuccess();
     gfsh.executeAndAssertThat(command).statusIsSuccess();
 
-    assertThat(gfsh.getGfshOutput()).contains("Cleared all keys in the region");
+    assertThat(gfsh.getGfshOutput()).contains(CLEAR_REGION_CLEARED_ALL_KEYS)
+        .contains(CliStrings.REMOVE__MSG__CLEARALL_DEPRECATION_WARNING);
 
     server1.invoke(() -> verifyAllKeysAreRemoved(REPLICATE_REGION_NAME));
     server2.invoke(() -> verifyAllKeysAreRemoved(REPLICATE_REGION_NAME));
@@ -139,11 +142,13 @@ public class RemoveCommandDUnitTest {
   public void removeAllFromPartitionedRegion() {
     String command = "remove --all --region=" + PARTITIONED_REGION_NAME;
 
-    // Maybe this should return an "error" status, but the current behavior is status "OK"
     gfsh.executeAndAssertThat(command).statusIsSuccess();
 
-    assertThat(gfsh.getGfshOutput())
-        .contains("Option --all is not supported on partitioned region");
+    assertThat(gfsh.getGfshOutput()).contains(CLEAR_REGION_CLEARED_ALL_KEYS)
+        .contains(CliStrings.REMOVE__MSG__CLEARALL_DEPRECATION_WARNING);;
+
+    server1.invoke(() -> verifyAllKeysAreRemoved(PARTITIONED_REGION_NAME));
+    server2.invoke(() -> verifyAllKeysAreRemoved(PARTITIONED_REGION_NAME));
   }
 
   /**

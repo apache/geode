@@ -1622,7 +1622,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
   /**
    * Returns true if the a primary is known.
    */
-  private boolean hasPrimary() {
+  protected boolean hasPrimary() {
     final byte primaryState = this.primaryState;
     return primaryState == OTHER_PRIMARY_NOT_HOSTING || primaryState == OTHER_PRIMARY_HOSTING
         || primaryState == IS_PRIMARY_HOSTING;

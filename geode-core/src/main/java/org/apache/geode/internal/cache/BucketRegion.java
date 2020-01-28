@@ -560,6 +560,38 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     }
   }
 
+  /**
+   * this starts with a primary bucket, clears it, and distribute a DistributedClearOperation
+   * .OperationType.OP_CLEAR operation to other members.
+   * If this member is not locked yet, lock it and send OP_LOCK_FOR_CLEAR to others first.
+   */
+  @Override
+  public void cmnClearRegion(RegionEventImpl regionEvent, boolean cacheWrite, boolean useRVV) {
+    if (!getBucketAdvisor().isPrimary()) {
+      if (logger.isDebugEnabled()) {
+        logger.debug("Not primary bucket when doing clear, do nothing");
+      }
+      return;
+    }
+
+    // get rvvLock
+    Set<InternalDistributedMember> participants =
+        getCacheDistributionAdvisor().adviseInvalidateRegion();
+    boolean isLockedAlready = this.partitionedRegion.getPartitionedRegionClear()
+        .isLockedForListenerAndClientNotification();
+
+    try {
+      obtainWriteLocksForClear(regionEvent, participants, isLockedAlready);
+      // no need to dominate my own rvv.
+      // Clear is on going here, there won't be GII for this member
+      clearRegionLocally(regionEvent, cacheWrite, null);
+      distributeClearOperation(regionEvent, null, participants);
+
+      // TODO: call reindexUserDataRegion if there're lucene indexes
+    } finally {
+      releaseWriteLocksForClear(regionEvent, participants, isLockedAlready);
+    }
+  }
 
   long generateTailKey() {
     long key = eventSeqNum.addAndGet(partitionedRegion.getTotalNumberOfBuckets());
@@ -2110,8 +2142,8 @@ public class BucketRegion extends DistributedRegion implements Bucket {
       // counters to 0.
       oldMemValue = bytesInMemory.getAndSet(0);
     } else {
-      throw new InternalGemFireError(
-          "Trying to clear a bucket region that was not destroyed or in initialization.");
+      // BucketRegion's clear is supported now
+      oldMemValue = bytesInMemory.getAndSet(0);
     }
     if (oldMemValue != BUCKET_DESTROYED) {
       partitionedRegion.getPrStats().incDataStoreEntryCount(-sizeBeforeClear);
@@ -2483,4 +2515,10 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   void checkSameSenderIdsAvailableOnAllNodes() {
     // nothing needed on a bucket region
   }
+
+  @Override
+  protected void basicClear(RegionEventImpl regionEvent) {
+    basicClear(regionEvent, false);
+  }
+
 }
