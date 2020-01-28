@@ -29,7 +29,9 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.SearcherManager;
 import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.similarities.TFIDFSimilarity;
 import org.apache.lucene.store.AlreadyClosedException;
+import org.apache.lucene.util.BytesRef;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.lucene.LuceneIndex;
@@ -145,6 +147,33 @@ public class IndexRepositoryImpl implements IndexRepository {
     long start = stats.startRepositoryQuery();
     long totalHits = 0;
     IndexSearcher searcher = searcherManager.acquire();
+    searcher.setSimilarity(new TFIDFSimilarity() {
+      @Override
+      public float tf(float freq) {
+        return (float) Math.sqrt(freq);
+      }
+
+      @Override
+      public float idf(long docFreq, long docCount) {
+        return (float) Math.sqrt((docCount) / (1 + docFreq) + 1);
+      }
+
+      @Override
+      public float lengthNorm(int length) {
+        return (float) (1 / Math.sqrt(length));
+      }
+
+      @Override
+      public float sloppyFreq(int distance) {
+        return 0;
+      }
+
+      @Override
+      public float scorePayload(int doc, int start, int end, BytesRef payload) {
+        return 1;
+      }
+    });
+
     try {
       TopDocs docs = searcher.search(query, limit);
       totalHits = docs.totalHits;

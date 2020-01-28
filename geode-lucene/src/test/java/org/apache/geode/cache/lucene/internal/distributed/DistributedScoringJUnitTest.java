@@ -16,6 +16,7 @@ package org.apache.geode.cache.lucene.internal.distributed;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -109,8 +110,15 @@ public class DistributedScoringJUnitTest {
 
     List<EntryScore<String>> distResult = manager.reduce(collectors).getEntries().getHits();
 
-    Assert.assertTrue(singleResult.size() > 0);
     Assert.assertEquals(singleResult.size(), distResult.size());
+    Assert.assertTrue(singleResult.size() > 0);
+
+    for (Iterator single = distResult.iterator(), dist = singleResult.iterator(); single.hasNext()
+        && dist.hasNext();) {
+      EntryScore<String> singleScore = (EntryScore<String>) single.next();
+      EntryScore<String> distScore = (EntryScore<String>) dist.next();
+      Assert.assertEquals(singleScore.getKey(), distScore.getKey());
+    }
   }
 
   private void populateIndex(String[] testStrings, IndexRepositoryImpl repo, int start, int end)
