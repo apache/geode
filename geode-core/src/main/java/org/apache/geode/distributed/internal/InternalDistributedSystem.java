@@ -198,6 +198,8 @@ public class InternalDistributedSystem extends DistributedSystem
 
   private final AtomicReference<ClusterAlertMessaging> clusterAlertMessaging =
       new AtomicReference<>();
+
+  // captured in initialize() when starting so that we can hand it to new instance when restarting
   private MembershipLocator<InternalDistributedMember> membershipLocator;
 
   /**
@@ -675,9 +677,7 @@ public class InternalDistributedSystem extends DistributedSystem
       MetricsService.Builder metricsServiceBuilder,
       final MembershipLocator<InternalDistributedMember> membershipLocatorArg) {
 
-    if (membershipLocatorArg != null) {
-      membershipLocator = membershipLocatorArg;
-    }
+    membershipLocator = membershipLocatorArg;
 
     if (originalConfig.getLocators().equals("")) {
       if (originalConfig.getMcastPort() != 0) {
@@ -766,9 +766,8 @@ public class InternalDistributedSystem extends DistributedSystem
         lockMemory(avail, size);
       }
 
-      final MembershipLocator<InternalDistributedMember> membershipLocatorX;
       try {
-        membershipLocatorX = startInitLocator(membershipLocatorArg);
+        membershipLocator = startInitLocator(membershipLocator);
       } catch (InterruptedException e) {
         throw new SystemConnectException("Startup has been interrupted", e);
       }
@@ -779,7 +778,7 @@ public class InternalDistributedSystem extends DistributedSystem
 
       if (!isLoner) {
         try {
-          dm = ClusterDistributionManager.create(this, membershipLocatorX);
+          dm = ClusterDistributionManager.create(this, membershipLocator);
           // fix bug #46324
           if (InternalLocator.hasLocator()) {
             InternalLocator internalLocator = InternalLocator.getLocator();
@@ -909,8 +908,8 @@ public class InternalDistributedSystem extends DistributedSystem
      * there. So if that singleton logic goes away, this code here might save us.
      */
     if (membershipLocatorArg != null && shouldStartLocator) {
-      throw new IllegalStateException("Internal error: trying to start a second locator "
-          + "in this JVM");
+      throw new IllegalStateException("Setting the start-locator property is not supported in "
+          + "dedicated locators launched through gfsh or the Java Locator class");
     }
 
     // when reconnecting we don't want to join with a colocated locator unless
