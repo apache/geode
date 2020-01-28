@@ -19,20 +19,23 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.ResourceEvent;
+import org.apache.geode.distributed.internal.ResourceEventsListener;
 import org.apache.geode.internal.cache.CacheService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
 import org.apache.geode.redis.GeodeRedisServer;
 
-public class GeodeRedisService implements CacheService {
+public class GeodeRedisService implements CacheService, ResourceEventsListener {
   private static final Logger logger = LogService.getLogger();
   private GeodeRedisServer redisServer;
+  private InternalCache cache;
 
   @Override
   public boolean init(Cache cache) {
-    InternalCache internalCache = (InternalCache) cache;
-    startRedisServer(internalCache);
+    this.cache = (InternalCache) cache;
+    this.cache.getInternalDistributedSystem().addResourceListener(this);
 
     return true;
   }
@@ -40,6 +43,13 @@ public class GeodeRedisService implements CacheService {
   @Override
   public void close() {
     stopRedisServer();
+  }
+
+  @Override
+  public void handleEvent(ResourceEvent event, Object resource) {
+    if (event.equals(ResourceEvent.CACHE_SERVICE_CREATE) && resource == this) {
+      startRedisServer(cache);
+    }
   }
 
   private void startRedisServer(InternalCache cache) {
@@ -66,8 +76,6 @@ public class GeodeRedisService implements CacheService {
     if (this.redisServer != null)
       this.redisServer.shutdown();
   }
-
-
 
   @Override
   public Class<? extends CacheService> getInterface() {
