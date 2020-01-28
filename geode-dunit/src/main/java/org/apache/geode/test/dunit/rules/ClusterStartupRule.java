@@ -39,6 +39,7 @@ import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.test.dunit.DUnitEnv;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.SerializableConsumerIF;
@@ -97,6 +98,7 @@ public class ClusterStartupRule implements SerializableTestRule {
   }
 
   private final int vmCount;
+  private final boolean launchDunitLocator;
 
   private final DistributedRestoreSystemProperties restoreSystemProperties =
       new DistributedRestoreSystemProperties();
@@ -106,11 +108,20 @@ public class ClusterStartupRule implements SerializableTestRule {
   private boolean logFile = false;
 
   public ClusterStartupRule() {
-    this(NUM_VMS);
+    this(NUM_VMS, false);
   }
 
   public ClusterStartupRule(final int vmCount) {
+    this(vmCount, false);
+  }
+
+  public ClusterStartupRule(final boolean launchDunitLocator) {
+    this(NUM_VMS, launchDunitLocator);
+  }
+
+  public ClusterStartupRule(final int vmCount, boolean launchDunitLocator) {
     this.vmCount = vmCount;
+    this.launchDunitLocator = launchDunitLocator;
   }
 
   public static ClientCache getClientCache() {
@@ -148,13 +159,21 @@ public class ClusterStartupRule implements SerializableTestRule {
       // GEODE-6247: JDK 11 has an issue where native code is reporting committed is 2MB > max.
       IgnoredException.addIgnoredException("committed = 538968064 should be < max = 536870912");
     }
-    DUnitLauncher.launchIfNeeded(false);
+    DUnitLauncher.launchIfNeeded(launchDunitLocator);
     for (int i = 0; i < vmCount; i++) {
       Host.getHost(0).getVM(i);
     }
     restoreSystemProperties.beforeDistributedTest(description);
     occupiedVMs = new HashMap<>();
   }
+
+  /**
+   * Returns the port that the standard dunit locator is listening on.
+   */
+  public static int getDUnitLocatorPort() {
+    return DUnitEnv.get().getLocatorPort();
+  }
+
 
   private void after(Description description) throws Throwable {
 

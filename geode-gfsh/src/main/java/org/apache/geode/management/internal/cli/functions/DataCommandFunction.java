@@ -29,7 +29,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
@@ -318,20 +317,18 @@ public class DataCommandFunction implements InternalFunction<DataCommandRequest>
               CliStrings.REMOVE__MSG__KEY_NOT_FOUND_REGION, false);
         }
       } else {
-        DataPolicy policy = region.getAttributes().getDataPolicy();
-        if (!policy.withPartitioning()) {
-          region.clear();
-          if (logger.isDebugEnabled()) {
-            logger.debug("Cleared all keys in the region - {}", regionName);
-          }
-          return DataCommandResult.createRemoveInfoResult(key, null, null,
-              CliStrings.format(CliStrings.REMOVE__MSG__CLEARED_ALL_CLEARS, regionName), true);
-        } else {
-          return DataCommandResult.createRemoveInfoResult(key, null, null,
-              CliStrings.REMOVE__MSG__CLEARALL_NOT_SUPPORTED_FOR_PARTITIONREGION, false);
-        }
+        return clear(region, regionName);
       }
     }
+  }
+
+  public DataCommandResult clear(Region region, String regionName) {
+    region.clear();
+    if (logger.isDebugEnabled()) {
+      logger.debug("Cleared all keys in the region - {}", regionName);
+    }
+    return DataCommandResult.createRemoveInfoResult(null, null, null,
+        CliStrings.format(CliStrings.CLEAR_REGION_CLEARED_ALL_KEYS, regionName), true);
   }
 
   @SuppressWarnings({"rawtypes"})

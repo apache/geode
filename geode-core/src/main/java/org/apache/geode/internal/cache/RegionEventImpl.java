@@ -119,6 +119,11 @@ public class RegionEventImpl
     return region;
   }
 
+  public void setRegion(LocalRegion region) {
+    this.region = region;
+    this.distributedMember = region.getMyId();
+  }
+
   @Override
   public Operation getOperation() {
     return this.op;
