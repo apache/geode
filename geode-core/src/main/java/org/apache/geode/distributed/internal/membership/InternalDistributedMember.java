@@ -460,11 +460,6 @@ public class InternalDistributedMember
   }
 
   @Override
-  public int getDSFID() {
-    return memberIdentifier.getDSFID();
-  }
-
-  @Override
   public void toData(DataOutput out,
       SerializationContext context)
       throws IOException {
