@@ -990,7 +990,7 @@ public abstract class RollingUpgrade2DUnitTestBase extends JUnit4DistributedTest
     return clientCache;
   }
 
-  private static boolean assertRegionExists(GemFireCache cache, String regionName) {
+  protected static boolean assertRegionExists(GemFireCache cache, String regionName) {
     Region region = cache.getRegion(regionName);
     if (region == null) {
       throw new Error("Region: " + regionName + " does not exist");
@@ -998,7 +998,7 @@ public abstract class RollingUpgrade2DUnitTestBase extends JUnit4DistributedTest
     return true;
   }
 
-  private static Region getRegion(GemFireCache cache, String regionName) {
+  protected static Region getRegion(GemFireCache cache, String regionName) {
     return cache.getRegion(regionName);
   }
 

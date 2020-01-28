@@ -327,6 +327,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    */
   private int txRefCount;
 
+
   private volatile boolean regionInvalid;
 
   /**
@@ -474,6 +475,11 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * TODO: move this to ClientMetadataService into {@code Map<Region, Lock>}
    */
   private final Lock clientMetaDataLock = new ReentrantLock();
+
+  /**
+   * Lock to prevent multiple threads on this member from performing a clear at the same time.
+   */
+  protected final Object clearLock = new Object();
 
   /**
    * Lock for updating the cache service profile for the region.
@@ -2788,6 +2794,11 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     checkRegionDestroyed(true);
   }
 
+  protected void lockCheckReadiness() {
+    cache.getCancelCriterion().checkCancelInProgress(null);
+    checkReadiness();
+  }
+
   /**
    * This method should be called when the caller cannot locate an entry and that condition is
    * unexpected. This will first double check the cache and region state before throwing an
@@ -3030,7 +3041,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   /**
    * @since GemFire 5.7
    */
-  private void serverRegionClear(RegionEventImpl regionEvent) {
+  protected void serverRegionClear(RegionEventImpl regionEvent) {
     if (regionEvent.getOperation().isDistributed()) {
       ServerRegionProxy mySRP = getServerProxy();
       if (mySRP != null) {
@@ -3149,7 +3160,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     return result;
   }
 
-  private void cacheWriteBeforeRegionClear(RegionEventImpl event)
+  void cacheWriteBeforeRegionClear(RegionEventImpl event)
       throws CacheWriterException, TimeoutException {
     // copy into local var to prevent race condition
     CacheWriter writer = basicGetWriter();
@@ -8016,7 +8027,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
   }
 
-  private void cancelAllEntryExpiryTasks() {
+  @VisibleForTesting
+  void cancelAllEntryExpiryTasks() {
     // This method gets called during LocalRegion construction
     // in which case the final entryExpiryTasks field can still be null
     if (entryExpiryTasks.isEmpty()) {
@@ -8031,6 +8043,10 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       task.cancel();
       doPurge = true;
     }
+
+    // Clear the map after canceling each expiry task.
+    entryExpiryTasks.clear();
+
     if (doPurge) {
       // do a force to not leave any refs to this region
       cache.getExpirationScheduler().forcePurge();
@@ -8502,7 +8518,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * will not take distributedLock. The clear operation will also clear the local transactional
    * entries. The clear operation will have immediate committed state.
    */
-  void clearRegionLocally(RegionEventImpl regionEvent, boolean cacheWrite,
+  @Override
+  public void clearRegionLocally(RegionEventImpl regionEvent, boolean cacheWrite,
       RegionVersionVector vector) {
     final boolean isRvvDebugEnabled = logger.isTraceEnabled(LogMarker.RVV_VERBOSE);
 
