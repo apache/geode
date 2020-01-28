@@ -14,7 +14,9 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.anyLong;
@@ -31,7 +33,10 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.junit.Test;
+
 import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.statistics.StatisticsClock;
 
 public class BucketRegionJUnitTest extends DistributedRegionJUnitTest {
@@ -128,4 +133,76 @@ public class BucketRegionJUnitTest extends DistributedRegionJUnitTest {
     }
   }
 
+  @Test
+  public void cmnClearRegionWillDoNothingIfNotPrimary() {
+    RegionEventImpl event = createClearRegionEvent();
+    BucketRegion region = (BucketRegion) event.getRegion();
+    BucketAdvisor ba = mock(BucketAdvisor.class);
+    RegionVersionVector rvv = mock(RegionVersionVector.class);
+    doReturn(rvv).when(region).getVersionVector();
+    doReturn(ba).when(region).getBucketAdvisor();
+    when(ba.isPrimary()).thenReturn(false);
+    region.cmnClearRegion(event, true, true);
+    verify(region, never()).clearRegionLocally(eq(event), eq(true), eq(rvv));
+  }
+
+  @Test
+  public void cmnClearRegionCalledOnPrimary() {
+    RegionEventImpl event = createClearRegionEvent();
+    BucketRegion region = (BucketRegion) event.getRegion();
+    BucketAdvisor ba = mock(BucketAdvisor.class);
+    RegionVersionVector rvv = mock(RegionVersionVector.class);
+    doReturn(rvv).when(region).getVersionVector();
+    doReturn(true).when(region).getConcurrencyChecksEnabled();
+    doReturn(ba).when(region).getBucketAdvisor();
+    doNothing().when(region).distributeClearOperation(any(), any(), any());
+    doNothing().when(region).lockLocallyForClear(any(), any(), any());
+    doNothing().when(region).clearRegionLocally(event, true, null);
+    when(ba.isPrimary()).thenReturn(true);
+    region.cmnClearRegion(event, true, true);
+    verify(region, times(1)).clearRegionLocally(eq(event), eq(true), eq(null));
+  }
+
+  @Test
+  public void clearWillUseNullAsRVVWhenConcurrencyCheckDisabled() {
+    RegionEventImpl event = createClearRegionEvent();
+    BucketRegion region = (BucketRegion) event.getRegion();
+    BucketAdvisor ba = mock(BucketAdvisor.class);
+    doReturn(false).when(region).getConcurrencyChecksEnabled();
+    doReturn(ba).when(region).getBucketAdvisor();
+    doNothing().when(region).distributeClearOperation(any(), any(), any());
+    doNothing().when(region).lockLocallyForClear(any(), any(), any());
+    doNothing().when(region).clearRegionLocally(event, true, null);
+    when(ba.isPrimary()).thenReturn(true);
+    region.cmnClearRegion(event, true, true);
+    verify(region, times(1)).clearRegionLocally(eq(event), eq(true), eq(null));
+  }
+
+  @Test
+  public void obtainWriteLocksForClearInBRShouldNotDistribute() {
+    RegionEventImpl event = createClearRegionEvent();
+    BucketRegion region = (BucketRegion) event.getRegion();
+    doNothing().when(region).lockLocallyForClear(any(), any(), any());
+    region.obtainWriteLocksForClear(event, null);
+    assertTrue(region.isUsedForPartitionedRegionBucket());
+  }
+
+  @Test
+  public void updateSizeToZeroOnClearBucketRegion() {
+    RegionEventImpl event = createClearRegionEvent();
+    BucketRegion region = (BucketRegion) event.getRegion();
+    PartitionedRegion pr = region.getPartitionedRegion();
+    PartitionedRegionDataStore prds = mock(PartitionedRegionDataStore.class);
+    PartitionedRegionStats prStats = mock(PartitionedRegionStats.class);
+    when(pr.getPrStats()).thenReturn(prStats);
+    doNothing().when(prStats).incDataStoreEntryCount(anyInt());
+    doNothing().when(prds).updateMemoryStats(anyInt());
+    when(pr.getDataStore()).thenReturn(prds);
+    region.updateSizeOnCreate("key1", 20);
+    long sizeBeforeClear = region.getTotalBytes();
+    assertEquals(20, sizeBeforeClear);
+    region.updateSizeOnClearRegion((int) sizeBeforeClear);
+    long sizeAfterClear = region.getTotalBytes();
+    assertEquals(0, sizeAfterClear);
+  }
 }

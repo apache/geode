@@ -57,6 +57,9 @@ public interface DataSerializableFixedID extends SerializationVersions, BasicSer
   // NOTE, codes < -65536 will take 4 bytes to serialize
   // NOTE, codes < -128 will take 2 bytes to serialize
 
+  short PR_CLEAR_REPLY_MESSAGE = -164;
+  short PR_CLEAR_MESSAGE = -163;
+
   short DISTRIBUTED_PING_MESSAGE = -162;
 
   short REGION_REDUNDANCY_STATUS = -161;

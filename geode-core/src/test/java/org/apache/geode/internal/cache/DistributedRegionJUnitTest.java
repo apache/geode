@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.internal.Assert.fail;
 import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
@@ -52,6 +53,14 @@ public class DistributedRegionJUnitTest
 
   @Override
   protected void setInternalRegionArguments(InternalRegionArguments ira) {}
+
+  protected RegionEventImpl createClearRegionEvent() {
+    DistributedRegion region = prepare(true, true);
+    DistributedMember member = mock(DistributedMember.class);
+    RegionEventImpl regionEvent = new RegionEventImpl(region, Operation.REGION_CLEAR, null, false,
+        member, true);
+    return regionEvent;
+  }
 
   @Override
   protected DistributedRegion createAndDefineRegion(boolean isConcurrencyChecksEnabled,
@@ -246,4 +255,13 @@ public class DistributedRegionJUnitTest
     region.basicBridgeReplace("key1", "value1", false, null, client, true, clientEvent);
     assertThat(clientEvent.getVersionTag().equals(tag));
   }
+
+  @Test(expected = UnsupportedOperationException.class)
+  public void localClearIsNotSupportedOnReplicatedRegion() {
+    RegionEventImpl event = createClearRegionEvent();
+    DistributedRegion region = (DistributedRegion) event.getRegion();
+    region.basicLocalClear(event);
+    fail("Expect UnsupportedOperationException");
+  }
+
 }
