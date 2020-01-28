@@ -2003,6 +2003,10 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     super.basicClear(regionEvent, cacheWrite);
   }
 
+  void distributeClearOperation(RegionEventImpl regionEvent, RegionVersionVector rvv,
+      Set<InternalDistributedMember> participants) {
+    DistributedClearOperation.clear(regionEvent, rvv, participants);
+  }
 
   @Override
   void cmnClearRegion(RegionEventImpl regionEvent, boolean cacheWrite, boolean useRVV) {
@@ -2025,7 +2029,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
             obtainWriteLocksForClear(regionEvent, participants);
             clearRegionLocally(regionEvent, cacheWrite, null);
             if (!regionEvent.isOriginRemote() && regionEvent.getOperation().isDistributed()) {
-              DistributedClearOperation.clear(regionEvent, null, participants);
+              distributeClearOperation(regionEvent, null, participants);
             }
           } finally {
             releaseWriteLocksForClear(regionEvent, participants);
@@ -2081,10 +2085,12 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   /**
    * obtain locks preventing generation of new versions in other members
    */
-  private void obtainWriteLocksForClear(RegionEventImpl regionEvent,
+  protected void obtainWriteLocksForClear(RegionEventImpl regionEvent,
       Set<InternalDistributedMember> participants) {
     lockLocallyForClear(getDistributionManager(), getMyId(), regionEvent);
-    DistributedClearOperation.lockAndFlushToOthers(regionEvent, participants);
+    if (!isUsedForPartitionedRegionBucket()) {
+      DistributedClearOperation.lockAndFlushToOthers(regionEvent, participants);
+    }
   }
 
   /**
@@ -2121,7 +2127,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   /**
    * releases the locks obtained in obtainWriteLocksForClear
    */
-  private void releaseWriteLocksForClear(RegionEventImpl regionEvent,
+  protected void releaseWriteLocksForClear(RegionEventImpl regionEvent,
       Set<InternalDistributedMember> participants) {
 
     ARMLockTestHook armLockTestHook = getRegionMap().getARMLockTestHook();
@@ -2129,8 +2135,13 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
       armLockTestHook.beforeRelease(this, regionEvent);
     }
 
-    getVersionVector().unlockForClear(getMyId());
-    DistributedClearOperation.releaseLocks(regionEvent, participants);
+    RegionVersionVector rvv = getVersionVector();
+    if (rvv != null) {
+      rvv.unlockForClear(getMyId());
+    }
+    if (!isUsedForPartitionedRegionBucket()) {
+      DistributedClearOperation.releaseLocks(regionEvent, participants);
+    }
 
     if (armLockTestHook != null) {
       armLockTestHook.afterRelease(this, regionEvent);
