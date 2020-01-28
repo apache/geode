@@ -168,7 +168,34 @@ resources:
     password: ((docker-password))
     repository: gcr.io/((gcp-project))/((pipeline-prefix))gce-instances-resource
 
+- name: github-pr-resource-image
+  type: docker-image
+  source:
+    username: ((docker-username))
+    password: ((docker-password))
+    repository: gcr.io/((gcp-project))/((pipeline-prefix))github-pr-resource
+
+- name: github-pr-resource-dockerfile
+  type: git
+  source:
+    branch: master
+    uri: https://github.com/digitalocean/github-pr-resource.git
+  version:
+    ref: 1abb4b2a162e78099dab0b30144fec1e6c9b696d
+
 jobs:
+- name: build-github-pr-resource-image
+  public: ((public-pipelines))
+  serial: true
+  plan:
+    - get: alpine-tools-image
+      passed: [build-alpine-tools-docker-image]
+    - get:  github-pr-resource-dockerfile
+    - put: github-pr-resource-image
+      params:
+        build: github-pr-resource-dockerfile
+        tag_as_latest: true
+
 - name: build-concourse-docker-image
   public: ((public-pipelines))
   serial: true

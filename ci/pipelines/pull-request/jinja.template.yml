@@ -82,7 +82,7 @@ resource_types:
   source:
     username: ((docker-username))
     password: ((docker-password))
-    repository: gcr.io/gemfire-dev/github-pr-resource
+    repository: gcr.io/((gcp-project))/((pipeline-prefix))github-pr-resource
     tag: latest
 - name: concourse-metadata-resource
   type: docker-image
