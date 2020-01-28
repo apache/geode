@@ -14,8 +14,6 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.messenger;
 
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.isA;
@@ -25,7 +23,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.Properties;
 import java.util.concurrent.RejectedExecutionException;
 
 import org.jgroups.Event;
@@ -163,9 +160,6 @@ public class StatRecorderJUnitTest {
     Services mockServices = mock(Services.class);
 
     // first test to see if the non-multicast stack has the recorder installed
-    Properties nonDefault = new Properties();
-    nonDefault.put(MCAST_PORT, "0");
-    nonDefault.put(LOCATORS, "localhost[12345]");
     MembershipConfig mockConfig = mock(MembershipConfig.class);
     when(mockConfig.getMembershipPortRange()).thenReturn(new int[] {0, 10});
     when(mockConfig.getSecurityUDPDHAlgo()).thenReturn("");

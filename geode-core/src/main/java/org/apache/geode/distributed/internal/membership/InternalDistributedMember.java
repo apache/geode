@@ -78,6 +78,11 @@ public class InternalDistributedMember
     memberIdentifier = MEMBER_IDENTIFIER_FACTORY.create(null);
   }
 
+  @Override
+  public int getDSFID() {
+    return DISTRIBUTED_MEMBER;
+  }
+
   /**
    * Construct a InternalDistributedMember
    * <p>
