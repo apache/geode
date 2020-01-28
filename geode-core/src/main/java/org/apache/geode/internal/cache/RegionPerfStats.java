@@ -520,9 +520,15 @@ class RegionPerfStats extends CachePerfStats implements RegionStats {
   }
 
   @Override
-  public void incClearCount() {
-    stats.incLong(clearsId, 1L);
-    cachePerfStats.incClearCount();
+  public void incRegionClearCount() {
+    stats.incLong(regionClearsId, 1L);
+    cachePerfStats.incRegionClearCount();
+  }
+
+  @Override
+  public void incBucketClearCount() {
+    stats.incLong(bucketClearsId, 1L);
+    cachePerfStats.incBucketClearCount();
   }
 
   @Override

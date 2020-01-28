@@ -34,6 +34,7 @@ import org.apache.geode.cache.query.internal.Undefined;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.result.model.DataResultModel;
+import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.i18n.CliStrings;
@@ -50,6 +51,7 @@ public class DataCommandResult implements Serializable {
 
   public static final Logger logger = LogManager.getLogger();
   public static final String DATA_INFO_SECTION = "data-info";
+  public static final String WARNING_INFO_SECTION = "header-info";
   public static final String QUERY_SECTION = "query";
   public static final String LOCATION_SECTION = "location";
   private String command;
@@ -373,6 +375,10 @@ public class DataCommandResult implements Serializable {
   }
 
   public ResultModel toResultModel() {
+    return toResultModel("");
+  }
+
+  public ResultModel toResultModel(String warningMessage) {
     if (StringUtils.isEmpty(keyClass)) {
       keyClass = "java.lang.String";
     }
@@ -382,6 +388,12 @@ public class DataCommandResult implements Serializable {
     }
 
     ResultModel result = new ResultModel();
+
+    if (warningMessage != null && !warningMessage.isEmpty()) {
+      InfoResultModel info = result.addInfo(WARNING_INFO_SECTION);
+      info.addLine(warningMessage);
+    }
+
     DataResultModel data = result.addData(DATA_INFO_SECTION);
 
     if (errorString != null) {

@@ -73,7 +73,7 @@ public class FileBasedCountDownLatch implements Serializable {
     GeodeAwaitility.await().until(this::currentValue, is(equalTo(0)));
   }
 
-  protected int currentValue() throws IOException {
+  public int currentValue() throws IOException {
     try (FileOutputStream out = new FileOutputStream(lockFile)) {
       java.nio.channels.FileLock lock = out.getChannel().lock();
       try {

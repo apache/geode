@@ -163,6 +163,10 @@ public class DistributedClearOperation extends DistributedCacheOperation {
   }
 
 
+  /**
+   * this message is to operate on the BucketRegion level, used by the primary member to distribute
+   * clear message to secondary buckets
+   */
   public static class ClearRegionMessage extends CacheOperationMessage {
 
     protected EventID eventID;
@@ -184,6 +188,10 @@ public class DistributedClearOperation extends DistributedCacheOperation {
        * information.
        */
       return OperationExecutors.HIGH_PRIORITY_EXECUTOR;
+    }
+
+    public OperationType getOperationType() {
+      return clearOp;
     }
 
     @Override

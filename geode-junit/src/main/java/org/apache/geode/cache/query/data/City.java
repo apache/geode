@@ -24,6 +24,8 @@ package org.apache.geode.cache.query.data;
 import java.io.Serializable;
 
 public class City implements Serializable {
+  public static int ZIP_START = 300000;
+  public int id;
   public String name;
   public int zip;
 

@@ -41,6 +41,7 @@ import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.test.dunit.DUnitEnv;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.SerializableConsumerIF;
 import org.apache.geode.test.dunit.VM;
@@ -98,6 +99,7 @@ public class ClusterStartupRule implements SerializableTestRule {
   }
 
   private final int vmCount;
+  private final boolean launchDunitLocator;
 
   private final DistributedRestoreSystemProperties restoreSystemProperties =
       new DistributedRestoreSystemProperties();
@@ -107,11 +109,20 @@ public class ClusterStartupRule implements SerializableTestRule {
   private boolean logFile = false;
 
   public ClusterStartupRule() {
-    this(NUM_VMS);
+    this(NUM_VMS, false);
   }
 
   public ClusterStartupRule(final int vmCount) {
+    this(vmCount, false);
+  }
+
+  public ClusterStartupRule(final boolean launchDunitLocator) {
+    this(NUM_VMS, launchDunitLocator);
+  }
+
+  public ClusterStartupRule(final int vmCount, boolean launchDunitLocator) {
     this.vmCount = vmCount;
+    this.launchDunitLocator = launchDunitLocator;
   }
 
   public static ClientCache getClientCache() {
@@ -153,6 +164,14 @@ public class ClusterStartupRule implements SerializableTestRule {
     restoreSystemProperties.beforeDistributedTest(description);
     occupiedVMs = new HashMap<>();
   }
+
+  /**
+   * Returns the port that the standard dunit locator is listening on.
+   */
+  public static int getDUnitLocatorPort() {
+    return DUnitEnv.get().getLocatorPort();
+  }
+
 
   private void after(Description description) throws Throwable {
 

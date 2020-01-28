@@ -169,7 +169,7 @@ public class RegionClearStatsDistributedTest implements Serializable {
   }
 
   private void validateClearCountStat() {
-    assertThat(cacheRule.getCache().getCachePerfStats().getClearCount())
+    assertThat(cacheRule.getCache().getCachePerfStats().getRegionClearCount())
         .isEqualTo(EXPECTED_CLEAR_COUNT_STAT_VALUE);
   }
 }
