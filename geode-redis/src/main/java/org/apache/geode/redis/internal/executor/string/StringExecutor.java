@@ -22,6 +22,6 @@ import org.apache.geode.redis.internal.executor.AbstractExecutor;
 public abstract class StringExecutor extends AbstractExecutor {
 
   protected void checkAndSetDataType(ByteArrayWrapper key, ExecutionHandlerContext context) {
-    context.getRegionProvider().addToMetadataRegion(key, RedisDataType.REDIS_STRING);
+    context.getKeyRegistrar().register(key, RedisDataType.REDIS_STRING);
   }
 }

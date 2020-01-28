@@ -18,7 +18,6 @@ import java.io.Closeable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledExecutorService;
@@ -64,7 +63,7 @@ public class RegionProvider implements Closeable {
    * all Regions created. The mapping is a {@link String} key which is the name of the
    * {@link Region} created to hold the data to the RedisDataType it contains.
    */
-  private final Region<String, RedisDataType> redisMetaRegion;
+  private final KeyRegistrar keyRegistrar;
 
   /**
    * This is the {@link RedisDataType#REDIS_STRING} {@link Region}. This is the Region that stores
@@ -91,7 +90,7 @@ public class RegionProvider implements Closeable {
 
   public RegionProvider(Region<ByteArrayWrapper, ByteArrayWrapper> stringsRegion,
       Region<ByteArrayWrapper, HyperLogLogPlus> hLLRegion,
-      Region<String, RedisDataType> redisMetaRegion,
+      KeyRegistrar redisMetaRegion,
       ConcurrentMap<ByteArrayWrapper, ScheduledFuture<?>> expirationsMap,
       ScheduledExecutorService expirationExecutor, RegionShortcut defaultShortcut) {
     if (stringsRegion == null || hLLRegion == null || redisMetaRegion == null)
@@ -99,37 +98,13 @@ public class RegionProvider implements Closeable {
     this.regions = new ConcurrentHashMap<>();
     this.stringsRegion = stringsRegion;
     this.hLLRegion = hLLRegion;
-    this.redisMetaRegion = redisMetaRegion;
+    this.keyRegistrar = redisMetaRegion;
     this.cache = GemFireCacheImpl.getInstance();
     this.queryService = cache.getQueryService();
     this.expirationsMap = expirationsMap;
     this.expirationExecutor = expirationExecutor;
     this.defaultRegionType = defaultShortcut;
     this.locks = new ConcurrentHashMap<>();
-  }
-
-  public boolean existsKey(ByteArrayWrapper key) {
-    return this.redisMetaRegion.containsKey(key.toString());
-  }
-
-  public Set<String> metaKeySet() {
-    return this.redisMetaRegion.keySet();
-  }
-
-  public Set<Map.Entry<String, RedisDataType>> metaEntrySet() {
-    return this.redisMetaRegion.entrySet();
-  }
-
-  public int getMetaSize() {
-    return this.redisMetaRegion.size() - RedisConstants.NUM_DEFAULT_KEYS;
-  }
-
-  private boolean metaRemoveEntry(ByteArrayWrapper key) {
-    return this.redisMetaRegion.remove(key.toString()) != null;
-  }
-
-  private RedisDataType metaPutIfAbsent(ByteArrayWrapper key, RedisDataType value) {
-    return this.redisMetaRegion.putIfAbsent(key.toString(), value);
   }
 
   public Region<?, ?> getRegion(ByteArrayWrapper key) {
@@ -155,7 +130,7 @@ public class RegionProvider implements Closeable {
   }
 
   public boolean removeKey(ByteArrayWrapper key) {
-    RedisDataType type = getRedisDataType(key);
+    RedisDataType type = this.keyRegistrar.getType(key);
     return removeKey(key, type);
   }
 
@@ -171,7 +146,7 @@ public class RegionProvider implements Closeable {
       if (lock != null) {// Strings/hlls will not have locks
         lock.lock();
       }
-      metaRemoveEntry(key);
+      this.keyRegistrar.unregister(key);
       try {
         if (type == RedisDataType.REDIS_STRING) {
           return this.stringsRegion.remove(key) != null;
@@ -249,7 +224,7 @@ public class RegionProvider implements Closeable {
 
   private Region<?, ?> getOrCreateRegion0(ByteArrayWrapper key, RedisDataType type,
       ExecutionHandlerContext context, boolean addToMeta) {
-    checkDataType(key, type);
+    this.keyRegistrar.validate(key, type);
     Region<?, ?> r = this.regions.get(key);
     if (r != null && r.isDestroyed()) {
       removeKey(key, type);
@@ -298,7 +273,7 @@ public class RegionProvider implements Closeable {
             } while (concurrentCreateDestroyException != null);
             this.regions.put(key, r);
             if (addToMeta) {
-              addToMetadataRegion(key, type);
+              this.keyRegistrar.register(key, type);
             }
           } finally {
             if (hasTransaction)
@@ -413,49 +388,6 @@ public class RegionProvider implements Closeable {
     return this.preparedQueries.get(key).get(query);
   }
 
-  /**
-   * Checks if the given key is associated with the passed data type. If there is a mismatch, a
-   * {@link RuntimeException} is thrown
-   *
-   * @param key Key to check
-   * @param type Type to check to
-   */
-  protected void checkDataType(ByteArrayWrapper key, RedisDataType type) {
-    RedisDataType currentType = redisMetaRegion.get(key.toString());
-    if (!isValidDataType(currentType, type)) {
-      throwDataTypeException(key, currentType);
-    }
-  }
-
-  /**
-   * Checks if the givenKey is associated with the passed data type. If an entry doesn't exist,
-   * store the key:datatype association in the metadataRegion
-   * @param key
-   * @param type
-   */
-  public void addToMetadataRegion(ByteArrayWrapper key, RedisDataType type) {
-    RedisDataType existingType = metaPutIfAbsent(key, type);
-    if (!isValidDataType(existingType, type)) {
-      throwDataTypeException(key, existingType);
-    }
-  }
-
-  private boolean isValidDataType(RedisDataType actualDataType, RedisDataType expectedDataType) {
-    return isKeyUnused(actualDataType) || actualDataType == expectedDataType;
-  }
-
-  private boolean isKeyUnused(RedisDataType dataType) {
-    return dataType == null;
-  }
-
-  private void throwDataTypeException(ByteArrayWrapper key, RedisDataType dataType) {
-    if (dataType == RedisDataType.REDIS_PROTECTED)
-      throw new RedisDataTypeMismatchException("The key name \"" + key + "\" is protected");
-    else
-      throw new RedisDataTypeMismatchException(
-              "The key name \"" + key + "\" is already used by a " + dataType.toString());
-  }
-
   public boolean regionExists(ByteArrayWrapper key) {
     return this.regions.containsKey(key);
   }
@@ -466,14 +398,6 @@ public class RegionProvider implements Closeable {
 
   public Region<ByteArrayWrapper, HyperLogLogPlus> gethLLRegion() {
     return this.hLLRegion;
-  }
-
-  private RedisDataType getRedisDataType(String key) {
-    return this.redisMetaRegion.get(key);
-  }
-
-  public RedisDataType getRedisDataType(ByteArrayWrapper key) {
-    return getRedisDataType(key.toString());
   }
 
   /**
@@ -487,7 +411,7 @@ public class RegionProvider implements Closeable {
    * @return True is expiration set, false otherwise
    */
   public boolean setExpiration(ByteArrayWrapper key, long delay) {
-    RedisDataType type = getRedisDataType(key);
+    RedisDataType type = this.keyRegistrar.getType(key);
     if (type == null)
       return false;
     ScheduledFuture<?> future = this.expirationExecutor
@@ -512,7 +436,7 @@ public class RegionProvider implements Closeable {
     if (!canceled)
       return false;
 
-    RedisDataType type = getRedisDataType(key);
+    RedisDataType type = this.keyRegistrar.getType(key);
     if (type == null)
       return false;
 
