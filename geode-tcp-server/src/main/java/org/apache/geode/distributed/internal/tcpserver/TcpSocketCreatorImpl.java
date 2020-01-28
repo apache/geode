@@ -47,6 +47,8 @@ public class TcpSocketCreatorImpl implements TcpSocketCreator {
     }
   }
 
+  public TcpSocketCreatorImpl() {}
+
 
   @Override
   public boolean useSSL() {

@@ -31,6 +31,7 @@ import org.apache.geode.distributed.internal.tcpserver.ProtocolChecker;
 import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
+import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreatorImpl;
 
 public final class MembershipLocatorBuilderImpl<ID extends MemberIdentifier> implements
     MembershipLocatorBuilder<ID> {
@@ -103,16 +104,16 @@ public final class MembershipLocatorBuilderImpl<ID extends MemberIdentifier> imp
   public MembershipLocator<ID> create()
       throws UnknownHostException, MembershipConfigurationException {
     Services.registerSerializables(serializer);
-    MembershipLocator locator = new MembershipLocatorImpl<ID>(port, bindAddress, protocolChecker,
+    TcpSocketCreator sc = this.socketCreator;
+    if (sc == null) {
+      sc = new TcpSocketCreatorImpl();
+    }
+    return new MembershipLocatorImpl<ID>(port, bindAddress, protocolChecker,
         executorServiceSupplier,
-        serializer.getObjectSerializer(), serializer.getObjectDeserializer(),
+        sc, serializer.getObjectSerializer(), serializer.getObjectDeserializer(),
         fallbackHandler,
         objectSerializer, objectDeserializer, fallbackHandler,
         locatorsAreCoordinators, locatorStats, workingDirectory, config);
-    if (socketCreator != null) {
-      locator.setSocketCreator(socketCreator);
-    }
-    return locator;
   }
 
 }
