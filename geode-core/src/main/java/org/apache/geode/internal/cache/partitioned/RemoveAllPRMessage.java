@@ -408,6 +408,7 @@ public class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
 
       if (!notificationOnly) {
         boolean locked = false;
+        boolean rvvLocked = false;
         try {
           if (removeAllPRData.length > 0) {
             if (this.posDup && bucketRegion.getConcurrencyChecksEnabled()) {
@@ -433,6 +434,10 @@ public class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
             bucketRegion.recordBulkOpStart(membershipID, eventID);
           }
           locked = bucketRegion.waitUntilLocked(keys);
+          if (!rvvLocked) {
+            bucketRegion.lockRVVForBulkOp();
+            rvvLocked = true;
+          }
           boolean lockedForPrimary = false;
           final ArrayList<Object> succeeded = new ArrayList<Object>();
           PutAllPartialResult partialKeys = new PutAllPartialResult(removeAllPRDataSize);
@@ -528,6 +533,10 @@ public class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
         } catch (RegionDestroyedException e) {
           ds.checkRegionDestroyedOnBucket(bucketRegion, true, e);
         } finally {
+          if (rvvLocked) {
+            bucketRegion.unlockRVVForBulkOp();
+            rvvLocked = false;
+          }
           if (locked) {
             bucketRegion.removeAndNotifyKeys(keys);
           }

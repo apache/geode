@@ -163,6 +163,10 @@ public class DistributedClearOperation extends DistributedCacheOperation {
   }
 
 
+  /**
+   * this message is to operate on the BucketRegion level, used by the primary member to distribute
+   * clear message to secondary buckets
+   */
   public static class ClearRegionMessage extends CacheOperationMessage {
 
     protected EventID eventID;
@@ -186,6 +190,10 @@ public class DistributedClearOperation extends DistributedCacheOperation {
       return OperationExecutors.HIGH_PRIORITY_EXECUTOR;
     }
 
+    public OperationType getOperationType() {
+      return clearOp;
+    }
+
     @Override
     protected InternalCacheEvent createEvent(DistributedRegion rgn) throws EntryNotFoundException {
       RegionEventImpl event = createRegionEvent(rgn);
@@ -207,17 +215,19 @@ public class DistributedClearOperation extends DistributedCacheOperation {
     protected boolean operateOnRegion(CacheEvent event, ClusterDistributionManager dm)
         throws EntryNotFoundException {
 
-      DistributedRegion region = (DistributedRegion) event.getRegion();
+      LocalRegion region = (LocalRegion) event.getRegion();
       switch (this.clearOp) {
         case OP_CLEAR:
           region.clearRegionLocally((RegionEventImpl) event, false, this.rvv);
-          region.notifyBridgeClients((RegionEventImpl) event);
+          region.notifyBridgeClients(event);
           this.appliedOperation = true;
           break;
         case OP_LOCK_FOR_CLEAR:
-          if (region.getDataPolicy().withStorage()) {
-            DistributedClearOperation.regionLocked(this.getSender(), region.getFullPath(), region);
-            region.lockLocallyForClear(dm, this.getSender(), event);
+          if (region.getDataPolicy().withStorage() && region instanceof DistributedRegion) {
+            DistributedRegion distributedRegion = (DistributedRegion) region;
+            DistributedClearOperation.regionLocked(this.getSender(), region.getFullPath(),
+                distributedRegion);
+            distributedRegion.lockLocallyForClear(dm, this.getSender(), event);
           }
           this.appliedOperation = true;
           break;

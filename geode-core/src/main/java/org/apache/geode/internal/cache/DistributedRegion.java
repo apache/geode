@@ -192,10 +192,6 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   @MutableForTesting
   public static boolean ignoreReconnect = false;
 
-  /**
-   * Lock to prevent multiple threads on this member from performing a clear at the same time.
-   */
-  private final Object clearLock = new Object();
   private final ReentrantReadWriteLock failedInitialImageLock = new ReentrantReadWriteLock(true);
 
   @MakeNotStatic
@@ -933,11 +929,6 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
       logger.fatal("Unexpected exception:",
           e);
     }
-  }
-
-  private void lockCheckReadiness() {
-    cache.getCancelCriterion().checkCancelInProgress(null);
-    checkReadiness();
   }
 
   @Override
@@ -2020,6 +2011,10 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     super.basicClear(regionEvent, cacheWrite);
   }
 
+  void distributeClearOperation(RegionEventImpl regionEvent, RegionVersionVector rvv,
+      Set<InternalDistributedMember> participants) {
+    DistributedClearOperation.clear(regionEvent, rvv, participants);
+  }
 
   @Override
   void cmnClearRegion(RegionEventImpl regionEvent, boolean cacheWrite, boolean useRVV) {
@@ -2039,13 +2034,13 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
               getCacheDistributionAdvisor().adviseInvalidateRegion();
           // pause all generation of versions and flush from the other members to this one
           try {
-            obtainWriteLocksForClear(regionEvent, participants);
+            obtainWriteLocksForClear(regionEvent, participants, false);
             clearRegionLocally(regionEvent, cacheWrite, null);
             if (!regionEvent.isOriginRemote() && regionEvent.getOperation().isDistributed()) {
-              DistributedClearOperation.clear(regionEvent, null, participants);
+              distributeClearOperation(regionEvent, null, participants);
             }
           } finally {
-            releaseWriteLocksForClear(regionEvent, participants);
+            releaseWriteLocksForClear(regionEvent, participants, false);
           }
         } finally {
           distributedUnlockForClear();
@@ -2055,7 +2050,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
             getCacheDistributionAdvisor().adviseInvalidateRegion();
         clearRegionLocally(regionEvent, cacheWrite, null);
         if (!regionEvent.isOriginRemote() && regionEvent.getOperation().isDistributed()) {
-          DistributedClearOperation.clear(regionEvent, null, participants);
+          distributeClearOperation(regionEvent, null, participants);
         }
       }
     }
@@ -2098,9 +2093,28 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   /**
    * obtain locks preventing generation of new versions in other members
    */
-  private void obtainWriteLocksForClear(RegionEventImpl regionEvent,
+  protected void obtainWriteLocksForClear(RegionEventImpl regionEvent,
+      Set<InternalDistributedMember> participants, boolean localLockedAlready) {
+    if (!localLockedAlready) {
+      lockLocallyForClear(getDistributionManager(), getMyId(), regionEvent);
+    }
+    lockAndFlushClearToOthers(regionEvent, participants);
+  }
+
+  /**
+   * releases the locks obtained in obtainWriteLocksForClear
+   */
+  protected void releaseWriteLocksForClear(RegionEventImpl regionEvent,
+      Set<InternalDistributedMember> participants,
+      boolean localLockedAlready) {
+    if (!localLockedAlready) {
+      releaseLockLocallyForClear(regionEvent);
+    }
+    DistributedClearOperation.releaseLocks(regionEvent, participants);
+  }
+
+  void lockAndFlushClearToOthers(RegionEventImpl regionEvent,
       Set<InternalDistributedMember> participants) {
-    lockLocallyForClear(getDistributionManager(), getMyId(), regionEvent);
     DistributedClearOperation.lockAndFlushToOthers(regionEvent, participants);
   }
 
@@ -2135,19 +2149,16 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     }
   }
 
-  /**
-   * releases the locks obtained in obtainWriteLocksForClear
-   */
-  private void releaseWriteLocksForClear(RegionEventImpl regionEvent,
-      Set<InternalDistributedMember> participants) {
-
+  protected void releaseLockLocallyForClear(RegionEventImpl regionEvent) {
     ARMLockTestHook armLockTestHook = getRegionMap().getARMLockTestHook();
     if (armLockTestHook != null) {
       armLockTestHook.beforeRelease(this, regionEvent);
     }
 
-    getVersionVector().unlockForClear(getMyId());
-    DistributedClearOperation.releaseLocks(regionEvent, participants);
+    RegionVersionVector rvv = getVersionVector();
+    if (rvv != null) {
+      rvv.unlockForClear(getMyId());
+    }
 
     if (armLockTestHook != null) {
       armLockTestHook.afterRelease(this, regionEvent);

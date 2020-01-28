@@ -856,8 +856,19 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
         && prof.filterProfile.hasInterest();
   };
 
+  @Immutable
+  private static final Filter prServerWithCqFilter = profile -> {
+    CacheProfile prof = (CacheProfile) profile;
+    return prof.isPartitioned && prof.hasCacheServer && prof.filterProfile != null
+        && prof.filterProfile.hasCQs();
+  };
+
   public boolean hasPRServerWithInterest() {
     return satisfiesFilter(prServerWithInterestFilter);
+  }
+
+  public boolean hasPRServerWithCQs() {
+    return satisfiesFilter(prServerWithCqFilter);
   }
 
   /**

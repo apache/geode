@@ -415,6 +415,7 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
       Object[] keys = getKeysToBeLocked();
       if (!notificationOnly) {
         boolean locked = false;
+        boolean rvvLocked = false;
         try {
           if (putAllPRData.length > 0) {
             if (this.posDup && bucketRegion.getConcurrencyChecksEnabled()) {
@@ -440,6 +441,10 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
             bucketRegion.recordBulkOpStart(membershipID, eventID);
           }
           locked = bucketRegion.waitUntilLocked(keys);
+          if (!rvvLocked) {
+            bucketRegion.lockRVVForBulkOp();
+            rvvLocked = true;
+          }
           boolean lockedForPrimary = false;
           final HashMap succeeded = new HashMap();
           PutAllPartialResult partialKeys = new PutAllPartialResult(putAllPRDataSize);
@@ -520,6 +525,10 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
         } catch (RegionDestroyedException e) {
           ds.checkRegionDestroyedOnBucket(bucketRegion, true, e);
         } finally {
+          if (rvvLocked) {
+            bucketRegion.unlockRVVForBulkOp();
+            rvvLocked = false;
+          }
           if (locked) {
             bucketRegion.removeAndNotifyKeys(keys);
           }

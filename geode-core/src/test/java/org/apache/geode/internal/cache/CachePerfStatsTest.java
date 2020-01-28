@@ -14,9 +14,9 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.internal.cache.CachePerfStats.bucketClearsId;
 import static org.apache.geode.internal.cache.CachePerfStats.cacheListenerCallsCompletedId;
 import static org.apache.geode.internal.cache.CachePerfStats.cacheWriterCallsCompletedId;
-import static org.apache.geode.internal.cache.CachePerfStats.clearsId;
 import static org.apache.geode.internal.cache.CachePerfStats.createsId;
 import static org.apache.geode.internal.cache.CachePerfStats.deltaFailedUpdatesId;
 import static org.apache.geode.internal.cache.CachePerfStats.deltaFullValuesRequestedId;
@@ -43,11 +43,14 @@ import static org.apache.geode.internal.cache.CachePerfStats.loadsCompletedId;
 import static org.apache.geode.internal.cache.CachePerfStats.missesId;
 import static org.apache.geode.internal.cache.CachePerfStats.netloadsCompletedId;
 import static org.apache.geode.internal.cache.CachePerfStats.netsearchesCompletedId;
+import static org.apache.geode.internal.cache.CachePerfStats.partitionedRegionClearLocalDurationId;
+import static org.apache.geode.internal.cache.CachePerfStats.partitionedRegionClearTotalDurationId;
 import static org.apache.geode.internal.cache.CachePerfStats.previouslySeenEventsId;
 import static org.apache.geode.internal.cache.CachePerfStats.putAllsId;
 import static org.apache.geode.internal.cache.CachePerfStats.putTimeId;
 import static org.apache.geode.internal.cache.CachePerfStats.putsId;
 import static org.apache.geode.internal.cache.CachePerfStats.queryExecutionsId;
+import static org.apache.geode.internal.cache.CachePerfStats.regionClearsId;
 import static org.apache.geode.internal.cache.CachePerfStats.removeAllsId;
 import static org.apache.geode.internal.cache.CachePerfStats.retriesId;
 import static org.apache.geode.internal.cache.CachePerfStats.txCommitChangesId;
@@ -429,30 +432,60 @@ public class CachePerfStatsTest {
 
   @Test
   public void getClearsDelegatesToStatistics() {
-    statistics.incLong(clearsId, Long.MAX_VALUE);
+    statistics.incLong(regionClearsId, Long.MAX_VALUE);
 
-    assertThat(cachePerfStats.getClearCount()).isEqualTo(Long.MAX_VALUE);
+    assertThat(cachePerfStats.getRegionClearCount()).isEqualTo(Long.MAX_VALUE);
+  }
+
+  @Test
+  public void incRegionClearCountIncrementsClears() {
+    cachePerfStats.incRegionClearCount();
+
+    assertThat(statistics.getLong(regionClearsId)).isEqualTo(1L);
+  }
+
+  @Test
+  public void incBucketClearCountIncrementsClears() {
+    cachePerfStats.incBucketClearCount();
+
+    assertThat(statistics.getLong(bucketClearsId)).isEqualTo(1L);
+  }
+
+  @Test
+  public void incPartitionedRegionClearLocalDurationIncrementsPartitionedRegionClearLocalDuration() {
+    cachePerfStats.incPartitionedRegionClearLocalDuration(100L);
+
+    assertThat(statistics.getLong(partitionedRegionClearLocalDurationId)).isEqualTo(100L);
   }
 
 
 
   @Test
-  public void incClearCountIncrementsClears() {
-    cachePerfStats.incClearCount();
+  public void incPartitionedRegionClearTotalDurationIncrementsPartitionedRegionClearTotalDuration() {
+    cachePerfStats.incPartitionedRegionClearTotalDuration(100L);
 
-    assertThat(statistics.getLong(clearsId)).isEqualTo(1L);
+    assertThat(statistics.getLong(partitionedRegionClearTotalDurationId)).isEqualTo(100L);
   }
 
   /**
    * Characterization test: {@code clears} currently wraps to negative from max long value.
    */
   @Test
-  public void clearsWrapsFromMaxLongToNegativeValue() {
-    statistics.incLong(clearsId, Long.MAX_VALUE);
+  public void regionClearsWrapsFromMaxLongToNegativeValue() {
+    statistics.incLong(regionClearsId, Long.MAX_VALUE);
 
-    cachePerfStats.incClearCount();
+    cachePerfStats.incRegionClearCount();
 
-    assertThat(cachePerfStats.getClearCount()).isNegative();
+    assertThat(cachePerfStats.getRegionClearCount()).isNegative();
+  }
+
+  @Test
+  public void bucketClearsWrapsFromMaxLongToNegativeValue() {
+    statistics.incLong(bucketClearsId, Long.MAX_VALUE);
+
+    cachePerfStats.incBucketClearCount();
+
+    assertThat(cachePerfStats.getBucketClearCount()).isNegative();
   }
 
   @Test

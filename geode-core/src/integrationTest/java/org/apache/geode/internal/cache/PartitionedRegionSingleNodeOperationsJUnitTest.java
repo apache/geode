@@ -25,7 +25,6 @@ import static org.junit.Assert.fail;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -1296,71 +1295,6 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
       assertEquals(one, re.getKey());
       // TODO: Finish out the entry operations
       assertNull(pr.getEntry("nuthin"));
-    } finally {
-      if (pr != null) {
-        pr.destroyRegion();
-      }
-    }
-  }
-
-  @Test
-  public void test023UnsupportedOps() throws Exception {
-    Region pr = null;
-    try {
-      pr = PartitionedRegionTestHelper.createPartitionedRegion("testUnsupportedOps",
-          String.valueOf(200), 0);
-
-      pr.put(new Integer(1), "one");
-      pr.put(new Integer(2), "two");
-      pr.put(new Integer(3), "three");
-      pr.getEntry("key");
-
-      try {
-        pr.clear();
-        fail(
-            "PartitionedRegionSingleNodeOperationTest:testUnSupportedOps() operation failed on a blank PartitionedRegion");
-      } catch (UnsupportedOperationException expected) {
-      }
-
-      // try {
-      // pr.entries(true);
-      // fail();
-      // }
-      // catch (UnsupportedOperationException expected) {
-      // }
-
-      // try {
-      // pr.entrySet(true);
-      // fail();
-      // }
-      // catch (UnsupportedOperationException expected) {
-      // }
-
-      try {
-        HashMap data = new HashMap();
-        data.put("foo", "bar");
-        data.put("bing", "bam");
-        data.put("supper", "hero");
-        pr.putAll(data);
-        // fail("testPutAll() does NOT throw UnsupportedOperationException");
-      } catch (UnsupportedOperationException onse) {
-      }
-
-
-      // try {
-      // pr.values();
-      // fail("testValues() does NOT throw UnsupportedOperationException");
-      // }
-      // catch (UnsupportedOperationException expected) {
-      // }
-
-
-      try {
-        pr.containsValue("foo");
-      } catch (UnsupportedOperationException ex) {
-        fail("PartitionedRegionSingleNodeOperationTest:testContainsValue() operation failed");
-      }
-
     } finally {
       if (pr != null) {
         pr.destroyRegion();

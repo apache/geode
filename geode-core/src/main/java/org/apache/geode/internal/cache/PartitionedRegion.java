@@ -180,6 +180,7 @@ import org.apache.geode.internal.cache.execute.PartitionedRegionFunctionResultWa
 import org.apache.geode.internal.cache.execute.RegionFunctionContextImpl;
 import org.apache.geode.internal.cache.execute.ServerToClientFunctionResultSender;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
+import org.apache.geode.internal.cache.partitioned.ClearPRMessage;
 import org.apache.geode.internal.cache.partitioned.ContainsKeyValueMessage;
 import org.apache.geode.internal.cache.partitioned.ContainsKeyValueMessage.ContainsKeyValueResponse;
 import org.apache.geode.internal.cache.partitioned.DestroyMessage;
@@ -318,6 +319,8 @@ public class PartitionedRegion extends LocalRegion
       return i;
     }
   };
+
+  private final PartitionedRegionClear partitionedRegionClear = new PartitionedRegionClear(this);
 
   /**
    * Global Region for storing PR config ( PRName->PRConfig). This region would be used to resolve
@@ -567,6 +570,14 @@ public class PartitionedRegion extends LocalRegion
 
   public PartitionListener[] getPartitionListeners() {
     return this.partitionListeners;
+  }
+
+  public CachePerfStats getRegionCachePerfStats() {
+    if (dataStore != null && dataStore.getAllLocalBucketRegions().size() > 0) {
+      BucketRegion bucket = dataStore.getAllLocalBucketRegions().iterator().next();
+      return bucket.getCachePerfStats();
+    }
+    return null;
   }
 
   /**
@@ -2172,18 +2183,13 @@ public class PartitionedRegion extends LocalRegion
     throw new UnsupportedOperationException();
   }
 
-  /**
-   * @since GemFire 5.0
-   * @throws UnsupportedOperationException OVERRIDES
-   */
-  @Override
-  public void clear() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  void basicClear(RegionEventImpl regionEvent, boolean cacheWrite) {
-    throw new UnsupportedOperationException();
+  List<ClearPRMessage> createClearPRMessages(EventID eventID) {
+    ArrayList<ClearPRMessage> clearMsgList = new ArrayList<>();
+    for (int bucketId = 0; bucketId < getTotalNumberOfBuckets(); bucketId++) {
+      ClearPRMessage clearPRMessage = new ClearPRMessage(bucketId, eventID);
+      clearMsgList.add(clearPRMessage);
+    }
+    return clearMsgList;
   }
 
   @Override
@@ -2602,7 +2608,7 @@ public class PartitionedRegion extends LocalRegion
             retryTime = new RetryTimeKeeper(this.retryTimeout);
           }
 
-          currentTarget = waitForNodeOrCreateBucket(retryTime, event, bucketId);
+          currentTarget = waitForNodeOrCreateBucket(retryTime, event, bucketId, true);
           if (isDebugEnabled) {
             logger.debug("PR.sendMsgByBucket: event size is {}, new currentTarget is {}",
                 getEntrySize(event), currentTarget);
@@ -2741,7 +2747,7 @@ public class PartitionedRegion extends LocalRegion
             retryTime = new RetryTimeKeeper(this.retryTimeout);
           }
 
-          currentTarget = waitForNodeOrCreateBucket(retryTime, event, bucketId);
+          currentTarget = waitForNodeOrCreateBucket(retryTime, event, bucketId, true);
           if (logger.isDebugEnabled()) {
             logger.debug("PR.sendMsgByBucket: event size is {}, new currentTarget is {}",
                 getEntrySize(event), currentTarget);
@@ -2986,7 +2992,7 @@ public class PartitionedRegion extends LocalRegion
         if (retryTime == null) {
           retryTime = new RetryTimeKeeper(this.retryTimeout);
         }
-        currentTarget = waitForNodeOrCreateBucket(retryTime, event, bucketId);
+        currentTarget = waitForNodeOrCreateBucket(retryTime, event, bucketId, true);
 
         // It's possible this is a GemFire thread e.g. ServerConnection
         // which got to this point because of a distributed system shutdown or
@@ -3145,10 +3151,11 @@ public class PartitionedRegion extends LocalRegion
    * @param retryTime the RetryTimeKeeper to track retry times
    * @param event the event used to get the entry size in the event a new bucket should be created
    * @param bucketId the identity of the bucket should it be created
+   * @param createIfNotExist boolean to indicate if to create a bucket if found not exist
    * @return a Node which contains the bucket, potentially null
    */
   private InternalDistributedMember waitForNodeOrCreateBucket(RetryTimeKeeper retryTime,
-      EntryEventImpl event, Integer bucketId) {
+      EntryEventImpl event, Integer bucketId, boolean createIfNotExist) {
     InternalDistributedMember newNode;
     if (retryTime.overMaximum()) {
       PRHARedundancyProvider.timedOut(this, null, null, "allocate a bucket",
@@ -3158,7 +3165,7 @@ public class PartitionedRegion extends LocalRegion
 
     retryTime.waitForBucketsRecovery();
     newNode = getNodeForBucketWrite(bucketId, retryTime);
-    if (newNode == null) {
+    if (newNode == null && createIfNotExist) {
       newNode = createBucket(bucketId, getEntrySize(event), retryTime);
     }
 
@@ -4272,6 +4279,26 @@ public class PartitionedRegion extends LocalRegion
     return null;
   }
 
+  boolean triggerWriter(RegionEventImpl event, SearchLoadAndWriteProcessor processor, int paction,
+      String theKey) {
+    CacheWriter localWriter = basicGetWriter();
+    Set netWriteRecipients = localWriter == null ? this.distAdvisor.adviseNetWrite() : null;
+
+    if (localWriter == null && (netWriteRecipients == null || netWriteRecipients.isEmpty())) {
+      return false;
+    }
+
+    final long start = getCachePerfStats().startCacheWriterCall();
+    try {
+      processor.initialize(this, theKey, null);
+      processor.doNetWrite(event, netWriteRecipients, localWriter, paction);
+      processor.release();
+    } finally {
+      getCachePerfStats().endCacheWriterCall(start);
+    }
+    return true;
+  }
+
   /**
    * This invokes a cache writer before a destroy operation. Although it has the same method
    * signature as the method in LocalRegion, it is invoked in a different code path. LocalRegion
@@ -4281,29 +4308,24 @@ public class PartitionedRegion extends LocalRegion
   @Override
   boolean cacheWriteBeforeRegionDestroy(RegionEventImpl event)
       throws CacheWriterException, TimeoutException {
-
     if (event.getOperation().isDistributed()) {
       serverRegionDestroy(event);
-      CacheWriter localWriter = basicGetWriter();
-      Set netWriteRecipients = localWriter == null ? this.distAdvisor.adviseNetWrite() : null;
-
-      if (localWriter == null && (netWriteRecipients == null || netWriteRecipients.isEmpty())) {
-        return false;
-      }
-
-      final long start = getCachePerfStats().startCacheWriterCall();
-      try {
-        SearchLoadAndWriteProcessor processor = SearchLoadAndWriteProcessor.getProcessor();
-        processor.initialize(this, "preDestroyRegion", null);
-        processor.doNetWrite(event, netWriteRecipients, localWriter,
-            SearchLoadAndWriteProcessor.BEFOREREGIONDESTROY);
-        processor.release();
-      } finally {
-        getCachePerfStats().endCacheWriterCall(start);
-      }
-      return true;
+      SearchLoadAndWriteProcessor processor = SearchLoadAndWriteProcessor.getProcessor();
+      return triggerWriter(event, processor, SearchLoadAndWriteProcessor.BEFOREREGIONDESTROY,
+          "preDestroyRegion");
     }
     return false;
+  }
+
+  @Override
+  void cacheWriteBeforeRegionClear(RegionEventImpl event)
+      throws CacheWriterException, TimeoutException {
+    if (event.getOperation().isDistributed()) {
+      serverRegionClear(event);
+      SearchLoadAndWriteProcessor processor = SearchLoadAndWriteProcessor.getProcessor();
+      triggerWriter(event, processor, SearchLoadAndWriteProcessor.BEFOREREGIONCLEAR,
+          "preClearRegion");
+    }
   }
 
   /**
@@ -5188,6 +5210,7 @@ public class PartitionedRegion extends LocalRegion
 
     return this.totalNumberOfBuckets;
   }
+
 
   @Override
   public void basicDestroy(final EntryEventImpl event, final boolean cacheWrite,
@@ -10130,6 +10153,29 @@ public class PartitionedRegion extends LocalRegion
     }
     this.getSystem().handleResourceEvent(ResourceEvent.REGION_CREATE, this);
     this.regionCreationNotified = true;
+  }
+
+  protected PartitionedRegionClear getPartitionedRegionClear() {
+    return partitionedRegionClear;
+  }
+
+  @Override
+  void cmnClearRegion(RegionEventImpl regionEvent, boolean cacheWrite, boolean useRVV) {
+    // Synchronized to avoid other threads invoking clear on this vm/node.
+    synchronized (clearLock) {
+      partitionedRegionClear.doClear(regionEvent, cacheWrite);
+    }
+  }
+
+  boolean hasAnyClientsInterested() {
+    // Check local filter
+    if (getFilterProfile() != null && (getFilterProfile().hasInterest() || getFilterProfile()
+        .hasCQs())) {
+      return true;
+    }
+    // check peer server filters
+    return (getRegionAdvisor().hasPRServerWithInterest()
+        || getRegionAdvisor().hasPRServerWithCQs());
   }
 
   public boolean areRecoveriesInProgress() {
