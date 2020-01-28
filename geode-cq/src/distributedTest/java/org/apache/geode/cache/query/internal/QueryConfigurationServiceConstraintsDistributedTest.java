@@ -27,7 +27,6 @@ import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -39,6 +38,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import junitparams.JUnitParamsRunner;
+import junitparams.NamedParameters;
 import junitparams.Parameters;
 import junitparams.naming.TestCaseName;
 import org.junit.Before;
@@ -73,8 +73,8 @@ import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
-@RunWith(JUnitParamsRunner.class)
 @Category({OQLQueryTest.class, SecurityTest.class})
+@RunWith(JUnitParamsRunner.class)
 @SuppressWarnings("serial")
 public class QueryConfigurationServiceConstraintsDistributedTest implements Serializable {
 
@@ -123,7 +123,17 @@ public class QueryConfigurationServiceConstraintsDistributedTest implements Seri
     int serverPort = getRandomAvailableTCPPort();
 
     serverVM.invoke(() -> {
-      createServer(serverPort);
+      serverLauncher = new ServerLauncher.Builder()
+          .setMemberName("server")
+          .setServerPort(serverPort)
+          .setWorkingDirectory(temporaryFolder.newFolder("server").getAbsolutePath())
+          .set(SERIALIZABLE_OBJECT_FILTER, "org.apache.geode.cache.query.internal.*")
+          .set(SECURITY_MANAGER, SimpleSecurityManager.class.getName())
+          .set(USER_NAME, "cluster")
+          .set(PASSWORD, "cluster")
+          .build();
+
+      serverLauncher.start();
 
       InternalCache internalCache = (InternalCache) serverLauncher.getCache();
       assertThat(internalCache).isNotNull();
@@ -140,24 +150,30 @@ public class QueryConfigurationServiceConstraintsDistributedTest implements Seri
           .set(SECURITY_CLIENT_AUTH_INIT, UserPasswordAuthInit.class.getName())
           .set(USER_NAME, "data")
           .set(PASSWORD, "data")
-          .setPoolSubscriptionEnabled(true)
           .addPoolServer("localhost", serverPort)
+          .setPoolSubscriptionEnabled(true)
           .create();
     });
   }
 
-  private void createServer(int port) throws IOException {
-    serverLauncher = new ServerLauncher.Builder()
-        .setMemberName("server")
-        .setWorkingDirectory(temporaryFolder.newFolder("server").getAbsolutePath())
-        .setServerPort(port)
-        .set(SERIALIZABLE_OBJECT_FILTER, "org.apache.geode.cache.query.internal.*")
-        .set(SECURITY_MANAGER, SimpleSecurityManager.class.getName())
-        .set(USER_NAME, "cluster")
-        .set(PASSWORD, "cluster")
-        .build();
-
-    serverLauncher.start();
+  @NamedParameters("parameters")
+  @SuppressWarnings("unused")
+  private static String[] namedParameters() {
+    return new String[] {
+        "REPLICATE, PUT, true", "REPLICATE, PUT, false",
+        "REPLICATE, CREATE, true", "REPLICATE, CREATE, false",
+        "REPLICATE, REMOVE, true", "REPLICATE, REMOVE, false",
+        "REPLICATE, DESTROY, true", "REPLICATE, DESTROY, false",
+        "REPLICATE, UPDATE, true", "REPLICATE, UPDATE, false",
+        "REPLICATE, REPLACE, true", "REPLICATE, REPLACE, false",
+        "REPLICATE, INVALIDATE, true", "REPLICATE, INVALIDATE, false",
+        "PARTITION, PUT, true", "REPLICATE, PUT, false",
+        "PARTITION, CREATE, true", "REPLICATE, CREATE, false",
+        "PARTITION, REMOVE, true", "REPLICATE, REMOVE, false",
+        "PARTITION, DESTROY, true", "REPLICATE, DESTROY, false",
+        "PARTITION, UPDATE, true", "REPLICATE, UPDATE, false",
+        "PARTITION, REPLACE, true", "REPLICATE, REPLACE, false",
+        "PARTITION, INVALIDATE, true", "REPLICATE, INVALIDATE, false"};
   }
 
   /**
@@ -167,21 +183,7 @@ public class QueryConfigurationServiceConstraintsDistributedTest implements Seri
    * The operations should succeed, the CQ should fire 'onEvent' and no errors should be logged.
    */
   @Test
-  @Parameters({
-      "REPLICATE, PUT, true", "REPLICATE, PUT, false",
-      "REPLICATE, CREATE, true", "REPLICATE, CREATE, false",
-      "REPLICATE, REMOVE, true", "REPLICATE, REMOVE, false",
-      "REPLICATE, DESTROY, true", "REPLICATE, DESTROY, false",
-      "REPLICATE, UPDATE, true", "REPLICATE, UPDATE, false",
-      "REPLICATE, REPLACE, true", "REPLICATE, REPLACE, false",
-      "REPLICATE, INVALIDATE, true", "REPLICATE, INVALIDATE, false",
-      "PARTITION, PUT, true", "REPLICATE, PUT, false",
-      "PARTITION, CREATE, true", "REPLICATE, CREATE, false",
-      "PARTITION, REMOVE, true", "REPLICATE, REMOVE, false",
-      "PARTITION, DESTROY, true", "REPLICATE, DESTROY, false",
-      "PARTITION, UPDATE, true", "REPLICATE, UPDATE, false",
-      "PARTITION, REPLACE, true", "REPLICATE, REPLACE, false",
-      "PARTITION, INVALIDATE, true", "REPLICATE, INVALIDATE, false"})
+  @Parameters(named = "parameters")
   @TestCaseName("{method}(regionShortcut={0}, operation={1}, executeWithInitialResults={2})")
   public void cqsShouldSucceedDuringEventProcessingAfterRegionOperationWhenMethodAuthorizerIsChangedAndQueryContainsMethodsAllowedByTheNewAuthorizer(
       RegionShortcut regionShortcut, Operation operation, boolean executeWithInitialResults) {
@@ -228,21 +230,7 @@ public class QueryConfigurationServiceConstraintsDistributedTest implements Seri
    * The operations should succeed, the CQ should fire 'onError' and the issues should be logged.
    */
   @Test
-  @Parameters({
-      "REPLICATE, PUT, true", "REPLICATE, PUT, false",
-      "REPLICATE, CREATE, true", "REPLICATE, CREATE, false",
-      "REPLICATE, REMOVE, true", "REPLICATE, REMOVE, false",
-      "REPLICATE, DESTROY, true", "REPLICATE, DESTROY, false",
-      "REPLICATE, UPDATE, true", "REPLICATE, UPDATE, false",
-      "REPLICATE, REPLACE, true", "REPLICATE, REPLACE, false",
-      "REPLICATE, INVALIDATE, true", "REPLICATE, INVALIDATE, false",
-      "PARTITION, PUT, true", "REPLICATE, PUT, false",
-      "PARTITION, CREATE, true", "REPLICATE, CREATE, false",
-      "PARTITION, REMOVE, true", "REPLICATE, REMOVE, false",
-      "PARTITION, DESTROY, true", "REPLICATE, DESTROY, false",
-      "PARTITION, UPDATE, true", "REPLICATE, UPDATE, false",
-      "PARTITION, REPLACE, true", "REPLICATE, REPLACE, false",
-      "PARTITION, INVALIDATE, true", "REPLICATE, INVALIDATE, false"})
+  @Parameters(named = "parameters")
   @TestCaseName("{method}(regionShortcut={0}, operation={1}, executeWithInitialResults={2})")
   public void cqsShouldFailDuringEventProcessingAfterRegionOperationWhenMethodAuthorizerIsChangedAndQueryContainsMethodsNotAllowedByTheNewAuthorizer(
       RegionShortcut regionShortcut, Operation operation, boolean executeWithInitialResults) {
