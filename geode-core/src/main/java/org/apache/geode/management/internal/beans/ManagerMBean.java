@@ -15,10 +15,11 @@
 package org.apache.geode.management.internal.beans;
 
 import javax.management.JMException;
+import javax.management.NotificationBroadcasterSupport;
 
 import org.apache.geode.management.ManagerMXBean;
 
-public class ManagerMBean implements ManagerMXBean {
+public class ManagerMBean extends NotificationBroadcasterSupport implements ManagerMXBean {
 
   private ManagerMBeanBridge bridge;
 

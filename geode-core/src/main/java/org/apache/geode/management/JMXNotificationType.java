@@ -238,4 +238,6 @@ public interface JMXNotificationType {
    */
   String CACHE_SERVICE_CREATED =
       GeodeGlossary.GEMFIRE_PREFIX + "distributedsystem.cache.service.created";
+
+  String MANAGER_STARTED = GeodeGlossary.GEMFIRE_PREFIX + "distributedsystem.manager.started";
 }
