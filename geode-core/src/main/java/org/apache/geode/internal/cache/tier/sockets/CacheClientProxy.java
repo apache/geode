@@ -2686,10 +2686,8 @@ public class CacheClientProxy implements ClientSession {
       if (logger.isTraceEnabled(LogMarker.BRIDGE_SERVER_VERBOSE)) {
         logger.trace(LogMarker.BRIDGE_SERVER_VERBOSE, "Dispatching {}", clientMessage);
       }
-      Message message = null;
+      Message message;
 
-      // byte[] latestValue =
-      // this._eventConflator.getLatestValue(clientMessage);
 
       if (clientMessage instanceof ClientUpdateMessage) {
         byte[] latestValue = (byte[]) ((ClientUpdateMessage) clientMessage).getValue();

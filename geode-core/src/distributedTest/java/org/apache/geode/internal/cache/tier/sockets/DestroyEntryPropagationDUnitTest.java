@@ -401,7 +401,7 @@ public class DestroyEntryPropagationDUnitTest extends JUnit4DistributedTestCase 
     WaitCriterion ev = new WaitCriterion() {
       @Override
       public boolean done() {
-        return ccl.destroys.contains(key);
+        return ccl.getDestroys().contains(key);
       }
 
       @Override
@@ -410,7 +410,7 @@ public class DestroyEntryPropagationDUnitTest extends JUnit4DistributedTestCase 
       }
     };
     GeodeAwaitility.await().untilAsserted(ev);
-    ccl.destroys.remove(key);
+    ccl.getDestroys().remove(key);
   }
 
   private static void createClientCache(String host, Integer port1, Integer port2)

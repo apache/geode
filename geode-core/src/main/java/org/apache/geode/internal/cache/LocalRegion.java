@@ -5107,7 +5107,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       Object callbackArg, final ClientProxyMembershipID client, boolean fromClient,
       EntryEventImpl clientEvent, boolean throwEntryExists)
       throws TimeoutException, EntryExistsException, CacheWriterException {
-
     EventID eventId = clientEvent.getEventId();
     Object theCallbackArg = callbackArg;
 
