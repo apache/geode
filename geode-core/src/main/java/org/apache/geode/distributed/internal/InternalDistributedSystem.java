@@ -677,8 +677,6 @@ public class InternalDistributedSystem extends DistributedSystem
       MetricsService.Builder metricsServiceBuilder,
       final MembershipLocator<InternalDistributedMember> membershipLocatorArg) {
 
-    membershipLocator = membershipLocatorArg;
-
     if (originalConfig.getLocators().equals("")) {
       if (originalConfig.getMcastPort() != 0) {
         throw new GemFireConfigException("The " + LOCATORS + " attribute can not be empty when the "
@@ -767,7 +765,7 @@ public class InternalDistributedSystem extends DistributedSystem
       }
 
       try {
-        membershipLocator = startInitLocator(membershipLocator);
+        startInitLocator(membershipLocatorArg);
       } catch (InterruptedException e) {
         throw new SystemConnectException("Startup has been interrupted", e);
       }
@@ -887,9 +885,11 @@ public class InternalDistributedSystem extends DistributedSystem
    *         otherwise starts a new InternalLocator and returns its associated MembershipLocator
    *
    * @since GemFire 5.7
-   * @param membershipLocatorArg an already-running MembershipLocator, or null if none is known
+   * @param membershipLocatorArg on initial startup, a MembershipLocator provided explicitly by
+   *        a caller, or null; on restart, the old MembershipLocator (from the previous instance of
+   *        InternalDistributedSystem.)
    */
-  private MembershipLocator startInitLocator(
+  private void startInitLocator(
       final MembershipLocator<InternalDistributedMember> membershipLocatorArg)
       throws InterruptedException {
 
@@ -897,19 +897,8 @@ public class InternalDistributedSystem extends DistributedSystem
     final boolean shouldStartLocator = locatorString.length() > 0;
 
     if (!shouldStartLocator) {
-      return membershipLocatorArg;
-    }
-
-    /*
-     * Defensive coding here. InternalLocator's constructor is keeping track of a singleton instance
-     * and that constructor will throw an exception if we try to have more than one
-     * InternalLocator in existence at the same time. So in that sense we shouldn't need this check.
-     * Nevertheless, we'd like the code over here to not rely on that singleton bookkeeping over
-     * there. So if that singleton logic goes away, this code here might save us.
-     */
-    if (membershipLocatorArg != null && shouldStartLocator) {
-      throw new IllegalStateException("Setting the start-locator property is not supported in "
-          + "dedicated locators launched through gfsh or the Java Locator class");
+      membershipLocator = membershipLocatorArg;
+      return;
     }
 
     // when reconnecting we don't want to join with a colocated locator unless
@@ -919,7 +908,7 @@ public class InternalDistributedSystem extends DistributedSystem
         logger.info("performing a quorum check to see if location services can be started early");
         if (!quorumChecker.checkForQuorum(3L * config.getMemberTimeout())) {
           logger.info("quorum check failed - not allowing location services to start early");
-          return membershipLocatorArg;
+          return;
         }
         logger.info("Quorum check passed - allowing location services to start early");
       }
@@ -937,10 +926,13 @@ public class InternalDistributedSystem extends DistributedSystem
       boolean startedPeerLocation = false;
       try {
         startedLocator.startPeerLocation();
+        membershipLocator = startedLocator.getMembershipLocator();
         startedPeerLocation = true;
       } finally {
         if (!startedPeerLocation) {
           startedLocator.stop();
+          startedLocator = null;
+          membershipLocator = null;
         }
       }
     } catch (IOException e) {
@@ -948,7 +940,6 @@ public class InternalDistributedSystem extends DistributedSystem
           "Problem starting a locator service",
           e);
     }
-    return startedLocator.getMembershipLocator();
   }
 
   /**
