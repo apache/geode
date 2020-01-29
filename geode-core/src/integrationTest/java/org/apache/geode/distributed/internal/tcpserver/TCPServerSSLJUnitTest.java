@@ -128,7 +128,7 @@ public class TCPServerSSLJUnitTest {
       // ok!
     }
 
-    assertThat(recordedSocketTimeouts.size()).isEqualTo(1);
+    assertThat(recordedSocketTimeouts).hasSizeGreaterThan(0);
 
     for (final Integer socketTimeOut : recordedSocketTimeouts) {
       assertThat(Integer.parseInt(expectedSocketTimeout)).isEqualTo(socketTimeOut.intValue());
