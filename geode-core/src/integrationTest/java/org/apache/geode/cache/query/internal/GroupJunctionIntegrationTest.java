@@ -72,7 +72,7 @@ public class GroupJunctionIntegrationTest {
   @SuppressWarnings("unused")
   private Object[] regionTypeAndQuery() {
     return new Object[] {
-        // The order or the comparisons matters, so we test both combinations (see GEODE-7728).
+        // The comparison order matters, so we test both combinations (see GEODE-7728).
         new Object[] {"REPLICATE", "SELECT * FROM /" + REGION_NAME
             + " WHERE code=utilityCode AND functionalCode=managementCode"},
         new Object[] {"REPLICATE", "SELECT * FROM /" + REGION_NAME

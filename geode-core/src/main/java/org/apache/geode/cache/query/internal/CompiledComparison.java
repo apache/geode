@@ -296,15 +296,23 @@ public class CompiledComparison extends AbstractCompiledValue
   public int getSizeEstimate(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     IndexInfo[] idxInfo = getIndexInfo(context);
-    if ((idxInfo == null) || (idxInfo.length > 1)) {
-      // Asif: This implies it is an independent condition. So evaluate it first
-      // in filter operand
+
+    // Both operands are indexed, evaluate it first in the filter operand.
+    if (idxInfo != null && idxInfo.length > 1) {
       return 0;
     }
+
+    // Asif: This implies it is an independent condition. So evaluate it second in filter operand.
+    if (idxInfo == null) {
+      return 1;
+    }
+
     assert idxInfo.length == 1;
     Object key = idxInfo[0].evaluateIndexKey(context);
+
+    // Evaluate it second as we do with the independent condition if key was not found.
     if (key != null && key.equals(QueryService.UNDEFINED)) {
-      return 0;
+      return 1;
     }
 
     if (context instanceof QueryExecutionContext) {
@@ -318,7 +326,6 @@ public class CompiledComparison extends AbstractCompiledValue
     int op = reflectOnOperator(idxInfo[0]._key());
 
     return idxInfo[0]._index.getSizeEstimate(key, op, idxInfo[0]._matchLevel);
-
   }
 
   /** **************** PRIVATE METHODS ************************** */
