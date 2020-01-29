@@ -21,7 +21,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_S
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATOR_WAIT_TIME;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.apache.geode.distributed.internal.membership.adapter.TcpSocketCreatorAdapter.asTcpSocketCreator;
 import static org.apache.geode.internal.AvailablePort.SOCKET;
 import static org.apache.geode.internal.AvailablePort.getRandomAvailablePort;
 import static org.apache.geode.util.internal.GeodeGlossary.GEMFIRE_PREFIX;
@@ -171,10 +170,8 @@ public class LocatorIntegrationTest {
   public void testBasicInfo() throws Exception {
     locator = Locator.startLocator(port, tmpFile);
     int boundPort = port == 0 ? locator.getPort() : port;
-    TcpClient client = new TcpClient(
-        asTcpSocketCreator(
-            SocketCreatorFactory
-                .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
+    TcpClient client = new TcpClient(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR),
         InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
         InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());
     String[] info = client.getInfo(InetAddress.getLocalHost(), boundPort);

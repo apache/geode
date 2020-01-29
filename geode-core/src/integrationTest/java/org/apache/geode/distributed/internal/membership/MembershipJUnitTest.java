@@ -21,7 +21,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.MEMBER_TIMEOUT;
-import static org.apache.geode.distributed.internal.membership.adapter.TcpSocketCreatorAdapter.asTcpSocketCreator;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -279,14 +278,12 @@ public class MembershipJUnitTest {
           }
         };
 
-    final TcpClient locatorClient = new TcpClient(
-        asTcpSocketCreator(
-            SocketCreatorFactory
-                .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
+    final TcpClient locatorClient = new TcpClient(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR),
         InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
         InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());
-    final TcpSocketCreator socketCreator = asTcpSocketCreator(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER));
+    final TcpSocketCreator socketCreator = SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER);
     final GMSAuthenticator authenticator =
         new GMSAuthenticator(config.getSecurityProps(), securityService,
             mockSystem.getSecurityLogWriter(), mockSystem.getInternalLogWriter());

@@ -16,33 +16,29 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.locator;
 
-import static org.apache.geode.distributed.internal.membership.adapter.TcpSocketCreatorAdapter.asTcpSocketCreator;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.util.Properties;
-
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import org.apache.geode.distributed.internal.DistributionConfigImpl;
-import org.apache.geode.distributed.internal.LocatorStats;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.membership.api.MemberData;
+import org.apache.geode.distributed.internal.membership.api.MemberDataBuilder;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifierFactoryImpl;
 import org.apache.geode.distributed.internal.membership.api.MembershipConfigurationException;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembership;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
+import org.apache.geode.distributed.internal.membership.gms.MembershipLocatorStatisticsNoOp;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.JoinLeave;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Messenger;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
-import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.net.SocketCreatorFactory;
-import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreatorImpl;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.internal.DSFIDSerializerImpl;
@@ -62,8 +58,6 @@ public class GMSLocatorIntegrationTest {
   @Before
   public void setUp() throws MembershipConfigurationException {
 
-    SocketCreatorFactory.setDistributionConfig(new DistributionConfigImpl(new Properties()));
-
     tcpServer = mock(TcpServer.class);
     view = new GMSMembershipView();
     services = mock(Services.class);
@@ -77,26 +71,23 @@ public class GMSLocatorIntegrationTest {
     when(services.getJoinLeave()).thenReturn(joinLeave);
     messenger = mock(Messenger.class);
     when(services.getMessenger()).thenReturn(messenger);
-    when(messenger.getMemberID()).thenReturn(new InternalDistributedMember("localhost", 8080));
+
+    final MemberIdentifierFactoryImpl factory = new MemberIdentifierFactoryImpl();
+    MemberData memberData = MemberDataBuilder.newBuilderForLocalHost("localhost")
+        .setMembershipPort(1234).build();
+    MemberIdentifier memberId = factory.create(memberData);
+    when(messenger.getMemberID()).thenReturn(memberId);
 
     gmsLocator =
-        new GMSLocator(null, null, false, false, new LocatorStats(), "",
-            temporaryFolder.getRoot().toPath(), new TcpClient(
-                asTcpSocketCreator(
-                    SocketCreatorFactory
-                        .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
-                InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
-                InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer()),
-            InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
-            InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());
+        new GMSLocator(null, null, false, false, new MembershipLocatorStatisticsNoOp(), "",
+            temporaryFolder.getRoot().toPath(), new TcpClient(new TcpSocketCreatorImpl(),
+                services.getSerializer().getObjectSerializer(),
+                services.getSerializer().getObjectDeserializer()),
+            services.getSerializer().getObjectSerializer(),
+            services.getSerializer().getObjectDeserializer());
     GMSMembership membership = mock(GMSMembership.class);
     when(membership.getServices()).thenReturn(services);
     gmsLocator.setMembership(membership);
-  }
-
-  @After
-  public void after() {
-    SocketCreatorFactory.close();
   }
 
   @Test

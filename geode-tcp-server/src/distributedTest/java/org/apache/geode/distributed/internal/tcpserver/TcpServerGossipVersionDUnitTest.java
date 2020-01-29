@@ -17,7 +17,6 @@ package org.apache.geode.distributed.internal.tcpserver;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.apache.geode.distributed.internal.membership.adapter.TcpSocketCreatorAdapter.asTcpSocketCreator;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
@@ -146,10 +145,8 @@ public class TcpServerGossipVersionDUnitTest extends JUnit4DistributedTestCase {
           new InternalDistributedMember("localhost", 1234));
       FindCoordinatorResponse response;
 
-      response = (FindCoordinatorResponse) new TcpClient(
-          asTcpSocketCreator(
-              SocketCreatorFactory
-                  .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
+      response = (FindCoordinatorResponse) new TcpClient(SocketCreatorFactory
+          .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR),
           InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
           InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer())
               .requestToServer(LocalHostUtil.getLocalHost(), port0, req, 5000);
