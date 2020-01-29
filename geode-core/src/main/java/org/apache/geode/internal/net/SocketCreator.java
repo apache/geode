@@ -602,12 +602,12 @@ public class SocketCreator extends TcpSocketCreatorImpl {
 
   @Override
   protected RuntimeException problemCreatingSocketInPortRangeException(String s, IOException e) {
-    return new SystemConnectException(s, e);
+    return new GemFireConfigException(s, e);
   }
 
   @Override
   protected RuntimeException noFreePortException(String reason) {
-    return new GemFireConfigException(reason);
+    return new SystemConnectException(reason);
   }
 
   /**

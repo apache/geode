@@ -43,7 +43,6 @@ import org.mockito.Mockito;
 
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.DistributionStats;
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.net.SocketCreatorFactory;
@@ -77,7 +76,6 @@ public class TCPServerSSLJUnitTest {
         expectedSocketTimeout);
 
     localhost = InetAddress.getLocalHost();
-    port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
 
     socketCreator = new SocketCreatorFailHandshake(
         SSLConfigurationFactory.getSSLConfigForComponent(
@@ -86,7 +84,7 @@ public class TCPServerSSLJUnitTest {
         recordedSocketTimeouts);
 
     server = new TcpServer(
-        port,
+        0,
         localhost,
         Mockito.mock(TcpHandler.class),
         "server thread",
@@ -99,6 +97,7 @@ public class TCPServerSSLJUnitTest {
         GeodeGlossary.GEMFIRE_PREFIX + "TcpServer.BACKLOG");
 
     server.start();
+    port = server.getPort();
   }
 
   @After

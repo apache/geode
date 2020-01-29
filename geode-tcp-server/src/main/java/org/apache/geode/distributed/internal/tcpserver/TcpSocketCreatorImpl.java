@@ -85,7 +85,9 @@ public class TcpSocketCreatorImpl implements TcpSocketCreator {
             portLimit = startingPort - 1;
             startingPort = 0;
           } else {
-            throw noFreePortException("Unable to find a free port in the membership-port-range");
+            throw noFreePortException(
+                String.format("Unable to find a free port in the membership-port-range: [%d,%d]",
+                    tcpPortRange[0], tcpPortRange[1]));
           }
         }
         ServerSocket socket = null;
@@ -186,15 +188,15 @@ public class TcpSocketCreatorImpl implements TcpSocketCreator {
       if (socketBufferSize != -1) {
         socket.setReceiveBufferSize(socketBufferSize);
       }
-    }
-    if (optionalWatcher != null) {
-      optionalWatcher.beforeConnect(socket);
-    }
-    try {
-      socket.connect(new InetSocketAddress(inetadd, port));
-    } finally {
       if (optionalWatcher != null) {
-        optionalWatcher.afterConnect(socket);
+        optionalWatcher.beforeConnect(socket);
+      }
+      try {
+        socket.connect(new InetSocketAddress(inetadd, port));
+      } finally {
+        if (optionalWatcher != null) {
+          optionalWatcher.afterConnect(socket);
+        }
       }
     }
     return socket;
