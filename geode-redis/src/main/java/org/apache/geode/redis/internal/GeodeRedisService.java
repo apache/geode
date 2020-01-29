@@ -47,7 +47,7 @@ public class GeodeRedisService implements CacheService, ResourceEventsListener {
 
   @Override
   public void handleEvent(ResourceEvent event, Object resource) {
-    if (event.equals(ResourceEvent.CACHE_SERVICE_CREATE) && resource == this) {
+    if (event.equals(ResourceEvent.CLUSTER_CONFIGURATION_APPLIED) && resource == cache) {
       startRedisServer(cache);
     }
   }
