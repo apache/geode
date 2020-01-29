@@ -92,12 +92,14 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.cache.util.CacheWriterAdapter;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
+import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
+import org.apache.geode.test.dunit.rules.DistributedExecutorServiceRule;
 import org.apache.geode.test.dunit.rules.SharedErrorCollector;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
@@ -118,19 +120,20 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
   private static final int ONE_HUNDRED = 100;
   private static final int ONE_THOUSAND = 1000;
 
-  private static final CacheListenerAction<Integer> EMPTY_INTEGER_ACTION =
-      new CacheListenerAction<>(null, emptyConsumer());
+  private static final Action<Integer> EMPTY_INTEGER_ACTION =
+      new Action<>(null, emptyConsumer());
 
   private static final Counter DUMMY_COUNTER = new Counter("dummy");
 
-  private static volatile AtomicReference<TickerData> valueReference;
-  private static volatile CountDownLatch latch;
-  private static volatile CountDownLatch beforeLatch;
-  private static volatile CountDownLatch afterLatch;
-  private static volatile Counter serverCounter;
+  private static final AtomicReference<TickerData> VALUE = new AtomicReference<>();
+  private static final AtomicReference<CountDownLatch> LATCH = new AtomicReference<>();
+  private static final AtomicReference<CountDownLatch> BEFORE = new AtomicReference<>();
+  private static final AtomicReference<CountDownLatch> AFTER = new AtomicReference<>();
+  private static final AtomicReference<Counter> COUNTER = new AtomicReference<>();
 
   private String regionName;
   private String hostName;
+  private String poolName;
   private String title;
   private String locators;
 
@@ -138,6 +141,9 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
   private VM server2;
   private VM client1;
   private VM client2;
+
+  @Rule
+  public DistributedExecutorServiceRule executorServiceRule = new DistributedExecutorServiceRule();
 
   @Rule
   public SerializableTestName testName = new SerializableTestName();
@@ -149,6 +155,7 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
   public void setUp() {
     regionName = getClass().getSimpleName();
     hostName = getHostName();
+    poolName = "testPool";
     title = testName.getMethodName();
     locators = getLocators();
 
@@ -157,12 +164,21 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
     client1 = getVM(2);
     client2 = getVM(3);
 
+    for (VM vm : toArray(client1, client2, server1, server2)) {
+      vm.invoke(() -> {
+        VALUE.set(null);
+        LATCH.set(new CountDownLatch(0));
+        BEFORE.set(new CountDownLatch(0));
+        AFTER.set(new CountDownLatch(0));
+        COUNTER.set(null);
+      });
+    }
+
     addIgnoredException(ConnectException.class);
     addIgnoredException(PutAllPartialResultException.class);
     addIgnoredException(RegionDestroyedException.class);
     addIgnoredException(ServerConnectivityException.class);
     addIgnoredException(SocketException.class);
-
     addIgnoredException("Broken pipe");
     addIgnoredException("Connection reset");
     addIgnoredException("Unexpected IOException");
@@ -173,18 +189,9 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
     for (VM vm : toArray(client1, client2, server1, server2)) {
       vm.invoke(() -> {
         disconnectFromDS();
-        if (valueReference != null) {
-          valueReference.set(null);
-        }
-        if (latch != null) {
-          latch.countDown();
-        }
-        if (beforeLatch != null) {
-          beforeLatch.countDown();
-        }
-        if (afterLatch != null) {
-          afterLatch.countDown();
-        }
+        LATCH.get().countDown();
+        BEFORE.get().countDown();
+        AFTER.get().countDown();
       });
     }
   }
@@ -195,27 +202,18 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
   @Test
   public void testOneServer() throws Exception {
     // set <PR=false, notifyBySubscription=true> to enable registerInterest and CQ
-    int serverPort = server1.invoke(() -> createServer(regionName, 0, false, 0, null));
+    int serverPort = server1.invoke(() -> createServer(regionName, false, 0));
 
-    client1.invoke(() -> createClient(regionName, hostName, new int[] {serverPort}, -1, -1,
-        false, true, true, true));
-    client2.invoke(() -> createClient(regionName, hostName, new int[] {serverPort}, -1, -1,
-        false, true, true, true));
-
-    server1.invoke(() -> {
-      Region<String, TickerData> region = getCache().getRegion(regionName);
-      region.getAttributesMutator().addCacheListener(new CountingCacheListener<>());
-    });
+    client1.invoke(() -> createClient(serverPort, -1, -1, false, true, true, true));
+    client2.invoke(() -> createClient(serverPort, -1, -1, false, true, true, true));
 
     client2.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
-      region.getAttributesMutator().addCacheListener(new CountingCacheListener<>());
       region.registerInterest("ALL_KEYS");
     });
 
     client1.invoke(() -> {
       RegionFactory<String, TickerData> regionFactory = getCache().createRegionFactory(LOCAL);
-      regionFactory.addCacheListener(new CountingCacheListener<>());
       regionFactory.create("localsave");
 
       Region<String, TickerData> region = getCache().getRegion(regionName);
@@ -224,21 +222,23 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
     });
 
     client1.invoke(() -> {
-      beforeLatch = new CountDownLatch(1);
-      afterLatch = new CountDownLatch(1);
+      BEFORE.set(new CountDownLatch(1));
+      AFTER.set(new CountDownLatch(1));
     });
 
     AsyncInvocation<Void> createCqInClient1 = client1.invokeAsync(() -> {
       // create a CQ for key 10-20
-      Region<String, TickerData> region = getCache().getRegion("localsave");
+      Region<String, TickerData> localSaveRegion = getCache().getRegion("localsave");
 
       CqAttributesFactory cqAttributesFactory = new CqAttributesFactory();
-      cqAttributesFactory.addCqListener(new CountingCqListener<>(region));
+      cqAttributesFactory.addCqListener(new CountingCqListener<>(localSaveRegion));
       CqAttributes cqAttributes = cqAttributesFactory.create();
 
       String cqName = "EOInfoTracker";
-      String query = "SELECT ALL * FROM /" + regionName
-          + " ii WHERE ii.getTicker() >= '10' and ii.getTicker() < '20'";
+      String query = String.join(" ",
+          "SELECT ALL * FROM /" + regionName + " ii",
+          "WHERE ii.getTicker() >= '10' and ii.getTicker() < '20'");
+
       CqQuery cqQuery = getCache().getQueryService().newCq(cqName, query, cqAttributes);
 
       SelectResults<Struct> results = cqQuery.executeWithInitialResults();
@@ -246,11 +246,11 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
       for (int i = 0; i < resultsAsList.size(); i++) {
         Struct struct = resultsAsList.get(i);
         TickerData tickerData = (TickerData) struct.get("value");
-        region.put("key-" + i, tickerData);
+        localSaveRegion.put("key-" + i, tickerData);
       }
 
-      beforeLatch.countDown();
-      afterLatch.await(TIMEOUT_MILLIS, MILLISECONDS);
+      BEFORE.get().countDown();
+      AFTER.get().await(TIMEOUT_MILLIS, MILLISECONDS);
 
       cqQuery.close();
     });
@@ -267,20 +267,16 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
 
     // verify CQ is ready
     client1.invoke(() -> {
-      beforeLatch.await(TIMEOUT_MILLIS, MILLISECONDS);
+      BEFORE.get().await(TIMEOUT_MILLIS, MILLISECONDS);
 
-      Region<String, TickerData> region = getCache().getRegion("localsave");
-      await().untilAsserted(() -> {
-        assertThat(region.size()).isGreaterThan(0);
-      });
+      Region<String, TickerData> localSaveRegion = getCache().getRegion("localsave");
+      await().untilAsserted(() -> assertThat(localSaveRegion.size()).isGreaterThan(0));
     });
 
     // verify registerInterest result at client2
     client2.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
-      await().untilAsserted(() -> {
-        assertThat(region.size()).isEqualTo(ONE_HUNDRED);
-      });
+      await().untilAsserted(() -> assertThat(region.size()).isEqualTo(ONE_HUNDRED));
 
       for (int i = 0; i < ONE_HUNDRED; i++) {
         TickerData tickerData = region.getEntry("key-" + i).getValue();
@@ -308,18 +304,18 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
 
     // verify CQ result at client1
     client1.invoke(() -> {
-      Region<String, TickerData> region = getCache().getRegion("localsave");
+      Region<String, TickerData> localSaveRegion = getCache().getRegion("localsave");
 
       for (int i = 10; i < 20; i++) {
         String key = "key-" + i;
         int price = i * 10;
         await().untilAsserted(() -> {
-          TickerData tickerData = region.get(key);
+          TickerData tickerData = localSaveRegion.get(key);
           assertThat(tickerData.getPrice()).isEqualTo(price);
         });
       }
 
-      afterLatch.countDown();
+      AFTER.get().countDown();
     });
 
     createCqInClient1.await();
@@ -352,40 +348,36 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
   @Test
   public void testOldValueInEvent() {
     // set notifyBySubscription=false to test local-invalidates
-    int serverPort1 = server1.invoke(() -> createServer(regionName, 0, false, 0, null));
-    int serverPort2 = server2.invoke(() -> createServer(regionName, 0, false, 0, null));
+    int serverPort1 = server1.invoke(() -> createServer(regionName, false, 0));
+    int serverPort2 = server2.invoke(() -> createServer(regionName, false, 0));
 
-    client1.invoke(() -> createClient(regionName, hostName, new int[] {serverPort1}, -1, -1,
-        false, true, true, true));
-    client2.invoke(() -> createClient(regionName, hostName, new int[] {serverPort2}, -1, -1,
-        false, true, true, true));
+    client1.invoke(() -> createClient(serverPort1, -1, -1, false, true, true, true));
+    client2.invoke(() -> createClient(serverPort2, -1, -1, false, true, true, true));
 
     client2.invoke(() -> {
-      valueReference = new AtomicReference<>();
-      latch = new CountDownLatch(1);
+      LATCH.set(new CountDownLatch(1));
 
       Region<String, TickerData> region = getCache().getRegion(regionName);
       region.getAttributesMutator()
-          .addCacheListener(new OldValueCacheListener<>(new CacheListenerAction<>(Operation.UPDATE,
+          .addCacheListener(new ActionCacheListener<>(new Action<>(Operation.UPDATE,
               event -> {
                 assertThat(event.getOldValue()).isNotNull();
-                valueReference.set(event.getOldValue());
-                latch.countDown();
+                VALUE.set(event.getOldValue());
+                LATCH.get().countDown();
               })));
       region.registerInterest("ALL_KEYS");
     });
 
     client1.invoke(() -> {
-      valueReference = new AtomicReference<>();
-      latch = new CountDownLatch(1);
+      LATCH.set(new CountDownLatch(1));
 
       Region<String, TickerData> region = getCache().getRegion(regionName);
       region.getAttributesMutator()
-          .addCacheListener(new OldValueCacheListener<>(new CacheListenerAction<>(Operation.UPDATE,
+          .addCacheListener(new ActionCacheListener<>(new Action<>(Operation.UPDATE,
               event -> {
                 assertThat(event.getOldValue()).isNotNull();
-                valueReference.set(event.getOldValue());
-                latch.countDown();
+                VALUE.set(event.getOldValue());
+                LATCH.get().countDown();
               })));
 
       // create keys
@@ -399,13 +391,13 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
 
     // the local PUTALL_UPDATE event should contain old value
     client1.invoke(() -> {
-      latch.await(TIMEOUT_MILLIS, MILLISECONDS);
-      assertThat(valueReference.get()).isInstanceOf(TickerData.class);
+      LATCH.get().await(TIMEOUT_MILLIS, MILLISECONDS);
+      assertThat(VALUE.get()).isInstanceOf(TickerData.class);
     });
 
     client2.invoke(() -> {
-      latch.await(TIMEOUT_MILLIS, MILLISECONDS);
-      assertThat(valueReference.get()).isInstanceOf(TickerData.class);
+      LATCH.get().await(TIMEOUT_MILLIS, MILLISECONDS);
+      assertThat(VALUE.get()).isInstanceOf(TickerData.class);
     });
   }
 
@@ -418,15 +410,12 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
   @Test
   public void shouldReturnVersionTagOfTombstoneVersionWhenRemoveAllRetried() {
     // set notifyBySubscription=false to test local-invalidates
-    int serverPort1 = server1.invoke(() -> createServer(regionName, 0, true, 0, "ds1"));
+    int serverPort1 = server1.invoke(() -> createServer(regionName, true, 0, "ds1"));
 
-    client1.invoke(() -> createClient(regionName, hostName, new int[] {serverPort1}, -1, -1,
-        true, true, true, true));
+    client1.invoke(() -> createClient(serverPort1, -1, -1, true, true, true, true));
 
     client1.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
-      region.getAttributesMutator().addCacheListener(new CountingCacheListener<>());
-
       doPutAll(region, "key-", ONE_HUNDRED);
       assertThat(region.size()).isEqualTo(ONE_HUNDRED);
     });
@@ -461,25 +450,15 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
   @Test
   public void test2Server() throws Exception {
     // set notifyBySubscription=false to test local-invalidates
-    int serverPort1 = server1.invoke(() -> createServer(regionName, 0, false, 0, null));
-    int serverPort2 = server2.invoke(() -> createServer(regionName, 0, false, 0, null));
+    int serverPort1 = server1.invoke(() -> createServer(regionName, false, 0));
+    int serverPort2 = server2.invoke(() -> createServer(regionName, false, 0));
 
-    client1.invoke(() -> createClient(regionName, hostName, new int[] {serverPort1}, -1, -1,
-        true, true, true, true));
-    client2.invoke(() -> createClient(regionName, hostName, new int[] {serverPort2}, -1, -1,
-        true, true, true, true));
+    client1.invoke(() -> createClient(serverPort1, -1, -1, true, true, true, true));
+    client2.invoke(() -> createClient(serverPort2, -1, -1, true, true, true, true));
 
-    // client2 add listener
-    client2.invoke(() -> {
-      Region<String, TickerData> region = getCache().getRegion(regionName);
-      region.getAttributesMutator().addCacheListener(new CountingCacheListener<>());
-    });
-
-    // client1 add listener and putAll
+    // client1 putAll
     client1.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
-      region.getAttributesMutator().addCacheListener(new CountingCacheListener<>());
-
       doPutAll(region, "key-", ONE_HUNDRED);
       assertThat(region.size()).isEqualTo(ONE_HUNDRED);
 
@@ -516,9 +495,7 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
     // client2 verify putAll
     client2.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
-      await().untilAsserted(() -> {
-        assertThat(region.size()).isEqualTo(ONE_HUNDRED);
-      });
+      await().untilAsserted(() -> assertThat(region.size()).isEqualTo(ONE_HUNDRED));
 
       for (int i = 0; i < ONE_HUNDRED; i++) {
         Entry<String, TickerData> regionEntry = region.getEntry("key-" + i);
@@ -558,9 +535,7 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
     // client2 verify removeAll
     client2.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
-      await().untilAsserted(() -> {
-        assertThat(region.size()).isZero();
-      });
+      await().untilAsserted(() -> assertThat(region.size()).isZero());
     });
 
     // async putAll1 from client1
@@ -639,9 +614,7 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
     // client2 verify async putAll
     client2.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
-      await().untilAsserted(() -> {
-        assertThat(region.size()).isEqualTo(ONE_HUNDRED * 2);
-      });
+      await().untilAsserted(() -> assertThat(region.size()).isEqualTo(ONE_HUNDRED * 2));
 
       for (int i = 0; i < ONE_HUNDRED; i++) {
         Entry<String, TickerData> regionEntry = region.getEntry("async1key-" + i);
@@ -689,9 +662,7 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
     // client2 verify async removeAll
     client2.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
-      await().untilAsserted(() -> {
-        assertThat(region.size()).isZero();
-      });
+      await().untilAsserted(() -> assertThat(region.size()).isZero());
     });
 
     // server1 execute P2P putAll
@@ -724,9 +695,7 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
     // client2 verify p2p putAll
     client2.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
-      await().untilAsserted(() -> {
-        assertThat(region.size()).isEqualTo(ONE_HUNDRED);
-      });
+      await().untilAsserted(() -> assertThat(region.size()).isEqualTo(ONE_HUNDRED));
 
       for (int i = 0; i < ONE_HUNDRED; i++) {
         Entry<String, TickerData> regionEntry = region.getEntry("p2pkey-" + i);
@@ -738,9 +707,7 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
     // client1 verify p2p putAll
     client1.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
-      await().untilAsserted(() -> {
-        assertThat(region.size()).isEqualTo(ONE_HUNDRED);
-      });
+      await().untilAsserted(() -> assertThat(region.size()).isEqualTo(ONE_HUNDRED));
 
       for (int i = 0; i < ONE_HUNDRED; i++) {
         Entry<String, TickerData> regionEntry = region.getEntry("p2pkey-" + i);
@@ -764,23 +731,17 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
     // client2 verify p2p removeAll
     client2.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
-      await().untilAsserted(() -> {
-        assertThat(region.size()).isZero();
-      });
+      await().untilAsserted(() -> assertThat(region.size()).isZero());
     });
 
     // client1 verify p2p removeAll
     client1.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
-      await().untilAsserted(() -> {
-        assertThat(region.size()).isZero();
-      });
+      await().untilAsserted(() -> assertThat(region.size()).isZero());
     });
 
     // execute putAll on client2 for key 0-10
-    client2.invoke(() -> {
-      doPutAll(getCache().getRegion(regionName), "key-", 10);
-    });
+    client2.invoke(() -> doPutAll(getCache().getRegion(regionName), "key-", 10));
 
     // verify client1 for local invalidate
     client1.invoke(() -> {
@@ -810,23 +771,14 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
     int serverPort2 =
         server2.invoke(() -> createServerRegion(regionName, concurrencyChecksEnabled));
 
-    client1.invoke(() -> createClient(regionName, hostName, new int[] {serverPort1}, -1, 59000,
-        true, true, true, true));
-    client2.invoke(() -> createClient(regionName, hostName, new int[] {serverPort2}, -1, 59000,
-        true, true, true, true));
-
-    client2.invoke(() -> {
-      Region<String, TickerData> region = getCache().getRegion(regionName);
-      region.getAttributesMutator().addCacheListener(new CountingCacheListener<>());
-    });
+    client1.invoke(() -> createClient(serverPort1, -1, 59000, true, true, true, true));
+    client2.invoke(() -> createClient(serverPort2, -1, 59000, true, true, true, true));
 
     // test case 1: putAll and removeAll to server1
 
     // client1 add listener and putAll
     client1.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
-      region.getAttributesMutator().addCacheListener(new CountingCacheListener<>());
-
       doPutAll(region, "case1-", ONE_HUNDRED);
       assertThat(region.size()).isEqualTo(ONE_HUNDRED);
 
@@ -896,9 +848,7 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
     // client2 verify removeAll
     client2.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
-      await().untilAsserted(() -> {
-        assertThat(region.size()).isZero();
-      });
+      await().untilAsserted(() -> assertThat(region.size()).isZero());
     });
 
     // test case 2: putAll to server1, removeAll to server2
@@ -952,9 +902,7 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
     // client1 verify removeAll
     client1.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
-      await().untilAsserted(() -> {
-        assertThat(region.size()).isEqualTo(100);
-      });
+      await().untilAsserted(() -> assertThat(region.size()).isEqualTo(100));
       doRemoveAll(region, "case2-", ONE_HUNDRED);
     });
 
@@ -988,27 +936,15 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
   @TestCaseName("{method}(isPR={0}, redundantCopies={1})")
   public void testPRServerRVDuplicatedKeys(boolean isPR, int redundantCopies) {
     // set <true, false> means <PR=true, notifyBySubscription=false> to test local-invalidates
-    int serverPort1 =
-        server1.invoke(() -> createServer(regionName, 0, isPR, redundantCopies, null));
-    int serverPort2 =
-        server2.invoke(() -> createServer(regionName, 0, isPR, redundantCopies, null));
+    int serverPort1 = server1.invoke(() -> createServer(regionName, isPR, redundantCopies));
+    int serverPort2 = server2.invoke(() -> createServer(regionName, isPR, redundantCopies));
 
-    client1.invoke(() -> createClient(regionName, hostName, new int[] {serverPort1}, -1, 59000,
-        true, true, false, true));
-    client2.invoke(() -> createClient(regionName, hostName, new int[] {serverPort2}, -1, 59000,
-        true, true, false, true));
-
-    // client2 add listener
-    client2.invoke(() -> {
-      Region<String, TickerData> region = getCache().getRegion(regionName);
-      region.getAttributesMutator().addCacheListener(new CountingCacheListener<>());
-    });
+    client1.invoke(() -> createClient(serverPort1, -1, 59000, true, true, false, true));
+    client2.invoke(() -> createClient(serverPort2, -1, 59000, true, true, false, true));
 
     // client1 add listener and putAll
     client1.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
-      region.getAttributesMutator().addCacheListener(new CountingCacheListener<>());
-
       doPutAll(region, "key-", ONE_HUNDRED);
       assertThat(region.size()).isEqualTo(ONE_HUNDRED);
 
@@ -1145,25 +1081,21 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
   @Parameters({"true", "false"})
   @TestCaseName("{method}(singleHop={0})")
   public void testBug51725(boolean singleHop) {
-    int serverPort1 = server1.invoke(() -> createServer(regionName, 0, true, 0, "ds1"));
-    server2.invoke(() -> createServer(regionName, 0, true, 0, "ds1"));
+    int serverPort1 = server1.invoke(() -> createServer(regionName, true, 0, "ds1"));
+    server2.invoke(() -> createServer(regionName, true, 0, "ds1"));
 
-    client1.invoke(() -> createClient(regionName, hostName, new int[] {serverPort1}, -1, 59000,
-        false, false, singleHop, true));
-    client2.invoke(() -> createClient(regionName, hostName, new int[] {serverPort1}, -1, 59000,
-        false, false, singleHop, true));
+    client1.invoke(() -> createClient(serverPort1, -1, 59000, false, false, singleHop, true));
+    client2.invoke(() -> createClient(serverPort1, -1, 59000, false, false, singleHop, true));
 
     // client2 add listener
     client2.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
-      region.getAttributesMutator().addCacheListener(new CountingCacheListener<>());
       region.registerInterest("ALL_KEYS");
     });
 
     // put 3 keys then removeAll
     client1.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
-      region.getAttributesMutator().addCacheListener(new CountingCacheListener<>());
 
       // do putAll to create all buckets
       doPutAll(region, "key-", ONE_HUNDRED);
@@ -1175,7 +1107,6 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
     // putAll from client again
     client1.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
-      region.getAttributesMutator().addCacheListener(new CountingCacheListener<>());
 
       String message =
           String.format("Region %s putAll at server applied partial keys due to exception.",
@@ -1206,6 +1137,7 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
           region.getFullPath());
 
       thrown = catchThrowable(() -> doRemoveAll(region, title, ONE_HUNDRED));
+
       assertThat(thrown)
           .isInstanceOf(ServerOperationException.class)
           .hasMessageContaining(message);
@@ -1237,25 +1169,15 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
   @Test
   public void testPRServer() throws Exception {
     // set <true, false> means <PR=true, notifyBySubscription=false> to test local-invalidates
-    int serverPort1 = server1.invoke(() -> createServer(regionName, 0, true, 1, null));
-    int serverPort2 = server2.invoke(() -> createServer(regionName, 0, true, 1, null));
+    int serverPort1 = server1.invoke(() -> createServer(regionName, true, 1));
+    int serverPort2 = server2.invoke(() -> createServer(regionName, true, 1));
 
-    client1.invoke(() -> createClient(regionName, hostName, new int[] {serverPort1}, -1, 59000,
-        true, true, false, true));
-    client2.invoke(() -> createClient(regionName, hostName, new int[] {serverPort2}, -1, 59000,
-        true, true, false, true));
+    client1.invoke(() -> createClient(serverPort1, -1, 59000, true, true, false, true));
+    client2.invoke(() -> createClient(serverPort2, -1, 59000, true, true, false, true));
 
-    // client2 add listener
-    client2.invoke(() -> {
-      Region<String, TickerData> region = getCache().getRegion(regionName);
-      region.getAttributesMutator().addCacheListener(new CountingCacheListener<>());
-    });
-
-    // client1 add listener and putAll
+    // client1 putAll
     client1.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
-      region.getAttributesMutator().addCacheListener(new CountingCacheListener<>());
-
       doPutAll(region, "key-", ONE_HUNDRED);
       assertThat(region.size()).isEqualTo(ONE_HUNDRED);
 
@@ -1292,9 +1214,7 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
     // verify client2
     client2.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
-      await().untilAsserted(() -> {
-        assertThat(region.size()).isEqualTo(ONE_HUNDRED);
-      });
+      await().untilAsserted(() -> assertThat(region.size()).isEqualTo(ONE_HUNDRED));
 
       for (int i = 0; i < ONE_HUNDRED; i++) {
         Entry<String, TickerData> regionEntry = region.getEntry("key-" + i);
@@ -1337,9 +1257,7 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
     // client2 verify removeAll
     client2.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
-      await().untilAsserted(() -> {
-        assertThat(region.size()).isZero();
-      });
+      await().untilAsserted(() -> assertThat(region.size()).isZero());
     });
 
     // Execute client putAll from multithread client
@@ -1399,9 +1317,7 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
     // client2 verify async putAll
     client2.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
-      await().untilAsserted(() -> {
-        assertThat(region.size()).isEqualTo(ONE_HUNDRED * 2);
-      });
+      await().untilAsserted(() -> assertThat(region.size()).isEqualTo(ONE_HUNDRED * 2));
 
       for (int i = 0; i < ONE_HUNDRED; i++) {
         Entry<String, TickerData> regionEntry = region.getEntry("async1key-" + i);
@@ -1449,9 +1365,7 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
     // client2 verify async removeAll
     client2.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
-      await().untilAsserted(() -> {
-        assertThat(region.size()).isZero();
-      });
+      await().untilAsserted(() -> assertThat(region.size()).isZero());
     });
 
     // server1 execute P2P putAll
@@ -1484,9 +1398,7 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
     // client2 verify p2p putAll
     client2.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
-      await().untilAsserted(() -> {
-        assertThat(region.size()).isEqualTo(ONE_HUNDRED);
-      });
+      await().untilAsserted(() -> assertThat(region.size()).isEqualTo(ONE_HUNDRED));
 
       for (int i = 0; i < ONE_HUNDRED; i++) {
         Entry<String, TickerData> regionEntry = region.getEntry("p2pkey-" + i);
@@ -1498,9 +1410,7 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
     // client1 verify p2p putAll
     client1.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
-      await().untilAsserted(() -> {
-        assertThat(region.size()).isEqualTo(ONE_HUNDRED);
-      });
+      await().untilAsserted(() -> assertThat(region.size()).isEqualTo(ONE_HUNDRED));
 
       for (int i = 0; i < ONE_HUNDRED; i++) {
         Entry<String, TickerData> regionEntry = region.getEntry("p2pkey-" + i);
@@ -1524,17 +1434,13 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
     // client2 verify p2p removeAll
     client2.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
-      await().untilAsserted(() -> {
-        assertThat(region.size()).isZero();
-      });
+      await().untilAsserted(() -> assertThat(region.size()).isZero());
     });
 
     // client1 verify p2p removeAll
     client1.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
-      await().untilAsserted(() -> {
-        assertThat(region.size()).isZero();
-      });
+      await().untilAsserted(() -> assertThat(region.size()).isZero());
     });
 
     // execute putAll on client2 for key 0-10
@@ -1568,21 +1474,21 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
   @Test
   public void testClientDestroyOfUncreatedEntry() {
     // set <true, false> means <PR=true, notifyBySubscription=false> to test local-invalidates
-    int serverPort1 = server1.invoke(() -> createServer(regionName, 0, false, 0, null));
+    int serverPort1 = server1.invoke(() -> createServer(regionName, false, 0));
 
-    client1.invoke(() -> createClient(regionName, hostName, new int[] {serverPort1}, -1, -1, false,
-        true, true, true));
+    client1.invoke(() -> createClient(serverPort1, -1, -1, false, true, true, true));
 
     // server1 add cacheWriter
     server1.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
       // Install cacheWriter that causes the very first destroy to fail
-      region.getAttributesMutator().setCacheWriter(new ThrowingCacheWriter<>(
-          new CacheListenerAction<>(Operation.DESTROY, destroys -> {
-            if (destroys >= 0) {
-              throw new CacheWriterException("Expected by test");
-            }
-          })));
+      region.getAttributesMutator()
+          .setCacheWriter(new ActionCacheWriter<>(new Action<>(Operation.DESTROY,
+              destroys -> {
+                if (destroys >= 0) {
+                  throw new CacheWriterException("Expected by test");
+                }
+              })));
     });
 
     assertThat(server1.invoke(() -> getCache().getRegion(regionName).size())).isZero();
@@ -1590,9 +1496,7 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
     // client1 destroy
     client1.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
-
       Throwable thrown = catchThrowable(() -> region.destroy("bogusKey"));
-
       assertThat(thrown)
           .isInstanceOf(ServerOperationException.class)
           .hasCauseInstanceOf(CacheWriterException.class);
@@ -1609,30 +1513,28 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
   @Test
   public void testPartialKeyInLocalRegion() {
     // set <true, false> means <PR=true, notifyBySubscription=false> to test local-invalidates
-    int serverPort1 = server1.invoke(() -> createServer(regionName, 0, false, 0, null));
-    server2.invoke(() -> createServer(regionName, 0, false, 0, null));
+    int serverPort1 = server1.invoke(() -> createServer(regionName, false, 0));
+    server2.invoke(() -> createServer(regionName, false, 0));
 
-    client1.invoke(() -> createClient(regionName, hostName, new int[] {serverPort1}, -1, -1, false,
-        true, true, true));
-    client2.invoke(() -> createClient(regionName, hostName, new int[] {serverPort1}, -1, -1, false,
-        true, true, true));
+    client1.invoke(() -> createClient(serverPort1, -1, -1, false, true, true, true));
+    client2.invoke(() -> createClient(serverPort1, -1, -1, false, true, true, true));
 
     // server1 add cacheWriter
     server1.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
       // let the server to trigger exception after created 15 keys
-      region.getAttributesMutator().setCacheWriter(new ThrowingCacheWriter<>(
-          new CacheListenerAction<>(Operation.CREATE, creates -> {
-            if (creates >= 15) {
-              throw new CacheWriterException("Expected by test");
-            }
-          })));
+      region.getAttributesMutator()
+          .setCacheWriter(new ActionCacheWriter<>(new Action<>(Operation.CREATE,
+              creates -> {
+                if (creates >= 15) {
+                  throw new CacheWriterException("Expected by test");
+                }
+              })));
     });
 
-    // client2 add listener
+    // client2 register interest
     client2.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
-      region.getAttributesMutator().addCacheListener(new CountingCacheListener<>());
       region.registerInterest("ALL_KEYS");
     });
 
@@ -1666,24 +1568,20 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
     server1.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
       // let the server to trigger exception after created 15 keys
-      region.getAttributesMutator().setCacheWriter(new ThrowingCacheWriter<>(
-          new CacheListenerAction<>(Operation.CREATE, creates -> {
-            if (creates >= 15) {
-              throw new CacheWriterException("Expected by test");
-            }
-          })));
+      region.getAttributesMutator()
+          .setCacheWriter(new ActionCacheWriter<>(new Action<>(Operation.CREATE,
+              creates -> {
+                if (creates >= 15) {
+                  throw new CacheWriterException("Expected by test");
+                }
+              })));
     });
 
     // server2 add listener and putAll
     server2.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
-      region.getAttributesMutator().addCacheListener(new CountingCacheListener<>());
-
-      Throwable thrown =
-          catchThrowable(() -> doPutAll(region, "key-" + "again:", ONE_HUNDRED));
-
-      assertThat(thrown)
-          .isInstanceOf(CacheWriterException.class);
+      Throwable thrown = catchThrowable(() -> doPutAll(region, "key-" + "again:", ONE_HUNDRED));
+      assertThat(thrown).isInstanceOf(CacheWriterException.class);
     });
 
     int sizeOnServer2 = server2.invoke(() -> getCache().getRegion(regionName).size());
@@ -1701,12 +1599,13 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
     server1.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
       // server triggers exception after destroying 5 keys
-      region.getAttributesMutator().setCacheWriter(new ThrowingCacheWriter<>(
-          new CacheListenerAction<>(Operation.DESTROY, creates -> {
-            if (creates >= 5) {
-              throw new CacheWriterException("Expected by test");
-            }
-          })));
+      region.getAttributesMutator()
+          .setCacheWriter(new ActionCacheWriter<>(new Action<>(Operation.DESTROY,
+              creates -> {
+                if (creates >= 5) {
+                  throw new CacheWriterException("Expected by test");
+                }
+              })));
     });
 
     // client1 removeAll
@@ -1742,39 +1641,33 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
     server1.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
       // server triggers exception after destroying 5 keys
-      region.getAttributesMutator().setCacheWriter(new ThrowingCacheWriter<>(
-          new CacheListenerAction<>(Operation.DESTROY, ops -> {
-            if (ops >= 5) {
-              throw new CacheWriterException("Expected by test");
-            }
-          })));
+      region.getAttributesMutator()
+          .setCacheWriter(new ActionCacheWriter<>(new Action<>(Operation.DESTROY,
+              ops -> {
+                if (ops >= 5) {
+                  throw new CacheWriterException("Expected by test");
+                }
+              })));
     });
 
     // server2 add listener and removeAll
     server2.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
-      region.getAttributesMutator().addCacheListener(new CountingCacheListener<>());
-
-      Throwable thrown =
-          catchThrowable(() -> doRemoveAll(region, "key-" + "again:", ONE_HUNDRED));
-
-      assertThat(thrown)
-          .isInstanceOf(CacheWriterException.class);
+      Throwable thrown = catchThrowable(() -> doRemoveAll(region, "key-" + "again:", ONE_HUNDRED));
+      assertThat(thrown).isInstanceOf(CacheWriterException.class);
     });
 
-    {
-      await().untilAsserted(() -> {
-        // client 1 did not register interest
-        assertThat(client1.invoke(() -> getCache().getRegion(regionName).size()))
-            .isEqualTo(15 - 5);
-        assertThat(client2.invoke(() -> getCache().getRegion(regionName).size()))
-            .isEqualTo(15 * 2 - 5 - 5);
-        assertThat(server1.invoke(() -> getCache().getRegion(regionName).size()))
-            .isEqualTo(15 * 2 - 5 - 5);
-        assertThat(server2.invoke(() -> getCache().getRegion(regionName).size()))
-            .isEqualTo(15 * 2 - 5 - 5);
-      });
-    }
+    await().untilAsserted(() -> {
+      // client 1 did not register interest
+      assertThat(client1.invoke(() -> getCache().getRegion(regionName).size()))
+          .isEqualTo(15 - 5);
+      assertThat(client2.invoke(() -> getCache().getRegion(regionName).size()))
+          .isEqualTo(15 * 2 - 5 - 5);
+      assertThat(server1.invoke(() -> getCache().getRegion(regionName).size()))
+          .isEqualTo(15 * 2 - 5 - 5);
+      assertThat(server2.invoke(() -> getCache().getRegion(regionName).size()))
+          .isEqualTo(15 * 2 - 5 - 5);
+    });
   }
 
   /**
@@ -1784,43 +1677,43 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
   @Test
   public void testPartialKeyInPR() throws Exception {
     // set <true, false> means <PR=true, notifyBySubscription=false> to test local-invalidates
-    int serverPort1 = server1.invoke(() -> createServer(regionName, 0, true, 0, "ds1"));
-    int serverPort2 = server2.invoke(() -> createServer(regionName, 0, true, 0, "ds1"));
+    int serverPort1 = server1.invoke(() -> createServer(regionName, true, 0, "ds1"));
+    int serverPort2 = server2.invoke(() -> createServer(regionName, true, 0, "ds1"));
 
-    client1
-        .invoke(() -> createClient(regionName, hostName, new int[] {serverPort1, serverPort2}, -1,
-            -1, false, false, true, true));
-    client2
-        .invoke(() -> createClient(regionName, hostName, new int[] {serverPort1, serverPort2}, -1,
-            -1, false, false, true, true));
+    client1.invoke(() -> {
+      createClient(new int[] {serverPort1, serverPort2}, -1, -1, false, false, true, true);
+    });
+    client2.invoke(() -> {
+      createClient(new int[] {serverPort1, serverPort2}, -1, -1, false, false, true, true);
+    });
 
     // server1 add slow listener
     server1.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
-      region.getAttributesMutator().addCacheListener(new CountingCacheListener<>(true));
+      region.getAttributesMutator().addCacheListener(new SlowCacheListener<>());
     });
 
     // server2 add slow listener
     server2.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
       region.getAttributesMutator()
-          .addCacheListener(new CountingCacheListener<>(
-              new CacheListenerAction<>(Operation.CREATE,
-                  creates -> server2.invokeAsync(() -> closeCacheConditionally(creates, 10))),
-              true));
+          .addCacheListener(new SlowCountingCacheListener<>(new Action<>(Operation.CREATE,
+              creates -> executorServiceRule.submit(() -> {
+                closeCacheConditionally(creates, 10);
+              }))));
     });
 
     // client2 add listener
     client2.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
-      region.getAttributesMutator().addCacheListener(new CountingCacheListener<>());
+      region.getAttributesMutator().addCacheListener(new SlowCacheListener<>());
       region.registerInterest("ALL_KEYS");
     });
 
     // client1 add listener and putAll
     AsyncInvocation<Void> registerInterestAndPutAllInClient1 = client1.invokeAsync(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
-      region.getAttributesMutator().addCacheListener(new CountingCacheListener<>());
+      region.getAttributesMutator().addCacheListener(new SlowCacheListener<>());
       region.registerInterest("ALL_KEYS");
 
       String message =
@@ -1845,7 +1738,7 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
     int sizeOnClient2 = client2.invoke(() -> getCache().getRegion(regionName).size());
 
     // restart server2
-    server2.invoke(() -> createServer(regionName, serverPort2, true, 0, "ds1"));
+    server2.invoke(() -> createServer(regionName, true, 0, "ds1"));
 
     await().untilAsserted(() -> {
       assertThat(server1.invoke(() -> getCache().getRegion(regionName).size()))
@@ -1885,7 +1778,7 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
     assertThat(newSizeOnClient2).isEqualTo(sizeOnClient2 + ONE_HUNDRED / 2);
 
     // restart server2
-    server2.invoke(() -> createServer(regionName, serverPort2, true, 0, "ds1"));
+    server2.invoke(() -> createServer(regionName, true, 0, "ds1"));
     sizeOnServer1 = server1.invoke(() -> getCache().getRegion(regionName).size());
     int sizeOnServer2 = server2.invoke(() -> getCache().getRegion(regionName).size());
     assertThat(sizeOnServer2).isEqualTo(sizeOnServer1);
@@ -1894,12 +1787,13 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
     server1.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
       // let the server to trigger exception after created 15 keys
-      region.getAttributesMutator().setCacheWriter(new ThrowingCacheWriter<>(
-          new CacheListenerAction<>(Operation.CREATE, creates -> {
-            if (creates >= 15) {
-              throw new CacheWriterException("Expected by test");
-            }
-          })));
+      region.getAttributesMutator()
+          .setCacheWriter(new ActionCacheWriter<>(new Action<>(Operation.CREATE,
+              creates -> {
+                if (creates >= 15) {
+                  throw new CacheWriterException("Expected by test");
+                }
+              })));
     });
 
     // server2 add listener and putAll
@@ -1925,20 +1819,19 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
   @Test
   public void testPartialKeyInPRSingleHop() throws Exception {
     // set <true, false> means <PR=true, notifyBySubscription=false> to test local-invalidates
-    int serverPort1 = server1.invoke(() -> createServer(regionName, 0, true, 0, "ds1"));
-    int serverPort2 = server2.invoke(() -> createServer(regionName, 0, true, 0, "ds1"));
+    int serverPort1 = server1.invoke(() -> createServer(regionName, true, 0, "ds1"));
+    int serverPort2 = server2.invoke(() -> createServer(regionName, true, 0, "ds1"));
 
-    client1
-        .invoke(() -> createClient(regionName, hostName, new int[] {serverPort1, serverPort2}, -1,
-            -1, false, false, true, false));
-    client2
-        .invoke(() -> createClient(regionName, hostName, new int[] {serverPort1, serverPort2}, -1,
-            -1, false, false, true, true));
+    client1.invoke(() -> {
+      createClient(new int[] {serverPort1, serverPort2}, -1, -1, false, false, true, false);
+    });
+    client2.invoke(() -> {
+      createClient(new int[] {serverPort1, serverPort2}, -1, -1, false, false, true, true);
+    });
 
     // client2 add listener
     client2.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
-      region.getAttributesMutator().addCacheListener(new CountingCacheListener<>());
       region.registerInterest("ALL_KEYS");
     });
 
@@ -1961,7 +1854,7 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
     // server1 add slow listener
     server1.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
-      region.getAttributesMutator().addCacheListener(new CountingCacheListener<>(true));
+      region.getAttributesMutator().addCacheListener(new SlowCacheListener<>());
     });
 
     // add a listener that will close the cache at the 10th update
@@ -1970,16 +1863,15 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
     server2.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
       region.getAttributesMutator()
-          .addCacheListener(new CountingCacheListener<>(
-              new CacheListenerAction<>(Operation.CREATE,
-                  creates -> server2.invokeAsync(() -> closeCacheConditionally(creates, 10))),
-              true));
+          .addCacheListener(new SlowCountingCacheListener<>(new Action<>(Operation.CREATE,
+              creates -> executorServiceRule.submit(() -> {
+                closeCacheConditionally(creates, 10);
+              }))));
     });
 
     // client1 add listener and putAll
     AsyncInvocation<Void> addListenerAndPutAllInClient1 = client1.invokeAsync(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
-      region.getAttributesMutator().addCacheListener(new CountingCacheListener<>());
 
       String message =
           String.format("Region %s putAll at server applied partial keys due to exception.",
@@ -1999,8 +1891,7 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
     addListenerAndPutAllInClient1.await();
 
     // restart server2
-    System.out.println("restarting server 2");
-    server2.invoke(() -> createServer(regionName, serverPort2, true, 0, "ds1"));
+    server2.invoke(() -> createServer(regionName, true, 0, "ds1"));
 
     // Test Case1: Trigger singleHop putAll. Stop server2 in middle.
     // ONE_HUNDRED_ENTRIES/2 + X keys will be created at servers. i.e. X keys at server2,
@@ -2031,20 +1922,21 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
     // created on server2.
 
     // restart server2
-    server2.invoke(() -> createServer(regionName, serverPort2, true, 0, "ds1"));
+    server2.invoke(() -> createServer(regionName, true, 0, "ds1"));
 
     // add a cacheWriter for server to fail putAll after it created cacheWriterAllowedKeyNum keys
-    int cacheWriterAllowedKeyNum = 16; // TODO
+    int throwAfterNumberCreates = 16;
 
     // server1 add cacheWriter to throw exception after created some keys
     server1.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
-      region.getAttributesMutator().setCacheWriter(new ThrowingCacheWriter<>(
-          new CacheListenerAction<>(Operation.CREATE, creates -> {
-            if (creates >= cacheWriterAllowedKeyNum) {
-              throw new CacheWriterException("Expected by test");
-            }
-          })));
+      region.getAttributesMutator()
+          .setCacheWriter(new ActionCacheWriter<>(new Action<>(Operation.CREATE,
+              creates -> {
+                if (creates >= throwAfterNumberCreates) {
+                  throw new CacheWriterException("Expected by test");
+                }
+              })));
     });
 
     // client1 does putAll once more
@@ -2073,20 +1965,19 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
   @Test
   public void testPartialKeyInPRSingleHopWithRedundancy() throws Exception {
     // set <true, false> means <PR=true, notifyBySubscription=false> to test local-invalidates
-    int serverPort1 = server1.invoke(() -> createServer(regionName, 0, true, 1, "ds1"));
-    int serverPort2 = server2.invoke(() -> createServer(regionName, 0, true, 1, "ds1"));
+    int serverPort1 = server1.invoke(() -> createServer(regionName, true, 1, "ds1"));
+    int serverPort2 = server2.invoke(() -> createServer(regionName, true, 1, "ds1"));
 
-    client1
-        .invoke(() -> createClient(regionName, hostName, new int[] {serverPort1, serverPort2}, -1,
-            -1, false, false, true, false));
-    client2
-        .invoke(() -> createClient(regionName, hostName, new int[] {serverPort1, serverPort2}, -1,
-            -1, false, false, true, true));
+    client1.invoke(() -> {
+      createClient(new int[] {serverPort1, serverPort2}, -1, -1, false, false, true, false);
+    });
+    client2.invoke(() -> {
+      createClient(new int[] {serverPort1, serverPort2}, -1, -1, false, false, true, true);
+    });
 
     // client2 add listener
     client2.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
-      region.getAttributesMutator().addCacheListener(new CountingCacheListener<>());
       region.registerInterest("ALL_KEYS");
     });
 
@@ -2109,23 +2000,22 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
     // server1 add slow listener
     server1.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
-      region.getAttributesMutator().addCacheListener(new CountingCacheListener<>(true));
+      region.getAttributesMutator().addCacheListener(new SlowCacheListener<>());
     });
 
     // server2 add slow listener
     server2.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
       region.getAttributesMutator()
-          .addCacheListener(new CountingCacheListener<>(
-              new CacheListenerAction<>(Operation.CREATE,
-                  creates -> server2.invokeAsync(() -> closeCacheConditionally(creates, 10))),
-              true));
+          .addCacheListener(new SlowCountingCacheListener<>(new Action<>(Operation.CREATE,
+              creates -> executorServiceRule.submit(() -> {
+                closeCacheConditionally(creates, 10);
+              }))));
     });
 
     // client1 add listener and putAll
     AsyncInvocation<Void> registerInterestAndPutAllInClient1 = client1.invokeAsync(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
-      region.getAttributesMutator().addCacheListener(new CountingCacheListener<>());
       region.registerInterest("ALL_KEYS");
 
       // create keys
@@ -2144,7 +2034,7 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
     assertThat(sizeOnClient2).isEqualTo(sizeOnServer1);
 
     // restart server2
-    server2.invoke(() -> createServer(regionName, serverPort2, true, 1, "ds1"));
+    server2.invoke(() -> createServer(regionName, true, 1, "ds1"));
 
     sizeOnServer1 = server1.invoke(() -> getCache().getRegion(regionName).size());
     int sizeOnServer2 = server2.invoke(() -> getCache().getRegion(regionName).size());
@@ -2179,12 +2069,11 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
     int[] serverPorts = new int[3];
 
     // set <true, false> means <PR=true, notifyBySubscription=false> to test local-invalidates
-    serverPorts[0] = server1.invoke(() -> createServer(regionName, 0, true, 0, null));
-    serverPorts[1] = server2.invoke(() -> createServer(regionName, 0, true, 0, null));
-    serverPorts[2] = server3.invoke(() -> createServer(regionName, 0, true, 0, null));
+    serverPorts[0] = server1.invoke(() -> createServer(regionName, true, 0));
+    serverPorts[1] = server2.invoke(() -> createServer(regionName, true, 0));
+    serverPorts[2] = server3.invoke(() -> createServer(regionName, true, 0));
 
-    client1.invoke(() -> createClient(regionName, hostName, serverPorts, -1, -1, false, true, true,
-        false));
+    client1.invoke(() -> createClient(serverPorts, -1, -1, false, true, true, false));
 
     // Create local client with region
     Properties config = new Properties();
@@ -2193,9 +2082,7 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
 
     getCache(config);
 
-    String poolName = createPool(hostName, serverPorts, true, -1,
-        -1, null, null, PoolManager.createFactory(), -1,
-        -1, -2, -1);
+    String poolName = createPool(serverPorts, -1);
 
     RegionFactory<String, TickerData> regionFactory = getCache().createRegionFactory(LOCAL);
     regionFactory.setPoolName(poolName);
@@ -2215,34 +2102,33 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
     server1.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
       region.getAttributesMutator()
-          .addCacheListener(new CountingCacheListener<>(
-              new CacheListenerAction<>(Operation.CREATE,
-                  creates -> server1.invokeAsync(() -> closeCacheConditionally(creates, 10))),
-              true));
+          .addCacheListener(new SlowCountingCacheListener<>(new Action<>(Operation.CREATE,
+              creates -> executorServiceRule.submit(() -> {
+                closeCacheConditionally(creates, 10);
+              }))));
     });
 
     // server2 add slow listener
     server2.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
       region.getAttributesMutator()
-          .addCacheListener(new CountingCacheListener<>(
-              new CacheListenerAction<>(Operation.CREATE,
-                  creates -> server2.invokeAsync(() -> closeCacheConditionally(creates, 10))),
-              true));
+          .addCacheListener(new SlowCountingCacheListener<>(new Action<>(Operation.CREATE,
+              creates -> executorServiceRule.submit(() -> {
+                closeCacheConditionally(creates, 10);
+              }))));
     });
 
     // server3 add slow listener
     server3.invoke(() -> {
-      serverCounter = new Counter("server3");
+      COUNTER.set(new Counter("server3"));
       Region<String, TickerData> region = getCache().getRegion(regionName);
-      region.getAttributesMutator().addCacheListener(
-          new CountingCacheListener<>(serverCounter, true));
+      region.getAttributesMutator()
+          .addCacheListener(new SlowCountingCacheListener<>(COUNTER.get()));
     });
 
     // client1 add listener and putAll
     AsyncInvocation<Void> addListenerAndPutAllInClient1 = client1.invokeAsync(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
-      region.getAttributesMutator().addCacheListener(new CountingCacheListener<>());
       doPutAll(region, title, ONE_HUNDRED);
     });
 
@@ -2252,13 +2138,11 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
 
     // server3 print counter
     server3.invoke(() -> {
-      assertThat(serverCounter.getCreates()).isEqualTo(ONE_HUNDRED);
-      assertThat(serverCounter.getUpdates()).isZero();
+      assertThat(COUNTER.get().getCreates()).isEqualTo(ONE_HUNDRED);
+      assertThat(COUNTER.get().getUpdates()).isZero();
     });
 
-    await().untilAsserted(() -> {
-      assertThat(clientCounter.getCreates()).isEqualTo(ONE_HUNDRED);
-    });
+    await().untilAsserted(() -> assertThat(clientCounter.getCreates()).isEqualTo(ONE_HUNDRED));
 
     assertThat(clientCounter.getUpdates()).isZero();
   }
@@ -2270,39 +2154,37 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
   @Test
   public void test2FailOverDistributedServer() throws Exception {
     // set notifyBySubscription=true to test register interest
-    int serverPort1 = server1.invoke(() -> createServer(regionName, 0, false, 0, null));
-    int serverPort2 = server2.invoke(() -> createServer(regionName, 0, false, 0, null));
+    int serverPort1 = server1.invoke(() -> createServer(regionName, false, 0));
+    int serverPort2 = server2.invoke(() -> createServer(regionName, false, 0));
 
-    client1
-        .invoke(() -> createClient(regionName, hostName, new int[] {serverPort1, serverPort2}, -1,
-            -1, true, true, true, true));
-    client2
-        .invoke(() -> createClient(regionName, hostName, new int[] {serverPort2, serverPort1}, -1,
-            -1, true, true, true, true));
+    client1.invoke(() -> {
+      createClient(new int[] {serverPort1, serverPort2}, -1, -1, true, true, true, true);
+    });
+    client2.invoke(() -> {
+      createClient(new int[] {serverPort2, serverPort1}, -1, -1, true, true, true, true);
+    });
 
     // server1 add slow listener
     server1.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
-      region.getAttributesMutator().addCacheListener(new CountingCacheListener<>(true));
+      region.getAttributesMutator().addCacheListener(new SlowCacheListener<>());
     });
 
     // server2 add slow listener
     server2.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
-      region.getAttributesMutator().addCacheListener(new CountingCacheListener<>(true));
+      region.getAttributesMutator().addCacheListener(new SlowCacheListener<>());
     });
 
     // client1 registerInterest
     client1.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
-      region.getAttributesMutator().addCacheListener(new CountingCacheListener<>());
       region.registerInterest("ALL_KEYS");
     });
 
     // client2 registerInterest
     client2.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
-      region.getAttributesMutator().addCacheListener(new CountingCacheListener<>());
       region.registerInterest("ALL_KEYS");
     });
 
@@ -2318,9 +2200,7 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
     // stop cache server 1
     server1.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
-      await().untilAsserted(() -> {
-        assertThat(region.get("async1key-1")).isNotNull();
-      });
+      await().untilAsserted(() -> assertThat(region.get("async1key-1")).isNotNull());
       stopCacheServer(serverPort1);
     });
 
@@ -2346,34 +2226,33 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
   @Test
   public void testClientTimeOut() {
     // set notifyBySubscription=true to test register interest
-    int serverPort1 = server1.invoke(() -> createServer(regionName, 0, false, 0, null));
-    int serverPort2 = server2.invoke(() -> createServer(regionName, 0, false, 0, null));
+    int serverPort1 = server1.invoke(() -> createServer(regionName, false, 0));
+    int serverPort2 = server2.invoke(() -> createServer(regionName, false, 0));
 
-    client1
-        .invoke(() -> createClient(regionName, hostName, new int[] {serverPort1, serverPort2}, -1,
-            -1, true, true, true, true));
-    client2
-        .invoke(() -> createClient(regionName, hostName, new int[] {serverPort2, serverPort1}, -1,
-            -1, true, true, true, true));
+    client1.invoke(() -> {
+      createClient(new int[] {serverPort1, serverPort2}, -1, -1, true, true, true, true);
+    });
+    client2.invoke(() -> {
+      createClient(new int[] {serverPort2, serverPort1}, -1, -1, true, true, true, true);
+    });
 
     // server1 add slow listener
     server1.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
-      region.getAttributesMutator().addCacheListener(new CountingCacheListener<>(true));
+      region.getAttributesMutator().addCacheListener(new SlowCacheListener<>());
     });
 
     // server2 add slow listener
     server2.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
-      region.getAttributesMutator().addCacheListener(new CountingCacheListener<>(true));
+      region.getAttributesMutator().addCacheListener(new SlowCacheListener<>());
     });
 
     // client1 execute putAll
     client1.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
       Throwable thrown = catchThrowable(() -> doPutAll(region, "key-", ONE_THOUSAND));
-      assertThat(thrown)
-          .isInstanceOf(ServerConnectivityException.class);
+      assertThat(thrown).isInstanceOf(ServerConnectivityException.class);
     });
   }
 
@@ -2383,20 +2262,22 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
   @Test
   public void testEndPointSwitch() {
     // set notifyBySubscription=true to test register interest
-    int serverPort1 = server1.invoke(() -> createServer(regionName, 0, false, 0, null));
-    int serverPort2 = server2.invoke(() -> createServer(regionName, 0, false, 0, null));
+    int serverPort1 = server1.invoke(() -> createServer(regionName, false, 0));
+    int serverPort2 = server2.invoke(() -> createServer(regionName, false, 0));
 
-    client1.invoke(() -> createClient(regionName, hostName, new int[] {serverPort1, serverPort2}, 1,
-        -1, true, true, true, true));
-    client2.invoke(() -> createClient(regionName, hostName, new int[] {serverPort2, serverPort1}, 1,
-        -1, false, true, true, true));
+    client1.invoke(() -> {
+      createClient(new int[] {serverPort1, serverPort2}, 1, -1, true, true, true, true);
+    });
+    client2.invoke(() -> {
+      createClient(new int[] {serverPort2, serverPort1}, 1, -1, false, true, true, true);
+    });
 
     // only add slow listener to server1, because we wish it to succeed
 
     // server1 add slow listener
     server1.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
-      region.getAttributesMutator().addCacheListener(new CountingCacheListener<>(true));
+      region.getAttributesMutator().addCacheListener(new SlowCacheListener<>());
     });
 
     // only register interest on client2
@@ -2404,7 +2285,6 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
     // client2 registerInterest
     client2.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
-      region.getAttributesMutator().addCacheListener(new CountingCacheListener<>());
       region.registerInterest("ALL_KEYS");
     });
 
@@ -2420,9 +2300,7 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
     // verify Bridge client2 for keys arrived finally
     client2.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
-      await().untilAsserted(() -> {
-        assertThat(region.size()).isEqualTo(ONE_HUNDRED);
-      });
+      await().untilAsserted(() -> assertThat(region.size()).isEqualTo(ONE_HUNDRED));
     });
   }
 
@@ -2435,14 +2313,16 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
     addIgnoredException(DistributedSystemDisconnectedException.class);
 
     // set notifyBySubscription=true to test register interest
-    int serverPort1 = server1.invoke(() -> createServer(regionName, 0, false, 0, null));
-    int serverPort2 = server2.invoke(() -> createServer(regionName, 0, false, 0, null));
+    int serverPort1 = server1.invoke(() -> createServer(regionName, false, 0));
+    int serverPort2 = server2.invoke(() -> createServer(regionName, false, 0));
 
     // set queueRedundancy=1
-    client1.invoke(() -> createClient(regionName, hostName, new int[] {serverPort1, serverPort2}, 1,
-        -1, true, true, true, true));
-    client2.invoke(() -> createClient(regionName, hostName, new int[] {serverPort2, serverPort1}, 1,
-        -1, false, true, true, true));
+    client1.invoke(() -> {
+      createClient(new int[] {serverPort1, serverPort2}, 1, -1, true, true, true, true);
+    });
+    client2.invoke(() -> {
+      createClient(new int[] {serverPort2, serverPort1}, 1, -1, false, true, true, true);
+    });
 
     // client1 registerInterest
     client1.invoke(() -> {
@@ -2453,7 +2333,6 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
     // client2 registerInterest
     client2.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
-      region.getAttributesMutator().addCacheListener(new CountingCacheListener<>());
       region.registerInterest("ALL_KEYS");
     });
 
@@ -2483,23 +2362,19 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
     // verify Bridge client2 for async keys
     client2.invokeAsync(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
-      await().untilAsserted(() -> {
-        assertThat(region.size()).isEqualTo(ONE_HUNDRED * 2);
-      });
+      await().untilAsserted(() -> assertThat(region.size()).isEqualTo(ONE_HUNDRED * 2));
     });
   }
 
   @Test
   public void testVersionsOnClientsWithNotificationsOnly() {
     // set notifyBySubscription=true to test register interest
-    int serverPort1 = server1.invoke(() -> createServer(regionName, 0, true, 0, null));
-    int serverPort2 = server2.invoke(() -> createServer(regionName, 0, true, 0, null));
+    int serverPort1 = server1.invoke(() -> createServer(regionName, true, 0));
+    int serverPort2 = server2.invoke(() -> createServer(regionName, true, 0));
 
     // set queueRedundancy=1
-    client1.invoke(() -> createClient(regionName, hostName, new int[] {serverPort1}, 0, 59000, true,
-        true, true, true));
-    client2.invoke(() -> createClient(regionName, hostName, new int[] {serverPort2}, 0, 59000, true,
-        true, true, true));
+    client1.invoke(() -> createClient(serverPort1, 0, 59000, true, true, true, true));
+    client2.invoke(() -> createClient(serverPort2, 0, 59000, true, true, true, true));
 
     // client1 putAll
     client1.invoke(() -> {
@@ -2519,7 +2394,7 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
       Region<String, TickerData> region = getCache().getRegion(regionName);
       assertThat(region.size()).isEqualTo(ONE_HUNDRED * 2);
 
-      RegionMap entries = ((InternalRegion) region).getRegionMap();
+      RegionMap entries = ((DiskRecoveryStore) region).getRegionMap();
       List<VersionTag<?>> versions = new ArrayList<>();
       for (Object key : entries.keySet()) {
         RegionEntry regionEntry = entries.getEntry(key);
@@ -2535,7 +2410,7 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
       Region<String, TickerData> region = getCache().getRegion(regionName);
       assertThat(region.size()).isEqualTo(ONE_HUNDRED * 2);
 
-      RegionMap entries = ((InternalRegion) region).getRegionMap();
+      RegionMap entries = ((DiskRecoveryStore) region).getRegionMap();
       List<VersionTag<?>> versions = new ArrayList<>();
       for (Object key : entries.keySet()) {
         RegionEntry regionEntry = entries.getEntry(key);
@@ -2559,14 +2434,12 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
   @Test
   public void testRAVersionsOnClientsWithNotificationsOnly() {
     // set notifyBySubscription=true to test register interest
-    int serverPort1 = server1.invoke(() -> createServer(regionName, 0, true, 0, null));
-    int serverPort2 = server2.invoke(() -> createServer(regionName, 0, true, 0, null));
+    int serverPort1 = server1.invoke(() -> createServer(regionName, true, 0));
+    int serverPort2 = server2.invoke(() -> createServer(regionName, true, 0));
 
     // set queueRedundancy=1
-    client1.invoke(() -> createClient(regionName, hostName, new int[] {serverPort1}, 0, 59000, true,
-        true, true, true));
-    client2.invoke(() -> createClient(regionName, hostName, new int[] {serverPort2}, 0, 59000, true,
-        true, true, true));
+    client1.invoke(() -> createClient(serverPort1, 0, 59000, true, true, true, true));
+    client2.invoke(() -> createClient(serverPort2, 0, 59000, true, true, true, true));
 
     // client1 putAll+removeAll
     client1.invoke(() -> {
@@ -2591,7 +2464,7 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
       Region<String, TickerData> region = getCache().getRegion(regionName);
       assertThat(region.size()).isEqualTo(ONE_HUNDRED);
 
-      RegionMap entries = ((InternalRegion) region).getRegionMap();
+      RegionMap entries = ((DiskRecoveryStore) region).getRegionMap();
       assertThat(entries.size()).isEqualTo(ONE_HUNDRED * 2);
 
       List<VersionTag<?>> versions = new ArrayList<>();
@@ -2600,7 +2473,6 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
         VersionTag<?> tag = regionEntry.getVersionStamp().asVersionTag();
         versions.add(tag);
       }
-
       return versions;
     });
 
@@ -2609,7 +2481,7 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
       Region<String, TickerData> region = getCache().getRegion(regionName);
       assertThat(region.size()).isEqualTo(ONE_HUNDRED);
 
-      RegionMap entries = ((InternalRegion) region).getRegionMap();
+      RegionMap entries = ((DiskRecoveryStore) region).getRegionMap();
       assertThat(entries.size()).isEqualTo(ONE_HUNDRED * 2);
 
       List<VersionTag<?>> versions = new ArrayList<>();
@@ -2633,13 +2505,12 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
     VM server3 = client2;
 
     // set notifyBySubscription=true to test register interest
-    server1.invoke(() -> createServer(regionName, 0, true, 1, null));
-    server2.invoke(() -> createServer(regionName, 0, true, 1, null));
-    int serverPort3 = server3.invoke(() -> createServer(regionName, 0, true, 1, null));
+    server1.invoke(() -> createServer(regionName, true, 1));
+    server2.invoke(() -> createServer(regionName, true, 1));
+    int serverPort3 = server3.invoke(() -> createServer(regionName, true, 1));
 
     // set queueRedundancy=1
-    client1.invoke(() -> createClient(regionName, hostName, new int[] {serverPort3}, 0, 59000, true,
-        true, true, true));
+    client1.invoke(() -> createClient(serverPort3, 0, 59000, true, true, true, true));
 
     // client2 versions collection
     client1.invoke(() -> {
@@ -2671,19 +2542,17 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
           versions.add(key + " " + tag);
         }
       }
-
       return versions;
     });
-
-    // Let client be updated with all keys.
-    sleep(1000);
 
     // client1 versions collection
     List<String> actualVersions = client1.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
-      assertThat(region.size()).isEqualTo(ONE_HUNDRED * 2);
 
-      RegionMap entries = ((InternalRegion) region).getRegionMap();
+      // Let client be updated with all keys.
+      await().untilAsserted(() -> assertThat(region.size()).isEqualTo(ONE_HUNDRED * 2));
+
+      RegionMap entries = ((DiskRecoveryStore) region).getRegionMap();
       List<String> versions = new ArrayList<>();
       for (Object key : entries.keySet()) {
         RegionEntry regionEntry = entries.getEntry(key);
@@ -2691,7 +2560,6 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
         tag.setMemberID(null);
         versions.add(key + " " + tag);
       }
-
       return versions;
     });
 
@@ -2710,12 +2578,11 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
     VM server3 = client2;
 
     // set notifyBySubscription=true to test register interest
-    server1.invoke(() -> createServer(regionName, 0, true, 1, null));
-    server2.invoke(() -> createServer(regionName, 0, true, 1, null));
-    int serverPort3 = server3.invoke(() -> createServer(regionName, 0, true, 1, null));
+    server1.invoke(() -> createServer(regionName, true, 1));
+    server2.invoke(() -> createServer(regionName, true, 1));
+    int serverPort3 = server3.invoke(() -> createServer(regionName, true, 1));
 
-    client1.invoke(() -> createClient(regionName, hostName, new int[] {serverPort3}, 0, 59000, true,
-        true, true, true));
+    client1.invoke(() -> createClient(serverPort3, 0, 59000, true, true, true, true));
 
     client1.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
@@ -2748,19 +2615,19 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
           versions.add(key + " " + tag);
         }
       }
-
       return versions;
     });
 
-    // Let client be updated with all keys.
-    sleep(1000);
-
     List<String> actualRAVersions = client1.invoke(() -> {
       Region<String, TickerData> region = getCache().getRegion(regionName);
-      assertThat(region.size()).isEqualTo(ONE_HUNDRED);
 
-      RegionMap entries = ((InternalRegion) region).getRegionMap();
-      assertThat(entries.size()).isEqualTo(ONE_HUNDRED * 2);
+      // Let client be updated with all keys.
+      RegionMap entries = ((DiskRecoveryStore) region).getRegionMap();
+
+      await().untilAsserted(() -> {
+        assertThat(region.size()).isEqualTo(ONE_HUNDRED);
+        assertThat(entries.size()).isEqualTo(ONE_HUNDRED * 2);
+      });
 
       List<String> versions = new ArrayList<>();
       for (Object key : entries.keySet()) {
@@ -2782,12 +2649,11 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
   @Test
   public void testVersionsOnReplicasAfterPutAllAndRemoveAll() {
     // set notifyBySubscription=true to test register interest
-    int serverPort1 = server1.invoke(() -> createServer(regionName, 0, false, 0, null));
-    server2.invoke(() -> createServer(regionName, 0, false, 0, null));
+    int serverPort1 = server1.invoke(() -> createServer(regionName, false, 0));
+    server2.invoke(() -> createServer(regionName, false, 0));
 
     // set queueRedundancy=1
-    client1.invoke(() -> createClient(regionName, hostName, new int[] {serverPort1}, 0, 59000, true,
-        true, true, true));
+    client1.invoke(() -> createClient(serverPort1, 0, 59000, true, true, true, true));
 
     // client1 putAll
     client1.invoke(() -> {
@@ -2805,7 +2671,7 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
       Region<String, TickerData> region = getCache().getRegion(regionName);
       assertThat(region.size()).isEqualTo(ONE_HUNDRED);
 
-      RegionMap entries = ((InternalRegion) region).getRegionMap();
+      RegionMap entries = ((DiskRecoveryStore) region).getRegionMap();
       assertThat(entries.size()).isEqualTo(ONE_HUNDRED * 2);
 
       List<VersionTag<?>> versions = new ArrayList<>();
@@ -2814,7 +2680,6 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
         VersionTag<?> tag = regionEntry.getVersionStamp().asVersionTag();
         versions.add(tag);
       }
-
       return versions;
     });
 
@@ -2823,7 +2688,7 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
       Region<String, TickerData> region = getCache().getRegion(regionName);
       assertThat(region.size()).isEqualTo(ONE_HUNDRED);
 
-      RegionMap entries = ((InternalRegion) region).getRegionMap();
+      RegionMap entries = ((DiskRecoveryStore) region).getRegionMap();
       assertThat(entries.size()).isEqualTo(ONE_HUNDRED * 2);
 
       List<VersionTag<?>> versions = new ArrayList<>();
@@ -2831,7 +2696,6 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
         RegionEntry regionEntry = entries.getEntry(key);
         versions.add(regionEntry.getVersionStamp().asVersionTag());
       }
-
       return versions;
     });
 
@@ -2848,42 +2712,22 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
    * it is used to configure the client pool. Otherwise the pool is configured to use the dunit
    * locator.
    */
-  private String createPool(String host, int[] ports, boolean subscribe, int redundancy,
-      int connectionsPerServer, String serverGroup, String poolName, PoolFactory poolFactory,
-      int pingInterval, int idleTimeout, int lifetimeTimeout, int statisticInterval) {
+  private String createPool(int[] ports, int redundancy) {
+    PoolFactory poolFactory = PoolManager.createFactory();
+
     if (ports.length == 0) {
-      poolFactory.addLocator(host, getLocatorPort());
+      poolFactory.addLocator(hostName, getLocatorPort());
     } else {
       for (int port : ports) {
-        poolFactory.addServer(host, port);
+        poolFactory.addServer(hostName, port);
       }
     }
 
-    // TODO - probably should pass in minConnections rather than connections per server
-    if (connectionsPerServer != -1) {
-      poolFactory.setMinConnections(connectionsPerServer * ports.length);
-    }
-    if (pingInterval != -1) {
-      poolFactory.setPingInterval(pingInterval);
-    }
-    if (idleTimeout != -1) {
-      poolFactory.setIdleTimeout(idleTimeout);
-    }
-    if (statisticInterval != -1) {
-      poolFactory.setStatisticInterval(statisticInterval);
-    }
-    if (lifetimeTimeout != -2) {
-      poolFactory.setLoadConditioningInterval(lifetimeTimeout);
-    }
-    if (subscribe) {
-      poolFactory.setSubscriptionEnabled(true);
-      poolFactory.setSubscriptionRedundancy(redundancy);
-      poolFactory.setSubscriptionAckInterval(1);
-    }
-    if (serverGroup != null) {
-      poolFactory.setServerGroup(serverGroup);
-    }
-    Pool pool = poolFactory.create(poolName == null ? "testPool" : poolName);
+    poolFactory.setSubscriptionEnabled(true);
+    poolFactory.setSubscriptionRedundancy(redundancy);
+    poolFactory.setSubscriptionAckInterval(1);
+
+    Pool pool = poolFactory.create(poolName);
     return pool.getName();
   }
 
@@ -2901,7 +2745,12 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
     return cacheServer.getPort();
   }
 
-  private int createServer(String regionName, int serverPort, boolean createPR, int redundantCopies,
+  private int createServer(String regionName, boolean createPR, int redundantCopies)
+      throws IOException {
+    return createServer(regionName, createPR, redundantCopies, null);
+  }
+
+  private int createServer(String regionName, boolean createPR, int redundantCopies,
       String diskStoreName) throws IOException {
     Properties config = new Properties();
     config.setProperty(LOCATORS, locators);
@@ -2917,7 +2766,7 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
     }
 
     // In this test, no cacheLoader should be defined, otherwise, it will create a value for
-    // destroyed key factory.setCacheLoader(new CacheServerCacheLoader());
+    // destroyed key
 
     RegionFactory<String, TickerData> regionFactory;
     if (createPR) {
@@ -2954,15 +2803,22 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
     }
 
     CacheServer cacheServer = getCache().addCacheServer();
-    cacheServer.setPort(serverPort);
+    cacheServer.setPort(0);
     cacheServer.setMaxThreads(0);
     cacheServer.start();
     return cacheServer.getPort();
   }
 
-  private void createClient(String regionName, String serverHost, int[] serverPorts, int redundancy,
-      int readTimeOut, boolean receiveInvalidates, boolean concurrencyChecks,
-      boolean enableSingleHop, boolean subscriptionEnabled) {
+  private void createClient(int serverPort, int redundancy, int readTimeOut,
+      boolean receiveInvalidates, boolean concurrencyChecks, boolean enableSingleHop,
+      boolean subscriptionEnabled) {
+    createClient(new int[] {serverPort}, redundancy, readTimeOut, receiveInvalidates,
+        concurrencyChecks, enableSingleHop, subscriptionEnabled);
+  }
+
+  private void createClient(int[] serverPorts, int redundancy, int readTimeOut,
+      boolean receiveInvalidates, boolean concurrencyChecks, boolean enableSingleHop,
+      boolean subscriptionEnabled) {
     Properties config = new Properties();
     config.setProperty(MCAST_PORT, "0");
     config.setProperty(LOCATORS, "");
@@ -2981,7 +2837,7 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
 
       PoolFactory poolFactory = PoolManager.createFactory();
       for (int serverPort : serverPorts) {
-        poolFactory.addServer(serverHost, serverPort);
+        poolFactory.addServer(hostName, serverPort);
       }
 
       poolFactory.setReadTimeout(readTimeOut)
@@ -2990,8 +2846,7 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
           .create(poolName);
 
     } else {
-      poolName = createPool(serverHost, serverPorts, true,
-          redundancy, -1, null, null, PoolManager.createFactory(), -1, -1, -2, -1);
+      poolName = createPool(serverPorts, redundancy);
     }
 
     regionFactory.setPoolName(poolName);
@@ -3067,48 +2922,52 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
     }
   }
 
+  @SuppressWarnings("unchecked")
+  private static <T> T cast(Object object) {
+    return (T) object;
+  }
+
   private static class Counter implements Serializable {
 
     private final AtomicInteger creates = new AtomicInteger();
     private final AtomicInteger updates = new AtomicInteger();
     private final AtomicInteger invalidates = new AtomicInteger();
     private final AtomicInteger destroys = new AtomicInteger();
-
     private final String owner;
 
-    Counter(String owner) {
+    private Counter(String owner) {
       this.owner = owner;
     }
 
-    int getCreates() {
+    private int getCreates() {
       return creates.get();
     }
 
-    void incCreates() {
+    private void incCreates() {
       creates.incrementAndGet();
     }
 
-    int getUpdates() {
+    private int getUpdates() {
       return updates.get();
     }
 
-    void incUpdates() {
+    private void incUpdates() {
       updates.incrementAndGet();
     }
 
-    int getInvalidates() {
+    private int getInvalidates() {
       return invalidates.get();
     }
 
-    void incInvalidates() {
+    private void incInvalidates() {
       invalidates.incrementAndGet();
     }
 
-    int getDestroys() {
+    private int getDestroys() {
       return destroys.get();
     }
 
-    void incDestroys() {
+    private void incDestroys() {
       destroys.incrementAndGet();
     }
 
@@ -3120,19 +2979,19 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
   }
 
   /**
-   * Defines an action to be run after the specified operation is invoked by CacheListener.
+   * Defines an action to be run after the specified operation is invoked by Geode callbacks.
    */
-  private static class CacheListenerAction<T> {
+  private static class Action<T> {
 
     private final Operation operation;
     private final Consumer<T> consumer;
 
-    private CacheListenerAction(Operation operation, Consumer<T> consumer) {
+    private Action(Operation operation, Consumer<T> consumer) {
       this.operation = operation;
       this.consumer = consumer;
     }
 
-    void run(Operation operation, T value) {
+    private void run(Operation operation, T value) {
       if (operation == this.operation) {
         consumer.accept(value);
       }
@@ -3142,100 +3001,114 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
   private static class CountingCacheListener<K, V> extends CacheListenerAdapter<K, V> {
 
     private final Counter counter;
-    private final CacheListenerAction<Integer> operationCountAction;
-    private final boolean delay;
-    private final long sleepMillis;
+    private final Action<Integer> action;
 
-    CountingCacheListener() {
-      this(false);
+    private CountingCacheListener(Counter counter) {
+      this(counter, EMPTY_INTEGER_ACTION);
     }
 
-    CountingCacheListener(boolean delay) {
-      this(DUMMY_COUNTER, delay);
-    }
-
-    CountingCacheListener(Counter counter) {
-      this(counter, false);
-    }
-
-    CountingCacheListener(Counter counter, boolean delay) {
-      this(counter, EMPTY_INTEGER_ACTION, delay, 50);
-    }
-
-    CountingCacheListener(CacheListenerAction<Integer> operationCountAction, boolean delay) {
-      this(DUMMY_COUNTER, operationCountAction, delay, 50);
-    }
-
-    private CountingCacheListener(Counter counter,
-        CacheListenerAction<Integer> operationCountAction, boolean delay, long sleepMillis) {
+    private CountingCacheListener(Counter counter, Action<Integer> action) {
       this.counter = counter;
-      this.operationCountAction = operationCountAction;
-      this.delay = delay;
-      this.sleepMillis = sleepMillis;
+      this.action = action;
     }
 
     @Override
     public void afterCreate(EntryEvent<K, V> event) {
       counter.incCreates();
-      operationCountAction.run(Operation.CREATE, counter.getCreates());
-      if (delay) {
-        sleep(sleepMillis);
-      }
+      action.run(Operation.CREATE, counter.getCreates());
     }
 
     @Override
     public void afterUpdate(EntryEvent<K, V> event) {
       counter.incUpdates();
-      operationCountAction.run(Operation.UPDATE, counter.getUpdates());
-      if (delay) {
-        sleep(sleepMillis);
-      }
+      action.run(Operation.UPDATE, counter.getUpdates());
     }
 
     @Override
     public void afterInvalidate(EntryEvent<K, V> event) {
       counter.incInvalidates();
-      operationCountAction.run(Operation.INVALIDATE, counter.getInvalidates());
+      action.run(Operation.INVALIDATE, counter.getInvalidates());
     }
 
     @Override
     public void afterDestroy(EntryEvent<K, V> event) {
       counter.incDestroys();
-      operationCountAction.run(Operation.DESTROY, counter.getDestroys());
+      action.run(Operation.DESTROY, counter.getDestroys());
     }
   }
 
-  private static class OldValueCacheListener<K, V> extends CacheListenerAdapter<K, V> {
+  private static class SlowCacheListener<K, V> extends CacheListenerAdapter<K, V> {
 
-    private final CacheListenerAction<EntryEvent<K, V>> entryEventAction;
+    private final long sleepMillis = 50;
 
-    OldValueCacheListener(CacheListenerAction<EntryEvent<K, V>> entryEventAction) {
-      this.entryEventAction = entryEventAction;
+    @Override
+    public void afterCreate(EntryEvent<K, V> event) {
+      sleep(sleepMillis);
     }
 
     @Override
     public void afterUpdate(EntryEvent<K, V> event) {
-      entryEventAction.run(Operation.UPDATE, event);
+      sleep(sleepMillis);
     }
   }
 
+  private static class SlowCountingCacheListener<K, V> extends CountingCacheListener<K, V> {
+
+    private final long sleepMillis = 50;
+
+    private SlowCountingCacheListener(Action<Integer> action) {
+      this(DUMMY_COUNTER, action);
+    }
+
+    private SlowCountingCacheListener(Counter counter) {
+      this(counter, EMPTY_INTEGER_ACTION);
+    }
+
+    private SlowCountingCacheListener(Counter counter, Action<Integer> action) {
+      super(counter, action);
+    }
+
+    @Override
+    public void afterCreate(EntryEvent<K, V> event) {
+      super.afterCreate(event);
+      sleep(sleepMillis);
+    }
+
+    @Override
+    public void afterUpdate(EntryEvent<K, V> event) {
+      super.afterUpdate(event);
+      sleep(sleepMillis);
+    }
+  }
+
+  private static class ActionCacheListener<K, V> extends CacheListenerAdapter<K, V> {
+
+    private final Action<EntryEvent<K, V>> action;
+
+    private ActionCacheListener(Action<EntryEvent<K, V>> action) {
+      this.action = action;
+    }
+
+    @Override
+    public void afterUpdate(EntryEvent<K, V> event) {
+      action.run(Operation.UPDATE, event);
+    }
+  }
+
+  @SuppressWarnings({"unused", "WeakerAccess"})
   private static class TickerData implements DataSerializable {
 
-    private String ticker;
-    private int price;
     private long timeStamp = System.currentTimeMillis();
+    private int price;
+    private String ticker;
 
     public TickerData() {
       // nothing
     }
 
-    TickerData(int price) {
-      this(String.valueOf(price), price);
-    }
-
-    private TickerData(String ticker, int price) {
-      this.ticker = ticker;
+    private TickerData(int price) {
       this.price = price;
+      ticker = String.valueOf(price);
     }
 
     public String getTicker() {
@@ -3272,12 +3145,10 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
 
   private static class CountingCqListener<K, V> implements CqListener {
 
-    private final AtomicInteger creates = new AtomicInteger();
     private final AtomicInteger updates = new AtomicInteger();
-
     private final Region<K, V> region;
 
-    CountingCqListener(Region<K, V> region) {
+    private CountingCqListener(Region<K, V> region) {
       this.region = region;
     }
 
@@ -3287,12 +3158,11 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
         return;
       }
 
-      K key = (K) cqEvent.getKey();
-      V newValue = (V) cqEvent.getNewValue();
+      K key = cast(cqEvent.getKey());
+      V newValue = cast(cqEvent.getNewValue());
 
       if (newValue == null) {
         region.create(key, null);
-        creates.incrementAndGet();
       } else {
         region.put(key, newValue);
         updates.incrementAndGet();
@@ -3303,36 +3173,18 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
     public void onError(CqEvent cqEvent) {
       // nothing
     }
-
-    int getCreates() {
-      return creates.get();
-    }
-
-    int getUpdates() {
-      return updates.get();
-    }
   }
 
   private static class CountingCacheWriter<K, V> extends CacheWriterAdapter<K, V> {
 
-    private final AtomicInteger creates = new AtomicInteger();
     private final AtomicInteger destroys = new AtomicInteger();
-
-    @Override
-    public synchronized void beforeCreate(EntryEvent<K, V> event) {
-      creates.incrementAndGet();
-    }
 
     @Override
     public void beforeDestroy(EntryEvent<K, V> event) {
       destroys.incrementAndGet();
     }
 
-    int getCreates() {
-      return creates.get();
-    }
-
-    int getDestroys() {
+    private int getDestroys() {
       return destroys.get();
     }
   }
@@ -3340,27 +3192,20 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
   /**
    * cacheWriter to slow down P2P operations, listener only works for c/s in this case
    */
-  private static class ThrowingCacheWriter<K, V> extends CacheWriterAdapter<K, V> {
+  private static class ActionCacheWriter<K, V> extends CacheWriterAdapter<K, V> {
 
     private final AtomicInteger creates = new AtomicInteger();
     private final AtomicInteger destroys = new AtomicInteger();
+    private final long sleepMillis = 50;
+    private final Action<Integer> action;
 
-    private final CacheListenerAction<Integer> operationCountAction;
-    private final long sleepMillis;
-
-    ThrowingCacheWriter(CacheListenerAction<Integer> operationCountAction) {
-      this(operationCountAction, 50);
-    }
-
-    private ThrowingCacheWriter(CacheListenerAction<Integer> operationCountAction,
-        long sleepMillis) {
-      this.operationCountAction = operationCountAction;
-      this.sleepMillis = sleepMillis;
+    private ActionCacheWriter(Action<Integer> action) {
+      this.action = action;
     }
 
     @Override
-    public synchronized void beforeCreate(EntryEvent<K, V> event) {
-      operationCountAction.run(Operation.CREATE, creates.get());
+    public void beforeCreate(EntryEvent<K, V> event) {
+      action.run(Operation.CREATE, creates.get());
       sleep(sleepMillis);
       creates.incrementAndGet();
     }
@@ -3372,7 +3217,7 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
 
     @Override
     public void beforeDestroy(EntryEvent<K, V> event) {
-      operationCountAction.run(Operation.DESTROY, destroys.get());
+      action.run(Operation.DESTROY, destroys.get());
       sleep(sleepMillis);
       destroys.incrementAndGet();
     }
