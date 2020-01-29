@@ -70,7 +70,6 @@ public interface DataSerializableFixedID extends SerializationVersions, BasicSer
 
   short VIEW_ACK_MESSAGE = -151;
   short INSTALL_VIEW_MESSAGE = -150;
-  short DEFAULT_MEMBER_ID = -149; // membership module's default identifier
   short NETVIEW = -148;
   short GET_VIEW_REQ = -147;
   short GET_VIEW_RESP = -146;
@@ -673,6 +672,7 @@ public interface DataSerializableFixedID extends SerializationVersions, BasicSer
   short GATEWAY_SENDER_QUEUE_ENTRY_SYNCHRONIZATION_MESSAGE = 2181;
   short GATEWAY_SENDER_QUEUE_ENTRY_SYNCHRONIZATION_ENTRY = 2182;
   short ABORT_BACKUP_REQUEST = 2183;
+  short MEMBER_IDENTIFIER = 2184;
 
   // NOTE, codes > 65535 will take 4 bytes to serialize
 
