@@ -142,15 +142,12 @@ public class TcpSocketCreatorImpl implements TcpSocketCreator {
     if (socketBufferSize != -1) {
       result.setReceiveBufferSize(socketBufferSize);
     }
-    if (bindAddr == null) {
-      bindAddr = InetAddress.getLocalHost();
-    }
     try {
       result.bind(new InetSocketAddress(bindAddr, nport), backlog);
     } catch (BindException e) {
       BindException throwMe =
           new BindException(String.format("Failed to create server socket on %s[%s]",
-              bindAddr == null ? "*" : bindAddr,
+              bindAddr == null ? InetAddress.getLocalHost().getHostAddress() : bindAddr,
               String.valueOf(nport)));
       throwMe.initCause(e);
       throw throwMe;
@@ -163,29 +160,32 @@ public class TcpSocketCreatorImpl implements TcpSocketCreator {
   public final Socket connect(InetAddress inetadd, int port, int timeout,
       ConnectionWatcher optionalWatcher, boolean clientSide)
       throws IOException {
-    return connect(inetadd, port, timeout, optionalWatcher, clientSide, 0, false);
+    return connect(inetadd, port, timeout, optionalWatcher, clientSide, -1, useSSL());
   }
 
   @Override
   public Socket connect(InetAddress inetadd, int port, int timeout,
       ConnectionWatcher optionalWatcher, boolean clientSide,
       int socketBufferSize, boolean sslConnection) throws IOException {
-    if (clientSide) {
-      throw new UnsupportedOperationException();
-    }
     if (sslConnection) {
       throw new IllegalArgumentException();
     }
-    Socket socket = new Socket();
-
-    // Optionally enable SO_KEEPALIVE in the OS network protocol.
-    socket.setKeepAlive(ENABLE_TCP_KEEP_ALIVE);
-
-    if (timeout > 0) {
-      socket.setSoTimeout(timeout);
+    Socket socket = null;
+    if (clientSide) {
+      socket = createCustomClientSocket(inetadd, port);
     }
-    if (socketBufferSize > 0) {
-      socket.setReceiveBufferSize(socketBufferSize);
+    if (socket == null) {
+      socket = new Socket();
+
+      // Optionally enable SO_KEEPALIVE in the OS network protocol.
+      socket.setKeepAlive(ENABLE_TCP_KEEP_ALIVE);
+
+      if (timeout > 0) {
+        socket.setSoTimeout(timeout);
+      }
+      if (socketBufferSize != -1) {
+        socket.setReceiveBufferSize(socketBufferSize);
+      }
     }
     if (optionalWatcher != null) {
       optionalWatcher.beforeConnect(socket);
@@ -198,6 +198,17 @@ public class TcpSocketCreatorImpl implements TcpSocketCreator {
       }
     }
     return socket;
+  }
+
+  /**
+   * reimplement this method to use a custom socket factory to create and configure a new
+   * client-side socket
+   *
+   * @return the socket, or null if no custom client socket factory is available
+   */
+  protected Socket createCustomClientSocket(InetAddress inetaddr, int port) throws IOException {
+    throw new UnsupportedOperationException(
+        "custom client socket factory is not supported by this socket creator");
   }
 
   @Override

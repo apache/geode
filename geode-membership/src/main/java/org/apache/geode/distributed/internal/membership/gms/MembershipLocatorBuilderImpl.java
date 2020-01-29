@@ -52,7 +52,7 @@ public final class MembershipLocatorBuilderImpl<ID extends MemberIdentifier> imp
       final DSFIDSerializer serializer,
       final Path workingDirectory,
       final Supplier<ExecutorService> executorServiceSupplier) {
-    this.socketCreator = socketCreator;
+    this.socketCreator = socketCreator == null ? new TcpSocketCreatorImpl() : socketCreator;
     this.serializer = serializer;
     this.workingDirectory = workingDirectory;
     this.executorServiceSupplier = executorServiceSupplier;
@@ -104,15 +104,10 @@ public final class MembershipLocatorBuilderImpl<ID extends MemberIdentifier> imp
   public MembershipLocator<ID> create()
       throws UnknownHostException, MembershipConfigurationException {
     Services.registerSerializables(serializer);
-    TcpSocketCreator sc = this.socketCreator;
-    if (sc == null) {
-      sc = new TcpSocketCreatorImpl();
-    }
     return new MembershipLocatorImpl<ID>(port, bindAddress, protocolChecker,
         executorServiceSupplier,
-        sc, serializer.getObjectSerializer(), serializer.getObjectDeserializer(),
+        socketCreator, serializer.getObjectSerializer(), serializer.getObjectDeserializer(),
         fallbackHandler,
-        objectSerializer, objectDeserializer, fallbackHandler,
         locatorsAreCoordinators, locatorStats, workingDirectory, config);
   }
 

@@ -697,6 +697,14 @@ public class SocketCreator extends TcpSocketCreatorImpl {
     }
   }
 
+  @Override
+  protected Socket createCustomClientSocket(InetAddress inetadd, int port) throws IOException {
+    if (this.clientSocketFactory != null) {
+      return this.clientSocketFactory.createSocket(inetadd, port);
+    }
+    return null;
+  }
+
   /**
    * Returns an SSLEngine that can be used to perform TLS handshakes and communication
    */
