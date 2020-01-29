@@ -81,6 +81,12 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
 
   private boolean isAuthenticated;
 
+  public KeyRegistrar getKeyRegistrar() {
+    return keyRegistrar;
+  }
+
+  private KeyRegistrar keyRegistrar;
+
   /**
    * Default constructor for execution contexts.
    *
@@ -92,7 +98,8 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
    * @param pwd Authentication password for each context, can be null
    */
   public ExecutionHandlerContext(Channel ch, Cache cache, RegionProvider regionProvider,
-      GeodeRedisServer server, byte[] pwd) {
+      GeodeRedisServer server, byte[] pwd, KeyRegistrar keyRegistrar) {
+    this.keyRegistrar = keyRegistrar;
     if (ch == null || cache == null || regionProvider == null || server == null)
       throw new IllegalArgumentException("Only the authentication password may be null");
     this.cache = cache;
