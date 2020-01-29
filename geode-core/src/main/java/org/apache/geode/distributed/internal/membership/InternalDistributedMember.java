@@ -78,11 +78,6 @@ public class InternalDistributedMember
     memberIdentifier = MEMBER_IDENTIFIER_FACTORY.create(null);
   }
 
-  @Override
-  public int getDSFID() {
-    return DISTRIBUTED_MEMBER;
-  }
-
   /**
    * Construct a InternalDistributedMember
    * <p>
@@ -331,6 +326,11 @@ public class InternalDistributedMember
     } catch (UnknownHostException ee) {
       throw new InternalGemFireError(ee);
     }
+  }
+
+  @Override
+  public int getDSFID() {
+    return DISTRIBUTED_MEMBER;
   }
 
   @Override

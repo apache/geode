@@ -14,7 +14,6 @@
  */
 package org.apache.geode.distributed.internal.membership.gms;
 
-import static org.apache.geode.internal.serialization.DataSerializableFixedID.DEFAULT_MEMBER_ID;
 import static org.apache.geode.internal.serialization.DataSerializableFixedID.FINAL_CHECK_PASSED_MESSAGE;
 import static org.apache.geode.internal.serialization.DataSerializableFixedID.FIND_COORDINATOR_REQ;
 import static org.apache.geode.internal.serialization.DataSerializableFixedID.FIND_COORDINATOR_RESP;
@@ -26,6 +25,7 @@ import static org.apache.geode.internal.serialization.DataSerializableFixedID.IN
 import static org.apache.geode.internal.serialization.DataSerializableFixedID.JOIN_REQUEST;
 import static org.apache.geode.internal.serialization.DataSerializableFixedID.JOIN_RESPONSE;
 import static org.apache.geode.internal.serialization.DataSerializableFixedID.LEAVE_REQUEST_MESSAGE;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.MEMBER_IDENTIFIER;
 import static org.apache.geode.internal.serialization.DataSerializableFixedID.NETVIEW;
 import static org.apache.geode.internal.serialization.DataSerializableFixedID.NETWORK_PARTITION_MESSAGE;
 import static org.apache.geode.internal.serialization.DataSerializableFixedID.REMOVE_MEMBER_REQUEST;
@@ -174,7 +174,8 @@ public class Services<ID extends MemberIdentifier> {
     serializer.registerDSFID(FIND_COORDINATOR_RESP, FindCoordinatorResponse.class);
     serializer.registerDSFID(JOIN_RESPONSE, JoinResponseMessage.class);
     serializer.registerDSFID(JOIN_REQUEST, JoinRequestMessage.class);
-    serializer.registerDSFID(DEFAULT_MEMBER_ID, MemberIdentifierImpl.class);
+    serializer.registerDSFID(MEMBER_IDENTIFIER, MemberIdentifierImpl.class);
+
   }
 
   /**

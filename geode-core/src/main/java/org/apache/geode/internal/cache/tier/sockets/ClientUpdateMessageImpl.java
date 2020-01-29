@@ -20,7 +20,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -68,7 +67,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
    * The operation performed (e.g. AFTER_CREATE, AFTER_UPDATE, AFTER_DESTROY, AFTER_INVALIDATE,
    * AFTER_REGION_DESTROY)
    */
-  protected EnumListenerEvent _operation;
+  EnumListenerEvent _operation;
 
   /**
    * The name of the <code>Region</code> that was updated
@@ -88,22 +87,22 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
   /**
    * Whether the value is a serialized object or just a byte[]
    */
-  protected byte _valueIsObject;
+  private byte _valueIsObject;
 
   /**
    * The callback argument
    */
-  protected Object _callbackArgument;
+  private Object _callbackArgument;
 
   /**
    * The membership id of the originator of the event
    */
-  protected ClientProxyMembershipID _membershipId;
+  ClientProxyMembershipID _membershipId;
 
   /**
    * The event id of the event
    */
-  protected EventID _eventIdentifier;
+  EventID _eventIdentifier;
 
   private boolean _shouldConflate = false;
 
@@ -332,12 +331,8 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     return this._operation == EnumListenerEvent.AFTER_REGION_CLEAR;
   }
 
-  public boolean isInvalidateRegion() {
+  private boolean isInvalidateRegion() {
     return this._operation == EnumListenerEvent.AFTER_REGION_INVALIDATE;
-  }
-
-  public boolean isClientCompatible() {
-    return false;
   }
 
   @Override
@@ -360,15 +355,15 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
   protected Message getMessage(CacheClientProxy proxy, byte[] latestValue) throws IOException {
     Version clientVersion = proxy.getVersion();
     byte[] serializedValue = null;
-    Message message = null;
-    boolean conflation = false;
+    Message message;
+    boolean conflation;
     conflation = (proxy.clientConflation == Handshake.CONFLATION_ON)
         || (proxy.clientConflation == Handshake.CONFLATION_DEFAULT && this.shouldBeConflated());
 
     if (latestValue != null) {
       serializedValue = latestValue;
     } else {
-      /**
+      /*
        * This means latestValue is instance of Delta, and its delta has already been extracted and
        * put into deltaBytes. We serialize the value.
        */
@@ -397,7 +392,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
 
   protected Message getGFEMessage(ClientProxyMembershipID proxyId, byte[] latestValue,
       Version clientVersion) throws IOException {
-    Message message = null;
+    Message message;
     // Add CQ info.
     int cqMsgParts = 0;
     boolean clientHasCq = this._hasCqs && (this.getCqs(proxyId) != null);
@@ -417,7 +412,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
         // is put in the queue so that it can be conflated it later
         message.addStringOrObjPart(this._keyOfInterest);
         message.addObjPart(this._callbackArgument);
-        message.addObjPart(Boolean.valueOf(isClientInterested(proxyId)));
+        message.addObjPart(isClientInterested(proxyId));
         message.addObjPart(Boolean.FALSE);
 
       } else {
@@ -436,8 +431,8 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
         message.addStringOrObjPart(this._keyOfInterest);
         message.addRawPart(latestValue, (this._valueIsObject == 0x01));
         message.addObjPart(this._callbackArgument);
-        message.addObjPart(Boolean.valueOf(isClientInterested(proxyId)));
-        message.addObjPart(Boolean.valueOf(clientHasCq));
+        message.addObjPart(isClientInterested(proxyId));
+        message.addObjPart(clientHasCq);
 
         if (clientHasCq) {
           this.addCqsToMessage(proxyId, message);
@@ -456,8 +451,8 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
       // is put in the queue so that it can be conflated it later
       message.addStringOrObjPart(this._keyOfInterest);
       message.addObjPart(this._callbackArgument);
-      message.addObjPart(Boolean.valueOf(isClientInterested(proxyId)));
-      message.addObjPart(Boolean.valueOf(clientHasCq));
+      message.addObjPart(isClientInterested(proxyId));
+      message.addObjPart(clientHasCq);
 
       if (clientHasCq) {
         this.addCqsToMessage(proxyId, message);
@@ -467,7 +462,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
       message.setMessageType(MessageType.LOCAL_DESTROY_REGION);
       message.addStringPart(this._regionName, true);
       message.addObjPart(this._callbackArgument);
-      message.addObjPart(Boolean.valueOf(clientHasCq));
+      message.addObjPart(clientHasCq);
 
       if (clientHasCq) {
         this.addCqsToMessage(proxyId, message);
@@ -477,7 +472,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
       message.setMessageType(MessageType.CLEAR_REGION);
       message.addStringPart(this._regionName, true);
       message.addObjPart(this._callbackArgument);
-      message.addObjPart(Boolean.valueOf(clientHasCq));
+      message.addObjPart(clientHasCq);
 
       if (clientHasCq) {
         this.addCqsToMessage(proxyId, message);
@@ -487,7 +482,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
       message.setMessageType(MessageType.INVALIDATE_REGION);
       message.addStringPart(this._regionName, true);
       message.addObjPart(this._callbackArgument);
-      message.addObjPart(Boolean.valueOf(clientHasCq));
+      message.addObjPart(clientHasCq);
 
       if (clientHasCq) {
         this.addCqsToMessage(proxyId, message);
@@ -503,9 +498,9 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     return message;
   }
 
-  protected Message getGFE61Message(CacheClientProxy proxy, byte[] latestValue, boolean conflation,
+  private Message getGFE61Message(CacheClientProxy proxy, byte[] latestValue, boolean conflation,
       Version clientVersion) throws IOException {
-    Message message = null;
+    Message message;
     ClientProxyMembershipID proxyId = proxy.getProxyID();
 
     // Add CQ info.
@@ -535,7 +530,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
         message.addObjPart(this._callbackArgument);
 
         // Add interestlist status.
-        message.addObjPart(Boolean.valueOf(isClientInterested(proxyId)));
+        message.addObjPart(isClientInterested(proxyId));
 
         // Add CQ status.
         message.addObjPart(Boolean.FALSE);
@@ -594,10 +589,10 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
         message.addObjPart(this._callbackArgument);
 
         // Add interest list status.
-        message.addObjPart(Boolean.valueOf(isClientInterested));
+        message.addObjPart(isClientInterested);
 
         // Add CQ status.
-        message.addObjPart(Boolean.valueOf(clientHasCq));
+        message.addObjPart(clientHasCq);
 
         if (clientHasCq) {
           this.addCqsToMessage(proxyId, message);
@@ -620,8 +615,8 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
       message.addStringOrObjPart(this._keyOfInterest);
 
       message.addObjPart(this._callbackArgument);
-      message.addObjPart(Boolean.valueOf(isClientInterested(proxyId)));
-      message.addObjPart(Boolean.valueOf(clientHasCq));
+      message.addObjPart(isClientInterested(proxyId));
+      message.addObjPart(clientHasCq);
 
       if (clientHasCq) {
         this.addCqsToMessage(proxyId, message);
@@ -631,7 +626,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
       message.setMessageType(MessageType.LOCAL_DESTROY_REGION);
       message.addStringPart(this._regionName, true);
       message.addObjPart(this._callbackArgument);
-      message.addObjPart(Boolean.valueOf(clientHasCq));
+      message.addObjPart(clientHasCq);
 
       if (clientHasCq) {
         this.addCqsToMessage(proxyId, message);
@@ -641,7 +636,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
       message.setMessageType(MessageType.CLEAR_REGION);
       message.addStringPart(this._regionName, true);
       message.addObjPart(this._callbackArgument);
-      message.addObjPart(Boolean.valueOf(clientHasCq));
+      message.addObjPart(clientHasCq);
 
       if (clientHasCq) {
         this.addCqsToMessage(proxyId, message);
@@ -651,7 +646,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
       message.setMessageType(MessageType.INVALIDATE_REGION);
       message.addStringPart(this._regionName, true);
       message.addObjPart(this._callbackArgument);
-      message.addObjPart(Boolean.valueOf(clientHasCq));
+      message.addObjPart(clientHasCq);
 
       if (clientHasCq) {
         this.addCqsToMessage(proxyId, message);
@@ -667,10 +662,10 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     return message;
   }
 
-  protected Message getGFE65Message(CacheClientProxy proxy, byte[] p_latestValue,
+  private Message getGFE65Message(CacheClientProxy proxy, byte[] p_latestValue,
       boolean conflation, Version clientVersion) throws IOException {
     byte[] latestValue = p_latestValue;
-    Message message = null;
+    Message message;
     ClientProxyMembershipID proxyId = proxy.getProxyID();
 
     // Add CQ info.
@@ -749,8 +744,8 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
       }
 
       message.addObjPart(this._callbackArgument);
-      message.addObjPart(Boolean.valueOf(isClientInterested(proxyId)));
-      message.addObjPart(Boolean.valueOf(clientHasCq));
+      message.addObjPart(isClientInterested(proxyId));
+      message.addObjPart(clientHasCq);
 
       if (clientHasCq) {
         if (message.getMessageType() == MessageType.LOCAL_INVALIDATE) {
@@ -773,8 +768,8 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
       message.addStringPart(this._regionName, true);
       message.addStringOrObjPart(this._keyOfInterest);
       message.addObjPart(this._callbackArgument);
-      message.addObjPart(Boolean.valueOf(isClientInterested(proxyId)));
-      message.addObjPart(Boolean.valueOf(clientHasCq));
+      message.addObjPart(isClientInterested(proxyId));
+      message.addObjPart(clientHasCq);
 
       if (clientHasCq) {
         if (isInvalidate()) {
@@ -789,7 +784,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
       message.setMessageType(MessageType.LOCAL_DESTROY_REGION);
       message.addStringPart(this._regionName, true);
       message.addObjPart(this._callbackArgument);
-      message.addObjPart(Boolean.valueOf(clientHasCq));
+      message.addObjPart(clientHasCq);
 
       if (clientHasCq) {
         this.addCqsToMessage(proxyId, message);
@@ -799,7 +794,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
       message.setMessageType(MessageType.CLEAR_REGION);
       message.addStringPart(this._regionName, true);
       message.addObjPart(this._callbackArgument);
-      message.addObjPart(Boolean.valueOf(clientHasCq));
+      message.addObjPart(clientHasCq);
 
       if (clientHasCq) {
         this.addCqsToMessage(proxyId, message);
@@ -811,7 +806,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
       message.addObjPart(this._callbackArgument);
 
       // Add CQ status.
-      message.addObjPart(Boolean.valueOf(clientHasCq));
+      message.addObjPart(clientHasCq);
 
       if (clientHasCq) {
         this.addCqsToMessage(proxyId, message);
@@ -828,10 +823,11 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
   }
 
 
-  protected Message getGFE70Message(CacheClientProxy proxy, byte[] p_latestValue,
+  private Message getGFE70Message(CacheClientProxy proxy, byte[] p_latestValue,
       boolean conflation, Version clientVersion) throws IOException {
     byte[] latestValue = p_latestValue;
-    Message message = null;
+
+    Message message;
     ClientProxyMembershipID proxyId = proxy.getProxyID();
     // Add CQ info.
     int cqMsgParts = 0;
@@ -892,8 +888,8 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
         this.versionTag.setCanonicalIDs(proxy.getCache().getDistributionManager());
       }
       message.addObjPart(this.versionTag);
-      message.addObjPart(Boolean.valueOf(isClientInterested(proxyId)));
-      message.addObjPart(Boolean.valueOf(clientHasCq));
+      message.addObjPart(isClientInterested(proxyId));
+      message.addObjPart(clientHasCq);
 
       if (clientHasCq) {
         if (message.getMessageType() == MessageType.LOCAL_INVALIDATE) {
@@ -917,8 +913,8 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
       message.addStringOrObjPart(this._keyOfInterest);
       message.addObjPart(this._callbackArgument);
       message.addObjPart(this.versionTag);
-      message.addObjPart(Boolean.valueOf(isClientInterested(proxyId)));
-      message.addObjPart(Boolean.valueOf(clientHasCq));
+      message.addObjPart(isClientInterested(proxyId));
+      message.addObjPart(clientHasCq);
 
       if (clientHasCq) {
         if (isInvalidate()) {
@@ -933,7 +929,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
       message.setMessageType(MessageType.LOCAL_DESTROY_REGION);
       message.addStringPart(this._regionName, true);
       message.addObjPart(this._callbackArgument);
-      message.addObjPart(Boolean.valueOf(clientHasCq));
+      message.addObjPart(clientHasCq);
 
       if (clientHasCq) {
         this.addCqsToMessage(proxyId, message);
@@ -943,7 +939,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
       message.setMessageType(MessageType.CLEAR_REGION);
       message.addStringPart(this._regionName, true);
       message.addObjPart(this._callbackArgument);
-      message.addObjPart(Boolean.valueOf(clientHasCq));
+      message.addObjPart(clientHasCq);
 
       if (clientHasCq) {
         this.addCqsToMessage(proxyId, message);
@@ -955,7 +951,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
       message.addObjPart(this._callbackArgument);
 
       // Add CQ status.
-      message.addObjPart(Boolean.valueOf(clientHasCq));
+      message.addObjPart(clientHasCq);
 
       if (clientHasCq) {
         this.addCqsToMessage(proxyId, message);
@@ -972,12 +968,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
   }
 
   private static final ThreadLocal<Map<Integer, Message>> CACHED_MESSAGES =
-      new ThreadLocal<Map<Integer, Message>>() {
-        @Override
-        protected Map<Integer, Message> initialValue() {
-          return new HashMap<Integer, Message>();
-        };
-      };
+      ThreadLocal.withInitial(HashMap::new);
 
   private Message getMessage(int numParts, Version clientVersion) {
     Message m = CACHED_MESSAGES.get().get(numParts);
@@ -1014,9 +1005,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
   public boolean hasCqs(ClientProxyMembershipID clientId) {
     if (this._clientCqs != null) {
       CqNameToOp cqs = this._clientCqs.get(clientId);
-      if (cqs != null && !cqs.isEmpty()) {
-        return true;
-      }
+      return cqs != null && !cqs.isEmpty();
     }
     return false;
   }
@@ -1033,7 +1022,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
    * Returns the cqs for the given client.
    *
    */
-  public String[] getCqs(ClientProxyMembershipID clientId) {
+  private String[] getCqs(ClientProxyMembershipID clientId) {
     String[] cqNames = null;
     if (this._clientCqs != null) {
       CqNameToOp cqs = this._clientCqs.get(clientId);
@@ -1061,7 +1050,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     this._clientCqs.put(clientId, filteredCqs);
   }
 
-  public void addClientCq(ClientProxyMembershipID clientId, String cqName, Integer cqEvent) {
+  void addClientCq(ClientProxyMembershipID clientId, String cqName, Integer cqEvent) {
     if (this._clientCqs == null) {
       this._clientCqs = new ClientCqConcurrentMap();
       this._hasCqs = true;
@@ -1109,7 +1098,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
   }
 
   /**
-   * @see HAEventWrapper#fromData(DataInput)
+   * @see HAEventWrapper#fromData(DataInput, DeserializationContext)
    * @see HAContainerRegion#get(Object)
    */
   public void setEventIdentifier(EventID eventId) {
@@ -1119,7 +1108,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
   }
 
   /**
-   * @see HAEventWrapper#fromData(DataInput)
+   * @see HAEventWrapper#fromData(DataInput, DeserializationContext)
    * @see HAContainerRegion#get(Object)
    */
   public void setClientCqs(ClientCqConcurrentMap clientCqs) {
@@ -1183,21 +1172,21 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     return this._clientInterestListInv != null;
   }
 
-  protected Object deserialize(byte[] serializedBytes) {
+  private Object deserialize(byte[] serializedBytes) {
     Object deserializedObject = serializedBytes;
     // This is a debugging method so ignore all exceptions like
     // ClassNotFoundException
     try {
       ByteArrayDataInput dis = new ByteArrayDataInput(serializedBytes);
       deserializedObject = DataSerializer.readObject(dis);
-    } catch (Exception e) {
+    } catch (Exception ignored) {
     }
     return deserializedObject;
   }
 
   @Override
   public String toString() {
-    StringBuffer buffer = new StringBuffer();
+    StringBuilder buffer = new StringBuilder();
     buffer.append("ClientUpdateMessageImpl[").append("op=").append(this._operation)
         .append(";region=").append(this._regionName).append(";key=").append(this._keyOfInterest);
     if (logger.isTraceEnabled()) {
@@ -1423,7 +1412,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
       super(initialCapacity, loadFactor, concurrencyLevel);
     }
 
-    public ClientCqConcurrentMap() {
+    ClientCqConcurrentMap() {
       super(16, 1.0f, 1);
     }
   }
@@ -1459,9 +1448,9 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     private static final String[] EMPTY_NAMES_ARRAY = new String[0];
 
 
-    public CqNameToOpSingleEntry(String name, Integer op) {
+    CqNameToOpSingleEntry(String name, Integer op) {
       initializeName(name);
-      this.op = op.intValue();
+      this.op = op;
     }
 
     private void initializeName(String name) {
@@ -1476,7 +1465,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
       InternalDataSerializer.writeArrayLength(size, out);
       if (size > 0) {
         DataSerializer.writeObject(this.name[0], out);
-        DataSerializer.writeObject(Integer.valueOf(this.op), out);
+        DataSerializer.writeObject(this.op, out);
       }
     }
 
@@ -1507,9 +1496,9 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     public void add(String name, Integer op) {
       if (isEmpty()) {
         this.name = new String[] {name};
-        this.op = op.intValue();
+        this.op = op;
       } else if (this.name[0].equals(name)) {
-        this.op = op.intValue();
+        this.op = op;
       } else {
         throw new IllegalStateException("tried to add to a full CqNameToOpSingleEntry");
       }
@@ -1537,7 +1526,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
       super(initialCapacity, 1.0f);
     }
 
-    public CqNameToOpHashMap(CqNameToOpSingleEntry se) {
+    CqNameToOpHashMap(CqNameToOpSingleEntry se) {
       super(2, 1.0f);
       add(se.name[0], se.op);
     }
@@ -1558,14 +1547,12 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
 
     @Override
     public void addToMessage(Message message) {
-      Iterator<Entry<String, Integer>> entries = entrySet().iterator();
-      while (entries.hasNext()) {
-        Entry<String, Integer> entry = entries.next();
+      for (Entry<String, Integer> entry : entrySet()) {
         // Add CQ Name.
         String cq = entry.getKey();
         message.addStringPart(cq, true);
         // Add CQ Op.
-        int op = entry.getValue().intValue();
+        int op = entry.getValue();
         message.addIntPart(op);
       }
     }
