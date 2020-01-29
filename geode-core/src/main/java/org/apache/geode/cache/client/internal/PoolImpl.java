@@ -19,6 +19,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -28,6 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 
@@ -49,6 +51,7 @@ import org.apache.geode.cache.client.internal.pooling.ConnectionManagerImpl;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.internal.DefaultQueryService;
 import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.PoolCancelledException;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -867,7 +870,7 @@ public class PoolImpl implements InternalPool {
   }
 
   @Override
-  public Map<ServerLocation, Endpoint> getEndpointMap() {
+  public Map<DistributedMember, Endpoint> getEndpointMap() {
     return endpointManager.getEndpointMap();
   }
 
@@ -1148,8 +1151,10 @@ public class PoolImpl implements InternalPool {
    * Returns a list of ServerLocation instances; one for each server we are currently connected to.
    */
   public List<ServerLocation> getCurrentServers() {
-    Map<ServerLocation, Endpoint> endpointMap = endpointManager.getEndpointMap();
-    return new ArrayList<>(endpointMap.keySet());
+    Map<DistributedMember, Endpoint> endpointMap = endpointManager.getEndpointMap();
+    Set<Endpoint> endpoints = new HashSet<>(endpointManager.getEndpointMap().values());
+    return endpoints.stream().map(endpoint -> endpoint.getLocation())
+        .collect(Collectors.toList());
   }
 
   /**
@@ -1196,7 +1201,7 @@ public class PoolImpl implements InternalPool {
       // do nothing.
     }
 
-    Map<ServerLocation, Endpoint> endpoints = endpointManager.getEndpointMap();
+    Map<DistributedMember, Endpoint> endpoints = endpointManager.getEndpointMap();
     for (Endpoint endpoint : endpoints.values()) {
       logger.debug("PoolImpl Simulating crash of endpoint {}", endpoint);
       endpointManager.serverCrashed(endpoint);
