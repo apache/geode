@@ -18,7 +18,6 @@ package org.apache.geode.distributed.internal.membership.api;
 import java.io.IOException;
 import java.net.SocketAddress;
 
-import org.apache.geode.distributed.internal.membership.gms.interfaces.Locator;
 import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
 
 public interface MembershipLocator<ID extends MemberIdentifier> {
@@ -46,6 +45,4 @@ public interface MembershipLocator<ID extends MemberIdentifier> {
   void addHandler(Class<?> clazz, TcpHandler handler);
 
   boolean isHandled(Class<?> clazz);
-
-  Locator<ID> getLocator();
 }

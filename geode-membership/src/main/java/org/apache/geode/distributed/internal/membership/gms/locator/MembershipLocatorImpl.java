@@ -36,7 +36,6 @@ import org.apache.geode.distributed.internal.membership.api.MembershipLocator;
 import org.apache.geode.distributed.internal.membership.api.MembershipLocatorStatistics;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembership;
 import org.apache.geode.distributed.internal.membership.gms.Services;
-import org.apache.geode.distributed.internal.membership.gms.interfaces.Locator;
 import org.apache.geode.distributed.internal.tcpserver.ProtocolChecker;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
@@ -119,11 +118,6 @@ public class MembershipLocatorImpl<ID extends MemberIdentifier> implements Membe
   }
 
   @Override
-  public Locator<ID> getLocator() {
-    return gmsLocator;
-  }
-
-  @Override
   public boolean isShuttingDown() {
     return server.isShuttingDown();
   }
@@ -165,7 +159,7 @@ public class MembershipLocatorImpl<ID extends MemberIdentifier> implements Membe
   }
 
   @VisibleForTesting
-  public GMSLocator getGMSLocator() {
+  public GMSLocator<ID> getGMSLocator() {
     return this.gmsLocator;
   }
 

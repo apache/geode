@@ -27,6 +27,7 @@ import org.apache.geode.distributed.internal.membership.api.MembershipListener;
 import org.apache.geode.distributed.internal.membership.api.MembershipLocator;
 import org.apache.geode.distributed.internal.membership.api.MembershipStatistics;
 import org.apache.geode.distributed.internal.membership.api.MessageListener;
+import org.apache.geode.distributed.internal.membership.gms.locator.MembershipLocatorImpl;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
@@ -48,7 +49,7 @@ public class MembershipBuilderImpl<ID extends MemberIdentifier> implements Membe
   private final MemberIdentifierFactory<ID> memberFactory;
   private LifecycleListener<ID> lifecycleListener = new LifecycleListenerNoOp();
 
-  private MembershipLocator<ID> membershipLocator;
+  private MembershipLocatorImpl<ID> membershipLocator;
 
   public MembershipBuilderImpl(
       final TcpSocketCreator socketCreator,
@@ -79,9 +80,10 @@ public class MembershipBuilderImpl<ID extends MemberIdentifier> implements Membe
     return this;
   }
 
+  @Override
   public MembershipBuilder<ID> setMembershipLocator(
       final MembershipLocator<ID> membershipLocator) {
-    this.membershipLocator = membershipLocator;
+    this.membershipLocator = (MembershipLocatorImpl<ID>) membershipLocator;
     return this;
   }
 
@@ -112,7 +114,7 @@ public class MembershipBuilderImpl<ID extends MemberIdentifier> implements Membe
         new Services<>(gmsMembership.getGMSManager(), statistics, authenticator,
             membershipConfig, serializer, memberFactory, locatorClient, socketCreator);
     if (membershipLocator != null) {
-      services.setLocators(membershipLocator.getLocator(), membershipLocator);
+      services.setLocators(membershipLocator.getGMSLocator(), membershipLocator);
     }
     services.init();
     return gmsMembership;
