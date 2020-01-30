@@ -133,8 +133,8 @@ public class MembershipOnlyTest {
     LifecycleListener<MemberIdentifier> lifeCycleListener = mock(LifecycleListener.class);
 
 
-    final Membership<MemberIdentifierImpl> membership =
-        MembershipBuilder.<MemberIdentifierImpl>newMembershipBuilder(
+    final Membership<MemberIdentifier> membership =
+        MembershipBuilder.<MemberIdentifier>newMembershipBuilder(
             socketCreator,
             locatorClient,
             dsfidSerializer,
