@@ -70,6 +70,7 @@ import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.ByteToCommandDecoder;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.KeyRegistrar;
 import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.RegionProvider;
 
@@ -259,6 +260,7 @@ public class GeodeRedisServer {
 
   private boolean shutdown;
   private boolean started;
+  private KeyRegistrar keyRegistrar;
 
   /**
    * Determine the {@link RegionShortcut} type from a String value. If the String value doesn't map
@@ -443,7 +445,8 @@ public class GeodeRedisServer {
         assErr.initCause(e);
         throw assErr;
       }
-      this.regionCache = new RegionProvider(stringsRegion, hLLRegion, redisMetaData,
+      this.keyRegistrar = new KeyRegistrar(redisMetaData);
+      this.regionCache = new RegionProvider(stringsRegion, hLLRegion, this.keyRegistrar,
           expirationFutures, expirationExecutor, this.DEFAULT_REGION_TYPE);
       redisMetaData.put(REDIS_META_DATA_REGION, RedisDataType.REDIS_PROTECTED);
       redisMetaData.put(HLL_REGION, RedisDataType.REDIS_PROTECTED);
@@ -453,7 +456,7 @@ public class GeodeRedisServer {
   }
 
   private void checkForRegions() {
-    Collection<Entry<String, RedisDataType>> entrySet = this.regionCache.metaEntrySet();
+    Collection<Entry<String, RedisDataType>> entrySet = keyRegistrar.keyInfos();
     for (Entry<String, RedisDataType> entry : entrySet) {
       String regionName = entry.getKey();
       RedisDataType type = entry.getValue();
@@ -525,7 +528,8 @@ public class GeodeRedisServer {
             ChannelPipeline p = ch.pipeline();
             p.addLast(ByteToCommandDecoder.class.getSimpleName(), new ByteToCommandDecoder());
             p.addLast(ExecutionHandlerContext.class.getSimpleName(),
-                new ExecutionHandlerContext(ch, cache, regionCache, GeodeRedisServer.this, pwdB));
+                new ExecutionHandlerContext(ch, cache, regionCache, GeodeRedisServer.this, pwdB,
+                    keyRegistrar));
           }
         }).option(ChannelOption.SO_REUSEADDR, true).option(ChannelOption.SO_RCVBUF, getBufferSize())
         .childOption(ChannelOption.SO_KEEPALIVE, true)
