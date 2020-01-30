@@ -41,7 +41,6 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.Distribution;
@@ -78,7 +77,7 @@ public class GMSLocatorRecoveryIntegrationTest {
 
   private File stateFile;
   private GMSLocator gmsLocator;
-  private Locator locator;
+  private InternalLocator locator;
   private DSFIDSerializer serializer;
   private Distribution distribution;
 
@@ -193,7 +192,7 @@ public class GMSLocatorRecoveryIntegrationTest {
 
     distribution =
         new DistributionImpl(mockClusterDistributionManager, transport, mockSystem, mockListener,
-            mockMessageListener);
+            mockMessageListener, locator.getMembershipLocator());
     distribution.start();
 
     GMSLocator gmsLocator = new GMSLocator(localHost,

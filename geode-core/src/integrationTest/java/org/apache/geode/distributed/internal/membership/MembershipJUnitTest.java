@@ -26,7 +26,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -46,12 +45,10 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
-import org.apache.geode.distributed.internal.DistributionImpl;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.SerialAckedMessage;
@@ -66,6 +63,7 @@ import org.apache.geode.distributed.internal.membership.api.Membership;
 import org.apache.geode.distributed.internal.membership.api.MembershipBuilder;
 import org.apache.geode.distributed.internal.membership.api.MembershipConfig;
 import org.apache.geode.distributed.internal.membership.api.MembershipListener;
+import org.apache.geode.distributed.internal.membership.api.MembershipLocator;
 import org.apache.geode.distributed.internal.membership.api.MembershipView;
 import org.apache.geode.distributed.internal.membership.api.MessageListener;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
@@ -131,7 +129,7 @@ public class MembershipJUnitTest {
       throws Exception {
 
     Membership<InternalDistributedMember> m1 = null, m2 = null;
-    Locator l = null;
+    InternalLocator internalLocator = null;
     // int mcastPort = AvailablePortHelper.getRandomAvailableUDPPort();
 
     try {
@@ -142,8 +140,9 @@ public class MembershipJUnitTest {
 
       // this locator will hook itself up with the first Membership
       // to be created
-      l = InternalLocator.startLocator(port, new File(""), null, null, localHost, false,
-          new Properties(), null, temporaryFolder.getRoot().toPath());
+      internalLocator =
+          InternalLocator.startLocator(port, new File(""), null, null, localHost, false,
+              new Properties(), null, temporaryFolder.getRoot().toPath());
 
       // create configuration objects
       Properties nonDefault = new Properties();
@@ -159,11 +158,14 @@ public class MembershipJUnitTest {
           new RemoteTransportConfig(config, ClusterDistributionManager.LOCATOR_DM_TYPE);
 
       // start the first membership manager
-      m1 = createMembershipManager(config, transport).getLeft();
+      final MembershipLocator<InternalDistributedMember> membershipLocator =
+          internalLocator.getMembershipLocator();
+
+      m1 = createMembershipManager(config, transport, membershipLocator).getLeft();
 
       // start the second membership manager
       final Pair<Membership, MessageListener> pair =
-          createMembershipManager(config, transport);
+          createMembershipManager(config, transport, membershipLocator);
       m2 = pair.getLeft();
       final MessageListener listener2 = pair.getRight();
 
@@ -241,15 +243,16 @@ public class MembershipJUnitTest {
       if (m1 != null) {
         m1.shutdown();
       }
-      if (l != null) {
-        l.stop();
+      if (internalLocator != null) {
+        internalLocator.stop();
       }
     }
   }
 
   private Pair<Membership, MessageListener> createMembershipManager(
       final DistributionConfigImpl config,
-      final RemoteTransportConfig transport) throws MemberStartupException {
+      final RemoteTransportConfig transport,
+      final MembershipLocator<InternalDistributedMember> locator) throws MemberStartupException {
     final MembershipListener<InternalDistributedMember> listener = mock(MembershipListener.class);
     final MessageListener<InternalDistributedMember> messageListener = mock(MessageListener.class);
     final DMStats stats1 = mock(DMStats.class);
@@ -290,6 +293,7 @@ public class MembershipJUnitTest {
     final Membership<InternalDistributedMember> m1 =
         MembershipBuilder.<InternalDistributedMember>newMembershipBuilder(
             socketCreator, locatorClient, serializer, memberIdentifierFactory)
+            .setMembershipLocator(locator)
             .setAuthenticator(authenticator)
             .setStatistics(stats1)
             .setMessageListener(messageListener)
@@ -297,10 +301,6 @@ public class MembershipJUnitTest {
             .setConfig(new ServiceConfig(transport, config))
             .setLifecycleListener(lifeCycleListener)
             .create();
-    doAnswer(invocation -> {
-      DistributionImpl.connectLocatorToServices(m1);
-      return null;
-    }).when(lifeCycleListener).started();
     m1.start();
     m1.startEventProcessing();
     return Pair.of(m1, messageListener);
@@ -319,7 +319,7 @@ public class MembershipJUnitTest {
   public void testLocatorAndTwoServersJoinUsingDiffeHellman() throws Exception {
 
     Membership<InternalDistributedMember> m1 = null, m2 = null;
-    Locator l = null;
+    InternalLocator internalLocator = null;
     int mcastPort = AvailablePortHelper.getRandomAvailableUDPPort();
 
     try {
@@ -331,8 +331,9 @@ public class MembershipJUnitTest {
       p.setProperty(ConfigurationProperties.SECURITY_UDP_DHALGO, "AES:128");
       // this locator will hook itself up with the first Membership
       // to be created
-      l = InternalLocator.startLocator(port, new File(""), null, null, localHost, false, p, null,
-          temporaryFolder.getRoot().toPath());
+      internalLocator =
+          InternalLocator.startLocator(port, new File(""), null, null, localHost, false, p, null,
+              temporaryFolder.getRoot().toPath());
 
       // create configuration objects
       Properties nonDefault = new Properties();
@@ -349,11 +350,14 @@ public class MembershipJUnitTest {
           new RemoteTransportConfig(config, ClusterDistributionManager.LOCATOR_DM_TYPE);
 
       // start the first membership manager
-      m1 = createMembershipManager(config, transport).getLeft();
+      final MembershipLocator<InternalDistributedMember> membershipLocator =
+          internalLocator.getMembershipLocator();
+
+      m1 = createMembershipManager(config, transport, membershipLocator).getLeft();
 
       // start the second membership manager
       final Pair<Membership, MessageListener> pair =
-          createMembershipManager(config, transport);
+          createMembershipManager(config, transport, membershipLocator);
       m2 = pair.getLeft();
       final MessageListener listener2 = pair.getRight();
 
@@ -423,8 +427,8 @@ public class MembershipJUnitTest {
       if (m1 != null) {
         m1.disconnect(false);
       }
-      if (l != null) {
-        l.stop();
+      if (internalLocator != null) {
+        internalLocator.stop();
       }
     }
   }
