@@ -15,7 +15,6 @@
 package org.apache.geode.session.tests;
 
 import java.io.File;
-import java.util.ArrayList;
 
 import org.junit.After;
 import org.junit.Before;
@@ -32,9 +31,9 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
  *
  * Sets up the server needed for the client container to connect to
  */
-public abstract class TomcatClientServerTest extends TomcatTest {
-  private final ArrayList<String> serverList = new ArrayList<>();
-  private final int numberOfServers = 2;
+public abstract class TomcatClientServerTest extends CargoTestBase {
+  private String serverName1;
+  private String serverName2;
 
   @Rule
   public transient TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -48,9 +47,8 @@ public abstract class TomcatClientServerTest extends TomcatTest {
    */
   @Before
   public void startServer() throws Exception {
-    for (int i = 0; i < numberOfServers; i++) {
-      serverList.add(startAServer(i));
-    }
+    serverName1 = startAServer(1);
+    serverName2 = startAServer(2);
 
     afterStartServers();
   }
@@ -75,13 +73,7 @@ public abstract class TomcatClientServerTest extends TomcatTest {
         binDirJars + File.pathSeparator + libDirJars);
     command.addOption(CliStrings.START_SERVER__LOCATORS,
         locatorVM.invoke(() -> ClusterStartupRule.getLocator().asString()));
-    // statistic file
-    command.addOption(CliStrings.START_SERVER__STATISTIC_ARCHIVE_FILE, "statArchive.gfs");
-
     command.addOption(CliStrings.START_SERVER__J, "-Dgemfire.member-timeout=60000");
-    command.addOption(CliStrings.START_SERVER__J, "-Dgemfire.statistic-sampling-enabled=true");
-    command.addOption(CliStrings.START_SERVER__J, "-XX:+HeapDumpOnOutOfMemoryError");
-    command.addOption(CliStrings.START_SERVER__J, "-XX:+JavaMonitorsInStackTrace");
 
     // Start server
     gfsh.executeAndAssertThat(command.toString()).statusIsSuccess();
@@ -93,13 +85,9 @@ public abstract class TomcatClientServerTest extends TomcatTest {
    * Stops the server for the client Tomcat container is has been connecting to
    */
   @After
-  public void stopServer() {
-    for (int i = 0; i < numberOfServers; i++) {
-      try {
-        stopAServer(serverList.get(i));
-      } catch (Exception ignore) {
-      }
-    }
+  public void stopServer() throws Exception {
+    stopAServer(serverName1);
+    stopAServer(serverName2);
   }
 
   private void stopAServer(String serverName) {

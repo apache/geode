@@ -14,7 +14,6 @@
  */
 package org.apache.geode.session.tests;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
@@ -59,8 +58,6 @@ public abstract class CargoTestBase {
   protected ContainerManager manager;
   protected ContainerInstall install;
   protected MemberVM locatorVM;
-  protected boolean dumpLogs = true;
-  protected int numberOfContainers = 2;
 
   /**
    * Should only be called once per test.
@@ -91,7 +88,7 @@ public abstract class CargoTestBase {
     install = getInstall(portSupplier::getAvailablePort);
     install.setDefaultLocatorPort(locatorVM.getPort());
 
-    manager.addContainers(numberOfContainers, install);
+    manager.addContainers(2, install);
 
     customizeContainers();
   }
@@ -107,9 +104,7 @@ public abstract class CargoTestBase {
       manager.stopAllActiveContainers();
     } finally {
       try {
-        if (dumpLogs) {
-          manager.dumpLogs();
-        }
+        manager.dumpLogs();
       } finally {
         try {
           manager.cleanUp();
@@ -125,12 +120,6 @@ public abstract class CargoTestBase {
    * container has the associated expected value
    */
   public void getKeyValueDataOnAllClients(String key, String expectedValue, String expectedCookie)
-      throws IOException, URISyntaxException {
-    getKeyValueDataOnAllClients(client, key, expectedValue, expectedCookie);
-  }
-
-  public void getKeyValueDataOnAllClients(Client client, String key, String expectedValue,
-      String expectedCookie)
       throws IOException, URISyntaxException {
     for (int i = 0; i < manager.numContainers(); i++) {
       // Set the port for this server
@@ -150,25 +139,22 @@ public abstract class CargoTestBase {
         String value = resp.getResponse();
         if (!expectedValue.equals(value)) {
           LogService.getLogger().info("verifying container {} for expected value of {}"
-              + " for key {}, but gets response value of {}. Waiting for update from server. for client {}",
-              i,
-              expectedValue, key, value, client);
+              + " for key {}, but gets response value of {}. Waiting for update from server.", i,
+              expectedValue, key, value);
         }
-        GeodeAwaitility.await().pollInSameThread().untilAsserted(
-            () -> assertThat(getResponseValue(client, key)).isEqualTo(expectedValue));
+        GeodeAwaitility.await().until(() -> expectedValue.equals(getResponseValue(client, key)));
       } else {
         // either p2p cache or client cache which has proxy/empty region - retrieving session from
         // servers
-        assertEquals("Session data is not replicating properly for key " + key, expectedValue,
-            resp.getResponse());
+        assertEquals("Session data is not replicating properly", expectedValue, resp.getResponse());
       }
     }
   }
 
   private String getResponseValue(Client client, String key)
       throws IOException, URISyntaxException {
-    Client.Response response = client.get(key);
-    String value = response.getResponse();
+    String value = client.get(key).getResponse();
+    LogService.getLogger().info("client gets response value of {}", value);
     return value;
   }
 
@@ -204,8 +190,8 @@ public abstract class CargoTestBase {
   }
 
   /**
-   * Test that when a container fails, session attributes that were previously set in that
-   * container are still available in other containers
+   * Test that when a container fails, session attributes that were previously set in that container
+   * are still available in other containers
    */
   @Test
   public void failureShouldStillAllowOtherContainersDataAccess()
@@ -307,8 +293,8 @@ public abstract class CargoTestBase {
 
 
   /**
-   * Test that if one container is accessing a session, that will prevent the session from
-   * expiring in all containers.
+   * Test that if one container is accessing a session, that will prevent the session from expiring
+   * in all containers.
    */
   @Test
   public void containersShouldShareSessionExpirationReset()
@@ -343,8 +329,7 @@ public abstract class CargoTestBase {
   }
 
   /**
-   * Test that if a session attribute is removed in one container, it is removed from all
-   * containers
+   * Test that if a session attribute is removed in one container, it is removed from all containers
    */
   @Test
   public void containersShouldShareDataRemovals() throws IOException, URISyntaxException {
@@ -365,8 +350,8 @@ public abstract class CargoTestBase {
   }
 
   /**
-   * Test that a container added to the system after puts still can access the correct sessions
-   * and data.
+   * Test that a container added to the system after puts still can access the correct sessions and
+   * data.
    */
   @Test
   public void newContainersShouldShareDataAccess() throws Exception {
