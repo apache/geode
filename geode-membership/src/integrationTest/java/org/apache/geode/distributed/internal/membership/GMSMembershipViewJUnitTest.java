@@ -14,7 +14,7 @@
  */
 package org.apache.geode.distributed.internal.membership;
 
-import static org.apache.geode.distributed.internal.membership.gms.util.MembershipAddressUtil.createMemberID;
+import static org.apache.geode.distributed.internal.membership.gms.util.MemberIdentifierUtil.createMemberID;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;

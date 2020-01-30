@@ -14,15 +14,6 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.fd;
 
-import static org.apache.geode.distributed.ConfigurationProperties.ACK_SEVERE_ALERT_THRESHOLD;
-import static org.apache.geode.distributed.ConfigurationProperties.ACK_WAIT_THRESHOLD;
-import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_TCP;
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
-import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_TTL;
-import static org.apache.geode.distributed.ConfigurationProperties.MEMBER_TIMEOUT;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -52,7 +43,6 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 import java.util.Timer;
 import java.util.concurrent.locks.Condition;
@@ -67,22 +57,15 @@ import org.junit.experimental.categories.Category;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import org.apache.geode.DataSerializer;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionConfigImpl;
-import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.DistributionStats;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.adapter.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.api.MemberData;
 import org.apache.geode.distributed.internal.membership.api.MemberDataBuilder;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifierFactoryImpl;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifierImpl;
 import org.apache.geode.distributed.internal.membership.api.MemberStartupException;
 import org.apache.geode.distributed.internal.membership.api.MembershipConfig;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
+import org.apache.geode.distributed.internal.membership.gms.DefaultMembershipStatistics;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.Services.Stopper;
 import org.apache.geode.distributed.internal.membership.gms.fd.GMSHealthMonitor.ClientSocketHandler;
@@ -94,11 +77,11 @@ import org.apache.geode.distributed.internal.membership.gms.messages.HeartbeatMe
 import org.apache.geode.distributed.internal.membership.gms.messages.HeartbeatRequestMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.SuspectMembersMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.SuspectRequest;
-import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.net.SocketCreatorFactory;
-import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.distributed.internal.membership.gms.util.MemberIdentifierUtil;
+import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreatorImpl;
+import org.apache.geode.internal.serialization.BufferDataOutputStream;
 import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.internal.DSFIDSerializerImpl;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 @Category({MembershipTest.class})
@@ -106,50 +89,49 @@ public class GMSHealthMonitorJUnitTest {
 
   private Services services;
   private MembershipConfig mockConfig;
-  private DistributionConfig mockDistConfig;
   private List<MemberIdentifier> mockMembers;
   private Messenger messenger;
   private JoinLeave joinLeave;
   private GMSHealthMonitor gmsHealthMonitor;
   private Manager manager;
-  private long statsId = 123;
   final long memberTimeout = 1000l;
   private int[] portRange = new int[] {0, 65535};
   private boolean useGMSHealthMonitorTestClass = false;
   private boolean simulateHeartbeatInGMSHealthMonitorTestClass = true;
   private boolean allowSelfCheckToSucceed = true;
   private final int myAddressIndex = 3;
+  private DSFIDSerializerImpl dsfidSerializer;
 
   @Before
   public void initMocks() throws MemberStartupException {
     // ensure that Geode's serialization and version are initialized
     Version currentVersion = Version.CURRENT;
-    InternalDataSerializer.getDSFIDSerializer();
+    dsfidSerializer = new DSFIDSerializerImpl();
+    Services.registerSerializables(dsfidSerializer);
 
     // System.setProperty("gemfire.bind-address", "localhost");
-    mockDistConfig = mock(DistributionConfig.class);
-    mockConfig = mock(ServiceConfig.class);
+    mockConfig = mock(MembershipConfig.class);
     messenger = mock(Messenger.class);
     joinLeave = mock(JoinLeave.class);
     manager = mock(Manager.class);
     services = mock(Services.class);
     Stopper stopper = mock(Stopper.class);
 
-    Properties nonDefault = new Properties();
-    nonDefault.put(ACK_WAIT_THRESHOLD, "1");
-    nonDefault.put(ACK_SEVERE_ALERT_THRESHOLD, "10");
-    nonDefault.put(DISABLE_TCP, "true");
-    nonDefault.put(MCAST_PORT, "0");
-    nonDefault.put(MCAST_TTL, "0");
-    nonDefault.put(LOG_FILE, "");
-    nonDefault.put(LOG_LEVEL, "fine");
-    nonDefault.put(MEMBER_TIMEOUT, "" + memberTimeout);
-    nonDefault.put(LOCATORS, "localhost[10344]");
-    DistributionManager dm = mock(DistributionManager.class);
-    SocketCreatorFactory.setDistributionConfig(new DistributionConfigImpl(new Properties()));
-    InternalDistributedSystem system = new InternalDistributedSystem.BuilderForTesting(nonDefault)
-        .setDistributionManager(dm)
-        .build();
+    // nonDefault.put(ACK_WAIT_THRESHOLD, "1");
+    // nonDefault.put(ACK_SEVERE_ALERT_THRESHOLD, "10");
+    // nonDefault.put(DISABLE_TCP, "true");
+    // nonDefault.put(MCAST_PORT, "0");
+    // nonDefault.put(MCAST_TTL, "0");
+    // nonDefault.put(LOG_FILE, "");
+    // nonDefault.put(LOG_LEVEL, "fine");
+    // nonDefault.put(MEMBER_TIMEOUT, "" + memberTimeout);
+    // nonDefault.put(LOCATORS, "localhost[10344]");
+    // DistributionManager dm = mock(DistributionManager.class);
+    // SocketCreatorFactory.setDistributionConfig(new DistributionConfigImpl(new Properties()));
+    // InternalDistributedSystem system = new
+    // InternalDistributedSystem.BuilderForTesting(nonDefault)
+    // .setDistributionManager(dm)
+    // .build();
 
     when(mockConfig.getMemberTimeout()).thenReturn(memberTimeout);
     when(mockConfig.getMembershipPortRange()).thenReturn(portRange);
@@ -158,7 +140,7 @@ public class GMSHealthMonitorJUnitTest {
     when(services.getJoinLeave()).thenReturn(joinLeave);
     when(services.getCancelCriterion()).thenReturn(stopper);
     when(services.getManager()).thenReturn(manager);
-    when(services.getStatistics()).thenReturn(new DistributionStats(system, statsId));
+    when(services.getStatistics()).thenReturn(new DefaultMembershipStatistics());
     when(services.getTimer()).thenReturn(new Timer("Geode Membership Timer", true));
     when(stopper.isCancelInProgress()).thenReturn(false);
     when(services.getMemberFactory()).thenReturn(new MemberIdentifierFactoryImpl());
@@ -166,10 +148,10 @@ public class GMSHealthMonitorJUnitTest {
     if (mockMembers == null) {
       mockMembers = new ArrayList<>();
       for (int i = 0; i < 7; i++) {
-        MemberIdentifier mbr = new InternalDistributedMember("localhost", 8888 + i);
+        MemberIdentifier mbr = MemberIdentifierUtil.createMemberID(8888 + i);
 
         if (i == 0 || i == 1) {
-          mbr.setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
+          mbr.setVmKind(MemberIdentifier.LOCATOR_DM_TYPE);
           mbr.setPreferredForCoordinator(true);
         }
         mockMembers.add(mbr);
@@ -185,20 +167,16 @@ public class GMSHealthMonitorJUnitTest {
   @After
   public void tearDown() {
     gmsHealthMonitor.stop();
-    SocketCreatorFactory.close();
     // System.getProperties().remove("gemfire.bind-address");
   }
 
   @Test
   public void testHMServiceStarted() throws Exception {
 
-    MemberIdentifier mbr =
-        new InternalDistributedMember("localhost", 12345);
+    MemberIdentifier mbr = MemberIdentifierUtil.createMemberID(12345);
     mbr.setVmViewId(1);
     when(messenger.getMemberID()).thenReturn(mbr);
     gmsHealthMonitor.started();
-
-    GMSMembershipView v = new GMSMembershipView(mbr, 1, mockMembers);
 
     gmsHealthMonitor.processMessage(new HeartbeatRequestMessage(mbr, 1));
     verify(messenger, atLeastOnce()).send(any(HeartbeatMessage.class));
@@ -612,7 +590,7 @@ public class GMSHealthMonitorJUnitTest {
       gmsHealthMonitor.setNextNeighbor(v, memberToCheck);
       assertNotEquals(memberToCheck, gmsHealthMonitor.getNextNeighbor());
 
-      ((InternalDistributedMember) mockMembers.get(0)).setVersionObjectForTest(Version.GEODE_1_3_0);
+      ((MemberIdentifierImpl) mockMembers.get(0)).setVersionObjectForTest(Version.GEODE_1_3_0);
       boolean retVal = gmsHealthMonitor.inlineCheckIfAvailable(mockMembers.get(0), v, true,
           memberToCheck, "Not responding");
 
@@ -627,14 +605,15 @@ public class GMSHealthMonitorJUnitTest {
   @Test
   public void testFinalCheckPassedMessageCanBeSerializedAndDeserialized()
       throws IOException, ClassNotFoundException {
-    HeapDataOutputStream heapDataOutputStream = new HeapDataOutputStream(500, Version.CURRENT);
+    BufferDataOutputStream BufferDataOutputStream =
+        new BufferDataOutputStream(500, Version.CURRENT);
     FinalCheckPassedMessage message =
         new FinalCheckPassedMessage(mockMembers.get(0), mockMembers.get(1));
-    DataSerializer.writeObject(message, heapDataOutputStream);
+    dsfidSerializer.getObjectSerializer().writeObject(message, BufferDataOutputStream);
     ByteArrayInputStream byteArrayInputStream =
-        new ByteArrayInputStream(heapDataOutputStream.toByteArray());
+        new ByteArrayInputStream(BufferDataOutputStream.toByteArray());
     DataInputStream dataInputStream = new DataInputStream(byteArrayInputStream);
-    message = DataSerializer.readObject(dataInputStream);
+    message = dsfidSerializer.getObjectDeserializer().readObject(dataInputStream);
     assertEquals(mockMembers.get(1), message.getSuspect());
   }
 
@@ -1022,8 +1001,7 @@ public class GMSHealthMonitorJUnitTest {
     public Set<MemberIdentifier> availabilityCheckedMembers = new HashSet<>();
 
     public GMSHealthMonitorTest() {
-      super(SocketCreatorFactory
-          .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER));
+      super(new TcpSocketCreatorImpl());
     }
 
     @Override
