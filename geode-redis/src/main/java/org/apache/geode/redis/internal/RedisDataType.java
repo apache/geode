@@ -103,6 +103,15 @@ public enum RedisDataType {
     }
   },
 
+  /** Pubsub */
+  REDIS_PUBSUB {
+    @Override
+    public String toString() {
+      return "pubsub";
+    }
+
+  },
+
   /**
    * None
    */
@@ -111,6 +120,5 @@ public enum RedisDataType {
     public String toString() {
       return "none";
     }
-  };
-
-};
+  }
+}

@@ -22,6 +22,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.DecoderException;
@@ -86,6 +88,11 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   }
 
   private KeyRegistrar keyRegistrar;
+  private PubSub pubSub;
+
+  public PubSub getPubSub() {
+    return pubSub;
+  }
 
   /**
    * Default constructor for execution contexts.
@@ -98,8 +105,9 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
    * @param pwd Authentication password for each context, can be null
    */
   public ExecutionHandlerContext(Channel ch, Cache cache, RegionProvider regionProvider,
-      GeodeRedisServer server, byte[] pwd, KeyRegistrar keyRegistrar) {
+      GeodeRedisServer server, byte[] pwd, KeyRegistrar keyRegistrar, PubSub pubSub) {
     this.keyRegistrar = keyRegistrar;
+    this.pubSub = pubSub;
     if (ch == null || cache == null || regionProvider == null || server == null)
       throw new IllegalArgumentException("Only the authentication password may be null");
     this.cache = cache;
@@ -130,8 +138,21 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     }
   }
 
-  private void writeToChannel(ByteBuf message) {
+  public ChannelFuture writeToChannelWithListener(ByteBuf message,
+      ChannelFutureListener channelFutureListener) {
+    ChannelFuture channelFuture =
+        channel.write(message, channel.newPromise()).addListener(channelFutureListener);
+
+    if (!needChannelFlush.getAndSet(true)) {
+      this.lastExecutor.execute(flusher);
+    }
+
+    return channelFuture;
+  }
+
+  public void writeToChannel(ByteBuf message) {
     channel.write(message, channel.voidPromise());
+
     if (!needChannelFlush.getAndSet(true)) {
       this.lastExecutor.execute(flusher);
     }
@@ -391,4 +412,9 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   public void setAuthenticationVerified() {
     this.isAuthenticated = true;
   }
+
+  public Client getClient() {
+    return new Client(channel);
+  }
+
 }

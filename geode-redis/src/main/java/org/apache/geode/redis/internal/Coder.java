@@ -30,8 +30,6 @@ import org.apache.geode.cache.query.Struct;
 
 /**
  * This is a safe encoder and decoder for all redis matching needs
- *
- *
  */
 public class Coder {
 
@@ -123,36 +121,51 @@ public class Coder {
     if (v == null) {
       response = alloc.buffer();
       response.writeBytes(bNIL);
-      return response;
     } else if (v instanceof byte[]) {
       byte[] value = (byte[]) v;
       response = alloc.buffer(value.length + 20);
       toWrite = value;
+      writeStringResponse(response, toWrite);
     } else if (v instanceof ByteArrayWrapper) {
       byte[] value = ((ByteArrayWrapper) v).toBytes();
       response = alloc.buffer(value.length + 20);
       toWrite = value;
+      writeStringResponse(response, toWrite);
     } else if (v instanceof Double) {
       response = alloc.buffer();
       toWrite = doubleToBytes(((Double) v).doubleValue());
+      writeStringResponse(response, toWrite);
     } else if (v instanceof String) {
       String value = (String) v;
       response = alloc.buffer(value.length() + 20);
       toWrite = stringToBytes(value);
+      writeStringResponse(response, toWrite);
+    } else if (v instanceof Integer) {
+      response = alloc.buffer(15);
+      response.writeByte(INTEGER_ID);
+      response.writeBytes(intToBytes((Integer) v));
+      response.writeBytes(CRLFar);
+    } else if (v instanceof Long) {
+      response = alloc.buffer(15);
+      response.writeByte(INTEGER_ID);
+      response.writeBytes(intToBytes(((Long) v).intValue()));
+      response.writeBytes(CRLFar);
     } else {
       throw new CoderException();
     }
 
+    return response;
+  }
+
+  private static void writeStringResponse(ByteBuf response, byte[] toWrite) {
     response.writeByte(BULK_STRING_ID);
     response.writeBytes(intToBytes(toWrite.length));
     response.writeBytes(CRLFar);
     response.writeBytes(toWrite);
     response.writeBytes(CRLFar);
-
-    return response;
   }
 
-  public static ByteBuf getBulkStringArrayResponse(ByteBufAllocator alloc, Collection<?> items)
+  public static ByteBuf getArrayResponse(ByteBufAllocator alloc, Collection<?> items)
       throws CoderException {
     ByteBuf response = alloc.buffer();
     response.writeByte(ARRAY_ID);
@@ -163,7 +176,7 @@ public class Coder {
       try {
         if (next instanceof Collection) {
           Collection<?> nextItems = (Collection<?>) next;
-          tmp = getBulkStringArrayResponse(alloc, nextItems);
+          tmp = getArrayResponse(alloc, nextItems);
           response.writeBytes(tmp);
         } else {
           tmp = getBulkStringResponse(alloc, next);
@@ -362,8 +375,9 @@ public class Coder {
 
   public static ByteBuf zRangeResponse(ByteBufAllocator alloc, Collection<?> list,
       boolean withScores) {
-    if (list.isEmpty())
+    if (list.isEmpty()) {
       return Coder.getEmptyArrayResponse(alloc);
+    }
 
     ByteBuf buffer = alloc.buffer();
     buffer.writeByte(Coder.ARRAY_ID);
@@ -419,15 +433,17 @@ public class Coder {
     response.writeBytes(intToBytes(length));
     response.writeBytes(Coder.CRLFar);
 
-    for (int i = 0; i < length; i++)
+    for (int i = 0; i < length; i++) {
       response.writeBytes(bNIL);
+    }
 
     return response;
   }
 
   public static String bytesToString(byte[] bytes) {
-    if (bytes == null)
+    if (bytes == null) {
       return null;
+    }
     try {
       return new String(bytes, CHARSET).intern();
     } catch (UnsupportedEncodingException e) {
@@ -436,16 +452,18 @@ public class Coder {
   }
 
   public static String doubleToString(double d) {
-    if (d == Double.POSITIVE_INFINITY)
+    if (d == Double.POSITIVE_INFINITY) {
       return "Infinity";
-    else if (d == Double.NEGATIVE_INFINITY)
+    } else if (d == Double.NEGATIVE_INFINITY) {
       return "-Infinity";
+    }
     return String.valueOf(d);
   }
 
   public static byte[] stringToBytes(String string) {
-    if (string == null || string.equals(""))
+    if (string == null || string.equals("")) {
       return null;
+    }
     try {
       return string.getBytes(CHARSET);
     } catch (UnsupportedEncodingException e) {
@@ -502,12 +520,13 @@ public class Coder {
    * @throws NumberFormatException if the double cannot be parsed
    */
   public static double stringToDouble(String d) {
-    if (d.equalsIgnoreCase(P_INF))
+    if (d.equalsIgnoreCase(P_INF)) {
       return Double.POSITIVE_INFINITY;
-    else if (d.equalsIgnoreCase(N_INF))
+    } else if (d.equalsIgnoreCase(N_INF)) {
       return Double.NEGATIVE_INFINITY;
-    else
+    } else {
       return Double.parseDouble(d);
+    }
   }
 
   public static ByteArrayWrapper stringToByteWrapper(String s) {
