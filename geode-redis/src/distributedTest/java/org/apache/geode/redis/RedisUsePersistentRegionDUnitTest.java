@@ -22,6 +22,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
 
+import org.apache.geode.cache.Region;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
@@ -48,5 +49,8 @@ public class RedisUsePersistentRegionDUnitTest {
 
     long result = client.hset("user", "name", "Joe");
     assertThat(result).isEqualTo(1);
+
+    Region<?, ?> stringRegion = server.getCache().getRegion(GeodeRedisServer.STRING_REGION);
+    assertThat(stringRegion.getAttributes().getDataPolicy().withPersistence()).isTrue();
   }
 }
