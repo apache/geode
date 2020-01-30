@@ -248,6 +248,10 @@ public class Client {
     }
   }
 
+  public String getCookie() {
+    return cookie;
+  }
+
   private String getCookieHeader(CloseableHttpResponse resp) {
     Header lastHeader = resp.getLastHeader("Set-Cookie");
 
