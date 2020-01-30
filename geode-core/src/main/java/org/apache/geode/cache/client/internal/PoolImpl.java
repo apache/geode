@@ -1153,8 +1153,10 @@ public class PoolImpl implements InternalPool {
   public List<ServerLocation> getCurrentServers() {
     Map<DistributedMember, Endpoint> endpointMap = endpointManager.getEndpointMap();
     Set<Endpoint> endpoints = new HashSet<>(endpointManager.getEndpointMap().values());
-    return endpoints.stream().map(endpoint -> endpoint.getLocation())
-        .collect(Collectors.toList());
+    List<ServerLocation> serverLocations =
+        endpoints.stream().map(endpoint -> endpoint.getLocation())
+            .collect(Collectors.toList());
+    return new ArrayList<>(new HashSet<>(serverLocations)); // Remove possible duplicated values
   }
 
   /**
