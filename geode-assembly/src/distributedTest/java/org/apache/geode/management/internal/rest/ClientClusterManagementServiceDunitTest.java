@@ -25,7 +25,6 @@ import org.junit.Test;
 
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
-import org.apache.geode.management.api.BaseConnectionConfig;
 import org.apache.geode.management.api.ClusterManagementRealizationResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
@@ -33,7 +32,7 @@ import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.configuration.RegionType;
-import org.apache.geode.management.internal.api.GeodeConnectionConfig;
+import org.apache.geode.management.internal.builder.GeodeClusterManagementServiceBuilder;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -54,8 +53,8 @@ public class ClientClusterManagementServiceDunitTest {
     locator = cluster.startLocatorVM(0, l -> l.withHttpService());
     server = cluster.startServerVM(1, locator.getPort());
     serverWithGroupA = cluster.startServerVM(2, groupA, locator.getPort());
-    cmsClient = new ClusterManagementServiceBuilder().setConnectionConfig(
-        new BaseConnectionConfig("localhost", locator.getHttpPort()))
+    cmsClient = new ClusterManagementServiceBuilder()
+        .setPort(locator.getHttpPort())
         .build();
   }
 
@@ -130,9 +129,10 @@ public class ClientClusterManagementServiceDunitTest {
     client = cluster.startClientVM(3, c -> c.withLocatorConnection(locatorPort));
 
     client.invoke(() -> {
-      ClusterManagementService service = new ClusterManagementServiceBuilder().setConnectionConfig(
-          new GeodeConnectionConfig(ClusterStartupRule.getClientCache()))
-          .build();
+      ClusterManagementService service =
+          new GeodeClusterManagementServiceBuilder()
+              .setCache(ClusterStartupRule.getClientCache())
+              .build();
       assertThat(service.isConnected()).isTrue();
     });
     client.stop();
@@ -144,8 +144,8 @@ public class ClientClusterManagementServiceDunitTest {
     client = cluster.startClientVM(3, c -> c.withServerConnection(serverPort));
 
     client.invoke(() -> {
-      assertThatThrownBy(() -> new ClusterManagementServiceBuilder().setConnectionConfig(
-          new GeodeConnectionConfig(ClusterStartupRule.getClientCache()))
+      assertThatThrownBy(() -> new GeodeClusterManagementServiceBuilder()
+          .setCache(ClusterStartupRule.getClientCache())
           .build())
               .isInstanceOf(IllegalStateException.class)
               .hasMessageContaining(

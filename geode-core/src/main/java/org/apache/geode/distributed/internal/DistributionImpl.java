@@ -135,7 +135,7 @@ public class DistributionImpl implements Distribution {
           InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());
       final TcpSocketCreator socketCreator = SocketCreatorFactory
           .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER);
-      membership = MembershipBuilder.<InternalDistributedMember>newMembershipBuilder(
+      membership = MembershipBuilder.newMembershipBuilder(
           socketCreator,
           locatorClient,
           InternalDataSerializer.getDSFIDSerializer(),

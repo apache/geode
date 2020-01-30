@@ -26,7 +26,6 @@ import org.junit.Test;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
-import org.apache.geode.management.api.BaseConnectionConfig;
 import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementRealizationResult;
 import org.apache.geode.management.api.ClusterManagementService;
@@ -54,8 +53,8 @@ public class ListIndexOnPartitionRegionTest {
     lsRule.startServerVM(2, "group2", locator.getPort());
     lsRule.startServerVM(3, "group3", locator.getPort());
 
-    cms = new ClusterManagementServiceBuilder().setConnectionConfig(
-        new BaseConnectionConfig("localhost", locator.getHttpPort()))
+    cms = new ClusterManagementServiceBuilder()
+        .setPort(locator.getHttpPort())
         .build();
 
     // set up the same region in 3 different groups, one is a proxy region, but with the same name

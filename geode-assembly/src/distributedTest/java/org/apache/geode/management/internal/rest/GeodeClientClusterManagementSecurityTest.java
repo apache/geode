@@ -22,8 +22,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 
 import org.apache.geode.examples.SimpleSecurityManager;
-import org.apache.geode.management.client.ClusterManagementServiceBuilder;
-import org.apache.geode.management.internal.api.GeodeConnectionConfig;
+import org.apache.geode.management.internal.builder.GeodeClusterManagementServiceBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.ClientCacheRule;
@@ -47,26 +46,27 @@ public class GeodeClientClusterManagementSecurityTest {
 
   @Test
   public void withClientConnectionCredential() {
-    assertThat(new ClusterManagementServiceBuilder().setConnectionConfig(
-        new GeodeConnectionConfig(client.getCache())).build().isConnected())
+    assertThat(new GeodeClusterManagementServiceBuilder()
+        .setCache(client.getCache())
+        .build().isConnected())
             .isTrue();
   }
 
   @Test
   public void withDifferentCredentials() {
     assertThat(
-        new ClusterManagementServiceBuilder().setConnectionConfig(
-            new GeodeConnectionConfig(client.getCache())
-                .setUsername("test").setPassword("test"))
+        new GeodeClusterManagementServiceBuilder()
+            .setCache(client.getCache())
+            .setUsername("test").setPassword("test")
             .build().isConnected()).isTrue();
   }
 
   @Test
   public void withInvalidCredential() {
     assertThat(
-        new ClusterManagementServiceBuilder().setConnectionConfig(
-            new GeodeConnectionConfig(client.getCache())
-                .setUsername("test").setPassword("wrong"))
+        new GeodeClusterManagementServiceBuilder()
+            .setCache(client.getCache())
+            .setUsername("test").setPassword("wrong")
             .build().isConnected()).isFalse();
   }
 }

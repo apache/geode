@@ -21,7 +21,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Rule;
 import org.junit.Test;
 
-import org.apache.geode.management.api.BaseConnectionConfig;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
@@ -43,8 +42,8 @@ public class ServerRestartTest {
     MemberVM server2 = cluster.startServerVM(2, locator.getPort());
 
     ClusterManagementService cmService =
-        new ClusterManagementServiceBuilder().setConnectionConfig(
-            new BaseConnectionConfig("localhost", locator.getHttpPort()))
+        new ClusterManagementServiceBuilder()
+            .setPort(locator.getHttpPort())
             .build();
 
     Region region = new Region();
