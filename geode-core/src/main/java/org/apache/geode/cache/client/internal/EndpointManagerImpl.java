@@ -60,7 +60,7 @@ public class EndpointManagerImpl implements EndpointManager {
     boolean addedEndpoint = false;
     if (endpoint == null || endpoint.isClosed()) {
       synchronized (this) {
-        endpoint = endpointMap.get(server);
+        endpoint = endpointMap.get(memberId);
         if (endpoint == null || endpoint.isClosed()) {
           ConnectionStats stats = getStats(server);
           Map<DistributedMember, Endpoint> endpointMapTemp = new HashMap<>(endpointMap);
