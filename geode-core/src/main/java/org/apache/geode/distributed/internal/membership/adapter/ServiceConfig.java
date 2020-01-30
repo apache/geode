@@ -318,7 +318,7 @@ public class ServiceConfig implements MembershipConfig {
   }
 
   @Override
-  public Object getOldDSMembershipInfo() {
+  public Object getOldMembershipInfo() {
     return transport.getOldDSMembershipInfo();
   }
 

@@ -64,8 +64,8 @@ import org.apache.geode.distributed.internal.membership.api.MemberIdentifierFact
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifierImpl;
 import org.apache.geode.distributed.internal.membership.api.MemberStartupException;
 import org.apache.geode.distributed.internal.membership.api.MembershipConfig;
-import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.DefaultMembershipStatistics;
+import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.Services.Stopper;
 import org.apache.geode.distributed.internal.membership.gms.fd.GMSHealthMonitor.ClientSocketHandler;
@@ -116,22 +116,6 @@ public class GMSHealthMonitorJUnitTest {
     manager = mock(Manager.class);
     services = mock(Services.class);
     Stopper stopper = mock(Stopper.class);
-
-    // nonDefault.put(ACK_WAIT_THRESHOLD, "1");
-    // nonDefault.put(ACK_SEVERE_ALERT_THRESHOLD, "10");
-    // nonDefault.put(DISABLE_TCP, "true");
-    // nonDefault.put(MCAST_PORT, "0");
-    // nonDefault.put(MCAST_TTL, "0");
-    // nonDefault.put(LOG_FILE, "");
-    // nonDefault.put(LOG_LEVEL, "fine");
-    // nonDefault.put(MEMBER_TIMEOUT, "" + memberTimeout);
-    // nonDefault.put(LOCATORS, "localhost[10344]");
-    // DistributionManager dm = mock(DistributionManager.class);
-    // SocketCreatorFactory.setDistributionConfig(new DistributionConfigImpl(new Properties()));
-    // InternalDistributedSystem system = new
-    // InternalDistributedSystem.BuilderForTesting(nonDefault)
-    // .setDistributionManager(dm)
-    // .build();
 
     when(mockConfig.getMemberTimeout()).thenReturn(memberTimeout);
     when(mockConfig.getMembershipPortRange()).thenReturn(portRange);

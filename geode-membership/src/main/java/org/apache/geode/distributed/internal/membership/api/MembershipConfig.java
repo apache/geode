@@ -224,7 +224,7 @@ public interface MembershipConfig {
     return MemberIdentifier.NORMAL_DM_TYPE;
   }
 
-  default Object getOldDSMembershipInfo() {
+  default Object getOldMembershipInfo() {
     return DEFAULT_OLD_MEMBERSHIP_INFO;
   }
 
