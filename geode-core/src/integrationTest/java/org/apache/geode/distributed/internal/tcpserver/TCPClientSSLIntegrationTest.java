@@ -14,7 +14,6 @@
  */
 package org.apache.geode.distributed.internal.tcpserver;
 
-import static org.apache.geode.distributed.internal.membership.adapter.TcpSocketCreatorAdapter.asTcpSocketCreator;
 import static org.apache.geode.security.SecurableCommunicationChannels.LOCATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -98,11 +97,9 @@ public class TCPClientSSLIntegrationTest {
 
     startTcpServer(serverProperties);
 
-    client = new TcpClient(
-        asTcpSocketCreator(
-            new SocketCreator(
-                SSLConfigurationFactory.getSSLConfigForComponent(clientProperties,
-                    SecurableCommunicationChannel.LOCATOR))),
+    client = new TcpClient(new SocketCreator(
+        SSLConfigurationFactory.getSSLConfigForComponent(clientProperties,
+            SecurableCommunicationChannel.LOCATOR)),
         InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
         InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());
   }
@@ -122,11 +119,10 @@ public class TCPClientSSLIntegrationTest {
         (socket, input, firstByte) -> false,
         DistributionStats::getStatTime,
         Executors::newCachedThreadPool,
-        asTcpSocketCreator(
-            new SocketCreator(
-                SSLConfigurationFactory.getSSLConfigForComponent(
-                    new DistributionConfigImpl(sslProperties),
-                    SecurableCommunicationChannel.LOCATOR))),
+        new SocketCreator(
+            SSLConfigurationFactory.getSSLConfigForComponent(
+                new DistributionConfigImpl(sslProperties),
+                SecurableCommunicationChannel.LOCATOR)),
         InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
         InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer(),
         "not-a-system-property",

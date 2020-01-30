@@ -22,6 +22,7 @@ import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
+import org.apache.geode.redis.internal.RedisDataType;
 
 public class BitOpExecutor extends StringExecutor {
 
@@ -40,13 +41,13 @@ public class BitOpExecutor extends StringExecutor {
 
     String operation = command.getStringKey().toUpperCase();
     ByteArrayWrapper destKey = new ByteArrayWrapper(commandElems.get(2));
-    checkDataType(destKey, context);
+    checkDataType(destKey, RedisDataType.REDIS_STRING, context);
 
     byte[][] values = new byte[commandElems.size() - 3][];
     int maxLength = 0;
     for (int i = 3; i < commandElems.size(); i++) {
       ByteArrayWrapper key = new ByteArrayWrapper(commandElems.get(i));
-      checkDataType(key, context);
+      checkDataType(key, RedisDataType.REDIS_STRING, context);
       ByteArrayWrapper value = r.get(key);
       if (value == null) {
         values[i - 3] = null;

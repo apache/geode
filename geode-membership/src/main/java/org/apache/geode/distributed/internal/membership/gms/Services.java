@@ -45,6 +45,7 @@ import org.apache.geode.distributed.internal.membership.api.MemberStartupExcepti
 import org.apache.geode.distributed.internal.membership.api.MembershipClosedException;
 import org.apache.geode.distributed.internal.membership.api.MembershipConfig;
 import org.apache.geode.distributed.internal.membership.api.MembershipConfigurationException;
+import org.apache.geode.distributed.internal.membership.api.MembershipLocator;
 import org.apache.geode.distributed.internal.membership.api.MembershipStatistics;
 import org.apache.geode.distributed.internal.membership.gms.fd.GMSHealthMonitor;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.HealthMonitor;
@@ -56,6 +57,7 @@ import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordina
 import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordinatorResponse;
 import org.apache.geode.distributed.internal.membership.gms.locator.GetViewRequest;
 import org.apache.geode.distributed.internal.membership.gms.locator.GetViewResponse;
+import org.apache.geode.distributed.internal.membership.gms.locator.MembershipLocatorImpl;
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
 import org.apache.geode.distributed.internal.membership.gms.messages.FinalCheckPassedMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.HeartbeatMessage;
@@ -102,6 +104,7 @@ public class Services<ID extends MemberIdentifier> {
   private volatile Exception shutdownCause;
 
   private Locator<ID> locator;
+  private MembershipLocator<ID> membershipLocator;
 
   private final Timer timer = new Timer("Geode Membership Timer", true);
 
@@ -208,6 +211,18 @@ public class Services<ID extends MemberIdentifier> {
       this.joinLeave.started();
       this.healthMon.started();
       this.manager.started();
+
+      if (membershipLocator != null) {
+        /*
+         * Now that all the services have started we can let the membership locator know
+         * about them. We must do this before telling the manager to joinDistributedSystem()
+         * later in this method
+         */
+        final MembershipLocatorImpl locatorImpl =
+            (MembershipLocatorImpl) this.membershipLocator;
+        locatorImpl.setServices(this);
+      }
+
       logger.debug("All membership services have been started");
       started = true;
     } catch (RuntimeException e) {
@@ -329,12 +344,14 @@ public class Services<ID extends MemberIdentifier> {
     return this.manager;
   }
 
-  public Locator<ID> getLocator() {
-    return this.locator;
+  public void setLocators(final Locator<ID> locator,
+      final MembershipLocator<ID> membershipLocator) {
+    this.locator = locator;
+    this.membershipLocator = membershipLocator;
   }
 
-  public void setLocator(Locator<ID> locator) {
-    this.locator = locator;
+  public Locator<ID> getLocator() {
+    return locator;
   }
 
   public JoinLeave<ID> getJoinLeave() {

@@ -72,8 +72,9 @@ public class WANRollingUpgradeCreateGatewaySenderMixedSiteOneCurrentSiteTwo
                     || InternalLocator.getLocator().isSharedConfigurationRunning())));
 
     // Start current site locator
-    site2Locator.invoke(() -> startLocator(site2LocatorPort, site2DistributedSystemId,
-        site2Locators, site1Locators));
+    site2Locator.invoke(
+        () -> await().untilAsserted(() -> startLocator(site2LocatorPort, site2DistributedSystemId,
+            site2Locators, site1Locators)));
 
     // Start current site servers with receivers
     site2Server1.invoke(() -> createCache(site2Locators));

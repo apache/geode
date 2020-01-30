@@ -39,10 +39,8 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
-import org.apache.geode.distributed.internal.membership.api.Membership;
 import org.apache.geode.distributed.internal.membership.api.MembershipConfigurationException;
 import org.apache.geode.distributed.internal.membership.api.MembershipLocatorStatistics;
-import org.apache.geode.distributed.internal.membership.gms.GMSMembership;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
 import org.apache.geode.distributed.internal.membership.gms.Services;
@@ -132,15 +130,20 @@ public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID>, Tcp
     this.objectDeserializer = objectDeserializer;
   }
 
-  public synchronized boolean setMembership(Membership<ID> membership) {
-    if (services == null || services.isStopped()) {
-      services = ((GMSMembership<ID>) membership).getServices();
-      localAddress = services.getMessenger().getMemberID();
+  /**
+   * Called initially and after each auto-reconnect. See restart handlers in InternalLocator
+   * up in geode-core. Services must be started before this call.
+   *
+   */
+  public synchronized boolean setServices(
+      final Services<ID> services) {
+    if (this.services == null || this.services.isStopped()) {
+      this.services = services;
+      localAddress = this.services.getMessenger().getMemberID();
       Objects.requireNonNull(localAddress, "member address should have been established");
       logger.info("Peer locator is connecting to local membership services with ID {}",
           localAddress);
-      services.setLocator(this);
-      GMSMembershipView<ID> newView = services.getJoinLeave().getView();
+      GMSMembershipView<ID> newView = this.services.getJoinLeave().getView();
       if (newView != null) {
         view = newView;
         recoveredView = null;

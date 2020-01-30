@@ -14,10 +14,8 @@
  */
 package org.apache.geode.distributed.internal.membership.gms;
 
-import static org.apache.geode.distributed.internal.membership.adapter.TcpSocketCreatorAdapter.asTcpSocketCreator;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
@@ -43,6 +41,7 @@ import org.apache.geode.distributed.internal.membership.api.MembershipLocator;
 import org.apache.geode.distributed.internal.membership.api.MembershipLocatorBuilder;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
+import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreatorImpl;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
@@ -65,12 +64,12 @@ public class MembershipOnlyTest {
     dsfidSerializer = new DSFIDSerializerFactory().create();
 
     // TODO - using geode-core socket creator
-    socketCreator = asTcpSocketCreator(new SocketCreator(new SSLConfig.Builder().build()));
+    socketCreator = new SocketCreator(new SSLConfig.Builder().build());
 
     final Supplier<ExecutorService> executorServiceSupplier =
         () -> LoggingExecutors.newCachedThreadPool("membership", false);
     membershipLocator = MembershipLocatorBuilder.<MemberIdentifierImpl>newLocatorBuilder(
-        socketCreator,
+        new TcpSocketCreatorImpl(),
         dsfidSerializer,
         temporaryFolder.newFolder("locator").toPath(),
         executorServiceSupplier)
@@ -94,7 +93,6 @@ public class MembershipOnlyTest {
     Membership<MemberIdentifier> membership = startMember("member", membershipLocator);
     assertThat(membership.getView().getMembers()).hasSize(1);
   }
-
 
   @Test
   public void twoMembersCanConnect() throws MemberStartupException {
@@ -134,22 +132,17 @@ public class MembershipOnlyTest {
 
     LifecycleListener<MemberIdentifier> lifeCycleListener = mock(LifecycleListener.class);
 
-    final Membership<MemberIdentifier> membership =
-        MembershipBuilder.<MemberIdentifier>newMembershipBuilder(
-            socketCreator, locatorClient, dsfidSerializer, memberIdFactory)
+
+    final Membership<MemberIdentifierImpl> membership =
+        MembershipBuilder.<MemberIdentifierImpl>newMembershipBuilder(
+            socketCreator,
+            locatorClient,
+            dsfidSerializer,
+            memberIdFactory)
+            .setMembershipLocator(membershipLocator)
             .setConfig(config)
             .setLifecycleListener(lifeCycleListener)
             .create();
-
-
-    // TODO - the membership *must* be installed in the locator at this special
-    // point during membership startup for the start to succeed
-    if (embeddedLocator != null) {
-      doAnswer(invocation -> {
-        embeddedLocator.setMembership(membership);
-        return null;
-      }).when(lifeCycleListener).started();
-    }
 
     membership.start();
     membership.startEventProcessing();

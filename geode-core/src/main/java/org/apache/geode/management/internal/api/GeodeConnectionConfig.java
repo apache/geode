@@ -16,7 +16,6 @@
 
 package org.apache.geode.management.internal.api;
 
-import static org.apache.geode.distributed.internal.membership.adapter.TcpSocketCreatorAdapter.asTcpSocketCreator;
 
 import java.net.InetSocketAddress;
 import java.util.List;
@@ -176,8 +175,8 @@ public class GeodeConnectionConfig
     }
     config = ((GemFireCacheImpl) clientCache).getSystem().getConfig();
     TcpClient client =
-        new TcpClient(asTcpSocketCreator(SocketCreatorFactory.setDistributionConfig(config)
-            .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
+        new TcpClient(SocketCreatorFactory.setDistributionConfig(config)
+            .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR),
             InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
             InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());
     cmsInfo = null;

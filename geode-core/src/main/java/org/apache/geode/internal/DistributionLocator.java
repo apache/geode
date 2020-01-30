@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal;
 
-import static org.apache.geode.distributed.internal.membership.adapter.TcpSocketCreatorAdapter.asTcpSocketCreator;
 
 import java.io.File;
 import java.io.IOException;
@@ -71,10 +70,8 @@ public class DistributionLocator {
 
   public static void stop(InetAddress addr, int port) {
     try {
-      new TcpClient(
-          asTcpSocketCreator(
-              SocketCreatorFactory
-                  .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
+      new TcpClient(SocketCreatorFactory
+          .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR),
           InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
           InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer()).stop(addr,
               port);

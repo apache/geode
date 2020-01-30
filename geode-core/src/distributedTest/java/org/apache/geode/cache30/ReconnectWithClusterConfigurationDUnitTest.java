@@ -91,7 +91,6 @@ public class ReconnectWithClusterConfigurationDUnitTest implements Serializable 
           locator = Locator.startLocatorAndDS(locatorPorts[locatorNumber], new File(""), props);
           system = locator.getDistributedSystem();
           cache = ((InternalLocator) locator).getCache();
-          ReconnectDUnitTest.savedSystem = locator.getDistributedSystem();
           IgnoredException.addIgnoredException(
               "org.apache.geode.ForcedDisconnectException||Possible loss of quorum");
         } catch (IOException e) {
