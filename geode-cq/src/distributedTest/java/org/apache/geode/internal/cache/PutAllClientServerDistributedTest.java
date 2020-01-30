@@ -42,7 +42,6 @@ import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -2859,7 +2858,7 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
   }
 
   private void doPutAll(Region<String, TickerData> region, String keyPrefix, int entryCount) {
-    Map<String, TickerData> map = new LinkedHashMap<>();
+    Map<String, TickerData> map = new HashMap<>();
     for (int i = 0; i < entryCount; i++) {
       map.put(keyPrefix + i, new TickerData(i));
     }
