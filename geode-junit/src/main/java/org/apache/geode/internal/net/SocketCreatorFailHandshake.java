@@ -26,6 +26,7 @@ import org.apache.geode.internal.admin.SSLConfig;
  * This test class will fail the TLS handshake with an SSLException, by default.
  */
 public class SocketCreatorFailHandshake extends SocketCreator {
+
   private final List<Integer> socketSoTimeouts;
   private boolean failTLSHandshake;
 
@@ -45,10 +46,9 @@ public class SocketCreatorFailHandshake extends SocketCreator {
   @Override
   public void handshakeIfSocketIsSSL(Socket socket, int timeout) throws IOException {
     this.socketSoTimeouts.add(timeout);
-    if (failTLSHandshake) {
+    if (failTLSHandshake)
       throw new SSLException("This is a test SSLException");
-    } else {
+    else
       super.handshakeIfSocketIsSSL(socket, timeout);
-    }
   }
 }

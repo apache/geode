@@ -18,6 +18,7 @@ import static org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace;
 import static org.apache.geode.distributed.ConfigurationProperties.BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.internal.membership.adapter.TcpSocketCreatorAdapter.asTcpSocketCreator;
 import static org.apache.geode.internal.admin.remote.DistributionLocatorId.asDistributionLocatorIds;
 import static org.apache.geode.util.internal.GeodeGlossary.GEMFIRE_PREFIX;
 
@@ -539,8 +540,9 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
               MAX_POOL_SIZE, new DelayedPoolStatHelper(),
               POOL_IDLE_TIMEOUT,
               new ThreadPoolExecutor.CallerRunsPolicy());
-      final TcpSocketCreator socketCreator = SocketCreatorFactory
-          .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR);
+      final TcpSocketCreator socketCreator = asTcpSocketCreator(
+          SocketCreatorFactory
+              .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR));
       membershipLocator =
           MembershipLocatorBuilder.<InternalDistributedMember>newLocatorBuilder(
               socketCreator,

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.wan;
 
+import static org.apache.geode.distributed.internal.membership.adapter.TcpSocketCreatorAdapter.asTcpSocketCreator;
 
 import java.io.IOException;
 import java.net.ConnectException;
@@ -80,8 +81,10 @@ public abstract class AbstractRemoteGatewaySender extends AbstractGatewaySender 
       DistributionLocatorId locatorID = new DistributionLocatorId(localLocator);
       try {
         RemoteLocatorResponse response =
-            (RemoteLocatorResponse) new TcpClient(SocketCreatorFactory
-                .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR),
+            (RemoteLocatorResponse) new TcpClient(
+                asTcpSocketCreator(
+                    SocketCreatorFactory
+                        .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
                 InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
                 InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer())
                     .requestToServer(locatorID.getHost(), request,

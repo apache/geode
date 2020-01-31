@@ -30,7 +30,6 @@ import org.apache.geode.distributed.internal.membership.gms.locator.MembershipLo
 import org.apache.geode.distributed.internal.tcpserver.ProtocolChecker;
 import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
-import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreatorImpl;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
 
 public final class MembershipLocatorBuilderImpl<ID extends MemberIdentifier> implements
@@ -52,7 +51,7 @@ public final class MembershipLocatorBuilderImpl<ID extends MemberIdentifier> imp
       final DSFIDSerializer serializer,
       final Path workingDirectory,
       final Supplier<ExecutorService> executorServiceSupplier) {
-    this.socketCreator = socketCreator == null ? new TcpSocketCreatorImpl() : socketCreator;
+    this.socketCreator = socketCreator;
     this.serializer = serializer;
     this.workingDirectory = workingDirectory;
     this.executorServiceSupplier = executorServiceSupplier;

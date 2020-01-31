@@ -17,6 +17,7 @@ package org.apache.geode.distributed.internal.membership.gms.locator;
 import static org.apache.geode.distributed.ConfigurationProperties.BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_TCP;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.internal.membership.adapter.TcpSocketCreatorAdapter.asTcpSocketCreator;
 import static org.apache.geode.distributed.internal.membership.gms.locator.GMSLocator.LOCATOR_FILE_STAMP;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
@@ -94,8 +95,10 @@ public class GMSLocatorRecoveryIntegrationTest {
     stateFile = new File(temporaryFolder.getRoot(), getClass().getSimpleName() + "_locator.dat");
 
     gmsLocator = new GMSLocator(null, null, false, false, new LocatorStats(), "",
-        temporaryFolder.getRoot().toPath(), new TcpClient(SocketCreatorFactory
-            .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR),
+        temporaryFolder.getRoot().toPath(), new TcpClient(
+            asTcpSocketCreator(
+                SocketCreatorFactory
+                    .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
             InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
             InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer()),
         InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
@@ -186,8 +189,9 @@ public class GMSLocatorRecoveryIntegrationTest {
     when(mockSystem.getConfig()).thenReturn(config);
 
     final TcpClient locatorClient = new TcpClient(
-        SocketCreatorFactory
-            .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR),
+        asTcpSocketCreator(
+            SocketCreatorFactory
+                .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
         InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
         InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());
 

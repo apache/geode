@@ -17,6 +17,7 @@ package org.apache.geode.cache.client.internal;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.internal.membership.adapter.TcpSocketCreatorAdapter.asTcpSocketCreator;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -159,8 +160,10 @@ public class AutoConnectionSourceImplJUnitTest {
 
   private void issueStopRequest(final int port)
       throws ConnectException, UnknownHostException {
-    new TcpClient(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR),
+    new TcpClient(
+        asTcpSocketCreator(
+            SocketCreatorFactory
+                .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
         InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
         InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer())
             .stop(InetAddress.getLocalHost(), port);
@@ -335,8 +338,9 @@ public class AutoConnectionSourceImplJUnitTest {
             "tcp server", new ProtocolCheckerImpl(null, new ClientProtocolServiceLoader()),
             DistributionStats::getStatTime,
             Executors::newCachedThreadPool,
-            SocketCreatorFactory
-                .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR),
+            asTcpSocketCreator(
+                SocketCreatorFactory
+                    .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
             InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
             InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer(),
             GeodeGlossary.GEMFIRE_PREFIX + "TcpServer.READ_TIMEOUT",
@@ -422,8 +426,9 @@ public class AutoConnectionSourceImplJUnitTest {
         "Tcp Server", new ProtocolCheckerImpl(null, new ClientProtocolServiceLoader()),
         DistributionStats::getStatTime,
         Executors::newCachedThreadPool,
-        SocketCreatorFactory
-            .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR),
+        asTcpSocketCreator(
+            SocketCreatorFactory
+                .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
         InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
         InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer(),
         GeodeGlossary.GEMFIRE_PREFIX + "TcpServer.READ_TIMEOUT",

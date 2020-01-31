@@ -15,6 +15,7 @@
 package org.apache.geode.admin.internal;
 
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.internal.membership.adapter.TcpSocketCreatorAdapter.asTcpSocketCreator;
 import static org.apache.geode.internal.net.InetAddressUtilsWithLogging.toInetAddress;
 import static org.apache.geode.internal.net.InetAddressUtilsWithLogging.validateHost;
 
@@ -73,8 +74,10 @@ public class DistributionLocatorConfigImpl extends ManagedEntityConfigImpl
     String[] info = new String[] {"unknown", "unknown"};
 
     try {
-      TcpClient client = new TcpClient(SocketCreatorFactory
-          .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR),
+      TcpClient client = new TcpClient(
+          asTcpSocketCreator(
+              SocketCreatorFactory
+                  .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
           InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
           InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());
       if (bindAddress != null) {

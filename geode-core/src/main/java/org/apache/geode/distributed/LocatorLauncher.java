@@ -20,6 +20,7 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.StringUtils.lowerCase;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.apache.geode.distributed.internal.membership.adapter.TcpSocketCreatorAdapter.asTcpSocketCreator;
 import static org.apache.geode.internal.lang.StringUtils.wrap;
 import static org.apache.geode.internal.lang.SystemUtils.CURRENT_DIRECTORY;
 import static org.apache.geode.internal.util.IOUtils.tryGetCanonicalPathElseGetAbsolutePath;
@@ -319,7 +320,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
       final SSLConfig sslConfig = SSLConfigurationFactory.getSSLConfigForComponent(
           properties,
           SecurableCommunicationChannel.LOCATOR);
-      final TcpSocketCreator socketCreator = new SocketCreator(sslConfig);
+      final TcpSocketCreator socketCreator = asTcpSocketCreator(new SocketCreator(sslConfig));
       final TcpClient client = new TcpClient(socketCreator,
           InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
           InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());

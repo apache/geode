@@ -22,6 +22,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_PROTOCOLS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
+import static org.apache.geode.distributed.internal.membership.adapter.TcpSocketCreatorAdapter.asTcpSocketCreator;
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -43,6 +44,7 @@ import org.mockito.Mockito;
 
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.DistributionStats;
+import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.net.SocketCreatorFactory;
@@ -76,6 +78,7 @@ public class TCPServerSSLJUnitTest {
         expectedSocketTimeout);
 
     localhost = InetAddress.getLocalHost();
+    port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
 
     socketCreator = new SocketCreatorFailHandshake(
         SSLConfigurationFactory.getSSLConfigForComponent(
@@ -84,20 +87,19 @@ public class TCPServerSSLJUnitTest {
         recordedSocketTimeouts);
 
     server = new TcpServer(
-        0,
+        port,
         localhost,
         Mockito.mock(TcpHandler.class),
         "server thread",
         (socket, input, firstByte) -> false, DistributionStats::getStatTime,
         Executors::newCachedThreadPool,
-        socketCreator,
+        asTcpSocketCreator(socketCreator),
         InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
         InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer(),
         GeodeGlossary.GEMFIRE_PREFIX + "TcpServer.READ_TIMEOUT",
         GeodeGlossary.GEMFIRE_PREFIX + "TcpServer.BACKLOG");
 
     server.start();
-    port = server.getPort();
   }
 
   @After
@@ -128,7 +130,7 @@ public class TCPServerSSLJUnitTest {
       // ok!
     }
 
-    assertThat(recordedSocketTimeouts).hasSizeGreaterThan(0);
+    assertThat(recordedSocketTimeouts.size()).isEqualTo(1);
 
     for (final Integer socketTimeOut : recordedSocketTimeouts) {
       assertThat(Integer.parseInt(expectedSocketTimeout)).isEqualTo(socketTimeOut.intValue());
@@ -154,10 +156,12 @@ public class TCPServerSSLJUnitTest {
   }
 
   private TcpClient getTcpClient() {
-    return new TcpClient(SocketCreatorFactory
-        .getSocketCreatorForComponent(
-            new DistributionConfigImpl(getSSLConfigurationProperties()),
-            SecurableCommunicationChannel.LOCATOR),
+    return new TcpClient(
+        asTcpSocketCreator(
+            SocketCreatorFactory
+                .getSocketCreatorForComponent(
+                    new DistributionConfigImpl(getSSLConfigurationProperties()),
+                    SecurableCommunicationChannel.LOCATOR)),
         InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
         InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());
   }

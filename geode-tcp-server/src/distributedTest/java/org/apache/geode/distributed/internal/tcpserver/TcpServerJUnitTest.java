@@ -14,6 +14,7 @@
  */
 package org.apache.geode.distributed.internal.tcpserver;
 
+import static org.apache.geode.distributed.internal.membership.adapter.TcpSocketCreatorAdapter.asTcpSocketCreator;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
@@ -95,8 +96,9 @@ public class TcpServerJUnitTest {
         () -> CoreLoggingExecutors.newThreadPoolWithSynchronousFeed("locator request thread ",
             InternalLocator.MAX_POOL_SIZE, stats, InternalLocator.POOL_IDLE_TIMEOUT,
             new ThreadPoolExecutor.CallerRunsPolicy()),
-        SocketCreatorFactory
-            .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR),
+        asTcpSocketCreator(
+            SocketCreatorFactory
+                .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
         InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
         InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer(),
         GeodeGlossary.GEMFIRE_PREFIX + "TcpServer.READ_TIMEOUT",
@@ -148,8 +150,10 @@ public class TcpServerJUnitTest {
   }
 
   private TcpClient createTcpClient() {
-    return new TcpClient(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR),
+    return new TcpClient(
+        asTcpSocketCreator(
+            SocketCreatorFactory
+                .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
         InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
         InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());
   }

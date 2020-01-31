@@ -21,6 +21,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_TTL;
+import static org.apache.geode.distributed.internal.membership.adapter.TcpSocketCreatorAdapter.asTcpSocketCreator;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -179,8 +180,8 @@ public class JGroupsMessengerJUnitTest {
 
     when(services.getStatistics()).thenReturn(mock(DistributionStats.class));
 
-    socketCreator = SocketCreatorFactory.setDistributionConfig(config)
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER);
+    socketCreator = asTcpSocketCreator(SocketCreatorFactory.setDistributionConfig(config)
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER));
     messenger = new JGroupsMessenger<MemberIdentifier>();
     messenger.init(services);
 

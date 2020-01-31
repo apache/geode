@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.client.internal;
 
+import static org.apache.geode.distributed.internal.membership.adapter.TcpSocketCreatorAdapter.asTcpSocketCreator;
 
 import java.io.IOException;
 import java.net.ConnectException;
@@ -114,8 +115,10 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
     this.initialLocators = Collections.unmodifiableList(this.locators.get().getLocatorAddresses());
     this.connectionTimeout = handshakeTimeout;
     this.serverGroup = serverGroup;
-    this.tcpClient = new TcpClient(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR),
+    this.tcpClient = new TcpClient(
+        asTcpSocketCreator(
+            SocketCreatorFactory
+                .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
         InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
         InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());
   }

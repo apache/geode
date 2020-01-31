@@ -14,6 +14,7 @@
  */
 package org.apache.geode.distributed.internal;
 
+import static org.apache.geode.distributed.internal.membership.adapter.TcpSocketCreatorAdapter.asTcpSocketCreator;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -126,12 +127,14 @@ public class DistributionImpl implements Distribution {
 
     memberTimeout = system.getConfig().getMemberTimeout();
     try {
-      final TcpClient locatorClient = new TcpClient(SocketCreatorFactory
-          .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR),
+      final TcpClient locatorClient = new TcpClient(
+          asTcpSocketCreator(
+              SocketCreatorFactory
+                  .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
           InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
           InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());
-      final TcpSocketCreator socketCreator = SocketCreatorFactory
-          .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER);
+      final TcpSocketCreator socketCreator = asTcpSocketCreator(SocketCreatorFactory
+          .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER));
       membership = MembershipBuilder.<InternalDistributedMember>newMembershipBuilder(
           socketCreator,
           locatorClient,
