@@ -852,9 +852,9 @@ public class GMSHealthMonitorJUnitTest {
 
     MemberIdentifier testMember =
         createGMSMember(Version.CURRENT_ORDINAL, viewId,
-            gmsMember.getMemberData().getUuidMostSignificantBits(),
-            gmsMember.getMemberData().getUuidLeastSignificantBits());
-    testMember.getMemberData().setUdpPort(9000);
+            gmsMember.getUuidMostSignificantBits(),
+            gmsMember.getUuidLeastSignificantBits());
+    testMember.setUdpPort(9000);
 
     // We set to our expected test viewId in the IDM as well as resetting the gms member
     gmsMember.setVmViewId(viewId);
