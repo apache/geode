@@ -43,11 +43,6 @@ public class LifecycleListenerNoOp<ID extends MemberIdentifier> implements Lifec
   }
 
   @Override
-  public void started() {
-
-  }
-
-  @Override
   public void forcedDisconnect() {
 
   }

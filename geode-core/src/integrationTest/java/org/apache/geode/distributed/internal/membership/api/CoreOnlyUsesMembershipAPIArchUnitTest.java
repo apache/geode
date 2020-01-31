@@ -17,8 +17,13 @@ package org.apache.geode.distributed.internal.membership.api;
 import static com.tngtech.archunit.core.domain.JavaClass.Predicates.resideInAPackage;
 import static com.tngtech.archunit.library.Architectures.layeredArchitecture;
 
+import java.util.regex.Pattern;
+
 import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.importer.ClassFileImporter;
+import com.tngtech.archunit.core.importer.ImportOption;
+import com.tngtech.archunit.core.importer.ImportOptions;
+import com.tngtech.archunit.core.importer.Location;
 import com.tngtech.archunit.lang.ArchRule;
 import org.junit.Test;
 
@@ -33,7 +38,7 @@ public class CoreOnlyUsesMembershipAPIArchUnitTest {
 
   @Test
   public void distributedAndInternalClassesDoNotUseMembershipInternals() {
-    JavaClasses importedClasses = new ClassFileImporter().importPackages(
+    JavaClasses importedClasses = getClassFileImporter().importPackages(
         "org.apache.geode.distributed..",
         "org.apache.geode.internal..");
 
@@ -41,9 +46,30 @@ public class CoreOnlyUsesMembershipAPIArchUnitTest {
   }
 
   @Test
-  public void cacheClassesDoNotUseMembershipInternals() {
-    JavaClasses importedClasses = new ClassFileImporter().importPackages(
+  public void geodeClassesDoNotUseMembershipInternals() {
+    ClassFileImporter classFileImporter = getClassFileImporter();
+    // create an ImportOption that only allows org.apache.geode classes and
+    // membership classes. Prepackaged ImportOptions always cause a package's
+    // subpackages to be walked with walkFileTree so you can't examine a single
+    // high-level pachage like org.apache.geode without examining its subpackages.
+    classFileImporter = classFileImporter.withImportOption(new ImportOption() {
+      final Pattern matcher = Pattern.compile(".*/org/apache/geode/[a-zA-z0-9]+/.*");
+
+      @Override
+      public boolean includes(Location location) {
+        return location.contains("org/apache/geode/distributed/internal/membership")
+            || !location.matches(matcher);
+      }
+    });
+    JavaClasses importedClasses = classFileImporter.importPackages(
         "org.apache.geode",
+        "org.apache.geode.distributed.internal.membership..");
+    checkMembershipAPIUse(importedClasses);
+  }
+
+  @Test
+  public void cacheClassesDoNotUseMembershipInternals() {
+    JavaClasses importedClasses = getClassFileImporter().importPackages(
         "org.apache.geode.cache..",
         "org.apache.geode.distributed.internal.membership..");
 
@@ -52,7 +78,7 @@ public class CoreOnlyUsesMembershipAPIArchUnitTest {
 
   @Test
   public void managementClassesDoNotUseMembershipInternals() {
-    JavaClasses importedClasses = new ClassFileImporter().importPackages(
+    JavaClasses importedClasses = getClassFileImporter().importPackages(
         "org.apache.geode.management..",
         "org.apache.geode.admin..",
         "org.apache.geode.distributed.internal.membership..");
@@ -62,7 +88,7 @@ public class CoreOnlyUsesMembershipAPIArchUnitTest {
 
   @Test
   public void securityClassesDoNotUseMembershipInternals() {
-    JavaClasses importedClasses = new ClassFileImporter().importPackages(
+    JavaClasses importedClasses = getClassFileImporter().importPackages(
         "org.apache.geode.security..",
         "org.apache.geode.distributed.internal.membership..");
 
@@ -71,7 +97,7 @@ public class CoreOnlyUsesMembershipAPIArchUnitTest {
 
   @Test
   public void pdxClassesDoNotUseMembershipInternals() {
-    JavaClasses importedClasses = new ClassFileImporter().importPackages(
+    JavaClasses importedClasses = getClassFileImporter().importPackages(
         "org.apache.geode.pdx..",
         "org.apache.geode.distributed.internal.membership..");
 
@@ -80,7 +106,7 @@ public class CoreOnlyUsesMembershipAPIArchUnitTest {
 
   @Test
   public void exampleClassesDoNotUseMembershipInternals() {
-    JavaClasses importedClasses = new ClassFileImporter().importPackages(
+    JavaClasses importedClasses = getClassFileImporter().importPackages(
         "org.apache.geode.examples..",
         "org.apache.geode.distributed.internal.membership..");
 
@@ -89,7 +115,7 @@ public class CoreOnlyUsesMembershipAPIArchUnitTest {
 
   @Test
   public void miscCoreClassesDoNotUseMembershipInternals() {
-    JavaClasses importedClasses = new ClassFileImporter().importPackages(
+    JavaClasses importedClasses = getClassFileImporter().importPackages(
         "org.apache.geode.alerting..",
         "org.apache.geode.compression..",
         "org.apache.geode.datasource..",
@@ -112,4 +138,11 @@ public class CoreOnlyUsesMembershipAPIArchUnitTest {
 
     myRule.check(importedClasses);
   }
+
+  private ClassFileImporter getClassFileImporter() {
+    return new ClassFileImporter(
+        new ImportOptions().with(ImportOption.Predefined.DO_NOT_INCLUDE_ARCHIVES));
+  }
+
+
 }

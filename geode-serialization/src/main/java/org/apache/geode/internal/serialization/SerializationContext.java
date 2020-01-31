@@ -14,6 +14,14 @@
  */
 package org.apache.geode.internal.serialization;
 
+/**
+ * A SerializationContext is passed to the toData() method of a DataSerializableFixedID
+ * implementation. It can be used to obtain an ObjectSerializer and determine the
+ * Geode Version of the destination of the data in cases where the SerializationVersions
+ * interface is not being used to handle backward-compatibility issues. For instance,
+ * you might decide to change a toData() method to check on the destination version
+ * and decide to omit a field that you've added in a more recent version of Geode.
+ */
 public interface SerializationContext {
 
   /** return the version of the source/destination of this serializer */

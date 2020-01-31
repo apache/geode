@@ -29,7 +29,6 @@ import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.Executor;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.RedisDataType;
-import org.apache.geode.redis.internal.RedisDataTypeMismatchException;
 import org.apache.geode.redis.internal.RegionProvider;
 
 /**
@@ -77,23 +76,17 @@ public abstract class AbstractExecutor implements Executor {
   }
 
   /**
-   * Checks if the given key is associated with the passed data type. If there is a mismatch, a
+   * Checks if the given key is associated with the passed expectedDataType. If there is a mismatch,
+   * a
    * {@link RuntimeException} is thrown
    *
    * @param key Key to check
-   * @param type Type to check to
+   * @param expectedDataType Type to check to
    * @param context context
    */
-  protected void checkDataType(ByteArrayWrapper key, RedisDataType type,
+  protected void checkDataType(ByteArrayWrapper key, RedisDataType expectedDataType,
       ExecutionHandlerContext context) {
-    RedisDataType currentType = context.getRegionProvider().getRedisDataType(key);
-    if (currentType == null)
-      return;
-    if (currentType == RedisDataType.REDIS_PROTECTED)
-      throw new RedisDataTypeMismatchException("The key name \"" + key + "\" is protected");
-    if (currentType != type)
-      throw new RedisDataTypeMismatchException(
-          "The key name \"" + key + "\" is already used by a " + currentType.toString());
+    context.getKeyRegistrar().validate(key, expectedDataType);
   }
 
   protected Query getQuery(ByteArrayWrapper key, Enum<?> type, ExecutionHandlerContext context) {

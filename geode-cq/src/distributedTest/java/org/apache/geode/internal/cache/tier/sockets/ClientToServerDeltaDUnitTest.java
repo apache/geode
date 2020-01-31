@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.tier.sockets;
 import static org.apache.geode.distributed.ConfigurationProperties.DELTA_PROPAGATION;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -26,6 +27,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Properties;
 
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -62,6 +64,7 @@ import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
@@ -121,6 +124,11 @@ public class ClientToServerDeltaDUnitTest extends JUnit4DistributedTestCase {
       "select * from /" + REGION_NAME + " where intVar < 0"};
 
   public static String LAST_KEY = "LAST_KEY";
+
+
+  @Rule
+  public DistributedRestoreSystemProperties restoreSystemProperties =
+      new DistributedRestoreSystemProperties();
 
   @Override
   public final void postSetUp() throws Exception {
@@ -281,6 +289,124 @@ public class ClientToServerDeltaDUnitTest extends JUnit4DistributedTestCase {
     err = ((Boolean) server2.invoke(() -> ClientToServerDeltaDUnitTest.getError())).booleanValue();
     err = ((Boolean) client2.invoke(() -> ClientToServerDeltaDUnitTest.getError())).booleanValue();
     assertFalse("validation fails", err);
+  }
+
+  @Test
+  public void testClientDeltaPropogationPutFetchesTheLatestValueWhenClientVersionIsOlder()
+      throws Exception {
+    // client did not register interest
+    Integer PORT1 = ((Integer) server.invoke(() -> ClientToServerDeltaDUnitTest
+        .createServerCache(Boolean.TRUE, Boolean.FALSE, Boolean.TRUE, Boolean.TRUE))).intValue();
+
+    ClientToServerDeltaDUnitTest.createClientCache(
+        NetworkUtils.getServerHostName(server.getHost()), new Integer(PORT1), Boolean.FALSE,
+        Boolean.FALSE, Boolean.FALSE, null, Boolean.FALSE);
+    Region r = cache.getRegion(REGION_NAME);
+    DeltaTestImpl val = new DeltaTestImpl(0, "0", new Double(0), new byte[0],
+        new TestObjectWithIdentifier("0", 0));
+    r.put(KEY1, val);
+
+    server.invoke(() -> {
+      Region region = cache.getRegion(REGION_NAME);
+      DeltaTestImpl val1 = (DeltaTestImpl) region.get(KEY1);
+      val1.NEED_TO_RESET_T0_DELTA = false;
+      val1.setIntVar(1);
+      region.put(KEY1, val1);
+    });
+
+    DeltaTestImpl val2 = new DeltaTestImpl(0, "0", new Double(0), new byte[0],
+        new TestObjectWithIdentifier("0", 0));
+    val2.setStr("1");
+    val2.NEED_TO_RESET_T0_DELTA = false;
+    r.put(KEY1, val2);
+
+    server.invoke(() -> {
+      Region region = cache.getRegion(REGION_NAME);
+      assertThat((DeltaTestImpl) region.get(KEY1)).isNotNull();
+    });
+
+    DeltaTestImpl expected = new DeltaTestImpl(1, "1", new Double(0), new byte[0],
+        new TestObjectWithIdentifier("0", 0));
+
+    server.invoke(() -> {
+      Region region = cache.getRegion(REGION_NAME);
+      GeodeAwaitility.await()
+          .untilAsserted(() -> assertThat((DeltaTestImpl) region.get(KEY1)).isEqualTo(expected));
+    });
+
+    GeodeAwaitility.await()
+        .untilAsserted(() -> assertThat((DeltaTestImpl) r.get(KEY1)).isEqualTo(expected));
+  }
+
+  @Test
+  public void clientDeltaPutFetchesTheLatestVersionIfNotYetReceivedQueuedEvent() {
+    server.invoke(() -> setSlowStartForTesting());
+    server2.invoke(() -> setSlowStartForTesting());
+    initialise(false);
+
+    DeltaTestImpl original = new DeltaTestImpl(0, "0", new Double(0), new byte[0],
+        new TestObjectWithIdentifier("0", 0));
+    client.invoke(() -> {
+      Region r = cache.getRegion(REGION_NAME);
+      original.NEED_TO_RESET_T0_DELTA = false;
+      r.put(KEY1, original);
+    });
+
+    client2.invoke(() -> {
+      Region r = cache.getRegion(REGION_NAME);
+      assertThat(r.get(KEY1)).isEqualTo(original);
+    });
+
+    client.invoke(() -> {
+      Region r = cache.getRegion(REGION_NAME);
+      DeltaTestImpl val = (DeltaTestImpl) r.get(KEY1);
+      assertThat(val).isEqualTo(original);
+      val.NEED_TO_RESET_T0_DELTA = false;
+      val.setIntVar(1);
+      r.put(KEY1, val);
+    });
+
+    client2.invoke(() -> {
+      Region r = cache.getRegion(REGION_NAME);
+      DeltaTestImpl val = (DeltaTestImpl) r.get(KEY1);
+      // delta update should not arrive yet due to slow dispatcher
+      assertThat(val).isEqualTo(original);
+      val.NEED_TO_RESET_T0_DELTA = false;
+      val.setStr("1");
+      r.put(KEY1, val);
+      Object o = r.get(KEY1);
+      logger.info("object is " + o);
+    });
+
+    server.invoke(() -> {
+      Region r = cache.getRegion(REGION_NAME);
+      r.get(KEY1);
+    });
+
+    server2.invoke(() -> {
+      Region r = cache.getRegion(REGION_NAME);
+      r.get(KEY1);
+    });
+
+    DeltaTestImpl expected = new DeltaTestImpl(1, "1", new Double(0), new byte[0],
+        new TestObjectWithIdentifier("0", 0));
+
+    client.invoke(() -> {
+      Region r = cache.getRegion(REGION_NAME);
+      GeodeAwaitility.await()
+          .untilAsserted(() -> assertThat((DeltaTestImpl) r.get(KEY1)).isEqualTo(expected));
+    });
+
+    client2.invoke(() -> {
+      Region r = cache.getRegion(REGION_NAME);
+      GeodeAwaitility.await()
+          .untilAsserted(() -> assertThat((DeltaTestImpl) r.get(KEY1)).isEqualTo(expected));
+    });
+  }
+
+  private void setSlowStartForTesting() {
+    CacheClientProxy.isSlowStartForTesting = true;
+    System.setProperty("slowStartTimeForTesting", "5000");
   }
 
   private static void putDeltaForCQ(String key, Integer numOfPuts, Integer[] cqIndices,

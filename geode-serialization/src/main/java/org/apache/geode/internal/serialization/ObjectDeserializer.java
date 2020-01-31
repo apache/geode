@@ -17,6 +17,13 @@ package org.apache.geode.internal.serialization;
 import java.io.DataInput;
 import java.io.IOException;
 
+/**
+ * An ObjectDeserializer is held by a DSFIDSerializer serialization service. It
+ * is passed to the fromData() method of a DataSerializableFixedID embedded in a
+ * DeserializationContext for use in deserializing data from an input data stream.
+ * The class StaticSerialization also provides helper methods for deserializing
+ * data.
+ */
 public interface ObjectDeserializer {
 
   /**

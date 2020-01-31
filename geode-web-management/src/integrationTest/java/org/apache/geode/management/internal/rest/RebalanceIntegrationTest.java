@@ -37,11 +37,14 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.ResultMatcher;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.context.WebApplicationContext;
 
 import org.apache.geode.management.api.ClusterManagementListOperationsResult;
 import org.apache.geode.management.api.ClusterManagementOperationResult;
 import org.apache.geode.management.api.ClusterManagementService;
+import org.apache.geode.management.api.ClusterManagementServiceTransport;
+import org.apache.geode.management.api.RestTemplateClusterManagementServiceTransport;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.operation.RebalanceOperation;
 import org.apache.geode.management.runtime.RebalanceResult;
@@ -64,8 +67,12 @@ public class RebalanceIntegrationTest {
   @Before
   public void before() {
     context = new LocatorWebContext(webApplicationContext);
-    client = ClusterManagementServiceBuilder.buildWithRequestFactory()
-        .setRequestFactory(context.getRequestFactory()).build();
+
+    RestTemplate template = new RestTemplate();
+    template.setRequestFactory(context.getRequestFactory());
+    ClusterManagementServiceTransport transport =
+        new RestTemplateClusterManagementServiceTransport(template);
+    client = new ClusterManagementServiceBuilder().setTransport(transport).build();
   }
 
   @Test

@@ -37,10 +37,12 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.context.WebApplicationContext;
 
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
+import org.apache.geode.management.api.RestTemplateClusterManagementServiceTransport;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.Index;
 import org.apache.geode.management.configuration.IndexType;
@@ -73,8 +75,10 @@ public class RegionManagementIntegrationTest {
   @Before
   public void before() {
     context = new LocatorWebContext(webApplicationContext);
-    client = ClusterManagementServiceBuilder.buildWithRequestFactory()
-        .setRequestFactory(context.getRequestFactory()).build();
+    client = new ClusterManagementServiceBuilder().setTransport(
+        new RestTemplateClusterManagementServiceTransport(
+            new RestTemplate(context.getRequestFactory())))
+        .build();
     region = new Region();
     index = new Index();
   }

@@ -25,8 +25,6 @@ import java.io.UTFDataFormatException;
  * A reusable {@link DataInput} implementation that wraps a given byte array. It also implements
  * {@link org.apache.geode.internal.serialization.VersionedDataStream} for a stream coming from a
  * different product version.
- *
- * @since GemFire 7.1
  */
 public class ByteArrayDataInput extends InputStream implements DataInput, VersionedDataStream {
 

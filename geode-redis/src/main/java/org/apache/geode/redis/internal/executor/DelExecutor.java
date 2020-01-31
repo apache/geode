@@ -42,7 +42,7 @@ public class DelExecutor extends AbstractExecutor {
     for (int i = 1; i < commandElems.size(); i++) {
       byte[] byteKey = commandElems.get(i);
       ByteArrayWrapper key = new ByteArrayWrapper(byteKey);
-      RedisDataType type = context.getRegionProvider().getRedisDataType(key);
+      RedisDataType type = context.getKeyRegistrar().getType(key);
       if (removeEntry(key, type, context))
         numRemoved++;
     }

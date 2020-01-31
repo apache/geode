@@ -27,12 +27,15 @@ import java.util.function.Supplier;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.api.Membership;
 import org.apache.geode.distributed.internal.membership.api.MembershipConfig;
 import org.apache.geode.distributed.internal.membership.api.MembershipConfigurationException;
 import org.apache.geode.distributed.internal.membership.api.MembershipLocator;
 import org.apache.geode.distributed.internal.membership.api.MembershipLocatorStatistics;
+import org.apache.geode.distributed.internal.membership.gms.GMSMembership;
+import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.tcpserver.ProtocolChecker;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
@@ -58,7 +61,8 @@ public class MembershipLocatorImpl<ID extends MemberIdentifier> implements Membe
   public MembershipLocatorImpl(int port, InetAddress bindAddress,
       ProtocolChecker protocolChecker,
       Supplier<ExecutorService> executorServiceSupplier,
-      TcpSocketCreator socketCreator, ObjectSerializer objectSerializer,
+      TcpSocketCreator socketCreator,
+      ObjectSerializer objectSerializer,
       ObjectDeserializer objectDeserializer,
       TcpHandler fallbackHandler,
       boolean locatorsAreCoordinators,
@@ -139,8 +143,9 @@ public class MembershipLocatorImpl<ID extends MemberIdentifier> implements Membe
   }
 
   @Override
-  public void setMembership(Membership<ID> membership) {
-    gmsLocator.setMembership(membership);
+  public void setMembership(final Membership<ID> membership) {
+    final GMSMembership<ID> gmsMembership = (GMSMembership<ID>) membership;
+    setServices(gmsMembership.getServices());
   }
 
   @Override
@@ -151,6 +156,19 @@ public class MembershipLocatorImpl<ID extends MemberIdentifier> implements Membe
   @Override
   public boolean isHandled(Class<?> clazz) {
     return this.handler.isHandled(clazz);
+  }
+
+  @VisibleForTesting
+  public GMSLocator<ID> getGMSLocator() {
+    return this.gmsLocator;
+  }
+
+  /**
+   * Services is a class internal to the membership module. As such, the ability to setServices
+   * is available ony within the module. It's not part of the external API.
+   */
+  public void setServices(final Services<ID> services) {
+    gmsLocator.setServices(services);
   }
 
   public void stop() {

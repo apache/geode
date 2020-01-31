@@ -30,7 +30,7 @@ import org.apache.geode.internal.inet.LocalHostUtil;
  *
  *
  */
-public class ServerLocation implements DataSerializable, Comparable {
+public class ServerLocation implements DataSerializable, Comparable<ServerLocation> {
   private static final long serialVersionUID = -5850116974987640560L;
 
   private String hostName;
@@ -139,8 +139,7 @@ public class ServerLocation implements DataSerializable, Comparable {
   }
 
   @Override
-  public int compareTo(Object o) {
-    ServerLocation other = (ServerLocation) o;
+  public int compareTo(ServerLocation other) {
     int difference = hostName.compareTo(other.hostName);
     if (difference != 0) {
       return difference;

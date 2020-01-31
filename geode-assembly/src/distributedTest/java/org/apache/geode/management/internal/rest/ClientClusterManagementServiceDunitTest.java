@@ -1,27 +1,3 @@
-package org.apache.geode.management.internal.rest;
-
-import static org.apache.geode.lang.Identifiable.find;
-import static org.apache.geode.management.builder.ClusterManagementServiceBuilder.buildWithCache;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
-
-import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
-import org.apache.geode.management.api.ClusterManagementRealizationResult;
-import org.apache.geode.management.api.ClusterManagementResult;
-import org.apache.geode.management.api.ClusterManagementService;
-import org.apache.geode.management.api.RealizationResult;
-import org.apache.geode.management.client.ClusterManagementServiceBuilder;
-import org.apache.geode.management.configuration.Region;
-import org.apache.geode.management.configuration.RegionType;
-import org.apache.geode.test.dunit.rules.ClientVM;
-import org.apache.geode.test.dunit.rules.ClusterStartupRule;
-import org.apache.geode.test.dunit.rules.MemberVM;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for additional information regarding
@@ -36,6 +12,32 @@ import org.apache.geode.test.dunit.rules.MemberVM;
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
+package org.apache.geode.management.internal.rest;
+
+import static org.apache.geode.lang.Identifiable.find;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Test;
+
+import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
+import org.apache.geode.management.api.BaseConnectionConfig;
+import org.apache.geode.management.api.ClusterManagementRealizationResult;
+import org.apache.geode.management.api.ClusterManagementResult;
+import org.apache.geode.management.api.ClusterManagementService;
+import org.apache.geode.management.api.RealizationResult;
+import org.apache.geode.management.client.ClusterManagementServiceBuilder;
+import org.apache.geode.management.configuration.Region;
+import org.apache.geode.management.configuration.RegionType;
+import org.apache.geode.management.internal.api.GeodeConnectionConfig;
+import org.apache.geode.test.dunit.rules.ClientVM;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
+import org.apache.geode.test.dunit.rules.MemberVM;
+
 
 public class ClientClusterManagementServiceDunitTest {
   @ClassRule
@@ -52,8 +54,9 @@ public class ClientClusterManagementServiceDunitTest {
     locator = cluster.startLocatorVM(0, l -> l.withHttpService());
     server = cluster.startServerVM(1, locator.getPort());
     serverWithGroupA = cluster.startServerVM(2, groupA, locator.getPort());
-    cmsClient = ClusterManagementServiceBuilder.buildWithHostAddress()
-        .setHostAddress("localhost", locator.getHttpPort()).build();
+    cmsClient = new ClusterManagementServiceBuilder().setConnectionConfig(
+        new BaseConnectionConfig("localhost", locator.getHttpPort()))
+        .build();
   }
 
   @Test
@@ -127,8 +130,9 @@ public class ClientClusterManagementServiceDunitTest {
     client = cluster.startClientVM(3, c -> c.withLocatorConnection(locatorPort));
 
     client.invoke(() -> {
-      ClusterManagementService service = buildWithCache()
-          .setCache(ClusterStartupRule.getClientCache()).build();
+      ClusterManagementService service = new ClusterManagementServiceBuilder().setConnectionConfig(
+          new GeodeConnectionConfig(ClusterStartupRule.getClientCache()))
+          .build();
       assertThat(service.isConnected()).isTrue();
     });
     client.stop();
@@ -140,8 +144,9 @@ public class ClientClusterManagementServiceDunitTest {
     client = cluster.startClientVM(3, c -> c.withServerConnection(serverPort));
 
     client.invoke(() -> {
-      assertThatThrownBy(() -> buildWithCache()
-          .setCache(ClusterStartupRule.getClientCache()).build())
+      assertThatThrownBy(() -> new ClusterManagementServiceBuilder().setConnectionConfig(
+          new GeodeConnectionConfig(ClusterStartupRule.getClientCache()))
+          .build())
               .isInstanceOf(IllegalStateException.class)
               .hasMessageContaining(
                   "the client needs to have a client pool connected with a locator");

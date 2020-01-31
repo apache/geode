@@ -21,8 +21,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.lang.Identifiable.find;
-import static org.apache.geode.management.builder.ClusterManagementServiceBuilder.buildWithCache;
-import static org.apache.geode.management.client.ClusterManagementServiceBuilder.buildWithHostAddress;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -41,12 +39,15 @@ import org.springframework.web.client.ResourceAccessException;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.management.api.BaseConnectionConfig;
 import org.apache.geode.management.api.ClusterManagementRealizationResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.RealizationResult;
+import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.configuration.RegionType;
+import org.apache.geode.management.internal.api.GeodeConnectionConfig;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -100,11 +101,12 @@ public class ClientClusterManagementSSLTest {
     client.invoke(() -> {
       SSLContext sslContext = SSLContext.getDefault();
       HostnameVerifier hostnameVerifier = new NoopHostnameVerifier();
-      ClusterManagementService cmsClient = buildWithHostAddress()
-          .setHostAddress("localhost", httpPort)
-          .setSslContext(sslContext)
-          .setHostnameVerifier(hostnameVerifier)
-          .setCredentials("dataManage", "dataManage").build();
+      ClusterManagementService cmsClient =
+          new ClusterManagementServiceBuilder().setConnectionConfig(
+              new BaseConnectionConfig("localhost", httpPort)
+                  .setSslContext(sslContext).setUsername("dataManage").setPassword("dataManage")
+                  .setHostnameVerifier(hostnameVerifier))
+              .build();
 
       ClusterManagementRealizationResult result = cmsClient.create(region);
       assertThat(result.isSuccessful()).isTrue();
@@ -122,10 +124,12 @@ public class ClientClusterManagementSSLTest {
     int httpPort = locator.getHttpPort();
 
     client.invoke(() -> {
-      ClusterManagementService cmsClient = buildWithHostAddress()
-          .setHostAddress("localhost", httpPort)
-          .setSslContext(null)
-          .setCredentials("dataManage", "dataManage").build();
+      ClusterManagementService cmsClient =
+          new ClusterManagementServiceBuilder().setConnectionConfig(
+              new BaseConnectionConfig("localhost", httpPort)
+                  .setSslContext(null).setUsername("dataManage").setPassword("dataManage"))
+              .build();
+
       assertThatThrownBy(() -> cmsClient.create(region))
           .isInstanceOf(ResourceAccessException.class);
     });
@@ -141,11 +145,12 @@ public class ClientClusterManagementSSLTest {
     client.invoke(() -> {
       SSLContext sslContext = SSLContext.getDefault();
       HostnameVerifier hostnameVerifier = new NoopHostnameVerifier();
-      ClusterManagementService cmsClient = buildWithHostAddress()
-          .setHostAddress("localhost", httpPort)
-          .setSslContext(sslContext)
-          .setHostnameVerifier(hostnameVerifier)
-          .setCredentials("dataManage", "wrongPassword").build();
+      ClusterManagementService cmsClient =
+          new ClusterManagementServiceBuilder().setConnectionConfig(
+              new BaseConnectionConfig("localhost", httpPort)
+                  .setSslContext(sslContext).setUsername("dataManage").setPassword("wrongPassword")
+                  .setHostnameVerifier(hostnameVerifier))
+              .build();
 
       assertThatThrownBy(() -> cmsClient.create(region)).hasMessageContaining("UNAUTHENTICATED");
     });
@@ -162,11 +167,11 @@ public class ClientClusterManagementSSLTest {
       SSLContext sslContext = SSLContext.getDefault();
       HostnameVerifier hostnameVerifier = new NoopHostnameVerifier();
 
-      ClusterManagementService cmsClient = buildWithHostAddress()
-          .setHostAddress("localhost", httpPort)
-          .setSslContext(sslContext)
-          .setHostnameVerifier(hostnameVerifier)
-          .build();
+      ClusterManagementService cmsClient =
+          new ClusterManagementServiceBuilder().setConnectionConfig(
+              new BaseConnectionConfig("localhost", httpPort)
+                  .setSslContext(sslContext).setHostnameVerifier(hostnameVerifier))
+              .build();
 
       assertThatThrownBy(() -> cmsClient.create(region)).hasMessageContaining("UNAUTHENTICATED");
     });
@@ -182,11 +187,12 @@ public class ClientClusterManagementSSLTest {
     client.invoke(() -> {
       SSLContext sslContext = SSLContext.getDefault();
       HostnameVerifier hostnameVerifier = new NoopHostnameVerifier();
-      ClusterManagementService cmsClient = buildWithHostAddress()
-          .setHostAddress("localhost", httpPort)
-          .setSslContext(sslContext)
-          .setHostnameVerifier(hostnameVerifier)
-          .setCredentials("dataManage", null).build();
+      ClusterManagementService cmsClient =
+          new ClusterManagementServiceBuilder().setConnectionConfig(
+              new BaseConnectionConfig("localhost", httpPort)
+                  .setSslContext(sslContext).setUsername("dataManage").setPassword(null)
+                  .setHostnameVerifier(hostnameVerifier))
+              .build();
 
       assertThatThrownBy(() -> cmsClient.create(region)).hasMessageContaining("UNAUTHENTICATED");
     });
@@ -202,11 +208,12 @@ public class ClientClusterManagementSSLTest {
     client.invoke(() -> {
       SSLContext sslContext = SSLContext.getDefault();
       HostnameVerifier hostnameVerifier = new NoopHostnameVerifier();
-      ClusterManagementService cmsClient = buildWithHostAddress()
-          .setHostAddress("localhost", httpPort)
-          .setSslContext(sslContext)
-          .setHostnameVerifier(hostnameVerifier)
-          .setCredentials("dataRead", "dataRead").build();
+      ClusterManagementService cmsClient =
+          new ClusterManagementServiceBuilder().setConnectionConfig(
+              new BaseConnectionConfig("localhost", httpPort)
+                  .setSslContext(sslContext).setUsername("dataRead").setPassword("dataRead")
+                  .setHostnameVerifier(hostnameVerifier))
+              .build();
 
       assertThatThrownBy(() -> cmsClient.create(region)).hasMessageContaining("UNAUTHORIZED");
     });
@@ -216,9 +223,11 @@ public class ClientClusterManagementSSLTest {
   public void invokeFromServer() {
     server.invoke(() -> {
       // when getting the service from the server, we don't need to provide the host information
-      ClusterManagementService cmsClient = buildWithCache()
-          .setCache(ClusterStartupRule.getCache())
-          .setCredentials("dataManage", "dataManage").build();
+      ClusterManagementService cmsClient =
+          new ClusterManagementServiceBuilder().setConnectionConfig(
+              new GeodeConnectionConfig(ClusterStartupRule.getCache())
+                  .setUsername("dataManage").setPassword("dataManage"))
+              .build();
       Region region = new Region();
       region.setName("orders");
       region.setType(RegionType.PARTITION);

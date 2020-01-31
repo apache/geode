@@ -23,8 +23,8 @@ import org.apache.geode.management.runtime.OperationResult;
 import org.apache.geode.management.runtime.RuntimeInfo;
 
 /**
- * this is responsible for applying and persisting cache configuration changes on locators and/or
- * servers.
+ * Implementations of this interface are responsible for applying and persisting cache
+ * configuration changes.
  */
 @Experimental
 public interface ClusterManagementService extends AutoCloseable {

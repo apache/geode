@@ -62,11 +62,11 @@ import org.apache.geode.internal.InternalInstantiator;
 import org.apache.geode.internal.admin.remote.ShutdownAllResponse;
 import org.apache.geode.internal.cache.execute.data.CustId;
 import org.apache.geode.internal.serialization.DSCODE;
-import org.apache.geode.internal.serialization.DSFIDSerializerImpl;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.internal.DSFIDSerializerImpl;
 
 /**
  * Tests the DataType support for off-heap MemoryInspector.

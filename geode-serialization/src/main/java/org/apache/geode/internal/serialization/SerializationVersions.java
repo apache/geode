@@ -17,7 +17,6 @@ package org.apache.geode.internal.serialization;
 /**
  * This interface is extended by DataSerializableFixedID and VersionedDataSerializable in order to
  * furnish version information to the serialization infrastructure for backward compatibility
- *
  */
 
 public interface SerializationVersions {

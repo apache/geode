@@ -232,7 +232,7 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
 
     // Initialize CQ results (key) cache.
     if (CqServiceProvider.MAINTAIN_KEYS) {
-      this.cqResultKeys = new HashMap<Object, Object>();
+      this.cqResultKeys = new HashMap<>();
       // Currently the CQ Result keys are not cached for the Partitioned
       // Regions. Supporting this with PR needs more work like forcing
       // query execution on primary buckets only; and handling the bucket
@@ -242,7 +242,7 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
       if (this.isPR) {
         this.setCqResultsCacheInitialized();
       } else {
-        this.destroysWhileCqResultsInProgress = new HashSet<Object>();
+        this.destroysWhileCqResultsInProgress = new HashSet<>();
       }
     }
 
@@ -266,7 +266,7 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
   public Set<Object> getCqResultKeyCache() {
     if (this.cqResultKeys != null) {
       synchronized (this.cqResultKeys) {
-        return Collections.synchronizedSet(new HashSet<Object>(this.cqResultKeys.keySet()));
+        return Collections.synchronizedSet(new HashSet<>(this.cqResultKeys.keySet()));
       }
     } else {
       return null;

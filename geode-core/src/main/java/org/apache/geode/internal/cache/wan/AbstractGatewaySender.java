@@ -1475,13 +1475,16 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     GatewayQueueEvent event = null;
     for (RegionQueue queue : getQueues()) {
       Region region = queue.getRegion();
+      if (region == null) {
+        continue;
+      }
       for (Iterator i = region.values().iterator(); i.hasNext();) {
         GatewaySenderEventImpl gsei = (GatewaySenderEventImpl) i.next();
         if (gsei.getKey().equals(key) && gsei.getVersionTimeStamp() == timestamp) {
           event = gsei;
           logger.info("{}: Providing synchronization event for key={}; timestamp={}: {}",
               this, key, timestamp, event);
-          this.statistics.incSynchronizationEventsProvided();
+          getStatistics().incSynchronizationEventsProvided();
           break;
         }
       }

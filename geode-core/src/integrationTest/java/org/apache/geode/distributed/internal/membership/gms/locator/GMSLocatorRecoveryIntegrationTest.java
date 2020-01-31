@@ -17,7 +17,6 @@ package org.apache.geode.distributed.internal.membership.gms.locator;
 import static org.apache.geode.distributed.ConfigurationProperties.BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_TCP;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.internal.membership.adapter.TcpSocketCreatorAdapter.asTcpSocketCreator;
 import static org.apache.geode.distributed.internal.membership.gms.locator.GMSLocator.LOCATOR_FILE_STAMP;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
@@ -42,7 +41,6 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.Distribution;
@@ -79,7 +77,7 @@ public class GMSLocatorRecoveryIntegrationTest {
 
   private File stateFile;
   private GMSLocator gmsLocator;
-  private Locator locator;
+  private InternalLocator locator;
   private DSFIDSerializer serializer;
   private Distribution distribution;
 
@@ -95,10 +93,8 @@ public class GMSLocatorRecoveryIntegrationTest {
     stateFile = new File(temporaryFolder.getRoot(), getClass().getSimpleName() + "_locator.dat");
 
     gmsLocator = new GMSLocator(null, null, false, false, new LocatorStats(), "",
-        temporaryFolder.getRoot().toPath(), new TcpClient(
-            asTcpSocketCreator(
-                SocketCreatorFactory
-                    .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
+        temporaryFolder.getRoot().toPath(), new TcpClient(SocketCreatorFactory
+            .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR),
             InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
             InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer()),
         InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
@@ -189,15 +185,14 @@ public class GMSLocatorRecoveryIntegrationTest {
     when(mockSystem.getConfig()).thenReturn(config);
 
     final TcpClient locatorClient = new TcpClient(
-        asTcpSocketCreator(
-            SocketCreatorFactory
-                .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
+        SocketCreatorFactory
+            .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR),
         InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
         InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());
 
     distribution =
         new DistributionImpl(mockClusterDistributionManager, transport, mockSystem, mockListener,
-            mockMessageListener);
+            mockMessageListener, locator.getMembershipLocator());
     distribution.start();
 
     GMSLocator gmsLocator = new GMSLocator(localHost,

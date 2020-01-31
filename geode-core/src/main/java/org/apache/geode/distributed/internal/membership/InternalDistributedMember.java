@@ -296,6 +296,11 @@ public class InternalDistributedMember extends MemberIdentifierImpl
   }
 
   @Override
+  public int getDSFID() {
+    return DISTRIBUTED_MEMBER;
+  }
+
+  @Override
   public void toDataPre_GFE_9_0_0_0(DataOutput out, SerializationContext context)
       throws IOException {
     super.toDataPre_GFE_9_0_0_0(out, context);

@@ -14,9 +14,8 @@
  */
 package org.apache.geode.distributed.internal.membership.gms;
 
-import static org.apache.geode.distributed.internal.membership.adapter.TcpSocketCreatorAdapter.asTcpSocketCreator;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
@@ -30,7 +29,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.api.LifecycleListener;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifierFactoryImpl;
@@ -44,10 +42,11 @@ import org.apache.geode.distributed.internal.membership.api.MembershipLocator;
 import org.apache.geode.distributed.internal.membership.api.MembershipLocatorBuilder;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
-import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreatorImpl;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
+import org.apache.geode.internal.serialization.DSFIDSerializerFactory;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 
 public class MembershipOnlyTest {
@@ -63,20 +62,17 @@ public class MembershipOnlyTest {
   public void before() throws IOException, MembershipConfigurationException {
     localHost = InetAddress.getLocalHost();
 
-    // TODO - using geode-core serializer. This is needed to have be able to
-    // read InternalDistributedMember.
-    dsfidSerializer = InternalDataSerializer.getDSFIDSerializer();
+    dsfidSerializer = new DSFIDSerializerFactory().create();
 
     // TODO - using geode-core socket creator
-    socketCreator = asTcpSocketCreator(new SocketCreator(new SSLConfig.Builder().build()));
+    socketCreator = new SocketCreator(new SSLConfig.Builder().build());
 
     final Supplier<ExecutorService> executorServiceSupplier =
         () -> LoggingExecutors.newCachedThreadPool("membership", false);
-    membershipLocator = MembershipLocatorBuilder.<InternalDistributedMember>newLocatorBuilder(
-        socketCreator,
-        dsfidSerializer.getObjectSerializer(),
-        dsfidSerializer.getObjectDeserializer(),
-        temporaryFolder.newFile("locator").toPath(),
+    membershipLocator = MembershipLocatorBuilder.<MemberIdentifierImpl>newLocatorBuilder(
+        new TcpSocketCreatorImpl(),
+        dsfidSerializer,
+        temporaryFolder.newFolder("locator").toPath(),
         executorServiceSupplier)
         .create();
 
@@ -95,7 +91,21 @@ public class MembershipOnlyTest {
 
   @Test
   public void memberCanConnectToSelfHostedLocator() throws MemberStartupException {
+    Membership<MemberIdentifierImpl> membership = startMember("member", membershipLocator);
+    assertThat(membership.getView().getMembers()).hasSize(1);
+  }
 
+  @Test
+  public void twoMembersCanConnect() throws MemberStartupException {
+    Membership<MemberIdentifierImpl> member1 = startMember("member1", membershipLocator);
+    Membership<MemberIdentifierImpl> member2 = startMember("member2", null);
+    await().untilAsserted(() -> assertThat(member1.getView().getMembers()).hasSize(2));
+    await().untilAsserted(() -> assertThat(member2.getView().getMembers()).hasSize(2));
+  }
+
+  private Membership<MemberIdentifierImpl> startMember(String name,
+      final MembershipLocator embeddedLocator)
+      throws MemberStartupException {
     MembershipConfig config = new MembershipConfig() {
       public String getLocators() {
         return localHost.getHostName() + '[' + membershipLocator.getPort() + ']';
@@ -106,13 +116,17 @@ public class MembershipOnlyTest {
       // being associated with a locator
       @Override
       public int getVmKind() {
-        return MemberIdentifier.LOCATOR_DM_TYPE;
+        return embeddedLocator != null ? MemberIdentifier.LOCATOR_DM_TYPE
+            : MemberIdentifier.NORMAL_DM_TYPE;
+      }
+
+      @Override
+      public String getName() {
+        return name;
       }
     };
 
-    // TODO - using geode-core InternalDistributedMember
     MemberIdentifierFactoryImpl memberIdFactory = new MemberIdentifierFactoryImpl();
-
 
     TcpClient locatorClient = new TcpClient(socketCreator, dsfidSerializer.getObjectSerializer(),
         dsfidSerializer.getObjectDeserializer());
@@ -121,21 +135,17 @@ public class MembershipOnlyTest {
 
     final Membership<MemberIdentifierImpl> membership =
         MembershipBuilder.<MemberIdentifierImpl>newMembershipBuilder(
-            socketCreator, locatorClient, dsfidSerializer, memberIdFactory)
+            socketCreator,
+            locatorClient,
+            dsfidSerializer,
+            memberIdFactory)
+            .setMembershipLocator(membershipLocator)
             .setConfig(config)
             .setLifecycleListener(lifeCycleListener)
             .create();
 
-
-    // TODO - the membership *must* be installed in the locator at this special
-    // point during membership startup for the start to succeed
-    doAnswer(invocation -> {
-      membershipLocator.setMembership(membership);
-      return null;
-    }).when(lifeCycleListener).started();
-
-
     membership.start();
-    assertThat(membership.getView().getMembers()).hasSize(1);
+    membership.startEventProcessing();
+    return membership;
   }
 }
