@@ -1410,10 +1410,10 @@ public class DistributedSystemBridge {
           continue;
         }
         if (bean.isParallel()) {
-          senderMap.merge(String.valueOf(dsId), bean.isConnected(), Boolean::logicalAnd);
+          senderMap.merge(String.valueOf(dsId), bean.isRunning(), Boolean::logicalAnd);
         } else {
           if (bean.isPrimary()) {
-            senderMap.put(String.valueOf(dsId), bean.isConnected());
+            senderMap.put(String.valueOf(dsId), bean.isRunning());
           }
         }
       }
