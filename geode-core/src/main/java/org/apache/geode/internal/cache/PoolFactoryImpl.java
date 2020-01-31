@@ -31,6 +31,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolFactory;
@@ -49,7 +50,7 @@ import org.apache.geode.pdx.internal.TypeRegistry;
  *
  * @since GemFire 5.7
  */
-public class PoolFactoryImpl implements PoolFactory {
+public class PoolFactoryImpl implements InternalPoolFactory {
   private static final Logger logger = LogService.getLogger();
 
   /**
@@ -310,10 +311,7 @@ public class PoolFactoryImpl implements PoolFactory {
     return this;
   }
 
-
-  /**
-   * Initializes the state of this factory for the given pool's state.
-   */
+  @Override
   public void init(Pool cp) {
     setSocketConnectTimeout(cp.getSocketConnectTimeout());
     setFreeConnectionTimeout(cp.getFreeConnectionTimeout());
@@ -380,9 +378,8 @@ public class PoolFactoryImpl implements PoolFactory {
     return GemFireCacheImpl.getInstance();
   }
 
-  /**
-   * Needed by test framework.
-   */
+  @Override
+  @VisibleForTesting
   public PoolAttributes getPoolAttributes() {
     return attributes;
   }
