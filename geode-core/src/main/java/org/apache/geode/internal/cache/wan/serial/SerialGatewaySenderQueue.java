@@ -918,13 +918,14 @@ public class SerialGatewaySenderQueue implements RegionQueue {
             new Object[] {this, this.regionName}),
             e);
       }
-      if ((this.region != null) && this.cleanQueues && this.enablePersistence) {
+      if ((this.region != null) && this.cleanQueues) {
         this.region.clear();
       }
 
     } else {
-      throw new IllegalStateException(
-          "Queue region " + this.regionName + " already exists.");
+      if (this.cleanQueues) {
+        this.region.clear();
+      }
     }
   }
 
@@ -971,15 +972,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
   }
 
   @Override
-  public void close() {
-    Region r = getRegion();
-    if (r != null && !r.isDestroyed()) {
-      try {
-        r.close();
-      } catch (RegionDestroyedException e) {
-      }
-    }
-  }
+  public void close() {}
 
   private class BatchRemovalThread extends Thread {
     /**

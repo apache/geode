@@ -547,7 +547,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         if (logger.isDebugEnabled()) {
           logger.debug("{}: Created queue region: {}", this, prQ);
         }
-        if ((prQ != null) && this.cleanQueues && sender.isPersistenceEnabled()) {
+        if ((prQ != null) && this.cleanQueues) {
           // now, clean up the shadowPR's buckets on this node (primary as well as
           // secondary) for a fresh start
           Set<BucketRegion> localBucketRegions = prQ.getDataStore().getAllLocalBucketRegions();
@@ -623,9 +623,11 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     }
     // now, clean up the shadowPR's buckets on this node (primary as well as
     // secondary) for a fresh start
-    Set<BucketRegion> localBucketRegions = prQ.getDataStore().getAllLocalBucketRegions();
-    for (BucketRegion bucketRegion : localBucketRegions) {
-      bucketRegion.clear();
+    if (this.cleanQueues) {
+      Set<BucketRegion> localBucketRegions = prQ.getDataStore().getAllLocalBucketRegions();
+      for (BucketRegion bucketRegion : localBucketRegions) {
+        bucketRegion.clear();
+      }
     }
   }
 
@@ -1607,15 +1609,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
   }
 
   @Override
-  public void close() {
-    Region r = getRegion();
-    if (!this.asyncEvent && r != null && !r.isDestroyed()) {
-      try {
-        r.close();
-      } catch (RegionDestroyedException e) {
-      }
-    }
-  }
+  public void close() {}
 
   /**
    * @return the bucketToTempQueueMap
