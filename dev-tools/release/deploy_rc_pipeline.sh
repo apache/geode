@@ -385,7 +385,6 @@ jobs:
               verifyArtifactSignature apache-geode-${VERSION}-src.tgz 256 
               verifyArtifactSignature apache-geode-${VERSION}.tgz 256
               verifyArtifactSignature apache-geode-examples-${VERSION}.tar.gz 256
-              verifyArtifactSignature apache-geode-examples-${VERSION}.zip 256
               verifyArtifactSignature apache-geode-native-${VERSION}-src.tar.gz 512
 EOF
 fly -t concourse.apachegeode-ci.info-main login --team-name main --concourse-url https://concourse.apachegeode-ci.info/
