@@ -17,7 +17,6 @@ package org.apache.geode.management;
 import static java.lang.management.ManagementFactory.getPlatformMBeanServer;
 import static java.util.Arrays.asList;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static javax.management.ObjectName.getInstance;
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
@@ -175,7 +174,7 @@ public class JMXMBeanReconnectDUnitTest implements Serializable {
     });
 
     mxbeansOnLocator1 = locator1VM.invoke(() -> {
-      await().atMost(10, SECONDS).untilAsserted(() -> {
+      await().untilAsserted(() -> {
         assertThat(getPlatformMBeanServer().queryNames(getInstance("GemFire:*"), null))
             .as("GemFire mbeans on locator1")
             .containsAll(expectedServerMXBeans(serverName, regionName))
@@ -188,7 +187,7 @@ public class JMXMBeanReconnectDUnitTest implements Serializable {
     });
 
     mxbeansOnLocator2 = locator2VM.invoke(() -> {
-      await().atMost(10, SECONDS).untilAsserted(() -> {
+      await().untilAsserted(() -> {
         assertThat(getPlatformMBeanServer().queryNames(getInstance("GemFire:*"), null))
             .as("GemFire mbeans on locator2")
             .containsAll(expectedServerMXBeans(serverName, regionName))
@@ -292,7 +291,7 @@ public class JMXMBeanReconnectDUnitTest implements Serializable {
     locator1VM.invoke(() -> {
       InternalLocator locator = (InternalLocator) LOCATOR.get().getLocator();
 
-      await().atMost(60, SECONDS).untilAsserted(() -> {
+      await().untilAsserted(() -> {
         boolean isReconnected = locator.isReconnected();
         boolean isSharedConfigurationRunning = locator.isSharedConfigurationRunning();
         Set<ObjectName> mbeanNames =
