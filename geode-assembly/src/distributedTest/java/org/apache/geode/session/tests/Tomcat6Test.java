@@ -19,7 +19,7 @@ import static org.apache.geode.session.tests.TomcatInstall.TomcatVersion.TOMCAT6
 
 import java.util.function.IntSupplier;
 
-public class Tomcat6Test extends TomcatTest {
+public class Tomcat6Test extends CargoTestBase {
   @Override
   public ContainerInstall getInstall(IntSupplier portSupplier) throws Exception {
     return new TomcatInstall(getClass().getSimpleName(), TOMCAT6, PEER_TO_PEER, portSupplier);
