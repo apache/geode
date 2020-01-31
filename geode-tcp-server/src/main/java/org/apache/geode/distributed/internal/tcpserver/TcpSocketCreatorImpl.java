@@ -182,9 +182,6 @@ public class TcpSocketCreatorImpl implements TcpSocketCreator {
       // Optionally enable SO_KEEPALIVE in the OS network protocol.
       socket.setKeepAlive(ENABLE_TCP_KEEP_ALIVE);
 
-      if (timeout > 0) {
-        socket.setSoTimeout(timeout);
-      }
       if (socketBufferSize != -1) {
         socket.setReceiveBufferSize(socketBufferSize);
       }
@@ -192,7 +189,7 @@ public class TcpSocketCreatorImpl implements TcpSocketCreator {
         optionalWatcher.beforeConnect(socket);
       }
       try {
-        socket.connect(new InetSocketAddress(inetadd, port));
+        socket.connect(new InetSocketAddress(inetadd, port), Math.max(timeout, 0));
       } finally {
         if (optionalWatcher != null) {
           optionalWatcher.afterConnect(socket);
