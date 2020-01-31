@@ -27,6 +27,7 @@ import org.jgroups.Global;
 import org.jgroups.stack.IpAddress;
 import org.jgroups.util.UUID;
 
+import org.apache.geode.distributed.internal.membership.api.MemberData;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.util.internal.GeodeGlossary;
 
@@ -55,9 +56,10 @@ public class JGAddress extends UUID {
     super();
     this.ip_addr = mbr.getInetAddress();
     this.port = mbr.getMembershipPort();
-    this.mostSigBits = mbr.getUuidMostSignificantBits();
-    this.leastSigBits = mbr.getUuidLeastSignificantBits();
-    this.vmViewId = mbr.getVmViewId();
+    MemberData memberData = mbr.getMemberData();
+    this.mostSigBits = memberData.getUuidMostSignificantBits();
+    this.leastSigBits = memberData.getUuidLeastSignificantBits();
+    this.vmViewId = memberData.getVmViewId();
   }
 
 

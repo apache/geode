@@ -61,7 +61,8 @@ public class GMSMembershipViewJUnitTest {
 
     // member joining in this view
     members.get(numMembers - 1).setVmViewId(2);
-    members.get(numMembers - 1).setVmKind(MemberIdentifier.NORMAL_DM_TYPE);
+    members.get(numMembers - 1).getMemberData()
+        .setVmKind(MemberIdentifier.NORMAL_DM_TYPE);
   }
 
   private void setFailureDetectionPorts(GMSMembershipView view) {

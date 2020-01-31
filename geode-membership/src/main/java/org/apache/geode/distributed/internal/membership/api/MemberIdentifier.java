@@ -14,20 +14,10 @@
  */
 package org.apache.geode.distributed.internal.membership.api;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import java.net.InetAddress;
 import java.util.List;
-import java.util.function.Function;
-
-import org.jgroups.util.UUID;
 
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
-import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 
 /**
@@ -150,78 +140,4 @@ public interface MemberIdentifier extends DataSerializableFixedID {
    * @return true if this is a partial ID
    */
   boolean isPartial();
-
-  void setDurableId(String id);
-
-  void setDurableTimeout(int newValue);
-
-  int getDirectChannelPort();
-
-  String getName();
-
-  void addFixedToString(StringBuilder sb, boolean useIpAddress);
-
-  void writeExternal(ObjectOutput out) throws IOException;
-
-  void readExternal(ObjectInput in) throws IOException, ClassNotFoundException;
-
-  void toDataPre_GFE_9_0_0_0(DataOutput out, SerializationContext context) throws IOException;
-
-  void toDataPre_GFE_7_1_0_0(DataOutput out, SerializationContext context) throws IOException;
-
-  void fromDataPre_GFE_9_0_0_0(DataInput in, DeserializationContext context)
-      throws IOException, ClassNotFoundException;
-
-  void fromDataPre_GFE_7_1_0_0(DataInput in, DeserializationContext context)
-      throws IOException, ClassNotFoundException;
-
-  void _readEssentialData(DataInput in, Function<InetAddress, String> hostnameResolver)
-      throws IOException, ClassNotFoundException;
-
-  void writeEssentialData(DataOutput out) throws IOException;
-
-  void setPort(int p);
-
-  String getHost();
-
-  int getProcessId();
-
-  String getId();
-
-  String getUniqueId();
-
-  void setVersionObjectForTest(Version v);
-
-  void setUniqueTag(String tag);
-
-  int compareTo(MemberIdentifier memberIdentifier, boolean compareMemberData,
-      boolean compareViewIds);
-
-  String getUniqueTag();
-
-  void setName(String name);
-
-  String getDurableId();
-
-  int getDurableTimeout();
-
-  void setHostName(String hostName);
-
-  void setProcessId(int id);
-
-  boolean hasUUID();
-
-  long getUuidLeastSignificantBits();
-
-  long getUuidMostSignificantBits();
-
-  boolean isNetworkPartitionDetectionEnabled();
-
-  void setUUID(UUID randomUUID);
-
-  void setMemberWeight(byte b);
-
-  void setUdpPort(int i);
-
-  UUID getUUID();
 }

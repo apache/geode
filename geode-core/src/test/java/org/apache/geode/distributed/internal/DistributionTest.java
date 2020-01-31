@@ -44,6 +44,7 @@ import org.apache.geode.distributed.internal.direct.DirectChannel;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.api.Membership;
 import org.apache.geode.distributed.internal.membership.api.MembershipClosedException;
+import org.apache.geode.distributed.internal.membership.gms.GMSMemberData;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembership;
 import org.apache.geode.internal.admin.remote.AlertListenerMessage;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
@@ -84,8 +85,9 @@ public class DistributionTest {
     mockMembers = new InternalDistributedMember[5];
     for (int i = 0; i < mockMembers.length; i++) {
       mockMembers[i] = new InternalDistributedMember("localhost", 8888 + i);
+      GMSMemberData m = (GMSMemberData) mockMembers[i].getMemberData();
       UUID uuid = new UUID(r.nextLong(), r.nextLong());
-      mockMembers[i].setUUID(uuid);
+      m.setUUID(uuid);
     }
 
     dc = mock(DirectChannel.class);

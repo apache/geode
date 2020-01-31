@@ -28,7 +28,6 @@ import com.tngtech.archunit.lang.ArchRule;
 import org.junit.runner.RunWith;
 
 import org.apache.geode.distributed.internal.membership.gms.MemberDataBuilderImpl;
-import org.apache.geode.distributed.internal.membership.gms.MemberIdentifierImpl;
 import org.apache.geode.distributed.internal.membership.gms.MembershipBuilderImpl;
 import org.apache.geode.distributed.internal.membership.gms.MembershipLocatorBuilderImpl;
 import org.apache.geode.internal.inet.LocalHostUtil;
@@ -50,11 +49,9 @@ public class MembershipAPIArchUnitTest {
               // Serialization is a dependency of membership
               .or(resideInAPackage("org.apache.geode.internal.serialization.."))
               .or(resideInAPackage("org.apache.geode.distributed.internal.tcpserver.."))
-              // allowed implementation class accesses
+              // allowed
               .or(type(MembershipBuilderImpl.class))
               .or(type(MembershipLocatorBuilderImpl.class))
-              .or(type(MemberDataBuilderImpl.class))
-              .or(type(MemberIdentifierImpl.class))
-
-              .or(type(LocalHostUtil.class)));
+              .or(type(MemberDataBuilderImpl.class)
+                  .or(type(LocalHostUtil.class))));
 }

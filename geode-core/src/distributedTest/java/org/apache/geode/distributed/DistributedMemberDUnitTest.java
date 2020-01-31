@@ -263,7 +263,7 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
     assertTrue(system == basicGetSystem()); // senders will use basicGetSystem()
     InternalDistributedMember internalDistributedMember = system.getDistributedMember();
 
-    internalDistributedMember.setName(null);
+    internalDistributedMember.getMemberData().setName(null);
     HeapDataOutputStream outputStream = new HeapDataOutputStream(100);
     internalDistributedMember.writeEssentialData(outputStream);
     DataInputStream dataInputStream =

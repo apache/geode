@@ -91,10 +91,5 @@ public interface MemberDataBuilder {
 
   MemberDataBuilder setUuidLeastSignificantBits(long uuidLeastSignificantBits);
 
-  MemberDataBuilder setIsPartial(boolean isPartial);
-
-  MemberDataBuilder setUniqueTag(String uniqueTag);
-
   MemberData build();
-
 }

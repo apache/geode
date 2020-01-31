@@ -350,10 +350,10 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
         GMSHealthMonitor.this.stats.incFinalCheckRequestsReceived();
         GMSHealthMonitor.this.stats.incTcpFinalCheckRequestsReceived();
         ID gmbr = localAddress;
-        UUID myUUID = gmbr.getUUID();
+        UUID myUUID = gmbr.getMemberData().getUUID();
         // during reconnect or rapid restart we will have a zero viewId but there may still
         // be an old ID in the membership view that we do not want to respond to
-        int myVmViewId = gmbr.getVmViewId();
+        int myVmViewId = gmbr.getMemberData().getVmViewId();
         if (playingDead) {
           logger.debug("HealthMonitor: simulating sick member in health check");
         } else if (uuidLSBs == myUUID.getLeastSignificantBits()
@@ -647,8 +647,8 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
   void writeMemberToStream(ID gmbr, DataOutputStream out) throws IOException {
     out.writeShort(Version.getCurrentVersion().ordinal());
     out.writeInt(gmbr.getVmViewId());
-    out.writeLong(gmbr.getUuidLeastSignificantBits());
-    out.writeLong(gmbr.getUuidMostSignificantBits());
+    out.writeLong(gmbr.getMemberData().getUuidLeastSignificantBits());
+    out.writeLong(gmbr.getMemberData().getUuidMostSignificantBits());
     out.flush();
   }
 

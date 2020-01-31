@@ -49,7 +49,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -76,10 +75,9 @@ import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.adapter.ServiceConfig;
-import org.apache.geode.distributed.internal.membership.api.MemberData;
 import org.apache.geode.distributed.internal.membership.api.MemberDisconnectedException;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
-import org.apache.geode.distributed.internal.membership.api.MemberIdentifierFactory;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifierFactoryImpl;
 import org.apache.geode.distributed.internal.membership.api.MembershipClosedException;
 import org.apache.geode.distributed.internal.membership.api.MembershipConfig;
 import org.apache.geode.distributed.internal.membership.api.Message;
@@ -188,18 +186,7 @@ public class JGroupsMessengerJUnitTest {
 
     // if I do this earlier then test this return messenger as null
     when(services.getMessenger()).thenReturn(messenger);
-    when(services.getMemberFactory())
-        .thenReturn(new MemberIdentifierFactory<InternalDistributedMember>() {
-          @Override
-          public InternalDistributedMember create(MemberData memberInfo) {
-            return new InternalDistributedMember(memberInfo);
-          }
-
-          @Override
-          public Comparator<InternalDistributedMember> getComparator() {
-            return InternalDistributedMember::compareTo;
-          }
-        });
+    when(services.getMemberFactory()).thenReturn(new MemberIdentifierFactoryImpl());
 
     String jgroupsConfig = messenger.jgStackConfig;
     int startIdx = jgroupsConfig.indexOf("<org");
@@ -289,7 +276,7 @@ public class JGroupsMessengerJUnitTest {
     BufferDataOutputStream out =
         new BufferDataOutputStream(500, Version.getCurrentVersion());
     MemberIdentifier mbr = createAddress(8888);
-    mbr.setMemberWeight((byte) 40);
+    mbr.getMemberData().setMemberWeight((byte) 40);
     mbr.toData(out, mock(SerializationContext.class));
     DataInputStream in = new DataInputStream(new ByteArrayInputStream(out.toByteArray()));
     mbr = new InternalDistributedMember();
@@ -566,7 +553,7 @@ public class JGroupsMessengerJUnitTest {
     int seqno = 1;
     for (org.jgroups.Message m : messages) {
       if (jgroupsWillUseMulticast) {
-        m.setSrc(messenger.localAddress.getUUID());
+        m.setSrc(messenger.localAddress.getMemberData().getUUID());
       } else {
         m.setSrc(fakeMember);
         UNICAST3.Header oldHeader = (UNICAST3.Header) m.getHeader(unicastHeaderId);
@@ -1150,9 +1137,9 @@ public class JGroupsMessengerJUnitTest {
 
   private MemberIdentifier createAddress(int port) {
     MemberIdentifier gms = new InternalDistributedMember("localhost", port);
-    gms.setUUID(UUID.randomUUID());
+    gms.getMemberData().setUUID(UUID.randomUUID());
     gms.setVmKind(MemberIdentifier.NORMAL_DM_TYPE);
-    gms.setVersionObjectForTest(Version.getCurrentVersion());
+    gms.getMemberData().setVersionOrdinal(Version.getCurrentVersion().ordinal());
     return gms;
   }
 

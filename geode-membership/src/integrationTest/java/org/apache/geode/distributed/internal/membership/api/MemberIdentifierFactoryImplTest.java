@@ -93,7 +93,7 @@ public class MemberIdentifierFactoryImplTest {
     MemberData memberData = MemberDataBuilder.newBuilderForLocalHost("hostname")
         .setDurableId("myId").build();
     MemberIdentifier data = factory.create(memberData);
-    assertThat(data.getDurableId()).isEqualTo("myId");
+    assertThat(data.getMemberData().getDurableId()).isEqualTo("myId");
   }
 
   @Test
@@ -108,10 +108,10 @@ public class MemberIdentifierFactoryImplTest {
   public void membersAreEqual() {
     MemberData memberData = MemberDataBuilder.newBuilderForLocalHost("hostname")
         .setMembershipPort(1).build();
-    MemberIdentifier member1 = factory.create(memberData);
+    MemberIdentifierImpl member1 = factory.create(memberData);
     memberData = MemberDataBuilder.newBuilderForLocalHost("hostname")
         .setMembershipPort(1).build();
-    MemberIdentifier member2 = factory.create(memberData);
+    MemberIdentifierImpl member2 = factory.create(memberData);
     assertThat(factory.getComparator().compare(member1, member2)).isZero();
   }
 
@@ -119,10 +119,10 @@ public class MemberIdentifierFactoryImplTest {
   public void membersAreNotEqual() {
     MemberData memberData = MemberDataBuilder.newBuilderForLocalHost("hostname")
         .setMembershipPort(1).build();
-    MemberIdentifier member1 = factory.create(memberData);
+    MemberIdentifierImpl member1 = factory.create(memberData);
     memberData = MemberDataBuilder.newBuilderForLocalHost("hostname")
         .setMembershipPort(2).build();
-    MemberIdentifier member2 = factory.create(memberData);
+    MemberIdentifierImpl member2 = factory.create(memberData);
     assertThat(factory.getComparator().compare(member1, member2)).isLessThan(0);
     assertThat(factory.getComparator().compare(member2, member1)).isGreaterThan(0);
   }

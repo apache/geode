@@ -362,10 +362,10 @@ public class ClientCacheFactoryJUnitTest {
     assertThat(newMemberID.getVersionObject()).isEqualTo(Version.GFE_82);
     assertThat(newID.getClientVersion()).isEqualTo(Version.GFE_82);
 
-    assertThat(newMemberID.getUuidLeastSignificantBits()).isEqualTo(0);
-    assertThat(newMemberID.getUuidMostSignificantBits()).isEqualTo(0);
+    assertThat(newMemberID.getMemberData().getUuidLeastSignificantBits()).isEqualTo(0);
+    assertThat(newMemberID.getMemberData().getUuidMostSignificantBits()).isEqualTo(0);
 
-    gmsID.setUUID(new UUID(1234L, 5678L));
+    gmsID.getMemberData().setUUID(new UUID(1234L, 5678L));
     memberID.setVersionObjectForTest(Version.CURRENT);
     clientID = ClientProxyMembershipID.getClientId(memberID);
     out = new HeapDataOutputStream(Version.CURRENT);
@@ -378,10 +378,10 @@ public class ClientCacheFactoryJUnitTest {
     assertThat(newMemberID.getVersionObject()).isEqualTo(Version.CURRENT);
     assertThat(newID.getClientVersion()).isEqualTo(Version.CURRENT);
 
-    assertThat(newMemberID.getUuidLeastSignificantBits())
-        .isEqualTo(gmsID.getUuidLeastSignificantBits());
-    assertThat(newMemberID.getUuidMostSignificantBits())
-        .isEqualTo(gmsID.getUuidMostSignificantBits());
+    assertThat(newMemberID.getMemberData().getUuidLeastSignificantBits())
+        .isEqualTo(gmsID.getMemberData().getUuidLeastSignificantBits());
+    assertThat(newMemberID.getMemberData().getUuidMostSignificantBits())
+        .isEqualTo(gmsID.getMemberData().getUuidMostSignificantBits());
   }
 
   @Test

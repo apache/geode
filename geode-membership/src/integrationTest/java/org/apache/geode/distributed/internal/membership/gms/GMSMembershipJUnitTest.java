@@ -118,8 +118,9 @@ public class GMSMembershipJUnitTest {
 
     authenticator = mock(Authenticator.class);
     myMemberId = createMemberID(8887);
+    GMSMemberData m = (GMSMemberData) myMemberId.getMemberData();
     UUID uuid = new UUID(12345, 12345);
-    myMemberId.setUUID(uuid);
+    m.setUUID(uuid);
 
     messenger = mock(Messenger.class);
     when(messenger.getMemberID()).thenReturn(myMemberId);
@@ -147,8 +148,9 @@ public class GMSMembershipJUnitTest {
     mockMembers = new MemberIdentifier[5];
     for (int i = 0; i < mockMembers.length; i++) {
       mockMembers[i] = createMemberID(8888 + i);
+      m = (GMSMemberData) mockMembers[i].getMemberData();
       uuid = new UUID(r.nextLong(), r.nextLong());
-      mockMembers[i].setUUID(uuid);
+      m.setUUID(uuid);
     }
     members = new ArrayList<>(Arrays.asList(mockMembers));
 
@@ -314,7 +316,7 @@ public class GMSMembershipJUnitTest {
     // each destination w/o a UUID should have been replaced with the corresponding
     // ID from the membership view
     for (int i = 0; i < destinations.length; i++) {
-      assertTrue(destinations[i].hasUUID());
+      assertTrue(((GMSMemberData) destinations[i].getMemberData()).hasUUID());
     }
   }
 

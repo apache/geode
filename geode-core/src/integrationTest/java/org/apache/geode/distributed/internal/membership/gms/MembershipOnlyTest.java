@@ -32,6 +32,7 @@ import org.junit.rules.TemporaryFolder;
 import org.apache.geode.distributed.internal.membership.api.LifecycleListener;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifierFactoryImpl;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifierImpl;
 import org.apache.geode.distributed.internal.membership.api.MemberStartupException;
 import org.apache.geode.distributed.internal.membership.api.Membership;
 import org.apache.geode.distributed.internal.membership.api.MembershipBuilder;
@@ -90,19 +91,19 @@ public class MembershipOnlyTest {
 
   @Test
   public void memberCanConnectToSelfHostedLocator() throws MemberStartupException {
-    Membership<MemberIdentifier> membership = startMember("member", membershipLocator);
+    Membership<MemberIdentifierImpl> membership = startMember("member", membershipLocator);
     assertThat(membership.getView().getMembers()).hasSize(1);
   }
 
   @Test
   public void twoMembersCanConnect() throws MemberStartupException {
-    Membership<MemberIdentifier> member1 = startMember("member1", membershipLocator);
-    Membership<MemberIdentifier> member2 = startMember("member2", null);
+    Membership<MemberIdentifierImpl> member1 = startMember("member1", membershipLocator);
+    Membership<MemberIdentifierImpl> member2 = startMember("member2", null);
     await().untilAsserted(() -> assertThat(member1.getView().getMembers()).hasSize(2));
     await().untilAsserted(() -> assertThat(member2.getView().getMembers()).hasSize(2));
   }
 
-  private Membership<MemberIdentifier> startMember(String name,
+  private Membership<MemberIdentifierImpl> startMember(String name,
       final MembershipLocator embeddedLocator)
       throws MemberStartupException {
     MembershipConfig config = new MembershipConfig() {
@@ -130,11 +131,10 @@ public class MembershipOnlyTest {
     TcpClient locatorClient = new TcpClient(socketCreator, dsfidSerializer.getObjectSerializer(),
         dsfidSerializer.getObjectDeserializer());
 
-    LifecycleListener<MemberIdentifier> lifeCycleListener = mock(LifecycleListener.class);
+    LifecycleListener<MemberIdentifierImpl> lifeCycleListener = mock(LifecycleListener.class);
 
-
-    final Membership<MemberIdentifier> membership =
-        MembershipBuilder.<MemberIdentifier>newMembershipBuilder(
+    final Membership<MemberIdentifierImpl> membership =
+        MembershipBuilder.<MemberIdentifierImpl>newMembershipBuilder(
             socketCreator,
             locatorClient,
             dsfidSerializer,

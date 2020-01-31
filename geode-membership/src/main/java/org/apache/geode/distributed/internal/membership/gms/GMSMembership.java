@@ -1441,7 +1441,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
     for (int i = 0; i < addresses.length; i++) {
       ID id = addresses[i];
       if (id != null) {
-        if (!id.hasUUID()) {
+        if (!id.getMemberData().hasUUID()) {
           id.setMemberData(view.getCanonicalID(id).getMemberData());
         }
       }

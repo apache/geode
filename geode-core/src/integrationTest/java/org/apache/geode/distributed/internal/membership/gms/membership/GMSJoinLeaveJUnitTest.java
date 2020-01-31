@@ -632,7 +632,7 @@ public class GMSJoinLeaveJUnitTest {
             .setMembershipPort(gmsJoinLeaveMemberId.getMembershipPort())
             .build());
     previousMemberId.setVmViewId(0);
-    previousMemberId.setUUID(gmsJoinLeaveMemberId.getUUID());
+    previousMemberId.getMemberData().setUUID(gmsJoinLeaveMemberId.getMemberData().getUUID());
     GMSMembershipView view = new GMSMembershipView(mockMembers[0], 1,
         createMemberList(mockMembers[0], previousMemberId, mockMembers[1]));
     InstallViewMessage viewMessage = new InstallViewMessage(view, 0, false);
@@ -867,7 +867,7 @@ public class GMSJoinLeaveJUnitTest {
     mbrs.add(mockMembers[2]);
     mbrs.add(gmsJoinLeaveMemberId);
 
-    mockMembers[1].setMemberWeight((byte) 20);
+    mockMembers[1].getMemberData().setMemberWeight((byte) 20);
 
     GMSMembershipView newView =
         new GMSMembershipView(mockMembers[0], gmsJoinLeave.getView().getViewId() + 1, mbrs);
@@ -917,7 +917,7 @@ public class GMSJoinLeaveJUnitTest {
     mbrs.add(mockMembers[2]);
     mbrs.add(gmsJoinLeaveMemberId);
 
-    mockMembers[1].setMemberWeight((byte) 20);
+    mockMembers[1].getMemberData().setMemberWeight((byte) 20);
 
     GMSMembershipView newView =
         new GMSMembershipView(mockMembers[0], gmsJoinLeave.getView().getViewId() + 1, mbrs,

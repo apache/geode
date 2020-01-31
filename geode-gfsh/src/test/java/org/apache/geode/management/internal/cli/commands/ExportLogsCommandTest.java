@@ -173,8 +173,8 @@ public class ExportLogsCommandTest {
 
     InternalDistributedMember member1 = new InternalDistributedMember("member1", 12345);
     InternalDistributedMember member2 = new InternalDistributedMember("member2", 98765);
-    member1.setName("member1");
-    member2.setName("member2");
+    member1.getMemberData().setName("member1");
+    member2.getMemberData().setName("member2");
     Set<DistributedMember> testMembers = new HashSet<>();
     testMembers.add(member1);
     testMembers.add(member2);
@@ -216,8 +216,8 @@ public class ExportLogsCommandTest {
 
     InternalDistributedMember member1 = new InternalDistributedMember("member1", 12345);
     InternalDistributedMember member2 = new InternalDistributedMember("member2", 98765);
-    member1.setName("member1");
-    member2.setName("member2");
+    member1.getMemberData().setName("member1");
+    member2.getMemberData().setName("member2");
     Set<DistributedMember> testMembers = new HashSet<>();
     testMembers.add(member1);
     testMembers.add(member2);
@@ -258,7 +258,7 @@ public class ExportLogsCommandTest {
     boolean statsOnly = false;
 
     InternalDistributedMember member1 = new InternalDistributedMember("member1", 12345);
-    member1.setName("member1");
+    member1.getMemberData().setName("member1");
     Set<DistributedMember> testMembers = new HashSet<>();
     testMembers.add(member1);
 

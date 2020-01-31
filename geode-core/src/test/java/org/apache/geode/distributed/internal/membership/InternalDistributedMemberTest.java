@@ -123,10 +123,8 @@ public class InternalDistributedMemberTest {
     InetAddress host1 = InetAddress.getByAddress(new byte[] {127, 0, 0, 1});
     MemberData netMember1 = mock(MemberData.class);
     when(netMember1.getInetAddress()).thenReturn(host1);
-    when(netMember1.getUniqueTag()).thenReturn("tag1");
     MemberData netMember2 = mock(MemberData.class);
     when(netMember2.getInetAddress()).thenReturn(host1);
-    when(netMember2.getUniqueTag()).thenReturn("tag2");
     InternalDistributedMember member = new InternalDistributedMember(netMember1);
     member.setUniqueTag("tag1");
     InternalDistributedMember other = new InternalDistributedMember(netMember2);
