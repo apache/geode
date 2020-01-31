@@ -82,6 +82,7 @@ GitHub:
 https://github.com/apache/geode/tree/rel/v${FULL_VERSION}
 https://github.com/apache/geode-examples/tree/rel/v${FULL_VERSION}
 https://github.com/apache/geode-native/tree/rel/v${FULL_VERSION}
+https://github.com/apache/geode-benchmarks/tree/rel/v${FULL_VERSION}
 
 Pipelines:
 https://concourse.apachegeode-ci.info/teams/main/pipelines/apache-release-${VERSION//./-}-main

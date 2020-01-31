@@ -57,10 +57,11 @@ WORKSPACE=$PWD/release-${VERSION}-workspace
 GEODE=$WORKSPACE/geode
 GEODE_EXAMPLES=$WORKSPACE/geode-examples
 GEODE_NATIVE=$WORKSPACE/geode-native
+GEODE_BENCHMARKS=$WORKSPACE/geode-benchmarks
 SVN_DIR=$WORKSPACE/dist/dev/geode
 set +x
 
-if [ -d "$GEODE" ] && [ -d "$GEODE_EXAMPLES" ] && [ -d "$GEODE_NATIVE" ] && [ -d "$SVN_DIR" ] ; then
+if [ -d "$GEODE" ] && [ -d "$GEODE_EXAMPLES" ] && [ -d "$GEODE_NATIVE" ] && [ -d "$GEODE_BENCHMARKS" ] && [ -d "$SVN_DIR" ] ; then
     true
 else
     echo "Please run this script from the same working directory as you initially ran prepare_rc.sh"
@@ -101,7 +102,7 @@ echo "============================================================"
 echo "Pushing tags..."
 echo "============================================================"
 
-for DIR in ${GEODE} ${GEODE_EXAMPLES} ${GEODE_NATIVE} ; do
+for DIR in ${GEODE} ${GEODE_EXAMPLES} ${GEODE_NATIVE} ${GEODE_BENCHMARKS }; do
     set -x
     cd ${DIR}
     git push origin rel/v${FULL_VERSION}
@@ -111,7 +112,7 @@ done
 
 echo ""
 echo "============================================================"
-echo "Done publishing the release candidate!  Next steps:Once the RC pipeline is greenSend the email below to announce it:"
+echo "Done publishing the release candidate!  Next steps:"
 echo "============================================================"
 cd ${GEODE}/../..
 echo "1. ${0%/*}/deploy_rc_pipeline.sh -v ${VERSION}"
