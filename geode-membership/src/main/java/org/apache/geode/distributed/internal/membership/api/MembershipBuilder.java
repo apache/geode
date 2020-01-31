@@ -32,8 +32,6 @@ public interface MembershipBuilder<ID extends MemberIdentifier> {
 
   MembershipBuilder<ID> setMembershipListener(MembershipListener<ID> membershipListener);
 
-  MembershipBuilder<ID> setMembershipLocator(MembershipLocator<ID> membershipLocator);
-
   MembershipBuilder<ID> setMessageListener(MessageListener<ID> messageListener);
 
   MembershipBuilder<ID> setConfig(MembershipConfig membershipConfig);
@@ -47,7 +45,6 @@ public interface MembershipBuilder<ID extends MemberIdentifier> {
       final TcpClient locatorClient,
       final DSFIDSerializer serializer,
       final MemberIdentifierFactory<ID> memberFactory) {
-    return new MembershipBuilderImpl<>(
-        socketCreator, locatorClient, serializer, memberFactory);
+    return new MembershipBuilderImpl<>(socketCreator, locatorClient, serializer, memberFactory);
   }
 }

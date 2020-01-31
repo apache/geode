@@ -1890,6 +1890,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
     @Override
     public void started() throws MemberStartupException {
       startCleanupTimer();
+      lifecycleListener.started();
     }
 
     /* Service interface */

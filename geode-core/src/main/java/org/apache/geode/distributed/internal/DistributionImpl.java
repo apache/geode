@@ -57,7 +57,6 @@ import org.apache.geode.distributed.internal.membership.api.MembershipBuilder;
 import org.apache.geode.distributed.internal.membership.api.MembershipClosedException;
 import org.apache.geode.distributed.internal.membership.api.MembershipConfigurationException;
 import org.apache.geode.distributed.internal.membership.api.MembershipListener;
-import org.apache.geode.distributed.internal.membership.api.MembershipLocator;
 import org.apache.geode.distributed.internal.membership.api.MembershipStatistics;
 import org.apache.geode.distributed.internal.membership.api.MembershipView;
 import org.apache.geode.distributed.internal.membership.api.Message;
@@ -110,11 +109,9 @@ public class DistributionImpl implements Distribution {
 
 
   public DistributionImpl(final ClusterDistributionManager clusterDistributionManager,
-      final RemoteTransportConfig transport,
-      final InternalDistributedSystem system,
+      final RemoteTransportConfig transport, final InternalDistributedSystem system,
       final MembershipListener<InternalDistributedMember> listener,
-      final MessageListener<InternalDistributedMember> messageListener,
-      final MembershipLocator<InternalDistributedMember> locator) {
+      final MessageListener<InternalDistributedMember> messageListener) {
     this.clusterDistributionManager = clusterDistributionManager;
     this.transportConfig = transport;
     this.tcpDisabled = transportConfig.isTcpDisabled();
@@ -140,7 +137,6 @@ public class DistributionImpl implements Distribution {
           locatorClient,
           InternalDataSerializer.getDSFIDSerializer(),
           new ClusterDistributionManager.ClusterDistributionManagerIDFactory())
-          .setMembershipLocator(locator)
           .setAuthenticator(
               new GMSAuthenticator(system.getSecurityProperties(), system.getSecurityService(),
                   system.getSecurityLogWriter(), system.getInternalLogWriter()))
@@ -157,6 +153,14 @@ public class DistributionImpl implements Distribution {
     } catch (RuntimeException e) {
       logger.error("Unexpected problem starting up membership services", e);
       throw new SystemConnectException("Problem starting up membership services", e);
+    }
+  }
+
+  public static void connectLocatorToServices(Membership<InternalDistributedMember> membership) {
+    // see if a locator was started and put it in GMS Services
+    InternalLocator l = (InternalLocator) Locator.getLocator();
+    if (l != null && l.getMembershipLocator() != null) {
+      l.getMembershipLocator().setMembership(membership);
     }
   }
 
@@ -213,12 +217,11 @@ public class DistributionImpl implements Distribution {
       ClusterDistributionManager clusterDistributionManager, RemoteTransportConfig transport,
       InternalDistributedSystem system,
       MembershipListener<InternalDistributedMember> listener,
-      MessageListener<InternalDistributedMember> messageListener,
-      final MembershipLocator<InternalDistributedMember> locator) {
+      MessageListener<InternalDistributedMember> messageListener) {
 
     DistributionImpl distribution =
         new DistributionImpl(clusterDistributionManager, transport, system, listener,
-            messageListener, locator);
+            messageListener);
     distribution.start();
     return distribution;
   }
@@ -910,6 +913,11 @@ public class DistributionImpl implements Distribution {
     @Override
     public void destroyMember(InternalDistributedMember member, String reason) {
       distribution.destroyMember(member, reason);
+    }
+
+    @Override
+    public void started() {
+      connectLocatorToServices(distribution.getMembership());
     }
 
     @Override

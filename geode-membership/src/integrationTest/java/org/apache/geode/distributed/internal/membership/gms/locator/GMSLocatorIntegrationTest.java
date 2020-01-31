@@ -30,7 +30,7 @@ import org.apache.geode.distributed.internal.membership.api.MemberDataBuilder;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifierFactoryImpl;
 import org.apache.geode.distributed.internal.membership.api.MembershipConfigurationException;
-import org.apache.geode.distributed.internal.membership.api.MembershipLocator;
+import org.apache.geode.distributed.internal.membership.gms.GMSMembership;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.MembershipLocatorStatisticsNoOp;
 import org.apache.geode.distributed.internal.membership.gms.Services;
@@ -85,9 +85,9 @@ public class GMSLocatorIntegrationTest {
                 services.getSerializer().getObjectDeserializer()),
             services.getSerializer().getObjectSerializer(),
             services.getSerializer().getObjectDeserializer());
-
-    final MembershipLocator membershipLocator = mock(MembershipLocator.class);
-    gmsLocator.setServices(services);
+    GMSMembership membership = mock(GMSMembership.class);
+    when(membership.getServices()).thenReturn(services);
+    gmsLocator.setMembership(membership);
   }
 
   @Test
