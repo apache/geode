@@ -38,23 +38,23 @@ import org.apache.geode.management.runtime.RuntimeInfo;
  * @param <R> the runtimeInfo type
  */
 @Experimental
-public class ConfigurationResult<T extends AbstractConfiguration<R>, R extends RuntimeInfo> {
+public class EntityGroupInfo<T extends AbstractConfiguration<R>, R extends RuntimeInfo> {
   private T configuration;
   private List<R> runtimeInfo = new ArrayList<>();
 
   /**
    * for internal use only
    */
-  public ConfigurationResult() {}
+  public EntityGroupInfo() {}
 
   /**
    * for internal use only
    */
-  public ConfigurationResult(T configuration) {
+  public EntityGroupInfo(T configuration) {
     this(configuration, emptyList());
   }
 
-  public ConfigurationResult(T configuration, List<R> runtimeInfo) {
+  public EntityGroupInfo(T configuration, List<R> runtimeInfo) {
     this.configuration = configuration;
     this.runtimeInfo = runtimeInfo;
   }
@@ -100,7 +100,7 @@ public class ConfigurationResult<T extends AbstractConfiguration<R>, R extends R
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    ConfigurationResult<?, ?> that = (ConfigurationResult<?, ?>) o;
+    EntityGroupInfo<?, ?> that = (EntityGroupInfo<?, ?>) o;
     return Objects.equals(configuration, that.configuration) &&
         Objects.equals(runtimeInfo, that.runtimeInfo);
   }

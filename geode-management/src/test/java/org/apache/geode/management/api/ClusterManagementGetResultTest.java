@@ -33,11 +33,11 @@ public class ClusterManagementGetResultTest {
     Region region = createRegion();
     RuntimeRegionInfo runtimeRegionInfo = new RuntimeRegionInfo();
 
-    ConfigurationResult<Region, RuntimeRegionInfo> configurationResult =
-        new ConfigurationResult<>(region, singletonList(runtimeRegionInfo));
+    EntityGroupInfo<Region, RuntimeRegionInfo> entityGroupInfo =
+        new EntityGroupInfo<>(region, singletonList(runtimeRegionInfo));
 
-    ConfigurationInfo<Region, RuntimeRegionInfo> configurationinfo =
-        new ConfigurationInfo<>("my.element", singletonList(configurationResult));
+    EntityInfo<Region, RuntimeRegionInfo> configurationinfo =
+        new EntityInfo<>("my.element", singletonList(entityGroupInfo));
 
     ClusterManagementGetResult<Region, RuntimeRegionInfo> original =
         new ClusterManagementGetResult<>(configurationinfo);
