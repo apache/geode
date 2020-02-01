@@ -373,6 +373,8 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
           logger.fatal(e1.getMessage(), e1);
         }
         this.conn = null;
+        cluster.setConnectedFlag(false);
+        cluster.setConnectionErrorMsg(ioe.getMessage());
       }
 
       return false;

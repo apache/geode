@@ -93,7 +93,7 @@ public class Cluster extends Thread {
   private long garbageCollectionCount = 0L;
   private int clusterId;
   private int notificationPageNumber = 1;
-  private boolean connectedFlag;
+  private volatile boolean connectedFlag;
   private String connectionErrorMsg = "";
 
   private Set<String> deletedMembers = new HashSet<String>();
@@ -2253,6 +2253,9 @@ public class Cluster extends Thread {
 
     this.updater = new JMXDataUpdater(serverName, port, this);
     this.clusterHasBeenInitialized = new CountDownLatch(1);
+    if (Boolean.getBoolean(PulseConstants.SYSTEM_PROPERTY_PULSE_EMBEDDED)) {
+      this.setDaemon(true);
+    }
   }
 
   public void waitForInitialization(long timeout, TimeUnit unit) throws InterruptedException {
@@ -2265,7 +2268,8 @@ public class Cluster extends Thread {
   @Override
   public void run() {
     try {
-      while (!this.stopUpdates) {
+      while (!this.stopUpdates && isConnectedFlag()) {
+        logger.info("in run loop");
         try {
           if (!this.updateData()) {
             this.stale++;
