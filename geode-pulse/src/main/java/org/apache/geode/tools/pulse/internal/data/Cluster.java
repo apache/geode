@@ -2269,7 +2269,6 @@ public class Cluster extends Thread {
   public void run() {
     try {
       while (!this.stopUpdates && isConnectedFlag()) {
-        logger.info("in run loop");
         try {
           if (!this.updateData()) {
             this.stale++;
