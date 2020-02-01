@@ -1153,7 +1153,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
             if (response.getRegistrants() != null) {
               state.registrants.addAll(response.getRegistrants());
             }
-            logger.info("received {}", response);
+            logger.info("received {} from locator {}", response, laddr);
             if (!state.hasContactedAJoinedLocator && response.getSenderId() != null
                 && response.getSenderId().getVmViewId() >= 0) {
               logger.info("Locator's address indicates it is part of a distributed system "
