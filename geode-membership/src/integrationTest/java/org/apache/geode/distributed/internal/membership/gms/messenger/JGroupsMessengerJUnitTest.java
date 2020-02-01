@@ -41,7 +41,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -64,11 +63,15 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
 
+import org.apache.geode.distributed.internal.membership.api.MemberDisconnectedException;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifierFactoryImpl;
 import org.apache.geode.distributed.internal.membership.api.MembershipClosedException;
 import org.apache.geode.distributed.internal.membership.api.MembershipConfig;
 import org.apache.geode.distributed.internal.membership.api.Message;
 import org.apache.geode.distributed.internal.membership.gms.DefaultMembershipStatistics;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
+import org.apache.geode.distributed.internal.membership.gms.MemberIdentifierImpl;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.Services.Stopper;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.HealthMonitor;
@@ -192,17 +195,7 @@ public class JGroupsMessengerJUnitTest {
     // if I do this earlier then test this return messenger as null
     when(services.getMessenger()).thenReturn(messenger);
     when(services.getMemberFactory())
-        .thenReturn(new MemberIdentifierFactory<InternalDistributedMember>() {
-          @Override
-          public InternalDistributedMember create(MemberData memberInfo) {
-            return new InternalDistributedMember(memberInfo);
-          }
-
-          @Override
-          public Comparator<InternalDistributedMember> getComparator() {
-            return InternalDistributedMember::compareTo;
-          }
-        });
+        .thenReturn(new MemberIdentifierFactoryImpl());
 
     String jgroupsConfig = messenger.jgStackConfig;
     int startIdx = jgroupsConfig.indexOf("<org");
