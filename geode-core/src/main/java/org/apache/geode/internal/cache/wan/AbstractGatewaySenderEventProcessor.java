@@ -1240,6 +1240,10 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
       if (this.sender.isPrimary() && this.queue.size() > 0) {
         logger.warn("Destroying GatewayEventDispatcher with actively queued data.");
       }
+      if (resetLastPeekedEvents) {
+        resetLastPeekedEvents();
+        resetLastPeekedEvents = false;
+      }
     } catch (RegionDestroyedException ignore) {
     } catch (CancelException ignore) {
     } catch (CacheException ignore) {
