@@ -923,6 +923,9 @@ public class SerialGatewaySenderQueue implements RegionQueue {
       }
 
     } else {
+      if (listener != null) {
+        addCacheListener(listener);
+      }
       if (this.cleanQueues) {
         this.region.clear();
       }
@@ -972,7 +975,9 @@ public class SerialGatewaySenderQueue implements RegionQueue {
   }
 
   @Override
-  public void close() {}
+  public void close() {
+    removeCacheListener();
+  }
 
   private class BatchRemovalThread extends Thread {
     /**
