@@ -194,7 +194,7 @@ public class SerialAsyncEventQueueImpl extends AbstractGatewaySender {
         (InternalDistributedSystem) this.cache.getDistributedSystem();
     system.handleResourceEvent(ResourceEvent.GATEWAYSENDER_STOP, this);
 
-    this.eventProcessor = null;
+    // this.eventProcessor = null;
   }
 
   @Override
