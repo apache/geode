@@ -62,7 +62,7 @@ import org.apache.geode.management.api.ClusterManagementOperation;
 import org.apache.geode.management.api.ClusterManagementOperationResult;
 import org.apache.geode.management.api.ClusterManagementRealizationResult;
 import org.apache.geode.management.api.ClusterManagementResult;
-import org.apache.geode.management.api.ConfigurationResult;
+import org.apache.geode.management.api.EntityGroupInfo;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.configuration.Index;
 import org.apache.geode.management.configuration.Member;
@@ -424,17 +424,17 @@ public class LocatorClusterManagementServiceTest {
     ClusterManagementListResult<Region, RuntimeRegionInfo> listResult =
         mock(ClusterManagementListResult.class);
 
-    List<ConfigurationResult<Region, RuntimeRegionInfo>> configurationResults = new ArrayList<>();
+    List<EntityGroupInfo<Region, RuntimeRegionInfo>> entityGroupInfos = new ArrayList<>();
     for (int i = 0; i < 3; i++) {
-      configurationResults.add(mock(ConfigurationResult.class));
+      entityGroupInfos.add(mock(EntityGroupInfo.class));
     }
-    when(listResult.getResult()).thenReturn(configurationResults);
+    when(listResult.getResult()).thenReturn(entityGroupInfos);
 
     doReturn(listResult).when(service).list(same(filter));
 
     ClusterManagementGetResult<Region, RuntimeRegionInfo> getResult = service.get(filter);
 
-    assertThat(getResult.getResult().getConfigurationByGroup()).isSameAs(configurationResults);
+    assertThat(getResult.getResult().getConfigurationByGroup()).isSameAs(entityGroupInfos);
   }
 
   @Test
@@ -442,12 +442,12 @@ public class LocatorClusterManagementServiceTest {
     Member member = new Member();
     ClusterManagementListResult<Member, MemberInformation> listResult =
         mock(ClusterManagementListResult.class);
-    List<ConfigurationResult<Member, MemberInformation>> configurationResults = new ArrayList<>();
-    ConfigurationResult<Member, MemberInformation> configurationResult =
-        mock(ConfigurationResult.class);
-    when(configurationResult.getRuntimeInfo()).thenReturn(emptyList());
-    configurationResults.add(configurationResult);
-    when(listResult.getResult()).thenReturn(configurationResults);
+    List<EntityGroupInfo<Member, MemberInformation>> entityGroupInfos = new ArrayList<>();
+    EntityGroupInfo<Member, MemberInformation> entityGroupInfo =
+        mock(EntityGroupInfo.class);
+    when(entityGroupInfo.getRuntimeInfo()).thenReturn(emptyList());
+    entityGroupInfos.add(entityGroupInfo);
+    when(listResult.getResult()).thenReturn(entityGroupInfos);
 
     assertThatThrownBy(() -> service.get(member))
         .isInstanceOf(ClusterManagementException.class)

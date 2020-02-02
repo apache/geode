@@ -49,12 +49,12 @@ public class ClusterManagementListResult<T extends AbstractConfiguration<R>, R e
   // Override the mapper setting so that we always show result
   @JsonInclude
   @JsonProperty
-  private List<ConfigurationResult<T, R>> result = new ArrayList<>();
+  private List<EntityGroupInfo<T, R>> result = new ArrayList<>();
 
   /**
    * Returns the combined payload of the list call
    */
-  public List<ConfigurationResult<T, R>> getResult() {
+  public List<EntityGroupInfo<T, R>> getResult() {
     return result;
   }
 
@@ -63,7 +63,7 @@ public class ClusterManagementListResult<T extends AbstractConfiguration<R>, R e
    */
   @JsonIgnore
   public List<T> getConfigResult() {
-    return result.stream().map(ConfigurationResult::getConfiguration).collect(Collectors.toList());
+    return result.stream().map(EntityGroupInfo::getConfiguration).collect(Collectors.toList());
   }
 
   /**
@@ -77,7 +77,7 @@ public class ClusterManagementListResult<T extends AbstractConfiguration<R>, R e
   /**
    * for internal use only
    */
-  public void setResult(List<ConfigurationResult<T, R>> result) {
+  public void setResult(List<EntityGroupInfo<T, R>> result) {
     this.result = result;
   }
 }

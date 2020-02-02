@@ -37,7 +37,7 @@ import org.apache.geode.management.runtime.RuntimeInfo;
 import org.apache.geode.management.runtime.RuntimeRegionInfo;
 import org.apache.geode.util.internal.GeodeJsonMapper;
 
-public class ConfigurationInfoTest {
+public class EntityInfoTest {
   abstract static class TestRuntimeInfo extends RuntimeInfo {
   }
 
@@ -50,17 +50,17 @@ public class ConfigurationInfoTest {
 
     Map<String, List<TestRuntimeInfo>> runtimeInfosPerGroup = runtimeInfosFor(groups);
 
-    List<ConfigurationResult<TestConfiguration, TestRuntimeInfo>> groupResults =
+    List<EntityGroupInfo<TestConfiguration, TestRuntimeInfo>> groupResults =
         createGroupResults(configurationsFor(groups), runtimeInfosPerGroup);
 
-    ConfigurationInfo<TestConfiguration, TestRuntimeInfo> configurationInfo =
-        new ConfigurationInfo<>("some.element.id", groupResults);
+    EntityInfo<TestConfiguration, TestRuntimeInfo> entityInfo =
+        new EntityInfo<>("some.element.id", groupResults);
 
     List<TestRuntimeInfo> runtimeInfosForAllGroups = runtimeInfosPerGroup.values().stream()
         .flatMap(List::stream)
         .collect(toList());
 
-    assertThat(configurationInfo.getRuntimeInfos())
+    assertThat(entityInfo.getRuntimeInfos())
         .containsExactlyInAnyOrderElementsOf(runtimeInfosForAllGroups);
   }
 
@@ -70,15 +70,15 @@ public class ConfigurationInfoTest {
 
     Map<String, TestConfiguration> configurationPerGroup = configurationsFor(groups);
 
-    List<ConfigurationResult<TestConfiguration, TestRuntimeInfo>> groupResults =
+    List<EntityGroupInfo<TestConfiguration, TestRuntimeInfo>> groupResults =
         createGroupResults(configurationPerGroup, runtimeInfosFor(groups));
 
-    ConfigurationInfo<TestConfiguration, TestRuntimeInfo> configurationInfo =
-        new ConfigurationInfo<>("some.element.id", groupResults);
+    EntityInfo<TestConfiguration, TestRuntimeInfo> entityInfo =
+        new EntityInfo<>("some.element.id", groupResults);
 
     Collection<TestConfiguration> configurationsForAllGroups = configurationPerGroup.values();
 
-    assertThat(configurationInfo.getConfigurations())
+    assertThat(entityInfo.getConfigurations())
         .containsExactlyInAnyOrderElementsOf(configurationsForAllGroups);
   }
 
@@ -88,11 +88,11 @@ public class ConfigurationInfoTest {
     Region region = new Region();
     RuntimeRegionInfo runtimeRegionInfo = new RuntimeRegionInfo();
 
-    ConfigurationResult<Region, RuntimeRegionInfo> configurationResult =
-        new ConfigurationResult<>(region, singletonList(runtimeRegionInfo));
+    EntityGroupInfo<Region, RuntimeRegionInfo> entityGroupInfo =
+        new EntityGroupInfo<>(region, singletonList(runtimeRegionInfo));
 
-    ConfigurationInfo<Region, RuntimeRegionInfo> original =
-        new ConfigurationInfo<>("my.element", singletonList(configurationResult));
+    EntityInfo<Region, RuntimeRegionInfo> original =
+        new EntityInfo<>("my.element", singletonList(entityGroupInfo));
 
     ObjectMapper mapper = GeodeJsonMapper.getMapper();
     String json = mapper.writeValueAsString(original);
@@ -103,8 +103,8 @@ public class ConfigurationInfoTest {
 
     System.out.println(json);
 
-    ConfigurationInfo<Region, RuntimeRegionInfo> deserialized =
-        mapper.readValue(json, ConfigurationInfo.class);
+    EntityInfo<Region, RuntimeRegionInfo> deserialized =
+        mapper.readValue(json, EntityInfo.class);
 
     System.out.println(mapper.writeValueAsString(deserialized));
 
@@ -121,11 +121,11 @@ public class ConfigurationInfoTest {
         .collect(toMap(group -> group, group -> listOf(3, TestRuntimeInfo.class)));
   }
 
-  private static List<ConfigurationResult<TestConfiguration, TestRuntimeInfo>> createGroupResults(
+  private static List<EntityGroupInfo<TestConfiguration, TestRuntimeInfo>> createGroupResults(
       Map<String, TestConfiguration> configurationPerGroup,
       Map<String, List<TestRuntimeInfo>> runtimeInfosPerGroup) {
     return configurationPerGroup.keySet().stream()
-        .map(group -> new ConfigurationResult<>(configurationPerGroup.get(group),
+        .map(group -> new EntityGroupInfo<>(configurationPerGroup.get(group),
             runtimeInfosPerGroup.get(group)))
         .collect(toList());
   }

@@ -705,9 +705,9 @@ javadoc/org/apache/geode/management/api/ClusterManagementResult.html
 javadoc/org/apache/geode/management/api/ClusterManagementService.html
 javadoc/org/apache/geode/management/api/ClusterManagementServiceTransport.html
 javadoc/org/apache/geode/management/api/CommandType.html
-javadoc/org/apache/geode/management/api/ConfigurationInfo.html
-javadoc/org/apache/geode/management/api/ConfigurationResult.html
 javadoc/org/apache/geode/management/api/ConnectionConfig.html
+javadoc/org/apache/geode/management/api/EntityGroupInfo.html
+javadoc/org/apache/geode/management/api/EntityInfo.html
 javadoc/org/apache/geode/management/api/JsonSerializable.html
 javadoc/org/apache/geode/management/api/RealizationResult.html
 javadoc/org/apache/geode/management/api/RestTemplateClusterManagementServiceTransport.html
