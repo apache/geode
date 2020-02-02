@@ -1609,7 +1609,28 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
   }
 
   @Override
-  public void close() {}
+  public void close() {
+    if (resetLastPeeked) {
+      returnToQueuePreviouslyPeekedEvents();
+      resetLastPeeked = false;
+    }
+  }
+
+  private void returnToQueuePreviouslyPeekedEvents() {
+    for (Iterator<GatewaySenderEventImpl> iterator = peekedEvents.iterator(); iterator
+        .hasNext();) {
+      GatewaySenderEventImpl event = iterator.next();
+      final int bucketId = event.getBucketId();
+      final PartitionedRegion region = (PartitionedRegion) event.getRegion();
+      if (region.getRegionAdvisor().isPrimaryForBucket(bucketId)) {
+        iterator.remove();
+        BucketRegionQueue brq = getBucketRegionQueueByBucketId(getRandomShadowPR(), bucketId);
+        if (brq != null) {
+          brq.pushKeyIntoQueue(event.getShadowKey());
+        }
+      }
+    }
+  }
 
   /**
    * @return the bucketToTempQueueMap
