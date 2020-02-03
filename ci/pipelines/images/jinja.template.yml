@@ -188,7 +188,7 @@ jobs:
   public: ((public-pipelines))
   serial: true
   plan:
-    - get: alpine-tools-image
+    - get: alpine-tools-docker-image
       passed: [build-alpine-tools-docker-image]
     - get:  github-pr-resource-dockerfile
     - put: github-pr-resource-image
