@@ -37,7 +37,7 @@ public class QueryExecutionContext extends ExecutionContext {
 
   private final Query query;
 
-  private boolean cqQueryContext = false;
+  private final boolean cqQueryContext;
 
   private List bucketList;
 
@@ -67,6 +67,14 @@ public class QueryExecutionContext extends ExecutionContext {
   public QueryExecutionContext(Object[] bindArguments, InternalCache cache) {
     super(bindArguments, cache);
     this.query = null;
+    this.cqQueryContext = false;
+  }
+
+  public QueryExecutionContext(Object[] bindArguments, InternalCache cache,
+      boolean cqQueryContext) {
+    super(bindArguments, cache);
+    this.query = null;
+    this.cqQueryContext = cqQueryContext;
   }
 
   public QueryExecutionContext(Object[] bindArguments, InternalCache cache, Query query) {
