@@ -36,6 +36,8 @@ import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.SystemManagementService;
+import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
+import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.i18n.CliStrings;
@@ -44,7 +46,9 @@ import org.apache.geode.security.ResourcePermission;
 
 public class ListGatewayCommand extends GfshCommand {
   @CliCommand(value = CliStrings.LIST_GATEWAY, help = CliStrings.LIST_GATEWAY__HELP)
-  @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
+  @CliMetaData(
+      interceptor = "org.apache.geode.management.internal.cli.commands.ListGatewayCommand$Interceptor",
+      relatedTopic = CliStrings.TOPIC_GEODE_WAN)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.READ)
   public ResultModel listGateway(
@@ -55,16 +59,19 @@ public class ListGatewayCommand extends GfshCommand {
           optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.LIST_GATEWAY__GROUP__HELP) String[] onGroup,
       @CliOption(key = {CliStrings.LIST_GATEWAY__SHOW_RECEIVERS_ONLY},
-          specifiedDefaultValue = "true", unspecifiedDefaultValue = "false",
-          help = CliStrings.LIST_GATEWAY__SHOW_RECEIVERS_ONLY) boolean showReceiversOnly,
+          specifiedDefaultValue = "true",
+          help = CliStrings.LIST_GATEWAY__SHOW_RECEIVERS_ONLY__HELP) Boolean showReceiversOnly,
       @CliOption(key = {CliStrings.LIST_GATEWAY__SHOW_SENDERS_ONLY},
-          specifiedDefaultValue = "true", unspecifiedDefaultValue = "false",
-          help = CliStrings.LIST_GATEWAY__SHOW_SENDERS_ONLY__HELP) boolean showSendersOnly)
+          specifiedDefaultValue = "true",
+          help = CliStrings.LIST_GATEWAY__SHOW_SENDERS_ONLY__HELP) Boolean showSendersOnly)
 
       throws Exception {
 
-    if (showReceiversOnly && showSendersOnly) {
-      return ResultModel.createError(CliStrings.LIST_GATEWAY__ERROR_ON_SHOW_PARAMETERS);
+    if (showReceiversOnly == null){
+      showReceiversOnly=false;
+    }
+    if (showSendersOnly == null ) {
+      showSendersOnly=false;
     }
 
     ResultModel result = new ResultModel();
@@ -169,6 +176,20 @@ public class ListGatewayCommand extends GfshCommand {
               Arrays.stream(entry.getValue().getConnectedGatewaySenders()).collect(joining(", ")));
         }
       }
+    }
+  }
+
+  public static class Interceptor extends AbstractCliAroundInterceptor {
+    @Override
+    public ResultModel preExecution(GfshParseResult parseResult) {
+      Object showReceivers =
+          parseResult.getParamValue(CliStrings.LIST_GATEWAY__SHOW_RECEIVERS_ONLY);
+      Object showSenders = parseResult.getParamValue(CliStrings.LIST_GATEWAY__SHOW_SENDERS_ONLY);
+
+      if (showReceivers != null && showSenders != null) {
+        return ResultModel.createError(CliStrings.LIST_GATEWAY__ERROR_ON_SHOW_PARAMETERS);
+      }
+      return new ResultModel();
     }
   }
 }
