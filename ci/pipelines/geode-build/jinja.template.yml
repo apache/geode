@@ -188,7 +188,7 @@ resources:
     json_key: ((!concourse-gcp-key))
     key: semvers/((pipeline-prefix))((geode-build-branch))/version
 - name: geode-passing-tokens
-  type: gcs-resource
+  type: json-gcs-resource
   source:
     bucket: ((artifact-bucket))
     json_key: ((concourse-gcp-key))
@@ -232,6 +232,13 @@ resource_types:
   type: docker-image
   source:
     repository: frodenas/gcs-resource
+- name: json-gcs-resource
+  type: docker-image
+  source:
+    username: ((docker-username))
+    password: ((docker-password))
+    repository: gcr.io/((gcp-project))/((pipeline-prefix))gcs-resource-with-json-content
+    tag: latest
 jobs:
 {% for semverPiece in ['major', 'minor', 'patch'] -%}
 - name: Bump{{ semverPiece.title() }}
