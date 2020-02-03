@@ -14,7 +14,6 @@
  */
 package org.apache.geode.distributed.internal;
 
-import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -36,6 +35,7 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.mockito.quality.Strictness;
 
+import org.apache.geode.distributed.Locator;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.logging.internal.LoggingSession;
@@ -68,12 +68,16 @@ public class InternalLocatorIntegrationTest {
 
   @Before
   public void setUp() throws IOException {
-    port = getRandomAvailableTCPPort();
+    port = 0;
     hostnameForClients = "";
     bindAddress = null;
 
     logFile = temporaryFolder.newFile("logfile.log");
     workingDirectory = temporaryFolder.getRoot().toPath();
+
+    if (Locator.hasLocator()) {
+      Locator.getLocator().stop();
+    }
   }
 
   @After
@@ -103,6 +107,7 @@ public class InternalLocatorIntegrationTest {
     internalLocator = InternalLocator.startLocator(port, logFile, logWriter,
         securityLogWriter, bindAddress, true,
         distributedSystemProperties, hostnameForClients, workingDirectory);
+    port = internalLocator.getPort();
     internalLocator.stop(true, true, false);
     assertThat(InternalLocator.getLocator()).isNull();
     // try starting a cluster configuration service when a reconnected locator doesn't exist
@@ -116,6 +121,7 @@ public class InternalLocatorIntegrationTest {
     internalLocator = InternalLocator.startLocator(port, logFile, logWriter,
         securityLogWriter, bindAddress, true,
         distributedSystemProperties, hostnameForClients, workingDirectory);
+    port = internalLocator.getPort();
 
     assertThat(internalLocator.isStopped()).isFalse();
   }
@@ -125,6 +131,7 @@ public class InternalLocatorIntegrationTest {
     internalLocator = InternalLocator.startLocator(port, logFile, logWriter,
         securityLogWriter, bindAddress, true,
         distributedSystemProperties, hostnameForClients, workingDirectory);
+    port = internalLocator.getPort();
 
     assertThat(InternalLocator.hasLocator()).isTrue();
   }
@@ -134,6 +141,7 @@ public class InternalLocatorIntegrationTest {
     internalLocator = InternalLocator.startLocator(port, logFile, logWriter,
         securityLogWriter, bindAddress, true,
         distributedSystemProperties, hostnameForClients, workingDirectory);
+    port = internalLocator.getPort();
 
     internalLocator.stop();
 
@@ -145,6 +153,7 @@ public class InternalLocatorIntegrationTest {
     internalLocator = InternalLocator.startLocator(port, logFile, logWriter,
         securityLogWriter, bindAddress, true,
         distributedSystemProperties, hostnameForClients, workingDirectory);
+    port = internalLocator.getPort();
 
     internalLocator.stop();
 
