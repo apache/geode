@@ -26,7 +26,7 @@ import org.apache.geode.distributed.internal.membership.api.MemberIdentifierFact
 import org.apache.geode.distributed.internal.membership.gms.GMSMemberData;
 import org.apache.geode.internal.serialization.Version;
 
-public class MembershipAddressUtil {
+public class MemberIdentifierUtil {
   public static MemberIdentifier createMemberID(short version, int viewId, long msb, long lsb)
       throws UnknownHostException {
     MemberData memberData = MemberDataBuilder.newBuilderForLocalHost("localhost")

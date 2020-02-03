@@ -14,7 +14,7 @@
  */
 package org.apache.geode.distributed.internal.membership.gms;
 
-import static org.apache.geode.distributed.internal.membership.gms.util.MembershipAddressUtil.createMemberID;
+import static org.apache.geode.distributed.internal.membership.gms.util.MemberIdentifierUtil.createMemberID;
 import static org.apache.geode.internal.serialization.DataSerializableFixedID.HIGH_PRIORITY_ACKED_MESSAGE;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;

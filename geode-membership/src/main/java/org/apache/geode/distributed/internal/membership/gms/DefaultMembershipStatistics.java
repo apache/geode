@@ -17,10 +17,35 @@ package org.apache.geode.distributed.internal.membership.gms;
 import org.apache.geode.distributed.internal.membership.api.MembershipStatistics;
 
 /**
- * MembeshipStatisticsNoOp is the default implementation of MembershipStatistics. Create
+ * DefaultMembeshipStatistics is the default implementation of MembershipStatistics. Create
  * and install your own if you want to record membership stats.
  */
-public class MembershipStatisticsNoOp implements MembershipStatistics {
+public class DefaultMembershipStatistics implements MembershipStatistics {
+  private long sentBytes;
+  private long ucastWriteBytes;
+  private long ucastReadBytes;
+  private long mcastWriteBytes;
+  private long mcastReadBytes;
+  private long ucastRetransmits;
+  private long mcastRetransmits;
+  private long mcastRetransmitRequests;
+  private long heartbeatRequestsSent;
+  private long heartbeatRequestsReceived;
+  private long heartbeatsSent;
+  private long heartbeatsReceived;
+  private long suspectsSent;
+  private long suspectsReceived;
+  private long finalCheckRequestsSent;
+  private long finalCheckRequestsReceived;
+  private long finalCheckResponsesSent;
+  private long finalCheckResponsesReceived;
+  private long tcpFinalCheckRequestsSent;
+  private long tcpFinalCheckRequestsReceived;
+  private long tcpFinalCheckResponsesSent;
+  private long tcpFinalCheckResponsesReceived;
+  private long udpFinalCheckRequestsSent;
+  private long udpFinalCheckResponsesReceived;
+
   @Override
   public long startMsgSerialization() {
     return 0;
@@ -63,7 +88,7 @@ public class MembershipStatisticsNoOp implements MembershipStatistics {
 
   @Override
   public void incSentBytes(final long bytes) {
-
+    sentBytes++;
   }
 
   @Override
@@ -78,186 +103,186 @@ public class MembershipStatisticsNoOp implements MembershipStatistics {
 
   @Override
   public void incUcastWriteBytes(final int bytesWritten) {
-
+    ucastWriteBytes++;
   }
 
   @Override
   public void incUcastReadBytes(final int amount) {
-
+    ucastReadBytes++;
   }
 
   @Override
   public void incMcastWriteBytes(final int bytesWritten) {
-
+    mcastWriteBytes++;
   }
 
   @Override
   public void incMcastReadBytes(final int amount) {
-
+    mcastReadBytes++;
   }
 
   @Override
   public void incUcastRetransmits() {
-
+    ucastRetransmits++;
   }
 
   @Override
   public void incMcastRetransmits() {
-
+    mcastRetransmits++;
   }
 
   @Override
   public void incMcastRetransmitRequests() {
-
+    mcastRetransmitRequests++;
   }
 
   @Override
   public void incHeartbeatRequestsSent() {
-
+    heartbeatRequestsSent++;
   }
 
   @Override
   public void incHeartbeatRequestsReceived() {
-
+    heartbeatRequestsReceived++;
   }
 
   @Override
   public void incHeartbeatsSent() {
-
+    heartbeatsSent++;
   }
 
   @Override
   public void incHeartbeatsReceived() {
-
+    heartbeatsReceived++;
   }
 
   @Override
   public void incSuspectsSent() {
-
+    suspectsSent++;
   }
 
   @Override
   public void incSuspectsReceived() {
-
+    suspectsReceived++;
   }
 
   @Override
   public void incFinalCheckRequestsSent() {
-
+    finalCheckRequestsSent++;
   }
 
   @Override
   public void incFinalCheckRequestsReceived() {
-
+    finalCheckRequestsReceived++;
   }
 
   @Override
   public void incFinalCheckResponsesSent() {
-
+    finalCheckResponsesSent++;
   }
 
   @Override
   public void incFinalCheckResponsesReceived() {
-
+    finalCheckResponsesReceived++;
   }
 
   @Override
   public void incTcpFinalCheckRequestsSent() {
-
+    tcpFinalCheckRequestsSent++;
   }
 
   @Override
   public void incTcpFinalCheckRequestsReceived() {
-
+    tcpFinalCheckRequestsReceived++;
   }
 
   @Override
   public void incTcpFinalCheckResponsesSent() {
-
+    tcpFinalCheckResponsesSent++;
   }
 
   @Override
   public void incTcpFinalCheckResponsesReceived() {
-
+    tcpFinalCheckResponsesReceived++;
   }
 
   @Override
   public void incUdpFinalCheckRequestsSent() {
-
+    udpFinalCheckRequestsSent++;
   }
 
   @Override
   public long getUdpFinalCheckRequestsSent() {
-    return 0;
+    return udpFinalCheckRequestsSent;
   }
 
   @Override
   public void incUdpFinalCheckResponsesReceived() {
-
+    udpFinalCheckResponsesReceived++;
   }
 
   @Override
   public long getHeartbeatRequestsReceived() {
-    return 0;
+    return heartbeatRequestsReceived;
   }
 
   @Override
   public long getHeartbeatsSent() {
-    return 0;
+    return heartbeatsSent;
   }
 
   @Override
   public long getSuspectsSent() {
-    return 0;
+    return suspectsSent;
   }
 
   @Override
   public long getSuspectsReceived() {
-    return 0;
+    return suspectsReceived;
   }
 
   @Override
   public long getFinalCheckRequestsSent() {
-    return 0;
+    return finalCheckRequestsSent;
   }
 
   @Override
   public long getFinalCheckRequestsReceived() {
-    return 0;
+    return finalCheckRequestsReceived;
   }
 
   @Override
   public long getFinalCheckResponsesSent() {
-    return 0;
+    return finalCheckResponsesSent;
   }
 
   @Override
   public long getFinalCheckResponsesReceived() {
-    return 0;
+    return finalCheckResponsesReceived;
   }
 
   @Override
   public long getTcpFinalCheckRequestsSent() {
-    return 0;
+    return tcpFinalCheckRequestsSent;
   }
 
   @Override
   public long getTcpFinalCheckRequestsReceived() {
-    return 0;
+    return tcpFinalCheckRequestsReceived;
   }
 
   @Override
   public long getTcpFinalCheckResponsesSent() {
-    return 0;
+    return tcpFinalCheckResponsesSent;
   }
 
   @Override
   public long getTcpFinalCheckResponsesReceived() {
-    return 0;
+    return tcpFinalCheckResponsesReceived;
   }
 
   @Override
   public long getHeartbeatRequestsSent() {
-    return 0;
+    return heartbeatRequestsSent;
   }
 }

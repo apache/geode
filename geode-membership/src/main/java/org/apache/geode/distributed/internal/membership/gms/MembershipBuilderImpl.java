@@ -42,7 +42,7 @@ public class MembershipBuilderImpl<ID extends MemberIdentifier> implements Membe
   private MembershipListener<ID> membershipListener = new MembershipListenerNoOp();
   private MessageListener<ID> messageListener = message -> {
   };
-  private MembershipStatistics statistics = new MembershipStatisticsNoOp();
+  private MembershipStatistics statistics = new DefaultMembershipStatistics();
   private Authenticator<ID> authenticator = new AuthenticatorNoOp();
   private MembershipConfig membershipConfig = new MembershipConfig() {};
   private final DSFIDSerializer serializer;

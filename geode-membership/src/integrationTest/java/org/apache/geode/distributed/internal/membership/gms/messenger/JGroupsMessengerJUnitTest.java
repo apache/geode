@@ -14,13 +14,6 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.messenger;
 
-import static org.apache.geode.distributed.ConfigurationProperties.ACK_WAIT_THRESHOLD;
-import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_TCP;
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
-import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_TTL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -29,7 +22,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doCallRealMethod;
@@ -49,7 +41,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -67,23 +58,20 @@ import org.jgroups.protocols.pbcast.NAKACK2;
 import org.jgroups.util.Digest;
 import org.jgroups.util.UUID;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.mockito.Mockito;
 
-import org.apache.geode.SerializationException;
-import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.distributed.internal.DistributionConfigImpl;
-import org.apache.geode.distributed.internal.DistributionStats;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.adapter.ServiceConfig;
-import org.apache.geode.distributed.internal.membership.api.MemberData;
 import org.apache.geode.distributed.internal.membership.api.MemberDisconnectedException;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
-import org.apache.geode.distributed.internal.membership.api.MemberIdentifierFactory;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifierFactoryImpl;
 import org.apache.geode.distributed.internal.membership.api.MembershipClosedException;
 import org.apache.geode.distributed.internal.membership.api.MembershipConfig;
 import org.apache.geode.distributed.internal.membership.api.Message;
+import org.apache.geode.distributed.internal.membership.gms.DefaultMembershipStatistics;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
+import org.apache.geode.distributed.internal.membership.gms.MemberIdentifierImpl;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.Services.Stopper;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.HealthMonitor;
@@ -98,12 +86,7 @@ import org.apache.geode.distributed.internal.membership.gms.messages.JoinRequest
 import org.apache.geode.distributed.internal.membership.gms.messages.JoinResponseMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.LeaveRequestMessage;
 import org.apache.geode.distributed.internal.membership.gms.messenger.JGroupsMessenger.JGroupsReceiver;
-import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
-import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
-import org.apache.geode.internal.net.SocketCreatorFactory;
-import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.distributed.internal.membership.gms.util.MemberIdentifierUtil;
 import org.apache.geode.internal.serialization.BufferDataOutputStream;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
@@ -111,6 +94,7 @@ import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.internal.DSFIDSerializerImpl;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 @Category({MembershipTest.class})
@@ -125,35 +109,20 @@ public class JGroupsMessengerJUnitTest {
   private Stopper stopper;
   private HealthMonitor healthMonitor;
   private InterceptUDP interceptor;
-  private long statsId = 123;
   private MembershipConfig membershipConfig;
-  private RemoteTransportConfig tconfig;
-  private TcpSocketCreator socketCreator;
 
   private void initMocks(boolean enableMcast) throws Exception {
-    initMocks(enableMcast, new Properties());
+    initMocks(enableMcast, false);
   }
 
   /**
    * Create stub and mock objects
    */
-  private void initMocks(boolean enableMcast, Properties addProp) throws Exception {
+  private void initMocks(boolean enableMcast, boolean secure) throws Exception {
     if (messenger != null) {
       messenger.stop();
       messenger = null;
     }
-    Properties nonDefault = new Properties();
-    nonDefault.put(DISABLE_TCP, "true");
-    nonDefault.put(MCAST_PORT,
-        enableMcast ? "" + AvailablePortHelper.getRandomAvailableUDPPort() : "0");
-    nonDefault.put(MCAST_TTL, "0");
-    nonDefault.put(LOG_FILE, "");
-    nonDefault.put(LOG_LEVEL, "fine");
-    nonDefault.put(LOCATORS, "localhost[10344]");
-    nonDefault.put(ACK_WAIT_THRESHOLD, "1");
-    nonDefault.putAll(addProp);
-    DistributionConfigImpl config = new DistributionConfigImpl(nonDefault);
-    tconfig = new RemoteTransportConfig(config, MemberIdentifier.NORMAL_DM_TYPE);
 
     stopper = mock(Stopper.class);
     when(stopper.isCancelInProgress()).thenReturn(false);
@@ -165,7 +134,46 @@ public class JGroupsMessengerJUnitTest {
 
     joinLeave = mock(JoinLeave.class);
 
-    membershipConfig = new ServiceConfig(tconfig, config);
+
+    membershipConfig = new TestMembershipConfig() {
+      @Override
+      public String getLocators() {
+        return "localhost[10344]";
+      }
+
+      @Override
+      public long getAckWaitThreshold() {
+        return 1;
+      }
+
+      @Override
+      public int getMcastTtl() {
+        return 0;
+      }
+
+      @Override
+      public boolean getDisableTcp() {
+        return true;
+      }
+
+      @Override
+      public int getMcastPort() {
+        if (enableMcast) {
+          return 1234;
+        } else {
+          return 0;
+        }
+      }
+
+      @Override
+      public String getSecurityUDPDHAlgo() {
+        if (secure) {
+          return AES_128;
+        } else {
+          return "";
+        }
+      }
+    };
 
     services = mock(Services.class);
     when(services.getConfig()).thenReturn(membershipConfig);
@@ -173,33 +181,21 @@ public class JGroupsMessengerJUnitTest {
     when(services.getHealthMonitor()).thenReturn(healthMonitor);
     when(services.getManager()).thenReturn(manager);
     when(services.getJoinLeave()).thenReturn(joinLeave);
-    DSFIDSerializer serializer = InternalDataSerializer.getDSFIDSerializer();
+    DSFIDSerializer serializer = new DSFIDSerializerImpl();
     Services.registerSerializables(serializer);
     when(services.getSerializer()).thenReturn(serializer);
     Version current = Version.CURRENT; // force Version static initialization to set
                                        // Version
 
-    when(services.getStatistics()).thenReturn(mock(DistributionStats.class));
+    when(services.getStatistics()).thenReturn(new DefaultMembershipStatistics());
 
-    socketCreator = SocketCreatorFactory.setDistributionConfig(config)
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER);
-    messenger = new JGroupsMessenger<MemberIdentifier>();
+    messenger = new JGroupsMessenger<>();
     messenger.init(services);
 
     // if I do this earlier then test this return messenger as null
     when(services.getMessenger()).thenReturn(messenger);
     when(services.getMemberFactory())
-        .thenReturn(new MemberIdentifierFactory<InternalDistributedMember>() {
-          @Override
-          public InternalDistributedMember create(MemberData memberInfo) {
-            return new InternalDistributedMember(memberInfo);
-          }
-
-          @Override
-          public Comparator<InternalDistributedMember> getComparator() {
-            return InternalDistributedMember::compareTo;
-          }
-        });
+        .thenReturn(new MemberIdentifierFactoryImpl());
 
     String jgroupsConfig = messenger.jgStackConfig;
     int startIdx = jgroupsConfig.indexOf("<org");
@@ -292,7 +288,7 @@ public class JGroupsMessengerJUnitTest {
     mbr.setMemberWeight((byte) 40);
     mbr.toData(out, mock(SerializationContext.class));
     DataInputStream in = new DataInputStream(new ByteArrayInputStream(out.toByteArray()));
-    mbr = new InternalDistributedMember();
+    mbr = new MemberIdentifierImpl();
     mbr.fromData(in, mock(DeserializationContext.class));
     assertEquals(40, mbr.getMemberWeight());
   }
@@ -312,7 +308,7 @@ public class JGroupsMessengerJUnitTest {
       // for code coverage we need to test with both a SerializationException and
       // an IOException. The former is wrapped in a MembershipIOException while the
       // latter is not
-      doThrow(new SerializationException("")).when(msg).toData(any(DataOutput.class),
+      Mockito.doThrow(new IOException("test exception")).when(msg).toData(any(DataOutput.class),
           any(SerializationContext.class));
       Set<?> failures = messenger.send(msg);
       assertThat(failures).isNotNull();
@@ -803,14 +799,14 @@ public class JGroupsMessengerJUnitTest {
 
     interceptor.collectMessages = true;
     pinger.sendPingMessage(messenger.myChannel, null, addr);
-    assertEquals("expected 1 message but found " + interceptor.collectedMessages,
+    Assert.assertEquals("expected 1 message but found " + interceptor.collectedMessages,
         interceptor.collectedMessages.size(), 1);
     pingMessage = interceptor.collectedMessages.get(0);
     assertTrue(pinger.isPingMessage(pingMessage.getBuffer()));
 
     interceptor.collectedMessages.clear();
     pinger.sendPongMessage(messenger.myChannel, null, addr);
-    assertEquals("expected 1 message but found " + interceptor.collectedMessages,
+    Assert.assertEquals("expected 1 message but found " + interceptor.collectedMessages,
         interceptor.collectedMessages.size(), 1);
     pongMessage = interceptor.collectedMessages.get(0);
     assertTrue(pinger.isPongMessage(pongMessage.getBuffer()));
@@ -821,7 +817,7 @@ public class JGroupsMessengerJUnitTest {
     receiver.receive(pongMessage);
     assertEquals(pongsReceived + 1, messenger.pongsReceived.longValue());
     receiver.receive(pingMessage);
-    assertEquals("expected 1 message but found " + interceptor.collectedMessages,
+    Assert.assertEquals("expected 1 message but found " + interceptor.collectedMessages,
         interceptor.collectedMessages.size(), 1);
     org.jgroups.Message m = interceptor.collectedMessages.get(0);
     assertTrue(pinger.isPongMessage(m.getBuffer()));
@@ -880,16 +876,14 @@ public class JGroupsMessengerJUnitTest {
     when(manager.shutdownInProgress()).thenReturn(Boolean.TRUE);
     receiver.receive(msg);
     verify(manager, never()).processMessage(isA(Message.class));
-    verify(services.getStatistics(), times(3)).startUDPDispatchRequest();
-    verify(services.getStatistics(), times(3)).endUDPDispatchRequest(anyLong());
   }
 
   @Test
   public void testUseOldJChannel() throws Exception {
-    initMocks(false);
-    JChannel channel = messenger.myChannel;
-    tconfig.setOldDSMembershipInfo(new MembershipInformationImpl(channel,
-        new ConcurrentLinkedQueue<>()));
+    initMocks(false, true);
+    ((TestMembershipConfig) membershipConfig).oldMembershipInfo =
+        new MembershipInformationImpl(messenger.myChannel,
+            new ConcurrentLinkedQueue<>());
     JGroupsMessenger newMessenger = new JGroupsMessenger();
     newMessenger.init(services);
     newMessenger.start();
@@ -972,17 +966,14 @@ public class JGroupsMessengerJUnitTest {
 
   @Test
   public void testEncryptedFindCoordinatorRequest() throws Exception {
-    MemberIdentifier otherMbr = new InternalDistributedMember("localhost", 8888);
+    MemberIdentifier otherMbr = MemberIdentifierUtil.createMemberID(8888);
 
-    Properties p = new Properties();
-    final String udpDhalgo = "AES:128";
-    p.put(ConfigurationProperties.SECURITY_UDP_DHALGO, udpDhalgo);
-    initMocks(false, p);
+    initMocks(false, true);
 
     GMSMembershipView v = createView(otherMbr);
     when(joinLeave.getMemberID(messenger.getMemberID()))
         .thenReturn(messenger.getMemberID());
-    GMSEncrypt otherMbrEncrptor = new GMSEncrypt(services, udpDhalgo);
+    GMSEncrypt otherMbrEncrptor = new GMSEncrypt(services, AES_128);
 
     messenger.setPublicKey(otherMbrEncrptor.getPublicKeyBytes(), otherMbr);
     messenger.initClusterKey();
@@ -1013,12 +1004,11 @@ public class JGroupsMessengerJUnitTest {
 
   @Test
   public void testEncryptedFindCoordinatorResponse() throws Exception {
-    MemberIdentifier otherMbr = new InternalDistributedMember("localhost", 8888);
+    MemberIdentifier otherMbr = MemberIdentifierUtil.createMemberID(8888);
 
     Properties p = new Properties();
 
-    p.put(ConfigurationProperties.SECURITY_UDP_DHALGO, AES_128);
-    initMocks(false, p);
+    initMocks(false, true);
 
     GMSMembershipView v = createView(otherMbr);
 
@@ -1056,11 +1046,9 @@ public class JGroupsMessengerJUnitTest {
 
   @Test
   public void testEncryptedJoinRequest() throws Exception {
-    MemberIdentifier otherMbr = new InternalDistributedMember("localhost", 8888);
+    MemberIdentifier otherMbr = MemberIdentifierUtil.createMemberID(8888);
 
-    Properties p = new Properties();
-    p.put(ConfigurationProperties.SECURITY_UDP_DHALGO, AES_128);
-    initMocks(false, p);
+    initMocks(false, true);
 
     GMSMembershipView v = createView(otherMbr);
 
@@ -1091,11 +1079,9 @@ public class JGroupsMessengerJUnitTest {
 
   @Test
   public void testEncryptedJoinResponse() throws Exception {
-    MemberIdentifier otherMbr = new InternalDistributedMember("localhost", 8888);
+    MemberIdentifier otherMbr = MemberIdentifierUtil.createMemberID(8888);
 
-    Properties p = new Properties();
-    p.put(ConfigurationProperties.SECURITY_UDP_DHALGO, AES_128);
-    initMocks(false, p);
+    initMocks(false, true);
 
     GMSMembershipView v = createView(otherMbr);
 
@@ -1149,8 +1135,8 @@ public class JGroupsMessengerJUnitTest {
   }
 
   private MemberIdentifier createAddress(int port) {
-    MemberIdentifier gms = new InternalDistributedMember("localhost", port);
-    gms.setUUID(UUID.randomUUID());
+    MemberIdentifier gms = MemberIdentifierUtil.createMemberID(port);
+    gms.getMemberData().setUUID(UUID.randomUUID());
     gms.setVmKind(MemberIdentifier.NORMAL_DM_TYPE);
     gms.setVersionObjectForTest(Version.getCurrentVersion());
     return gms;
@@ -1187,6 +1173,15 @@ public class JGroupsMessengerJUnitTest {
     @Override
     public Version[] getSerializationVersions() {
       return null;
+    }
+  }
+
+  static class TestMembershipConfig implements MembershipConfig {
+    Object oldMembershipInfo;
+
+    @Override
+    public Object getOldMembershipInfo() {
+      return oldMembershipInfo;
     }
   }
 

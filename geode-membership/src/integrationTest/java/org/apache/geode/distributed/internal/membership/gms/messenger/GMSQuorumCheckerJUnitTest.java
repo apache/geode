@@ -41,7 +41,7 @@ import org.mockito.stubbing.Answer;
 
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
-import org.apache.geode.distributed.internal.membership.gms.util.MembershipAddressUtil;
+import org.apache.geode.distributed.internal.membership.gms.util.MemberIdentifierUtil;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 @Category({MembershipTest.class})
@@ -55,7 +55,7 @@ public class GMSQuorumCheckerJUnitTest {
   public void initMocks() {
     mockMembers = new MemberIdentifier[12];
     for (int i = 0; i < mockMembers.length; i++) {
-      mockMembers[i] = MembershipAddressUtil.createMemberID(8888 + i);
+      mockMembers[i] = MemberIdentifierUtil.createMemberID(8888 + i);
     }
     channel = mock(JChannel.class);
     address = mock(JGAddress.class);

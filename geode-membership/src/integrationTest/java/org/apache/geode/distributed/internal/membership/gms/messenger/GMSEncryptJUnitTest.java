@@ -14,7 +14,7 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.messenger;
 
-import static org.apache.geode.distributed.internal.membership.gms.util.MembershipAddressUtil.createMemberID;
+import static org.apache.geode.distributed.internal.membership.gms.util.MemberIdentifierUtil.createMemberID;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
