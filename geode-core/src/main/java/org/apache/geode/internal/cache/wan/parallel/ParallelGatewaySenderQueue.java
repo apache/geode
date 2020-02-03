@@ -1342,16 +1342,19 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
 
       // Remove all entries from peekedEvents for buckets that are not longer primary
       // This will prevent repeatedly trying to dispatch non-primary events
-      for (Iterator<GatewaySenderEventImpl> iterator = peekedEvents.iterator(); iterator
-          .hasNext();) {
-        GatewaySenderEventImpl event = iterator.next();
-        final int bucketId = event.getBucketId();
-        final PartitionedRegion region = (PartitionedRegion) event.getRegion();
-        if (!region.getRegionAdvisor().isPrimaryForBucket(bucketId)) {
-          iterator.remove();
-          BucketRegionQueue brq = getBucketRegionQueueByBucketId(getRandomShadowPR(), bucketId);
-          if (brq != null) {
-            brq.pushKeyIntoQueue(event.getShadowKey());
+      Object[] helpArray = peekedEvents.toArray();
+      if (helpArray.length > 0) {
+
+        for (int i = helpArray.length - 1; i >= 0; i--) {
+          GatewaySenderEventImpl event = (GatewaySenderEventImpl) helpArray[i];
+          final int bucketId = event.getBucketId();
+          final PartitionedRegion region = (PartitionedRegion) event.getRegion();
+          if (!region.getRegionAdvisor().isPrimaryForBucket(bucketId)) {
+            peekedEvents.remove(event);
+            BucketRegionQueue brq = getBucketRegionQueueByBucketId(getRandomShadowPR(), bucketId);
+            if (brq != null) {
+              brq.pushKeyIntoQueue(event.getShadowKey());
+            }
           }
         }
       }
@@ -1611,18 +1614,17 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
   }
 
   private void returnToQueuePreviouslyPeekedEvents() {
-    List<GatewaySenderEventImpl> helplist = new ArrayList<>(peekedEvents.size());
-    helplist.addAll(peekedEvents);
+    Object[] helpArray = peekedEvents.toArray();
     peekedEvents.clear();
-    Collections.reverse(helplist);
+    if (helpArray.length == 0) {
+      return;
+    }
 
-    for (Iterator<GatewaySenderEventImpl> iterator = helplist.iterator(); iterator
-        .hasNext();) {
-      GatewaySenderEventImpl event = iterator.next();
+    for (int i = helpArray.length - 1; i >= 0; i--) {
+      GatewaySenderEventImpl event = (GatewaySenderEventImpl) helpArray[i];
       final int bucketId = event.getBucketId();
       final PartitionedRegion region = (PartitionedRegion) event.getRegion();
       if (region.getRegionAdvisor().isPrimaryForBucket(bucketId)) {
-        iterator.remove();
         BucketRegionQueue brq = getBucketRegionQueueByBucketId(getRandomShadowPR(), bucketId);
         if (brq != null) {
           brq.pushKeyIntoQueue(event.getShadowKey());
