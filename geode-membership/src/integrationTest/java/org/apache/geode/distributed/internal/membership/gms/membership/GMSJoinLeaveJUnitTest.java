@@ -28,7 +28,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -594,12 +593,8 @@ public class GMSJoinLeaveJUnitTest {
   @Test
   public void testRemoveMessageForRogueCausesImmediateRemovalMessageToRogue() throws Exception {
     initMocks();
-    synchronized (gmsJoinLeave.getViewInstallationLock()) {
-      gmsJoinLeave.becomeCoordinator();
-    }
-    prepareAndInstallView(gmsJoinLeaveMemberId,
-        createMemberList(gmsJoinLeaveMemberId, mockMembers[0], mockMembers[1]));
-    reset(messenger);
+    gmsJoinLeave.currentView = createView();
+    gmsJoinLeave.isCoordinator = true;
     RemoveMemberMessage msg = new RemoveMemberMessage(gmsJoinLeaveMemberId,
         MemberIdentifierUtil.createMemberID(10000), "removing for test");
     msg.setSender(mockMembers[0]);

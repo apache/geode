@@ -140,7 +140,8 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
   /**
    * guarded by viewInstallationLock
    */
-  private volatile boolean isCoordinator;
+  @VisibleForTesting
+  volatile boolean isCoordinator;
 
   /**
    * a synch object that guards view installation
@@ -150,7 +151,8 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
   /**
    * the currently installed view. Guarded by viewInstallationLock
    */
-  private volatile GMSMembershipView<ID> currentView;
+  @VisibleForTesting
+  volatile GMSMembershipView<ID> currentView;
 
   /**
    * the previous view
