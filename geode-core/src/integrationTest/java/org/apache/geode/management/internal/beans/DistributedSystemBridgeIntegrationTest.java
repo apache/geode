@@ -138,18 +138,18 @@ public class DistributedSystemBridgeIntegrationTest {
   }
 
   @Test
-  public void viewClusterStatusShouldBeTrueIfAllParallelSendersAreRunning() {
+  public void viewClusterStatusShouldBeTrueIfAllParallelSendersAreConnected() {
     // parallel senders for dsid = 2
     doReturn(true).when(bean1).isParallel();
-    doReturn(true).when(bean1).isRunning();
+    doReturn(true).when(bean1).isConnected();
     doReturn(true).when(bean2).isParallel();
-    doReturn(true).when(bean2).isRunning();
+    doReturn(true).when(bean2).isConnected();
 
     // parallel senders for dsid = 3
     doReturn(true).when(bean3).isParallel();
-    doReturn(true).when(bean3).isRunning();
+    doReturn(true).when(bean3).isConnected();
     doReturn(true).when(bean4).isParallel();
-    doReturn(true).when(bean4).isRunning();
+    doReturn(true).when(bean4).isConnected();
 
     Map<String, Boolean> status = bridge.viewRemoteClusterStatus();
     assertThat(status.keySet()).hasSize(2);
@@ -158,18 +158,18 @@ public class DistributedSystemBridgeIntegrationTest {
   }
 
   @Test
-  public void viewClusterStatusShouldBeFalseIfAnyParallelSendersIsNotRunning() {
+  public void viewClusterStatusShouldBeFalseIfAnyParallelSendersIsNotConnected() {
     // parallel senders for dsid = 2
     doReturn(true).when(bean1).isParallel();
-    doReturn(true).when(bean1).isRunning();
+    doReturn(true).when(bean1).isConnected();
     doReturn(true).when(bean2).isParallel();
-    doReturn(true).when(bean2).isRunning();
+    doReturn(true).when(bean2).isConnected();
 
     // parallel senders for dsid = 3
     doReturn(true).when(bean3).isParallel();
-    doReturn(true).when(bean3).isRunning();
+    doReturn(true).when(bean3).isConnected();
     doReturn(true).when(bean4).isParallel();
-    doReturn(false).when(bean4).isRunning();
+    doReturn(false).when(bean4).isConnected();
 
     Map<String, Boolean> status = bridge.viewRemoteClusterStatus();
     assertThat(status.keySet()).hasSize(2);
@@ -178,26 +178,26 @@ public class DistributedSystemBridgeIntegrationTest {
   }
 
   @Test
-  public void viewClusterStatusShouldBeTrueIfASerialPrimaryIsRunning() {
+  public void viewClusterStatusShouldBeTrueIfASerialPrimaryIsConnected() {
     // serial primary for dsid = 2
     doReturn(false).when(bean1).isParallel();
     doReturn(true).when(bean1).isPrimary();
-    doReturn(true).when(bean1).isRunning();
+    doReturn(true).when(bean1).isConnected();
 
     // serial secondary for dsid = 2
     doReturn(false).when(bean2).isParallel();
     doReturn(false).when(bean2).isPrimary();
-    doReturn(false).when(bean2).isRunning();
+    doReturn(false).when(bean2).isConnected();
 
     // serial primary for dsid = 3
     doReturn(false).when(bean3).isParallel();
     doReturn(true).when(bean3).isPrimary();
-    doReturn(true).when(bean3).isRunning();
+    doReturn(true).when(bean3).isConnected();
 
     // serial secondary for dsid = 3
     doReturn(false).when(bean4).isParallel();
     doReturn(false).when(bean4).isPrimary();
-    doReturn(false).when(bean4).isRunning();
+    doReturn(false).when(bean4).isConnected();
 
     Map<String, Boolean> status = bridge.viewRemoteClusterStatus();
     assertThat(status.keySet()).hasSize(2);
@@ -206,26 +206,26 @@ public class DistributedSystemBridgeIntegrationTest {
   }
 
   @Test
-  public void viewClusterStatusShouldBeFalseIfASerialPrimaryIsNotRunning() {
+  public void viewClusterStatusShouldBeFalseIfASerialPrimaryIsNotConnected() {
     // serial primary for dsid = 2
     doReturn(false).when(bean1).isParallel();
     doReturn(true).when(bean1).isPrimary();
-    doReturn(true).when(bean1).isRunning();
+    doReturn(true).when(bean1).isConnected();
 
     // serial secondary for dsid = 2
     doReturn(false).when(bean2).isParallel();
     doReturn(false).when(bean2).isPrimary();
-    doReturn(false).when(bean2).isRunning();
+    doReturn(false).when(bean2).isConnected();
 
     // serial primary for dsid = 3
     doReturn(false).when(bean3).isParallel();
     doReturn(true).when(bean3).isPrimary();
-    doReturn(false).when(bean3).isRunning();
+    doReturn(false).when(bean3).isConnected();
 
     // serial secondary for dsid = 3
     doReturn(false).when(bean4).isParallel();
     doReturn(false).when(bean4).isPrimary();
-    doReturn(true).when(bean4).isRunning();
+    doReturn(true).when(bean4).isConnected();
 
     Map<String, Boolean> status = bridge.viewRemoteClusterStatus();
     assertThat(status.keySet()).hasSize(2);
