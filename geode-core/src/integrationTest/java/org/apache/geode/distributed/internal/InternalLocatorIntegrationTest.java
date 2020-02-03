@@ -16,7 +16,6 @@ package org.apache.geode.distributed.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
@@ -163,14 +162,19 @@ public class InternalLocatorIntegrationTest {
   @Test
   public void startLocatorFail() throws Exception {
     Properties properties = new Properties();
-    // use this property to induce a NPE when calling
-    // InternalLocator.startConfigurationPersistenceService
-    // so this would demonstrate that we would throw the exception when we encounter an error when
-    // calling InternalLocator.startConfigurationPersistenceService
+    // require cluster configuration to be loaded from disk. This should result in
+    // the locator not starting
     properties.put("load-cluster-configuration-from-dir", "true");
-    assertThatThrownBy(() -> InternalLocator.startLocator(port, logFile, logWriter,
-        securityLogWriter, bindAddress, true,
-        properties, hostnameForClients, workingDirectory)).isInstanceOf(RuntimeException.class);
+    try {
+      InternalLocator locator = InternalLocator.startLocator(port, logFile, logWriter,
+          securityLogWriter, bindAddress, true,
+          properties, hostnameForClients, workingDirectory);
+      if (locator != null) {
+        assertThat(locator.isStopped()).isTrue();
+      }
+    } catch (NullPointerException e) {
+      // "expected" but not always thrown (Why are we okay with it throwing an NPE??)
+    }
 
     assertThat(InternalLocator.hasLocator()).isFalse();
   }
