@@ -1357,17 +1357,8 @@ public class LocatorDUnitTest implements Serializable {
   public void testHostingMultipleLocators() throws Exception {
     Locator.startLocator(port1, null);
 
-    try {
-      Locator.startLocator(port2, null);
-      fail("expected second locator start to fail.");
-    } catch (IllegalStateException expected) {
-    }
-
-    String locators = hostName + "[" + port1 + "]," + hostName + "[" + port2 + "]";
-
-    Properties props = getBasicProperties(locators);
-
-    getConnectedDistributedSystem(props);
+    assertThatThrownBy(() -> Locator.startLocator(port2, null))
+        .isInstanceOf(IllegalStateException.class);
   }
 
   /**

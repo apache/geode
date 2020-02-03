@@ -32,7 +32,7 @@ import org.apache.geode.management.api.ClusterManagementGetResult;
 import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
-import org.apache.geode.management.api.ConfigurationInfo;
+import org.apache.geode.management.api.EntityInfo;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.AbstractConfiguration;
 import org.apache.geode.management.configuration.Region;
@@ -148,7 +148,7 @@ public class ListRegionManagementDunitTest {
     ClusterManagementGetResult<Region, RuntimeRegionInfo> result =
         client.get(region);
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
-    ConfigurationInfo<Region, RuntimeRegionInfo> configInfo = result.getResult();
+    EntityInfo<Region, RuntimeRegionInfo> configInfo = result.getResult();
     assertThat(configInfo.getId()).isEqualTo(REGION_WITH_MULTIPLE_TYPES);
     assertThat(configInfo.getConfigurations()).extracting(Region::getName)
         .containsExactlyInAnyOrder(

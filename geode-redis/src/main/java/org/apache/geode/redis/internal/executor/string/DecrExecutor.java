@@ -22,7 +22,6 @@ import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
-import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.RegionProvider;
 
 public class DecrExecutor extends StringExecutor {
@@ -59,7 +58,6 @@ public class DecrExecutor extends StringExecutor {
     if (valueWrapper == null) {
       byte[] newValue = INIT_VALUE_BYTES;
       r.put(key, new ByteArrayWrapper(newValue));
-      rC.metaPut(key, RedisDataType.REDIS_STRING);
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), INIT_VALUE_INT));
       return;
     }

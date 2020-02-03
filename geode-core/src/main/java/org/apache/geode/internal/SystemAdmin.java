@@ -16,7 +16,6 @@ package org.apache.geode.internal;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
-import static org.apache.geode.distributed.internal.membership.adapter.TcpSocketCreatorAdapter.asTcpSocketCreator;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -295,10 +294,8 @@ public class SystemAdmin {
       }
 
       try {
-        new TcpClient(
-            asTcpSocketCreator(
-                SocketCreatorFactory
-                    .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
+        new TcpClient(SocketCreatorFactory
+            .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR),
             InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
             InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer())
                 .stop(addr, port);

@@ -18,13 +18,20 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.Externalizable;
 import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.jgroups.util.UUID;
+
 import org.apache.geode.InternalGemFireError;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.client.ServerConnectivityException;
@@ -35,34 +42,40 @@ import org.apache.geode.distributed.internal.DistributionAdvisor.ProfileId;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.membership.api.MemberData;
 import org.apache.geode.distributed.internal.membership.api.MemberDataBuilder;
-import org.apache.geode.distributed.internal.membership.api.MemberIdentifierImpl;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifierFactoryImpl;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.OSProcess;
 
 /**
  * This is the fundamental representation of a member of a GemFire distributed system.
  */
-public class InternalDistributedMember extends MemberIdentifierImpl
-    implements DistributedMember, Externalizable, ProfileId, VersionSource<DistributedMember> {
+public class InternalDistributedMember
+    implements DistributedMember, Externalizable, ProfileId, VersionSource<DistributedMember>,
+    MemberIdentifier, DataSerializableFixedID {
   private static final long serialVersionUID = -2785249969777296507L;
+
+  @Immutable
+  public static final MemberIdentifierFactoryImpl MEMBER_IDENTIFIER_FACTORY =
+      new MemberIdentifierFactoryImpl();
 
   /** Retrieves an InetAddress given the provided hostname */
   @MutableForTesting
   protected static HostnameResolver hostnameResolver =
       (location) -> InetAddress.getByName(location.getHostName());
+  private final MemberIdentifier memberIdentifier;
 
   /** lock object used when getting/setting roles/rolesSet fields */
 
   // Used only by deserialization
-  public InternalDistributedMember() {}
-
-  @Override
-  public int getDSFID() {
-    return DISTRIBUTED_MEMBER;
+  public InternalDistributedMember() {
+    memberIdentifier = MEMBER_IDENTIFIER_FACTORY.create(null);
   }
 
   /**
@@ -81,11 +94,12 @@ public class InternalDistributedMember extends MemberIdentifierImpl
   public InternalDistributedMember(InetAddress i, int membershipPort, boolean splitBrainEnabled,
       boolean canBeCoordinator) {
 
-    super(MemberDataBuilder.newBuilder(i, getHostName(i))
-        .setMembershipPort(membershipPort)
-        .setNetworkPartitionDetectionEnabled(splitBrainEnabled)
-        .setPreferredForCoordinator(canBeCoordinator)
-        .build(), null);
+    memberIdentifier =
+        MEMBER_IDENTIFIER_FACTORY.create(MemberDataBuilder.newBuilder(i, getHostName(i))
+            .setMembershipPort(membershipPort)
+            .setNetworkPartitionDetectionEnabled(splitBrainEnabled)
+            .setPreferredForCoordinator(canBeCoordinator)
+            .build());
   }
 
   private static String getHostName(InetAddress i) {
@@ -97,11 +111,11 @@ public class InternalDistributedMember extends MemberIdentifierImpl
    *
    */
   public InternalDistributedMember(MemberData m) {
-    super(m, null);
+    memberIdentifier = MEMBER_IDENTIFIER_FACTORY.create(m);
 
-    if (getMemberData().getHostName() == null || getMemberData().isPartial()) {
+    if (getHostName() == null || isPartial()) {
       String hostName = getHostName(m.getInetAddress());
-      getMemberData().setHostName(hostName);
+      memberIdentifier.setHostName(hostName);
     }
   }
 
@@ -133,11 +147,13 @@ public class InternalDistributedMember extends MemberIdentifierImpl
    */
 
   public InternalDistributedMember(ServerLocation location) {
-    super(MemberDataBuilder.newBuilder(getInetAddress(location), location.getHostName())
-        .setMembershipPort(location.getPort())
-        .setNetworkPartitionDetectionEnabled(false)
-        .setPreferredForCoordinator(true)
-        .build(), null);
+    memberIdentifier =
+        MEMBER_IDENTIFIER_FACTORY.create(
+            MemberDataBuilder.newBuilder(getInetAddress(location), location.getHostName())
+                .setMembershipPort(location.getPort())
+                .setNetworkPartitionDetectionEnabled(false)
+                .setPreferredForCoordinator(true)
+                .build());
   }
 
   private static InetAddress getInetAddress(ServerLocation location) {
@@ -172,14 +188,15 @@ public class InternalDistributedMember extends MemberIdentifierImpl
    */
   public InternalDistributedMember(String host, int p, String n, String u, int vmKind,
       String[] groups, DurableClientAttributes attr) throws UnknownHostException {
-    super(createMemberData(host, p, n, vmKind, groups, attr), u);
+    memberIdentifier =
+        MEMBER_IDENTIFIER_FACTORY.create(createMemberData(host, p, n, vmKind, groups, attr, u));
 
     defaultToCurrentHost();
   }
 
   private static MemberData createMemberData(String host, int p, String n, int vmKind,
       String[] groups,
-      DurableClientAttributes attr) {
+      DurableClientAttributes attr, String u) {
     InetAddress addr = LocalHostUtil.toInetAddress(host);
     MemberDataBuilder builder = MemberDataBuilder.newBuilder(addr, host)
         .setName(n)
@@ -188,6 +205,7 @@ public class InternalDistributedMember extends MemberIdentifierImpl
         .setPreferredForCoordinator(false)
         .setNetworkPartitionDetectionEnabled(true)
         .setVmKind(vmKind)
+        .setUniqueTag(u)
         .setGroups(groups);
     if (attr != null) {
       builder.setDurableId(attr.getId())
@@ -208,9 +226,9 @@ public class InternalDistributedMember extends MemberIdentifierImpl
    * @param p the membership listening port
    */
   public InternalDistributedMember(InetAddress i, int p) {
-    super(MemberDataBuilder.newBuilder(i, "localhost")
+    memberIdentifier = MEMBER_IDENTIFIER_FACTORY.create(MemberDataBuilder.newBuilder(i, "localhost")
         .setMembershipPort(p)
-        .build(), null);
+        .build());
     defaultToCurrentHost();
   }
 
@@ -227,8 +245,9 @@ public class InternalDistributedMember extends MemberIdentifierImpl
    *        false to create a temporary id for the OTHER side of a connection)
    */
   public InternalDistributedMember(InetAddress addr, int p, boolean isCurrentHost) {
-    super(MemberDataBuilder.newBuilder(addr, "localhost")
-        .setMembershipPort(p).build(), null);
+    memberIdentifier =
+        MEMBER_IDENTIFIER_FACTORY.create(MemberDataBuilder.newBuilder(addr, "localhost")
+            .setMembershipPort(p).build());
     if (isCurrentHost) {
       defaultToCurrentHost();
     }
@@ -250,31 +269,34 @@ public class InternalDistributedMember extends MemberIdentifierImpl
   /**
    * Returns this client member's durable attributes or null if no durable attributes were created.
    */
+  @Override
   public DurableClientAttributes getDurableClientAttributes() {
     assert !this.isPartial();
-    String durableId = getMemberData().getDurableId();
+    String durableId = memberIdentifier.getDurableId();
     if (durableId == null || durableId.isEmpty()) {
       return new DurableClientAttributes("", 300);
     }
-    return new DurableClientAttributes(durableId, getMemberData().getDurableTimeout());
+    return new DurableClientAttributes(durableId, memberIdentifier.getDurableTimeout());
   }
 
   /**
    * Returns an unmodifiable Set of this member's Roles.
    */
+  @Override
   public Set<Role> getRoles() {
 
-    if (getMemberData().getGroups() == null) {
+    if (getGroups() == null) {
       return Collections.emptySet();
     }
     return getGroups().stream().map(InternalRole::getRole).collect(Collectors.toSet());
   }
 
+  @Override
   public int compareTo(DistributedMember o) {
     return compareTo(o, false, true);
   }
 
-  public int compareTo(DistributedMember o, boolean compareMemberData, boolean compareViewIds) {
+  private int compareTo(DistributedMember o, boolean compareMemberData, boolean compareViewIds) {
     if (this == o) {
       return 0;
     }
@@ -282,18 +304,24 @@ public class InternalDistributedMember extends MemberIdentifierImpl
     if (!(o instanceof InternalDistributedMember))
       throw new ClassCastException(
           "InternalDistributedMember.compareTo(): comparison between different classes");
-    MemberIdentifierImpl other = (MemberIdentifierImpl) o;
+    InternalDistributedMember other = (InternalDistributedMember) o;
 
-    return compareTo(other, compareMemberData, compareViewIds);
+    return compareTo(other.memberIdentifier, compareMemberData, compareViewIds);
   }
 
-  protected void defaultToCurrentHost() {
-    getMemberData().setProcessId(OSProcess.getId());
+  @Override
+  public int compareTo(
+      MemberIdentifier memberIdentifier, boolean compareMemberData, boolean compareViewIds) {
+    return this.memberIdentifier.compareTo(memberIdentifier, compareMemberData, compareViewIds);
+  }
+
+  private void defaultToCurrentHost() {
+    memberIdentifier.setProcessId(OSProcess.getId());
     try {
       if (SocketCreator.resolve_dns) {
-        getMemberData().setHostName(SocketCreator.getHostName(LocalHostUtil.getLocalHost()));
+        setHostName(SocketCreator.getHostName(LocalHostUtil.getLocalHost()));
       } else {
-        getMemberData().setHostName(LocalHostUtil.getLocalHost().getHostAddress());
+        setHostName(LocalHostUtil.getLocalHost().getHostAddress());
       }
     } catch (UnknownHostException ee) {
       throw new InternalGemFireError(ee);
@@ -301,27 +329,313 @@ public class InternalDistributedMember extends MemberIdentifierImpl
   }
 
   @Override
-  public void toDataPre_GFE_9_0_0_0(DataOutput out, SerializationContext context)
+  public int getDSFID() {
+    return DISTRIBUTED_MEMBER;
+  }
+
+  @Override
+  public void setDurableTimeout(int newValue) {
+    memberIdentifier.setDurableTimeout(newValue);
+  }
+
+  @Override
+  public void setDurableId(String id) {
+    memberIdentifier.setDurableId(id);
+  }
+
+  @Override
+  public void setMemberData(MemberData m) {
+    memberIdentifier.setMemberData(m);
+  }
+
+  @Override
+  public InetAddress getInetAddress() {
+    return memberIdentifier.getInetAddress();
+  }
+
+  @Override
+  public int getMembershipPort() {
+    return memberIdentifier.getMembershipPort();
+  }
+
+  @Override
+  public short getVersionOrdinal() {
+    return memberIdentifier.getVersionOrdinal();
+  }
+
+  @Override
+  public int getDirectChannelPort() {
+    return memberIdentifier.getDirectChannelPort();
+  }
+
+  @Override
+  public int getVmKind() {
+    return memberIdentifier.getVmKind();
+  }
+
+  @Override
+  public int getMemberWeight() {
+    return memberIdentifier.getMemberWeight();
+  }
+
+  @Override
+  public int getVmViewId() {
+    return memberIdentifier.getVmViewId();
+  }
+
+  @Override
+  public boolean preferredForCoordinator() {
+    return memberIdentifier.preferredForCoordinator();
+  }
+
+  @Override
+  public List<String> getGroups() {
+    return memberIdentifier.getGroups();
+  }
+
+  @Override
+  public void setVmViewId(int p) {
+    memberIdentifier.setVmViewId(p);
+  }
+
+  @Override
+  public void setPreferredForCoordinator(boolean preferred) {
+    memberIdentifier.setPreferredForCoordinator(preferred);
+  }
+
+  @Override
+  public void setDirectChannelPort(int dcPort) {
+    memberIdentifier.setDirectChannelPort(dcPort);
+  }
+
+  @Override
+  public void setVmKind(int dmType) {
+    memberIdentifier.setVmKind(dmType);
+  }
+
+  @Override
+  public String getName() {
+    return memberIdentifier.getName();
+  }
+
+  @Override
+  public boolean isPartial() {
+    return memberIdentifier.isPartial();
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    InternalDistributedMember that = (InternalDistributedMember) o;
+    return memberIdentifier.equals(that.memberIdentifier);
+  }
+
+  @Override
+  public int hashCode() {
+    return memberIdentifier.hashCode();
+  }
+
+  @Override
+  public String toString() {
+    return memberIdentifier.toString();
+  }
+
+  public void addFixedToString(StringBuilder sb, boolean useIpAddress) {
+    memberIdentifier.addFixedToString(sb, useIpAddress);
+  }
+
+  @Override
+  public void writeExternal(ObjectOutput out) throws IOException {
+    memberIdentifier.writeExternal(out);
+  }
+
+  @Override
+  public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+    memberIdentifier.readExternal(in);
+  }
+
+  @Override
+  public void toData(DataOutput out,
+      SerializationContext context)
       throws IOException {
-    super.toDataPre_GFE_9_0_0_0(out, context);
+    memberIdentifier.toData(out, context);
   }
 
-  @Override
-  public void toDataPre_GFE_7_1_0_0(DataOutput out, SerializationContext context)
+  public void toDataPre_GFE_9_0_0_0(DataOutput out,
+      SerializationContext context)
       throws IOException {
-    super.toDataPre_GFE_7_1_0_0(out, context);
+    memberIdentifier.toDataPre_GFE_9_0_0_0(out, context);
+  }
+
+  public void toDataPre_GFE_7_1_0_0(DataOutput out,
+      SerializationContext context)
+      throws IOException {
+    memberIdentifier.toDataPre_GFE_7_1_0_0(out, context);
   }
 
   @Override
-  public void fromDataPre_GFE_9_0_0_0(DataInput in, DeserializationContext context)
+  public void fromData(DataInput in,
+      DeserializationContext context)
       throws IOException, ClassNotFoundException {
-    super.fromDataPre_GFE_9_0_0_0(in, context);
+    memberIdentifier.fromData(in, context);
   }
 
   @Override
-  public void fromDataPre_GFE_7_1_0_0(DataInput in, DeserializationContext context)
+  public void fromDataPre_GFE_9_0_0_0(DataInput in,
+      DeserializationContext context)
       throws IOException, ClassNotFoundException {
-    super.fromDataPre_GFE_7_1_0_0(in, context);
+    memberIdentifier.fromDataPre_GFE_9_0_0_0(in, context);
+  }
+
+  @Override
+  public void fromDataPre_GFE_7_1_0_0(DataInput in,
+      DeserializationContext context)
+      throws IOException, ClassNotFoundException {
+    memberIdentifier.fromDataPre_GFE_7_1_0_0(in, context);
+  }
+
+  @Override
+  public void _readEssentialData(DataInput in,
+      Function<InetAddress, String> hostnameResolver)
+      throws IOException, ClassNotFoundException {
+    memberIdentifier._readEssentialData(in, hostnameResolver);
+  }
+
+  @Override
+  public void writeEssentialData(DataOutput out) throws IOException {
+    memberIdentifier.writeEssentialData(out);
+  }
+
+  public void setPort(int p) {
+    memberIdentifier.setPort(p);
+  }
+
+  @Override
+  public MemberData getMemberData() {
+    return memberIdentifier.getMemberData();
+  }
+
+  @Override
+  public String getHostName() {
+    return memberIdentifier.getHostName();
+  }
+
+  @Override
+  public String getHost() {
+    return memberIdentifier.getHost();
+  }
+
+  @Override
+  public int getProcessId() {
+    return memberIdentifier.getProcessId();
+  }
+
+  @Override
+  public String getId() {
+    return memberIdentifier.getId();
+  }
+
+  @Override
+  public String getUniqueId() {
+    return memberIdentifier.getUniqueId();
+  }
+
+  public void setVersionObjectForTest(Version v) {
+    memberIdentifier.setVersionObjectForTest(v);
+  }
+
+  @Override
+  public Version getVersionObject() {
+    return memberIdentifier.getVersionObject();
+  }
+
+  @Override
+  public Version[] getSerializationVersions() {
+    return memberIdentifier.getSerializationVersions();
+  }
+
+  @Override
+  public String getUniqueTag() {
+    return memberIdentifier.getUniqueTag();
+  }
+
+  public void setUniqueTag(String tag) {
+    memberIdentifier.setUniqueTag(tag);
+  }
+
+  @Override
+  public void setIsPartial(boolean value) {
+    memberIdentifier.setIsPartial(value);
+  }
+
+  @Override
+  public void setName(String name) {
+    memberIdentifier.setName(name);
+  }
+
+  @Override
+  public String getDurableId() {
+    return memberIdentifier.getDurableId();
+  }
+
+  @Override
+  public int getDurableTimeout() {
+    return memberIdentifier.getDurableTimeout();
+  }
+
+  @Override
+  public void setHostName(String hostName) {
+    memberIdentifier.setHostName(hostName);
+  }
+
+  @Override
+  public void setProcessId(int id) {
+    memberIdentifier.setProcessId(id);
+  }
+
+  @Override
+  public boolean hasUUID() {
+    return memberIdentifier.hasUUID();
+  }
+
+  @Override
+  public long getUuidLeastSignificantBits() {
+    return memberIdentifier.getUuidLeastSignificantBits();
+  }
+
+  @Override
+  public long getUuidMostSignificantBits() {
+    return memberIdentifier.getUuidMostSignificantBits();
+  }
+
+  @Override
+  public boolean isNetworkPartitionDetectionEnabled() {
+    return memberIdentifier.isNetworkPartitionDetectionEnabled();
+  }
+
+  @Override
+  public void setUUID(UUID randomUUID) {
+    memberIdentifier.setUUID(randomUUID);
+  }
+
+  @Override
+  public void setMemberWeight(byte b) {
+    memberIdentifier.setMemberWeight(b);
+  }
+
+  @Override
+  public void setUdpPort(int i) {
+    memberIdentifier.setUdpPort(i);
+  }
+
+  @Override
+  public UUID getUUID() {
+    return memberIdentifier.getUUID();
   }
 
   @FunctionalInterface

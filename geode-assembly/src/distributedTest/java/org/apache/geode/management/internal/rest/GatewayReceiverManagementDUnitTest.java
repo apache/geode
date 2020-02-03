@@ -30,7 +30,7 @@ import org.junit.Test;
 
 import org.apache.geode.management.api.BaseConnectionConfig;
 import org.apache.geode.management.api.ClusterManagementService;
-import org.apache.geode.management.api.ConfigurationResult;
+import org.apache.geode.management.api.EntityGroupInfo;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.GatewayReceiver;
@@ -101,13 +101,13 @@ public class GatewayReceiverManagementDUnitTest {
 
     ClusterManagementListResultAssert<GatewayReceiver, GatewayReceiverInfo> listAssert =
         assertManagementListResult(cms.list(new GatewayReceiver())).isSuccessful();
-    List<ConfigurationResult<GatewayReceiver, GatewayReceiverInfo>> listResult =
+    List<EntityGroupInfo<GatewayReceiver, GatewayReceiverInfo>> listResult =
         listAssert.getResult();
 
     assertThat(listResult).hasSize(2);
 
     // verify that we have two configurations, but only group1 config has a running gwr
-    for (ConfigurationResult<GatewayReceiver, GatewayReceiverInfo> result : listResult) {
+    for (EntityGroupInfo<GatewayReceiver, GatewayReceiverInfo> result : listResult) {
       if (result.getConfiguration().getGroup().equals("group1")) {
         assertThat(result.getRuntimeInfo()).hasSize(1);
         assertThat(result.getRuntimeInfo().get(0).getPort()).isGreaterThanOrEqualTo(5000);
@@ -138,7 +138,7 @@ public class GatewayReceiverManagementDUnitTest {
     filter.setGroup("group2");
     ClusterManagementGetResultAssert<GatewayReceiver, GatewayReceiverInfo> getAssert =
         assertManagementGetResult(cms.get(filter)).isSuccessful();
-    ConfigurationResult<GatewayReceiver, GatewayReceiverInfo> getResult = getAssert.getResult();
+    EntityGroupInfo<GatewayReceiver, GatewayReceiverInfo> getResult = getAssert.getResult();
     assertThat(getResult.getConfiguration().getId()).isEqualTo("group2");
 
     GatewayReceiver clusterFilter = new GatewayReceiver();

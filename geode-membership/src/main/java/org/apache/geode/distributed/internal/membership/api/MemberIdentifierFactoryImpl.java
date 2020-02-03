@@ -16,16 +16,26 @@ package org.apache.geode.distributed.internal.membership.api;
 
 import java.util.Comparator;
 
+import org.apache.geode.distributed.internal.membership.gms.MemberIdentifierImpl;
+import org.apache.geode.distributed.internal.tcpserver.TcpClient;
+import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
+import org.apache.geode.internal.serialization.DSFIDSerializer;
+
+/**
+ * The default {@link MemberIdentifierFactory} which produces {@link MemberIdentifier} objects. For
+ * use in
+ * {@link MembershipBuilder#newMembershipBuilder(TcpSocketCreator, TcpClient, DSFIDSerializer, MemberIdentifierFactory)}
+ */
 public class MemberIdentifierFactoryImpl
-    implements MemberIdentifierFactory<MemberIdentifierImpl> {
+    implements MemberIdentifierFactory<MemberIdentifier> {
 
   @Override
-  public MemberIdentifierImpl create(MemberData memberInfo) {
-    return new MemberIdentifierImpl(memberInfo, null);
+  public MemberIdentifier create(MemberData memberInfo) {
+    return new MemberIdentifierImpl(memberInfo);
   }
 
   @Override
-  public Comparator<MemberIdentifierImpl> getComparator() {
-    return MemberIdentifierImpl::compare;
+  public Comparator<MemberIdentifier> getComparator() {
+    return (identifier, other) -> identifier.compareTo(other, false, true);
   }
 }

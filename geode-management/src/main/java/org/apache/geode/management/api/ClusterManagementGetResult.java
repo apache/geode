@@ -27,20 +27,20 @@ import org.apache.geode.management.runtime.RuntimeInfo;
 @Experimental
 public class ClusterManagementGetResult<T extends AbstractConfiguration<R>, R extends RuntimeInfo>
     extends ClusterManagementResult {
-  private ConfigurationInfo<T, R> configurationById;
+  private EntityInfo<T, R> entityInfo;
 
   public ClusterManagementGetResult() {}
 
-  public ClusterManagementGetResult(ConfigurationInfo<T, R> configurationById) {
-    this.configurationById = configurationById;
+  public ClusterManagementGetResult(EntityInfo<T, R> entityInfo) {
+    this.entityInfo = entityInfo;
   }
 
-  public ConfigurationInfo<T, R> getResult() {
-    return configurationById;
+  public EntityInfo<T, R> getResult() {
+    return entityInfo;
   }
 
-  public void setResult(ConfigurationInfo<T, R> configurationInfo) {
-    this.configurationById = configurationInfo;
+  public void setResult(EntityInfo<T, R> entityInfo) {
+    this.entityInfo = entityInfo;
   }
 
   @Override
@@ -55,18 +55,18 @@ public class ClusterManagementGetResult<T extends AbstractConfiguration<R>, R ex
       return false;
     }
     ClusterManagementGetResult<?, ?> that = (ClusterManagementGetResult<?, ?>) o;
-    return Objects.equals(configurationById, that.configurationById);
+    return Objects.equals(entityInfo, that.entityInfo);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), configurationById);
+    return Objects.hash(super.hashCode(), entityInfo);
   }
 
   @Override
   public String toString() {
     return "ClusterManagementGetResult{" +
-        "configurationInfo=" + configurationById +
+        "configurationInfo=" + entityInfo +
         "} " + super.toString();
   }
 }

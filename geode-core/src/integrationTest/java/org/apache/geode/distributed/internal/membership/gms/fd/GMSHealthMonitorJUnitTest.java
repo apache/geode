@@ -23,7 +23,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_TTL;
 import static org.apache.geode.distributed.ConfigurationProperties.MEMBER_TIMEOUT;
-import static org.apache.geode.distributed.internal.membership.adapter.TcpSocketCreatorAdapter.asTcpSocketCreator;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -853,9 +852,9 @@ public class GMSHealthMonitorJUnitTest {
 
     MemberIdentifier testMember =
         createGMSMember(Version.CURRENT_ORDINAL, viewId,
-            gmsMember.getMemberData().getUuidMostSignificantBits(),
-            gmsMember.getMemberData().getUuidLeastSignificantBits());
-    testMember.getMemberData().setUdpPort(9000);
+            gmsMember.getUuidMostSignificantBits(),
+            gmsMember.getUuidLeastSignificantBits());
+    testMember.setUdpPort(9000);
 
     // We set to our expected test viewId in the IDM as well as resetting the gms member
     gmsMember.setVmViewId(viewId);
@@ -1023,8 +1022,8 @@ public class GMSHealthMonitorJUnitTest {
     public Set<MemberIdentifier> availabilityCheckedMembers = new HashSet<>();
 
     public GMSHealthMonitorTest() {
-      super(asTcpSocketCreator(SocketCreatorFactory
-          .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER)));
+      super(SocketCreatorFactory
+          .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER));
     }
 
     @Override

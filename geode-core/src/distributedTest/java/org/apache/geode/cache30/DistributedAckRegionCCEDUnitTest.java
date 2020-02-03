@@ -40,7 +40,6 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionAdvisor;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.api.MemberData;
 import org.apache.geode.internal.cache.DistributedCacheOperation;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.EntryEventImpl;
@@ -218,8 +217,8 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
       VersionTag<InternalDistributedMember> tag =
           (VersionTag<InternalDistributedMember>) versionStamp.asVersionTag();
       // create a fake member ID that will be < mine and lose a concurrency check
-      MemberData nm =
-          CCRegion.getDistributionManager().getDistributionManagerId().getMemberData();
+      InternalDistributedMember nm =
+          CCRegion.getDistributionManager().getDistributionManagerId();
       InternalDistributedMember mbr = null;
 
       mbr = new InternalDistributedMember(nm.getInetAddress().getCanonicalHostName(),

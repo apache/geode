@@ -30,11 +30,12 @@ import org.apache.geode.distributed.internal.membership.gms.locator.MembershipLo
 import org.apache.geode.distributed.internal.tcpserver.ProtocolChecker;
 import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
-import org.apache.geode.internal.serialization.ObjectDeserializer;
-import org.apache.geode.internal.serialization.ObjectSerializer;
+import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreatorImpl;
+import org.apache.geode.internal.serialization.DSFIDSerializer;
 
 public final class MembershipLocatorBuilderImpl<ID extends MemberIdentifier> implements
     MembershipLocatorBuilder<ID> {
+  private final DSFIDSerializer serializer;
   private int port = 0;
   private InetAddress bindAddress = null;
   private ProtocolChecker protocolChecker = (socket, input, firstByte) -> false;
@@ -42,21 +43,17 @@ public final class MembershipLocatorBuilderImpl<ID extends MemberIdentifier> imp
   private MembershipLocatorStatistics locatorStats = new MembershipLocatorStatisticsNoOp();
   private boolean locatorsAreCoordinators = true;
   private final TcpSocketCreator socketCreator;
-  private final ObjectSerializer objectSerializer;
-  private final ObjectDeserializer objectDeserializer;
   private final Path workingDirectory;
   private MembershipConfig config = new MembershipConfig() {};
   private final Supplier<ExecutorService> executorServiceSupplier;
 
   public MembershipLocatorBuilderImpl(
       final TcpSocketCreator socketCreator,
-      final ObjectSerializer objectSerializer,
-      final ObjectDeserializer objectDeserializer,
+      final DSFIDSerializer serializer,
       final Path workingDirectory,
       final Supplier<ExecutorService> executorServiceSupplier) {
-    this.socketCreator = socketCreator;
-    this.objectSerializer = objectSerializer;
-    this.objectDeserializer = objectDeserializer;
+    this.socketCreator = socketCreator == null ? new TcpSocketCreatorImpl() : socketCreator;
+    this.serializer = serializer;
     this.workingDirectory = workingDirectory;
     this.executorServiceSupplier = executorServiceSupplier;
   }
@@ -106,9 +103,11 @@ public final class MembershipLocatorBuilderImpl<ID extends MemberIdentifier> imp
   @Override
   public MembershipLocator<ID> create()
       throws UnknownHostException, MembershipConfigurationException {
+    Services.registerSerializables(serializer);
     return new MembershipLocatorImpl<ID>(port, bindAddress, protocolChecker,
         executorServiceSupplier,
-        socketCreator, objectSerializer, objectDeserializer, fallbackHandler,
+        socketCreator, serializer.getObjectSerializer(), serializer.getObjectDeserializer(),
+        fallbackHandler,
         locatorsAreCoordinators, locatorStats, workingDirectory, config);
   }
 

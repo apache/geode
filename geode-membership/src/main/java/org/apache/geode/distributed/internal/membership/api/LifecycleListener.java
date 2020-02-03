@@ -33,13 +33,6 @@ public interface LifecycleListener<ID extends MemberIdentifier> {
       final ID memberID);
 
   /**
-   * Invoked when the Membership is starting. All membership services will have been
-   * initialized and had their "started" methods invoked but we will not yet have joined
-   * the cluster.
-   */
-  void started();
-
-  /**
    * Invoked when the Membership has successfully joined the cluster. At this point the
    * membership address is stable.
    */

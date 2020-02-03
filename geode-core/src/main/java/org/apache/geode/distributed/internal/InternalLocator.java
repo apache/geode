@@ -18,7 +18,6 @@ import static org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace;
 import static org.apache.geode.distributed.ConfigurationProperties.BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.internal.membership.adapter.TcpSocketCreatorAdapter.asTcpSocketCreator;
 import static org.apache.geode.internal.admin.remote.DistributionLocatorId.asDistributionLocatorIds;
 import static org.apache.geode.util.internal.GeodeGlossary.GEMFIRE_PREFIX;
 
@@ -111,6 +110,7 @@ import org.apache.geode.management.internal.configuration.handlers.SharedConfigu
 import org.apache.geode.management.internal.configuration.messages.ClusterManagementServiceInfoRequest;
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusRequest;
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusResponse;
+import org.apache.geode.metrics.internal.InternalDistributedSystemMetricsService;
 import org.apache.geode.security.AuthTokenEnabledComponents;
 
 /**
@@ -540,14 +540,12 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
               MAX_POOL_SIZE, new DelayedPoolStatHelper(),
               POOL_IDLE_TIMEOUT,
               new ThreadPoolExecutor.CallerRunsPolicy());
-      final TcpSocketCreator socketCreator = asTcpSocketCreator(
-          SocketCreatorFactory
-              .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR));
+      final TcpSocketCreator socketCreator = SocketCreatorFactory
+          .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR);
       membershipLocator =
           MembershipLocatorBuilder.<InternalDistributedMember>newLocatorBuilder(
               socketCreator,
-              InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
-              InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer(),
+              InternalDataSerializer.getDSFIDSerializer(),
               workingDirectory,
               executor)
               .setConfig(config)
@@ -564,9 +562,9 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
 
     membershipLocator.addHandler(InfoRequest.class, new InfoRequestHandler());
     restartHandlers.add((ds, cache, sharedConfig) -> {
-      InternalDistributedSystem ids = (InternalDistributedSystem) ds;
-      Distribution distribution = ids.getDM().getDistribution();
-      membershipLocator.setMembership(distribution.getMembership());
+      final InternalDistributedSystem ids = (InternalDistributedSystem) ds;
+      // let old locator know about new membership object
+      membershipLocator.setMembership(ids.getDM().getDistribution().getMembership());
     });
   }
 
@@ -661,7 +659,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
   /**
    * @return the TcpHandler for peer to peer discovery
    */
-  public MembershipLocator getMembershipLocator() {
+  public MembershipLocator<InternalDistributedMember> getMembershipLocator() {
     return membershipLocator;
   }
 
@@ -736,13 +734,17 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
       logger.info("Starting distributed system");
 
       internalDistributedSystem =
-          (InternalDistributedSystem) DistributedSystem.connect(distributedSystemProperties);
+          InternalDistributedSystem
+              .connectInternal(distributedSystemProperties, null,
+                  new InternalDistributedSystemMetricsService.Builder(),
+                  membershipLocator);
 
       if (peerLocator) {
         // We've created a peer location message handler - it needs to be connected to
         // the membership service in order to get membership view notifications
         membershipLocator
-            .setMembership(internalDistributedSystem.getDM().getDistribution().getMembership());
+            .setMembership(internalDistributedSystem.getDM()
+                .getDistribution().getMembership());
       }
 
       internalDistributedSystem.addDisconnectListener(sys -> stop(false, false, false));

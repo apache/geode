@@ -1441,7 +1441,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
     for (int i = 0; i < addresses.length; i++) {
       ID id = addresses[i];
       if (id != null) {
-        if (!id.getMemberData().hasUUID()) {
+        if (!id.hasUUID()) {
           id.setMemberData(view.getCanonicalID(id).getMemberData());
         }
       }
@@ -1890,7 +1890,6 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
     @Override
     public void started() throws MemberStartupException {
       startCleanupTimer();
-      lifecycleListener.started();
     }
 
     /* Service interface */

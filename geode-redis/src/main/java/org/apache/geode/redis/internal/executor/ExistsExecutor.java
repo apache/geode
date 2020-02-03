@@ -36,7 +36,7 @@ public class ExistsExecutor extends AbstractExecutor {
     }
 
     ByteArrayWrapper key = command.getKey();
-    boolean exists = context.getRegionProvider().existsKey(key);
+    boolean exists = context.getKeyRegistrar().isRegistered(key);
 
     if (exists)
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), EXISTS));

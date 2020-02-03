@@ -12,24 +12,33 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.logging.internal;
 
-import static org.apache.geode.logging.internal.ConfigurationInfo.getConfigurationInfo;
+package org.apache.geode.management.api;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.categories.LoggingTest;
+import org.apache.geode.management.configuration.Region;
+import org.apache.geode.management.runtime.RuntimeRegionInfo;
+import org.apache.geode.util.internal.GeodeJsonMapper;
 
-/**
- * Integration tests for {@link ConfigurationInfo}.
- */
-@Category(LoggingTest.class)
-public class ConfigurationInfoIntegrationTest {
+public class EntityGroupInfoTest {
+  private ObjectMapper mapper = GeodeJsonMapper.getMapper();
 
   @Test
-  public void getConfigurationInfoContainsLog4j2Xml() {
-    assertThat(getConfigurationInfo()).contains("log4j2.xml");
+  public void jsonTest() throws Exception {
+    EntityGroupInfo<Region, RuntimeRegionInfo> result = new EntityGroupInfo<>();
+    Region region = new Region();
+    region.setName("test");
+    result.setConfiguration(region);
+
+    String regionJson = mapper.writeValueAsString(region);
+    String json = mapper.writeValueAsString(result);
+    assertThat(regionJson).doesNotContain("links");
+    System.out.println(json);
+    assertThat(json).contains("links");
+    mapper.readValue(json, EntityGroupInfo.class);
   }
 }
