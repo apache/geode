@@ -80,7 +80,10 @@ resource_types:
 - name: pull-request
   type: docker-image
   source:
-    repository: teliaoss/github-pr-resource
+    username: ((docker-username))
+    password: ((docker-password))
+    repository: gcr.io/((gcp-project))/((pipeline-prefix))github-pr-resource
+    tag: latest
 - name: concourse-metadata-resource
   type: docker-image
   source:
