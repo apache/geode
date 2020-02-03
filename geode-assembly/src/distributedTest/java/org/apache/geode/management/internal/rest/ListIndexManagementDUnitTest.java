@@ -34,7 +34,7 @@ import org.apache.geode.management.api.ClusterManagementGetResult;
 import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementRealizationResult;
 import org.apache.geode.management.api.ClusterManagementService;
-import org.apache.geode.management.api.ConfigurationResult;
+import org.apache.geode.management.api.EntityGroupInfo;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.Index;
 import org.apache.geode.management.configuration.IndexType;
@@ -155,9 +155,9 @@ public class ListIndexManagementDUnitTest {
       softly.assertThat(indexConfig.getRegionPath()).as("get index: region path")
           .isEqualTo("/region1");
       softly.assertThat(indexConfig.getExpression()).as("get index: expression").isEqualTo("id");
-      ConfigurationResult<Index, IndexInfo> configurationResult =
+      EntityGroupInfo<Index, IndexInfo> entityGroupInfo =
           cms.get(this.indexConfig).getResult().getConfigurationByGroup().get(0);
-      Index indexConfigTwo = configurationResult.getConfiguration();
+      Index indexConfigTwo = entityGroupInfo.getConfiguration();
       softly.assertThat(indexConfigTwo.getLinks().getLinks()).as("get index: links key")
           .containsKey("region");
       softly.assertThat(indexConfigTwo.getLinks().getLinks().get("region"))

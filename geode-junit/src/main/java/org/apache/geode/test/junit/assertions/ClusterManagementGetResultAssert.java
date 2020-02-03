@@ -23,7 +23,7 @@ import org.assertj.core.api.ObjectAssert;
 
 import org.apache.geode.management.api.ClusterManagementGetResult;
 import org.apache.geode.management.api.ClusterManagementResult;
-import org.apache.geode.management.api.ConfigurationResult;
+import org.apache.geode.management.api.EntityGroupInfo;
 import org.apache.geode.management.configuration.AbstractConfiguration;
 import org.apache.geode.management.runtime.RuntimeInfo;
 
@@ -56,7 +56,7 @@ public class ClusterManagementGetResultAssert<T extends AbstractConfiguration<R>
     return this;
   }
 
-  public ConfigurationResult<T, R> getResult() {
+  public EntityGroupInfo<T, R> getResult() {
     return actual.getResult().getConfigurationByGroup().get(0);
   };
 

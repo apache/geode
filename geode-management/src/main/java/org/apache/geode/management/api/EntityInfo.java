@@ -35,15 +35,15 @@ import org.apache.geode.management.runtime.RuntimeInfo;
  * @param <T> the config type
  * @param <R> the runtimeInfo type
  */
-public class ConfigurationInfo<T extends AbstractConfiguration<R>, R extends RuntimeInfo> {
+public class EntityInfo<T extends AbstractConfiguration<R>, R extends RuntimeInfo> {
   private String id;
   @JsonInclude
   @JsonProperty
-  private List<ConfigurationResult<T, R>> configurationByGroup = new ArrayList<>();
+  private List<EntityGroupInfo<T, R>> configurationByGroup = new ArrayList<>();
 
-  public ConfigurationInfo() {}
+  public EntityInfo() {}
 
-  public ConfigurationInfo(String id, List<ConfigurationResult<T, R>> configurationByGroup) {
+  public EntityInfo(String id, List<EntityGroupInfo<T, R>> configurationByGroup) {
     this.id = id;
     this.configurationByGroup = configurationByGroup;
   }
@@ -56,18 +56,18 @@ public class ConfigurationInfo<T extends AbstractConfiguration<R>, R extends Run
     this.id = id;
   }
 
-  public List<ConfigurationResult<T, R>> getConfigurationByGroup() {
+  public List<EntityGroupInfo<T, R>> getConfigurationByGroup() {
     return configurationByGroup;
   }
 
-  public void setConfigurationByGroup(List<ConfigurationResult<T, R>> configurationByGroup) {
+  public void setConfigurationByGroup(List<EntityGroupInfo<T, R>> configurationByGroup) {
     this.configurationByGroup = configurationByGroup;
   }
 
   @JsonIgnore
   public List<T> getConfigurations() {
     return configurationByGroup.stream()
-        .map(ConfigurationResult::getConfiguration)
+        .map(EntityGroupInfo::getConfiguration)
         .collect(toList());
   }
 
@@ -86,7 +86,7 @@ public class ConfigurationInfo<T extends AbstractConfiguration<R>, R extends Run
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    ConfigurationInfo<?, ?> that = (ConfigurationInfo<?, ?>) o;
+    EntityInfo<?, ?> that = (EntityInfo<?, ?>) o;
     return Objects.equals(id, that.id) &&
         Objects.equals(configurationByGroup, that.configurationByGroup);
   }

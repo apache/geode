@@ -38,7 +38,7 @@ import org.apache.geode.distributed.internal.InternalConfigurationPersistenceSer
 import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
-import org.apache.geode.management.api.ConfigurationResult;
+import org.apache.geode.management.api.EntityGroupInfo;
 import org.apache.geode.management.api.RestTemplateClusterManagementServiceTransport;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.ClassName;
@@ -101,7 +101,7 @@ public class GatewayManagementIntegrationTest {
     ClusterManagementListResult<GatewayReceiver, GatewayReceiverInfo> results =
         client.list(receiver);
     assertThat(results.isSuccessful()).isTrue();
-    List<ConfigurationResult<GatewayReceiver, GatewayReceiverInfo>> receivers =
+    List<EntityGroupInfo<GatewayReceiver, GatewayReceiverInfo>> receivers =
         results.getResult();
     assertThat(receivers.size()).isEqualTo(1);
     GatewayReceiver result = receivers.get(0).getConfiguration();
