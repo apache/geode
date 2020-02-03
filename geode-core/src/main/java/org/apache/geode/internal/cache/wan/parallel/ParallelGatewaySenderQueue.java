@@ -1617,7 +1617,12 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
   }
 
   private void returnToQueuePreviouslyPeekedEvents() {
-    for (Iterator<GatewaySenderEventImpl> iterator = peekedEvents.iterator(); iterator
+    List<GatewaySenderEventImpl> helplist = new ArrayList<>(peekedEvents.size());
+    helplist.addAll(peekedEvents);
+    peekedEvents.clear();
+    Collections.reverse(helplist);
+
+    for (Iterator<GatewaySenderEventImpl> iterator = helplist.iterator(); iterator
         .hasNext();) {
       GatewaySenderEventImpl event = iterator.next();
       final int bucketId = event.getBucketId();
