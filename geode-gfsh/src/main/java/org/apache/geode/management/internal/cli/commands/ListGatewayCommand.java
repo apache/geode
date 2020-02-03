@@ -55,47 +55,16 @@ public class ListGatewayCommand extends GfshCommand {
           optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.LIST_GATEWAY__GROUP__HELP) String[] onGroup,
       @CliOption(key = {CliStrings.LIST_GATEWAY__SHOW_RECEIVERS_ONLY},
-          specifiedDefaultValue = CliStrings.LIST_GATEWAY__SHOW_PARAM_TRUE,
-          unspecifiedDefaultValue = CliStrings.LIST_GATEWAY__SHOW_PARAM_EMPTY,
-          help = CliStrings.LIST_GATEWAY__SHOW_RECEIVERS_ONLY) String showReceiversOnly,
+          specifiedDefaultValue = "true", unspecifiedDefaultValue = "false",
+          help = CliStrings.LIST_GATEWAY__SHOW_RECEIVERS_ONLY) boolean showReceiversOnly,
       @CliOption(key = {CliStrings.LIST_GATEWAY__SHOW_SENDERS_ONLY},
-          specifiedDefaultValue = CliStrings.LIST_GATEWAY__SHOW_PARAM_TRUE,
-          unspecifiedDefaultValue = CliStrings.LIST_GATEWAY__SHOW_PARAM_EMPTY,
-          help = CliStrings.LIST_GATEWAY__SHOW_SENDERS_ONLY__HELP) String showSendersOnly)
+          specifiedDefaultValue = "true", unspecifiedDefaultValue = "false",
+          help = CliStrings.LIST_GATEWAY__SHOW_SENDERS_ONLY__HELP) boolean showSendersOnly)
 
       throws Exception {
 
-    // Check value of --receivers-only
-    if (!showReceiversOnly.equals(CliStrings.LIST_GATEWAY__SHOW_PARAM_EMPTY)
-        && !showReceiversOnly.equals(CliStrings.LIST_GATEWAY__SHOW_PARAM_TRUE)
-        && !showReceiversOnly.equals(CliStrings.LIST_GATEWAY__SHOW_PARAM_FALSE)) {
-      return ResultModel.createError(CliStrings.LIST_GATEWAY__SHOW_RECEIVERS_ONLY_INPUT_ERROR);
-    }
-
-    // Check value of --senders-only
-    if (!showSendersOnly.equals(CliStrings.LIST_GATEWAY__SHOW_PARAM_EMPTY)
-        && !showSendersOnly.equals(CliStrings.LIST_GATEWAY__SHOW_PARAM_TRUE)
-        && !showSendersOnly.equals(CliStrings.LIST_GATEWAY__SHOW_PARAM_FALSE)) {
-      return ResultModel.createError(CliStrings.LIST_GATEWAY__SHOW_SENDERS_ONLY_INPUT_ERROR);
-    }
-
-    // Check --senders-only & --receivers-only have not been used together
-    if (!showReceiversOnly.equals(CliStrings.LIST_GATEWAY__SHOW_PARAM_EMPTY)
-        && !showSendersOnly.equals(CliStrings.LIST_GATEWAY__SHOW_PARAM_EMPTY)) {
+    if (showReceiversOnly && showSendersOnly) {
       return ResultModel.createError(CliStrings.LIST_GATEWAY__ERROR_ON_SHOW_PARAMETERS);
-    }
-
-    boolean getSenders = true;
-    boolean getReceivers = true;
-
-    if (showReceiversOnly.equals(CliStrings.LIST_GATEWAY__SHOW_PARAM_EMPTY)
-        && showSendersOnly.equals(CliStrings.LIST_GATEWAY__SHOW_PARAM_TRUE)) {
-      getReceivers = false;
-    }
-
-    if (showSendersOnly.equals(CliStrings.LIST_GATEWAY__SHOW_PARAM_EMPTY)
-        && showReceiversOnly.equals(CliStrings.LIST_GATEWAY__SHOW_PARAM_TRUE)) {
-      getSenders = false;
     }
 
     ResultModel result = new ResultModel();
@@ -116,7 +85,7 @@ public class ListGatewayCommand extends GfshCommand {
       String memberNameOrId =
           (memberName != null && !memberName.isEmpty()) ? memberName : member.getId();
 
-      if (getSenders) {
+      if (!showReceiversOnly) {
         ObjectName gatewaySenderObjectNames[] =
             dsMXBean.listGatewaySenderObjectNames(memberNameOrId);
         // gateway senders : a member can have multiple gateway senders defined
@@ -139,7 +108,7 @@ public class ListGatewayCommand extends GfshCommand {
         }
       }
       // gateway receivers : a member can have only one gateway receiver
-      if (getReceivers) {
+      if (!showSendersOnly) {
         ObjectName gatewayReceiverObjectName = MBeanJMXAdapter.getGatewayReceiverMBeanName(member);
         if (gatewayReceiverObjectName != null) {
           GatewayReceiverMXBean receiverBean;

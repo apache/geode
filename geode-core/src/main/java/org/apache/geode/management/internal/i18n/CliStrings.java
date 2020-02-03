@@ -1654,22 +1654,13 @@ public class CliStrings {
 
   public static final String LIST_GATEWAY = "list gateways";
   public static final String LIST_GATEWAY__SHOW_SENDERS_ONLY = "senders-only";
-  public static final String LIST_GATEWAY__SHOW_SENDERS_ONLY_INPUT_ERROR =
-      "senders-only must be 'true' or 'false'";
   public static final String LIST_GATEWAY__SHOW_SENDERS_ONLY__HELP =
       "Display gateway senders only.";
   public static final String LIST_GATEWAY__SHOW_RECEIVERS_ONLY = "receivers-only";
-  public static final String LIST_GATEWAY__SHOW_RECEIVERS_ONLY_INPUT_ERROR =
-      "receivers-only must be 'true' or 'false'";
   public static final String LIST_GATEWAY__SHOW_RECEIVERS_ONLY__HELP =
       "Display gateway receivers only.";
-
-  public static final String LIST_GATEWAY__SHOW_PARAM_TRUE = "true";
-  public static final String LIST_GATEWAY__SHOW_PARAM_FALSE = "false";
-  public static final String LIST_GATEWAY__SHOW_PARAM_EMPTY = "empty";
-
   public static final String LIST_GATEWAY__ERROR_ON_SHOW_PARAMETERS =
-      "Options --senders-only and --receivers-only cannot be used together.";
+      "Options --senders and --receivers cannot be used together.";
   public static final String LIST_GATEWAY__HELP =
       "Display the Gateway Senders and Receivers for a member or members.";
   public static final String LIST_GATEWAY__GROUP__HELP =
