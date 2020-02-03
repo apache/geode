@@ -99,6 +99,19 @@ public class InternalLocatorIntegrationTest {
   }
 
   @Test
+  public void restartingClusterConfigurationDoesNotThrowException() throws IOException {
+    internalLocator = InternalLocator.startLocator(port, logFile, logWriter,
+        securityLogWriter, bindAddress, true,
+        distributedSystemProperties, hostnameForClients, workingDirectory);
+    internalLocator.stop(true, true, false);
+    assertThat(InternalLocator.getLocator()).isNull();
+    // try starting a cluster configuration service when a reconnected locator doesn't exist
+    assertThatCode(() -> {
+      internalLocator.startClusterManagementService();
+    }).doesNotThrowAnyException();
+  }
+
+  @Test
   public void startedLocatorIsRunning() throws IOException {
     internalLocator = InternalLocator.startLocator(port, logFile, logWriter,
         securityLogWriter, bindAddress, true,

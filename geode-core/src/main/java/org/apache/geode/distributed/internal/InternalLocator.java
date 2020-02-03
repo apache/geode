@@ -773,15 +773,19 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
     startClusterManagementService();
   }
 
-  private void startClusterManagementService() throws IOException {
+  @VisibleForTesting
+  void startClusterManagementService() throws IOException {
     startConfigurationPersistenceService();
 
-    if (internalCache == null) {
+    InternalCache myCache = this.internalCache;
+    InternalLocator currentLocator = InternalLocator.locator;
+
+    if (myCache == null || currentLocator == null) {
       return;
     }
 
-    clusterManagementService = new LocatorClusterManagementService(locator.internalCache,
-        locator.configurationPersistenceService);
+    clusterManagementService = new LocatorClusterManagementService(currentLocator.internalCache,
+        currentLocator.configurationPersistenceService);
 
     // start management rest service
     AgentUtil agentUtil = new AgentUtil(GemFireVersion.getGemFireVersion());
@@ -796,7 +800,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
 
     Map<String, Object> serviceAttributes = new HashMap<>();
     serviceAttributes.put(HttpService.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM,
-        internalCache.getSecurityService());
+        myCache.getSecurityService());
     serviceAttributes.put(HttpService.CLUSTER_MANAGEMENT_SERVICE_CONTEXT_PARAM,
         clusterManagementService);
 
@@ -807,7 +811,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
     serviceAttributes.put(HttpService.AUTH_TOKEN_ENABLED_PARAM, managementAuthTokenEnabled);
 
     if (distributionConfig.getEnableManagementRestService()) {
-      internalCache.getOptionalService(HttpService.class).ifPresent(x -> {
+      myCache.getOptionalService(HttpService.class).ifPresent(x -> {
         try {
           logger.info("Geode Property {}=true Geode Management Rest Service is enabled.",
               ConfigurationProperties.ENABLE_MANAGEMENT_REST_SERVICE);
