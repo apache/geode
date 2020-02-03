@@ -428,7 +428,7 @@ public class ListGatewaysCommandDUnitTest implements Serializable {
     String command = CliStrings.LIST_GATEWAY + " --" + CliStrings.LIST_GATEWAY__SHOW_RECEIVERS_ONLY
         + "=false --" + CliStrings.LIST_GATEWAY__SHOW_SENDERS_ONLY + "=false";
     gfsh.executeAndAssertThat(command).statusIsError()
-            .containsOutput(CliStrings.LIST_GATEWAY__ERROR_ON_SHOW_PARAMETERS);
+        .containsOutput(CliStrings.LIST_GATEWAY__ERROR_ON_SHOW_PARAMETERS);
   }
 
   @Test
@@ -458,10 +458,10 @@ public class ListGatewaysCommandDUnitTest implements Serializable {
     setupClusters();
 
     String command =
-            CliStrings.LIST_GATEWAY + " --" + CliStrings.LIST_GATEWAY__SHOW_SENDERS_ONLY + "=true --"
-                    + CliStrings.LIST_GATEWAY__SHOW_RECEIVERS_ONLY + "=false";
+        CliStrings.LIST_GATEWAY + " --" + CliStrings.LIST_GATEWAY__SHOW_SENDERS_ONLY + "=true --"
+            + CliStrings.LIST_GATEWAY__SHOW_RECEIVERS_ONLY + "=false";
     gfsh.executeAndAssertThat(command).statusIsError()
-            .containsOutput(CliStrings.LIST_GATEWAY__ERROR_ON_SHOW_PARAMETERS);
+        .containsOutput(CliStrings.LIST_GATEWAY__ERROR_ON_SHOW_PARAMETERS);
   }
 
   void setupClusters() {

@@ -67,11 +67,11 @@ public class ListGatewayCommand extends GfshCommand {
 
       throws Exception {
 
-    if (showReceiversOnly == null){
-      showReceiversOnly=false;
+    if (showReceiversOnly == null) {
+      showReceiversOnly = false;
     }
-    if (showSendersOnly == null ) {
-      showSendersOnly=false;
+    if (showSendersOnly == null) {
+      showSendersOnly = false;
     }
 
     ResultModel result = new ResultModel();
