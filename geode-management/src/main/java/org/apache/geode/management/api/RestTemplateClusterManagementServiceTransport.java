@@ -235,9 +235,9 @@ public class RestTemplateClusterManagementServiceTransport
         new CompletableFutureProxy<>(restTemplate, uri, longRunningStatusPollingThreadPool,
             futureOperationEnded);
 
-    return new ClusterManagementOperationResult<>(result, operationResult,
-        result.getOperationStart(), futureOperationEnded, result.getOperator(),
-        result.getOperationId());
+    return new ClusterManagementOperationResult<>(result,
+        result.getOperationStart(), result.getOperationEnd(), result.getOperator(),
+        result.getOperationId(), result.getOperationResult(), result.getThrowable());
   }
 
 
