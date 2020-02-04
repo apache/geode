@@ -101,15 +101,7 @@ public class StatusGatewaySenderCommand extends SingleGfshCommand {
         resultData.accumulate(CliStrings.RESULT_POLICY,
             bean.isPrimary() ? CliStrings.SENDER_PRIMARY : CliStrings.SENDER_SECONADRY);
       }
-      if (bean.isRunning()) {
-        if (bean.isPaused()) {
-          resultData.accumulate(CliStrings.RESULT_STATUS, CliStrings.SENDER_PAUSED);
-        } else {
-          resultData.accumulate(CliStrings.RESULT_STATUS, CliStrings.GATEWAY_RUNNING);
-        }
-      } else {
-        resultData.accumulate(CliStrings.RESULT_STATUS, CliStrings.GATEWAY_NOT_RUNNING);
-      }
+      resultData.accumulate(CliStrings.RESULT_STATUS, ListGatewayCommand.getStatus(bean));
     } else {
       resultData.accumulate(CliStrings.GATEWAY_ERROR, CliStrings.GATEWAY_SENDER_IS_NOT_AVAILABLE);
     }
