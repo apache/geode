@@ -16,7 +16,6 @@
 package org.apache.geode.management.internal.operation;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.ArgumentMatchers.same;
@@ -126,8 +125,10 @@ public class RegionOperationHistoryPersistenceServiceTest {
 
   @Test
   public void publicConstructorCreatesRegion() {
-    RegionOperationHistoryPersistenceService regionOperationHistoryPersistenceService = new RegionOperationHistoryPersistenceService(cache);
+    RegionOperationHistoryPersistenceService regionOperationHistoryPersistenceService =
+        new RegionOperationHistoryPersistenceService(cache);
 
-    verify(cache).getRegion(eq(RegionOperationHistoryPersistenceService.OPERATION_HISTORY_REGION_NAME));
+    verify(cache)
+        .getRegion(eq(RegionOperationHistoryPersistenceService.OPERATION_HISTORY_REGION_NAME));
   }
 }

@@ -49,9 +49,11 @@ public class OperationHistoryManagerTest {
   private OperationHistoryManager history;
   private OperationHistoryPersistenceService operationHistoryPersistenceService;
   private Executor executor;
+  private Cache cache;
 
   @Before
   public void setUp() throws Exception {
+    cache = mock(Cache.class);
     operationHistoryPersistenceService = mock(OperationHistoryPersistenceService.class);
     history = new OperationHistoryManager(2, TimeUnit.HOURS, operationHistoryPersistenceService);
     executor = LoggingExecutors.newThreadOnEachExecute("OHM_test");
