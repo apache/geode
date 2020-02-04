@@ -84,7 +84,7 @@ public abstract class AbstractExecutor implements Executor {
    * @param expectedDataType Type to check to
    * @param context context
    */
-  protected void checkDataType(ByteArrayWrapper key, RedisDataType expectedDataType,
+  public void checkDataType(ByteArrayWrapper key, RedisDataType expectedDataType,
       ExecutionHandlerContext context) {
     context.getKeyRegistrar().validate(key, expectedDataType);
   }
