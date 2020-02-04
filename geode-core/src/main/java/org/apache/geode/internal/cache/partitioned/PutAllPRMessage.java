@@ -340,6 +340,8 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
     return false;
   }
 
+  // BR: We skipped this in our new message class. WE can revisit this if we need our
+  // RegionEventImpl
   /* we need a event with content for waitForNodeOrCreateBucket() */
   @Retained
   public EntryEventImpl getFirstEvent(PartitionedRegion r) {

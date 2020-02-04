@@ -2147,15 +2147,16 @@ public class PartitionedRegion extends LocalRegion
   /**
    * @since GemFire 5.0
    * @throws UnsupportedOperationException OVERRIDES
+   *
+   * @Override
+   *           public void clear() {
+   *           throw new UnsupportedOperationException();
+   *           }
    */
-  @Override
-  public void clear() {
-    throw new UnsupportedOperationException();
-  }
 
   @Override
   void basicClear(RegionEventImpl regionEvent, boolean cacheWrite) {
-    throw new UnsupportedOperationException();
+    // base off basicPutAll()
   }
 
   @Override
