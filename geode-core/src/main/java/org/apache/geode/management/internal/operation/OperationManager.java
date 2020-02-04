@@ -16,7 +16,7 @@ package org.apache.geode.management.internal.operation;
 
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
@@ -57,15 +57,21 @@ public class OperationManager implements AutoCloseable {
 
   public <A extends ClusterManagementOperation<V>, V extends OperationResult> OperationState<A, V> submit(
       A op) {
-    String opId = UUID.randomUUID().toString();
-
     BiFunction<Cache, A, V> performer = getPerformer(op);
     if (performer == null) {
       throw new IllegalArgumentException(String.format("%s is not supported.",
           op.getClass().getSimpleName()));
     }
 
-    return historyManager.save(op, performer, cache, executor);
+    String opId = historyManager.recordStart(op);
+
+    CompletableFuture.supplyAsync(() -> performer.apply(cache, op), executor)
+        .whenComplete((result, exception) -> {
+          Throwable cause = exception == null ? null : exception.getCause();
+          historyManager.recordEnd(opId, result, cause);
+        });
+
+    return historyManager.get(opId);
   }
 
   @SuppressWarnings("unchecked")
@@ -84,14 +90,14 @@ public class OperationManager implements AutoCloseable {
   /**
    * looks up the future for an async operation by id
    */
-  public <A extends ClusterManagementOperation<V>, V extends OperationResult> OperationState<A, V> getOperationInstance(
+  public <A extends ClusterManagementOperation<V>, V extends OperationResult> OperationState<A, V> get(
       String opId) {
-    return historyManager.getOperationInstance(opId);
+    return historyManager.get(opId);
   }
 
-  public <A extends ClusterManagementOperation<V>, V extends OperationResult> List<OperationState<A, V>> listOperationInstances(
+  public <A extends ClusterManagementOperation<V>, V extends OperationResult> List<OperationState<A, V>> list(
       A opType) {
-    return historyManager.listOperationInstances(opType);
+    return historyManager.list(opType);
   }
 
   @Override

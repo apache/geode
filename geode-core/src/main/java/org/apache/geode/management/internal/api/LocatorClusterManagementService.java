@@ -405,7 +405,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
   public <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementListOperationsResult<V> list(
       A opType) {
     return assertSuccessful(new ClusterManagementListOperationsResult<>(
-        operationManager.listOperationInstances(opType).stream()
+        operationManager.list(opType).stream()
             .map(this::toClusterManagementListOperationsResult).collect(Collectors.toList())));
   }
 
@@ -459,7 +459,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
    */
   public <V extends OperationResult> ClusterManagementOperationStatusResult<V> checkStatus(
       String opId) {
-    final OperationState<?, V> operationInstance = operationManager.getOperationInstance(opId);
+    final OperationState<?, V> operationInstance = operationManager.get(opId);
     if (operationInstance == null) {
       raise(StatusCode.ENTITY_NOT_FOUND, "Operation '" + opId + "' does not exist.");
     }

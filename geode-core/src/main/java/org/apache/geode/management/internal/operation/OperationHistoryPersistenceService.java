@@ -45,7 +45,7 @@ public interface OperationHistoryPersistenceService {
   /**
    * Returns a list of all persisted {@link OperationState}.
    */
-  <A extends ClusterManagementOperation<V>, V extends OperationResult> List<OperationState<A, V>> listOperationInstances();
+  <A extends ClusterManagementOperation<V>, V extends OperationResult> List<OperationState<A, V>> list();
 
   /**
    * Records that the given operation has completed with the given result or exception.

@@ -379,7 +379,7 @@ public class LocatorClusterManagementServiceTest {
   @Test
   public void checkStatus() {
     OperationState operationInstance = mock(OperationState.class);
-    when(executorManager.getOperationInstance(any())).thenReturn(operationInstance);
+    when(executorManager.get(any())).thenReturn(operationInstance);
     ClusterManagementOperationStatusResult<OperationResult> result = service.checkStatus("456");
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.IN_PROGRESS);
     assertThat(result.getResult()).isNull();

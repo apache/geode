@@ -30,8 +30,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.api.ClusterManagementOperation;
 import org.apache.geode.management.runtime.OperationResult;
 
@@ -39,8 +39,7 @@ public class RegionOperationHistoryPersistenceServiceTest {
   private OperationHistoryPersistenceService historyPersistenceService;
   private Supplier<String> uniqueIdSupplier;
   private Region<String, OperationState<ClusterManagementOperation<OperationResult>, OperationResult>> region;
-  private Supplier<Region<String, OperationState>> regionSupplier;
-  private Cache cache;
+  private InternalCache cache;
 
   @Before
   public void init() {
@@ -49,7 +48,7 @@ public class RegionOperationHistoryPersistenceServiceTest {
     region = mock(Region.class);
     historyPersistenceService =
         new RegionOperationHistoryPersistenceService(uniqueIdSupplier, region);
-    cache = mock(Cache.class);
+    cache = mock(InternalCache.class);
   }
 
   @Test

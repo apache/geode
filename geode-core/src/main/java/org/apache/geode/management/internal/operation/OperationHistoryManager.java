@@ -17,14 +17,11 @@ package org.apache.geode.management.internal.operation;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
-import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.cache.Cache;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.management.api.ClusterManagementOperation;
 import org.apache.geode.management.runtime.OperationResult;
 
@@ -59,16 +56,17 @@ public class OperationHistoryManager {
    * look up the specified key
    */
   @SuppressWarnings("unchecked")
-  <A extends ClusterManagementOperation<V>, V extends OperationResult> OperationState<A, V> getOperationInstance(
+  <A extends ClusterManagementOperation<V>, V extends OperationResult> OperationState<A, V> get(
       String opId) {
     expireHistory();
 
     return (OperationState<A, V>) historyPersistenceService.get(opId);
   }
 
-  private void expireHistory() {
+  @VisibleForTesting
+  void expireHistory() {
     final long expirationTime = now() - keepCompletedMillis;
-    Set<String> expiredKeys = historyPersistenceService.listOperationInstances()
+    Set<String> expiredKeys = historyPersistenceService.list()
         .stream()
         .filter(operationInstance -> isExpired(expirationTime, operationInstance))
         .map(OperationState::getId)
@@ -92,28 +90,26 @@ public class OperationHistoryManager {
   }
 
   /**
-   * Stores a new operation in the history and installs a trigger to record the operation end time.
+   * Stores a new operation in the history returns its given identifier.
    */
-  public <A extends ClusterManagementOperation<V>, V extends OperationResult> OperationState<A, V> save(
-      A op, BiFunction<Cache, A, V> performer, Cache cache, Executor executor) {
-    String opId = historyPersistenceService.recordStart(op);
-
-    CompletableFuture.supplyAsync(() -> performer.apply(cache, op), executor)
-        .whenComplete((result, exception) -> {
-          Throwable cause = exception == null ? null : exception.getCause();
-          historyPersistenceService.recordEnd(opId, result, cause);
-        });
-
+  public String recordStart(ClusterManagementOperation<?> op) {
     expireHistory();
 
-    return historyPersistenceService.get(opId);
+    return historyPersistenceService.recordStart(op);
   }
 
-  <A extends ClusterManagementOperation<V>, V extends OperationResult> List<OperationState<A, V>> listOperationInstances(
+  /**
+   * Stores the result of a previously started operation.
+   */
+  public void recordEnd(String opId, OperationResult result, Throwable cause) {
+    historyPersistenceService.recordEnd(opId, result, cause);
+  }
+
+  <A extends ClusterManagementOperation<V>, V extends OperationResult> List<OperationState<A, V>> list(
       A opType) {
     expireHistory();
 
-    return historyPersistenceService.listOperationInstances()
+    return historyPersistenceService.list()
         .stream()
         .filter(instance -> instance.getOperation().getClass().equals(opType.getClass()))
         .map(fi -> (OperationState<A, V>) fi)

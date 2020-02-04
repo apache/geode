@@ -112,7 +112,7 @@ public class RegionOperationHistoryPersistenceService
   }
 
   @Override
-  public <A extends ClusterManagementOperation<V>, V extends OperationResult> List<OperationState<A, V>> listOperationInstances() {
+  public <A extends ClusterManagementOperation<V>, V extends OperationResult> List<OperationState<A, V>> list() {
     return null;
   }
 
