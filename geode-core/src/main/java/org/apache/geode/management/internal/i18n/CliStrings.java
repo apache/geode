@@ -2866,6 +2866,8 @@ public class CliStrings {
   public static final String SENDER_PARALLEL = "Parallel";
   public static final String SENDER_SERIAL = "Serial";
   public static final String GATEWAY_RUNNING = "Running";
+  public static final String GATEWAY_RUNNING_NOT_CONNECTED = "Running, not Connected";
+  public static final String GATEWAY_RUNNING_CONNECTED = "Running and Connected";
   public static final String GATEWAY_NOT_RUNNING = "Not Running";
   public static final String SENDER_PAUSED = "Paused";
   public static final String SENDER_PRIMARY = "Primary";
