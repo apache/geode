@@ -69,10 +69,17 @@ public class ClusterManagementListResultTest {
 
     list.setEntityGroupInfo(groupInfos);
 
+    // make sure it has 3 region definition by groups
     assertThat(list.getEntityGroupInfo()).hasSize(3);
+    // make sure it only has 2 regions defined (one region exists in 2 groups)
     assertThat(list.getResult()).hasSize(2);
 
     String json = mapper.writeValueAsString(list);
+    System.out.println(json);
+
+    // make sure each region's link only appears once in the json
+    assertThat(json).containsOnlyOnce("\"self\":\"#HREF/management/v1/regions/regionA\"")
+        .containsOnlyOnce("\"self\":\"#HREF/management/v1/regions/regionB\"");
 
     ClusterManagementListResult result =
         mapper.readValue(json, ClusterManagementListResult.class);

@@ -26,6 +26,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.apache.geode.management.configuration.AbstractConfiguration;
+import org.apache.geode.management.configuration.Links;
 import org.apache.geode.management.runtime.RuntimeInfo;
 
 /**
@@ -76,6 +77,15 @@ public class EntityInfo<T extends AbstractConfiguration<R>, R extends RuntimeInf
     return configurationByGroup.stream()
         .flatMap(r -> r.getRuntimeInfo().stream())
         .collect(toList());
+  }
+
+  @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+  public Links getLinks() {
+    if (configurationByGroup.size() == 0) {
+      return null;
+    }
+
+    return configurationByGroup.get(0).getLinks();
   }
 
   @Override
