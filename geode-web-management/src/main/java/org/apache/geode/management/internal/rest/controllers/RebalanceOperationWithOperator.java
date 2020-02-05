@@ -13,17 +13,26 @@
  * the License.
  */
 
-package org.apache.geode.management.runtime;
+package org.apache.geode.management.internal.rest.controllers;
 
-import java.io.Serializable;
+import java.util.Optional;
 
-import org.apache.geode.annotations.Experimental;
-import org.apache.geode.management.api.ClusterManagementOperation;
-import org.apache.geode.management.api.JsonSerializable;
+import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.management.internal.operation.TaggedWithOperator;
+import org.apache.geode.management.operation.RebalanceOperation;
 
-/**
- * marker interface for the final result of a {@link ClusterManagementOperation}
- */
-@Experimental
-public interface OperationResult extends JsonSerializable, Serializable {
+class RebalanceOperationWithOperator extends RebalanceOperation
+    implements TaggedWithOperator {
+  private String operator;
+
+  public RebalanceOperationWithOperator(RebalanceOperation other, SecurityService securityService) {
+    super(other);
+    this.operator = Optional.ofNullable(securityService).map(SecurityService::getSubject)
+        .map(Object::toString).orElse(null);
+  }
+
+  @Override
+  public String getOperator() {
+    return operator;
+  }
 }

@@ -239,8 +239,15 @@ public class RegionFactory<K, V> {
   /**
    * Returns the cache used by this factory.
    */
-  private synchronized InternalCache getCache() {
+  protected synchronized InternalCache getCache() {
     return this.cache;
+  }
+
+  /**
+   * Returns the Region attributes used by this Region factory.
+   */
+  protected RegionAttributes<K, V> getRegionAttributes() {
+    return this.attrsFactory.create();
   }
 
   /**

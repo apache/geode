@@ -18,7 +18,7 @@ package org.apache.geode.management.internal.rest.controllers;
 import static org.apache.geode.management.configuration.Links.URI_VERSION;
 import static org.apache.geode.management.operation.RebalanceOperation.REBALANCE_ENDPOINT;
 
-import java.util.Optional;
+import java.io.Serializable;
 
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpHeaders;
@@ -32,11 +32,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.api.ClusterManagementListOperationsResult;
 import org.apache.geode.management.api.ClusterManagementOperationResult;
 import org.apache.geode.management.internal.ClusterManagementOperationStatusResult;
-import org.apache.geode.management.internal.operation.TaggedWithOperator;
 import org.apache.geode.management.operation.RebalanceOperation;
 import org.apache.geode.management.runtime.RebalanceResult;
 
@@ -49,7 +47,7 @@ public class RebalanceOperationController extends AbstractManagementController {
   public ResponseEntity<ClusterManagementOperationResult<RebalanceResult>> startRebalance(
       @RequestBody RebalanceOperation operation) {
     ClusterManagementOperationResult<RebalanceResult> result =
-        clusterManagementService.start(new RebalanceOperationWithOperator(operation));
+        clusterManagementService.start(new RebalanceOperationWithOperator(operation, securityService));
     return new ResponseEntity<>(result, HttpStatus.ACCEPTED);
   }
 
@@ -70,21 +68,5 @@ public class RebalanceOperationController extends AbstractManagementController {
     HttpHeaders headers = new HttpHeaders();
     headers.add("Retry-After", "30");
     return new ResponseEntity<>(result, headers, HttpStatus.OK);
-  }
-
-  private class RebalanceOperationWithOperator extends RebalanceOperation
-      implements TaggedWithOperator {
-    private String operator;
-
-    public RebalanceOperationWithOperator(RebalanceOperation other) {
-      super(other);
-      this.operator = Optional.ofNullable(securityService).map(SecurityService::getSubject)
-          .map(Object::toString).orElse(null);
-    }
-
-    @Override
-    public String getOperator() {
-      return operator;
-    }
   }
 }
