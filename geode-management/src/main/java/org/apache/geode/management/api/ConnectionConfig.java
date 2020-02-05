@@ -19,33 +19,105 @@ package org.apache.geode.management.api;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 
 /**
- * Interface representing the properties required to configure and create a
- * {@link ClusterManagementServiceTransport}. Although the current implementation is HTTP based,
- * these properties should be general enough that they are relevant to any different implementation.
- * <p/>
- * Concrete implementations of this interface can be created through either the
- * {@link BaseConnectionConfig} or
- * {@code GeodeClusterManagementServiceConnectionConfig} classes.
+ * Concrete implementation of {@link ConnectionConfig} which can be used where the various
+ * connection properties should be set directly as opposed to being derived from another context
+ * such as a {@code Cache}. For example {@code GeodeClusterManagementServiceConnectionConfig}.
+ *
+ * @see ClusterManagementServiceBuilder
  */
 @Experimental
-public interface ConnectionConfig {
+public class ConnectionConfig {
 
-  String getHost();
+  private String host;
+  private int port;
+  private String username;
+  private String password;
+  private HostnameVerifier hostnameVerifier = new NoopHostnameVerifier();
+  private SSLContext sslContext;
+  private String authToken;
+  private boolean followRedirects;
 
-  int getPort();
+  public ConnectionConfig() {}
 
-  String getAuthToken();
+  public ConnectionConfig(String host, int port) {
+    this.host = host;
+    this.port = port;
+  }
 
-  SSLContext getSslContext();
+  protected void setHost(String host) {
+    this.host = host;
+  }
 
-  String getUsername();
+  protected void setPort(int port) {
+    this.port = port;
+  }
 
-  String getPassword();
+  public String getHost() {
+    return host;
+  }
 
-  HostnameVerifier getHostnameVerifier();
+  public int getPort() {
+    return port;
+  }
 
-  boolean getFollowRedirects();
+  public String getAuthToken() {
+    return authToken;
+  }
+
+  public ConnectionConfig setAuthToken(String authToken) {
+    this.authToken = authToken;
+    return this;
+  }
+
+  public ConnectionConfig setSslContext(SSLContext sslContext) {
+    this.sslContext = sslContext;
+    return this;
+  }
+
+  public SSLContext getSslContext() {
+    return sslContext;
+  }
+
+  public ConnectionConfig setUsername(String username) {
+    this.username = username;
+    return this;
+  }
+
+  public String getUsername() {
+    return username;
+  }
+
+  public ConnectionConfig setPassword(String password) {
+    this.password = password;
+    return this;
+  }
+
+  public String getPassword() {
+    return password;
+  }
+
+  public ConnectionConfig setHostnameVerifier(
+      HostnameVerifier hostnameVerifier) {
+    this.hostnameVerifier = hostnameVerifier;
+    return this;
+  }
+
+  public HostnameVerifier getHostnameVerifier() {
+    return hostnameVerifier;
+  }
+
+  public ConnectionConfig setFollowRedirects(boolean followRedirects) {
+    this.followRedirects = followRedirects;
+    return this;
+  }
+
+  public boolean getFollowRedirects() {
+    return followRedirects;
+  }
 }
