@@ -327,8 +327,8 @@ public class Tomcat8ClientServerRollingUpgradeTest {
     String currentVersion = Version.CURRENT.getName();
 
     final String[] requiredClasspathJars = {
-        "/lib/geode-modules-" + currentVersion + "-SNAPSHOT.jar",
-        "/lib/geode-modules-tomcat8-" + currentVersion + "-SNAPSHOT.jar",
+        "/lib/geode-modules-" + currentVersion + ".jar",
+        "/lib/geode-modules-tomcat8-" + currentVersion + ".jar",
         "/lib/servlet-api.jar",
         "/lib/catalina.jar",
         "/lib/tomcat-util.jar",
