@@ -409,7 +409,7 @@ public class LocatorClusterManagementServiceTest {
     Region filter = new Region();
     ClusterManagementListResult<Region, RuntimeRegionInfo> result =
         mock(ClusterManagementListResult.class);
-    when(result.getResult()).thenReturn(emptyList());
+    when(result.getEntityGroupInfo()).thenReturn(emptyList());
 
     doReturn(result).when(service).list(same(filter));
 
@@ -428,7 +428,7 @@ public class LocatorClusterManagementServiceTest {
     for (int i = 0; i < 3; i++) {
       entityGroupInfos.add(mock(EntityGroupInfo.class));
     }
-    when(listResult.getResult()).thenReturn(entityGroupInfos);
+    when(listResult.getEntityGroupInfo()).thenReturn(entityGroupInfos);
 
     doReturn(listResult).when(service).list(same(filter));
 
@@ -447,7 +447,7 @@ public class LocatorClusterManagementServiceTest {
         mock(EntityGroupInfo.class);
     when(entityGroupInfo.getRuntimeInfo()).thenReturn(emptyList());
     entityGroupInfos.add(entityGroupInfo);
-    when(listResult.getResult()).thenReturn(entityGroupInfos);
+    when(listResult.getEntityGroupInfo()).thenReturn(entityGroupInfos);
 
     assertThatThrownBy(() -> service.get(member))
         .isInstanceOf(ClusterManagementException.class)

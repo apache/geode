@@ -367,7 +367,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
       response.setRuntimeInfo(runtimeInfos);
     }
 
-    result.setResult(responses);
+    result.setEntityGroupInfo(responses);
     return assertSuccessful(result);
   }
 
@@ -375,18 +375,19 @@ public class LocatorClusterManagementService implements ClusterManagementService
   public <T extends AbstractConfiguration<R>, R extends RuntimeInfo> ClusterManagementGetResult<T, R> get(
       T config) {
     ClusterManagementListResult<T, R> list = list(config);
-    List<EntityGroupInfo<T, R>> result = list.getResult();
+
+    List<EntityInfo<T, R>> result = list.getResult();
     int size = result.size();
     if (config instanceof Member) {
-      size = result.get(0).getRuntimeInfo().size();
+      size = result.get(0).getRuntimeInfos().size();
     }
 
     if (size == 0) {
       raise(StatusCode.ENTITY_NOT_FOUND,
           config.getClass().getSimpleName() + " '" + config.getId() + "' does not exist.");
     }
-    EntityInfo<T, R> entityInfo = new EntityInfo<>(config.getId(), result);
-    return new ClusterManagementGetResult<>(entityInfo);
+
+    return new ClusterManagementGetResult<>(result.get(0));
   }
 
   @Override
