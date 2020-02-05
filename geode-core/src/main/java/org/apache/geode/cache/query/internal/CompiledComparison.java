@@ -310,9 +310,9 @@ public class CompiledComparison extends AbstractCompiledValue
     assert idxInfo.length == 1;
     Object key = idxInfo[0].evaluateIndexKey(context);
 
-    // Evaluate it second as we do with the independent condition if key was not found.
+    // Key not found (indexes have mapping for UNDEFINED), evaluation is fast so do it first.
     if (key != null && key.equals(QueryService.UNDEFINED)) {
-      return 1;
+      return 0;
     }
 
     if (context instanceof QueryExecutionContext) {
