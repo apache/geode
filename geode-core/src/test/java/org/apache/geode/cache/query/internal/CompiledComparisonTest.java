@@ -57,13 +57,7 @@ public class CompiledComparisonTest {
   }
 
   @Test
-  public void getSizeEstimateShouldReturnOneWhenThereAreNoIndexes() throws NameResolutionException,
-      TypeMismatchException, FunctionDomainException, QueryInvocationTargetException {
-    assertThat(compiledComparison.getSizeEstimate(queryExecutionContext)).isEqualTo(1);
-  }
-
-  @Test
-  public void getSizeEstimateShouldReturnOneWhenTheIndexKeyIsUndefined()
+  public void getSizeEstimateShouldReturnZeroWhenTheIndexKeyIsUndefined()
       throws NameResolutionException, TypeMismatchException, FunctionDomainException,
       QueryInvocationTargetException {
     IndexInfo indexInfo = mock(IndexInfo.class);
@@ -71,6 +65,12 @@ public class CompiledComparisonTest {
     IndexInfo[] indexInfos = new IndexInfo[] {indexInfo};
     doReturn(indexInfos).when(compiledComparison).getIndexInfo(queryExecutionContext);
 
+    assertThat(compiledComparison.getSizeEstimate(queryExecutionContext)).isEqualTo(0);
+  }
+
+  @Test
+  public void getSizeEstimateShouldReturnOneWhenThereAreNoIndexes() throws NameResolutionException,
+      TypeMismatchException, FunctionDomainException, QueryInvocationTargetException {
     assertThat(compiledComparison.getSizeEstimate(queryExecutionContext)).isEqualTo(1);
   }
 
