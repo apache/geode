@@ -111,6 +111,11 @@ public class RegionOperationHistoryPersistenceService
     return (OperationState<A, V>) region.get(opId);
   }
 
+  @VisibleForTesting
+  Region<String, OperationState<ClusterManagementOperation<OperationResult>, OperationResult>> getRegion() {
+    return region;
+  }
+
   @Override
   public <A extends ClusterManagementOperation<V>, V extends OperationResult> List<OperationState<A, V>> list() {
     return null;

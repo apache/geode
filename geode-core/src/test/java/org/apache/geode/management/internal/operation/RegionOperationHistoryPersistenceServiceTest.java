@@ -123,11 +123,14 @@ public class RegionOperationHistoryPersistenceServiceTest {
   }
 
   @Test
-  public void publicConstructorCreatesRegion() {
-    RegionOperationHistoryPersistenceService regionOperationHistoryPersistenceService =
+  public void cacheConstructorUsesExistingRegion() {
+    Region region = mock(Region.class);
+    when(cache.getRegion(RegionOperationHistoryPersistenceService.OPERATION_HISTORY_REGION_NAME))
+        .thenReturn(region);
+
+    RegionOperationHistoryPersistenceService result =
         new RegionOperationHistoryPersistenceService(cache);
 
-    verify(cache)
-        .getRegion(eq(RegionOperationHistoryPersistenceService.OPERATION_HISTORY_REGION_NAME));
+    assertThat(result.getRegion()).isSameAs(region);
   }
 }
