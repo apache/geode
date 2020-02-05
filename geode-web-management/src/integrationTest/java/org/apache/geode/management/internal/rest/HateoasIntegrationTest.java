@@ -89,10 +89,10 @@ public class HateoasIntegrationTest {
     context.perform(get("/v1/regions/customers"))
         .andExpect(status().isOk())
         .andExpect(
-            jsonPath("$.result.configurationByGroup[0].links.self",
+            jsonPath("$.result.links.self",
                 Matchers.endsWith("/regions/customers")))
         .andExpect(
-            jsonPath("$.result.configurationByGroup[0].links.indexes",
+            jsonPath("$.result.links.indexes",
                 Matchers.endsWith("/regions/customers/indexes")));
   }
 

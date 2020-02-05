@@ -89,6 +89,9 @@ public class EntityGroupInfo<T extends AbstractConfiguration<R>, R extends Runti
 
   @JsonIgnore
   public Links getLinks() {
+    if (configuration == null) {
+      return null;
+    }
     return configuration.getLinks();
   }
 

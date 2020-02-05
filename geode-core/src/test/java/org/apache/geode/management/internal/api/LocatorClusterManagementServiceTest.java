@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.api;
 
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -63,6 +64,7 @@ import org.apache.geode.management.api.ClusterManagementOperationResult;
 import org.apache.geode.management.api.ClusterManagementRealizationResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.EntityGroupInfo;
+import org.apache.geode.management.api.EntityInfo;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.configuration.Index;
 import org.apache.geode.management.configuration.Member;
@@ -424,17 +426,18 @@ public class LocatorClusterManagementServiceTest {
     ClusterManagementListResult<Region, RuntimeRegionInfo> listResult =
         mock(ClusterManagementListResult.class);
 
-    List<EntityGroupInfo<Region, RuntimeRegionInfo>> entityGroupInfos = new ArrayList<>();
-    for (int i = 0; i < 3; i++) {
-      entityGroupInfos.add(mock(EntityGroupInfo.class));
-    }
-    when(listResult.getEntityGroupInfo()).thenReturn(entityGroupInfos);
+    List<EntityGroupInfo<Region, RuntimeRegionInfo>> entityGroupInfos =
+        asList(mock(EntityGroupInfo.class));
+    List<EntityInfo<Region, RuntimeRegionInfo>> entityInfos =
+        asList(new EntityInfo<>("id", entityGroupInfos));
+
+    when(listResult.getResult()).thenReturn(entityInfos);
 
     doReturn(listResult).when(service).list(same(filter));
 
     ClusterManagementGetResult<Region, RuntimeRegionInfo> getResult = service.get(filter);
 
-    assertThat(getResult.getResult().getConfigurationByGroup()).isSameAs(entityGroupInfos);
+    assertThat(getResult.getResult().getGroups()).isSameAs(entityGroupInfos);
   }
 
   @Test

@@ -38,7 +38,7 @@ public class EntityGroupInfoTest {
     String json = mapper.writeValueAsString(result);
     assertThat(regionJson).doesNotContain("links");
     System.out.println(json);
-    assertThat(json).contains("links");
+    assertThat(json).doesNotContain("links");
     mapper.readValue(json, EntityGroupInfo.class);
   }
 }

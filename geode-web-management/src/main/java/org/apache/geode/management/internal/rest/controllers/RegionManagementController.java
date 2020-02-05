@@ -69,7 +69,7 @@ public class RegionManagementController extends AbstractManagementController {
   @ApiOperation(value = "list regions",
       extensions = {@Extension(properties = {
           @ExtensionProperty(name = "jqFilter",
-              value = ".result[] | .runtimeInfo[] + .configuration | {name:.name,type:.type,entryCount:.entryCount}")})})
+              value = ".result[] | .groups[] | .runtimeInfo[] + .configuration | {name:.name,type:.type,entryCount:.entryCount}")})})
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ')")
   @GetMapping(REGION_CONFIG_ENDPOINT)
   public ClusterManagementListResult<Region, RuntimeRegionInfo> listRegion(
@@ -88,7 +88,7 @@ public class RegionManagementController extends AbstractManagementController {
   @ApiOperation(value = "get region",
       extensions = {@Extension(properties = {
           @ExtensionProperty(name = "jqFilter",
-              value = ".result | .configurationByGroup[] | .runtimeInfo[] + .configuration | {name:.name,type:.type,entryCount:.entryCount}")})})
+              value = ".result | .groups[] | .runtimeInfo[] + .configuration | {name:.name,type:.type,entryCount:.entryCount}")})})
   @GetMapping(REGION_CONFIG_ENDPOINT + "/{id:.+}")
   public ClusterManagementGetResult<Region, RuntimeRegionInfo> getRegion(
       @PathVariable(name = "id") String id) {
@@ -115,7 +115,7 @@ public class RegionManagementController extends AbstractManagementController {
   @ApiOperation(value = "list region indexes",
       extensions = {@Extension(properties = {
           @ExtensionProperty(name = "jqFilter",
-              value = ".result[] | .configuration | {name:.name,expression:.expression}")})})
+              value = ".result[] | .groups[] | .configuration | {name:.name,expression:.expression}")})})
   @GetMapping(REGION_CONFIG_ENDPOINT + "/{regionName}" + INDEXES)
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ', 'QUERY')")
   public ClusterManagementListResult<Index, IndexInfo> listIndex(
@@ -133,7 +133,7 @@ public class RegionManagementController extends AbstractManagementController {
   @ApiOperation(value = "list indexes",
       extensions = {@Extension(properties = {
           @ExtensionProperty(name = "jqFilter",
-              value = ".result[] | .configuration | {name:.name,expression:.expression,regionPath:.regionPath}")})})
+              value = ".result[] | .groups[] | .configuration | {name:.name,expression:.expression,regionPath:.regionPath}")})})
   @GetMapping(INDEXES)
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ', 'QUERY')")
   public ClusterManagementListResult<Index, IndexInfo> listAllIndex(
@@ -148,7 +148,7 @@ public class RegionManagementController extends AbstractManagementController {
   @ApiOperation(value = "get index",
       extensions = {@Extension(properties = {
           @ExtensionProperty(name = "jqFilter",
-              value = ".result | .configurationByGroup[] | .configuration | {name:.name,expression:.expression}")})})
+              value = ".result | .groups[] | .configuration | {name:.name,expression:.expression}")})})
   @GetMapping(REGION_CONFIG_ENDPOINT + "/{regionName}" + INDEXES + "/{id:.+}")
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ', 'QUERY')")
   public ClusterManagementGetResult<Index, IndexInfo> getIndex(

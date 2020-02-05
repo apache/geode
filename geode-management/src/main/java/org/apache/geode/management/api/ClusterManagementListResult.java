@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.management.configuration.AbstractConfiguration;
@@ -48,10 +49,12 @@ public class ClusterManagementListResult<T extends AbstractConfiguration<R>, R e
   @JsonIgnore
   public List<EntityGroupInfo<T, R>> getEntityGroupInfo() {
     return entities.values().stream()
-        .flatMap(x -> x.getConfigurationByGroup().stream())
+        .flatMap(x -> x.getGroups().stream())
         .collect(Collectors.toList());
   }
 
+  // this annotation makes sure we always show the result even though it's an empty list
+  @JsonInclude
   public List<EntityInfo<T, R>> getResult() {
     return entities.values().stream().collect(Collectors.toList());
   }
@@ -61,6 +64,10 @@ public class ClusterManagementListResult<T extends AbstractConfiguration<R>, R e
     for (EntityInfo entity : entities) {
       this.entities.put(entity.getId(), entity);
     }
+  }
+
+  public void addEntityInfo(EntityInfo<T, R> entityInfo) {
+    this.entities.put(entityInfo.getId(), entityInfo);
   }
 
   @JsonIgnore
@@ -74,7 +81,7 @@ public class ClusterManagementListResult<T extends AbstractConfiguration<R>, R e
         entity.setId(id);
         this.entities.put(id, entity);
       }
-      entity.getConfigurationByGroup().add(result);
+      entity.getGroups().add(result);
     }
   }
 
