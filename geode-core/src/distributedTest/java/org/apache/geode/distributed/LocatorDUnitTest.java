@@ -22,6 +22,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_NETWOR
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATOR_WAIT_TIME;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.MEMBER_TIMEOUT;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
@@ -103,6 +104,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.DUnitBlackboard;
 import org.apache.geode.test.dunit.DistributedTestUtils;
+import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.NetworkUtils;
@@ -248,6 +250,52 @@ public class LocatorDUnitTest implements Serializable {
       loc.stop();
       assertThat(Locator.hasLocator()).isFalse();
     }
+  }
+
+  @Test
+  public void testCrashLocatorMultipleTimes() throws Exception {
+    port1 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    DistributedTestUtils.deleteLocatorStateFile(port1);
+    File logFile = new File("");
+    File stateFile = new File("locator" + port1 + "state.dat");
+    VM vm = VM.getVM(0);
+    final Properties properties =
+        getBasicProperties(Host.getHost(0).getHostName() + "[" + port1 + "]");
+    properties.put(MAX_WAIT_TIME_RECONNECT, "3000");
+    addDSProps(properties);
+    if (stateFile.exists()) {
+      assertThat(stateFile.delete()).isTrue();
+    }
+
+    Locator locator = Locator.startLocatorAndDS(port1, logFile, properties);
+    system = (InternalDistributedSystem) locator.getDistributedSystem();
+
+    vm.invoke(() -> {
+      getConnectedDistributedSystem(properties);
+      return null;
+    });
+
+    try {
+      forceDisconnect();
+      system.waitUntilReconnected(5, MINUTES);
+      assertThat(system.getReconnectedSystem()).isNotNull();
+      system = (InternalDistributedSystem) system.getReconnectedSystem();
+
+      forceDisconnect();
+      system.waitUntilReconnected(5, MINUTES);
+      assertThat(system.getReconnectedSystem()).isNotNull();
+      system = (InternalDistributedSystem) system.getReconnectedSystem();
+
+      assertEquals(2, ((InternalDistributedSystem) locator.getDistributedSystem()).getDM()
+          .getViewMembers().size());
+    } finally {
+      vm.invoke("disconnect", () -> {
+        getConnectedDistributedSystem(properties).disconnect();
+        return null;
+      });
+      locator.stop();
+    }
+
   }
 
   /**

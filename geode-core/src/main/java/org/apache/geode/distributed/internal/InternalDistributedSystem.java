@@ -1624,7 +1624,7 @@ public class InternalDistributedSystem extends DistributedSystem
           dm.close();
           // we close the locator after the DM so that when split-brain detection
           // is enabled, loss of the locator doesn't cause the DM to croak
-          if (startedLocator != null) {
+          if (startedLocator != null && !isReconnectingDS) {
             startedLocator.stop(forcedDisconnect, preparingForReconnect, false);
             startedLocator = null;
           }

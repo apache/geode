@@ -778,14 +778,13 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
     startConfigurationPersistenceService();
 
     InternalCache myCache = this.internalCache;
-    InternalLocator currentLocator = InternalLocator.locator;
 
-    if (myCache == null || currentLocator == null) {
+    if (myCache == null) {
       return;
     }
 
-    clusterManagementService = new LocatorClusterManagementService(currentLocator.internalCache,
-        currentLocator.configurationPersistenceService);
+    clusterManagementService = new LocatorClusterManagementService(myCache,
+        configurationPersistenceService);
 
     // start management rest service
     AgentUtil agentUtil = new AgentUtil(GemFireVersion.getGemFireVersion());
@@ -952,6 +951,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
       locatorDiscoverer = null;
     }
 
+    // stop the TCPServer
     membershipLocator.stop();
 
     removeLocator(this);
@@ -1064,8 +1064,10 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
       } catch (IOException e) {
         logger.info("attempt to restart location services terminated", e);
       } finally {
+        shutdownHandled.set(false);
         if (!restarted) {
           stoppedForReconnect = false;
+          stop();
         }
         reconnected = restarted;
       }
@@ -1374,14 +1376,14 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
     }
 
 
-    if (locator.configurationPersistenceService == null) {
+    if (configurationPersistenceService == null) {
       // configurationPersistenceService will already be created in case of auto-reconnect
-      locator.configurationPersistenceService =
-          new InternalConfigurationPersistenceService(locator.internalCache, workingDirectory,
+      configurationPersistenceService =
+          new InternalConfigurationPersistenceService(internalCache, workingDirectory,
               JAXBService.create());
     }
-    locator.configurationPersistenceService
-        .initSharedConfiguration(locator.loadFromSharedConfigDir());
+    configurationPersistenceService
+        .initSharedConfiguration(loadFromSharedConfigDir());
     logger.info(
         "Cluster configuration service start up completed successfully and is now running ....");
     isSharedConfigurationStarted = true;
@@ -1423,8 +1425,8 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
       InternalLocator locator = InternalLocator.this;
 
       SharedConfigurationStatusResponse response;
-      if (locator.configurationPersistenceService != null) {
-        response = locator.configurationPersistenceService.createStatusResponse();
+      if (configurationPersistenceService != null) {
+        response = configurationPersistenceService.createStatusResponse();
       } else {
         response = new SharedConfigurationStatusResponse();
         response.setStatus(SharedConfigurationStatus.UNDETERMINED);
