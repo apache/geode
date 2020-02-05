@@ -32,8 +32,7 @@ import org.junit.Test;
 
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.management.api.ClusterManagementService;
-import org.apache.geode.management.client.ClusterManagementServiceBuilder;
-import org.apache.geode.management.internal.api.GeodeConnectionConfig;
+import org.apache.geode.management.internal.builder.GeodeClusterManagementServiceBuilder;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -70,9 +69,8 @@ public class GeodeClientClusterManagementSSLTest {
       await().untilAsserted(() -> {
         try {
           ClusterManagementService service =
-              new ClusterManagementServiceBuilder().setConnectionConfig(
-                  new GeodeConnectionConfig(
-                      ClusterStartupRule.getClientCache()))
+              new GeodeClusterManagementServiceBuilder()
+                  .setCache(ClusterStartupRule.getClientCache())
                   .build();
           assertThat(service.isConnected()).isTrue();
         } catch (IllegalStateException e) {

@@ -16,14 +16,10 @@
 
 package org.apache.geode.management.internal.api;
 
-
 import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLContext;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -46,7 +42,6 @@ import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.management.api.BaseConnectionConfig;
 import org.apache.geode.management.api.ConnectionConfig;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.internal.SSLUtil;
@@ -57,19 +52,15 @@ import org.apache.geode.management.runtime.MemberInformation;
 import org.apache.geode.security.AuthInitialize;
 
 /**
- * Concrete implementation of {@link ConnectionConfig} which can be used
- * to derive most (if not all) of the connection properties from an existing {@link Cache} or
- * {@link ClientCache}.
+ * Concrete implementation of {@link ConnectionConfig} which can be used to derive most (if not all)
+ * of the connection properties from an existing {@link Cache} or {@link ClientCache}.
  *
  * @see ClusterManagementServiceBuilder
  */
 @Experimental
-public class GeodeConnectionConfig
-    implements ConnectionConfig {
+public class GeodeConnectionConfig extends ConnectionConfig {
 
   private static final Logger logger = LogService.getLogger();
-
-  private BaseConnectionConfig connectionConfig;
 
   @Immutable
   private static final GetMemberInformationFunction MEMBER_INFORMATION_FUNCTION =
@@ -84,72 +75,6 @@ public class GeodeConnectionConfig
     } else {
       throw new IllegalArgumentException("Need a cache instance in order to build the service.");
     }
-  }
-
-  @Override
-  public String getHost() {
-    return connectionConfig.getHost();
-  }
-
-  @Override
-  public int getPort() {
-    return connectionConfig.getPort();
-  }
-
-  @Override
-  public String getAuthToken() {
-    return connectionConfig.getAuthToken();
-  }
-
-  public GeodeConnectionConfig setAuthToken(String authToken) {
-    connectionConfig.setAuthToken(authToken);
-    return this;
-  }
-
-  @Override
-  public SSLContext getSslContext() {
-    return connectionConfig.getSslContext();
-  }
-
-  @Override
-  public String getUsername() {
-    return connectionConfig.getUsername();
-  }
-
-  public GeodeConnectionConfig setUsername(String username) {
-    connectionConfig.setUsername(username);
-    return this;
-  }
-
-  @Override
-  public String getPassword() {
-    return connectionConfig.getPassword();
-  }
-
-  public GeodeConnectionConfig setPassword(String password) {
-    connectionConfig.setPassword(password);
-    return this;
-  }
-
-  @Override
-  public HostnameVerifier getHostnameVerifier() {
-    return connectionConfig.getHostnameVerifier();
-  }
-
-  @Override
-  public boolean getFollowRedirects() {
-    return connectionConfig.getFollowRedirects();
-  }
-
-  public GeodeConnectionConfig setFollowRedirects(boolean followRedirects) {
-    connectionConfig.setFollowRedirects(followRedirects);
-    return this;
-  }
-
-  public GeodeConnectionConfig setHostnameVerifier(
-      HostnameVerifier hostnameVerifier) {
-    connectionConfig.setHostnameVerifier(hostnameVerifier);
-    return this;
   }
 
   private void setServerCache(GemFireCacheImpl cache) {
@@ -207,8 +132,8 @@ public class GeodeConnectionConfig
 
   private void configureBuilder(DistributionConfig config,
       ClusterManagementServiceInfo cmsInfo) {
-    connectionConfig = new BaseConnectionConfig(cmsInfo.getHostName(),
-        cmsInfo.getHttpPort());
+    setHost(cmsInfo.getHostName());
+    setPort(cmsInfo.getHttpPort());
 
     // if user didn't pass in a username and the locator requires credentials, use the credentials
     // user used to create the client cache
@@ -221,8 +146,8 @@ public class GeodeConnectionConfig
             "You will need to set the buildWithHostAddress username and password or specify security-username and security-password in the properties when starting this geode server/client.";
         throw new IllegalStateException(message);
       }
-      connectionConfig.setUsername(username);
-      connectionConfig.setPassword(password);
+      setUsername(username);
+      setPassword(password);
     }
 
     if (cmsInfo.isSSL()) {
@@ -233,7 +158,7 @@ public class GeodeConnectionConfig
             "This server/client needs to have ssl-truststore or ssl-use-default-context specified in order to use cluster management service.");
       }
 
-      connectionConfig.setSslContext(SSLUtil.createAndConfigureSSLContext(sslConfig, false));
+      setSslContext(SSLUtil.createAndConfigureSSLContext(sslConfig, false));
     }
   }
 

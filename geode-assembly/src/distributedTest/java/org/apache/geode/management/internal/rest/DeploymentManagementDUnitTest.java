@@ -30,7 +30,6 @@ import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.examples.SimpleSecurityManager;
-import org.apache.geode.management.api.BaseConnectionConfig;
 import org.apache.geode.management.api.ClusterManagementGetResult;
 import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementService;
@@ -79,9 +78,10 @@ public class DeploymentManagementDUnitTest {
     server2 = cluster.startServerVM(2, s -> s.withConnectionToLocator(locatorPort).withProperty(
         DistributionConfig.GROUPS_NAME, "group2").withCredential("cluster", "cluster"));
 
-    client = new ClusterManagementServiceBuilder().setConnectionConfig(
-        new BaseConnectionConfig("localhost", locator.getHttpPort())
-            .setUsername("cluster").setPassword("cluster"))
+    client = new ClusterManagementServiceBuilder()
+        .setPort(locator.getHttpPort())
+        .setUsername("cluster")
+        .setPassword("cluster")
         .build();
 
     gfsh.secureConnect(locatorPort, GfshCommandRule.PortType.locator, "cluster", "cluster");

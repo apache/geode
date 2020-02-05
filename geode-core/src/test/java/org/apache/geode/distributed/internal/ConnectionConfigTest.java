@@ -29,7 +29,7 @@ import org.apache.geode.distributed.internal.membership.api.QuorumChecker;
 /**
  * Unit tests for {@link ConnectionConfigImpl}.
  */
-public class BaseConnectionConfigTest {
+public class ConnectionConfigTest {
 
   @Test
   public void distributionConfig_doesNotContainDsQuorumCheckerProperty() {
