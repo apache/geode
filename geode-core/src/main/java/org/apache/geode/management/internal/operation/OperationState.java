@@ -17,6 +17,7 @@
 package org.apache.geode.management.internal.operation;
 
 import java.util.Date;
+import java.util.Objects;
 
 import org.apache.geode.lang.Identifiable;
 import org.apache.geode.management.api.ClusterManagementOperation;
@@ -34,6 +35,30 @@ public class OperationState<A extends ClusterManagementOperation<V>, V extends O
   private Date operationEnd;
   private V result;
   private Throwable throwable;
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    OperationState<?, ?> that = (OperationState<?, ?>) o;
+    return Objects.equals(opId, that.opId) &&
+        Objects.equals(getOperation(), that.getOperation()) &&
+        Objects.equals(getOperator(), that.getOperator()) &&
+        Objects.equals(getOperationStart(), that.getOperationStart()) &&
+        Objects.equals(getOperationEnd(), that.getOperationEnd()) &&
+        Objects.equals(getResult(), that.getResult()) &&
+        Objects.equals(getThrowable(), that.getThrowable());
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(opId, getOperation(), getOperator(), getOperationStart(), getOperationEnd(),
+        getResult(), getThrowable());
+  }
 
   public OperationState(String opId, A operation, Date operationStart) {
     this.opId = opId;

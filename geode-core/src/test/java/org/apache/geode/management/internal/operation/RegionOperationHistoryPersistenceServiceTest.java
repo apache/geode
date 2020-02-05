@@ -24,6 +24,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Supplier;
 
 import org.junit.Before;
@@ -120,6 +122,18 @@ public class RegionOperationHistoryPersistenceServiceTest {
     OperationState operationState = historyPersistenceService.get(opId);
 
     assertThat(operationState).isSameAs(recordedOperationState);
+  }
+
+  @Test
+  public void listReturnsOperationsFromRegion() {
+    ArrayList list = new ArrayList<>();
+    list.add(new OperationState("op1", null, null));
+    list.add(new OperationState("op2", null, null));
+    when(region.values()).thenReturn(list);
+
+    List result = historyPersistenceService.list();
+
+    assertThat(result).containsExactlyElementsOf(list);
   }
 
   @Test

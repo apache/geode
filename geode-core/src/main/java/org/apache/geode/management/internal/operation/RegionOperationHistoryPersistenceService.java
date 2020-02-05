@@ -18,6 +18,7 @@ package org.apache.geode.management.internal.operation;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -118,7 +119,7 @@ public class RegionOperationHistoryPersistenceService
 
   @Override
   public <A extends ClusterManagementOperation<V>, V extends OperationResult> List<OperationState<A, V>> list() {
-    return null;
+    return new ArrayList(region.values());
   }
 
   @Override
