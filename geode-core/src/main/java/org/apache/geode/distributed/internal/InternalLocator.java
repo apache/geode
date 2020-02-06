@@ -1067,11 +1067,10 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
         shutdownHandled.set(false);
         if (!restarted) {
           stoppedForReconnect = false;
-          stop();
         }
         reconnected = restarted;
+        restartThread = null;
       }
-      restartThread = null;
     });
     restartThread.start();
   }
@@ -1100,7 +1099,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
 
       while (system.getReconnectedSystem() == null && !system.isReconnectCancelled()) {
         if (quorumChecker == null) {
-          quorumChecker = internalDistributedSystem.getQuorumChecker();
+          quorumChecker = system.getQuorumChecker();
           if (quorumChecker != null) {
             logger.info("The distributed system returned this quorum checker: {}", quorumChecker);
           }
@@ -1108,7 +1107,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
 
         if (quorumChecker != null && !tcpServerStarted) {
           boolean start = quorumChecker
-              .checkForQuorum(3L * internalDistributedSystem.getConfig().getMemberTimeout());
+              .checkForQuorum(3L * system.getConfig().getMemberTimeout());
           if (start) {
             // start up peer location. server location is started after the DS finishes reconnecting
             logger.info("starting peer location");
@@ -1127,9 +1126,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
         try {
           system.waitUntilReconnected(waitTime, TimeUnit.MILLISECONDS);
         } catch (CancelException e) {
-          logger.info("Attempt to reconnect failed and further attempts have been terminated");
-          stoppedForReconnect = false;
-          return false;
+          continue; // DistributedSystem failed to restart - loop until it gives up
         }
       }
 

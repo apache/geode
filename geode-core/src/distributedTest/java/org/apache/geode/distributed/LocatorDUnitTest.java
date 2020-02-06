@@ -14,6 +14,7 @@
  */
 package org.apache.geode.distributed;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_AUTO_RECONNECT;
@@ -101,6 +102,7 @@ import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.tcp.Connection;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.DUnitBlackboard;
 import org.apache.geode.test.dunit.DistributedTestUtils;
@@ -261,7 +263,12 @@ public class LocatorDUnitTest implements Serializable {
     VM vm = VM.getVM(0);
     final Properties properties =
         getBasicProperties(Host.getHost(0).getHostName() + "[" + port1 + "]");
-    properties.put(MAX_WAIT_TIME_RECONNECT, "3000");
+    int memberTimeoutMS = 3000;
+    properties.put(MEMBER_TIMEOUT, "" + memberTimeoutMS);
+    properties.put(MAX_WAIT_TIME_RECONNECT, "" + (3 * memberTimeoutMS));
+    // since we're restarting location services let's be a little forgiving about that service
+    // starting up so that stress-tests can pass
+    properties.put(LOCATOR_WAIT_TIME, "" + (3 * memberTimeoutMS));
     addDSProps(properties);
     if (stateFile.exists()) {
       assertThat(stateFile.delete()).isTrue();
@@ -276,16 +283,12 @@ public class LocatorDUnitTest implements Serializable {
     });
 
     try {
-      forceDisconnect();
-      system.waitUntilReconnected(5, MINUTES);
-      assertThat(system.getReconnectedSystem()).isNotNull();
-      system = (InternalDistributedSystem) system.getReconnectedSystem();
-
-      forceDisconnect();
-      system.waitUntilReconnected(5, MINUTES);
-      assertThat(system.getReconnectedSystem()).isNotNull();
-      system = (InternalDistributedSystem) system.getReconnectedSystem();
-
+      for (int i = 0; i < 4; i++) {
+        forceDisconnect();
+        system.waitUntilReconnected(GeodeAwaitility.getTimeout().getValueInMS(), MILLISECONDS);
+        assertThat(system.getReconnectedSystem()).isNotNull();
+        system = (InternalDistributedSystem) system.getReconnectedSystem();
+      }
       assertEquals(2, ((InternalDistributedSystem) locator.getDistributedSystem()).getDM()
           .getViewMembers().size());
     } finally {
@@ -1629,11 +1632,13 @@ public class LocatorDUnitTest implements Serializable {
     return props;
   }
 
-  private Properties getClusterProperties(String locators, String s) {
+  private Properties getClusterProperties(String locators,
+      String enableNetworkPartitionDetectionString) {
     Properties properties = getBasicProperties(locators);
     properties.setProperty(DISABLE_AUTO_RECONNECT, "true");
     properties.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
-    properties.setProperty(ENABLE_NETWORK_PARTITION_DETECTION, s);
+    properties.setProperty(ENABLE_NETWORK_PARTITION_DETECTION,
+        enableNetworkPartitionDetectionString);
     properties.setProperty(LOCATOR_WAIT_TIME, "10"); // seconds
     properties.setProperty(MEMBER_TIMEOUT, "2000");
     properties.setProperty(USE_CLUSTER_CONFIGURATION, "false");
