@@ -22,6 +22,7 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
+import org.apache.geode.management.api.BaseConnectionConfig;
 import org.apache.geode.management.api.ClusterManagementGetResult;
 import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementResult;
@@ -44,8 +45,8 @@ public class MemberManagementServiceDunitTest {
   public static void beforeClass() {
     locator = cluster.startLocatorVM(0, MemberStarterRule::withHttpService);
     cluster.startServerVM(1, locator.getPort());
-    cmsClient = new ClusterManagementServiceBuilder()
-        .setPort(locator.getHttpPort())
+    cmsClient = new ClusterManagementServiceBuilder().setConnectionConfig(
+        new BaseConnectionConfig("localhost", locator.getHttpPort()))
         .build();
   }
 

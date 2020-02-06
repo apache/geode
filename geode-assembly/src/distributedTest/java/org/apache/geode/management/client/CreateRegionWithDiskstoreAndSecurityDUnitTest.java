@@ -26,6 +26,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.examples.SimpleSecurityManager;
+import org.apache.geode.management.api.BaseConnectionConfig;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.configuration.Region;
@@ -78,10 +79,9 @@ public class CreateRegionWithDiskstoreAndSecurityDUnitTest {
     regionConfig.setDiskStoreName("DISKSTORE");
 
     ClusterManagementService client =
-        new ClusterManagementServiceBuilder()
-            .setPort(locator.getHttpPort())
-            .setUsername("user")
-            .setPassword("user")
+        new ClusterManagementServiceBuilder().setConnectionConfig(
+            new BaseConnectionConfig("localhost", locator.getHttpPort())
+                .setUsername("user").setPassword("user"))
             .build();
 
     assertThatThrownBy(() -> client.create(regionConfig))
@@ -101,10 +101,9 @@ public class CreateRegionWithDiskstoreAndSecurityDUnitTest {
     regionConfig.setDiskStoreName("DISKSTORE");
 
     ClusterManagementService client =
-        new ClusterManagementServiceBuilder()
-            .setPort(locator.getHttpPort())
-            .setUsername("data")
-            .setPassword("data")
+        new ClusterManagementServiceBuilder().setConnectionConfig(
+            new BaseConnectionConfig("localhost", locator.getHttpPort())
+                .setUsername("data").setPassword("data"))
             .build();
 
     assertThatThrownBy(() -> client.create(regionConfig))
@@ -125,10 +124,9 @@ public class CreateRegionWithDiskstoreAndSecurityDUnitTest {
     regionConfig.setDiskStoreName("DISKSTORE");
 
     ClusterManagementService client =
-        new ClusterManagementServiceBuilder()
-            .setPort(locator.getHttpPort())
-            .setUsername("data,cluster")
-            .setPassword("data,cluster")
+        new ClusterManagementServiceBuilder().setConnectionConfig(
+            new BaseConnectionConfig("localhost", locator.getHttpPort())
+                .setUsername("data,cluster").setPassword("data,cluster"))
             .build();
 
     ClusterManagementResult result = client.create(regionConfig);

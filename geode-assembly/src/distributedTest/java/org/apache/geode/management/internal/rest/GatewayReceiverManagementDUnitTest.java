@@ -28,6 +28,7 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
+import org.apache.geode.management.api.BaseConnectionConfig;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.EntityGroupInfo;
 import org.apache.geode.management.api.RealizationResult;
@@ -62,10 +63,9 @@ public class GatewayReceiverManagementDUnitTest {
 
   @Test
   public void createGWRAndList() {
-    ClusterManagementService cms = new ClusterManagementServiceBuilder()
-        .setPort(locator.getHttpPort())
-        .setUsername("cluster")
-        .setPassword("cluster")
+    ClusterManagementService cms = new ClusterManagementServiceBuilder().setConnectionConfig(
+        new BaseConnectionConfig("localhost", locator.getHttpPort())
+            .setUsername("cluster").setPassword("cluster"))
         .build();
 
     receiver.setStartPort(5000);

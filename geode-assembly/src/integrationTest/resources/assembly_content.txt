@@ -691,6 +691,7 @@ javadoc/org/apache/geode/management/PersistentMemberDetails.html
 javadoc/org/apache/geode/management/RegionAttributesData.html
 javadoc/org/apache/geode/management/RegionMXBean.html
 javadoc/org/apache/geode/management/ServerLoadData.html
+javadoc/org/apache/geode/management/api/BaseConnectionConfig.html
 javadoc/org/apache/geode/management/api/ClusterManagementException.html
 javadoc/org/apache/geode/management/api/ClusterManagementGetResult.html
 javadoc/org/apache/geode/management/api/ClusterManagementListOperationsResult.html
@@ -713,10 +714,6 @@ javadoc/org/apache/geode/management/api/RestTemplateClusterManagementServiceTran
 javadoc/org/apache/geode/management/api/package-frame.html
 javadoc/org/apache/geode/management/api/package-summary.html
 javadoc/org/apache/geode/management/api/package-tree.html
-javadoc/org/apache/geode/management/builder/GeodeClusterManagementServiceBuilder.html
-javadoc/org/apache/geode/management/builder/package-frame.html
-javadoc/org/apache/geode/management/builder/package-summary.html
-javadoc/org/apache/geode/management/builder/package-tree.html
 javadoc/org/apache/geode/management/cli/CliFunction.html
 javadoc/org/apache/geode/management/cli/CliMetaData.AvailabilityMetadata.html
 javadoc/org/apache/geode/management/cli/CliMetaData.html

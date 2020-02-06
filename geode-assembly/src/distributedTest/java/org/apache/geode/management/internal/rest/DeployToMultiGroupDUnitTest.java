@@ -26,6 +26,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import org.apache.geode.management.api.BaseConnectionConfig;
 import org.apache.geode.management.api.ClusterManagementGetResult;
 import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementService;
@@ -37,7 +38,6 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.assertions.ClusterManagementListResultAssert;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
-import org.apache.geode.test.junit.rules.MemberStarterRule;
 
 public class DeployToMultiGroupDUnitTest {
   @ClassRule
@@ -61,12 +61,12 @@ public class DeployToMultiGroupDUnitTest {
     jar = new File(stagingDir, "lib.jar");
     JarBuilder jarBuilder = new JarBuilder();
     jarBuilder.buildJarFromClassNames(jar, "Class1");
-    locator = cluster.startLocatorVM(0, MemberStarterRule::withHttpService);
+    locator = cluster.startLocatorVM(0, l -> l.withHttpService());
     server1 = cluster.startServerVM(1, "group1", locator.getPort());
     server2 = cluster.startServerVM(2, "group2", locator.getPort());
 
-    client = new ClusterManagementServiceBuilder()
-        .setPort(locator.getHttpPort())
+    client = new ClusterManagementServiceBuilder().setConnectionConfig(
+        new BaseConnectionConfig("localhost", locator.getHttpPort()))
         .build();
 
     gfsh.connect(locator);

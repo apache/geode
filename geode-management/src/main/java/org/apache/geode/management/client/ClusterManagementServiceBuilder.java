@@ -17,46 +17,66 @@
 package org.apache.geode.management.client;
 
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.ClusterManagementServiceTransport;
 import org.apache.geode.management.api.ConnectionConfig;
 import org.apache.geode.management.api.RestTemplateClusterManagementServiceTransport;
-import org.apache.geode.management.internal.api.BaseManagementServiceBuilder;
+import org.apache.geode.management.internal.ClientClusterManagementService;
 
 /**
  * This builder facilitates creating a ClusterManagementService using either (or both) a {@link
- * ConnectionConfig} or a {@link ClusterManagementServiceTransport}. For typical usage it should be
- * sufficient to only use a {@code ClusterManagementServiceConnectionConfig}. For example:
+ * ConnectionConfig} or a {@link ClusterManagementServiceTransport}. For
+ * typical usage it should be sufficient to only use a
+ * {@code ClusterManagementServiceConnectionConfig}.
+ * For example:
  *
  * <pre>
  * ClusterManagementService service = new ClusterManagementServiceBuilder()
- *     .setPort(7070)
- *     .setHost("localhost")
+ *     .setConnectionConfig(new BasicClusterManagementServiceConnectionConfig("localhost", 7070))
  *     .build();
  * </pre>
- * <p>
- * If no transport is set a public transport of
+ *
+ * If no transport is set a default transport of
  * {@link RestTemplateClusterManagementServiceTransport}
  * will be used and configured with the provided config.
  */
 @Experimental
-public class ClusterManagementServiceBuilder
-    extends BaseManagementServiceBuilder<ClusterManagementServiceBuilder> {
+public class ClusterManagementServiceBuilder {
 
-  private String host = System.getProperty("geode.config.cms.connection.hostname", "localhost");
-  private int port = Integer.getInteger("geode.config.cms.connection.port", 7070);
+  private ClusterManagementServiceTransport transport;
 
-  public ClusterManagementServiceBuilder setHost(String hostname) {
-    this.host = hostname;
+  private ConnectionConfig connectionConfig;
+
+  /**
+   * Build a new {@link ClusterManagementService} instance
+   *
+   * @return a ClusterManagementService
+   * @throws IllegalStateException if neither transport or config have been set
+   */
+  public ClusterManagementService build() {
+    if (transport == null && connectionConfig == null) {
+      throw new IllegalStateException(
+          "Both transportBuilder and connectionConfig are null. Please configure with at least one of setTransportBuilder() or setConnectionConfig()");
+    }
+
+    if (transport == null) {
+      transport = new RestTemplateClusterManagementServiceTransport(connectionConfig);
+    } else if (connectionConfig != null) {
+      transport.configureConnection(connectionConfig);
+    }
+
+    return new ClientClusterManagementService(transport);
+  }
+
+  public ClusterManagementServiceBuilder setTransport(
+      ClusterManagementServiceTransport transport) {
+    this.transport = transport;
     return this;
   }
 
-  public ClusterManagementServiceBuilder setPort(int port) {
-    this.port = port;
+  public ClusterManagementServiceBuilder setConnectionConfig(
+      ConnectionConfig connectionConfig) {
+    this.connectionConfig = connectionConfig;
     return this;
-  }
-
-  protected ConnectionConfig createConnectionConfig() {
-    ConnectionConfig newConnectionConfig = new ConnectionConfig(host, port);
-    return newConnectionConfig;
   }
 }

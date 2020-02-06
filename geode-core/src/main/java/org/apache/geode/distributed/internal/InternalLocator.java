@@ -210,7 +210,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
   private DistributionConfigImpl distributionConfig;
   private WanLocatorDiscoverer locatorDiscoverer;
   private InternalConfigurationPersistenceService configurationPersistenceService;
-  private ClusterManagementService clusterManagementService;
+  private LocatorClusterManagementService clusterManagementService;
 
   public static InternalLocator getLocator() {
     synchronized (locatorLock) {

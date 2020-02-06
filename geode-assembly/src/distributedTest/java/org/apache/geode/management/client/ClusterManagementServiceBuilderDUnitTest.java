@@ -22,6 +22,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.springframework.web.client.RestTemplate;
 
+import org.apache.geode.management.api.BaseConnectionConfig;
 import org.apache.geode.management.api.ConnectionConfig;
 import org.apache.geode.management.api.RestTemplateClusterManagementServiceTransport;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -30,10 +31,6 @@ import org.apache.geode.test.junit.rules.MemberStarterRule;
 
 public class ClusterManagementServiceBuilderDUnitTest {
 
-  private static int locatorPort = -1;
-
-  private static ConnectionConfig connectionConfig;
-
   @ClassRule
   public static ClusterStartupRule cluster = new ClusterStartupRule(1);
 
@@ -41,29 +38,15 @@ public class ClusterManagementServiceBuilderDUnitTest {
   public static void beforeClass() {
 
     MemberVM locator = cluster.startLocatorVM(0, MemberStarterRule::withHttpService);
-    locatorPort = locator.getHttpPort();
-    connectionConfig = new ConnectionConfig("localhost", locatorPort);
+    connectionConfig = new BaseConnectionConfig("localhost", locator.getHttpPort());
   }
 
-
+  private static ConnectionConfig connectionConfig;
 
   @Test
   public void buildWithTransportOnlyHavingConnectionConfig() {
     assertThat(new ClusterManagementServiceBuilder().setTransport(
         new RestTemplateClusterManagementServiceTransport(connectionConfig)).build().isConnected())
-            .isTrue();
-  }
-
-  @Test
-  public void buildWithPortOnly() {
-    assertThat(new ClusterManagementServiceBuilder().setPort(locatorPort).build().isConnected())
-        .isTrue();
-  }
-
-  @Test
-  public void buildWithHostnameOnly() {
-    assertThat(new ClusterManagementServiceBuilder().setHost("localhost").setPort(locatorPort)
-        .build().isConnected())
             .isTrue();
   }
 
@@ -78,15 +61,38 @@ public class ClusterManagementServiceBuilderDUnitTest {
   public void buildWithTransportOnlyHavingRestTemplateAndConnectionConfig() {
     assertThat(new ClusterManagementServiceBuilder().setTransport(
         new RestTemplateClusterManagementServiceTransport(new RestTemplate(), connectionConfig))
-        .build()
-        .isConnected()).isTrue();
+        .build().isConnected()).isTrue();
+  }
+
+  @Test
+  public void buildWithConnectionConfigOnly() {
+    assertThat(new ClusterManagementServiceBuilder()
+        .setConnectionConfig(connectionConfig).build().isConnected()).isTrue();
   }
 
   @Test
   public void buildWithTransportHavingRestTemplateAndConnectionConfig() {
     assertThat(new ClusterManagementServiceBuilder().setTransport(
+        new RestTemplateClusterManagementServiceTransport(new RestTemplate()))
+        .setConnectionConfig(connectionConfig).build().isConnected()).isTrue();
+  }
+
+  @Test
+  public void buildWithTransportHavingConnectionConfigAndConnectionConfig() {
+    assertThat(new ClusterManagementServiceBuilder().setTransport(
+        new RestTemplateClusterManagementServiceTransport(connectionConfig))
+        .setConnectionConfig(connectionConfig).build().isConnected()).isTrue();
+  }
+
+  @Test
+  public void buildWithTransportHavingConnectionConfigAndRestTemplateAndConnectionConfig() {
+    assertThat(new ClusterManagementServiceBuilder().setTransport(
         new RestTemplateClusterManagementServiceTransport(new RestTemplate(), connectionConfig))
-        .build().isConnected())
-            .isTrue();
+        .setConnectionConfig(connectionConfig).build().isConnected()).isTrue();
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void buildWithNothing() {
+    new ClusterManagementServiceBuilder().build();
   }
 }
