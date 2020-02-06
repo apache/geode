@@ -24,33 +24,33 @@ dependencies {
   compile(platform(project(':boms:geode-all-bom')))
   compile(project(':geode-common'))
   compile(project(':geode-protobuf-messages'))
-  testCompile(project(':geode-core'))
-  testCompile(project(':geode-junit')) {
+  testImplementation(project(':geode-core'))
+  testImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
-  testCompile(project(':geode-protobuf'))
-  integrationTestCompile(project(':geode-core'))
-  integrationTestCompile(project(':geode-dunit')) {
+  testImplementation(project(':geode-protobuf'))
+  integrationTestImplementation(project(':geode-core'))
+  integrationTestImplementation(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
-  integrationTestCompile(project(':geode-junit')) {
+  integrationTestImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
-  integrationTestCompile(project(':geode-protobuf'))
+  integrationTestImplementation(project(':geode-protobuf'))
 
-  compile('com.google.protobuf:protobuf-java')
+  implementation('com.google.protobuf:protobuf-java')
 
-  testCompile('com.github.stefanbirkner:system-rules') {
+  testImplementation('com.github.stefanbirkner:system-rules') {
     exclude module: 'junit-dep'
   }
 
   integrationTestImplementation(project(':geode-logging'))
   integrationTestImplementation(project(':geode-serialization'))
-  integrationTestCompile('com.github.stefanbirkner:system-rules') {
+  integrationTestImplementation('com.github.stefanbirkner:system-rules') {
     exclude module: 'junit-dep'
   }
-  integrationTestCompile('junit:junit')
-  integrationTestCompile('org.hamcrest:hamcrest-all')
-  integrationTestCompile('org.hamcrest:hamcrest-core')
-  integrationTestCompile('org.hamcrest:hamcrest-library')
+  integrationTestImplementation('junit:junit')
+  integrationTestImplementation('org.hamcrest:hamcrest-all')
+  integrationTestImplementation('org.hamcrest:hamcrest-core')
+  integrationTestImplementation('org.hamcrest:hamcrest-library')
 }

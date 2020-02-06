@@ -25,24 +25,24 @@ dependencies {
   compile(project(':geode-core'))
   implementation(project(':geode-serialization'))
   implementation(project(':geode-logging'))
-  integrationTestCompile(project(':geode-junit')) {
+  integrationTestImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
 
-  compile('org.apache.logging.log4j:log4j-api')
-  compile('org.springframework:spring-context') {
+  implementation('org.apache.logging.log4j:log4j-api')
+  implementation('org.springframework:spring-context') {
     exclude module: 'spring-beans'
     exclude module: 'spring-expression'
     exclude module: 'spring-aop'
   }
 
-  testCompile('junit:junit')
-  testCompile('org.assertj:assertj-core')
-  testCompile('org.mockito:mockito-core')
+  testImplementation('junit:junit')
+  testImplementation('org.assertj:assertj-core')
+  testImplementation('org.mockito:mockito-core')
 
-  integrationTestCompile('junit:junit')
-  integrationTestCompile('org.awaitility:awaitility')
-  integrationTestCompile('org.hamcrest:hamcrest-all')
-  integrationTestCompile('org.hamcrest:hamcrest-core')
-  integrationTestCompile('org.hamcrest:hamcrest-library')
+  integrationTestImplementation('junit:junit')
+  integrationTestImplementation('org.awaitility:awaitility')
+  integrationTestImplementation('org.hamcrest:hamcrest-all')
+  integrationTestImplementation('org.hamcrest:hamcrest-core')
+  integrationTestImplementation('org.hamcrest:hamcrest-library')
 }

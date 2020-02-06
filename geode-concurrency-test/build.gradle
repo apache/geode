@@ -21,9 +21,9 @@ apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 
 dependencies {
   compile(platform(project(':boms:geode-all-bom')))
-  compile('junit:junit')
-  compile('org.apache.logging.log4j:log4j-api')
-  integrationTestCompile('org.assertj:assertj-core')
+  implementation('junit:junit')
+  implementation('org.apache.logging.log4j:log4j-api')
+  integrationTestImplementation('org.assertj:assertj-core')
 }
 
 integrationTest {

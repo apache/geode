@@ -19,13 +19,13 @@ apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 
 dependencies {
   compile(platform(project(':boms:geode-all-bom')))
-  compile('org.awaitility:awaitility')
-  compile('junit:junit')
-  compile('org.eclipse.jetty:jetty-server')
-  compile('commons-io:commons-io')
-  compile('org.apache.commons:commons-lang3')
-  compile('mx4j:mx4j')
-  compile('mx4j:mx4j-remote') {
+  implementation('org.awaitility:awaitility')
+  implementation('junit:junit')
+  implementation('org.eclipse.jetty:jetty-server')
+  implementation('commons-io:commons-io')
+  implementation('org.apache.commons:commons-lang3')
+  implementation('mx4j:mx4j')
+  implementation('mx4j:mx4j-remote') {
     ext.optional = true
   }
 
@@ -36,8 +36,8 @@ dependencies {
   }
   compileOnly(project(':geode-pulse'))
 
-  compile('org.seleniumhq.selenium:selenium-api')
-  compile('org.seleniumhq.selenium:selenium-chrome-driver')
-  compile('org.seleniumhq.selenium:selenium-support')
+  implementation('org.seleniumhq.selenium:selenium-api')
+  implementation('org.seleniumhq.selenium:selenium-chrome-driver')
+  implementation('org.seleniumhq.selenium:selenium-support')
 }
 

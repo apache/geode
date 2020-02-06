@@ -22,14 +22,14 @@ apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 
 dependencies {
   compile(platform(project(':boms:geode-all-bom')))
-  compile('org.apache.lucene:lucene-core')
+  implementation('org.apache.lucene:lucene-core')
   implementation(project(':geode-logging'))
   implementation(project(':geode-serialization'))
   compile(project(':geode-core'))
   compileOnly(project(':geode-lucene'))
 
-  compile('junit:junit')
-  compile('org.apache.lucene:lucene-test-framework')
-  compile('org.mockito:mockito-core')
+  implementation('junit:junit')
+  implementation('org.apache.lucene:lucene-test-framework')
+  implementation('org.mockito:mockito-core')
 }
 

@@ -21,26 +21,33 @@ apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 
 dependencies {
     api(platform(project(':boms:geode-all-bom')))
-    compile(project(':geode-core'))
-    compile(project(':geode-logging'))
-    compile(project(':geode-membership'))
-    compile(project(':geode-serialization'))
-    compile(project(':geode-unsafe'))
 
-    compile('com.healthmarketscience.rmiio:rmiio')
+    api(project(':geode-core'))
+    api(project(':geode-common'))
+
+    implementation(project(':geode-logging'))
+    implementation(project(':geode-membership'))
+    implementation(project(':geode-serialization'))
+    implementation(project(':geode-unsafe'))
+    implementation('org.springframework:spring-web')
+    implementation('org.apache.commons:commons-lang3')
+    implementation('com.healthmarketscience.rmiio:rmiio')
+    implementation('com.fasterxml.jackson.core:jackson-databind')
 
 //    //Find bugs is used in multiple places in the code to suppress findbugs warnings
-    testCompile('com.github.stephenc.findbugs:findbugs-annotations')
-    testCompile('org.springframework:spring-test')
-    integrationTestCompile('org.powermock:powermock-module-junit4')
-    integrationTestCompile('org.powermock:powermock-api-mockito2')
-    testCompile(project(':geode-junit'))
+    testImplementation('com.github.stephenc.findbugs:findbugs-annotations')
+    testImplementation('org.springframework:spring-test')
+    integrationTestImplementation('org.powermock:powermock-module-junit4')
+    integrationTestImplementation('org.powermock:powermock-api-mockito2')
+    testImplementation(project(':geode-junit'))
 
-    integrationTestCompile(project(':geode-dunit'))
-    integrationTestRuntime('org.apache.derby:derby')
-
-    distributedTestCompile(project(':geode-dunit'))
-    distributedTestRuntime('org.apache.derby:derby')
+    integrationTestImplementation(project(':geode-dunit'))
+    integrationTestImplementation('pl.pragmatists:JUnitParams')
+    integrationTestRuntimeOnly('org.apache.derby:derby')
+    
+    distributedTestImplementation(project(':geode-dunit'))
+    distributedTestImplementation('pl.pragmatists:JUnitParams')
+    distributedTestRuntimeOnly('org.apache.derby:derby')
 
 
     implementation('net.sf.jopt-simple:jopt-simple')

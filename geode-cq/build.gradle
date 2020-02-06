@@ -22,51 +22,43 @@ apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 
 dependencies {
   compile(platform(project(':boms:geode-all-bom')))
-  compile(project(':geode-core'))
+  implementation(project(':geode-core'))
   implementation(project(':geode-logging'))
   implementation(project(':geode-membership'))
   implementation(project(':geode-serialization'))
-  testCompile(project(':geode-junit')) {
-    exclude module: 'geode-core'
-  }
-  integrationTestCompile(project(':geode-dunit')) {
-    exclude module: 'geode-core'
-  }
-  integrationTestCompile(project(':geode-junit')) {
-    exclude module: 'geode-core'
-  }
-  distributedTestCompile(project(':geode-junit')) {
-    exclude module: 'geode-core'
-  }
-  distributedTestCompile(project(':geode-dunit')){
-    exclude module: 'geode-core'
-  }
-  upgradeTestCompile(project(':geode-dunit')) {
-    exclude module: 'geode-core'
-  }
-  upgradeTestCompile(project(':geode-junit')) {
-    exclude module: 'geode-core'
-  }
+  implementation('org.apache.logging.log4j:log4j-api')
 
-  compile('org.apache.logging.log4j:log4j-api')
 
-  integrationTestCompile('junit:junit')
-  integrationTestCompile('org.awaitility:awaitility')
+  testImplementation(project(':geode-junit'))
 
-  distributedTestCompile('org.apache.commons:commons-lang3')
-  distributedTestCompile('junit:junit')
-  distributedTestCompile('mx4j:mx4j')
-  distributedTestCompile('org.assertj:assertj-core')
-  distributedTestCompile('org.awaitility:awaitility')
-  distributedTestCompile('org.hamcrest:hamcrest-all')
-  distributedTestCompile('org.hamcrest:hamcrest-core')
-  distributedTestCompile('org.hamcrest:hamcrest-library')
 
-  upgradeTestCompile('junit:junit')
-  upgradeTestCompile('org.awaitility:awaitility')
-  upgradeTestCompile('org.mockito:mockito-core')
+  integrationTestImplementation(project(':geode-dunit'))
+  integrationTestImplementation(project(':geode-junit'))
+  integrationTestImplementation('junit:junit')
+  integrationTestImplementation('org.awaitility:awaitility')
 
-  upgradeTestRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
+
+  distributedTestImplementation(project(':geode-gfsh'))
+  distributedTestImplementation(project(':geode-junit'))
+  distributedTestImplementation(project(':geode-dunit'))
+  distributedTestImplementation('org.apache.commons:commons-lang3')
+  distributedTestImplementation('junit:junit')
+  distributedTestImplementation('mx4j:mx4j')
+  distributedTestImplementation('org.assertj:assertj-core')
+  distributedTestImplementation('org.awaitility:awaitility')
+  distributedTestImplementation('org.hamcrest:hamcrest-all')
+  distributedTestImplementation('org.hamcrest:hamcrest-core')
+  distributedTestImplementation('org.hamcrest:hamcrest-library')
+  distributedTestImplementation('pl.pragmatists:JUnitParams')
+
+
+  upgradeTestImplementation(project(':geode-dunit'))
+  upgradeTestImplementation(project(':geode-junit'))
+  upgradeTestImplementation('junit:junit')
+  upgradeTestImplementation('org.awaitility:awaitility')
+  upgradeTestImplementation('org.mockito:mockito-core')
+
+  upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
 }
 
 ext.moduleName = group + '.cq'

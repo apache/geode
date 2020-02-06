@@ -26,13 +26,14 @@ dependencies {
   implementation('org.apache.logging.log4j:log4j-api')
   implementation('org.eclipse.jetty:jetty-webapp')
   implementation('org.eclipse.jetty:jetty-server')
-
+  implementation('org.apache.commons:commons-lang3')
+  
   compileOnly(project(':geode-core'))
   compileOnly(project(':geode-common')) {
     exclude module: 'junit'
   }
 
-  testCompile(project(':geode-core'))
-  testCompile(project(':geode-common'))
-  testCompile(project(':geode-junit'))
+  testImplementation(project(':geode-core'))
+  testImplementation(project(':geode-common'))
+  testImplementation(project(':geode-junit'))
 }
