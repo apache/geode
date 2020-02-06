@@ -18,8 +18,6 @@ package org.apache.geode.management.internal.api;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
-
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.ClusterManagementServiceTransport;
 import org.apache.geode.management.api.ConnectionConfig;
@@ -30,14 +28,12 @@ public abstract class BaseManagementServiceBuilder<T extends BaseManagementServi
 
   private ClusterManagementServiceTransport transport;
 
-  private String username = System.getProperty("geode.config.cms.connection.username");
-  private String password = System.getProperty("geode.config.cms.connection.password");
-  private HostnameVerifier hostnameVerifier = new NoopHostnameVerifier();
+  private String username;
+  private String password;
+  private HostnameVerifier hostnameVerifier;
   private SSLContext sslContext;
   private String authToken;
-  private boolean followRedirects =
-      Boolean.parseBoolean(System
-          .getProperty("geode.config.cms.connection.follow-redirect", "false"));
+  private Boolean followRedirects;
 
   /**
    * Build a new {@link ClusterManagementService} instance
@@ -95,12 +91,24 @@ public abstract class BaseManagementServiceBuilder<T extends BaseManagementServi
   protected abstract ConnectionConfig createConnectionConfig();
 
   protected ConnectionConfig configureConnectionConfig(ConnectionConfig newConnectionConfig) {
-    newConnectionConfig.setAuthToken(authToken);
-    newConnectionConfig.setFollowRedirects(followRedirects);
-    newConnectionConfig.setHostnameVerifier(hostnameVerifier);
-    newConnectionConfig.setUsername(username);
-    newConnectionConfig.setPassword(password);
-    newConnectionConfig.setSslContext(sslContext);
+    if (authToken != null) {
+      newConnectionConfig.setAuthToken(authToken);
+    }
+    if (followRedirects != null) {
+      newConnectionConfig.setFollowRedirects(followRedirects);
+    }
+    if (hostnameVerifier != null) {
+      newConnectionConfig.setHostnameVerifier(hostnameVerifier);
+    }
+    if (username != null) {
+      newConnectionConfig.setUsername(username);
+    }
+    if (password != null) {
+      newConnectionConfig.setPassword(password);
+    }
+    if (sslContext != null) {
+      newConnectionConfig.setSslContext(sslContext);
+    }
     return newConnectionConfig;
   }
 }
