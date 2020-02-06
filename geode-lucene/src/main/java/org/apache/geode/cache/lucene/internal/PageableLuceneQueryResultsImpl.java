@@ -144,12 +144,8 @@ public class PageableLuceneQueryResultsImpl<K, V> implements PageableLuceneQuery
 
   @Override
   public boolean hasNext() {
-
     advancePage();
-    if (currentPage.isEmpty()) {
-      return false;
-    }
-    return true;
+    return !currentPage.isEmpty();
   }
 
   @Override
