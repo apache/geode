@@ -17,7 +17,8 @@ package org.apache.geode.cache.query.dunit;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.apache.geode.internal.cache.control.MemoryThresholds.MemoryState.NORMAL;
+import static org.apache.geode.internal.cache.control.MemoryThresholds.MemoryState.EVICTION_DISABLED;
+import static org.apache.geode.internal.cache.control.MemoryThresholds.MemoryState.EVICTION_DISABLED_CRITICAL;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
@@ -25,6 +26,7 @@ import static org.assertj.core.api.Assertions.fail;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.logging.log4j.Logger;
 import org.junit.Test;
@@ -63,7 +65,7 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.control.HeapMemoryMonitor;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
-import org.apache.geode.internal.cache.control.MemoryEvent;
+import org.apache.geode.internal.cache.control.MemoryThresholds;
 import org.apache.geode.internal.cache.control.ResourceListener;
 import org.apache.geode.internal.cache.control.TestMemoryThresholdListener;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -94,6 +96,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
     });
     IgnoredException.addIgnoredException("above heap critical threshold");
     IgnoredException.addIgnoredException("below heap critical threshold");
+    criticalMemoryCountDownLatch = new CountDownLatch(1);
   }
 
   @Override
@@ -112,7 +115,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
       // Reset CRITICAL_UP by informing all that heap usage is now 1 byte (0 would disable).
       irm.getHeapMonitor().updateStateAndSendEvent(NORMAL_HEAP_USED, "test");
       Set<ResourceListener> listeners = irm.getResourceListeners(ResourceType.HEAP_MEMORY);
-      for (ResourceListener<MemoryEvent> l : listeners) {
+      for (ResourceListener l : listeners) {
         if (l instanceof TestMemoryThresholdListener) {
           ((TestMemoryThresholdListener) l).resetThresholdCalls();
         }
@@ -174,7 +177,19 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
     // Timeout is set along with critical heap but it be called after the timeout expires
     // Timeout is set to 1ms which is very unrealistic time period for a query to be able to fetch
     // 200 entries from the region successfully, hence a timeout is expected.
-    executeQueryWithTimeoutSetAndCriticalThreshold();
+    // create region on the server
+    final VM server = VM.getVM(0);
+    try {
+      final int port = AvailablePortHelper.getRandomAvailableTCPPort();
+      startCacheServer(server, port, false, 1,
+          false);
+      populateData(server);
+      executeQueryWithCriticalHeapCalledAfterTimeout(server, server);
+      vmRecoversFromCriticalHeap(server);
+
+    } finally {
+      stopServer(server);
+    }
   }
 
   @Test
@@ -182,7 +197,21 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
     // Timeout is set along with critical heap but it be called after the timeout expires
     // Timeout is set to 1ms which is very unrealistic time period for a query to be able to fetch
     // 200 entries from the region successfully, hence a timeout is expected.
-    executeQueryFromClientWithTimeoutSetAndCriticalThreshold();
+    // create region on the server
+    final VM server = VM.getVM(0);
+    final VM client = VM.getVM(1);
+    try {
+      final int port = AvailablePortHelper.getRandomAvailableTCPPort();
+      startCacheServer(server, port, false, 1,
+          false);
+      startClient(client, port);
+      populateData(server);
+      executeQueryWithCriticalHeapCalledAfterTimeout(server, client);
+      vmRecoversFromCriticalHeap(server);
+
+    } finally {
+      stopServer(server);
+    }
   }
 
   @Test
@@ -218,18 +247,237 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
   }
 
   @Test
-  public void testPRGatherCancellation() {
-    doCriticalMemoryHitTestWithMultipleServers();
+  public void testPRGatherCancellation() throws InterruptedException, Throwable {
+    // create region on the server
+    final VM server1 = VM.getVM(0);
+    final VM server2 = VM.getVM(1);
+    final VM client = VM.getVM(2);
+    final int numObjects = 200;
+    final VM controller = VM.getController();
+
+    try {
+      final int[] port = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+      startCacheServer(server1, port[0], false,
+          -1, true);
+      startCacheServer(server2, port[1], true, -1, true);
+
+      startClient(client, port[0]);
+      populateData(server2);
+
+      server1.invoke("create latch test Hook", () -> {
+        DefaultQuery.testHook = getPauseHook(true, controller);
+      });
+
+      // remove from here to ....
+      AsyncInvocation queryExecution1 = executeQueryOnClient(client);
+
+      // comment this sleep out...
+      Thread.sleep(1000);
+
+      // We simulate a low memory/critical heap percentage hit
+      setHeapToCriticalAndReleaseLatch(server1);
+
+      assertThat(queryExecution1.get(60, SECONDS)).isEqualTo(0);
+
+      verifyDroppedObjectsAndSetHeapToNormal(server1);
+
+      // to here....
+
+      // Check to see if query execution is ok under "normal" or "healthy" conditions
+      client.invoke("Executing query when system is 'Normal'", () -> {
+        try {
+          Query query = getCache().getQueryService().newQuery("Select * From /" + "portfolios");
+          SelectResults results = (SelectResults) query.execute();
+          assertThat(results.size()).isEqualTo(numObjects);
+        } catch (QueryInvocationTargetException | FunctionDomainException | TypeMismatchException
+            | NameResolutionException e) {
+          fail("");
+        }
+      });
+
+      // We simulate a low memory/critical heap percentage hit
+      setHeapToCriticalAndReleaseLatch(server1);
+
+      AsyncInvocation queryExecution = executeQueryOnClient(client);
+
+      assertThat(queryExecution.get(60, SECONDS)).isEqualTo(0);
+
+      verifyDroppedObjectsAndSetHeapToNormal(server1);
+
+    } finally {
+      stopServer(server1);
+      stopServer(server2);
+    }
+  }
+
+  private AsyncInvocation executeQueryOnClient(VM client) {
+    return client.invokeAsync("execute query from client", () -> {
+      try {
+        Query query1 = getCache().getQueryService().newQuery("Select * From /" + "portfolios");
+        query1.execute();
+
+        throw new CacheException("Exception should have been thrown due to low memory") {};
+      } catch (Exception e2) {
+        handleException(e2, true, false, -1);
+      }
+      return 0;
+    });
+  }
+
+  private void setHeapToCriticalAndReleaseLatch(VM server1) {
+    server1.invoke("vm hits critical heap and counts down latch.", () -> {
+      InternalResourceManager resourceManager =
+          (InternalResourceManager) getCache().getResourceManager();
+      resourceManager.getHeapMonitor().updateStateAndSendEvent(CRITICAL_HEAP_USED, "test");
+
+      await()
+          .until(() -> resourceManager.getHeapMonitor().getState() == EVICTION_DISABLED_CRITICAL);
+
+      Thread.sleep(MAX_TEST_QUERY_TIMEOUT);
+
+      // release the hook to have the query throw either a low memory or query timeout
+      // unless otherwise configured
+      PauseTestHook hook = (PauseTestHook) DefaultQuery.testHook;
+      hook.countDown();
+    });
+  }
+
+  private void verifyDroppedObjectsAndSetHeapToNormal(VM server1) {
+    server1.invoke("verify dropped objects", () -> {
+      if (DefaultQuery.testHook instanceof RejectedObjectsInterface) {
+        RejectedObjectsInterface rejectedObjectsInterface =
+            (RejectedObjectsInterface) DefaultQuery.testHook;
+        await()
+            .untilAsserted(() -> assertThat(rejectedObjectsInterface.rejectedObjects).isTrue());
+      }
+
+      InternalResourceManager resourceManager =
+          (InternalResourceManager) getCache().getResourceManager();
+      resourceManager.getHeapMonitor().updateStateAndSendEvent(NORMAL_HEAP_USED, "test");
+
+      await().until(() -> resourceManager.getHeapMonitor().getState() == EVICTION_DISABLED);
+    });
   }
 
   @Test
   public void testPRGatherCancellationWhileGatheringResults() {
-    doCriticalMemoryHitDuringGatherTestWithMultipleServers();
+    // create region on the server
+    final VM server1 = VM.getVM(0);
+    final VM server2 = VM.getVM(1);
+    final VM client = VM.getVM(2);
+    final int numObjects = 200;
+    try {
+      final int[] port = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+      startCacheServer(server1, port[0], false,
+          -1, true);
+      startCacheServer(server2, port[1], true, -1, true);
+
+      startClient(client, port[0]);
+      populateData(server2);
+
+      createCancelDuringGatherTestHook(server1, true, VM.getController());
+      client.invoke("executing query to be canceled by gather", () -> {
+        QueryService qs;
+        try {
+          qs = getCache().getQueryService();
+          Query query = qs.newQuery("Select * From /" + "portfolios");
+          query.execute();
+        } catch (ServerOperationException soe) {
+          if (soe.getRootCause() instanceof QueryException) {
+            QueryException e = (QueryException) soe.getRootCause();
+            if (!isExceptionDueToLowMemory(e)) {
+              throw new CacheException(soe) {};
+            } else {
+              return 0;
+            }
+          }
+        } catch (Exception e) {
+          throw new CacheException(e) {};
+        }
+        // assertTrue(((CancelDuringGatherHook)DefaultQuery.testHook).triggeredOOME);
+        throw new CacheException("should have hit low memory") {};
+      });
+
+      verifyRejectedObjects(server1);
+
+      // Recover from critical heap
+      vmRecoversFromCriticalHeap(server1);
+
+      // Check to see if query execution is ok under "normal" or "healthy" conditions
+      client.invoke("Executing query when system is 'Normal'", () -> {
+        try {
+          QueryService qs = getCache().getQueryService();
+          Query query = qs.newQuery("Select * From /" + "portfolios");
+          SelectResults results = (SelectResults) query.execute();
+          assertThat(results.size()).isEqualTo(numObjects);
+        } catch (QueryInvocationTargetException | FunctionDomainException | TypeMismatchException
+            | NameResolutionException e) {
+          fail("");
+        }
+      });
+
+      // Recover from critical heap
+      vmRecoversFromCriticalHeap(server1);
+    } finally {
+      stopServer(server1);
+      stopServer(server2);
+    }
   }
 
   @Test
   public void testPRGatherCancellationWhileAddingResults() {
-    doCriticalMemoryHitAddResultsTestWithMultipleServers();
+    // create region on the server
+    final VM server1 = VM.getVM(0);
+    final VM server2 = VM.getVM(1);
+    final VM client = VM.getVM(2);
+    final int numObjects = 200;
+    try {
+      final int[] port = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+      startCacheServer(server1, port[0], false,
+          -1, true);
+      startCacheServer(server2, port[1], true, -1, true);
+
+      startClient(client, port[0]);
+      populateData(server2);
+
+      createCancelDuringAddResultsTestHook(server1);
+      client.invoke("executing query to be canceled during add results", () -> {
+        QueryService qs;
+        try {
+          qs = getCache().getQueryService();
+          Query query = qs.newQuery("Select * From /" + "portfolios");
+          query.execute();
+          throw new CacheException("should have hit low memory") {};
+        } catch (Exception e) {
+          handleException(e, true, false, -1);
+        }
+        return 0;
+      });
+
+      verifyRejectedObjects(server1);
+
+      // Recover from critical heap
+      vmRecoversFromCriticalHeap(server1);
+
+      // Check to see if query execution is ok under "normal" or "healthy" conditions
+      client.invoke("Executing query when system is 'Normal'", () -> {
+        try {
+          QueryService qs = getCache().getQueryService();
+          Query query = qs.newQuery("Select * From /" + "portfolios");
+          SelectResults results = (SelectResults) query.execute();
+          assertThat(results.size()).isEqualTo(numObjects);
+        } catch (QueryInvocationTargetException | FunctionDomainException | TypeMismatchException
+            | NameResolutionException e) {
+          fail("");
+        }
+      });
+
+      // Recover from critical heap
+      vmRecoversFromCriticalHeap(server1);
+    } finally {
+      stopServer(server1);
+      stopServer(server2);
+    }
   }
 
   @Test
@@ -288,16 +536,10 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
       doTestCriticalHeapAndQueryTimeout(server, client, disabledQueryMonitorForLowMem,
           queryTimeout, hitCriticalThreshold);
 
-      // Pause for a second and then let's recover
-      try {
-        Thread.sleep(1000);
-      } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
-      }
-
       // Recover from critical heap
       if (hitCriticalThreshold) {
         vmRecoversFromCriticalHeap(server);
+        await().until(() -> vmCheckCritcalHeap(server) == EVICTION_DISABLED);
       }
 
       // Check to see if query execution is ok under "normal" or "healthy" conditions
@@ -319,6 +561,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
       // Recover from critical heap
       if (hitCriticalThreshold) {
         vmRecoversFromCriticalHeap(server);
+        await().until(() -> vmCheckCritcalHeap(server) == EVICTION_DISABLED);
       }
     } finally {
       stopServer(server);
@@ -343,7 +586,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
       startClient(client, port[0]);
       populateData(server1);
 
-      createCancelDuringGatherTestHook(server1);
+      createCancelDuringGatherTestHook(server1, true, VM.getController());
       server1.invoke("create index", () -> {
         QueryService qs;
         try {
@@ -378,192 +621,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
     }
   }
 
-  private void doCriticalMemoryHitAddResultsTestWithMultipleServers() {
-    // create region on the server
-    final VM server1 = VM.getVM(0);
-    final VM server2 = VM.getVM(1);
-    final VM client = VM.getVM(2);
-    final int numObjects = 200;
-    try {
-      final int[] port = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-      startCacheServer(server1, port[0], false,
-          -1, true);
-      startCacheServer(server2, port[1], true, -1, true);
-
-      startClient(client, port[0]);
-      populateData(server2);
-
-      createCancelDuringAddResultsTestHook(server1);
-      client.invoke("executing query to be canceled during add results", () -> {
-        QueryService qs;
-        try {
-          qs = getCache().getQueryService();
-          Query query = qs.newQuery("Select * From /" + "portfolios");
-          query.execute();
-          throw new CacheException("should have hit low memory") {};
-        } catch (Exception e) {
-          handleException(e, true, false, -1);
-        }
-        return 0;
-      });
-
-      verifyRejectedObjects(server1);
-      // Pause for a second and then let's recover
-      try {
-        Thread.sleep(1000);
-      } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
-      }
-
-      // Recover from critical heap
-      vmRecoversFromCriticalHeap(server1);
-
-      // Check to see if query execution is ok under "normal" or "healthy" conditions
-      client.invoke("Executing query when system is 'Normal'", () -> {
-        try {
-          QueryService qs = getCache().getQueryService();
-          Query query = qs.newQuery("Select * From /" + "portfolios");
-          SelectResults results = (SelectResults) query.execute();
-          assertThat(results.size()).isEqualTo(numObjects);
-        } catch (QueryInvocationTargetException | FunctionDomainException | TypeMismatchException
-            | NameResolutionException e) {
-          fail("");
-        }
-      });
-
-      // Recover from critical heap
-      vmRecoversFromCriticalHeap(server1);
-    } finally {
-      stopServer(server1);
-      stopServer(server2);
-    }
-  }
-
-  // tests low memory hit while gathering partition region results
-  private void doCriticalMemoryHitDuringGatherTestWithMultipleServers() {
-    // create region on the server
-    final VM server1 = VM.getVM(0);
-    final VM server2 = VM.getVM(1);
-    final VM client = VM.getVM(2);
-    final int numObjects = 200;
-    try {
-      final int[] port = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-      startCacheServer(server1, port[0], false,
-          -1, true);
-      startCacheServer(server2, port[1], true, -1, true);
-
-      startClient(client, port[0]);
-      populateData(server2);
-
-      createCancelDuringGatherTestHook(server1);
-      client.invoke("executing query to be canceled by gather", () -> {
-        QueryService qs;
-        try {
-          qs = getCache().getQueryService();
-          Query query = qs.newQuery("Select * From /" + "portfolios");
-          query.execute();
-        } catch (ServerOperationException soe) {
-          if (soe.getRootCause() instanceof QueryException) {
-            QueryException e = (QueryException) soe.getRootCause();
-            if (!isExceptionDueToLowMemory(e)) {
-              throw new CacheException(soe) {};
-            } else {
-              return 0;
-            }
-          }
-        } catch (Exception e) {
-          throw new CacheException(e) {};
-        }
-        // assertTrue(((CancelDuringGatherHook)DefaultQuery.testHook).triggeredOOME);
-        throw new CacheException("should have hit low memory") {};
-      });
-
-      verifyRejectedObjects(server1);
-      // Pause for a second and then let's recover
-      try {
-        Thread.sleep(1000);
-      } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
-      }
-
-      // Recover from critical heap
-      vmRecoversFromCriticalHeap(server1);
-
-      // Check to see if query execution is ok under "normal" or "healthy" conditions
-      client.invoke("Executing query when system is 'Normal'", () -> {
-        try {
-          QueryService qs = getCache().getQueryService();
-          Query query = qs.newQuery("Select * From /" + "portfolios");
-          SelectResults results = (SelectResults) query.execute();
-          assertThat(results.size()).isEqualTo(numObjects);
-        } catch (QueryInvocationTargetException | FunctionDomainException | TypeMismatchException
-            | NameResolutionException e) {
-          fail("");
-        }
-      });
-
-      // Recover from critical heap
-      vmRecoversFromCriticalHeap(server1);
-    } finally {
-      stopServer(server1);
-      stopServer(server2);
-    }
-  }
-
-  // Executes on client cache with multiple configured servers
-  private void doCriticalMemoryHitTestWithMultipleServers() {
-    // create region on the server
-    final VM server1 = VM.getVM(0);
-    final VM server2 = VM.getVM(1);
-    final VM client = VM.getVM(2);
-    final int numObjects = 200;
-
-    try {
-      final int[] port = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-      startCacheServer(server1, port[0], false,
-          -1, true);
-      startCacheServer(server2, port[1], true, -1, true);
-
-      startClient(client, port[0]);
-      populateData(server2);
-
-      doTestCriticalHeapAndQueryTimeout(server1, client, false,
-          -1, true);
-      verifyRejectedObjects(server1);
-      // Pause for a second and then let's recover
-      try {
-        Thread.sleep(1000);
-      } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
-      }
-
-      // Recover from critical heap
-      vmRecoversFromCriticalHeap(server1);
-
-      // Check to see if query execution is ok under "normal" or "healthy" conditions
-      client.invoke("Executing query when system is 'Normal'", () -> {
-        try {
-          QueryService qs = getCache().getQueryService();
-          Query query = qs.newQuery("Select * From /" + "portfolios");
-          SelectResults results = (SelectResults) query.execute();
-          assertThat(results.size()).isEqualTo(numObjects);
-        } catch (QueryInvocationTargetException | FunctionDomainException | TypeMismatchException
-            | NameResolutionException e) {
-          fail("");
-        }
-      });
-
-      // Execute a critical heap event/ query timeout test again
-      doTestCriticalHeapAndQueryTimeout(server1, client, false,
-          -1, true);
-      verifyRejectedObjects(server1);
-      // Recover from critical heap
-      vmRecoversFromCriticalHeap(server1);
-    } finally {
-      stopServer(server1);
-      stopServer(server2);
-    }
-  }
+  private static CountDownLatch criticalMemoryCountDownLatch;
 
   // Executes the query on the server with the RM and QM configured
   private void doCriticalMemoryHitTestOnServer(boolean createPR,
@@ -583,12 +641,6 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
       doTestCriticalHeapAndQueryTimeout(server, server, disabledQueryMonitorForLowMem,
           queryTimeout, hitCriticalThreshold);
 
-      // Pause for a second and then let's recover
-      try {
-        Thread.sleep(1000);
-      } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
-      }
 
       // Recover from critical heap
       if (hitCriticalThreshold) {
@@ -622,40 +674,6 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
   }
 
 
-  private void executeQueryFromClientWithTimeoutSetAndCriticalThreshold() {
-    // create region on the server
-    final VM server = VM.getVM(0);
-    final VM client = VM.getVM(1);
-    try {
-      final int port = AvailablePortHelper.getRandomAvailableTCPPort();
-      startCacheServer(server, port, false, 1,
-          false);
-      startClient(client, port);
-      populateData(server);
-      executeQueryWithCriticalHeapCalledAfterTimeout(server, client);
-      vmRecoversFromCriticalHeap(server);
-
-    } finally {
-      stopServer(server);
-    }
-  }
-
-  private void executeQueryWithTimeoutSetAndCriticalThreshold() {
-    // create region on the server
-    final VM server = VM.getVM(0);
-    try {
-      final int port = AvailablePortHelper.getRandomAvailableTCPPort();
-      startCacheServer(server, port, false, 1,
-          false);
-      populateData(server);
-      executeQueryWithCriticalHeapCalledAfterTimeout(server, server);
-      vmRecoversFromCriticalHeap(server);
-
-    } finally {
-      stopServer(server);
-    }
-  }
-
   // This helper method will set up a test hook
   // Execute a query on the server, pause due to the test hook
   // Execute a critical heap event
@@ -669,30 +687,26 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
       final boolean disabledQueryMonitorForLowMem,
       final int queryTimeout,
       final boolean hitCriticalThreshold) {
-    createLatchTestHook(server);
-    InternalResourceManager internalResourceManager = getCache().getInternalResourceManager();
-    internalResourceManager
-        .addResourceListener(event -> logger.info("MLH resource event " + event));
+    createLatchTestHook(server, hitCriticalThreshold, VM.getController());
 
     AsyncInvocation queryExecution = invokeClientQuery(client,
-        disabledQueryMonitorForLowMem, queryTimeout, hitCriticalThreshold);
+        disabledQueryMonitorForLowMem, queryTimeout, hitCriticalThreshold, VM.getController());
 
     try {
-      Thread.sleep(1000);
+      criticalMemoryCountDownLatch.await();
+      logger.info("MLH: Finished awaiting");
     } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
+      e.printStackTrace();
     }
+
     // We simulate a low memory/critical heap percentage hit
     if (hitCriticalThreshold) {
       vmHitsCriticalHeap(server);
+      await().until(() -> vmCheckCritcalHeap(server) == EVICTION_DISABLED_CRITICAL);
     }
 
     // Pause until query would time out if low memory was ignored
-    try {
-      Thread.sleep(MAX_TEST_QUERY_TIMEOUT);
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-    }
+    letTimeoutExpire();
 
     // release the hook to have the query throw either a low memory or query timeout
     // unless otherwise configured
@@ -706,8 +720,16 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
     }
   }
 
+  private void letTimeoutExpire() {
+    try {
+      Thread.sleep(MAX_TEST_QUERY_TIMEOUT);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+    }
+  }
+
   private void executeQueryWithCriticalHeapCalledAfterTimeout(VM server, VM client) {
-    createLatchTestHook(server);
+    createLatchTestHook(server, false, VM.getController());
     AsyncInvocation queryExecution = executeQueryWithTimeout(client);
 
     // Wait till the timeout expires on the query
@@ -722,7 +744,6 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
     vmHitsCriticalHeap(server);
 
     releaseHook(server);
-
 
     // Make sure no exceptions were thrown during query testing
     try {
@@ -773,14 +794,18 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
   private AsyncInvocation invokeClientQuery(VM client,
       final boolean disabledQueryMonitorForLowMem,
       final int queryTimeout,
-      final boolean hitCriticalThreshold) {
+      final boolean hitCriticalThreshold,
+      VM callbackToVM) {
     return client.invokeAsync("execute query from client", () -> {
       QueryService qs = null;
       try {
         qs = getCache().getQueryService();
         Query query = qs.newQuery("Select * From /" + "portfolios");
+        callbackToVM
+            .invoke(() -> ResourceManagerWithQueryMonitorDUnitTest.criticalMemoryCountDownLatch
+                .countDown());
+        logger.info("MLH Counted down latch");
         query.execute();
-
         if (disabledQueryMonitorForLowMem) {
           if (queryTimeout != -1) {
             // we should have timed out due to the way the test is written
@@ -882,7 +907,6 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
     }
   }
 
-
   private void vmHitsCriticalHeap(VM vm) {
     vm.invoke("vm hits critical heap", () -> {
       InternalResourceManager resourceManager =
@@ -890,6 +914,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
       resourceManager.getHeapMonitor().updateStateAndSendEvent(CRITICAL_HEAP_USED, "test");
     });
   }
+
 
   private void vmRecoversFromCriticalHeap(VM vm) {
     vm.invoke("vm hits critical heap", () -> {
@@ -899,15 +924,31 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
     });
   }
 
-  private void createLatchTestHook(VM vm) {
-    vm.invoke("create latch test Hook", () -> {
-      DefaultQuery.testHook = getPauseHook();
+  private MemoryThresholds.MemoryState vmCheckCritcalHeap(VM vm) {
+    return vm.invoke("vm hits critical heap", () -> {
+      InternalResourceManager resourceManager =
+          (InternalResourceManager) getCache().getResourceManager();
+      return resourceManager.getHeapMonitor().getState();
     });
   }
 
-  private void createCancelDuringGatherTestHook(VM vm) {
+  private static MemoryThresholds.MemoryState vmCheckCritcalHeap() {
+    InternalResourceManager resourceManager =
+        (InternalResourceManager) basicGetCache().getResourceManager();
+    return resourceManager.getHeapMonitor().getState();
+  }
+
+  private void createLatchTestHook(VM vm, boolean hitCriticalThreshold,
+      VM vmToCallBack) {
+    vm.invoke("create latch test Hook", () -> {
+      DefaultQuery.testHook = getPauseHook(hitCriticalThreshold, vmToCallBack);
+    });
+  }
+
+  private void createCancelDuringGatherTestHook(VM vm, boolean hitCriticalThreshold,
+      VM vmToCallback) {
     vm.invoke("create cancel during gather test Hook", () -> {
-      DefaultQuery.testHook = getCancelDuringGatherHook();
+      DefaultQuery.testHook = getCancelDuringGatherHook(hitCriticalThreshold, vmToCallback);
     });
   }
 
@@ -977,7 +1018,6 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
       GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
 
       cache.MAX_QUERY_EXECUTION_TIME = queryTimeout;
-
 
       InternalResourceManager resourceManager =
           (InternalResourceManager) cache.getResourceManager();
@@ -1056,21 +1096,36 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
                 -1)));
   }
 
-  private DefaultQuery.TestHook getPauseHook() {
-    return new PauseTestHook();
+  private DefaultQuery.TestHook getPauseHook(boolean hitCriticalThreshold,
+      VM vmToCallback) {
+    return new PauseTestHook(hitCriticalThreshold, vmToCallback);
   }
 
-  private DefaultQuery.TestHook getCancelDuringGatherHook() {
-    return new CancelDuringGatherHook();
+  private DefaultQuery.TestHook getCancelDuringGatherHook(boolean hitCriticalThreshold,
+      VM vmToCallback) {
+    return new CancelDuringGatherHook(hitCriticalThreshold, vmToCallback);
   }
 
   private DefaultQuery.TestHook getCancelDuringAddResultsHook() {
     return new CancelDuringAddResultsHook();
   }
 
-  private static class PauseTestHook implements DefaultQuery.TestHook {
-    private final CountDownLatch latch = new CountDownLatch(1);
+  class RejectedObjectsInterface {
     boolean rejectedObjects = false;
+  }
+
+  private class PauseTestHook extends RejectedObjectsInterface implements DefaultQuery.TestHook {
+    private final CountDownLatch latch = new CountDownLatch(1);
+
+    boolean hitCriticalThreshold;
+    AtomicBoolean hitOnce = new AtomicBoolean(false);
+    VM callbackVM;
+
+    PauseTestHook(boolean hitCriticalThreshold, VM vmToCallback) {
+      super();
+      this.hitCriticalThreshold = hitCriticalThreshold;
+      callbackVM = vmToCallback;
+    }
 
     @Override
     public void doTestHook(final SPOTS spot, final DefaultQuery _ignored,
@@ -1086,8 +1141,24 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
             Thread.currentThread().interrupt();
           }
           break;
+        case BEFORE_ADD_OR_UPDATE_MAPPING_OR_DESERIALIZING_NTH_STREAMINGOPERATION:
+          logger.info("MLH calling modded test hook");
+          if (hitCriticalThreshold && hitOnce.compareAndSet(false, true)) {
+            InternalResourceManager resourceManager =
+                (InternalResourceManager) getCache().getResourceManager();
+            resourceManager.getHeapMonitor().updateStateAndSendEvent(CRITICAL_HEAP_USED, "test");
+            await().until(() -> vmCheckCritcalHeap() == EVICTION_DISABLED_CRITICAL);
+
+            callbackVM
+                .invoke(() -> ResourceManagerWithQueryMonitorDUnitTest.criticalMemoryCountDownLatch
+                    .countDown());
+            logger.info("MLH Counted down latch");
+          }
+          break;
         case LOW_MEMORY_WHEN_DESERIALIZING_STREAMINGOPERATION:
           rejectedObjects = true;
+          break;
+        default:
           break;
       }
     }
@@ -1098,10 +1169,20 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
   }
 
   // non-static class because it needs to call getCache()
-  private class CancelDuringGatherHook implements DefaultQuery.TestHook {
-    boolean rejectedObjects = false;
+  private class CancelDuringGatherHook extends RejectedObjectsInterface
+      implements DefaultQuery.TestHook {
     boolean triggeredOOME = false;
     private int count = 0;
+    boolean hitCriticalThreshold;
+    AtomicBoolean hitOnce = new AtomicBoolean(false);
+    VM callbackVM;
+
+
+    CancelDuringGatherHook(boolean hitCriticalThreshold, VM vmToCallback) {
+      super();
+      this.hitCriticalThreshold = hitCriticalThreshold;
+      callbackVM = vmToCallback;
+    }
 
     @Override
     public void doTestHook(final SPOTS spot, final DefaultQuery _ignored,
@@ -1113,9 +1194,18 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
           break;
         case BEFORE_ADD_OR_UPDATE_MAPPING_OR_DESERIALIZING_NTH_STREAMINGOPERATION:
           if (count++ == numObjectsBeforeCancel) {
-            InternalResourceManager resourceManager =
-                (InternalResourceManager) getCache().getResourceManager();
-            resourceManager.getHeapMonitor().updateStateAndSendEvent(CRITICAL_HEAP_USED, "test");
+            logger.info("MLH calling modded test hook");
+            if (hitCriticalThreshold && hitOnce.compareAndSet(false, true)) {
+              InternalResourceManager resourceManager =
+                  (InternalResourceManager) getCache().getResourceManager();
+              resourceManager.getHeapMonitor().updateStateAndSendEvent(CRITICAL_HEAP_USED, "test");
+              await().until(() -> vmCheckCritcalHeap() == EVICTION_DISABLED_CRITICAL);
+              callbackVM
+                  .invoke(
+                      () -> ResourceManagerWithQueryMonitorDUnitTest.criticalMemoryCountDownLatch
+                          .countDown());
+              logger.info("MLH Counted down latch");
+            }
             triggeredOOME = true;
           }
           break;
@@ -1124,9 +1214,9 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
   }
 
   // non-static class because it needs to call getCache()
-  private class CancelDuringAddResultsHook implements DefaultQuery.TestHook {
+  private class CancelDuringAddResultsHook extends RejectedObjectsInterface
+      implements DefaultQuery.TestHook {
     boolean triggeredOOME = false;
-    boolean rejectedObjects = false;
 
     @Override
     public void doTestHook(final SPOTS spot, final DefaultQuery _ignored,
