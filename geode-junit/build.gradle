@@ -50,7 +50,7 @@ dependencies {
   compile('org.mockito:mockito-core')
   compile('org.skyscreamer:jsonassert')
 
-  testCompile('pl.pragmatists:JUnitParams')
+  testImplementation('pl.pragmatists:JUnitParams')
 
   testRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
 }

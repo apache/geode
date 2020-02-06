@@ -36,8 +36,8 @@ dependencies {
     exclude module: "jackson-annotations"
   }
 
-  testCompile(project(':geode-common'))
-  testCompile(project(':geode-junit')) {
+  testImplementation(project(':geode-common'))
+  testImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
 }

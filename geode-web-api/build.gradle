@@ -85,20 +85,20 @@ dependencies {
   compileOnly('org.apache.logging.log4j:log4j-api')
 
 
-  testCompile(project(':geode-junit')) {
+  testImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
-  testCompile(project(':geode-core'))
-  testCompile('javax.servlet:javax.servlet-api')
+  testImplementation(project(':geode-core'))
+  testImplementation('javax.servlet:javax.servlet-api')
 
-  integrationTestCompile('org.springframework:spring-test')
-  integrationTestCompile('org.springframework.security:spring-security-test')
+  integrationTestImplementation('org.springframework:spring-test')
+  integrationTestImplementation('org.springframework.security:spring-security-test')
 
-  integrationTestCompile(project(':geode-core'))
-  integrationTestCompile(project(':geode-junit')) {
+  integrationTestImplementation(project(':geode-core'))
+  integrationTestImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
-  integrationTestCompile(project(':geode-dunit')) {
+  integrationTestImplementation(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
 }

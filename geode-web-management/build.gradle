@@ -101,52 +101,52 @@ dependencies {
   }
   compileOnly('org.apache.logging.log4j:log4j-api')
 
-  commonTestCompile(project(':geode-core'))
-  commonTestCompile(project(':geode-junit')) {
+  commonTestImplementation(project(':geode-core'))
+  commonTestImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
-  commonTestCompile(project(':geode-dunit')) {
+  commonTestImplementation(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
-  commonTestCompile('org.springframework:spring-test')
-  commonTestCompile('org.springframework:spring-webmvc')
-  commonTestCompile('org.springframework.security:spring-security-test')
-  commonTestCompile(project(':geode-web-management'))
+  commonTestImplementation('org.springframework:spring-test')
+  commonTestImplementation('org.springframework:spring-webmvc')
+  commonTestImplementation('org.springframework.security:spring-security-test')
+  commonTestImplementation(project(':geode-web-management'))
 
-  testCompile(project(':geode-junit')) {
+  testImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
-  testCompile(project(':geode-core'))
-  testCompile('javax.servlet:javax.servlet-api')
+  testImplementation(project(':geode-core'))
+  testImplementation('javax.servlet:javax.servlet-api')
 
-  integrationTestCompile(sourceSets.commonTest.output)
+  integrationTestImplementation(sourceSets.commonTest.output)
 
-  integrationTestCompile(project(':geode-core'))
-  integrationTestCompile('org.springframework:spring-test')
-  integrationTestCompile('org.springframework:spring-webmvc')
-  integrationTestCompile('org.springframework.security:spring-security-test')
+  integrationTestImplementation(project(':geode-core'))
+  integrationTestImplementation('org.springframework:spring-test')
+  integrationTestImplementation('org.springframework:spring-webmvc')
+  integrationTestImplementation('org.springframework.security:spring-security-test')
 
-  integrationTestCompile(project(':geode-junit')) {
+  integrationTestImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
-  integrationTestCompile(project(':geode-dunit')) {
+  integrationTestImplementation(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
   integrationTestRuntimeOnly('org.apache.logging.log4j:log4j-slf4j-impl') {
     exclude module: 'slf4j-api'
   }
 
-  distributedTestCompile(sourceSets.commonTest.output)
+  distributedTestImplementation(sourceSets.commonTest.output)
 
-  distributedTestCompile('org.springframework:spring-test')
-  distributedTestCompile('org.springframework:spring-webmvc')
-  distributedTestCompile('org.springframework.security:spring-security-test')
+  distributedTestImplementation('org.springframework:spring-test')
+  distributedTestImplementation('org.springframework:spring-webmvc')
+  distributedTestImplementation('org.springframework.security:spring-security-test')
 
-  distributedTestCompile(project(':geode-core'))
-  distributedTestCompile(project(':geode-junit')) {
+  distributedTestImplementation(project(':geode-core'))
+  distributedTestImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
-  distributedTestCompile(project(':geode-dunit')) {
+  distributedTestImplementation(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
 

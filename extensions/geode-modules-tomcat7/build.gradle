@@ -28,13 +28,13 @@ dependencies {
   compile(project(':geode-core'))
   compile('mx4j:mx4j')
   compile('javax.servlet:javax.servlet-api')
-  integrationTestCompile('org.httpunit:httpunit')
-  integrationTestCompile('junit:junit')
+  integrationTestImplementation('org.httpunit:httpunit')
+  integrationTestImplementation('junit:junit')
   compile(project(':extensions:geode-modules')) {
     // Remove everything related to Tomcat 6.x
     exclude group: 'org.apache.tomcat'
   }
-  testCompile(project(':extensions:geode-modules')) {
+  testImplementation(project(':extensions:geode-modules')) {
     // Remove everything related to Tomcat 6.x
     exclude group: 'org.apache.tomcat'
   }
@@ -48,15 +48,15 @@ dependencies {
   }
   compile('org.apache.tomcat:tomcat-juli:' + DependencyConstraints.get('tomcat7.version'))
 
-  testCompile('org.httpunit:httpunit')
-  testCompile('junit:junit')
-  testCompile('org.assertj:assertj-core')
-  testCompile('org.mockito:mockito-core')
-  testCompile(project(':extensions:geode-modules-test'))
-  integrationTestCompile(project(':geode-dunit')) {
+  testImplementation('org.httpunit:httpunit')
+  testImplementation('junit:junit')
+  testImplementation('org.assertj:assertj-core')
+  testImplementation('org.mockito:mockito-core')
+  testImplementation(project(':extensions:geode-modules-test'))
+  integrationTestImplementation(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
-  integrationTestCompile(project(':extensions:geode-modules-test'))
+  integrationTestImplementation(project(':extensions:geode-modules-test'))
 
   integrationTestRuntime('javax.annotation:jsr250-api')
   integrationTestRuntime('javax.ejb:ejb-api')

@@ -32,7 +32,7 @@ dependencies {
     exclude module: 'junit'
   }
 
-  testCompile(project(':geode-core'))
-  testCompile(project(':geode-common'))
-  testCompile(project(':geode-junit'))
+  testImplementation(project(':geode-core'))
+  testImplementation(project(':geode-common'))
+  testImplementation(project(':geode-junit'))
 }

@@ -303,17 +303,17 @@ dependencies {
 
   jcaCompile(sourceSets.main.output)
 
-  testCompile(project(':geode-junit')) {
+  testImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
-  testCompile(project(':geode-concurrency-test'))
-  testCompile('org.apache.bcel:bcel')
-  testCompile('org.mockito:mockito-core')
-  testCompile('com.pholser:junit-quickcheck-core')
-  testCompile('org.powermock:powermock-core')
-  testCompile('org.powermock:powermock-module-junit4')
-  testCompile('org.powermock:powermock-api-mockito2')
-  testCompile('pl.pragmatists:JUnitParams')
+  testImplementation(project(':geode-concurrency-test'))
+  testImplementation('org.apache.bcel:bcel')
+  testImplementation('org.mockito:mockito-core')
+  testImplementation('com.pholser:junit-quickcheck-core')
+  testImplementation('org.powermock:powermock-core')
+  testImplementation('org.powermock:powermock-module-junit4')
+  testImplementation('org.powermock:powermock-api-mockito2')
+  testImplementation('pl.pragmatists:JUnitParams')
   testImplementation('com.tngtech.archunit:archunit-junit4')
 
   testCompile files("${System.getProperty('java.home')}/../lib/tools.jar")
@@ -325,47 +325,47 @@ dependencies {
   testRuntime('com.pholser:junit-quickcheck-generators')
   testRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
 
-
-  integrationTestCompile(project(':geode-junit')) {
+  integrationTestImplementation(project(':geode-gfsh'))
+  integrationTestImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
-  integrationTestCompile(project(':geode-dunit')) {
+  integrationTestImplementation(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
   integrationTestImplementation(project(':geode-log4j')) {
     exclude module: 'geode-core'
   }
-  integrationTestCompile(project(':geode-concurrency-test'))
-  integrationTestCompile('org.apache.bcel:bcel')
-  integrationTestCompile('org.powermock:powermock-core')
-  integrationTestCompile('org.powermock:powermock-module-junit4')
-  integrationTestCompile('org.powermock:powermock-api-mockito2')
-  integrationTestCompile('pl.pragmatists:JUnitParams')
-  integrationTestCompile('com.tngtech.archunit:archunit-junit4')
+  integrationTestImplementation(project(':geode-concurrency-test'))
+  integrationTestImplementation('org.apache.bcel:bcel')
+  integrationTestImplementation('org.powermock:powermock-core')
+  integrationTestImplementation('org.powermock:powermock-module-junit4')
+  integrationTestImplementation('org.powermock:powermock-api-mockito2')
+  integrationTestImplementation('pl.pragmatists:JUnitParams')
+  integrationTestImplementation('com.tngtech.archunit:archunit-junit4')
 
 
   integrationTestRuntime('org.apache.derby:derby')
   integrationTestRuntime('xerces:xercesImpl')
 
-
-  distributedTestCompile(project(':geode-junit')) {
+  distributedTestImplementation(project(':geode-gfsh'))
+  distributedTestImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
-  distributedTestCompile(project(':geode-dunit')) {
+  distributedTestImplementation(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
   distributedTestImplementation(project(':geode-log4j')) {
     exclude module: 'geode-core'
   }
-  distributedTestCompile('pl.pragmatists:JUnitParams')
-  distributedTestCompile('com.jayway.jsonpath:json-path-assert')
-  distributedTestCompile('net.openhft:compiler')
+  distributedTestImplementation('pl.pragmatists:JUnitParams')
+  distributedTestImplementation('com.jayway.jsonpath:json-path-assert')
+  distributedTestImplementation('net.openhft:compiler')
 
   distributedTestRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
   distributedTestRuntime('org.apache.derby:derby')
 
 
-  upgradeTestCompile(project(':geode-dunit')) {
+  upgradeTestImplementation(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
 
@@ -373,7 +373,7 @@ dependencies {
   upgradeTestRuntime(project(':geode-log4j'))
 
 
-  performanceTestCompile(project(':geode-junit')) {
+  performanceTestImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
   performanceTestImplementation(project(':geode-log4j'))

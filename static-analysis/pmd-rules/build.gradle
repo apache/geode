@@ -18,6 +18,6 @@
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 
 dependencies {
-    testCompile(group: 'net.sourceforge.pmd', name: 'pmd-test', version: '6.18.0')
+    testImplementation(group: 'net.sourceforge.pmd', name: 'pmd-test', version: '6.18.0')
     compile(group: 'net.sourceforge.pmd', name: 'pmd-java', version: '6.18.0')
 }

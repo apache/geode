@@ -28,7 +28,7 @@ dependencies {
   compile(project(':extensions:geode-modules')) {
     exclude group: 'org.apache.tomcat'
   }
-  testCompile(project(':extensions:geode-modules')) {
+  testImplementation(project(':extensions:geode-modules')) {
     exclude group: 'org.apache.tomcat'
   }
 
@@ -42,13 +42,13 @@ dependencies {
   compile('org.apache.tomcat:tomcat-juli:' + DependencyConstraints.get('tomcat9.version'))
   compile('javax.servlet:javax.servlet-api:' + '3.1.0')
 
-  testCompile('org.httpunit:httpunit')
-  testCompile('junit:junit')
-  testCompile('org.assertj:assertj-core')
-  testCompile('org.mockito:mockito-core')
-  testCompile(project(':extensions:geode-modules-test')) 
+  testImplementation('org.httpunit:httpunit')
+  testImplementation('junit:junit')
+  testImplementation('org.assertj:assertj-core')
+  testImplementation('org.mockito:mockito-core')
+  testImplementation(project(':extensions:geode-modules-test'))
 
-  distributedTestCompile(project(':extensions:geode-modules-test'))
+  distributedTestImplementation(project(':extensions:geode-modules-test'))
 
   distributedTestRuntime('xerces:xercesImpl')
   distributedTestRuntime('javax.annotation:javax.annotation-api')
