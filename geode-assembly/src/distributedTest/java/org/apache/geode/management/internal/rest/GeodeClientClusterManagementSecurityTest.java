@@ -48,7 +48,8 @@ public class GeodeClientClusterManagementSecurityTest {
   public void withClientConnectionCredential() {
     assertThat(new GeodeClusterManagementServiceBuilder()
         .setCache(client.getCache())
-        .build().isConnected())
+        .build()
+        .isConnected())
             .isTrue();
   }
 
