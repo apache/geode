@@ -90,7 +90,7 @@ public class RebalanceIntegrationTest {
   @Test
   public void getStatus() throws Exception {
     String json = "{}";
-    CompletableFuture<String> futureUri = new CompletableFuture<String>();
+    CompletableFuture<String> futureUri = new CompletableFuture<>();
     context.perform(post("/v1/operations/rebalances").content(json))
         .andExpect(status().isAccepted())
         .andExpect(new ResponseBodyMatchers().containsObjectAsJson(futureUri))
@@ -100,8 +100,8 @@ public class RebalanceIntegrationTest {
         context.perform(get(futureUri.get()))
             .andExpect(status().isOk())
             .andExpect(content().string(not(containsString("\"class\""))))
-            .andExpect(jsonPath("$.statusMessage",
-                Matchers.containsString("Operation finished successfully.")));
+            .andExpect(jsonPath("$.result.statusMessage",
+                Matchers.containsString("has no regions")));
         return;
       } catch (Throwable t) {
         if (!t.getMessage().contains("Operation in progress"))
@@ -123,7 +123,7 @@ public class RebalanceIntegrationTest {
   }
 
   @Test
-  public void checkStatus() throws Exception {
+  public void checkStatusOperationDoesNotExist() throws Exception {
     context.perform(get("/v1/operations/rebalances/abc"))
         .andExpect(status().isNotFound())
         .andExpect(content().string(not(containsString("\"class\""))))
