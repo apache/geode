@@ -81,7 +81,7 @@ public class EntityInfo<T extends AbstractConfiguration<R>, R extends RuntimeInf
 
   @JsonProperty(access = JsonProperty.Access.READ_ONLY)
   public Links getLinks() {
-    if (groups.size() == 0) {
+    if (groups.isEmpty()) {
       return null;
     }
     return groups.get(0).getLinks();

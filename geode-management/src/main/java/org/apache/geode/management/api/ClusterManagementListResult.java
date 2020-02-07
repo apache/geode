@@ -41,7 +41,7 @@ public class ClusterManagementListResult<T extends AbstractConfiguration<R>, R e
     super(statusCode, message);
   }
 
-  private Map<String, EntityInfo<T, R>> entities = new HashMap<>();
+  private final Map<String, EntityInfo<T, R>> entities = new HashMap<>();
 
   /**
    * Returns the combined payload of the list call
@@ -71,17 +71,17 @@ public class ClusterManagementListResult<T extends AbstractConfiguration<R>, R e
   }
 
   @JsonIgnore
-  public void setEntityGroupInfo(List<EntityGroupInfo<T, R>> results) {
+  public void setEntityGroupInfo(List<EntityGroupInfo<T, R>> entityGroupInfos) {
     this.entities.clear();
-    for (EntityGroupInfo result : results) {
-      String id = result.getConfiguration().getId();
+    for (EntityGroupInfo entityGroupInfo : entityGroupInfos) {
+      String id = entityGroupInfo.getConfiguration().getId();
       EntityInfo<T, R> entity = this.entities.get(id);
       if (entity == null) {
         entity = new EntityInfo<>();
         entity.setId(id);
         this.entities.put(id, entity);
       }
-      entity.getGroups().add(result);
+      entity.getGroups().add(entityGroupInfo);
     }
   }
 
