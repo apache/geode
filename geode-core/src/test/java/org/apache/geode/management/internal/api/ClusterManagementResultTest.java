@@ -134,7 +134,7 @@ public class ClusterManagementResultTest {
     String json = "{\"statusCode\":\"OK\"}";
     ClusterManagementListResult result =
         GeodeJsonMapper.getMapper().readValue(json, ClusterManagementListResult.class);
-    assertThat(result.getResult()).isNotNull().isEmpty();
+    assertThat(result.getEntityGroupInfo()).isNotNull().isEmpty();
   }
 
   @Test
@@ -152,7 +152,7 @@ public class ClusterManagementResultTest {
     RuntimeRegionInfo info = new RuntimeRegionInfo();
     info.setEntryCount(3);
     response.setRuntimeInfo(Collections.singletonList(info));
-    result.setResult(Collections.singletonList(response));
+    result.setEntityGroupInfo(Collections.singletonList(response));
 
     String json = mapper.writeValueAsString(result);
     System.out.println(json);

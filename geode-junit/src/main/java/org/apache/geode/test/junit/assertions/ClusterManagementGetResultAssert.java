@@ -57,15 +57,15 @@ public class ClusterManagementGetResultAssert<T extends AbstractConfiguration<R>
   }
 
   public EntityGroupInfo<T, R> getResult() {
-    return actual.getResult().getConfigurationByGroup().get(0);
+    return actual.getResult().getGroups().get(0);
   };
 
   public ObjectAssert<T> hasConfiguration() {
-    return assertThat(getActual().getResult().getConfigurationByGroup().get(0).getConfiguration());
+    return assertThat(getActual().getResult().getGroups().get(0).getConfiguration());
   }
 
   public ListAssert<R> hasRuntimeInfos() {
-    return assertThat(getActual().getResult().getConfigurationByGroup().get(0).getRuntimeInfo());
+    return assertThat(getActual().getResult().getGroups().get(0).getRuntimeInfo());
   }
 
   public static <T extends AbstractConfiguration<R>, R extends RuntimeInfo> ClusterManagementGetResultAssert<T, R> assertManagementGetResult(
