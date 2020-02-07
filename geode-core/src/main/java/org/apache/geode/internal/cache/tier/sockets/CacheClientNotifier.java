@@ -126,6 +126,7 @@ public class CacheClientNotifier {
 
   private final SocketMessageWriter socketMessageWriter;
   private final ClientRegistrationEventQueueManager clientRegistrationEventQueueManager;
+  private final CacheClientProxyFactory cacheClientProxyFactory;
 
   @VisibleForTesting
   static CacheClientNotifier getInstance(InternalCache cache,
@@ -141,7 +142,7 @@ public class CacheClientNotifier {
     if (ccnSingleton == null) {
       ccnSingleton = new CacheClientNotifier(cache, clientRegistrationEventQueueManager,
           statisticsClock, acceptorStats, maximumMessageCount, messageTimeToLive, listener,
-          isGatewayReceiver, socketMessageWriter);
+          isGatewayReceiver, new CacheClientProxyFactory());
     }
 
     if (!isGatewayReceiver && ccnSingleton.getHaContainer() == null) {
@@ -313,9 +314,9 @@ public class CacheClientNotifier {
               clientProxyMembershipID.getDurableId());
         }
         cacheClientProxy =
-            new CacheClientProxy(this, socket, clientProxyMembershipID, isPrimary, clientConflation,
-                clientVersion, acceptorId, notifyBySubscription, cache.getSecurityService(),
-                subject, statisticsClock);
+            cacheClientProxyFactory.create(this, socket, clientProxyMembershipID, isPrimary,
+                clientConflation, clientVersion, acceptorId, notifyBySubscription,
+                cache.getSecurityService(), subject, statisticsClock);
         successful = initializeProxy(cacheClientProxy);
       } else {
         cacheClientProxy.setSubject(subject);
@@ -1680,7 +1681,7 @@ public class CacheClientNotifier {
   /**
    * Returns this {@code CacheClientNotifier}'s {@code InternalCache}.
    */
-  protected InternalCache getCache() {
+  public InternalCache getCache() {
     if (cache != null && cache.isClosed()) {
       InternalCache cache = GemFireCacheImpl.getInstance();
       if (cache != null) {
@@ -1722,12 +1723,13 @@ public class CacheClientNotifier {
   private CacheClientNotifier(InternalCache cache,
       ClientRegistrationEventQueueManager clientRegistrationEventQueueManager,
       StatisticsClock statisticsClock,
-      CacheServerStats acceptorStats, int maximumMessageCount,
+      CacheServerStats acceptorStats,
+      int maximumMessageCount,
       int messageTimeToLive,
       ConnectionListener listener,
       boolean isGatewayReceiver,
-      SocketMessageWriter socketMessageWriter) {
-    this.socketMessageWriter = socketMessageWriter;
+      CacheClientProxyFactory cacheClientProxyFactory) {
+    this.cacheClientProxyFactory = cacheClientProxyFactory;
     // Set the Cache
     setCache(cache);
     this.clientRegistrationEventQueueManager = clientRegistrationEventQueueManager;

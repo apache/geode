@@ -216,7 +216,7 @@ public interface ClientRegionFactory<K, V> {
    * @since GemFire 7.0
    * @param concurrencyChecksEnabled whether to perform concurrency checks on operations
    */
-  void setConcurrencyChecksEnabled(boolean concurrencyChecksEnabled);
+  ClientRegionFactory<K, V> setConcurrencyChecksEnabled(boolean concurrencyChecksEnabled);
 
   /**
    * Sets the DiskStore name attribute. This causes the region to belong to the DiskStore.

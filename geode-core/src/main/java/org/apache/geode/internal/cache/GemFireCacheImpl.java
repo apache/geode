@@ -44,7 +44,7 @@ import static org.apache.geode.internal.cache.PartitionedRegion.PRIMARY_BUCKETS_
 import static org.apache.geode.internal.cache.PartitionedRegionHelper.PARTITION_LOCK_SERVICE_NAME;
 import static org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType.HEAP_MEMORY;
 import static org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType.OFFHEAP_MEMORY;
-import static org.apache.geode.internal.cache.util.UncheckedUtils.uncheckedRegion;
+import static org.apache.geode.internal.cache.util.UncheckedUtils.cast;
 import static org.apache.geode.internal.logging.CoreLoggingExecutors.newThreadPoolWithFixedFeed;
 import static org.apache.geode.internal.tcp.ConnectionTable.threadWantsSharedResources;
 import static org.apache.geode.logging.internal.executors.LoggingExecutors.newFixedThreadPool;
@@ -3022,7 +3022,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       system.handleResourceEvent(ResourceEvent.REGION_CREATE, region);
     }
 
-    return uncheckedRegion(region);
+    return cast(region);
   }
 
   @Override
@@ -3146,7 +3146,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   @Override
   public <K, V> Region<K, V> getRegionByPath(String path) {
-    return uncheckedRegion(getInternalRegionByPath(path));
+    return cast(getInternalRegionByPath(path));
   }
 
   @Override
@@ -3203,7 +3203,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         stopper.checkCancelInProgress(null);
         return null;
       }
-      return uncheckedRegion(result);
+      return cast(result);
     }
 
     String[] pathParts = parsePath(path);
@@ -3227,7 +3227,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       logger.debug("GemFireCache.getRegion, calling getSubregion on rootRegion({}): {}",
           pathParts[0], pathParts[1]);
     }
-    return uncheckedRegion(rootRegion.getSubregion(pathParts[1], returnDestroyedRegion));
+    return cast(rootRegion.getSubregion(pathParts[1], returnDestroyedRegion));
   }
 
   @Override
