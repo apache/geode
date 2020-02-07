@@ -111,7 +111,7 @@ public class OperationHistoryManager {
 
     return historyPersistenceService.list()
         .stream()
-        .filter(instance -> instance.getOperation().getClass().equals(opType.getClass()))
+        .filter(instance -> opType.getClass().isAssignableFrom(instance.getOperation().getClass()))
         .map(fi -> (OperationState<A, V>) fi)
         .collect(Collectors.toList());
   }

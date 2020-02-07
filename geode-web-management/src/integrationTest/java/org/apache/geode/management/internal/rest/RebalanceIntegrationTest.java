@@ -100,8 +100,9 @@ public class RebalanceIntegrationTest {
         context.perform(get(futureUri.get()))
             .andExpect(status().isOk())
             .andExpect(content().string(not(containsString("\"class\""))))
-            .andExpect(jsonPath("$.result.statusMessage",
-                Matchers.containsString("has no regions")));
+            .andExpect(jsonPath("$.operationResult.statusMessage",
+                Matchers.containsString("has no regions")))
+            .andExpect(jsonPath("$.operationResult.success", Matchers.is(false)));
         return;
       } catch (Throwable t) {
         if (!t.getMessage().contains("Operation in progress"))
