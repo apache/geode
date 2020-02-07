@@ -88,7 +88,7 @@ public class RegionOperationHistoryPersistenceService
       InternalRegionArguments internalArgs = new InternalRegionArguments();
       internalArgs.setIsUsedForMetaRegion(true);
       internalArgs.setMetaRegionWithTransactions(false);
-      ((RegionFactoryImpl)regionFactory).setInternalRegionArguments(internalArgs);
+      ((RegionFactoryImpl) regionFactory).setInternalRegionArguments(internalArgs);
 
       return regionFactory.create(OPERATION_HISTORY_REGION_NAME);
     } catch (RuntimeException e) {

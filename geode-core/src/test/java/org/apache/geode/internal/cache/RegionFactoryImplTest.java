@@ -54,7 +54,8 @@ public class RegionFactoryImplTest {
     regionFactory.setInternalRegionArguments(internalRegionArguments);
     String regionName = "regionName";
     Region<Object, Object> expectedRegion = mock(Region.class);
-    when(cache.createVMRegion(same(regionName), any(), same(internalRegionArguments))).thenReturn(expectedRegion);
+    when(cache.createVMRegion(same(regionName), any(), same(internalRegionArguments)))
+        .thenReturn(expectedRegion);
 
     Region<Object, Object> region = regionFactory.create(regionName);
 

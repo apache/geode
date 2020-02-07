@@ -454,33 +454,27 @@ public class LocatorClusterManagementService implements ClusterManagementService
         operationInstance);
   }
 
-  /**
-   * this is intended for use by the REST controller. for Java usage, please use
-   */
   public <V extends OperationResult> ClusterManagementOperationStatusResult<V> checkStatus(
       String opId) {
-    final OperationState<?, V> operationInstance = operationManager.get(opId);
-    if (operationInstance == null) {
+    final OperationState<?, V> operationState = operationManager.get(opId);
+    if (operationState == null) {
       raise(StatusCode.ENTITY_NOT_FOUND, "Operation '" + opId + "' does not exist.");
     }
 
-    ClusterManagementOperationStatusResult<V> result;
-    if (operationInstance.getOperationEnd() == null) {
-      result = new ClusterManagementOperationStatusResult<>(
-          new ClusterManagementResult(StatusCode.IN_PROGRESS, ""));
-    } else {
-      if (operationInstance.getThrowable() != null) {
-        result = new ClusterManagementOperationStatusResult<>(new ClusterManagementResult(
-            StatusCode.ERROR, operationInstance.getThrowable().getMessage()));
-      } else {
-        result = new ClusterManagementOperationStatusResult<>(
-            new ClusterManagementResult(StatusCode.OK, ""));
-      }
+    StatusCode resultStatus = StatusCode.OK;
+    String resultMessage = "";
+    if (operationState.getOperationEnd() == null) {
+      resultStatus = StatusCode.IN_PROGRESS;
+    } else if (operationState.getThrowable() != null) {
+      resultStatus = StatusCode.ERROR;
+      resultMessage = operationState.getThrowable().getMessage();
     }
-    result.setOperator(operationInstance.getOperator());
-    result.setOperationStart(operationInstance.getOperationStart());
-    result.setResult((V) operationInstance.getResult());
-    result.setOperationEnded(operationInstance.getOperationEnd());
+    ClusterManagementOperationStatusResult<V> result = new ClusterManagementOperationStatusResult<>(
+        new ClusterManagementResult(resultStatus, resultMessage));
+    result.setOperator(operationState.getOperator());
+    result.setOperationStart(operationState.getOperationStart());
+    result.setResult((V) operationState.getResult());
+    result.setOperationEnded(operationState.getOperationEnd());
 
     return result;
   }

@@ -18,8 +18,6 @@ package org.apache.geode.management.internal.rest.controllers;
 import static org.apache.geode.management.configuration.Links.URI_VERSION;
 import static org.apache.geode.management.operation.RebalanceOperation.REBALANCE_ENDPOINT;
 
-import java.io.Serializable;
-
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -47,7 +45,8 @@ public class RebalanceOperationController extends AbstractManagementController {
   public ResponseEntity<ClusterManagementOperationResult<RebalanceResult>> startRebalance(
       @RequestBody RebalanceOperation operation) {
     ClusterManagementOperationResult<RebalanceResult> result =
-        clusterManagementService.start(new RebalanceOperationWithOperator(operation, securityService));
+        clusterManagementService
+            .start(new RebalanceOperationWithOperator(operation, securityService));
     return new ResponseEntity<>(result, HttpStatus.ACCEPTED);
   }
 
