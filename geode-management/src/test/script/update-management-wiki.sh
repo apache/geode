@@ -75,9 +75,10 @@ GEODE_VERSION=$($GEODE/bin/gfsh version | sed 's/-SNAPSHOT//')
 [[ "${GEODE_VERSION%.*}" == "1.10" ]] && PAGE_ID=115511910
 [[ "${GEODE_VERSION%.*}" == "1.11" ]] && PAGE_ID=135861023
 [[ "${GEODE_VERSION%.*}" == "1.12" ]] && PAGE_ID=132322415
+[[ "${GEODE_VERSION%.*}" == "1.13" ]] && PAGE_ID=147426059
 
 if [[ -z "${PAGE_ID}" ]] ; then
-    echo "Please create a new wiki page for $GEODE_VERSION and add its page ID to $0 near line 78"
+    echo "Please create a new wiki page for $GEODE_VERSION and add its page ID to $0 near line 79"
     exit 1
 fi
 
