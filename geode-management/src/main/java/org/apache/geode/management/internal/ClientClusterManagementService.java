@@ -94,7 +94,7 @@ public class ClientClusterManagementService implements ClusterManagementService 
   @Override
   public <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<V> start(
       A op) {
-    return transport.submitMessageForStart(op);
+    return assertSuccessful(transport.submitMessageForStart(op));
   }
 
   @Override
@@ -106,8 +106,8 @@ public class ClientClusterManagementService implements ClusterManagementService 
   @Override
   public <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementListOperationsResult<V> list(
       A opType) {
-    return transport.submitMessageForListOperation(opType,
-        ClusterManagementListOperationsResult.class);
+    return assertSuccessful(transport.submitMessageForListOperation(opType,
+        ClusterManagementListOperationsResult.class));
   }
 
   @Override

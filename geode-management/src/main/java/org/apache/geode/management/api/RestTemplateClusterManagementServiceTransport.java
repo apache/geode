@@ -19,7 +19,7 @@ package org.apache.geode.management.api;
 import static org.apache.geode.management.configuration.Links.URI_VERSION;
 import static org.apache.geode.management.internal.Constants.INCLUDE_CLASS_HEADER;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -95,7 +95,9 @@ public class RestTemplateClusterManagementServiceTransport
           "host and port needs to be specified in order to build the service.");
     }
 
-    DefaultUriTemplateHandler templateHandler = new DefaultUriTemplateHandler();
+    DefaultUriTemplateHandler templateHandler = new DefaultUriTemplateHandler(); // TODO: find
+                                                                                 // non-deprecated
+                                                                                 // equivalent
     String schema = (connectionConfig.getSslContext() == null) ? "http" : "https";
     templateHandler
         .setBaseUrl(schema + "://" + connectionConfig.getHost() + ":" + connectionConfig.getPort()
@@ -114,7 +116,7 @@ public class RestTemplateClusterManagementServiceTransport
     }
     // configures the clientBuilder
     if (connectionConfig.getAuthToken() != null) {
-      List<Header> defaultHeaders = Arrays.asList(
+      List<Header> defaultHeaders = Collections.singletonList(
           new BasicHeader(HttpHeaders.AUTHORIZATION, "Bearer " + connectionConfig.getAuthToken()));
       clientBuilder.setDefaultHeaders(defaultHeaders);
     } else if (connectionConfig.getUsername() != null) {
