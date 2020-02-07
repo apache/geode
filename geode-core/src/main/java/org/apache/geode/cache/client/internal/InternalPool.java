@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.apache.geode.CancelCriterion;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.internal.cache.PoolStats;
 
@@ -26,9 +27,9 @@ import org.apache.geode.internal.cache.PoolStats;
  * connection source to access the cache and update the list of endpoints on the connection pool.
  *
  * @since GemFire 5.7
- *
  */
 public interface InternalPool extends Pool, ExecutablePool {
+
   PoolStats getStats();
 
   Map getEndpointMap();
@@ -46,4 +47,10 @@ public interface InternalPool extends Pool, ExecutablePool {
   String getPoolOrCacheCancelInProgress();
 
   boolean getKeepAlive();
+
+  /**
+   * Test hook that returns the port of the primary server. -1 is returned if we have no primary.
+   */
+  @VisibleForTesting
+  int getPrimaryPort();
 }

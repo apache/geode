@@ -14,1358 +14,1604 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.apache.geode.cache.Region.SEPARATOR;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.apache.geode.cache.EvictionAction.LOCAL_DESTROY;
+import static org.apache.geode.cache.EvictionAction.OVERFLOW_TO_DISK;
+import static org.apache.geode.cache.EvictionAttributes.createLRUEntryAttributes;
+import static org.apache.geode.cache.client.PoolFactory.DEFAULT_SUBSCRIPTION_REDUNDANCY;
 import static org.apache.geode.distributed.ConfigurationProperties.CONFLATE_EVENTS;
 import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_ID;
 import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_TIMEOUT;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.internal.DistributionConfig.CLIENT_CONFLATION_PROP_VALUE_DEFAULT;
+import static org.apache.geode.distributed.internal.DistributionConfig.CLIENT_CONFLATION_PROP_VALUE_OFF;
+import static org.apache.geode.distributed.internal.DistributionConfig.CLIENT_CONFLATION_PROP_VALUE_ON;
+import static org.apache.geode.internal.AvailablePort.SOCKET;
+import static org.apache.geode.internal.AvailablePort.getRandomAvailablePort;
 import static org.apache.geode.internal.cache.CacheServerImpl.generateNameForClientMsgsRegion;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.apache.geode.internal.cache.tier.sockets.CacheClientProxyFactory.INTERNAL_FACTORY_PROPERTY;
+import static org.apache.geode.internal.lang.SystemPropertyHelper.GEMFIRE_PREFIX;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
+import static org.apache.geode.test.dunit.VM.getController;
+import static org.apache.geode.test.dunit.VM.getVM;
+import static org.apache.geode.test.dunit.VM.getVMId;
+import static org.apache.geode.test.dunit.VM.toArray;
+import static org.apache.geode.test.dunit.rules.DistributedRule.getDistributedSystemProperties;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.mockito.Mockito.mock;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
+import java.io.UncheckedIOException;
+import java.net.Socket;
 import java.util.Properties;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.shiro.subject.Subject;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.DeltaTestImpl;
 import org.apache.geode.InvalidDeltaException;
-import org.apache.geode.LogWriter;
-import org.apache.geode.cache.AttributesFactory;
-import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.DataPolicy;
-import org.apache.geode.cache.DiskStoreFactory;
+import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.EntryEvent;
-import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAttributes;
-import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionEvent;
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.client.ClientCacheFactory;
+import org.apache.geode.cache.client.ClientRegionFactory;
+import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.PoolManager;
-import org.apache.geode.cache.client.internal.PoolImpl;
+import org.apache.geode.cache.client.internal.InternalClientCache;
+import org.apache.geode.cache.client.internal.InternalPool;
 import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.cache.server.ClientSubscriptionConfig;
 import org.apache.geode.cache.util.CacheListenerAdapter;
-import org.apache.geode.cache30.ClientServerTestCase;
 import org.apache.geode.compression.Compressor;
 import org.apache.geode.compression.SnappyCompressor;
-import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.eviction.EvictionController;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
-import org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil;
-import org.apache.geode.internal.cache.tier.sockets.ConflationDUnitTestHelper;
+import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
+import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
+import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
+import org.apache.geode.internal.cache.tier.sockets.CacheClientProxyFactory.InternalCacheClientProxyFactory;
+import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
+import org.apache.geode.internal.cache.tier.sockets.MessageDispatcher;
+import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.tcp.ConnectionTable;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.SerializableCallableIF;
-import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.WaitCriterion;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
+import org.apache.geode.test.dunit.rules.DistributedRule;
+import org.apache.geode.test.dunit.rules.SharedErrorCollector;
+import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
+import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 /**
  * @since GemFire 6.1
  */
-
-public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
-
-  private final Compressor compressor = SnappyCompressor.getDefaultInstance();
-
-  protected static Cache cache = null;
-
-  protected VM vm0 = null;
-
-  protected VM vm1 = null;
-
-  protected VM vm2 = null;
-
-  protected VM vm3 = null;
-
-  private int PORT1;
-
-  private int PORT2;
-
-  private static final String regionName = DeltaPropagationDUnitTest.class.getSimpleName();
-
-  private static LogWriter logger = null;
+@SuppressWarnings("serial")
+public class DeltaPropagationDUnitTest implements Serializable {
 
   private static final int EVENTS_SIZE = 6;
-
-  private static boolean lastKeyReceived = false;
-
-  private boolean markerReceived = false;
-
-  private int numOfCreates;
-
-  private int numOfUpdates;
-
-  private static int numOfInvalidates;
-
-  private static int numOfDestroys;
-
-  private static DeltaTestImpl[] deltaPut = new DeltaTestImpl[EVENTS_SIZE];
-
-  private boolean areListenerResultsValid = true;
-
-  private boolean closeCache = false;
-
-  private StringBuffer listenerError = new StringBuffer("");
-
   private static final String DELTA_KEY = "DELTA_KEY";
-
   private static final String LAST_KEY = "LAST_KEY";
+  private static final InternalCache DUMMY_CACHE = mock(InternalCache.class);
+  private static final InternalClientCache DUMMY_CLIENT_CACHE = mock(InternalClientCache.class);
+  private static final String CACHE_CLIENT_PROXY_FACTORY_NAME =
+      CustomCacheClientProxyFactory.class.getName();
 
-  private static final int NO_LISTENER = 0;
+  private static final AtomicReference<CountDownLatch> LATCH =
+      new AtomicReference<>(new CountDownLatch(0));
 
-  private static final int CLIENT_LISTENER = 1;
+  private static final AtomicBoolean LAST_KEY_RECEIVED = new AtomicBoolean();
+  private static final AtomicInteger INVALIDATE_COUNTER = new AtomicInteger();
+  private static final AtomicInteger CREATE_COUNTER = new AtomicInteger();
+  private static final AtomicInteger UPDATE_COUNTER = new AtomicInteger();
+  private static final AtomicBoolean MARKER_RECEIVED = new AtomicBoolean();
 
-  private static final int SERVER_LISTENER = 2;
+  private static final AtomicReference<InternalCache> CACHE = new AtomicReference<>(DUMMY_CACHE);
+  private static final AtomicReference<InternalClientCache> CLIENT_CACHE =
+      new AtomicReference<>(DUMMY_CLIENT_CACHE);
 
-  private static final int C2S2S_SERVER_LISTENER = 3;
+  private static final DeltaTestImpl[] DELTA_VALUES = new DeltaTestImpl[EVENTS_SIZE];
 
-  private static final int LAST_KEY_LISTENER = 4;
+  private VM vm0;
+  private VM vm1;
+  private VM vm2;
+  private VM vm3;
 
-  private static final int DURABLE_CLIENT_LISTENER = 5;
+  private String regionName;
 
-  private static final int CLIENT_LISTENER_2 = 6;
+  @Rule
+  public DistributedRule distributedRule = new DistributedRule();
+  @Rule
+  public DistributedRestoreSystemProperties restoreProps = new DistributedRestoreSystemProperties();
+  @Rule
+  public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
+  @Rule
+  public SerializableTestName testName = new SerializableTestName();
+  @Rule
+  public SharedErrorCollector errorCollector = new SharedErrorCollector();
 
-  private static final String CREATE = "CREATE";
+  @Before
+  public void setUp() {
+    vm0 = getVM(0);
+    vm1 = getVM(1);
+    vm2 = getVM(2);
+    vm3 = getVM(3);
 
-  private static final String UPDATE = "UPDATE";
+    for (VM vm : toArray(getController(), vm0, vm1, vm2, vm3)) {
+      vm.invoke(() -> {
+        DeltaTestImpl.resetDeltaInvokationCounters();
+        CREATE_COUNTER.set(0);
+        UPDATE_COUNTER.set(0);
+        INVALIDATE_COUNTER.set(0);
+        LAST_KEY_RECEIVED.set(false);
+        MARKER_RECEIVED.set(false);
+        LATCH.set(new CountDownLatch(0));
+      });
+    }
 
-  private static final String INVALIDATE = "INVALIDATE";
-
-  private static final String DESTROY = "DESTROY";
-
-  @Override
-  public final void postSetUp() throws Exception {
-    final Host host = Host.getHost(0);
-    vm0 = host.getVM(0);
-    vm1 = host.getVM(1);
-    vm2 = host.getVM(2);
-    vm3 = host.getVM(3);
-
-    vm0.invoke(this::resetAll);
-    vm1.invoke(this::resetAll);
-    vm2.invoke(this::resetAll);
-    vm3.invoke(this::resetAll);
-    resetAll();
+    regionName = getName() + "_region";
   }
 
-  @Override
-  public final void preTearDown() throws Exception {
-    closeCache();
-    vm2.invoke((SerializableCallableIF) this::closeCache);
-    vm3.invoke((SerializableCallableIF) this::closeCache);
-
-    // Unset the isSlowStartForTesting flag
-    vm0.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
-    vm1.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
-    // then close the servers
-    vm0.invoke((SerializableRunnableIF) this::closeCache);
-    vm1.invoke((SerializableRunnableIF) this::closeCache);
-    disconnectAllFromDS();
-  }
-
-  @Test
-  public void testS2CSuccessfulDeltaPropagationWithCompression() throws Exception {
-    PORT1 = vm0.invoke(() -> createServerCache(HARegionQueue.HA_EVICTION_POLICY_NONE, 1,
-        NO_LISTENER, false, compressor));
-
-    vm0.invoke(
-        () -> assertTrue(cache.getRegion(regionName).getAttributes().getCompressor() != null));
-
-    createClientCache(PORT1, -1, "0", CLIENT_LISTENER);
-
-    registerInterestListAll();
-
-    vm0.invoke(this::prepareDeltas);
-    prepareDeltas();
-
-    vm0.invoke(this::createAndUpdateDeltas);
-
-    waitForLastKey();
-
-    long toDeltas = vm0.invoke(DeltaTestImpl::getToDeltaInvokations);
-    long fromDeltas = DeltaTestImpl.getFromDeltaInvokations();
-    assertTrue((EVENTS_SIZE - 1) + " deltas were to be sent but were " + toDeltas,
-        toDeltas == (EVENTS_SIZE - 1));
-    assertTrue((EVENTS_SIZE - 1) + " deltas were to be received but were " + fromDeltas,
-        fromDeltas == toDeltas);
-
-    verifyData(2, EVENTS_SIZE - 1);
-    assertTrue(listenerError.toString(), areListenerResultsValid);
+  @After
+  public void tearDown() {
+    for (VM vm : toArray(getController(), vm0, vm1, vm2, vm3)) {
+      vm.invoke(() -> {
+        LATCH.get().countDown();
+        closeClientCache(false);
+        closeCache();
+        PoolManager.close();
+      });
+    }
   }
 
   @Test
-  public void testS2CSuccessfulDeltaPropagation() throws Exception {
-    PORT1 = vm0.invoke(() -> createServerCache(HARegionQueue.HA_EVICTION_POLICY_MEMORY));
+  public void testS2CSuccessfulDeltaPropagationWithCompression() {
+    VM clientVM = getController();
+    VM serverVM = vm0;
 
-    createClientCache(PORT1, -1, "0", CLIENT_LISTENER);
-    registerInterestListAll();
+    int serverPort = serverVM.invoke(() -> new ServerFactory()
+        .compressor(new SnappyCompressor())
+        .regionShortcut(RegionShortcut.REPLICATE)
+        .create());
 
-    vm0.invoke(this::prepareDeltas);
-    prepareDeltas();
+    serverVM.invoke(() -> {
+      assertThat(getCache().getRegion(regionName).getAttributes().getCompressor()).isNotNull();
+    });
 
-    vm0.invoke(this::createAndUpdateDeltas);
+    clientVM.invoke(() -> {
+      new ClientFactory()
+          .cacheListener(new ValidatingClientListener(errorCollector))
+          .serverPorts(serverPort)
+          .create();
 
-    waitForLastKey();
+      Region<String, Object> region = getClientCache().getRegion(regionName);
+      region.registerInterest("ALL_KEYS");
+    });
 
-    long toDeltas = vm0.invoke(DeltaTestImpl::getToDeltaInvokations);
-    long fromDeltas = DeltaTestImpl.getFromDeltaInvokations();
-    assertTrue((EVENTS_SIZE - 1) + " deltas were to be sent but were " + toDeltas,
-        toDeltas == (EVENTS_SIZE - 1));
-    assertTrue((EVENTS_SIZE - 1) + " deltas were to be received but were " + fromDeltas,
-        fromDeltas == toDeltas);
+    for (VM vm : toArray(serverVM, clientVM)) {
+      vm.invoke(() -> prepareDeltas());
+    }
 
-    verifyData(2, EVENTS_SIZE - 1);
-    assertTrue(listenerError.toString(), areListenerResultsValid);
+    serverVM.invoke(() -> {
+      Region<String, Object> region = getCache().getRegion(regionName);
+      region.create(DELTA_KEY, DELTA_VALUES[0]);
+      for (int i = 1; i < EVENTS_SIZE; i++) {
+        region.put(DELTA_KEY, DELTA_VALUES[i]);
+      }
+      region.put(LAST_KEY, "");
+    });
+
+    clientVM.invoke(() -> await().until(() -> LAST_KEY_RECEIVED.get()));
+
+    long toDeltas = serverVM.invoke(() -> DeltaTestImpl.getToDeltaInvokations());
+    long fromDeltas = clientVM.invoke(() -> DeltaTestImpl.getFromDeltaInvokations());
+
+    assertThat(toDeltas).isEqualTo(EVENTS_SIZE - 1);
+    assertThat(fromDeltas).isEqualTo(EVENTS_SIZE - 1);
+
+    clientVM.invoke(() -> {
+      assertThat(CREATE_COUNTER.get()).isEqualTo(2);
+      assertThat(UPDATE_COUNTER.get()).isEqualTo(EVENTS_SIZE - 1);
+    });
   }
 
   @Test
-  public void testS2CFailureInToDeltaMethod() throws Exception {
-    PORT1 = vm0.invoke(() -> createServerCache(HARegionQueue.HA_EVICTION_POLICY_MEMORY));
+  public void testS2CSuccessfulDeltaPropagation() {
+    VM clientVM = getController();
+    VM serverVM = vm0;
 
-    createClientCache(PORT1, -1, "0", CLIENT_LISTENER_2);
-    registerInterestListAll();
+    int serverPort = serverVM.invoke(() -> new ServerFactory()
+        .evictionPolicy(HARegionQueue.HA_EVICTION_POLICY_MEMORY)
+        .regionShortcut(RegionShortcut.REPLICATE)
+        .create());
 
-    vm0.invoke(this::prepareErroneousDeltasForToDelta);
-    prepareErroneousDeltasForToDelta();
+    clientVM.invoke(() -> {
+      new ClientFactory()
+          .cacheListener(new ClientListener())
+          .serverPorts(serverPort)
+          .create();
 
-    vm0.invoke(this::createAndUpdateDeltas);
+      Region<String, Object> region = getClientCache().getRegion(regionName);
+      region.registerInterest("ALL_KEYS");
+    });
 
-    waitForLastKey();
+    for (VM vm : toArray(serverVM, clientVM)) {
+      vm.invoke(() -> prepareDeltas());
+    }
 
-    long toDeltas = vm0.invoke(DeltaTestImpl::getToDeltaInvokations);
-    long fromDeltas = DeltaTestImpl.getFromDeltaInvokations();
-    long toDeltafailures = vm0.invoke(DeltaTestImpl::getToDeltaFailures);
-    assertTrue((EVENTS_SIZE - 1) + " deltas were to be sent but were " + toDeltas,
-        toDeltas == (EVENTS_SIZE - 1));
-    assertTrue((EVENTS_SIZE - 1 - 1/*
-                                    * This is because the one failed in toDelta will be sent as full
-                                    * value. So client will not see it as 'delta'.
-                                    */) + " deltas were to be received but were " + fromDeltas,
-        fromDeltas == (EVENTS_SIZE - 1 - 1));
-    assertTrue(1 + " deltas were to be failed while extracting but were " + toDeltafailures,
-        toDeltafailures == 1);
+    serverVM.invoke(() -> {
+      Region<String, Object> region = getCache().getRegion(regionName);
+      region.create(DELTA_KEY, DELTA_VALUES[0]);
+      for (int i = 1; i < EVENTS_SIZE; i++) {
+        region.put(DELTA_KEY, DELTA_VALUES[i]);
+      }
+      region.put(LAST_KEY, "");
+    });
 
-    verifyData(2, EVENTS_SIZE - 1 - 1 /* Full value no more sent if toDelta() fails */);
-    assertTrue(listenerError.toString(), areListenerResultsValid);
+    clientVM.invoke(() -> await().until(() -> LAST_KEY_RECEIVED.get()));
+
+    long toDeltas = serverVM.invoke(() -> DeltaTestImpl.getToDeltaInvokations());
+    long fromDeltas = clientVM.invoke(() -> DeltaTestImpl.getFromDeltaInvokations());
+
+    assertThat(toDeltas).isEqualTo(EVENTS_SIZE - 1);
+    assertThat(fromDeltas).isEqualTo(EVENTS_SIZE - 1);
+
+    clientVM.invoke(() -> {
+      assertThat(CREATE_COUNTER.get()).isEqualTo(2);
+      assertThat(UPDATE_COUNTER.get()).isEqualTo(EVENTS_SIZE - 1);
+    });
   }
 
   @Test
-  public void testS2CFailureInFromDeltaMethod() throws Exception {
-    PORT1 = vm0.invoke(() -> createServerCache(HARegionQueue.HA_EVICTION_POLICY_MEMORY));
+  public void testS2CFailureInToDeltaMethod() {
+    VM clientVM = getController();
+    VM serverVM = vm0;
 
-    createClientCache(PORT1, -1, "0", CLIENT_LISTENER);
-    registerInterestListAll();
+    int serverPort = serverVM.invoke(() -> new ServerFactory()
+        .evictionPolicy(HARegionQueue.HA_EVICTION_POLICY_MEMORY)
+        .regionShortcut(RegionShortcut.REPLICATE)
+        .create());
 
-    vm0.invoke(this::prepareErroneousDeltasForFromDelta);
-    prepareErroneousDeltasForFromDelta();
+    clientVM.invoke(() -> {
+      new ClientFactory()
+          .cacheListener(new SkipThirdDeltaValue(errorCollector))
+          .serverPorts(serverPort)
+          .create();
 
-    vm0.invoke(this::createAndUpdateDeltas);
+      Region<String, Object> region = getClientCache().getRegion(regionName);
+      region.registerInterest("ALL_KEYS");
+    });
 
-    waitForLastKey();
+    for (VM vm : toArray(serverVM, clientVM)) {
+      vm.invoke(() -> prepareErroneousDeltasForToDelta());
+    }
 
-    long toDeltas = vm0.invoke(DeltaTestImpl::getToDeltaInvokations);
-    long fromDeltas = DeltaTestImpl.getFromDeltaInvokations();
-    long fromDeltafailures = DeltaTestImpl.getFromDeltaFailures();
-    assertTrue((EVENTS_SIZE - 1) + " deltas were to be sent but were " + toDeltas,
-        toDeltas == (EVENTS_SIZE - 1));
-    assertTrue((EVENTS_SIZE - 1) + " deltas were to be received but were " + fromDeltas,
-        fromDeltas == toDeltas);
-    assertTrue(1 + " deltas were to be failed while applying but were " + fromDeltafailures,
-        fromDeltafailures == 1);
+    serverVM.invoke(() -> {
+      Region<String, Object> region = getCache().getRegion(regionName);
+      region.create(DELTA_KEY, DELTA_VALUES[0]);
+      for (int i = 1; i < EVENTS_SIZE; i++) {
+        try {
+          // Note: this may or may not throw
+          region.put(DELTA_KEY, DELTA_VALUES[i]);
+        } catch (InvalidDeltaException ide) {
+          assertThat(DELTA_VALUES[i].getIntVar())
+              .isEqualTo(DeltaTestImpl.ERRONEOUS_INT_FOR_TO_DELTA);
+        }
+      }
+      region.put(LAST_KEY, "");
+    });
 
-    verifyData(2, EVENTS_SIZE - 1);
-    assertTrue(listenerError.toString(), areListenerResultsValid);
+    clientVM.invoke(() -> await().until(() -> LAST_KEY_RECEIVED.get()));
+
+    long toDeltas = serverVM.invoke(() -> DeltaTestImpl.getToDeltaInvokations());
+    long fromDeltas = clientVM.invoke(() -> DeltaTestImpl.getFromDeltaInvokations());
+    long toDeltaFailures = serverVM.invoke(() -> DeltaTestImpl.getToDeltaFailures());
+
+    assertThat(toDeltas).isEqualTo(EVENTS_SIZE - 1);
+    // -1 below is because the one failed in toDelta will be sent as full
+    // value. So client will not see it as 'delta'.
+    assertThat(fromDeltas).isEqualTo(EVENTS_SIZE - 1 - 1);
+    assertThat(toDeltaFailures).isOne();
+
+    clientVM.invoke(() -> {
+      // Full value no more sent if toDelta() fails
+      assertThat(CREATE_COUNTER.get()).isEqualTo(2);
+      assertThat(UPDATE_COUNTER.get()).isEqualTo(EVENTS_SIZE - 1 - 1);
+    });
   }
 
   @Test
-  public void testS2CWithOldValueAtClientOverflownToDisk() throws Exception {
-    PORT1 = vm0.invoke(() -> createServerCache(HARegionQueue.HA_EVICTION_POLICY_MEMORY));
+  public void testS2CFailureInFromDeltaMethod() {
+    VM clientVM = getController();
+    VM serverVM = vm0;
 
-    EvictionAttributes evAttr =
-        EvictionAttributes.createLRUEntryAttributes(1, EvictionAction.OVERFLOW_TO_DISK);
+    int serverPort = serverVM.invoke(() -> new ServerFactory()
+        .evictionPolicy(HARegionQueue.HA_EVICTION_POLICY_MEMORY)
+        .regionShortcut(RegionShortcut.REPLICATE)
+        .create());
 
-    createClientCache(PORT1, -1, "0", true/* add listener */, evAttr);
-    registerInterestListAll();
+    clientVM.invoke(() -> {
+      new ClientFactory()
+          .cacheListener(new ClientListener())
+          .serverPorts(serverPort)
+          .create();
 
-    vm0.invoke(this::prepareDeltas);
-    prepareDeltas();
+      Region<String, Object> region = getClientCache().getRegion(regionName);
+      region.registerInterest("ALL_KEYS");
+    });
 
-    vm0.invoke(this::createDelta);
-    vm0.invoke(this::createAnEntry);
-    Thread.sleep(5000); // TODO: Find a better 'n reliable alternative
-    // assert overflow occurred on client vm
-    verifyOverflowOccurred(1L, 2);
-    vm0.invoke(this::updateDelta);
+    for (VM vm : toArray(serverVM, clientVM)) {
+      vm.invoke(() -> prepareErroneousDeltasForFromDelta());
+    }
 
-    waitForLastKey();
+    serverVM.invoke(() -> {
+      Region<String, Object> region = getCache().getRegion(regionName);
+      region.create(DELTA_KEY, DELTA_VALUES[0]);
+      for (int i = 1; i < EVENTS_SIZE; i++) {
+        region.put(DELTA_KEY, DELTA_VALUES[i]);
+      }
+      region.put(LAST_KEY, "");
+    });
 
-    long toDeltas = vm0.invoke(DeltaTestImpl::getToDeltaInvokations);
-    long fromDeltas = DeltaTestImpl.getFromDeltaInvokations();
+    clientVM.invoke(() -> await().until(() -> LAST_KEY_RECEIVED.get()));
 
-    assertTrue((EVENTS_SIZE - 1) + " deltas were to be sent but were " + toDeltas,
-        toDeltas == (EVENTS_SIZE - 1));
-    assertTrue((EVENTS_SIZE - 1) + " deltas were to be received but were " + fromDeltas,
-        fromDeltas == (EVENTS_SIZE - 1));
+    long toDeltas = serverVM.invoke(() -> DeltaTestImpl.getToDeltaInvokations());
+    long fromDeltas = clientVM.invoke(() -> DeltaTestImpl.getFromDeltaInvokations());
+    long fromDeltaFailures = clientVM.invoke(() -> DeltaTestImpl.getFromDeltaFailures());
 
-    verifyData(3, EVENTS_SIZE - 1);
-    assertTrue(listenerError.toString(), areListenerResultsValid);
+    assertThat(toDeltas).isEqualTo(EVENTS_SIZE - 1);
+    assertThat(fromDeltas).isEqualTo(EVENTS_SIZE - 1);
+    assertThat(fromDeltaFailures).isOne();
+
+    clientVM.invoke(() -> {
+      assertThat(CREATE_COUNTER.get()).isEqualTo(2);
+      assertThat(UPDATE_COUNTER.get()).isEqualTo(EVENTS_SIZE - 1);
+    });
   }
 
   @Test
-  public void testS2CWithLocallyDestroyedOldValueAtClient() throws Exception {
-    PORT1 = vm0.invoke(() -> createServerCache(HARegionQueue.HA_EVICTION_POLICY_MEMORY));
+  public void testS2CWithOldValueAtClientOverflownToDisk() {
+    VM clientVM = getController();
+    VM serverVM = vm0;
 
-    EvictionAttributes evAttr =
-        EvictionAttributes.createLRUEntryAttributes(1, EvictionAction.LOCAL_DESTROY);
+    int serverPort = serverVM.invoke(() -> new ServerFactory()
+        .evictionPolicy(HARegionQueue.HA_EVICTION_POLICY_MEMORY)
+        .regionShortcut(RegionShortcut.REPLICATE)
+        .create());
 
-    createClientCache(PORT1, -1, "0", true/* add listener */, evAttr);
-    registerInterestListAll();
+    clientVM.invoke(() -> {
+      new ClientFactory()
+          .cacheListener(new ClientListener())
+          .evictionAttributes(createLRUEntryAttributes(1, OVERFLOW_TO_DISK))
+          .serverPorts(serverPort)
+          .create();
 
-    vm0.invoke(this::prepareDeltas);
-    prepareDeltas();
+      Region<String, Object> region = getClientCache().getRegion(regionName);
+      region.registerInterest("ALL_KEYS");
+    });
 
-    vm0.invoke(this::createDelta);
-    vm0.invoke(this::createAnEntry);
-    Thread.sleep(5000); // TODO: Find a better 'n reliable alternative
-    // assert overflow occurred on client vm
-    verifyOverflowOccurred(1L, 1);
-    vm0.invoke(this::updateDelta);
+    for (VM vm : toArray(serverVM, clientVM)) {
+      vm.invoke(() -> prepareDeltas());
+    }
 
-    waitForLastKey();
+    serverVM.invoke(() -> {
+      Region<String, Object> region = getCache().getRegion(regionName);
+      region.create(DELTA_KEY, DELTA_VALUES[0]);
+      region.create("KEY-A", "I push the delta out to disk :)");
+    });
 
-    long toDeltas = vm0.invoke(DeltaTestImpl::getToDeltaInvokations);
-    long fromDeltas = DeltaTestImpl.getFromDeltaInvokations();
+    clientVM.invoke(() -> {
+      // assert overflow occurred on client vm
+      await().untilAsserted(() -> verifyOverflowOccurred(1, 2));
+    });
 
-    assertTrue((EVENTS_SIZE - 1) + " deltas were to be sent but were " + toDeltas,
-        toDeltas == (EVENTS_SIZE - 1));
-    assertTrue(
-        (EVENTS_SIZE - 1 - 1/* destroyed */) + " deltas were to be received but were " + fromDeltas,
-        fromDeltas == (EVENTS_SIZE - 1 - 1));
+    serverVM.invoke(() -> {
+      Region<String, Object> region = getCache().getRegion(regionName);
+      for (int i = 1; i < EVENTS_SIZE; i++) {
+        region.put(DELTA_KEY, DELTA_VALUES[i]);
+      }
+      region.put(LAST_KEY, "");
+    });
 
-    verifyData(4, EVENTS_SIZE - 2);
+    clientVM.invoke(() -> await().until(() -> LAST_KEY_RECEIVED.get()));
+
+    long toDeltas = serverVM.invoke(() -> DeltaTestImpl.getToDeltaInvokations());
+    long fromDeltas = clientVM.invoke(() -> DeltaTestImpl.getFromDeltaInvokations());
+
+    assertThat(toDeltas).isEqualTo(EVENTS_SIZE - 1);
+    assertThat(fromDeltas).isEqualTo(EVENTS_SIZE - 1);
+
+    clientVM.invoke(() -> {
+      assertThat(CREATE_COUNTER.get()).isEqualTo(3);
+      assertThat(UPDATE_COUNTER.get()).isEqualTo(EVENTS_SIZE - 1);
+    });
   }
 
   @Test
-  public void testS2CWithInvalidatedOldValueAtClient() throws Exception {
-    PORT1 = vm0.invoke(() -> createServerCache(HARegionQueue.HA_EVICTION_POLICY_MEMORY));
+  public void testS2CWithLocallyDestroyedOldValueAtClient() {
+    VM clientVM = getController();
+    VM serverVM = vm0;
 
-    createClientCache(PORT1, -1, "0", CLIENT_LISTENER);
-    registerInterestListAll();
+    int serverPort = serverVM.invoke(() -> new ServerFactory()
+        .evictionPolicy(HARegionQueue.HA_EVICTION_POLICY_MEMORY)
+        .regionShortcut(RegionShortcut.REPLICATE)
+        .create());
 
-    vm0.invoke(this::prepareDeltas);
-    prepareDeltas();
+    clientVM.invoke(() -> {
+      new ClientFactory()
+          .cacheListener(new ClientListener())
+          .evictionAttributes(createLRUEntryAttributes(1, LOCAL_DESTROY))
+          .serverPorts(serverPort)
+          .create();
 
-    vm0.invoke(this::createDelta);
-    vm0.invoke(this::invalidateDelta);
-    vm0.invoke(this::updateDelta);
+      Region<String, Object> region = getClientCache().getRegion(regionName);
+      region.registerInterest("ALL_KEYS");
+    });
 
-    waitForLastKey();
+    for (VM vm : toArray(serverVM, clientVM)) {
+      vm.invoke(() -> prepareDeltas());
+    }
 
-    long toDeltas = vm0.invoke(DeltaTestImpl::getToDeltaInvokations);
-    long fromDeltas = DeltaTestImpl.getFromDeltaInvokations();
+    serverVM.invoke(() -> {
+      Region<String, Object> region = getCache().getRegion(regionName);
+      region.create(DELTA_KEY, DELTA_VALUES[0]);
+      region.create("KEY-A", "I push the delta out to disk :)");
+    });
 
-    assertTrue((EVENTS_SIZE - 1) + " deltas were to be sent but were " + toDeltas,
-        toDeltas == (EVENTS_SIZE - 1));
-    assertTrue((EVENTS_SIZE - 1 - 1/* invalidated */) + " deltas were to be received but were "
-        + fromDeltas, fromDeltas == (EVENTS_SIZE - 1 - 1));
+    clientVM.invoke(() -> {
+      // assert overflow occurred on client vm
+      await().untilAsserted(() -> verifyOverflowOccurred(1, 1));
+    });
 
-    verifyData(2, EVENTS_SIZE - 1);
-    assertTrue(listenerError.toString(), areListenerResultsValid);
+    serverVM.invoke(() -> {
+      Region<String, Object> region = getCache().getRegion(regionName);
+      for (int i = 1; i < EVENTS_SIZE; i++) {
+        region.put(DELTA_KEY, DELTA_VALUES[i]);
+      }
+      region.put(LAST_KEY, "");
+    });
+
+    clientVM.invoke(() -> await().until(() -> LAST_KEY_RECEIVED.get()));
+
+    long toDeltas = serverVM.invoke(() -> DeltaTestImpl.getToDeltaInvokations());
+    long fromDeltas = clientVM.invoke(() -> DeltaTestImpl.getFromDeltaInvokations());
+
+    assertThat(toDeltas).isEqualTo(EVENTS_SIZE - 1);
+    assertThat(fromDeltas).isEqualTo(EVENTS_SIZE - 1 - 1);
+
+    clientVM.invoke(() -> {
+      assertThat(CREATE_COUNTER.get()).isEqualTo(4);
+      assertThat(UPDATE_COUNTER.get()).isEqualTo(EVENTS_SIZE - 2);
+    });
   }
 
   @Test
-  public void testS2CDeltaPropagationWithClientConflationON() throws Exception {
-    PORT1 = vm0.invoke(() -> createServerCache(HARegionQueue.HA_EVICTION_POLICY_MEMORY));
+  public void testS2CWithInvalidatedOldValueAtClient() {
+    VM clientVM = getController();
+    VM serverVM = vm0;
 
-    createClientCache(PORT1, -1, "0", DistributionConfig.CLIENT_CONFLATION_PROP_VALUE_ON,
-        LAST_KEY_LISTENER, null, null);
+    int serverPort = serverVM.invoke(() -> new ServerFactory()
+        .evictionPolicy(HARegionQueue.HA_EVICTION_POLICY_MEMORY)
+        .regionShortcut(RegionShortcut.REPLICATE)
+        .create());
 
-    registerInterestListAll();
-    vm0.invoke(this::prepareDeltas);
+    clientVM.invoke(() -> {
+      new ClientFactory()
+          .cacheListener(new ClientListener())
+          .serverPorts(serverPort)
+          .create();
 
-    vm0.invoke(this::createAndUpdateDeltas);
+      Region<String, Object> region = getClientCache().getRegion(regionName);
+      region.registerInterest("ALL_KEYS");
+    });
 
-    waitForLastKey();
+    for (VM vm : toArray(serverVM, clientVM)) {
+      vm.invoke(() -> prepareDeltas());
+    }
 
-    // TODO: (Amogh) get CCPStats and assert 0 deltas sent.
-    assertEquals(0, DeltaTestImpl.getFromDeltaInvokations().longValue());
+    serverVM.invoke(() -> {
+      Region<String, Object> region = getCache().getRegion(regionName);
+      region.create(DELTA_KEY, DELTA_VALUES[0]);
+      region.invalidate(DELTA_KEY);
+      for (int i = 1; i < EVENTS_SIZE; i++) {
+        region.put(DELTA_KEY, DELTA_VALUES[i]);
+      }
+      region.put(LAST_KEY, "");
+    });
+
+    clientVM.invoke(() -> await().until(() -> LAST_KEY_RECEIVED.get()));
+
+    long toDeltas = serverVM.invoke(() -> DeltaTestImpl.getToDeltaInvokations());
+    long fromDeltas = clientVM.invoke(() -> DeltaTestImpl.getFromDeltaInvokations());
+
+    assertThat(toDeltas).isEqualTo(EVENTS_SIZE - 1);
+    assertThat(fromDeltas).isEqualTo(EVENTS_SIZE - 1 - 1);
+
+    clientVM.invoke(() -> {
+      assertThat(CREATE_COUNTER.get()).isEqualTo(2);
+      assertThat(UPDATE_COUNTER.get()).isEqualTo(EVENTS_SIZE - 1);
+    });
   }
 
   @Test
-  public void testS2CDeltaPropagationWithServerConflationON() throws Exception {
-    vm0.invoke((SerializableRunnableIF) this::closeCache);
-    PORT1 = vm0.invoke(() -> createServerCache(HARegionQueue.HA_EVICTION_POLICY_MEMORY, 1,
-        NO_LISTENER, true /* conflate */, null));
+  public void testS2CDeltaPropagationWithClientConflationON() {
+    VM clientVM = getController();
+    VM serverVM = vm0;
 
-    createClientCache(PORT1, -1, "0", DistributionConfig.CLIENT_CONFLATION_PROP_VALUE_DEFAULT,
-        LAST_KEY_LISTENER, null, null);
+    int serverPort = serverVM.invoke(() -> new ServerFactory()
+        .evictionPolicy(HARegionQueue.HA_EVICTION_POLICY_MEMORY)
+        .regionShortcut(RegionShortcut.REPLICATE)
+        .create());
 
-    vm3.invoke(() -> createClientCache(PORT1, -1, "0",
-        DistributionConfig.CLIENT_CONFLATION_PROP_VALUE_OFF, LAST_KEY_LISTENER, null, null));
+    clientVM.invoke(() -> {
+      new ClientFactory()
+          .cacheListener(new LastKeyListener())
+          .clientConflation(CLIENT_CONFLATION_PROP_VALUE_ON)
+          .serverPorts(serverPort)
+          .create();
 
-    registerInterestListAll();
-    vm3.invoke(this::registerInterestListAll);
+      Region<String, Object> region = getClientCache().getRegion(regionName);
+      region.registerInterest("ALL_KEYS");
+    });
 
-    vm0.invoke(this::prepareDeltas);
-    vm0.invoke(this::createAndUpdateDeltas);
+    serverVM.invoke(() -> {
+      prepareDeltas();
+      Region<String, Object> region = getCache().getRegion(regionName);
+      region.create(DELTA_KEY, DELTA_VALUES[0]);
+      for (int i = 1; i < EVENTS_SIZE; i++) {
+        region.put(DELTA_KEY, DELTA_VALUES[i]);
+      }
+      region.put(LAST_KEY, "");
+    });
 
-    waitForLastKey();
-    vm3.invoke(this::waitForLastKey);
+    clientVM.invoke(() -> {
+      await().until(() -> LAST_KEY_RECEIVED.get());
 
-    // TODO: (Amogh) use CCPStats.
-    assertEquals("Delta Propagation feature used.", 0,
-        DeltaTestImpl.getFromDeltaInvokations().longValue());
-    long fromDeltaInvocations = vm3.invoke(DeltaTestImpl::getFromDeltaInvokations);
-    assertEquals((EVENTS_SIZE - 1), fromDeltaInvocations);
+      assertThat(DeltaTestImpl.getFromDeltaInvokations()).isZero();
+    });
   }
 
   @Test
-  public void testS2CDeltaPropagationWithOnlyCreateEvents() throws Exception {
-    PORT1 = vm0.invoke(() -> createServerCache(HARegionQueue.HA_EVICTION_POLICY_MEMORY));
+  public void testS2CDeltaPropagationWithServerConflationON() {
+    VM client1VM = getController();
+    VM client2VM = vm3;
+    VM serverVM = vm0;
 
-    createClientCache(PORT1, -1, "0", LAST_KEY_LISTENER);
-    registerInterestListAll();
+    int serverPort = serverVM.invoke(() -> new ServerFactory()
+        .enableSubscriptionConflation(true)
+        .evictionPolicy(HARegionQueue.HA_EVICTION_POLICY_MEMORY)
+        .regionShortcut(RegionShortcut.REPLICATE)
+        .create());
 
-    vm0.invoke(this::createDeltas);
-    waitForLastKey();
+    client1VM.invoke(() -> new ClientFactory()
+        .cacheListener(new LastKeyListener())
+        .serverPorts(serverPort)
+        .create());
 
-    assertEquals(0l, ((Long) vm0.invoke(DeltaTestImpl::getToDeltaInvokations)).longValue());
-    assertTrue("Delta Propagation feature used.", DeltaTestImpl.getFromDeltaInvokations() == 0);
+    client2VM.invoke(() -> new ClientFactory()
+        .cacheListener(new LastKeyListener())
+        .clientConflation(CLIENT_CONFLATION_PROP_VALUE_OFF)
+        .serverPorts(serverPort)
+        .create());
+
+    for (VM clientVM : toArray(client1VM, client2VM)) {
+      clientVM.invoke(() -> {
+        Region<String, Object> region = getClientCache().getRegion(regionName);
+        region.registerInterest("ALL_KEYS");
+      });
+    }
+
+    serverVM.invoke(() -> {
+      prepareDeltas();
+      Region<String, Object> region = getCache().getRegion(regionName);
+      region.create(DELTA_KEY, DELTA_VALUES[0]);
+      for (int i = 1; i < EVENTS_SIZE; i++) {
+        region.put(DELTA_KEY, DELTA_VALUES[i]);
+      }
+      region.put(LAST_KEY, "");
+    });
+
+    for (VM clientVM : toArray(client1VM, client2VM)) {
+      clientVM.invoke(() -> await().until(() -> LAST_KEY_RECEIVED.get()));
+    }
+
+    client1VM.invoke(() -> {
+      assertThat(DeltaTestImpl.getFromDeltaInvokations()).isZero();
+    });
+
+    client2VM.invoke(() -> {
+      assertThat(DeltaTestImpl.getFromDeltaInvokations()).isEqualTo(EVENTS_SIZE - 1);
+    });
+  }
+
+  @Test
+  public void testS2CDeltaPropagationWithOnlyCreateEvents() {
+    VM clientVM = getController();
+    VM serverVM = vm0;
+
+    int serverPort = serverVM.invoke(() -> new ServerFactory()
+        .evictionPolicy(HARegionQueue.HA_EVICTION_POLICY_MEMORY)
+        .regionShortcut(RegionShortcut.REPLICATE)
+        .create());
+
+    clientVM.invoke(() -> {
+      new ClientFactory()
+          .cacheListener(new LastKeyListener())
+          .serverPorts(serverPort)
+          .create();
+
+      Region<String, Object> region = getClientCache().getRegion(regionName);
+      region.registerInterest("ALL_KEYS");
+    });
+
+    serverVM.invoke(() -> {
+      Region<String, Object> region = getCache().getRegion(regionName);
+      for (int i = 0; i < 100; i++) {
+        region.create(DELTA_KEY + i, new DeltaTestImpl());
+      }
+      region.create(LAST_KEY, "");
+    });
+
+    clientVM.invoke(() -> await().until(() -> LAST_KEY_RECEIVED.get()));
+
+    serverVM.invoke(() -> {
+      assertThat(DeltaTestImpl.getToDeltaInvokations()).isZero();
+    });
+
+    clientVM.invoke(() -> {
+      assertThat(DeltaTestImpl.getFromDeltaInvokations()).isZero();
+    });
   }
 
   /**
    * Tests that an update on a server with full Delta object causes distribution of the full Delta
    * instance, and not its delta bits, to other peers, even if that instance's
-   * <code>hasDelta()</code> returns true.
+   * {@code hasDelta()} returns true.
    */
   @Test
-  public void testC2S2SDeltaPropagation() throws Exception {
-    prepareDeltas();
-    vm0.invoke(this::prepareDeltas);
-    vm1.invoke(this::prepareDeltas);
+  public void testC2S2SDeltaPropagation() {
+    VM clientVM = getController();
+    VM server1VM = vm0;
+    VM server2VM = vm1;
 
-    DeltaTestImpl val = deltaPut[1];
-    vm0.invoke((SerializableRunnableIF) this::closeCache);
+    for (VM vm : toArray(clientVM, server1VM, server2VM)) {
+      vm.invoke(() -> prepareDeltas());
+    }
 
-    PORT1 = vm0.invoke(
-        () -> createServerCache(HARegionQueue.HA_EVICTION_POLICY_MEMORY, 1, C2S2S_SERVER_LISTENER));
-    PORT2 = vm1.invoke(
-        () -> createServerCache(HARegionQueue.HA_EVICTION_POLICY_MEMORY, 1, C2S2S_SERVER_LISTENER));
+    int serverPort = server1VM.invoke(() -> {
+      int port = new ServerFactory()
+          .cacheListener(new ClientToServerToServerListener())
+          .evictionPolicy(HARegionQueue.HA_EVICTION_POLICY_MEMORY)
+          .create();
 
-    createClientCache(PORT1, -1, "0", NO_LISTENER);
+      Region<String, DeltaTestImpl> region = getCache().getRegion(regionName);
+      region.create(DELTA_KEY, DELTA_VALUES[0]);
 
-    Region r = cache.getRegion("/" + regionName);
-    assertNotNull(r);
+      return port;
+    });
+    server2VM.invoke(() -> {
+      new ServerFactory()
+          .cacheListener(new ClientToServerToServerListener())
+          .evictionPolicy(HARegionQueue.HA_EVICTION_POLICY_MEMORY)
+          .create();
 
-    r.create(DELTA_KEY, deltaPut[0]);
+      Region<String, DeltaTestImpl> region = getCache().getRegion(regionName);
+      region.create(DELTA_KEY, DELTA_VALUES[0]);
+    });
+
+    clientVM.invoke(() -> {
+      new ClientFactory()
+          .cacheListener(new ClientListener())
+          .serverPorts(serverPort)
+          .create();
+
+      Region<String, DeltaTestImpl> region = getClientCache().getRegion(regionName);
+      region.create(DELTA_KEY, DELTA_VALUES[0]);
+    });
 
     // Invalidate the value at both the servers.
-    vm0.invoke(() -> doLocalOp(INVALIDATE, regionName, DELTA_KEY));
-    vm1.invoke(() -> doLocalOp(INVALIDATE, regionName, DELTA_KEY));
+    for (VM serverVM : toArray(server1VM, server2VM)) {
+      serverVM.invoke(() -> {
+        Region<String, DeltaTestImpl> region = getCache().getRegion(regionName);
+        region.localInvalidate(DELTA_KEY);
+      });
+    }
+    for (VM serverVM : toArray(server1VM, server2VM)) {
+      serverVM.invoke(() -> {
+        await().untilAsserted(() -> assertThat(INVALIDATE_COUNTER.get()).isEqualTo(1));
+      });
+    }
 
-    vm0.invoke(() -> assertOp(INVALIDATE, 1));
-    vm1.invoke(() -> assertOp(INVALIDATE, 1));
+    clientVM.invoke(() -> {
+      Region<String, DeltaTestImpl> region = getClientCache().getRegion(regionName);
+      region.put(DELTA_KEY, DELTA_VALUES[1]);
+    });
 
-    r.put(DELTA_KEY, val);
-    Thread.sleep(5000);
+    // Assert that server1VM distributed val as full value to server2VM.
+    server2VM.invoke(() -> await().untilAsserted(() -> {
+      Region<String, DeltaTestImpl> region = getCache().getRegion(regionName);
+      DeltaTestImpl deltaValue = region.getEntry(DELTA_KEY).getValue();
 
-    // Assert that vm0 distributed val as full value to vm1.
-    vm1.invoke(() -> assertValue(regionName, DELTA_KEY, val));
+      assertThat(deltaValue).isEqualTo(DELTA_VALUES[1]);
+    }));
 
-    assertTrue("Delta Propagation feature used.", !vm0.invoke(DeltaTestImpl::deltaFeatureUsed));
-    assertTrue("Delta Propagation feature used.", !vm1.invoke(DeltaTestImpl::deltaFeatureUsed));
-    assertTrue("Delta Propagation feature NOT used.", DeltaTestImpl.deltaFeatureUsed());
+    for (VM vm : toArray(server1VM, server2VM)) {
+      vm.invoke(() -> {
+        assertThat(DeltaTestImpl.deltaFeatureUsed()).isFalse();
+      });
+    }
+
+    clientVM.invoke(() -> {
+      assertThat(DeltaTestImpl.deltaFeatureUsed()).isTrue();
+    });
   }
 
   @Test
-  public void testS2S2CDeltaPropagationWithHAOverflow() throws Exception {
-    prepareDeltas();
-    vm0.invoke(this::prepareDeltas);
-    vm1.invoke(this::prepareDeltas);
+  public void testS2S2CDeltaPropagationWithHAOverflow() {
+    VM clientVM = getController();
+    VM server1VM = vm0;
+    VM server2VM = vm1;
 
-    vm0.invoke((SerializableRunnableIF) this::closeCache);
+    for (VM vm : toArray(clientVM, server1VM, server2VM)) {
+      vm.invoke(() -> prepareDeltas());
+    }
 
-    PORT1 = vm0.invoke(() -> createServerCache(HARegionQueue.HA_EVICTION_POLICY_NONE, 1));
-    PORT2 = vm1.invoke(() -> createServerCache(HARegionQueue.HA_EVICTION_POLICY_ENTRY, 1));
+    for (VM vm : toArray(server1VM, server2VM)) {
+      vm.invoke(() -> {
+        System.setProperty(INTERNAL_FACTORY_PROPERTY, CACHE_CLIENT_PROXY_FACTORY_NAME);
+        LATCH.set(new CountDownLatch(1));
+      });
+    }
 
-    vm0.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("60000"));
-    vm1.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("60000"));
+    server1VM.invoke(() -> new ServerFactory()
+        .regionShortcut(RegionShortcut.REPLICATE)
+        .create());
+    int serverPort = server2VM.invoke(() -> new ServerFactory()
+        .evictionPolicy(HARegionQueue.HA_EVICTION_POLICY_ENTRY)
+        .regionShortcut(RegionShortcut.REPLICATE)
+        .create());
 
-    createClientCache(PORT2, -1, "0", CLIENT_LISTENER);
+    clientVM.invoke(() -> {
+      new ClientFactory()
+          .cacheListener(new ClientListener())
+          .serverPorts(serverPort)
+          .create();
 
-    Region r = cache.getRegion("/" + regionName);
-    assertNotNull(r);
-    r.registerInterest("ALL_KEYS");
+      Region<String, DeltaTestImpl> region = getClientCache().getRegion(regionName);
+      region.registerInterest("ALL_KEYS");
+    });
 
-    vm0.invoke(this::createAndUpdateDeltas);
-    vm1.invoke(() -> confirmEviction(PORT2));
+    server1VM.invoke(() -> {
+      Region<String, Object> region = getCache().getRegion(regionName);
+      region.create(DELTA_KEY, DELTA_VALUES[0]);
+      for (int i = 1; i < EVENTS_SIZE; i++) {
+        region.put(DELTA_KEY, DELTA_VALUES[i]);
+      }
+      region.put(LAST_KEY, "");
+    });
 
-    vm1.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
+    server2VM.invoke(() -> {
+      Region<String, Object> region =
+          getCache().getRegion(generateNameForClientMsgsRegion(serverPort));
 
-    waitForLastKey();
+      EvictionController evictionController = ((DiskRecoveryStore) region)
+          .getRegionMap()
+          .getEvictionController();
 
-    long toDeltasOnServer1 = (Long) vm0.invoke(DeltaTestImpl::getToDeltaInvokations);
-    long fromDeltasOnServer2 = (Long) vm1.invoke(DeltaTestImpl::getFromDeltaInvokations);
-    long toDeltasOnServer2 = (Long) vm1.invoke(DeltaTestImpl::getToDeltaInvokations);
-    long fromDeltasOnClient = DeltaTestImpl.getFromDeltaInvokations();
+      await().untilAsserted(() -> {
+        assertThat(evictionController.getCounters().getEvictions()).isGreaterThan(0);
+      });
 
-    assertTrue((EVENTS_SIZE - 1) + " deltas were to be sent but were " + toDeltasOnServer1,
-        toDeltasOnServer1 == (EVENTS_SIZE - 1));
-    assertTrue((EVENTS_SIZE - 1) + " deltas were to be received but were " + fromDeltasOnServer2,
-        fromDeltasOnServer2 == (EVENTS_SIZE - 1));
-    assertTrue("0 toDelta() were to be invoked but were " + toDeltasOnServer2,
-        toDeltasOnServer2 == 0);
-    assertTrue((EVENTS_SIZE - 1) + " deltas were to be received but were " + fromDeltasOnClient,
-        fromDeltasOnClient == (EVENTS_SIZE - 1));
+      LATCH.get().countDown();
+    });
+
+    clientVM.invoke(() -> {
+      await().until(() -> LAST_KEY_RECEIVED.get());
+
+      long toDeltasOnServer1 = server1VM.invoke(() -> DeltaTestImpl.getToDeltaInvokations());
+      long fromDeltasOnServer2 = server2VM.invoke(() -> DeltaTestImpl.getFromDeltaInvokations());
+      long toDeltasOnServer2 = server2VM.invoke(() -> DeltaTestImpl.getToDeltaInvokations());
+      long fromDeltasOnClient = DeltaTestImpl.getFromDeltaInvokations();
+
+      assertThat(toDeltasOnServer1).isEqualTo(EVENTS_SIZE - 1);
+      assertThat(fromDeltasOnServer2).isEqualTo(EVENTS_SIZE - 1);
+      assertThat(toDeltasOnServer2).isZero();
+      assertThat(fromDeltasOnClient).isEqualTo(EVENTS_SIZE - 1);
+    });
   }
 
   @Test
-  public void testS2CDeltaPropagationWithGIIAndFailover() throws Exception {
-    prepareDeltas();
-    vm0.invoke(this::prepareDeltas);
-    vm1.invoke(this::prepareDeltas);
-    vm2.invoke(this::prepareDeltas);
+  public void testS2CDeltaPropagationWithGIIAndFailover() {
+    VM clientVM = getController();
+    VM server1VM = vm0;
+    VM server2VM = vm1;
+    VM server3VM = vm2;
 
-    vm0.invoke((SerializableRunnableIF) this::closeCache);
-
-    PORT1 =
-        vm0.invoke(() -> createServerCache(HARegionQueue.HA_EVICTION_POLICY_NONE, 1, NO_LISTENER));
-    PORT2 =
-        vm1.invoke(() -> createServerCache(HARegionQueue.HA_EVICTION_POLICY_NONE, 1, NO_LISTENER));
-    int port3 =
-        vm2.invoke(() -> createServerCache(HARegionQueue.HA_EVICTION_POLICY_NONE, 1, NO_LISTENER));
+    for (VM vm : toArray(clientVM, server1VM, server2VM, server3VM)) {
+      vm.invoke(() -> prepareDeltas());
+    }
 
     // Do puts after slowing the dispatcher.
-    try {
-      vm0.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("60000"));
-      vm1.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("60000"));
-      vm2.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("60000"));
+    for (VM vm : toArray(server1VM, server2VM, server3VM)) {
+      vm.invoke(() -> {
+        System.setProperty(INTERNAL_FACTORY_PROPERTY, CACHE_CLIENT_PROXY_FACTORY_NAME);
+        LATCH.set(new CountDownLatch(1));
+      });
+    }
 
-      createClientCache(new int[] {PORT1, PORT2, port3}, "1",
-          DistributionConfig.CLIENT_CONFLATION_PROP_VALUE_DEFAULT, CLIENT_LISTENER, null, null);
-      Region r = cache.getRegion("/" + regionName);
-      assertNotNull(r);
-      r.registerInterest("ALL_KEYS");
+    int serverPort1 = server1VM.invoke(() -> new ServerFactory()
+        .regionShortcut(RegionShortcut.REPLICATE)
+        .create());
+    int serverPort2 = server2VM.invoke(() -> new ServerFactory()
+        .regionShortcut(RegionShortcut.REPLICATE)
+        .create());
+    int serverPort3 = server3VM.invoke(() -> new ServerFactory()
+        .regionShortcut(RegionShortcut.REPLICATE)
+        .create());
 
-      Pool testPool = PoolManager.getAll().values().stream().findFirst().get();
+    clientVM.invoke(() -> {
+      new ClientFactory()
+          .cacheListener(new ClientListener())
+          .serverPorts(serverPort1, serverPort2, serverPort3)
+          .subscriptionRedundancy(1)
+          .create();
 
-      VM primary = (((PoolImpl) testPool).getPrimaryPort() == PORT1) ? vm0
-          : ((((PoolImpl) testPool).getPrimaryPort() == PORT2) ? vm1 : vm2);
+      Region<String, DeltaTestImpl> region = getClientCache().getRegion(regionName);
+      region.registerInterest("ALL_KEYS");
 
-      primary.invoke(this::createAndUpdateDeltas);
-      Thread.sleep(5000);
+      InternalPool pool = (InternalPool) PoolManager.getAll().values().stream().findFirst().get();
 
-      primary.invoke((SerializableRunnableIF) this::closeCache);
-      Thread.sleep(5000);
+      VM primaryServerVM = pool.getPrimaryPort() == serverPort1 ? server1VM
+          : pool.getPrimaryPort() == serverPort2 ? server2VM : server3VM;
 
-      primary = (((PoolImpl) testPool).getPrimaryPort() == PORT1) ? vm0
-          : ((((PoolImpl) testPool).getPrimaryPort() == PORT2) ? vm1 : vm2);
+      primaryServerVM.invoke(() -> {
+        Region<String, Object> regionOnServer = getCache().getRegion(regionName);
+        regionOnServer.create(DELTA_KEY, DELTA_VALUES[0]);
+        for (int i = 1; i < EVENTS_SIZE; i++) {
+          regionOnServer.put(DELTA_KEY, DELTA_VALUES[i]);
+        }
+        regionOnServer.put(LAST_KEY, "");
+        closeCache();
+      });
 
-      vm0.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
-      vm1.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
-      vm2.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
+      await().until(() -> LAST_KEY_RECEIVED.get());
 
-      primary.invoke((SerializableRunnableIF) this::closeCache);
-      Thread.sleep(5000);
+      VM primaryServer2VM = pool.getPrimaryPort() == serverPort1 ? server1VM
+          : pool.getPrimaryPort() == serverPort2 ? server2VM : server3VM;
 
-      org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
-          .info("waiting for client to receive last_key");
-      waitForLastKey();
+      for (VM vm : toArray(server1VM, server2VM, server3VM)) {
+        vm.invoke(() -> LATCH.get().countDown());
+      }
+
+      primaryServer2VM.invoke(() -> closeCache());
 
       long fromDeltasOnClient = DeltaTestImpl.getFromDeltaInvokations();
-      assertTrue((EVENTS_SIZE - 1) + " deltas were to be received but were " + fromDeltasOnClient,
-          fromDeltasOnClient == (EVENTS_SIZE - 1));
-    } finally {
-      vm0.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
-      vm1.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
-      vm2.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
-    }
+      assertThat(fromDeltasOnClient).isEqualTo(EVENTS_SIZE - 1);
+    });
   }
 
+  /**
+   * <pre>
+   * 1. Create a cache server with slow dispatcher
+   * 2. Start a durable client with a custom cache listener which shuts itself down as soon as it
+   *    receives a marker message.
+   * 3. Do some puts on the server region
+   * 4. Let the dispatcher start dispatching
+   * 5. Verify that durable client is disconnected as soon as it processes the marker. Server will
+   *    retain its queue which has some events (containing deltas) in it.
+   * 6. Restart the durable client without the self-destructing listener.
+   * 7. Wait till the durable client processes all its events.
+   * 8. Verify that no deltas are received by it.
+   * </pre>
+   */
   @Test
-  public void testBug40165ClientReconnects() throws Exception {
-    PORT1 = vm0.invoke(() -> createServerCache(HARegionQueue.HA_EVICTION_POLICY_MEMORY));
+  public void testBug40165ClientReconnects() {
+    VM clientVM = getController();
+    VM serverVM = vm1;
 
-    /**
-     * 1. Create a cache server with slow dispatcher 2. Start a durable client with a custom cache
-     * listener which shuts itself down as soon as it receives a marker message. 3. Do some puts on
-     * the server region 4. Let the dispatcher start dispatching 5. Verify that durable client is
-     * disconnected as soon as it processes the marker. Server will retain its queue which has some
-     * events (containing deltas) in it. 6. Restart the durable client without the self-destructing
-     * listener. 7. Wait till the durable client processes all its events. 8. Verify that no deltas
-     * are received by it.
-     */
+    int serverPort = serverVM.invoke(() -> {
+      // Step 1
+      System.setProperty(INTERNAL_FACTORY_PROPERTY, CACHE_CLIENT_PROXY_FACTORY_NAME);
+      LATCH.set(new CountDownLatch(1));
 
-    // Step 0
-    prepareDeltas();
-    vm0.invoke(this::prepareDeltas);
+      return new ServerFactory()
+          .evictionPolicy(HARegionQueue.HA_EVICTION_POLICY_MEMORY)
+          .regionShortcut(RegionShortcut.REPLICATE)
+          .create();
+    });
 
-    // Step 1
-    try {
-      vm0.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("60000"));
+    for (VM vm : toArray(clientVM, serverVM)) {
+      vm.invoke(() -> prepareDeltas());
+    }
 
-      // Step 2
-      String durableClientId = getName() + "_client";
-      PoolFactory pf = PoolManager.createFactory();
-      pf.addServer("localhost", PORT1).setSubscriptionEnabled(true).setSubscriptionAckInterval(1);
-      ((PoolFactoryImpl) pf).getPoolAttributes();
+    String durableClientId = getName() + "_client";
 
-      Properties properties = new Properties();
-      properties.setProperty(MCAST_PORT, "0");
-      properties.setProperty(LOCATORS, "");
-      properties.setProperty(DURABLE_CLIENT_ID, durableClientId);
-      properties.setProperty(DURABLE_CLIENT_TIMEOUT, String.valueOf(60));
+    Properties clientProperties = new Properties();
+    clientProperties.setProperty(LOCATORS, "");
+    clientProperties.setProperty(DURABLE_CLIENT_ID, durableClientId);
+    clientProperties.setProperty(DURABLE_CLIENT_TIMEOUT, String.valueOf(60));
 
-      createDurableCacheClient(((PoolFactoryImpl) pf).getPoolAttributes(), regionName, properties,
-          DURABLE_CLIENT_LISTENER, true);
+    // Step 2
+    clientVM.invoke(() -> {
+      new ClientFactory().create(new ClientCacheFactory(clientProperties));
 
+      Pool pool = PoolManager.createFactory()
+          .addServer("localhost", serverPort)
+          .setSubscriptionEnabled(true)
+          .setSubscriptionAckInterval(1)
+          .create("DeltaPropagationDUnitTest");
+
+      LATCH.set(new CountDownLatch(1));
+
+      Region<String, Object> region = getClientCache()
+          .<String, Object>createClientRegionFactory(ClientRegionShortcut.LOCAL)
+          .addCacheListener(new CacheListenerAdapter<String, Object>() {
+            @Override
+            public void afterRegionLive(RegionEvent event) {
+              if (Operation.MARKER == event.getOperation()) {
+                closeClientCache(true);
+                LATCH.get().countDown();
+              }
+            }
+          })
+          .setConcurrencyChecksEnabled(false)
+          .setPoolName(pool.getName())
+          .create(regionName);
+
+      region.registerInterest("ALL_KEYS");
+
+      getClientCache().readyForEvents();
+    });
+
+    serverVM.invoke(() -> {
       // Step 3
-      vm0.invoke((SerializableRunnableIF) this::doPuts);
+      Region<String, Object> region = getCache().getRegion(regionName);
+      for (int i = 0; i < 100; i++) {
+        DeltaTestImpl value = new DeltaTestImpl();
+        value.setStr(String.valueOf(i));
+        region.put(DELTA_KEY, value);
+      }
+      region.put(LAST_KEY, "");
 
       // Step 4
-      vm0.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
+      LATCH.get().countDown();
+    });
 
+    clientVM.invoke(() -> {
       // Step 5
-      // verifyDurableClientDisconnected();
-      Thread.sleep(5000);
+      LATCH.get().await(getTimeout().getValueInMS(), MILLISECONDS);
 
       // Step 6
-      createDurableCacheClient(((PoolFactoryImpl) pf).getPoolAttributes(), regionName, properties,
-          DURABLE_CLIENT_LISTENER, false);
+      new ClientFactory().create(new ClientCacheFactory(clientProperties));
+
+      Pool pool = PoolManager.createFactory()
+          .addServer("localhost", serverPort)
+          .setSubscriptionAckInterval(1)
+          .setSubscriptionEnabled(true)
+          .create("DeltaPropagationDUnitTest");
+
+      AtomicReference<Object> afterCreateKey = new AtomicReference<>();
+
+      Region<String, Object> region = getClientCache()
+          .<String, Object>createClientRegionFactory(ClientRegionShortcut.LOCAL)
+          .addCacheListener(new CacheListenerAdapter<String, Object>() {
+            @Override
+            public void afterCreate(EntryEvent<String, Object> event) {
+              afterCreateKey.set(event.getKey());
+            }
+          })
+          .setConcurrencyChecksEnabled(false)
+          .setPoolName(pool.getName())
+          .create(regionName);
+
+      region.registerInterest("ALL_KEYS");
+
+      getClientCache().readyForEvents();
 
       // Step 7
-      waitForLastKey();
+      await().untilAsserted(() -> assertThat(afterCreateKey.get()).isEqualTo(LAST_KEY));
 
       // Step 8
       long fromDeltasOnClient = DeltaTestImpl.getFromDeltaInvokations();
-      assertTrue("No deltas were to be received but received: " + fromDeltasOnClient,
-          fromDeltasOnClient < 1);
-    } finally {
-      // Step 4
-      vm0.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
-    }
-
+      assertThat(fromDeltasOnClient).isLessThan(1);
+    });
   }
 
   @Test
-  public void testBug40165ClientFailsOver() throws Exception {
-    PORT1 = vm0.invoke(() -> createServerCache(HARegionQueue.HA_EVICTION_POLICY_MEMORY));
+  public void testBug40165ClientFailsOver() {
+    VM clientVM = getController();
+    VM server1VM = vm0;
+    VM server2VM = vm1;
 
-    /**
-     * 1. Create two cache servers with slow dispatcher 2. Start a durable client with a custom
-     * cache listener 3. Do some puts on the server region 4. Let the dispatcher start dispatching
-     * 5. Wait till the durable client receives marker from its primary. 6. Kill the primary server,
-     * so that the second one becomes primary. 7. Wait till the durable client processes all its
-     * events. 8. Verify that expected number of deltas are received by it.
-     */
+    int serverPort1 = server1VM.invoke(() -> new ServerFactory()
+        .evictionPolicy(HARegionQueue.HA_EVICTION_POLICY_MEMORY)
+        .regionShortcut(RegionShortcut.REPLICATE)
+        .create());
+
+    // 1. Create two cache servers with slow dispatcher
+    // 2. Start a durable client with a custom cache listener
+    // 3. Do some puts on the server region
+    // 4. Let the dispatcher start dispatching
+    // 5. Wait till the durable client receives marker from its primary.
+    // 6. Kill the primary server, so that the second one becomes primary.
+    // 7. Wait till the durable client processes all its events.
+    // 8. Verify that expected number of deltas are received by it.
 
     // Step 0
-    prepareDeltas();
-    vm0.invoke(this::prepareDeltas);
-    vm1.invoke(this::prepareDeltas);
+    for (VM vm : toArray(getController(), server1VM, server2VM)) {
+      vm.invoke(() -> prepareDeltas());
+    }
 
-    try {
-      // Step 1
-      vm0.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("60000"));
-      PORT2 = vm1.invoke(() -> createServerCache(HARegionQueue.HA_EVICTION_POLICY_MEMORY));
-      vm1.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("60000"));
+    // Step 1
+    for (VM serverVM : toArray(server1VM, server2VM)) {
+      serverVM.invoke(() -> {
+        System.setProperty(INTERNAL_FACTORY_PROPERTY, CACHE_CLIENT_PROXY_FACTORY_NAME);
+        LATCH.set(new CountDownLatch(1));
+      });
+    }
 
-      // Step 2
+    int serverPort2 = server2VM.invoke(() -> new ServerFactory()
+        .evictionPolicy(HARegionQueue.HA_EVICTION_POLICY_MEMORY)
+        .regionShortcut(RegionShortcut.REPLICATE)
+        .create());
+
+    // Step 2
+    clientVM.invoke(() -> {
       String durableClientId = getName() + "_client";
-      PoolFactory pf = PoolManager.createFactory();
-      pf.addServer("localhost", PORT1).addServer("localhost", PORT2).setSubscriptionEnabled(true)
-          .setSubscriptionAckInterval(1).setSubscriptionRedundancy(2);
-      ((PoolFactoryImpl) pf).getPoolAttributes();
 
-      Properties properties = new Properties();
-      properties.setProperty(MCAST_PORT, "0");
-      properties.setProperty(LOCATORS, "");
-      properties.setProperty(DURABLE_CLIENT_ID, durableClientId);
-      properties.setProperty(DURABLE_CLIENT_TIMEOUT, String.valueOf(60));
+      Properties props = new Properties();
+      props.setProperty(LOCATORS, "");
+      props.setProperty(DURABLE_CLIENT_ID, durableClientId);
+      props.setProperty(DURABLE_CLIENT_TIMEOUT, String.valueOf(60));
 
-      createDurableCacheClient(((PoolFactoryImpl) pf).getPoolAttributes(), regionName, properties,
-          DURABLE_CLIENT_LISTENER, false);
+      new ClientFactory().create(new ClientCacheFactory(props));
 
-      // Step 3
-      vm0.invoke((SerializableRunnableIF) this::doPuts);
-    } finally {
-      // Step 4
-      vm0.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
-      vm1.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
+      Pool pool = PoolManager.createFactory()
+          .addServer("localhost", serverPort1)
+          .addServer("localhost", serverPort2)
+          .setSubscriptionEnabled(true)
+          .setSubscriptionAckInterval(1)
+          .setSubscriptionRedundancy(2)
+          .create(getName() + "_pool");
+
+      Region<String, Object> region = getClientCache()
+          .<String, Object>createClientRegionFactory(ClientRegionShortcut.LOCAL)
+          .addCacheListener(new DurableClientListener(errorCollector))
+          .setConcurrencyChecksEnabled(false)
+          .setPoolName(pool.getName())
+          .create(regionName);
+
+      region.registerInterest("ALL_KEYS");
+      getClientCache().readyForEvents();
+    });
+
+    // Step 3
+    server1VM.invoke(() -> {
+      Region<String, Object> region = getCache().getRegion(regionName);
+      for (int i = 0; i < 100; i++) {
+        DeltaTestImpl value = new DeltaTestImpl();
+        value.setStr(String.valueOf(i));
+        region.put(DELTA_KEY, value);
+      }
+      region.put(LAST_KEY, "");
+    });
+
+    for (VM serverVM : toArray(server1VM, server2VM)) {
+      serverVM.invoke(() -> LATCH.get().countDown());
     }
 
     // Step 5
-    Pool testPool = PoolManager.getAll().values().stream().findFirst().get();
-    VM pVM = (((PoolImpl) testPool).getPrimaryPort() == PORT1) ? vm0 : vm1;
-    while (!markerReceived) {
-      Thread.sleep(50);
-    }
+    clientVM.invoke(() -> {
+      InternalPool pool = (InternalPool) PoolManager.getAll().values().stream().findFirst().get();
+      VM primaryVM = pool.getPrimaryPort() == serverPort1 ? server1VM : server2VM;
 
-    // Step 6
-    pVM.invoke((SerializableRunnableIF) this::closeCache);
-    Thread.sleep(5000);
+      await().until(() -> MARKER_RECEIVED.get());
 
-    // Step 7
-    waitForLastKey();
+      // Step 6
+      primaryVM.invoke(() -> closeCache());
 
-    // Step 8
-    long fromDeltasOnClient = DeltaTestImpl.getFromDeltaInvokations();
-    assertTrue("Atleast 99 deltas were to be received but received: " + fromDeltasOnClient,
-        fromDeltasOnClient >= 99);
+      // Step 7
+      await().until(() -> LAST_KEY_RECEIVED.get());
+
+      // Step 8
+      long fromDeltasOnClient = DeltaTestImpl.getFromDeltaInvokations();
+      assertThat(fromDeltasOnClient).isGreaterThanOrEqualTo(99);
+    });
   }
 
-  public void doLocalOp(String op, String rName, String key) {
-    try {
-      Region r = cache.getRegion("/" + rName);
-      assertNotNull(r);
-      if (INVALIDATE.equals(op)) {
-        r.localInvalidate(key);
-      } else if (DESTROY.equals(op)) {
-        r.localDestroy(key);
-      }
-    } catch (Exception e) {
-      org.apache.geode.test.dunit.Assert.fail("failed in doLocalOp()", e);
-    }
+  private String getName() {
+    return getClass().getSimpleName() + "_" + testName.getMethodName();
   }
 
-  public void assertOp(String op, Integer num) {
-    final int expected = num;
-    WaitCriterion wc = null;
-    if (INVALIDATE.equals(op)) {
-      wc = new WaitCriterion() {
-        @Override
-        public boolean done() {
-          return numOfInvalidates == expected;
-        }
-
-        @Override
-        public String description() {
-          return "numOfInvalidates was expected to be " + expected + " but is " + numOfInvalidates;
-        }
-      };
-    } else if (DESTROY.equals(op)) {
-      wc = new WaitCriterion() {
-        @Override
-        public boolean done() {
-          return numOfInvalidates == expected;
-        }
-
-        @Override
-        public String description() {
-          return "numOfDestroys was expected to be " + expected + " but is " + numOfDestroys;
-        }
-      };
-    }
-    GeodeAwaitility.await().untilAsserted(wc);
+  private InternalCache getCache() {
+    return CACHE.get();
   }
 
-  private void assertValue(String rName, String key, Object expected) {
-    try {
-      Region r = cache.getRegion("/" + rName);
-      assertNotNull(r);
-      Object value = r.getEntry(key).getValue();
-      assertTrue("Value against " + key + " is " + value + ". It should be " + expected,
-          expected.equals(value));
-    } catch (Exception e) {
-      org.apache.geode.test.dunit.Assert.fail("failed in assertValue()", e);
-    }
+  private void closeCache() {
+    CACHE.getAndSet(DUMMY_CACHE).close();
   }
 
-  private void confirmEviction(Integer port) {
-    final EvictionController cc = ((VMLRURegionMap) ((LocalRegion) cache.getRegion(
-        SEPARATOR + generateNameForClientMsgsRegion(port))).entries)
-            .getEvictionController();
-
-    WaitCriterion wc = new WaitCriterion() {
-      @Override
-      public boolean done() {
-        return cc.getCounters().getEvictions() > 0;
-      }
-
-      @Override
-      public String description() {
-        return "HA Overflow did not occure.";
-      }
-    };
-    GeodeAwaitility.await().untilAsserted(wc);
+  private InternalClientCache getClientCache() {
+    return CLIENT_CACHE.get();
   }
 
-  private void waitForLastKey() {
-    WaitCriterion wc = new WaitCriterion() {
-      @Override
-      public boolean done() {
-        return isLastKeyReceived();
-      }
-
-      @Override
-      public String description() {
-        return "Last key NOT received.";
-      }
-    };
-    GeodeAwaitility.await().untilAsserted(wc);
+  private void closeClientCache(boolean keepAlive) {
+    CLIENT_CACHE.getAndSet(DUMMY_CLIENT_CACHE).close(keepAlive);
   }
 
   private void prepareDeltas() {
     for (int i = 0; i < EVENTS_SIZE; i++) {
-      deltaPut[i] =
+      DELTA_VALUES[i] =
           new DeltaTestImpl(0, "0", 0d, new byte[0], new TestObjectWithIdentifier("0", 0));
     }
-    deltaPut[1].setIntVar(5);
-    deltaPut[2].setIntVar(5);
-    deltaPut[3].setIntVar(5);
-    deltaPut[4].setIntVar(5);
-    deltaPut[5].setIntVar(5);
+    DELTA_VALUES[1].setIntVar(5);
+    DELTA_VALUES[2].setIntVar(5);
+    DELTA_VALUES[3].setIntVar(5);
+    DELTA_VALUES[4].setIntVar(5);
+    DELTA_VALUES[5].setIntVar(5);
 
-    deltaPut[2].resetDeltaStatus();
-    deltaPut[2].setByteArr(new byte[] {1, 2, 3, 4, 5});
-    deltaPut[3].setByteArr(new byte[] {1, 2, 3, 4, 5});
-    deltaPut[4].setByteArr(new byte[] {1, 2, 3, 4, 5});
-    deltaPut[5].setByteArr(new byte[] {1, 2, 3, 4, 5});
+    DELTA_VALUES[2].resetDeltaStatus();
+    DELTA_VALUES[2].setByteArr(new byte[] {1, 2, 3, 4, 5});
+    DELTA_VALUES[3].setByteArr(new byte[] {1, 2, 3, 4, 5});
+    DELTA_VALUES[4].setByteArr(new byte[] {1, 2, 3, 4, 5});
+    DELTA_VALUES[5].setByteArr(new byte[] {1, 2, 3, 4, 5});
 
-    deltaPut[3].resetDeltaStatus();
-    deltaPut[3].setDoubleVar(5d);
-    deltaPut[4].setDoubleVar(5d);
-    deltaPut[5].setDoubleVar(5d);
+    DELTA_VALUES[3].resetDeltaStatus();
+    DELTA_VALUES[3].setDoubleVar(5d);
+    DELTA_VALUES[4].setDoubleVar(5d);
+    DELTA_VALUES[5].setDoubleVar(5d);
 
-    deltaPut[4].resetDeltaStatus();
-    deltaPut[4].setStr("str changed");
-    deltaPut[5].setStr("str changed");
+    DELTA_VALUES[4].resetDeltaStatus();
+    DELTA_VALUES[4].setStr("str changed");
+    DELTA_VALUES[5].setStr("str changed");
 
-    deltaPut[5].resetDeltaStatus();
-    deltaPut[5].setIntVar(100);
-    deltaPut[5].setTestObj(new TestObjectWithIdentifier("CHANGED", 100));
+    DELTA_VALUES[5].resetDeltaStatus();
+    DELTA_VALUES[5].setIntVar(100);
+    DELTA_VALUES[5].setTestObj(new TestObjectWithIdentifier("CHANGED", 100));
   }
 
   private void prepareErroneousDeltasForToDelta() {
     for (int i = 0; i < EVENTS_SIZE; i++) {
-      deltaPut[i] =
+      DELTA_VALUES[i] =
           new DeltaTestImpl(0, "0", 0d, new byte[0], new TestObjectWithIdentifier("0", 0));
     }
-    deltaPut[1].setIntVar(5);
-    deltaPut[2].setIntVar(5);
-    deltaPut[3].setIntVar(DeltaTestImpl.ERRONEOUS_INT_FOR_TO_DELTA);
-    deltaPut[4].setIntVar(5);
-    deltaPut[5].setIntVar(5);
+    DELTA_VALUES[1].setIntVar(5);
+    DELTA_VALUES[2].setIntVar(5);
+    DELTA_VALUES[3].setIntVar(DeltaTestImpl.ERRONEOUS_INT_FOR_TO_DELTA);
+    DELTA_VALUES[4].setIntVar(5);
+    DELTA_VALUES[5].setIntVar(5);
 
-    deltaPut[2].setByteArr(new byte[] {1, 2, 3, 4, 5});
-    deltaPut[3].setByteArr(new byte[] {1, 2, 3, 4, 5});
-    deltaPut[4].setByteArr(new byte[] {1, 2, 3, 4, 5});
-    deltaPut[5].setByteArr(new byte[] {1, 2, 3, 4, 5});
+    DELTA_VALUES[2].setByteArr(new byte[] {1, 2, 3, 4, 5});
+    DELTA_VALUES[3].setByteArr(new byte[] {1, 2, 3, 4, 5});
+    DELTA_VALUES[4].setByteArr(new byte[] {1, 2, 3, 4, 5});
+    DELTA_VALUES[5].setByteArr(new byte[] {1, 2, 3, 4, 5});
 
-    deltaPut[3].setDoubleVar(5d);
-    deltaPut[4].setDoubleVar(5d);
-    deltaPut[5].setDoubleVar(5d);
+    DELTA_VALUES[3].setDoubleVar(5d);
+    DELTA_VALUES[4].setDoubleVar(5d);
+    DELTA_VALUES[5].setDoubleVar(5d);
 
-    deltaPut[4].setStr("str changed");
-    deltaPut[5].setStr("str changed");
+    DELTA_VALUES[4].setStr("str changed");
+    DELTA_VALUES[5].setStr("str changed");
 
-    deltaPut[5].setIntVar(100);
-    deltaPut[5].setTestObj(new TestObjectWithIdentifier("CHANGED", 100));
+    DELTA_VALUES[5].setIntVar(100);
+    DELTA_VALUES[5].setTestObj(new TestObjectWithIdentifier("CHANGED", 100));
   }
 
   private void prepareErroneousDeltasForFromDelta() {
     for (int i = 0; i < EVENTS_SIZE; i++) {
-      deltaPut[i] =
+      DELTA_VALUES[i] =
           new DeltaTestImpl(0, "0", 0d, new byte[0], new TestObjectWithIdentifier("0", 0));
     }
-    deltaPut[1].setIntVar(5);
-    deltaPut[2].setIntVar(5);
-    deltaPut[3].setIntVar(5);
-    deltaPut[4].setIntVar(5);
-    deltaPut[5].setIntVar(5);
+    DELTA_VALUES[1].setIntVar(5);
+    DELTA_VALUES[2].setIntVar(5);
+    DELTA_VALUES[3].setIntVar(5);
+    DELTA_VALUES[4].setIntVar(5);
+    DELTA_VALUES[5].setIntVar(5);
 
-    deltaPut[2].setByteArr(new byte[] {1, 2, 3, 4, 5});
-    deltaPut[3].setByteArr(new byte[] {1, 2, 3, 4, 5});
-    deltaPut[4].setByteArr(new byte[] {1, 2, 3, 4, 5});
-    deltaPut[5].setByteArr(new byte[] {1, 2, 3, 4, 5});
+    DELTA_VALUES[2].setByteArr(new byte[] {1, 2, 3, 4, 5});
+    DELTA_VALUES[3].setByteArr(new byte[] {1, 2, 3, 4, 5});
+    DELTA_VALUES[4].setByteArr(new byte[] {1, 2, 3, 4, 5});
+    DELTA_VALUES[5].setByteArr(new byte[] {1, 2, 3, 4, 5});
 
-    deltaPut[3].setDoubleVar(5d);
-    deltaPut[4].setDoubleVar(5d);
-    deltaPut[5].setDoubleVar(5d);
+    DELTA_VALUES[3].setDoubleVar(5d);
+    DELTA_VALUES[4].setDoubleVar(5d);
+    DELTA_VALUES[5].setDoubleVar(5d);
 
-    deltaPut[4].setStr("str changed");
-    deltaPut[5].setStr(DeltaTestImpl.ERRONEOUS_STRING_FOR_FROM_DELTA);
+    DELTA_VALUES[4].setStr("str changed");
+    DELTA_VALUES[5].setStr(DeltaTestImpl.ERRONEOUS_STRING_FOR_FROM_DELTA);
 
-    deltaPut[5].setIntVar(100);
-    deltaPut[5].setTestObj(new TestObjectWithIdentifier("CHANGED", 100));
+    DELTA_VALUES[5].setIntVar(100);
+    DELTA_VALUES[5].setTestObj(new TestObjectWithIdentifier("CHANGED", 100));
   }
 
-  private void doPuts() {
-    doPuts(100);
+  private void verifyOverflowOccurred(long expectedEvictions, int expectedRegionSize) {
+    DiskRecoveryStore region = (DiskRecoveryStore) getClientCache().getRegion(regionName);
+    RegionMap regionMap = region.getRegionMap();
+
+    long evictions = regionMap.getEvictionController().getCounters().getEvictions();
+    assertThat(evictions).isEqualTo(expectedEvictions);
+
+    int regionSize = regionMap.size();
+    assertThat(regionSize).isEqualTo(expectedRegionSize);
   }
 
-  private void doPuts(Integer num) {
-    try {
-      Region r = cache.getRegion("/" + regionName);
-      assertNotNull(r);
+  private class ServerFactory {
 
-      for (int i = 0; i < num; i++) {
-        DeltaTestImpl val = new DeltaTestImpl();
-        val.setStr("" + i);
-        r.put(DELTA_KEY, val);
+    private CacheListener<String, Object> cacheListener;
+    private Compressor compressor;
+    private boolean enableSubscriptionConflation;
+    private String evictionPolicy = HARegionQueue.HA_EVICTION_POLICY_NONE;
+    private RegionShortcut regionShortcut;
+
+    private ServerFactory cacheListener(CacheListener<String, Object> cacheListener) {
+      this.cacheListener = cacheListener;
+      return this;
+    }
+
+    private ServerFactory compressor(Compressor compressor) {
+      this.compressor = compressor;
+      return this;
+    }
+
+    private ServerFactory enableSubscriptionConflation(boolean enableSubscriptionConflation) {
+      this.enableSubscriptionConflation = enableSubscriptionConflation;
+      return this;
+    }
+
+    private ServerFactory evictionPolicy(String evictionPolicy) {
+      this.evictionPolicy = evictionPolicy;
+      return this;
+    }
+
+    private ServerFactory regionShortcut(RegionShortcut regionShortcut) {
+      this.regionShortcut = regionShortcut;
+      return this;
+    }
+
+    private int create() {
+      try {
+        return doCreate();
+      } catch (IOException e) {
+        throw new UncheckedIOException(e);
       }
-      r.put(LAST_KEY, "");
-    } catch (Exception ex) {
-      org.apache.geode.test.dunit.Assert.fail("failed in createDelta()", ex);
     }
-  }
 
-  private void createAndUpdateDeltas() {
-    createDelta();
-    updateDelta();
-  }
+    private int doCreate() throws IOException {
+      ConnectionTable.threadWantsSharedResources();
 
-  private void createDelta() {
-    try {
-      Region r = cache.getRegion("/" + regionName);
-      assertNotNull(r);
+      CACHE.set((InternalCache) new CacheFactory(getDistributedSystemProperties()).create());
 
-      r.create(DELTA_KEY, deltaPut[0]);
-    } catch (Exception ex) {
-      org.apache.geode.test.dunit.Assert.fail("failed in createDelta()", ex);
-    }
-  }
-
-  private void updateDelta() {
-    try {
-      Region r = cache.getRegion("/" + regionName);
-      assertNotNull(r);
-
-      for (int i = 1; i < EVENTS_SIZE; i++) {
-        try {
-          r.put(DELTA_KEY, deltaPut[i]);
-        } catch (InvalidDeltaException ide) {
-          assertTrue("InvalidDeltaException not expected for deltaPut[" + i + "]",
-              deltaPut[i].getIntVar() == DeltaTestImpl.ERRONEOUS_INT_FOR_TO_DELTA);
-        }
+      RegionFactory<String, Object> factory;
+      if (regionShortcut == null) {
+        factory = getCache().createRegionFactory();
+        factory.setDataPolicy(DataPolicy.NORMAL);
+        factory.setScope(Scope.DISTRIBUTED_NO_ACK);
+      } else {
+        factory = getCache().createRegionFactory(regionShortcut);
       }
-      r.put(LAST_KEY, "");
-    } catch (Exception ex) {
-      org.apache.geode.test.dunit.Assert.fail("failed in updateDelta()", ex);
-    }
-  }
 
-  private void createDeltas() {
-    try {
-      Region r = cache.getRegion("/" + regionName);
-      assertNotNull(r);
-
-      for (int i = 0; i < 100; i++) {
-        r.create(DELTA_KEY + i, new DeltaTestImpl());
+      if (cacheListener != null) {
+        factory.addCacheListener(cacheListener);
       }
-      r.create(LAST_KEY, "");
-    } catch (Exception ex) {
-      org.apache.geode.test.dunit.Assert.fail("failed in createDeltas()", ex);
-    }
-  }
+      if (compressor != null) {
+        factory.setCompressor(compressor);
+      }
 
-  private void createAnEntry() {
-    try {
-      Region r = cache.getRegion("/" + regionName);
-      assertNotNull(r);
-
-      r.create("KEY-A", "I push the delta out to disk :)");
-    } catch (Exception ex) {
-      org.apache.geode.test.dunit.Assert.fail("failed in createAnEntry()", ex);
-    }
-  }
-
-  private void invalidateDelta() {
-    try {
-      Region r = cache.getRegion("/" + regionName);
-      assertNotNull(r);
-
-      r.invalidate(DELTA_KEY);
-    } catch (Exception ex) {
-      fail("failed in invalidateDelta()" + ex.getMessage());
-    }
-  }
-
-  private void verifyOverflowOccurred(long evictions, int regionsize) {
-    EvictionController cc = ((VMLRURegionMap) ((LocalRegion) cache.getRegion(regionName)).entries)
-        .getEvictionController();
-    Assert.assertTrue(cc.getCounters().getEvictions() == evictions,
-        "Number of evictions expected to be " + evictions + " but was "
-            + cc.getCounters().getEvictions());
-    int rSize = ((LocalRegion) cache.getRegion(regionName)).getRegionMap().size();
-    Assert.assertTrue(rSize == regionsize,
-        "Region size expected to be " + regionsize + " but was " + rSize);
-  }
-
-  private void verifyData(int creates, int updates) {
-    assertEquals(creates, numOfCreates);
-    assertEquals(updates, numOfUpdates);
-  }
-
-  private Integer createServerCache(String ePolicy) throws Exception {
-    return createServerCache(ePolicy, 1);
-  }
-
-  private Integer createServerCache(String ePolicy, Integer cap) throws Exception {
-    return createServerCache(ePolicy, cap, NO_LISTENER);
-  }
-
-  private Integer createServerCache(String ePolicy, Integer cap, Integer listenerCode)
-      throws Exception {
-    return createServerCache(ePolicy, cap, listenerCode, false, null);
-  }
-
-  private Integer createServerCache(String ePolicy, Integer cap, Integer listenerCode,
-      Boolean conflate, Compressor compressor) throws Exception {
-    ConnectionTable.threadWantsSharedResources();
-    createCache(new Properties());
-    AttributesFactory factory = new AttributesFactory();
-    factory.setEnableSubscriptionConflation(conflate);
-    if (listenerCode != 0) {
-      factory.addCacheListener(getCacheListener(listenerCode));
-    }
-    if (compressor != null) {
-      factory.setCompressor(compressor);
-    }
-    if (listenerCode == C2S2S_SERVER_LISTENER) {
-      factory.setScope(Scope.DISTRIBUTED_NO_ACK);
-      factory.setDataPolicy(DataPolicy.NORMAL);
       factory.setConcurrencyChecksEnabled(false);
-      RegionAttributes attrs = factory.create();
-      Region r = cache.createRegion(regionName, attrs);
-      logger = cache.getLogger();
-      r.create(DELTA_KEY, deltaPut[0]);
-    } else {
-      factory.setScope(Scope.DISTRIBUTED_ACK);
-      factory.setDataPolicy(DataPolicy.REPLICATE);
-      factory.setConcurrencyChecksEnabled(false);
-      RegionAttributes attrs = factory.create();
-      cache.createRegion(regionName, attrs);
-      logger = cache.getLogger();
-    }
+      factory.setEnableSubscriptionConflation(enableSubscriptionConflation);
 
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    CacheServer server1 = cache.addCacheServer();
-    server1.setPort(port);
-    server1.setNotifyBySubscription(true);
-    if (ePolicy != null) {
-      File overflowDirectory = new File("bsi_overflow_" + port);
-      overflowDirectory.mkdir();
-      DiskStoreFactory dsf = cache.createDiskStoreFactory();
-      File[] dirs1 = new File[] {overflowDirectory};
+      factory.create(regionName);
 
-      server1.getClientSubscriptionConfig().setEvictionPolicy(ePolicy);
-      server1.getClientSubscriptionConfig().setCapacity(cap);
-      // specify diskstore for this server
-      server1.getClientSubscriptionConfig()
-          .setDiskStoreName(dsf.setDiskDirs(dirs1).create("bsi").getName());
-    }
-    server1.start();
-    return server1.getPort();
-  }
+      int port = getRandomAvailablePort(SOCKET);
+      CacheServer cacheServer = getCache().addCacheServer();
+      cacheServer.setPort(port);
 
-  private CacheListener getCacheListener(Integer code) {
-    CacheListener listener = null;
-    switch (code) {
-      case 0:
-        break;
-      case SERVER_LISTENER:
-        // listener = new CacheListenerAdapter() {};
-        break;
-      case CLIENT_LISTENER:
-        listener = new CacheListenerAdapter() {
-          @Override
-          public void afterCreate(EntryEvent event) {
-            numOfCreates++;
-            logger.fine("Create Event: <" + event.getKey() + ", " + event.getNewValue() + ">");
-            if (DELTA_KEY.equals(event.getKey()) && !deltaPut[0].equals(event.getNewValue())) {
-              areListenerResultsValid = false;
-              listenerError.append("Create event:\n |-> sent: " + deltaPut[0] + "\n |-> rcvd: "
-                  + event.getNewValue() + "\n");
-            } else if (LAST_KEY.equals(event.getKey())) {
-              lastKeyReceived = true;
-            }
-          }
+      if (evictionPolicy != null) {
+        File overflowDirectory = temporaryFolder.newFolder("bsi_overflow_" + port);
 
-          @Override
-          public void afterUpdate(EntryEvent event) {
-            numOfUpdates++;
-            logger.fine("Update Event: <" + event.getKey() + ", " + event.getNewValue() + ">"
-                + ", numOfUpdates: " + numOfUpdates);
-            if (!deltaPut[numOfUpdates].equals(event.getNewValue())) {
-              areListenerResultsValid = false;
-              listenerError.append("\nUpdate event(" + numOfUpdates + "):\n |-> sent: "
-                  + deltaPut[numOfUpdates] + "\n |-> recd: " + event.getNewValue());
-            }
-          }
-        };
-        break;
-      case CLIENT_LISTENER_2:
-        listener = new CacheListenerAdapter() {
-          @Override
-          public void afterCreate(EntryEvent event) {
-            numOfCreates++;
-            logger.fine("Create Event: <" + event.getKey() + ", " + event.getNewValue() + ">");
-            if (DELTA_KEY.equals(event.getKey()) && !deltaPut[0].equals(event.getNewValue())) {
-              areListenerResultsValid = false;
-              listenerError.append("Create event:\n |-> sent: " + deltaPut[0] + "\n |-> rcvd: "
-                  + event.getNewValue() + "\n");
-            } else if (LAST_KEY.equals(event.getKey())) {
-              lastKeyReceived = true;
-            }
-          }
+        DiskStore diskStore = getCache().createDiskStoreFactory()
+            .setDiskDirs(new File[] {overflowDirectory})
+            .create("bsi");
 
-          @Override
-          public void afterUpdate(EntryEvent event) {
-            int tmp = ++numOfUpdates;
-            logger.fine("Update Event: <" + event.getKey() + ", " + event.getNewValue() + ">"
-                + ", numOfUpdates: " + numOfUpdates);
-            // Hack to ignore illegal delta put
-            tmp = (tmp >= 3) ? ++tmp : tmp;
-            if (!deltaPut[tmp].equals(event.getNewValue())) {
-              areListenerResultsValid = false;
-              listenerError.append("\nUpdate event(" + numOfUpdates + "):\n |-> sent: "
-                  + deltaPut[tmp] + "\n |-> recd: " + event.getNewValue());
-            }
-          }
-        };
-        break;
-      case C2S2S_SERVER_LISTENER:
-        listener = new CacheListenerAdapter() {
-          @Override
-          public void afterCreate(EntryEvent event) {
-            numOfCreates++;
-            logger.fine("Create Event: <" + event.getKey() + ", " + event.getNewValue() + ">");
-            if (LAST_KEY.equals(event.getKey())) {
-              lastKeyReceived = true;
-            }
-          }
+        ClientSubscriptionConfig clientSubscriptionConfig =
+            cacheServer.getClientSubscriptionConfig();
 
-          @Override
-          public void afterUpdate(EntryEvent event) {
-            numOfUpdates++;
-            logger.fine("Update Event: <" + event.getKey() + ", " + event.getNewValue() + ">"
-                + ", numOfUpdates: " + numOfUpdates);
-          }
-
-          @Override
-          public void afterInvalidate(EntryEvent event) {
-            numOfInvalidates++;
-            logger.fine("Invalidate Event: <" + event.getKey() + ", " + event.getOldValue() + ">"
-                + ", numOfInvalidates: " + numOfInvalidates);
-          }
-
-          @Override
-          public void afterDestroy(EntryEvent event) {
-            numOfDestroys++;
-            logger.fine("Destroy Event: <" + event.getKey() + ", " + event.getOldValue() + ">"
-                + ", numOfDestroys: " + numOfDestroys);
-          }
-        };
-        break;
-      case LAST_KEY_LISTENER:
-        listener = new CacheListenerAdapter() {
-          @Override
-          public void afterCreate(EntryEvent event) {
-            if (LAST_KEY.equals(event.getKey())) {
-              lastKeyReceived = true;
-            }
-          }
-        };
-        break;
-      case DURABLE_CLIENT_LISTENER:
-        listener = new CacheListenerAdapter() {
-          @Override
-          public void afterRegionLive(RegionEvent event) {
-            logger.fine("Marker received");
-            if (Operation.MARKER == event.getOperation()) {
-              markerReceived = true;
-              if (closeCache) {
-                logger.fine("Closing the durable client cache...");
-                closeCache(true); // keepAlive
-              }
-            }
-          }
-
-          @Override
-          public void afterCreate(EntryEvent event) {
-            logger.fine("CREATE received");
-            if (LAST_KEY.equals(event.getKey())) {
-              logger.fine("LAST KEY received");
-              lastKeyReceived = true;
-            }
-          }
-
-          @Override
-          public void afterUpdate(EntryEvent event) {
-            assertNotNull(event.getNewValue());
-          }
-        };
-        break;
-      default:
-        fail("Invalid listener code");
-        break;
-    }
-    return listener;
-
-  }
-
-  private void createClientCache(Integer port1, Integer port2, String rLevel) throws Exception {
-    createClientCache(port1, port2, rLevel, DistributionConfig.CLIENT_CONFLATION_PROP_VALUE_DEFAULT,
-        CLIENT_LISTENER, null, null);
-  }
-
-  private void createClientCache(Integer port1, Integer port2, String rLevel, Boolean addListener,
-      EvictionAttributes evictAttrs) throws Exception {
-    createClientCache(port1, port2, rLevel, DistributionConfig.CLIENT_CONFLATION_PROP_VALUE_DEFAULT,
-        CLIENT_LISTENER, evictAttrs, null);
-  }
-
-  private void createClientCache(Integer port1, Integer port2, String rLevel, Boolean addListener,
-      ExpirationAttributes expAttrs) throws Exception {
-    createClientCache(port1, port2, rLevel, DistributionConfig.CLIENT_CONFLATION_PROP_VALUE_DEFAULT,
-        CLIENT_LISTENER, null, expAttrs);
-  }
-
-  private void createClientCache(Integer port1, Integer port2, String rLevel, Integer listener)
-      throws Exception {
-    createClientCache(port1, port2, rLevel, DistributionConfig.CLIENT_CONFLATION_PROP_VALUE_DEFAULT,
-        listener, null, null);
-  }
-
-  private void createClientCache(Integer port1, Integer port2, String rLevel, String conflate,
-      Integer listener, EvictionAttributes evictAttrs, ExpirationAttributes expAttrs)
-      throws Exception {
-    int[] ports = null;
-    if (port2 != -1) {
-      ports = new int[] {port1, port2};
-    } else {
-      ports = new int[] {port1};
-    }
-    assertTrue("No server ports provided", ports != null);
-    createClientCache(ports, rLevel, conflate, listener, evictAttrs, expAttrs);
-  }
-
-  private void createClientCache(int[] ports, String rLevel, String conflate, Integer listener,
-      EvictionAttributes evictAttrs, ExpirationAttributes expAttrs) throws Exception {
-    CacheServerTestUtil.disableShufflingOfEndpoints();
-
-    Properties props = new Properties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(LOCATORS, "");
-    props.setProperty(CONFLATE_EVENTS, conflate);
-    createCache(props);
-    AttributesFactory factory = new AttributesFactory();
-    ClientServerTestCase.configureConnectionPool(factory, "localhost", ports, true,
-        Integer.parseInt(rLevel), 2, null, 1000, 250, -2);
-
-    factory.setScope(Scope.LOCAL);
-
-    if (listener != 0) {
-      factory.addCacheListener(getCacheListener(listener));
-    }
-
-    if (evictAttrs != null) {
-      factory.setEvictionAttributes(evictAttrs);
-    }
-    if (expAttrs != null) {
-      factory.setEntryTimeToLive(expAttrs);
-    }
-    if (evictAttrs != null && evictAttrs.getAction().isOverflowToDisk()) {
-      // create diskstore with overflow dir
-      // since it's overflow, no need to recover, so we can use random number as dir name
-      int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-      File dir = new File("overflow_" + port);
-      if (!dir.exists()) {
-        dir.mkdir();
+        clientSubscriptionConfig.setCapacity(1);
+        clientSubscriptionConfig.setDiskStoreName(diskStore.getName());
+        clientSubscriptionConfig.setEvictionPolicy(evictionPolicy);
       }
-      File[] dir1 = new File[] {dir};
-      DiskStoreFactory dsf = cache.createDiskStoreFactory();
-      factory.setDiskStoreName(dsf.setDiskDirs(dir1).create("client_overflow_ds").getName());
-    }
-    factory.setConcurrencyChecksEnabled(false);
-    RegionAttributes attrs = factory.create();
-    cache.createRegion(regionName, attrs);
-    logger = cache.getLogger();
-  }
 
-  private void createCache(Properties props) throws Exception {
-    DistributedSystem ds = getSystem(props);
-    ds.disconnect();
-    ds = getSystem(props);
-    assertNotNull(ds);
-    cache = CacheFactory.create(ds);
-    assertNotNull(cache);
-  }
-
-  private void createDurableCacheClient(Pool poolAttr, String regionName, Properties dsProperties,
-      Integer listenerCode, Boolean close) throws Exception {
-    new DeltaPropagationDUnitTest().createCache(dsProperties);
-    PoolFactoryImpl poolFactory = (PoolFactoryImpl) PoolManager.createFactory();
-    poolFactory.init(poolAttr);
-    PoolImpl pool = (PoolImpl) poolFactory.create("DeltaPropagationDUnitTest");
-    AttributesFactory factory = new AttributesFactory();
-    factory.setScope(Scope.LOCAL);
-    factory.setConcurrencyChecksEnabled(false);
-    factory.setPoolName(pool.getName());
-    if (listenerCode != 0) {
-      factory.addCacheListener(getCacheListener(listenerCode));
-    }
-    RegionAttributes attrs = factory.create();
-    Region r = cache.createRegion(regionName, attrs);
-    r.registerInterest("ALL_KEYS");
-    cache.readyForEvents();
-    logger = cache.getLogger();
-    closeCache = close;
-  }
-
-  private void registerInterestListAll() {
-    try {
-      Region r = cache.getRegion("/" + regionName);
-      assertNotNull(r);
-      r.registerInterest("ALL_KEYS");
-    } catch (Exception ex) {
-      org.apache.geode.test.dunit.Assert.fail("failed in registerInterestListAll", ex);
+      cacheServer.start();
+      return cacheServer.getPort();
     }
   }
 
-  private Object closeCache() {
-    if (cache != null && !cache.isClosed()) {
-      cache.close();
-      cache.getDistributedSystem().disconnect();
-      return null;
+  private class ClientFactory {
+
+    private CacheListener<String, Object> cacheListener;
+    private String clientConflation = CLIENT_CONFLATION_PROP_VALUE_DEFAULT;
+    private EvictionAttributes evictionAttributes;
+    private int[] serverPorts;
+    private int subscriptionRedundancy = DEFAULT_SUBSCRIPTION_REDUNDANCY;
+
+    private ClientFactory cacheListener(CacheListener<String, Object> cacheListener) {
+      this.cacheListener = cacheListener;
+      return this;
     }
-    return null;
-  }
 
-  private void closeCache(boolean keepalive) {
-    if (cache != null && !cache.isClosed()) {
-      cache.close(keepalive);
-      cache.getDistributedSystem().disconnect();
+    private ClientFactory clientConflation(String clientConflation) {
+      this.clientConflation = clientConflation;
+      return this;
+    }
+
+    private ClientFactory evictionAttributes(EvictionAttributes evictionAttributes) {
+      this.evictionAttributes = evictionAttributes;
+      return this;
+    }
+
+    private ClientFactory serverPorts(int... serverPorts) {
+      this.serverPorts = serverPorts;
+      return this;
+    }
+
+    private ClientFactory subscriptionRedundancy(int subscriptionRedundancy) {
+      this.subscriptionRedundancy = subscriptionRedundancy;
+      return this;
+    }
+
+    private void create() {
+      try {
+        doCreate();
+      } catch (IOException e) {
+        throw new UncheckedIOException(e);
+      }
+    }
+
+    private void create(ClientCacheFactory clientCacheFactory) {
+      CLIENT_CACHE.set((InternalClientCache) clientCacheFactory.create());
+    }
+
+    private void doCreate() throws IOException {
+      System.setProperty(GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints", "true");
+
+      Properties clientProperties = getDistributedSystemProperties();
+      clientProperties.setProperty(LOCATORS, "");
+      clientProperties.setProperty(CONFLATE_EVENTS, clientConflation);
+
+      create(new ClientCacheFactory(clientProperties));
+
+      ClientRegionFactory<String, Object> regionFactory = getClientCache()
+          .createClientRegionFactory(ClientRegionShortcut.LOCAL);
+
+      PoolFactory poolFactory = PoolManager.createFactory();
+
+      for (int port : serverPorts) {
+        poolFactory.addServer("localhost", port);
+      }
+
+      Pool pool = poolFactory
+          .setMinConnections(2 * serverPorts.length)
+          .setPingInterval(1000)
+          .setIdleTimeout(250)
+          .setSubscriptionEnabled(true)
+          .setSubscriptionRedundancy(subscriptionRedundancy)
+          .setSubscriptionAckInterval(1)
+          .create(getName() + "_pool");
+
+      regionFactory.setPoolName(pool.getName());
+
+      if (cacheListener != null) {
+        regionFactory.addCacheListener(cacheListener);
+      }
+      if (evictionAttributes != null) {
+        regionFactory.setEvictionAttributes(evictionAttributes);
+      }
+      if (evictionAttributes != null && evictionAttributes.getAction().isOverflowToDisk()) {
+        // create diskstore with overflow dir
+        // since it's overflow, no need to recover, so we can use random number as dir name
+        File overflowDir = temporaryFolder.newFolder("overflow_" + getVMId());
+
+        DiskStore diskStore = getClientCache().createDiskStoreFactory()
+            .setDiskDirs(new File[] {overflowDir})
+            .create("client_overflow_ds");
+
+        regionFactory.setDiskStoreName(diskStore.getName());
+      }
+
+      regionFactory.setConcurrencyChecksEnabled(false);
+
+      regionFactory.create(regionName);
     }
   }
 
-  private boolean isLastKeyReceived() {
-    return lastKeyReceived;
+  private static class ClientListener extends CacheListenerAdapter<String, Object> {
+
+    @Override
+    public void afterCreate(EntryEvent event) {
+      CREATE_COUNTER.incrementAndGet();
+      if (LAST_KEY.equals(event.getKey())) {
+        LAST_KEY_RECEIVED.set(true);
+      }
+    }
+
+    @Override
+    public void afterUpdate(EntryEvent event) {
+      UPDATE_COUNTER.incrementAndGet();
+    }
   }
 
-  private void resetAll() {
-    DeltaTestImpl.resetDeltaInvokationCounters();
-    numOfCreates = numOfUpdates = numOfInvalidates = numOfDestroys = 0;
-    lastKeyReceived = false;
-    markerReceived = false;
-    areListenerResultsValid = true;
-    listenerError = new StringBuffer("");
+  private static class ValidatingClientListener extends CacheListenerAdapter<String, Object> {
+
+    private final SharedErrorCollector errorCollector;
+
+    private ValidatingClientListener(SharedErrorCollector errorCollector) {
+      this.errorCollector = errorCollector;
+    }
+
+    @Override
+    public void afterCreate(EntryEvent event) {
+      CREATE_COUNTER.incrementAndGet();
+      if (DELTA_KEY.equals(event.getKey())) {
+        errorCollector.checkThat(event.getNewValue(), equalTo(DELTA_VALUES[0]));
+      } else if (LAST_KEY.equals(event.getKey())) {
+        LAST_KEY_RECEIVED.set(true);
+      }
+    }
+
+    @Override
+    public void afterUpdate(EntryEvent event) {
+      int index = UPDATE_COUNTER.incrementAndGet();
+      errorCollector.checkThat(event.getNewValue(), equalTo(DELTA_VALUES[index]));
+    }
+  }
+
+  private static class SkipThirdDeltaValue extends ValidatingClientListener {
+
+    private final SharedErrorCollector errorCollector;
+
+    private SkipThirdDeltaValue(SharedErrorCollector errorCollector) {
+      super(errorCollector);
+      this.errorCollector = errorCollector;
+    }
+
+    @Override
+    public void afterUpdate(EntryEvent event) {
+      int index = UPDATE_COUNTER.incrementAndGet();
+
+      // Hack to ignore illegal delta put (skip the 3rd delta value)
+      index = index >= 3 ? ++index : index;
+
+      errorCollector.checkThat(event.getNewValue(), equalTo(DELTA_VALUES[index]));
+    }
+  }
+
+  private static class ClientToServerToServerListener extends CacheListenerAdapter<String, Object> {
+
+    @Override
+    public void afterCreate(EntryEvent event) {
+      CREATE_COUNTER.incrementAndGet();
+      if (LAST_KEY.equals(event.getKey())) {
+        LAST_KEY_RECEIVED.set(true);
+      }
+    }
+
+    @Override
+    public void afterUpdate(EntryEvent event) {
+      UPDATE_COUNTER.incrementAndGet();
+    }
+
+    @Override
+    public void afterInvalidate(EntryEvent event) {
+      INVALIDATE_COUNTER.incrementAndGet();
+    }
+  }
+
+  private static class LastKeyListener extends CacheListenerAdapter<String, Object> {
+
+    @Override
+    public void afterCreate(EntryEvent event) {
+      if (LAST_KEY.equals(event.getKey())) {
+        LAST_KEY_RECEIVED.set(true);
+      }
+    }
+  }
+
+  private static class DurableClientListener extends CacheListenerAdapter<String, Object> {
+
+    private final SharedErrorCollector errorCollector;
+
+    private DurableClientListener(SharedErrorCollector errorCollector) {
+      this.errorCollector = errorCollector;
+    }
+
+    @Override
+    public void afterRegionLive(RegionEvent event) {
+      if (Operation.MARKER == event.getOperation()) {
+        MARKER_RECEIVED.set(true);
+      }
+    }
+
+    @Override
+    public void afterCreate(EntryEvent event) {
+      if (LAST_KEY.equals(event.getKey())) {
+        LAST_KEY_RECEIVED.set(true);
+      }
+    }
+
+    @Override
+    public void afterUpdate(EntryEvent event) {
+      errorCollector.checkThat(event.getNewValue(), notNullValue());
+    }
+  }
+
+  public static class CustomCacheClientProxyFactory implements InternalCacheClientProxyFactory {
+
+    @Override
+    public CacheClientProxy create(CacheClientNotifier notifier, Socket socket,
+        ClientProxyMembershipID proxyId, boolean isPrimary, byte clientConflation,
+        Version clientVersion, long acceptorId, boolean notifyBySubscription,
+        SecurityService securityService, Subject subject, StatisticsClock statisticsClock)
+        throws CacheException {
+      return new CustomCacheClientProxy(notifier, socket, proxyId, isPrimary, clientConflation,
+          clientVersion, acceptorId, notifyBySubscription, securityService, subject,
+          statisticsClock);
+    }
+  }
+
+  private static class CustomCacheClientProxy extends CacheClientProxy {
+
+    private CustomCacheClientProxy(CacheClientNotifier notifier, Socket socket,
+        ClientProxyMembershipID proxyId, boolean isPrimary, byte clientConflation,
+        Version clientVersion, long acceptorId, boolean notifyBySubscription,
+        SecurityService securityService, Subject subject, StatisticsClock statisticsClock)
+        throws CacheException {
+      super(notifier.getCache(), notifier, socket, proxyId, isPrimary, clientConflation,
+          clientVersion, acceptorId, notifyBySubscription, securityService, subject,
+          statisticsClock,
+          notifier.getCache().getInternalDistributedSystem().getStatisticsManager(),
+          DEFAULT_CACHECLIENTPROXYSTATSFACTORY, CustomMessageDispatcher::new);
+    }
+  }
+
+  private static class CustomMessageDispatcher extends MessageDispatcher {
+
+    private CustomMessageDispatcher(CacheClientProxy proxy, String name,
+        StatisticsClock statisticsClock) throws CacheException {
+      super(proxy, name, statisticsClock);
+    }
+
+    @Override
+    public void run() {
+      try {
+        LATCH.get().await(getTimeout().getValueInMS(), MILLISECONDS);
+      } catch (InterruptedException ignore) {
+        // ignored
+      }
+      runDispatcher();
+    }
   }
 }

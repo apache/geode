@@ -12,12 +12,23 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache.util;
+package org.apache.geode.internal.cache;
 
-@SuppressWarnings({"unchecked", "unused"})
-public class UncheckedUtils {
+import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.cache.client.Pool;
+import org.apache.geode.cache.client.PoolFactory;
+import org.apache.geode.internal.cache.PoolFactoryImpl.PoolAttributes;
 
-  public static <T> T cast(Object object) {
-    return (T) object;
-  }
+public interface InternalPoolFactory extends PoolFactory {
+
+  /**
+   * Initializes the state of this factory for the given pool's state.
+   */
+  void init(Pool cp);
+
+  /**
+   * Needed by test framework.
+   */
+  @VisibleForTesting
+  PoolAttributes getPoolAttributes();
 }
