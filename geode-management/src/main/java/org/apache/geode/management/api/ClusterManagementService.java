@@ -99,6 +99,16 @@ public interface ClusterManagementService extends AutoCloseable {
       A op);
 
   /**
+   * Checks and returns the status of a given previously started operation.
+   *
+   * @param opId the operationId of a previously started operation
+   * @param <V> the return type of the operation
+   * @return the status of the identified operation
+   */
+  <V extends OperationResult> ClusterManagementOperationResult<V> checkStatus(
+      String opId);
+
+  /**
    * This method will list the status of all asynchronous cluster management operations in progress
    * or recently completed.
    *

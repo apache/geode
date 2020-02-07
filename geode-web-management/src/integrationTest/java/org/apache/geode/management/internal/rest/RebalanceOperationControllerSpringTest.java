@@ -35,8 +35,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.context.WebApplicationContext;
 
-import org.apache.geode.management.api.ClusterManagementResult;
-import org.apache.geode.management.internal.ClusterManagementOperationStatusResult;
+import org.apache.geode.management.api.ClusterManagementOperationResult;
 import org.apache.geode.management.internal.api.LocatorClusterManagementService;
 
 @RunWith(SpringRunner.class)
@@ -70,8 +69,7 @@ public class RebalanceOperationControllerSpringTest {
     String requestPath = URI_VERSION + REBALANCE_ENDPOINT + "/" + rebalanceIdWithDot;
 
     when(cms.checkStatus(any()))
-        .thenReturn(new ClusterManagementOperationStatusResult<>(
-            new ClusterManagementResult()));
+        .thenReturn(new ClusterManagementOperationResult<>());
 
     context.perform(get(requestPath))
         .andExpect(status().is2xxSuccessful());

@@ -71,7 +71,6 @@ import org.apache.geode.management.configuration.Pdx;
 import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.configuration.RegionScoped;
 import org.apache.geode.management.internal.CacheElementOperation;
-import org.apache.geode.management.internal.ClusterManagementOperationStatusResult;
 import org.apache.geode.management.internal.configuration.mutators.CacheConfigurationManager;
 import org.apache.geode.management.internal.configuration.mutators.ConfigurationManager;
 import org.apache.geode.management.internal.configuration.mutators.DeploymentManager;
@@ -435,13 +434,13 @@ public class LocatorClusterManagementService implements ClusterManagementService
    * builds a result object from a base status and an operation instance
    */
   private <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<V> toClusterManagementListOperationsResult(
-      ClusterManagementResult status, OperationState<A, V> operationInstance) {
+      ClusterManagementResult status, OperationState<A, V> operationState) {
     ClusterManagementOperationResult<V> result = new ClusterManagementOperationResult<>(status,
-        operationInstance.getOperationStart(), operationInstance.getOperationEnd(),
-        operationInstance.getOperator(), operationInstance.getId(), operationInstance.getResult(),
-        operationInstance.getThrowable());
+        operationState.getOperationStart(), operationState.getOperationEnd(),
+        operationState.getOperator(), operationState.getId(), operationState.getResult(),
+        operationState.getThrowable());
     result.setLinks(
-        new Links(operationInstance.getId(), operationInstance.getOperation().getEndpoint()));
+        new Links(operationState.getId(), operationState.getOperation().getEndpoint()));
     return result;
   }
 
@@ -449,12 +448,13 @@ public class LocatorClusterManagementService implements ClusterManagementService
    * builds a result object from an operation instance
    */
   private <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<V> toClusterManagementListOperationsResult(
-      OperationState<A, V> operationInstance) {
-    return toClusterManagementListOperationsResult(checkStatus(operationInstance.getId()),
-        operationInstance);
+      OperationState<A, V> operationState) {
+    return toClusterManagementListOperationsResult(checkStatus(operationState.getId()),
+        operationState);
   }
 
-  public <V extends OperationResult> ClusterManagementOperationStatusResult<V> checkStatus(
+  @Override
+  public <V extends OperationResult> ClusterManagementOperationResult<V> checkStatus(
       String opId) {
     final OperationState<?, V> operationState = operationManager.get(opId);
     if (operationState == null) {
@@ -469,13 +469,17 @@ public class LocatorClusterManagementService implements ClusterManagementService
       resultStatus = StatusCode.ERROR;
       resultMessage = operationState.getThrowable().getMessage();
     }
-    ClusterManagementOperationStatusResult<V> result = new ClusterManagementOperationStatusResult<>(
-        new ClusterManagementResult(resultStatus, resultMessage));
-    result.setOperator(operationState.getOperator());
-    result.setOperationStart(operationState.getOperationStart());
-    result.setResult((V) operationState.getResult());
-    result.setOperationEnded(operationState.getOperationEnd());
-
+    ClusterManagementOperationResult<V> result = new ClusterManagementOperationResult<>(
+        new ClusterManagementResult(resultStatus, resultMessage),
+        operationState.getOperationStart(),
+        operationState.getOperationEnd(),
+        operationState.getOperator(),
+        opId,
+        operationState.getResult(),
+        operationState.getThrowable());
+    if (operationState.getOperation() != null) {
+      result.setLinks(new Links(opId, operationState.getOperation().getEndpoint()));
+    }
     return result;
   }
 

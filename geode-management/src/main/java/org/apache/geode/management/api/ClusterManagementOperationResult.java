@@ -15,7 +15,6 @@
 package org.apache.geode.management.api;
 
 import java.util.Date;
-import java.util.concurrent.CompletableFuture;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
@@ -23,10 +22,11 @@ import org.apache.geode.annotations.Experimental;
 import org.apache.geode.management.runtime.OperationResult;
 
 /**
- * This is normally returned by
+ * Returned by
  * {@link ClusterManagementService#start(ClusterManagementOperation)} to convey status of
- * launching the async operation, and if successful, the {@link CompletableFuture} to access the
- * status, result, and start/end times of the async operation.
+ * launching the async operation,
+ * and by {@link ClusterManagementService#checkStatus(String)} to describe the status of
+ * a started async operation.
  *
  * @param <V> the type of the operation's result
  */

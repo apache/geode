@@ -23,6 +23,7 @@ import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.runtime.OperationResult;
 
 @Experimental
+// TODO can this class be removed?
 public class ClusterManagementOperationStatusResult<V extends OperationResult>
     extends ClusterManagementResult {
   public ClusterManagementOperationStatusResult() {}

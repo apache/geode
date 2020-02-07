@@ -98,6 +98,12 @@ public class ClientClusterManagementService implements ClusterManagementService 
   }
 
   @Override
+  public <V extends OperationResult> ClusterManagementOperationResult<V> checkStatus(String opId) {
+    // TODO implement
+    return null;
+  }
+
+  @Override
   public <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementListOperationsResult<V> list(
       A opType) {
     return transport.submitMessageForListOperation(opType,

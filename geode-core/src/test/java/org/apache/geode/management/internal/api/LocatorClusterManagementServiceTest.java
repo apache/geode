@@ -68,7 +68,6 @@ import org.apache.geode.management.configuration.Member;
 import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.configuration.RegionType;
 import org.apache.geode.management.internal.CacheElementOperation;
-import org.apache.geode.management.internal.ClusterManagementOperationStatusResult;
 import org.apache.geode.management.internal.configuration.mutators.CacheConfigurationManager;
 import org.apache.geode.management.internal.configuration.mutators.ConfigurationManager;
 import org.apache.geode.management.internal.configuration.mutators.GatewayReceiverConfigManager;
@@ -383,9 +382,9 @@ public class LocatorClusterManagementServiceTest {
   public void checkStatus() {
     OperationState operationInstance = mock(OperationState.class);
     when(executorManager.get(any())).thenReturn(operationInstance);
-    ClusterManagementOperationStatusResult<OperationResult> result = service.checkStatus("456");
+    ClusterManagementOperationResult<OperationResult> result = service.checkStatus("456");
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.IN_PROGRESS);
-    assertThat(result.getResult()).isNull();
+    assertThat(result.getOperationResult()).isNull();
 
     when(operationInstance.getOperationEnd()).thenReturn(new Date());
     result = service.checkStatus("456");

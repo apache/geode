@@ -32,7 +32,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import org.apache.geode.management.api.ClusterManagementListOperationsResult;
 import org.apache.geode.management.api.ClusterManagementOperationResult;
-import org.apache.geode.management.internal.ClusterManagementOperationStatusResult;
 import org.apache.geode.management.operation.RebalanceOperation;
 import org.apache.geode.management.runtime.RebalanceResult;
 
@@ -60,12 +59,12 @@ public class RebalanceOperationController extends AbstractManagementController {
   @ApiOperation(value = "check rebalance")
   @PreAuthorize("@securityService.authorize('DATA', 'MANAGE')")
   @GetMapping(REBALANCE_ENDPOINT + "/{id:.+}")
-  public ResponseEntity<ClusterManagementOperationStatusResult<RebalanceResult>> checkRebalanceStatus(
+  public ResponseEntity<ClusterManagementOperationResult<RebalanceResult>> checkRebalanceStatus(
       @PathVariable String id) {
-    ClusterManagementOperationStatusResult<RebalanceResult> result =
+    ClusterManagementOperationResult<RebalanceResult> result =
         clusterManagementService.checkStatus(id);
     HttpHeaders headers = new HttpHeaders();
-    headers.add("Retry-After", "30");
+    headers.add("Retry-After", "30"); // TODO consider removing this
     return new ResponseEntity<>(result, headers, HttpStatus.OK);
   }
 }
