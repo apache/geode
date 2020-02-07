@@ -91,6 +91,8 @@ public class GMSQuorumChecker<ID extends MemberIdentifier> implements QuorumChec
       return true;
     }
 
+    resume(); // make sure this quorum checker is the JGroups receiver
+
     if (isInfoEnabled) {
       logger.info("beginning quorum check with {}", this);
     }
