@@ -18,10 +18,18 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * This class allows previously seen PdxTypes and EnumInfos to be stored locally so that they can be
+ * retrieved without needing to access the /PdxTypes region.
+ */
 class TypeRegistrationCachingMap {
   final Map<Integer, PdxType> idToType = Collections.synchronizedMap(new HashMap<>());
-  final Map<PdxType, Integer> typeToId = Collections.synchronizedMap(new HashMap<>());
   final Map<EnumId, EnumInfo> idToEnum = Collections.synchronizedMap(new HashMap<>());
+  /**
+   * These maps enable checking to see what the ID associated with a given PdxType or EnumInfo is
+   * without having to iterate through every entry in the idToType or idToEnum maps.
+   */
+  final Map<PdxType, Integer> typeToId = Collections.synchronizedMap(new HashMap<>());
   final Map<EnumInfo, EnumId> enumToId = Collections.synchronizedMap(new HashMap<>());
 
   Map<PdxType, Integer> getTypeToId() {

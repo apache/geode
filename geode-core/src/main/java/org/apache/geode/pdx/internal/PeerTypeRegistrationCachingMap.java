@@ -21,7 +21,20 @@ import java.util.Map;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Region;
 
+/**
+ * This class provides additional functionality to handle the race conditions caused by a PdxType or
+ * EnumInfo being added to a local map before it has finished being distributed to the rest of the
+ * cluster.
+ */
 class PeerTypeRegistrationCachingMap extends TypeRegistrationCachingMap {
+  /**
+   * When a new PdxType or a new EnumInfo is added to the /PdxTypes region, its listener will add
+   * the new type to the inaccessible pending maps first, to make sure the distribution has finished
+   * before the PdxType or EnumInfo is used. Any member who wants to use this new PdxType or
+   * EnumInfo has to first get the dlock to flush the pending maps into the accessible local maps.
+   * This design is to guarantee that when using the new PdxType, it should have been distributed to
+   * all members.
+   */
   private final Map<Integer, PdxType> pendingIdToType =
       Collections.synchronizedMap(new HashMap<>());
   private final Map<PdxType, Integer> pendingTypeToId =
@@ -59,6 +72,7 @@ class PeerTypeRegistrationCachingMap extends TypeRegistrationCachingMap {
     return (regionSize != localMapsSize || regionSize != localReverseMapSize);
   }
 
+  // This should only be called while holding the PDX_LOCK
   void flushPendingLocalMaps() {
     if (!pendingIdToType.isEmpty()) {
       idToType.putAll(pendingIdToType);
