@@ -301,7 +301,8 @@ public class TypeRegistryTest {
     when(mockInternalCache.getPdxReadSerializedByAnyGemFireServices()).thenReturn(false);
     doThrow(new ClassNotFoundException()).when(newEnumInfo).getEnum();
 
-    assertThatThrownBy(() -> typeRegistry.getEnumById(ENUM_ID)).isInstanceOf(PdxSerializationException.class);
+    assertThatThrownBy(() -> typeRegistry.getEnumById(ENUM_ID))
+        .isInstanceOf(PdxSerializationException.class);
   }
 
   @Test
@@ -317,7 +318,8 @@ public class TypeRegistryTest {
   public void addImportedTypeThrowsPdxSerializationExceptionWhenImportedTypeDoesNotEqualExistingTypeWithSameId() {
     PdxType existingType = mock(PdxType.class);
     when(mockTypeRegistration.getType(TYPE_ID)).thenReturn(existingType);
-    assertThatThrownBy(() -> typeRegistry.addImportedType(TYPE_ID, newType)).isInstanceOf(PdxSerializationException.class);
+    assertThatThrownBy(() -> typeRegistry.addImportedType(TYPE_ID, newType))
+        .isInstanceOf(PdxSerializationException.class);
   }
 
   @Test
@@ -333,7 +335,8 @@ public class TypeRegistryTest {
   public void addImportedEnumThrowsPdxSerializationExceptionWhenImportedEnumInfoDoesNotEqualExistingEnumInfoWithSameId() {
     EnumInfo existingEnumInfo = mock(EnumInfo.class);
     when(mockTypeRegistration.getEnumById(ENUM_ID)).thenReturn(existingEnumInfo);
-    assertThatThrownBy(() -> typeRegistry.addImportedEnum(ENUM_ID, newEnumInfo)).isInstanceOf(PdxSerializationException.class);
+    assertThatThrownBy(() -> typeRegistry.addImportedEnum(ENUM_ID, newEnumInfo))
+        .isInstanceOf(PdxSerializationException.class);
   }
 
   private enum TestEnum {

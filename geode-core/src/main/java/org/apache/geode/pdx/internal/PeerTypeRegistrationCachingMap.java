@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.pdx.internal;
 
 import java.util.Collections;
@@ -22,22 +21,12 @@ import java.util.Map;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Region;
 
-/**
- * This class serves two purposes. It lets us look up an id based on a type/enum, if we previously
- * found that type/enum in the region. And, if a type/enum is present in this map, that means we
- * read the type/enum while holding the dlock, which means the type/enum was distributed to all
- * members.
- */
-class PeerTypeRegistrationReverseMap extends TypeRegistrationReverseMap {
-  /**
-   * When a new pdxType or a new enumInfo is added to idToType region, its
-   * listener will add the new type to the pendingTypeToId first, to make sure
-   * the distribution finished.
-   * Then any member who wants to use this new pdxType has to get the dlock to
-   * flush the pendingTypeToId map into typeToId. This design to guarantee that
-   * when using the new pdxType, it should have been distributed to all members.
-   */
+class PeerTypeRegistrationCachingMap extends TypeRegistrationCachingMap {
+  private final Map<Integer, PdxType> pendingIdToType =
+      Collections.synchronizedMap(new HashMap<>());
   private final Map<PdxType, Integer> pendingTypeToId =
+      Collections.synchronizedMap(new HashMap<>());
+  private final Map<EnumId, EnumInfo> pendingIdToEnum =
       Collections.synchronizedMap(new HashMap<>());
   private final Map<EnumInfo, EnumId> pendingEnumToId =
       Collections.synchronizedMap(new HashMap<>());
@@ -45,28 +34,43 @@ class PeerTypeRegistrationReverseMap extends TypeRegistrationReverseMap {
   void saveToPending(Object key, Object value) {
     if (value instanceof PdxType) {
       PdxType type = (PdxType) value;
+      pendingIdToType.put((Integer) key, type);
       pendingTypeToId.put(type, (Integer) key);
     } else if (value instanceof EnumInfo) {
       EnumInfo info = (EnumInfo) value;
+      pendingIdToEnum.put((EnumId) key, info);
       pendingEnumToId.put(info, (EnumId) key);
     }
   }
 
-  // The reverse maps should only be loaded from the region if there is a mismatch in size between
-  // the region and all reverse maps, which should only occur when initializing a new
+  // The maps should only be loaded from the region if there is a mismatch in size between
+  // the region and either of the local maps, which should only occur when initializing a new
   // PeerTypeRegistration in a system with an existing and not-empty PdxTypes region
-  boolean shouldReloadFromRegion(Region pdxRegion) {
+  boolean shouldReloadFromRegion(Region<?, ?> pdxRegion) {
     if (pdxRegion == null) {
       return false;
     }
-    return ((typeToId.size() + pendingTypeToId.size() + enumToId.size()
-        + pendingEnumToId.size()) != pdxRegion.size());
+    int regionSize = pdxRegion.size();
+    // These sizes should always be the same, but it doesn't hurt to check both
+    int localMapsSize =
+        idToType.size() + pendingIdToType.size() + idToEnum.size() + pendingIdToEnum.size();
+    int localReverseMapSize =
+        typeToId.size() + pendingTypeToId.size() + enumToId.size() + pendingEnumToId.size();
+    return (regionSize != localMapsSize || regionSize != localReverseMapSize);
   }
 
-  void flushPendingReverseMap() {
+  void flushPendingLocalMaps() {
+    if (!pendingIdToType.isEmpty()) {
+      idToType.putAll(pendingIdToType);
+      pendingIdToType.clear();
+    }
     if (!pendingTypeToId.isEmpty()) {
       typeToId.putAll(pendingTypeToId);
       pendingTypeToId.clear();
+    }
+    if (!pendingIdToEnum.isEmpty()) {
+      idToEnum.putAll(pendingIdToEnum);
+      pendingIdToEnum.clear();
     }
     if (!pendingEnumToId.isEmpty()) {
       enumToId.putAll(pendingEnumToId);
@@ -77,6 +81,9 @@ class PeerTypeRegistrationReverseMap extends TypeRegistrationReverseMap {
   @Override
   void flushEnumCache() {
     super.flushEnumCache();
+    synchronized (pendingIdToEnum) {
+      pendingIdToEnum.values().forEach(EnumInfo::flushCache);
+    }
     synchronized (pendingEnumToId) {
       pendingEnumToId.keySet().forEach(EnumInfo::flushCache);
     }
@@ -86,8 +93,15 @@ class PeerTypeRegistrationReverseMap extends TypeRegistrationReverseMap {
   @Override
   void clear() {
     super.clear();
+    pendingIdToType.clear();
     pendingTypeToId.clear();
+    pendingIdToEnum.clear();
     pendingEnumToId.clear();
+  }
+
+  @VisibleForTesting
+  int pendingIdToTypeSize() {
+    return pendingIdToType.size();
   }
 
   @VisibleForTesting
@@ -96,7 +110,13 @@ class PeerTypeRegistrationReverseMap extends TypeRegistrationReverseMap {
   }
 
   @VisibleForTesting
+  int pendingIdToEnumSize() {
+    return pendingIdToEnum.size();
+  }
+
+  @VisibleForTesting
   int pendingEnumToIdSize() {
     return pendingEnumToId.size();
   }
+
 }

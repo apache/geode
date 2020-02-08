@@ -18,42 +18,53 @@ package org.apache.geode.pdx.internal;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
+import org.junit.Before;
 import org.junit.Test;
 
-public class TypeRegistrationReverseMapTest {
+public class TypeRegistrationCachingMapTest {
+  private TypeRegistrationCachingMap map;
+
+  @Before
+  public void setUp() {
+    map = new TypeRegistrationCachingMap();
+  }
 
   @Test
-  public void saveCorrectlyAddsToReverseMaps() {
-    TypeRegistrationReverseMap map = new TypeRegistrationReverseMap();
-    assertThat(map.typeToIdSize()).isEqualTo(0);
-    assertThat(map.enumToIdSize()).isEqualTo(0);
+  public void saveCorrectlyAddsToLocalMaps() {
+    assertLocalMapsSize(0);
 
-    addPdxTypeToMap(map);
+    addPdxTypeToMaps();
 
     assertThat(map.typeToIdSize()).isEqualTo(1);
+    assertThat(map.idToTypeSize()).isEqualTo(1);
     assertThat(map.enumToIdSize()).isEqualTo(0);
+    assertThat(map.idToEnumSize()).isEqualTo(0);
 
-    addEnumInfoToMap(map);
+    addEnumInfoToMaps();
 
-    assertThat(map.typeToIdSize()).isEqualTo(1);
-    assertThat(map.enumToIdSize()).isEqualTo(1);
+    assertLocalMapsSize(1);
 
     Object fakeKey = mock(Object.class);
     Object fakeValue = mock(Object.class);
     map.save(fakeKey, fakeValue);
 
-    assertThat(map.typeToIdSize()).isEqualTo(1);
-    assertThat(map.enumToIdSize()).isEqualTo(1);
+    assertLocalMapsSize(1);
   }
 
+  void assertLocalMapsSize(int expectedSize) {
+    assertThat(map.typeToIdSize()).isEqualTo(expectedSize);
+    assertThat(map.idToTypeSize()).isEqualTo(expectedSize);
+    assertThat(map.enumToIdSize()).isEqualTo(expectedSize);
+    assertThat(map.idToEnumSize()).isEqualTo(expectedSize);
+  }
 
-  void addEnumInfoToMap(TypeRegistrationReverseMap map) {
+  void addEnumInfoToMaps() {
     EnumId enumId = mock(EnumId.class);
     EnumInfo enumInfo = mock(EnumInfo.class);
     map.save(enumId, enumInfo);
   }
 
-  void addPdxTypeToMap(TypeRegistrationReverseMap map) {
+  void addPdxTypeToMaps() {
     Integer pdxId = map.typeToIdSize();
     PdxType pdxType = mock(PdxType.class);
     map.save(pdxId, pdxType);

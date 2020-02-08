@@ -47,8 +47,7 @@ public class ClientTypeRegistration implements TypeRegistration {
 
   private static final Logger logger = LogService.getLogger();
 
-  private final TypeRegistrationLocalMap localMap = new TypeRegistrationLocalMap();
-  private final TypeRegistrationReverseMap reverseMap = new TypeRegistrationReverseMap();
+  private final TypeRegistrationCachingMap localMap = new TypeRegistrationCachingMap();
 
   private final InternalCache cache;
 
@@ -63,7 +62,7 @@ public class ClientTypeRegistration implements TypeRegistration {
 
   @Override
   public int defineType(PdxType newType) {
-    Integer existingId = reverseMap.getTypeId(newType);
+    Integer existingId = localMap.getIdForType(newType);
     if (existingId != null) {
       return existingId;
     }
@@ -76,7 +75,6 @@ public class ClientTypeRegistration implements TypeRegistration {
         newTypeId = getPdxIdFromPool(newType, (ExecutablePool) pool);
         newType.setTypeId(newTypeId);
         localMap.save(newTypeId, newType);
-        reverseMap.save(newTypeId, newType);
         copyTypeToOtherPools(newType, newTypeId, pool);
         return newTypeId;
       } catch (ServerConnectivityException e) {
@@ -139,7 +137,6 @@ public class ClientTypeRegistration implements TypeRegistration {
         PdxType type = getPdxTypeFromPool(typeId, (ExecutablePool) pool);
         if (type != null) {
           localMap.save(typeId, type);
-          reverseMap.save(typeId, type);
           return type;
         }
       } catch (ServerConnectivityException e) {
@@ -213,7 +210,7 @@ public class ClientTypeRegistration implements TypeRegistration {
   }
 
   private int processEnumInfoForEnumId(EnumInfo enumInfo) {
-    EnumId existingId = reverseMap.getEnumId(enumInfo);
+    EnumId existingId = localMap.getIdForEnum(enumInfo);
     if (existingId != null) {
       return existingId.intValue();
     }
@@ -225,7 +222,6 @@ public class ClientTypeRegistration implements TypeRegistration {
         int result = getEnumIdFromPool(enumInfo, (ExecutablePool) pool);
         EnumId newId = new EnumId(result);
         localMap.save(newId, enumInfo);
-        reverseMap.save(newId, enumInfo);
         copyEnumToOtherPools(enumInfo, result, pool);
         return result;
       } catch (ServerConnectivityException e) {
@@ -290,7 +286,6 @@ public class ClientTypeRegistration implements TypeRegistration {
         EnumInfo result = getEnumFromPool(enumId, (ExecutablePool) pool);
         if (result != null) {
           localMap.save(id, result);
-          reverseMap.save(id, result);
 
           return result;
         }
@@ -384,7 +379,6 @@ public class ClientTypeRegistration implements TypeRegistration {
       }
     }
     localMap.save(typeId, importedType);
-    reverseMap.save(typeId, importedType);
   }
 
   /**
@@ -405,7 +399,6 @@ public class ClientTypeRegistration implements TypeRegistration {
     }
     EnumId id = new EnumId(enumId);
     localMap.save(id, importedInfo);
-    reverseMap.save(id, importedInfo);
   }
 
   private RuntimeException returnCorrectExceptionForFailure(final int typeId,
@@ -424,23 +417,21 @@ public class ClientTypeRegistration implements TypeRegistration {
 
   @Override
   public Map<PdxType, Integer> getTypeToIdMap() {
-    return reverseMap.typeToId;
+    return localMap.getTypeToId();
   }
 
   @Override
   public Map<EnumInfo, EnumId> getEnumToIdMap() {
-    return reverseMap.enumToId;
+    return localMap.getEnumToId();
   }
 
   @Override
   public void clearLocalMaps() {
     localMap.clear();
-    reverseMap.clear();
   }
 
   @Override
   public void flushCache() {
     localMap.flushEnumCache();
-    reverseMap.flushEnumCache();
   }
 }

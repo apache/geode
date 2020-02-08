@@ -18,49 +18,77 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-class TypeRegistrationReverseMap {
-  /**
-   * These maps allow revere look-ups of the idToType and idToEnum maps (or the idToType region
-   * if the TypeRegistration containing them is a PeerTypeRegistration) without having to iterate
-   * through the entry set
-   */
+class TypeRegistrationCachingMap {
+  final Map<Integer, PdxType> idToType = Collections.synchronizedMap(new HashMap<>());
   final Map<PdxType, Integer> typeToId = Collections.synchronizedMap(new HashMap<>());
+  final Map<EnumId, EnumInfo> idToEnum = Collections.synchronizedMap(new HashMap<>());
   final Map<EnumInfo, EnumId> enumToId = Collections.synchronizedMap(new HashMap<>());
+
+  Map<PdxType, Integer> getTypeToId() {
+    return typeToId;
+  }
+
+  Map<EnumInfo, EnumId> getEnumToId() {
+    return enumToId;
+  }
+
+  PdxType getType(Integer id) {
+    return idToType.get(id);
+  }
+
+  Integer getIdForType(PdxType newType) {
+    return typeToId.get(newType);
+  }
+
+  EnumInfo getEnum(EnumId id) {
+    return idToEnum.get(id);
+  }
+
+  EnumId getIdForEnum(EnumInfo newInfo) {
+    return enumToId.get(newInfo);
+  }
 
   void save(Object key, Object value) {
     if (value instanceof PdxType) {
       PdxType type = (PdxType) value;
+      idToType.put((Integer) key, type);
       typeToId.put(type, (Integer) key);
     } else if (value instanceof EnumInfo) {
       EnumInfo info = (EnumInfo) value;
+      idToEnum.put((EnumId) key, info);
       enumToId.put(info, (EnumId) key);
     }
   }
 
   void flushEnumCache() {
+    synchronized (idToEnum) {
+      idToEnum.values().forEach(EnumInfo::flushCache);
+    }
     synchronized (enumToId) {
       enumToId.keySet().forEach(EnumInfo::flushCache);
     }
   }
 
   void clear() {
+    idToType.clear();
     typeToId.clear();
+    idToEnum.clear();
     enumToId.clear();
+  }
+
+  int idToTypeSize() {
+    return idToType.size();
   }
 
   int typeToIdSize() {
     return typeToId.size();
   }
 
+  int idToEnumSize() {
+    return idToEnum.size();
+  }
+
   int enumToIdSize() {
     return enumToId.size();
-  }
-
-  Integer getTypeId(PdxType newType) {
-    return typeToId.get(newType);
-  }
-
-  EnumId getEnumId(EnumInfo newInfo) {
-    return enumToId.get(newInfo);
   }
 }
