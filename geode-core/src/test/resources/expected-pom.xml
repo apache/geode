@@ -243,18 +243,6 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>org.apache.geode</groupId>
-      <artifactId>geode-gfsh</artifactId>
-      <scope>runtime</scope>
-      <exclusions>
-        <exclusion>
-          <artifactId>geode-core</artifactId>
-          <groupId>*</groupId>
-        </exclusion>
-      </exclusions>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
       <groupId>io.swagger</groupId>
       <artifactId>swagger-annotations</artifactId>
       <scope>runtime</scope>
