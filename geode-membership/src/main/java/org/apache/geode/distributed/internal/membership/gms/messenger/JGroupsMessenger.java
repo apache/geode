@@ -336,6 +336,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
         MembershipInformationImpl oldInfo = (MembershipInformationImpl) oldDSMembershipInfo;
         myChannel = oldInfo.getChannel();
         queuedMessagesFromReconnect = oldInfo.getQueuedMessages();
+        encrypt = oldInfo.getEncrypt();
 
         // scrub the old channel
         ViewId vid = new ViewId(new JGAddress(), 0);
@@ -1248,7 +1249,8 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
       }
     }
     GMSQuorumChecker<ID> qc =
-        new GMSQuorumChecker<>(view, services.getConfig().getLossThreshold(), this.myChannel);
+        new GMSQuorumChecker<>(view, services.getConfig().getLossThreshold(), this.myChannel,
+            encrypt);
     qc.initialize();
     return qc;
   }
