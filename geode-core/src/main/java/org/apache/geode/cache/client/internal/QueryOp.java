@@ -49,7 +49,7 @@ public class QueryOp {
    */
   public static SelectResults execute(ExecutablePool pool, String queryPredicate,
       Object[] queryParams) {
-    AbstractOp op = null;
+    AbstractOp op;
 
     if (queryParams != null && queryParams.length > 0) {
       op = new QueryOpImpl(queryPredicate, queryParams);
@@ -70,7 +70,7 @@ public class QueryOp {
     /**
      * @throws org.apache.geode.SerializationException if serialization fails
      */
-    public QueryOpImpl(String queryPredicate) {
+    QueryOpImpl(String queryPredicate) {
       super(MessageType.QUERY, 1);
       getMessage().addStringPart(queryPredicate);
     }
@@ -78,7 +78,7 @@ public class QueryOp {
     /**
      * @throws org.apache.geode.SerializationException if serialization fails
      */
-    public QueryOpImpl(String queryPredicate, Object[] queryParams) {
+    QueryOpImpl(String queryPredicate, Object[] queryParams) {
       super(MessageType.QUERY_WITH_PARAMETERS, 2 + queryParams.length);
       getMessage().addStringPart(queryPredicate);
       getMessage().addIntPart(queryParams.length);
@@ -105,67 +105,63 @@ public class QueryOp {
     protected Object processResponse(Message msg) throws Exception {
       final SelectResults[] resultRef = new SelectResults[1];
       final Exception[] exceptionRef = new Exception[1];
-      ChunkHandler ch = new ChunkHandler() {
-        @Override
-        public void handle(ChunkedMessage cm) throws Exception {
-          Part collectionTypePart = cm.getPart(0);
-          Object o = collectionTypePart.getObject();
-          if (o instanceof Throwable) {
-            String s = "While performing a remote " + getOpName();
-            exceptionRef[0] = new ServerOperationException(s, (Throwable) o);
-            return;
+      ChunkHandler ch = cm -> {
+        Part collectionTypePart = cm.getPart(0);
+        Object o = collectionTypePart.getObject();
+        if (o instanceof Throwable) {
+          String s = "While performing a remote " + getOpName();
+          exceptionRef[0] = new ServerOperationException(s, (Throwable) o);
+          return;
+        }
+        CollectionType collectionType = (CollectionType) o;
+        Part resultPart = cm.getPart(1);
+        Object queryResult;
+        try {
+          queryResult = resultPart.getObject();
+        } catch (Exception e) {
+          String s = "While deserializing " + getOpName() + " result";
+          exceptionRef[0] = new SerializationException(s, e);
+          return;
+        }
+        if (queryResult instanceof Throwable) {
+          String s = "While performing a remote " + getOpName();
+          exceptionRef[0] = new ServerOperationException(s, (Throwable) queryResult);
+        } else if (queryResult instanceof Integer) {
+          // Create the appropriate SelectResults instance if necessary
+          if (resultRef[0] == null) {
+            resultRef[0] = QueryUtils.getEmptySelectResults(TypeUtils.OBJECT_TYPE, null);
           }
-          CollectionType collectionType = (CollectionType) o;
-          Part resultPart = cm.getPart(1);
-          Object queryResult = null;
-          try {
-            queryResult = resultPart.getObject();
-          } catch (Exception e) {
-            String s = "While deserializing " + getOpName() + " result";
-            exceptionRef[0] = new SerializationException(s, e);
-            return;
+          resultRef[0].add(queryResult);
+        } else { // typical query result
+          // Create the appropriate SelectResults instance if necessary
+          if (resultRef[0] == null) {
+            resultRef[0] = QueryUtils.getEmptySelectResults(collectionType, null);
           }
-          if (queryResult instanceof Throwable) {
-            String s = "While performing a remote " + getOpName();
-            exceptionRef[0] = new ServerOperationException(s, (Throwable) queryResult);
-            return;
-          } else if (queryResult instanceof Integer) {
-            // Create the appropriate SelectResults instance if necessary
-            if (resultRef[0] == null) {
-              resultRef[0] = QueryUtils.getEmptySelectResults(TypeUtils.OBJECT_TYPE, null);
-            }
-            resultRef[0].add(queryResult);
-          } else { // typical query result
-            // Create the appropriate SelectResults instance if necessary
-            if (resultRef[0] == null) {
-              resultRef[0] = QueryUtils.getEmptySelectResults(collectionType, null);
-            }
-            SelectResults selectResults = resultRef[0];
-            ObjectType objectType = collectionType.getElementType();
-            Object[] resultArray;
-            // for select * queries, the serialized object byte arrays are
-            // returned as part of ObjectPartList
-            boolean isObjectPartList = false;
-            if (queryResult instanceof ObjectPartList) {
-              isObjectPartList = true;
-              resultArray = ((ObjectPartList) queryResult).getObjects().toArray();
-            } else {
-              // Add the results to the SelectResults
-              resultArray = (Object[]) queryResult;
-            }
-            if (objectType.isStructType()) {
-              for (int i = 0; i < resultArray.length; i++) {
-                if (isObjectPartList) {
-                  selectResults.add(new StructImpl((StructTypeImpl) objectType,
-                      ((ObjectPartList) resultArray[i]).getObjects().toArray()));
-                } else {
-                  selectResults
-                      .add(new StructImpl((StructTypeImpl) objectType, (Object[]) resultArray[i]));
-                }
+          SelectResults selectResults = resultRef[0];
+          ObjectType objectType = collectionType.getElementType();
+          Object[] resultArray;
+          // for select * queries, the serialized object byte arrays are
+          // returned as part of ObjectPartList
+          boolean isObjectPartList = false;
+          if (queryResult instanceof ObjectPartList) {
+            isObjectPartList = true;
+            resultArray = ((ObjectPartList) queryResult).getObjects().toArray();
+          } else {
+            // Add the results to the SelectResults
+            resultArray = (Object[]) queryResult;
+          }
+          if (objectType.isStructType()) {
+            for (Object value : resultArray) {
+              if (isObjectPartList) {
+                selectResults.add(new StructImpl((StructTypeImpl) objectType,
+                    ((ObjectPartList) value).getObjects().toArray()));
+              } else {
+                selectResults
+                    .add(new StructImpl((StructTypeImpl) objectType, (Object[]) value));
               }
-            } else {
-              selectResults.addAll(Arrays.asList(resultArray));
             }
+          } else {
+            selectResults.addAll(Arrays.asList(resultArray));
           }
         }
       };
