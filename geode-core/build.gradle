@@ -263,10 +263,6 @@ dependencies {
   //Log4j is used everywhere
   implementation('org.apache.logging.log4j:log4j-api')
 
-  runtimeOnly(project(':geode-gfsh')) {
-    exclude module: 'geode-core'
-    ext.optional = true
-  }
 
   runtimeOnly('io.swagger:swagger-annotations') {
     ext.optional = true
