@@ -434,6 +434,22 @@ public class ListGatewaysCommandDUnitTest implements Serializable {
         .containsOutput(CliStrings.LIST_GATEWAY__ERROR_ON_SHOW_PARAMETERS);
   }
 
+  @Test
+  public void testListGatewaysReceiversOnlyFalseAndSendersOnlyFalseReturnsSendersAndReceivers() {
+    setupClusters();
+    final int expectedGwSenderSectionSize = 4;
+    final int expectedGwReceiverSectionSize = 1;
+    String command =
+        CliStrings.LIST_GATEWAY + " --" + CliStrings.LIST_GATEWAY__SHOW_RECEIVERS_ONLY + "=false --"
+            + CliStrings.LIST_GATEWAY__SHOW_SENDERS_ONLY + "=false";
+    CommandResultAssert commandAssert = gfsh.executeAndAssertThat(command).statusIsSuccess();
+    commandAssert
+        .hasTableSection("gatewaySenders").hasRowSize(expectedGwSenderSectionSize)
+        .hasColumns().contains("GatewaySender Id", "Member");
+    commandAssert.hasTableSection("gatewayReceivers")
+        .hasRowSize(expectedGwReceiverSectionSize).hasColumns().contains("Port", "Member");
+  }
+
   void setupClusters() {
     Integer lnPort = locatorSite1.getPort();
     Integer nyPort = locatorSite2.getPort();
