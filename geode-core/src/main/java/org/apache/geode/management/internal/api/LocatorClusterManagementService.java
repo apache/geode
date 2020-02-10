@@ -27,9 +27,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.NotImplementedException;
@@ -409,28 +407,6 @@ public class LocatorClusterManagementService implements ClusterManagementService
   }
 
   /**
-   * builds a base status from the state of a future result
-   */
-  private static <V extends OperationResult> ClusterManagementResult getStatus(
-      CompletableFuture<V> future) {
-    if (future.isCompletedExceptionally()) {
-      String error = "Operation failed.";
-      try {
-        future.get();
-      } catch (InterruptedException ignore) {
-        Thread.currentThread().interrupt();
-      } catch (ExecutionException e) {
-        error = e.getMessage();
-      }
-      return new ClusterManagementResult(StatusCode.ERROR, error);
-    } else if (future.isDone()) {
-      return new ClusterManagementResult(StatusCode.OK, "Operation finished successfully.");
-    } else {
-      return new ClusterManagementResult(StatusCode.IN_PROGRESS, "Operation in progress.");
-    }
-  }
-
-  /**
    * builds a result object from a base status and an operation instance
    */
   private <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<V> toClusterManagementListOperationsResult(
@@ -449,13 +425,14 @@ public class LocatorClusterManagementService implements ClusterManagementService
    */
   private <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<V> toClusterManagementListOperationsResult(
       OperationState<A, V> operationState) {
-    return toClusterManagementListOperationsResult(checkStatus(operationState.getId()),
+    return toClusterManagementListOperationsResult(
+        checkStatus(operationState.getOperation(), operationState.getId()),
         operationState);
   }
 
   @Override
-  public <V extends OperationResult> ClusterManagementOperationResult<V> checkStatus(
-      String opId) {
+  public <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<V> checkStatus(
+      A opType, String opId) {
     final OperationState<?, V> operationState = operationManager.get(opId);
     if (operationState == null) {
       raise(StatusCode.ENTITY_NOT_FOUND, "Operation '" + opId + "' does not exist.");

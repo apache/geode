@@ -62,7 +62,7 @@ public class RebalanceOperationController extends AbstractManagementController {
   public ResponseEntity<ClusterManagementOperationResult<RebalanceResult>> checkRebalanceStatus(
       @PathVariable String id) {
     ClusterManagementOperationResult<RebalanceResult> result =
-        clusterManagementService.checkStatus(id);
+        clusterManagementService.checkStatus(new RebalanceOperation(), id);
     HttpHeaders headers = new HttpHeaders();
     headers.add("Retry-After", "30"); // TODO consider removing this
     return new ResponseEntity<>(result, headers, HttpStatus.OK);

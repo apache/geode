@@ -37,48 +37,54 @@ public interface ClusterManagementServiceTransport {
    *
    * @param configMessage configuration object
    * @param command the command to use
-   * @param responseType the expected response class
    * @param <T> configuration object which extends {@link AbstractConfiguration}
    * @return {@link ClusterManagementRealizationResult}
    */
   <T extends AbstractConfiguration<?>> ClusterManagementRealizationResult submitMessage(
-      T configMessage, CommandType command,
-      Class<? extends ClusterManagementRealizationResult> responseType);
+      T configMessage, CommandType command);
 
   /**
    * Submit a message with a specific command which returns a list result. This supports the
    * {@link ClusterManagementService#list(AbstractConfiguration)} command.
    *
    * @param configMessage configuration object
-   * @param responseType the expected response class
    * @param <T> configuration object which extends {@link AbstractConfiguration}
    * @return {@link ClusterManagementListResult}
    */
   <T extends AbstractConfiguration<R>, R extends RuntimeInfo> ClusterManagementListResult<T, R> submitMessageForList(
-      T configMessage, Class<? extends ClusterManagementListResult> responseType);
+      T configMessage);
 
   /**
    * Submit a message with a specific command which returns a single result. This supports the
    * {@link ClusterManagementService#get} command.
    *
    * @param configMessage configuration object
-   * @param responseType the expected response class
    * @param <T> configuration object which extends {@link AbstractConfiguration}
    * @return {@link ClusterManagementGetResult}
    */
   <T extends AbstractConfiguration<R>, R extends RuntimeInfo> ClusterManagementGetResult<T, R> submitMessageForGet(
-      T configMessage, Class<? extends ClusterManagementGetResult> responseType);
+      T configMessage);
 
   /**
    * Submit a message for a specific command which returns a list result of operations in progress.
    * This supports the {@link ClusterManagementService#list(ClusterManagementOperation)} command.
    *
-   * @param responseType the expected response class
    * @param <A> operation of type {@link ClusterManagementOperation}
    * @return {@link ClusterManagementListResult}
    */
   <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementListOperationsResult<V> submitMessageForListOperation(
-      A opType, Class<? extends ClusterManagementListOperationsResult> responseType);
+      A opType);
+
+  /**
+   * Submit a message for a specific command which returns a single operation in progress.
+   * This supports the {@link ClusterManagementService#get(AbstractConfiguration)} command.
+   *
+   * @param <A> operation of type {@link ClusterManagementOperation}
+   * @param operationId the identifier of the operation
+   * @return {@link ClusterManagementListResult}
+   */
+  <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<V> submitMessageForGetOperation(
+      A opType, String operationId);
 
   /**
    * Submit a message to start a specific command. This supports the

@@ -61,14 +61,13 @@ public class ClientClusterManagementService implements ClusterManagementService 
   @Override
   public <T extends AbstractConfiguration<?>> ClusterManagementRealizationResult create(T config) {
     return assertSuccessful(transport
-        .submitMessage(config, CommandType.CREATE, ClusterManagementRealizationResult.class));
+        .submitMessage(config, CommandType.CREATE));
   }
 
   @Override
   public <T extends AbstractConfiguration<?>> ClusterManagementRealizationResult delete(
       T config) {
-    return assertSuccessful(transport.submitMessage(config, CommandType.DELETE,
-        ClusterManagementRealizationResult.class));
+    return assertSuccessful(transport.submitMessage(config, CommandType.DELETE));
   }
 
   @Override
@@ -81,14 +80,14 @@ public class ClientClusterManagementService implements ClusterManagementService 
   public <T extends AbstractConfiguration<R>, R extends RuntimeInfo> ClusterManagementListResult<T, R> list(
       T config) {
     return assertSuccessful(
-        transport.submitMessageForList(config, ClusterManagementListResult.class));
+        transport.submitMessageForList(config));
   }
 
   @Override
   public <T extends AbstractConfiguration<R>, R extends RuntimeInfo> ClusterManagementGetResult<T, R> get(
       T config) {
     return assertSuccessful(
-        transport.submitMessageForGet(config, ClusterManagementGetResult.class));
+        transport.submitMessageForGet(config));
   }
 
   @Override
@@ -98,16 +97,15 @@ public class ClientClusterManagementService implements ClusterManagementService 
   }
 
   @Override
-  public <V extends OperationResult> ClusterManagementOperationResult<V> checkStatus(String opId) {
-    // TODO implement
-    return null;
+  public <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<V> checkStatus(
+      A opType, String opId) {
+    return assertSuccessful(transport.submitMessageForGetOperation(opType, opId));
   }
 
   @Override
   public <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementListOperationsResult<V> list(
       A opType) {
-    return assertSuccessful(transport.submitMessageForListOperation(opType,
-        ClusterManagementListOperationsResult.class));
+    return assertSuccessful(transport.submitMessageForListOperation(opType));
   }
 
   @Override

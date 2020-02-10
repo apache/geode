@@ -17,6 +17,7 @@ package org.apache.geode.management.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.mock;
@@ -27,6 +28,7 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.management.api.ClusterManagementException;
 import org.apache.geode.management.api.ClusterManagementGetResult;
 import org.apache.geode.management.api.ClusterManagementListOperationsResult;
 import org.apache.geode.management.api.ClusterManagementListResult;
@@ -36,6 +38,9 @@ import org.apache.geode.management.api.ClusterManagementRealizationResult;
 import org.apache.geode.management.api.ClusterManagementServiceTransport;
 import org.apache.geode.management.api.CommandType;
 import org.apache.geode.management.configuration.AbstractConfiguration;
+import org.apache.geode.management.operation.RebalanceOperation;
+import org.apache.geode.management.runtime.OperationResult;
+import org.apache.geode.management.runtime.RebalanceResult;
 import org.apache.geode.management.runtime.RuntimeInfo;
 
 public class ClientClusterManagementServiceTest {
@@ -43,8 +48,8 @@ public class ClientClusterManagementServiceTest {
   private ClusterManagementServiceTransport serviceTransport;
   private AbstractConfiguration<RuntimeInfo> configuration;
   private ClusterManagementRealizationResult successRealizationResult;
-  private ClusterManagementOperationResult successOperationResult;
-  private ClusterManagementOperation operation;
+  private ClusterManagementOperationResult<RebalanceResult> successOperationResult;
+  private ClusterManagementOperation<OperationResult> operation;
 
   @Before
   public void init() {
@@ -63,24 +68,22 @@ public class ClientClusterManagementServiceTest {
 
   @Test
   public void createCallsSubmitMessageAndReturnsResult() {
-    when(serviceTransport.submitMessage(any(), any(), any())).thenReturn(successRealizationResult);
+    when(serviceTransport.submitMessage(any(), any())).thenReturn(successRealizationResult);
 
     ClusterManagementRealizationResult realizationResult = service.create(configuration);
 
     assertThat(realizationResult).isSameAs(successRealizationResult);
-    verify(serviceTransport).submitMessage(same(configuration), same(CommandType.CREATE), same(
-        ClusterManagementRealizationResult.class));
+    verify(serviceTransport).submitMessage(same(configuration), same(CommandType.CREATE));
   }
 
   @Test
   public void deleteCallsSubmitMessageAndReturnsResult() {
-    when(serviceTransport.submitMessage(any(), any(), any())).thenReturn(successRealizationResult);
+    when(serviceTransport.submitMessage(any(), any())).thenReturn(successRealizationResult);
 
     ClusterManagementRealizationResult realizationResult = service.delete(configuration);
 
     assertThat(realizationResult).isSameAs(successRealizationResult);
-    verify(serviceTransport).submitMessage(same(configuration), same(CommandType.DELETE), same(
-        ClusterManagementRealizationResult.class));
+    verify(serviceTransport).submitMessage(same(configuration), same(CommandType.DELETE));
   }
 
   @Test
@@ -92,63 +95,91 @@ public class ClientClusterManagementServiceTest {
 
   @Test
   public void listCallsSubmitMessageAndReturnsResult() {
-    ClusterManagementListResult successListResult = mock(ClusterManagementListResult.class);
+    ClusterManagementListResult<AbstractConfiguration<RuntimeInfo>, RuntimeInfo> successListResult =
+        mock(ClusterManagementListResult.class);
     when(successListResult.isSuccessful()).thenReturn(true);
-    when(serviceTransport.submitMessageForList(any(), any())).thenReturn(successListResult);
+    when(serviceTransport.submitMessageForList(any())).thenReturn(successListResult);
 
-    ClusterManagementListResult listResult = service.list(configuration);
+    ClusterManagementListResult<AbstractConfiguration<RuntimeInfo>, RuntimeInfo> listResult =
+        service.list(configuration);
 
     assertThat(listResult).isSameAs(successListResult);
-    verify(serviceTransport).submitMessageForList(same(configuration),
-        same(ClusterManagementListResult.class));
+    verify(serviceTransport).submitMessageForList(same(configuration));
   }
 
   @Test
   public void getCallsSubmitMessageAndReturnsResult() {
-    ClusterManagementGetResult successGetResult = mock(ClusterManagementGetResult.class);
+    ClusterManagementGetResult<AbstractConfiguration<RuntimeInfo>, RuntimeInfo> successGetResult =
+        mock(ClusterManagementGetResult.class);
     when(successGetResult.isSuccessful()).thenReturn(true);
-    when(serviceTransport.submitMessageForGet(any(), any())).thenReturn(successGetResult);
+    when(serviceTransport.submitMessageForGet(any())).thenReturn(successGetResult);
 
-    ClusterManagementGetResult getResult = service.get(configuration);
+    ClusterManagementGetResult<AbstractConfiguration<RuntimeInfo>, RuntimeInfo> getResult =
+        service.get(configuration);
 
     assertThat(getResult).isSameAs(successGetResult);
-    verify(serviceTransport).submitMessageForGet(same(configuration),
-        same(ClusterManagementGetResult.class));
+    verify(serviceTransport).submitMessageForGet(same(configuration));
   }
 
   @Test
   public void startCallsSubmitMessageAndReturnsResult() {
-    when(serviceTransport.submitMessageForStart(any())).thenReturn(successOperationResult);
+    RebalanceOperation rebalanceOperation = new RebalanceOperation();
+    when(serviceTransport.submitMessageForStart(any(RebalanceOperation.class)))
+        .thenReturn(successOperationResult);
 
-    ClusterManagementOperationResult operationResult = service.start(operation);
+    ClusterManagementOperationResult<RebalanceResult> operationResult =
+        service.start(rebalanceOperation);
 
     assertThat(operationResult).isSameAs(successOperationResult);
-    verify(serviceTransport).submitMessageForStart(same(operation));
   }
 
   @Test
   public void checkStatusCallsSubmitMessageAndReturnsResult() {
     String opId = "opId";
-    // when transport then do
+    RebalanceOperation opType = new RebalanceOperation();
+    when(serviceTransport.submitMessageForGetOperation(same(opType), same(opId)))
+        .thenReturn(successOperationResult);
 
-    ClusterManagementOperationResult operationResult = service.checkStatus(opId);
+    ClusterManagementOperationResult<RebalanceResult> operationResult =
+        service.checkStatus(opType, opId);
 
-    assertThat(operationResult).isNotNull();
-    // verify call to transport
+    assertThat(operationResult).isSameAs(successOperationResult);
+    verify(serviceTransport).submitMessageForGetOperation(same(opType), same(opId));
   }
 
   @Test
   public void listOperationCallsSubmitMessageAndReturnsResult() {
-    ClusterManagementListOperationsResult successListOperationsResult =
+    ClusterManagementListOperationsResult<OperationResult> successListOperationsResult =
         mock(ClusterManagementListOperationsResult.class);
     when(successListOperationsResult.isSuccessful()).thenReturn(true);
-    when(serviceTransport.submitMessageForListOperation(any(), any()))
+    when(serviceTransport.submitMessageForListOperation(any()))
         .thenReturn(successListOperationsResult);
 
-    ClusterManagementListOperationsResult operationResult = service.list(operation);
+    ClusterManagementListOperationsResult<OperationResult> operationResult =
+        service.list(operation);
 
     assertThat(operationResult).isSameAs(successListOperationsResult);
-    verify(serviceTransport).submitMessageForListOperation(same(operation),
-        same(ClusterManagementListOperationsResult.class));
+    verify(serviceTransport).submitMessageForListOperation(same(operation));
+  }
+
+  @Test
+  public void createWithNullResultThrows() {
+    when(serviceTransport.submitMessage(any(), any())).thenReturn(null);
+
+    assertThatThrownBy(() -> service.create(configuration))
+        .hasMessageContaining("Unable to parse server response.");
+  }
+
+  @Test
+  public void createWithFailedResult() {
+    ClusterManagementRealizationResult realizationResult =
+        mock(ClusterManagementRealizationResult.class);
+    when(realizationResult.isSuccessful()).thenReturn(false);
+    when(serviceTransport.submitMessage(any(), any())).thenReturn(realizationResult);
+
+    Throwable throwable = catchThrowable(() -> service.create(configuration));
+
+    assertThat(throwable).isInstanceOf(ClusterManagementException.class);
+    assertThat(((ClusterManagementException) throwable).getResult()).isSameAs(realizationResult);
   }
 }
