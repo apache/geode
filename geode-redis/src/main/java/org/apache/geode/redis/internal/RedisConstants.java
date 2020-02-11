@@ -304,6 +304,8 @@ public class RedisConstants {
         "The wrong number of arguments or syntax was provided, the format for the MSETNX command is \"MSETNX key value [key value ...]\", or not every key matches a value";
     public static final String PSETEX =
         "The wrong number of arguments or syntax was provided, the format for the PSETEX command is \"PSETEX key milliseconds value\"";
+    public static final String PUBLISH =
+        "The wrong number of arguments or syntax was provided, the format for the PUBLISH command is \"PUBLISH channel message\"";
     public static final String SETBIT =
         "The wrong number of arguments or syntax was provided, the format for the SETBIT command is \"SETBIT key offset value\"";
     public static final String SET =

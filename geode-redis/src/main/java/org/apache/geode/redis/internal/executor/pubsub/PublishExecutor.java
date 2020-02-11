@@ -15,19 +15,30 @@
 
 package org.apache.geode.redis.internal.executor.pubsub;
 
+import java.util.List;
+
 import io.netty.buffer.ByteBuf;
 
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.Executor;
+import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 
 public class PublishExecutor implements Executor {
+
+
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
-    byte[] channelName = command.getProcessedCommand().get(1);
-    byte[] message = command.getProcessedCommand().get(2);
-    long publishCount = context.getPubSub().publish(new String(channelName), new String(message));
+    List<byte[]> args = command.getProcessedCommand();
+    if (args.size() != 3) {
+      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.PUBLISH));
+      return;
+    }
+
+    String channelName = new String(args.get(1));
+    String message = new String(args.get(2));
+    long publishCount = context.getPubSub().publish(channelName, message);
 
     writeResponse(command, context, publishCount);
   }
