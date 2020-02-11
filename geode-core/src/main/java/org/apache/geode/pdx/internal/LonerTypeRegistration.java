@@ -36,19 +36,19 @@ public class LonerTypeRegistration implements TypeRegistration {
 
   @Override
   public int defineType(PdxType newType) {
-    initializeRegistry();
+    initializeRegistry(null);
     return delegate.defineType(newType);
   }
 
   @Override
   public PdxType getType(int typeId) {
-    initializeRegistry();
+    initializeRegistry(null);
     return delegate.getType(typeId);
   }
 
   @Override
   public void addRemoteType(int typeId, PdxType type) {
-    initializeRegistry();
+    initializeRegistry(null);
     delegate.addRemoteType(typeId, type);
   }
 
@@ -65,8 +65,9 @@ public class LonerTypeRegistration implements TypeRegistration {
 
   @Override
   public void creatingPersistentRegion() {
-    initializeRegistry();
-    delegate.creatingPersistentRegion();
+    if (delegate != null) {
+      delegate.creatingPersistentRegion();
+    }
   }
 
   @Override
@@ -78,16 +79,19 @@ public class LonerTypeRegistration implements TypeRegistration {
   /**
    * Actually initialize the delegate. This is method is called when the type registry is used. At
    * that time, it creates the registry.
+   *
+   * @param isClient Whether the registration is known to belong to a Client (true) or a Peer
+   *        (false). If null, the presence of a pool in the cache will be used to determine the type
+   *        of TypeRegistration that should be used for the delegate.
    */
-  synchronized void initializeRegistry() {
+  synchronized void initializeRegistry(Boolean isClient) {
     if (delegate != null) {
       return;
     }
-    initializeRegistry(cache.hasPool());
-  }
-
-  private synchronized void initializeRegistry(boolean client) {
-    final TypeRegistration delegateTmp = createTypeRegistration(client);
+    if (isClient == null) {
+      isClient = cache.hasPool();
+    }
+    final TypeRegistration delegateTmp = createTypeRegistration(isClient);
     delegateTmp.initialize();
     delegate = delegateTmp;
   }
@@ -116,97 +120,97 @@ public class LonerTypeRegistration implements TypeRegistration {
 
   @Override
   public int getEnumId(Enum<?> v) {
-    initializeRegistry();
+    initializeRegistry(null);
     return this.delegate.getEnumId(v);
   }
 
   @Override
   public void addRemoteEnum(int enumId, EnumInfo newInfo) {
-    initializeRegistry();
+    initializeRegistry(null);
     this.delegate.addRemoteEnum(enumId, newInfo);
   }
 
   @Override
   public int defineEnum(EnumInfo newInfo) {
-    initializeRegistry();
+    initializeRegistry(null);
     return delegate.defineEnum(newInfo);
   }
 
   @Override
   public EnumInfo getEnumById(int enumId) {
-    initializeRegistry();
+    initializeRegistry(null);
     return delegate.getEnumById(enumId);
   }
 
   @Override
   public Map<Integer, PdxType> types() {
-    initializeRegistry();
+    initializeRegistry(null);
     return delegate.types();
   }
 
   @Override
   public Map<Integer, EnumInfo> enums() {
-    initializeRegistry();
+    initializeRegistry(null);
     return delegate.enums();
   }
 
   @Override
   public PdxType getPdxTypeForField(String fieldName, String className) {
-    initializeRegistry();
+    initializeRegistry(null);
     return delegate.getPdxTypeForField(fieldName, className);
   }
 
   @Override
   public Set<PdxType> getPdxTypesForClassName(String className) {
-    initializeRegistry();
+    initializeRegistry(null);
     return delegate.getPdxTypesForClassName(className);
   }
 
   @Override
   public boolean isClient() {
-    initializeRegistry();
+    initializeRegistry(null);
     return delegate.isClient();
   }
 
   @Override
   public void addImportedType(int typeId, PdxType importedType) {
-    initializeRegistry();
+    initializeRegistry(null);
     this.delegate.addImportedType(typeId, importedType);
   }
 
   @Override
   public void addImportedEnum(int enumId, EnumInfo importedInfo) {
-    initializeRegistry();
+    initializeRegistry(null);
     this.delegate.addImportedEnum(enumId, importedInfo);
   }
 
   @Override
   public int getLocalSize() {
-    initializeRegistry();
+    initializeRegistry(null);
     return delegate.getLocalSize();
   }
 
   @Override
   public Map<PdxType, Integer> getTypeToIdMap() {
-    initializeRegistry();
+    initializeRegistry(null);
     return delegate.getTypeToIdMap();
   }
 
   @Override
   public Map<EnumInfo, EnumId> getEnumToIdMap() {
-    initializeRegistry();
+    initializeRegistry(null);
     return delegate.getEnumToIdMap();
   }
 
   @Override
   public void clearLocalMaps() {
-    initializeRegistry();
+    initializeRegistry(null);
     delegate.clearLocalMaps();
   }
 
   @Override
   public void flushCache() {
-    initializeRegistry();
+    initializeRegistry(null);
     delegate.flushCache();
   }
 

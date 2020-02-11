@@ -53,17 +53,35 @@ public class LonerTypeRegistrationTest {
   @Test
   @TestCaseName("{method} isClient={0}")
   @Parameters(method = "clientOrPeerTypeRegistrationParams")
-  public void initializeRegistrySetsCorrectDelegateWhenDelegateIsNullAndDoewNotUpdateDelegateWhenDelegateIsNotNull(
+  public void initializeRegistryWithNullArgumentSetsCorrectDelegateWhenDelegateIsNullAndDoesNotUpdateDelegateWhenDelegateIsNotNull(
       final boolean isClient, final Class<?> expectedTypeRegistration) {
     assertThat(spyRegistration.getDelegateClass()).isNull();
     when(mockCache.hasPool()).thenReturn(isClient);
 
-    spyRegistration.initializeRegistry();
+    spyRegistration.initializeRegistry(null);
 
     verify(spyRegistration, times(1)).createTypeRegistration(isClient);
     assertThat(spyRegistration.getDelegateClass()).isEqualTo(expectedTypeRegistration);
 
-    spyRegistration.initializeRegistry();
+    spyRegistration.initializeRegistry(null);
+
+    verify(spyRegistration, times(1)).createTypeRegistration(isClient);
+    assertThat(spyRegistration.getDelegateClass()).isEqualTo(expectedTypeRegistration);
+  }
+
+  @Test
+  @TestCaseName("{method} isClient={0}")
+  @Parameters(method = "clientOrPeerTypeRegistrationParams")
+  public void initializeRegistryWithNonNullArgumentSetsCorrectDelegateWhenDelegateIsNullAndDoesNotUpdateDelegateWhenDelegateIsNotNull(
+      final boolean isClient, final Class<?> expectedTypeRegistration) {
+    assertThat(spyRegistration.getDelegateClass()).isNull();
+
+    spyRegistration.initializeRegistry(isClient);
+
+    verify(spyRegistration, times(1)).createTypeRegistration(isClient);
+    assertThat(spyRegistration.getDelegateClass()).isEqualTo(expectedTypeRegistration);
+
+    spyRegistration.initializeRegistry(isClient);
 
     verify(spyRegistration, times(1)).createTypeRegistration(isClient);
     assertThat(spyRegistration.getDelegateClass()).isEqualTo(expectedTypeRegistration);
