@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.partitioned;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
@@ -59,7 +60,7 @@ public class ClearPRMessageTest {
 
     assertThatThrownBy(() -> message.doLocalClear(region))
         .isInstanceOf(PartitionedRegionException.class)
-        .hasMessageContaining("We're not primary!");
+        .hasMessageContaining(ClearPRMessage.BUCKET_NON_PRIMARY_MESSAGE);
   }
 
   @Test
@@ -72,7 +73,7 @@ public class ClearPRMessageTest {
 
     assertThatThrownBy(() -> message.doLocalClear(region))
         .isInstanceOf(PartitionedRegionException.class)
-        .hasMessageContaining("We couldn't lock!");
+        .hasMessageContaining(ClearPRMessage.BUCKET_REGION_LOCK_UNAVAILABLE_MESSAGE);
   }
 
   @Test
@@ -86,7 +87,7 @@ public class ClearPRMessageTest {
 
     assertThatThrownBy(() -> message.doLocalClear(region))
         .isInstanceOf(PartitionedRegionException.class)
-        .hasMessageContaining("We're not primary!");
+        .hasMessageContaining(ClearPRMessage.BUCKET_NON_PRIMARY_MESSAGE);
     // Confirm that we actually obtained and released the lock
     verify(mockLockService, times(1)).lock(any(), anyLong(), anyLong());
     verify(mockLockService, times(1)).unlock(any());
@@ -98,6 +99,7 @@ public class ClearPRMessageTest {
     DistributedLockService mockLockService = mock(DistributedLockService.class);
     doReturn(mockLockService).when(message).getPartitionRegionLockService();
 
+
     // Be primary on the first check, then be not primary on the second check
     when(bucketRegion.isPrimary()).thenReturn(true);
     when(mockLockService.lock(any(), anyLong(), anyLong())).thenReturn(true);
@@ -105,7 +107,7 @@ public class ClearPRMessageTest {
     assertThat(message.doLocalClear(region)).isTrue();
 
     // Confirm that cmnClearRegion was called
-    // verify(bucketRegion, times(1)).cmnClearRegion(any(), any(), any());
+    verify(bucketRegion, times(1)).cmnClearRegion(any(), anyBoolean(), anyBoolean());
 
     // Confirm that we actually obtained and released the lock
     verify(mockLockService, times(1)).lock(any(), anyLong(), anyLong());

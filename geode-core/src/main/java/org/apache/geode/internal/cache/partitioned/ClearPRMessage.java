@@ -64,6 +64,10 @@ public class ClearPRMessage extends PartitionMessageWithDirectReply {
 
   /** The time in ms to wait for a lock to be obtained during doLocalClear() */
   public static final int LOCK_WAIT_TIMEOUT_MS = 100;
+  public static final String BUCKET_NON_PRIMARY_MESSAGE =
+      "The bucket region on target member is no longer primary";
+  public static final String BUCKET_REGION_LOCK_UNAVAILABLE_MESSAGE =
+      "A lock for the bucket region could not be obtained.";
 
   protected static final short HAS_BRIDGE_CONTEXT = UNRESERVED_FLAGS_START;
 
@@ -195,7 +199,7 @@ public class ClearPRMessage extends PartitionMessageWithDirectReply {
 
     // Check if we are primary, throw exception if not
     if (!bucketRegion.isPrimary()) {
-      throw new PartitionedRegionException("We're not primary!");
+      throw new PartitionedRegionException(BUCKET_NON_PRIMARY_MESSAGE);
     }
 
     DistributedLockService lockService = getPartitionRegionLockService();
@@ -204,15 +208,17 @@ public class ClearPRMessage extends PartitionMessageWithDirectReply {
       boolean locked = lockService.lock(lockName, LOCK_WAIT_TIMEOUT_MS, -1);
 
       if (!locked) {
-        throw new PartitionedRegionException("We couldn't lock!");
+        throw new PartitionedRegionException(BUCKET_REGION_LOCK_UNAVAILABLE_MESSAGE);
       }
 
+      // Double check if we are still primary, as this could have changed between our first check
+      // and obtaining the lock
       if (!bucketRegion.isPrimary()) {
-        throw new PartitionedRegionException("We're not primary!");
+        throw new PartitionedRegionException(BUCKET_NON_PRIMARY_MESSAGE);
       }
 
       // call new cmnClearRegion on the target bucket region
-      // bucketRegion.cmnClearRegion(regionEvent, true?, true?);
+      bucketRegion.cmnClearRegion(regionEvent, true, true);
     } finally {
       lockService.unlock(lockName);
     }

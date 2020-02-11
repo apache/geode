@@ -2009,7 +2009,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   }
 
   @Override
-  void cmnClearRegion(RegionEventImpl regionEvent, boolean cacheWrite, boolean useRVV) {
+  public void cmnClearRegion(RegionEventImpl regionEvent, boolean cacheWrite, boolean useRVV) {
     boolean enableRVV = useRVV && getDataPolicy().withReplication()
         && getConcurrencyChecksEnabled() && !getDistributionManager().isLoner();
 
