@@ -1487,7 +1487,9 @@ public class Connection implements Runnable {
         asyncClose(false);
         owner.removeAndCloseThreadOwnedSockets();
       } else {
-        asyncClose(false);
+        if (sharedResource) {
+          asyncClose(false);
+        }
       }
       releaseInputBuffer();
 
@@ -1627,21 +1629,23 @@ public class Connection implements Runnable {
             }
             return;
           }
-          if (!isHandShakeReader) {
-            processInputBuffer();
+          processInputBuffer();
 
-            if (!isReceiver && (handshakeRead || handshakeCancelled)) {
-              if (logger.isDebugEnabled()) {
-                if (handshakeRead) {
-                  logger.debug("handshake has been read {}", this);
-                } else {
-                  logger.debug("handshake has been cancelled {}", this);
-                }
+          if (!isHandShakeReader && !isReceiver && (handshakeRead || handshakeCancelled)) {
+            if (logger.isDebugEnabled()) {
+              if (handshakeRead) {
+                logger.debug("handshake has been read {}", this);
+              } else {
+                logger.debug("handshake has been cancelled {}", this);
               }
-              isHandShakeReader = true;
-              notifyHandshakeWaiter(false);
-              // Once we have read the handshake the reader can skip processing messages
             }
+            isHandShakeReader = true;
+            notifyHandshakeWaiter(false);
+            // Once we have read the handshake the reader can skip processing messages
+            if (!sharedResource) {
+              break;
+            }
+
           }
         } catch (CancelException e) {
           if (logger.isDebugEnabled()) {
