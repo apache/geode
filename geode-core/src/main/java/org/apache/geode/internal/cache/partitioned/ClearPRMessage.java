@@ -233,9 +233,8 @@ public class ClearPRMessage extends PartitionMessageWithDirectReply {
   }
 
   @Override
-  // DE Do we want this to be true or false?
   public boolean canStartRemoteTransaction() {
-    return true;
+    return false;
   }
 
   @Override
