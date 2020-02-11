@@ -28,6 +28,7 @@ import org.junit.Test;
 import redis.clients.jedis.Jedis;
 
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 
@@ -83,16 +84,8 @@ public class PubSubDUnitTest {
     mockSubscriber1.unsubscribe(CHANNEL_NAME);
     mockSubscriber2.unsubscribe(CHANNEL_NAME);
 
-    subscriberThread1.join(2000);
-    subscriberThread2.join(2000);
-
-    assertThat(subscriberThread1.isAlive())
-        .as("subscriber thread 1 should not be alive")
-        .isFalse();
-
-    assertThat(subscriberThread2.isAlive())
-        .as("subscriber thread 2 should not be alive")
-        .isFalse();
+    GeodeAwaitility.await().untilAsserted(subscriberThread1::join);
+    GeodeAwaitility.await().untilAsserted(subscriberThread2::join);
   }
 
 }

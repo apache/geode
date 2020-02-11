@@ -26,23 +26,25 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 
+/**
+ * Central class that manages publish and subscribe functionality. Since Redis subscriptions
+ * require a persistent connection we need to have a way to track the existing clients that are
+ * expecting to receive published messages.
+ */
 public class PubSub {
   public static final String REDIS_PUB_SUB_FUNCTION_ID = "redisPubSubFunctionID";
 
   Subscribers subscribers = new Subscribers();
 
   public long publish(String channel, String message) {
-    ResultCollector<?, ?> subscriberCountCollector = FunctionService
+    ResultCollector<String[], List<Long>> subscriberCountCollector = FunctionService
         .onMembers()
         .setArguments(new String[] {channel, message})
         .execute(REDIS_PUB_SUB_FUNCTION_ID);
 
-    List<Long> subscriberCounts = (List<Long>) subscriberCountCollector.getResult();
-    long totalSubscribers = 0;
-    for (long subscriberCount : subscriberCounts) {
-      totalSubscribers += subscriberCount;
-    }
-    return totalSubscribers;
+    List<Long> subscriberCounts = subscriberCountCollector.getResult();
+
+    return subscriberCounts.stream().mapToLong(x -> x).sum();
   }
 
   public long subscribe(String channel, ExecutionHandlerContext context, Client client) {
@@ -55,15 +57,15 @@ public class PubSub {
   }
 
   public void registerPublishFunction() {
-    FunctionService.registerFunction(new Function() {
+    FunctionService.registerFunction(new Function<String[]>() {
       @Override
       public String getId() {
         return REDIS_PUB_SUB_FUNCTION_ID;
       }
 
       @Override
-      public void execute(FunctionContext context) {
-        String[] publishMessage = (String[]) context.getArguments();
+      public void execute(FunctionContext<String[]> context) {
+        String[] publishMessage = context.getArguments();
         long subscriberCount = publishMessageToSubscribers(publishMessage[0], publishMessage[1]);
         context.getResultSender().lastResult(subscriberCount);
       }
@@ -79,7 +81,8 @@ public class PubSub {
     Map<Boolean, List<Subscriber>> results = this.subscribers
         .findSubscribers(channel)
         .stream()
-        .collect(Collectors.partitioningBy(s -> s.publishMessage(channel, message)));
+        .collect(
+            Collectors.partitioningBy(subscriber -> subscriber.publishMessage(channel, message)));
 
     prune(results.get(false));
 
@@ -98,16 +101,16 @@ public class PubSub {
     List<Subscriber> subscribers = new ArrayList<>();
 
     private boolean exists(String channel, Client client) {
-      return subscribers.stream().anyMatch((s) -> s.isEqualTo(channel, client));
+      return subscribers.stream().anyMatch(subscriber -> subscriber.isEqualTo(channel, client));
     }
 
     private List<Subscriber> findSubscribers(Client client) {
-      return subscribers.stream().filter((s) -> s.client.equals(client))
+      return subscribers.stream().filter(subscriber -> subscriber.client.equals(client))
           .collect(Collectors.toList());
     }
 
     private List<Subscriber> findSubscribers(String channel) {
-      return subscribers.stream().filter((s) -> s.channel.equals(channel))
+      return subscribers.stream().filter(subscriber -> subscriber.channel.equals(channel))
           .collect(Collectors.toList());
     }
 
@@ -116,11 +119,11 @@ public class PubSub {
     }
 
     public void remove(String channel, Client client) {
-      this.subscribers.removeIf((subscriber) -> subscriber.isEqualTo(channel, client));
+      this.subscribers.removeIf(subscriber -> subscriber.isEqualTo(channel, client));
     }
 
     public void remove(Client client) {
-      this.subscribers.removeIf((subscriber) -> subscriber.client.equals(client));
+      this.subscribers.removeIf(subscriber -> subscriber.client.equals(client));
     }
   }
 }

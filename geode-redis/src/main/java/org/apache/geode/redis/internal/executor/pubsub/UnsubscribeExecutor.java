@@ -18,7 +18,9 @@ package org.apache.geode.redis.internal.executor.pubsub;
 import java.util.ArrayList;
 
 import io.netty.buffer.ByteBuf;
+import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.CoderException;
 import org.apache.geode.redis.internal.Command;
@@ -26,6 +28,7 @@ import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 
 public class UnsubscribeExecutor extends AbstractExecutor {
+  private static final Logger logger = LogService.getLogger();
 
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
@@ -37,11 +40,12 @@ public class UnsubscribeExecutor extends AbstractExecutor {
     items.add("unsubscribe");
     items.add(channelName);
     items.add(subscriptionCount);
+
     ByteBuf response = null;
     try {
       response = Coder.getArrayResponse(context.getByteBufAllocator(), items);
     } catch (CoderException e) {
-      e.printStackTrace();
+      logger.warn("Error encoding unsubscribe response", e);
     }
 
     command.setResponse(response);

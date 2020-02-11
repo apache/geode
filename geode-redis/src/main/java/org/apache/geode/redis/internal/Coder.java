@@ -454,9 +454,11 @@ public class Coder {
   public static String doubleToString(double d) {
     if (d == Double.POSITIVE_INFINITY) {
       return "Infinity";
-    } else if (d == Double.NEGATIVE_INFINITY) {
+    }
+    if (d == Double.NEGATIVE_INFINITY) {
       return "-Infinity";
     }
+
     return String.valueOf(d);
   }
 

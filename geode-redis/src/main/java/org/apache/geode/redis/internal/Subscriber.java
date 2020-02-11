@@ -17,21 +17,21 @@
 package org.apache.geode.redis.internal;
 
 import java.util.Arrays;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ExecutionException;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 class Subscriber {
+  private static final Logger logger = LogService.getLogger();
   public final Client client;
   public final String channel;
   private ExecutionHandlerContext context;
 
-  public Subscriber(Client client, String channel,
-      ExecutionHandlerContext context) {
-
+  public Subscriber(Client client, String channel, ExecutionHandlerContext context) {
     this.client = client;
     this.channel = channel;
     this.context = context;
@@ -42,25 +42,38 @@ class Subscriber {
   }
 
   public boolean publishMessage(String channel, String message) {
+    ByteBuf messageByteBuffer = constructResponse(channel, message);
+    if (messageByteBuffer == null) {
+      return false;
+    }
+
+    return writeToChannelSynchronously(messageByteBuffer);
+  }
+
+  private ByteBuf constructResponse(String channel, String message) {
     ByteBuf messageByteBuffer;
     try {
       messageByteBuffer = Coder.getArrayResponse(context.getByteBufAllocator(),
           Arrays.asList("message", channel, message));
     } catch (CoderException e) {
-      throw new RuntimeException(e);
+      logger.warn("Unable to encode publish message", e);
+      return null;
     }
+    return messageByteBuffer;
+  }
 
-    CountDownLatch latch = new CountDownLatch(1);
-
-    ChannelFutureListener channelFutureListener = future -> latch.countDown();
-
-    ChannelFuture channelFuture =
-        context.writeToChannelWithListener(messageByteBuffer, channelFutureListener);
+  /**
+   * This method turns the response into a synchronous call. We want to
+   * determine if the response, to the client, resulted in an error - for example if the client has
+   * disconnected and the write fails. In such cases we need to be able to notify the caller.
+   */
+  private boolean writeToChannelSynchronously(ByteBuf messageByteBuffer) {
+    ChannelFuture channelFuture = context.writeToChannel(messageByteBuffer);
 
     try {
-      latch.await(1, TimeUnit.SECONDS);
-    } catch (InterruptedException e) {
-      throw new RuntimeException(e);
+      channelFuture.get();
+    } catch (InterruptedException | ExecutionException e) {
+      return false;
     }
     return channelFuture.cause() == null;
   }

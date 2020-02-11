@@ -18,7 +18,9 @@ package org.apache.geode.redis.internal.executor.pubsub;
 import java.util.ArrayList;
 
 import io.netty.buffer.ByteBuf;
+import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.CoderException;
 import org.apache.geode.redis.internal.Command;
@@ -26,6 +28,7 @@ import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 
 public class SubscribeExecutor extends AbstractExecutor {
+  private static final Logger logger = LogService.getLogger();
 
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
@@ -48,17 +51,17 @@ public class SubscribeExecutor extends AbstractExecutor {
 
   private void writeResponse(Command command, ExecutionHandlerContext context,
       ArrayList<ArrayList<Object>> items) {
-    ByteBuf bigResponse = context.getByteBufAllocator().buffer();
+    ByteBuf aggregatedResponse = context.getByteBufAllocator().buffer();
     items.forEach(item -> {
       ByteBuf response = null;
       try {
         response = Coder.getArrayResponse(context.getByteBufAllocator(), item);
       } catch (CoderException e) {
-        e.printStackTrace();
+        logger.warn("Error encoding subscribe response", e);
       }
-      bigResponse.writeBytes(response);
+      aggregatedResponse.writeBytes(response);
     });
-    command.setResponse(bigResponse);
+    command.setResponse(aggregatedResponse);
   }
 
 }
