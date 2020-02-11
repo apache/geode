@@ -178,7 +178,7 @@ public final class GMSEncrypt<ID extends MemberIdentifier> {
   protected byte[] getPublicKey(ID member) {
     ID localMbr = services.getMessenger().getMemberID();
     try {
-      if (localMbr != null && localMbr.compareTo(member, true, false) == 0) {
+      if (localMbr != null && localMbr.compareTo(member, false, false) == 0) {
         return this.dhPublicKey.getEncoded();// local one
       }
       return lookupKeyByMember(member);
