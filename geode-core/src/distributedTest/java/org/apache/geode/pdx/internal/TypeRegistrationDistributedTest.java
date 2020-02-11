@@ -84,22 +84,16 @@ public class TypeRegistrationDistributedTest implements Serializable {
       final InternalCache cache = cacheRule.getOrCreateCache();
       final SuppliableStatistics statistics = getStatistics(cache);
       statistics.updateSuppliedValues();
-      // assertThat(statistics.getLong(TYPE_DEFINED)).isEqualTo(0);
-      // assertThat(statistics.getLong(ENUM_DEFINED)).isEqualTo(0);
       assertThat(statistics.getLong(TYPE_CREATED)).isEqualTo(0);
       assertThat(statistics.getLong(ENUM_CREATED)).isEqualTo(0);
       assertThat(statistics.getLong(SIZE)).isEqualTo(0);
       pdxGenerator.run();
       statistics.updateSuppliedValues();
-      // assertThat(statistics.getLong(TYPE_DEFINED)).isEqualTo(1);
-      // assertThat(statistics.getLong(ENUM_DEFINED)).isEqualTo(1);
       assertThat(statistics.getLong(TYPE_CREATED)).isEqualTo(1);
       assertThat(statistics.getLong(ENUM_CREATED)).isEqualTo(1);
       assertThat(statistics.getLong(SIZE)).isEqualTo(2);
       pdxGenerator.run();
       statistics.updateSuppliedValues();
-      // assertThat(statistics.getLong(TYPE_DEFINED)).isEqualTo(1);
-      // assertThat(statistics.getLong(ENUM_DEFINED)).isEqualTo(1);
       assertThat(statistics.getLong(TYPE_CREATED)).isEqualTo(1);
       assertThat(statistics.getLong(ENUM_CREATED)).isEqualTo(1);
       assertThat(statistics.getLong(SIZE)).isEqualTo(2);
@@ -108,25 +102,14 @@ public class TypeRegistrationDistributedTest implements Serializable {
       final InternalCache cache = cacheRule.getOrCreateCache();
       final SuppliableStatistics statistics = getStatistics(cache);
       statistics.updateSuppliedValues();
-      // assertThat(statistics.getLong(TYPE_DEFINED)).isEqualTo(0);
-      // assertThat(statistics.getLong(ENUM_DEFINED)).isEqualTo(0);
       assertThat(statistics.getLong(TYPE_CREATED)).isEqualTo(0);
       assertThat(statistics.getLong(ENUM_CREATED)).isEqualTo(0);
       assertThat(statistics.getLong(SIZE)).isEqualTo(2);
       pdxGenerator.run();
       statistics.updateSuppliedValues();
-      // assertThat(statistics.getLong(TYPE_DEFINED)).isEqualTo(1);
-      // assertThat(statistics.getLong(ENUM_DEFINED)).isEqualTo(1);
       assertThat(statistics.getLong(TYPE_CREATED)).isEqualTo(0);
       assertThat(statistics.getLong(ENUM_CREATED)).isEqualTo(0);
       assertThat(statistics.getLong(SIZE)).isEqualTo(2);
-      // pdxGenerator.run();
-      // statistics.updateSuppliedValues();
-      // assertThat(statistics.getLong(TYPE_DEFINED)).isEqualTo(1);
-      // assertThat(statistics.getLong(ENUM_DEFINED)).isEqualTo(1);
-      // assertThat(statistics.getLong(TYPE_CREATED)).isEqualTo(0);
-      // assertThat(statistics.getLong(ENUM_CREATED)).isEqualTo(0);
-      // assertThat(statistics.getLong(SIZE)).isEqualTo(2);
     });
   }
 

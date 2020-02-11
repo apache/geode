@@ -65,10 +65,8 @@ public class LonerTypeRegistration implements TypeRegistration {
 
   @Override
   public void creatingPersistentRegion() {
-    if (delegate != null) {
-      delegate.creatingPersistentRegion();
-    }
-
+    initializeRegistry();
+    delegate.creatingPersistentRegion();
   }
 
   @Override
@@ -81,14 +79,14 @@ public class LonerTypeRegistration implements TypeRegistration {
    * Actually initialize the delegate. This is method is called when the type registry is used. At
    * that time, it creates the registry.
    */
-  private synchronized void initializeRegistry() {
+  synchronized void initializeRegistry() {
+    if (delegate != null) {
+      return;
+    }
     initializeRegistry(cache.hasPool());
   }
 
   private synchronized void initializeRegistry(boolean client) {
-    if (delegate != null) {
-      return;
-    }
     final TypeRegistration delegateTmp = createTypeRegistration(client);
     delegateTmp.initialize();
     delegate = delegateTmp;
@@ -166,6 +164,7 @@ public class LonerTypeRegistration implements TypeRegistration {
 
   @Override
   public boolean isClient() {
+    initializeRegistry();
     return delegate.isClient();
   }
 
@@ -183,6 +182,7 @@ public class LonerTypeRegistration implements TypeRegistration {
 
   @Override
   public int getLocalSize() {
+    initializeRegistry();
     return delegate.getLocalSize();
   }
 
@@ -208,5 +208,14 @@ public class LonerTypeRegistration implements TypeRegistration {
   public void flushCache() {
     initializeRegistry();
     delegate.flushCache();
+  }
+
+  // For testing
+  Class<? extends TypeRegistration> getDelegateClass() {
+    if (delegate != null) {
+      return delegate.getClass();
+    } else {
+      return null;
+    }
   }
 }

@@ -43,6 +43,7 @@ import org.apache.geode.cache.util.CacheWriterAdapter;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.LockServiceDestroyedException;
+import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.internal.CopyOnWriteHashSet;
@@ -100,16 +101,16 @@ public class PeerTypeRegistration implements TypeRegistration {
 
     final InternalDistributedSystem internalDistributedSystem =
         cache.getInternalDistributedSystem();
+
     typeIdPrefix = getDistributedSystemId(internalDistributedSystem) << 24;
     statistics =
         new TypeRegistrationStatistics(internalDistributedSystem.getStatisticsManager(), this);
   }
 
-  private static int getDistributedSystemId(
-      final InternalDistributedSystem internalDistributedSystem) {
+  int getDistributedSystemId(final InternalDistributedSystem internalDistributedSystem) {
     final int distributedSystemId =
         internalDistributedSystem.getDistributionManager().getDistributedSystemId();
-    if (distributedSystemId == -1) {
+    if (distributedSystemId == DistributionConfig.DEFAULT_DISTRIBUTED_SYSTEM_ID) {
       return 0;
     }
     return distributedSystemId;
@@ -171,7 +172,6 @@ public class PeerTypeRegistration implements TypeRegistration {
     });
 
     factory.setCacheWriter(new CacheWriterAdapter<Object, Object>() {
-
       @Override
       public void beforeCreate(EntryEvent<Object, Object> event) throws CacheWriterException {
         Object newValue = event.getNewValue();
@@ -193,7 +193,6 @@ public class PeerTypeRegistration implements TypeRegistration {
           throw new CacheWriterException(ex);
         }
       }
-
     });
 
     factory.setIsUsedForMetaRegion(true);
