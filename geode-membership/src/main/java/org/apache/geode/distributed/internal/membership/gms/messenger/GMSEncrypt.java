@@ -176,14 +176,15 @@ public final class GMSEncrypt<ID extends MemberIdentifier> {
   }
 
   protected byte[] getPublicKey(ID member) {
+    ID localMbr = services.getMessenger().getMemberID();
     try {
-      ID localMbr = services.getMessenger().getMemberID();
       if (localMbr != null && localMbr.compareTo(member, true, false) == 0) {
         return this.dhPublicKey.getEncoded();// local one
       }
       return lookupKeyByMember(member);
     } catch (Exception e) {
-      throw new RuntimeException("Not found public key for member " + member, e);
+      throw new RuntimeException(
+          "Not found public key for member " + member + "; my address is " + localMbr, e);
     }
   }
 
