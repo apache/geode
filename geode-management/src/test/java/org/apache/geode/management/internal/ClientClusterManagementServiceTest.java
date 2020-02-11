@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.same;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -48,7 +49,7 @@ public class ClientClusterManagementServiceTest {
   private ClusterManagementServiceTransport serviceTransport;
   private AbstractConfiguration<RuntimeInfo> configuration;
   private ClusterManagementRealizationResult successRealizationResult;
-  private ClusterManagementOperationResult<RebalanceResult> successOperationResult;
+  private ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> successOperationResult;
   private ClusterManagementOperation<OperationResult> operation;
 
   @Before
@@ -124,10 +125,10 @@ public class ClientClusterManagementServiceTest {
   @Test
   public void startCallsSubmitMessageAndReturnsResult() {
     RebalanceOperation rebalanceOperation = new RebalanceOperation();
-    when(serviceTransport.submitMessageForStart(any(RebalanceOperation.class)))
-        .thenReturn(successOperationResult);
+    doReturn(successOperationResult).when(serviceTransport)
+        .submitMessageForStart(any(RebalanceOperation.class));
 
-    ClusterManagementOperationResult<RebalanceResult> operationResult =
+    ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> operationResult =
         service.start(rebalanceOperation);
 
     assertThat(operationResult).isSameAs(successOperationResult);
@@ -137,10 +138,10 @@ public class ClientClusterManagementServiceTest {
   public void checkStatusCallsSubmitMessageAndReturnsResult() {
     String opId = "opId";
     RebalanceOperation opType = new RebalanceOperation();
-    when(serviceTransport.submitMessageForGetOperation(same(opType), same(opId)))
-        .thenReturn(successOperationResult);
+    doReturn(successOperationResult).when(serviceTransport)
+        .submitMessageForGetOperation(same(opType), same(opId));
 
-    ClusterManagementOperationResult<RebalanceResult> operationResult =
+    ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> operationResult =
         service.checkStatus(opType, opId);
 
     assertThat(operationResult).isSameAs(successOperationResult);
@@ -149,13 +150,12 @@ public class ClientClusterManagementServiceTest {
 
   @Test
   public void listOperationCallsSubmitMessageAndReturnsResult() {
-    ClusterManagementListOperationsResult<OperationResult> successListOperationsResult =
+    ClusterManagementListOperationsResult<ClusterManagementOperation<OperationResult>, OperationResult> successListOperationsResult =
         mock(ClusterManagementListOperationsResult.class);
     when(successListOperationsResult.isSuccessful()).thenReturn(true);
-    when(serviceTransport.submitMessageForListOperation(any()))
-        .thenReturn(successListOperationsResult);
+    doReturn(successOperationResult).when(serviceTransport).submitMessageForListOperation(any());
 
-    ClusterManagementListOperationsResult<OperationResult> operationResult =
+    ClusterManagementListOperationsResult<ClusterManagementOperation<OperationResult>, OperationResult> operationResult =
         service.list(operation);
 
     assertThat(operationResult).isSameAs(successListOperationsResult);

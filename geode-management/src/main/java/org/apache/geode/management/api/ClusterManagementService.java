@@ -95,7 +95,7 @@ public interface ClusterManagementService extends AutoCloseable {
    *         operation was launched successfully) or an error code otherwise.
    * @throws ClusterManagementException if unsuccessful
    */
-  <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<V> start(
+  <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<A, V> start(
       A op);
 
   /**
@@ -105,7 +105,7 @@ public interface ClusterManagementService extends AutoCloseable {
    * @param <V> the return type of the operation
    * @return the status of the identified operation
    */
-  <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<V> checkStatus(
+  <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<A, V> checkStatus(
       A opType, String opId);
 
   /**
@@ -118,7 +118,7 @@ public interface ClusterManagementService extends AutoCloseable {
    * @return a list of {@link ClusterManagementOperationResult}
    * @throws ClusterManagementException if unsuccessful
    */
-  <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementListOperationsResult<V> list(
+  <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementListOperationsResult<A, V> list(
       A opType);
 
   /**

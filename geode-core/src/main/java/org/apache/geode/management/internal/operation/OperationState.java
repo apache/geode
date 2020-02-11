@@ -30,7 +30,6 @@ public class OperationState<A extends ClusterManagementOperation<V>, V extends O
     implements Identifiable<String> {
   private final String opId;
   private final A operation;
-  private final String operator;
   private final Date operationStart;
   private Date operationEnd;
   private V result;
@@ -47,7 +46,6 @@ public class OperationState<A extends ClusterManagementOperation<V>, V extends O
     OperationState<?, ?> that = (OperationState<?, ?>) o;
     return Objects.equals(opId, that.opId) &&
         Objects.equals(getOperation(), that.getOperation()) &&
-        Objects.equals(getOperator(), that.getOperator()) &&
         Objects.equals(getOperationStart(), that.getOperationStart()) &&
         Objects.equals(getOperationEnd(), that.getOperationEnd()) &&
         Objects.equals(getResult(), that.getResult()) &&
@@ -56,7 +54,7 @@ public class OperationState<A extends ClusterManagementOperation<V>, V extends O
 
   @Override
   public int hashCode() {
-    return Objects.hash(opId, getOperation(), getOperator(), getOperationStart(), getOperationEnd(),
+    return Objects.hash(opId, getOperation(), getOperationStart(), getOperationEnd(),
         getResult(), getThrowable());
   }
 
@@ -64,11 +62,6 @@ public class OperationState<A extends ClusterManagementOperation<V>, V extends O
     this.opId = opId;
     this.operation = operation;
     this.operationStart = operationStart;
-    if (operation instanceof TaggedWithOperator) {
-      this.operator = ((TaggedWithOperator) operation).getOperator();
-    } else {
-      this.operator = null;
-    }
   }
 
   @Override
@@ -82,10 +75,6 @@ public class OperationState<A extends ClusterManagementOperation<V>, V extends O
 
   public Date getOperationStart() {
     return operationStart;
-  }
-
-  public String getOperator() {
-    return operator;
   }
 
   public void setOperationEnd(Date operationEnd, V result, Throwable exception) {

@@ -38,16 +38,13 @@ public class ClusterManagementOperationResultTest {
   public void serialize() throws Exception {
     ClusterManagementResult result1 = new ClusterManagementResult();
     result1.setStatus(StatusCode.OK, "Success!!");
-    ClusterManagementOperationResult<TestOperationResult> result =
+    ClusterManagementOperationResult<ClusterManagementOperation<OperationResult>, OperationResult> result =
         new ClusterManagementOperationResult<>(result1, new Date(), new Date(),
-            "operator", "id", null, null);
+            null, "id", null, null);
     String json = mapper.writeValueAsString(result);
     System.out.println(json);
-    ClusterManagementOperationResult<TestOperationResult> value =
+    ClusterManagementOperationResult<ClusterManagementOperation<OperationResult>, OperationResult> value =
         mapper.readValue(json, ClusterManagementOperationResult.class);
     assertThat(value.getStatusMessage()).isEqualTo("Success!!");
-  }
-
-  static class TestOperationResult implements OperationResult {
   }
 }

@@ -388,7 +388,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
   }
 
   @Override
-  public <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<V> start(
+  public <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<A, V> start(
       A op) {
     OperationState<A, V> operationInstance = operationManager.submit(op);
 
@@ -399,7 +399,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
   }
 
   @Override
-  public <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementListOperationsResult<V> list(
+  public <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementListOperationsResult<A, V> list(
       A opType) {
     return assertSuccessful(new ClusterManagementListOperationsResult<>(
         operationManager.list(opType).stream()
@@ -409,11 +409,11 @@ public class LocatorClusterManagementService implements ClusterManagementService
   /**
    * builds a result object from a base status and an operation instance
    */
-  private <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<V> toClusterManagementListOperationsResult(
+  private <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<A, V> toClusterManagementListOperationsResult(
       ClusterManagementResult status, OperationState<A, V> operationState) {
-    ClusterManagementOperationResult<V> result = new ClusterManagementOperationResult<>(status,
+    ClusterManagementOperationResult<A, V> result = new ClusterManagementOperationResult<>(status,
         operationState.getOperationStart(), operationState.getOperationEnd(),
-        operationState.getOperator(), operationState.getId(), operationState.getResult(),
+        operationState.getOperation(), operationState.getId(), operationState.getResult(),
         operationState.getThrowable());
     result.setLinks(
         new Links(operationState.getId(), operationState.getOperation().getEndpoint()));
@@ -423,7 +423,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
   /**
    * builds a result object from an operation instance
    */
-  private <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<V> toClusterManagementListOperationsResult(
+  private <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<A, V> toClusterManagementListOperationsResult(
       OperationState<A, V> operationState) {
     return toClusterManagementListOperationsResult(
         checkStatus(operationState.getOperation(), operationState.getId()),
@@ -431,9 +431,9 @@ public class LocatorClusterManagementService implements ClusterManagementService
   }
 
   @Override
-  public <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<V> checkStatus(
+  public <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<A, V> checkStatus(
       A opType, String opId) {
-    final OperationState<?, V> operationState = operationManager.get(opId);
+    final OperationState<A, V> operationState = operationManager.get(opId);
     if (operationState == null) {
       raise(StatusCode.ENTITY_NOT_FOUND, "Operation '" + opId + "' does not exist.");
     }
@@ -446,11 +446,11 @@ public class LocatorClusterManagementService implements ClusterManagementService
       resultStatus = StatusCode.ERROR;
       resultMessage = operationState.getThrowable().getMessage();
     }
-    ClusterManagementOperationResult<V> result = new ClusterManagementOperationResult<>(
+    ClusterManagementOperationResult<A, V> result = new ClusterManagementOperationResult<>(
         new ClusterManagementResult(resultStatus, resultMessage),
         operationState.getOperationStart(),
         operationState.getOperationEnd(),
-        operationState.getOperator(),
+        operationState.getOperation(),
         opId,
         operationState.getResult(),
         operationState.getThrowable());

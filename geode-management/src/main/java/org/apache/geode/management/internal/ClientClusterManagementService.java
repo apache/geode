@@ -60,14 +60,17 @@ public class ClientClusterManagementService implements ClusterManagementService 
 
   @Override
   public <T extends AbstractConfiguration<?>> ClusterManagementRealizationResult create(T config) {
-    return assertSuccessful(transport
-        .submitMessage(config, CommandType.CREATE));
+    ClusterManagementRealizationResult result = transport.submitMessage(config, CommandType.CREATE);
+    assertSuccessful(result);
+    return result;
   }
 
   @Override
   public <T extends AbstractConfiguration<?>> ClusterManagementRealizationResult delete(
       T config) {
-    return assertSuccessful(transport.submitMessage(config, CommandType.DELETE));
+    ClusterManagementRealizationResult result = transport.submitMessage(config, CommandType.DELETE);
+    assertSuccessful(result);
+    return result;
   }
 
   @Override
@@ -79,33 +82,43 @@ public class ClientClusterManagementService implements ClusterManagementService 
   @Override
   public <T extends AbstractConfiguration<R>, R extends RuntimeInfo> ClusterManagementListResult<T, R> list(
       T config) {
-    return assertSuccessful(
-        transport.submitMessageForList(config));
+    ClusterManagementListResult<T, R> result = transport.submitMessageForList(config);
+    assertSuccessful(result);
+    return result;
   }
 
   @Override
   public <T extends AbstractConfiguration<R>, R extends RuntimeInfo> ClusterManagementGetResult<T, R> get(
       T config) {
-    return assertSuccessful(
-        transport.submitMessageForGet(config));
+    ClusterManagementGetResult<T, R> result = transport.submitMessageForGet(config);
+    assertSuccessful(result);
+    return result;
   }
 
   @Override
-  public <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<V> start(
+  public <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<A, V> start(
       A op) {
-    return assertSuccessful(transport.submitMessageForStart(op));
+    ClusterManagementOperationResult<A, V> result = transport.submitMessageForStart(op);
+    assertSuccessful(result);
+    return result;
   }
 
   @Override
-  public <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<V> checkStatus(
+  public <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<A, V> checkStatus(
       A opType, String opId) {
-    return assertSuccessful(transport.submitMessageForGetOperation(opType, opId));
+    ClusterManagementOperationResult<A, V> result =
+        transport.submitMessageForGetOperation(opType, opId);
+    assertSuccessful(result);
+    return result;
   }
 
   @Override
-  public <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementListOperationsResult<V> list(
+  public <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementListOperationsResult<A, V> list(
       A opType) {
-    return assertSuccessful(transport.submitMessageForListOperation(opType));
+    ClusterManagementListOperationsResult<A, V> result =
+        transport.submitMessageForListOperation(opType);
+    assertSuccessful(result);
+    return result;
   }
 
   @Override
@@ -118,7 +131,7 @@ public class ClientClusterManagementService implements ClusterManagementService 
     transport.close();
   }
 
-  private <T extends ClusterManagementResult> T assertSuccessful(T result) {
+  private void assertSuccessful(ClusterManagementResult result) {
     if (result == null) {
       ClusterManagementResult somethingVeryBadHappened = new ClusterManagementResult(
           ClusterManagementResult.StatusCode.ERROR, "Unable to parse server response.");
@@ -126,6 +139,5 @@ public class ClientClusterManagementService implements ClusterManagementService 
     } else if (!result.isSuccessful()) {
       throw new ClusterManagementException(result);
     }
-    return result;
   }
 }

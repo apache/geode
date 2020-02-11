@@ -25,13 +25,14 @@ import org.apache.geode.management.runtime.OperationResult;
  * Returned by
  * {@link ClusterManagementService#start(ClusterManagementOperation)} to convey status of
  * launching the async operation,
- * and by {@link ClusterManagementService#checkStatus(String)} to describe the status of
+ * and by {@link ClusterManagementService#checkStatus(ClusterManagementOperation, String)} to
+ * describe the status of
  * a started async operation.
  *
  * @param <V> the type of the operation's result
  */
 @Experimental
-public class ClusterManagementOperationResult<V extends OperationResult>
+public class ClusterManagementOperationResult<A extends ClusterManagementOperation<V>, V extends OperationResult>
     extends ClusterManagementResult {
 
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
@@ -39,39 +40,36 @@ public class ClusterManagementOperationResult<V extends OperationResult>
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
   private Date operationEnd;
   private String operationId;
-  private String operator;
+  private A operation;
   private V operationResult;
   private Throwable throwable;
 
   /**
    * for internal use only
    */
-  public ClusterManagementOperationResult() {
-    this.operator = null;
-  }
+  public ClusterManagementOperationResult() {}
 
   /**
    * normally called by {@link ClusterManagementService#start(ClusterManagementOperation)}
    */
   public ClusterManagementOperationResult(ClusterManagementResult result,
       Date operationStart, Date operationEnd,
-      String operator, String operationId, V operationResult,
+      A operation, String operationId, V operationResult,
       Throwable throwable) {
     super(result);
     this.operationStart = operationStart;
     this.operationEnd = operationEnd;
-    this.operator = operator;
+    this.operation = operation;
     this.operationId = operationId;
     this.operationResult = operationResult;
     this.throwable = throwable;
   }
 
   /**
-   * Returns the user who initiated the async operation, if initiated externally and security is
-   * enabled
+   * Returns the async operation.
    */
-  public String getOperator() {
-    return operator;
+  public A getOperation() {
+    return operation;
   }
 
   /**
@@ -97,7 +95,7 @@ public class ClusterManagementOperationResult<V extends OperationResult>
   }
 
   /**
-   * Returns the operation result as {@link V} extends {@link OperationResult}
+   * Returns the operation result as an extension of {@link OperationResult}
    */
   public V getOperationResult() {
     return this.operationResult;

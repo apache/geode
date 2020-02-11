@@ -195,5 +195,10 @@ public class OperationHistoryManagerTest {
     public String getEndpoint() {
       return null;
     }
+
+    @Override
+    public String getOperator() {
+      return null;
+    }
   }
 }

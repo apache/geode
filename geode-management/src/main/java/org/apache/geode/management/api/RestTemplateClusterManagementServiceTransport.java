@@ -177,7 +177,7 @@ public class RestTemplateClusterManagementServiceTransport
 
   @Override
   @SuppressWarnings("unchecked")
-  public <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementListOperationsResult<V> submitMessageForListOperation(
+  public <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementListOperationsResult<A, V> submitMessageForListOperation(
       A opType) {
     return restTemplate.exchange(URI_VERSION + opType.getEndpoint(), HttpMethod.GET,
         makeEntity(null), ClusterManagementListOperationsResult.class).getBody();
@@ -185,7 +185,7 @@ public class RestTemplateClusterManagementServiceTransport
 
   @Override
   @SuppressWarnings("unchecked")
-  public <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<V> submitMessageForGetOperation(
+  public <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<A, V> submitMessageForGetOperation(
       A op, String operationId) {
     String uri = URI_VERSION + op.getEndpoint() + "/" + operationId;
     return restTemplate
@@ -195,7 +195,7 @@ public class RestTemplateClusterManagementServiceTransport
 
   @Override
   @SuppressWarnings("unchecked")
-  public <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<V> submitMessageForStart(
+  public <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<A, V> submitMessageForStart(
       A op) {
     return restTemplate.exchange(URI_VERSION + op.getEndpoint(), HttpMethod.POST, makeEntity(op),
         ClusterManagementOperationResult.class).getBody();

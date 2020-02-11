@@ -47,7 +47,7 @@ public class RestTemplateClusterManagementServiceTransportTest {
   private Links links;
   private ClusterManagementRealizationResult realizationSuccess;
   private ClusterManagementRealizationResult realizationFailure;
-  private ClusterManagementOperationResult<RebalanceResult> rebalanceOperationResult;
+  private ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> rebalanceOperationResult;
 
   @Before
   public void init() {

@@ -39,4 +39,6 @@ public interface ClusterManagementOperation<V extends OperationResult> extends S
    */
   @JsonIgnore
   String getEndpoint();
+
+  String getOperator();
 }

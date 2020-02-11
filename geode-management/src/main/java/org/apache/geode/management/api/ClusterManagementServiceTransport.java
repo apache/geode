@@ -72,7 +72,7 @@ public interface ClusterManagementServiceTransport {
    * @param <A> operation of type {@link ClusterManagementOperation}
    * @return {@link ClusterManagementListResult}
    */
-  <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementListOperationsResult<V> submitMessageForListOperation(
+  <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementListOperationsResult<A, V> submitMessageForListOperation(
       A opType);
 
   /**
@@ -83,7 +83,7 @@ public interface ClusterManagementServiceTransport {
    * @param operationId the identifier of the operation
    * @return {@link ClusterManagementListResult}
    */
-  <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<V> submitMessageForGetOperation(
+  <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<A, V> submitMessageForGetOperation(
       A opType, String operationId);
 
   /**
@@ -93,7 +93,7 @@ public interface ClusterManagementServiceTransport {
    * @param <A> operation of type {@link ClusterManagementOperation}
    * @return {@link ClusterManagementListResult}
    */
-  <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<V> submitMessageForStart(
+  <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<A, V> submitMessageForStart(
       A op);
 
   /**

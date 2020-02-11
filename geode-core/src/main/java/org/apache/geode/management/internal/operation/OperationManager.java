@@ -77,14 +77,7 @@ public class OperationManager implements AutoCloseable {
   @SuppressWarnings("unchecked")
   private <C extends Cache, A extends ClusterManagementOperation<V>, V extends OperationResult> BiFunction<C, A, V> getPerformer(
       A op) {
-    Class<? extends ClusterManagementOperation> aClass = op.getClass();
-
-    if (op instanceof TaggedWithOperator
-        && ClusterManagementOperation.class.isAssignableFrom(aClass.getSuperclass())) {
-      aClass = (Class<? extends ClusterManagementOperation>) aClass.getSuperclass();
-    }
-
-    return performers.get(aClass);
+    return performers.get(op.getClass());
   }
 
   /**

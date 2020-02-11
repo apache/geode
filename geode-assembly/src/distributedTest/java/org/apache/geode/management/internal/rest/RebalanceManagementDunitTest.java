@@ -55,7 +55,9 @@ public class RebalanceManagementDunitTest {
   @BeforeClass
   public static void beforeClass() {
     locator1 = cluster.startLocatorVM(0, MemberStarterRule::withHttpService);
-    locator2 = cluster.startLocatorVM(1, MemberStarterRule::withHttpService);
+    int locator1Port = locator1.getPort();
+    locator2 =
+        cluster.startLocatorVM(1, l -> l.withHttpService().withConnectionToLocator(locator1Port));
     server1 = cluster.startServerVM(2, "group1", locator1.getPort());
     server2 = cluster.startServerVM(3, "group2", locator1.getPort());
 
@@ -121,7 +123,7 @@ public class RebalanceManagementDunitTest {
     ClusterManagementOperationResult<RebalanceResult> cmr = client1.start(op);
     assertThat(cmr.isSuccessful()).isTrue();
 
-    RebalanceResult result = cmr.getOperationResult();
+    RebalanceResult result = waitForStartToEnd(client1, cmr.getOperationId()).getOperationResult();
     assertThat(result.getRebalanceRegionResults().size()).isEqualTo(1);
     RebalanceRegionResult firstRegionSummary = result.getRebalanceRegionResults().get(0);
     assertThat(firstRegionSummary.getRegionName()).isEqualTo("customers2");

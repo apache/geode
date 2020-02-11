@@ -372,7 +372,7 @@ public class LocatorClusterManagementServiceTest {
     when(operation.getEndpoint()).thenReturn(URI);
     when(executorManager.submit(any()))
         .thenReturn(new OperationState<>("42", operation, new Date()));
-    ClusterManagementOperationResult<?> result = service.start(operation);
+    ClusterManagementOperationResult<?, ?> result = service.start(operation);
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.ACCEPTED);
     assertThat(result.getStatusMessage()).contains("Operation started");
   }
@@ -387,7 +387,7 @@ public class LocatorClusterManagementServiceTest {
   public void checkStatus() {
     OperationState operationInstance = mock(OperationState.class);
     when(executorManager.get(any())).thenReturn(operationInstance);
-    ClusterManagementOperationResult<RebalanceResult> result =
+    ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> result =
         service.checkStatus(rebalanceOperation, "456");
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.IN_PROGRESS);
     assertThat(result.getOperationResult()).isNull();
