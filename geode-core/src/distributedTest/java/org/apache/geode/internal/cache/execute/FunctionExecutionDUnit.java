@@ -14,18 +14,42 @@
  */
 package org.apache.geode.internal.cache.execute;
 
+import java.io.Serializable;
+
 import org.junit.Rule;
 import org.junit.Test;
 
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.execute.Function;
+import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.internal.cache.functions.TestFunction;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 
-public class FunctionExecutionDUnit {
+public class FunctionExecutionDUnit implements Serializable {
+
+  public class TestFunction implements Function {
+
+    @Override
+    public void execute(FunctionContext context) {
+      if (context.getCache().getRegion("testRegion") == null) {
+        RegionFactory regionFactory = context.getCache().createRegionFactory();
+        regionFactory.create("testRegion");
+        context.getResultSender().lastResult(true);
+      }
+      else {
+        context.getResultSender().lastResult(false);
+      }
+    }
+
+    @Override
+    public String getId() {
+      return getClass().getSimpleName();
+    }
+  }
 
   @Rule
   public ClusterStartupRule cluster = new ClusterStartupRule();
@@ -36,14 +60,22 @@ public class FunctionExecutionDUnit {
     MemberVM server = cluster.startServerVM(1, locator.getPort());
     ClientVM client = cluster.startClientVM(2, c -> c.withLocatorConnection(locator.getPort()));
 
-    server.invoke( () -> {
-      Function function = new TestFunction(true, TestFunction.TEST_FUNCTION1);
+    server.invoke(() -> {
+      System.out.println("Server invoke");
+      Function function = new TestFunction();
       FunctionService.registerFunction(function);
     });
     client.invokeAsync(() -> {
+      System.out.println("Client invoke");
       ClientCache clientCache = ClusterStartupRule.getClientCache();
       while (true) {
-        FunctionService.onServers(clientCache).execute(TestFunction.TEST_FUNCTION1).getResult();
+        FunctionService.onServers(clientCache).execute("TestFunction").getResult();
+      }
+    });
+    server.invoke(() -> {
+      Region region = null;
+      while (region == null) {
+        region = ClusterStartupRule.getCache().getRegion("testRegion");
       }
     });
     cluster.stop(1);
