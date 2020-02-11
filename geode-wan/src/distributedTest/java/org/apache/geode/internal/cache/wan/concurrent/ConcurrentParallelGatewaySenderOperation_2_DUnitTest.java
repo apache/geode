@@ -55,6 +55,72 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
     IgnoredException.addIgnoredException("Unexpected IOException");
   }
 
+
+  @Test
+  public void shuttingOneSenderInAVMShouldNotAffectOthersBatchRemovalThread() {
+    Integer lnport = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnport));
+
+    createCacheInVMs(lnport, vm2, vm3);
+    vm2.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, true, null, true));
+    vm2.invoke(() -> WANTestBase.createSender("ln2", 2, true, 100, 10, false, true, null, true));
+    vm2.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", "ln,ln2", 1,
+        100, false));
+
+    createCacheInVMs(nyPort, vm4, vm5);
+    vm4.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 1, 100,
+        false));
+    vm5.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 1, 100,
+        false));
+    vm4.invoke(() -> WANTestBase.createReceiver());
+
+    vm2.invoke(() -> WANTestBase.startSender("ln"));
+    vm2.invoke(() -> WANTestBase.startSender("ln2"));
+
+    vm3.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, true, null, true));
+    vm3.invoke(() -> WANTestBase.createSender("ln2", 2, true, 100, 10, false, true, null, true));
+    vm3.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", "ln,ln2", 1,
+        100, false));
+
+    vm3.invoke(() -> WANTestBase.startSender("ln"));
+    vm3.invoke(() -> WANTestBase.startSender("ln2"));
+
+    vm2.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
+    vm2.invoke(() -> WANTestBase.waitForSenderRunningState("ln2"));
+    vm3.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
+    vm3.invoke(() -> WANTestBase.waitForSenderRunningState("ln2"));
+
+    AsyncInvocation asyncPuts = vm2.invokeAsync(() -> {
+      WANTestBase.doPuts(getTestMethodName() + "_PR", 1000);
+    });
+    // Guarantee some entries are in the queue even if the asyncPuts thread is slow
+    vm2.invoke(() -> {
+      WANTestBase.doPuts(getTestMethodName() + "_PR", 100);
+    });
+    vm2.invoke(() -> await()
+        .until(() -> WANTestBase.getSenderStats("ln", -1).get(3) > 0));
+    vm2.invoke(() -> WANTestBase.stopSender("ln")); // Things have dispatched
+    // Dispatch additional values
+    vm2.invoke(() -> {
+      WANTestBase.doPutsFrom(getTestMethodName() + "_PR", 1000, 1100);
+    });
+
+    await().until(() -> asyncPuts.isDone());
+
+    vm2.invoke(() -> await()
+        .untilAsserted(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 1100)));
+    vm4.invoke(() -> await()
+        .untilAsserted(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 1100)));
+
+    vm3.invoke(() -> {
+      await()
+          .untilAsserted(
+              () -> assertTrue(WANTestBase.getQueueContentSize("ln2", true) + " was the size",
+                  WANTestBase.getQueueContentSize("ln2", true) == 0));
+    });
+  }
+
+
   // to test that when userPR is locally destroyed, shadow Pr is also locally
   // destroyed and on recreation userPr , shadow Pr is also recreated.
   @Test
