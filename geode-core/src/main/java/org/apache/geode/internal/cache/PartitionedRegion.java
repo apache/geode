@@ -2153,7 +2153,6 @@ public class PartitionedRegion extends LocalRegion
       throw new UnsupportedOperationException();
    }
 
-
   @Override
   void basicClear(RegionEventImpl regionEvent, boolean cacheWrite) {
     throw new UnsupportedOperationException();
