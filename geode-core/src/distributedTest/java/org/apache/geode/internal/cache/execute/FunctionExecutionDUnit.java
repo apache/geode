@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.execute;
 
 import static org.apache.geode.internal.lang.ThrowableUtils.hasCauseType;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
 
@@ -25,7 +26,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.NoAvailableServersException;
-import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
@@ -33,7 +33,6 @@ import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class FunctionExecutionDUnit implements Serializable {
 
@@ -45,8 +44,7 @@ public class FunctionExecutionDUnit implements Serializable {
         RegionFactory regionFactory = context.getCache().createRegionFactory();
         regionFactory.create("testRegion");
         context.getResultSender().lastResult(true);
-      }
-      else {
+      } else {
         context.getResultSender().lastResult(false);
       }
     }
@@ -96,4 +94,3 @@ public class FunctionExecutionDUnit implements Serializable {
     }
   }
 }
-
