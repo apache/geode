@@ -38,6 +38,9 @@ class Subscriber {
   }
 
   public boolean isEqualTo(String channel, Client client) {
+    if (channel == null || client == null) {
+      return false;
+    }
     return channel.equals(this.channel) && client.equals(this.client);
   }
 
