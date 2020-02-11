@@ -84,26 +84,31 @@ public class RebalanceManagementDunitTest {
 
   @Test
   public void rebalance() {
-    ClusterManagementOperationResult<RebalanceResult> cmr =
+    ClusterManagementOperationResult<RebalanceResult> startResult =
         client1.start(new RebalanceOperation());
-    assertThat(cmr.isSuccessful()).isTrue();
+    assertThat(startResult.isSuccessful()).isTrue();
     long now = System.currentTimeMillis();
-    assertThat(cmr.getOperationStart().getTime()).isBetween(now - 60000, now);
+    assertThat(startResult.getOperationStart().getTime()).isBetween(now - 60000, now);
 
-    GeodeAwaitility.await()
-        .untilAsserted(() -> assertThat(
-            client1.checkStatus(new RebalanceOperation(), cmr.getOperationId()).getOperationEnd())
-                .isNotNull());
-    ClusterManagementOperationResult<RebalanceResult> operationResult =
-        client1.checkStatus(new RebalanceOperation(), cmr.getOperationId());
-    long end = operationResult.getOperationEnd().getTime();
+    ClusterManagementOperationResult<RebalanceResult> endResult =
+        waitForStartToEnd(client1, startResult.getOperationId());
+    long end = endResult.getOperationEnd().getTime();
     now = System.currentTimeMillis();
     assertThat(end).isBetween(now - 60000, now)
-        .isGreaterThanOrEqualTo(operationResult.getOperationStart().getTime());
-    RebalanceResult result = operationResult.getOperationResult();
+        .isGreaterThanOrEqualTo(endResult.getOperationStart().getTime());
+    RebalanceResult result = endResult.getOperationResult();
     assertThat(result.getRebalanceRegionResults().size()).isEqualTo(2);
     RebalanceRegionResult firstRegionSummary = result.getRebalanceRegionResults().get(0);
     assertThat(firstRegionSummary.getRegionName()).isIn("customers1", "customers2");
+  }
+
+  private ClusterManagementOperationResult<RebalanceResult> waitForStartToEnd(
+      ClusterManagementService client, String opId) {
+    final RebalanceOperation op = new RebalanceOperation();
+    GeodeAwaitility.await()
+        .untilAsserted(
+            () -> assertThat(client.checkStatus(op, opId).getOperationEnd()).isNotNull());
+    return client.checkStatus(op, opId);
   }
 
   @Test
