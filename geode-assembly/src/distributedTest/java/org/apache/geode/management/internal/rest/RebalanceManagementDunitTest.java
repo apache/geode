@@ -90,12 +90,17 @@ public class RebalanceManagementDunitTest {
     long now = System.currentTimeMillis();
     assertThat(cmr.getOperationStart().getTime()).isBetween(now - 60000, now);
 
-    GeodeAwaitility.await().untilAsserted(() -> assertThat(cmr.getOperationEnd()).isNotNull());
-    long end = cmr.getOperationEnd().getTime();
+    GeodeAwaitility.await()
+        .untilAsserted(() -> assertThat(
+            client1.checkStatus(new RebalanceOperation(), cmr.getOperationId()).getOperationEnd())
+                .isNotNull());
+    ClusterManagementOperationResult<RebalanceResult> operationResult =
+        client1.checkStatus(new RebalanceOperation(), cmr.getOperationId());
+    long end = operationResult.getOperationEnd().getTime();
     now = System.currentTimeMillis();
     assertThat(end).isBetween(now - 60000, now)
-        .isGreaterThanOrEqualTo(cmr.getOperationStart().getTime());
-    RebalanceResult result = cmr.getOperationResult();
+        .isGreaterThanOrEqualTo(operationResult.getOperationStart().getTime());
+    RebalanceResult result = operationResult.getOperationResult();
     assertThat(result.getRebalanceRegionResults().size()).isEqualTo(2);
     RebalanceRegionResult firstRegionSummary = result.getRebalanceRegionResults().get(0);
     assertThat(firstRegionSummary.getRegionName()).isIn("customers1", "customers2");
@@ -129,7 +134,8 @@ public class RebalanceManagementDunitTest {
     ClusterManagementOperationResult<RebalanceResult> cmr = client1.start(op);
     assertThat(cmr.isSuccessful()).isTrue();
 
-    RebalanceResult result = cmr.getOperationResult();
+    RebalanceResult result =
+        client1.checkStatus(new RebalanceOperation(), cmr.getOperationId()).getOperationResult();
     assertThat(result.getRebalanceRegionResults().size()).isEqualTo(1);
     RebalanceRegionResult firstRegionSummary = result.getRebalanceRegionResults().get(0);
     assertThat(firstRegionSummary.getRegionName()).isEqualTo("customers2");

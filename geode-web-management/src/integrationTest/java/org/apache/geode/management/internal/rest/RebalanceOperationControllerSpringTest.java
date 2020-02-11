@@ -19,6 +19,7 @@ package org.apache.geode.management.internal.rest;
 import static org.apache.geode.management.configuration.Links.URI_VERSION;
 import static org.apache.geode.management.operation.RebalanceOperation.REBALANCE_ENDPOINT;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -68,12 +69,12 @@ public class RebalanceOperationControllerSpringTest {
     String rebalanceIdWithDot = "rebalance.id";
     String requestPath = URI_VERSION + REBALANCE_ENDPOINT + "/" + rebalanceIdWithDot;
 
-    when(cms.checkStatus(any()))
+    when(cms.checkStatus(any(), eq(rebalanceIdWithDot)))
         .thenReturn(new ClusterManagementOperationResult<>());
 
     context.perform(get(requestPath))
         .andExpect(status().is2xxSuccessful());
 
-    verify(cms).checkStatus(rebalanceIdWithDot);
+    verify(cms).checkStatus(any(), eq(rebalanceIdWithDot));
   }
 }

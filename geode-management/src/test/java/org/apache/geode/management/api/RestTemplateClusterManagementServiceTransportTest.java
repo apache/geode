@@ -16,10 +16,12 @@
 package org.apache.geode.management.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -29,10 +31,13 @@ import org.junit.Test;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import org.apache.geode.management.configuration.AbstractConfiguration;
 import org.apache.geode.management.configuration.Links;
+import org.apache.geode.management.operation.RebalanceOperation;
+import org.apache.geode.management.runtime.RebalanceResult;
 
 public class RestTemplateClusterManagementServiceTransportTest {
   private RestTemplateClusterManagementServiceTransport restServiceTransport;
@@ -42,6 +47,7 @@ public class RestTemplateClusterManagementServiceTransportTest {
   private Links links;
   private ClusterManagementRealizationResult realizationSuccess;
   private ClusterManagementRealizationResult realizationFailure;
+  private ClusterManagementOperationResult<RebalanceResult> rebalanceOperationResult;
 
   @Before
   public void init() {
@@ -57,6 +63,8 @@ public class RestTemplateClusterManagementServiceTransportTest {
     when(realizationSuccess.isSuccessful()).thenReturn(true);
     realizationFailure = mock(ClusterManagementRealizationResult.class);
     when(realizationFailure.isSuccessful()).thenReturn(false);
+
+    rebalanceOperationResult = mock(ClusterManagementOperationResult.class);
   }
 
   @Test
@@ -69,6 +77,20 @@ public class RestTemplateClusterManagementServiceTransportTest {
 
     verify(restTemplate).exchange(eq("/v1/operations"), eq(HttpMethod.POST), any(HttpEntity.class),
         eq(ClusterManagementRealizationResult.class));
+  }
+
+  @Test
+  public void submitMessageThrowsException() {
+    when(links.getList()).thenReturn("/operations");
+    doThrow(new RestClientException("Rest call failed")).when(restTemplate).exchange(
+        any(String.class), same(HttpMethod.POST),
+        any(HttpEntity.class), same(ClusterManagementRealizationResult.class));
+
+    Throwable throwable =
+        catchThrowable(() -> restServiceTransport.submitMessage(configuration, CommandType.CREATE));
+
+    assertThat(throwable).isInstanceOf(RestClientException.class);
+    assertThat(throwable.getMessage()).isEqualTo("Rest call failed");
   }
 
   @Test
@@ -112,8 +134,16 @@ public class RestTemplateClusterManagementServiceTransportTest {
   }
 
   @Test
-  public void submitMessageForGetOperationSucceeds() {
-    assertThat(true).as("not implemented").isFalse();
+  public void submitMessageForGetOperationCallsRestTemplateExchange() {
+    String opId = "opId";
+    doReturn(responseEntity).when(restTemplate).exchange(any(String.class), same(HttpMethod.GET),
+        any(HttpEntity.class), same(ClusterManagementOperationResult.class));
+
+    restServiceTransport.submitMessageForGetOperation(new RebalanceOperation(), opId);
+
+    verify(restTemplate).exchange(eq("/v1/operations/rebalances/opId"), eq(HttpMethod.GET),
+        any(HttpEntity.class),
+        eq(ClusterManagementOperationResult.class));
   }
 
   @Test
