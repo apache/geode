@@ -35,7 +35,6 @@ import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
-import org.apache.geode.internal.cache.PartitionedRegionException;
 
 public class ClearPRMessageTest {
 
@@ -59,7 +58,7 @@ public class ClearPRMessageTest {
     when(bucketRegion.isPrimary()).thenReturn(false);
 
     assertThatThrownBy(() -> message.doLocalClear(region))
-        .isInstanceOf(PartitionedRegionException.class)
+        .isInstanceOf(ForceReattemptException.class)
         .hasMessageContaining(ClearPRMessage.BUCKET_NON_PRIMARY_MESSAGE);
   }
 
@@ -72,7 +71,7 @@ public class ClearPRMessageTest {
     when(bucketRegion.isPrimary()).thenReturn(true);
 
     assertThatThrownBy(() -> message.doLocalClear(region))
-        .isInstanceOf(PartitionedRegionException.class)
+        .isInstanceOf(ForceReattemptException.class)
         .hasMessageContaining(ClearPRMessage.BUCKET_REGION_LOCK_UNAVAILABLE_MESSAGE);
   }
 
@@ -86,7 +85,7 @@ public class ClearPRMessageTest {
     when(mockLockService.lock(any(), anyLong(), anyLong())).thenReturn(true);
 
     assertThatThrownBy(() -> message.doLocalClear(region))
-        .isInstanceOf(PartitionedRegionException.class)
+        .isInstanceOf(ForceReattemptException.class)
         .hasMessageContaining(ClearPRMessage.BUCKET_NON_PRIMARY_MESSAGE);
     // Confirm that we actually obtained and released the lock
     verify(mockLockService, times(1)).lock(any(), anyLong(), anyLong());

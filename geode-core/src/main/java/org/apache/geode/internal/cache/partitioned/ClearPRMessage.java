@@ -25,7 +25,6 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheException;
-import org.apache.geode.cache.EntryExistsException;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
@@ -41,11 +40,9 @@ import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.cache.BucketRegion;
-import org.apache.geode.internal.cache.DataLocationException;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.cache.PartitionedRegionException;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.cache.RegionEventImpl;
 import org.apache.geode.internal.logging.log4j.LogMarker;
@@ -60,16 +57,12 @@ public class ClearPRMessage extends PartitionMessageWithDirectReply {
 
   private Integer bucketId;
 
-  private Object callbackArg;
-
   /** The time in ms to wait for a lock to be obtained during doLocalClear() */
-  public static final int LOCK_WAIT_TIMEOUT_MS = 100;
+  public static final int LOCK_WAIT_TIMEOUT_MS = 1000;
   public static final String BUCKET_NON_PRIMARY_MESSAGE =
       "The bucket region on target member is no longer primary";
   public static final String BUCKET_REGION_LOCK_UNAVAILABLE_MESSAGE =
       "A lock for the bucket region could not be obtained.";
-
-  protected static final short HAS_BRIDGE_CONTEXT = UNRESERVED_FLAGS_START;
 
   /**
    * state from operateOnRegion that must be preserved for transmission from the waiting pool
@@ -81,13 +74,13 @@ public class ClearPRMessage extends PartitionMessageWithDirectReply {
    */
   public ClearPRMessage() {}
 
-  public ClearPRMessage(int bucketId, boolean notificationOnly, boolean posDup,
-      Object callbackArg) {
+  public ClearPRMessage(int bucketId) {
     this.bucketId = bucketId;
-    this.notificationOnly = notificationOnly;
-    this.posDup = posDup;
-    this.callbackArg = callbackArg;
-    initTxMemberId();
+
+    // These are both used by the parent class, but don't apply to this message type
+    this.notificationOnly = false;
+    this.posDup = false;
+
   }
 
   public void setEventId(RegionEventImpl event) {
@@ -103,7 +96,7 @@ public class ClearPRMessage extends PartitionMessageWithDirectReply {
     this.regionId = region.getPRId();
     this.processor = replyProcessor;
     this.processorId = replyProcessor == null ? 0 : replyProcessor.getProcessorId();
-    if (replyProcessor != null && this.isSevereAlertCompatible()) {
+    if (replyProcessor != null) {
       replyProcessor.enableSevereAlertProcessing();
     }
     this.notificationOnly = notifyOnly;
@@ -129,7 +122,6 @@ public class ClearPRMessage extends PartitionMessageWithDirectReply {
         Collections.singleton((InternalDistributedMember) recipient);
     ClearResponse clearResponse = new ClearResponse(region.getSystem(), recipients);
     initMessage(region, recipients, false, clearResponse);
-    setTransactionDistributed(region.getCache().getTxManager().isDistributed());
     if (logger.isDebugEnabled()) {
       logger.debug("ClearPRMessage.send: recipient is {}, msg is {}", recipient, this);
     }
@@ -154,8 +146,6 @@ public class ClearPRMessage extends PartitionMessageWithDirectReply {
     } else {
       InternalDataSerializer.writeSignedVL(bucketId, out);
     }
-    DataSerializer.writeObject(this.callbackArg, out);
-    // BR: This may not work properly
     DataSerializer.writeObject(regionEvent, out);
   }
 
@@ -164,7 +154,6 @@ public class ClearPRMessage extends PartitionMessageWithDirectReply {
       throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     this.bucketId = (int) InternalDataSerializer.readSignedVL(in);
-    this.callbackArg = DataSerializer.readObject(in);
     this.regionEvent = DataSerializer.readObject(in);
   }
 
@@ -180,8 +169,7 @@ public class ClearPRMessage extends PartitionMessageWithDirectReply {
    */
   @Override
   protected boolean operateOnPartitionedRegion(ClusterDistributionManager distributionManager,
-      PartitionedRegion region, long startTime)
-      throws EntryExistsException, ForceReattemptException, DataLocationException {
+      PartitionedRegion region, long startTime) {
     try {
       result = doLocalClear(region);
     } catch (ForceReattemptException ex) {
@@ -199,7 +187,7 @@ public class ClearPRMessage extends PartitionMessageWithDirectReply {
 
     // Check if we are primary, throw exception if not
     if (!bucketRegion.isPrimary()) {
-      throw new PartitionedRegionException(BUCKET_NON_PRIMARY_MESSAGE);
+      throw new ForceReattemptException(BUCKET_NON_PRIMARY_MESSAGE);
     }
 
     DistributedLockService lockService = getPartitionRegionLockService();
@@ -208,13 +196,13 @@ public class ClearPRMessage extends PartitionMessageWithDirectReply {
       boolean locked = lockService.lock(lockName, LOCK_WAIT_TIMEOUT_MS, -1);
 
       if (!locked) {
-        throw new PartitionedRegionException(BUCKET_REGION_LOCK_UNAVAILABLE_MESSAGE);
+        throw new ForceReattemptException(BUCKET_REGION_LOCK_UNAVAILABLE_MESSAGE);
       }
 
       // Double check if we are still primary, as this could have changed between our first check
       // and obtaining the lock
       if (!bucketRegion.isPrimary()) {
-        throw new PartitionedRegionException(BUCKET_NON_PRIMARY_MESSAGE);
+        throw new ForceReattemptException(BUCKET_NON_PRIMARY_MESSAGE);
       }
 
       // call new cmnClearRegion on the target bucket region
@@ -254,11 +242,6 @@ public class ClearPRMessage extends PartitionMessageWithDirectReply {
   protected void appendFields(StringBuilder buff) {
     super.appendFields(buff);
     buff.append("; bucketId=").append(this.bucketId);
-  }
-
-  @Override
-  protected boolean mayNotifySerialGatewaySender(ClusterDistributionManager distributionManager) {
-    return notifiesSerialGatewaySender(distributionManager);
   }
 
   @Override
