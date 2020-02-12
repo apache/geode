@@ -169,6 +169,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
   // Query directly on member with RM and QM set
   @Test
   public void testRMAndNoTimeoutSetOnServer() {
+    logger.info("MLH testRMAndNoTimeoutSetOnServer 1");
     doCriticalMemoryHitTestOnServer(false, false, -1, true);
   }
 
@@ -617,46 +618,59 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
       final boolean disabledQueryMonitorForLowMem,
       final int queryTimeout,
       final boolean hitCriticalThreshold) {
+    logger.info("MLH doCriticalMemoryHitTestOnServer 1");
+
     // create region on the server
     final VM server = VM.getVM(0);
     final int numObjects = 200;
     try {
       final int port = AvailablePortHelper.getRandomAvailableTCPPort();
+      logger.info("MLH doCriticalMemoryHitTestOnServer 2");
+
       startCacheServer(server, port, disabledQueryMonitorForLowMem, queryTimeout,
           createPR);
-
+      logger.info("MLH doCriticalMemoryHitTestOnServer 3");
       populateData(server);
-
+      logger.info("MLH doCriticalMemoryHitTestOnServer 4");
       doTestCriticalHeapAndQueryTimeout(server, server, disabledQueryMonitorForLowMem,
           queryTimeout, hitCriticalThreshold);
-
+      logger.info("MLH doCriticalMemoryHitTestOnServer 5");
       // Recover from critical heap
       if (hitCriticalThreshold) {
         vmRecoversFromCriticalHeap(server);
+        logger.info("MLH doCriticalMemoryHitTestOnServer 6");
       }
 
       // Check to see if query execution is ok under "normal" or "healthy" conditions
       server.invoke("Executing query when system is 'Normal'", () -> {
         try {
+          logger.info("MLH doCriticalMemoryHitTestOnServer 6");
           QueryService qs = getCache().getQueryService();
+          logger.info("MLH doCriticalMemoryHitTestOnServer 7");
           Query query = qs.newQuery("Select * From /" + "portfolios");
+          logger.info("MLH doCriticalMemoryHitTestOnServer 8");
           SelectResults results = (SelectResults) query.execute();
+          logger.info("MLH doCriticalMemoryHitTestOnServer 9");
           assertThat(results.size()).isEqualTo(numObjects);
+          logger.info("MLH doCriticalMemoryHitTestOnServer 10");
         } catch (QueryInvocationTargetException | FunctionDomainException | TypeMismatchException
             | NameResolutionException e) {
+          logger.info("MLH doCriticalMemoryHitTestOnServer 11");
           fail("");
         }
       });
-
+      logger.info("MLH doCriticalMemoryHitTestOnServer 12");
       // Execute a critical heap event/ query timeout test again
       doTestCriticalHeapAndQueryTimeout(server, server, disabledQueryMonitorForLowMem,
           queryTimeout, hitCriticalThreshold);
-
+      logger.info("MLH doCriticalMemoryHitTestOnServer 13");
       // Recover from critical heap
       if (hitCriticalThreshold) {
         vmRecoversFromCriticalHeap(server);
+        logger.info("MLH doCriticalMemoryHitTestOnServer 14");
       }
     } finally {
+      logger.info("MLH doCriticalMemoryHitTestOnServer 15");
       stopServer(server);
     }
   }
@@ -675,39 +689,55 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
       final boolean disabledQueryMonitorForLowMem,
       final int queryTimeout,
       final boolean hitCriticalThreshold) {
+    logger.info("MLH doTestCriticalHeapAndQueryTimeout 1");
     createLatchTestHook(server, hitCriticalThreshold, VM.getController());
+    logger.info("MLH doTestCriticalHeapAndQueryTimeout 2");
 
     AsyncInvocation queryExecution = invokeClientQuery(client,
         disabledQueryMonitorForLowMem, queryTimeout, hitCriticalThreshold, VM.getController());
+    logger.info("MLH doTestCriticalHeapAndQueryTimeout 3");
 
     try {
       criticalMemoryCountDownLatch.await();
+      logger.info("MLH doTestCriticalHeapAndQueryTimeout 4");
     } catch (InterruptedException e) {
+      logger.info("MLH doTestCriticalHeapAndQueryTimeout 5");
       e.printStackTrace();
     }
+    logger.info("MLH doTestCriticalHeapAndQueryTimeout 6");
 
     // We simulate a low memory/critical heap percentage hit
     if (hitCriticalThreshold) {
+      logger.info("MLH doTestCriticalHeapAndQueryTimeout 7");
       vmHitsCriticalHeap(server);
+      logger.info("MLH doTestCriticalHeapAndQueryTimeout 8");
       await().until(() -> vmCheckCritcalHeap(server) == EVICTION_DISABLED_CRITICAL);
+      logger.info("MLH doTestCriticalHeapAndQueryTimeout 9");
     }
 
     // Pause until query would time out if low memory was ignored
     try {
+      logger.info("MLH doTestCriticalHeapAndQueryTimeout 10");
       Thread.sleep(MAX_TEST_QUERY_TIMEOUT);
     } catch (InterruptedException e1) {
       Thread.currentThread().interrupt();
     }
+    logger.info("MLH doTestCriticalHeapAndQueryTimeout 11");
 
     // release the hook to have the query throw either a low memory or query timeout
     // unless otherwise configured
     releaseHook(server);
+    logger.info("MLH doTestCriticalHeapAndQueryTimeout 12");
 
     try {
       assertThat(queryExecution.get(60, SECONDS)).isEqualTo(0);
+      logger.info("MLH doTestCriticalHeapAndQueryTimeout 13");
+
     } catch (Throwable e) {
       e.printStackTrace();
+      logger.info("MLH doTestCriticalHeapAndQueryTimeout 14");
       fail("queryExecution.getResult() threw Exception " + e.toString());
+      logger.info("MLH doTestCriticalHeapAndQueryTimeout 15");
     }
   }
 
