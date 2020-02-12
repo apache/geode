@@ -28,12 +28,20 @@ import org.apache.geode.distributed.internal.membership.api.MembershipInformatio
 public class MembershipInformationImpl implements MembershipInformation {
   private final JChannel channel;
   private final Queue<Message> queuedMessages;
+  private final GMSEncrypt encrypt;
 
   protected MembershipInformationImpl(JChannel channel,
-      Queue<Message> queuedMessages) {
+      Queue<Message> queuedMessages,
+      GMSEncrypt encrypt) {
 
     this.channel = channel;
     this.queuedMessages = queuedMessages;
+    this.encrypt = encrypt;
+  }
+
+
+  public GMSEncrypt getEncrypt() {
+    return encrypt;
   }
 
   public JChannel getChannel() {

@@ -36,6 +36,7 @@ public class LocatorUDPSecurityDUnitTest extends LocatorDUnitTest {
     p.setProperty(SECURITY_UDP_DHALGO, "AES:128");
   }
 
+
   @Test
   public void testLocatorWithUDPSecurityButServer() {
     String locators = hostName + "[" + port1 + "]";
