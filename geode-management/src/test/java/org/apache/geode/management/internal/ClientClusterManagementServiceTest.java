@@ -153,7 +153,8 @@ public class ClientClusterManagementServiceTest {
     ClusterManagementListOperationsResult<ClusterManagementOperation<OperationResult>, OperationResult> successListOperationsResult =
         mock(ClusterManagementListOperationsResult.class);
     when(successListOperationsResult.isSuccessful()).thenReturn(true);
-    doReturn(successOperationResult).when(serviceTransport).submitMessageForListOperation(any());
+    doReturn(successListOperationsResult).when(serviceTransport)
+        .submitMessageForListOperation(any());
 
     ClusterManagementListOperationsResult<ClusterManagementOperation<OperationResult>, OperationResult> operationResult =
         service.list(operation);

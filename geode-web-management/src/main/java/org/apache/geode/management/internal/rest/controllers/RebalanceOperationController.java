@@ -44,29 +44,32 @@ public class RebalanceOperationController extends AbstractManagementController {
   @ApiOperation(value = "start rebalance")
   @PreAuthorize("@securityService.authorize('DATA', 'MANAGE')")
   @PostMapping(REBALANCE_ENDPOINT)
-  public ResponseEntity<ClusterManagementOperationResult<RebalanceResult>> startRebalance(
+  public ResponseEntity<ClusterManagementOperationResult<RebalanceOperation, RebalanceResult>> startRebalance(
       @RequestBody RebalanceOperation operation) {
-    operation.setOperator(Optional.ofNullable(securityService).map(SecurityService::getSubject)
-        .map(Object::toString).orElse(null));
-    ClusterManagementOperationResult<RebalanceResult> result =
-        clusterManagementService.start(operation);
+    operation.setOperator(
+        Optional.ofNullable(securityService).map(SecurityService::getSubject).map(Object::toString)
+            .orElse(null));
+    ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> result =
+        clusterManagementService
+            .start(operation);
     return new ResponseEntity<>(result, HttpStatus.ACCEPTED);
   }
 
   @ApiOperation(value = "list rebalances")
   @PreAuthorize("@securityService.authorize('DATA', 'MANAGE')")
   @GetMapping(REBALANCE_ENDPOINT)
-  public ClusterManagementListOperationsResult<RebalanceResult> listRebalances() {
+  public ClusterManagementListOperationsResult<RebalanceOperation, RebalanceResult> listRebalances() {
     return clusterManagementService.list(new RebalanceOperation());
   }
 
   @ApiOperation(value = "check rebalance")
   @PreAuthorize("@securityService.authorize('DATA', 'MANAGE')")
   @GetMapping(REBALANCE_ENDPOINT + "/{id:.+}")
-  public ResponseEntity<ClusterManagementOperationResult<RebalanceResult>> checkRebalanceStatus(
+  public ResponseEntity<ClusterManagementOperationResult<RebalanceOperation, RebalanceResult>> checkRebalanceStatus(
       @PathVariable String id) {
-    ClusterManagementOperationResult<RebalanceResult> result =
-        clusterManagementService.checkStatus(new RebalanceOperation(), id);
+    ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> result =
+        clusterManagementService
+            .checkStatus(new RebalanceOperation(), id);
     HttpHeaders headers = new HttpHeaders();
     headers.add("Retry-After", "30"); // TODO consider removing this
     return new ResponseEntity<>(result, headers, HttpStatus.OK);

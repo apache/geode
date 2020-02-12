@@ -86,13 +86,13 @@ public class RebalanceManagementDunitTest {
 
   @Test
   public void rebalance() {
-    ClusterManagementOperationResult<RebalanceResult> startResult =
+    ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> startResult =
         client1.start(new RebalanceOperation());
     assertThat(startResult.isSuccessful()).isTrue();
     long now = System.currentTimeMillis();
     assertThat(startResult.getOperationStart().getTime()).isBetween(now - 60000, now);
 
-    ClusterManagementOperationResult<RebalanceResult> endResult =
+    ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> endResult =
         waitForStartToEnd(client1, startResult.getOperationId());
     long end = endResult.getOperationEnd().getTime();
     now = System.currentTimeMillis();
@@ -104,7 +104,7 @@ public class RebalanceManagementDunitTest {
     assertThat(firstRegionSummary.getRegionName()).isIn("customers1", "customers2");
   }
 
-  private ClusterManagementOperationResult<RebalanceResult> waitForStartToEnd(
+  private ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> waitForStartToEnd(
       ClusterManagementService client, String opId) {
     final RebalanceOperation op = new RebalanceOperation();
     GeodeAwaitility.await()
@@ -120,7 +120,7 @@ public class RebalanceManagementDunitTest {
     RebalanceOperation op = new RebalanceOperation();
     op.setIncludeRegions(includeRegions);
     int initialSize = client1.list(op).getResult().size();
-    ClusterManagementOperationResult<RebalanceResult> cmr = client1.start(op);
+    ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> cmr = client1.start(op);
     assertThat(cmr.isSuccessful()).isTrue();
 
     RebalanceResult result = waitForStartToEnd(client1, cmr.getOperationId()).getOperationResult();
@@ -131,14 +131,14 @@ public class RebalanceManagementDunitTest {
     assertThat(firstRegionSummary.getTimeInMilliseconds()).isGreaterThanOrEqualTo(0);
 
     assertThat(client1.list(op).getResult()).hasSize(initialSize + 1);
-    assertThat(client2.list(op).getResult()).hasSize(0); // TODO should be initialSize+1)
+    assertThat(client2.list(op).getResult()).hasSize(initialSize + 1);
   }
 
   @Test
   public void rebalanceExcludedRegion() {
     RebalanceOperation op = new RebalanceOperation();
     op.setExcludeRegions(Collections.singletonList("customers1"));
-    ClusterManagementOperationResult<RebalanceResult> cmr = client1.start(op);
+    ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> cmr = client1.start(op);
     assertThat(cmr.isSuccessful()).isTrue();
 
     RebalanceResult result =
@@ -156,11 +156,11 @@ public class RebalanceManagementDunitTest {
     IgnoredException.addIgnoredException(RuntimeException.class);
     RebalanceOperation op = new RebalanceOperation();
     op.setIncludeRegions(Collections.singletonList("nonexisting_region"));
-    ClusterManagementOperationResult<RebalanceResult> cmr = client1.start(op);
+    ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> cmr = client1.start(op);
     assertThat(cmr.isSuccessful()).isTrue();
     String id = cmr.getOperationId();
 
-    ClusterManagementOperationResult<RebalanceResult>[] rebalanceResult =
+    ClusterManagementOperationResult<RebalanceOperation, RebalanceResult>[] rebalanceResult =
         new ClusterManagementOperationResult[1];
     GeodeAwaitility.await().untilAsserted(() -> {
       rebalanceResult[0] = getRebalanceResult(op, id);
@@ -173,10 +173,11 @@ public class RebalanceManagementDunitTest {
 
   }
 
-  private ClusterManagementOperationResult<RebalanceResult> getRebalanceResult(
+  private ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> getRebalanceResult(
       RebalanceOperation op, String id) {
-    ClusterManagementListOperationsResult<RebalanceResult> listOperationsResult = client1.list(op);
-    Optional<ClusterManagementOperationResult<RebalanceResult>> rebalanceResult =
+    ClusterManagementListOperationsResult<RebalanceOperation, RebalanceResult> listOperationsResult =
+        client1.list(op);
+    Optional<ClusterManagementOperationResult<RebalanceOperation, RebalanceResult>> rebalanceResult =
         listOperationsResult.getResult()
             .stream()
             .filter(rbalresult -> rbalresult.getOperationId().equals(id)
@@ -191,10 +192,10 @@ public class RebalanceManagementDunitTest {
     IgnoredException.addIgnoredException(RuntimeException.class);
     RebalanceOperation op = new RebalanceOperation();
     op.setIncludeRegions(Arrays.asList("nonexisting_region", "customers1"));
-    ClusterManagementOperationResult<RebalanceResult> cmr = client1.start(op);
+    ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> cmr = client1.start(op);
     assertThat(cmr.isSuccessful()).isTrue();
 
-    RebalanceResult result = cmr.getOperationResult();
+    RebalanceResult result = waitForStartToEnd(client1, cmr.getOperationId()).getOperationResult();
     assertThat(result.getRebalanceRegionResults().size()).isEqualTo(1);
     RebalanceRegionResult firstRegionSummary = result.getRebalanceRegionResults().get(0);
     assertThat(firstRegionSummary.getRegionName()).isEqualTo("customers1");

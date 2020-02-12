@@ -31,7 +31,8 @@ import org.apache.geode.management.runtime.OperationResult;
  * @param <V> the result type of the operation
  */
 @SuppressWarnings("unused")
-public interface ClusterManagementOperation<V extends OperationResult> extends Serializable {
+public interface ClusterManagementOperation<V extends OperationResult>
+    extends JsonSerializable, Serializable {
   /**
    * must match the REST controller's RequestMapping
    *

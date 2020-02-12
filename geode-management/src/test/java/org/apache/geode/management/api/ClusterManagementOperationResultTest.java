@@ -23,7 +23,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.management.api.ClusterManagementResult.StatusCode;
+import org.apache.geode.management.internal.operation.RebalanceResultImpl;
+import org.apache.geode.management.operation.RebalanceOperation;
 import org.apache.geode.management.runtime.OperationResult;
+import org.apache.geode.management.runtime.RebalanceResult;
 import org.apache.geode.util.internal.GeodeJsonMapper;
 
 public class ClusterManagementOperationResultTest {
@@ -44,6 +47,20 @@ public class ClusterManagementOperationResultTest {
     String json = mapper.writeValueAsString(result);
     System.out.println(json);
     ClusterManagementOperationResult<ClusterManagementOperation<OperationResult>, OperationResult> value =
+        mapper.readValue(json, ClusterManagementOperationResult.class);
+    assertThat(value.getStatusMessage()).isEqualTo("Success!!");
+  }
+
+  @Test
+  public void serializeRebal() throws Exception {
+    ClusterManagementResult result1 = new ClusterManagementResult();
+    result1.setStatus(StatusCode.OK, "Success!!");
+    ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> result =
+        new ClusterManagementOperationResult(result1, new Date(), new Date(),
+            new RebalanceOperation(), "id", new RebalanceResultImpl(), null);
+    String json = mapper.writeValueAsString(result);
+    System.out.println(json);
+    ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> value =
         mapper.readValue(json, ClusterManagementOperationResult.class);
     assertThat(value.getStatusMessage()).isEqualTo("Success!!");
   }

@@ -150,7 +150,8 @@ public class RebalanceIntegrationTest {
   @Test
   public void doOperation() throws Exception {
     RebalanceOperation rebalance = new RebalanceOperation();
-    ClusterManagementOperationResult<RebalanceResult> result = client.start(rebalance);
+    ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> result =
+        client.start(rebalance);
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusMessage())
         .isEqualTo("Operation started.  Use the URI to check its status.");
@@ -159,7 +160,7 @@ public class RebalanceIntegrationTest {
   @Test
   public void doListOperations() {
     client.start(new RebalanceOperation());
-    ClusterManagementListOperationsResult<RebalanceResult> listResult =
+    ClusterManagementListOperationsResult<RebalanceOperation, RebalanceResult> listResult =
         client.list(new RebalanceOperation());
     assertThat(listResult.getResult().size()).isGreaterThanOrEqualTo(1);
     assertThat(listResult.getResult().get(0).getOperationStart()).isNotNull();
