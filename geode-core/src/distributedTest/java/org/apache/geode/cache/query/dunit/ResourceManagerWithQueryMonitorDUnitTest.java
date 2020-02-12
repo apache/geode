@@ -303,12 +303,17 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
   private AsyncInvocation executeQueryOnClient(VM client) {
     return client.invokeAsync("execute query from client", () -> {
       try {
+        logger.info("MLH executeQueryOnClient 1");
         Query query1 = getCache().getQueryService().newQuery("Select * From /" + "portfolios");
+        logger.info("MLH executeQueryOnClient 2");
         query1.execute();
+        logger.info("MLH executeQueryOnClient 3");
         throw new CacheException("Exception should have been thrown due to low memory") {};
       } catch (Exception e2) {
+        logger.info("MLH executeQueryOnClient 4");
         handleException(e2, true, false, -1);
       }
+      logger.info("MLH executeQueryOnClient 5");
       return 0;
     });
   }
