@@ -135,14 +135,14 @@ public class ClientClusterManagementServiceTest {
   }
 
   @Test
-  public void checkStatusCallsSubmitMessageAndReturnsResult() {
+  public void getOperationCallsSubmitMessageAndReturnsResult() {
     String opId = "opId";
     RebalanceOperation opType = new RebalanceOperation();
     doReturn(successOperationResult).when(serviceTransport)
         .submitMessageForGetOperation(same(opType), same(opId));
 
     ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> operationResult =
-        service.checkStatus(opType, opId);
+        service.get(opType, opId);
 
     assertThat(operationResult).isSameAs(successOperationResult);
     verify(serviceTransport).submitMessageForGetOperation(same(opType), same(opId));

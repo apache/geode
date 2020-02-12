@@ -65,16 +65,16 @@ public class RebalanceOperationControllerSpringTest {
   }
 
   @Test
-  public void checkStatusMappingRecognizesRebalanceIdWithDot() throws Exception {
+  public void getMappingRecognizesRebalanceIdWithDot() throws Exception {
     String rebalanceIdWithDot = "rebalance.id";
     String requestPath = URI_VERSION + REBALANCE_ENDPOINT + "/" + rebalanceIdWithDot;
 
-    when(cms.checkStatus(any(), eq(rebalanceIdWithDot)))
+    when(cms.get(any(), eq(rebalanceIdWithDot)))
         .thenReturn(new ClusterManagementOperationResult<>());
 
     context.perform(get(requestPath))
         .andExpect(status().is2xxSuccessful());
 
-    verify(cms).checkStatus(any(), eq(rebalanceIdWithDot));
+    verify(cms).get(any(), eq(rebalanceIdWithDot));
   }
 }

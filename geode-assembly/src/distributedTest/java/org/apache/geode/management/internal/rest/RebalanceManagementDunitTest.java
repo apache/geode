@@ -109,8 +109,8 @@ public class RebalanceManagementDunitTest {
     final RebalanceOperation op = new RebalanceOperation();
     GeodeAwaitility.await()
         .untilAsserted(
-            () -> assertThat(client.checkStatus(op, opId).getOperationEnd()).isNotNull());
-    return client.checkStatus(op, opId);
+            () -> assertThat(client.get(op, opId).getOperationEnd()).isNotNull());
+    return client.get(op, opId);
   }
 
   @Test
@@ -142,7 +142,7 @@ public class RebalanceManagementDunitTest {
     assertThat(cmr.isSuccessful()).isTrue();
 
     RebalanceResult result =
-        client1.checkStatus(new RebalanceOperation(), cmr.getOperationId()).getOperationResult();
+        client1.get(new RebalanceOperation(), cmr.getOperationId()).getOperationResult();
     assertThat(result.getRebalanceRegionResults().size()).isEqualTo(1);
     RebalanceRegionResult firstRegionSummary = result.getRebalanceRegionResults().get(0);
     assertThat(firstRegionSummary.getRegionName()).isEqualTo("customers2");

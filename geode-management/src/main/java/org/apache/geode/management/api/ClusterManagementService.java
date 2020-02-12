@@ -99,13 +99,15 @@ public interface ClusterManagementService extends AutoCloseable {
       A op);
 
   /**
-   * Checks and returns the status of a given previously started operation.
+   * Returns the status of the identified operation.
    *
+   * @param opType the type of the operation to get
    * @param opId the operationId of a previously started operation
+   * @param <A> the operation type (a subclass of {@link ClusterManagementOperation}
    * @param <V> the return type of the operation
    * @return the status of the identified operation
    */
-  <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<A, V> checkStatus(
+  <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<A, V> get(
       A opType, String opId);
 
   /**

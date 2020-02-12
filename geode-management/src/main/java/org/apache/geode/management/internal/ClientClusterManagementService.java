@@ -104,7 +104,7 @@ public class ClientClusterManagementService implements ClusterManagementService 
   }
 
   @Override
-  public <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<A, V> checkStatus(
+  public <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<A, V> get(
       A opType, String opId) {
     ClusterManagementOperationResult<A, V> result =
         transport.submitMessageForGetOperation(opType, opId);

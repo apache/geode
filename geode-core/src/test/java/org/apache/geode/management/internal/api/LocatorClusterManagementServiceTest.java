@@ -378,22 +378,22 @@ public class LocatorClusterManagementServiceTest {
   }
 
   @Test
-  public void checkStatusForNotFound() {
-    assertThatThrownBy(() -> service.checkStatus(rebalanceOperation, "123"))
+  public void getRebalanceWithNoOpThrows() {
+    assertThatThrownBy(() -> service.get(rebalanceOperation, "123"))
         .isInstanceOf(ClusterManagementException.class);
   }
 
   @Test
-  public void checkStatus() {
-    OperationState operationInstance = mock(OperationState.class);
-    when(executorManager.get(any())).thenReturn(operationInstance);
+  public void getRebalance() {
+    OperationState operationState = mock(OperationState.class);
+    when(executorManager.get(any())).thenReturn(operationState);
     ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> result =
-        service.checkStatus(rebalanceOperation, "456");
+        service.get(rebalanceOperation, "456");
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.IN_PROGRESS);
     assertThat(result.getOperationResult()).isNull();
 
-    when(operationInstance.getOperationEnd()).thenReturn(new Date());
-    result = service.checkStatus(rebalanceOperation, "456");
+    when(operationState.getOperationEnd()).thenReturn(new Date());
+    result = service.get(rebalanceOperation, "456");
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
   }
 

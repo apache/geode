@@ -25,7 +25,7 @@ import org.apache.geode.management.runtime.OperationResult;
  * Returned by
  * {@link ClusterManagementService#start(ClusterManagementOperation)} to convey status of
  * launching the async operation,
- * and by {@link ClusterManagementService#checkStatus(ClusterManagementOperation, String)} to
+ * and by {@link ClusterManagementService#get(ClusterManagementOperation, String)} to
  * describe the status of
  * a started async operation.
  *
