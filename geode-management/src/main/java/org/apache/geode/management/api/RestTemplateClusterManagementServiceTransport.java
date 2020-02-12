@@ -170,7 +170,7 @@ public class RestTemplateClusterManagementServiceTransport
       T config) {
     String endPoint = URI_VERSION + config.getLinks().getList();
     return restTemplate
-        .exchange(endPoint + "/?id={id}&group={group}", HttpMethod.GET, makeEntity(config),
+        .exchange(endPoint + "?id={id}&group={group}", HttpMethod.GET, makeEntity(config),
             ClusterManagementListResult.class, config.getId(), config.getGroup())
         .getBody();
   }

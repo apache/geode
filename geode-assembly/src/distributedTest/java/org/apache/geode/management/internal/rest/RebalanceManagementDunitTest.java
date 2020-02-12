@@ -48,18 +48,16 @@ public class RebalanceManagementDunitTest {
   @ClassRule
   public static ClusterStartupRule cluster = new ClusterStartupRule();
 
-  private static MemberVM locator1, locator2, server1, server2;
-
   private static ClusterManagementService client1, client2;
 
   @BeforeClass
   public static void beforeClass() {
-    locator1 = cluster.startLocatorVM(0, MemberStarterRule::withHttpService);
+    MemberVM locator1 = cluster.startLocatorVM(0, MemberStarterRule::withHttpService);
     int locator1Port = locator1.getPort();
-    locator2 =
+    MemberVM locator2 =
         cluster.startLocatorVM(1, l -> l.withHttpService().withConnectionToLocator(locator1Port));
-    server1 = cluster.startServerVM(2, "group1", locator1.getPort());
-    server2 = cluster.startServerVM(3, "group2", locator1.getPort());
+    cluster.startServerVM(2, "group1", locator1Port);
+    cluster.startServerVM(3, "group2", locator1Port);
 
     client1 = new ClusterManagementServiceBuilder()
         .setHost("localhost")
@@ -160,15 +158,19 @@ public class RebalanceManagementDunitTest {
     assertThat(cmr.isSuccessful()).isTrue();
     String id = cmr.getOperationId();
 
-    ClusterManagementOperationResult<RebalanceOperation, RebalanceResult>[] rebalanceResult =
-        new ClusterManagementOperationResult[1];
+    List<ClusterManagementOperationResult<RebalanceOperation, RebalanceResult>> resultArrayList =
+        new ArrayList<>();
     GeodeAwaitility.await().untilAsserted(() -> {
-      rebalanceResult[0] = getRebalanceResult(op, id);
-      assertThat(rebalanceResult[0]).isNotNull();
+      ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> rebalanceResult =
+          getRebalanceResult(op, id);
+      if (rebalanceResult != null) {
+        resultArrayList.add(rebalanceResult);
+      }
+      assertThat(rebalanceResult).isNotNull();
     });
 
-    assertThat(rebalanceResult[0].isSuccessful()).isFalse();
-    assertThat(rebalanceResult[0].getStatusMessage())
+    assertThat(resultArrayList.get(0).isSuccessful()).isFalse();
+    assertThat(resultArrayList.get(0).getStatusMessage())
         .contains("For the region /nonexisting_region, no member was found");
 
   }

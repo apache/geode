@@ -46,7 +46,8 @@ public class RestTemplateClusterManagementServiceTransportTest {
   private AbstractConfiguration configuration;
   private Links links;
   private ClusterManagementRealizationResult realizationSuccess;
-  private ClusterManagementRealizationResult realizationFailure;
+  private ClusterManagementListResult listResult;
+  private ClusterManagementGetResult getResult;
   private ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> rebalanceOperationResult;
 
   @Before
@@ -61,8 +62,10 @@ public class RestTemplateClusterManagementServiceTransportTest {
 
     realizationSuccess = mock(ClusterManagementRealizationResult.class);
     when(realizationSuccess.isSuccessful()).thenReturn(true);
-    realizationFailure = mock(ClusterManagementRealizationResult.class);
-    when(realizationFailure.isSuccessful()).thenReturn(false);
+    listResult = mock(ClusterManagementListResult.class);
+    when(listResult.isSuccessful()).thenReturn(true);
+    getResult = mock(ClusterManagementGetResult.class);
+    when(getResult.isSuccessful()).thenReturn(true);
 
     rebalanceOperationResult = mock(ClusterManagementOperationResult.class);
   }
@@ -80,7 +83,7 @@ public class RestTemplateClusterManagementServiceTransportTest {
   }
 
   @Test
-  public void submitMessageThrowsException() {
+  public void submitMessageRestCallFails() {
     when(links.getList()).thenReturn("/operations");
     doThrow(new RestClientException("Rest call failed")).when(restTemplate).exchange(
         any(String.class), same(HttpMethod.POST),
@@ -94,43 +97,21 @@ public class RestTemplateClusterManagementServiceTransportTest {
   }
 
   @Test
-  public void submitMessageFails() {
-    assertThat(true).as("not implemented").isFalse();
-  }
+  public void submitMessageForListCallsRestTemplateExchange() {
+    String opId = "opId";
+    String groupId = "groupId";
+    when(links.getList()).thenReturn("/operations");
+    doReturn(responseEntity).when(restTemplate).exchange(any(String.class), same(HttpMethod.GET),
+        any(HttpEntity.class), same(ClusterManagementListResult.class), any(String.class),
+        any(String.class));
+    when(configuration.getId()).thenReturn(opId);
+    when(configuration.getGroup()).thenReturn(groupId);
 
-  @Test
-  public void submitMessageForGetSucceeds() {
-    assertThat(true).as("not implemented").isFalse();
-  }
+    restServiceTransport.submitMessageForList(configuration);
 
-  @Test
-  public void submitMessageThrowsRestException() {
-    assertThat(true).as("not implemented").isFalse();
-  }
-
-  @Test
-  public void submitMessageForGetFails() {
-    assertThat(true).as("not implemented").isFalse();
-  }
-
-  @Test
-  public void submitMessageForListSucceeds() {
-    assertThat(true).as("not implemented").isFalse();
-  }
-
-  @Test
-  public void submitMessageForListFails() {
-    assertThat(true).as("not implemented").isFalse();
-  }
-
-  @Test
-  public void submitMessageForListOperationSucceeds() {
-    assertThat(true).as("not implemented").isFalse();
-  }
-
-  @Test
-  public void submitMessageForListOperationFails() {
-    assertThat(true).as("not implemented").isFalse();
+    verify(restTemplate).exchange(eq("/v1/operations?id={id}&group={group}"), eq(HttpMethod.GET),
+        any(HttpEntity.class),
+        eq(ClusterManagementListResult.class), eq(opId), eq(groupId));
   }
 
   @Test
@@ -144,30 +125,5 @@ public class RestTemplateClusterManagementServiceTransportTest {
     verify(restTemplate).exchange(eq("/v1/operations/rebalances/opId"), eq(HttpMethod.GET),
         any(HttpEntity.class),
         eq(ClusterManagementOperationResult.class));
-  }
-
-  @Test
-  public void submitMessageForGetOperationFails() {
-    assertThat(true).as("not implemented").isFalse();
-  }
-
-  @Test
-  public void submitMessageForStartOperationSucceeds() {
-    assertThat(true).as("not implemented").isFalse();
-  }
-
-  @Test
-  public void submitMessageForStartOperationFails() {
-    assertThat(true).as("not implemented").isFalse();
-  }
-
-  @Test
-  public void reAnimateSucceeds() {
-    assertThat(true).as("not implemented").isFalse();
-  }
-
-  @Test
-  public void reAnimateFails() {
-    assertThat(true).as("not implemented").isFalse();
   }
 }
