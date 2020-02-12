@@ -558,7 +558,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   }
 
   @Override
-  void cmnClearRegion(RegionEventImpl regionEvent, boolean cacheWrite, boolean useRVV) {
+  public void cmnClearRegion(RegionEventImpl regionEvent, boolean cacheWrite, boolean useRVV) {
     if (!getBucketAdvisor().isPrimary()) {
       if (logger.isDebugEnabled()) {
         logger.debug("Not primary bucket when doing clear, do nothing");
