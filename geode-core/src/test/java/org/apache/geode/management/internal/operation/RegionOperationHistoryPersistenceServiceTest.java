@@ -15,7 +15,11 @@
 
 package org.apache.geode.management.internal.operation;
 
+import static org.apache.geode.management.internal.operation.RegionOperationHistoryPersistenceService.OPERATION_HISTORY_DIR_NAME;
+import static org.apache.geode.management.internal.operation.RegionOperationHistoryPersistenceService.OPERATION_HISTORY_REGION_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.ArgumentMatchers.same;
@@ -24,6 +28,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
@@ -32,8 +38,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
+import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.RegionFactoryImpl;
 import org.apache.geode.management.api.ClusterManagementOperation;
 import org.apache.geode.management.runtime.OperationResult;
 
@@ -139,8 +148,47 @@ public class RegionOperationHistoryPersistenceServiceTest {
   @Test
   public void cacheConstructorUsesExistingRegion() {
     Region region = mock(Region.class);
-    when(cache.getRegion(RegionOperationHistoryPersistenceService.OPERATION_HISTORY_REGION_NAME))
-        .thenReturn(region);
+    when(cache.getRegion(OPERATION_HISTORY_REGION_NAME)).thenReturn(region);
+
+    RegionOperationHistoryPersistenceService result =
+        new RegionOperationHistoryPersistenceService(cache);
+
+    assertThat(result.getRegion()).isSameAs(region);
+  }
+
+  @Test
+  public void constructorWithFailedDirCreationThrowsException() {
+    Path path = mock(Path.class);
+    File file = mock(File.class);
+    when(path.resolve(OPERATION_HISTORY_DIR_NAME)).thenReturn(path);
+    when(cache.getRegion(OPERATION_HISTORY_REGION_NAME)).thenReturn(null);
+    when(path.toFile()).thenReturn(file);
+    when(file.exists()).thenReturn(false);
+    when(file.mkdirs()).thenReturn(false);
+
+    Throwable throwable =
+        catchThrowable(() -> new RegionOperationHistoryPersistenceService(cache, path));
+
+    assertThat(throwable)
+        .isInstanceOf(RuntimeException.class)
+        .hasMessageContaining("Cannot create operation history directory at " + file);
+  }
+
+  @Test
+  public void constructorWithNoExistingRegionCreatesRegion() {
+    when(cache.getRegion(OPERATION_HISTORY_REGION_NAME)).thenReturn(null);
+    DiskStoreFactory diskStoreFactory = mock(DiskStoreFactory.class);
+    when(cache.createDiskStoreFactory()).thenReturn(diskStoreFactory);
+    when(diskStoreFactory.setDiskDirs(any())).thenReturn(diskStoreFactory);
+    when(diskStoreFactory.setAutoCompact(true)).thenReturn(diskStoreFactory);
+    when(diskStoreFactory.setMaxOplogSize(10)).thenReturn(diskStoreFactory);
+
+    RegionFactoryImpl regionFactory = mock(RegionFactoryImpl.class);
+    when(cache.createRegionFactory(eq(RegionShortcut.REPLICATE_PERSISTENT)))
+        .thenReturn(regionFactory);
+
+    Region region = mock(Region.class);
+    when(regionFactory.create(OPERATION_HISTORY_REGION_NAME)).thenReturn(region);
 
     RegionOperationHistoryPersistenceService result =
         new RegionOperationHistoryPersistenceService(cache);
