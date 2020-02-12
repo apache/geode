@@ -389,8 +389,6 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     // SECOND RUN: do some more puts
     vm4.invoke(() -> doPuts(regionName, 1000));
 
-    vm4.invoke(() -> validateRegionSize(regionName, 1000));
-
     // verify all the buckets on all the sender nodes are drained
     validateParallelSenderQueueAllBucketsDrained();
 
@@ -512,9 +510,6 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
 
     // start the senders again
     startSenderInVMs("ln", vm4, vm5, vm6, vm7);
-
-    // make sure all the senders are not running on accessor nodes and running on non-accessor nodes
-    waitForSendersRunning();
 
     // Region size on remote site should remain same and below the number of puts done in the FIRST
     // RUN
