@@ -450,7 +450,7 @@ public class GeodeRedisServer {
         throw assErr;
       }
       this.keyRegistrar = new KeyRegistrar(redisMetaData);
-      this.pubSub = createPubSub();
+      this.pubSub = new PubSubImpl();
       this.regionCache = new RegionProvider(stringsRegion, hLLRegion, this.keyRegistrar,
           expirationFutures, expirationExecutor, this.DEFAULT_REGION_TYPE);
       redisMetaData.put(REDIS_META_DATA_REGION, RedisDataType.REDIS_PROTECTED);
@@ -740,12 +740,6 @@ public class GeodeRedisServer {
       }
     }
     return logLevel;
-  }
-
-  private PubSub createPubSub() {
-    PubSubImpl pubSub = new PubSubImpl();
-    pubSub.registerPublishFunction();
-    return pubSub;
   }
 
 }

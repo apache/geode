@@ -34,7 +34,11 @@ import org.apache.geode.cache.execute.ResultCollector;
 public class PubSubImpl implements PubSub {
   public static final String REDIS_PUB_SUB_FUNCTION_ID = "redisPubSubFunctionID";
 
-  Subscribers subscribers = new Subscribers();
+  private Subscribers subscribers = new Subscribers();
+
+  public PubSubImpl() {
+    registerPublishFunction();
+  }
 
   @Override
   public long publish(String channel, String message) {
@@ -58,7 +62,7 @@ public class PubSubImpl implements PubSub {
     return subscribers.findSubscribers(client).size();
   }
 
-  public void registerPublishFunction() {
+  private void registerPublishFunction() {
     FunctionService.registerFunction(new Function<String[]>() {
       @Override
       public String getId() {
