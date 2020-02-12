@@ -31,6 +31,7 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.DefaultUriBuilderFactory;
 import org.springframework.web.util.DefaultUriTemplateHandler;
 
 import org.apache.geode.management.api.ClusterManagementService;
@@ -64,7 +65,7 @@ public class ClusterManagementServiceBuilderTest {
         new ClusterManagementServiceBuilder().setHost(HOST).setPort(PORT).build();
 
     RestTemplate restTemplate = getFieldValue(getFieldValue(cms, "transport"), "restTemplate");
-    assertThat(((DefaultUriTemplateHandler) (restTemplate.getUriTemplateHandler())).getBaseUrl())
+    assertThat(restTemplate.getUriTemplateHandler().expand("").toString())
         .contains(HOST + ":" + PORT);
   }
 
@@ -78,7 +79,7 @@ public class ClusterManagementServiceBuilderTest {
             .build();
 
     RestTemplate restTemplate = getFieldValue(getFieldValue(cms, "transport"), "restTemplate");
-    assertThat(((DefaultUriTemplateHandler) (restTemplate.getUriTemplateHandler())).getBaseUrl())
+    assertThat(restTemplate.getUriTemplateHandler().expand("").toString())
         .contains("https://");
   }
 
@@ -88,7 +89,7 @@ public class ClusterManagementServiceBuilderTest {
         new ClusterManagementServiceBuilder().setHost(HOST).setPort(PORT).build();
 
     RestTemplate restTemplate = getFieldValue(getFieldValue(cms, "transport"), "restTemplate");
-    assertThat(((DefaultUriTemplateHandler) (restTemplate.getUriTemplateHandler())).getBaseUrl())
+    assertThat(restTemplate.getUriTemplateHandler().expand("").toString())
         .contains("http://");
   }
 
