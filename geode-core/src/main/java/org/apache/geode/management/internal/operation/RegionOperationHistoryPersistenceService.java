@@ -15,7 +15,6 @@
 
 package org.apache.geode.management.internal.operation;
 
-import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -69,19 +68,19 @@ public class RegionOperationHistoryPersistenceService
       return region;
     }
 
-    File diskDir = workingDir.resolve(OPERATION_HISTORY_DIR_NAME).toFile();
-
-    if (!diskDir.exists() && !diskDir.mkdirs()) {
-      throw new RuntimeException("Cannot create operation history directory at " + diskDir);
-    }
-
-    File[] diskDirs = {diskDir};
-    cache.createDiskStoreFactory().setDiskDirs(diskDirs).setAutoCompact(true)
-        .setMaxOplogSize(10).create(OPERATION_HISTORY_DISK_STORE_NAME);
+    // File diskDir = workingDir.resolve(OPERATION_HISTORY_DIR_NAME).toFile();
+    //
+    // if (!diskDir.exists() && !diskDir.mkdirs()) {
+    // throw new RuntimeException("Cannot create operation history directory at " + diskDir);
+    // }
+    //
+    // File[] diskDirs = {diskDir};
+    // cache.createDiskStoreFactory().setDiskDirs(diskDirs).setAutoCompact(true)
+    // .setMaxOplogSize(10).create(OPERATION_HISTORY_DISK_STORE_NAME);
 
     RegionFactory<String, OperationState<ClusterManagementOperation<OperationResult>, OperationResult>> regionFactory =
-        cache.createRegionFactory(RegionShortcut.REPLICATE_PERSISTENT);
-    regionFactory.setDiskStoreName(OPERATION_HISTORY_DISK_STORE_NAME);
+        cache.createRegionFactory(RegionShortcut.REPLICATE/* _PERSISTENT */);
+    // regionFactory.setDiskStoreName(OPERATION_HISTORY_DISK_STORE_NAME);
 
     InternalRegionArguments internalArgs = new InternalRegionArguments();
     internalArgs.setIsUsedForMetaRegion(true);
