@@ -273,7 +273,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
       Thread.sleep(1000);
       // We simulate a low memory/critical heap percentage hit
       setHeapToCriticalAndReleaseLatch(server1);
-      assertThat(queryExecution1.get()).isEqualTo(0);
+      assertThat(queryExecution1.get(60, SECONDS)).isEqualTo(0);
       verifyDroppedObjectsAndSetHeapToNormal(server1);
 
       // to here....
