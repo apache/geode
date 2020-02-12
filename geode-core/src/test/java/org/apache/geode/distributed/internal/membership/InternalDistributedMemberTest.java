@@ -231,6 +231,27 @@ public class InternalDistributedMemberTest {
   }
 
   @Test
+  public void getDurableClientAttributesShouldReturnCachedInstanceWhenBackingMemberIdentifierAttributesHaveNotChanged()
+      throws UnknownHostException {
+    InetAddress host1 = InetAddress.getByAddress(new byte[] {127, 0, 0, 1});
+    MemberData memberData = mock(MemberData.class);
+    when(memberData.getInetAddress()).thenReturn(host1);
+    when(memberData.getDurableId()).thenReturn("durableId");
+    when(memberData.getDurableTimeout()).thenReturn(Integer.MAX_VALUE);
+    InternalDistributedMember internalDistributedMember = new InternalDistributedMember(memberData);
+    assertThat(internalDistributedMember.durableClientAttributes).isNull();
+
+    // Get Attributes first time - should be instantiated and cached.
+    DurableClientAttributes attributes = internalDistributedMember.getDurableClientAttributes();
+    assertThat(attributes).isNotNull();
+    assertThat(attributes.getId()).isEqualTo("durableId");
+    assertThat(attributes.getTimeout()).isEqualTo(Integer.MAX_VALUE);
+
+    // Get Attributes again without changing backing store - should return cached instance .
+    assertThat(internalDistributedMember.getDurableClientAttributes()).isSameAs(attributes);
+  }
+
+  @Test
   public void setDurableTimeOutShouldNullifyCachedDurableClientAttributes() {
     InternalDistributedMember member = new InternalDistributedMember("", 34567, "name", "uniqueId",
         MemberIdentifier.NORMAL_DM_TYPE, new String[] {}, new DurableClientAttributes("", 500));
