@@ -16,114 +16,36 @@
 
 package org.apache.geode.redis.internal;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import org.apache.geode.cache.execute.Function;
-import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.cache.execute.ResultCollector;
-
 /**
- * Central class that manages publish and subscribe functionality. Since Redis subscriptions
- * require a persistent connection we need to have a way to track the existing clients that are
- * expecting to receive published messages.
+ * Interface that represents the ability to Publish, Subscribe and Unsubscribe from channels.
  */
-public class PubSub {
-  public static final String REDIS_PUB_SUB_FUNCTION_ID = "redisPubSubFunctionID";
+public interface PubSub {
 
-  Subscribers subscribers = new Subscribers();
+  /**
+   * Publish a message on a channel
+   *
+   * @param channel to publish to
+   * @param message to publish
+   * @return the number of messages published
+   */
+  long publish(String channel, String message);
 
-  public long publish(String channel, String message) {
-    ResultCollector<String[], List<Long>> subscriberCountCollector = FunctionService
-        .onMembers()
-        .setArguments(new String[] {channel, message})
-        .execute(REDIS_PUB_SUB_FUNCTION_ID);
+  /**
+   * Subscribe to a channel
+   *
+   * @param channel to subscribe to
+   * @param context ExecutionHandlerContext which will handle the client response
+   * @param client a Client instance making the request
+   * @return the number of channels subscribed to
+   */
+  long subscribe(String channel, ExecutionHandlerContext context, Client client);
 
-    List<Long> subscriberCounts = subscriberCountCollector.getResult();
-
-    return subscriberCounts.stream().mapToLong(x -> x).sum();
-  }
-
-  public long subscribe(String channel, ExecutionHandlerContext context, Client client) {
-    if (subscribers.exists(channel, client)) {
-      return subscribers.findSubscribers(client).size();
-    }
-    Subscriber subscriber = new Subscriber(client, channel, context);
-    subscribers.add(subscriber);
-    return subscribers.findSubscribers(client).size();
-  }
-
-  public void registerPublishFunction() {
-    FunctionService.registerFunction(new Function<String[]>() {
-      @Override
-      public String getId() {
-        return REDIS_PUB_SUB_FUNCTION_ID;
-      }
-
-      @Override
-      public void execute(FunctionContext<String[]> context) {
-        String[] publishMessage = context.getArguments();
-        long subscriberCount = publishMessageToSubscribers(publishMessage[0], publishMessage[1]);
-        context.getResultSender().lastResult(subscriberCount);
-      }
-    });
-  }
-
-  public long unsubscribe(String channel, Client client) {
-    this.subscribers.remove(channel, client);
-    return this.subscribers.findSubscribers(client).size();
-  }
-
-  private long publishMessageToSubscribers(String channel, String message) {
-    Map<Boolean, List<Subscriber>> results = this.subscribers
-        .findSubscribers(channel)
-        .stream()
-        .collect(
-            Collectors.partitioningBy(subscriber -> subscriber.publishMessage(channel, message)));
-
-    prune(results.get(false));
-
-    return results.get(true).size();
-  }
-
-  private void prune(List<Subscriber> failedSubscribers) {
-    failedSubscribers.forEach(subscriber -> {
-      if (subscriber.client.isDead()) {
-        subscribers.remove(subscriber.client);
-      }
-    });
-  }
-
-  private class Subscribers {
-    List<Subscriber> subscribers = new ArrayList<>();
-
-    private boolean exists(String channel, Client client) {
-      return subscribers.stream().anyMatch(subscriber -> subscriber.isEqualTo(channel, client));
-    }
-
-    private List<Subscriber> findSubscribers(Client client) {
-      return subscribers.stream().filter(subscriber -> subscriber.client.equals(client))
-          .collect(Collectors.toList());
-    }
-
-    private List<Subscriber> findSubscribers(String channel) {
-      return subscribers.stream().filter(subscriber -> subscriber.channel.equals(channel))
-          .collect(Collectors.toList());
-    }
-
-    public void add(Subscriber subscriber) {
-      this.subscribers.add(subscriber);
-    }
-
-    public void remove(String channel, Client client) {
-      this.subscribers.removeIf(subscriber -> subscriber.isEqualTo(channel, client));
-    }
-
-    public void remove(Client client) {
-      this.subscribers.removeIf(subscriber -> subscriber.client.equals(client));
-    }
-  }
+  /**
+   * Unsubscribe a client from a channel
+   *
+   * @param channel the channel to unsubscribe from
+   * @param client the Client which is to be unsubscribed
+   * @return the number of channels still subscribed to by the client
+   */
+  long unsubscribe(String channel, Client client);
 }

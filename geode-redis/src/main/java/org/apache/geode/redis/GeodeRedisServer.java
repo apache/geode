@@ -72,6 +72,7 @@ import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.KeyRegistrar;
 import org.apache.geode.redis.internal.PubSub;
+import org.apache.geode.redis.internal.PubSubImpl;
 import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.RegionProvider;
 
@@ -742,7 +743,7 @@ public class GeodeRedisServer {
   }
 
   private PubSub createPubSub() {
-    PubSub pubSub = new PubSub();
+    PubSubImpl pubSub = new PubSubImpl();
     pubSub.registerPublishFunction();
     return pubSub;
   }
