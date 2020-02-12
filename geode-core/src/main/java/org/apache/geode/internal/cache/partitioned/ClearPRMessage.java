@@ -24,6 +24,7 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedMember;
@@ -108,10 +109,6 @@ public class ClearPRMessage extends PartitionMessageWithDirectReply {
     return true;
   }
 
-  public void setPossibleDuplicate(boolean posDup) {
-    this.posDup = posDup;
-  }
-
   public RegionEventImpl getRegionEvent() {
     return regionEvent;
   }
@@ -168,6 +165,7 @@ public class ClearPRMessage extends PartitionMessageWithDirectReply {
    * indefinitely for the acknowledgement
    */
   @Override
+  @VisibleForTesting
   protected boolean operateOnPartitionedRegion(ClusterDistributionManager distributionManager,
       PartitionedRegion region, long startTime) {
     try {
