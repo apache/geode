@@ -11,41 +11,46 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
+ *
  */
 
 package org.apache.geode.redis.internal.executor.pubsub;
 
-import java.util.List;
+import java.util.ArrayList;
 
 import io.netty.buffer.ByteBuf;
+import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.Coder;
+import org.apache.geode.redis.internal.CoderException;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
+import org.apache.geode.redis.internal.org.apache.hadoop.fs.GlobPattern;
 
-public class PublishExecutor extends AbstractExecutor {
-
+public class PunsubscribeExecutor extends AbstractExecutor {
+  private static final Logger logger = LogService.getLogger();
 
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
-    List<byte[]> args = command.getProcessedCommand();
-    if (args.size() != 3) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.PUBLISH));
-      return;
+    byte[] pattern = command.getProcessedCommand().get(1);
+    long subscriptionCount =
+        context
+            .getPubSub()
+            .punsubscribe(new GlobPattern(new String(pattern)), context.getClient());
+
+    ArrayList<Object> items = new ArrayList<>();
+    items.add("punsubscribe");
+    items.add(pattern);
+    items.add(subscriptionCount);
+
+    ByteBuf response = null;
+    try {
+      response = Coder.getArrayResponse(context.getByteBufAllocator(), items);
+    } catch (CoderException e) {
+      logger.warn("Error encoding unsubscribe response", e);
     }
-
-    String channelName = new String(args.get(1));
-    String message = new String(args.get(2));
-    long publishCount = context.getPubSub().publish(channelName, message);
-
-    writeResponse(command, context, publishCount);
-  }
-
-  private void writeResponse(Command command, ExecutionHandlerContext context,
-      long publishCount) {
-    ByteBuf response = Coder.getIntegerResponse(context.getByteBufAllocator(), publishCount);
     command.setResponse(response);
   }
 }
