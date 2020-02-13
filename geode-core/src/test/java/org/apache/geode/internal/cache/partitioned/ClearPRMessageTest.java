@@ -133,7 +133,8 @@ public class ClearPRMessageTest {
     InternalDistributedSystem distributedSystem = mock(InternalDistributedSystem.class);
     InternalDistributedMember sender = mock(InternalDistributedMember.class);
 
-    //We need these mocks to allow us to create our processor despite not having a real distributed system
+    // We need these mocks to allow us to create our processor despite not having a real distributed
+    // system
     DistributionManager distributionManager = mock(DistributionManager.class);
     CancelCriterion cancelCriterion = mock(CancelCriterion.class);
     when(distributedSystem.getDistributionManager()).thenReturn(distributionManager);
@@ -142,8 +143,8 @@ public class ClearPRMessageTest {
     Set<InternalDistributedMember> recipients = new HashSet();
     recipients.add(sender);
 
-    ClearPRMessage.ClearResponse
-        clearResponse = new ClearPRMessage.ClearResponse(distributedSystem, recipients);
+    ClearPRMessage.ClearResponse clearResponse =
+        new ClearPRMessage.ClearResponse(distributedSystem, recipients);
 
     message.initMessage(region, recipients, false, clearResponse);
 
@@ -152,7 +153,7 @@ public class ClearPRMessageTest {
 
   @Test
   public void initMessageDoesNotAttemptEnableProcessingWithNullProcessor() {
-    //If the message attempts to enable processing, this will throw an NPE
+    // If the message attempts to enable processing, this will throw an NPE
     message.initMessage(region, null, false, null);
   }
 
@@ -162,7 +163,8 @@ public class ClearPRMessageTest {
     InternalDistributedMember recipient = mock(InternalDistributedMember.class);
     when(region.getSystem()).thenReturn(distributedSystem);
 
-    //We need these mocks to allow us to create our processor despite not having a real distributed system
+    // We need these mocks to allow us to create our processor despite not having a real distributed
+    // system
     DistributionManager distributionManager = mock(DistributionManager.class);
     CancelCriterion cancelCriterion = mock(CancelCriterion.class);
     when(distributedSystem.getDistributionManager()).thenReturn(distributionManager);
@@ -191,12 +193,14 @@ public class ClearPRMessageTest {
     doReturn(sender).when(message).getSender();
     doReturn(processorId).when(message).getProcessorId();
 
-    //We don't want to deal with mocking the behavior of sendReply() in this test, so we mock it to do nothing and verify later that it was called with proper input
+    // We don't want to deal with mocking the behavior of sendReply() in this test, so we mock it to
+    // do nothing and verify later that it was called with proper input
     doNothing().when(message).sendReply(any(), anyInt(), any(), any(), any(), anyLong());
 
     message.operateOnPartitionedRegion(distributionManager, region, startTime);
 
-    verify(message, times(1)).sendReply(sender, processorId, distributionManager, null, region, startTime);
+    verify(message, times(1)).sendReply(sender, processorId, distributionManager, null, region,
+        startTime);
   }
 
   @Test
@@ -206,13 +210,15 @@ public class ClearPRMessageTest {
     InternalDistributedMember sender = mock(InternalDistributedMember.class);
     int processorId = 1000;
     int startTime = 0;
-    ForceReattemptException exception = new ForceReattemptException(ClearPRMessage.BUCKET_NON_PRIMARY_MESSAGE);
+    ForceReattemptException exception =
+        new ForceReattemptException(ClearPRMessage.BUCKET_NON_PRIMARY_MESSAGE);
 
     doThrow(exception).when(message).doLocalClear(region);
     doReturn(sender).when(message).getSender();
     doReturn(processorId).when(message).getProcessorId();
 
-    //We don't want to deal with mocking the behavior of sendReply() in this test, so we mock it to do nothing and verify later that it was called with proper input
+    // We don't want to deal with mocking the behavior of sendReply() in this test, so we mock it to
+    // do nothing and verify later that it was called with proper input
     doNothing().when(message).sendReply(any(), anyInt(), any(), any(), any(), anyLong());
 
     message.operateOnPartitionedRegion(distributionManager, region, startTime);
@@ -263,7 +269,7 @@ public class ClearPRMessageTest {
     DistributionManager distributionManager = mock(DistributionManager.class);
     ClearPRMessage.ClearReplyMessage clearReplyMessage = new ClearPRMessage.ClearReplyMessage();
 
-    //We will get an NPE if we try to process this reply on a non-existant processor
+    // We will get an NPE if we try to process this reply on a non-existant processor
     clearReplyMessage.process(distributionManager, null);
   }
 }
