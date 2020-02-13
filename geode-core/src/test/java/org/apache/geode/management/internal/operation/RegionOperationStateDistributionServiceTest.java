@@ -15,7 +15,7 @@
 
 package org.apache.geode.management.internal.operation;
 
-import static org.apache.geode.management.internal.operation.RegionOperationHistoryPersistenceService.OPERATION_HISTORY_REGION_NAME;
+import static org.apache.geode.management.internal.operation.RegionOperationStateDistributionService.OPERATION_STATE_REGION_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -42,8 +42,8 @@ import org.apache.geode.internal.cache.RegionFactoryImpl;
 import org.apache.geode.management.api.ClusterManagementOperation;
 import org.apache.geode.management.runtime.OperationResult;
 
-public class RegionOperationHistoryPersistenceServiceTest {
-  private RegionOperationHistoryPersistenceService historyPersistenceService;
+public class RegionOperationStateDistributionServiceTest {
+  private RegionOperationStateDistributionService service;
   private Supplier<String> uniqueIdSupplier;
   private Region<String, OperationState<ClusterManagementOperation<OperationResult>, OperationResult>> region;
   private InternalCache cache;
@@ -53,8 +53,7 @@ public class RegionOperationHistoryPersistenceServiceTest {
     uniqueIdSupplier = mock(Supplier.class);
     when(uniqueIdSupplier.get()).thenReturn("defaultId");
     region = mock(Region.class);
-    historyPersistenceService =
-        new RegionOperationHistoryPersistenceService(uniqueIdSupplier, region);
+    service = new RegionOperationStateDistributionService(uniqueIdSupplier, region);
     cache = mock(InternalCache.class);
   }
 
@@ -63,7 +62,7 @@ public class RegionOperationHistoryPersistenceServiceTest {
     ClusterManagementOperation<OperationResult> operation = mock(ClusterManagementOperation.class);
     String uniqueId = ";lkajdfa;ldkjfppoiuqe.,.,mnavc098";
     when(uniqueIdSupplier.get()).thenReturn(uniqueId);
-    String opId = historyPersistenceService.recordStart(operation);
+    String opId = service.recordStart(operation);
 
     assertThat(opId).isSameAs(uniqueId);
     verify(uniqueIdSupplier).get();
@@ -73,7 +72,7 @@ public class RegionOperationHistoryPersistenceServiceTest {
   public void recordStartRecordsOperationStatusInGivenRegion() {
     ClusterManagementOperation<OperationResult> operation = mock(ClusterManagementOperation.class);
 
-    String opId = historyPersistenceService.recordStart(operation);
+    String opId = service.recordStart(operation);
 
     ArgumentCaptor<OperationState> capturedOperationInstance = ArgumentCaptor.forClass(
         OperationState.class);
@@ -99,7 +98,7 @@ public class RegionOperationHistoryPersistenceServiceTest {
     OperationResult operationResult = mock(OperationResult.class);
     Throwable thrownByOperation = new RuntimeException();
 
-    historyPersistenceService.recordEnd(opId, operationResult, thrownByOperation);
+    service.recordEnd(opId, operationResult, thrownByOperation);
 
     verify(operationState).setOperationEnd(notNull(), same(operationResult),
         same(thrownByOperation));
@@ -112,7 +111,7 @@ public class RegionOperationHistoryPersistenceServiceTest {
   public void removeRemovesIdentifiedOperationStateFromRegion() {
     String opId = "doomed-operation";
 
-    historyPersistenceService.remove(opId);
+    service.remove(opId);
 
     verify(region).remove(opId);
   }
@@ -124,7 +123,7 @@ public class RegionOperationHistoryPersistenceServiceTest {
 
     when(region.get(opId)).thenReturn(recordedOperationState);
 
-    OperationState operationState = historyPersistenceService.get(opId);
+    OperationState operationState = service.get(opId);
 
     assertThat(operationState).isSameAs(recordedOperationState);
   }
@@ -136,7 +135,7 @@ public class RegionOperationHistoryPersistenceServiceTest {
     list.add(new OperationState("op2", null, null));
     when(region.values()).thenReturn(list);
 
-    List result = historyPersistenceService.list();
+    List result = service.list();
 
     assertThat(result).containsExactlyElementsOf(list);
   }
@@ -144,17 +143,17 @@ public class RegionOperationHistoryPersistenceServiceTest {
   @Test
   public void cacheConstructorUsesExistingRegion() {
     Region region = mock(Region.class);
-    when(cache.getRegion(OPERATION_HISTORY_REGION_NAME)).thenReturn(region);
+    when(cache.getRegion(OPERATION_STATE_REGION_NAME)).thenReturn(region);
 
-    RegionOperationHistoryPersistenceService result =
-        new RegionOperationHistoryPersistenceService(cache);
+    RegionOperationStateDistributionService result =
+        new RegionOperationStateDistributionService(cache);
 
     assertThat(result.getRegion()).isSameAs(region);
   }
 
   @Test
   public void constructorWithNoExistingRegionCreatesRegion() {
-    when(cache.getRegion(OPERATION_HISTORY_REGION_NAME)).thenReturn(null);
+    when(cache.getRegion(OPERATION_STATE_REGION_NAME)).thenReturn(null);
     DiskStoreFactory diskStoreFactory = mock(DiskStoreFactory.class);
     when(cache.createDiskStoreFactory()).thenReturn(diskStoreFactory);
     when(diskStoreFactory.setDiskDirs(any())).thenReturn(diskStoreFactory);
@@ -163,10 +162,10 @@ public class RegionOperationHistoryPersistenceServiceTest {
     RegionFactoryImpl regionFactory = mock(RegionFactoryImpl.class);
     when(cache.createRegionFactory(eq(RegionShortcut.REPLICATE))).thenReturn(regionFactory);
     Region region = mock(Region.class);
-    when(regionFactory.create(OPERATION_HISTORY_REGION_NAME)).thenReturn(region);
+    when(regionFactory.create(OPERATION_STATE_REGION_NAME)).thenReturn(region);
 
-    RegionOperationHistoryPersistenceService result =
-        new RegionOperationHistoryPersistenceService(cache);
+    RegionOperationStateDistributionService result =
+        new RegionOperationStateDistributionService(cache);
 
     assertThat(result.getRegion()).isSameAs(region);
   }

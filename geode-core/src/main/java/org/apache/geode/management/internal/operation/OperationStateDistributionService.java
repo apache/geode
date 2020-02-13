@@ -21,13 +21,10 @@ import org.apache.geode.management.api.ClusterManagementOperation;
 import org.apache.geode.management.runtime.OperationResult;
 
 /**
- * OperationHistoryPersistenceService provides methods for managing the persistence of Operation
- * History across the cluster.
- *
- * {@link OperationState} instances will not be completely persisted by
- * this service; the futures stored in the operation will always be null.
+ * Provides methods for managing the distribution of operation
+ * state to other locators on the cluster.
  */
-public interface OperationHistoryPersistenceService {
+public interface OperationStateDistributionService {
   /**
    * Records the state of the given in-progress operation.
    *

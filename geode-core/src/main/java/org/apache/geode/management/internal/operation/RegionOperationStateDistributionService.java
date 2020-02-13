@@ -15,8 +15,6 @@
 
 package org.apache.geode.management.internal.operation;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -33,34 +31,29 @@ import org.apache.geode.internal.cache.RegionFactoryImpl;
 import org.apache.geode.management.api.ClusterManagementOperation;
 import org.apache.geode.management.runtime.OperationResult;
 
-public class RegionOperationHistoryPersistenceService
-    implements OperationHistoryPersistenceService {
+public class RegionOperationStateDistributionService
+    implements OperationStateDistributionService {
   private final Supplier<String> uniqueIdSupplier;
   private final Region<String, OperationState<ClusterManagementOperation<OperationResult>, OperationResult>> region;
 
-  public static final String OPERATION_HISTORY_REGION_NAME = "OperationHistoryRegion";
+  public static final String OPERATION_STATE_REGION_NAME = "OperationStateRegion";
 
   @VisibleForTesting
-  RegionOperationHistoryPersistenceService(
+  RegionOperationStateDistributionService(
       Supplier<String> uniqueIdSupplier,
       Region<String, OperationState<ClusterManagementOperation<OperationResult>, OperationResult>> region) {
     this.uniqueIdSupplier = uniqueIdSupplier;
     this.region = region;
   }
 
-  @VisibleForTesting
-  public RegionOperationHistoryPersistenceService(InternalCache cache, Path workingDir) {
-    this(() -> UUID.randomUUID().toString(), getRegion(cache, workingDir));
-  }
-
-  public RegionOperationHistoryPersistenceService(InternalCache cache) {
-    this(cache, Paths.get(System.getProperty("user.dir")));
+  public RegionOperationStateDistributionService(InternalCache cache) {
+    this(() -> UUID.randomUUID().toString(), getRegion(cache));
   }
 
   private static Region<String, OperationState<ClusterManagementOperation<OperationResult>, OperationResult>> getRegion(
-      InternalCache cache, Path workingDir) {
+      InternalCache cache) {
     Region<String, OperationState<ClusterManagementOperation<OperationResult>, OperationResult>> region =
-        cache.getRegion(OPERATION_HISTORY_REGION_NAME);
+        cache.getRegion(OPERATION_STATE_REGION_NAME);
 
     if (region != null) {
       return region;
@@ -74,7 +67,7 @@ public class RegionOperationHistoryPersistenceService
     internalArgs.setMetaRegionWithTransactions(false);
     ((RegionFactoryImpl) regionFactory).setInternalRegionArguments(internalArgs);
 
-    return regionFactory.create(OPERATION_HISTORY_REGION_NAME);
+    return regionFactory.create(OPERATION_STATE_REGION_NAME);
   }
 
   @Override

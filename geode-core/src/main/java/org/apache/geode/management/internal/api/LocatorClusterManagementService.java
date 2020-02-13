@@ -88,7 +88,7 @@ import org.apache.geode.management.internal.functions.CacheRealizationFunction;
 import org.apache.geode.management.internal.operation.OperationHistoryManager;
 import org.apache.geode.management.internal.operation.OperationManager;
 import org.apache.geode.management.internal.operation.OperationState;
-import org.apache.geode.management.internal.operation.RegionOperationHistoryPersistenceService;
+import org.apache.geode.management.internal.operation.RegionOperationStateDistributionService;
 import org.apache.geode.management.runtime.OperationResult;
 import org.apache.geode.management.runtime.RuntimeInfo;
 
@@ -106,7 +106,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     this(persistenceService, new ConcurrentHashMap<>(), new ConcurrentHashMap<>(),
         new MemberValidator(cache, persistenceService), new CommonConfigurationValidator(),
         new OperationManager(cache,
-            new OperationHistoryManager(new RegionOperationHistoryPersistenceService(cache))));
+            new OperationHistoryManager(new RegionOperationStateDistributionService(cache))));
     // initialize the list of managers
     managers.put(Region.class, new RegionConfigManager(persistenceService));
     managers.put(Pdx.class, new PdxManager(persistenceService));
