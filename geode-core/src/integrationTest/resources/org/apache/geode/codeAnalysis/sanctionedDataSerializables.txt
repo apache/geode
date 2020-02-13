@@ -1655,14 +1655,6 @@ org/apache/geode/internal/cache/partitioned/PutAllPRMessage$PutAllReplyMessage,2
 fromData,28
 toData,25
 
-org/apache/geode/internal/cache/partitioned/ClearPRMessage,2
-fromData,30
-toData,44
-
-org/apache/geode/internal/cache/partitioned/ClearPRMessage$ClearReplyMessage,2
-fromData,17
-toData,17
-
 org/apache/geode/internal/cache/partitioned/PutMessage,2
 fromData,226
 toData,393
