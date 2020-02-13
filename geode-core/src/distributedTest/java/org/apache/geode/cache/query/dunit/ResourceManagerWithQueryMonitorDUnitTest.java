@@ -98,6 +98,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
     IgnoredException.addIgnoredException("above heap critical threshold");
     IgnoredException.addIgnoredException("below heap critical threshold");
     criticalMemoryCountDownLatch = new CountDownLatch(1);
+    criticalMemorySetLatch = new CountDownLatch(1);
   }
 
   @Override
@@ -613,6 +614,8 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
 
   private static CountDownLatch criticalMemoryCountDownLatch;
 
+  private static CountDownLatch criticalMemorySetLatch;
+
   // Executes the query on the server with the RM and QM configured
   private void doCriticalMemoryHitTestOnServer(boolean createPR,
       final boolean disabledQueryMonitorForLowMem,
@@ -714,7 +717,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
       await().until(() -> vmCheckCritcalHeap(server) == EVICTION_DISABLED_CRITICAL);
       logger.info("MLH doTestCriticalHeapAndQueryTimeout 9");
     }
-
+    criticalMemorySetLatch.countDown();
     // Pause until query would time out if low memory was ignored
     try {
       logger.info("MLH doTestCriticalHeapAndQueryTimeout 10");
@@ -821,6 +824,8 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
             .invoke(() -> ResourceManagerWithQueryMonitorDUnitTest.criticalMemoryCountDownLatch
                 .countDown());
         logger.info("MLH invokeClientQuery 4");
+        callbackToVM
+            .invoke(() -> ResourceManagerWithQueryMonitorDUnitTest.criticalMemorySetLatch.await());
         query.execute();
         logger.info("MLH invokeClientQuery 5");
         if (disabledQueryMonitorForLowMem) {
@@ -835,7 +840,8 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
           if (hitCriticalThreshold) {
             logger.info("MLH invokeClientQuery 7");
 
-            throw new CacheException("Exception should have been thrown due to low memory") {};
+            throw new CacheException(
+                "MLH 1 Exception should have been thrown due to low memory") {};
           }
         }
       } catch (Exception e) {
