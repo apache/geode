@@ -562,8 +562,9 @@ public class CliStrings {
   public static final String CONNECT__USERNAME__HELP =
       "User name to securely connect to the jmx-manager. If the --password parameter is not specified then it will be prompted for.";
   public static final String CONNECT__PASSWORD = "password";
-  public static final String CONNECT__PASSWORD__HELP =
-      "Password to securely connect to the jmx-manager.";
+  public static final String CONNECT__PASSWORD__HELP = "Password to securely connect to the jmx-manager.";
+  public static final String CONNECT__TOKEN = "token";
+  public static final String CONNECT__TOKEN__HELP = "Token to securely connect to the jmx-manager.";
   public static final String CONNECT__KEY_STORE = "key-store";
   public static final String CONNECT__KEY_STORE__HELP =
       "Java keystore file containing this application's certificate and private key. If the --key-store-password parameter is not specified then it will be prompted for.";
