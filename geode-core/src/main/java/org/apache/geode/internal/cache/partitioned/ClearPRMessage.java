@@ -81,7 +81,6 @@ public class ClearPRMessage extends PartitionMessageWithDirectReply {
     // These are both used by the parent class, but don't apply to this message type
     this.notificationOnly = false;
     this.posDup = false;
-
   }
 
   public void setEventId(RegionEventImpl event) {
@@ -89,7 +88,7 @@ public class ClearPRMessage extends PartitionMessageWithDirectReply {
   }
 
   public void initMessage(PartitionedRegion region, Set<InternalDistributedMember> recipients,
-      boolean notifyOnly, DirectReplyProcessor replyProcessor) {
+      DirectReplyProcessor replyProcessor) {
     this.resetRecipients();
     if (recipients != null) {
       setRecipients(recipients);
@@ -100,7 +99,6 @@ public class ClearPRMessage extends PartitionMessageWithDirectReply {
     if (replyProcessor != null) {
       replyProcessor.enableSevereAlertProcessing();
     }
-    this.notificationOnly = notifyOnly;
   }
 
   @Override
@@ -118,7 +116,7 @@ public class ClearPRMessage extends PartitionMessageWithDirectReply {
     Set<InternalDistributedMember> recipients =
         Collections.singleton((InternalDistributedMember) recipient);
     ClearResponse clearResponse = new ClearResponse(region.getSystem(), recipients);
-    initMessage(region, recipients, false, clearResponse);
+    initMessage(region, recipients, clearResponse);
     if (logger.isDebugEnabled()) {
       logger.debug("ClearPRMessage.send: recipient is {}, msg is {}", recipient, this);
     }
@@ -319,8 +317,7 @@ public class ClearPRMessage extends PartitionMessageWithDirectReply {
         return;
       }
       if (replyProcessor instanceof ClearResponse) {
-        ClearResponse processor = (ClearResponse) replyProcessor;
-        processor.setResponse(this);
+        ((ClearResponse) replyProcessor).setResponse(this);
       }
       replyProcessor.process(this);
 
@@ -358,8 +355,6 @@ public class ClearPRMessage extends PartitionMessageWithDirectReply {
 
   /**
    * A processor to capture the value returned by {@link ClearPRMessage}
-   *
-   * @since GemFire 5.8
    */
   public static class ClearResponse extends PartitionResponse {
     private volatile boolean returnValue;
