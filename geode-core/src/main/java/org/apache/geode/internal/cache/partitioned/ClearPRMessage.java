@@ -64,6 +64,8 @@ public class ClearPRMessage extends PartitionMessageWithDirectReply {
       "The bucket region on target member is no longer primary";
   public static final String BUCKET_REGION_LOCK_UNAVAILABLE_MESSAGE =
       "A lock for the bucket region could not be obtained.";
+  public static final String EXCEPTION_THROWN_DURING_CLEAR_OPERATION =
+      "An exception was thrown during the local clear operation: ";
 
   /**
    * state from operateOnRegion that must be preserved for transmission from the waiting pool
@@ -83,7 +85,7 @@ public class ClearPRMessage extends PartitionMessageWithDirectReply {
     this.posDup = false;
   }
 
-  public void setEventId(RegionEventImpl event) {
+  public void setRegionEvent(RegionEventImpl event) {
     regionEvent = event;
   }
 
@@ -201,8 +203,14 @@ public class ClearPRMessage extends PartitionMessageWithDirectReply {
         throw new ForceReattemptException(BUCKET_NON_PRIMARY_MESSAGE);
       }
 
-      // call new cmnClearRegion on the target bucket region
-      bucketRegion.cmnClearRegion(regionEvent, true, true);
+      try {
+        // call new cmnClearRegion on the target bucket region
+        bucketRegion.cmnClearRegion(regionEvent, true, true);
+      } catch (Exception ex) {
+        throw new ForceReattemptException(
+            EXCEPTION_THROWN_DURING_CLEAR_OPERATION + ex.getClass().getName(), ex);
+      }
+
     } finally {
       lockService.unlock(lockName);
     }

@@ -38,12 +38,10 @@ import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.CancelCriterion;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplySender;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -63,8 +61,8 @@ public class ClearPRMessageTest {
   @Before
   public void setup() throws ForceReattemptException {
     message = spy(new ClearPRMessage());
-    region = mock(PartitionedRegion.class);
-    dataStore = mock(PartitionedRegionDataStore.class, RETURNS_DEEP_STUBS);
+    region = mock(PartitionedRegion.class, RETURNS_DEEP_STUBS);
+    dataStore = mock(PartitionedRegionDataStore.class);
     when(region.getDataStore()).thenReturn(dataStore);
     bucketRegion = mock(BucketRegion.class);
     when(dataStore.getInitializedBucketForId(any(), any())).thenReturn(bucketRegion);
@@ -104,6 +102,30 @@ public class ClearPRMessageTest {
     assertThatThrownBy(() -> message.doLocalClear(region))
         .isInstanceOf(ForceReattemptException.class)
         .hasMessageContaining(ClearPRMessage.BUCKET_NON_PRIMARY_MESSAGE);
+    // Confirm that we actually obtained and released the lock
+    verify(mockLockService, times(1)).lock(any(), anyLong(), anyLong());
+    verify(mockLockService, times(1)).unlock(any());
+  }
+
+  @Test
+  public void doLocalClearThrowsForceReattemptExceptionWhenAnExceptionIsThrownDuringClearOperation()
+      throws ForceReattemptException {
+    DistributedLockService mockLockService = mock(DistributedLockService.class);
+    doReturn(mockLockService).when(message).getPartitionRegionLockService();
+    NullPointerException exception = new NullPointerException("Error encountered");
+    doThrow(exception).when(bucketRegion).cmnClearRegion(any(), anyBoolean(), anyBoolean());
+
+    // Be primary on the first check, then be not primary on the second check
+    when(bucketRegion.isPrimary()).thenReturn(true);
+    when(mockLockService.lock(any(), anyLong(), anyLong())).thenReturn(true);
+
+    assertThatThrownBy(() -> message.doLocalClear(region))
+        .isInstanceOf(ForceReattemptException.class)
+        .hasMessageContaining(ClearPRMessage.EXCEPTION_THROWN_DURING_CLEAR_OPERATION);
+
+    // Confirm that cmnClearRegion was called
+    verify(bucketRegion, times(1)).cmnClearRegion(any(), anyBoolean(), anyBoolean());
+
     // Confirm that we actually obtained and released the lock
     verify(mockLockService, times(1)).lock(any(), anyLong(), anyLong());
     verify(mockLockService, times(1)).unlock(any());
@@ -156,14 +178,9 @@ public class ClearPRMessageTest {
 
   @Test
   public void sendThrowsExceptionIfPutOutgoingMethodReturnsNonNullSetOfFailures() {
-    InternalDistributedSystem distributedSystem = mock(InternalDistributedSystem.class);
     InternalDistributedMember recipient = mock(InternalDistributedMember.class);
-    when(region.getSystem()).thenReturn(distributedSystem);
 
     DistributionManager distributionManager = mock(DistributionManager.class);
-    CancelCriterion cancelCriterion = mock(CancelCriterion.class);
-    when(distributedSystem.getDistributionManager()).thenReturn(distributionManager);
-    when(distributionManager.getCancelCriterion()).thenReturn(cancelCriterion);
     when(region.getDistributionManager()).thenReturn(distributionManager);
 
     doNothing().when(message).initMessage(any(), any(), any());
