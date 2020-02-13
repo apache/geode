@@ -130,8 +130,9 @@ public class TCPConduitDUnitTest extends DistributedTestCase {
     vm2.invoke(() -> startServer(properties));
     vm3.invoke(() -> startServer(properties));
 
-    Thread.sleep(5000);
-    assertThat(ConnectionTable.getNumSenderSharedConnections()).isGreaterThan(0);
+    await().untilAsserted(() -> {
+      assertThat(ConnectionTable.getNumSenderSharedConnections()).isEqualTo(3);
+    });
 
     try {
       await("for message to be sent").until(() -> {
