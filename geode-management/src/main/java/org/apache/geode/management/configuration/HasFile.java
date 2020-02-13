@@ -13,21 +13,17 @@
  * the License.
  */
 
-package org.apache.geode.codeAnalysis;
+package org.apache.geode.management.configuration;
 
-import org.junit.experimental.categories.Category;
+import java.io.File;
 
-import org.apache.geode.test.junit.categories.SerializationTest;
+public interface HasFile {
+  public static final String FILE_PARAM = "file";
+  public static final String CONFIG_PARAM = "config";
 
-@Category({SerializationTest.class})
-public class AnalyzeManagementSerializablesJUnitTest extends AnalyzeSerializablesJUnitTestBase {
-  @Override
-  protected String getModuleName() {
-    return "geode-management";
-  }
+  File getFile();
 
-  @Override
-  // Override this method because all geode-management classes will be scanned by the core's
-  // data serializable test
-  public void testDataSerializables() throws Exception {}
+  void setFile(File file);
+
+  String getFileName();
 }

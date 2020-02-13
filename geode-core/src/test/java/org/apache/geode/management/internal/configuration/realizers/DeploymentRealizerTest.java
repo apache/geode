@@ -48,14 +48,14 @@ public class DeploymentRealizerTest {
 
   @Test
   public void jarNotFound() throws Exception {
-    deployment.setJarFileName("a.jar");
+    deployment.setFileName("a.jar");
     DeploymentInfo deploymentInfo = realizer.get(deployment, null);
     assertThat(deploymentInfo.getJarLocation()).isEqualTo(DeploymentRealizer.JAR_NOT_DEPLOYED);
   }
 
   @Test
   public void jarFound() throws Exception {
-    deployment.setJarFileName("a.jar");
+    deployment.setFileName("a.jar");
     DeployedJar deployedJar = mock(DeployedJar.class);
     when(deployedJar.getFile()).thenReturn(new File("/test/a.jar"));
     deployed.put("a", deployedJar);

@@ -51,7 +51,7 @@ public class DeploymentManagerTest {
     DeploymentManager manager = new DeploymentManager(persistenceService);
 
     Deployment filter = new Deployment();
-    filter.setJarFileName(null);
+    filter.setFileName(null);
 
     List<Deployment> result = manager.list(filter, "some-group");
 
@@ -80,7 +80,7 @@ public class DeploymentManagerTest {
     DeploymentManager manager = new DeploymentManager(persistenceService);
 
     Deployment filter = new Deployment();
-    filter.setJarFileName(requestedJarFile);
+    filter.setFileName(requestedJarFile);
 
     List<Deployment> result = manager.list(filter, "some-group");
 
@@ -99,7 +99,7 @@ public class DeploymentManagerTest {
     DeploymentManager manager = new DeploymentManager(persistenceService);
 
     Deployment filter = new Deployment();
-    filter.setJarFileName("jarFileThatHasNotBeenDeployed.jar");
+    filter.setFileName("jarFileThatHasNotBeenDeployed.jar");
 
     List<Deployment> result = manager.list(filter, "some-group");
 

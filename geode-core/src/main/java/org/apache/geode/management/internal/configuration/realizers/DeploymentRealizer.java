@@ -19,22 +19,43 @@ import java.io.File;
 import java.time.Instant;
 import java.util.Map;
 
+import org.apache.commons.lang3.NotImplementedException;
+
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.DeployedJar;
 import org.apache.geode.internal.JarDeployer;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.management.runtime.DeploymentInfo;
 
-public class DeploymentRealizer extends ReadOnlyConfigurationRealizer<Deployment, DeploymentInfo> {
+public class DeploymentRealizer
+    implements ConfigurationRealizer<Deployment, DeploymentInfo> {
 
   static final String JAR_NOT_DEPLOYED = "Jar file not deployed on the server.";
+
+  @Override
+  public RealizationResult create(Deployment config, InternalCache cache) {
+    RealizationResult result = new RealizationResult();
+    try {
+      DeployedJar deployedJar =
+          ClassPathLoader.getLatest().getJarDeployer().deploy(config.getFile());
+      if (deployedJar == null) {
+        result.setMessage("Already deployed");
+      } else {
+        result.setMessage(deployedJar.getFileCanonicalPath());
+      }
+    } catch (Exception e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
+    return result;
+  }
 
   @Override
   public DeploymentInfo get(Deployment config, InternalCache cache) {
     Map<String, DeployedJar> deployedJars = getDeployedJars();
     DeploymentInfo info = new DeploymentInfo();
-    String artifactId = JarDeployer.getArtifactId(config.getJarFileName());
+    String artifactId = JarDeployer.getArtifactId(config.getFileName());
     DeployedJar deployedJar = deployedJars.get(artifactId);
     if (deployedJar != null) {
       File file = deployedJar.getFile();
@@ -44,6 +65,21 @@ public class DeploymentRealizer extends ReadOnlyConfigurationRealizer<Deployment
       info.setJarLocation(JAR_NOT_DEPLOYED);
     }
     return info;
+  }
+
+  @Override
+  public boolean exists(Deployment config, InternalCache cache) {
+    return false;
+  }
+
+  @Override
+  public RealizationResult update(Deployment config, InternalCache cache) {
+    throw new NotImplementedException("Not implemented");
+  }
+
+  @Override
+  public RealizationResult delete(Deployment config, InternalCache cache) {
+    throw new NotImplementedException("Not implemented");
   }
 
   String getDateString(long milliseconds) {

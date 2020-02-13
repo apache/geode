@@ -46,20 +46,20 @@ public class DeploymentTest {
 
   @Test
   public void remembersJarFileName() {
-    deployment.setJarFileName("jarFileName");
-    assertThat(deployment.getJarFileName()).isEqualTo("jarFileName");
+    deployment.setFileName("jarFileName");
+    assertThat(deployment.getFileName()).isEqualTo("jarFileName");
   }
 
   @Test
   public void idSetByJarFileName() {
-    deployment.setJarFileName("jarFileName");
+    deployment.setFileName("jarFileName");
     assertThat(deployment.getId()).isEqualTo("jarFileName");
   }
 
   @Test
   public void jsonSerializationRoundTrip() throws Exception {
     deployment.setGroup("group1");
-    deployment.setJarFileName("jarFileName");
+    deployment.setFileName("jarFileName");
     deployment.setDeployedBy("deployedBy");
     deployment.setDeployedTime("deployedTime");
     String json = mapper.writeValueAsString(deployment);
@@ -69,14 +69,14 @@ public class DeploymentTest {
 
   @Test
   public void notShowId() throws Exception {
-    deployment.setJarFileName("abc.jar");
+    deployment.setFileName("abc.jar");
     String json = mapper.writeValueAsString(deployment);
     assertThat(json).doesNotContain("id");
   }
 
   @Test
   public void selfLinkUsesJarFileName() {
-    deployment.setJarFileName("jarFileName");
+    deployment.setFileName("jarFileName");
     assertThat(deployment.getLinks().getSelf()).isEqualTo("/deployments/jarFileName");
   }
 
@@ -87,7 +87,7 @@ public class DeploymentTest {
 
   @Test
   public void linksHasOnlySelfAndList() {
-    deployment.setJarFileName("jarFileName");
+    deployment.setFileName("jarFileName");
     assertThat(deployment.getLinks().getLinks()).containsOnlyKeys("self", "list");
   }
 }

@@ -15,20 +15,13 @@
 package org.apache.geode.management.internal.cli.functions;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import com.healthmarketscience.rmiio.RemoteInputStream;
-import com.healthmarketscience.rmiio.RemoteInputStreamClient;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.SystemFailure;
@@ -40,7 +33,7 @@ import org.apache.geode.internal.DeployedJar;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.management.internal.beans.FileUploader;
+import org.apache.geode.management.internal.functions.CacheRealizationFunction;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 
 public class DeployFunction implements InternalFunction {
@@ -70,7 +63,7 @@ public class DeployFunction implements InternalFunction {
         memberId = member.getName();
       }
 
-      Set<File> stagedFiles = stageJarContent(jarFilenames, jarStreams);
+      Set<File> stagedFiles = CacheRealizationFunction.stageFileContent(jarFilenames, jarStreams);
       stagingDir = stagedFiles.stream().findFirst().get().getParentFile();
 
       List<String> deployedList = new ArrayList<>();
@@ -144,39 +137,5 @@ public class DeployFunction implements InternalFunction {
     } catch (IOException iox) {
       logger.error("Unable to delete staging directory: {}", iox.getMessage());
     }
-  }
-
-  private Set<File> stageJarContent(List<String> jarNames,
-      List<RemoteInputStream> jarStreams) throws IOException {
-    Set<File> stagedJars = new HashSet<>();
-
-    try {
-      Path tempDir = FileUploader.createSecuredTempDirectory("deploy-");
-
-      for (int i = 0; i < jarNames.size(); i++) {
-        Path tempJar = Paths.get(tempDir.toString(), jarNames.get(i));
-        FileOutputStream fos = new FileOutputStream(tempJar.toString());
-
-        InputStream input = RemoteInputStreamClient.wrap(jarStreams.get(i));
-
-        IOUtils.copyLarge(input, fos);
-
-        fos.close();
-        input.close();
-
-        stagedJars.add(tempJar.toFile());
-      }
-    } catch (IOException iox) {
-      for (int i = 0; i < jarStreams.size(); i++) {
-        try {
-          jarStreams.get(i).close(true);
-        } catch (IOException ex) {
-          // Ignored
-        }
-      }
-      throw iox;
-    }
-
-    return stagedJars;
   }
 }

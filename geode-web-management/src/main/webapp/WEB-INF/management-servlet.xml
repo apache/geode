@@ -43,6 +43,8 @@
 
   <mvc:default-servlet-handler/>
 
+  <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver"/>
+
   <bean id="contentNegotiationManager" class="org.springframework.web.accept.ContentNegotiationManagerFactoryBean"
         p:favorPathExtension="true"
         p:favorParameter="false"
