@@ -232,6 +232,11 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
   String SSL_PREFIX = "ssl-";
 
   /**
+   * The prefix used for Gemfire properties set through java system properties
+   */
+  public static final String GEMFIRE_PREFIX = GeodeGlossary.GEMFIRE_PREFIX;
+
+  /**
    * Returns the value of the {@link ConfigurationProperties#NAME} property Gets the member's name.
    * A name is optional and by default empty. If set it must be unique in the ds. When set its used
    * by tools to help identify the member.
