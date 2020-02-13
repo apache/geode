@@ -29,6 +29,7 @@ import org.apache.geode.cache.query.NameNotFoundException;
 import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.internal.types.TypeUtils;
+import org.apache.geode.cache.query.security.MethodInvocationAuthorizer;
 import org.apache.geode.security.NotAuthorizedException;
 
 /**
@@ -57,23 +58,30 @@ public class MethodDispatch {
     Object[] argsArray = args.toArray();
 
     try {
-      // Try to use cached result so authorizer gets invoked only once per query.
-      boolean authorizationResult;
-      String cacheKey = target.getClass().getCanonicalName() + "." + _method.getName();
-      Boolean cachedResult = (Boolean) executionContext.cacheGet(cacheKey);
+      MethodInvocationAuthorizer authorizer = executionContext.getMethodInvocationAuthorizer();
 
-      if (cachedResult != null) {
-        // Use cached result.
-        authorizationResult = cachedResult;
+      // CQs are generally executed on individual events, so caching is just an overhead.
+      if (executionContext.isCqQueryContext()) {
+        if (!authorizer.authorize(_method, target)) {
+          throw new NotAuthorizedException(UNAUTHORIZED_STRING + _method.getName());
+        }
       } else {
-        // First time, evaluate and cache result.
-        authorizationResult =
-            executionContext.getMethodInvocationAuthorizer().authorize(_method, target);
-        executionContext.cachePut(cacheKey, authorizationResult);
-      }
+        // Try to use cached result so authorizer gets invoked only once per query.
+        boolean authorizationResult;
+        Boolean cachedResult = (Boolean) executionContext.cacheGet(_method);
 
-      if (!authorizationResult) {
-        throw new NotAuthorizedException(UNAUTHORIZED_STRING + _method.getName());
+        if (cachedResult != null) {
+          // Use cached result.
+          authorizationResult = cachedResult;
+        } else {
+          // First time, evaluate and cache result.
+          authorizationResult = authorizer.authorize(_method, target);
+          executionContext.cachePut(_method, authorizationResult);
+        }
+
+        if (!authorizationResult) {
+          throw new NotAuthorizedException(UNAUTHORIZED_STRING + _method.getName());
+        }
       }
 
       return _method.invoke(target, argsArray);
