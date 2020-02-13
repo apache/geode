@@ -108,8 +108,7 @@ public class ClearPRMessageTest {
   }
 
   @Test
-  public void doLocalClearThrowsForceReattemptExceptionWhenAnExceptionIsThrownDuringClearOperation()
-      throws ForceReattemptException {
+  public void doLocalClearThrowsForceReattemptExceptionWhenAnExceptionIsThrownDuringClearOperation() {
     DistributedLockService mockLockService = mock(DistributedLockService.class);
     doReturn(mockLockService).when(message).getPartitionRegionLockService();
     NullPointerException exception = new NullPointerException("Error encountered");
@@ -125,10 +124,6 @@ public class ClearPRMessageTest {
 
     // Confirm that cmnClearRegion was called
     verify(bucketRegion, times(1)).cmnClearRegion(any(), anyBoolean(), anyBoolean());
-
-    // Confirm that we actually obtained and released the lock
-    verify(mockLockService, times(1)).lock(any(), anyLong(), anyLong());
-    verify(mockLockService, times(1)).unlock(any());
   }
 
   @Test
@@ -141,7 +136,6 @@ public class ClearPRMessageTest {
     // Be primary on the first check, then be not primary on the second check
     when(bucketRegion.isPrimary()).thenReturn(true);
     when(mockLockService.lock(any(), anyLong(), anyLong())).thenReturn(true);
-
     assertThat(message.doLocalClear(region)).isTrue();
 
     // Confirm that cmnClearRegion was called

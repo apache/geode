@@ -204,7 +204,6 @@ public class ClearPRMessage extends PartitionMessageWithDirectReply {
       }
 
       try {
-        // call new cmnClearRegion on the target bucket region
         bucketRegion.cmnClearRegion(regionEvent, true, true);
       } catch (Exception ex) {
         throw new ForceReattemptException(
