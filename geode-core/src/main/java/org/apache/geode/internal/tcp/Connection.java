@@ -1609,7 +1609,8 @@ public class Connection implements Runnable {
             }
             isHandShakeReader = true;
             notifyHandshakeWaiter(false);
-            // Once we have read the handshake the reader can skip processing messages
+            // Once we have read the handshake for unshared connections, the reader can skip
+            // processing messages
             if (!sharedResource) {
               break;
             }
