@@ -1608,7 +1608,7 @@ public class Connection implements Runnable {
               }
             }
             isHandShakeReader = true;
-            notifyHandshakeWaiter(false);
+
             // Once we have read the handshake for unshared connections, the reader can skip
             // processing messages
             if (!sharedResource) {
@@ -1668,8 +1668,10 @@ public class Connection implements Runnable {
         }
       }
     } finally {
-      synchronized (stateLock) {
-        connectionState = STATE_IDLE;
+      if (!isHandShakeReader || sharedResource) {
+        synchronized (stateLock) {
+          connectionState = STATE_IDLE;
+        }
       }
       if (logger.isDebugEnabled()) {
         logger.debug("readMessages terminated id={} from {} isHandshakeReader={}", conduitIdStr,
