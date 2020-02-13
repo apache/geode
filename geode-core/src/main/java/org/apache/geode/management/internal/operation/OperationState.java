@@ -54,8 +54,7 @@ public class OperationState<A extends ClusterManagementOperation<V>, V extends O
 
   @Override
   public int hashCode() {
-    return Objects.hash(opId, getOperation(), getOperationStart(), getOperationEnd(),
-        getResult(), getThrowable());
+    return Objects.hash(opId);
   }
 
   public OperationState(String opId, A operation, Date operationStart) {
