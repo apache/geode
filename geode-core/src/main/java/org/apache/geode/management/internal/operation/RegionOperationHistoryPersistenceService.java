@@ -38,9 +38,7 @@ public class RegionOperationHistoryPersistenceService
   private final Supplier<String> uniqueIdSupplier;
   private final Region<String, OperationState<ClusterManagementOperation<OperationResult>, OperationResult>> region;
 
-  private static final String OPERATION_HISTORY_DISK_STORE_NAME = "OperationHistory";
   public static final String OPERATION_HISTORY_REGION_NAME = "OperationHistoryRegion";
-  public static final String OPERATION_HISTORY_DIR_NAME = "operationHistory";
 
   @VisibleForTesting
   RegionOperationHistoryPersistenceService(
@@ -68,19 +66,8 @@ public class RegionOperationHistoryPersistenceService
       return region;
     }
 
-    // File diskDir = workingDir.resolve(OPERATION_HISTORY_DIR_NAME).toFile();
-    //
-    // if (!diskDir.exists() && !diskDir.mkdirs()) {
-    // throw new RuntimeException("Cannot create operation history directory at " + diskDir);
-    // }
-    //
-    // File[] diskDirs = {diskDir};
-    // cache.createDiskStoreFactory().setDiskDirs(diskDirs).setAutoCompact(true)
-    // .setMaxOplogSize(10).create(OPERATION_HISTORY_DISK_STORE_NAME);
-
     RegionFactory<String, OperationState<ClusterManagementOperation<OperationResult>, OperationResult>> regionFactory =
-        cache.createRegionFactory(RegionShortcut.REPLICATE/* _PERSISTENT */);
-    // regionFactory.setDiskStoreName(OPERATION_HISTORY_DISK_STORE_NAME);
+        cache.createRegionFactory(RegionShortcut.REPLICATE);
 
     InternalRegionArguments internalArgs = new InternalRegionArguments();
     internalArgs.setIsUsedForMetaRegion(true);

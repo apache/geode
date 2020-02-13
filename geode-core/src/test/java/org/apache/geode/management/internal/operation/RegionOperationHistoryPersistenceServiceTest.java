@@ -152,24 +152,6 @@ public class RegionOperationHistoryPersistenceServiceTest {
     assertThat(result.getRegion()).isSameAs(region);
   }
 
-  // @Test
-  // public void constructorWithFailedDirCreationThrowsException() {
-  // Path path = mock(Path.class);
-  // File file = mock(File.class);
-  // when(path.resolve(OPERATION_HISTORY_DIR_NAME)).thenReturn(path);
-  // when(cache.getRegion(OPERATION_HISTORY_REGION_NAME)).thenReturn(null);
-  // when(path.toFile()).thenReturn(file);
-  // when(file.exists()).thenReturn(false);
-  // when(file.mkdirs()).thenReturn(false);
-  //
-  // Throwable throwable =
-  // catchThrowable(() -> new RegionOperationHistoryPersistenceService(cache, path));
-  //
-  // assertThat(throwable)
-  // .isInstanceOf(RuntimeException.class)
-  // .hasMessageContaining("Cannot create operation history directory at " + file);
-  // }
-
   @Test
   public void constructorWithNoExistingRegionCreatesRegion() {
     when(cache.getRegion(OPERATION_HISTORY_REGION_NAME)).thenReturn(null);
@@ -178,11 +160,8 @@ public class RegionOperationHistoryPersistenceServiceTest {
     when(diskStoreFactory.setDiskDirs(any())).thenReturn(diskStoreFactory);
     when(diskStoreFactory.setAutoCompact(true)).thenReturn(diskStoreFactory);
     when(diskStoreFactory.setMaxOplogSize(10)).thenReturn(diskStoreFactory);
-
     RegionFactoryImpl regionFactory = mock(RegionFactoryImpl.class);
-    when(cache.createRegionFactory(eq(RegionShortcut.REPLICATE/* _PERSISTENT */)))
-        .thenReturn(regionFactory);
-
+    when(cache.createRegionFactory(eq(RegionShortcut.REPLICATE))).thenReturn(regionFactory);
     Region region = mock(Region.class);
     when(regionFactory.create(OPERATION_HISTORY_REGION_NAME)).thenReturn(region);
 
