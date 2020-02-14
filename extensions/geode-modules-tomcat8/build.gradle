@@ -64,8 +64,8 @@ dependencies {
     exclude module: 'geode-core'
   }
   integrationTestImplementation(project(':extensions:geode-modules-test'))
-  integrationTestRuntime('xerces:xercesImpl')
-  integrationTestRuntime('javax.annotation:javax.annotation-api')
+  integrationTestRuntimeOnly('xerces:xercesImpl')
+  integrationTestRuntimeOnly('javax.annotation:javax.annotation-api')
 
   distributedTestImplementation(project(':geode-dunit')) {
     exclude module: 'geode-core'
@@ -76,8 +76,8 @@ dependencies {
   }
   distributedTestImplementation(project(':extensions:geode-modules-test'))
 
-  distributedTestRuntime('xerces:xercesImpl')
-  distributedTestRuntime('javax.annotation:javax.annotation-api')
+  distributedTestRuntimeOnly('xerces:xercesImpl')
+  distributedTestRuntimeOnly('javax.annotation:javax.annotation-api')
 }
 
 eclipse.classpath.file {

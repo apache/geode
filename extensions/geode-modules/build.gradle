@@ -60,8 +60,8 @@ dependencies {
   integrationTestImplementation('junit:junit')
   integrationTestImplementation('pl.pragmatists:JUnitParams')
 
-  integrationTestRuntime('org.apache.tomcat:coyote:' + DependencyConstraints.get('tomcat6.version'))
-  integrationTestRuntime('xerces:xercesImpl')
+  integrationTestRuntimeOnly('org.apache.tomcat:coyote:' + DependencyConstraints.get('tomcat6.version'))
+  integrationTestRuntimeOnly('xerces:xercesImpl')
 
   distributedTestImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'

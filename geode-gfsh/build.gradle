@@ -43,11 +43,11 @@ dependencies {
 
     integrationTestImplementation(project(':geode-dunit'))
     integrationTestImplementation('pl.pragmatists:JUnitParams')
-    integrationTestRuntime('org.apache.derby:derby')
+    integrationTestRuntimeOnly('org.apache.derby:derby')
     
     distributedTestImplementation(project(':geode-dunit'))
     distributedTestImplementation('pl.pragmatists:JUnitParams')
-    distributedTestRuntime('org.apache.derby:derby')
+    distributedTestRuntimeOnly('org.apache.derby:derby')
 
 
     implementation('net.sf.jopt-simple:jopt-simple')

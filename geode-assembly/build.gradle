@@ -202,7 +202,7 @@ dependencies {
   testRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
 
 
-  acceptanceTestRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
+  acceptanceTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
 
 
   integrationTestImplementation(project(':geode-core'))
@@ -227,10 +227,10 @@ dependencies {
   integrationTestImplementation('javax.servlet:javax.servlet-api')
 
 
-  integrationTestRuntime('io.swagger:swagger-annotations')
+  integrationTestRuntimeOnly('io.swagger:swagger-annotations')
   // these two modules are for testing only
-  integrationTestRuntime('com.fasterxml.jackson.datatype:jackson-datatype-joda')
-  integrationTestRuntime('joda-time:joda-time')
+  integrationTestRuntimeOnly('com.fasterxml.jackson.datatype:jackson-datatype-joda')
+  integrationTestRuntimeOnly('joda-time:joda-time')
 
 
   distributedTestImplementation(project(':geode-gfsh'))
@@ -254,12 +254,12 @@ dependencies {
   distributedTestImplementation('com.arakelian:java-jq')
   distributedTestImplementation('javax.servlet:javax.servlet-api')
 
-  distributedTestRuntime(project(':extensions:geode-modules-session-internal')) {
+  distributedTestRuntimeOnly(project(':extensions:geode-modules-session-internal')) {
     exclude group: 'org.apache.tomcat'
   }
-  distributedTestRuntime('org.codehaus.cargo:cargo-core-uberjar')
-  distributedTestRuntime('io.swagger:swagger-annotations')
-  distributedTestRuntime(project(':geode-wan'))
+  distributedTestRuntimeOnly('org.codehaus.cargo:cargo-core-uberjar')
+  distributedTestRuntimeOnly('io.swagger:swagger-annotations')
+  distributedTestRuntimeOnly(project(':geode-wan'))
 
 
   // geodeArchives is a direct reflection of what is contained in geode-dependencies.jar. To that
@@ -288,8 +288,8 @@ dependencies {
   uiTestImplementation('org.seleniumhq.selenium:selenium-remote-driver')
   uiTestImplementation('org.seleniumhq.selenium:selenium-support')
 
-  uiTestRuntime(project(':geode-core'))
-  uiTestRuntime('org.seleniumhq.selenium:selenium-chrome-driver')
+  uiTestRuntimeOnly(project(':geode-core'))
+  uiTestRuntimeOnly('org.seleniumhq.selenium:selenium-chrome-driver')
 
   upgradeTestImplementation(project(':geode-gfsh'))
   upgradeTestImplementation(project(':geode-logging'))
@@ -300,10 +300,10 @@ dependencies {
   }
   upgradeTestImplementation(project(':geode-assembly:geode-assembly-test'))
 
-  upgradeTestRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
-  upgradeTestRuntime(project(':extensions:session-testing-war'))
-  upgradeTestRuntime('org.codehaus.cargo:cargo-core-uberjar')
-  upgradeTestRuntime('org.apache.httpcomponents:httpclient')
+  upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
+  upgradeTestRuntimeOnly(project(':extensions:session-testing-war'))
+  upgradeTestRuntimeOnly('org.codehaus.cargo:cargo-core-uberjar')
+  upgradeTestRuntimeOnly('org.apache.httpcomponents:httpclient')
   upgradeTestRuntime files({ downloadWebServers } )
 
   //Web servers used for session module testing

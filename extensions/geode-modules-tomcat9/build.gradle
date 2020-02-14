@@ -50,8 +50,8 @@ dependencies {
 
   distributedTestImplementation(project(':extensions:geode-modules-test'))
 
-  distributedTestRuntime('xerces:xercesImpl')
-  distributedTestRuntime('javax.annotation:javax.annotation-api')
+  distributedTestRuntimeOnly('xerces:xercesImpl')
+  distributedTestRuntimeOnly('javax.annotation:javax.annotation-api')
 }
 
 eclipse.classpath.file {

@@ -108,7 +108,7 @@ dependencies {
   distributedTestImplementation('org.assertj:assertj-core')
   distributedTestImplementation('org.mockito:mockito-core')
   distributedTestImplementation('pl.pragmatists:JUnitParams')
-  distributedTestRuntime('org.apache.derby:derby')
+  distributedTestRuntimeOnly('org.apache.derby:derby')
 
   acceptanceTestImplementation('com.github.stefanbirkner:system-rules') {
     exclude module: 'junit-dep'
@@ -121,9 +121,9 @@ dependencies {
   acceptanceTestImplementation('pl.pragmatists:JUnitParams')
   acceptanceTestImplementation('com.palantir.docker.compose:docker-compose-rule-junit4')
 
-  acceptanceTestRuntime('mysql:mysql-connector-java')
-  acceptanceTestRuntime('org.apache.derby:derby')
-  acceptanceTestRuntime('org.postgresql:postgresql')
+  acceptanceTestRuntimeOnly('mysql:mysql-connector-java')
+  acceptanceTestRuntimeOnly('org.apache.derby:derby')
+  acceptanceTestRuntimeOnly('org.postgresql:postgresql')
 
   jdbcTestingJars('mysql:mysql-connector-java:8.0.17')
 }

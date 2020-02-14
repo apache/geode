@@ -124,7 +124,7 @@ dependencies {
   integrationTestImplementation('org.springframework:spring-test')
 
 
-  uiTestRuntime(project(':geode-core'))
+  uiTestRuntimeOnly(project(':geode-core'))
   uiTestImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }

@@ -68,5 +68,5 @@ dependencies {
   upgradeTestImplementation('junit:junit')
   upgradeTestImplementation('xml-apis:xml-apis:2.0.2')
 
-  upgradeTestRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
+  upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
 }

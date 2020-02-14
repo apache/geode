@@ -68,7 +68,7 @@ dependencies {
 
   upgradeTestImplementation(project(':geode-dunit'))
   upgradeTestImplementation('commons-io:commons-io')
-  upgradeTestRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
+  upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
 
 
   performanceTestImplementation(project(':geode-junit'))

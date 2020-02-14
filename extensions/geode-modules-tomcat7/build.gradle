@@ -58,11 +58,11 @@ dependencies {
   }
   integrationTestImplementation(project(':extensions:geode-modules-test'))
 
-  integrationTestRuntime('javax.annotation:jsr250-api')
-  integrationTestRuntime('javax.ejb:ejb-api')
-  integrationTestRuntime('javax.servlet:javax.servlet-api')
-  integrationTestRuntime('org.eclipse.persistence:javax.persistence')
-  integrationTestRuntime('xerces:xercesImpl')
+  integrationTestRuntimeOnly('javax.annotation:jsr250-api')
+  integrationTestRuntimeOnly('javax.ejb:ejb-api')
+  integrationTestRuntimeOnly('javax.servlet:javax.servlet-api')
+  integrationTestRuntimeOnly('org.eclipse.persistence:javax.persistence')
+  integrationTestRuntimeOnly('xerces:xercesImpl')
 }
 
 eclipse.classpath.file {

@@ -60,7 +60,7 @@ dependencies {
   }
   integrationTestImplementation('org.slf4j:slf4j-api')
 
-  integrationTestRuntime('xerces:xercesImpl')
+  integrationTestRuntimeOnly('xerces:xercesImpl')
 }
 
 jar {
