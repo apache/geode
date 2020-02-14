@@ -23,7 +23,12 @@ apply plugin: 'war'
 
 dependencies {
   compile(platform(project(':boms:geode-all-bom')))
-  implementation('javax.servlet:javax.servlet-api')
+  compile('javax.servlet:javax.servlet-api')
+    compileOnly(project(':extensions:geode-modules'))
+    compileOnly(project(':geode-assembly:geode-assembly-test'))
+    compile(project(':geode-junit')) {
+        exclude module: 'geode-core'
+    }
 }
 
 war {

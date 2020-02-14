@@ -19,7 +19,7 @@ import static org.apache.geode.session.tests.TomcatInstall.TomcatVersion.TOMCAT7
 
 import java.util.function.IntSupplier;
 
-public class Tomcat7Test extends CargoTestBase {
+public class Tomcat7Test extends TomcatTest {
   @Override
   public ContainerInstall getInstall(IntSupplier portSupplier) throws Exception {
     return new TomcatInstall(getClass().getSimpleName(), TOMCAT7, PEER_TO_PEER, portSupplier);

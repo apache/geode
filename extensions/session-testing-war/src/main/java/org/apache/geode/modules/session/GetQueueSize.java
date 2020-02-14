@@ -12,16 +12,28 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.session.tests;
+package org.apache.geode.modules.session;
 
-import static org.apache.geode.session.tests.ContainerInstall.ConnectionType.PEER_TO_PEER;
-import static org.apache.geode.session.tests.TomcatInstall.TomcatVersion.TOMCAT6;
+import java.util.Map;
 
-import java.util.function.IntSupplier;
+import org.apache.geode.cache.execute.Function;
+import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.tier.InternalClientMembership;
 
-public class Tomcat6Test extends TomcatTest {
+public class GetQueueSize implements Function {
+  public static final String ID = "get-queue-size";
+
   @Override
-  public ContainerInstall getInstall(IntSupplier portSupplier) throws Exception {
-    return new TomcatInstall(getClass().getSimpleName(), TOMCAT6, PEER_TO_PEER, portSupplier);
+  @SuppressWarnings("unchecked")
+  public void execute(FunctionContext context) {
+    InternalCache cache = (InternalCache) context.getCache();
+    Map clientProxyMembershipIDMap = InternalClientMembership.getClientQueueSizes(cache);
+    context.getResultSender().lastResult(clientProxyMembershipIDMap);
+  }
+
+  @Override
+  public String getId() {
+    return ID;
   }
 }
