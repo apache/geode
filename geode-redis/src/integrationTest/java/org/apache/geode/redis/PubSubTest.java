@@ -205,9 +205,8 @@ public class PubSubTest {
 
     subscriber.close();
 
-    // waitFor flaky in this case, temporarily replaced with assert until we fully understand the
-    // issue
     assertThat(subscriber.isConnected()).isFalse();
+    waitFor(() -> !subscriber.isConnected());
     Long result = publisher.publish("salutations", "hello");
 
     assertThat(result).isEqualTo(0);
@@ -306,6 +305,6 @@ public class PubSubTest {
   }
 
   private void waitFor(Callable<Boolean> booleanCallable) {
-    await().atMost(10, TimeUnit.SECONDS).until(booleanCallable);
+    await().atMost(1, TimeUnit.SECONDS).until(booleanCallable);
   }
 }
