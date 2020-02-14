@@ -49,6 +49,7 @@ dependencies {
   distributedTestImplementation('org.hamcrest:hamcrest-all')
   distributedTestImplementation('org.hamcrest:hamcrest-core')
   distributedTestImplementation('org.hamcrest:hamcrest-library')
+  distributedTestImplementation('pl.pragmatists:JUnitParams')
 
 
   upgradeTestImplementation(project(':geode-dunit'))

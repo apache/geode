@@ -25,7 +25,7 @@ dependencies {
   compile(project(':geode-core'))
   compileOnly(project(':geode-protobuf'))
 
-  compile('junit:junit')
-  compile('org.mockito:mockito-core')
+  implementation('junit:junit')
+  implementation('org.mockito:mockito-core')
 }
 

@@ -53,6 +53,8 @@ dependencies {
   implementation(project(':geode-serialization'))
   implementation(project(':geode-core'))
   implementation(project(':geode-gfsh'))
+  implementation('org.apache.httpcomponents:httpcore')
+  implementation('com.fasterxml.jackson.core:jackson-databind')
 
   testImplementation(project(':geode-membership'))
   testImplementation(project(':geode-junit')) {
@@ -77,14 +79,14 @@ dependencies {
     exclude module: 'geode-core'
   }
 
-  compile('com.zaxxer:HikariCP')
-  compile('org.apache.commons:commons-lang3')
-  compile('javax.xml.bind:jaxb-api')
-  compile('org.apache.logging.log4j:log4j-api')
-  compile('org.apache.logging.log4j:log4j-jcl') {
+  implementation('com.zaxxer:HikariCP')
+  implementation('org.apache.commons:commons-lang3')
+  implementation('javax.xml.bind:jaxb-api')
+  implementation('org.apache.logging.log4j:log4j-api')
+  implementation('org.apache.logging.log4j:log4j-jcl') {
     ext.optional = true
   }
-  compile('org.springframework.shell:spring-shell') {
+  implementation('org.springframework.shell:spring-shell') {
     exclude module: 'aopalliance'
     exclude module: 'asm'
     exclude module: 'cglib'
@@ -94,7 +96,7 @@ dependencies {
     exclude module: 'spring-core'
     ext.optional = true
   }
-  compile('com.healthmarketscience.rmiio:rmiio')
+  implementation('com.healthmarketscience.rmiio:rmiio')
 
   testImplementation('pl.pragmatists:JUnitParams')
 

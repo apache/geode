@@ -23,7 +23,7 @@ apply plugin: 'war'
 
 dependencies {
   compile(platform(project(':boms:geode-all-bom')))
-  compile('javax.servlet:javax.servlet-api')
+  implementation('javax.servlet:javax.servlet-api')
 }
 
 war {

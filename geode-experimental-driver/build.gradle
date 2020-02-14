@@ -38,7 +38,7 @@ dependencies {
   }
   integrationTestImplementation(project(':geode-protobuf'))
 
-  compile('com.google.protobuf:protobuf-java')
+  implementation('com.google.protobuf:protobuf-java')
 
   testImplementation('com.github.stefanbirkner:system-rules') {
     exclude module: 'junit-dep'

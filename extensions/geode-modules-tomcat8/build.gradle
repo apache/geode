@@ -26,7 +26,7 @@ evaluationDependsOn(":geode-core")
 dependencies {
   compile(platform(project(':boms:geode-all-bom')))
   distributedTestImplementation('junit:junit')
-  compile('mx4j:mx4j')
+  implementation('mx4j:mx4j')
   distributedTestImplementation(project(':geode-logging'))
   testImplementation('org.httpunit:httpunit')
   testImplementation('org.apache.tomcat:tomcat-jaspic-api:' + DependencyConstraints.get('tomcat8.version'))
@@ -37,6 +37,7 @@ dependencies {
   testImplementation(project(':extensions:geode-modules-test'))
   distributedTestImplementation('org.httpunit:httpunit')
   distributedTestImplementation('org.apache.tomcat:tomcat-jaspic-api:' + DependencyConstraints.get('tomcat8.version'))
+  distributedTestImplementation('org.springframework:spring-core')
   compile(project(':geode-core'))
   compile(project(':extensions:geode-modules')) {
     exclude group: 'org.apache.tomcat'
@@ -46,15 +47,15 @@ dependencies {
   }
 
 
-  compile('org.apache.tomcat:tomcat-catalina:' + DependencyConstraints.get('tomcat8.version')) {
+  implementation('org.apache.tomcat:tomcat-catalina:' + DependencyConstraints.get('tomcat8.version')) {
     exclude module: 'tomcat-annotations-api'
     exclude module: 'tomcat-servlet-api'
   }
-  compile('org.apache.tomcat:tomcat-coyote:' + DependencyConstraints.get('tomcat8.version')) {
+  implementation('org.apache.tomcat:tomcat-coyote:' + DependencyConstraints.get('tomcat8.version')) {
     exclude module: 'tomcat-servlet-api'
   }
-  compile('org.apache.tomcat:tomcat-juli:' + DependencyConstraints.get('tomcat8.version'))
-  compile('javax.servlet:javax.servlet-api')
+  implementation('org.apache.tomcat:tomcat-juli:' + DependencyConstraints.get('tomcat8.version'))
+  implementation('javax.servlet:javax.servlet-api')
 
   integrationTestImplementation(project(':geode-dunit')) {
     exclude module: 'geode-core'

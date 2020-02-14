@@ -174,11 +174,14 @@ dependencies {
 
   //tools.jar seems to be used by gfsh is some cases to control processes using
   //the sun attach API? But this code path may not even be used?
-  compileOnly files("${System.getProperty('java.home')}/../lib/tools.jar")
+  compileOnly(files("${System.getProperty('java.home')}/../lib/tools.jar"))
 
   //Find bugs is used in multiple places in the code to suppress findbugs warnings
   compileOnly('com.github.stephenc.findbugs:findbugs-annotations')
   testCompileOnly('com.github.stephenc.findbugs:findbugs-annotations')
+
+  //Spring web is used for SerializableObjectHttpMessageConverter
+  implementation('org.springframework:spring-web')
 
   //Jgroups is a core component of our membership system.
   implementation('org.jgroups:jgroups')
@@ -308,6 +311,7 @@ dependencies {
   }
   testImplementation(project(':geode-concurrency-test'))
   testImplementation('org.apache.bcel:bcel')
+  testImplementation('org.assertj:assertj-core')
   testImplementation('org.mockito:mockito-core')
   testImplementation('com.pholser:junit-quickcheck-core')
   testImplementation('org.powermock:powermock-core')
@@ -316,7 +320,7 @@ dependencies {
   testImplementation('pl.pragmatists:JUnitParams')
   testImplementation('com.tngtech.archunit:archunit-junit4')
 
-  testCompile files("${System.getProperty('java.home')}/../lib/tools.jar")
+  testImplementation(files("${System.getProperty('java.home')}/../lib/tools.jar"))
 
   testRuntime('commons-collections:commons-collections')
   testRuntime('commons-configuration:commons-configuration')
@@ -337,6 +341,7 @@ dependencies {
   }
   integrationTestImplementation(project(':geode-concurrency-test'))
   integrationTestImplementation('org.apache.bcel:bcel')
+  integrationTestImplementation('org.apache.logging.log4j:log4j-core')
   integrationTestImplementation('org.powermock:powermock-core')
   integrationTestImplementation('org.powermock:powermock-module-junit4')
   integrationTestImplementation('org.powermock:powermock-api-mockito2')

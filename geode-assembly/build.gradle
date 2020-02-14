@@ -218,9 +218,13 @@ dependencies {
   }
   integrationTestImplementation(project(':geode-pulse'))
   integrationTestImplementation(project(':geode-assembly:geode-assembly-test'))
-  integrationTestImplementation('org.apache.httpcomponents:httpclient')
-  integrationTestImplementation('javax.annotation:javax.annotation-api')
   integrationTestImplementation(project(':geode-logging'))
+  integrationTestImplementation('org.apache.httpcomponents:httpclient')
+  integrationTestImplementation('org.springframework:spring-beans')
+  integrationTestImplementation('org.springframework:spring-context')
+  integrationTestImplementation('org.springframework:spring-web')
+  integrationTestImplementation('javax.annotation:javax.annotation-api')
+  integrationTestImplementation('javax.servlet:javax.servlet-api')
 
 
   integrationTestRuntime('io.swagger:swagger-annotations')
@@ -248,6 +252,7 @@ dependencies {
   distributedTestImplementation(project(':geode-management'))
   distributedTestImplementation(project(':geode-web-management'))
   distributedTestImplementation('com.arakelian:java-jq')
+  distributedTestImplementation('javax.servlet:javax.servlet-api')
 
   distributedTestRuntime(project(':extensions:geode-modules-session-internal')) {
     exclude group: 'org.apache.tomcat'

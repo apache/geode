@@ -42,6 +42,7 @@ dependencies {
   providedCompile('org.apache.logging.log4j:log4j-api')
 
   implementation('org.springframework:spring-webmvc')
+  implementation('org.apache.commons:commons-lang3')
 
   runtimeOnly('org.springframework:spring-aspects') {
     exclude module: 'aspectjweaver'

@@ -29,8 +29,10 @@ dependencies {
     implementation(project(':geode-membership'))
     implementation(project(':geode-serialization'))
     implementation(project(':geode-unsafe'))
-
+    implementation('org.springframework:spring-web')
+    implementation('org.apache.commons:commons-lang3')
     implementation('com.healthmarketscience.rmiio:rmiio')
+    implementation('com.fasterxml.jackson.core:jackson-databind')
 
 //    //Find bugs is used in multiple places in the code to suppress findbugs warnings
     testImplementation('com.github.stephenc.findbugs:findbugs-annotations')
@@ -40,9 +42,11 @@ dependencies {
     testImplementation(project(':geode-junit'))
 
     integrationTestImplementation(project(':geode-dunit'))
+    integrationTestImplementation('pl.pragmatists:JUnitParams')
     integrationTestRuntime('org.apache.derby:derby')
-
+    
     distributedTestImplementation(project(':geode-dunit'))
+    distributedTestImplementation('pl.pragmatists:JUnitParams')
     distributedTestRuntime('org.apache.derby:derby')
 
 

@@ -29,12 +29,12 @@ dependencies {
   compileOnly(platform(project(':boms:geode-all-bom')))
   providedCompile(platform(project(':boms:geode-all-bom')))
 
-  compile('org.springframework.security:spring-security-core')
-  compile('javax.servlet:javax.servlet-api')
-  compile('mx4j:mx4j') {
+  implementation('org.springframework.security:spring-security-core')
+  implementation('javax.servlet:javax.servlet-api')
+  implementation('mx4j:mx4j') {
     ext.optional = true
   }
-  compile('mx4j:mx4j-remote') {
+  implementation('mx4j:mx4j-remote') {
     ext.optional = true
   }
   integrationTestImplementation('junit:junit')
@@ -47,45 +47,45 @@ dependencies {
   uiTestImplementation('org.assertj:assertj-core')
   uiTestImplementation('org.apache.httpcomponents:httpclient')
   uiTestImplementation('org.seleniumhq.selenium:selenium-support')
-  compile('org.springframework:spring-beans')
+  implementation('org.springframework:spring-beans')
 
   // Needed to fully use log4j instead of commons-logging.
-  compile('org.apache.logging.log4j:log4j-jcl')
-  compile('org.apache.logging.log4j:log4j-api')
-//  compile('org.apache.logging.log4j:log4j-core')
+  implementation('org.apache.logging.log4j:log4j-jcl')
+  implementation('org.apache.logging.log4j:log4j-api')
+//  implementation('org.apache.logging.log4j:log4j-core')
 
-  compile('commons-beanutils:commons-beanutils')
-  compile('commons-collections:commons-collections')
-  compile('commons-digester:commons-digester')
-  compile('org.apache.commons:commons-lang3')
-  compile('org.springframework.ldap:spring-ldap-core')
+  implementation('commons-beanutils:commons-beanutils')
+  implementation('commons-collections:commons-collections')
+  implementation('commons-digester:commons-digester')
+  implementation('org.apache.commons:commons-lang3')
+  implementation('org.springframework.ldap:spring-ldap-core')
 
-  compile('org.springframework.security:spring-security-config') {
+  implementation('org.springframework.security:spring-security-config') {
     exclude module: 'aopalliance'
     exclude module: 'spring-expression'
   }
-  compile('org.springframework.security:spring-security-ldap') {
+  implementation('org.springframework.security:spring-security-ldap') {
     exclude module: 'aopalliance'
     exclude module: 'spring-asm'
     exclude module: 'spring-expression'
     exclude module: 'spring-jdbc'
   }
-  compile('org.springframework.security:spring-security-web') {
+  implementation('org.springframework.security:spring-security-web') {
     exclude module: 'aopalliance'
     exclude module: 'spring-asm'
     exclude module: 'spring-expression'
     exclude module: 'spring-jdbc'
   }
-  compile('org.springframework:spring-context')
-  compile('org.springframework:spring-web')
+  implementation('org.springframework:spring-context')
+  implementation('org.springframework:spring-web')
   runtimeOnly('org.springframework:spring-webmvc') {
     exclude module: 'aopalliance'
     exclude module: 'aspectjweaver'
   }
-  compile('org.springframework:spring-tx')
-  compile('com.fasterxml.jackson.core:jackson-annotations')
-  compile('com.fasterxml.jackson.core:jackson-core')
-  compile('com.fasterxml.jackson.core:jackson-databind')
+  implementation('org.springframework:spring-tx')
+  implementation('com.fasterxml.jackson.core:jackson-annotations')
+  implementation('com.fasterxml.jackson.core:jackson-core')
+  implementation('com.fasterxml.jackson.core:jackson-databind')
 
   compileOnly('org.mortbay.jetty:servlet-api')
 

@@ -48,9 +48,9 @@ dependencies {
   }
   distributedTestImplementation(project(':geode-protobuf:geode-protobuf-test'))
 
-  compile('com.google.protobuf:protobuf-java')
-  compile('org.apache.logging.log4j:log4j-api')
-  compile('org.apache.shiro:shiro-core')
+  implementation('com.google.protobuf:protobuf-java')
+  implementation('org.apache.logging.log4j:log4j-api')
+  implementation('org.apache.shiro:shiro-core')
 
   integrationTestImplementation('com.github.stefanbirkner:system-rules') {
     exclude module: 'junit-dep'

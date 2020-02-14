@@ -28,14 +28,14 @@ dependencies {
   implementation(project(':geode-logging'))
   implementation(project(':geode-membership'))
   implementation(project(':geode-serialization'))
-  compile('org.apache.lucene:lucene-analyzers-common')
-  compile('org.apache.lucene:lucene-queryparser') {
+  implementation('org.apache.lucene:lucene-analyzers-common')
+  implementation('org.apache.lucene:lucene-queryparser') {
     exclude module: 'lucene-sandbox'
   }
-  compile('org.apache.lucene:lucene-core')
-  compile('org.apache.commons:commons-lang3')
-  compile('mx4j:mx4j')
-  compile('org.apache.logging.log4j:log4j-api')
+  implementation('org.apache.lucene:lucene-core')
+  implementation('org.apache.commons:commons-lang3')
+  implementation('mx4j:mx4j')
+  implementation('org.apache.logging.log4j:log4j-api')
 
   runtimeOnly('org.apache.lucene:lucene-analyzers-phonetic')
 

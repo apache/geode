@@ -26,6 +26,7 @@ dependencies {
 
   implementation(project(':geode-core'))
   implementation(project(':geode-logging'))
+  implementation('org.apache.commons:commons-lang3')
 
   implementation('org.apache.logging.log4j:log4j-api')
   implementation('org.apache.logging.log4j:log4j-core')
