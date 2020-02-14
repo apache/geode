@@ -111,9 +111,12 @@ public class JmxOperationInvoker implements OperationInvoker {
     // when not using JMXShiroAuthenticator in the integrated security, JMX own password file
     // authentication requires the credentials been sent in String[] format.
     // Our JMXShiroAuthenticator handles both String[] and Properties format
+    String token = gfProperties.getProperty(ResourceConstants.TOKEN);
     String username = gfProperties.getProperty(ResourceConstants.USER_NAME);
     String password = gfProperties.getProperty(ResourceConstants.PASSWORD);
-    if (username != null) {
+    if (token != null) {
+      env.put(JMXConnector.CREDENTIALS, token);
+    } else if (username != null) {
       env.put(JMXConnector.CREDENTIALS, new String[] {username, password});
     }
 

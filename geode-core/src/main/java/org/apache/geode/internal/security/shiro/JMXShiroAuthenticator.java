@@ -48,13 +48,16 @@ public class JMXShiroAuthenticator implements JMXAuthenticator, NotificationList
 
   @Override
   public Subject authenticate(Object credentials) {
-    String username = null;
+    String username;
     Properties credProps = new Properties();
     if (credentials instanceof String[]) {
       final String[] aCredentials = (String[]) credentials;
       username = aCredentials[0];
       credProps.setProperty(ResourceConstants.USER_NAME, aCredentials[0]);
       credProps.setProperty(ResourceConstants.PASSWORD, aCredentials[1]);
+    } else if (credentials instanceof String) {
+      username = "";
+      credProps.setProperty(ResourceConstants.TOKEN, (String) credentials);
     } else {
       throw new AuthenticationFailedException(MISSING_CREDENTIALS_MESSAGE);
     }
