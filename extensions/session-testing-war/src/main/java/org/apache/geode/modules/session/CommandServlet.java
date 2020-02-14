@@ -15,8 +15,13 @@
 
 package org.apache.geode.modules.session;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.reflect.Field;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 import javax.servlet.ServletConfig;
@@ -25,6 +30,18 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+
+import org.apache.catalina.Manager;
+import org.apache.catalina.session.StandardSession;
+import org.apache.catalina.session.StandardSessionFacade;
+import org.awaitility.Duration;
+
+import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.cache.execute.Execution;
+import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.modules.session.catalina.DeltaSessionManager;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public class CommandServlet extends HttpServlet {
   @SuppressWarnings("unused")
@@ -92,10 +109,47 @@ public class CommandServlet extends HttpServlet {
             out.write(result);
           }
           break;
+        case WAIT_UNTIL_QUEUE_DRAINED:
+          session = request.getSession();
+          DeltaSessionManager manager = (DeltaSessionManager) getSessionManager(session);
+          GeodeAwaitility.await().pollInterval(Duration.TWO_HUNDRED_MILLISECONDS)
+              .untilAsserted(() -> assertThat(checkQueueDrained(manager)).isTrue());
+          break;
       }
     } catch (Exception e) {
       out.write("Error in servlet: " + e.toString());
       e.printStackTrace(out);
     }
+  }
+
+  private boolean checkQueueDrained(DeltaSessionManager manager) {
+    GemFireCache cache = manager.getSessionCache().getCache();
+    Execution execution = FunctionService.onServers(cache);
+
+    ResultCollector collector = execution.execute(GetQueueSize.ID);
+    List list = (List) collector.getResult();
+    for (Object object : list) {
+      for (Object queue : ((Map) object).keySet()) {
+        manager.getLogger().info("client cache has queue: " + queue);
+      }
+    }
+    for (Object object : list) {
+      for (Object size : ((Map) object).values()) {
+        if ((Integer) size != 0) {
+          manager.getLogger().info("checkQueueDrained not drained with size " + size);
+          return false;
+        }
+      }
+    }
+    manager.getLogger().info("checkQueueDrained drained");
+    return true;
+  }
+
+  private Manager getSessionManager(HttpSession session) throws Exception {
+    Field facadeSessionField = StandardSessionFacade.class.getDeclaredField("session");
+    facadeSessionField.setAccessible(true);
+    StandardSession stdSession = (StandardSession) facadeSessionField.get(session);
+
+    return stdSession.getManager();
   }
 }
