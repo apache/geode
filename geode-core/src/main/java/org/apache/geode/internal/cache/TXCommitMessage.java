@@ -1660,7 +1660,7 @@ public class TXCommitMessage extends PooledDistributionMessage
 
       @Override
       public boolean equals(Object o) {
-        if (o == null || !(o instanceof FarSideEntryOp)) {
+        if (!(o instanceof FarSideEntryOp)) {
           return false;
         }
         return compareTo(o) == 0;

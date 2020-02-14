@@ -56,7 +56,7 @@ public class DescribeMemberCommand extends GfshCommand {
     ArrayList<?> output = (ArrayList<?>) rc.getResult();
     Object obj = output.get(0);
 
-    if (obj == null || !(obj instanceof MemberInformation)) {
+    if (!(obj instanceof MemberInformation)) {
       return ResultModel.createInfo(String.format(
           CliStrings.DESCRIBE_MEMBER__MSG__INFO_FOR__0__COULD_NOT_BE_RETRIEVED, memberNameOrId));
     }

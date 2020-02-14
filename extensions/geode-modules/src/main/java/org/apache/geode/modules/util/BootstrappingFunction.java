@@ -191,10 +191,9 @@ public class BootstrappingFunction implements Function, MembershipListener, Data
       return true;
     }
 
-    if (obj == null || !(obj instanceof BootstrappingFunction)) {
+    if (!(obj instanceof BootstrappingFunction)) {
       return false;
     }
-
     return true;
   }
 

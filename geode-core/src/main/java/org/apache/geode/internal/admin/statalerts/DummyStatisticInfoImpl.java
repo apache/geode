@@ -103,7 +103,7 @@ public class DummyStatisticInfoImpl implements StatisticInfo {
   @Override
   public boolean equals(Object object) {
 
-    if (object == null || !(object instanceof DummyStatisticInfoImpl)) {
+    if (!(object instanceof DummyStatisticInfoImpl)) {
       return false;
     }
 

@@ -379,7 +379,7 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
   @Override
   public boolean equals(Object obj) {
     // GemStone fix for 29125
-    if ((obj == null) || !(obj instanceof GMSMemberData)) {
+    if (!(obj instanceof GMSMemberData)) {
       return false;
     }
     return compareTo((GMSMemberData) obj) == 0;

@@ -710,7 +710,7 @@ public class PartitionedRegionHelper {
     } finally {
       LocalRegion.setThreadInitLevelRequirement(oldLevel);
     }
-    if (region == null || !(region instanceof PartitionedRegion)) {
+    if (!(region instanceof PartitionedRegion)) {
       return null;
     }
 
