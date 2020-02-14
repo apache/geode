@@ -14,6 +14,7 @@
  */
 
 package org.apache.geode.redis.internal;
+
 /**
  * Represents the results of publishing a message to a subscription. Contains the client the message
  * was published to as well as whether or not the message was published successfully.

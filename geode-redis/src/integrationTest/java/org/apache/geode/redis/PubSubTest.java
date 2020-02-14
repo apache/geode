@@ -33,6 +33,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.GemFireCache;
@@ -118,7 +119,6 @@ public class PubSubTest {
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 0);
     waitFor(() -> !subscriberThread.isAlive());
 
-
     assertThat(mockSubscriber.getReceivedMessages()).isEqualTo(expectedMessages);
   }
 
@@ -140,7 +140,6 @@ public class PubSubTest {
 
     waitFor(() -> mockSubscriber1.getSubscribedChannels() == 1);
     waitFor(() -> mockSubscriber2.getSubscribedChannels() == 1);
-
 
     Long result = publisher.publish("salutations", "hello");
     assertThat(result).isEqualTo(2);
@@ -189,14 +188,18 @@ public class PubSubTest {
   }
 
   @Test
-  public void testDeadSubscriber() throws InterruptedException {
+  public void testDeadSubscriber() {
     Jedis subscriber = new Jedis("localhost", port);
     Jedis publisher = new Jedis("localhost", port);
 
     MockSubscriber mockSubscriber = new MockSubscriber();
 
     Runnable runnable = () -> {
-      subscriber.subscribe(mockSubscriber, "salutations");
+      // this will throw an exception when the socket is closed later in this test
+      try {
+        subscriber.subscribe(mockSubscriber, "salutations");
+      } catch (JedisConnectionException e) {
+      }
     };
 
     Thread subscriberThread = new Thread(runnable);
@@ -205,7 +208,6 @@ public class PubSubTest {
 
     subscriber.close();
 
-    assertThat(subscriber.isConnected()).isFalse();
     waitFor(() -> !subscriber.isConnected());
     Long result = publisher.publish("salutations", "hello");
 
