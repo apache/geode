@@ -248,6 +248,10 @@ public class Client {
     }
   }
 
+  public String getCookie() {
+    return cookie;
+  }
+
   private String getCookieHeader(CloseableHttpResponse resp) {
     Header lastHeader = resp.getLastHeader("Set-Cookie");
 
@@ -301,5 +305,13 @@ public class Client {
       return "Response{" + "sessionCookie='" + sessionCookie + '\'' + ", response='" + response
           + '\'' + '}';
     }
+  }
+
+  public Response waitForQueueToDrain() throws IOException, URISyntaxException {
+    resetURI();
+    reqURIBuild.setParameter("cmd", QueryCommand.WAIT_UNTIL_QUEUE_DRAINED.name());
+    reqURIBuild.setParameter("param", null);
+
+    return doRequest(new HttpGet(reqURIBuild.build()), true);
   }
 }

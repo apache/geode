@@ -31,6 +31,8 @@ public enum QueryCommand {
 
   UNKNOWN,
 
-  FUNCTION;
+  FUNCTION,
+
+  WAIT_UNTIL_QUEUE_DRAINED;
 
 }
