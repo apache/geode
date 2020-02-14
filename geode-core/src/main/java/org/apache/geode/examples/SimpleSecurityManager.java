@@ -61,6 +61,7 @@ public class SimpleSecurityManager implements SecurityManager {
     if (username != null && username.equals(password)) {
       return username;
     }
+
     throw new AuthenticationFailedException("invalid username/password");
   }
 

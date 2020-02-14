@@ -176,6 +176,12 @@ public class GfshCommandRule extends DescribedExternalResource {
     assertThat(this.connected).isTrue();
   }
 
+  public void secureConnectWithTokenAndVerify(int port, PortType portType, String token)
+      throws Exception {
+    connect(port, portType, CliStrings.CONNECT__TOKEN, token);
+    assertThat(this.connected).isTrue();
+  }
+
   public void connect(int port, PortType type, Properties properties) throws Exception {
     File propertyFile = temporaryFolder.newFile();
     FileOutputStream out = new FileOutputStream(propertyFile);
@@ -304,6 +310,7 @@ public class GfshCommandRule extends DescribedExternalResource {
     this.gfshTimeout = timeoutInSeconds;
     return this;
   }
+
 
   public enum PortType {
     locator, jmxManager, http, https
