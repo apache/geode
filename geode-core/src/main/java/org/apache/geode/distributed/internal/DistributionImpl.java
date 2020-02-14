@@ -919,7 +919,7 @@ public class DistributionImpl implements Distribution {
       // network-down testing
       InternalLocator loc = (InternalLocator) Locator.getLocator();
       if (loc != null) {
-        loc.stop(true, !distribution.disableAutoReconnect, false);
+        loc.stop(true, !distribution.disableAutoReconnect, true);
       }
     }
   }

@@ -72,7 +72,6 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -256,7 +255,6 @@ public class LocatorDUnitTest implements Serializable {
   }
 
   @Test
-  @Ignore("GEODE=7760 - test sometimes hangs due to product issue")
   public void testCrashLocatorMultipleTimes() throws Exception {
     port1 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     DistributedTestUtils.deleteLocatorStateFile(port1);
@@ -270,11 +268,14 @@ public class LocatorDUnitTest implements Serializable {
     properties.put(MAX_WAIT_TIME_RECONNECT, "" + (3 * memberTimeoutMS));
     // since we're restarting location services let's be a little forgiving about that service
     // starting up so that stress-tests can pass
-    properties.put(LOCATOR_WAIT_TIME, "" + (3 * memberTimeoutMS));
+    properties.put(LOCATOR_WAIT_TIME, "" + 3);
     addDSProps(properties);
     if (stateFile.exists()) {
       assertThat(stateFile.delete()).isTrue();
     }
+
+    IgnoredException
+        .addIgnoredException("Possible loss of quorum due to the loss of 1 cache processes");
 
     Locator locator = Locator.startLocatorAndDS(port1, logFile, properties);
     system = (InternalDistributedSystem) locator.getDistributedSystem();

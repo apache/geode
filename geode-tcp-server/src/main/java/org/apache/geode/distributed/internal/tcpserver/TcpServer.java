@@ -164,7 +164,9 @@ public class TcpServer {
   public void restarting() throws IOException {
     this.shuttingDown = false;
     startServerThread();
-    this.executor = executorServiceSupplier.get();
+    if (this.executor == null || this.executor.isShutdown()) {
+      this.executor = executorServiceSupplier.get();
+    }
     logger.info("TcpServer@" + System.identityHashCode(this)
         + " restarting: completed.  Server thread=" + this.serverThread + '@'
         + System.identityHashCode(this.serverThread) + ";alive=" + this.serverThread.isAlive());
