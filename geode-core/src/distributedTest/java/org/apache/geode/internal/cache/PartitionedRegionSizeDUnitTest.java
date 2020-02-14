@@ -174,7 +174,6 @@ public class PartitionedRegionSizeDUnitTest extends CacheTestCase {
       }
 
       await().until(() -> dataStore.getBucketSize(0) == 50 * size);
-
       return size;
     });
 
@@ -228,7 +227,6 @@ public class PartitionedRegionSizeDUnitTest extends CacheTestCase {
     Cache cache = getCache();
 
     File[] diskDirs = new File[] {overflowDirectory};
-
     DiskStoreFactory diskStoreFactory = cache.createDiskStoreFactory();
     diskStoreFactory.setDiskDirs(diskDirs);
     DiskStore diskStore = diskStoreFactory.create(DISK_STORE_NAME);
@@ -243,7 +241,6 @@ public class PartitionedRegionSizeDUnitTest extends CacheTestCase {
     regionFactory.setDiskSynchronous(true);
     regionFactory.setEvictionAttributes(createLRUEntryAttributes(2, OVERFLOW_TO_DISK));
     regionFactory.setPartitionAttributes(paf.create());
-
     regionFactory.create(REGION_NAME);
   }
 
@@ -255,7 +252,6 @@ public class PartitionedRegionSizeDUnitTest extends CacheTestCase {
 
     RegionFactory regionFactory = getCache().createRegionFactory(RegionShortcut.PARTITION);
     regionFactory.setPartitionAttributes(paf.create());
-
     regionFactory.create(REGION_NAME);
   }
 
