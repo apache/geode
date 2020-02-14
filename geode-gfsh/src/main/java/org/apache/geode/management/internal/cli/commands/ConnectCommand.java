@@ -299,7 +299,8 @@ public class ConnectCommand extends OfflineGfshCommand {
     } catch (SecurityException | AuthenticationFailedException e) {
       // if it's security exception, and we already sent in username and password, still returns the
       // connection error
-      if (gfProperties.containsKey(ResourceConstants.USER_NAME)) {
+      if (gfProperties.containsKey(ResourceConstants.USER_NAME)
+          || gfProperties.containsKey(ResourceConstants.TOKEN)) {
         return handleException(e);
       }
 
@@ -375,7 +376,8 @@ public class ConnectCommand extends OfflineGfshCommand {
     } catch (SecurityException | AuthenticationFailedException e) {
       // if it's security exception, and we already sent in username and password, still returns the
       // connection error
-      if (gfProperties.containsKey(ResourceConstants.USER_NAME)) {
+      if (gfProperties.containsKey(ResourceConstants.USER_NAME)
+          || gfProperties.containsKey(ResourceConstants.TOKEN)) {
         return handleException(e, jmxHostPortToConnect);
       }
 
