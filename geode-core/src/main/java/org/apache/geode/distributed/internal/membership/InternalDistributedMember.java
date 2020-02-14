@@ -60,6 +60,7 @@ public class InternalDistributedMember
     implements DistributedMember, Externalizable, ProfileId, VersionSource<DistributedMember>,
     MemberIdentifier, DataSerializableFixedID {
   private static final long serialVersionUID = -2785249969777296507L;
+  public static final int DEFAULT_DURABLE_CLIENT_TIMEOUT = 300;
 
   @Immutable
   public static final MemberIdentifierFactoryImpl MEMBER_IDENTIFIER_FACTORY =
@@ -69,9 +70,12 @@ public class InternalDistributedMember
   @MutableForTesting
   protected static HostnameResolver hostnameResolver =
       (location) -> InetAddress.getByName(location.getHostName());
+
   private final MemberIdentifier memberIdentifier;
 
-  /** lock object used when getting/setting roles/rolesSet fields */
+  @VisibleForTesting
+  // Cached to prevent creating a new instance every single time.
+  protected volatile DurableClientAttributes durableClientAttributes;
 
   // Used only by deserialization
   public InternalDistributedMember() {
@@ -187,7 +191,8 @@ public class InternalDistributedMember
    * @throws UnknownHostException if the given hostname cannot be resolved
    */
   public InternalDistributedMember(String host, int p, String n, String u, int vmKind,
-      String[] groups, DurableClientAttributes attr) throws UnknownHostException {
+      String[] groups, DurableClientAttributes attr) {
+    durableClientAttributes = attr;
     memberIdentifier =
         MEMBER_IDENTIFIER_FACTORY.create(createMemberData(host, p, n, vmKind, groups, attr, u));
 
@@ -272,11 +277,19 @@ public class InternalDistributedMember
   @Override
   public DurableClientAttributes getDurableClientAttributes() {
     assert !this.isPartial();
-    String durableId = memberIdentifier.getDurableId();
-    if (durableId == null || durableId.isEmpty()) {
-      return new DurableClientAttributes("", 300);
+
+    if (durableClientAttributes == null) {
+      String durableId = memberIdentifier.getDurableId();
+
+      if (durableId == null || durableId.isEmpty()) {
+        durableClientAttributes = new DurableClientAttributes("", DEFAULT_DURABLE_CLIENT_TIMEOUT);
+      } else {
+        durableClientAttributes =
+            new DurableClientAttributes(durableId, memberIdentifier.getDurableTimeout());
+      }
     }
-    return new DurableClientAttributes(durableId, memberIdentifier.getDurableTimeout());
+
+    return durableClientAttributes;
   }
 
   /**
@@ -336,16 +349,19 @@ public class InternalDistributedMember
   @Override
   public void setDurableTimeout(int newValue) {
     memberIdentifier.setDurableTimeout(newValue);
+    durableClientAttributes = null;
   }
 
   @Override
   public void setDurableId(String id) {
     memberIdentifier.setDurableId(id);
+    durableClientAttributes = null;
   }
 
   @Override
   public void setMemberData(MemberData m) {
     memberIdentifier.setMemberData(m);
+    durableClientAttributes = null;
   }
 
   @Override
@@ -457,6 +473,7 @@ public class InternalDistributedMember
   @Override
   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
     memberIdentifier.readExternal(in);
+    durableClientAttributes = null;
   }
 
   @Override
@@ -483,6 +500,7 @@ public class InternalDistributedMember
       DeserializationContext context)
       throws IOException, ClassNotFoundException {
     memberIdentifier.fromData(in, context);
+    durableClientAttributes = null;
   }
 
   @Override
@@ -490,6 +508,7 @@ public class InternalDistributedMember
       DeserializationContext context)
       throws IOException, ClassNotFoundException {
     memberIdentifier.fromDataPre_GFE_9_0_0_0(in, context);
+    durableClientAttributes = null;
   }
 
   @Override
@@ -497,6 +516,7 @@ public class InternalDistributedMember
       DeserializationContext context)
       throws IOException, ClassNotFoundException {
     memberIdentifier.fromDataPre_GFE_7_1_0_0(in, context);
+    durableClientAttributes = null;
   }
 
   @Override

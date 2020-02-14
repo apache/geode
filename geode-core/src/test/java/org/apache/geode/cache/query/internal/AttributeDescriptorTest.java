@@ -75,7 +75,7 @@ public class AttributeDescriptorTest {
     when(mockService.getMethodAuthorizer()).thenReturn(methodInvocationAuthorizer);
 
     when(mockCache.getService(QueryConfigurationService.class)).thenReturn(mockService);
-    queryExecutionContext = new QueryExecutionContext(null, mockCache);
+    queryExecutionContext = spy(new QueryExecutionContext(null, mockCache));
   }
 
   @Test
@@ -241,8 +241,23 @@ public class AttributeDescriptorTest {
     AttributeDescriptor attributeDescriptor = new AttributeDescriptor(typeRegistry, attributeName);
     attributeDescriptor.readReflection(testBean, queryExecutionContext);
 
-    String cacheKey = TestBean.class.getCanonicalName() + "." + methodName;
-    assertThat(queryExecutionContext.cacheGet(cacheKey)).isEqualTo(true);
+    Method method = TestBean.class.getMethod(methodName);
+    assertThat(queryExecutionContext.cacheGet(method)).isEqualTo(true);
+  }
+
+  @Test
+  @Parameters({
+      "nonPublicAttributeWithPublicAccessor, nonPublicAttributeWithPublicAccessor",
+      "nonPublicAttributeWithPublicGetterMethod, getNonPublicAttributeWithPublicGetterMethod"})
+  public void readReflectionForImplicitMethodInvocationShouldReturnCorrectlyWhenMethodIsAuthorizedAndDoNotCacheResultForCqs(
+      String attributeName, String methodName) throws Exception {
+    when(queryExecutionContext.isCqQueryContext()).thenReturn(true);
+    doReturn(true).when(methodInvocationAuthorizer).authorize(any(), any());
+    AttributeDescriptor attributeDescriptor = new AttributeDescriptor(typeRegistry, attributeName);
+    attributeDescriptor.readReflection(testBean, queryExecutionContext);
+
+    Method method = TestBean.class.getMethod(methodName);
+    assertThat(queryExecutionContext.cacheGet(method)).isNull();
   }
 
   @Test
@@ -295,6 +310,31 @@ public class AttributeDescriptorTest {
   }
 
   @Test
+  public void readReflectionForImplicitMethodInvocationShouldNotUseCachedAuthorizerResultForCqs() {
+    when(queryExecutionContext.isCqQueryContext()).thenReturn(true);
+    doReturn(true).when(methodInvocationAuthorizer).authorize(any(), any());
+    AttributeDescriptor nonPublicAttributeWithPublicAccessor =
+        new AttributeDescriptor(typeRegistry, PRIVATE_ACCESSOR_BY_NAME);
+    AttributeDescriptor nonPublicAttributeWithPublicGetterMethod =
+        new AttributeDescriptor(typeRegistry, PRIVATE_ACCESSOR_BY_GETTER);
+
+    // Same QueryExecutionContext but CQ -> Do not use cache.
+    IntStream.range(0, 10).forEach(element -> {
+      try {
+        assertThat(
+            nonPublicAttributeWithPublicAccessor.readReflection(testBean, queryExecutionContext))
+                .isInstanceOf(String.class).isEqualTo(PRIVATE_ACCESSOR_BY_NAME);
+        assertThat(nonPublicAttributeWithPublicGetterMethod.readReflection(testBean,
+            queryExecutionContext)).isInstanceOf(String.class)
+                .isEqualTo(PRIVATE_ACCESSOR_BY_GETTER);
+      } catch (NameNotFoundException | QueryInvocationTargetException exception) {
+        throw new RuntimeException(exception);
+      }
+    });
+    verify(methodInvocationAuthorizer, times(20)).authorize(any(), any());
+  }
+
+  @Test
   @Parameters({PRIVATE_ACCESSOR_BY_NAME, PRIVATE_ACCESSOR_BY_GETTER})
   public void readReflectionForImplicitMethodInvocationShouldThrowExceptionWhenMethodIsNotAuthorized(
       String attributeName) {
@@ -310,8 +350,8 @@ public class AttributeDescriptorTest {
   @Parameters({
       "nonPublicAttributeWithPublicAccessor, nonPublicAttributeWithPublicAccessor",
       "nonPublicAttributeWithPublicGetterMethod, getNonPublicAttributeWithPublicGetterMethod"})
-  public void readReflectionForImplicitMethodInvocationShouldShouldThrowExceptionWhenMethodIsNotAuthorizedAndCacheResult(
-      String attributeName, String methodName) {
+  public void readReflectionForImplicitMethodInvocationShouldThrowExceptionWhenMethodIsNotAuthorizedAndCacheResult(
+      String attributeName, String methodName) throws NoSuchMethodException {
     doReturn(false).when(methodInvocationAuthorizer).authorize(any(), any());
     AttributeDescriptor attributeDescriptor = new AttributeDescriptor(typeRegistry, attributeName);
 
@@ -319,8 +359,26 @@ public class AttributeDescriptorTest {
         .isInstanceOf(NotAuthorizedException.class)
         .hasMessageStartingWith(RestrictedMethodAuthorizer.UNAUTHORIZED_STRING);
 
-    String cacheKey = TestBean.class.getCanonicalName() + "." + methodName;
-    assertThat(queryExecutionContext.cacheGet(cacheKey)).isEqualTo(false);
+    Method method = TestBean.class.getMethod(methodName);
+    assertThat(queryExecutionContext.cacheGet(method)).isEqualTo(false);
+  }
+
+  @Test
+  @Parameters({
+      "nonPublicAttributeWithPublicAccessor, nonPublicAttributeWithPublicAccessor",
+      "nonPublicAttributeWithPublicGetterMethod, getNonPublicAttributeWithPublicGetterMethod"})
+  public void readReflectionForImplicitMethodInvocationShouldThrowExceptionWhenMethodIsNotAuthorizedAndDoNotCacheResultForCqs(
+      String attributeName, String methodName) throws NoSuchMethodException {
+    when(queryExecutionContext.isCqQueryContext()).thenReturn(true);
+    doReturn(false).when(methodInvocationAuthorizer).authorize(any(), any());
+    AttributeDescriptor attributeDescriptor = new AttributeDescriptor(typeRegistry, attributeName);
+
+    assertThatThrownBy(() -> attributeDescriptor.readReflection(testBean, queryExecutionContext))
+        .isInstanceOf(NotAuthorizedException.class)
+        .hasMessageStartingWith(RestrictedMethodAuthorizer.UNAUTHORIZED_STRING);
+
+    Method method = TestBean.class.getMethod(methodName);
+    assertThat(queryExecutionContext.cacheGet(method)).isNull();
   }
 
   @Test
@@ -363,6 +421,27 @@ public class AttributeDescriptorTest {
       assertThatThrownBy(
           () -> nonPublicAttributeWithPublicGetterMethod.readReflection(testBean, mockContext))
               .isInstanceOf(NotAuthorizedException.class)
+              .hasMessageStartingWith(RestrictedMethodAuthorizer.UNAUTHORIZED_STRING);
+    });
+    verify(methodInvocationAuthorizer, times(20)).authorize(any(), any());
+  }
+
+  @Test
+  public void readReflectionForImplicitMethodInvocationShouldNotUseCachedAuthorizerResultWhenMethodIsForbiddenForCqs() {
+    when(queryExecutionContext.isCqQueryContext()).thenReturn(true);
+    doReturn(false).when(methodInvocationAuthorizer).authorize(any(), any());
+    AttributeDescriptor nonPublicAttributeWithPublicAccessor =
+        new AttributeDescriptor(typeRegistry, PRIVATE_ACCESSOR_BY_NAME);
+    AttributeDescriptor nonPublicAttributeWithPublicGetterMethod =
+        new AttributeDescriptor(typeRegistry, PRIVATE_ACCESSOR_BY_GETTER);
+
+    // Same QueryExecutionContext but CQ -> Do not use cache.
+    IntStream.range(0, 10).forEach(element -> {
+      assertThatThrownBy(() -> nonPublicAttributeWithPublicAccessor.readReflection(testBean,
+          queryExecutionContext)).isInstanceOf(NotAuthorizedException.class)
+              .hasMessageStartingWith(RestrictedMethodAuthorizer.UNAUTHORIZED_STRING);
+      assertThatThrownBy(() -> nonPublicAttributeWithPublicGetterMethod.readReflection(testBean,
+          queryExecutionContext)).isInstanceOf(NotAuthorizedException.class)
               .hasMessageStartingWith(RestrictedMethodAuthorizer.UNAUTHORIZED_STRING);
     });
     verify(methodInvocationAuthorizer, times(20)).authorize(any(), any());

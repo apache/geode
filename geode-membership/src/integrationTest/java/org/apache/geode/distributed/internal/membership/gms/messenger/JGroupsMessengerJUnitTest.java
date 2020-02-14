@@ -883,7 +883,7 @@ public class JGroupsMessengerJUnitTest {
     initMocks(false, true);
     ((TestMembershipConfig) membershipConfig).oldMembershipInfo =
         new MembershipInformationImpl(messenger.myChannel,
-            new ConcurrentLinkedQueue<>());
+            new ConcurrentLinkedQueue<>(), null);
     JGroupsMessenger newMessenger = new JGroupsMessenger();
     newMessenger.init(services);
     newMessenger.start();

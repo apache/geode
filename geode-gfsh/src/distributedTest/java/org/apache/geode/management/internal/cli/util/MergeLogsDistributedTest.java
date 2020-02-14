@@ -81,8 +81,13 @@ public class MergeLogsDistributedTest {
     List<File> actualFiles = MergeLogs.findLogFilesToMerge(lsRule.getWorkingDirRoot());
     // remove pulse.log if present
     actualFiles =
-        actualFiles.stream().filter(x -> !x.getName().endsWith("pulse.log")).collect(toList());
-    assertThat(actualFiles).hasSize(4);
+        actualFiles.stream()
+            .filter(x -> !x.getName().endsWith("pulse.log"))
+            .filter(x -> !x.getName().contains("views"))
+            .collect(toList());
+    // besides locator views log or pulse log, there should only be locator-0.log, server-1.log and
+    // server-2.log
+    assertThat(actualFiles).hasSize(3);
 
     File result = MergeLogs.mergeLogFile(lsRule.getWorkingDirRoot().getCanonicalPath());
     assertOnLogContents(result);
@@ -93,8 +98,13 @@ public class MergeLogsDistributedTest {
     List<File> actualFiles = MergeLogs.findLogFilesToMerge(lsRule.getWorkingDirRoot());
     // remove pulse.log if present
     actualFiles =
-        actualFiles.stream().filter(x -> !x.getName().endsWith("pulse.log")).collect(toList());
-    assertThat(actualFiles).hasSize(4);
+        actualFiles.stream()
+            .filter(x -> !x.getName().endsWith("pulse.log"))
+            .filter(x -> !x.getName().contains("views"))
+            .collect(toList());
+    // besides locator views log or pulse log, there should only be locator-0.log, server-1.log and
+    // server-2.log
+    assertThat(actualFiles).hasSize(3);
 
     MergeLogs.mergeLogsInNewProcess(lsRule.getWorkingDirRoot().toPath());
     File result = Arrays.stream(lsRule.getWorkingDirRoot().listFiles())

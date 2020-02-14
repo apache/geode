@@ -275,9 +275,9 @@ fromData,17
 toData,17
 
 org/apache/geode/distributed/internal/membership/InternalDistributedMember,6
-fromData,12
-fromDataPre_GFE_7_1_0_0,12
-fromDataPre_GFE_9_0_0_0,12
+fromData,17
+fromDataPre_GFE_7_1_0_0,17
+fromDataPre_GFE_9_0_0_0,17
 toData,12
 toDataPre_GFE_7_1_0_0,12
 toDataPre_GFE_9_0_0_0,12
