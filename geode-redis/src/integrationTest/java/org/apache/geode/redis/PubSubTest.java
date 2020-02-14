@@ -46,6 +46,8 @@ public class PubSubTest {
   private static GeodeRedisServer server;
   private static GemFireCache cache;
   private static Random rand;
+  private static Jedis publisher;
+  private static Jedis subscriber;
   private static int port = 6379;
 
   @BeforeClass
@@ -58,20 +60,22 @@ public class PubSubTest {
     cache = cf.create();
     port = AvailablePortHelper.getRandomAvailableTCPPort();
     server = new GeodeRedisServer("localhost", port);
+    subscriber = new Jedis("localhost", port);
+    publisher = new Jedis("localhost", port);
 
     server.start();
   }
 
   @AfterClass
   public static void tearDown() {
+    subscriber.close();
+    publisher.close();
     cache.close();
     server.shutdown();
   }
 
   @Test
   public void testOneSubscriberOneChannel() {
-    Jedis subscriber = new Jedis("localhost", port);
-    Jedis publisher = new Jedis("localhost", port);
     List<String> expectedMessages = Arrays.asList("hello");
 
     MockSubscriber mockSubscriber = new MockSubscriber();
@@ -96,8 +100,6 @@ public class PubSubTest {
 
   @Test
   public void testOneSubscriberSubscribingToTwoChannels() {
-    Jedis subscriber = new Jedis("localhost", port);
-    Jedis publisher = new Jedis("localhost", port);
     List<String> expectedMessages = Arrays.asList("hello", "howdy");
     MockSubscriber mockSubscriber = new MockSubscriber();
 
@@ -124,13 +126,11 @@ public class PubSubTest {
 
   @Test
   public void testTwoSubscribersOneChannel() {
-    Jedis subscriber1 = new Jedis("localhost", port);
     Jedis subscriber2 = new Jedis("localhost", port);
-    Jedis publisher = new Jedis("localhost", port);
     MockSubscriber mockSubscriber1 = new MockSubscriber();
     MockSubscriber mockSubscriber2 = new MockSubscriber();
 
-    Runnable runnable1 = () -> subscriber1.subscribe(mockSubscriber1, "salutations");
+    Runnable runnable1 = () -> subscriber.subscribe(mockSubscriber1, "salutations");
     Runnable runnable2 = () -> subscriber2.subscribe(mockSubscriber2, "salutations");
 
     Thread subscriber1Thread = new Thread(runnable1);
@@ -155,19 +155,18 @@ public class PubSubTest {
 
     assertThat(mockSubscriber1.getReceivedMessages()).isEqualTo(Collections.singletonList("hello"));
     assertThat(mockSubscriber2.getReceivedMessages()).isEqualTo(Arrays.asList("hello", "goodbye"));
+
+    subscriber2.close();
   }
 
   @Test
   public void testPublishToNonexistentChannel() {
-    Jedis publisher = new Jedis("localhost", port);
     Long result = publisher.publish("thisChannelDoesn'tExist", "hello");
     assertThat(result).isEqualTo(0);
   }
 
   @Test
   public void testOneSubscriberOneChannelTwoTimes() {
-    Jedis subscriber = new Jedis("localhost", port);
-    Jedis publisher = new Jedis("localhost", port);
     MockSubscriber mockSubscriber = new MockSubscriber();
 
     Runnable runnable1 = () -> subscriber.subscribe(mockSubscriber, "salutations", "salutations");
@@ -189,15 +188,14 @@ public class PubSubTest {
 
   @Test
   public void testDeadSubscriber() {
-    Jedis subscriber = new Jedis("localhost", port);
-    Jedis publisher = new Jedis("localhost", port);
+    Jedis deadSubscriber = new Jedis("localhost", port);
 
     MockSubscriber mockSubscriber = new MockSubscriber();
 
     Runnable runnable = () -> {
       // this will throw an exception when the socket is closed later in this test
       try {
-        subscriber.subscribe(mockSubscriber, "salutations");
+        deadSubscriber.subscribe(mockSubscriber, "salutations");
       } catch (JedisConnectionException e) {
       }
     };
@@ -206,9 +204,9 @@ public class PubSubTest {
     subscriberThread.start();
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
 
-    subscriber.close();
+    deadSubscriber.close();
 
-    waitFor(() -> !subscriber.isConnected());
+    waitFor(() -> !deadSubscriber.isConnected());
     Long result = publisher.publish("salutations", "hello");
 
     assertThat(result).isEqualTo(0);
@@ -217,9 +215,6 @@ public class PubSubTest {
 
   @Test
   public void testPatternSubscribe() {
-    Jedis subscriber = new Jedis("localhost", port);
-    Jedis publisher = new Jedis("localhost", port);
-
     MockSubscriber mockSubscriber = new MockSubscriber();
 
     Runnable runnable = () -> {
@@ -244,9 +239,6 @@ public class PubSubTest {
 
   @Test
   public void testPatternAndRegularSubscribe() {
-    Jedis subscriber = new Jedis("localhost", port);
-    Jedis publisher = new Jedis("localhost", port);
-
     MockSubscriber mockSubscriber = new MockSubscriber();
 
     Runnable runnable = () -> {
@@ -276,9 +268,6 @@ public class PubSubTest {
 
   @Test
   public void testPatternWithoutAGlob() {
-    Jedis subscriber = new Jedis("localhost", port);
-    Jedis publisher = new Jedis("localhost", port);
-
     MockSubscriber mockSubscriber = new MockSubscriber();
 
     Runnable runnable = () -> {
