@@ -33,7 +33,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.exceptions.JedisConnectionException;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.GemFireCache;
@@ -193,11 +192,7 @@ public class PubSubTest {
     MockSubscriber mockSubscriber = new MockSubscriber();
 
     Runnable runnable = () -> {
-      // this will throw an exception when the socket is closed later in this test
-      try {
-        deadSubscriber.subscribe(mockSubscriber, "salutations");
-      } catch (JedisConnectionException e) {
-      }
+      deadSubscriber.subscribe(mockSubscriber, "salutations");
     };
 
     Thread subscriberThread = new Thread(runnable);
@@ -296,6 +291,8 @@ public class PubSubTest {
   }
 
   private void waitFor(Callable<Boolean> booleanCallable) {
-    await().atMost(1, TimeUnit.SECONDS).until(booleanCallable);
+    await().atMost(1, TimeUnit.SECONDS)
+        .ignoreExceptions() // ignoring socket closed exceptions
+        .until(booleanCallable);
   }
 }
