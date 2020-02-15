@@ -1287,12 +1287,12 @@ public class DistributionAdvisor {
     // must synchronize when modifying profile array
 
     // don't add more than once, but replace existing profile
-    profilesVersion++;
     int index = indexOfMemberId(p.getId());
     if (index >= 0) {
       Profile[] oldProfiles = profiles; // volatile read
       oldProfiles[index] = p;
       profiles = oldProfiles; // volatile write
+      profilesVersion++;
       return false;
     }
 
@@ -1302,6 +1302,7 @@ public class DistributionAdvisor {
     Objects.requireNonNull(newProfiles);
 
     profiles = newProfiles; // volatile write
+    profilesVersion++;
     setNumActiveProfiles(newProfiles.length);
 
     return true;
@@ -1313,11 +1314,8 @@ public class DistributionAdvisor {
   private synchronized Profile basicRemoveMemberId(ProfileId id) {
     // must synchronize when modifying profile array
 
-
-
     int i = indexOfMemberId(id);
     if (i >= 0) {
-      profilesVersion++;
       Profile profileRemoved = profiles[i];
       basicRemoveIndex(i);
       return profileRemoved;
@@ -1350,6 +1348,7 @@ public class DistributionAdvisor {
     System.arraycopy(oldProfiles, 0, newProfiles, 0, index);
     System.arraycopy(oldProfiles, index + 1, newProfiles, index, newProfiles.length - index);
     profiles = newProfiles; // volatile write
+    profilesVersion++;
     if (numActiveProfiles > 0) {
       numActiveProfiles--;
     }
