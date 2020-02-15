@@ -74,7 +74,6 @@ publishing {
                geodeDependency*.appendNode('groupId')*.setValue(p.group)
                geodeDependency*.appendNode('artifactId')*.setValue(p.name)
                geodeDependency*.appendNode('version')*.setValue(p.version.toString())
-               geodeDependency*.appendNode('scope')*.setValue('compile')
             }
           }
           thisNode

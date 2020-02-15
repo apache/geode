@@ -132,7 +132,7 @@ repositories {
   ivy {
     url 'https://archive.apache.org/'
     patternLayout {
-      artifact '/dist/tomcat/tomcat-6/v6.0.37/bin/[organisation]-[module]-[revision].[ext]'
+      artifact "/dist/tomcat/tomcat-6/v${DependencyConstraints.get('tomcat6.version')}/bin/[organisation]-[module]-[revision].[ext]"
     }
   }
   // For gradle tooling dependencies
@@ -152,7 +152,7 @@ sourceSets {
   }
 }
 
-task downloadWebServers(type:Copy) {
+tasks.register('downloadWebServers', Copy) {
   from {configurations.findAll {it.name.startsWith("webServer")}}
   into webServersDir
 }
@@ -295,7 +295,7 @@ dependencies {
   upgradeTestRuntime(project(':extensions:session-testing-war'))
   upgradeTestRuntime('org.codehaus.cargo:cargo-core-uberjar')
   upgradeTestRuntime('org.apache.httpcomponents:httpclient')
-  upgradeTestRuntime files({ downloadWebServers } )
+  upgradeTestRuntime(files({ downloadWebServers } ))
 
   //Web servers used for session module testing
   webServerTomcat6('apache:tomcat:' + DependencyConstraints.get('tomcat6.version') + '@zip')

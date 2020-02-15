@@ -22,10 +22,7 @@ apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 
 dependencies {
   compile(platform(project(':boms:geode-all-bom')))
-  gradleLint.ignore {
-    // See GEODE-6128 -- ignore xml-apis in linter to avoid changes with every run.
-    upgradeTestCompile('xml-apis:xml-apis:2.0.2')
-  }
+  upgradeTestCompile('xml-apis:xml-apis:2.0.2')
   implementation(project(':geode-logging'))
   implementation(project(':geode-membership'))
   implementation(project(':geode-serialization'))

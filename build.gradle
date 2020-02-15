@@ -15,24 +15,35 @@
  * limitations under the License.
  */
 
-buildscript {
-  repositories {
-    maven { url "https://plugins.gradle.org/m2/" }
-    maven { url "https://dl.bintray.com/palantir/releases" }
-    jcenter()
-  }
+//buildscript {
+//  repositories {
+//    maven { url "https://plugins.gradle.org/m2/" }
+//    maven { url "https://dl.bintray.com/palantir/releases" }
+//    jcenter()
+//  }
+//
+//  dependencies {
+////    classpath 'com.diffplug.spotless:spotless-plugin-gradle:3.21.1'
+////    classpath 'com.github.ben-manes:gradle-versions-plugin:0.21.0'
+////    classpath 'com.netflix.nebula:gradle-lint-plugin:11.4.4'
+////    classpath 'com.netflix.nebula:nebula-project-plugin:6.0.2'
+////    classpath 'gradle.plugin.com.palantir.gradle.docker:gradle-docker:0.22.1'
+////    classpath 'io.spring.gradle:dependency-management-plugin:1.0.7.RELEASE'
+////    classpath 'org.ajoberstar.grgit:grgit-gradle:3.1.1'
+////    classpath 'org.nosphere.apache:creadur-rat-gradle:0.4.0'
+////    classpath 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.7'
+//  }
+//}
 
-  dependencies {
-    classpath 'com.diffplug.spotless:spotless-plugin-gradle:3.21.1'
-    classpath 'com.github.ben-manes:gradle-versions-plugin:0.21.0'
-    classpath 'com.netflix.nebula:gradle-lint-plugin:11.4.4'
-    classpath 'com.netflix.nebula:nebula-project-plugin:6.0.2'
-    classpath 'gradle.plugin.com.palantir.gradle.docker:gradle-docker:0.22.1'
-    classpath 'io.spring.gradle:dependency-management-plugin:1.0.7.RELEASE'
-    classpath 'org.ajoberstar.grgit:grgit-gradle:3.1.1'
-    classpath 'org.nosphere.apache:creadur-rat-gradle:0.4.0'
-    classpath 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.7'
-  }
+plugins {
+  id "org.nosphere.apache.rat" version "0.6.0"
+  id "com.diffplug.gradle.spotless" version "3.27.1"
+  id "com.github.ben-manes.versions" version "0.27.0"
+  id "nebula.project" version "7.0.7"
+  id "com.palantir.docker" version "0.25.0"
+  id "io.spring.dependency-management" version "1.0.9.RELEASE"
+  id "org.sonarqube" version "2.8"
+  id "org.ajoberstar.grgit" version "4.0.1"
 }
 
 apply plugin: 'wrapper'
@@ -41,7 +52,7 @@ apply plugin: 'java-library'
 apply plugin: 'idea'
 apply plugin: 'eclipse'
 
-apply from: "${scriptDir}/lint.gradle"
+//apply from: "${scriptDir}/lint.gradle"
 apply from: "${scriptDir}/resolve-dependencies.gradle"
 apply from: "${scriptDir}/sonar.gradle"
 apply from: "${scriptDir}/rat.gradle"
