@@ -134,6 +134,9 @@ repositories {
     patternLayout {
       artifact "/dist/tomcat/tomcat-6/v${DependencyConstraints.get('tomcat6.version')}/bin/[organisation]-[module]-[revision].[ext]"
     }
+    metadataSources {
+      artifact()
+    }
   }
   // For gradle tooling dependencies
   maven {
