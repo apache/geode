@@ -38,12 +38,12 @@ import org.apache.geode.management.runtime.OperationResult;
 
 public class OperationHistoryManagerTest {
   private OperationHistoryManager history;
-  private OperationStateDistributionService operationStateDistributionService;
+  private OperationStateStore operationStateStore;
 
   @Before
   public void setUp() throws Exception {
-    operationStateDistributionService = mock(OperationStateDistributionService.class);
-    history = new OperationHistoryManager(2, TimeUnit.HOURS, operationStateDistributionService);
+    operationStateStore = mock(OperationStateStore.class);
+    history = new OperationHistoryManager(2, TimeUnit.HOURS, operationStateStore);
   }
 
   @Test
@@ -55,7 +55,7 @@ public class OperationHistoryManagerTest {
   public void recordStartReturnsExpectedOpId() {
     ClusterManagementOperation<?> op = mock(ClusterManagementOperation.class);
     String expectedOpId = "12345";
-    when(operationStateDistributionService.recordStart(same(op))).thenReturn(expectedOpId);
+    when(operationStateStore.recordStart(same(op))).thenReturn(expectedOpId);
 
     String opId = history.recordStart(op);
     assertThat(opId).isSameAs(expectedOpId);
@@ -66,7 +66,7 @@ public class OperationHistoryManagerTest {
     ClusterManagementOperation<?> op = mock(ClusterManagementOperation.class);
 
     String opId = history.recordStart(op);
-    verify(operationStateDistributionService).recordStart(same(op));
+    verify(operationStateStore).recordStart(same(op));
   }
 
   @Test
@@ -76,7 +76,7 @@ public class OperationHistoryManagerTest {
     Throwable cause = new Throwable();
 
     history.recordEnd(opId, result, cause);
-    verify(operationStateDistributionService).recordEnd(same(opId), same(result), same(cause));
+    verify(operationStateStore).recordEnd(same(opId), same(result), same(cause));
   }
 
   @Test
@@ -89,11 +89,11 @@ public class OperationHistoryManagerTest {
       // Have not called operation end, so operation is still in progress.
       sampleOps.add(operationInstance);
     }
-    doReturn(sampleOps).when(operationStateDistributionService).list();
+    doReturn(sampleOps).when(operationStateStore).list();
 
     history.expireHistory();
 
-    verify(operationStateDistributionService, never()).remove(any());
+    verify(operationStateStore, never()).remove(any());
   }
 
   @Test
@@ -105,11 +105,11 @@ public class OperationHistoryManagerTest {
       sampleOps.get(i).setOperationEnd(new Date(), null, null);
     }
 
-    doReturn(sampleOps).when(operationStateDistributionService).list();
+    doReturn(sampleOps).when(operationStateStore).list();
 
     history.expireHistory();
 
-    verify(operationStateDistributionService, never()).remove(any());
+    verify(operationStateStore, never()).remove(any());
   }
 
   @Test
@@ -123,11 +123,11 @@ public class OperationHistoryManagerTest {
       sampleOps.get(i).setOperationEnd(new Date(twoAndAHalfHoursAgo), null, null);
     }
 
-    doReturn(sampleOps).when(operationStateDistributionService).list();
+    doReturn(sampleOps).when(operationStateStore).list();
 
     history.expireHistory();
 
-    verify(operationStateDistributionService, times(5)).remove(any());
+    verify(operationStateStore, times(5)).remove(any());
   }
 
   @Test
@@ -144,7 +144,7 @@ public class OperationHistoryManagerTest {
       }
     }
 
-    doReturn(sampleOps).when(operationStateDistributionService).list();
+    doReturn(sampleOps).when(operationStateStore).list();
 
     List<OperationState<ClusterManagementOperation<OperationResult>, OperationResult>> opList1 =
         history.list(opType1);
@@ -162,7 +162,7 @@ public class OperationHistoryManagerTest {
     history.list(op);
 
     // once for expireHistory, once directly
-    verify(operationStateDistributionService, times(2)).list();
+    verify(operationStateStore, times(2)).list();
   }
 
   @Test

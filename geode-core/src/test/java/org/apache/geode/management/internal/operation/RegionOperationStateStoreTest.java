@@ -15,7 +15,7 @@
 
 package org.apache.geode.management.internal.operation;
 
-import static org.apache.geode.management.internal.operation.RegionOperationStateDistributionService.OPERATION_STATE_REGION_NAME;
+import static org.apache.geode.management.internal.operation.RegionOperationStateStore.OPERATION_STATE_REGION_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -42,8 +42,8 @@ import org.apache.geode.internal.cache.RegionFactoryImpl;
 import org.apache.geode.management.api.ClusterManagementOperation;
 import org.apache.geode.management.runtime.OperationResult;
 
-public class RegionOperationStateDistributionServiceTest {
-  private RegionOperationStateDistributionService service;
+public class RegionOperationStateStoreTest {
+  private RegionOperationStateStore service;
   private Supplier<String> uniqueIdSupplier;
   private Region<String, OperationState<ClusterManagementOperation<OperationResult>, OperationResult>> region;
   private InternalCache cache;
@@ -53,7 +53,7 @@ public class RegionOperationStateDistributionServiceTest {
     uniqueIdSupplier = mock(Supplier.class);
     when(uniqueIdSupplier.get()).thenReturn("defaultId");
     region = mock(Region.class);
-    service = new RegionOperationStateDistributionService(uniqueIdSupplier, region);
+    service = new RegionOperationStateStore(uniqueIdSupplier, region);
     cache = mock(InternalCache.class);
   }
 
@@ -145,8 +145,8 @@ public class RegionOperationStateDistributionServiceTest {
     Region region = mock(Region.class);
     when(cache.getRegion(OPERATION_STATE_REGION_NAME)).thenReturn(region);
 
-    RegionOperationStateDistributionService result =
-        new RegionOperationStateDistributionService(cache);
+    RegionOperationStateStore result =
+        new RegionOperationStateStore(cache);
 
     assertThat(result.getRegion()).isSameAs(region);
   }
@@ -164,8 +164,8 @@ public class RegionOperationStateDistributionServiceTest {
     Region region = mock(Region.class);
     when(regionFactory.create(OPERATION_STATE_REGION_NAME)).thenReturn(region);
 
-    RegionOperationStateDistributionService result =
-        new RegionOperationStateDistributionService(cache);
+    RegionOperationStateStore result =
+        new RegionOperationStateStore(cache);
 
     assertThat(result.getRegion()).isSameAs(region);
   }

@@ -31,22 +31,27 @@ import org.apache.geode.internal.cache.RegionFactoryImpl;
 import org.apache.geode.management.api.ClusterManagementOperation;
 import org.apache.geode.management.runtime.OperationResult;
 
-public class RegionOperationStateDistributionService
-    implements OperationStateDistributionService {
+/**
+ * This store uses a geode region to implement the storage of operation state.
+ * It is a REPLICATE region so that the storage will be shared on each member
+ * that hosts this region. Currently each locator hosts this region.
+ */
+public class RegionOperationStateStore
+    implements OperationStateStore {
   private final Supplier<String> uniqueIdSupplier;
   private final Region<String, OperationState<ClusterManagementOperation<OperationResult>, OperationResult>> region;
 
-  public static final String OPERATION_STATE_REGION_NAME = "OperationStateRegion";
+  public static final String OPERATION_STATE_REGION_NAME = "__OperationStateRegion";
 
   @VisibleForTesting
-  RegionOperationStateDistributionService(
+  RegionOperationStateStore(
       Supplier<String> uniqueIdSupplier,
       Region<String, OperationState<ClusterManagementOperation<OperationResult>, OperationResult>> region) {
     this.uniqueIdSupplier = uniqueIdSupplier;
     this.region = region;
   }
 
-  public RegionOperationStateDistributionService(InternalCache cache) {
+  public RegionOperationStateStore(InternalCache cache) {
     this(() -> UUID.randomUUID().toString(), getRegion(cache));
   }
 

@@ -34,23 +34,23 @@ import org.apache.geode.management.runtime.OperationResult;
 @Experimental
 public class OperationHistoryManager {
   private final long keepCompletedMillis;
-  private final OperationStateDistributionService operationStateDistributionService;
+  private final OperationStateStore operationStateStore;
 
   /**
    * set a default retention policy to keep results for 2 hours after completion
    */
   public OperationHistoryManager(
-      OperationStateDistributionService operationStateDistributionService) {
-    this(2, TimeUnit.HOURS, operationStateDistributionService);
+      OperationStateStore operationStateStore) {
+    this(2, TimeUnit.HOURS, operationStateStore);
   }
 
   /**
    * set a custom retention policy to keep results for X amount of time after completion
    */
   public OperationHistoryManager(long keepCompleted, TimeUnit timeUnit,
-      OperationStateDistributionService operationStateDistributionService) {
+      OperationStateStore operationStateStore) {
     keepCompletedMillis = timeUnit.toMillis(keepCompleted);
-    this.operationStateDistributionService = operationStateDistributionService;
+    this.operationStateStore = operationStateStore;
   }
 
   /**
@@ -61,19 +61,19 @@ public class OperationHistoryManager {
       String opId) {
     expireHistory();
 
-    return (OperationState<A, V>) operationStateDistributionService.get(opId);
+    return (OperationState<A, V>) operationStateStore.get(opId);
   }
 
   @VisibleForTesting
   void expireHistory() {
     final long expirationTime = now() - keepCompletedMillis;
-    Set<String> expiredKeys = operationStateDistributionService.list()
+    Set<String> expiredKeys = operationStateStore.list()
         .stream()
         .filter(operationInstance -> isExpired(expirationTime, operationInstance))
         .map(OperationState::getId)
         .collect(Collectors.toSet());
 
-    expiredKeys.forEach(operationStateDistributionService::remove);
+    expiredKeys.forEach(operationStateStore::remove);
   }
 
   private long now() {
@@ -96,21 +96,21 @@ public class OperationHistoryManager {
   public String recordStart(ClusterManagementOperation<?> op) {
     expireHistory();
 
-    return operationStateDistributionService.recordStart(op);
+    return operationStateStore.recordStart(op);
   }
 
   /**
    * Stores the result of a previously started operation.
    */
   public void recordEnd(String opId, OperationResult result, Throwable cause) {
-    operationStateDistributionService.recordEnd(opId, result, cause);
+    operationStateStore.recordEnd(opId, result, cause);
   }
 
   <A extends ClusterManagementOperation<V>, V extends OperationResult> List<OperationState<A, V>> list(
       A opType) {
     expireHistory();
 
-    return operationStateDistributionService.list()
+    return operationStateStore.list()
         .stream()
         .filter(instance -> opType.getClass().isAssignableFrom(instance.getOperation().getClass()))
         .map(fi -> (OperationState<A, V>) fi)

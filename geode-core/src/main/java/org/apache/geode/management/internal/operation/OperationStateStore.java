@@ -21,10 +21,14 @@ import org.apache.geode.management.api.ClusterManagementOperation;
 import org.apache.geode.management.runtime.OperationResult;
 
 /**
- * Provides methods for managing the distribution of operation
- * state to other locators on the cluster.
+ * Stores operation state.
+ * The typical life cycle of an operation on this store is:
+ * 1. recordStart: adds the state to this store and sets its start time
+ * 2. recordEnd: updates the state in this store and sets its end time
+ * 3. get/list: to see one or more states in this store
+ * 4. remove: removes a state from this store
  */
-public interface OperationStateDistributionService {
+public interface OperationStateStore {
   /**
    * Records the state of the given in-progress operation.
    *
