@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -154,33 +155,29 @@ public class ClientTypeRegistration implements TypeRegistration {
   }
 
   Collection<Pool> getAllPools() {
-    Collection<Pool> pools = PoolManagerImpl.getPMI().getMap().values();
+    Collection<Pool> pools = getPools();
 
-    for (Iterator<Pool> itr = pools.iterator(); itr.hasNext();) {
-      PoolImpl pool = (PoolImpl) itr.next();
-      if (pool.isUsedByGateway()) {
-        itr.remove();
-      }
-    }
+    Collection<Pool> filteredPools = pools.stream()
+        .filter(pool -> !((PoolImpl)pool).isUsedByGateway())
+        .collect(Collectors.toSet());
 
-    if (pools.isEmpty()) {
+    if (filteredPools.isEmpty()) {
       if (this.cache.isClosed()) {
         throw cache.getCacheClosedException("PDX detected cache was closed");
       }
       throw cache.getCacheClosedException(
           "Client pools have been closed so the PDX type registry is not available.");
     }
-    return pools;
+    return filteredPools;
+  }
+
+  Collection<Pool> getPools() {
+    return PoolManagerImpl.getPMI().getMap().values();
   }
 
   @Override
   public void addRemoteType(int typeId, PdxType type) {
     throw new UnsupportedOperationException("Clients will not be asked to add remote types");
-  }
-
-  @SuppressWarnings("unused")
-  public int getLastAllocatedTypeId() {
-    throw new UnsupportedOperationException("Clients does not keep track of last allocated id");
   }
 
   @Override
@@ -333,6 +330,7 @@ public class ClientTypeRegistration implements TypeRegistration {
 
   @Override
   public PdxType getPdxTypeForField(String fieldName, String className) {
+    //TODO check local maps first
     for (Object value : types().values()) {
       if (value instanceof PdxType) {
         PdxType pdxType = (PdxType) value;
@@ -346,6 +344,7 @@ public class ClientTypeRegistration implements TypeRegistration {
 
   @Override
   public Set<PdxType> getPdxTypesForClassName(String className) {
+    //TODO check local maps first
     Set<PdxType> result = new HashSet<>();
     for (Object value : types().values()) {
       if (value instanceof PdxType) {
