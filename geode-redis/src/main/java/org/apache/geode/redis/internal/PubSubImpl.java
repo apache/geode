@@ -16,15 +16,16 @@
 
 package org.apache.geode.redis.internal;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.redis.internal.org.apache.hadoop.fs.GlobPattern;
 
 /**
  * Concrete class that manages publish and subscribe functionality. Since Redis subscriptions
@@ -34,9 +35,11 @@ import org.apache.geode.cache.execute.ResultCollector;
 public class PubSubImpl implements PubSub {
   public static final String REDIS_PUB_SUB_FUNCTION_ID = "redisPubSubFunctionID";
 
-  private Subscribers subscribers = new Subscribers();
+  private final Subscriptions subscriptions;
 
-  public PubSubImpl() {
+  public PubSubImpl(Subscriptions subscriptions) {
+    this.subscriptions = subscriptions;
+
     registerPublishFunction();
   }
 
@@ -54,12 +57,23 @@ public class PubSubImpl implements PubSub {
 
   @Override
   public long subscribe(String channel, ExecutionHandlerContext context, Client client) {
-    if (subscribers.exists(channel, client)) {
-      return subscribers.findSubscribers(client).size();
+    if (subscriptions.exists(channel, client)) {
+      return subscriptions.findSubscriptions(client).size();
     }
-    Subscriber subscriber = new Subscriber(client, channel, context);
-    subscribers.add(subscriber);
-    return subscribers.findSubscribers(client).size();
+    Subscription subscription = new ChannelSubscription(client, channel, context);
+    subscriptions.add(subscription);
+    return subscriptions.findSubscriptions(client).size();
+  }
+
+  @Override
+  public long psubscribe(GlobPattern pattern, ExecutionHandlerContext context, Client client) {
+    if (subscriptions.exists(pattern, client)) {
+      return subscriptions.findSubscriptions(client).size();
+    }
+    Subscription subscription = new PatternSubscription(client, pattern, context);
+    subscriptions.add(subscription);
+
+    return subscriptions.findSubscriptions(client).size();
   }
 
   private void registerPublishFunction() {
@@ -80,57 +94,36 @@ public class PubSubImpl implements PubSub {
 
   @Override
   public long unsubscribe(String channel, Client client) {
-    this.subscribers.remove(channel, client);
-    return this.subscribers.findSubscribers(client).size();
+    this.subscriptions.remove(channel, client);
+    return this.subscriptions.findSubscriptions(client).size();
   }
 
-  private long publishMessageToSubscribers(String channel, String message) {
-    Map<Boolean, List<Subscriber>> results = this.subscribers
-        .findSubscribers(channel)
+  @Override
+  public long punsubscribe(GlobPattern pattern, Client client) {
+    this.subscriptions.remove(pattern, client);
+    return this.subscriptions.findSubscriptions(client).size();
+  }
+
+  @VisibleForTesting
+  long publishMessageToSubscribers(String channel, String message) {
+
+    Map<Boolean, List<PublishResult>> results = this.subscriptions
+        .findSubscriptions(channel)
         .stream()
-        .collect(
-            Collectors.partitioningBy(subscriber -> subscriber.publishMessage(channel, message)));
+        .map(subscription -> subscription.publishMessage(channel, message))
+        .collect(Collectors.partitioningBy(PublishResult::isSuccessful));
 
     prune(results.get(false));
 
     return results.get(true).size();
   }
 
-  private void prune(List<Subscriber> failedSubscribers) {
-    failedSubscribers.forEach(subscriber -> {
-      if (subscriber.client.isDead()) {
-        subscribers.remove(subscriber.client);
+  private void prune(List<PublishResult> failedSubscriptions) {
+    failedSubscriptions.forEach(publishResult -> {
+      Client client = publishResult.getClient();
+      if (client.isDead()) {
+        subscriptions.remove(client);
       }
     });
-  }
-
-  private class Subscribers {
-    List<Subscriber> subscribers = new ArrayList<>();
-
-    private boolean exists(String channel, Client client) {
-      return subscribers.stream().anyMatch(subscriber -> subscriber.isEqualTo(channel, client));
-    }
-
-    private List<Subscriber> findSubscribers(Client client) {
-      return subscribers.stream().filter(subscriber -> subscriber.client.equals(client))
-          .collect(Collectors.toList());
-    }
-
-    private List<Subscriber> findSubscribers(String channel) {
-      return subscribers.stream().filter(subscriber -> subscriber.channel.equals(channel))
-          .collect(Collectors.toList());
-    }
-
-    public void add(Subscriber subscriber) {
-      this.subscribers.add(subscriber);
-    }
-
-    public void remove(String channel, Client client) {
-      this.subscribers.removeIf(subscriber -> subscriber.isEqualTo(channel, client));
-    }
-
-    public void remove(Client client) {
-      this.subscribers.removeIf(subscriber -> subscriber.client.equals(client));
-    }
   }
 }
