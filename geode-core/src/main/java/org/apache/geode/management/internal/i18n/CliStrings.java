@@ -1660,7 +1660,7 @@ public class CliStrings {
   public static final String LIST_GATEWAY__SHOW_RECEIVERS_ONLY__HELP =
       "Display gateway receivers only.";
   public static final String LIST_GATEWAY__ERROR_ON_SHOW_PARAMETERS =
-      "Options --senders and --receivers cannot be used together.";
+      "Options --senders-only and --receivers-only cannot be used together.";
   public static final String LIST_GATEWAY__HELP =
       "Display the Gateway Senders and Receivers for a member or members.";
   public static final String LIST_GATEWAY__GROUP__HELP =
