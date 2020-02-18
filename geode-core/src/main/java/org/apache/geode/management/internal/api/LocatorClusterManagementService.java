@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -458,6 +459,12 @@ public class LocatorClusterManagementService implements ClusterManagementService
       result.setLinks(new Links(opId, operationState.getOperation().getEndpoint()));
     }
     return result;
+  }
+
+  @Override
+  public <A extends ClusterManagementOperation<V>, V extends OperationResult> CompletableFuture<ClusterManagementOperationResult<A, V>> getFuture(
+      A opType, String opId) {
+    throw new IllegalStateException("This should never be called on locator");
   }
 
   private <T extends ClusterManagementResult> T assertSuccessful(T result) {

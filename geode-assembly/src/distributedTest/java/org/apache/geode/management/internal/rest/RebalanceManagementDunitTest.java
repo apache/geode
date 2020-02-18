@@ -83,7 +83,7 @@ public class RebalanceManagementDunitTest {
   }
 
   @Test
-  public void rebalance() {
+  public void rebalance() throws Exception {
     ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> startResult =
         client1.start(new RebalanceOperation());
     assertThat(startResult.isSuccessful()).isTrue();
@@ -91,7 +91,7 @@ public class RebalanceManagementDunitTest {
     assertThat(startResult.getOperationStart().getTime()).isBetween(now - 60000, now);
 
     ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> endResult =
-        waitForStartToEnd(client1, startResult.getOperationId());
+        client1.getFuture(new RebalanceOperation(), startResult.getOperationId()).get();
     long end = endResult.getOperationEnd().getTime();
     now = System.currentTimeMillis();
     assertThat(end).isBetween(now - 60000, now)
@@ -112,7 +112,7 @@ public class RebalanceManagementDunitTest {
   }
 
   @Test
-  public void rebalanceExistRegion() {
+  public void rebalanceExistRegion() throws Exception {
     List<String> includeRegions = new ArrayList<>();
     includeRegions.add("customers2");
     RebalanceOperation op = new RebalanceOperation();
@@ -121,7 +121,8 @@ public class RebalanceManagementDunitTest {
     ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> cmr = client1.start(op);
     assertThat(cmr.isSuccessful()).isTrue();
 
-    RebalanceResult result = waitForStartToEnd(client1, cmr.getOperationId()).getOperationResult();
+    RebalanceResult result = client1.getFuture(new RebalanceOperation(), cmr.getOperationId()).get()
+        .getOperationResult();
     assertThat(result.getRebalanceRegionResults().size()).isEqualTo(1);
     RebalanceRegionResult firstRegionSummary = result.getRebalanceRegionResults().get(0);
     assertThat(firstRegionSummary.getRegionName()).isEqualTo("customers2");
@@ -189,7 +190,7 @@ public class RebalanceManagementDunitTest {
   }
 
   @Test
-  public void rebalanceOneExistingOneNonExistingRegion() {
+  public void rebalanceOneExistingOneNonExistingRegion() throws Exception {
     IgnoredException.addIgnoredException(ExecutionException.class);
     IgnoredException.addIgnoredException(RuntimeException.class);
     RebalanceOperation op = new RebalanceOperation();
@@ -197,7 +198,8 @@ public class RebalanceManagementDunitTest {
     ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> cmr = client1.start(op);
     assertThat(cmr.isSuccessful()).isTrue();
 
-    RebalanceResult result = waitForStartToEnd(client1, cmr.getOperationId()).getOperationResult();
+    RebalanceResult result = client1.getFuture(new RebalanceOperation(), cmr.getOperationId()).get()
+        .getOperationResult();
     assertThat(result.getRebalanceRegionResults().size()).isEqualTo(1);
     RebalanceRegionResult firstRegionSummary = result.getRebalanceRegionResults().get(0);
     assertThat(firstRegionSummary.getRegionName()).isEqualTo("customers1");

@@ -38,7 +38,7 @@ public class ClusterManagementOperationResult<A extends ClusterManagementOperati
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
   private Date operationStart;
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
-  private Date operationEnd;
+  private volatile Date operationEnd;
   private String operationId;
   private A operation;
   private V operationResult;

@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowable;
@@ -24,6 +25,9 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.util.Date;
+import java.util.concurrent.CompletableFuture;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.junit.Before;
@@ -146,6 +150,43 @@ public class ClientClusterManagementServiceTest {
 
     assertThat(operationResult).isSameAs(successOperationResult);
     verify(serviceTransport).submitMessageForGetOperation(same(opType), same(opId));
+  }
+
+  @Test
+  public void getOperationCallsSubmitMessageAndReturnsFuture() {
+    String opId = "opId";
+    RebalanceOperation opType = new RebalanceOperation();
+    doReturn(successOperationResult).when(serviceTransport)
+        .submitMessageForGetOperation(same(opType), same(opId));
+
+    CompletableFuture<ClusterManagementOperationResult<RebalanceOperation, RebalanceResult>> future =
+        service.getFuture(opType, opId);
+
+    await().untilAsserted(
+        () -> verify(serviceTransport).submitMessageForGetOperation(same(opType), same(opId)));
+    assertThat(future.isDone()).isFalse();
+
+    future.cancel(true);
+  }
+
+  @Test
+  public void getOperationCallsSubmitMessageAndReturnsFutureThatCompletes() throws Exception {
+    String opId = "opId";
+    RebalanceOperation opType = new RebalanceOperation();
+    doReturn(successOperationResult).when(serviceTransport)
+        .submitMessageForGetOperation(same(opType), same(opId));
+
+    CompletableFuture<ClusterManagementOperationResult<RebalanceOperation, RebalanceResult>> future =
+        service.getFuture(opType, opId);
+
+    await().untilAsserted(
+        () -> verify(serviceTransport).submitMessageForGetOperation(same(opType), same(opId)));
+    assertThat(future.isDone()).isFalse();
+
+    when(successOperationResult.getOperationEnd()).thenReturn(new Date());
+    await().untilAsserted(future::isDone);
+
+    assertThat(future.get()).isSameAs(successOperationResult);
   }
 
   @Test

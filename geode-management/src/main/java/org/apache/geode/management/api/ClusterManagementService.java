@@ -110,6 +110,20 @@ public interface ClusterManagementService extends AutoCloseable {
   <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<A, V> get(
       A opType, String opId);
 
+
+  /**
+   * Returns a {@link CompletableFuture} that provides a synchronous way to get the result of a
+   * completed operation.
+   *
+   * @param <A> the operation type (a subclass of {@link ClusterManagementOperation}
+   * @param <V> the return type of the operation
+   * @param opType the type of the operation to get
+   * @param opId the operationId of a previously started operation
+   * @return the status of the identified operation
+   */
+  <A extends ClusterManagementOperation<V>, V extends OperationResult> CompletableFuture<ClusterManagementOperationResult<A, V>> getFuture(
+      A opType, String opId);
+
   /**
    * This method will list the status of all asynchronous cluster management operations in progress
    * or recently completed.

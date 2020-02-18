@@ -15,6 +15,9 @@
 
 package org.apache.geode.management.internal;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.apache.commons.lang3.NotImplementedException;
 
 import org.apache.geode.management.api.ClusterManagementException;
@@ -110,6 +113,28 @@ public class ClientClusterManagementService implements ClusterManagementService 
         transport.submitMessageForGetOperation(opType, opId);
     assertSuccessful(result);
     return result;
+  }
+
+  @Override
+  public <A extends ClusterManagementOperation<V>, V extends OperationResult> CompletableFuture<ClusterManagementOperationResult<A, V>> getFuture(
+      A opType, String opId) {
+    AtomicReference<CompletableFuture<ClusterManagementOperationResult<A, V>>> futureAtomicReference =
+        new AtomicReference<>();
+    futureAtomicReference.set(CompletableFuture.supplyAsync(() -> {
+      while (futureAtomicReference.get() == null || !futureAtomicReference.get().isCancelled()) {
+        ClusterManagementOperationResult<A, V> result = this.get(opType, opId);
+        if (result.getOperationEnd() != null) {
+          return result;
+        }
+        try {
+          Thread.sleep(1000L);
+        } catch (InterruptedException e) {
+          throw new ClusterManagementException(result, e);
+        }
+      }
+      return null;
+    }));
+    return futureAtomicReference.get();
   }
 
   @Override
