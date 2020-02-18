@@ -16,6 +16,8 @@
 
 package org.apache.geode.redis.internal;
 
+import org.apache.geode.redis.internal.org.apache.hadoop.fs.GlobPattern;
+
 /**
  * Interface that represents the ability to Publish, Subscribe and Unsubscribe from channels.
  */
@@ -41,6 +43,16 @@ public interface PubSub {
   long subscribe(String channel, ExecutionHandlerContext context, Client client);
 
   /**
+   * Subscribe to a pattern
+   *
+   * @param pattern glob pattern to subscribe to
+   * @param context ExecutionHandlerContext which will handle the client response
+   * @param client a Client instance making the request
+   * @return the number of channels subscribed to
+   */
+  long psubscribe(GlobPattern pattern, ExecutionHandlerContext context, Client client);
+
+  /**
    * Unsubscribe a client from a channel
    *
    * @param channel the channel to unsubscribe from
@@ -48,4 +60,13 @@ public interface PubSub {
    * @return the number of channels still subscribed to by the client
    */
   long unsubscribe(String channel, Client client);
+
+  /**
+   * Unsubscribe from a previously subscribed pattern
+   *
+   * @param pattern the channel to unsubscribe from
+   * @param client the Client which is to be unsubscribed
+   * @return the number of channels still subscribed to by the client
+   */
+  long punsubscribe(GlobPattern pattern, Client client);
 }
