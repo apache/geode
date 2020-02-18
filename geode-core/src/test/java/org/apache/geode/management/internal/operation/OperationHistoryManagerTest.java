@@ -25,10 +25,10 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -43,7 +43,7 @@ public class OperationHistoryManagerTest {
   @Before
   public void setUp() throws Exception {
     operationStateStore = mock(OperationStateStore.class);
-    history = new OperationHistoryManager(2, TimeUnit.HOURS, operationStateStore);
+    history = new OperationHistoryManager(Duration.ofHours(2), operationStateStore);
   }
 
   @Test
@@ -115,7 +115,7 @@ public class OperationHistoryManagerTest {
   @Test
   public void expireHistoryRemovesExpiredCompletedOperations() {
     long now = System.currentTimeMillis();
-    long twoAndAHalfHoursAgo = new Double(now - (3600 * 2.5 * 1000)).longValue();
+    long twoAndAHalfHoursAgo = now - Duration.ofHours(2).plusMinutes(30).toMillis();
 
     List<OperationState<?, ?>> sampleOps = new ArrayList<>();
     for (int i = 0; i < 5; i++) {
