@@ -18,13 +18,14 @@ package org.apache.geode.redis;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.AfterClass;
@@ -41,10 +42,11 @@ import org.apache.geode.test.junit.categories.RedisTest;
 
 @Category({RedisTest.class})
 public class PubSubTest {
-  private static Jedis jedis;
   private static GeodeRedisServer server;
   private static GemFireCache cache;
   private static Random rand;
+  private static Jedis publisher;
+  private static Jedis subscriber;
   private static int port = 6379;
 
   @BeforeClass
@@ -57,26 +59,25 @@ public class PubSubTest {
     cache = cf.create();
     port = AvailablePortHelper.getRandomAvailableTCPPort();
     server = new GeodeRedisServer("localhost", port);
+    subscriber = new Jedis("localhost", port);
+    publisher = new Jedis("localhost", port);
 
     server.start();
-    jedis = new Jedis("localhost", port, 10000000);
   }
 
   @AfterClass
   public static void tearDown() {
-    jedis.close();
+    subscriber.close();
+    publisher.close();
     cache.close();
     server.shutdown();
   }
 
   @Test
-  public void testOneSubscriberOneChannel() throws InterruptedException {
-    Jedis subscriber = new Jedis("localhost", port);
-    Jedis publisher = new Jedis("localhost", port);
+  public void testOneSubscriberOneChannel() {
     List<String> expectedMessages = Arrays.asList("hello");
 
-    CountDownLatch latch = new CountDownLatch(1);
-    MockSubscriber mockSubscriber = new MockSubscriber(latch);
+    MockSubscriber mockSubscriber = new MockSubscriber();
 
     Runnable runnable = () -> {
       subscriber.subscribe(mockSubscriber, "salutations");
@@ -84,41 +85,29 @@ public class PubSubTest {
 
     Thread subscriberThread = new Thread(runnable);
     subscriberThread.start();
-
-    assertThat(latch.await(2, TimeUnit.SECONDS))
-        .as("channel subscriptions were not received")
-        .isTrue();
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
 
     Long result = publisher.publish("salutations", "hello");
     assertThat(result).isEqualTo(1);
 
     mockSubscriber.unsubscribe("salutations");
-
-    subscriberThread.join(2000);
-
-    assertThat(subscriberThread.isAlive())
-        .as("subscriber thread should not be alive")
-        .isFalse();
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 0);
+    waitFor(() -> !subscriberThread.isAlive());
 
     assertThat(mockSubscriber.getReceivedMessages()).isEqualTo(expectedMessages);
   }
 
   @Test
-  public void testOneSubscriberSubscribingToTwoChannels() throws Exception {
-    Jedis subscriber = new Jedis("localhost", port);
-    Jedis publisher = new Jedis("localhost", port);
+  public void testOneSubscriberSubscribingToTwoChannels() {
     List<String> expectedMessages = Arrays.asList("hello", "howdy");
-    CountDownLatch latch = new CountDownLatch(2);
-    MockSubscriber mockSubscriber = new MockSubscriber(latch);
+    MockSubscriber mockSubscriber = new MockSubscriber();
 
     Runnable runnable = () -> subscriber.subscribe(mockSubscriber, "salutations", "yuletide");
 
     Thread subscriberThread = new Thread(runnable);
     subscriberThread.start();
 
-    assertThat(latch.await(2, TimeUnit.SECONDS))
-        .as("channel subscriptions were not received")
-        .isTrue();
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 2);
 
     Long result = publisher.publish("salutations", "hello");
     assertThat(result).isEqualTo(1);
@@ -126,28 +115,21 @@ public class PubSubTest {
     result = publisher.publish("yuletide", "howdy");
     assertThat(result).isEqualTo(1);
     mockSubscriber.unsubscribe("salutations");
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
     mockSubscriber.unsubscribe("yuletide");
-
-    subscriberThread.join(2000);
-
-    assertThat(subscriberThread.isAlive())
-        .as("subscriber thread should not be alive")
-        .isFalse();
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 0);
+    waitFor(() -> !subscriberThread.isAlive());
 
     assertThat(mockSubscriber.getReceivedMessages()).isEqualTo(expectedMessages);
   }
 
   @Test
-  public void testTwoSubscribersOneChannel() throws Exception {
-    Jedis subscriber1 = new Jedis("localhost", port);
+  public void testTwoSubscribersOneChannel() {
     Jedis subscriber2 = new Jedis("localhost", port);
-    Jedis publisher = new Jedis("localhost", port);
-    CountDownLatch latch = new CountDownLatch(2);
-    MockSubscriber mockSubscriber1 = new MockSubscriber(latch);
-    MockSubscriber mockSubscriber2 = new MockSubscriber(latch);
+    MockSubscriber mockSubscriber1 = new MockSubscriber();
+    MockSubscriber mockSubscriber2 = new MockSubscriber();
 
-    Runnable runnable1 = () -> subscriber1.subscribe(mockSubscriber1, "salutations");
-
+    Runnable runnable1 = () -> subscriber.subscribe(mockSubscriber1, "salutations");
     Runnable runnable2 = () -> subscriber2.subscribe(mockSubscriber2, "salutations");
 
     Thread subscriber1Thread = new Thread(runnable1);
@@ -155,78 +137,104 @@ public class PubSubTest {
     Thread subscriber2Thread = new Thread(runnable2);
     subscriber2Thread.start();
 
-    assertThat(latch.await(2, TimeUnit.SECONDS))
-        .as("channel subscriptions were not received")
-        .isTrue();
+    waitFor(() -> mockSubscriber1.getSubscribedChannels() == 1);
+    waitFor(() -> mockSubscriber2.getSubscribedChannels() == 1);
 
     Long result = publisher.publish("salutations", "hello");
     assertThat(result).isEqualTo(2);
     mockSubscriber1.unsubscribe("salutations");
-
-    subscriber1Thread.join(2000);
-
-    assertThat(subscriber1Thread.isAlive())
-        .as("subscriber1 thread should not be alive")
-        .isFalse();
+    waitFor(() -> mockSubscriber1.getSubscribedChannels() == 0);
+    waitFor(() -> !subscriber1Thread.isAlive());
 
     result = publisher.publish("salutations", "goodbye");
     assertThat(result).isEqualTo(1);
     mockSubscriber2.unsubscribe("salutations");
-
-    subscriber2Thread.join(2000);
-    assertThat(subscriber2Thread.isAlive())
-        .as("subscriber2 thread should not be alive")
-        .isFalse();
+    waitFor(() -> mockSubscriber2.getSubscribedChannels() == 0);
+    waitFor(() -> !subscriber2Thread.isAlive());
 
     assertThat(mockSubscriber1.getReceivedMessages()).isEqualTo(Collections.singletonList("hello"));
     assertThat(mockSubscriber2.getReceivedMessages()).isEqualTo(Arrays.asList("hello", "goodbye"));
+
+    subscriber2.close();
   }
 
   @Test
-  public void testPublishToNonexistentChannel() throws Exception {
-    Jedis publisher = new Jedis("localhost", port);
+  public void testPublishToNonexistentChannel() {
     Long result = publisher.publish("thisChannelDoesn'tExist", "hello");
     assertThat(result).isEqualTo(0);
   }
 
   @Test
-  public void testOneSubscriberOneChannelTwoTimes() throws Exception {
-    Jedis subscriber = new Jedis("localhost", port);
-    Jedis publisher = new Jedis("localhost", port);
-    CountDownLatch latch = new CountDownLatch(2);
-    MockSubscriber mockSubscriber = new MockSubscriber(latch);
+  public void testOneSubscriberOneChannelTwoTimes() {
+    MockSubscriber mockSubscriber = new MockSubscriber();
 
     Runnable runnable1 = () -> subscriber.subscribe(mockSubscriber, "salutations", "salutations");
 
     Thread subscriberThread = new Thread(runnable1);
     subscriberThread.start();
 
-    assertThat(latch.await(2, TimeUnit.SECONDS))
-        .as("channel subscriptions were not received")
-        .isTrue();
-    assertThat(mockSubscriber.getSubscribedChannels()).isEqualTo(1);
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
 
     Long result = publisher.publish("salutations", "hello");
     assertThat(result).isEqualTo(1);
 
     mockSubscriber.unsubscribe("salutations");
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 0);
 
-    subscriberThread.join(2000);
-
-    assertThat(subscriberThread.isAlive())
-        .as("subscriber1 thread should not be alive")
-        .isFalse();
-
+    waitFor(() -> !subscriberThread.isAlive());
     assertThat(mockSubscriber.getReceivedMessages()).isEqualTo(Collections.singletonList("hello"));
   }
 
   @Test
-  public void testDeadSubscriber() throws InterruptedException {
-    Jedis subscriber = new Jedis("localhost", port);
-    Jedis publisher = new Jedis("localhost", port);
+  public void testDeadSubscriber() {
+    Jedis deadSubscriber = new Jedis("localhost", port);
 
-    CountDownLatch latch = new CountDownLatch(1);
-    MockSubscriber mockSubscriber = new MockSubscriber(latch);
+    MockSubscriber mockSubscriber = new MockSubscriber();
+
+    Runnable runnable = () -> {
+      deadSubscriber.subscribe(mockSubscriber, "salutations");
+    };
+
+    Thread subscriberThread = new Thread(runnable);
+    subscriberThread.start();
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
+
+    deadSubscriber.close();
+
+    waitFor(() -> !deadSubscriber.isConnected());
+    Long result = publisher.publish("salutations", "hello");
+
+    assertThat(result).isEqualTo(0);
+    assertThat(mockSubscriber.getReceivedMessages()).isEmpty();
+  }
+
+  @Test
+  public void testPatternSubscribe() {
+    MockSubscriber mockSubscriber = new MockSubscriber();
+
+    Runnable runnable = () -> {
+      subscriber.psubscribe(mockSubscriber, "sal*s");
+    };
+
+    Thread subscriberThread = new Thread(runnable);
+    subscriberThread.start();
+
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
+
+    Long result = publisher.publish("salutations", "hello");
+    assertThat(result).isEqualTo(1);
+
+    assertThat(mockSubscriber.getReceivedMessages()).hasSize(1);
+    assertThat(mockSubscriber.getReceivedMessages()).contains("hello");
+
+    mockSubscriber.punsubscribe("sal*s");
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 0);
+    waitFor(() -> !subscriberThread.isAlive());
+  }
+
+  @Test
+  public void testPatternAndRegularSubscribe() {
+    MockSubscriber mockSubscriber = new MockSubscriber();
 
     Runnable runnable = () -> {
       subscriber.subscribe(mockSubscriber, "salutations");
@@ -234,21 +242,57 @@ public class PubSubTest {
 
     Thread subscriberThread = new Thread(runnable);
     subscriberThread.start();
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
 
-    assertThat(latch.await(2, TimeUnit.SECONDS))
-        .as("channel subscriptions were not received")
-        .isTrue();
-
-    subscriber.close();
-    subscriberThread.join(2000);
-
-    assertThat(subscriberThread.isAlive())
-        .as("subscriber thread should not be alive")
-        .isFalse();
+    mockSubscriber.psubscribe("sal*s");
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 2);
 
     Long result = publisher.publish("salutations", "hello");
-    assertThat(result).isEqualTo(0);
+    assertThat(result).isEqualTo(2);
 
-    assertThat(mockSubscriber.getReceivedMessages()).isEmpty();
+    mockSubscriber.punsubscribe("sal*s");
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
+
+    mockSubscriber.unsubscribe("salutations");
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 0);
+
+    waitFor(() -> !subscriberThread.isAlive());
+
+    assertThat(mockSubscriber.getReceivedMessages()).containsExactly("hello", "hello");
+  }
+
+  @Test
+  public void testPatternWithoutAGlob() {
+    MockSubscriber mockSubscriber = new MockSubscriber();
+
+    Runnable runnable = () -> {
+      subscriber.subscribe(mockSubscriber, "salutations");
+    };
+
+    Thread subscriberThread = new Thread(runnable);
+    subscriberThread.start();
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
+
+    mockSubscriber.psubscribe("salutations");
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 2);
+
+    Long result = publisher.publish("salutations", "hello");
+    assertThat(result).isEqualTo(2);
+
+    mockSubscriber.punsubscribe("salutations");
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
+
+    mockSubscriber.unsubscribe("salutations");
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 0);
+
+    waitFor(() -> !subscriberThread.isAlive());
+
+    assertThat(mockSubscriber.getReceivedMessages()).containsExactly("hello", "hello");
+  }
+
+  private void waitFor(Callable<Boolean> booleanCallable) {
+    await().atMost(1, TimeUnit.SECONDS)
+        .ignoreExceptions() // ignoring socket closed exceptions
+        .until(booleanCallable);
   }
 }

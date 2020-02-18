@@ -18,29 +18,23 @@ package org.apache.geode.redis.mocks;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 
 import redis.clients.jedis.JedisPubSub;
 
 public class MockSubscriber extends JedisPubSub {
-  private CountDownLatch latch;
-  private List<String> receivedMessages = new ArrayList<String>();
-
-  public MockSubscriber(CountDownLatch latch) {
-    this.latch = latch;
-  }
+  private List<String> receivedMessages = new ArrayList<>();
 
   public List<String> getReceivedMessages() {
     return receivedMessages;
   }
 
   @Override
-  public void onSubscribe(String channel, int subscribedChannels) {
-    latch.countDown();
+  public void onMessage(String channel, String message) {
+    receivedMessages.add(message);
   }
 
   @Override
-  public void onMessage(String channel, String message) {
+  public void onPMessage(String pattern, String channel, String message) {
     receivedMessages.add(message);
   }
 }

@@ -75,6 +75,7 @@ import org.apache.geode.redis.internal.PubSub;
 import org.apache.geode.redis.internal.PubSubImpl;
 import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.RegionProvider;
+import org.apache.geode.redis.internal.Subscriptions;
 
 /**
  * The GeodeRedisServer is a server that understands the Redis protocol. As commands are sent to the
@@ -450,7 +451,7 @@ public class GeodeRedisServer {
         throw assErr;
       }
       this.keyRegistrar = new KeyRegistrar(redisMetaData);
-      this.pubSub = new PubSubImpl();
+      this.pubSub = new PubSubImpl(new Subscriptions());
       this.regionCache = new RegionProvider(stringsRegion, hLLRegion, this.keyRegistrar,
           expirationFutures, expirationExecutor, this.DEFAULT_REGION_TYPE);
       redisMetaData.put(REDIS_META_DATA_REGION, RedisDataType.REDIS_PROTECTED);

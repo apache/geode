@@ -11,39 +11,35 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
+ *
  */
 
 package org.apache.geode.redis.internal;
 
-import java.util.Objects;
+/**
+ * This class represents a single channel subscription as created by the SUBSCRIBE command
+ */
+class ChannelSubscription extends AbstractSubscription {
+  private String channel;
 
-import io.netty.channel.Channel;
+  public ChannelSubscription(Client client, String channel, ExecutionHandlerContext context) {
+    super(client, context);
 
-public class Client {
-  private Channel channel;
-
-  public Client(Channel remoteAddress) {
-    this.channel = remoteAddress;
+    if (channel == null) {
+      throw new IllegalArgumentException("channel cannot be null");
+    }
+    this.channel = channel;
   }
 
   @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    Client client = (Client) o;
-    return Objects.equals(channel, client.channel);
+  public boolean isEqualTo(Object channelOrPattern, Client client) {
+    return this.channel != null && this.channel.equals(channelOrPattern)
+        && this.getClient().equals(client);
   }
 
   @Override
-  public int hashCode() {
-    return Objects.hash(channel);
+  public boolean matches(String channel) {
+    return this.channel.equals(channel);
   }
 
-  public boolean isDead() {
-    return !this.channel.isOpen();
-  }
 }
