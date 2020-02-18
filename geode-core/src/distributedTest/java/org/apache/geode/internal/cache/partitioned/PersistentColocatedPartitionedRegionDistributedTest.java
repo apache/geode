@@ -33,10 +33,10 @@ import static org.apache.geode.test.dunit.VM.toArray;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.timeout;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import java.io.File;
@@ -518,7 +518,7 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
    * missing regions are logged in the warning. Verifies that as regions are created they no longer
    * appear in the warning.
    */
-  @Test
+  @Test // GEODE-7513
   public void testMultipleColocatedChildPRsMissingWithSequencedStart() throws Exception {
     int childPRCount = 2;
 
@@ -636,7 +636,7 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
   /**
    * Testing that all missing persistent PRs in a colocation hierarchy are logged as warnings
    */
-  @Test
+  @Test // GEODE-7513
   public void testHierarchyOfColocatedChildPRsMissingGrandchild() throws Exception {
     int childPRGenerationsCount = 3;
 
@@ -1802,7 +1802,7 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
 
       verify(spyLogger.logger(),
           timeout(TIMEOUT_MILLIS)
-              .times(expectedLogMessagesCount))
+              .atLeast(expectedLogMessagesCount))
                   .accept(messageCaptor.capture());
 
       for (String message : messageCaptor.getAllValues()) {
@@ -1837,7 +1837,7 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
 
         verify(spyLogger.logger(),
             timeout(TIMEOUT_MILLIS)
-                .times(expectedCount))
+                .atLeast(expectedCount))
                     .accept(anyString());
 
         // Start the child region
@@ -1846,7 +1846,7 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
       }
 
       verify(spyLogger.logger(),
-          times(expectedLogMessagesCount))
+          atLeast(expectedLogMessagesCount))
               .accept(messageCaptor.capture());
 
       for (String message : messageCaptor.getAllValues()) {
@@ -1878,7 +1878,7 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
 
         verify(spyLogger.logger(),
             timeout(TIMEOUT_MILLIS)
-                .times(expectedCount))
+                .atLeast(expectedCount))
                     .accept(anyString());
 
         // Start the child region
@@ -1891,7 +1891,7 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
       }
 
       verify(spyLogger.logger(),
-          times(expectedLogMessagesCount))
+          atLeast(expectedLogMessagesCount))
               .accept(messageCaptor.capture());
     }
   }
@@ -1912,7 +1912,7 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
 
       verify(spyLogger.logger(),
           timeout(TIMEOUT_MILLIS)
-              .times(expectedLogMessagesCount))
+              .atLeast(expectedLogMessagesCount))
                   .accept(messageCaptor.capture());
 
       for (String message : messageCaptor.getAllValues()) {
