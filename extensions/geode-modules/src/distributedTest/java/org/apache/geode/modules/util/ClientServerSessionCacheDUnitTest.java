@@ -39,7 +39,7 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
-import org.apache.geode.cache.execute.FunctionException;
+import org.apache.geode.cache.client.NoAvailableServersException;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.internal.DistributionManager;
@@ -105,7 +105,7 @@ public class ClientServerSessionCacheDUnitTest implements Serializable {
     final VM client = VM.getVM(2);
 
     assertThatThrownBy(() -> client.invoke(this::startClientSessionCache))
-        .hasCauseInstanceOf(FunctionException.class);
+        .hasCauseInstanceOf(NoAvailableServersException.class);
   }
 
   @Test
