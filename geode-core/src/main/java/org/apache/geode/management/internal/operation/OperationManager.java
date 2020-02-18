@@ -95,8 +95,5 @@ public class OperationManager implements AutoCloseable {
 
   @Override
   public void close() {
-    if (executor instanceof ExecutorService) {
-      ((ExecutorService) executor).shutdownNow();
-    }
   }
 }
