@@ -59,8 +59,8 @@ public class PubSubTest {
     cache = cf.create();
     port = AvailablePortHelper.getRandomAvailableTCPPort();
     server = new GeodeRedisServer("localhost", port);
-    subscriber = new Jedis("localhost", port);
-    publisher = new Jedis("localhost", port);
+    subscriber = new Jedis("localhost", port, 100000);
+    publisher = new Jedis("localhost", port, 100000);
 
     server.start();
   }
