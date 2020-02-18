@@ -346,6 +346,51 @@ public class OpExecutorImpl implements ExecutablePool {
     }
   }
 
+  protected Object executeOn(Endpoint endpoint, Op op, boolean accessed,
+      boolean onlyUseExistingCnx) {
+    boolean returnCnx = true;
+    boolean pingOp = (op instanceof PingOp.PingOpImpl);
+    Connection conn = null;
+    if (pingOp) {
+      // currently for pings we prefer to queue clientToServer cnx so that we will
+      // not create a pooled cnx when all we have is queue cnxs.
+      if (queueManager != null) {
+        // see if our QueueManager has a connection to this server that we can send
+        // the ping on.
+        Endpoint ep = endpointManager.getEndpointMap().get(endpoint.getMemberId());
+        if (ep != null) {
+          QueueConnections qcs = queueManager.getAllConnectionsNoWait();
+          conn = qcs.getConnection(ep);
+          if (conn != null) {
+            // we found one to do the ping on
+            returnCnx = false;
+          }
+        }
+      }
+    }
+    if (conn == null) {
+      conn = connectionManager.borrowConnection(endpoint.getLocation(), onlyUseExistingCnx);
+    }
+    try {
+      return executeWithPossibleReAuthentication(conn, op);
+    } catch (Exception e) {
+      handleException(e, conn, 0, true);
+      // this shouldn't actually be reached, handle exception will throw something
+      throw new ServerConnectivityException("Received error connecting to server", e);
+    } finally {
+      if (serverAffinity.get() && affinityServerLocation.get() == null) {
+        if (logger.isDebugEnabled()) {
+          logger.debug("setting server affinity to {} server:{}", conn.getEndpoint().getMemberId(),
+              conn.getServer());
+        }
+        affinityServerLocation.set(conn.getServer());
+      }
+      if (returnCnx) {
+        connectionManager.returnConnection(conn, accessed);
+      }
+    }
+  }
+
   /*
    * (non-Javadoc)
    *
