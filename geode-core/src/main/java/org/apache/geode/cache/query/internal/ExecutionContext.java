@@ -97,7 +97,7 @@ public class ExecutionContext {
   private Object currentProjectionField = null;
   private boolean isPRQueryNode = false;
 
-  private Optional<ScheduledFuture> cancelationTask;
+  private Optional<ScheduledFuture> cancellationTask;
   private volatile CacheRuntimeException canceledException;
   static final ThreadLocal<AtomicBoolean> isCanceled =
       ThreadLocal.withInitial(AtomicBoolean::new);
@@ -132,17 +132,17 @@ public class ExecutionContext {
   public ExecutionContext(Object[] bindArguments, InternalCache cache) {
     this.cache = cache;
     this.bindArguments = bindArguments;
-    this.cancelationTask = Optional.empty();
+    this.cancellationTask = Optional.empty();
     this.queryConfigurationService = cache.getService(QueryConfigurationService.class);
     this.methodInvocationAuthorizer = queryConfigurationService.getMethodAuthorizer();
   }
 
-  Optional<ScheduledFuture> getCancelationTask() {
-    return cancelationTask;
+  Optional<ScheduledFuture> getCancellationTask() {
+    return cancellationTask;
   }
 
-  void setCancelationTask(final ScheduledFuture cancelationTask) {
-    this.cancelationTask = Optional.of(cancelationTask);
+  void setCancellationTask(final ScheduledFuture cancellationTask) {
+    this.cancellationTask = Optional.of(cancellationTask);
   }
 
   public CachePerfStats getCachePerfStats() {

@@ -48,7 +48,7 @@ public class RemoteApplicationVM extends RemoteGemFireVM implements ApplicationV
 
   @Override
   public boolean equals(Object obj) {
-    if (obj == null || !(obj instanceof RemoteApplicationVM)) {
+    if (!(obj instanceof RemoteApplicationVM)) {
       return false;
     } else {
       RemoteApplicationVM vm = (RemoteApplicationVM) obj;

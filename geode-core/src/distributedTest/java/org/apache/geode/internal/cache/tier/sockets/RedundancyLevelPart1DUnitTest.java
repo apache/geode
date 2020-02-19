@@ -174,14 +174,17 @@ public class RedundancyLevelPart1DUnitTest implements Serializable {
     // of keys was timing out sometimes causing fail over to EP4 causing
     // below assertion to fail
     createClientCache(0, 3000, 100);
-    assertThat(server0).isEqualTo(pool.getPrimaryName());
+
+    await().untilAsserted(() -> assertThat(server0).isEqualTo(pool.getPrimaryName()));
+
     vm0.invoke(this::stopServer);
     verifyConnectedAndRedundantServers(0);
 
-    await().untilAsserted(() -> assertThat(pool.getCurrentServerNames()).doesNotContain(server0));
-
-    assertThat(pool.getPrimaryName()).isNotEqualTo(server0);
-    assertThat(pool.getPrimaryName()).isEqualTo(server1);
+    await().untilAsserted(() -> {
+      assertThat(pool.getCurrentServerNames()).doesNotContain(server0);
+      assertThat(pool.getPrimaryName()).isNotEqualTo(server0);
+      assertThat(pool.getPrimaryName()).isEqualTo(server1);
+    });
   }
 
   /**
@@ -193,11 +196,17 @@ public class RedundancyLevelPart1DUnitTest implements Serializable {
   public void testRedundancySpecifiedNonFailoverEPFails() {
     createClientCache(
         1, DEFAULT_SOCKET_READ_TIMEOUT, DEFAULT_RETRY_INTERVAL);
-    waitConnectedServers();
-    assertThat(pool.getRedundantNames().size()).isEqualTo(1);
-    assertThat(pool.getRedundantNames().contains(server1)).isTrue();
+
+    await().untilAsserted(() -> {
+      assertThat(pool.getConnectedServerCount()).isEqualTo(DEFAULT_CONNECTED_SERVER_COUNT);
+      assertThat(pool.getRedundantNames()).hasSize(1);
+      assertThat(pool.getRedundantNames()).contains(server1);
+    });
+
     vm2.invoke(this::stopServer);
-    verifyRedundantServersContain(server1);
+
+    await().untilAsserted(() -> assertThat(pool.getRedundantNames()).contains(server1));
+
     verifyConnectedAndRedundantServers(1);
   }
 
@@ -209,12 +218,18 @@ public class RedundancyLevelPart1DUnitTest implements Serializable {
   @Test
   public void testRedundancySpecifiedNonFailoverEPFailsDetectionByPut() {
     createClientCache(1, 500, 1000);
-    waitConnectedServers();
-    assertThat(pool.getRedundantNames().size()).isEqualTo(1);
-    assertThat(pool.getRedundantNames().contains(server1)).isTrue();
+
+    await().untilAsserted(() -> {
+      assertThat(pool.getConnectedServerCount()).isEqualTo(DEFAULT_CONNECTED_SERVER_COUNT);
+      assertThat(pool.getRedundantNames()).hasSize(1);
+      assertThat(pool.getRedundantNames()).contains(server1);
+    });
+
     vm2.invoke(this::stopServer);
     doPuts();
-    verifyRedundantServersContain(server1);
+
+    await().untilAsserted(() -> assertThat(pool.getRedundantNames()).contains(server1));
+
     verifyConnectedAndRedundantServers(1);
   }
 
@@ -227,12 +242,18 @@ public class RedundancyLevelPart1DUnitTest implements Serializable {
   public void testRedundancySpecifiedNonPrimaryEPFails() {
     createClientCache(
         1, DEFAULT_SOCKET_READ_TIMEOUT, DEFAULT_RETRY_INTERVAL);
-    waitConnectedServers();
-    assertThat(pool.getRedundantNames().size()).isEqualTo(1);
-    assertThat(server0).isEqualTo(pool.getPrimaryName());
-    assertThat(pool.getRedundantNames().contains(server1)).isTrue();
+
+    await().untilAsserted(() -> {
+      assertThat(pool.getConnectedServerCount()).isEqualTo(DEFAULT_CONNECTED_SERVER_COUNT);
+      assertThat(pool.getRedundantNames().size()).isEqualTo(1);
+      assertThat(pool.getRedundantNames().contains(server1)).isTrue();
+      assertThat(server0).isEqualTo(pool.getPrimaryName());
+    });
+
     vm1.invoke(this::stopServer);
-    verifyRedundantServersContain(server2);
+
+    await().untilAsserted(() -> assertThat(pool.getRedundantNames()).contains(server2));
+
     verifyConnectedAndRedundantServers(1);
     vm2.invoke(this::verifyInterestRegistration);
   }
@@ -246,12 +267,18 @@ public class RedundancyLevelPart1DUnitTest implements Serializable {
   public void testRedundancySpecifiedNonPrimaryEPFailsDetectionByCCU() {
     failOverDetectionByCCU.set(true);
     createClientCache(1, 250, 500);
-    waitConnectedServers();
-    assertThat(pool.getRedundantNames().size()).isEqualTo(1);
-    assertThat(server0).isEqualTo(pool.getPrimaryName());
-    assertThat(pool.getRedundantNames().contains(server1)).isTrue();
+
+    await().untilAsserted(() -> {
+      assertThat(pool.getConnectedServerCount()).isEqualTo(DEFAULT_CONNECTED_SERVER_COUNT);
+      assertThat(pool.getRedundantNames().size()).isEqualTo(1);
+      assertThat(pool.getRedundantNames().contains(server1)).isTrue();
+      assertThat(server0).isEqualTo(pool.getPrimaryName());
+    });
+
     vm1.invoke(this::stopServer);
-    verifyRedundantServersContain(server2);
+
+    await().untilAsserted(() -> assertThat(pool.getRedundantNames()).contains(server2));
+
     verifyConnectedAndRedundantServers(1);
     vm2.invoke(this::verifyInterestRegistration);
   }
@@ -266,14 +293,20 @@ public class RedundancyLevelPart1DUnitTest implements Serializable {
   public void testRedundancySpecifiedNonPrimaryEPFailsDetectionByRegisterInterest() {
 
     createClientCache(1, 250, 500);
-    waitConnectedServers();
-    assertThat(pool.getRedundantNames().size()).isEqualTo(1);
-    assertThat(server0).isEqualTo(pool.getPrimaryName());
-    assertThat(pool.getRedundantNames().contains(server1)).isTrue();
+
+    await().untilAsserted(() -> {
+      assertThat(pool.getConnectedServerCount()).isEqualTo(DEFAULT_CONNECTED_SERVER_COUNT);
+      assertThat(pool.getRedundantNames().size()).isEqualTo(1);
+      assertThat(pool.getRedundantNames().contains(server1)).isTrue();
+      assertThat(server0).isEqualTo(pool.getPrimaryName());
+    });
+
     vm1.invoke(this::stopServer);
     createEntriesK1andK2();
     registerK1AndK2();
-    verifyRedundantServersContain(server2);
+
+    await().untilAsserted(() -> assertThat(pool.getRedundantNames()).contains(server2));
+
     verifyConnectedAndRedundantServers(1);
     vm2.invoke(this::verifyInterestRegistration);
   }
@@ -288,13 +321,19 @@ public class RedundancyLevelPart1DUnitTest implements Serializable {
   public void testRedundancySpecifiedNonPrimaryEPFailsDetectionByUnregisterInterest() {
 
     createClientCache(1, 250, 500);
-    waitConnectedServers();
-    assertThat(pool.getRedundantNames().size()).isEqualTo(1);
-    assertThat(server0).isEqualTo(pool.getPrimaryName());
-    assertThat(pool.getRedundantNames().contains(server1)).isTrue();
+
+    await().untilAsserted(() -> {
+      assertThat(pool.getConnectedServerCount()).isEqualTo(DEFAULT_CONNECTED_SERVER_COUNT);
+      assertThat(pool.getRedundantNames().size()).isEqualTo(1);
+      assertThat(pool.getRedundantNames().contains(server1)).isTrue();
+      assertThat(server0).isEqualTo(pool.getPrimaryName());
+    });
+
     vm1.invoke(this::stopServer);
     unregisterInterest();
-    verifyRedundantServersContain(server2);
+
+    await().untilAsserted(() -> assertThat(pool.getRedundantNames()).contains(server2));
+
     verifyConnectedAndRedundantServers(1);
   }
 
@@ -308,17 +347,19 @@ public class RedundancyLevelPart1DUnitTest implements Serializable {
   public void testRedundancySpecifiedNonPrimaryEPFailsDetectionByPut() {
 
     createClientCache(1, 250, 500);
-    waitConnectedServers();
-    assertThat(pool.getRedundantNames().size()).isEqualTo(1);
-    assertThat(server0).isEqualTo(pool.getPrimaryName());
-    assertThat(pool.getRedundantNames().contains(server1)).isTrue();
+
+    await().untilAsserted(() -> {
+      assertThat(pool.getConnectedServerCount()).isEqualTo(DEFAULT_CONNECTED_SERVER_COUNT);
+      assertThat(pool.getRedundantNames().size()).isEqualTo(1);
+      assertThat(pool.getRedundantNames().contains(server1)).isTrue();
+      assertThat(server0).isEqualTo(pool.getPrimaryName());
+    });
+
     vm1.invoke(this::stopServer);
     doPuts();
-    System.out.println("server1=" + server0);
-    System.out.println("server2=" + server1);
-    System.out.println("server3=" + server2);
-    System.out.println("server4=" + server3);
-    verifyRedundantServersContain(server2);
+
+    await().untilAsserted(() -> assertThat(pool.getRedundantNames()).contains(server2));
+
     verifyConnectedAndRedundantServers(1);
     vm2.invoke(this::verifyInterestRegistration);
 
@@ -331,10 +372,6 @@ public class RedundancyLevelPart1DUnitTest implements Serializable {
     region.put(K2, K2);
     assertThat(region.get(K1)).isEqualTo(K1);
     assertThat(region.get(K2)).isEqualTo(K2);
-  }
-
-  private void verifyRedundantServersContain(final String server) {
-    await().untilAsserted(() -> assertThat(pool.getRedundantNames()).contains(server));
   }
 
   private void verifyConnectedAndRedundantServers(final int redundantServers) {
@@ -356,13 +393,16 @@ public class RedundancyLevelPart1DUnitTest implements Serializable {
 
   private void createEntriesK1andK2() {
     Region<String, String> r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);
+
     assertThat(r1).isNotNull();
+
     if (!r1.containsKey(K1)) {
       r1.create(K1, K1);
     }
     if (!r1.containsKey(K2)) {
       r1.create(K2, K2);
     }
+
     assertThat(r1.getEntry(K1).getValue()).isEqualTo(K1);
     assertThat(r1.getEntry(K2).getValue()).isEqualTo(K2);
   }
@@ -487,8 +527,4 @@ public class RedundancyLevelPart1DUnitTest implements Serializable {
     assertThat(keysMap.contains(K2)).isTrue();
   }
 
-  private void waitConnectedServers() {
-    await().untilAsserted(
-        () -> assertThat(pool.getConnectedServerCount()).isEqualTo(DEFAULT_CONNECTED_SERVER_COUNT));
-  }
 }

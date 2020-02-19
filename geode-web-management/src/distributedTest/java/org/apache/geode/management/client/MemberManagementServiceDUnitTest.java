@@ -150,8 +150,7 @@ public class MemberManagementServiceDUnitTest {
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode())
         .isEqualTo(ClusterManagementResult.StatusCode.OK);
-    assertThat(result.getResult().size()).isEqualTo(1);
-    assertThat(result.getRuntimeResult().size()).isEqualTo(0);
+    assertThat(result.getResult().size()).isEqualTo(0);
   }
 
   @Test

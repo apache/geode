@@ -244,7 +244,7 @@ public class DeltaTestImpl implements DataSerializable, Delta {
 
   @Override
   public boolean equals(Object other) {
-    if (other == null || !(other instanceof DeltaTestImpl)) {
+    if (!(other instanceof DeltaTestImpl)) {
       return false;
     }
     DeltaTestImpl delta = (DeltaTestImpl) other;

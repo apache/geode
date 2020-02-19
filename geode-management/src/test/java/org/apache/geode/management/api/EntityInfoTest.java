@@ -91,15 +91,19 @@ public class EntityInfoTest {
     EntityGroupInfo<Region, RuntimeRegionInfo> entityGroupInfo =
         new EntityGroupInfo<>(region, singletonList(runtimeRegionInfo));
 
+    EntityGroupInfo<Region, RuntimeRegionInfo> entityGroupInfo2 =
+        new EntityGroupInfo<>(region, singletonList(runtimeRegionInfo));
+
     EntityInfo<Region, RuntimeRegionInfo> original =
-        new EntityInfo<>("my.element", singletonList(entityGroupInfo));
+        new EntityInfo<>("my.element", asList(entityGroupInfo, entityGroupInfo2));
 
     ObjectMapper mapper = GeodeJsonMapper.getMapper();
     String json = mapper.writeValueAsString(original);
 
     assertThat(json)
         .containsOnlyOnce("id")
-        .containsOnlyOnce("configurationByGroup");
+        .containsOnlyOnce("groups")
+        .containsOnlyOnce("links");
 
     System.out.println(json);
 

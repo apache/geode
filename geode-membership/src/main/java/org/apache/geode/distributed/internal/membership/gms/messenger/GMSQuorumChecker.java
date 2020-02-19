@@ -45,6 +45,8 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  */
 public class GMSQuorumChecker<ID extends MemberIdentifier> implements QuorumChecker {
   private static final Logger logger = LogService.getLogger();
+
+  private final GMSEncrypt encrypt;
   private boolean isInfoEnabled = false;
   private Map<SocketAddress, ID> addressConversionMap;
   private GMSPingPonger pingPonger;
@@ -60,10 +62,12 @@ public class GMSQuorumChecker<ID extends MemberIdentifier> implements QuorumChec
   private final long partitionThreshold;
   private ConcurrentLinkedQueue<Message> messageQueue = new ConcurrentLinkedQueue<>();
 
-  public GMSQuorumChecker(GMSMembershipView<ID> jgView, int partitionThreshold, JChannel channel) {
+  public GMSQuorumChecker(GMSMembershipView<ID> jgView, int partitionThreshold, JChannel channel,
+      GMSEncrypt encrypt) {
     this.lastView = jgView;
     this.partitionThreshold = partitionThreshold;
     this.channel = channel;
+    this.encrypt = encrypt;
   }
 
   public void initialize() {
@@ -91,6 +95,8 @@ public class GMSQuorumChecker<ID extends MemberIdentifier> implements QuorumChec
       return true;
     }
 
+    resume(); // make sure this quorum checker is the JGroups receiver
+
     if (isInfoEnabled) {
       logger.info("beginning quorum check with {}", this);
     }
@@ -117,7 +123,7 @@ public class GMSQuorumChecker<ID extends MemberIdentifier> implements QuorumChec
 
   @Override
   public MembershipInformation getMembershipInfo() {
-    return new MembershipInformationImpl(channel, messageQueue);
+    return new MembershipInformationImpl(channel, messageQueue, encrypt);
   }
 
   private boolean calculateQuorum() {

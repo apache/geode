@@ -15,6 +15,7 @@
 
 package org.apache.geode.redis.internal.org.apache.hadoop.fs;
 
+import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -157,6 +158,23 @@ public class GlobPattern {
    */
   public boolean hasWildcard() {
     return hasWildcard;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof GlobPattern)) {
+      return false;
+    }
+    GlobPattern that = (GlobPattern) o;
+    return this.compiled.pattern().equals(that.compiled.pattern());
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(compiled, hasWildcard);
   }
 
   private static void error(String message, String pattern, int pos) {

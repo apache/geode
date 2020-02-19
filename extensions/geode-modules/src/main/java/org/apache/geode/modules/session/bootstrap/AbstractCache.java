@@ -162,7 +162,7 @@ public abstract class AbstractCache {
   }
 
   public void setEvictionHeapPercentage(String evictionHeapPercentage) {
-    this.evictionHeapPercentage = Float.valueOf(evictionHeapPercentage);
+    this.evictionHeapPercentage = Float.parseFloat(evictionHeapPercentage);
   }
 
   public float getCriticalHeapPercentage() {
@@ -170,7 +170,7 @@ public abstract class AbstractCache {
   }
 
   public void setCriticalHeapPercentage(String criticalHeapPercentage) {
-    this.criticalHeapPercentage = Float.valueOf(criticalHeapPercentage);
+    this.criticalHeapPercentage = Float.parseFloat(criticalHeapPercentage);
   }
 
   public void setRebalance(boolean rebalance) {
