@@ -308,23 +308,43 @@ public class ConnectionManagerImpl implements ConnectionManager {
    * destroyed when returned to the pool.
    */
   @Override
-  public PooledConnection borrowConnection(ServerLocation server,
-      boolean onlyUseExistingCnx) throws AllConnectionsInUseException, NoAvailableServersException {
-    PooledConnection connection =
-        availableConnectionManager.useFirst((c) -> c.getServer().equals(server));
-    if (null != connection) {
-      return connection;
+  public PooledConnection borrowConnection(ServerLocation server, long acquireTimeout,
+      boolean onlyUseExistingCnx)
+      throws AllConnectionsInUseException, NoAvailableServersException, ServerOperationException {
+
+    long waitStart = NOT_WAITING;
+    try {
+      long timeout = System.nanoTime() + MILLISECONDS.toNanos(acquireTimeout);
+      while (true) {
+        PooledConnection connection =
+            availableConnectionManager.useFirst((c) -> c.getServer().equals(server));
+        if (null != connection) {
+          return connection;
+        }
+
+        if (!onlyUseExistingCnx) {
+          connection = forceCreateConnection(server);
+          if (null != connection) {
+            return connection;
+          }
+        }
+
+        if (checkShutdownInterruptedOrTimeout(timeout)) {
+          break;
+        }
+
+        waitStart = beginConnectionWaitStatIfNotStarted(waitStart);
+
+        Thread.yield();
+      }
+    } finally {
+      endConnectionWaitStatIfStarted(waitStart);
     }
 
+    cancelCriterion.checkCancelInProgress(null);
     if (onlyUseExistingCnx) {
       throw new AllConnectionsInUseException();
     }
-
-    connection = forceCreateConnection(server);
-    if (null != connection) {
-      return connection;
-    }
-
     throw new ServerConnectivityException(BORROW_CONN_ERROR_MSG + server);
   }
 
