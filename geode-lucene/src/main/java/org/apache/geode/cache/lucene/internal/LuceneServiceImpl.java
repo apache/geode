@@ -213,7 +213,7 @@ public class LuceneServiceImpl implements InternalLuceneService {
       // If the region does not yet exist, install LuceneRegionListener and return
       PartitionedRegion region = (PartitionedRegion) cache.getRegion(regionPath);
       if (region == null) {
-        LuceneRegionListener regionListener = new LuceneRegionListener(this, cache, indexName,
+        LuceneRegionListener regionListener = new LuceneRegionListener(this, indexName,
             regionPath, fields, analyzer, fieldAnalyzers, serializer);
         cache.addRegionListener(regionListener);
         return;
