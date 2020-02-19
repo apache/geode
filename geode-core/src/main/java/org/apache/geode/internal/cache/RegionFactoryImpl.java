@@ -14,9 +14,17 @@
  */
 package org.apache.geode.internal.cache;
 
+import java.io.IOException;
+
+import org.apache.geode.InternalGemFireError;
+import org.apache.geode.cache.CacheExistsException;
+import org.apache.geode.cache.CacheWriterException;
+import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionExistsException;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.TimeoutException;
 
 /**
  * {@code RegionFactoryImpl} extends RegionFactory adding {@link RegionShortcut} support.
@@ -24,6 +32,8 @@ import org.apache.geode.cache.RegionShortcut;
  * @since GemFire 6.5
  */
 public class RegionFactoryImpl<K, V> extends RegionFactory<K, V> {
+  private InternalRegionArguments internalRegionArguments;
+
   public RegionFactoryImpl(InternalCache cache) {
     super(cache);
   }
@@ -32,7 +42,7 @@ public class RegionFactoryImpl<K, V> extends RegionFactory<K, V> {
     super(cache, pra);
   }
 
-  public RegionFactoryImpl(InternalCache cache, RegionAttributes ra) {
+  public RegionFactoryImpl(InternalCache cache, RegionAttributes<K, V> ra) {
     super(cache, ra);
   }
 
@@ -43,4 +53,38 @@ public class RegionFactoryImpl<K, V> extends RegionFactory<K, V> {
   public RegionFactoryImpl(RegionFactory<K, V> regionFactory) {
     super(regionFactory);
   }
+
+  public void setInternalRegionArguments(
+      InternalRegionArguments internalRegionArguments) {
+    this.internalRegionArguments = internalRegionArguments;
+  }
+
+  @Override
+  public Region<K, V> create(String name)
+      throws CacheExistsException, RegionExistsException, CacheWriterException, TimeoutException {
+    if (internalRegionArguments == null) {
+      return super.create(name);
+    }
+    try {
+      return getCache().createVMRegion(name, getRegionAttributes(), internalRegionArguments);
+    } catch (IOException | ClassNotFoundException e) {
+      throw new InternalGemFireError("unexpected exception", e);
+    }
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public Region<K, V> createSubregion(Region<?, ?> parent, String name)
+      throws RegionExistsException {
+    if (internalRegionArguments == null) {
+      return super.createSubregion(parent, name);
+    }
+    try {
+      return ((InternalRegion) parent).createSubregion(name, getRegionAttributes(),
+          internalRegionArguments);
+    } catch (IOException | ClassNotFoundException e) {
+      throw new InternalGemFireError("unexpected exception", e);
+    }
+  }
+
 }
