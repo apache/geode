@@ -1270,7 +1270,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       }
       if (value instanceof CachedDeserializable) {
         if (!preferCachedDeserializable) {
-          if (isCopyOnRead()) {
+          if (isCopyOnRead() || isProxy()) {
             if (disableCopyOnRead) {
               value = ((CachedDeserializable) value).getDeserializedForReading();
             } else {
@@ -1439,16 +1439,9 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent,
       boolean returnTombstones) throws TimeoutException, CacheLoaderException {
     @Retained
-    Object result;
-    if (isProxy()) {
-      result =
-          getObject(keyInfo, isCreate, generateCallbacks, localValue, disableCopyOnRead, preferCD,
-              requestingClient, clientEvent, returnTombstones);
-    } else {
-      result = optimizedGetObject(keyInfo, isCreate, generateCallbacks, localValue,
-          disableCopyOnRead, preferCD,
-          requestingClient, clientEvent, returnTombstones);
-    }
+    Object result = optimizedGetObject(keyInfo, isCreate, generateCallbacks, localValue,
+        disableCopyOnRead, preferCD,
+        requestingClient, clientEvent, returnTombstones);
     return result;
   }
 
@@ -1518,7 +1511,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
             } else {
               result = cd.getDeserializedForReading();
             }
-
           } else if (!disableCopyOnRead) {
             result = conditionalCopy(result);
           }
@@ -1544,7 +1536,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       result =
           getObject(keyInfo, isCreate, generateCallbacks, localValue, disableCopyOnRead, preferCD,
               requestingClient, clientEvent, returnTombstones);
-
     } finally {
       if (otherFuture == null) {
         if (result != null) {
@@ -1579,7 +1570,9 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * @since GemFire 4.0
    */
   Object conditionalCopy(Object o) {
-    if (isCopyOnRead() && !Token.isInvalid(o)) {
+    logger.info(" about to conditional copy");
+    if (isCopyOnRead() && !Token.isInvalid(o) || isProxy()) {
+      logger.info(" conditional copy for " + o);
       return CopyHelper.copy(o);
     }
     return o;
@@ -4923,7 +4916,11 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
 
     discoverJTA();
-    getDataView().invalidateExistingEntry(event, invokeCallbacks, forceNewEntry);
+    try {
+      getDataView().invalidateExistingEntry(event, invokeCallbacks, forceNewEntry);
+    } finally {
+      clearOptimizedGetFuture(event.getKey());
+    }
   }
 
   void basicInvalidatePart2(RegionEntry regionEntry, EntryEventImpl event,
@@ -5035,8 +5032,18 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   public boolean basicPut(EntryEventImpl event, boolean ifNew, boolean ifOld,
       Object expectedOldValue, boolean requireOldValue)
       throws TimeoutException, CacheWriterException {
-    return getDataView().putEntry(event, ifNew, ifOld, expectedOldValue, requireOldValue, 0L,
-        false);
+    try {
+      return getDataView().putEntry(event, ifNew, ifOld, expectedOldValue, requireOldValue, 0L,
+          false);
+    } finally {
+      clearOptimizedGetFuture(event.getKey());
+    }
+  }
+
+  private void clearOptimizedGetFuture(Object key) {
+    if (isProxy() && getFutures != null) {
+      getFutures.remove(key);
+    }
   }
 
   /**
@@ -5570,9 +5577,14 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
     validateValue(event.basicGetNewValue());
 
-    return getDataView().putEntry(event, ifNew, ifOld, null, false, lastModified,
-        overwriteDestroyed, invokeCallbacks, throwConcurrentModificationException);
+    try {
+      return getDataView().putEntry(event, ifNew, ifOld, null, false, lastModified,
+          overwriteDestroyed, invokeCallbacks, throwConcurrentModificationException);
+    } finally {
+      clearOptimizedGetFuture(event.getKey());
+    }
   }
+
 
   public boolean virtualPut(final EntryEventImpl event, final boolean ifNew, final boolean ifOld,
       Object expectedOldValue, boolean requireOldValue, final long lastModified,
@@ -6412,7 +6424,11 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
 
     discoverJTA();
-    getDataView().destroyExistingEntry(event, cacheWrite, expectedOldValue);
+    try {
+      getDataView().destroyExistingEntry(event, cacheWrite, expectedOldValue);
+    } finally {
+      clearOptimizedGetFuture(event.getKey());
+    }
   }
 
   final boolean restoreSetOperationTransactionBehavior =
@@ -8571,6 +8587,10 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
             private static final long serialVersionUID = 0L;
           };
         }
+      }
+    } else {
+      if (getFutures != null) {
+        getFutures.clear();
       }
     }
 
