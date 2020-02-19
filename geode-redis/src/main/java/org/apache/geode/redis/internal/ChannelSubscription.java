@@ -16,6 +16,9 @@
 
 package org.apache.geode.redis.internal;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * This class represents a single channel subscription as created by the SUBSCRIBE command
  */
@@ -29,6 +32,11 @@ class ChannelSubscription extends AbstractSubscription {
       throw new IllegalArgumentException("channel cannot be null");
     }
     this.channel = channel;
+  }
+
+  @Override
+  public List<String> createResponse(String channel, String message) {
+    return Arrays.asList("message", channel, message);
   }
 
   @Override

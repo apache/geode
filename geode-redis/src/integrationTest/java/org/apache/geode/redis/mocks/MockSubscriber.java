@@ -23,9 +23,14 @@ import redis.clients.jedis.JedisPubSub;
 
 public class MockSubscriber extends JedisPubSub {
   private List<String> receivedMessages = new ArrayList<>();
+  private List<String> receivedPMessages = new ArrayList<>();
 
   public List<String> getReceivedMessages() {
     return receivedMessages;
+  }
+
+  public List<String> getReceivedPMessages() {
+    return receivedPMessages;
   }
 
   @Override
@@ -35,6 +40,6 @@ public class MockSubscriber extends JedisPubSub {
 
   @Override
   public void onPMessage(String pattern, String channel, String message) {
-    receivedMessages.add(message);
+    receivedPMessages.add(message);
   }
 }

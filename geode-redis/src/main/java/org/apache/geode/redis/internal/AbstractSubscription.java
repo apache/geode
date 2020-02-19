@@ -16,7 +16,6 @@
 
 package org.apache.geode.redis.internal;
 
-import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 
 import io.netty.buffer.ByteBuf;
@@ -64,7 +63,7 @@ public abstract class AbstractSubscription implements Subscription {
     ByteBuf messageByteBuffer;
     try {
       messageByteBuffer = Coder.getArrayResponse(context.getByteBufAllocator(),
-          Arrays.asList("message", channel, message));
+          createResponse(channel, message));
     } catch (CoderException e) {
       logger.warn("Unable to encode publish message", e);
       return null;
@@ -83,6 +82,7 @@ public abstract class AbstractSubscription implements Subscription {
     try {
       channelFuture.get();
     } catch (InterruptedException | ExecutionException e) {
+      logger.warn("Unable to write to channel", e);
       return false;
     }
 

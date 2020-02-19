@@ -26,7 +26,6 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.DecoderException;
-import io.netty.util.concurrent.EventExecutor;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.Cache;
@@ -66,8 +65,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   private final GeodeRedisServer server;
   private final Channel channel;
   private final AtomicBoolean needChannelFlush;
-  private final Runnable flusher;
-  private final EventExecutor lastExecutor;
   private final ByteBufAllocator byteBufAllocator;
   /**
    * TransactionId for any transactions started by this client
@@ -114,15 +111,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     this.server = server;
     this.channel = ch;
     this.needChannelFlush = new AtomicBoolean(false);
-    this.flusher = new Runnable() {
-
-      @Override
-      public void run() {
-        flushChannel();
-      }
-
-    };
-    this.lastExecutor = channel.pipeline().lastContext().executor();
     this.byteBufAllocator = channel.alloc();
     this.transactionID = null;
     this.transactionQueue = null; // Lazy
@@ -138,13 +126,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   }
 
   public ChannelFuture writeToChannel(ByteBuf message) {
-    ChannelFuture channelFuture = channel.write(message, channel.newPromise());
-
-    if (!needChannelFlush.getAndSet(true)) {
-      this.lastExecutor.execute(flusher);
-    }
-
-    return channelFuture;
+    return channel.writeAndFlush(message, channel.newPromise());
   }
 
   /**

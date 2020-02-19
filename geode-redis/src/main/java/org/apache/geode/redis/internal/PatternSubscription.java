@@ -16,6 +16,9 @@
 
 package org.apache.geode.redis.internal;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.apache.geode.redis.internal.org.apache.hadoop.fs.GlobPattern;
 
 /**
@@ -31,6 +34,11 @@ class PatternSubscription extends AbstractSubscription {
       throw new IllegalArgumentException("pattern cannot be null");
     }
     this.pattern = pattern;
+  }
+
+  @Override
+  public List<String> createResponse(String channel, String message) {
+    return Arrays.asList("pmessage", pattern.globPattern(), channel, message);
   }
 
   @Override

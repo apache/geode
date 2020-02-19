@@ -18,19 +18,15 @@ package org.apache.geode.redis;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import redis.clients.jedis.Jedis;
@@ -39,32 +35,32 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.redis.mocks.MockSubscriber;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.junit.categories.RedisTest;
 
 @Category({RedisTest.class})
-@Ignore("GEODE-7798")
 public class PubSubTest {
+  private static final int REDIS_CLIENT_TIMEOUT = 100000;
   private static GeodeRedisServer server;
   private static GemFireCache cache;
-  private static Random rand;
   private static Jedis publisher;
   private static Jedis subscriber;
   private static int port = 6379;
 
   @BeforeClass
   public static void setUp() {
-    rand = new Random();
     CacheFactory cf = new CacheFactory();
-    cf.set(LOG_LEVEL, "error");
+    cf.set(LOG_LEVEL, "warn");
     cf.set(MCAST_PORT, "0");
     cf.set(LOCATORS, "");
     cache = cf.create();
+
     port = AvailablePortHelper.getRandomAvailableTCPPort();
     server = new GeodeRedisServer("localhost", port);
-    subscriber = new Jedis("localhost", port, 100000);
-    publisher = new Jedis("localhost", port, 100000);
-
     server.start();
+
+    subscriber = new Jedis("localhost", port, REDIS_CLIENT_TIMEOUT);
+    publisher = new Jedis("localhost", port, REDIS_CLIENT_TIMEOUT);
   }
 
   @AfterClass
@@ -127,7 +123,7 @@ public class PubSubTest {
 
   @Test
   public void testTwoSubscribersOneChannel() {
-    Jedis subscriber2 = new Jedis("localhost", port);
+    Jedis subscriber2 = new Jedis("localhost", port, REDIS_CLIENT_TIMEOUT);
     MockSubscriber mockSubscriber1 = new MockSubscriber();
     MockSubscriber mockSubscriber2 = new MockSubscriber();
 
@@ -189,7 +185,7 @@ public class PubSubTest {
 
   @Test
   public void testDeadSubscriber() {
-    Jedis deadSubscriber = new Jedis("localhost", port);
+    Jedis deadSubscriber = new Jedis("localhost", port, REDIS_CLIENT_TIMEOUT);
 
     MockSubscriber mockSubscriber = new MockSubscriber();
 
@@ -226,8 +222,8 @@ public class PubSubTest {
     Long result = publisher.publish("salutations", "hello");
     assertThat(result).isEqualTo(1);
 
-    assertThat(mockSubscriber.getReceivedMessages()).hasSize(1);
-    assertThat(mockSubscriber.getReceivedMessages()).contains("hello");
+    assertThat(mockSubscriber.getReceivedMessages()).isEmpty();
+    assertThat(mockSubscriber.getReceivedPMessages()).containsExactly("hello");
 
     mockSubscriber.punsubscribe("sal*s");
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 0);
@@ -260,7 +256,8 @@ public class PubSubTest {
 
     waitFor(() -> !subscriberThread.isAlive());
 
-    assertThat(mockSubscriber.getReceivedMessages()).containsExactly("hello", "hello");
+    assertThat(mockSubscriber.getReceivedMessages()).containsExactly("hello");
+    assertThat(mockSubscriber.getReceivedPMessages()).containsExactly("hello");
   }
 
   @Test
@@ -289,11 +286,12 @@ public class PubSubTest {
 
     waitFor(() -> !subscriberThread.isAlive());
 
-    assertThat(mockSubscriber.getReceivedMessages()).containsExactly("hello", "hello");
+    assertThat(mockSubscriber.getReceivedMessages()).containsExactly("hello");
+    assertThat(mockSubscriber.getReceivedPMessages()).containsExactly("hello");
   }
 
   private void waitFor(Callable<Boolean> booleanCallable) {
-    await().atMost(1, TimeUnit.SECONDS)
+    GeodeAwaitility.await()
         .ignoreExceptions() // ignoring socket closed exceptions
         .until(booleanCallable);
   }
