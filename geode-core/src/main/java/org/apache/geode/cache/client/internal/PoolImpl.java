@@ -930,7 +930,7 @@ public class PoolImpl implements InternalPool {
    * Test hook that acquires and returns a connection from the pool with a given ServerLocation.
    */
   public Connection acquireConnection(ServerLocation loc) {
-    return manager.borrowConnection(loc, false);
+    return manager.borrowConnection(loc, 15000L, false);
   }
 
   /**

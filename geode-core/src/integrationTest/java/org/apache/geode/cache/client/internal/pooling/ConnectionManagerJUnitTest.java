@@ -341,9 +341,9 @@ public class ConnectionManagerJUnitTest {
 
     // Ok, now get some connections that fill our queue
     Connection ping1 =
-        manager.borrowConnection(new ServerLocation("localhost", 5), false);
+        manager.borrowConnection(new ServerLocation("localhost", 5), BORROW_TIMEOUT_MILLIS, false);
     Connection ping2 =
-        manager.borrowConnection(new ServerLocation("localhost", 5), false);
+        manager.borrowConnection(new ServerLocation("localhost", 5), BORROW_TIMEOUT_MILLIS, false);
     manager.returnConnection(ping1);
     manager.returnConnection(ping2);
 
@@ -692,7 +692,7 @@ public class ConnectionManagerJUnitTest {
       // do nothing
     }
 
-    Connection conn3 = manager.borrowConnection(new ServerLocation("localhost", -2), false);
+    Connection conn3 = manager.borrowConnection(new ServerLocation("localhost", -2), 10, false);
     Assert.assertEquals(2, factory.creates);
     Assert.assertEquals(0, factory.destroys);
     Assert.assertEquals(0, factory.closes);

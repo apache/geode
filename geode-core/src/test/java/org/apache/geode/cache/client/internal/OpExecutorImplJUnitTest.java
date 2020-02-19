@@ -453,7 +453,7 @@ public class OpExecutorImplJUnitTest {
     }
 
     @Override
-    public Connection borrowConnection(ServerLocation server,
+    public Connection borrowConnection(ServerLocation server, long aquireTimeout,
         boolean onlyUseExistingCnx) {
       borrows++;
       return new DummyConnection(server);
