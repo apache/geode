@@ -391,12 +391,9 @@ public class LocatorClusterManagementService implements ClusterManagementService
   @Override
   public <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<A, V> start(
       A op) {
-    OperationState<A, V> operationInstance = operationManager.submit(op);
-
-    ClusterManagementResult result = new ClusterManagementResult(
-        StatusCode.ACCEPTED, "Operation started.  Use the URI to check its status.");
-
-    return assertSuccessful(toClusterManagementListOperationsResult(result, operationInstance));
+    OperationState<A, V> operationState = operationManager.submit(op);
+    return assertSuccessful(toClusterManagementOperationResult(StatusCode.ACCEPTED,
+        "Operation started.  Use the URI to check its status.", operationState));
   }
 
   @Override
@@ -404,31 +401,21 @@ public class LocatorClusterManagementService implements ClusterManagementService
       A opType) {
     return assertSuccessful(new ClusterManagementListOperationsResult<>(
         operationManager.list(opType).stream()
-            .map(this::toClusterManagementListOperationsResult).collect(Collectors.toList())));
+            .map(this::toClusterManagementOperationResult).collect(Collectors.toList())));
   }
 
-  /**
-   * builds a result object from a base status and an operation instance
-   */
-  private <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<A, V> toClusterManagementListOperationsResult(
-      ClusterManagementResult status, OperationState<A, V> operationState) {
-    ClusterManagementOperationResult<A, V> result = new ClusterManagementOperationResult<>(status,
-        operationState.getOperationStart(), operationState.getOperationEnd(),
-        operationState.getOperation(), operationState.getId(), operationState.getResult(),
-        operationState.getThrowable());
-    result.setLinks(
-        new Links(operationState.getId(), operationState.getOperation().getEndpoint()));
+  private <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<A, V> toClusterManagementOperationResult(
+      StatusCode statusCode, String message, OperationState<A, V> operationState) {
+    ClusterManagementOperationResult<A, V> result =
+        new ClusterManagementOperationResult<>(statusCode, message,
+            operationState.getOperationStart(), operationState.getOperationEnd(),
+            operationState.getOperation(), operationState.getId(), operationState.getResult(),
+            operationState.getThrowable());
+    A operation = operationState.getOperation();
+    if (operation != null) {
+      result.setLinks(new Links(operationState.getId(), operation.getEndpoint()));
+    }
     return result;
-  }
-
-  /**
-   * builds a result object from an operation instance
-   */
-  private <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<A, V> toClusterManagementListOperationsResult(
-      OperationState<A, V> operationState) {
-    return toClusterManagementListOperationsResult(
-        get(operationState.getOperation(), operationState.getId()),
-        operationState);
   }
 
   @Override
@@ -438,7 +425,17 @@ public class LocatorClusterManagementService implements ClusterManagementService
     if (operationState == null) {
       raise(StatusCode.ENTITY_NOT_FOUND, "Operation '" + opId + "' does not exist.");
     }
+    return toClusterManagementOperationResult(operationState);
+  }
 
+  @Override
+  public <A extends ClusterManagementOperation<V>, V extends OperationResult> CompletableFuture<ClusterManagementOperationResult<A, V>> getFuture(
+      A opType, String opId) {
+    throw new IllegalStateException("This should never be called on locator");
+  }
+
+  private <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<A, V> toClusterManagementOperationResult(
+      OperationState<A, V> operationState) {
     StatusCode resultStatus = StatusCode.OK;
     String resultMessage = "";
     if (operationState.getOperationEnd() == null) {
@@ -447,24 +444,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
       resultStatus = StatusCode.ERROR;
       resultMessage = operationState.getThrowable().getMessage();
     }
-    ClusterManagementOperationResult<A, V> result = new ClusterManagementOperationResult<>(
-        new ClusterManagementResult(resultStatus, resultMessage),
-        operationState.getOperationStart(),
-        operationState.getOperationEnd(),
-        operationState.getOperation(),
-        opId,
-        operationState.getResult(),
-        operationState.getThrowable());
-    if (operationState.getOperation() != null) {
-      result.setLinks(new Links(opId, operationState.getOperation().getEndpoint()));
-    }
-    return result;
-  }
-
-  @Override
-  public <A extends ClusterManagementOperation<V>, V extends OperationResult> CompletableFuture<ClusterManagementOperationResult<A, V>> getFuture(
-      A opType, String opId) {
-    throw new IllegalStateException("This should never be called on locator");
+    return toClusterManagementOperationResult(resultStatus, resultMessage, operationState);
   }
 
   private <T extends ClusterManagementResult> T assertSuccessful(T result) {

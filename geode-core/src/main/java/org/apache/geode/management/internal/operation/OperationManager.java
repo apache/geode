@@ -19,7 +19,6 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
 import java.util.function.BiFunction;
 
 import org.apache.geode.annotations.Experimental;
@@ -94,6 +93,5 @@ public class OperationManager implements AutoCloseable {
   }
 
   @Override
-  public void close() {
-  }
+  public void close() {}
 }

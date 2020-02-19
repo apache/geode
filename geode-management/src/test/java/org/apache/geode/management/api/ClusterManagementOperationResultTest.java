@@ -39,10 +39,8 @@ public class ClusterManagementOperationResultTest {
 
   @Test
   public void serialize() throws Exception {
-    ClusterManagementResult result1 = new ClusterManagementResult();
-    result1.setStatus(StatusCode.OK, "Success!!");
     ClusterManagementOperationResult<ClusterManagementOperation<OperationResult>, OperationResult> result =
-        new ClusterManagementOperationResult<>(result1, new Date(), new Date(),
+        new ClusterManagementOperationResult<>(StatusCode.OK, "Success!!", new Date(), new Date(),
             null, "id", null, null);
     String json = mapper.writeValueAsString(result);
     System.out.println(json);
@@ -53,12 +51,10 @@ public class ClusterManagementOperationResultTest {
 
   @Test
   public void serializeRebal() throws Exception {
-    ClusterManagementResult result1 = new ClusterManagementResult();
-    result1.setStatus(StatusCode.OK, "Success!!");
     RebalanceOperation rebalanceOperation = new RebalanceOperation();
     rebalanceOperation.setOperator("operator");
     ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> result =
-        new ClusterManagementOperationResult(result1, new Date(), new Date(),
+        new ClusterManagementOperationResult(StatusCode.OK, "Success!!", new Date(), new Date(),
             rebalanceOperation, "id", new RebalanceResultImpl(), null);
     String json = mapper.writeValueAsString(result);
     System.out.println(json);

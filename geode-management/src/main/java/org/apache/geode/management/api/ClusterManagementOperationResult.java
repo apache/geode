@@ -52,11 +52,11 @@ public class ClusterManagementOperationResult<A extends ClusterManagementOperati
   /**
    * normally called by {@link ClusterManagementService#start(ClusterManagementOperation)}
    */
-  public ClusterManagementOperationResult(ClusterManagementResult result,
+  public ClusterManagementOperationResult(StatusCode statusCode, String message,
       Date operationStart, Date operationEnd,
       A operation, String operationId, V operationResult,
       Throwable throwable) {
-    super(result);
+    super(statusCode, message);
     this.operationStart = operationStart;
     this.operationEnd = operationEnd;
     this.operation = operation;
