@@ -30,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import redis.clients.jedis.Jedis;
@@ -41,6 +42,7 @@ import org.apache.geode.redis.mocks.MockSubscriber;
 import org.apache.geode.test.junit.categories.RedisTest;
 
 @Category({RedisTest.class})
+@Ignore("GEODE-7798")
 public class PubSubTest {
   private static GeodeRedisServer server;
   private static GemFireCache cache;
