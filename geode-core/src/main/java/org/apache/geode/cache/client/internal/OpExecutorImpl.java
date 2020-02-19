@@ -323,7 +323,7 @@ public class OpExecutorImpl implements ExecutablePool {
       }
     }
     if (conn == null) {
-      conn = connectionManager.borrowConnection(p_server, onlyUseExistingCnx);
+      conn = connectionManager.borrowConnection(p_server, serverTimeout, onlyUseExistingCnx);
     }
     try {
       return executeWithPossibleReAuthentication(conn, op);

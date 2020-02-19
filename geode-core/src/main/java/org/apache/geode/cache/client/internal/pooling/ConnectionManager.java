@@ -56,6 +56,7 @@ public interface ConnectionManager {
    * no connection is available.
    *
    * @param server The server the connection needs to be to.
+   * @param aquireTimeout The amount of time to wait for a connection to become available.
    * @param onlyUseExistingCnx if true, will not create a new connection if none are available.
    * @return A connection to use.
    * @throws AllConnectionsInUseException If there is no available connection on the desired server,
@@ -66,7 +67,7 @@ public interface ConnectionManager {
    *         to return a connection
    *
    */
-  Connection borrowConnection(ServerLocation server, boolean onlyUseExistingCnx)
+  Connection borrowConnection(ServerLocation server, long aquireTimeout, boolean onlyUseExistingCnx)
       throws AllConnectionsInUseException, NoAvailableServersException;
 
   /**
