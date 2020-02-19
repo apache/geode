@@ -28,6 +28,8 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.management.api.ClusterManagementGetResult;
 import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementService;
@@ -68,15 +70,21 @@ public class DeploymentManagementDUnitTest {
     jarBuilder.buildJarFromClassNames(group2Jar, "Class2");
     jarBuilder.buildJarFromClassNames(clusterJar, "Class3");
 
-    locator = cluster.startLocatorVM(0, l -> l.withHttpService());
-    server1 = cluster.startServerVM(1, "group1", locator.getPort());
-    server2 = cluster.startServerVM(2, "group2", locator.getPort());
+    locator = cluster.startLocatorVM(0, l -> l.withHttpService().withSecurityManager(
+        SimpleSecurityManager.class));
+    int locatorPort = locator.getPort();
+    server1 = cluster.startServerVM(1, s -> s.withConnectionToLocator(locatorPort).withProperty(
+        DistributionConfig.GROUPS_NAME, "group1").withCredential("cluster", "cluster"));
+    server2 = cluster.startServerVM(2, s -> s.withConnectionToLocator(locatorPort).withProperty(
+        DistributionConfig.GROUPS_NAME, "group2").withCredential("cluster", "cluster"));
 
-    client =
-        ClusterManagementServiceBuilder.buildWithHostAddress()
-            .setHostAddress("localhost", locator.getHttpPort())
-            .build();
-    gfsh.connect(locator);
+    client = new ClusterManagementServiceBuilder()
+        .setPort(locator.getHttpPort())
+        .setUsername("cluster")
+        .setPassword("cluster")
+        .build();
+
+    gfsh.secureConnect(locatorPort, GfshCommandRule.PortType.locator, "cluster", "cluster");
 
     gfsh.executeAndAssertThat("deploy --group=group1 --jar=" + group1Jar.getAbsolutePath())
         .statusIsSuccess();
@@ -115,15 +123,24 @@ public class DeploymentManagementDUnitTest {
   public void listById() throws Exception {
     Deployment filter = new Deployment();
     filter.setJarFileName("cluster.jar");
+
     ClusterManagementListResult<Deployment, DeploymentInfo> list = client.list(filter);
+
     ClusterManagementListResultAssert<Deployment, DeploymentInfo> resultAssert =
         assertManagementListResult(list).isSuccessful();
-    resultAssert.hasConfigurations().extracting(Deployment::getJarFileName)
-        .containsExactlyInAnyOrder("cluster.jar");
+
+    assertThat(list.getConfigResult()).hasSize(1);
+    Deployment deployment = list.getConfigResult().get(0);
+    assertThat(deployment.getJarFileName()).isEqualTo("cluster.jar");
+    assertThat(deployment.getDeployedBy()).isEqualTo("cluster");
+    assertThat(deployment.getDeployedTime()).isNotNull();
+
     List<DeploymentInfo> runtimeResult = resultAssert.getActual().getRuntimeResult();
-    assertThat(runtimeResult).extracting(DeploymentInfo::getJarLocation).extracting(
-        FilenameUtils::getName).containsExactlyInAnyOrder("cluster.v1.jar", "cluster.v1.jar");
-    assertThat(runtimeResult.get(0).getTimeDeployed()).isNotNull();
+    assertThat(runtimeResult)
+        .extracting(DeploymentInfo::getJarLocation)
+        .extracting(FilenameUtils::getName)
+        .containsExactlyInAnyOrder("cluster.v1.jar", "cluster.v1.jar");
+    assertThat(runtimeResult.get(0).getLastModified()).isNotNull();
   }
 
   @Test

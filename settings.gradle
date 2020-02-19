@@ -27,6 +27,7 @@ include 'geode-unsafe'
 include 'geode-junit'
 include 'geode-dunit'
 include 'geode-logging'
+include 'geode-membership'
 include 'geode-serialization'
 include 'geode-tcp-server'
 include 'geode-core'
@@ -82,7 +83,8 @@ include 'static-analysis:pmd-rules'
  '1.9.0',
  '1.9.1',
  '1.9.2',
- '1.10.0'].each {
+ '1.10.0',
+ '1.11.0'].each {
   include 'geode-old-versions:'.concat(it)
 }
 

@@ -45,7 +45,7 @@ import org.apache.geode.internal.cache.PartitionedRegionStatus;
 import org.apache.geode.internal.cache.RegionStatus;
 import org.apache.geode.internal.cache.tier.InternalClientMembership;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
-import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.inet.LocalHostUtil;
 
 /**
  * Class <code>GemFireMemberStatus</code> provides the status of a specific GemFire member VM. This
@@ -616,7 +616,7 @@ public class GemFireMemberStatus implements Serializable {
     setUpTime(System.currentTimeMillis() - ids.getStartTime());
     try {
       setHostAddress((bindAddress != null && bindAddress.length() > 0)
-          ? InetAddress.getByName(bindAddress) : SocketCreator.getLocalHost());
+          ? InetAddress.getByName(bindAddress) : LocalHostUtil.getLocalHost());
     } catch (IOException e) {
       /* ignore - leave null host address */}
   }

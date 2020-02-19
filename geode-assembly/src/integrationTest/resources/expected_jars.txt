@@ -23,6 +23,7 @@ commons-validator
 error_prone_annotations
 failureaccess
 fastutil
+findbugs-annotations
 geo
 gfsh-dependencies.jar
 grumpy-core
@@ -53,6 +54,7 @@ jetty-xml
 jgroups
 jline
 jna
+jna-platform
 jopt-simple
 json-path
 json-smart
@@ -117,6 +119,5 @@ springfox-spring-web
 springfox-swagger
 springfox-swagger-common
 springfox-swagger-ui
-spring-jcl
 swagger-annotations
 swagger-models

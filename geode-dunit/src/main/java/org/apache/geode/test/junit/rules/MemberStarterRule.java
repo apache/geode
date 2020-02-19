@@ -56,9 +56,12 @@ import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.ssl.CertStores;
+import org.apache.geode.cache.ssl.CertificateBuilder;
+import org.apache.geode.cache.ssl.CertificateMaterial;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
+import org.apache.geode.distributed.internal.membership.api.MembershipManagerHelper;
 import org.apache.geode.internal.UniquePortSupplier;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
@@ -203,6 +206,36 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
       this.properties.putAll(props);
     }
     return (T) this;
+  }
+
+  public T withSSL(String components, boolean requireAuth,
+      boolean endPointIdentification) {
+    Properties sslProps = getSSLProperties(components, requireAuth, endPointIdentification);
+    properties.putAll(sslProps);
+    return (T) this;
+  }
+
+  public static Properties getSSLProperties(String components, boolean requireAuth,
+      boolean endPointIdentification) {
+    CertificateMaterial ca = new CertificateBuilder()
+        .commonName("Test CA")
+        .isCA()
+        .generate();
+
+    CertificateMaterial memberMaterial = new CertificateBuilder()
+        .commonName("member")
+        .issuedBy(ca)
+        .generate();
+
+    CertStores memberStore = new CertStores("member");
+    memberStore.withCertificate("member", memberMaterial);
+    memberStore.trust("ca", ca);
+
+    try {
+      return memberStore.propertiesWith(components, requireAuth, endPointIdentification);
+    } catch (Exception e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
   }
 
   public T withSecurityManager(Class<? extends SecurityManager> securityManager) {

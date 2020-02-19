@@ -55,7 +55,7 @@ public class PdxManager extends CacheConfigurationManager<Pdx> {
   }
 
   @Override
-  public Pdx get(String id, CacheConfig existing) {
+  public Pdx get(Pdx config, CacheConfig existing) {
     return pdxConverter.fromXmlObject(existing.getPdx());
   }
 }

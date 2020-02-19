@@ -63,7 +63,7 @@ if [[ "${CONCOURSE_HOST}" == "concourse.apachegeode-ci.info" ]]; then
   CONCOURSE_SCHEME=https
 fi
 CONCOURSE_URL=${CONCOURSE_SCHEME:-"http"}://${CONCOURSE_HOST}
-FLY_TARGET=${CONCOURSE_HOST}
+FLY_TARGET=${CONCOURSE_HOST}-${CONCOURSE_TEAM}
 
 . ${SCRIPTDIR}/../shared/utilities.sh
 SANITIZED_GEODE_BRANCH=$(getSanitizedBranch ${GEODE_BRANCH})
@@ -81,4 +81,4 @@ function destroyPipelines {
 }
 
 destroyPipelines ${PIPELINE_PREFIX}main ${PIPELINE_PREFIX}pr ${PIPELINE_PREFIX}images ${PIPELINE_PREFIX}reaper ${PIPELINE_PREFIX}metrics ${PIPELINE_PREFIX}examples ${PIPELINE_PREFIX}meta ${PIPELINE_PREFIX}rc
-echo "Destroyed ${CONCOURSE_URL}/teams/main/pipelines/${PIPELINE_PREFIX}main and all related pipelines"
+echo "Destroyed ${CONCOURSE_URL}/teams/${CONCOURSE_TEAM}/pipelines/${PIPELINE_PREFIX}main and all related pipelines"

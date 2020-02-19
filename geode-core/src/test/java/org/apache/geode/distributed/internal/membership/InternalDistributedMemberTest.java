@@ -24,7 +24,9 @@ import java.net.UnknownHostException;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.distributed.internal.membership.gms.GMSMemberData;
+import org.apache.geode.distributed.DurableClientAttributes;
+import org.apache.geode.distributed.internal.membership.api.MemberData;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 /**
@@ -37,18 +39,14 @@ public class InternalDistributedMemberTest {
   public void equalsReturnsTrueForSameMember() {
     InternalDistributedMember member = new InternalDistributedMember("", 34567);
 
-    boolean result = member.equals(member);
-
-    assertThat(result).isTrue();
+    assertThat(member.equals(member)).isTrue();
   }
 
   @Test
   public void equalsReturnsFalseForNull() {
     InternalDistributedMember member = new InternalDistributedMember("", 34567);
 
-    boolean result = member.equals(null);
-
-    assertThat(result).isFalse();
+    assertThat(member.equals(null)).isFalse();
   }
 
   @Test
@@ -73,9 +71,9 @@ public class InternalDistributedMemberTest {
   @Test
   public void equalsReturnsTrueIfNullInetAddress() throws UnknownHostException {
     InetAddress localHost = InetAddress.getLocalHost();
-    GMSMemberData netMember1 = mock(GMSMemberData.class);
+    MemberData netMember1 = mock(MemberData.class);
     when(netMember1.getInetAddress()).thenReturn(localHost).thenReturn(null);
-    GMSMemberData netMember2 = mock(GMSMemberData.class);
+    MemberData netMember2 = mock(MemberData.class);
     when(netMember2.getInetAddress()).thenReturn(localHost).thenReturn(null);
     InternalDistributedMember member = new InternalDistributedMember(netMember1);
     InternalDistributedMember other = new InternalDistributedMember(netMember2);
@@ -89,9 +87,9 @@ public class InternalDistributedMemberTest {
   public void equalsReturnsFalseIfInetAddressDiffer() throws UnknownHostException {
     InetAddress host1 = InetAddress.getByAddress(new byte[] {127, 0, 0, 1});
     InetAddress host2 = InetAddress.getByAddress(new byte[] {127, 0, 0, 2});
-    GMSMemberData netMember1 = mock(GMSMemberData.class);
+    MemberData netMember1 = mock(MemberData.class);
     when(netMember1.getInetAddress()).thenReturn(host1);
-    GMSMemberData netMember2 = mock(GMSMemberData.class);
+    MemberData netMember2 = mock(MemberData.class);
     when(netMember2.getInetAddress()).thenReturn(host2);
     InternalDistributedMember member = new InternalDistributedMember(netMember1);
     InternalDistributedMember other = new InternalDistributedMember(netMember2);
@@ -104,9 +102,9 @@ public class InternalDistributedMemberTest {
   @Test
   public void equalsReturnsFalseIfGetViewIdDiffer() throws UnknownHostException {
     InetAddress host1 = InetAddress.getByAddress(new byte[] {127, 0, 0, 1});
-    GMSMemberData netMember1 = mock(GMSMemberData.class);
+    MemberData netMember1 = mock(MemberData.class);
     when(netMember1.getInetAddress()).thenReturn(host1);
-    GMSMemberData netMember2 = mock(GMSMemberData.class);
+    MemberData netMember2 = mock(MemberData.class);
     when(netMember2.getInetAddress()).thenReturn(host1);
     when(netMember1.getVmViewId()).thenReturn(1);
     when(netMember2.getVmViewId()).thenReturn(2);
@@ -121,10 +119,12 @@ public class InternalDistributedMemberTest {
   @Test
   public void equalsReturnsFalseIfUniqueTagsDiffer() throws UnknownHostException {
     InetAddress host1 = InetAddress.getByAddress(new byte[] {127, 0, 0, 1});
-    GMSMemberData netMember1 = mock(GMSMemberData.class);
+    MemberData netMember1 = mock(MemberData.class);
     when(netMember1.getInetAddress()).thenReturn(host1);
-    GMSMemberData netMember2 = mock(GMSMemberData.class);
+    when(netMember1.getUniqueTag()).thenReturn("tag1");
+    MemberData netMember2 = mock(MemberData.class);
     when(netMember2.getInetAddress()).thenReturn(host1);
+    when(netMember2.getUniqueTag()).thenReturn("tag2");
     InternalDistributedMember member = new InternalDistributedMember(netMember1);
     member.setUniqueTag("tag1");
     InternalDistributedMember other = new InternalDistributedMember(netMember2);
@@ -138,10 +138,10 @@ public class InternalDistributedMemberTest {
   @Test
   public void equalsReturnsFalseIfNotPartialAndNamesDiffer() throws UnknownHostException {
     InetAddress host1 = InetAddress.getByAddress(new byte[] {127, 0, 0, 1});
-    GMSMemberData netMember1 = mock(GMSMemberData.class);
+    MemberData netMember1 = mock(MemberData.class);
     when(netMember1.getInetAddress()).thenReturn(host1);
     when(netMember1.getName()).thenReturn("name1");
-    GMSMemberData netMember2 = mock(GMSMemberData.class);
+    MemberData netMember2 = mock(MemberData.class);
     when(netMember2.getInetAddress()).thenReturn(host1);
     when(netMember2.getName()).thenReturn("name2");
     InternalDistributedMember member = new InternalDistributedMember(netMember1);
@@ -157,9 +157,9 @@ public class InternalDistributedMemberTest {
   @Test
   public void equalsReturnsFalseIfCompareAdditionalDataDiffer() throws UnknownHostException {
     InetAddress host1 = InetAddress.getByAddress(new byte[] {127, 0, 0, 1});
-    GMSMemberData netMember1 = mock(GMSMemberData.class);
+    MemberData netMember1 = mock(MemberData.class);
     when(netMember1.getInetAddress()).thenReturn(host1);
-    GMSMemberData netMember2 = mock(GMSMemberData.class);
+    MemberData netMember2 = mock(MemberData.class);
     when(netMember2.getInetAddress()).thenReturn(host1);
     when(netMember1.compareAdditionalData(netMember2)).thenReturn(1);
     when(netMember2.compareAdditionalData(netMember1)).thenReturn(-1);
@@ -181,4 +181,103 @@ public class InternalDistributedMemberTest {
     assertThat(result).isTrue();
   }
 
+  @Test
+  public void getDurableClientAttributesShouldReturnDefaultsWhenCachedInstanceIsNullAndDurableIdIsNull()
+      throws UnknownHostException {
+    InetAddress host1 = InetAddress.getByAddress(new byte[] {127, 0, 0, 1});
+    MemberData memberData = mock(MemberData.class);
+    when(memberData.getInetAddress()).thenReturn(host1);
+    InternalDistributedMember member = new InternalDistributedMember(memberData);
+
+    assertThat(member.durableClientAttributes).isNull();
+    assertThat(member.getDurableClientAttributes()).isNotNull();
+    assertThat(member.getDurableClientAttributes().getId()).isEqualTo("");
+    assertThat(member.getDurableClientAttributes().getTimeout())
+        .isEqualTo(InternalDistributedMember.DEFAULT_DURABLE_CLIENT_TIMEOUT);
+  }
+
+  @Test
+  public void getDurableClientAttributesShouldReturnDefaultsWhenCachedInstanceIsNullAndDurableIdIsEmpty()
+      throws UnknownHostException {
+    InetAddress host1 = InetAddress.getByAddress(new byte[] {127, 0, 0, 1});
+    MemberData memberData = mock(MemberData.class);
+    when(memberData.getDurableId()).thenReturn("");
+    when(memberData.getInetAddress()).thenReturn(host1);
+    InternalDistributedMember member = new InternalDistributedMember(memberData);
+
+    assertThat(member.durableClientAttributes).isNull();
+    assertThat(member.getDurableClientAttributes()).isNotNull();
+    assertThat(member.getDurableClientAttributes().getId()).isEqualTo("");
+    assertThat(member.getDurableClientAttributes().getTimeout())
+        .isEqualTo(InternalDistributedMember.DEFAULT_DURABLE_CLIENT_TIMEOUT);
+  }
+
+  @Test
+  public void getDurableClientAttributesShouldReturnCustomAttributesWhenCachedInstanceIsNullAndDurableIdIsNotNull()
+      throws UnknownHostException {
+    InetAddress host1 = InetAddress.getByAddress(new byte[] {127, 0, 0, 1});
+    MemberData memberData = mock(MemberData.class);
+    when(memberData.getInetAddress()).thenReturn(host1);
+    when(memberData.getDurableId()).thenReturn("durableId");
+    when(memberData.getDurableTimeout()).thenReturn(Integer.MAX_VALUE);
+    InternalDistributedMember internalDistributedMember = new InternalDistributedMember(memberData);
+
+    assertThat(internalDistributedMember.durableClientAttributes).isNull();
+    assertThat(internalDistributedMember.getDurableClientAttributes()).isNotNull();
+    assertThat(internalDistributedMember.getDurableClientAttributes().getId())
+        .isEqualTo("durableId");
+    assertThat(internalDistributedMember.getDurableClientAttributes().getTimeout())
+        .isEqualTo(Integer.MAX_VALUE);
+  }
+
+  @Test
+  public void getDurableClientAttributesShouldReturnCachedInstanceWhenBackingMemberIdentifierAttributesHaveNotChanged()
+      throws UnknownHostException {
+    InetAddress host1 = InetAddress.getByAddress(new byte[] {127, 0, 0, 1});
+    MemberData memberData = mock(MemberData.class);
+    when(memberData.getInetAddress()).thenReturn(host1);
+    when(memberData.getDurableId()).thenReturn("durableId");
+    when(memberData.getDurableTimeout()).thenReturn(Integer.MAX_VALUE);
+    InternalDistributedMember internalDistributedMember = new InternalDistributedMember(memberData);
+    assertThat(internalDistributedMember.durableClientAttributes).isNull();
+
+    // Get Attributes first time - should be instantiated and cached.
+    DurableClientAttributes attributes = internalDistributedMember.getDurableClientAttributes();
+    assertThat(attributes).isNotNull();
+    assertThat(attributes.getId()).isEqualTo("durableId");
+    assertThat(attributes.getTimeout()).isEqualTo(Integer.MAX_VALUE);
+
+    // Get Attributes again without changing backing store - should return cached instance .
+    assertThat(internalDistributedMember.getDurableClientAttributes()).isSameAs(attributes);
+  }
+
+  @Test
+  public void setDurableTimeOutShouldNullifyCachedDurableClientAttributes() {
+    InternalDistributedMember member = new InternalDistributedMember("", 34567, "name", "uniqueId",
+        MemberIdentifier.NORMAL_DM_TYPE, new String[] {}, new DurableClientAttributes("", 500));
+    assertThat(member.durableClientAttributes).isNotNull();
+
+    member.setDurableTimeout(600);
+    assertThat(member.durableClientAttributes).isNull();
+  }
+
+  @Test
+  public void setDurableIdShouldNullifyCachedDurableClientAttributes() {
+    InternalDistributedMember member = new InternalDistributedMember("", 34567, "name", "uniqueId",
+        MemberIdentifier.NORMAL_DM_TYPE, new String[] {}, new DurableClientAttributes("", 500));
+    assertThat(member.durableClientAttributes).isNotNull();
+
+    member.setDurableId("testId");
+    assertThat(member.durableClientAttributes).isNull();
+  }
+
+  @Test
+  public void setMemberDataShouldNullifyCachedDurableClientAttributes() {
+    InternalDistributedMember member = new InternalDistributedMember("", 34567, "name", "uniqueId",
+        MemberIdentifier.NORMAL_DM_TYPE, new String[] {}, new DurableClientAttributes("", 500));
+    assertThat(member.durableClientAttributes).isNotNull();
+
+    member.setMemberData(mock(MemberData.class));
+    assertThat(member.durableClientAttributes).isNull();
+  }
 }

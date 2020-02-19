@@ -15,16 +15,17 @@
 package org.apache.geode.internal.statistics;
 
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.SynchronousQueue;
 
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.SystemFailure;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * @since GemFire 7.0
@@ -34,13 +35,12 @@ public class StatMonitorHandler implements SampleHandler {
   private static final Logger logger = LogService.getLogger();
 
   protected static final String ENABLE_MONITOR_THREAD =
-      DistributionConfig.GEMFIRE_PREFIX + "stats.enableMonitorThread";
+      GeodeGlossary.GEMFIRE_PREFIX + "stats.enableMonitorThread";
 
   private final boolean enableMonitorThread;
 
   /** The registered monitors */
-  private final ConcurrentHashSet<StatisticsMonitor> monitors =
-      new ConcurrentHashSet<StatisticsMonitor>();
+  private final Set<StatisticsMonitor> monitors = ConcurrentHashMap.newKeySet();
 
   /** Protected by synchronization on this handler instance */
   private volatile StatMonitorNotifier notifier;
@@ -132,8 +132,11 @@ public class StatMonitorHandler implements SampleHandler {
   @Override
   public void destroyedResourceInstance(ResourceInstance resourceInstance) {}
 
-  /** For testing only */
-  ConcurrentHashSet<StatisticsMonitor> getMonitorsSnapshot() {
+  /**
+   * For testing only
+   *
+   */
+  Set<StatisticsMonitor> getMonitorsSnapshot() {
     return this.monitors;
   }
 

@@ -34,8 +34,8 @@ public class ClusterManagementRestLoggingTest {
 
   @BeforeClass
   public static void beforeClass() {
-    cms = ClusterManagementServiceBuilder.buildWithHostAddress()
-        .setHostAddress("localhost", locator.getHttpPort())
+    cms = new ClusterManagementServiceBuilder()
+        .setPort(locator.getHttpPort())
         .build();
   }
 

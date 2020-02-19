@@ -21,9 +21,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_S
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Objects;
@@ -46,7 +43,6 @@ import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.internal.JmxManagerLocatorRequest;
 import org.apache.geode.management.internal.JmxManagerLocatorResponse;
 import org.apache.geode.management.internal.SSLUtil;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.converters.ConnectionEndpointConverter;
 import org.apache.geode.management.internal.cli.domain.ConnectToLocatorResult;
@@ -255,19 +251,6 @@ public class ConnectCommand extends OfflineGfshCommand {
     return sslOptions != null && Arrays.stream(sslOptions).anyMatch(Objects::nonNull);
   }
 
-  Properties loadProperties(File... files) {
-    Properties properties = new Properties();
-    if (files == null) {
-      return properties;
-    }
-    for (File file : files) {
-      if (file != null) {
-        properties.putAll(loadPropertiesFromFile(file));
-      }
-    }
-    return properties;
-  }
-
   static boolean containsLegacySSLConfig(Properties properties) {
     return properties.stringPropertyNames().stream()
         .anyMatch(key -> key.startsWith(CLUSTER_SSL_PREFIX)
@@ -456,33 +439,6 @@ public class ConnectCommand extends OfflineGfshCommand {
         hostPortToConnect.toString(false), e.getMessage()));
   }
 
-  private static Properties loadPropertiesFromFile(File propertyFile) {
-    try {
-      return loadPropertiesFromUrl(propertyFile.toURI().toURL());
-    } catch (MalformedURLException e) {
-      throw new RuntimeException(
-          CliStrings.format("Failed to load configuration properties from pathname (%1$s)!",
-              propertyFile.getAbsolutePath()),
-          e);
-    }
-  }
 
-  private static Properties loadPropertiesFromUrl(URL url) {
-    Properties properties = new Properties();
 
-    if (url == null) {
-      return properties;
-    }
-
-    try (InputStream inputStream = url.openStream()) {
-      properties.load(inputStream);
-    } catch (IOException io) {
-      throw new RuntimeException(
-          CliStrings.format(CliStrings.CONNECT__MSG__COULD_NOT_READ_CONFIG_FROM_0,
-              CliUtil.decodeWithDefaultCharSet(url.getPath())),
-          io);
-    }
-
-    return properties;
-  }
 }

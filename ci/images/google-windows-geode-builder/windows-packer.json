@@ -7,7 +7,8 @@
     "gcp_network": "default",
     "gcp_subnetwork": "default",
     "use_internal_ip": "false",
-    "java_build_version": "8"
+    "java_build_version": "8",
+    "packer_ttl": ""
   },
   "builders": [
     {
@@ -17,7 +18,7 @@
       "project_id": "{{user `gcp_project`}}",
       "network": "{{user `gcp_network`}}",
       "subnetwork": "{{user `gcp_subnetwork`}}",
-      "source_image_family": "windows-2016",
+      "source_image_family": "{{ user `base_family`}}",
       "disk_size": "100",
       "machine_type": "n1-standard-4",
       "communicator": "winrm",
@@ -31,7 +32,11 @@
       "zone": "us-central1-a",
       "tags": ["packer"],
       "omit_external_ip": false,
-      "use_internal_ip": "{{user `use_internal_ip`}}"
+      "use_internal_ip": "{{user `use_internal_ip`}}",
+      "labels": {
+        "time-to-live": "{{user `packer_ttl`}}",
+        "instance_type": "packer"
+      }
     }
   ],
   "provisioners": [
@@ -40,23 +45,37 @@
       "inline": [
         "$ErrorActionPreference = \"Stop\"",
         "Set-ExecutionPolicy Bypass -Scope Process -Force",
-        "Install-WindowsFeature Containers",
-        "Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force",
-        "Install-Module DockerMsftProvider -Force",
-        "Install-Package Docker -ProviderName DockerMsftProvider -Force",
-        "Set-Service wuauserv -StartupType Disabled",
-        "Stop-Service wuauserv"
-        ]
-    },
-    {
-      "type": "windows-restart"
+        "Install-WindowsFeature Containers"
+      ]
     },
     {
       "type": "powershell",
       "inline": [
         "$ErrorActionPreference = \"Stop\"",
         "Set-ExecutionPolicy Bypass -Scope Process -Force",
-        "Invoke-WebRequest https://chocolatey.org/install.ps1 -UseBasicParsing | Invoke-Expression",
+        "Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force",
+        "Install-Module DockerMsftProvider -Force",
+        "Install-Package Docker -ProviderName DockerMsftProvider -Force",
+        "New-Item \"C:\\ProgramData\\Docker\\config\\daemon.json\" -Force",
+        "Set-Content \"C:\\ProgramData\\Docker\\config\\daemon.json\" '{\"registry-mirrors\": [\"https://mirror.gcr.io\"]}'",
+        "Set-Service wuauserv -StartupType Disabled",
+        "Stop-Service wuauserv"
+      ]
+    },
+    {
+      "type": "powershell",
+      "inline": [
+        "$ErrorActionPreference = \"Stop\"",
+        "Set-ExecutionPolicy Bypass -Scope Process -Force",
+        "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12",
+        "Invoke-WebRequest https://chocolatey.org/install.ps1 -UseBasicParsing | Invoke-Expression"
+      ]
+    },
+    {
+      "type": "powershell",
+      "inline": [
+        "$ErrorActionPreference = \"Stop\"",
+        "Set-ExecutionPolicy Bypass -Scope Process -Force",
         "choco install -y git cygwin cyg-get adoptopenjdk11",
         "Move-Item \"C:\\Program Files\\AdoptOpenJDK\\jdk-11*\" c:\\java11",
         "choco install -y jdk8 -params 'installdir=c:\\\\java8tmp;source=false'",
@@ -67,7 +86,12 @@
         "$NewPath = $OldPath + ';' + 'c:\\Program Files\\Git\\bin' + ';' + 'c:\\tools\\cygwin\\bin'",
         "Set-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\\System\\CurrentControlSet\\Control\\Session Manager\\Environment' -Name PATH -Value $NewPath",
         "refreshenv",
-        "cyg-get rsync",
+        "cyg-get rsync"
+      ]
+    },
+    {
+      "type": "powershell",
+      "inline": [
         "winrm set winrm/config/service '@{AllowUnencrypted=\"true\"}'",
         "New-NetFirewallRule -DisplayName sshd -Direction inbound -Action allow -Protocol tcp -LocalPort 22",
         "New-NetFirewallRule -DisplayName \"Docker containers\" -LocalAddress 172.0.0.0/8 -Action allow -Direction inbound",
@@ -77,19 +101,7 @@
       ]
     },
     {
-      "type":  "powershell",
-      "elevated_user": "geode",
-      "elevated_password": "{{.WinRMPassword}}",
-      "inline": [
-        "net start \"Docker Engine\"",
-        "write-output '>>>>>>>>>> Adding openjdk docker image <<<<<<<<<<'",
-        "docker pull openjdk:8",
-        "write-output '>>>>>>>>>> Removing unused docker images <<<<<<<<<<'",
-        "Set-Content -Path c:\\ProgramData\\docker\\config\\daemon.json -Value '{ \"hosts\": [\"tcp://0.0.0.0:2375\", \"npipe://\"] }'"
-      ]
-    },
-    {
-      "type":  "powershell",
+      "type": "powershell",
       "inline": [
 
         "write-output '>>>>>>>>>> Cloning geode repo <<<<<<<<<<'",
@@ -108,6 +120,16 @@
 
         "write-output '>>>>>>>>>> Final cleanup <<<<<<<<<<'",
         "rm -force -recurse geode"
+      ]
+    },
+    {
+      "type": "windows-restart",
+      "restart_timeout": "30m"
+    },
+    {
+      "type": "powershell",
+      "inline": [
+        "GCESysprep -NoShutDown"
       ]
     }
   ]

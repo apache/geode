@@ -50,7 +50,6 @@ import org.apache.geode.cache.partition.PartitionNotAvailableException;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.cache.util.CacheWriterAdapter;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -60,6 +59,7 @@ import org.apache.geode.internal.cache.partitioned.Bucket;
 import org.apache.geode.internal.cache.partitioned.PRLocallyDestroyedException;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 public class PartitionedRegionHelper {
   private static final Logger logger = LogService.getLogger();
@@ -85,7 +85,7 @@ public class PartitionedRegionHelper {
    * meta-data and this property controls the delay before giving up trying to acquire a global lock
    */
   static final String VM_OWNERSHIP_WAIT_TIME_PROPERTY =
-      DistributionConfig.GEMFIRE_PREFIX + "VM_OWNERSHIP_WAIT_TIME";
+      GeodeGlossary.GEMFIRE_PREFIX + "VM_OWNERSHIP_WAIT_TIME";
 
   /** Wait forever for ownership */
   static final long VM_OWNERSHIP_WAIT_TIME_DEFAULT = Long.MAX_VALUE;
@@ -214,7 +214,7 @@ public class PartitionedRegionHelper {
       factory.setScope(Scope.DISTRIBUTED_ACK);
       factory.setDataPolicy(DataPolicy.REPLICATE);
       factory.addCacheListener(new FixedPartitionAttributesListener());
-      if (Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "PRDebug")) {
+      if (Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "PRDebug")) {
         factory.addCacheListener(new CacheListenerAdapter() {
           @Override
           public void afterCreate(EntryEvent event) {
@@ -710,7 +710,7 @@ public class PartitionedRegionHelper {
     } finally {
       LocalRegion.setThreadInitLevelRequirement(oldLevel);
     }
-    if (region == null || !(region instanceof PartitionedRegion)) {
+    if (!(region instanceof PartitionedRegion)) {
       return null;
     }
 
@@ -835,7 +835,7 @@ public class PartitionedRegionHelper {
    */
   public static void logForDataLoss(PartitionedRegion partitionedRegion, int bucketId,
       String callingMethod) {
-    if (!Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "PRDebug")) {
+    if (!Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "PRDebug")) {
       return;
     }
     Region root = PartitionedRegionHelper.getPRRoot(partitionedRegion.getCache());

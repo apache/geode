@@ -43,7 +43,6 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.execute.metrics.FunctionStats;
@@ -57,6 +56,7 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 public class FunctionRetryTestBase implements Serializable {
 
@@ -323,7 +323,7 @@ public class FunctionRetryTestBase implements Serializable {
         vmIndex,
         cacheRule -> cacheRule
             .withCacheSetup(fnTimeOut -> System
-                .setProperty(DistributionConfig.GEMFIRE_PREFIX + "CLIENT_FUNCTION_TIMEOUT", "20"))
+                .setProperty(GeodeGlossary.GEMFIRE_PREFIX + "CLIENT_FUNCTION_TIMEOUT", "20"))
             .withLocatorConnection(locator.getPort()));
   }
 
@@ -332,7 +332,7 @@ public class FunctionRetryTestBase implements Serializable {
         vmIndex,
         cacheRule -> cacheRule
             .withCacheSetup(fnTimeOut -> System
-                .setProperty(DistributionConfig.GEMFIRE_PREFIX + "CLIENT_FUNCTION_TIMEOUT", "20"))
+                .setProperty(GeodeGlossary.GEMFIRE_PREFIX + "CLIENT_FUNCTION_TIMEOUT", "20"))
             .withLocatorConnection(locator.getPort())
             .withCacheSetup(cf -> cf.setPoolRetryAttempts(retryAttempts)));
   }

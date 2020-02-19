@@ -44,10 +44,9 @@ public class MemberManagementServiceDunitTest {
   public static void beforeClass() {
     locator = cluster.startLocatorVM(0, MemberStarterRule::withHttpService);
     cluster.startServerVM(1, locator.getPort());
-    cmsClient =
-        ClusterManagementServiceBuilder.buildWithHostAddress()
-            .setHostAddress("localhost", locator.getHttpPort())
-            .build();
+    cmsClient = new ClusterManagementServiceBuilder()
+        .setPort(locator.getHttpPort())
+        .build();
   }
 
   @Test
@@ -90,9 +89,9 @@ public class MemberManagementServiceDunitTest {
     ClusterManagementGetResult<Member, MemberInformation> result = cmsClient.get(config);
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
-    assertThat(result.getRuntimeResult().size()).isEqualTo(1);
+    assertThat(result.getResult().getRuntimeInfos().size()).isEqualTo(1);
 
-    MemberInformation memberConfig = result.getRuntimeResult().get(0);
+    MemberInformation memberConfig = result.getResult().getRuntimeInfos().get(0);
     assertThat(memberConfig.isCoordinator()).isTrue();
     assertThat(memberConfig.isServer()).isFalse();
     assertThat(memberConfig.getLocatorPort()).isEqualTo(locator.getPort());

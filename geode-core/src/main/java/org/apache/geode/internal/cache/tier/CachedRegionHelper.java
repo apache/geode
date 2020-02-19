@@ -15,7 +15,6 @@
 package org.apache.geode.internal.cache.tier;
 
 import org.apache.geode.CancelException;
-import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheForClientAccess;
@@ -66,15 +65,6 @@ public class CachedRegionHelper {
    */
   public void close() {
     // cache = null;
-  }
-
-  /**
-   * Just ensure that this class gets loaded.
-   *
-   * @see SystemFailure#loadEmergencyClasses()
-   */
-  public static void loadEmergencyClasses() {
-    // nothing needed, just make sure this class gets loaded
   }
 
 }

@@ -43,7 +43,7 @@ public class TTLExecutor extends AbstractExecutor implements Extendable {
     ByteArrayWrapper key = command.getKey();
     RegionProvider rC = context.getRegionProvider();
     boolean exists = false;
-    RedisDataType val = rC.getRedisDataType(key);
+    RedisDataType val = context.getKeyRegistrar().getType(key);
     if (val != null)
       exists = true;
 

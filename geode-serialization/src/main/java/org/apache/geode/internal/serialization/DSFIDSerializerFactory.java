@@ -14,6 +14,20 @@
  */
 package org.apache.geode.internal.serialization;
 
+import org.apache.geode.internal.serialization.internal.DSFIDSerializerImpl;
+
+/**
+ * DSFIDSerializerFactory can be used to create a serialization service.
+ * You may establish an overriding ObjectSerializer and ObjectDeserializer
+ * to handle types of serialization other than DataSerializableFixedID and
+ * BasicSerializable. Geode-core does this and adds a large number of other
+ * types of serialization including PDX and DataSerializable.
+ * <p>
+ * Once a DSFIDSerializer is created you should register your
+ * DataSerializableFixedID classes with it using registerDSFID(). You can
+ * find examples of doing this in other modules by looking for uses of this
+ * method.
+ */
 public class DSFIDSerializerFactory {
 
   private ObjectSerializer serializer;
@@ -43,7 +57,7 @@ public class DSFIDSerializerFactory {
 
   /** Create a DSFIDSerializer */
   public DSFIDSerializer create() {
-    if (serializer == null) {
+    if (serializer == null && deserializer == null) {
       return new DSFIDSerializerImpl();
     } else {
       return new DSFIDSerializerImpl(serializer, deserializer);

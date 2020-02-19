@@ -70,7 +70,8 @@ def main(url, team, pipeline, job, number_of_builds, authorization_cookie, threa
 
 
 def get_cookie(url):
-    data = yaml.load(open("/Users/mhanson/.flyrc"))
+    home = os.environ['HOME']
+    data = yaml.load(open(f"{home}/.flyrc"))
     for target in data["targets"]:
         api = data["targets"][target]["api"]
         if api == url:

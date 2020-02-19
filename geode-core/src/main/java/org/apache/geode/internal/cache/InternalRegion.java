@@ -384,6 +384,11 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
   boolean virtualPut(EntryEventImpl event, boolean ifNew, boolean ifOld, Object expectedOldValue,
       boolean requireOldValue, long lastModified, boolean overwriteDestroyed);
 
+  boolean virtualPut(EntryEventImpl event, boolean ifNew, boolean ifOld, Object expectedOldValue,
+      boolean requireOldValue, long lastModified, boolean overwriteDestroyed,
+      boolean invokeCallbacks,
+      boolean throwsConcurrentModification);
+
   long postPutAllSend(DistributedPutAllOperation putallOp, VersionedObjectList successfulPuts);
 
   void postPutAllFireEvents(DistributedPutAllOperation putallOp,
@@ -445,4 +450,13 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
       DistributedRemoveAllOperation removeAllOp, List<VersionTag> retryVersions);
 
   VersionTag getVersionTag(Object key);
+
+  /**
+   * This method determines whether this region should synchronize with peer replicated regions when
+   * the given member has crashed.
+   *
+   * @param id the crashed member
+   * @return true if synchronization should be attempted
+   */
+  boolean shouldSyncForCrashedMember(InternalDistributedMember id);
 }

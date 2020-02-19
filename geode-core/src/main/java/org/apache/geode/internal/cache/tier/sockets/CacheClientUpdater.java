@@ -54,7 +54,6 @@ import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.client.internal.QueueManager;
 import org.apache.geode.cache.query.internal.cq.CqService;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem.DisconnectListener;
@@ -89,6 +88,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.GemFireSecurityException;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * {@code CacheClientUpdater} is a thread that processes update messages from a cache server and
@@ -202,12 +202,12 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
   private final ServerLocation location;
 
   // TODO - remove these fields
-  private QueueManager qManager = null;
-  private EndpointManager eManager = null;
-  private Endpoint endpoint = null;
+  private QueueManager qManager;
+  private EndpointManager eManager;
+  private Endpoint endpoint;
 
   private static final long MAX_CACHE_WAIT =
-      Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "CacheClientUpdater.MAX_WAIT", 120); // seconds
+      Long.getLong(GeodeGlossary.GEMFIRE_PREFIX + "CacheClientUpdater.MAX_WAIT", 120); // seconds
 
   /**
    * Return true if cache appears
@@ -370,7 +370,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
     } catch (SSLException ex) {
       if (!quitting()) {
         getSecurityLogger().warning(String.format("%s SSL negotiation failed. %s",
-            new Object[] {this, ex}));
+            this, ex));
         throw new AuthenticationFailedException(
             String.format("SSL negotiation failed with endpoint: %s",
                 location),
@@ -381,14 +381,14 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
         getSecurityLogger().warning(
             String.format(
                 "%s: Security exception when creating server-to-client communication socket. %s",
-                new Object[] {this, ex}));
+                this, ex));
         throw ex;
       }
     } catch (IOException e) {
       if (!quitting()) {
         logger.warn(String.format(
             "%s: Caught following exception while attempting to create a server-to-client communication socket and will exit: %s",
-            new Object[] {this, e}),
+            this, e),
             logger.isDebugEnabled() ? e : null);
       }
       eManager.serverCrashed(this.endpoint);
@@ -401,7 +401,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
       if (!quitting()) {
         logger.warn(String.format(
             "%s: Caught following exception while attempting to create a server-to-client communication socket and will exit: %s",
-            new Object[] {this, e}),
+            this, e),
             logger.isDebugEnabled() ? e : null);
       }
       throw e;
@@ -448,7 +448,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
     return this.isPrimary;
   }
 
-  public InternalLogWriter getSecurityLogger() {
+  private InternalLogWriter getSecurityLogger() {
     return this.qManager.getSecurityLogger();
   }
 
@@ -654,23 +654,19 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
 
       LocalRegion region = (LocalRegion) this.cacheHelper.getRegion(regionName);
 
-      Object newValue = null;
       byte[] deltaBytes = null;
-      Object fullValue = null;
+      Object objectValue = null;
       boolean isValueObject;
 
       if (!isDeltaSent) {
-        // bug #42162 - must check for a serialized null here
         byte[] serializedForm = valuePart.getSerializedForm();
 
-        if (isCreate && InternalDataSerializer.isSerializedNull(serializedForm)) {
-          // newValue = null; newValue is already null
-        } else {
-          newValue = valuePart.getSerializedForm();
+        if (!isCreate || !InternalDataSerializer.isSerializedNull(serializedForm)) {
+          objectValue = valuePart.getSerializedForm();
         }
 
         if (withCQs) {
-          fullValue = valuePart.getObject();
+          objectValue = valuePart.getObject();
         }
 
         isValueObject = valuePart.isObject();
@@ -701,7 +697,8 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
           newEvent.setVersionTag(versionTag);
           newEvent.setFromServer(true);
 
-          region.basicBridgeClientUpdate(eventId.getDistributedMember(), key, newValue, deltaBytes,
+          region.basicBridgeClientUpdate(eventId.getDistributedMember(), key, objectValue,
+              deltaBytes,
               isValueObject, callbackArgument,
               clientMessage.getMessageType() == MessageType.LOCAL_CREATE,
               this.qManager.getState().getProcessedMarker() || !this.isDurableClient, newEvent,
@@ -712,15 +709,15 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
           // bug 45520 - ConcurrentCacheModificationException is not thrown and we must check this
           // flag
           if (withCQs && isDeltaSent) {
-            fullValue = newEvent.getNewValue();
+            objectValue = newEvent.getNewValue();
           }
         } catch (InvalidDeltaException ignore) {
           Part fullValuePart = requestFullValue(eventId, "Caught InvalidDeltaException.");
           region.getCachePerfStats().incDeltaFullValuesRequested();
-          fullValue = newValue = fullValuePart.getObject(); // TODO: fix this line
+          objectValue = fullValuePart.getObject();
           isValueObject = fullValuePart.isObject();
 
-          region.basicBridgeClientUpdate(eventId.getDistributedMember(), key, newValue, null,
+          region.basicBridgeClientUpdate(eventId.getDistributedMember(), key, objectValue, null,
               isValueObject, callbackArgument,
               clientMessage.getMessageType() == MessageType.LOCAL_CREATE,
               this.qManager.getState().getProcessedMarker() || !this.isDurableClient, newEvent,
@@ -745,8 +742,8 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
           logger.debug("Received message has CQ Event. Number of cqs interested in the event : {}",
               numCqsPart.getInt() / 2);
         }
-        partCnt = processCqs(clientMessage, partCnt, numCqsPart.getInt(),
-            clientMessage.getMessageType(), key, fullValue, deltaBytes, eventId);
+        processCqs(clientMessage, partCnt, numCqsPart.getInt(),
+            clientMessage.getMessageType(), key, objectValue, deltaBytes, eventId);
         this.isOpCompleted = true;
       }
     } catch (Exception e) {
@@ -873,7 +870,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
           logger.debug("Received message has CQ Event. Number of cqs interested in the event : {}",
               numCqsPart.getInt() / 2);
         }
-        partCnt = processCqs(clientMessage, partCnt, numCqsPart.getInt(), regionOpType.getInt(),
+        processCqs(clientMessage, partCnt, numCqsPart.getInt(), regionOpType.getInt(),
             key, null);
         this.isOpCompleted = true;
       }
@@ -920,8 +917,8 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
       Part isInterestListPassedPart = clientMessage.getPart(partCnt++);
       Part hasCqsPart = clientMessage.getPart(partCnt++);
 
-      boolean withInterest = ((Boolean) isInterestListPassedPart.getObject()).booleanValue();
-      boolean withCQs = ((Boolean) hasCqsPart.getObject()).booleanValue();
+      boolean withInterest = (Boolean) isInterestListPassedPart.getObject();
+      boolean withCQs = (Boolean) hasCqsPart.getObject();
 
       Object callbackArgument = callbackArgumentPart.getObject();
       if (isDebugEnabled) {
@@ -971,7 +968,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
           logger.debug("Received message has CQ Event. Number of cqs interested in the event : {}",
               numCqsPart.getInt() / 2);
         }
-        partCnt = processCqs(clientMessage, partCnt, numCqsPart.getInt(),
+        processCqs(clientMessage, partCnt, numCqsPart.getInt(),
             clientMessage.getMessageType(), key, null);
         this.isOpCompleted = true;
       }
@@ -1018,8 +1015,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
           logger.debug("Received message has CQ Event. Number of cqs interested in the event : {}",
               numCqsPart.getInt() / 2);
         }
-        // TODO: partCnt is unused -- does processCqs have side effects
-        partCnt = processCqs(clientMessage, partCnt, numCqsPart.getInt(),
+        processCqs(clientMessage, partCnt, numCqsPart.getInt(),
             clientMessage.getMessageType(), null, null);
       }
 
@@ -1087,7 +1083,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
           logger.debug("Received message has CQ Event. Number of cqs interested in the event : {}",
               numCqsPart.getInt() / 2);
         }
-        partCnt = processCqs(clientMessage, partCnt, numCqsPart.getInt(),
+        processCqs(clientMessage, partCnt, numCqsPart.getInt(),
             clientMessage.getMessageType(), null, null);
       }
 
@@ -1138,7 +1134,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
 
       int partCnt = 0;
       Part regionNamePart = clientMessage.getPart(partCnt++);
-      partCnt++; // Part callbackArgumentPart = m.getPart(partCnt++);
+      partCnt++;
 
       Part hasCqsPart = clientMessage.getPart(partCnt++);
 
@@ -1150,8 +1146,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
           logger.debug("Received message has CQ Event. Number of cqs interested in the event : {}",
               numCqsPart.getInt() / 2);
         }
-        // TODO: partCnt is unused
-        partCnt = processCqs(clientMessage, partCnt, numCqsPart.getInt(),
+        processCqs(clientMessage, partCnt, numCqsPart.getInt(),
             clientMessage.getMessageType(), null, null);
       }
 
@@ -1337,7 +1332,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
       Part interestTypePart = clientMessage.getPart(partCnt++);
       Part interestResultPolicyPart = clientMessage.getPart(partCnt++);
       Part isDurablePart = clientMessage.getPart(partCnt++);
-      Part receiveUpdatesAsInvalidatesPart = clientMessage.getPart(partCnt++);
+      Part receiveUpdatesAsInvalidatesPart = clientMessage.getPart(partCnt);
 
       regionName = regionNamePart.getCachedString();
       key = keyPart.getStringOrObject();
@@ -1394,7 +1389,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
       Part keyPart = clientMessage.getPart(partCnt++);
       Part interestTypePart = clientMessage.getPart(partCnt++);
       Part isDurablePart = clientMessage.getPart(partCnt++);
-      Part receiveUpdatesAsInvalidatesPart = clientMessage.getPart(partCnt++);
+      Part receiveUpdatesAsInvalidatesPart = clientMessage.getPart(partCnt);
       // Not reading the eventId part
 
       regionName = regionNamePart.getCachedString();
@@ -1465,12 +1460,12 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
         case 0:
           Map<VersionSource, Long> regionGCVersions =
               (Map<VersionSource, Long>) clientMessage.getPart(partIdx++).getObject();
-          EventID eventID = (EventID) clientMessage.getPart(partIdx++).getObject();
+          EventID eventID = (EventID) clientMessage.getPart(partIdx).getObject();
           region.expireTombstones(regionGCVersions, eventID, null);
           break;
 
         case 1:
-          Set<Object> removedKeys = (Set<Object>) clientMessage.getPart(partIdx++).getObject();
+          Set<Object> removedKeys = (Set<Object>) clientMessage.getPart(partIdx).getObject();
           region.expireTombstoneKeys(removedKeys);
           break;
 
@@ -1503,12 +1498,9 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
 
     // The pool stuff is really sick, so it's possible for us to have a distributed
     // system that is not the same as our cache. Check it just in case...
-    if (this.system.getCancelCriterion().isCancelInProgress()) {
-      return true;
-    }
+    return this.system.getCancelCriterion().isCancelInProgress();
 
     // All clear on this end, boss.
-    return false;
   }
 
   private void waitForFailedUpdater() {
@@ -1779,7 +1771,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
     // If this was a surprise, print a warning.
     if (unexpected && !(exception instanceof CancelException)) {
       logger.warn(String.format("%s : %s : %s",
-          new Object[] {this, message, exception}), exception);
+          this, message, exception), exception);
     }
     // We can't shutdown the client updater just because of an exception.
     // Let the caller decide if we should continue running or not.

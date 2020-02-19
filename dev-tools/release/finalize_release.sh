@@ -57,10 +57,11 @@ GEODE=$WORKSPACE/geode
 GEODE_DEVELOP=$WORKSPACE/geode-develop
 GEODE_EXAMPLES=$WORKSPACE/geode-examples
 GEODE_NATIVE=$WORKSPACE/geode-native
+GEODE_BENCHMARKS=$WORKSPACE/geode-benchmarks
 SVN_RELEASE_DIR=$WORKSPACE/dist/release/geode
 set +x
 
-if [ -d "$GEODE" ] && [ -d "$GEODE_DEVELOP" ] && [ -d "$GEODE_EXAMPLES" ] && [ -d "$GEODE_NATIVE" ] && [ -d "$SVN_RELEASE_DIR" ] ; then
+if [ -d "$GEODE" ] && [ -d "$GEODE_DEVELOP" ] && [ -d "$GEODE_EXAMPLES" ] && [ -d "$GEODE_NATIVE" ] && [ -d "$GEODE_BENCHMARKS" ] && [ -d "$SVN_RELEASE_DIR" ] ; then
     true
 else
     echo "Please run this script from the same working directory as you initially ran prepare_rc.sh"
@@ -76,7 +77,7 @@ set -x
 cd ${0%/*}/../../ci/pipelines/meta
 DEVELOP_META=$(pwd)
 cd ${GEODE}
-fly -t concourse.apachegeode-ci.info login --concourse-url https://concourse.apachegeode-ci.info/
+fly -t concourse.apachegeode-ci.info-main login --team-name main --concourse-url https://concourse.apachegeode-ci.info/
 ${DEVELOP_META}/destroy_pipelines.sh
 set +x
 
@@ -104,7 +105,7 @@ echo ""
 echo "============================================================"
 echo "Merging to master"
 echo "============================================================"
-for DIR in ${GEODE} ${GEODE_EXAMPLES} ${GEODE_NATIVE} ; do
+for DIR in ${GEODE} ${GEODE_EXAMPLES} ${GEODE_NATIVE} ${GEODE_BENCHMARKS} ; do
     set -x
     cd ${DIR}
     git fetch origin
@@ -122,7 +123,7 @@ echo ""
 echo "============================================================"
 echo "Destroying release branches"
 echo "============================================================"
-for DIR in ${GEODE} ${GEODE_EXAMPLES} ${GEODE_NATIVE} ; do
+for DIR in ${GEODE} ${GEODE_EXAMPLES} ${GEODE_NATIVE} ${GEODE_BENCHMARKS} ; do
     set -x
     cd ${DIR}
     git push origin --delete release/${VERSION}

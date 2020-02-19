@@ -16,6 +16,7 @@
 package org.apache.geode.management.internal.configuration.validators;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -30,6 +31,8 @@ import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.configuration.AbstractConfiguration;
+import org.apache.geode.management.configuration.GroupableConfiguration;
+import org.apache.geode.management.configuration.RegionScoped;
 import org.apache.geode.management.internal.configuration.mutators.CacheConfigurationManager;
 import org.apache.geode.management.internal.exceptions.EntityExistsException;
 
@@ -48,10 +51,19 @@ public class MemberValidator {
   public void validateCreate(AbstractConfiguration config, CacheConfigurationManager manager) {
 
     Map<String, AbstractConfiguration> existingElementsAndTheirGroups =
-        findCacheElement(config.getId(), manager);
+        findCacheElement(config, manager);
     if (existingElementsAndTheirGroups.size() == 0) {
       return;
     }
+
+    // if the configuration is not groupable and already exists, throw exception
+    if (!(config instanceof GroupableConfiguration)) {
+      throw new EntityExistsException(
+          config.getClass().getSimpleName() + " '" + config.getId()
+              + "' already exists");
+    }
+
+    // if configuration is groupable, then check if it's already in the group
     String configGroup = AbstractConfiguration.getGroupName(config.getGroup());
     if (existingElementsAndTheirGroups.keySet().contains(configGroup)) {
       throw new EntityExistsException(
@@ -59,8 +71,9 @@ public class MemberValidator {
               + "' already exists in group " + configGroup);
     }
 
-    Set<DistributedMember> membersOfExistingGroups =
-        findServers(existingElementsAndTheirGroups.keySet().toArray(new String[0]));
+    // if other group and this new group has common members, then throw exception
+    String[] groups = existingElementsAndTheirGroups.keySet().toArray(new String[0]);
+    Set<DistributedMember> membersOfExistingGroups = findServers(groups);
     Set<DistributedMember> membersOfNewGroup = findServers(config.getGroup());
     Set<DistributedMember> intersection = new HashSet<>(membersOfExistingGroups);
     intersection.retainAll(membersOfNewGroup);
@@ -80,24 +93,34 @@ public class MemberValidator {
     }
   }
 
-  public String[] findGroupsWithThisElement(String id, CacheConfigurationManager manager) {
-    return findCacheElement(id, manager).keySet().toArray(new String[0]);
+  public String[] findGroupsWithThisElement(AbstractConfiguration config,
+      CacheConfigurationManager manager) {
+    return findCacheElement(config, manager).keySet().toArray(new String[0]);
   }
 
   /**
    * this returns a map of CacheElement with this id, with the group as the key of the map
    */
-  public Map<String, AbstractConfiguration> findCacheElement(String id,
+  public Map<String, AbstractConfiguration> findCacheElement(AbstractConfiguration config,
       CacheConfigurationManager manager) {
     Map<String, AbstractConfiguration> results = new HashMap<>();
     for (String group : persistenceService.getGroups()) {
-      CacheConfig cacheConfig = persistenceService.getCacheConfig(group);
-      if (cacheConfig == null) {
-        continue;
-      }
-      AbstractConfiguration existing = manager.get(id, cacheConfig);
+      CacheConfig cacheConfig = persistenceService.getCacheConfig(group, true);
+      AbstractConfiguration existing = manager.get(config, cacheConfig);
       if (existing != null) {
         results.put(group, existing);
+      }
+    }
+    return results;
+  }
+
+  public Set<String> findGroups(String regionName) {
+    Set<String> results = new HashSet<>();
+    Set<String> groups = persistenceService.getGroups();
+    for (String group : groups) {
+      CacheConfig existing = persistenceService.getCacheConfig(group, false);
+      if (existing != null && existing.findRegionConfiguration(regionName) != null) {
+        results.add(group);
       }
     }
     return results;
@@ -110,6 +133,22 @@ public class MemberValidator {
     return findMembers(false, groups);
   }
 
+
+  public Set<DistributedMember> findServers(AbstractConfiguration configuration) {
+    if (configuration instanceof RegionScoped) {
+      Set<String> groups = findGroups(((RegionScoped) configuration).getRegionName());
+      if (groups.size() == 0) {
+        return Collections.emptySet();
+      }
+      return findServers(groups.toArray(new String[0]));
+    }
+
+    return findServers(configuration.getGroup());
+  }
+
+  /**
+   * if id is specified, find the member with that id, otherwise find members in the groups
+   */
   public Set<DistributedMember> findMembers(String id, String... groups) {
     if (StringUtils.isNotBlank(id)) {
       return getAllServersAndLocators().stream().filter(m -> m.getName().equals(id))
@@ -119,6 +158,11 @@ public class MemberValidator {
     return findMembers(true, groups);
   }
 
+  /**
+   * find members within these groups
+   *
+   * @param includeLocators whether to include locators in this search or not
+   */
   public Set<DistributedMember> findMembers(boolean includeLocators, String... groups) {
     if (groups == null) {
       groups = new String[] {AbstractConfiguration.CLUSTER};

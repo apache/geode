@@ -26,6 +26,8 @@ dependencies {
   compileOnly(project(':geode-core'))
   compileOnly(project(':geode-pulse'))
   implementation(project(':geode-logging'))
+  implementation(project(':geode-membership'))
+  compileOnly(project(':geode-tcp-server'))
   compileOnly('com.fasterxml.jackson.core:jackson-databind')
   compileOnly('commons-io:commons-io')
   compileOnly('junit:junit')

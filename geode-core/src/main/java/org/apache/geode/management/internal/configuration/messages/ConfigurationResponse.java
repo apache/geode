@@ -18,6 +18,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -131,7 +132,7 @@ public class ConfigurationResponse implements DataSerializableFixedID {
   }
 
   public void addJar(String group, Set<String> jarNames) {
-    this.jarNames.put(group, jarNames);
+    this.jarNames.put(group, new HashSet<>(jarNames));
   }
 
   public Map<String, Set<String>> getJarNames() {

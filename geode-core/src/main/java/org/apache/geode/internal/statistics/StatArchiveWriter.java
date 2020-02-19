@@ -38,11 +38,12 @@ import org.apache.geode.GemFireIOException;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.annotations.internal.MakeNotStatic;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.NanoTimer;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * StatArchiveWriter provides APIs to write statistic snapshots to an archive file.
@@ -60,7 +61,7 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
   private static volatile int traceResourceInstId = -1;
 
   private final boolean trace =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "stats.debug.traceStatArchiveWriter");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "stats.debug.traceStatArchiveWriter");
 
   private final Set<ResourceInstance> sampleWrittenForResources = new HashSet<ResourceInstance>();
   private final Set<ResourceInstance> addedResources = new HashSet<ResourceInstance>();
@@ -203,7 +204,7 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
   protected String getMachineInfo() {
     String machineInfo = System.getProperty("os.arch");
     try {
-      String hostName = SocketCreator.getHostName(SocketCreator.getLocalHost());
+      String hostName = SocketCreator.getHostName(LocalHostUtil.getLocalHost());
       machineInfo += " " + hostName;
     } catch (UnknownHostException ignore) {
     }

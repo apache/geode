@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * A utility class for building up arguments used in spawning another VM
@@ -81,7 +81,7 @@ public class JavaCommandBuilder {
     // the gemfire.vmarg.dashserver property allows customers to add a custom argument in place of
     // -server
     final String altDashServerArg =
-        System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "vmarg.dashserver", null);
+        System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + "vmarg.dashserver", null);
     return (altDashServerArg != null ? altDashServerArg
         : (omitDashServerArg(javaBinDir) ? null : "-server"));
   }

@@ -42,12 +42,12 @@ import javax.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.modules.session.internal.filter.GemfireHttpSession;
 import org.apache.geode.modules.session.internal.filter.GemfireSessionManager;
 import org.apache.geode.modules.session.internal.filter.SessionManager;
 import org.apache.geode.modules.session.internal.filter.attributes.DeltaQueuedSessionAttributes;
 import org.apache.geode.modules.session.internal.filter.attributes.DeltaSessionAttributes;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Primary class which orchestrates everything. This is the class which gets configured in the
@@ -76,7 +76,7 @@ public class SessionCachingFilter implements Filter {
    * Can be overridden during testing.
    */
   private static final AtomicInteger started = new AtomicInteger(
-      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "override.session.manager.count", 1));
+      Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "override.session.manager.count", 1));
 
   /**
    * This latch ensures that at least one thread/instance has fired up the session manager before

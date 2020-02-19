@@ -245,8 +245,6 @@ public class InternalHttpService implements HttpService {
             ignore.getMessage(), ignore);
       } finally {
         this.httpServer = null;
-        System.clearProperty("catalina.base");
-        System.clearProperty("catalina.home");
       }
     }
   }

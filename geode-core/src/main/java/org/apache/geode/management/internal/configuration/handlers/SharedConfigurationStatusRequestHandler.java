@@ -16,15 +16,12 @@ package org.apache.geode.management.internal.configuration.handlers;
 
 import java.io.IOException;
 
-import org.apache.geode.cache.GemFireCache;
-import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.distributed.internal.RestartableTcpHandler;
+import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusRequest;
 
-public class SharedConfigurationStatusRequestHandler implements RestartableTcpHandler {
+public class SharedConfigurationStatusRequestHandler implements TcpHandler {
 
 
   @Override
@@ -53,11 +50,4 @@ public class SharedConfigurationStatusRequestHandler implements RestartableTcpHa
   public void init(TcpServer tcpServer) {
 
   }
-
-  @Override
-  public void restarting(DistributedSystem system, GemFireCache cache,
-      InternalConfigurationPersistenceService sharedConfig) {
-
-  }
-
 }

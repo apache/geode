@@ -25,8 +25,8 @@ import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.BucketSetHelper;
+import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
 
 /**
@@ -77,7 +77,7 @@ public class FunctionRemoteContext implements DataSerializable {
     }
     this.args = DataSerializer.readObject(in);
     this.filter = (HashSet) DataSerializer.readHashSet(in);
-    if (InternalDataSerializer.getVersionForDataStream(in).compareTo(Version.GEODE_1_11_0) >= 0) {
+    if (StaticSerialization.getVersionForDataStream(in).compareTo(Version.GEODE_1_11_0) >= 0) {
       this.bucketArray = DataSerializer.readIntArray(in);
     } else {
       HashSet<Integer> bucketSet = DataSerializer.readHashSet(in);
@@ -95,7 +95,7 @@ public class FunctionRemoteContext implements DataSerializable {
     }
     DataSerializer.writeObject(this.args, out);
     DataSerializer.writeHashSet((HashSet) this.filter, out);
-    if (InternalDataSerializer.getVersionForDataStream(out).compareTo(Version.GEODE_1_11_0) >= 0) {
+    if (StaticSerialization.getVersionForDataStream(out).compareTo(Version.GEODE_1_11_0) >= 0) {
       DataSerializer.writeIntArray(this.bucketArray, out);
     } else {
       Set<Integer> bucketSet = BucketSetHelper.toSet(this.bucketArray);

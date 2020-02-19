@@ -18,8 +18,6 @@ package org.apache.geode.cache.query.internal;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.apache.geode.cache.query.FunctionDomainException;
 import org.apache.geode.cache.query.NameResolutionException;
@@ -93,21 +91,6 @@ public class Functions {
 
     if (arg instanceof Collection) {
       Collection c = (Collection) arg;
-      // for remote distinct queries, the result of sub query could contain a
-      // mix of String and PdxString which could be duplicates, so convert all
-      // PdxStrings to String
-      if (context.isDistinct() && ((DefaultQuery) context.getQuery()).isRemoteQuery()) {
-        Set tempResults = new HashSet();
-        for (Object o : c) {
-          if (o instanceof PdxString) {
-            o = ((PdxString) o).toString();
-          }
-          tempResults.add(o);
-        }
-        c.clear();
-        c.addAll(tempResults);
-        tempResults = null;
-      }
       checkSingleton(c.size());
       return c.iterator().next();
     }

@@ -35,10 +35,8 @@ import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
@@ -46,9 +44,11 @@ import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.util.Breadcrumbs;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * This class uniquely identifies any Region Operation like create, update destroy etc. It is
@@ -60,7 +60,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
 
   /** turns on very verbose logging ove membership id bytes */
   private static final boolean LOG_ID_BYTES =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "log-event-member-id-bytes");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "log-event-member-id-bytes");
 
   /**
    * Uniquely identifies the distributed member VM in which the Event is produced
@@ -351,12 +351,12 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
   @Override
   public void toData(DataOutput dop,
       SerializationContext context) throws IOException {
-    Version version = InternalDataSerializer.getVersionForDataStream(dop);
+    Version version = StaticSerialization.getVersionForDataStream(dop);
     // if we are sending to old clients we need to reserialize the ID
     // using the client's version to ensure it gets the proper on-wire form
     // of the identifier
     // See GEODE-3072
-    if (version.compareTo(Version.GEODE_1_1_0) < 0) {
+    if (membershipID != null && version.compareTo(Version.GEODE_1_1_0) < 0) {
       InternalDistributedMember member = getDistributedMember(Version.GFE_90);
       // reserialize with the client's version so that we write the UUID
       // bytes

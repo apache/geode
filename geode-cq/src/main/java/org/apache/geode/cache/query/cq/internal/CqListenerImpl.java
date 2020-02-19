@@ -30,10 +30,8 @@ public class CqListenerImpl implements CqListener {
    */
   @Override
   public void onEvent(CqEvent aCqEvent) {
-    if (true) {
-      throw new IllegalStateException(
-          "Not yet supported.");
-    }
+    throw new IllegalStateException(
+        "Not yet supported.");
   }
 
   /**
@@ -42,10 +40,8 @@ public class CqListenerImpl implements CqListener {
    */
   @Override
   public void onError(CqEvent aCqEvent) {
-    if (true) {
-      throw new IllegalStateException(
-          "Not yet supported.");
-    }
+    throw new IllegalStateException(
+        "Not yet supported.");
   }
 
   /** CQ is being closed, do any cleanup here */

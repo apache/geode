@@ -138,6 +138,7 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PoolFactoryImpl;
 import org.apache.geode.internal.cache.PoolManagerImpl;
+import org.apache.geode.internal.cache.RegionFactoryImpl;
 import org.apache.geode.internal.cache.RegionListener;
 import org.apache.geode.internal.cache.TXEntryStateFactory;
 import org.apache.geode.internal.cache.TXManagerImpl;
@@ -1101,36 +1102,34 @@ public class CacheCreation implements InternalCache {
     return new JSONFormatter();
   }
 
-  /**
-   * @since GemFire 6.5
-   */
+  private void throwIfClient() {
+    if (isClient()) {
+      throw new UnsupportedOperationException("operation is not supported on a client cache");
+    }
+  }
+
   @Override
   public <K, V> RegionFactory<K, V> createRegionFactory(RegionShortcut shortcut) {
-    throw new UnsupportedOperationException("Should not be invoked");
+    throwIfClient();
+    return new RegionFactoryImpl<>(this, shortcut);
   }
 
-  /**
-   * @since GemFire 6.5
-   */
   @Override
   public <K, V> RegionFactory<K, V> createRegionFactory() {
-    throw new UnsupportedOperationException("Should not be invoked");
+    throwIfClient();
+    return new RegionFactoryImpl<>(this);
   }
 
-  /**
-   * @since GemFire 6.5
-   */
   @Override
   public <K, V> RegionFactory<K, V> createRegionFactory(String regionAttributesId) {
-    throw new UnsupportedOperationException("Should not be invoked");
+    throwIfClient();
+    return new RegionFactoryImpl<>(this, regionAttributesId);
   }
 
-  /**
-   * @since GemFire 6.5
-   */
   @Override
   public <K, V> RegionFactory<K, V> createRegionFactory(RegionAttributes<K, V> regionAttributes) {
-    throw new UnsupportedOperationException("Should not be invoked");
+    throwIfClient();
+    return new RegionFactoryImpl<>(this, regionAttributes);
   }
 
   @Override

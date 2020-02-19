@@ -16,7 +16,6 @@ package org.apache.geode.internal;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
-import static org.apache.geode.distributed.internal.membership.adapter.SocketCreatorAdapter.asTcpSocketCreator;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -76,7 +75,6 @@ import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.HighPriorityAckedMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -97,6 +95,7 @@ import org.apache.geode.internal.util.JavaCommandBuilder;
 import org.apache.geode.internal.util.PluckStacks;
 import org.apache.geode.internal.util.PluckStacks.ThreadStack;
 import org.apache.geode.management.BackupStatus;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Provides static methods for various system administation tasks.
@@ -295,10 +294,8 @@ public class SystemAdmin {
       }
 
       try {
-        new TcpClient(
-            asTcpSocketCreator(
-                SocketCreatorFactory
-                    .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
+        new TcpClient(SocketCreatorFactory
+            .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR),
             InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
             InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer())
                 .stop(addr, port);
@@ -1594,7 +1591,7 @@ public class SystemAdmin {
     helpMap.put("-hostname-for-clients=",
         "Used to specify a host name or IP address to give to clients so they can connect to a locator.");
     helpMap.put("-properties=",
-        "Used to specify the " + DistributionConfig.GEMFIRE_PREFIX
+        "Used to specify the " + GeodeGlossary.GEMFIRE_PREFIX
             + "properties file to be used in configuring the locator's DistributedSystem.");
     helpMap.put("-archive=",
         "The argument is the statistic archive file the 'stats' command should read.");
@@ -1611,10 +1608,10 @@ public class SystemAdmin {
             + DateFormatter.FORMAT_STRING + ".");
     helpMap.put("-dir=",
         "The argument is the system directory the command should operate on.  If the argument is empty then a default system directory will be search for.\n"
-            + "However the search will not include the " + DistributionConfig.GEMFIRE_PREFIX
+            + "However the search will not include the " + GeodeGlossary.GEMFIRE_PREFIX
             + "properties file.  By default if a command needs a system directory, and one is not specified, then a search is done.\n"
-            + "If a " + DistributionConfig.GEMFIRE_PREFIX + "properties file can be located then "
-            + DistributionConfig.GEMFIRE_PREFIX
+            + "If a " + GeodeGlossary.GEMFIRE_PREFIX + "properties file can be located then "
+            + GeodeGlossary.GEMFIRE_PREFIX
             + "systemDirectory property from that file is used.\n"
             + "Otherwise if the GEMFIRE environment variable is set to a directory that contains a subdirectory named defaultSystem then that directory is used.\n"
             + "The property file is searched for in the following locations:\n"

@@ -41,7 +41,7 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.LonerDistributionManager;
-import org.apache.geode.internal.OSProcess;
+import org.apache.geode.logging.internal.OSProcess;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 /**

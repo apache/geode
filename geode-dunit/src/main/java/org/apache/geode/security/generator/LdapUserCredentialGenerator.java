@@ -23,12 +23,12 @@ import java.util.Random;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.tier.sockets.Handshake;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.security.templates.LdapUserAuthenticator;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
 import org.apache.geode.test.dunit.Assert;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 public class LdapUserCredentialGenerator extends CredentialGenerator {
 
@@ -70,7 +70,7 @@ public class LdapUserCredentialGenerator extends CredentialGenerator {
           createTempFileFromResource(LdapUserCredentialGenerator.class,
               PKCSCredentialGenerator.keyStoreDir + "/gemfire1.keystore").getAbsolutePath();
       extraProps.setProperty(Handshake.PRIVATE_KEY_FILE_PROP, keyStoreFile);
-      extraProps.setProperty(Handshake.PRIVATE_KEY_ALIAS_PROP, DistributionConfig.GEMFIRE_PREFIX);
+      extraProps.setProperty(Handshake.PRIVATE_KEY_ALIAS_PROP, GeodeGlossary.GEMFIRE_PREFIX);
       extraProps.setProperty(Handshake.PRIVATE_KEY_PASSWD_PROP, "gemfire");
     }
 

@@ -78,7 +78,7 @@ public-pipelines: ${PUBLIC_PIPELINES}
 gcp-project: ${GCP_PROJECT}
 concourse-url: ${CONCOURSE_URL}
 concourse-team: ${CONCOURSE_TEAM}
-fly-target: ${CONCOURSE_HOST}
+fly-target: ${CONCOURSE_HOST}-${CONCOURSE_TEAM}
 YML
 
 

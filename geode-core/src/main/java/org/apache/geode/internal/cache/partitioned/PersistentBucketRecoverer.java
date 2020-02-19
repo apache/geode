@@ -38,7 +38,7 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.ProxyBucketRegion;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.internal.cache.persistence.PersistentStateListener;
-import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.process.StartupStatus;
 import org.apache.geode.internal.util.TransformUtils;
 import org.apache.geode.logging.internal.executors.LoggingThread;
@@ -70,19 +70,27 @@ public class PersistentBucketRecoverer extends RecoveryRunnable implements Persi
 
   private final List<RegionStatus> regions;
 
+  private final StartupStatus startupStatus;
 
   /**
    * Creates a new PersistentBucketRecoverer.
-   *
    */
   public PersistentBucketRecoverer(PRHARedundancyProvider prhaRedundancyProvider,
       int proxyBuckets) {
+    this(prhaRedundancyProvider, proxyBuckets, new StartupStatus());
+  }
+
+  private PersistentBucketRecoverer(PRHARedundancyProvider prhaRedundancyProvider, int proxyBuckets,
+      StartupStatus startupStatus) {
     super(prhaRedundancyProvider);
+
+    this.startupStatus = startupStatus;
+
     PartitionedRegion baseRegion =
         ColocationHelper.getLeaderRegion(redundancyProvider.getPartitionedRegion());
     List<PartitionedRegion> colocatedRegions =
         getColocatedChildRegions(baseRegion);
-    List<RegionStatus> allRegions = new ArrayList<RegionStatus>(colocatedRegions.size() + 1);
+    List<RegionStatus> allRegions = new ArrayList<>(colocatedRegions.size() + 1);
     if (baseRegion.getDataPolicy().withPersistence()) {
       allRegions.add(new RegionStatus(baseRegion));
     }
@@ -96,7 +104,6 @@ public class PersistentBucketRecoverer extends RecoveryRunnable implements Persi
     allBucketsRecoveredFromDisk = new CountDownLatch(proxyBuckets);
     membershipChanged = true;
     addListeners();
-
   }
 
   List<PartitionedRegion> getColocatedChildRegions(PartitionedRegion baseRegion) {
@@ -117,7 +124,7 @@ public class PersistentBucketRecoverer extends RecoveryRunnable implements Persi
    */
   @Override
   public void memberOnline(InternalDistributedMember member, PersistentMemberID persistentID) {
-    this.membershipChanged = true;
+    membershipChanged = true;
   }
 
   /**
@@ -125,7 +132,7 @@ public class PersistentBucketRecoverer extends RecoveryRunnable implements Persi
    */
   @Override
   public void memberOffline(InternalDistributedMember member, PersistentMemberID persistentID) {
-    this.membershipChanged = true;
+    membershipChanged = true;
   }
 
   /**
@@ -133,7 +140,7 @@ public class PersistentBucketRecoverer extends RecoveryRunnable implements Persi
    */
   @Override
   public void memberRemoved(PersistentMemberID persistentID, boolean revoked) {
-    this.membershipChanged = true;
+    membershipChanged = true;
   }
 
 
@@ -177,8 +184,8 @@ public class PersistentBucketRecoverer extends RecoveryRunnable implements Persi
         }
         Thread.sleep(sleepMillis);
 
-        if (this.membershipChanged) {
-          this.membershipChanged = false;
+        if (membershipChanged) {
+          membershipChanged = false;
           for (RegionStatus region : regions) {
             region.logWaitingForMembers();
           }
@@ -233,19 +240,19 @@ public class PersistentBucketRecoverer extends RecoveryRunnable implements Persi
     private volatile boolean loggedDoneMessage = true;
 
     public RegionStatus(PartitionedRegion region) {
-      this.thisMember = createPersistentMemberID(region);
+      thisMember = createPersistentMemberID(region);
       this.region = region.getFullPath();
-      this.bucketRegions = region.getRegionAdvisor().getProxyBucketArray();
+      bucketRegions = region.getRegionAdvisor().getProxyBucketArray();
     }
 
     public void removeListeners() {
-      for (ProxyBucketRegion proxyBucket : this.bucketRegions) {
+      for (ProxyBucketRegion proxyBucket : bucketRegions) {
         proxyBucket.getPersistenceAdvisor().removeListener(PersistentBucketRecoverer.this);
       }
     }
 
     public void addListeners() {
-      for (ProxyBucketRegion proxyBucket : this.bucketRegions) {
+      for (ProxyBucketRegion proxyBucket : bucketRegions) {
         proxyBucket.getPersistenceAdvisor().addListener(PersistentBucketRecoverer.this);
       }
     }
@@ -284,7 +291,7 @@ public class PersistentBucketRecoverer extends RecoveryRunnable implements Persi
         InetAddress localHost = null;
 
         try {
-          localHost = SocketCreator.getLocalHost();
+          localHost = LocalHostUtil.getLocalHost();
         } catch (UnknownHostException e) {
           logger.error("Could not determine my own host", e);
         }
@@ -306,7 +313,7 @@ public class PersistentBucketRecoverer extends RecoveryRunnable implements Persi
           new HashMap<PersistentMemberID, Set<Integer>>();
 
 
-      for (ProxyBucketRegion proxyBucket : this.bucketRegions) {
+      for (ProxyBucketRegion proxyBucket : bucketRegions) {
         Integer bucketId = proxyBucket.getBucketId();
 
         // Get the set of missing members from the persistence advisor
@@ -337,13 +344,12 @@ public class PersistentBucketRecoverer extends RecoveryRunnable implements Persi
      * Prints a recovery completion message to the log.
      */
     private void logDoneMessage() {
-      this.loggedDoneMessage = true;
-      StartupStatus.startup(
+      loggedDoneMessage = true;
+      startupStatus.startup(
           String.format(
               "Region %s has successfully completed waiting for other members to recover the latest data.My persistent member information:%s",
-              new Object[] {this.region,
-                  TransformUtils.persistentMemberIdToLogEntryTransformer
-                      .transform(this.thisMember)}));
+              region,
+              TransformUtils.persistentMemberIdToLogEntryTransformer.transform(thisMember)));
     }
 
     /**
@@ -359,43 +365,41 @@ public class PersistentBucketRecoverer extends RecoveryRunnable implements Persi
        * Log any offline members the region is waiting for.
        */
       if (thereAreBucketsToBeRecovered && !offlineMembers.isEmpty()) {
-        Set<String> membersToWaitForLogEntries = new HashSet<String>();
+        Set<String> membersToWaitForLogEntries = new HashSet<>();
 
         TransformUtils.transform(offlineMembers.entrySet(), membersToWaitForLogEntries,
             TransformUtils.persistentMemberEntryToLogEntryTransformer);
 
         Set<Integer> missingBuckets = getAllWaitingBuckets(offlineMembers);
 
-        StartupStatus.startup(
+        startupStatus.startup(
             String.format(
                 "Region %s (and any colocated sub-regions) has potentially stale data.  Buckets %s are waiting for another offline member to recover the latest data.My persistent id is:%sOffline members with potentially new data:%sUse the gfsh show missing-disk-stores command to see all disk stores that are being waited on by other members.",
-                new Object[] {this.region, missingBuckets,
-                    TransformUtils.persistentMemberIdToLogEntryTransformer
-                        .transform(this.thisMember),
-                    membersToWaitForLogEntries}));
+                region, missingBuckets,
+                TransformUtils.persistentMemberIdToLogEntryTransformer.transform(thisMember),
+                membersToWaitForLogEntries));
 
-        this.loggedDoneMessage = false;
+        loggedDoneMessage = false;
       }
       /*
        * No offline? Then log any online members the region is waiting for.
        */
       else if (thereAreBucketsToBeRecovered && !allMembersToWaitFor.isEmpty()) {
-        Set<String> membersToWaitForLogEntries = new HashSet<String>();
+        Set<String> membersToWaitForLogEntries = new HashSet<>();
 
         Set<Integer> missingBuckets = getAllWaitingBuckets(allMembersToWaitFor);
         TransformUtils.transform(allMembersToWaitFor.entrySet(), membersToWaitForLogEntries,
             TransformUtils.persistentMemberEntryToLogEntryTransformer);
 
-        StartupStatus.startup(
+        startupStatus.startup(
             String.format(
                 "Region %s (and any colocated sub-regions) has potentially stale data.  Buckets %s are waiting for another online member to recover the latest data.My persistent id is:%sOnline members with potentially new data:%sUse the gfsh show missing-disk-stores command to see all disk stores that are being waited on by other members.",
-                new Object[] {this.region, missingBuckets,
-                    TransformUtils.persistentMemberIdToLogEntryTransformer
-                        .transform(this.thisMember),
-                    membersToWaitForLogEntries}));
+                region, missingBuckets,
+                TransformUtils.persistentMemberIdToLogEntryTransformer.transform(thisMember),
+                membersToWaitForLogEntries));
 
 
-        this.loggedDoneMessage = false;
+        loggedDoneMessage = false;
       }
       /*
        * No online? Then log that we are done.

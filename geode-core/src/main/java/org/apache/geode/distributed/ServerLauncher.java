@@ -70,7 +70,6 @@ import org.apache.geode.cache.control.ResourceManager;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.internal.DefaultServerLauncherCacheProvider;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.cache.AbstractCacheServer;
@@ -80,8 +79,8 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerHelper;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.lang.ObjectUtils;
-import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.process.ConnectionFailedException;
 import org.apache.geode.internal.process.ControlNotificationHandler;
 import org.apache.geode.internal.process.ControllableProcess;
@@ -104,6 +103,7 @@ import org.apache.geode.management.internal.util.JsonUtil;
 import org.apache.geode.pdx.PdxSerializer;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.GemFireSecurityException;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * The ServerLauncher class is a launcher class with main method to start a GemFire Server (implying
@@ -562,7 +562,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
         return getServerBindAddress().getCanonicalHostName();
       }
 
-      final InetAddress localhost = SocketCreator.getLocalHost();
+      final InetAddress localhost = LocalHostUtil.getLocalHost();
 
       return localhost.getCanonicalHostName();
     } catch (UnknownHostException handled) {
@@ -2105,7 +2105,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
       // NOTE only set the 'bind address' if the user specified a value
       try {
         InetAddress bindAddress = InetAddress.getByName(serverBindAddress);
-        if (SocketCreator.isLocalHost(bindAddress)) {
+        if (LocalHostUtil.isLocalHost(bindAddress)) {
           this.serverBindAddress = bindAddress;
           serverBindAddressSetByUser = true;
           return this;
@@ -2490,7 +2490,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     void validateOnStart() {
       if (Command.START == getCommand()) {
         if (isBlank(getMemberName())
-            && !isSet(System.getProperties(), DistributionConfig.GEMFIRE_PREFIX + NAME)
+            && !isSet(System.getProperties(), GeodeGlossary.GEMFIRE_PREFIX + NAME)
             && !isSet(getDistributedSystemProperties(), NAME)
             && !isSet(loadGemFireProperties(DistributedSystem.getPropertyFileURL()), NAME)) {
           throw new IllegalStateException(

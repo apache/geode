@@ -16,6 +16,7 @@
 package org.apache.geode.management.configuration;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -25,45 +26,66 @@ public class IndexTest {
   private Index index;
 
   @Before
-  public void before() throws Exception {
+  public void before() {
     index = new Index();
   }
 
   @Test
-  public void getRegionName() throws Exception {
-    index.setRegionPath(null);
-    assertThat(index.getRegionName()).isNull();
+  public void getRegionName() {
+    assertSoftly(softly -> {
+      index.setRegionPath(null);
+      softly.assertThat(index.getRegionName()).isNull();
 
-    index.setRegionPath("regionA");
-    assertThat(index.getRegionName()).isEqualTo("regionA");
+      index.setRegionPath("regionA");
+      softly.assertThat(index.getRegionName()).isEqualTo("regionA");
 
-    index.setRegionPath("   regionA   ");
-    assertThat(index.getRegionName()).isEqualTo("regionA");
+      index.setRegionPath("   regionA   ");
+      softly.assertThat(index.getRegionName()).isEqualTo("regionA");
 
-    index.setRegionPath("/regionA");
-    assertThat(index.getRegionName()).isEqualTo("regionA");
+      index.setRegionPath("/regionA");
+      softly.assertThat(index.getRegionName()).isEqualTo("regionA");
 
-    index.setRegionPath("/regionA.method()");
-    assertThat(index.getRegionName()).isEqualTo("regionA");
+      index.setRegionPath("/regionA.method()");
+      softly.assertThat(index.getRegionName()).isEqualTo("regionA");
 
-    index.setRegionPath("/regionA.method() a");
-    assertThat(index.getRegionName()).isEqualTo("regionA");
+      index.setRegionPath("/regionA.method() a");
+      softly.assertThat(index.getRegionName()).isEqualTo("regionA");
 
-    index.setRegionPath("/regionA.fieled.method() a");
-    assertThat(index.getRegionName()).isEqualTo("regionA");
+      index.setRegionPath("/regionA.fieled.method() a");
+      softly.assertThat(index.getRegionName()).isEqualTo("regionA");
 
-    index.setRegionPath("/regionA a");
-    assertThat(index.getRegionName()).isEqualTo("regionA");
+      index.setRegionPath("/regionA a");
+      softly.assertThat(index.getRegionName()).isEqualTo("regionA");
 
-    index.setRegionPath("/regionA a, a.foo");
-    assertThat(index.getRegionName()).isEqualTo("regionA");
+      index.setRegionPath("/regionA a, a.foo");
+      softly.assertThat(index.getRegionName()).isEqualTo("regionA");
+    });
   }
 
   @Test
-  public void getEndPoint() throws Exception {
-    assertThat(index.getLinks().getList()).isEqualTo("/indexes");
+  public void getEndPoint() {
+    assertSoftly(softly -> {
+      assertThat(index.getLinks().getList()).isEqualTo("/indexes");
 
-    index.setRegionPath("/regionA");
-    assertThat(index.getLinks().getList()).isEqualTo("/regions/regionA/indexes");
+      index.setName("testSelf");
+      softly.assertThat(index.getLinks().getSelf()).as("only name defined - self")
+          .isEqualTo("/indexes/testSelf");
+      softly.assertThat(index.getLinks().getList()).as("only name defined - list")
+          .isEqualTo("/indexes");
+
+      index.setRegionPath("/regionPath");
+      softly.assertThat(index.getLinks().getSelf()).as("region and name defined - self")
+          .isEqualTo("/regions/regionPath/indexes/testSelf");
+      softly.assertThat(index.getLinks().getList()).as("region and name defined - list")
+          .isEqualTo("/regions/regionPath/indexes");
+
+    });
+  }
+
+  @Test
+  public void getEndPoint_self_isNull() {
+    assertSoftly(softly -> {
+      softly.assertThat(index.getLinks().getSelf()).as("empty index config").isNull();
+    });
   }
 }

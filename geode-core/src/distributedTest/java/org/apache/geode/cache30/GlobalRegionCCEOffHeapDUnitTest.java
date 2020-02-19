@@ -18,6 +18,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.OFF_HEAP_MEMO
 
 import java.util.Properties;
 
+import org.junit.After;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
@@ -33,11 +34,11 @@ import org.apache.geode.test.junit.categories.OffHeapTest;
  * @since Geode 1.0
  */
 @Category({OffHeapTest.class})
-@SuppressWarnings({"deprecation", "serial"})
+@SuppressWarnings({"serial"})
 public class GlobalRegionCCEOffHeapDUnitTest extends GlobalRegionCCEDUnitTest {
 
-  @Override
-  public final void preTearDownAssertions() throws Exception {
+  @After
+  public void tearDown() throws Exception {
     SerializableRunnable checkOrphans = new SerializableRunnable() {
 
       @Override
@@ -58,23 +59,24 @@ public class GlobalRegionCCEOffHeapDUnitTest extends GlobalRegionCCEDUnitTest {
     return props;
   }
 
-  @SuppressWarnings({"rawtypes", "unchecked"})
-  @Override
-  protected RegionAttributes getRegionAttributes() {
-    RegionAttributes attrs = super.getRegionAttributes();
-    AttributesFactory factory = new AttributesFactory(attrs);
-    factory.setOffHeap(true);
-    return factory.create();
-  }
-
-  @SuppressWarnings({"rawtypes", "unchecked"})
-  @Override
-  protected RegionAttributes getRegionAttributes(String type) {
-    RegionAttributes ra = super.getRegionAttributes(type);
-    AttributesFactory factory = new AttributesFactory(ra);
-    if (!ra.getDataPolicy().isEmpty()) {
+  private <K, V> RegionAttributes<K, V> getBasicAttributes(
+      RegionAttributes<K, V> regionAttributes) {
+    AttributesFactory<K, V> factory = new AttributesFactory<>(regionAttributes);
+    if (!regionAttributes.getDataPolicy().withStorage()) {
       factory.setOffHeap(true);
     }
     return factory.create();
+  }
+
+  @Override
+  protected <K, V> RegionAttributes<K, V> getRegionAttributes() {
+    RegionAttributes<K, V> attrs = super.getRegionAttributes();
+    return getBasicAttributes(attrs);
+  }
+
+  @Override
+  protected <K, V> RegionAttributes<K, V> getRegionAttributes(String type) {
+    RegionAttributes<K, V> ra = super.getRegionAttributes(type);
+    return getBasicAttributes(ra);
   }
 }

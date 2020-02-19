@@ -33,16 +33,17 @@ import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.DurableClientAttributes;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * This class represents a ConnectionProxy of the CacheClient
@@ -207,7 +208,7 @@ public class ClientProxyMembershipID
   }
 
   private ClientProxyMembershipID(int id, byte[] clientSideIdentity) {
-    boolean specialCase = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "SPECIAL_DURABLE");
+    boolean specialCase = Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "SPECIAL_DURABLE");
     String durableID = this.system.getProperties().getProperty(DURABLE_CLIENT_ID);
     if (specialCase && durableID != null && (!durableID.equals(""))) {
       this.uniqueId = durable_synch_counter;
@@ -372,7 +373,7 @@ public class ClientProxyMembershipID
       memberIdAsString = idm.toString();
     } else {
       StringBuilder sb = new StringBuilder();
-      idm.addFixedToString(sb);
+      idm.addFixedToString(sb, !SocketCreator.resolve_dns);
       memberIdAsString = sb.toString();
     }
     return memberIdAsString;

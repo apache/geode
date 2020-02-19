@@ -15,47 +15,43 @@
 
 /**
  * Test class used to certify that a particular key has arrived in the cache This class is a great
- * way to reduce the liklihood of a race condition
+ * way to reduce the likelihood of a race condition
  */
 package org.apache.geode.cache30;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 
-import org.apache.geode.LogWriter;
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.cache.CacheEvent;
 import org.apache.geode.cache.EntryEvent;
-import org.apache.geode.internal.cache.xmlcache.Declarable2;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.WaitCriterion;
 
-public class CertifiableTestCacheListener extends TestCacheListener implements Declarable2 {
-  public final Set destroys = Collections.synchronizedSet(new HashSet());
-  public final Set creates = Collections.synchronizedSet(new HashSet());
-  public final Set invalidates = Collections.synchronizedSet(new HashSet());
-  public final Set updates = Collections.synchronizedSet(new HashSet());
-
-  final LogWriter logger;
-
-  public CertifiableTestCacheListener(LogWriter l) {
-    this.logger = l;
-  }
+public class CertifiableTestCacheListener<K, V> extends TestCacheListener<K, V> {
+  private final Set<K> destroys = Collections.synchronizedSet(new HashSet<>());
+  private final Set<K> creates = Collections.synchronizedSet(new HashSet<>());
+  private final Set<K> invalidates = Collections.synchronizedSet(new HashSet<>());
+  private final Set<K> updates = Collections.synchronizedSet(new HashSet<>());
+  private static final Logger logger = LogService.getLogger();
 
   /**
    * Clears the state of the listener, for consistent behavior this should only be called when there
    * is no activity on the Region
    */
   public void clearState() {
-    this.destroys.clear();
-    this.creates.clear();
-    this.invalidates.clear();
-    this.updates.clear();
+    destroys.clear();
+    creates.clear();
+    invalidates.clear();
+    updates.clear();
   }
 
   @Override
-  public List getEventHistory() {
+  public List<CacheEvent<K, V>> getEventHistory() {
     destroys.clear();
     creates.clear();
     invalidates.clear();
@@ -63,103 +59,52 @@ public class CertifiableTestCacheListener extends TestCacheListener implements D
     return super.getEventHistory();
   }
 
-  @Override
-  public void afterCreate2(EntryEvent event) {
-    this.creates.add(event.getKey());
+  @VisibleForTesting
+  public Set<K> getDestroys() {
+    return destroys;
   }
 
   @Override
-  public void afterDestroy2(EntryEvent event) {
-    this.destroys.add(event.getKey());
+  public void afterCreate2(EntryEvent<K, V> event) {
+    creates.add(event.getKey());
   }
 
   @Override
-  public void afterInvalidate2(EntryEvent event) {
-    Object key = event.getKey();
-    // logger.fine("got invalidate for " + key);
-    this.invalidates.add(key);
+  public void afterDestroy2(EntryEvent<K, V> event) {
+    destroys.add(event.getKey());
   }
 
   @Override
-  public void afterUpdate2(EntryEvent event) {
-    this.updates.add(event.getKey());
+  public void afterInvalidate2(EntryEvent<K, V> event) {
+    invalidates.add(event.getKey());
   }
 
-  private static final String WAIT_PROPERTY = "CertifiableTestCacheListener.maxWaitTime";
-  private static final int WAIT_DEFAULT = 30000;
+  @Override
+  public void afterUpdate2(EntryEvent<K, V> event) {
+    updates.add(event.getKey());
+  }
 
-  public static final long MAX_TIME = Integer.getInteger(WAIT_PROPERTY, WAIT_DEFAULT).intValue();;
-
-
-  public boolean waitForCreated(final Object key) {
-    WaitCriterion ev = new WaitCriterion() {
-      @Override
-      public boolean done() {
-        return CertifiableTestCacheListener.this.creates.contains(key);
-      }
-
-      @Override
-      public String description() {
-        return "Waiting for key creation: " + key;
-      }
-    };
-    GeodeAwaitility.await().untilAsserted(ev);
+  public boolean waitForCreated(final K key) {
+    GeodeAwaitility.await("Waiting for key creation: " + key)
+        .until(() -> creates.contains(key));
     return true;
   }
 
-  public boolean waitForDestroyed(final Object key) {
-    WaitCriterion ev = new WaitCriterion() {
-      @Override
-      public boolean done() {
-        return CertifiableTestCacheListener.this.destroys.contains(key);
-      }
-
-      @Override
-      public String description() {
-        return "Waiting for key destroy: " + key;
-      }
-    };
-    GeodeAwaitility.await().untilAsserted(ev);
+  public boolean waitForDestroyed(final K key) {
+    GeodeAwaitility.await("Waiting for key destroy: " + key)
+        .until(() -> destroys.contains(key));
     return true;
   }
 
-  public boolean waitForInvalidated(final Object key) {
-    WaitCriterion ev = new WaitCriterion() {
-      @Override
-      public boolean done() {
-        return CertifiableTestCacheListener.this.invalidates.contains(key);
-      }
-
-      @Override
-      public String description() {
-        return "Waiting for key invalidate: " + key;
-      }
-    };
-    GeodeAwaitility.await().untilAsserted(ev);
+  public boolean waitForInvalidated(final K key) {
+    GeodeAwaitility.await("Waiting for key invalidate: " + key)
+        .until(() -> invalidates.contains(key));
     return true;
   }
 
-  public boolean waitForUpdated(final Object key) {
-    WaitCriterion ev = new WaitCriterion() {
-      @Override
-      public boolean done() {
-        return CertifiableTestCacheListener.this.updates.contains(key);
-      }
-
-      @Override
-      public String description() {
-        return "Waiting for key update: " + key;
-      }
-    };
-    GeodeAwaitility.await().untilAsserted(ev);
+  public boolean waitForUpdated(final K key) {
+    GeodeAwaitility.await("Waiting for key update: " + key)
+        .until(() -> updates.contains(key));
     return true;
   }
-
-  @Override
-  public Properties getConfig() {
-    return null;
-  }
-
-  @Override
-  public void init(Properties props) {}
 }

@@ -48,7 +48,6 @@ import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.server.CacheServer;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.TXCommitMessage;
 import org.apache.geode.internal.cache.TXId;
@@ -62,6 +61,7 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 
 public class ClientServerJTADUnitTest extends JUnit4CacheTestCase {
@@ -288,7 +288,7 @@ public class ClientServerJTADUnitTest extends JUnit4CacheTestCase {
 
   final String restoreSetOperationTransactionBehavior = "restoreSetOperationTransactionBehavior";
   final String RESTORE_SET_OPERATION_PROPERTY =
-      (System.currentTimeMillis() % 2 == 0 ? DistributionConfig.GEMFIRE_PREFIX : "geode.")
+      (System.currentTimeMillis() % 2 == 0 ? GeodeGlossary.GEMFIRE_PREFIX : "geode.")
           + restoreSetOperationTransactionBehavior;
 
   @Test

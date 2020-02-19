@@ -16,15 +16,15 @@
 #
 
 benchmarks:
-  baseline_branch: develop/highwater
-  baseline_version: ''
+  baseline_branch: ''
+  baseline_version: '1.10.0'
   benchmark_branch: develop
   flavors:
   - title: '_base'
     flag: ''
     options: ''
   - title: '_with_ssl'
-    flag: '-PwithSsl'
+    flag: '-PwithSsl -PtestJVM=/usr/lib/jvm/java-11-openjdk-amd64/'
     options: '--tests=*GetBenchmark --tests=*PutBenchmark'
   - title: '_with_security_manager'
     flag: '-PwithSecurityManager'
@@ -40,6 +40,7 @@ build_test:
   MAX_IN_FLIGHT: 2
   PARALLEL_DUNIT: 'false'
   PARALLEL_GRADLE: 'false'
+  PLATFORM: linux
   RAM: '16'
   name: Build
 
@@ -65,7 +66,7 @@ java_test_versions:
   version: 11
 
 metadata:
-  initial_version: 1.12.0
+  initial_version: 1.13.0
 
 publish_artifacts:
   CPUS: '8'

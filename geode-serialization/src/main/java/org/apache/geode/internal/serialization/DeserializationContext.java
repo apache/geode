@@ -14,6 +14,10 @@
  */
 package org.apache.geode.internal.serialization;
 
+/**
+ * A DeserializationContext is provided to the fromData method in a DataSerializableFixedID
+ * implementation during deserialization.
+ */
 public interface DeserializationContext {
 
   /** return the version of the source/destination of this serializer */

@@ -50,6 +50,7 @@ HASHED_PIPELINE_PREFIX="i$(uuidgen -n @dns -s -N "${PIPELINE_PREFIX}")-"
 
 echo "Running packer"
 PACKER_LOG=1 packer build \
+  --var "base_family=${BASE_FAMILY}" \
   --var "geode_docker_image=${GEODE_DOCKER_IMAGE}" \
   --var "pipeline_prefix=${PIPELINE_PREFIX}" \
   --var "hashed_pipeline_prefix=${HASHED_PIPELINE_PREFIX}" \
@@ -58,4 +59,5 @@ PACKER_LOG=1 packer build \
   --var "gcp_network=${GCP_NETWORK}" \
   --var "gcp_subnetwork=${GCP_SUBNETWORK}" \
   --var "use_internal_ip=true" \
+  --var "packer_ttl=$(($(date +%s) + 60 * 60 * 12))" \
   packer.json

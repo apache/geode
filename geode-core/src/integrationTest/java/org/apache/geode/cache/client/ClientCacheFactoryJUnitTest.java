@@ -56,7 +56,7 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
@@ -362,10 +362,10 @@ public class ClientCacheFactoryJUnitTest {
     assertThat(newMemberID.getVersionObject()).isEqualTo(Version.GFE_82);
     assertThat(newID.getClientVersion()).isEqualTo(Version.GFE_82);
 
-    assertThat(newMemberID.getMemberData().getUuidLeastSignificantBits()).isEqualTo(0);
-    assertThat(newMemberID.getMemberData().getUuidMostSignificantBits()).isEqualTo(0);
+    assertThat(newMemberID.getUuidLeastSignificantBits()).isEqualTo(0);
+    assertThat(newMemberID.getUuidMostSignificantBits()).isEqualTo(0);
 
-    gmsID.getMemberData().setUUID(new UUID(1234L, 5678L));
+    gmsID.setUUID(new UUID(1234L, 5678L));
     memberID.setVersionObjectForTest(Version.CURRENT);
     clientID = ClientProxyMembershipID.getClientId(memberID);
     out = new HeapDataOutputStream(Version.CURRENT);
@@ -378,10 +378,10 @@ public class ClientCacheFactoryJUnitTest {
     assertThat(newMemberID.getVersionObject()).isEqualTo(Version.CURRENT);
     assertThat(newID.getClientVersion()).isEqualTo(Version.CURRENT);
 
-    assertThat(newMemberID.getMemberData().getUuidLeastSignificantBits())
-        .isEqualTo(gmsID.getMemberData().getUuidLeastSignificantBits());
-    assertThat(newMemberID.getMemberData().getUuidMostSignificantBits())
-        .isEqualTo(gmsID.getMemberData().getUuidMostSignificantBits());
+    assertThat(newMemberID.getUuidLeastSignificantBits())
+        .isEqualTo(gmsID.getUuidLeastSignificantBits());
+    assertThat(newMemberID.getUuidMostSignificantBits())
+        .isEqualTo(gmsID.getUuidMostSignificantBits());
   }
 
   @Test

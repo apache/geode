@@ -901,4 +901,8 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
       return printEventIdList(this.unprocessedTokens.keySet());
     }
   }
+
+  public int numUnprocessedEventTokens() {
+    return unprocessedTokens.entrySet().size();
+  }
 }

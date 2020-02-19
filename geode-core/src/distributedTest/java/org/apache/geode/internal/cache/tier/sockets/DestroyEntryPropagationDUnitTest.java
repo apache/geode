@@ -401,7 +401,7 @@ public class DestroyEntryPropagationDUnitTest extends JUnit4DistributedTestCase 
     WaitCriterion ev = new WaitCriterion() {
       @Override
       public boolean done() {
-        return ccl.destroys.contains(key);
+        return ccl.getDestroys().contains(key);
       }
 
       @Override
@@ -410,7 +410,7 @@ public class DestroyEntryPropagationDUnitTest extends JUnit4DistributedTestCase 
       }
     };
     GeodeAwaitility.await().untilAsserted(ev);
-    ccl.destroys.remove(key);
+    ccl.getDestroys().remove(key);
   }
 
   private static void createClientCache(String host, Integer port1, Integer port2)
@@ -437,7 +437,7 @@ public class DestroyEntryPropagationDUnitTest extends JUnit4DistributedTestCase 
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setPoolName(p.getName());
-    factory.setCacheListener(new CertifiableTestCacheListener(LogWriterUtils.getLogWriter()));
+    factory.setCacheListener(new CertifiableTestCacheListener());
     RegionAttributes attrs = factory.create();
     cache.createRegion(REGION_NAME, attrs);
 
@@ -448,7 +448,7 @@ public class DestroyEntryPropagationDUnitTest extends JUnit4DistributedTestCase 
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(DataPolicy.REPLICATE);
-    factory.setCacheListener(new CertifiableTestCacheListener(LogWriterUtils.getLogWriter()));
+    factory.setCacheListener(new CertifiableTestCacheListener());
     RegionAttributes attrs = factory.create();
     cache.createRegion(REGION_NAME, attrs);
 

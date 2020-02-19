@@ -21,18 +21,18 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.MEMBER_TIMEOUT;
-import static org.apache.geode.distributed.internal.membership.adapter.SocketCreatorAdapter.asTcpSocketCreator;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.net.InetAddress;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Properties;
 
@@ -44,39 +44,34 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import org.apache.geode.GemFireConfigException;
 import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
-import org.apache.geode.distributed.internal.DistributionImpl;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.SerialAckedMessage;
 import org.apache.geode.distributed.internal.membership.adapter.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.adapter.auth.GMSAuthenticator;
-import org.apache.geode.distributed.internal.membership.gms.GMSMemberData;
-import org.apache.geode.distributed.internal.membership.gms.GMSMembership;
-import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
-import org.apache.geode.distributed.internal.membership.gms.MemberIdentifierFactoryImpl;
-import org.apache.geode.distributed.internal.membership.gms.Services;
-import org.apache.geode.distributed.internal.membership.gms.api.LifecycleListener;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifierFactory;
-import org.apache.geode.distributed.internal.membership.gms.api.Membership;
-import org.apache.geode.distributed.internal.membership.gms.api.MembershipBuilder;
-import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
-import org.apache.geode.distributed.internal.membership.gms.api.MembershipListener;
-import org.apache.geode.distributed.internal.membership.gms.api.MessageListener;
-import org.apache.geode.distributed.internal.membership.gms.interfaces.JoinLeave;
-import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
+import org.apache.geode.distributed.internal.membership.api.LifecycleListener;
+import org.apache.geode.distributed.internal.membership.api.MemberData;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifierFactory;
+import org.apache.geode.distributed.internal.membership.api.MemberStartupException;
+import org.apache.geode.distributed.internal.membership.api.Membership;
+import org.apache.geode.distributed.internal.membership.api.MembershipBuilder;
+import org.apache.geode.distributed.internal.membership.api.MembershipConfig;
+import org.apache.geode.distributed.internal.membership.api.MembershipListener;
+import org.apache.geode.distributed.internal.membership.api.MembershipLocator;
+import org.apache.geode.distributed.internal.membership.api.MembershipView;
+import org.apache.geode.distributed.internal.membership.api.MessageListener;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
+import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
-import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.security.SecurityService;
@@ -134,19 +129,20 @@ public class MembershipJUnitTest {
       throws Exception {
 
     Membership<InternalDistributedMember> m1 = null, m2 = null;
-    Locator l = null;
+    InternalLocator internalLocator = null;
     // int mcastPort = AvailablePortHelper.getRandomAvailableUDPPort();
 
     try {
 
       // boot up a locator
       int port = AvailablePortHelper.getRandomAvailableTCPPort();
-      InetAddress localHost = SocketCreator.getLocalHost();
+      InetAddress localHost = LocalHostUtil.getLocalHost();
 
       // this locator will hook itself up with the first Membership
       // to be created
-      l = InternalLocator.startLocator(port, new File(""), null, null, localHost, false,
-          new Properties(), null, temporaryFolder.getRoot().toPath());
+      internalLocator =
+          InternalLocator.startLocator(port, new File(""), null, null, localHost, false,
+              new Properties(), null, temporaryFolder.getRoot().toPath());
 
       // create configuration objects
       Properties nonDefault = new Properties();
@@ -159,19 +155,17 @@ public class MembershipJUnitTest {
       nonDefault.put(LOCATORS, localHost.getHostName() + '[' + port + ']');
       DistributionConfigImpl config = new DistributionConfigImpl(nonDefault);
       RemoteTransportConfig transport =
-          new RemoteTransportConfig(config, ClusterDistributionManager.NORMAL_DM_TYPE);
+          new RemoteTransportConfig(config, ClusterDistributionManager.LOCATOR_DM_TYPE);
 
       // start the first membership manager
-      try {
-        System.setProperty(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY, "true");
-        m1 = createMembershipManager(config, transport).getLeft();
-      } finally {
-        System.getProperties().remove(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY);
-      }
+      final MembershipLocator<InternalDistributedMember> membershipLocator =
+          internalLocator.getMembershipLocator();
+
+      m1 = createMembershipManager(config, transport, membershipLocator).getLeft();
 
       // start the second membership manager
       final Pair<Membership, MessageListener> pair =
-          createMembershipManager(config, transport);
+          createMembershipManager(config, transport, membershipLocator);
       m2 = pair.getLeft();
       final MessageListener listener2 = pair.getRight();
 
@@ -179,15 +173,15 @@ public class MembershipJUnitTest {
       // manager queues new views for processing through the DM listener,
       // which is a mock object in this test
       System.out.println("waiting for views to stabilize");
-      JoinLeave jl1 = ((GMSMembership) m1).getServices().getJoinLeave();
-      JoinLeave jl2 = ((GMSMembership) m2).getServices().getJoinLeave();
+      final Membership mgr1 = m1;
+      final Membership mgr2 = m2;
       long giveUp = System.currentTimeMillis() + 15000;
       for (;;) {
         try {
-          assertTrue("view = " + jl2.getView(), jl2.getView().size() == 2);
-          assertTrue("view = " + jl1.getView(), jl1.getView().size() == 2);
-          assertTrue(jl1.getView().getCreator().equals(jl2.getView().getCreator()));
-          assertTrue(jl1.getView().getViewId() == jl2.getView().getViewId());
+          assertTrue("view = " + mgr2.getView(), mgr2.getView().size() == 2);
+          assertTrue("view = " + mgr1.getView(), mgr1.getView().size() == 2);
+          assertTrue(mgr1.getView().getCreator().equals(mgr2.getView().getCreator()));
+          assertTrue(mgr1.getView().getViewId() == mgr2.getView().getViewId());
           break;
         } catch (AssertionError e) {
           if (System.currentTimeMillis() > giveUp) {
@@ -196,9 +190,9 @@ public class MembershipJUnitTest {
         }
       }
 
-      GMSMembershipView<InternalDistributedMember> view = jl1.getView();
+      MembershipView<InternalDistributedMember> view = mgr1.getView();
       MemberIdentifier notCreator;
-      if (view.getCreator().equals(jl1.getMemberID())) {
+      if (view.getCreator().equals(mgr1.getLocalMember())) {
         notCreator = view.getMembers().get(1);
       } else {
         notCreator = view.getMembers().get(0);
@@ -237,7 +231,8 @@ public class MembershipJUnitTest {
       m2.disconnect(false);
       assertTrue(!m2.isConnected());
 
-      assertTrue(m1.getView().size() == 1);
+      Membership waitingMember = m1;
+      await().untilAsserted(() -> assertTrue(waitingMember.getView().size() == 1));
 
       return result;
     } finally {
@@ -248,51 +243,64 @@ public class MembershipJUnitTest {
       if (m1 != null) {
         m1.shutdown();
       }
-      if (l != null) {
-        l.stop();
+      if (internalLocator != null) {
+        internalLocator.stop();
       }
     }
   }
 
   private Pair<Membership, MessageListener> createMembershipManager(
       final DistributionConfigImpl config,
-      final RemoteTransportConfig transport) {
-    final MembershipListener listener = mock(MembershipListener.class);
-    final MessageListener messageListener = mock(MessageListener.class);
+      final RemoteTransportConfig transport,
+      final MembershipLocator<InternalDistributedMember> locator) throws MemberStartupException {
+    final MembershipListener<InternalDistributedMember> listener = mock(MembershipListener.class);
+    final MessageListener<InternalDistributedMember> messageListener = mock(MessageListener.class);
     final DMStats stats1 = mock(DMStats.class);
     final InternalDistributedSystem mockSystem = mock(InternalDistributedSystem.class);
     final SecurityService securityService = SecurityServiceFactory.create();
     DSFIDSerializer serializer = InternalDataSerializer.getDSFIDSerializer();
     final MemberIdentifierFactory memberFactory = mock(MemberIdentifierFactory.class);
-    when(memberFactory.create(isA(GMSMemberData.class))).thenAnswer(new Answer<MemberIdentifier>() {
+    when(memberFactory.create(isA(MemberData.class))).thenAnswer(new Answer<MemberIdentifier>() {
       @Override
       public MemberIdentifier answer(InvocationOnMock invocation) throws Throwable {
-        return new InternalDistributedMember((GMSMemberData) invocation.getArgument(0));
+        return new InternalDistributedMember((MemberData) invocation.getArgument(0));
       }
     });
-    LifecycleListener lifeCycleListener = mock(LifecycleListener.class);
-    final Membership m1 =
-        MembershipBuilder.<InternalDistributedMember>newMembershipBuilder()
-            .setAuthenticator(new GMSAuthenticator(config.getSecurityProps(), securityService,
-                mockSystem.getSecurityLogWriter(), mockSystem.getInternalLogWriter()))
+    LifecycleListener<InternalDistributedMember> lifeCycleListener = mock(LifecycleListener.class);
+
+    final MemberIdentifierFactory<InternalDistributedMember> memberIdentifierFactory =
+        new MemberIdentifierFactory<InternalDistributedMember>() {
+          @Override
+          public InternalDistributedMember create(MemberData memberInfo) {
+            return new InternalDistributedMember(memberInfo);
+          }
+
+          @Override
+          public Comparator<InternalDistributedMember> getComparator() {
+            return Comparator.naturalOrder();
+          }
+        };
+
+    final TcpClient locatorClient = new TcpClient(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR),
+        InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
+        InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());
+    final TcpSocketCreator socketCreator = SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER);
+    final GMSAuthenticator authenticator =
+        new GMSAuthenticator(config.getSecurityProps(), securityService,
+            mockSystem.getSecurityLogWriter(), mockSystem.getInternalLogWriter());
+    final Membership<InternalDistributedMember> m1 =
+        MembershipBuilder.<InternalDistributedMember>newMembershipBuilder(
+            socketCreator, locatorClient, serializer, memberIdentifierFactory)
+            .setMembershipLocator(locator)
+            .setAuthenticator(authenticator)
             .setStatistics(stats1)
             .setMessageListener(messageListener)
             .setMembershipListener(listener)
             .setConfig(new ServiceConfig(transport, config))
-            .setSerializer(serializer)
             .setLifecycleListener(lifeCycleListener)
-            .setMemberIDFactory(new MemberIdentifierFactoryImpl())
-            .setLocatorClient(new TcpClient(
-                asTcpSocketCreator(
-                    SocketCreatorFactory
-                        .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
-                InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
-                InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer()))
             .create();
-    doAnswer(invocation -> {
-      DistributionImpl.connectLocatorToServices(m1);
-      return null;
-    }).when(lifeCycleListener).started();
     m1.start();
     m1.startEventProcessing();
     return Pair.of(m1, messageListener);
@@ -311,20 +319,21 @@ public class MembershipJUnitTest {
   public void testLocatorAndTwoServersJoinUsingDiffeHellman() throws Exception {
 
     Membership<InternalDistributedMember> m1 = null, m2 = null;
-    Locator l = null;
+    InternalLocator internalLocator = null;
     int mcastPort = AvailablePortHelper.getRandomAvailableUDPPort();
 
     try {
 
       // boot up a locator
       int port = AvailablePortHelper.getRandomAvailableTCPPort();
-      InetAddress localHost = SocketCreator.getLocalHost();
+      InetAddress localHost = LocalHostUtil.getLocalHost();
       Properties p = new Properties();
       p.setProperty(ConfigurationProperties.SECURITY_UDP_DHALGO, "AES:128");
       // this locator will hook itself up with the first Membership
       // to be created
-      l = InternalLocator.startLocator(port, new File(""), null, null, localHost, false, p, null,
-          temporaryFolder.getRoot().toPath());
+      internalLocator =
+          InternalLocator.startLocator(port, new File(""), null, null, localHost, false, p, null,
+              temporaryFolder.getRoot().toPath());
 
       // create configuration objects
       Properties nonDefault = new Properties();
@@ -338,19 +347,17 @@ public class MembershipJUnitTest {
       nonDefault.put(ConfigurationProperties.SECURITY_UDP_DHALGO, "AES:128");
       DistributionConfigImpl config = new DistributionConfigImpl(nonDefault);
       RemoteTransportConfig transport =
-          new RemoteTransportConfig(config, ClusterDistributionManager.NORMAL_DM_TYPE);
+          new RemoteTransportConfig(config, ClusterDistributionManager.LOCATOR_DM_TYPE);
 
       // start the first membership manager
-      try {
-        System.setProperty(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY, "true");
-        m1 = createMembershipManager(config, transport).getLeft();
-      } finally {
-        System.getProperties().remove(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY);
-      }
+      final MembershipLocator<InternalDistributedMember> membershipLocator =
+          internalLocator.getMembershipLocator();
+
+      m1 = createMembershipManager(config, transport, membershipLocator).getLeft();
 
       // start the second membership manager
       final Pair<Membership, MessageListener> pair =
-          createMembershipManager(config, transport);
+          createMembershipManager(config, transport, membershipLocator);
       m2 = pair.getLeft();
       final MessageListener listener2 = pair.getRight();
 
@@ -358,15 +365,15 @@ public class MembershipJUnitTest {
       // manager queues new views for processing through the DM listener,
       // which is a mock object in this test
       System.out.println("waiting for views to stabilize");
-      JoinLeave jl1 = ((GMSMembership) m1).getServices().getJoinLeave();
-      JoinLeave jl2 = ((GMSMembership) m2).getServices().getJoinLeave();
+      final Membership mgr1 = m1;
+      final Membership mgr2 = m2;
       long giveUp = System.currentTimeMillis() + 15000;
       for (;;) {
         try {
-          assertTrue("view = " + jl2.getView(), jl2.getView().size() == 2);
-          assertTrue("view = " + jl1.getView(), jl1.getView().size() == 2);
-          assertTrue(jl1.getView().getCreator().equals(jl2.getView().getCreator()));
-          assertTrue(jl1.getView().getViewId() == jl2.getView().getViewId());
+          assertTrue("view = " + mgr2.getView(), mgr2.getView().size() == 2);
+          assertTrue("view = " + mgr1.getView(), mgr1.getView().size() == 2);
+          assertTrue(mgr1.getView().getCreator().equals(mgr2.getView().getCreator()));
+          assertTrue(mgr1.getView().getViewId() == mgr2.getView().getViewId());
           break;
         } catch (AssertionError e) {
           if (System.currentTimeMillis() > giveUp) {
@@ -409,7 +416,8 @@ public class MembershipJUnitTest {
       m2.disconnect(false);
       assertTrue(!m2.isConnected());
 
-      assertTrue(m1.getView().size() == 1);
+      Membership waitingMember = m1;
+      await().untilAsserted(() -> assertTrue(waitingMember.getView().size() == 1));
 
     } finally {
 
@@ -419,8 +427,8 @@ public class MembershipJUnitTest {
       if (m1 != null) {
         m1.disconnect(false);
       }
-      if (l != null) {
-        l.stop();
+      if (internalLocator != null) {
+        internalLocator.stop();
       }
     }
   }
@@ -444,7 +452,7 @@ public class MembershipJUnitTest {
     assertEquals(24000, sc.getJoinTimeout());
 
     nonDefault.clear();
-    nonDefault.put(LOCATORS, SocketCreator.getLocalHost().getHostAddress() + "[" + 12345 + "]");
+    nonDefault.put(LOCATORS, LocalHostUtil.getLocalHost().getHostAddress() + "[" + 12345 + "]");
     config = new DistributionConfigImpl(nonDefault);
     transport = new RemoteTransportConfig(config, ClusterDistributionManager.NORMAL_DM_TYPE);
     sc = new ServiceConfig(transport, config);
@@ -463,35 +471,4 @@ public class MembershipJUnitTest {
 
   }
 
-  @Test
-  public void testMulticastDiscoveryNotAllowed() {
-    Properties nonDefault = new Properties();
-    nonDefault.put(DISABLE_TCP, "true");
-    nonDefault.put(MCAST_PORT, "12345");
-    nonDefault.put(LOG_FILE, "");
-    nonDefault.put(LOG_LEVEL, "fine");
-    nonDefault.put(LOCATORS, "");
-    DistributionConfigImpl config = new DistributionConfigImpl(nonDefault);
-    RemoteTransportConfig transport =
-        new RemoteTransportConfig(config, ClusterDistributionManager.NORMAL_DM_TYPE);
-
-    MembershipConfig membershipConfig = new ServiceConfig(transport, config);
-
-    Services services = mock(Services.class);
-    when(services.getConfig()).thenReturn(membershipConfig);
-
-    GMSJoinLeave joinLeave = new GMSJoinLeave(new TcpClient(
-        asTcpSocketCreator(
-            SocketCreatorFactory.setDistributionConfig(config)
-                .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
-        InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
-        InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer()));
-    try {
-      joinLeave.init(services);
-      throw new Error(
-          "expected a GemFireConfigException to be thrown because no locators are configured");
-    } catch (GemFireConfigException e) {
-      // expected
-    }
-  }
 }

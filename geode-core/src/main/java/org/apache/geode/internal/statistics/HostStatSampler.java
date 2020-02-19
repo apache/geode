@@ -26,8 +26,8 @@ import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.Statistics;
 import org.apache.geode.SystemFailure;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.NanoTimer;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.io.MainWithChildrenRollingFileHandler;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.net.SocketCreator;
@@ -37,6 +37,7 @@ import org.apache.geode.internal.util.concurrent.StoppableCountDownLatch;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.logging.internal.spi.LogFile;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * HostStatSampler implements a thread which will monitor, sample, and archive statistics. It only
@@ -49,11 +50,11 @@ public abstract class HostStatSampler
   private static final Logger logger = LogService.getLogger();
 
   public static final String TEST_FILE_SIZE_LIMIT_IN_KB_PROPERTY =
-      DistributionConfig.GEMFIRE_PREFIX + "stats.test.fileSizeLimitInKB";
+      GeodeGlossary.GEMFIRE_PREFIX + "stats.test.fileSizeLimitInKB";
   public static final String OS_STATS_DISABLED_PROPERTY = "osStatsDisabled";
 
   protected static final String INITIALIZATION_TIMEOUT_PROPERTY =
-      DistributionConfig.GEMFIRE_PREFIX + "statSamplerInitializationTimeout";
+      GeodeGlossary.GEMFIRE_PREFIX + "statSamplerInitializationTimeout";
   protected static final int INITIALIZATION_TIMEOUT_DEFAULT = 30000;
   protected static final long INITIALIZATION_TIMEOUT_MILLIS =
       Long.getLong(INITIALIZATION_TIMEOUT_PROPERTY, INITIALIZATION_TIMEOUT_DEFAULT);
@@ -64,7 +65,7 @@ public abstract class HostStatSampler
    * check.
    */
   private static final long STAT_SAMPLER_DELAY_THRESHOLD =
-      Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "statSamplerDelayThreshold", 3000);
+      Long.getLong(GeodeGlossary.GEMFIRE_PREFIX + "statSamplerDelayThreshold", 3000);
   private static final long STAT_SAMPLER_DELAY_THRESHOLD_NANOS =
       NanoTimer.millisToNanos(STAT_SAMPLER_DELAY_THRESHOLD);
 
@@ -152,7 +153,7 @@ public abstract class HostStatSampler
   @Override
   public String getSystemDirectoryPath() {
     try {
-      return SocketCreator.getHostName(SocketCreator.getLocalHost());
+      return SocketCreator.getHostName(LocalHostUtil.getLocalHost());
     } catch (UnknownHostException ignore) {
       return "";
     }

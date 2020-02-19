@@ -72,15 +72,14 @@ import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.AvailablePort;
-import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
+import org.apache.geode.logging.internal.OSProcess;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
@@ -92,6 +91,7 @@ import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.internal.DUnitLauncher;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.version.VersionManager;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Tests client server corner cases between Region and Pool
@@ -844,7 +844,7 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
     props.setProperty(LOG_LEVEL, DUnitLauncher.logLevel);
     Cache cache = new ClientServerMiscDUnitTestBase().createCacheV(props);
     ClientServerMiscDUnitTestBase.static_cache = cache;
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints",
+    System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints",
         "true");
     PoolImpl p;
     try {
@@ -869,7 +869,7 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
       attrs = factory.create();
     } finally {
       System.getProperties()
-          .remove(DistributionConfig.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints");
+          .remove(GeodeGlossary.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints");
     }
 
     Region region1 = cache.createRegion(REGION_NAME1, attrs);

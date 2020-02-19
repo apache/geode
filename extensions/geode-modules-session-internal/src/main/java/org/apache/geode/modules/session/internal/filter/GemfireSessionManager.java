@@ -32,7 +32,6 @@ import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.control.ResourceManager;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.modules.session.bootstrap.AbstractCache;
 import org.apache.geode.modules.session.bootstrap.ClientServerCache;
@@ -48,6 +47,7 @@ import org.apache.geode.modules.session.internal.filter.attributes.DeltaSessionA
 import org.apache.geode.modules.session.internal.filter.util.TypeAwareMap;
 import org.apache.geode.modules.session.internal.jmx.SessionStatistics;
 import org.apache.geode.modules.util.RegionHelper;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * This class implements the session management using a Gemfire distributedCache as a persistent
@@ -60,12 +60,12 @@ public class GemfireSessionManager implements SessionManager {
   /**
    * Prefix of init param string used to set gemfire properties
    */
-  private static final String GEMFIRE_PROPERTY = DistributionConfig.GEMFIRE_PREFIX + "property.";
+  private static final String GEMFIRE_PROPERTY = GeodeGlossary.GEMFIRE_PREFIX + "property.";
 
   /**
    * Prefix of init param string used to set gemfire distributedCache setting
    */
-  private static final String GEMFIRE_CACHE = DistributionConfig.GEMFIRE_PREFIX + "cache.";
+  private static final String GEMFIRE_CACHE = GeodeGlossary.GEMFIRE_PREFIX + "cache.";
 
   private static final String INIT_PARAM_CACHE_TYPE = "cache-type";
   private static final String CACHE_TYPE_CLIENT_SERVER = "client-server";

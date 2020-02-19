@@ -581,6 +581,9 @@ public class QRegion implements SelectResults {
 
   @Override
   public boolean equals(Object obj) {
+    if (!(obj instanceof SelectResults)) {
+      return false;
+    }
     return this.values.equals(obj);
   }
 

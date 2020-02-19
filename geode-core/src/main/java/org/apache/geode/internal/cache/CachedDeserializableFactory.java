@@ -20,12 +20,12 @@ import java.io.IOException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.util.ObjectSizer;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.NullDataOutputStream;
 import org.apache.geode.internal.serialization.DSCODE;
 import org.apache.geode.internal.size.Sizeable;
 import org.apache.geode.pdx.PdxInstance;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Produces instances that implement CachedDeserializable.
@@ -35,11 +35,11 @@ import org.apache.geode.pdx.PdxInstance;
  */
 public class CachedDeserializableFactory {
   public static final boolean PREFER_DESERIALIZED =
-      !Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "PREFER_SERIALIZED");
+      !Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "PREFER_SERIALIZED");
 
   @MutableForTesting
   public static boolean STORE_ALL_VALUE_FORMS =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "STORE_ALL_VALUE_FORMS");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "STORE_ALL_VALUE_FORMS");
 
   /**
    * Creates and returns an instance of CachedDeserializable that contains the specified byte array.

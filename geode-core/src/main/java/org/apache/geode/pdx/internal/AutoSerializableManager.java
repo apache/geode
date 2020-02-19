@@ -40,7 +40,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.RegionService;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.CopyOnWriteHashSet;
 import org.apache.geode.internal.PdxSerializerObject;
 import org.apache.geode.internal.util.concurrent.CopyOnWriteWeakHashMap;
@@ -52,6 +51,7 @@ import org.apache.geode.pdx.PdxSerializationException;
 import org.apache.geode.pdx.PdxWriter;
 import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
 import org.apache.geode.unsafe.internal.sun.misc.Unsafe;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * The core of auto serialization which is used in both aspect and reflection-based
@@ -94,7 +94,7 @@ public class AutoSerializableManager {
    * future customer issues.
    */
   public static final String NO_HARDCODED_EXCLUDES_PARAM =
-      DistributionConfig.GEMFIRE_PREFIX + "auto.serialization.no.hardcoded.excludes";
+      GeodeGlossary.GEMFIRE_PREFIX + "auto.serialization.no.hardcoded.excludes";
 
   private boolean noHardcodedExcludes = Boolean.getBoolean(NO_HARDCODED_EXCLUDES_PARAM);
 
@@ -661,16 +661,16 @@ public class AutoSerializableManager {
   static {
     Unsafe tmp = null;
     // only use Unsafe if SAFE was not explicitly requested
-    if (!Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "AutoSerializer.SAFE")) {
+    if (!Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "AutoSerializer.SAFE")) {
       try {
         tmp = new Unsafe();
         // only throw an exception if UNSAFE was explicitly requested
       } catch (RuntimeException ex) {
-        if (Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "AutoSerializer.UNSAFE")) {
+        if (Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "AutoSerializer.UNSAFE")) {
           throw ex;
         }
       } catch (Error ex) {
-        if (Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "AutoSerializer.UNSAFE")) {
+        if (Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "AutoSerializer.UNSAFE")) {
           throw ex;
         }
       }
@@ -2054,7 +2054,7 @@ public class AutoSerializableManager {
   }
 
   private static final boolean USE_CONSTRUCTOR =
-      !Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "autopdx.ignoreConstructor");
+      !Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "autopdx.ignoreConstructor");
 
   /**
    * Using the given PdxReader, recreate the given object.

@@ -71,6 +71,8 @@ upstream-fork: ${UPSTREAM_FORK}
 pipeline-prefix: "${PIPELINE_PREFIX}"
 public-pipelines: ${PUBLIC_PIPELINES}
 gcp-project: ${GCP_PROJECT}
+windows-base-family: windows-2016
+linux-base-family: ubuntu-minimal-1804-lts
 YML
 
 

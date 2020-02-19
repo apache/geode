@@ -21,7 +21,7 @@ import static org.apache.geode.distributed.internal.DistributionConfig.DS_RECONN
 import java.util.Properties;
 import java.util.function.Supplier;
 
-import org.apache.geode.distributed.internal.membership.gms.api.QuorumChecker;
+import org.apache.geode.distributed.internal.membership.api.QuorumChecker;
 
 public class ConnectionConfigImpl implements ConnectionConfig {
   private final boolean isReconnecting;

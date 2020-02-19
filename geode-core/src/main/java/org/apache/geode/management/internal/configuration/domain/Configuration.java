@@ -14,17 +14,21 @@
  */
 package org.apache.geode.management.internal.configuration.domain;
 
+import static java.util.Arrays.asList;
+import static org.apache.geode.internal.JarDeployer.getArtifactId;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -34,7 +38,8 @@ import org.xml.sax.SAXException;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.JarDeployer;
+import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
 
 /**
@@ -42,14 +47,13 @@ import org.apache.geode.management.internal.configuration.utils.XmlUtils;
  *
  */
 public class Configuration implements DataSerializable {
-
   private static final long serialVersionUID = 1L;
   private String configName;
   private String cacheXmlContent;
   private String cacheXmlFileName;
   private String propertiesFileName;
   private Properties gemfireProperties;
-  Set<String> jarNames;
+  private final Map<String, Deployment> deployments = new HashMap<>();
 
   // Public no arg constructor required for Deserializable
   public Configuration() {
@@ -57,21 +61,20 @@ public class Configuration implements DataSerializable {
   }
 
   public Configuration(Configuration that) {
-    this.configName = that.configName;
-    this.cacheXmlContent = that.cacheXmlContent;
-    this.cacheXmlFileName = that.cacheXmlFileName;
-    this.propertiesFileName = that.propertiesFileName;
-    this.gemfireProperties = new Properties();
-    this.gemfireProperties.putAll(that.gemfireProperties);
-    this.jarNames = new HashSet<>(that.jarNames);
+    configName = that.configName;
+    cacheXmlContent = that.cacheXmlContent;
+    cacheXmlFileName = that.cacheXmlFileName;
+    propertiesFileName = that.propertiesFileName;
+    gemfireProperties = new Properties();
+    gemfireProperties.putAll(that.gemfireProperties);
+    deployments.putAll(that.deployments);
   }
 
   public Configuration(String configName) {
     this.configName = configName;
-    this.cacheXmlFileName = configName + ".xml";
-    this.propertiesFileName = configName + ".properties";
-    this.gemfireProperties = new Properties();
-    this.jarNames = new HashSet<>();
+    cacheXmlFileName = configName + ".xml";
+    propertiesFileName = configName + ".properties";
+    gemfireProperties = new Properties();
   }
 
   public String getCacheXmlContent() {
@@ -84,11 +87,11 @@ public class Configuration implements DataSerializable {
 
   public void setCacheXmlFile(File cacheXmlFile) throws IOException {
     if (cacheXmlFile.length() == 0) {
-      this.cacheXmlContent = "";
+      cacheXmlContent = "";
     } else {
       try {
         Document doc = XmlUtils.getDocumentBuilder().parse(cacheXmlFile);
-        this.cacheXmlContent = XmlUtils.elementToString(doc);
+        cacheXmlContent = XmlUtils.elementToString(doc);
       } catch (SAXException | TransformerException | ParserConfigurationException e) {
         throw new IOException("Unable to parse existing cluster configuration from file: "
             + cacheXmlFile.getAbsolutePath(), e);
@@ -100,14 +103,8 @@ public class Configuration implements DataSerializable {
     if (!propertiesFile.exists())
       return;
 
-    FileInputStream fis = null;
-    try {
-      fis = new FileInputStream(propertiesFile);
-      this.gemfireProperties.load(fis);
-    } finally {
-      if (fis != null) {
-        fis.close();
-      }
+    try (FileInputStream fis = new FileInputStream(propertiesFile)) {
+      gemfireProperties.load(fis);
     }
   }
 
@@ -135,30 +132,26 @@ public class Configuration implements DataSerializable {
     return propertiesFileName;
   }
 
-  public void addJarNames(Set<String> jarNames) {
-    for (String jarName : jarNames) {
-      String artifactId = JarDeployer.getArtifactId(jarName);
-      Iterator<String> iterator = this.jarNames.iterator();
-      while (iterator.hasNext()) {
-        String next = iterator.next();
-        if (JarDeployer.getArtifactId(next).equals(artifactId)) {
-          iterator.remove();
-        }
-      }
-    }
-    this.jarNames.addAll(jarNames);
+  public void putDeployment(Deployment deployment) {
+    String artifactId = getArtifactId(deployment.getJarFileName());
+    deployments.values().removeIf(d -> getArtifactId(d.getJarFileName()).equals(artifactId));
+    deployments.put(deployment.getId(), deployment);
+  }
+
+  public Collection<Deployment> getDeployments() {
+    return deployments.values();
   }
 
   public void removeJarNames(String[] jarNames) {
-    if (jarNames != null) {
-      this.jarNames.removeAll(Stream.of(jarNames).collect(Collectors.toSet()));
+    if (jarNames == null) {
+      deployments.clear();
     } else {
-      this.jarNames.clear();
+      asList(jarNames).forEach(deployments::remove);
     }
   }
 
   public Set<String> getJarNames() {
-    return this.jarNames;
+    return deployments.keySet();
   }
 
   @Override
@@ -168,80 +161,69 @@ public class Configuration implements DataSerializable {
     DataSerializer.writeString(cacheXmlContent, out);
     DataSerializer.writeString(propertiesFileName, out);
     DataSerializer.writeProperties(gemfireProperties, out);
-    DataSerializer.writeHashSet((HashSet<?>) jarNames, out);
+    // Before 1.12, this code wrote a non-null HashSet of jarnames to the output stream.
+    // As of 1.12, it writes a null HashSet to the stream, so that when we can still read the old
+    // configuration, and will now also write the deployment map.
+    DataSerializer.writeHashSet(null, out);
+    // As of 1.12, this class starting writing the current version
+    Version.getCurrentVersion().writeOrdinal(out, true);
+    DataSerializer.writeHashMap(deployments, out);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.configName = DataSerializer.readString(in);
-    this.cacheXmlFileName = DataSerializer.readString(in);
-    this.cacheXmlContent = DataSerializer.readString(in);
-    this.propertiesFileName = DataSerializer.readString(in);
-    this.gemfireProperties = DataSerializer.readProperties(in);
-    this.jarNames = DataSerializer.readHashSet(in);
+    configName = DataSerializer.readString(in);
+    cacheXmlFileName = DataSerializer.readString(in);
+    cacheXmlContent = DataSerializer.readString(in);
+    propertiesFileName = DataSerializer.readString(in);
+    gemfireProperties = DataSerializer.readProperties(in);
+    HashSet<String> jarNames = DataSerializer.readHashSet(in);
+    if (jarNames != null) {
+      // we are reading pre 1.12 data. So add each jar name to deployments
+      jarNames.stream()
+          .map(Deployment::new)
+          .forEach(deployment -> deployments.put(deployment.getJarFileName(), deployment));
+    } else {
+      // version of the data we are reading (1.12 or later)
+      Version version = Version.fromOrdinalNoThrow(Version.readOrdinal(in), true);
+      if (version.compareTo(Version.GEODE_1_12_0) >= 0) {
+        deployments.putAll(DataSerializer.readHashMap(in));
+      }
+    }
   }
-
 
   @Override
   public String toString() {
-    return "Configuration [configName=" + configName + ", cacheXmlContent=" + cacheXmlContent
-        + ", cacheXmlFileName=" + cacheXmlFileName + ", propertiesFileName=" + propertiesFileName
-        + ", gemfireProperties=" + gemfireProperties + ", jarNames=" + jarNames + "]";
+    return "Configuration{" +
+        "configName='" + configName + '\'' +
+        ", cacheXmlContent='" + cacheXmlContent + '\'' +
+        ", cacheXmlFileName='" + cacheXmlFileName + '\'' +
+        ", propertiesFileName='" + propertiesFileName + '\'' +
+        ", gemfireProperties=" + gemfireProperties +
+        ", deployments=" + deployments +
+        '}';
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    Configuration that = (Configuration) o;
+    return Objects.equals(configName, that.configName) &&
+        Objects.equals(cacheXmlContent, that.cacheXmlContent) &&
+        Objects.equals(cacheXmlFileName, that.cacheXmlFileName) &&
+        Objects.equals(propertiesFileName, that.propertiesFileName) &&
+        Objects.equals(gemfireProperties, that.gemfireProperties) &&
+        Objects.equals(deployments, that.deployments);
   }
 
   @Override
   public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((cacheXmlContent == null) ? 0 : cacheXmlContent.hashCode());
-    result = prime * result + ((cacheXmlFileName == null) ? 0 : cacheXmlFileName.hashCode());
-    result = prime * result + ((configName == null) ? 0 : configName.hashCode());
-    result = prime * result + ((gemfireProperties == null) ? 0 : gemfireProperties.hashCode());
-    result = prime * result + ((jarNames == null) ? 0 : jarNames.hashCode());
-    result = prime * result + ((propertiesFileName == null) ? 0 : propertiesFileName.hashCode());
-    return result;
+    return Objects.hash(configName, cacheXmlContent, cacheXmlFileName, propertiesFileName,
+        gemfireProperties, deployments);
   }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj)
-      return true;
-    if (obj == null)
-      return false;
-    if (!(obj instanceof Configuration))
-      return false;
-    Configuration other = (Configuration) obj;
-    if (cacheXmlContent == null) {
-      if (other.cacheXmlContent != null)
-        return false;
-    } else if (!cacheXmlContent.equals(other.cacheXmlContent))
-      return false;
-    if (cacheXmlFileName == null) {
-      if (other.cacheXmlFileName != null)
-        return false;
-    } else if (!cacheXmlFileName.equals(other.cacheXmlFileName))
-      return false;
-    if (configName == null) {
-      if (other.configName != null)
-        return false;
-    } else if (!configName.equals(other.configName))
-      return false;
-    if (gemfireProperties == null) {
-      if (other.gemfireProperties != null)
-        return false;
-    } else if (!gemfireProperties.equals(other.gemfireProperties))
-      return false;
-    if (jarNames == null) {
-      if (other.jarNames != null)
-        return false;
-    } else if (!jarNames.equals(other.jarNames))
-      return false;
-    if (propertiesFileName == null) {
-      if (other.propertiesFileName != null)
-        return false;
-    } else if (!propertiesFileName.equals(other.propertiesFileName))
-      return false;
-    return true;
-  }
-
 }

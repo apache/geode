@@ -24,7 +24,7 @@ import org.assertj.core.api.ListAssert;
 
 import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementResult;
-import org.apache.geode.management.api.ConfigurationResult;
+import org.apache.geode.management.api.EntityGroupInfo;
 import org.apache.geode.management.configuration.AbstractConfiguration;
 import org.apache.geode.management.runtime.RuntimeInfo;
 
@@ -57,8 +57,8 @@ public class ClusterManagementListResultAssert<T extends AbstractConfiguration<R
     return this;
   }
 
-  public List<ConfigurationResult<T, R>> getResult() {
-    return actual.getResult();
+  public List<EntityGroupInfo<T, R>> getResult() {
+    return actual.getEntityGroupInfo();
   };
 
   public ListAssert<T> hasConfigurations() {

@@ -42,7 +42,6 @@ import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.datasource.ClientConnectionFactoryWrapper;
 import org.apache.geode.internal.datasource.ConfigProperty;
@@ -54,6 +53,7 @@ import org.apache.geode.internal.jta.TransactionUtils;
 import org.apache.geode.internal.jta.UserTransactionImpl;
 import org.apache.geode.internal.util.DriverJarUtil;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * <p>
@@ -126,7 +126,7 @@ public class JNDIInvoker {
    */
   @MutableForTesting
   private static boolean IGNORE_JTA =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "ignoreJTA");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "ignoreJTA");
 
   @Immutable
   private static final DataSourceFactory dataSourceFactory = new DataSourceFactory();
@@ -228,7 +228,7 @@ public class JNDIInvoker {
     }
     dataSourceMap.values().stream().forEach(JNDIInvoker::closeDataSource);
     dataSourceMap.clear();
-    IGNORE_JTA = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "ignoreJTA");
+    IGNORE_JTA = Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "ignoreJTA");
   }
 
   private static void closeDataSource(Object dataSource) {

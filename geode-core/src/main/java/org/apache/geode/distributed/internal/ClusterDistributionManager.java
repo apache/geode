@@ -19,6 +19,7 @@ package org.apache.geode.distributed.internal;
 import java.io.NotSerializableException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -61,27 +62,29 @@ import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.Role;
 import org.apache.geode.distributed.internal.locks.ElderState;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberData;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifierFactory;
-import org.apache.geode.distributed.internal.membership.gms.api.Membership;
-import org.apache.geode.distributed.internal.membership.gms.api.MembershipView;
-import org.apache.geode.distributed.internal.membership.gms.api.Message;
+import org.apache.geode.distributed.internal.membership.api.MemberData;
+import org.apache.geode.distributed.internal.membership.api.MemberDisconnectedException;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifierFactory;
+import org.apache.geode.distributed.internal.membership.api.Membership;
+import org.apache.geode.distributed.internal.membership.api.MembershipLocator;
+import org.apache.geode.distributed.internal.membership.api.MembershipView;
+import org.apache.geode.distributed.internal.membership.api.Message;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.NanoTimer;
-import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.admin.remote.AdminConsoleDisconnectMessage;
 import org.apache.geode.internal.admin.remote.RemoteGfManagerAgent;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.cache.InitialImageOperation;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
-import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.sequencelog.MembershipLogger;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.tcp.ConnectionTable;
 import org.apache.geode.internal.tcp.ReenteredConnectException;
+import org.apache.geode.logging.internal.OSProcess;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.logging.internal.executors.LoggingUncaughtExceptionHandler;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -161,6 +164,12 @@ public class ClusterDistributionManager implements DistributionManager {
   private final ClusterElderManager clusterElderManager = new ClusterElderManager(this);
   private Distribution distribution;
   private ClusterOperationExecutors executors;
+
+  /**
+   * Membership failure listeners - for testing
+   */
+  private List<MembershipTestHook> membershipTestHooks;
+
 
   /**
    * The <code>MembershipListener</code>s that are registered on this manager for ALL members.
@@ -287,7 +296,8 @@ public class ClusterDistributionManager implements DistributionManager {
    *
    * @param system The distributed system to which this distribution manager will send messages.
    */
-  static ClusterDistributionManager create(InternalDistributedSystem system) {
+  static ClusterDistributionManager create(InternalDistributedSystem system,
+      final MembershipLocator<InternalDistributedMember> membershipLocator) {
 
     ClusterDistributionManager distributionManager = null;
     boolean beforeJoined = true;
@@ -314,7 +324,8 @@ public class ClusterDistributionManager implements DistributionManager {
       long start = System.currentTimeMillis();
 
       distributionManager =
-          new ClusterDistributionManager(system, transport, system.getAlertingService());
+          new ClusterDistributionManager(system, transport, system.getAlertingService(),
+              membershipLocator);
       distributionManager.assertDistributionManagerType();
 
       beforeJoined = false; // we have now joined the system
@@ -418,7 +429,8 @@ public class ClusterDistributionManager implements DistributionManager {
    *
    */
   private ClusterDistributionManager(RemoteTransportConfig transport,
-      InternalDistributedSystem system, AlertingService alertingService) {
+      InternalDistributedSystem system, AlertingService alertingService,
+      MembershipLocator<InternalDistributedMember> locator) {
 
     this.system = system;
     this.transport = transport;
@@ -451,7 +463,7 @@ public class ClusterDistributionManager implements DistributionManager {
       DMListener listener = new DMListener(this);
       distribution = DistributionImpl
           .createDistribution(this, transport, system, listener,
-              this::handleIncomingDMsg);
+              this::handleIncomingDMsg, locator);
 
       sb.append(System.currentTimeMillis() - start);
 
@@ -480,8 +492,10 @@ public class ClusterDistributionManager implements DistributionManager {
    * @param system The distributed system to which this distribution manager will send messages.
    */
   private ClusterDistributionManager(InternalDistributedSystem system,
-      RemoteTransportConfig transport, AlertingService alertingService) {
-    this(transport, system, alertingService);
+      RemoteTransportConfig transport,
+      AlertingService alertingService,
+      final MembershipLocator<InternalDistributedMember> membershipLocator) {
+    this(transport, system, alertingService, membershipLocator);
 
     boolean finishedConstructor = false;
     try {
@@ -1568,7 +1582,7 @@ public class ClusterDistributionManager implements DistributionManager {
       // no network interface
       equivs = new HashSet<>();
       try {
-        equivs.add(SocketCreator.getLocalHost());
+        equivs.add(LocalHostUtil.getLocalHost());
       } catch (UnknownHostException e) {
         // can't even get localhost
         if (getViewMembers().size() > 1) {
@@ -2277,7 +2291,7 @@ public class ClusterDistributionManager implements DistributionManager {
    *
    */
   private class DMListener implements
-      org.apache.geode.distributed.internal.membership.gms.api.MembershipListener<InternalDistributedMember> {
+      org.apache.geode.distributed.internal.membership.api.MembershipListener<InternalDistributedMember> {
     ClusterDistributionManager dm;
 
     DMListener(ClusterDistributionManager dm) {
@@ -2288,7 +2302,29 @@ public class ClusterDistributionManager implements DistributionManager {
     public void membershipFailure(String reason, Throwable t) {
       exceptionInThreads = true;
       rootCause = t;
-      getSystem().disconnect(reason, true);
+      if (rootCause != null && !(rootCause instanceof ForcedDisconnectException)) {
+        logger.info("cluster membership failed due to ", rootCause);
+        rootCause = new ForcedDisconnectException(rootCause.getMessage());
+      }
+      try {
+        if (membershipTestHooks != null) {
+          List<MembershipTestHook> l = membershipTestHooks;
+          for (final MembershipTestHook aL : l) {
+            MembershipTestHook dml = aL;
+            dml.beforeMembershipFailure(reason, rootCause);
+          }
+        }
+        getSystem().disconnect(reason, true);
+        if (membershipTestHooks != null) {
+          List<MembershipTestHook> l = membershipTestHooks;
+          for (final MembershipTestHook aL : l) {
+            MembershipTestHook dml = aL;
+            dml.afterMembershipFailure(reason, rootCause);
+          }
+        }
+      } catch (RuntimeException re) {
+        logger.warn("Exception caught while shutting down", re);
+      }
     }
 
     @Override
@@ -2297,39 +2333,63 @@ public class ClusterDistributionManager implements DistributionManager {
       // without holding the view lock. That can cause a race condition and
       // subsequent deadlock (#45566). Elder selection is now done when a view
       // is installed.
-      dm.addNewMember(member);
+      try {
+        dm.addNewMember(member);
+      } catch (VirtualMachineError err) {
+        // If this ever returns, rethrow the error. We're poisoned
+        // now, so don't let this thread continue.
+        throw err;
+      } catch (DistributedSystemDisconnectedException e) {
+        // don't log shutdown exceptions
+      } catch (Throwable t) {
+        logger.info(String.format("Membership: Fault while processing view addition of %s",
+            member),
+            t);
+      }
     }
 
     @Override
     public void memberDeparted(InternalDistributedMember theId, boolean crashed, String reason) {
-      boolean wasAdmin = getAdminMemberSet().contains(theId);
-      if (wasAdmin) {
-        // Pretend we received an AdminConsoleDisconnectMessage from the console that
-        // is no longer in the JavaGroup view.
-        // It must have died without sending a ShutdownMessage.
-        // This fixes bug 28454.
-        AdminConsoleDisconnectMessage message = new AdminConsoleDisconnectMessage();
-        message.setSender(theId);
-        message.setCrashed(crashed);
-        message.setAlertListenerExpected(true);
-        message.setIgnoreAlertListenerRemovalFailure(true); // we don't know if it was a listener so
-                                                            // don't issue a warning
-        message.setRecipient(localAddress);
-        message.setReason(reason); // added for #37950
-        handleIncomingDMsg(message);
+      try {
+        boolean wasAdmin = getAdminMemberSet().contains(theId);
+        if (wasAdmin) {
+          // Pretend we received an AdminConsoleDisconnectMessage from the console that
+          // is no longer in the JavaGroup view.
+          // It must have died without sending a ShutdownMessage.
+          // This fixes bug 28454.
+          AdminConsoleDisconnectMessage message = new AdminConsoleDisconnectMessage();
+          message.setSender(theId);
+          message.setCrashed(crashed);
+          message.setAlertListenerExpected(true);
+          message.setIgnoreAlertListenerRemovalFailure(true); // we don't know if it was a listener
+                                                              // so
+          // don't issue a warning
+          message.setRecipient(localAddress);
+          message.setReason(reason); // added for #37950
+          handleIncomingDMsg(message);
+        }
+        dm.handleManagerDeparture(theId, crashed, reason);
+      } catch (DistributedSystemDisconnectedException se) {
+        // let's not get huffy about it
       }
-      dm.handleManagerDeparture(theId, crashed, reason);
     }
 
     @Override
     public void memberSuspect(InternalDistributedMember suspect,
         InternalDistributedMember whoSuspected, String reason) {
-      dm.handleManagerSuspect(suspect, whoSuspected, reason);
+      try {
+        dm.handleManagerSuspect(suspect, whoSuspected, reason);
+      } catch (DistributedSystemDisconnectedException se) {
+        // let's not get huffy about it
+      }
     }
 
     @Override
     public void viewInstalled(MembershipView view) {
-      dm.handleViewInstalled(view);
+      try {
+        dm.handleViewInstalled(view);
+      } catch (DistributedSystemDisconnectedException se) {
+      }
     }
 
     @Override
@@ -2656,6 +2716,36 @@ public class ClusterDistributionManager implements DistributionManager {
     return distributedSystemId;
   }
 
+  @Override
+  public void registerTestHook(MembershipTestHook mth) {
+    this.getDistribution().doWithViewLocked(() -> {
+      if (this.membershipTestHooks == null) {
+        this.membershipTestHooks = Collections.singletonList(mth);
+      } else {
+        List<MembershipTestHook> l = new ArrayList<>(this.membershipTestHooks);
+        l.add(mth);
+        this.membershipTestHooks = l;
+      }
+      return null;
+    });
+  }
+
+  @Override
+  public void unregisterTestHook(MembershipTestHook mth) {
+    this.getDistribution().doWithViewLocked(() -> {
+      if (this.membershipTestHooks != null) {
+        if (this.membershipTestHooks.size() == 1) {
+          this.membershipTestHooks = null;
+        } else {
+          List<MembershipTestHook> l = new ArrayList<>(this.membershipTestHooks);
+          l.remove(mth);
+          this.membershipTestHooks = l;
+        }
+      }
+      return null;
+    });
+  }
+
   /**
    * this causes the given InternalDistributedMembers to log thread dumps. If useNative is true we
    * attempt to use OSProcess native code for the dumps. This goes to stdout instead of the
@@ -2785,6 +2875,9 @@ public class ClusterDistributionManager implements DistributionManager {
       }
 
       if (e == null) {
+        if (rc instanceof MemberDisconnectedException) {
+          rc = new ForcedDisconnectException(rc.getMessage());
+        }
         // Caller did not specify any root cause, so just use our own.
         return new DistributedSystemDisconnectedException(reason, rc);
       }

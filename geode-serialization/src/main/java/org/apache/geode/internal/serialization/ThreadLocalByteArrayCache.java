@@ -21,7 +21,7 @@ import java.lang.ref.SoftReference;
 /**
  * Provides a simple thread local cache of a single byte array.
  */
-public class ThreadLocalByteArrayCache {
+class ThreadLocalByteArrayCache {
   private final ThreadLocal<SoftReference<byte[]>> cache = new ThreadLocal<>();
   private final int maximumArraySize;
 

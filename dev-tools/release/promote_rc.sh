@@ -70,11 +70,12 @@ WORKSPACE=$PWD/release-${VERSION}-workspace
 GEODE=$WORKSPACE/geode
 GEODE_EXAMPLES=$WORKSPACE/geode-examples
 GEODE_NATIVE=$WORKSPACE/geode-native
+GEODE_BENCHMARKS=$WORKSPACE/geode-benchmarks
 BREW_DIR=$WORKSPACE/homebrew-core
 SVN_DIR=$WORKSPACE/dist/dev/geode
 set +x
 
-if [ -d "$GEODE" ] && [ -d "$GEODE_EXAMPLES" ] && [ -d "$GEODE_NATIVE" ] && [ -d "$BREW_DIR" ] && [ -d "$SVN_DIR" ] ; then
+if [ -d "$GEODE" ] && [ -d "$GEODE_EXAMPLES" ] && [ -d "$GEODE_NATIVE" ] && [ -d "$GEODE_BENCHMARKS" ] && [ -d "$BREW_DIR" ] && [ -d "$SVN_DIR" ] ; then
     true
 else
     echo "Please run this script from the same working directory as you initially ran prepare_rc.sh"
@@ -100,7 +101,7 @@ echo ""
 echo "============================================================"
 echo "Tagging ${FULL_VERSION} as ${VERSION} and pushing tags..."
 echo "============================================================"
-for DIR in ${GEODE} ${GEODE_EXAMPLES} ${GEODE_NATIVE} ; do
+for DIR in ${GEODE} ${GEODE_EXAMPLES} ${GEODE_NATIVE} ${GEODE_BENCHMARKS} ; do
     set -x
     cd ${DIR}
     git tag -s -u ${SIGNING_KEY} rel/v${VERSION} -m "Apache Geode v${VERSION} release" rel/v${FULL_VERSION}
@@ -165,6 +166,7 @@ echo "Updating Geode Dockerfile"
 echo "============================================================"
 set -x
 cd ${GEODE}/docker
+git pull -r
 set +x
 sed -e "s/^ENV GEODE_GPG.*/ENV GEODE_GPG ${SIGNING_KEY}/" \
     -e "s/^ENV GEODE_VERSION.*/ENV GEODE_VERSION ${VERSION}/" \
@@ -185,6 +187,7 @@ echo "Updating Native Dockerfile"
 echo "============================================================"
 set -x
 cd ${GEODE_NATIVE}/docker
+git pull -r
 set +x
 sed -e "/wget.*closer.*apache-geode-/s#http.*filename=geode#https://www.apache.org/dist/geode#" \
     -e "/wget.*closer.*apache-rat-/s#http.*filename=creadur#https://archive.apache.org/dist/creadur#" \

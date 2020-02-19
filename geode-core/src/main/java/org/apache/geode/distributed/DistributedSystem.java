@@ -37,13 +37,13 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.tcp.ConnectionTable;
 import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.metrics.internal.InternalDistributedSystemMetricsService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * A "connection" to a GemFire distributed system. A <code>DistributedSystem</code> is created by
@@ -452,7 +452,7 @@ public abstract class DistributedSystem implements StatisticsFactory {
    * @since Geode 1.0
    */
   public static final String PROPERTIES_FILE_DEFAULT =
-      DistributionConfig.GEMFIRE_PREFIX + "properties";
+      GeodeGlossary.GEMFIRE_PREFIX + "properties";
 
   /**
    * Returns the current value of {@link #PROPERTIES_FILE_PROPERTY} system property if set or the

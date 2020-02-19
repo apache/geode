@@ -14,7 +14,6 @@
  */
 package org.apache.geode.cache.client.internal;
 
-import static org.apache.geode.distributed.internal.membership.adapter.SocketCreatorAdapter.asTcpSocketCreator;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 
 import java.io.IOException;
@@ -178,10 +177,8 @@ public class LocatorLoadBalancingDUnitTest extends LocatorTestBase {
   private Object issueRequest(final String hostName, final int locatorPort,
       final Object request, final boolean replyExpected)
       throws IOException, ClassNotFoundException {
-    return new TcpClient(
-        asTcpSocketCreator(
-            SocketCreatorFactory
-                .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
+    return new TcpClient(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR),
         InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
         InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer())
             .requestToServer(InetAddress.getByName(hostName),

@@ -16,7 +16,10 @@ package org.apache.geode.internal.serialization;
 
 /**
  * An enumeration that contains a bunch of pre-defined values for use in serialization
- * The allowed range of these values is -128..127 inclusive (i.e., one byte).
+ * The allowed range of these values is -128..127 inclusive (i.e., one byte). These values
+ * are used in serialization to note the type of the data that follows the DSCODE. This is
+ * only useful for very advanced serialization code dealing with serialization internals.
+ * Examples of its use can be found in the geode-serialization and geode-core modules.
  */
 public enum DSCODE {
   /**

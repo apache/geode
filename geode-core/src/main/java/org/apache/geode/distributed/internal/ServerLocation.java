@@ -22,7 +22,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.inet.LocalHostUtil;
 
 /**
  * Represents the location of a cache server. This class is preferable to InetSocketAddress because
@@ -30,7 +30,7 @@ import org.apache.geode.internal.net.SocketCreator;
  *
  *
  */
-public class ServerLocation implements DataSerializable, Comparable {
+public class ServerLocation implements DataSerializable, Comparable<ServerLocation> {
   private static final long serialVersionUID = -5850116974987640560L;
 
   private String hostName;
@@ -112,7 +112,7 @@ public class ServerLocation implements DataSerializable, Comparable {
     } else if (!hostName.equals(other.hostName)) {
       String canonicalHostName;
       try {
-        canonicalHostName = SocketCreator.getLocalHost().getCanonicalHostName();
+        canonicalHostName = LocalHostUtil.getLocalHost().getCanonicalHostName();
       } catch (UnknownHostException e) {
         throw new IllegalStateException("getLocalHost failed with " + e);
       }
@@ -139,8 +139,7 @@ public class ServerLocation implements DataSerializable, Comparable {
   }
 
   @Override
-  public int compareTo(Object o) {
-    ServerLocation other = (ServerLocation) o;
+  public int compareTo(ServerLocation other) {
     int difference = hostName.compareTo(other.hostName);
     if (difference != 0) {
       return difference;

@@ -37,7 +37,7 @@ import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
-import org.apache.geode.internal.OSProcess;
+import org.apache.geode.logging.internal.OSProcess;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.SerializableRunnable;
@@ -46,14 +46,14 @@ import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 
 public class TXRestrictionsDUnitTest extends JUnit4CacheTestCase {
 
-  protected RegionAttributes getRegionAttributes() {
-    AttributesFactory factory = new AttributesFactory();
+  protected <K, V> RegionAttributes<K, V> getRegionAttributes() {
+    AttributesFactory<K, V> factory = new AttributesFactory<>();
     factory.setScope(Scope.DISTRIBUTED_NO_ACK);
     return factory.create();
   }
 
-  protected RegionAttributes getDiskRegionAttributes() {
-    AttributesFactory factory = new AttributesFactory(getRegionAttributes());
+  protected <K, V> RegionAttributes<K, V> getDiskRegionAttributes() {
+    AttributesFactory<K, V> factory = new AttributesFactory<>(getRegionAttributes());
     File[] diskDirs = new File[1];
     diskDirs[0] = new File("diskRegionDirs/" + OSProcess.getId());
     diskDirs[0].mkdirs();

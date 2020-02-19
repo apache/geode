@@ -24,6 +24,7 @@ import java.net.UnknownHostException;
 import org.apache.geode.admin.ManagedEntityConfig;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.admin.GemFireVM;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.net.SocketCreator;
 
 /**
@@ -61,7 +62,7 @@ public abstract class ManagedEntityConfigImpl implements ManagedEntityConfig {
    */
   protected static String getLocalHostName() {
     try {
-      return SocketCreator.getLocalHost().getCanonicalHostName();
+      return LocalHostUtil.getLocalHost().getCanonicalHostName();
 
     } catch (UnknownHostException ex) {
       IllegalStateException ex2 = new IllegalStateException(

@@ -118,7 +118,7 @@ public class CreateCQOp {
           // will be propagated up properly. Ideally, this exception would be
           // contained in the message..
           String errorMessage = part.getString();
-          if (errorMessage.indexOf("Not authorized") >= 0) {
+          if (errorMessage.contains("Not authorized")) {
             throw new NotAuthorizedException(errorMessage);
           }
 

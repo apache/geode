@@ -15,15 +15,18 @@
 package org.apache.geode.distributed.internal.membership.adapter;
 
 
-import java.net.InetAddress;
-
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
+import org.apache.geode.distributed.internal.membership.api.MembershipConfig;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.util.internal.GeodeGlossary;
 
+/**
+ * This is a MembershipConfig built from the Geode core RemoteTransportConfig and
+ * DistributionConfig objects.
+ */
 public class ServiceConfig implements MembershipConfig {
 
   /** various settings from Geode configuration */
@@ -77,7 +80,8 @@ public class ServiceConfig implements MembershipConfig {
     memberTimeout = theConfig.getMemberTimeout();
 
     int configuredLossThreshold =
-        Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "network-partition-threshold", 51);
+        Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "network-partition-threshold",
+            DEFAULT_LOSS_THRESHOLD);
     if (configuredLossThreshold < 51) {
       lossThreshold = 51;
     } else if (configuredLossThreshold > 100) {
@@ -86,7 +90,8 @@ public class ServiceConfig implements MembershipConfig {
       lossThreshold = configuredLossThreshold;
     }
 
-    memberWeight = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "member-weight", 0);
+    memberWeight = Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "member-weight",
+        DEFAULT_MEMBER_WEIGHT);
     locatorWaitTime = theConfig.getLocatorWaitTime();
 
     networkPartitionDetectionEnabled = theConfig.getEnableNetworkPartitionDetection();
@@ -193,7 +198,6 @@ public class ServiceConfig implements MembershipConfig {
     return dconfig.getStartLocator();
   }
 
-  @Override
   public boolean getEnableNetworkPartitionDetection() {
     return dconfig.getEnableNetworkPartitionDetection();
   }
@@ -239,8 +243,8 @@ public class ServiceConfig implements MembershipConfig {
   }
 
   @Override
-  public InetAddress getMcastAddress() {
-    return dconfig.getMcastAddress();
+  public String getMcastAddress() {
+    return dconfig.getMcastAddress().getHostAddress();
   }
 
   @Override
@@ -314,22 +318,17 @@ public class ServiceConfig implements MembershipConfig {
   }
 
   @Override
-  public boolean isMcastEnabled() {
-    return transport.isMcastEnabled();
-  }
-
-  @Override
-  public boolean isTcpDisabled() {
-    return transport.isTcpDisabled();
-  }
-
-  @Override
-  public Object getOldDSMembershipInfo() {
+  public Object getOldMembershipInfo() {
     return transport.getOldDSMembershipInfo();
   }
 
   @Override
   public boolean getIsReconnectingDS() {
     return transport.getIsReconnectingDS();
+  }
+
+  @Override
+  public boolean getHasLocator() {
+    return Locator.hasLocator();
   }
 }

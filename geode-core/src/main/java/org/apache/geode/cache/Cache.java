@@ -148,6 +148,7 @@ public interface Cache extends GemFireCache {
    */
   <K, V> RegionFactory<K, V> createRegionFactory(RegionAttributes<K, V> regionAttributes);
 
+
   /**
    * Internal GemStone method for accessing the internationalized logging object for GemFire, use
    * {@link #getLogger()} instead. This method does not throw {@code CacheClosedException} if the

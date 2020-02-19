@@ -1008,7 +1008,7 @@ public class TXState implements TXStateInterface {
 
     @Override
     public boolean equals(Object o) {
-      if (o == null || !(o instanceof TXEntryStateWithRegionAndKey))
+      if (!(o instanceof TXEntryStateWithRegionAndKey))
         return false;
       return compareTo(o) == 0;
     }
@@ -1700,6 +1700,15 @@ public class TXState implements TXStateInterface {
     return localRegion.nonTXbasicGetValueInVM(keyInfo);
   }
 
+  @Override
+  public boolean putEntry(EntryEventImpl event, boolean ifNew, boolean ifOld,
+      Object expectedOldValue, boolean requireOldValue, long lastModified,
+      boolean overwriteDestroyed) {
+    return this.putEntry(event, ifNew, ifOld, expectedOldValue, requireOldValue, lastModified,
+        overwriteDestroyed, true,
+        false);
+  }
+
   /*
    * (non-Javadoc)
    *
@@ -1709,7 +1718,7 @@ public class TXState implements TXStateInterface {
   @Override
   public boolean putEntry(EntryEventImpl event, boolean ifNew, boolean ifOld,
       Object expectedOldValue, boolean requireOldValue, long lastModified,
-      boolean overwriteDestroyed) {
+      boolean overwriteDestroyed, boolean invokeCallbacks, boolean throwConcurrentModification) {
     validateDelta(event);
     return txPutEntry(event, ifNew, requireOldValue, true, expectedOldValue);
   }

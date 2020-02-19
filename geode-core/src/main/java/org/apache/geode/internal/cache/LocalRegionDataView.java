@@ -149,6 +149,14 @@ public class LocalRegionDataView implements InternalDataView {
   }
 
 
+  @Override
+  public boolean putEntry(EntryEventImpl event, boolean ifNew, boolean ifOld,
+      Object expectedOldValue, boolean requireOldValue, long lastModified,
+      boolean overwriteDestroyed) {
+    return event.getRegion().virtualPut(event, ifNew, ifOld, expectedOldValue, requireOldValue,
+        lastModified, overwriteDestroyed);
+  }
+
   /*
    * (non-Javadoc)
    *
@@ -158,9 +166,9 @@ public class LocalRegionDataView implements InternalDataView {
   @Override
   public boolean putEntry(EntryEventImpl event, boolean ifNew, boolean ifOld,
       Object expectedOldValue, boolean requireOldValue, long lastModified,
-      boolean overwriteDestroyed) {
+      boolean overwriteDestroyed, boolean invokeCallbacks, boolean throwsConcurrentModification) {
     return event.getRegion().virtualPut(event, ifNew, ifOld, expectedOldValue, requireOldValue,
-        lastModified, overwriteDestroyed);
+        lastModified, overwriteDestroyed, invokeCallbacks, throwsConcurrentModification);
   }
 
   /*

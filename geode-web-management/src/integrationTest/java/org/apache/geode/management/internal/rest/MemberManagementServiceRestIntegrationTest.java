@@ -75,14 +75,16 @@ public class MemberManagementServiceRestIntegrationTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.memberStatuses").doesNotExist())
         .andExpect(jsonPath("$.statusCode", is("OK")))
-        .andExpect(jsonPath("$.result[0].runtimeInfo[*].memberName", contains("locator-0")))
-        .andExpect(jsonPath("$.result[0].runtimeInfo[0].locatorPort", greaterThan(0)))
-        .andExpect(jsonPath("$.result[0].runtimeInfo[0].server", is(false)))
-        .andExpect(jsonPath("$.result[0].runtimeInfo[0].status", is("online")))
-        .andExpect(jsonPath("$.result[0].runtimeInfo[0].cacheServerInfo").doesNotExist())
-        .andExpect(jsonPath("$.result[0].runtimeInfo[0].logFilePath", endsWith("locator-0.log")))
-        .andExpect(jsonPath("$.result[0].runtimeInfo[0].workingDirPath", notNullValue()))
-        .andExpect(jsonPath("$.result[0].runtimeInfo[0].heapUsage", greaterThan(0)));
+        .andExpect(
+            jsonPath("$.result[0].groups[0].runtimeInfo[*].memberName", contains("locator-0")))
+        .andExpect(jsonPath("$.result[0].groups[0].runtimeInfo[0].locatorPort", greaterThan(0)))
+        .andExpect(jsonPath("$.result[0].groups[0].runtimeInfo[0].server", is(false)))
+        .andExpect(jsonPath("$.result[0].groups[0].runtimeInfo[0].status", is("online")))
+        .andExpect(jsonPath("$.result[0].groups[0].runtimeInfo[0].cacheServerInfo").doesNotExist())
+        .andExpect(
+            jsonPath("$.result[0].groups[0].runtimeInfo[0].logFilePath", endsWith("locator-0.log")))
+        .andExpect(jsonPath("$.result[0].groups[0].runtimeInfo[0].workingDirPath", notNullValue()))
+        .andExpect(jsonPath("$.result[0].groups[0].runtimeInfo[0].heapUsage", greaterThan(0)));
   }
 
   @Test
@@ -92,14 +94,20 @@ public class MemberManagementServiceRestIntegrationTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.memberStatuses").doesNotExist())
         .andExpect(jsonPath("$.statusCode", is("OK")))
-        .andExpect(jsonPath("$.result.runtimeInfo[*].memberName", contains("locator-0")))
-        .andExpect(jsonPath("$.result.runtimeInfo[0].locatorPort", greaterThan(0)))
-        .andExpect(jsonPath("$.result.runtimeInfo[0].server", is(false)))
-        .andExpect(jsonPath("$.result.runtimeInfo[0].status", is("online")))
-        .andExpect(jsonPath("$.result.runtimeInfo[0].cacheServerInfo").doesNotExist())
-        .andExpect(jsonPath("$.result.runtimeInfo[0].logFilePath", endsWith("locator-0.log")))
-        .andExpect(jsonPath("$.result.runtimeInfo[0].workingDirPath", notNullValue()))
-        .andExpect(jsonPath("$.result.runtimeInfo[0].heapUsage", greaterThan(0)));
+        .andExpect(jsonPath("$.result.groups[0].runtimeInfo[*].memberName",
+            contains("locator-0")))
+        .andExpect(
+            jsonPath("$.result.groups[0].runtimeInfo[0].locatorPort", greaterThan(0)))
+        .andExpect(jsonPath("$.result.groups[0].runtimeInfo[0].server", is(false)))
+        .andExpect(jsonPath("$.result.groups[0].runtimeInfo[0].status", is("online")))
+        .andExpect(jsonPath("$.result.groups[0].runtimeInfo[0].cacheServerInfo")
+            .doesNotExist())
+        .andExpect(jsonPath("$.result.groups[0].runtimeInfo[0].logFilePath",
+            endsWith("locator-0.log")))
+        .andExpect(jsonPath("$.result.groups[0].runtimeInfo[0].workingDirPath",
+            notNullValue()))
+        .andExpect(
+            jsonPath("$.result.groups[0].runtimeInfo[0].heapUsage", greaterThan(0)));
   }
 
   @Test
@@ -110,18 +118,24 @@ public class MemberManagementServiceRestIntegrationTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.memberStatuses").doesNotExist())
         .andExpect(jsonPath("$.statusCode", is("OK")))
-        .andExpect(jsonPath("$.result[0].runtimeInfo[*].memberName", contains("server-1")))
-        .andExpect(jsonPath("$.result[0].runtimeInfo[0].locatorPort", is(0)))
-        .andExpect(jsonPath("$.result[0].runtimeInfo[0].server", is(true)))
-        .andExpect(jsonPath("$.result[0].runtimeInfo[0].cacheServerInfo[0].port", greaterThan(0)))
         .andExpect(
-            jsonPath("$.result[0].runtimeInfo[0].cacheServerInfo[0].maxConnections", equalTo(800)))
-        .andExpect(jsonPath("$.result[0].runtimeInfo[0].cacheServerInfo[0].maxThreads", equalTo(0)))
-        .andExpect(jsonPath("$.result[0].runtimeInfo[0].groups", equalTo("group-1,group-2")))
-        .andExpect(jsonPath("$.result[0].runtimeInfo[0].logFilePath", endsWith("server-1.log")))
-        .andExpect(jsonPath("$.result[0].runtimeInfo[0].workingDirPath", endsWith("vm1")))
-        .andExpect(jsonPath("$.result[0].runtimeInfo[0].clientCount", equalTo(0)))
-        .andExpect(jsonPath("$.result[0].runtimeInfo[0].heapUsage", greaterThan(0)));
+            jsonPath("$.result[0].groups[0].runtimeInfo[*].memberName", contains("server-1")))
+        .andExpect(jsonPath("$.result[0].groups[0].runtimeInfo[0].locatorPort", is(0)))
+        .andExpect(jsonPath("$.result[0].groups[0].runtimeInfo[0].server", is(true)))
+        .andExpect(jsonPath("$.result[0].groups[0].runtimeInfo[0].cacheServerInfo[0].port",
+            greaterThan(0)))
+        .andExpect(
+            jsonPath("$.result[0].groups[0].runtimeInfo[0].cacheServerInfo[0].maxConnections",
+                equalTo(800)))
+        .andExpect(jsonPath("$.result[0].groups[0].runtimeInfo[0].cacheServerInfo[0].maxThreads",
+            equalTo(0)))
+        .andExpect(
+            jsonPath("$.result[0].groups[0].runtimeInfo[0].groups", equalTo("group-1,group-2")))
+        .andExpect(
+            jsonPath("$.result[0].groups[0].runtimeInfo[0].logFilePath", endsWith("server-1.log")))
+        .andExpect(jsonPath("$.result[0].groups[0].runtimeInfo[0].workingDirPath", endsWith("vm1")))
+        .andExpect(jsonPath("$.result[0].groups[0].runtimeInfo[0].clientCount", equalTo(0)))
+        .andExpect(jsonPath("$.result[0].groups[0].runtimeInfo[0].heapUsage", greaterThan(0)));
   }
 
   @Test
@@ -131,7 +145,7 @@ public class MemberManagementServiceRestIntegrationTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.memberStatuses").doesNotExist())
         .andExpect(jsonPath("$.statusCode", is("OK")))
-        .andExpect(jsonPath("$.result[0].runtimeInfo[*].memberName",
+        .andExpect(jsonPath("$.result[*].id",
             containsInAnyOrder("locator-0", "server-1")));
   }
 }

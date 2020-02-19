@@ -129,6 +129,20 @@ public class ListGatewayCommand extends GfshCommand {
     return result;
   }
 
+  static String getStatus(GatewaySenderMXBean mbean) {
+    if (!mbean.isRunning()) {
+      return CliStrings.GATEWAY_NOT_RUNNING;
+    }
+    if (mbean.isPaused()) {
+      return CliStrings.SENDER_PAUSED;
+    }
+    if (mbean.isConnected()) {
+      return CliStrings.GATEWAY_RUNNING_CONNECTED;
+    }
+    // can only reach here when running, not paused and not connected
+    return CliStrings.GATEWAY_RUNNING_NOT_CONNECTED;
+  }
+
   protected void accumulateListGatewayResult(ResultModel result,
       Map<String, Map<String, GatewaySenderMXBean>> gatewaySenderBeans,
       Map<String, GatewayReceiverMXBean> gatewayReceiverBeans) {
@@ -144,8 +158,7 @@ public class ListGatewayCommand extends GfshCommand {
               memberToBean.getValue().getRemoteDSId() + "");
           gatewaySenders.accumulate(CliStrings.RESULT_TYPE, memberToBean.getValue().isParallel()
               ? CliStrings.SENDER_PARALLEL : CliStrings.SENDER_SERIAL);
-          gatewaySenders.accumulate(CliStrings.RESULT_STATUS, memberToBean.getValue().isRunning()
-              ? CliStrings.GATEWAY_RUNNING : CliStrings.GATEWAY_NOT_RUNNING);
+          gatewaySenders.accumulate(CliStrings.RESULT_STATUS, getStatus(memberToBean.getValue()));
           gatewaySenders.accumulate(CliStrings.RESULT_QUEUED_EVENTS,
               memberToBean.getValue().getEventQueueSize() + "");
           gatewaySenders.accumulate(CliStrings.RESULT_RECEIVER,

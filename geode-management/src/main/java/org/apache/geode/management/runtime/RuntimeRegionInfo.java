@@ -15,6 +15,8 @@
 
 package org.apache.geode.management.runtime;
 
+import java.util.Objects;
+
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.management.api.JsonSerializable;
 
@@ -28,5 +30,32 @@ public class RuntimeRegionInfo extends RuntimeInfo implements JsonSerializable {
 
   public void setEntryCount(long entrySize) {
     this.entryCount = entrySize;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof RuntimeRegionInfo)) {
+      return false;
+    }
+    if (!super.equals(o)) {
+      return false;
+    }
+    RuntimeRegionInfo that = (RuntimeRegionInfo) o;
+    return getEntryCount() == that.getEntryCount();
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(super.hashCode(), getEntryCount());
+  }
+
+  @Override
+  public String toString() {
+    return "RuntimeRegionInfo{" +
+        "entryCount=" + entryCount +
+        "} " + super.toString();
   }
 }

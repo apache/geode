@@ -16,6 +16,7 @@
 package org.apache.geode.tools.pulse;
 
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_BIND_ADDRESS;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.InetAddress;
@@ -94,5 +95,10 @@ public class PulseConnectivityTest {
     Cluster cluster = pulse.getRepository().getCluster("admin", null);
     assertThat(cluster.isConnectedFlag()).isTrue();
     assertThat(cluster.getServerCount()).isEqualTo(0);
+    assertThat(cluster.isAlive()).isTrue();
+    assertThat(cluster.isDaemon()).isTrue();
+    locator.getLocator().stop();
+    assertThat(locator.getLocator().isStopped()).isTrue();
+    await().untilAsserted(() -> assertThat(cluster.isAlive()).isFalse());
   }
 }

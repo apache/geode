@@ -23,12 +23,12 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.logging.internal.log4j.LogLevel;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Class for change log level function
@@ -54,7 +54,7 @@ public class ChangeLogLevelFunction implements InternalFunction {
 
       cache.getInternalDistributedSystem().getConfig().setLogLevel(logWriterLevel);
 
-      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + LOG_LEVEL, logLevel);
+      System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + LOG_LEVEL, logLevel);
       logger.info(LogMarker.CONFIG_MARKER, "GFSH Changed log level to {}", log4jLevel);
       result.put(cache.getDistributedSystem().getDistributedMember().getId(),
           "New log level is " + log4jLevel);

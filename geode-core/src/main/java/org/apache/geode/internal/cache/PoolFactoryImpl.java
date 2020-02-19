@@ -31,6 +31,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolFactory;
@@ -39,7 +40,7 @@ import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.membership.gms.membership.HostAddress;
+import org.apache.geode.distributed.internal.tcpserver.LocatorAddress;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.pdx.internal.TypeRegistry;
@@ -49,7 +50,7 @@ import org.apache.geode.pdx.internal.TypeRegistry;
  *
  * @since GemFire 5.7
  */
-public class PoolFactoryImpl implements PoolFactory {
+public class PoolFactoryImpl implements InternalPoolFactory {
   private static final Logger logger = LogService.getLogger();
 
   /**
@@ -57,7 +58,7 @@ public class PoolFactoryImpl implements PoolFactory {
    */
   private PoolAttributes attributes = new PoolAttributes();
 
-  private final List<HostAddress> locatorAddresses = new ArrayList<>();
+  private final List<LocatorAddress> locatorAddresses = new ArrayList<>();
 
   /**
    * The cache that created this factory
@@ -287,7 +288,7 @@ public class PoolFactoryImpl implements PoolFactory {
     }
     InetSocketAddress isa = getInetSocketAddress(host, port);
     attributes.locators.add(isa);
-    locatorAddresses.add(new HostAddress(isa, host));
+    locatorAddresses.add(new LocatorAddress(isa, host));
     return this;
   }
 
@@ -310,10 +311,7 @@ public class PoolFactoryImpl implements PoolFactory {
     return this;
   }
 
-
-  /**
-   * Initializes the state of this factory for the given pool's state.
-   */
+  @Override
   public void init(Pool cp) {
     setSocketConnectTimeout(cp.getSocketConnectTimeout());
     setFreeConnectionTimeout(cp.getFreeConnectionTimeout());
@@ -380,9 +378,8 @@ public class PoolFactoryImpl implements PoolFactory {
     return GemFireCacheImpl.getInstance();
   }
 
-  /**
-   * Needed by test framework.
-   */
+  @Override
+  @VisibleForTesting
   public PoolAttributes getPoolAttributes() {
     return attributes;
   }

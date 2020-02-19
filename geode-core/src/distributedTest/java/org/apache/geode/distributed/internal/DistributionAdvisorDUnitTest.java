@@ -14,7 +14,10 @@
  */
 package org.apache.geode.distributed.internal;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
+import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.atLeastOnce;
@@ -24,35 +27,43 @@ import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Future;
 
 import org.apache.logging.log4j.Logger;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.test.dunit.Invoke;
-import org.apache.geode.test.dunit.SerializableRunnable;
+import org.apache.geode.test.dunit.DistributedTestCase;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.dunit.rules.SharedErrorCollector;
 import org.apache.geode.test.junit.categories.MembershipTest;
+import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
-@Category({MembershipTest.class})
-public class DistributionAdvisorDUnitTest extends JUnit4DistributedTestCase {
+@Category(MembershipTest.class)
+@SuppressWarnings("serial")
+public class DistributionAdvisorDUnitTest extends DistributedTestCase {
 
-  private transient DistributionAdvisor.Profile profiles[];
-  protected transient DistributionAdvisor advisor;
+  private transient Profile[] profiles;
+  private transient DistributionAdvisor advisor;
 
-  @Override
-  public final void postSetUp() throws Exception {
+  @Rule
+  public ExecutorServiceRule executorServiceRule = new ExecutorServiceRule();
+
+  @Rule
+  public SharedErrorCollector errorCollector = new SharedErrorCollector();
+
+  @Before
+  public void setUp() {
     // connect to distributed system in every VM
-    Invoke.invokeInEveryVM(new SerializableRunnable("DistributionAdvisorDUnitTest: SetUp") {
-      @Override
-      public void run() {
-        getSystem();
-      }
+    invokeInEveryVM(() -> {
+      getSystem();
     });
 
     DistributionAdvisee advisee = mock(DistributionAdvisee.class);
@@ -62,85 +73,70 @@ public class DistributionAdvisorDUnitTest extends JUnit4DistributedTestCase {
     when(advisee.getDistributionManager()).thenReturn(getSystem().getDistributionManager());
     when(advisee.getCancelCriterion()).thenReturn(getSystem().getCancelCriterion());
 
-    advisor = DistributionAdvisor.createDistributionAdvisor(advisee);
+    advisor = new DistributionAdvisor(advisee);
+    advisor.initialize();
 
     when(advisee.getDistributionAdvisor()).thenReturn(advisor);
 
-    Set ids = getSystem().getDistributionManager().getOtherNormalDistributionManagerIds();
+    Set<InternalDistributedMember> ids =
+        getSystem().getDistributionManager().getOtherNormalDistributionManagerIds();
     assertEquals(VM.getVMCount(), ids.size());
-    List profileList = new ArrayList();
+    List<Profile> profileList = new ArrayList<>();
 
-    int i = 0;
-    for (Iterator itr = ids.iterator(); itr.hasNext(); i++) {
-      InternalDistributedMember id = (InternalDistributedMember) itr.next();
-      DistributionAdvisor.Profile profile = new DistributionAdvisor.Profile(id, 0);
+    for (InternalDistributedMember id : ids) {
+      Profile profile = new Profile(id, 0);
 
       // add profile to advisor
       advisor.putProfile(profile);
       profileList.add(profile);
     }
-    this.profiles = (DistributionAdvisor.Profile[]) profileList
-        .toArray(new DistributionAdvisor.Profile[profileList.size()]);
+
+    profiles = profileList.toArray(new Profile[0]);
   }
 
-  @Override
-  public final void preTearDown() throws Exception {
-    this.advisor.close();
+  @After
+  public void tearDown() {
+    advisor.close();
   }
-
 
   @Test
   public void testGenericAdvice() {
-    Set expected = new HashSet();
-    for (int i = 0; i < profiles.length; i++) {
-      expected.add(profiles[i].getDistributedMember());
+    Set<InternalDistributedMember> expected = new HashSet<>();
+    for (Profile profile : profiles) {
+      expected.add(profile.getDistributedMember());
     }
     assertEquals(expected, advisor.adviseGeneric());
   }
 
   @Test
   public void advisorIssuesSevereAlertForStateFlush() throws Exception {
-    final long membershipVersion = advisor.startOperation();
+    long membershipVersion = advisor.startOperation();
     advisor.forceNewMembershipVersion();
 
-    final Logger logger = mock(Logger.class);
-    final Exception exceptionHolder[] = new Exception[1];
-    Thread thread = new Thread(() -> {
+    Logger logger = mock(Logger.class);
+
+    Future<Void> waitForCurrentOperations = executorServiceRule.submit(() -> {
       try {
         advisor.waitForCurrentOperations(logger, 2000, 4000);
-      } catch (RuntimeException e) {
-        synchronized (exceptionHolder) {
-          exceptionHolder[0] = e;
-        }
+      } catch (Exception e) {
+        errorCollector.addError(e);
       }
     });
-    thread.setDaemon(true);
-    thread.start();
 
-    try {
-      await().untilAsserted(() -> {
-        verify(logger, atLeastOnce()).warn(isA(String.class), isA(Long.class));
-      });
-      await().untilAsserted(() -> {
-        verify(logger, atLeastOnce()).fatal(isA(String.class), isA(Long.class));
-      });
-      advisor.endOperation(membershipVersion);
-      await().untilAsserted(() -> {
-        verify(logger, atLeastOnce()).info("Wait for current operations completed");
-      });
-      await().until(() -> !thread.isAlive());
-    } finally {
-      if (thread.isAlive()) {
-        advisor.endOperation(membershipVersion);
-        thread.interrupt();
-        thread.join(10000);
-      } else {
-        synchronized (exceptionHolder) {
-          if (exceptionHolder[0] != null) {
-            throw exceptionHolder[0];
-          }
-        }
-      }
-    }
+    await().untilAsserted(() -> {
+      verify(logger, atLeastOnce()).warn(isA(String.class), isA(Long.class));
+    });
+
+    await().untilAsserted(() -> {
+      verify(logger, atLeastOnce()).fatal(isA(String.class), isA(Long.class));
+    });
+
+    advisor.endOperation(membershipVersion);
+
+    await().untilAsserted(() -> {
+      verify(logger, atLeastOnce()).info("Wait for current operations completed");
+    });
+
+    waitForCurrentOperations.get(getTimeout().getValueInMS(), MILLISECONDS);
   }
 }

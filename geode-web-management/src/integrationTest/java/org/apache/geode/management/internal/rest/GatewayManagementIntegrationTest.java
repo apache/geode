@@ -30,6 +30,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.context.WebApplicationContext;
 
 import org.apache.geode.cache.configuration.GatewayReceiverConfig;
@@ -37,7 +38,8 @@ import org.apache.geode.distributed.internal.InternalConfigurationPersistenceSer
 import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
-import org.apache.geode.management.api.ConfigurationResult;
+import org.apache.geode.management.api.EntityGroupInfo;
+import org.apache.geode.management.api.RestTemplateClusterManagementServiceTransport;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.ClassName;
 import org.apache.geode.management.configuration.GatewayReceiver;
@@ -64,8 +66,10 @@ public class GatewayManagementIntegrationTest {
   @Before
   public void before() {
     context = new LocatorWebContext(webApplicationContext);
-    client = ClusterManagementServiceBuilder.buildWithRequestFactory()
-        .setRequestFactory(context.getRequestFactory()).build();
+    client = new ClusterManagementServiceBuilder().setTransport(
+        new RestTemplateClusterManagementServiceTransport(
+            new RestTemplate(context.getRequestFactory())))
+        .build();
     receiver = new GatewayReceiver();
   }
 
@@ -74,7 +78,7 @@ public class GatewayManagementIntegrationTest {
     ClusterManagementListResult<GatewayReceiver, GatewayReceiverInfo> result =
         client.list(receiver);
     assertThat(result.isSuccessful()).isTrue();
-    assertThat(result.getResult().size()).isEqualTo(0);
+    assertThat(result.getEntityGroupInfo().size()).isEqualTo(0);
   }
 
   @Test
@@ -97,8 +101,8 @@ public class GatewayManagementIntegrationTest {
     ClusterManagementListResult<GatewayReceiver, GatewayReceiverInfo> results =
         client.list(receiver);
     assertThat(results.isSuccessful()).isTrue();
-    List<ConfigurationResult<GatewayReceiver, GatewayReceiverInfo>> receivers =
-        results.getResult();
+    List<EntityGroupInfo<GatewayReceiver, GatewayReceiverInfo>> receivers =
+        results.getEntityGroupInfo();
     assertThat(receivers.size()).isEqualTo(1);
     GatewayReceiver result = receivers.get(0).getConfiguration();
     assertThat(result.isManualStart()).isFalse();

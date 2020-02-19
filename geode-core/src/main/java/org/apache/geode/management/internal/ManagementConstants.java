@@ -204,6 +204,6 @@ public interface ManagementConstants {
   String CLIENT_LEFT_PREFIX = "Client left with Id ";
 
   String LOCATOR_STARTED_PREFIX = "Locator is Started in the VM ";
-
+  String MANAGER_STARTED_PREFIX = "Manager is Started in the VM ";
 
 }

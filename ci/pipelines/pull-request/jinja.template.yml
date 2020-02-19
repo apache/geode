@@ -31,7 +31,14 @@ resources:
 - name: geode
   type: pull-request
   source:
-    access_token: ((!github-pr-access-token))
+    access_token: ((github-apachegeode-ci-read-only-token))
+    repository: {{repository.fork}}/geode
+    disable_ci_skip: false
+    skip_ssl_verification: false
+- name: geode-status
+  type: pull-request
+  source:
+    access_token: ((github-pr-access-token))
     repository: {{repository.fork}}/geode
     disable_ci_skip: false
     skip_ssl_verification: false
@@ -54,7 +61,18 @@ resources:
     repository: gcr.io/((gcp-project))/((pipeline-prefix))alpine-tools
     tag: latest
 
+- name: linux-builder-image-family
+  type: gci
+  source:
+    key: ((concourse-gcp-key))
+    family_project: ((gcp-project))
+    family: ((pipeline-prefix))linux-geode-builder
+
 resource_types:
+- name: gci
+  type: registry-image
+  source:
+    repository: smgoller/gci-resource
 - name: gcs-resource
   type: docker-image
   source:
@@ -62,7 +80,10 @@ resource_types:
 - name: pull-request
   type: docker-image
   source:
-    repository: teliaoss/github-pr-resource
+    username: ((docker-username))
+    password: ((docker-password))
+    repository: gcr.io/((gcp-project))/((pipeline-prefix))github-pr-resource
+    tag: latest
 - name: concourse-metadata-resource
   type: docker-image
   source:
@@ -80,11 +101,14 @@ jobs:
       - get: geode
         trigger: true
         version: every
+        attempts: 2
       - get: geode-ci
+        attempts: 2
+      - get: {{ build_test.PLATFORM }}-builder-image-family
     - aggregate:
       - do:
         - put: pull-request-job-pending
-          resource: geode
+          resource: geode-status
           params:
             context: {{ build_test.name }}
             path: geode
@@ -105,6 +129,7 @@ jobs:
               GEODE_FORK: {{repository.fork}}
               JAVA_BUILD_VERSION: 8
               JAVA_TEST_VERSION: 8
+              IMAGE_FAMILY_NAME: ((pipeline-prefix))linux-geode-builder
             run:
               path: geode-ci/ci/scripts/create_instance.sh
             inputs:
@@ -158,7 +183,7 @@ jobs:
     on_failure:
       do:
       - put: pull-request-job-failure
-        resource: geode
+        resource: geode-status
         params:
           context: {{ build_test.name }}
           path: geode
@@ -215,7 +240,7 @@ jobs:
     on_success:
       do:
       - put: pull-request-job-success
-        resource: geode
+        resource: geode-status
         params:
           context: {{ build_test.name }}
           path: geode
@@ -234,11 +259,14 @@ jobs:
       - get: geode
         trigger: true
         version: every
+        attempts: 2
       - get: geode-ci
+        attempts: 2
+      - get: {{ test.PLATFORM }}-builder-image-family
     - aggregate:
       - do:
         - put: pull-request-job-pending
-          resource: geode
+          resource: geode-status
           params:
             context: {{test.name}}Test{{java_test_version.name}}
             path: geode
@@ -259,6 +287,7 @@ jobs:
               RAM: {{test.RAM}}
               JAVA_BUILD_VERSION: {{ java_build_version.version }}
               JAVA_TEST_VERSION: {{ java_test_version.version }}
+              IMAGE_FAMILY_NAME: ((pipeline-prefix)){{ test.PLATFORM }}-geode-builder
             run:
               path: geode-ci/ci/scripts/create_instance.sh
             inputs:
@@ -320,7 +349,7 @@ jobs:
     on_failure:
       do:
       - put: pull-request-job-failure
-        resource: geode
+        resource: geode-status
         params:
           context: {{test.name}}Test{{java_test_version.name}}
           path: geode
@@ -377,7 +406,7 @@ jobs:
     on_success:
       do:
       - put: pull-request-job-success
-        resource: geode
+        resource: geode-status
         params:
           context: {{test.name}}Test{{java_test_version.name}}
           path: geode

@@ -31,13 +31,16 @@ import org.apache.geode.management.internal.rest.controllers.ManagementControlle
 
 public class ManagementLoggingFilter extends OncePerRequestFilter {
 
+  private static final Boolean ENABLE_REQUEST_LOGGING =
+      Boolean.parseBoolean(System.getProperty("geode.management.request.logging", "false"));
+
   private static int MAX_PAYLOAD_LENGTH = 10000;
 
   @Override
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
       FilterChain filterChain) throws ServletException, IOException {
 
-    if (!logger.isDebugEnabled()) {
+    if (!logger.isDebugEnabled() && !ENABLE_REQUEST_LOGGING) {
       filterChain.doFilter(request, response);
       return;
     }
@@ -70,8 +73,17 @@ public class ManagementLoggingFilter extends OncePerRequestFilter {
     }
     String payload = getContentAsString(wrappedRequest.getContentAsByteArray(),
         wrappedRequest.getCharacterEncoding());
-    logger.debug(String.format(requestPattern, request.getMethod(), requestUrl,
-        request.getRemoteUser(), payload));
+    String message = String.format(requestPattern, request.getMethod(), requestUrl,
+        request.getRemoteUser(), payload);
+    logMessage(message);
+  }
+
+  private void logMessage(String message) {
+    if (ENABLE_REQUEST_LOGGING) {
+      logger.info(message);
+    } else {
+      logger.debug(message);
+    }
   }
 
   private void logResponse(HttpServletResponse response,
@@ -80,8 +92,9 @@ public class ManagementLoggingFilter extends OncePerRequestFilter {
     String responsePattern = "Management Response: Status=%s; response=%s";
     String payload = getContentAsString(wrappedResponse.getContentAsByteArray(),
         wrappedResponse.getCharacterEncoding());
-    logger.debug(String.format(responsePattern, response.getStatus(),
-        ManagementControllerAdvice.removeClassFromJsonText(payload)));
+    String message = String.format(responsePattern, response.getStatus(),
+        ManagementControllerAdvice.removeClassFromJsonText(payload));
+    logMessage(message);
   }
 
   private String getContentAsString(byte[] buf, String encoding) {

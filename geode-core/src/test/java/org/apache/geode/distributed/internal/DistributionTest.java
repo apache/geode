@@ -42,9 +42,9 @@ import org.junit.Test;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.direct.DirectChannel;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.gms.GMSMemberData;
+import org.apache.geode.distributed.internal.membership.api.Membership;
+import org.apache.geode.distributed.internal.membership.api.MembershipClosedException;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembership;
-import org.apache.geode.distributed.internal.membership.gms.api.Membership;
 import org.apache.geode.internal.admin.remote.AlertListenerMessage;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.tcp.ConnectExceptions;
@@ -84,9 +84,8 @@ public class DistributionTest {
     mockMembers = new InternalDistributedMember[5];
     for (int i = 0; i < mockMembers.length; i++) {
       mockMembers[i] = new InternalDistributedMember("localhost", 8888 + i);
-      GMSMemberData m = (GMSMemberData) mockMembers[i].getMemberData();
       UUID uuid = new UUID(r.nextLong(), r.nextLong());
-      m.setUUID(uuid);
+      mockMembers[i].setUUID(uuid);
     }
 
     dc = mock(DirectChannel.class);
@@ -138,7 +137,7 @@ public class DistributionTest {
         .directChannelSend(recipients, m);
     when(dc.send(any(), any(mockMembers.getClass()),
         any(DistributionMessage.class), anyInt(), anyInt())).thenReturn(0);
-    doThrow(DistributedSystemDisconnectedException.class).when(membership).checkCancelled();
+    doThrow(MembershipClosedException.class).when(membership).checkCancelled();
 
     try {
       distribution.directChannelSend(recipients, m);

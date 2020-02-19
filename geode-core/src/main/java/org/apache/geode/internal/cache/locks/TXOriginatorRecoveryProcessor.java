@@ -60,7 +60,7 @@ public class TXOriginatorRecoveryProcessor extends ReplyProcessor21 {
     // send msg to all members EXCEPT this member...
     Set recipients = new HashSet(members);
     recipients.remove(dm.getId());
-    msg.setRecipients(members);
+    msg.setRecipients(recipients);
     if (logger.isDebugEnabled()) {
       logger.debug("Sending TXOriginatorRecoveryMessage: {}", msg);
     }

@@ -88,10 +88,12 @@ import org.apache.geode.GemFireIOException;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.ConfigSource;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.process.ProcessLauncherContext;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.security.AuthTokenEnabledComponents;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Provides an implementation of <code>DistributionConfig</code> that knows how to read the
@@ -412,7 +414,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
    * Prefix to use for properties that are put as JVM java properties for use with layers (e.g.
    * jgroups membership) that do not have a <code>DistributionConfig</code> object.
    */
-  public static final String SECURITY_SYSTEM_PREFIX = GEMFIRE_PREFIX + "sys.";
+  public static final String SECURITY_SYSTEM_PREFIX = GeodeGlossary.GEMFIRE_PREFIX + "sys.";
 
   /**
    * whether to remove unresponsive client or not
@@ -625,6 +627,11 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   private String locatorSSLAlias = DEFAULT_SSL_ALIAS;
 
   private String sslDefaultAlias = DEFAULT_SSL_ALIAS;
+
+  /**
+   * The SSL Parameter Extension class name
+   */
+  private String sslParameterExtension = DEFAULT_SSL_PARAMETER_EXTENSION;
 
   private Map<String, ConfigSource> sourceMap =
       Collections.synchronizedMap(new HashMap<>());
@@ -865,6 +872,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     this.sslProperties = other.getSSLProperties();
     this.sslDefaultAlias = other.getSSLDefaultAlias();
     this.sslWebServiceRequireAuthentication = other.getSSLWebRequireAuthentication();
+    this.sslParameterExtension = other.getSSLParameterExtension();
 
     validateSerializableObjects = other.getValidateSerializableObjects();
     serializableObjectFilter = other.getSerializableObjectFilter();
@@ -962,16 +970,17 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     // all the system properties instead of looping through attNames
     Set attNameSet = new HashSet();
     for (int index = 0; index < attNames.length; ++index) {
-      attNameSet.add(GEMFIRE_PREFIX + attNames[index]);
+      attNameSet.add(GeodeGlossary.GEMFIRE_PREFIX + attNames[index]);
     }
 
     // Ensure that we're also iterating over the default properties - see GEODE-4690.
     for (String key : System.getProperties().stringPropertyNames()) {
-      if (attNameSet.contains(key) || key.startsWith(GEMFIRE_PREFIX + SECURITY_PREFIX_NAME)
-          || key.startsWith(GEMFIRE_PREFIX + SSL_SYSTEM_PROPS_NAME)) {
+      if (attNameSet.contains(key)
+          || key.startsWith(GeodeGlossary.GEMFIRE_PREFIX + SECURITY_PREFIX_NAME)
+          || key.startsWith(GeodeGlossary.GEMFIRE_PREFIX + SSL_SYSTEM_PROPS_NAME)) {
         String sysValue = System.getProperty(key);
         if (sysValue != null) {
-          String attName = key.substring(GEMFIRE_PREFIX.length());
+          String attName = key.substring(GeodeGlossary.GEMFIRE_PREFIX.length());
           props.put(attName, sysValue);
           sourceMap.put(attName, ConfigSource.sysprop());
         }
@@ -1768,7 +1777,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
         return bindAddress + "[" + startLocatorPort + "]";
       }
       try {
-        return SocketCreator.getHostName(SocketCreator.getLocalHost()) + "[" + startLocatorPort
+        return SocketCreator.getHostName(LocalHostUtil.getLocalHost()) + "[" + startLocatorPort
             + "]";
       } catch (UnknownHostException ignore) {
         // punt and use this.startLocator instead
@@ -3109,6 +3118,16 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   }
 
   @Override
+  public String getSSLParameterExtension() {
+    return sslParameterExtension;
+  }
+
+  @Override
+  public void setSSLParameterExtension(final String extension) {
+    sslParameterExtension = extension;
+  }
+
+  @Override
   public boolean getValidateSerializableObjects() {
     return validateSerializableObjects;
   }
@@ -3285,6 +3304,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
         .append(sslKeyStorePassword, that.sslKeyStorePassword)
         .append(sslTrustStore, that.sslTrustStore)
         .append(sslTrustStorePassword, that.sslTrustStorePassword)
+        .append(sslParameterExtension, that.sslParameterExtension)
         .append(locatorSSLAlias, that.locatorSSLAlias).append(sslDefaultAlias, that.sslDefaultAlias)
         .append(sourceMap, that.sourceMap).append(userCommandPackages, that.userCommandPackages)
         .append(offHeapMemorySize, that.offHeapMemorySize).append(shiroInit, that.shiroInit)
@@ -3357,7 +3377,8 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
         .append(httpServiceSSLAlias).append(securableCommunicationChannels).append(sslProtocols)
         .append(sslCiphers).append(sslRequireAuthentication).append(sslKeyStore)
         .append(sslKeyStoreType).append(sslKeyStorePassword).append(sslTrustStore)
-        .append(sslTrustStorePassword).append(sslWebServiceRequireAuthentication)
+        .append(sslTrustStorePassword).append(sslParameterExtension)
+        .append(sslWebServiceRequireAuthentication)
         .append(locatorSSLAlias).append(sslDefaultAlias).append(sourceMap)
         .append(userCommandPackages).append(offHeapMemorySize).append(lockMemory).append(shiroInit)
         .append(modifiable).append(threadMonitorEnabled).append(threadMonitorInterval)
@@ -3370,11 +3391,11 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
    * test.
    */
   void checkForDisallowedDefaults() {
-    if (Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "disallowMcastDefaults")) {
+    if (Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "disallowMcastDefaults")) {
       if (getMcastPort() != 0) { // it is not disabled
         if (getMcastAddress().equals(DistributionConfig.DEFAULT_MCAST_ADDRESS)
             && getMcastPort() == DistributionConfig.DEFAULT_MCAST_PORT) {
-          throw new IllegalStateException(DistributionConfig.GEMFIRE_PREFIX
+          throw new IllegalStateException(GeodeGlossary.GEMFIRE_PREFIX
               + "disallowMcastDefaults set and default address and port are being used");
         }
       }

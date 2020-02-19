@@ -22,12 +22,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.DecoderException;
 import io.netty.util.concurrent.EventExecutor;
+import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.LogWriter;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheTransactionManager;
@@ -37,6 +38,7 @@ import org.apache.geode.cache.TransactionId;
 import org.apache.geode.cache.UnsupportedOperationInTransactionException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.RegionNotFoundException;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.GeodeRedisServer;
 import org.apache.geode.redis.internal.executor.transactions.TransactionExecutor;
 
@@ -54,6 +56,7 @@ import org.apache.geode.redis.internal.executor.transactions.TransactionExecutor
  */
 public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
 
+  private static final Logger logger = LogService.getLogger();
   private static final int WAIT_REGION_DSTRYD_MILLIS = 100;
   private static final int MAXIMUM_NUM_RETRIES = (1000 * 60) / WAIT_REGION_DSTRYD_MILLIS; // 60
                                                                                           // seconds
@@ -61,7 +64,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
 
   private final Cache cache;
   private final GeodeRedisServer server;
-  private final LogWriter logger;
   private final Channel channel;
   private final AtomicBoolean needChannelFlush;
   private final Runnable flusher;
@@ -81,6 +83,17 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
 
   private boolean isAuthenticated;
 
+  public KeyRegistrar getKeyRegistrar() {
+    return keyRegistrar;
+  }
+
+  private final KeyRegistrar keyRegistrar;
+  private final PubSub pubSub;
+
+  public PubSub getPubSub() {
+    return pubSub;
+  }
+
   /**
    * Default constructor for execution contexts.
    *
@@ -92,12 +105,13 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
    * @param pwd Authentication password for each context, can be null
    */
   public ExecutionHandlerContext(Channel ch, Cache cache, RegionProvider regionProvider,
-      GeodeRedisServer server, byte[] pwd) {
+      GeodeRedisServer server, byte[] pwd, KeyRegistrar keyRegistrar, PubSub pubSub) {
+    this.keyRegistrar = keyRegistrar;
+    this.pubSub = pubSub;
     if (ch == null || cache == null || regionProvider == null || server == null)
       throw new IllegalArgumentException("Only the authentication password may be null");
     this.cache = cache;
     this.server = server;
-    this.logger = cache.getLogger();
     this.channel = ch;
     this.needChannelFlush = new AtomicBoolean(false);
     this.flusher = new Runnable() {
@@ -123,11 +137,14 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     }
   }
 
-  private void writeToChannel(ByteBuf message) {
-    channel.write(message, channel.voidPromise());
+  public ChannelFuture writeToChannel(ByteBuf message) {
+    ChannelFuture channelFuture = channel.write(message, channel.newPromise());
+
     if (!needChannelFlush.getAndSet(true)) {
       this.lastExecutor.execute(flusher);
     }
+
+    return channelFuture;
   }
 
   /**
@@ -136,6 +153,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   @Override
   public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
     Command command = (Command) msg;
+    logger.info("Executing Redis command: {}", command);
     executeCommand(ctx, command);
   }
 
@@ -170,8 +188,9 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     else if (cause instanceof IllegalStateException) {
       response = Coder.getErrorResponse(this.byteBufAllocator, cause.getMessage());
     } else {
-      if (this.logger.errorEnabled())
-        this.logger.error("GeodeRedisServer-Unexpected error handler for " + ctx.channel(), cause);
+      if (logger.isErrorEnabled()) {
+        logger.error("GeodeRedisServer-Unexpected error handler for " + ctx.channel(), cause);
+      }
       response = Coder.getErrorResponse(this.byteBufAllocator, RedisConstants.SERVER_ERROR_MESSAGE);
     }
     return response;
@@ -179,8 +198,9 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
 
   @Override
   public void channelInactive(ChannelHandlerContext ctx) {
-    if (logger.fineEnabled())
-      logger.fine("GeodeRedisServer-Connection closing with " + ctx.channel().remoteAddress());
+    if (logger.isDebugEnabled()) {
+      logger.debug("GeodeRedisServer-Connection closing with " + ctx.channel().remoteAddress());
+    }
     ctx.channel().close();
     ctx.close();
   }
@@ -346,14 +366,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   }
 
   /**
-   * Getter for logger
-   *
-   */
-  public LogWriter getLogger() {
-    return this.cache.getLogger();
-  }
-
-  /**
    * Get the channel for this context
    *
    *
@@ -384,4 +396,9 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   public void setAuthenticationVerified() {
     this.isAuthenticated = true;
   }
+
+  public Client getClient() {
+    return new Client(channel);
+  }
+
 }

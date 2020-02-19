@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.wan.parallel;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
@@ -39,6 +40,7 @@ import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.AbstractBucketRegionQueue;
 import org.apache.geode.internal.cache.BucketRegionQueue;
+import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
@@ -153,6 +155,32 @@ public class ParallelGatewaySenderQueueJUnitTest {
     queue.addShadowPartitionedRegionForUserPR(mockPR("region1"));
 
     assertEquals(3, queue.localSize());
+  }
+
+  @Test
+  public void isDREventReturnsTrueForDistributedRegionEvent() {
+    String regionPath = "regionPath";
+    GatewaySenderEventImpl event = mock(GatewaySenderEventImpl.class);
+    when(event.getRegionPath()).thenReturn(regionPath);
+    DistributedRegion region = mock(DistributedRegion.class);
+    when(cache.getRegion(regionPath)).thenReturn(region);
+    ParallelGatewaySenderQueue queue = mock(ParallelGatewaySenderQueue.class);
+    when(queue.isDREvent(cache, event)).thenCallRealMethod();
+
+    assertThat(queue.isDREvent(cache, event)).isTrue();
+  }
+
+  @Test
+  public void isDREventReturnsFalseForPartitionedRegionEvent() {
+    String regionPath = "regionPath";
+    GatewaySenderEventImpl event = mock(GatewaySenderEventImpl.class);
+    when(event.getRegionPath()).thenReturn(regionPath);
+    PartitionedRegion region = mock(PartitionedRegion.class);
+    when(cache.getRegion(regionPath)).thenReturn(region);
+    ParallelGatewaySenderQueue queue = mock(ParallelGatewaySenderQueue.class);
+    when(queue.isDREvent(cache, event)).thenCallRealMethod();
+
+    assertThat(queue.isDREvent(cache, event)).isFalse();
   }
 
   private PartitionedRegion mockPR(String name) {

@@ -69,7 +69,6 @@ import org.apache.geode.cache.query.internal.cq.ServerCQ;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.ClassLoadUtil;
@@ -101,7 +100,6 @@ import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.OverflowAttributes;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.net.SocketCloser;
 import org.apache.geode.internal.serialization.Version;
@@ -112,6 +110,7 @@ import org.apache.geode.security.AccessControl;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.GemFireSecurityException;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Class {@code CacheClientNotifier} works on the server and manages client socket connections
@@ -127,6 +126,7 @@ public class CacheClientNotifier {
 
   private final SocketMessageWriter socketMessageWriter = new SocketMessageWriter();
   private final ClientRegistrationEventQueueManager clientRegistrationEventQueueManager;
+  private final CacheClientProxyFactory cacheClientProxyFactory;
 
   /**
    * Factory method to construct a CacheClientNotifier {@code CacheClientNotifier} instance.
@@ -146,8 +146,8 @@ public class CacheClientNotifier {
       boolean isGatewayReceiver) {
     if (ccnSingleton == null) {
       ccnSingleton = new CacheClientNotifier(cache, clientRegistrationEventQueueManager,
-          statisticsClock, acceptorStats,
-          maximumMessageCount, messageTimeToLive, listener, isGatewayReceiver);
+          statisticsClock, acceptorStats, maximumMessageCount, messageTimeToLive, listener,
+          isGatewayReceiver, new CacheClientProxyFactory());
     }
 
     if (!isGatewayReceiver && ccnSingleton.getHaContainer() == null) {
@@ -298,9 +298,9 @@ public class CacheClientNotifier {
               clientProxyMembershipID.getDurableId());
         }
         cacheClientProxy =
-            new CacheClientProxy(this, socket, clientProxyMembershipID, isPrimary, clientConflation,
-                clientVersion, acceptorId, notifyBySubscription, cache.getSecurityService(),
-                subject, statisticsClock);
+            cacheClientProxyFactory.create(this, socket, clientProxyMembershipID, isPrimary,
+                clientConflation, clientVersion, acceptorId, notifyBySubscription,
+                cache.getSecurityService(), subject, statisticsClock);
         successful = initializeProxy(cacheClientProxy);
       } else {
         cacheClientProxy.setSubject(subject);
@@ -921,7 +921,7 @@ public class CacheClientNotifier {
    * collection of non-durable identifiers of clients connected to this VM
    */
   Set<ClientProxyMembershipID> getProxyIDs(Set mixedDurableAndNonDurableIDs) {
-    Set<ClientProxyMembershipID> result = new ConcurrentHashSet<>();
+    Set<ClientProxyMembershipID> result = ConcurrentHashMap.newKeySet();
     for (Object id : mixedDurableAndNonDurableIDs) {
       if (id instanceof String) {
         CacheClientProxy clientProxy = getClientProxy((String) id, true);
@@ -1661,7 +1661,7 @@ public class CacheClientNotifier {
   /**
    * Returns this {@code CacheClientNotifier}'s {@code InternalCache}.
    */
-  protected InternalCache getCache() {
+  public InternalCache getCache() {
     if (cache != null && cache.isClosed()) {
       InternalCache cache = GemFireCacheImpl.getInstance();
       if (cache != null) {
@@ -1703,9 +1703,13 @@ public class CacheClientNotifier {
   private CacheClientNotifier(InternalCache cache,
       ClientRegistrationEventQueueManager clientRegistrationEventQueueManager,
       StatisticsClock statisticsClock,
-      CacheServerStats acceptorStats, int maximumMessageCount,
+      CacheServerStats acceptorStats,
+      int maximumMessageCount,
       int messageTimeToLive,
-      ConnectionListener listener, boolean isGatewayReceiver) {
+      ConnectionListener listener,
+      boolean isGatewayReceiver,
+      CacheClientProxyFactory cacheClientProxyFactory) {
+    this.cacheClientProxyFactory = cacheClientProxyFactory;
     // Set the Cache
     setCache(cache);
     this.clientRegistrationEventQueueManager = clientRegistrationEventQueueManager;
@@ -1975,12 +1979,12 @@ public class CacheClientNotifier {
    * logged.
    */
   private static final String MAX_QUEUE_LOG_FREQUENCY =
-      DistributionConfig.GEMFIRE_PREFIX + "logFrequency.clientQueueReachedMaxLimit";
+      GeodeGlossary.GEMFIRE_PREFIX + "logFrequency.clientQueueReachedMaxLimit";
 
   public static final long DEFAULT_LOG_FREQUENCY = 1000;
 
   private static final String EVENT_ENQUEUE_WAIT_TIME_NAME =
-      DistributionConfig.GEMFIRE_PREFIX + "subscription.EVENT_ENQUEUE_WAIT_TIME";
+      GeodeGlossary.GEMFIRE_PREFIX + "subscription.EVENT_ENQUEUE_WAIT_TIME";
 
   private static final int DEFAULT_EVENT_ENQUEUE_WAIT_TIME = 100;
 
@@ -2010,10 +2014,10 @@ public class CacheClientNotifier {
   private final SocketCloser socketCloser;
 
   private static final int CLIENT_PING_TASK_PERIOD =
-      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "serverToClientPingPeriod", 60000);
+      Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "serverToClientPingPeriod", 60000);
 
   private static final long CLIENT_PING_TASK_COUNTER =
-      Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "serverToClientPingCounter", 3);
+      Long.getLong(GeodeGlossary.GEMFIRE_PREFIX + "serverToClientPingCounter", 3);
 
   public long getLogFrequency() {
     return logFrequency;

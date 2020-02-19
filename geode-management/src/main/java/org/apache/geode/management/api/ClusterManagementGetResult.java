@@ -14,64 +14,59 @@
  */
 package org.apache.geode.management.api;
 
-import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.Objects;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.management.configuration.AbstractConfiguration;
 import org.apache.geode.management.runtime.RuntimeInfo;
 
 /**
- *
  * @param <T> the type of the static config, e.g. RegionConfig
  * @param <R> the type of the corresponding runtime information, e.g. RuntimeRegionInfo
  */
 @Experimental
 public class ClusterManagementGetResult<T extends AbstractConfiguration<R>, R extends RuntimeInfo>
     extends ClusterManagementResult {
-  /**
-   * for internal use only
-   */
+  private EntityInfo<T, R> entityInfo;
+
   public ClusterManagementGetResult() {}
 
-  /**
-   * for internal use only
-   */
-  public ClusterManagementGetResult(ClusterManagementListResult<T, R> singletonListResult) {
-    super(singletonListResult);
-    setResult(singletonListResult.getResult().get(0));
+  public ClusterManagementGetResult(EntityInfo<T, R> entityInfo) {
+    this.entityInfo = entityInfo;
   }
 
-  private ConfigurationResult<T, R> result = null;
-
-  /**
-   * Returns the combined payload of the get call
-   */
-  public ConfigurationResult<T, R> getResult() {
-    return result;
+  public EntityInfo<T, R> getResult() {
+    return entityInfo;
   }
 
-  /**
-   * Returns only the static config portion of the result
-   */
-  @JsonIgnore
-  public T getConfigResult() {
-    return result.getConfiguration();
+  public void setResult(EntityInfo<T, R> entityInfo) {
+    this.entityInfo = entityInfo;
   }
 
-  /**
-   * Returns only the runtime information portion of the result
-   */
-  @JsonIgnore
-  public List<R> getRuntimeResult() {
-    return result.getRuntimeInfo();
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    if (!super.equals(o)) {
+      return false;
+    }
+    ClusterManagementGetResult<?, ?> that = (ClusterManagementGetResult<?, ?>) o;
+    return Objects.equals(entityInfo, that.entityInfo);
   }
 
-  /**
-   * for internal use only
-   */
-  public void setResult(ConfigurationResult<T, R> result) {
-    this.result = result;
+  @Override
+  public int hashCode() {
+    return Objects.hash(super.hashCode(), entityInfo);
+  }
+
+  @Override
+  public String toString() {
+    return "ClusterManagementGetResult{" +
+        "configurationInfo=" + entityInfo +
+        "} " + super.toString();
   }
 }

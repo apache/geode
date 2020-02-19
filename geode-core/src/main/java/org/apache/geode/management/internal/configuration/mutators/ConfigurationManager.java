@@ -27,11 +27,11 @@ import org.apache.geode.management.configuration.AbstractConfiguration;
 @Experimental
 public interface ConfigurationManager<T extends AbstractConfiguration> {
 
-  boolean add(T config, String groupName);
+  void add(T config, String groupName);
 
-  boolean delete(T config, String groupName);
+  void delete(T config, String groupName);
 
-  boolean update(T config, String groupName);
+  void update(T config, String groupName);
 
   List<T> list(T filterConfig, String groupName);
 }

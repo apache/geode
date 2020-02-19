@@ -20,7 +20,6 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.StringUtils.lowerCase;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
-import static org.apache.geode.distributed.internal.membership.adapter.SocketCreatorAdapter.asTcpSocketCreator;
 import static org.apache.geode.internal.lang.StringUtils.wrap;
 import static org.apache.geode.internal.lang.SystemUtils.CURRENT_DIRECTORY;
 import static org.apache.geode.internal.util.IOUtils.tryGetCanonicalPathElseGetAbsolutePath;
@@ -60,7 +59,6 @@ import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.client.internal.locator.LocatorStatusRequest;
 import org.apache.geode.cache.client.internal.locator.LocatorStatusResponse;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
@@ -68,6 +66,7 @@ import org.apache.geode.internal.DistributionLocator;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.admin.SSLConfig;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.lang.ObjectUtils;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.net.SocketCreator;
@@ -90,6 +89,7 @@ import org.apache.geode.lang.AttachAPINotFoundException;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.util.HostUtils;
 import org.apache.geode.management.internal.util.JsonUtil;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * The LocatorLauncher class is a launcher for a GemFire Locator.
@@ -319,7 +319,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
       final SSLConfig sslConfig = SSLConfigurationFactory.getSSLConfigForComponent(
           properties,
           SecurableCommunicationChannel.LOCATOR);
-      final TcpSocketCreator socketCreator = asTcpSocketCreator(new SocketCreator(sslConfig));
+      final TcpSocketCreator socketCreator = new SocketCreator(sslConfig);
       final TcpClient client = new TcpClient(socketCreator,
           InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
           InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());
@@ -448,7 +448,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
         return getBindAddress().getCanonicalHostName();
       }
 
-      InetAddress localhost = SocketCreator.getLocalHost();
+      InetAddress localhost = LocalHostUtil.getLocalHost();
 
       return localhost.getCanonicalHostName();
     } catch (UnknownHostException handled) {
@@ -1591,7 +1591,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
       } else {
         try {
           InetAddress address = InetAddress.getByName(bindAddress);
-          if (SocketCreator.isLocalHost(address)) {
+          if (LocalHostUtil.isLocalHost(address)) {
             this.bindAddress = address;
             return this;
           } else {
@@ -1866,7 +1866,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     protected void validateOnStart() {
       if (Command.START == getCommand()) {
         if (isBlank(getMemberName())
-            && !isSet(System.getProperties(), DistributionConfig.GEMFIRE_PREFIX + NAME)
+            && !isSet(System.getProperties(), GeodeGlossary.GEMFIRE_PREFIX + NAME)
             && !isSet(getDistributedSystemProperties(), NAME)
             && !isSet(loadGemFireProperties(DistributedSystem.getPropertyFileURL()), NAME)) {
           throw new IllegalStateException(

@@ -33,13 +33,13 @@ import org.apache.geode.cache.asyncqueue.AsyncEvent;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.RegionEntryContext;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
 import org.apache.geode.internal.cache.xmlcache.ResourceManagerCreation;
 import org.apache.geode.test.dunit.IgnoredException;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 
 public class CacheXmlGeode10DUnitTest extends CacheXml81DUnitTest {
@@ -52,7 +52,7 @@ public class CacheXmlGeode10DUnitTest extends CacheXml81DUnitTest {
   @SuppressWarnings("rawtypes")
   @Test
   public void testEnableOffHeapMemory() throws Exception {
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + OFF_HEAP_MEMORY_SIZE, "1m");
+    System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + OFF_HEAP_MEMORY_SIZE, "1m");
 
     final String regionName = "testEnableOffHeapMemory";
 
@@ -162,7 +162,7 @@ public class CacheXmlGeode10DUnitTest extends CacheXml81DUnitTest {
     final float low = 90.0f;
     final float high = 95.0f;
 
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + OFF_HEAP_MEMORY_SIZE, "1m");
+    System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + OFF_HEAP_MEMORY_SIZE, "1m");
 
     Cache c;
     ResourceManagerCreation rmc = new ResourceManagerCreation();

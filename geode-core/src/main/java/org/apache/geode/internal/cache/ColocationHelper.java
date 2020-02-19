@@ -38,7 +38,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.LocalRegion.InitializationLevel;
@@ -47,6 +46,7 @@ import org.apache.geode.internal.cache.partitioned.PRLocallyDestroyedException;
 import org.apache.geode.internal.cache.persistence.PRPersistentConfig;
 import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * An utility class to retrieve colocated regions in a colocation hierarchy in various scenarios
@@ -62,7 +62,7 @@ public class ColocationHelper {
    */
   @MutableForTesting
   public static boolean IGNORE_UNRECOVERED_QUEUE =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "IGNORE_UNRECOVERED_QUEUE");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "IGNORE_UNRECOVERED_QUEUE");
 
   /**
    * An utility method to retrieve colocated region of a given partitioned region

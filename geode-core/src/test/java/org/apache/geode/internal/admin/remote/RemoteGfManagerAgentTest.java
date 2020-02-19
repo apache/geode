@@ -15,69 +15,73 @@
 package org.apache.geode.internal.admin.remote;
 
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
 
+import org.apache.geode.CancelCriterion;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.internal.admin.GfManagerAgentConfig;
+import org.apache.geode.internal.admin.remote.RemoteGfManagerAgent.DSConnectionDaemon;
+import org.apache.geode.internal.admin.remote.RemoteGfManagerAgent.JoinProcessor;
+import org.apache.geode.internal.admin.remote.RemoteGfManagerAgent.MyMembershipListener;
+import org.apache.geode.internal.admin.remote.RemoteGfManagerAgent.SnapshotResultDispatcher;
 import org.apache.geode.internal.logging.InternalLogWriter;
-
+import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 public class RemoteGfManagerAgentTest {
 
-  private RemoteGfManagerAgent mockConnectedAgent(GfManagerAgentConfig config) {
-    RemoteGfManagerAgent agent = spy(new RemoteGfManagerAgent(config));
+  private RemoteGfManagerAgent agent;
+
+  @Rule
+  public ExecutorServiceRule executorServiceRule = new ExecutorServiceRule();
+
+  @Rule
+  public MockitoRule mockitoRule = MockitoJUnit.rule();
+
+  @Before
+  public void setUp() {
+    GfManagerAgentConfig config = mock(GfManagerAgentConfig.class);
     InternalDistributedSystem system = mock(InternalDistributedSystem.class);
-    when(system.isConnected()).thenReturn(true);
-    when(system.getCancelCriterion()).thenReturn(mock(Services.Stopper.class));
-    agent.system = system;
-    agent.connected = true;
-    return agent;
+
+    when(config.getLogWriter()).thenReturn(mock(InternalLogWriter.class));
+    when(config.getTransport()).thenReturn(mock(RemoteTransportConfig.class));
+    when(system.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
+
+    agent = new RemoteGfManagerAgent(config, props -> system, agent -> mock(JoinProcessor.class),
+        agent -> mock(SnapshotResultDispatcher.class), agent -> mock(DSConnectionDaemon.class),
+        agent -> mock(MyMembershipListener.class));
+
+    agent.setDSConnection(system);
   }
 
   @Test
-  public void removeAgentAndDisconnectWouldNotThrowNPE()
-      throws InterruptedException, ExecutionException {
-    InternalDistributedMember member;
-    member = mock(InternalDistributedMember.class);
-    Future future = mock(Future.class);
+  public void removeAgentAndDisconnectDoesNotThrowNPE() throws Exception {
+    InternalDistributedMember member = mock(InternalDistributedMember.class);
+    Map<InternalDistributedMember, Future<RemoteApplicationVM>> membersMap = new HashMap<>();
+    membersMap.put(member, mock(Future.class));
+    agent.setMembersMap(membersMap);
 
-    GfManagerAgentConfig config = mock(GfManagerAgentConfig.class);
-    when(config.getTransport()).thenReturn(mock(RemoteTransportConfig.class));
-    when(config.getLogWriter()).thenReturn(mock(InternalLogWriter.class));
+    // removeMember accesses the InternalDistributedSystem
+    Future<Void> removeMember = executorServiceRule.submit(() -> {
+      agent.removeMember(member);
+    });
 
-    int count = 10;
+    // disconnect sets the InternalDistributedSystem to null
+    Future<Void> disconnect = executorServiceRule.submit(() -> {
+      agent.disconnect();
+    });
 
-    for (int i = 0; i < count; i++) {
-      RemoteGfManagerAgent agent = mockConnectedAgent(config);
-      Map membersMap = new HashMap();
-      membersMap.put(member, future);
-      agent.membersMap = membersMap;
-      ExecutorService es = Executors.newFixedThreadPool(2);
-
-      // removeMember accesses the InternalDistributedSystem
-      Future<?> future1 = es.submit(() -> {
-        agent.removeMember(member);
-      });
-
-      // disconnect sets the InternalDistributedSystem to null
-      Future<?> future2 = es.submit(() -> {
-        agent.disconnect();
-      });
-
-      future1.get();
-      future2.get();
-    }
+    removeMember.get();
+    disconnect.get();
   }
 }

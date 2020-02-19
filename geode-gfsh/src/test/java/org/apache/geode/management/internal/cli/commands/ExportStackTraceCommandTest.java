@@ -33,7 +33,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import org.apache.geode.internal.OSProcess;
+import org.apache.geode.logging.internal.OSProcess;
 import org.apache.geode.management.internal.cli.domain.StackTracesPerMember;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 

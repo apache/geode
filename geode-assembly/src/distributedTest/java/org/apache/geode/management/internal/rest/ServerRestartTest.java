@@ -42,8 +42,8 @@ public class ServerRestartTest {
     MemberVM server2 = cluster.startServerVM(2, locator.getPort());
 
     ClusterManagementService cmService =
-        ClusterManagementServiceBuilder.buildWithHostAddress()
-            .setHostAddress("localhost", locator.getHttpPort())
+        new ClusterManagementServiceBuilder()
+            .setPort(locator.getHttpPort())
             .build();
 
     Region region = new Region();

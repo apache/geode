@@ -25,6 +25,7 @@ dependencies {
   implementation(project(':geode-logging'))
   implementation(project(':geode-serialization'))
   implementation(project(':geode-tcp-server'))
+  implementation(project(':geode-membership'))
   compile(project(':geode-core'))
   compile(project(':geode-protobuf-messages'))
   testCompile(project(':geode-core'))

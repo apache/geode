@@ -58,7 +58,7 @@ public class GatewayReceiverConfigManager extends CacheConfigurationManager<Gate
   }
 
   @Override
-  public GatewayReceiver get(String id, CacheConfig existing) {
+  public GatewayReceiver get(GatewayReceiver config, CacheConfig existing) {
     return converter.fromXmlObject(existing.getGatewayReceiver());
   }
 }

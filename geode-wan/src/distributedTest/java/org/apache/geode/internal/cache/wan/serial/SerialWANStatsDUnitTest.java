@@ -43,7 +43,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
 
   @Override
   protected final void postSetUpWANTestBase() throws Exception {
-    this.testName = getTestMethodName();
+    this.testName = getUniqueName();
     addIgnoredException("java.net.ConnectException");
     addIgnoredException("java.net.SocketException");
     addIgnoredException("Unexpected IOException");
@@ -329,7 +329,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     vm2.invoke(() -> WANTestBase.createReceiver());
 
     // This slows down the receiver
-    vm2.invoke(() -> addListenerToSleepAfterCreateEvent(1000, testName + "_RR_1"));
+    vm2.invoke(() -> addListenerToSleepAfterCreateEvent(1000, getUniqueName() + "_RR_1"));
 
 
     // these are part of local site

@@ -16,7 +16,6 @@ package org.apache.geode.cache30;
 
 import org.apache.geode.cache.CacheCallback;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.WaitCriterion;
 
 /**
  * An abstract superclass of implementation of GemFire cache callbacks that are used for testing.
@@ -58,18 +57,7 @@ public abstract class TestCacheCallback implements CacheCallback {
 
   public boolean waitForInvocation(int timeoutMs, long interval) {
     if (!this.invoked) {
-      WaitCriterion ev = new WaitCriterion() {
-        @Override
-        public boolean done() {
-          return invoked;
-        }
-
-        @Override
-        public String description() {
-          return "listener was never invoked";
-        }
-      };
-      GeodeAwaitility.await().untilAsserted(ev);
+      GeodeAwaitility.await("listener was never invoked").until(() -> invoked);
     }
     return wasInvoked();
   }

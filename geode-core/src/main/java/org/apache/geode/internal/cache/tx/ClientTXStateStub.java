@@ -32,7 +32,6 @@ import org.apache.geode.cache.TransactionInDoubtException;
 import org.apache.geode.cache.client.internal.ServerRegionDataAccess;
 import org.apache.geode.cache.client.internal.ServerRegionProxy;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -47,6 +46,7 @@ import org.apache.geode.internal.cache.TXStateStub;
 import org.apache.geode.internal.cache.locks.TXRegionLockRequest;
 import org.apache.geode.internal.cache.tx.TransactionalOperation.ServerRegionOperation;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 public class ClientTXStateStub extends TXStateStub {
   private static final Logger logger = LogService.getLogger();
@@ -59,7 +59,7 @@ public class ClientTXStateStub extends TXStateStub {
    * System property to disable conflict checks on clients.
    */
   private static final boolean DISABLE_CONFLICT_CHECK_ON_CLIENT =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "disableConflictChecksOnClient");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "disableConflictChecksOnClient");
 
   /**
    * @return true if transactional operation recording is enabled (test hook)

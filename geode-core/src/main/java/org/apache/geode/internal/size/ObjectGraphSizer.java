@@ -22,14 +22,14 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.size.ObjectTraverser.Visitor;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 
 public class ObjectGraphSizer {
   private static final String SIZE_OF_CLASS_NAME =
-      System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "ObjectSizer.SIZE_OF_CLASS",
+      System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + "ObjectSizer.SIZE_OF_CLASS",
           ReflectionSingleObjectSizer.class.getName());
   @Immutable
   static final SingleObjectSizer SIZE_OF_UTIL;

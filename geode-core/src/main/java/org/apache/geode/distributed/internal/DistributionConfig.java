@@ -158,6 +158,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_TYPE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_LOCATOR_ALIAS;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_PARAMETER_EXTENSION;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_PROTOCOLS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_REQUIRE_AUTHENTICATION;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_SERVER_ALIAS;
@@ -187,6 +188,7 @@ import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -201,6 +203,7 @@ import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.membership.api.MembershipConfig;
 import org.apache.geode.internal.Config;
 import org.apache.geode.internal.ConfigSource;
 import org.apache.geode.internal.logging.LogWriterImpl;
@@ -209,6 +212,7 @@ import org.apache.geode.internal.statistics.StatisticsConfig;
 import org.apache.geode.internal.tcp.Connection;
 import org.apache.geode.logging.internal.spi.LogConfig;
 import org.apache.geode.logging.internal.spi.LogWriterLevel;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Provides accessor (and in some cases mutator) methods for the various GemFire distribution
@@ -226,11 +230,6 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
    * The static String definition of the prefix used to defined ssl-* properties
    */
   String SSL_PREFIX = "ssl-";
-
-  /**
-   * The prefix used for Gemfire properties set through java system properties
-   */
-  String GEMFIRE_PREFIX = "gemfire.";
 
   /**
    * Returns the value of the {@link ConfigurationProperties#NAME} property Gets the member's name.
@@ -269,7 +268,7 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
    * <p>
    * Actual value of this constant is <code>""</code>.
    */
-  String DEFAULT_NAME = "";
+  String DEFAULT_NAME = MembershipConfig.DEFAULT_NAME;
 
   /**
    * Returns the value of the {@link ConfigurationProperties#MCAST_PORT}</a> property
@@ -286,7 +285,7 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
   /**
    * The default value of the {@link ConfigurationProperties#MCAST_PORT} property
    */
-  int DEFAULT_MCAST_PORT = 0;
+  int DEFAULT_MCAST_PORT = MembershipConfig.DEFAULT_MCAST_PORT;
 
   /**
    * The minimum {@link ConfigurationProperties#MCAST_PORT}.
@@ -367,7 +366,22 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
    * The default value of the {@link ConfigurationProperties#MCAST_ADDRESS} property. Current value
    * is <code>239.192.81.1</code>
    */
-  InetAddress DEFAULT_MCAST_ADDRESS = AbstractDistributionConfig._getDefaultMcastAddress();
+  InetAddress DEFAULT_MCAST_ADDRESS = _getDefaultMcastAddress();
+
+  static InetAddress _getDefaultMcastAddress() {
+    // Default MCast address can be just IPv4 address.
+    // On IPv6 machines, JGroups converts IPv4 address to equivalent IPv6 address.
+    try {
+      String ipLiteral = MembershipConfig.DEFAULT_MCAST_ADDRESS;
+      return InetAddress.getByName(ipLiteral);
+    } catch (UnknownHostException ex) {
+      // this should never happen
+      throw new Error(
+          String.format("Unexpected problem getting inetAddress: %s",
+              ex),
+          ex);
+    }
+  }
 
   /**
    * Returns the value of the {@link ConfigurationProperties#MCAST_TTL} property
@@ -384,7 +398,7 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
   /**
    * The default value of the {@link ConfigurationProperties#MCAST_TTL} property
    */
-  int DEFAULT_MCAST_TTL = 32;
+  int DEFAULT_MCAST_TTL = MembershipConfig.DEFAULT_MCAST_TTL;
 
   /**
    * The minimum {@link ConfigurationProperties#MCAST_TTL}.
@@ -428,7 +442,7 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
    * The default value of the {@link ConfigurationProperties#BIND_ADDRESS} property. Current value
    * is an empty string <code>""</code>
    */
-  String DEFAULT_BIND_ADDRESS = "";
+  String DEFAULT_BIND_ADDRESS = MembershipConfig.DEFAULT_BIND_ADDRESS;
 
   /**
    * Returns the value of the {@link ConfigurationProperties#SERVER_BIND_ADDRESS} property
@@ -484,7 +498,7 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
   /**
    * The default value of the {@link ConfigurationProperties#LOCATORS} property
    */
-  String DEFAULT_LOCATORS = "";
+  String DEFAULT_LOCATORS = MembershipConfig.DEFAULT_LOCATORS;
 
   /**
    * Locator wait time - how long to wait for a locator to start before giving up & throwing a
@@ -493,7 +507,7 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
   @ConfigAttribute(type = Integer.class)
   String LOCATOR_WAIT_TIME_NAME = LOCATOR_WAIT_TIME;
 
-  int DEFAULT_LOCATOR_WAIT_TIME = 0;
+  int DEFAULT_LOCATOR_WAIT_TIME = MembershipConfig.DEFAULT_LOCATOR_WAIT_TIME;
 
   @ConfigAttributeGetter(name = LOCATOR_WAIT_TIME)
   int getLocatorWaitTime();
@@ -525,7 +539,7 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
   /**
    * The default value of the {@link ConfigurationProperties#START_LOCATOR} property
    */
-  String DEFAULT_START_LOCATOR = "";
+  String DEFAULT_START_LOCATOR = MembershipConfig.DEFAULT_START_LOCATOR;
 
   /**
    * Returns the value of the {@link ConfigurationProperties#DEPLOY_WORKING_DIR} property
@@ -797,7 +811,7 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
    * <p>
    * Actual value of this constant is <code>15</code> seconds.
    */
-  int DEFAULT_ACK_WAIT_THRESHOLD = 15;
+  int DEFAULT_ACK_WAIT_THRESHOLD = MembershipConfig.DEFAULT_ACK_WAIT_THRESHOLD;
   /**
    * The minimum {@link ConfigurationProperties#ACK_WAIT_THRESHOLD}.
    * <p>
@@ -834,7 +848,7 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
    * <p>
    * Actual value of this constant is <code>0</code> seconds, which turns off shunning.
    */
-  int DEFAULT_ACK_SEVERE_ALERT_THRESHOLD = 0;
+  int DEFAULT_ACK_SEVERE_ALERT_THRESHOLD = MembershipConfig.DEFAULT_ACK_SEVERE_ALERT_THRESHOLD;
   /**
    * The minimum {@link ConfigurationProperties#ACK_SEVERE_ALERT_THRESHOLD}.
    * <p>
@@ -1386,9 +1400,9 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
    */
   int MAX_SOCKET_BUFFER_SIZE = Connection.MAX_MSG_SIZE;
 
-  boolean VALIDATE = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "validateMessageSize");
+  boolean VALIDATE = Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "validateMessageSize");
   int VALIDATE_CEILING = Integer
-      .getInteger(DistributionConfig.GEMFIRE_PREFIX + "validateMessageSizeCeiling", 8 * 1024 * 1024)
+      .getInteger(GeodeGlossary.GEMFIRE_PREFIX + "validateMessageSizeCeiling", 8 * 1024 * 1024)
       .intValue();
 
   /**
@@ -1412,7 +1426,7 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
   /**
    * The default value for {@link ConfigurationProperties#MCAST_SEND_BUFFER_SIZE} property
    */
-  int DEFAULT_MCAST_SEND_BUFFER_SIZE = 65535;
+  int DEFAULT_MCAST_SEND_BUFFER_SIZE = MembershipConfig.DEFAULT_MCAST_SEND_BUFFER_SIZE;
 
   /**
    * The minimum size of the {@link ConfigurationProperties#MCAST_SEND_BUFFER_SIZE}, in bytes.
@@ -1442,7 +1456,7 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
   /**
    * The default value of the {@link ConfigurationProperties#MCAST_RECV_BUFFER_SIZE} property
    */
-  int DEFAULT_MCAST_RECV_BUFFER_SIZE = 1048576;
+  int DEFAULT_MCAST_RECV_BUFFER_SIZE = MembershipConfig.DEFAULT_MCAST_RECV_BUFFER_SIZE;
 
   /**
    * The minimum size of the {@link ConfigurationProperties#MCAST_RECV_BUFFER_SIZE}, in bytes.
@@ -1479,7 +1493,10 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
    * The default value of the {@link ConfigurationProperties#MCAST_FLOW_CONTROL} property
    */
   @Immutable
-  FlowControlParams DEFAULT_MCAST_FLOW_CONTROL = new FlowControlParams(1048576, (float) 0.25, 5000);
+  FlowControlParams DEFAULT_MCAST_FLOW_CONTROL = new FlowControlParams(
+      MembershipConfig.DEFAULT_MCAST_BYTE_ALLOWANCE,
+      MembershipConfig.DEFAULT_MCAST_RECHARGE_THRESHOLD,
+      MembershipConfig.DEFAULT_MCAST_RECHARGE_BLOCKING_MS);
 
   /**
    * The minimum byteAllowance for the{@link ConfigurationProperties#MCAST_FLOW_CONTROL} setting of
@@ -1526,7 +1543,7 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
   /**
    * The default value of the {@link ConfigurationProperties#UDP_FRAGMENT_SIZE} property
    */
-  int DEFAULT_UDP_FRAGMENT_SIZE = 60000;
+  int DEFAULT_UDP_FRAGMENT_SIZE = MembershipConfig.DEFAULT_UDP_FRAGMENT_SIZE;
 
   /**
    * The minimum allowed {@link ConfigurationProperties#UDP_FRAGMENT_SIZE} setting of 1000
@@ -1559,7 +1576,7 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
   /**
    * The default value of the {@link ConfigurationProperties#UDP_SEND_BUFFER_SIZE} property
    */
-  int DEFAULT_UDP_SEND_BUFFER_SIZE = 65535;
+  int DEFAULT_UDP_SEND_BUFFER_SIZE = MembershipConfig.DEFAULT_UDP_SEND_BUFFER_SIZE;
 
   /**
    * The minimum size of the {@link ConfigurationProperties#UDP_SEND_BUFFER_SIZE}, in bytes.
@@ -1589,13 +1606,7 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
   /**
    * The default value of the {@link ConfigurationProperties#UDP_RECV_BUFFER_SIZE} property
    */
-  int DEFAULT_UDP_RECV_BUFFER_SIZE = 1048576;
-
-  /**
-   * The default size of the {@link ConfigurationProperties#UDP_RECV_BUFFER_SIZE} if tcp/ip sockets
-   * are enabled and multicast is disabled
-   */
-  int DEFAULT_UDP_RECV_BUFFER_SIZE_REDUCED = 65535;
+  int DEFAULT_UDP_RECV_BUFFER_SIZE = MembershipConfig.DEFAULT_UDP_RECV_BUFFER_SIZE;
 
   /**
    * The minimum size of the {@link ConfigurationProperties#UDP_RECV_BUFFER_SIZE}, in bytes.
@@ -1631,7 +1642,7 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
   /**
    * The default value of the {@link ConfigurationProperties#DISABLE_TCP} property
    */
-  boolean DEFAULT_DISABLE_TCP = false;
+  boolean DEFAULT_DISABLE_TCP = MembershipConfig.DEFAULT_DISABLE_TCP;
 
   /**
    * Returns the value of the {@link ConfigurationProperties#DISABLE_JMX} property
@@ -1817,7 +1828,8 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
    */
   @ConfigAttribute(type = Boolean.class)
   String ENABLE_NETWORK_PARTITION_DETECTION_NAME = ENABLE_NETWORK_PARTITION_DETECTION;
-  boolean DEFAULT_ENABLE_NETWORK_PARTITION_DETECTION = true;
+  boolean DEFAULT_ENABLE_NETWORK_PARTITION_DETECTION =
+      MembershipConfig.DEFAULT_ENABLE_NETWORK_PARTITION_DETECTION;
 
   /**
    * Get the value of the {@link ConfigurationProperties#MEMBER_TIMEOUT} property
@@ -1834,7 +1846,7 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
   /**
    * The default value of the {@link ConfigurationProperties#MEMBER_TIMEOUT} property
    */
-  int DEFAULT_MEMBER_TIMEOUT = 5000;
+  int DEFAULT_MEMBER_TIMEOUT = MembershipConfig.DEFAULT_MEMBER_TIMEOUT;
 
   /**
    * The minimum {@link ConfigurationProperties#MEMBER_TIMEOUT} setting of 1000 milliseconds
@@ -1857,10 +1869,10 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
   /**
    * set this boolean to restrict membership/communications to use ports in the ephemeral range
    */
-  String RESTRICT_MEMBERSHIP_PORT_RANGE = GEMFIRE_PREFIX + "use-ephemeral-ports";
+  String RESTRICT_MEMBERSHIP_PORT_RANGE = GeodeGlossary.GEMFIRE_PREFIX + "use-ephemeral-ports";
 
   @MakeImmutable
-  int[] DEFAULT_MEMBERSHIP_PORT_RANGE = new int[] {41000, 61000};
+  int[] DEFAULT_MEMBERSHIP_PORT_RANGE = MembershipConfig.DEFAULT_MEMBERSHIP_PORT_RANGE;
 
   @ConfigAttributeGetter(name = MEMBERSHIP_PORT_RANGE)
   int[] getMembershipPortRange();
@@ -1912,7 +1924,7 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
   /**
    * The default value of the {@link ConfigurationProperties#ROLES} property
    */
-  String DEFAULT_ROLES = "";
+  String DEFAULT_ROLES = MembershipConfig.DEFAULT_ROLES;
 
   /**
    * The name of the {@link ConfigurationProperties#MAX_WAIT_TIME_RECONNECT} property
@@ -2200,7 +2212,7 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
    * <p>
    * Actual value of this constant is <code>""</code>.
    */
-  String DEFAULT_DURABLE_CLIENT_ID = "";
+  String DEFAULT_DURABLE_CLIENT_ID = MembershipConfig.DEFAULT_DURABLE_CLIENT_ID;
 
   /**
    * Returns the value of the {@link ConfigurationProperties#DURABLE_CLIENT_TIMEOUT} property.
@@ -2225,7 +2237,7 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
    * <p>
    * Actual value of this constant is <code>"300"</code>.
    */
-  int DEFAULT_DURABLE_CLIENT_TIMEOUT = 300;
+  int DEFAULT_DURABLE_CLIENT_TIMEOUT = MembershipConfig.DEFAULT_DURABLE_CLIENT_TIMEOUT;
 
   /**
    * Returns user module name for client authentication initializer in
@@ -2392,7 +2404,7 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
    * Actual value of this is one of the available symmetric algorithm names in JDK like "AES:128" or
    * "Blowfish".
    */
-  String DEFAULT_SECURITY_UDP_DHALGO = "";
+  String DEFAULT_SECURITY_UDP_DHALGO = MembershipConfig.DEFAULT_SECURITY_UDP_DHALGO;
 
   /**
    * Returns user defined method name for peer authentication initializer in
@@ -2418,7 +2430,7 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
    * <p>
    * Actual value of this is fully qualified <code>"method name"</code>.
    */
-  String DEFAULT_SECURITY_PEER_AUTH_INIT = "";
+  String DEFAULT_SECURITY_PEER_AUTH_INIT = MembershipConfig.DEFAULT_SECURITY_PEER_AUTH_INIT;
 
   /**
    * Returns user defined method name authenticating peer's credentials in
@@ -2592,7 +2604,9 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
   /**
    * The default peer membership check timeout is 1 second.
    */
-  int DEFAULT_SECURITY_PEER_VERIFYMEMBER_TIMEOUT = 1000;
+  int DEFAULT_SECURITY_PEER_VERIFYMEMBER_TIMEOUT =
+      MembershipConfig.DEFAULT_SECURITY_PEER_VERIFYMEMBER_TIMEOUT;
+
 
   /**
    * Max membership timeout must be less than max peer handshake timeout. Currently this is set to
@@ -2633,7 +2647,7 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
 
   /**
    * Returns the value of
-   * {@link ConfigurationProperties#SSECURITY_AUTH_TOKEN_ENABLED_COMPONENTS} property
+   * {@link ConfigurationProperties#SECURITY_AUTH_TOKEN_ENABLED_COMPONENTS} property
    */
   @ConfigAttributeGetter(name = SECURITY_AUTH_TOKEN_ENABLED_COMPONENTS)
   String[] getSecurityAuthTokenEnabledComponents();
@@ -2799,7 +2813,7 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
    * customers that are already using this system property.
    */
   boolean DEFAULT_ENFORCE_UNIQUE_HOST =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "EnforceUniqueHostStorageAllocation");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "EnforceUniqueHostStorageAllocation");
 
   @ConfigAttributeSetter(name = ENFORCE_UNIQUE_HOST)
   void setEnforceUniqueHost(boolean enforceUniqueHost);
@@ -2849,7 +2863,7 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
    *
    * @since GemFire 7.0
    */
-  String DEFAULT_GROUPS = "";
+  String DEFAULT_GROUPS = MembershipConfig.DEFAULT_GROUPS;
 
   /**
    * Any cleanup required before closing the distributed system
@@ -4035,7 +4049,7 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
   /**
    * The default value of the {@link ConfigurationProperties#DISABLE_AUTO_RECONNECT} property
    */
-  boolean DEFAULT_DISABLE_AUTO_RECONNECT = false;
+  boolean DEFAULT_DISABLE_AUTO_RECONNECT = MembershipConfig.DEFAULT_DISABLE_AUTO_RECONNECT;
 
   /**
    * Gets the value of {@link ConfigurationProperties#DISABLE_AUTO_RECONNECT}
@@ -5243,6 +5257,35 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
    * The default value for http service ssl mutual authentication
    */
   boolean DEFAULT_SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION = false;
+
+
+  /**
+   * Returns user defined class name SSL Parameter Extension in
+   * {@link ConfigurationProperties#SSL_PARAMETER_EXTENSION}
+   */
+  @ConfigAttributeGetter(name = SSL_PARAMETER_EXTENSION)
+  String getSSLParameterExtension();
+
+  /**
+   * Sets the user defined class name in {@link ConfigurationProperties#SSL_PARAMETER_EXTENSION}
+   * property.
+   */
+  @ConfigAttributeSetter(name = SSL_PARAMETER_EXTENSION)
+  void setSSLParameterExtension(String attValue);
+
+  /**
+   * The name of class for {@link ConfigurationProperties#SSL_PARAMETER_EXTENSION} property
+   */
+  @ConfigAttribute(type = String.class)
+  String SSL_PARAMETER_EXTENSION_NAME = SSL_PARAMETER_EXTENSION;
+
+  /**
+   * The default {@link ConfigurationProperties#SSL_PARAMETER_EXTENSION} class name.
+   * <p>
+   * Actual value of this is fully qualified <code>"class name"</code>.
+   */
+  String DEFAULT_SSL_PARAMETER_EXTENSION = "";
+
 
   /**
    * Returns the value of the {@link ConfigurationProperties#VALIDATE_SERIALIZABLE_OBJECTS} property

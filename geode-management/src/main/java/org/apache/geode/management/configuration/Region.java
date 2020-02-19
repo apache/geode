@@ -325,4 +325,46 @@ public class Region extends GroupableConfiguration<RuntimeRegionInfo> {
       this.objectSizer = objectSizer;
     }
   }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    if (!super.equals(o)) {
+      return false;
+    }
+    Region region = (Region) o;
+    return Objects.equals(name, region.name) &&
+        type == region.type &&
+        Objects.equals(keyConstraint, region.keyConstraint) &&
+        Objects.equals(valueConstraint, region.valueConstraint) &&
+        Objects.equals(diskStoreName, region.diskStoreName) &&
+        Objects.equals(redundantCopies, region.redundantCopies) &&
+        Objects.equals(expirations, region.expirations) &&
+        Objects.equals(eviction, region.eviction);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(super.hashCode(), name, type, keyConstraint, valueConstraint, diskStoreName,
+        redundantCopies, expirations, eviction);
+  }
+
+  @Override
+  public String toString() {
+    return "Region{" +
+        "name='" + name + '\'' +
+        ", type=" + type +
+        ", keyConstraint='" + keyConstraint + '\'' +
+        ", valueConstraint='" + valueConstraint + '\'' +
+        ", diskStoreName='" + diskStoreName + '\'' +
+        ", redundantCopies=" + redundantCopies +
+        ", expirations=" + expirations +
+        ", eviction=" + eviction +
+        "} " + super.toString();
+  }
 }

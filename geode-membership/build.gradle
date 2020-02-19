@@ -1,0 +1,77 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
+
+apply from: "${project.projectDir}/../gradle/publish-java.gradle"
+
+dependencies {
+    compile(platform(project(':boms:geode-all-bom')))
+
+    // Geode-common has annotations and other pieces used by geode-logging
+    api(project(':geode-common'))
+    implementation(project(':geode-logging'))
+    implementation('org.apache.logging.log4j:log4j-api')
+    implementation('org.jgroups:jgroups')
+    implementation('org.apache.commons:commons-lang3')
+    implementation('it.unimi.dsi:fastutil')
+    implementation('com.github.stephenc.findbugs:findbugs-annotations')
+    //Commons validator is used to validate inet addresses in membership
+    implementation('commons-validator:commons-validator')
+
+    implementation(project(':geode-serialization'))
+    implementation(project(':geode-tcp-server'))
+    //Jgroups is a core component of our membership system.
+    implementation('org.jgroups:jgroups')
+
+    testCompile(project(':geode-junit')) {
+        exclude module: 'geode-logging'
+    }
+    testCompile(project(':geode-concurrency-test'))
+
+    testCompile('org.mockito:mockito-core')
+    testCompile('junit:junit')
+    testCompile('org.assertj:assertj-core')
+
+    testRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
+
+    integrationTestCompile(project(':geode-junit')) {
+        exclude module: 'geode-logging'
+    }
+    integrationTestCompile('pl.pragmatists:JUnitParams')
+    distributedTestCompile(project(':geode-junit')) {
+        exclude module: 'geode-logging'
+    }
+    distributedTestCompile(project(':geode-dunit')) {
+        exclude module: 'geode-logging'
+    }
+    distributedTestCompile('pl.pragmatists:JUnitParams')
+    distributedTestRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
+    upgradeTestRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
+
+    testImplementation('com.tngtech.archunit:archunit-junit4')
+
+    integrationTestCompile('com.tngtech.archunit:archunit-junit4')
+  
+}
+
+distributedTest {
+    // Some tests have inner tests that should be ignored
+    exclude "**/*\$*.class"
+}
+
+

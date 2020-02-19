@@ -229,7 +229,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
    */
   @Override
   public boolean equals(Object other) {
-    if (other == null || !(other instanceof HAEventWrapper)) {
+    if (!(other instanceof HAEventWrapper)) {
       return false;
     }
 

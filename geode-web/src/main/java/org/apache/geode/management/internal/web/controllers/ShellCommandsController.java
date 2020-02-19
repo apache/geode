@@ -83,7 +83,7 @@ public class ShellCommandsController extends AbstractCommandsController {
   public ResponseEntity<InputStreamResource> command(@RequestParam(value = "cmd") String command,
       @RequestParam(value = "resources", required = false) MultipartFile[] fileResource)
       throws IOException {
-    String result = processCommand(decode(command), getEnvironment(), fileResource);
+    String result = processCommand(command, getEnvironment(), fileResource);
     return getResponse(result);
   }
 

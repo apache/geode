@@ -14,13 +14,13 @@
  */
 package org.apache.geode.internal.cache.eviction;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
 import org.apache.geode.internal.offheap.MemoryAllocator;
 import org.apache.geode.internal.statistics.StatisticsClock;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Triggers centralized eviction(asynchronously) when the ResourceManager sends an eviction event
@@ -51,7 +51,7 @@ public class OffHeapEvictor extends HeapEvictor {
     }
 
     float evictionBurstPercentage = Float.parseFloat(System.getProperty(
-        DistributionConfig.GEMFIRE_PREFIX + "HeapLRUCapacityController.evictionBurstPercentage",
+        GeodeGlossary.GEMFIRE_PREFIX + "HeapLRUCapacityController.evictionBurstPercentage",
         "0.4"));
     bytesToEvictWithEachBurst =
         (long) (allocator.getTotalMemory() * 0.01 * evictionBurstPercentage);

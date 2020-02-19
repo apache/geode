@@ -24,6 +24,10 @@ import java.util.Map;
 
 import org.apache.geode.annotations.internal.MakeNotStatic;
 
+/**
+ * StaticSerialization provides a collection of serialization/deserialization methods that
+ * can be used in your toData/fromData methods in a DataSerializableFixedID implementation.
+ */
 public class StaticSerialization {
   // array is null
   public static final byte NULL_ARRAY = -1;
@@ -399,6 +403,7 @@ public class StaticSerialization {
     byte typeCode = in.readByte();
     if (typeCode == DSCODE.CLASS.toByte()) {
       String className = readString(in);
+      className = processIncomingClassName(className);
       return Class.forName(className);
     } else {
       return StaticSerialization.decodePrimitiveClass(typeCode);
@@ -492,6 +497,66 @@ public class StaticSerialization {
       default:
         throw new IllegalArgumentException(
             String.format("unexpected typeCode: %s", typeCode));
+    }
+  }
+
+  /**
+   * Get the {@link Version} of the peer or disk store that created this
+   * {@link DataInput}. Returns
+   * null if the version is same as this member's.
+   */
+  public static Version getVersionForDataStreamOrNull(DataInput in) {
+    // check if this is a versioned data input
+    if (in instanceof VersionedDataStream) {
+      return ((VersionedDataStream) in).getVersion();
+    } else {
+      // assume latest version
+      return null;
+    }
+  }
+
+  /**
+   * Get the {@link Version} of the peer or disk store that created this
+   * {@link DataInput}.
+   */
+  public static Version getVersionForDataStream(DataInput in) {
+    // check if this is a versioned data input
+    if (in instanceof VersionedDataStream) {
+      final Version v = ((VersionedDataStream) in).getVersion();
+      return v != null ? v : Version.CURRENT;
+    } else {
+      // assume latest version
+      return Version.CURRENT;
+    }
+  }
+
+  /**
+   * Get the {@link Version} of the peer or disk store that created this
+   * {@link DataOutput}.
+   */
+  public static Version getVersionForDataStream(DataOutput out) {
+    // check if this is a versioned data output
+    if (out instanceof VersionedDataStream) {
+      final Version v = ((VersionedDataStream) out).getVersion();
+      return v != null ? v : Version.CURRENT;
+    } else {
+      // assume latest version
+      return Version.CURRENT;
+    }
+  }
+
+  /**
+   * Get the {@link Version} of the peer or disk store that created this
+   * {@link DataOutput}. Returns
+   * null if the version is same as this member's.
+   */
+  public static Version getVersionForDataStreamOrNull(DataOutput out) {
+    // check if this is a versioned data output
+    if (out instanceof VersionedDataStream) {
+      return ((VersionedDataStream) out).getVersion();
+    } else {
+      // assume latest version
+      return null;
     }
   }
 }

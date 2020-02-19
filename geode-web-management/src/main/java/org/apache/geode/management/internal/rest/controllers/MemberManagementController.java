@@ -40,7 +40,7 @@ public class MemberManagementController extends AbstractManagementController {
   @ApiOperation(value = "get member",
       extensions = {@Extension(properties = {
           @ExtensionProperty(name = "jqFilter",
-              value = ".result | .runtimeInfo[] | {name:.memberName,status:.status}")})})
+              value = ".result | .groups[] | .runtimeInfo[] | {name:.memberName,status:.status}")})})
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ')")
   @GetMapping(MEMBER_ENDPOINT + "/{id:.+}")
   public ClusterManagementGetResult<Member, MemberInformation> getMember(
@@ -53,7 +53,7 @@ public class MemberManagementController extends AbstractManagementController {
   @ApiOperation(value = "list members",
       extensions = {@Extension(properties = {
           @ExtensionProperty(name = "jqFilter",
-              value = ".result[] | .runtimeInfo[] | {name:.memberName,status:.status}")})})
+              value = ".result[] | .groups[] | .runtimeInfo[] | {name:.memberName,status:.status}")})})
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ')")
   @GetMapping(MEMBER_ENDPOINT)
   public ClusterManagementListResult<Member, MemberInformation> listMembers(

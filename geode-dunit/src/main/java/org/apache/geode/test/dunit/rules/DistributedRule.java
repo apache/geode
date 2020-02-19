@@ -20,11 +20,12 @@ import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
 import static org.apache.geode.test.dunit.Invoke.invokeInLocator;
 import static org.apache.geode.test.dunit.VM.DEFAULT_VM_COUNT;
 
+import java.util.Properties;
+
 import org.apache.geode.cache.query.QueryTestUtils;
 import org.apache.geode.cache.query.internal.QueryObserverHolder;
 import org.apache.geode.cache30.ClientServerTestCase;
 import org.apache.geode.cache30.RegionTestCase;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
@@ -43,6 +44,7 @@ import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.internal.DUnitLauncher;
 import org.apache.geode.test.junit.rules.serializable.SerializableExternalResource;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * JUnit Rule that launches DistributedTest VMs and scans all log output for suspect strings without
@@ -147,6 +149,10 @@ public class DistributedRule extends AbstractDistributedRule {
     TearDown.doTearDown();
   }
 
+  public static Properties getDistributedSystemProperties() {
+    return DUnitLauncher.getDistributedSystemProperties();
+  }
+
   /**
    * Builds an instance of DistributedRule.
    */
@@ -240,7 +246,7 @@ public class DistributedRule extends AbstractDistributedRule {
       TcpClient.clearStaticData();
 
       // clear system properties -- keep alphabetized
-      System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "log-level");
+      System.clearProperty(GeodeGlossary.GEMFIRE_PREFIX + "log-level");
       System.clearProperty("jgroups.resolve_dns");
       System.clearProperty(Message.MAX_MESSAGE_SIZE_PROPERTY);
 

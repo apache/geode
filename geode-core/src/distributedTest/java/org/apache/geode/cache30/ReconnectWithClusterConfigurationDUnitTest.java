@@ -46,7 +46,7 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
+import org.apache.geode.distributed.internal.membership.api.MembershipManagerHelper;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
@@ -91,7 +91,6 @@ public class ReconnectWithClusterConfigurationDUnitTest implements Serializable 
           locator = Locator.startLocatorAndDS(locatorPorts[locatorNumber], new File(""), props);
           system = locator.getDistributedSystem();
           cache = ((InternalLocator) locator).getCache();
-          ReconnectDUnitTest.savedSystem = locator.getDistributedSystem();
           IgnoredException.addIgnoredException(
               "org.apache.geode.ForcedDisconnectException||Possible loss of quorum");
         } catch (IOException e) {

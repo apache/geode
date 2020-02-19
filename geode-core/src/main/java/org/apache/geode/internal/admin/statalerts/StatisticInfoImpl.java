@@ -96,7 +96,7 @@ public class StatisticInfoImpl implements StatisticInfo {
   @Override
   public boolean equals(Object object) {
 
-    if (object == null || !(object instanceof StatisticInfoImpl)) {
+    if (!(object instanceof StatisticInfoImpl)) {
       return false;
     }
 

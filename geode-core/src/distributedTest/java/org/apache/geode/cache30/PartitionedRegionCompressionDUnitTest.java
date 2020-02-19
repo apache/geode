@@ -32,34 +32,28 @@ public class PartitionedRegionCompressionDUnitTest extends PartitionedRegionDUni
     super();
   }
 
-  @SuppressWarnings({"rawtypes", "unchecked"})
   @Override
-  protected RegionAttributes getRegionAttributes() {
-    Compressor compressor = null;
-    try {
-      compressor = SnappyCompressor.getDefaultInstance();
-    } catch (Throwable t) {
-      // Not a supported OS
-      return super.getRegionAttributes();
-    }
-    RegionAttributes attrs = super.getRegionAttributes();
-    AttributesFactory factory = new AttributesFactory(attrs);
-    factory.setCompressor(compressor);
-    return factory.create();
+  protected <K, V> RegionAttributes<K, V> getRegionAttributes() {
+    return getRegionAttributes(null);
   }
 
-  @SuppressWarnings({"rawtypes", "unchecked"})
   @Override
-  protected RegionAttributes getRegionAttributes(String type) {
-    Compressor compressor = null;
+  protected <K, V> RegionAttributes<K, V> getRegionAttributes(String type) {
+    RegionAttributes<K, V> ra;
+    if (type != null) {
+      ra = super.getRegionAttributes(type);
+    } else {
+      ra = super.getRegionAttributes();
+    }
+
+    Compressor compressor;
     try {
       compressor = SnappyCompressor.getDefaultInstance();
     } catch (Throwable t) {
       // Not a supported OS
-      return super.getRegionAttributes(type);
+      return ra;
     }
-    RegionAttributes ra = super.getRegionAttributes(type);
-    AttributesFactory factory = new AttributesFactory(ra);
+    AttributesFactory<K, V> factory = new AttributesFactory<>(ra);
     if (!ra.getDataPolicy().isEmpty()) {
       factory.setCompressor(compressor);
     }

@@ -65,13 +65,17 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
 import org.apache.geode.internal.hll.HyperLogLogPlus;
-import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.ByteToCommandDecoder;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.KeyRegistrar;
+import org.apache.geode.redis.internal.PubSub;
+import org.apache.geode.redis.internal.PubSubImpl;
 import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.RegionProvider;
+import org.apache.geode.redis.internal.Subscriptions;
 
 /**
  * The GeodeRedisServer is a server that understands the Redis protocol. As commands are sent to the
@@ -84,11 +88,10 @@ import org.apache.geode.redis.internal.RegionProvider;
  * meta data region used internally are protected so the client may not store keys with the name
  * {@link GeodeRedisServer#REDIS_META_DATA_REGION} or {@link GeodeRedisServer#STRING_REGION}. The
  * default Region type is {@link RegionShortcut#PARTITION} although this can be changed by
- * specifying the SystemProperty {@value #DEFAULT_REGION_SYS_PROP_NAME} to a type defined by
- * {@link RegionShortcut}. If the {@link GeodeRedisServer#NUM_THREADS_SYS_PROP_NAME} system property
- * is set to 0, one thread per client will be created. Otherwise a worker thread pool of specified
- * size is used or a default size of 4 * {@link Runtime#availableProcessors()} if the property is
- * not set.
+ * specifying the SystemProperty {@value #DEFAULT_REGION_SYS_PROP_NAME} to a type defined by {@link
+ * RegionShortcut}. If the {@link GeodeRedisServer#NUM_THREADS_SYS_PROP_NAME} system property is set
+ * to 0, one thread per client will be created. Otherwise a worker thread pool of specified size is
+ * used or a default size of 4 * {@link Runtime#availableProcessors()} if the property is not set.
  * <p>
  * Setting the AUTH password requires setting the property "redis-password" just as "redis-port"
  * would be in xml or through GFSH.
@@ -117,7 +120,7 @@ import org.apache.geode.redis.internal.RegionProvider;
  * PERSIST, PEXPIRE, PEXPIREAT, PTTL, SCAN, TTL
  * <p>
  * Supported Transaction commands - DISCARD, EXEC, MULTI
- * <P>
+ * <p>
  * Supported Server commands - AUTH, ECHO, PING, TIME, QUIT
  * <p>
  * <p>
@@ -139,7 +142,6 @@ import org.apache.geode.redis.internal.RegionProvider;
  * transactions enabled. Also, you cannot watch or unwatch keys as all keys within a GemFire
  * transaction are watched by default.</li>
  * </ul>
- *
  */
 
 @Experimental
@@ -252,13 +254,15 @@ public class GeodeRedisServer {
   public static final String NUM_THREADS_SYS_PROP_NAME = "gemfireredis.numthreads";
 
   /**
-   * The actual {@link RegionShortcut} type specified by the system property
-   * {@value #DEFAULT_REGION_SYS_PROP_NAME}.
+   * The actual {@link RegionShortcut} type specified by the system property {@value
+   * #DEFAULT_REGION_SYS_PROP_NAME}.
    */
   public final RegionShortcut DEFAULT_REGION_TYPE;
 
   private boolean shutdown;
   private boolean started;
+  private KeyRegistrar keyRegistrar;
+  private PubSub pubSub;
 
   /**
    * Determine the {@link RegionShortcut} type from a String value. If the String value doesn't map
@@ -287,8 +291,9 @@ public class GeodeRedisServer {
     String prop = System.getProperty(NUM_THREADS_SYS_PROP_NAME);
     int numCores = Runtime.getRuntime().availableProcessors();
     int def = 4 * numCores;
-    if (prop == null || prop.isEmpty())
+    if (prop == null || prop.isEmpty()) {
       return def;
+    }
     int threads;
     try {
       threads = Integer.parseInt(prop);
@@ -314,8 +319,8 @@ public class GeodeRedisServer {
    * address and port
    *
    * @param bindAddress The address to which the server will attempt to bind to
-   * @param port The port the server will bind to, will use {@value #DEFAULT_REDIS_SERVER_PORT} by
-   *        default if argument is less than or equal to 0
+   * @param port The port the server will bind to, will use {@value #DEFAULT_REDIS_SERVER_PORT}
+   *        by default if argument is less than or equal to 0
    */
   public GeodeRedisServer(String bindAddress, int port) {
     this(bindAddress, port, null);
@@ -323,13 +328,13 @@ public class GeodeRedisServer {
 
   /**
    * Constructor for {@code GeodeRedisServer} that will start the server and bind to the given
-   * address and port. Keep in mind that the log level configuration will only be set if a
-   * {@link Cache} does not already exist, if one already exists then setting that property will
-   * have no effect.
+   * address and port. Keep in mind that the log level configuration will only be set if a {@link
+   * Cache} does not already exist, if one already exists then setting that property will have no
+   * effect.
    *
    * @param bindAddress The address to which the server will attempt to bind to
-   * @param port The port the server will bind to, will use {@value #DEFAULT_REDIS_SERVER_PORT} by
-   *        default if argument is less than or equal to 0
+   * @param port The port the server will bind to, will use {@value #DEFAULT_REDIS_SERVER_PORT}
+   *        by default if argument is less than or equal to 0
    * @param logLevel The logging level to be used by GemFire
    */
   public GeodeRedisServer(String bindAddress, int port, String logLevel) {
@@ -365,7 +370,7 @@ public class GeodeRedisServer {
    * @return The InetAddress to bind to
    */
   private InetAddress getBindAddress() throws UnknownHostException {
-    return this.bindAddress == null || this.bindAddress.isEmpty() ? SocketCreator.getLocalHost()
+    return this.bindAddress == null || this.bindAddress.isEmpty() ? LocalHostUtil.getLocalHost()
         : InetAddress.getByName(this.bindAddress);
   }
 
@@ -399,8 +404,9 @@ public class GeodeRedisServer {
         cache = GemFireCacheImpl.getInstance();
         if (cache == null) {
           CacheFactory cacheFactory = new CacheFactory();
-          if (logLevel != null)
+          if (logLevel != null) {
             cacheFactory.set(LOG_LEVEL, logLevel);
+          }
           cache = cacheFactory.create();
         }
       }
@@ -436,6 +442,7 @@ public class GeodeRedisServer {
           redisMetaData =
               gemFireCache.createVMRegion(REDIS_META_DATA_REGION, regionAttributesCreation, ira);
         }
+
       } catch (IOException | ClassNotFoundException e) {
         // only if loading snapshot, not here
         InternalGemFireError assErr = new InternalGemFireError(
@@ -443,7 +450,9 @@ public class GeodeRedisServer {
         assErr.initCause(e);
         throw assErr;
       }
-      this.regionCache = new RegionProvider(stringsRegion, hLLRegion, redisMetaData,
+      this.keyRegistrar = new KeyRegistrar(redisMetaData);
+      this.pubSub = new PubSubImpl(new Subscriptions());
+      this.regionCache = new RegionProvider(stringsRegion, hLLRegion, this.keyRegistrar,
           expirationFutures, expirationExecutor, this.DEFAULT_REGION_TYPE);
       redisMetaData.put(REDIS_META_DATA_REGION, RedisDataType.REDIS_PROTECTED);
       redisMetaData.put(HLL_REGION, RedisDataType.REDIS_PROTECTED);
@@ -453,7 +462,7 @@ public class GeodeRedisServer {
   }
 
   private void checkForRegions() {
-    Collection<Entry<String, RedisDataType>> entrySet = this.regionCache.metaEntrySet();
+    Collection<Entry<String, RedisDataType>> entrySet = keyRegistrar.keyInfos();
     for (Entry<String, RedisDataType> entry : entrySet) {
       String regionName = entry.getKey();
       RedisDataType type = entry.getValue();
@@ -464,8 +473,9 @@ public class GeodeRedisServer {
           this.regionCache
               .createRemoteRegionReferenceLocally(Coder.stringToByteArrayWrapper(regionName), type);
         } catch (Exception e) {
-          if (logger.errorEnabled())
+          if (logger.errorEnabled()) {
             logger.error(e);
+          }
         }
       }
     }
@@ -474,7 +484,6 @@ public class GeodeRedisServer {
   /**
    * Helper method to start the server listening for connections. The server is bound to the port
    * specified by {@link GeodeRedisServer#serverPort}
-   *
    */
   private void startRedisServer() throws IOException, InterruptedException {
     ThreadFactory selectorThreadFactory = new ThreadFactory() {
@@ -520,12 +529,14 @@ public class GeodeRedisServer {
         .childHandler(new ChannelInitializer<SocketChannel>() {
           @Override
           public void initChannel(SocketChannel ch) throws Exception {
-            if (logger.fineEnabled())
+            if (logger.fineEnabled()) {
               logger.fine("GeodeRedisServer-Connection established with " + ch.remoteAddress());
+            }
             ChannelPipeline p = ch.pipeline();
             p.addLast(ByteToCommandDecoder.class.getSimpleName(), new ByteToCommandDecoder());
             p.addLast(ExecutionHandlerContext.class.getSimpleName(),
-                new ExecutionHandlerContext(ch, cache, regionCache, GeodeRedisServer.this, pwdB));
+                new ExecutionHandlerContext(ch, cache, regionCache, GeodeRedisServer.this, pwdB,
+                    keyRegistrar, pubSub));
           }
         }).option(ChannelOption.SO_REUSEADDR, true).option(ChannelOption.SO_RCVBUF, getBufferSize())
         .childOption(ChannelOption.SO_KEEPALIVE, true)
@@ -537,18 +548,19 @@ public class GeodeRedisServer {
     if (this.logger.infoEnabled()) {
       String logMessage = "GeodeRedisServer started {" + getBindAddress() + ":" + serverPort
           + "}, Selector threads: " + this.numSelectorThreads;
-      if (this.singleThreadPerConnection)
+      if (this.singleThreadPerConnection) {
         logMessage += ", One worker thread per connection";
-      else
+      } else {
         logMessage += ", Worker threads: " + this.numWorkerThreads;
+      }
       this.logger.info(logMessage);
     }
     this.serverChannel = f.channel();
   }
 
   /**
-   * Takes an entry event and processes it. If the entry denotes that a
-   * {@link RedisDataType#REDIS_LIST} or {@link RedisDataType#REDIS_SORTEDSET} was created then this
+   * Takes an entry event and processes it. If the entry denotes that a {@link
+   * RedisDataType#REDIS_LIST} or {@link RedisDataType#REDIS_SORTEDSET} was created then this
    * function will call the necessary calls to create the parameterized queries for those keys.
    *
    * @param event EntryEvent from meta data region
@@ -615,8 +627,9 @@ public class GeodeRedisServer {
    */
   public synchronized void shutdown() {
     if (!shutdown) {
-      if (logger.infoEnabled())
+      if (logger.infoEnabled()) {
         logger.info("GeodeRedisServer shutting down");
+      }
       ChannelFuture closeFuture = this.serverChannel.closeFuture();
       Future<?> c = workerGroup.shutdownGracefully();
       Future<?> c2 = bossGroup.shutdownGracefully();
@@ -624,10 +637,12 @@ public class GeodeRedisServer {
       c.syncUninterruptibly();
       c2.syncUninterruptibly();
       this.regionCache.close();
-      if (mainThread != null)
+      if (mainThread != null) {
         mainThread.interrupt();
-      for (ScheduledFuture<?> f : this.expirationFutures.values())
+      }
+      for (ScheduledFuture<?> f : this.expirationFutures.values()) {
         f.cancel(true);
+      }
       this.expirationFutures.clear();
       this.expirationExecutor.shutdownNow();
       closeFuture.syncUninterruptibly();
@@ -650,12 +665,13 @@ public class GeodeRedisServer {
     String bindAddress = null;
     String logLevel = null;
     for (String arg : args) {
-      if (arg.startsWith("-port"))
+      if (arg.startsWith("-port")) {
         port = getPort(arg);
-      else if (arg.startsWith("-bind-address"))
+      } else if (arg.startsWith("-bind-address")) {
         bindAddress = getBindAddress(arg);
-      else if (arg.startsWith("-log-level"))
+      } else if (arg.startsWith("-log-level")) {
         logLevel = getLogLevel(arg);
+      }
     }
     mainThread = Thread.currentThread();
     GeodeRedisServer server = new GeodeRedisServer(bindAddress, port, logLevel);
@@ -674,8 +690,8 @@ public class GeodeRedisServer {
    * Helper method to parse the port to a number
    *
    * @param arg String where the argument is
-   * @return The port number when the correct syntax was used, otherwise will return
-   *         {@link #DEFAULT_REDIS_SERVER_PORT}
+   * @return The port number when the correct syntax was used, otherwise will return {@link
+   *         #DEFAULT_REDIS_SERVER_PORT}
    */
   private static int getPort(String arg) {
     int port = DEFAULT_REDIS_SERVER_PORT;
@@ -726,4 +742,5 @@ public class GeodeRedisServer {
     }
     return logLevel;
   }
+
 }

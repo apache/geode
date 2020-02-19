@@ -28,21 +28,24 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.Instantiator;
 import org.apache.geode.SystemConnectException;
+import org.apache.geode.distributed.internal.membership.api.StopShunningMarker;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalDataSerializer.SerializerAttributesHolder;
 import org.apache.geode.internal.InternalInstantiator;
 import org.apache.geode.internal.InternalInstantiator.InstantiatorAttributesHolder;
-import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * A message that is sent to all other distribution manager when a distribution manager starts up.
  */
-public class StartupMessage extends DistributionMessage implements AdminMessageType {
+public class StartupMessage extends DistributionMessage implements AdminMessageType,
+    StopShunningMarker {
   private static final Logger logger = LogService.getLogger();
 
   private String version = GemFireVersion.getGemFireVersion(); // added for bug 29005
@@ -69,7 +72,7 @@ public class StartupMessage extends DistributionMessage implements AdminMessageT
    */
   public static Set<InetAddress> getMyAddresses(ClusterDistributionManager dm) {
     try {
-      return SocketCreator.getMyAddresses();
+      return LocalHostUtil.getMyAddresses();
     } catch (IllegalArgumentException e) {
       logger.fatal(e.getMessage(), e);
       return Collections.emptySet();
@@ -213,7 +216,7 @@ public class StartupMessage extends DistributionMessage implements AdminMessageT
           && distributedSystemId != dm.getDistributedSystemId()) {
 
         String distributedSystemListener =
-            System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "DistributedSystemListener");
+            System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + "DistributedSystemListener");
         // this check is specific for Jayesh's use case of WAN BootStraping
         if (distributedSystemListener != null) {
           if (-distributedSystemId != dm.getDistributedSystemId()) {

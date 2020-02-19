@@ -37,7 +37,6 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.cache30.ClientServerTestCase;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
@@ -51,6 +50,7 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Tests <code>EventTracker</code> management.
@@ -203,7 +203,7 @@ public class EventTrackerDUnitTest extends JUnit4CacheTestCase {
       @Override
       public void run2() throws CacheException {
         // Set the message tracking timeout
-        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "messageTrackingTimeout",
+        System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "messageTrackingTimeout",
             MESSAGE_TRACKING_TIMEOUT);
 
         // Create a distributed Region

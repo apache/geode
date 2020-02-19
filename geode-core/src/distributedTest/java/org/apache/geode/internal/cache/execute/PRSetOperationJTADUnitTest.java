@@ -42,7 +42,6 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXStateProxyImpl;
@@ -52,6 +51,7 @@ import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 
 @RunWith(JUnitParamsRunner.class)
@@ -247,7 +247,7 @@ public class PRSetOperationJTADUnitTest extends JUnit4CacheTestCase {
 
   final String restoreSetOperationTransactionBehavior = "restoreSetOperationTransactionBehavior";
   final String RESTORE_SET_OPERATION_PROPERTY =
-      (System.currentTimeMillis() % 2 == 0 ? DistributionConfig.GEMFIRE_PREFIX : "geode.")
+      (System.currentTimeMillis() % 2 == 0 ? GeodeGlossary.GEMFIRE_PREFIX : "geode.")
           + restoreSetOperationTransactionBehavior;
 
   private void createCache(boolean disableSetOpToStartJTA) {

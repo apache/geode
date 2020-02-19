@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.wan.parallel;
 
+import static org.apache.geode.cache.wan.GatewaySender.DEFAULT_BATCH_SIZE;
 import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.BEFORE_INITIAL_IMAGE;
 
 import java.io.IOException;
@@ -660,9 +661,10 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     boolean putDone = false;
     // Can this region ever be null? Should we work with regionName and not with region
     // instance.
-    // It can't be as put is happeing on the region and its still under process
+    // It can't be as put is happening on the region and its still under process
     GatewaySenderEventImpl value = (GatewaySenderEventImpl) object;
-    boolean isDREvent = isDREvent(value);
+
+    boolean isDREvent = isDREvent(sender.getCache(), value);
 
     Region region = value.getRegion();
     String regionPath = null;
@@ -924,8 +926,9 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     return prQ;
   }
 
-  private boolean isDREvent(GatewaySenderEventImpl event) {
-    return (event.getRegion() instanceof DistributedRegion) ? true : false;
+  boolean isDREvent(InternalCache cache, GatewaySenderEventImpl event) {
+    Region region = cache.getRegion(event.getRegionPath());
+    return region instanceof DistributedRegion;
   }
 
   /**
@@ -1003,7 +1006,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         int bucketId = -1;
         Object key = null;
         if (event.getRegion() != null) {
-          if (isDREvent(event)) {
+          if (isDREvent(sender.getCache(), event)) {
             prQ = this.userRegionNameToshadowPRMap.get(event.getRegion().getFullPath());
             bucketId = event.getEventId().getBucketID();
             key = event.getEventId();
@@ -1213,7 +1216,6 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     final boolean isDebugEnabled = logger.isDebugEnabled();
 
     PartitionedRegion prQ = getRandomShadowPR();
-    List<GatewaySenderEventImpl> batch = new ArrayList<>();
     if (prQ == null || prQ.getLocalMaxMemory() == 0) {
       try {
         Thread.sleep(50);
@@ -1221,17 +1223,19 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         Thread.currentThread().interrupt();
       }
       blockProcessorThreadIfRequired();
-      return batch;
+      return Collections.EMPTY_LIST;
     }
+    List<GatewaySenderEventImpl> batch =
+        new ArrayList<>(batchSize == BATCH_BASED_ON_TIME_ONLY ? DEFAULT_BATCH_SIZE : batchSize);
 
     long start = System.currentTimeMillis();
     long end = start + timeToWait;
 
     // Add peeked events
-    addPeekedEvents(batch, batchSize);
+    addPeekedEvents(batch, batchSize == BATCH_BASED_ON_TIME_ONLY ? DEFAULT_BATCH_SIZE : batchSize);
 
     int bId = -1;
-    while (batch.size() < batchSize) {
+    while (batchSize == BATCH_BASED_ON_TIME_ONLY || batch.size() < batchSize) {
       if (areLocalBucketQueueRegionsPresent() && ((bId = getRandomPrimaryBucket(prQ)) != -1)) {
         GatewaySenderEventImpl object = (GatewaySenderEventImpl) peekAhead(prQ, bId);
         if (object != null) {

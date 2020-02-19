@@ -16,9 +16,9 @@
 
 package org.apache.geode.management.internal.rest;
 
+import static org.apache.geode.management.configuration.Index.INDEXES;
 import static org.apache.geode.management.configuration.Links.URI_VERSION;
 import static org.apache.geode.management.configuration.Region.REGION_CONFIG_ENDPOINT;
-import static org.apache.geode.management.internal.rest.controllers.RegionManagementController.INDEXES;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
@@ -124,5 +124,25 @@ public class RegionManagementControllerSpringTest {
 
     assertThat(regionPassedToGet.getName())
         .isEqualTo(regionNameWithDot);
+  }
+
+  @Test
+  public void deleteRegionMappingRecognizesIndexNameWithDot() throws Exception {
+    String regionName = "regionName";
+    String indexNameWithDot = "index.name";
+    String requestPath =
+        URI_VERSION + REGION_CONFIG_ENDPOINT + "/" + regionName + INDEXES + "/" + indexNameWithDot;
+
+    when(cms.delete(any())).thenReturn(new ClusterManagementRealizationResult());
+
+    context.perform(delete(requestPath))
+        .andExpect(status().is2xxSuccessful());
+
+    ArgumentCaptor<Index> indexCaptor = ArgumentCaptor.forClass(Index.class);
+    verify(cms).delete(indexCaptor.capture());
+    Index indexPassedToGet = indexCaptor.getValue();
+
+    assertThat(indexPassedToGet.getName())
+        .isEqualTo(indexNameWithDot);
   }
 }

@@ -30,8 +30,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.test.junit.categories.OffHeapTest;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Tests fill pattern validation for the {@link MemoryAllocatorImpl}.
@@ -89,7 +89,7 @@ public class MemoryAllocatorFillPatternIntegrationTest {
    */
   @Before
   public void setUp() throws Exception {
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "validateOffHeapWithFill", "true");
+    System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "validateOffHeapWithFill", "true");
     this.slab = new SlabImpl(SLAB_SIZE);
     this.allocator = MemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(),
         new NullOffHeapMemoryStats(), new SlabImpl[] {this.slab});
@@ -101,7 +101,7 @@ public class MemoryAllocatorFillPatternIntegrationTest {
   @After
   public void tearDown() throws Exception {
     MemoryAllocatorImpl.freeOffHeapMemory();
-    System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "validateOffHeapWithFill");
+    System.clearProperty(GeodeGlossary.GEMFIRE_PREFIX + "validateOffHeapWithFill");
   }
 
   /**

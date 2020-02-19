@@ -22,33 +22,33 @@ import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.DiskWriteAttributesFactory;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.Scope;
-import org.apache.geode.test.dunit.AsyncInvocation;
-import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.PersistenceTest;
 
 @Category(PersistenceTest.class)
 @SuppressWarnings("serial")
 public class PersistentRecoveryOrderOldConfigDUnitTest extends PersistentRecoveryOrderDUnitTest {
 
+  /**
+   * Override to use deprecated APIs for the creation of disk and region. This test class can
+   * probably be deleted.
+   */
   @Override
-  AsyncInvocation createPersistentRegionAsync(VM vm) {
-    return vm.invokeAsync(() -> {
-      getCache();
+  @SuppressWarnings("deprecation")
+  protected void createReplicateRegion(String regionName, File[] diskDirs,
+      boolean diskSynchronous) {
+    getCache();
 
-      File dir = getDiskDirForVM(vm);
-      dir.mkdirs();
+    DiskWriteAttributesFactory diskWriteAttributesFactory = new DiskWriteAttributesFactory();
+    diskWriteAttributesFactory.setMaxOplogSize(1);
+    diskWriteAttributesFactory.setSynchronous(diskSynchronous);
 
-      DiskWriteAttributesFactory diskWriteAttributesFactory = new DiskWriteAttributesFactory();
-      diskWriteAttributesFactory.setMaxOplogSize(1);
-      diskWriteAttributesFactory.setSynchronous(true);
+    RegionFactory regionFactory = new RegionFactory();
+    regionFactory.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
+    regionFactory.setScope(Scope.DISTRIBUTED_ACK);
+    regionFactory.setDiskDirs(diskDirs);
+    regionFactory.setDiskWriteAttributes(diskWriteAttributesFactory.create());
 
-      RegionFactory regionFactory = new RegionFactory();
-      regionFactory.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
-      regionFactory.setScope(Scope.DISTRIBUTED_ACK);
-      regionFactory.setDiskDirs(new File[] {dir});
-      regionFactory.setDiskWriteAttributes(diskWriteAttributesFactory.create());
-
-      regionFactory.create(regionName);
-    });
+    regionFactory.create(regionName);
   }
+
 }

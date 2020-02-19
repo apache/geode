@@ -18,15 +18,13 @@ import static org.apache.geode.distributed.ConfigurationProperties.OFF_HEAP_MEMO
 
 import java.util.Properties;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.After;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.internal.cache.OffHeapTestUtil;
 import org.apache.geode.test.dunit.Invoke;
-import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.junit.categories.OffHeapTest;
 
 /**
@@ -35,29 +33,20 @@ import org.apache.geode.test.junit.categories.OffHeapTest;
  * @since Geode 1.0
  */
 @Category({OffHeapTest.class})
-@SuppressWarnings({"deprecation", "serial", "rawtypes", "unchecked"})
+@SuppressWarnings({"serial"})
 public class GlobalRegionOffHeapDUnitTest extends GlobalRegionDUnitTest {
 
-  @Override
-  public final void preTearDownAssertions() throws Exception {
-    SerializableRunnable checkOrphans = new SerializableRunnable() {
-
-      @Override
-      public void run() {
-        if (hasCache()) {
-          OffHeapTestUtil.checkOrphans(getCache());
-        }
+  @After
+  public final void tearDown() {
+    Invoke.invokeInEveryVM(() -> {
+      if (hasCache()) {
+        OffHeapTestUtil.checkOrphans(getCache());
       }
-    };
-    Invoke.invokeInEveryVM(checkOrphans);
-    checkOrphans.run();
-  }
+    });
 
-  @Ignore("TODO: DISABLED due to bug 47951")
-  @Override
-  @Test
-  public void testNBRegionInvalidationDuringGetInitialImage() throws Exception {
-    // DISABLED - bug 47951
+    if (hasCache()) {
+      OffHeapTestUtil.checkOrphans(getCache());
+    }
   }
 
   @Override
@@ -68,17 +57,17 @@ public class GlobalRegionOffHeapDUnitTest extends GlobalRegionDUnitTest {
   }
 
   @Override
-  protected RegionAttributes getRegionAttributes() {
-    RegionAttributes attrs = super.getRegionAttributes();
-    AttributesFactory factory = new AttributesFactory(attrs);
+  protected <K, V> RegionAttributes<K, V> getRegionAttributes() {
+    RegionAttributes<K, V> attrs = super.getRegionAttributes();
+    AttributesFactory<K, V> factory = new AttributesFactory<>(attrs);
     factory.setOffHeap(true);
     return factory.create();
   }
 
   @Override
-  protected RegionAttributes getRegionAttributes(String type) {
-    RegionAttributes ra = super.getRegionAttributes(type);
-    AttributesFactory factory = new AttributesFactory(ra);
+  protected <K, V> RegionAttributes<K, V> getRegionAttributes(String type) {
+    RegionAttributes<K, V> ra = super.getRegionAttributes(type);
+    AttributesFactory<K, V> factory = new AttributesFactory<>(ra);
     if (!ra.getDataPolicy().isEmpty()) {
       factory.setOffHeap(true);
     }

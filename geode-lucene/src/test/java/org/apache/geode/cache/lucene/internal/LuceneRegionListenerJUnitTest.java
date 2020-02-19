@@ -63,7 +63,7 @@ public class LuceneRegionListenerJUnitTest {
     InternalRegionArguments internalRegionArgs = mock(InternalRegionArguments.class);
     when(internalRegionArgs.addCacheServiceProfile(any())).thenReturn(internalRegionArgs);
 
-    LuceneRegionListener listener = new LuceneRegionListener(service, cache, name, "/" + regionPath,
+    LuceneRegionListener listener = new LuceneRegionListener(service, name, "/" + regionPath,
         fields, analyzer, null, serializer);
     listener.beforeCreate(null, regionPath, attributes, internalRegionArgs);
     verify(service).beforeDataRegionCreated(eq(name), eq("/" + regionPath), eq(attributes),

@@ -69,6 +69,12 @@ resources:
     branch: release/<VERSION>
     tag_filter: rel/v<VERSION>.RC*
     uri: https://github.com/apache/geode-native.git
+- name: geode-benchmarks
+  type: git
+  source:
+    branch: release/<VERSION>
+    tag_filter: rel/v<VERSION>.RC*
+    uri: https://github.com/apache/geode-benchmarks.git
 - name: upthewaterspout-tests
   type: git
   source:
@@ -342,6 +348,35 @@ jobs:
               gpg --import KEYS
               java -version
               ./gradlew build -PmavenURL=${STAGING_MAVEN} -PdownloadURL=https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/ -Pversion=${FULL_VERSION}
+  - name: benchmarks-test
+    serial: true
+    plan:
+      - get: geode-benchmarks
+        trigger: true
+      - task: validate
+        timeout: 1h
+        config:
+          image_resource:
+            type: docker-image
+            source:
+              repository: openjdk
+              tag: 8
+          inputs:
+            - name: geode-benchmarks
+          platform: linux
+          run:
+            path: /bin/sh
+            args:
+            - -ec
+            - |
+              set -ex
+              FULL_VERSION=$(cd geode-benchmarks && git describe --tags | sed -e 's#^rel/v##')
+              VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
+              curl -s https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/apache-geode-benchmarks-${VERSION}-src.tgz > src.tgz
+              tar xzf src.tgz
+              cd apache-geode-benchmarks-${VERSION}-src
+              java -version
+              ./gradlew build test
   - name: verify-keys
     serial: true
     plan:
@@ -382,12 +417,12 @@ jobs:
                 gpg --verify $asc
                 $sum -c $sha
               }
-              verifyArtifactSignature apache-geode-${VERSION}-src.tgz 256 
+              verifyArtifactSignature apache-geode-${VERSION}-src.tgz 256
               verifyArtifactSignature apache-geode-${VERSION}.tgz 256
               verifyArtifactSignature apache-geode-examples-${VERSION}.tar.gz 256
-              verifyArtifactSignature apache-geode-examples-${VERSION}.zip 256
               verifyArtifactSignature apache-geode-native-${VERSION}-src.tar.gz 512
+              verifyArtifactSignature apache-geode-benchmarks-${VERSION}-src.tgz 256
 EOF
-fly -t concourse.apachegeode-ci.info login --concourse-url https://concourse.apachegeode-ci.info/
-fly -t concourse.apachegeode-ci.info set-pipeline -p apache-release-${VERSION//./-}-rc -c $PIPEYML
+fly -t concourse.apachegeode-ci.info-main login --team-name main --concourse-url https://concourse.apachegeode-ci.info/
+fly -t concourse.apachegeode-ci.info-main set-pipeline -p apache-release-${VERSION//./-}-rc -c $PIPEYML
 rm $PIPEYML

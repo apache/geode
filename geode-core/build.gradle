@@ -255,6 +255,7 @@ dependencies {
 
   //JNA is used for locking memory and preallocating disk files.
   implementation('net.java.dev.jna:jna')
+  implementation('net.java.dev.jna:jna-platform')
 
   //JOptSimple is used by gfsh. A couple of usages have leaked into DiskStore
   implementation('net.sf.jopt-simple:jopt-simple')
@@ -262,10 +263,6 @@ dependencies {
   //Log4j is used everywhere
   implementation('org.apache.logging.log4j:log4j-api')
 
-  runtimeOnly(project(':geode-gfsh')) {
-    exclude module: 'geode-core'
-    ext.optional = true
-  }
 
   runtimeOnly('io.swagger:swagger-annotations') {
     ext.optional = true
@@ -294,6 +291,7 @@ dependencies {
   //Geode-common has annotations and other pieces used geode-core
   api(project(':geode-common'))
   implementation(project(':geode-logging'))
+  implementation(project(':geode-membership'))
   implementation(project(':geode-unsafe'))
   implementation(project(':geode-serialization'))
   implementation(project(':geode-tcp-server'))

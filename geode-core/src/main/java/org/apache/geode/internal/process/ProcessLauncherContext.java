@@ -18,7 +18,7 @@ import static org.apache.commons.lang3.Validate.notNull;
 
 import java.util.Properties;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Thread based context for launching a process. GemFire internals can acquire optional
@@ -29,7 +29,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 public class ProcessLauncherContext {
 
   public static final String OVERRIDDEN_DEFAULTS_PREFIX =
-      DistributionConfig.GEMFIRE_PREFIX + "default.";
+      GeodeGlossary.GEMFIRE_PREFIX + "default.";
 
   /**
    * Default value for {@link #isRedirectingOutput()}
@@ -105,12 +105,12 @@ public class ProcessLauncherContext {
 
   private static void installLogListener(final StartupStatusListener startupListener) {
     if (startupListener != null) {
-      StartupStatus.setListener(startupListener);
+      StartupStatusListenerRegistry.setListener(startupListener);
     }
   }
 
   private static void clearLogListener() {
-    StartupStatus.clearListener();
+    StartupStatusListenerRegistry.clearListener();
   }
 
   private ProcessLauncherContext(final boolean redirectOutput, final Properties overriddenDefaults,

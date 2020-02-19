@@ -37,20 +37,22 @@ public class ManagementRestAuthTokenIntegrationTest {
       .withAutoStart();
 
   @Test
-  public void validToken() throws Exception {
-    ClusterManagementService cms = ClusterManagementServiceBuilder.buildWithHostAddress()
-        .setAuthToken(SimpleSecurityManager.VALID_TOKEN)
-        .setHostAddress("localhost", locator.getHttpPort())
-        .build();
+  public void validToken() {
+    ClusterManagementService cms =
+        new ClusterManagementServiceBuilder()
+            .setPort(locator.getHttpPort())
+            .setAuthToken(SimpleSecurityManager.VALID_TOKEN)
+            .build();
     assertThat(cms.isConnected()).isTrue();
   }
 
   @Test
-  public void invalidToken() throws Exception {
-    ClusterManagementService cms = ClusterManagementServiceBuilder.buildWithHostAddress()
-        .setAuthToken("invalidToken")
-        .setHostAddress("localhost", locator.getHttpPort())
-        .build();
+  public void invalidToken() {
+    ClusterManagementService cms =
+        new ClusterManagementServiceBuilder()
+            .setPort(locator.getHttpPort())
+            .setAuthToken("invalidToken")
+            .build();
     assertThat(cms.isConnected()).isFalse();
   }
 }

@@ -39,11 +39,11 @@ import org.apache.geode.cache.CacheTransactionManager;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXStateProxyImpl;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 @RunWith(JUnitParamsRunner.class)
 public class SetOperationTXJUnitTest {
@@ -143,7 +143,7 @@ public class SetOperationTXJUnitTest {
 
   final String restoreSetOperationTransactionBehavior = "restoreSetOperationTransactionBehavior";
   final String RESTORE_SET_OPERATION_PROPERTY =
-      (System.currentTimeMillis() % 2 == 0 ? DistributionConfig.GEMFIRE_PREFIX : "geode.")
+      (System.currentTimeMillis() % 2 == 0 ? GeodeGlossary.GEMFIRE_PREFIX : "geode.")
           + restoreSetOperationTransactionBehavior;
 
   private Cache createCache(boolean disableSetOpToStartTx) {

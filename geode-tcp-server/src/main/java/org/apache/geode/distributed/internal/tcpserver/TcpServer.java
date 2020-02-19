@@ -149,7 +149,11 @@ public class TcpServer {
     this.executor = executorServiceSupplier.get();
     this.threadName = threadName;
     this.nanoTimeSupplier = nanoTimeSupplier;
-    this.socketCreator = socketCreator;
+    if (socketCreator == null) {
+      this.socketCreator = new TcpSocketCreatorImpl();
+    } else {
+      this.socketCreator = socketCreator;
+    }
     this.objectSerializer = objectSerializer;
     this.objectDeserializer = objectDeserializer;
     readTimeout = Integer.getInteger(readTimeoutPropertyName, 60 * 1000);
@@ -160,7 +164,9 @@ public class TcpServer {
   public void restarting() throws IOException {
     this.shuttingDown = false;
     startServerThread();
-    this.executor = executorServiceSupplier.get();
+    if (this.executor == null || this.executor.isShutdown()) {
+      this.executor = executorServiceSupplier.get();
+    }
     logger.info("TcpServer@" + System.identityHashCode(this)
         + " restarting: completed.  Server thread=" + this.serverThread + '@'
         + System.identityHashCode(this.serverThread) + ";alive=" + this.serverThread.isAlive());

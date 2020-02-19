@@ -23,7 +23,9 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import org.apache.geode.management.configuration.GroupableConfiguration;
+import org.apache.geode.management.configuration.Links;
 import org.apache.geode.management.configuration.Region;
+import org.apache.geode.management.runtime.RuntimeInfo;
 import org.apache.geode.util.internal.GeodeJsonMapper;
 
 public class GroupableConfigurationTest {
@@ -74,5 +76,34 @@ public class GroupableConfigurationTest {
     assertThat(element.getGroup()).isEqualTo("cluster");
     element.setGroup("ClUsTeR");
     assertThat(element.getGroup()).isEqualTo("ClUsTeR");
+  }
+
+  private static class TestGroupableConfiguration extends GroupableConfiguration<TestRuntimeInfo> {
+    @Override
+    public String getId() {
+      return null;
+    }
+
+    @Override
+    public Links getLinks() {
+      return null;
+    }
+  }
+
+  @Test
+  public void equality() {
+    TestGroupableConfiguration configuration1 = new TestGroupableConfiguration();
+    TestGroupableConfiguration configuration2 = new TestGroupableConfiguration();
+
+    configuration1.setGroup("group");
+    configuration2.setGroup("group");
+
+    assertThat(configuration1).as("when equal").isEqualTo(configuration2);
+
+    configuration2.setGroup("different-group");
+    assertThat(configuration1).as("when not equal").isNotEqualTo(configuration2);
+  }
+
+  private static class TestRuntimeInfo extends RuntimeInfo {
   }
 }

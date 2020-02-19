@@ -84,8 +84,8 @@ public class ManagementRequestLoggingDistributedTest implements Serializable {
     locatorPort = locatorVM.invoke(this::startLocator);
     serverVM.invoke(this::startServer);
 
-    service = ClusterManagementServiceBuilder.buildWithHostAddress()
-        .setHostAddress("localhost", httpPort)
+    service = new ClusterManagementServiceBuilder()
+        .setPort(httpPort)
         .build();
   }
 

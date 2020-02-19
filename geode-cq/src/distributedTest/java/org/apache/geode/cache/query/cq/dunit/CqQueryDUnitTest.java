@@ -46,6 +46,7 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.query.CqAttributes;
 import org.apache.geode.cache.query.CqAttributesFactory;
 import org.apache.geode.cache.query.CqAttributesMutator;
@@ -375,24 +376,30 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
       regionFactory0.setScope(Scope.LOCAL);
       regionFactory1.setScope(Scope.LOCAL);
       if (redundancyLevel != null) {
-        ClientServerTestCase.configureConnectionPoolWithName(regionFactory0, serverHost,
+        ClientServerTestCase.configureConnectionPoolWithNameAndFactory(regionFactory0, serverHost,
             serverPorts1, true,
-            Integer.parseInt(redundancyLevel), -1,
-            null, "testPoolA");
-        ClientServerTestCase.configureConnectionPoolWithName(regionFactory1, serverHost,
+            Integer.parseInt(redundancyLevel),
+            -1, (String) null, "testPoolA", PoolManager.createFactory(), -1, -1, -2,
+            -1);
+        ClientServerTestCase.configureConnectionPoolWithNameAndFactory(regionFactory1, serverHost,
             serverPorts2, true,
-            Integer.parseInt(redundancyLevel), -1,
-            null, "testPoolB");
+            Integer.parseInt(redundancyLevel),
+            -1, (String) null, "testPoolB", PoolManager.createFactory(), -1, -1, -2,
+            -1);
       } else {
-        ClientServerTestCase.configureConnectionPoolWithName(regionFactory0, serverHost,
-            serverPorts1, true, -1, -1, null,
-            "testPoolA");
-        ClientServerTestCase.configureConnectionPoolWithName(regionFactory1, serverHost,
-            serverPorts2, true, -1, -1, null,
-            "testPoolB");
+        ClientServerTestCase.configureConnectionPoolWithNameAndFactory(regionFactory0, serverHost,
+            serverPorts1, true,
+            -1,
+            -1, (String) null, "testPoolA", PoolManager.createFactory(), -1, -1, -2,
+            -1);
+        ClientServerTestCase.configureConnectionPoolWithNameAndFactory(regionFactory1, serverHost,
+            serverPorts2, true,
+            -1,
+            -1, (String) null, "testPoolB", PoolManager.createFactory(), -1, -1, -2,
+            -1);
       }
-      createRegion(regions[0], regionFactory0.createRegionAttributes());
-      createRegion(regions[1], regionFactory1.createRegionAttributes());
+      createRegion(regions[0], regionFactory0.create());
+      createRegion(regions[1], regionFactory1.create());
       logger.info("### Successfully Created Region on Client :" + regions[0]);
       logger.info("### Successfully Created Region on Client :" + regions[1]);
 
@@ -788,7 +795,7 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
     vm.invoke(() -> {
       Region region = getRootRegion().getSubregion(regionName);
       region.getAttributesMutator()
-          .addCacheListener(new CertifiableTestCacheListener(LogWriterUtils.getLogWriter()));
+          .addCacheListener(new CertifiableTestCacheListener());
 
       List list = new ArrayList();
       for (int i = 1; i <= 10; i++) {

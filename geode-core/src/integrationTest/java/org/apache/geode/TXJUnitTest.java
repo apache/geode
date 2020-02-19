@@ -90,7 +90,6 @@ import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.cache.util.TransactionListenerAdapter;
 import org.apache.geode.cache.util.TxEventTestUtil;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.cache.AbstractRegion;
@@ -103,6 +102,7 @@ import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXStateProxy;
 import org.apache.geode.internal.util.StopWatch;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Tests basic transaction functionality
@@ -4711,7 +4711,7 @@ public class TXJUnitTest {
         assertEquals(this.txRollbacks, this.stats.getTxRollbacks());
         assertEquals(this.txRollbackChanges, this.stats.getTxRollbackChanges());
         if (Boolean
-            .getBoolean(DistributionConfig.GEMFIRE_PREFIX + "cache.enable-time-statistics")) {
+            .getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "cache.enable-time-statistics")) {
           assertTrue(this.txRollbackTime <= this.stats.getTxRollbackTime());
           // assertTrue(this.txRollbackLifeTime+((SLEEP_MS-10)*1000000) <=
           // this.stats.getTxRollbackLifeTime());
@@ -4761,14 +4761,14 @@ public class TXJUnitTest {
       testRollbackLifeTime += beforeRollback - afterBegin;
       // bruce - time based stats are disabled by default
       String p = (String) cache.getDistributedSystem().getProperties()
-          .get(DistributionConfig.GEMFIRE_PREFIX + "enable-time-statistics");
+          .get(GeodeGlossary.GEMFIRE_PREFIX + "enable-time-statistics");
       if (p != null && Boolean.getBoolean(p)) {
         assertTrue("Local RollbackLifeTime assertion:  " + testRollbackLifeTime + " is not <= "
             + statsRollbackLifeTime, testRollbackLifeTime <= statsRollbackLifeTime);
       }
       testTotalTx += afterRollback - beforeBegin;
       final long totalTXMinusRollback = testTotalTx - stats.getTxRollbackTime();
-      if (Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "cache.enable-time-statistics")) {
+      if (Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "cache.enable-time-statistics")) {
         assertTrue("Total Tx Minus Rollback assertion:  " + totalTXMinusRollback + " is not >= "
             + statsRollbackLifeTime, totalTXMinusRollback >= statsRollbackLifeTime);
       }

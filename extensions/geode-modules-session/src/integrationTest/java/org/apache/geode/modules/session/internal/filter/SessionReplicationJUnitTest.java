@@ -20,9 +20,9 @@ import com.mockrunner.mock.web.WebMockObjectFactory;
 import org.junit.Before;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.modules.session.filter.SessionCachingFilter;
 import org.apache.geode.test.junit.categories.SessionTest;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * This runs all tests with a local cache disabled
@@ -38,7 +38,7 @@ public class SessionReplicationJUnitTest extends CommonTests {
     WebMockObjectFactory factory = getWebMockObjectFactory();
     MockFilterConfig config = factory.getMockFilterConfig();
 
-    config.setInitParameter(DistributionConfig.GEMFIRE_PREFIX + "property.mcast-port", "0");
+    config.setInitParameter(GeodeGlossary.GEMFIRE_PREFIX + "property.mcast-port", "0");
     config.setInitParameter("cache-type", "peer-to-peer");
 
     factory.getMockServletContext().setContextPath(CONTEXT_PATH);

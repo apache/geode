@@ -30,7 +30,7 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 
 import org.apache.geode.distributed.LocatorLauncher.Builder;
 import org.apache.geode.distributed.LocatorLauncher.Command;
-import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Unit tests for {@link LocatorLauncher.Builder}. Extracted from {@link LocatorLauncherTest}.
@@ -507,7 +507,7 @@ public class LocatorLauncherBuilderTest {
 
   @Test
   public void buildUsesMemberNameSetInSystemPropertiesOnStart() {
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + NAME, "locatorXYZ");
+    System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + NAME, "locatorXYZ");
 
     LocatorLauncher launcher = new Builder().setCommand(LocatorLauncher.Command.START).build();
 

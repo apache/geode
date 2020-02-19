@@ -67,7 +67,6 @@ import org.apache.geode.cache.lucene.internal.management.ManagementIndexListener
 import org.apache.geode.cache.lucene.internal.results.LuceneGetPageFunction;
 import org.apache.geode.cache.lucene.internal.results.PageResults;
 import org.apache.geode.cache.lucene.internal.xml.LuceneServiceXmlGenerator;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.BucketNotFoundException;
@@ -83,6 +82,7 @@ import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Implementation of LuceneService to create lucene index and query.
@@ -99,7 +99,10 @@ public class LuceneServiceImpl implements InternalLuceneService {
   private final Map<String, LuceneIndexCreationProfile> definedIndexMap = new ConcurrentHashMap<>();
   private IndexListener managementListener;
   public static boolean LUCENE_REINDEX =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "luceneReindex");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "luceneReindex");
+
+  // Change this to the correct version once reindexing on an existing region is enabled
+  public static short LUCENE_REINDEX_ENABLED_VERSION_ORDINAL = Version.CURRENT_ORDINAL;
 
   public LuceneServiceImpl() {}
 
@@ -210,7 +213,7 @@ public class LuceneServiceImpl implements InternalLuceneService {
       // If the region does not yet exist, install LuceneRegionListener and return
       PartitionedRegion region = (PartitionedRegion) cache.getRegion(regionPath);
       if (region == null) {
-        LuceneRegionListener regionListener = new LuceneRegionListener(this, cache, indexName,
+        LuceneRegionListener regionListener = new LuceneRegionListener(this, indexName,
             regionPath, fields, analyzer, fieldAnalyzers, serializer);
         cache.addRegionListener(regionListener);
         return;

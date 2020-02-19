@@ -16,8 +16,8 @@
 FROM openjdk:8-jdk-alpine
 
 COPY --from=google/cloud-sdk:alpine /google-cloud-sdk /google-cloud-sdk
-COPY --from=hashicorp/packer:latest /bin/packer /usr/local/bin/packer
-COPY --from=hashicorp/packer:1.3.5 /bin/packer /usr/local/bin/packer135
+#COPY --from=hashicorp/packer:latest /bin/packer /usr/local/bin/packer
+COPY --from=hashicorp/packer:1.4.5 /bin/packer /usr/local/bin/packer
 ENV PATH /google-cloud-sdk/bin:$PATH
 RUN apk --no-cache add \
       bash \
@@ -36,10 +36,13 @@ RUN apk --no-cache add \
   && gcloud config set core/disable_usage_reporting true \
   && gcloud config set component_manager/disable_update_check true \
   && gcloud config set metrics/environment github_docker_image \
-  && git clone https://github.com/masterzen/winrm-cli \
-  && (cd winrm-cli; GOPATH=$PWD PATH=$PATH:$PWD/bin make) \
-  && cp winrm-cli/bin/winrm /usr/local/bin/ \
-  && rm -rf winrm-cli \
+  && mkdir -p gopath \
+  && cd gopath \
+  && export GOPATH=$(pwd) \
+  && go get github.com/masterzen/winrm-cli \
+  && cp ${GOPATH}/bin/winrm-cli /usr/local/bin/winrm \
+  && cd ${GOPATH}/.. \
+  && rm -rf ${GOPATH} \
   && gcloud components install -q beta \
   && printf "Host *\n  ServerAliveInterval 60 \n  ServerAliveCountMax 2\n" >> /etc/ssh/ssh_config \
   && pip2 install awscli \

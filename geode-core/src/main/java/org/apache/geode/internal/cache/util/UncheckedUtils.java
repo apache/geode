@@ -14,12 +14,10 @@
  */
 package org.apache.geode.internal.cache.util;
 
-import org.apache.geode.cache.Region;
-
 @SuppressWarnings({"unchecked", "unused"})
 public class UncheckedUtils {
 
-  public static <K, V> Region<K, V> uncheckedRegion(Region region) {
-    return region;
+  public static <T> T cast(Object object) {
+    return (T) object;
   }
 }

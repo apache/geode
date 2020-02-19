@@ -40,7 +40,6 @@ import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.cache.TransactionDataNodeHasDepartedException;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.LockServiceDestroyedException;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.locks.DLockQueryProcessor.DLockQueryMessage;
@@ -54,6 +53,7 @@ import org.apache.geode.internal.util.concurrent.StoppableCountDownLatch;
 import org.apache.geode.internal.util.concurrent.StoppableReentrantReadWriteLock;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Provides lock grantor authority to a distributed lock service. This is responsible for granting,
@@ -69,7 +69,7 @@ public class DLockGrantor {
 
   public static final boolean DEBUG_SUSPEND_LOCK = // TODO:LOG:CONVERT: REMOVE THIS
       Boolean.getBoolean(
-          DistributionConfig.GEMFIRE_PREFIX + "DLockService.DLockGrantor.debugSuspendLock");
+          GeodeGlossary.GEMFIRE_PREFIX + "DLockService.DLockGrantor.debugSuspendLock");
 
   /**
    * Default wait before grantor thread will reawaken to check for expirations and timeouts.

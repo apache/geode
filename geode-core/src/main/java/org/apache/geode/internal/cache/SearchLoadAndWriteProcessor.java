@@ -55,7 +55,6 @@ import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
 import org.apache.geode.distributed.internal.MembershipListener;
@@ -76,6 +75,7 @@ import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Implementation for distributed search, load and write operations in the GemFire system. Provides
@@ -94,7 +94,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       Integer.getInteger("DistributionManager.OptimizedUpdateByteLimit", 2000);
 
   static final long RETRY_TIME =
-      Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "search-retry-interval", 2000);
+      Long.getLong(GeodeGlossary.GEMFIRE_PREFIX + "search-retry-interval", 2000);
 
   private volatile InternalDistributedMember selectedNode;
   private boolean selectedNodeDead = false;

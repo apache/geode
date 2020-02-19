@@ -14,6 +14,7 @@
  */
 package org.apache.geode.distributed;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_AUTO_RECONNECT;
@@ -22,6 +23,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_NETWOR
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATOR_WAIT_TIME;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.MEMBER_TIMEOUT;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
@@ -70,6 +72,7 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -89,17 +92,22 @@ import org.apache.geode.distributed.internal.HighPriorityAckedMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.MembershipListener;
+import org.apache.geode.distributed.internal.MembershipTestHook;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
-import org.apache.geode.distributed.internal.membership.gms.api.MembershipTestHook;
-import org.apache.geode.distributed.internal.membership.gms.api.MembershipView;
+import org.apache.geode.distributed.internal.membership.api.MemberDisconnectedException;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
+import org.apache.geode.distributed.internal.membership.api.MembershipConfigurationException;
+import org.apache.geode.distributed.internal.membership.api.MembershipManagerHelper;
+import org.apache.geode.distributed.internal.membership.api.MembershipView;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.tcp.Connection;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.DUnitBlackboard;
 import org.apache.geode.test.dunit.DistributedTestUtils;
+import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.NetworkUtils;
@@ -163,6 +171,8 @@ public class LocatorDUnitTest implements Serializable {
     port3 = ports[2];
     port4 = ports[3];
     Invoke.invokeInEveryVM(() -> deleteLocatorStateFile(port1, port2, port3, port4));
+    addIgnoredException(MemberDisconnectedException.class); // ignore this suspect string
+    addIgnoredException(MembershipConfigurationException.class); // ignore this suspect string
   }
 
   @After
@@ -243,6 +253,57 @@ public class LocatorDUnitTest implements Serializable {
       loc.stop();
       assertThat(Locator.hasLocator()).isFalse();
     }
+  }
+
+  @Test
+  @Ignore("GEODE=7760 - test sometimes hangs due to product issue")
+  public void testCrashLocatorMultipleTimes() throws Exception {
+    port1 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    DistributedTestUtils.deleteLocatorStateFile(port1);
+    File logFile = new File("");
+    File stateFile = new File("locator" + port1 + "state.dat");
+    VM vm = VM.getVM(0);
+    final Properties properties =
+        getBasicProperties(Host.getHost(0).getHostName() + "[" + port1 + "]");
+    int memberTimeoutMS = 3000;
+    properties.put(MEMBER_TIMEOUT, "" + memberTimeoutMS);
+    properties.put(MAX_WAIT_TIME_RECONNECT, "" + (3 * memberTimeoutMS));
+    // since we're restarting location services let's be a little forgiving about that service
+    // starting up so that stress-tests can pass
+    properties.put(LOCATOR_WAIT_TIME, "" + 3);
+    addDSProps(properties);
+    if (stateFile.exists()) {
+      assertThat(stateFile.delete()).isTrue();
+    }
+
+    IgnoredException
+        .addIgnoredException("Possible loss of quorum due to the loss of 1 cache processes");
+
+    Locator locator = Locator.startLocatorAndDS(port1, logFile, properties);
+    system = (InternalDistributedSystem) locator.getDistributedSystem();
+
+    vm.invoke(() -> {
+      getConnectedDistributedSystem(properties);
+      return null;
+    });
+
+    try {
+      for (int i = 0; i < 4; i++) {
+        forceDisconnect();
+        system.waitUntilReconnected(GeodeAwaitility.getTimeout().getValueInMS(), MILLISECONDS);
+        assertThat(system.getReconnectedSystem()).isNotNull();
+        system = (InternalDistributedSystem) system.getReconnectedSystem();
+      }
+      assertEquals(2, ((InternalDistributedSystem) locator.getDistributedSystem()).getDM()
+          .getViewMembers().size());
+    } finally {
+      vm.invoke("disconnect", () -> {
+        getConnectedDistributedSystem(properties).disconnect();
+        return null;
+      });
+      locator.stop();
+    }
+
   }
 
   /**
@@ -765,7 +826,7 @@ public class LocatorDUnitTest implements Serializable {
         addIgnoredException(ForcedDisconnectException.class);
 
         hook = new TestHook();
-        MembershipManagerHelper.getDistribution(system).registerTestHook(hook);
+        MembershipManagerHelper.addTestHook(system, hook);
         try {
           MembershipManagerHelper.crashDistributedSystem(system);
         } finally {
@@ -793,8 +854,6 @@ public class LocatorDUnitTest implements Serializable {
 
     vm2.invokeAsync(crashSystem);
 
-    Wait.pause(1000); // 4 x the member-timeout
-
     // request member removal for first peer from second peer.
     vm2.invoke(new SerializableRunnable("Request Member Removal") {
 
@@ -805,11 +864,17 @@ public class LocatorDUnitTest implements Serializable {
         // check for shutdown cause in Distribution. Following call should
         // throw DistributedSystemDisconnectedException which should have cause as
         // ForceDisconnectException.
+        await().until(() -> !mmgr.getMembership().isConnected());
+        await().untilAsserted(() -> {
+          Throwable cause = mmgr.getShutdownCause();
+          assertThat(cause).isInstanceOf(ForcedDisconnectException.class);
+        });
         try (IgnoredException i = addIgnoredException("Membership: requesting removal of")) {
           mmgr.requestMemberRemoval((InternalDistributedMember) mem1, "test reasons");
           fail("It should have thrown exception in requestMemberRemoval");
         } catch (DistributedSystemDisconnectedException e) {
-          assertThat(e).hasRootCauseInstanceOf(ForcedDisconnectException.class);
+          // expected
+          assertThat(e.getCause()).isInstanceOf(ForcedDisconnectException.class);
         } finally {
           hook.reset();
         }
@@ -1131,13 +1196,18 @@ public class LocatorDUnitTest implements Serializable {
 
   private void waitUntilLocatorBecomesCoordinator() {
     await().until(() -> system != null && system.isConnected() &&
-        getCoordinator()
+        getCreator()
             .getVmKind() == ClusterDistributionManager.LOCATOR_DM_TYPE);
   }
 
-  private InternalDistributedMember getCoordinator() {
-    return (InternalDistributedMember) MembershipManagerHelper.getCoordinator(system);
+  private InternalDistributedMember getMember() {
+    return MembershipManagerHelper.getDistribution(system).getLocalMember();
   }
+
+  private InternalDistributedMember getCreator() {
+    return (InternalDistributedMember) MembershipManagerHelper.getCreator(system);
+  }
+
 
   private MembershipView getView() {
     return system.getDistributionManager().getDistribution().getView();
@@ -1190,7 +1260,7 @@ public class LocatorDUnitTest implements Serializable {
     String newLocators = hostName + "[" + port2 + "]," + hostName + "[" + port3 + "]";
     dsProps.setProperty(LOCATORS, newLocators);
 
-    InternalDistributedMember currentCoordinator = getCoordinator();
+    InternalDistributedMember currentCoordinator = getCreator();
     DistributedMember vm3ID = vm3.invoke(() -> system.getDM().getDistributionManagerId());
     assertEquals(
         "View is " + system.getDM().getDistribution().getView() + " and vm3's ID is "
@@ -1202,7 +1272,7 @@ public class LocatorDUnitTest implements Serializable {
     startLocator(vm2, dsProps, port3);
 
     await()
-        .until(() -> !getCoordinator().equals(currentCoordinator)
+        .until(() -> !getCreator().equals(currentCoordinator)
             && system.getDM().getAllHostedLocators().size() == 2);
 
     vm1.invoke("waitUntilLocatorBecomesCoordinator", this::waitUntilLocatorBecomesCoordinator);
@@ -1305,15 +1375,19 @@ public class LocatorDUnitTest implements Serializable {
     vm1.invoke("waitUntilLocatorBecomesCoordinator", this::waitUntilLocatorBecomesCoordinator);
     vm2.invoke("waitUntilLocatorBecomesCoordinator", this::waitUntilLocatorBecomesCoordinator);
 
-    if (vm1.invoke(() -> system.getDistributedMember().equals(getView().getCreator()))) {
-      assertFalse(
-          vm2.invoke("Checking ViewCreator",
-              () -> system.getDistributedMember().equals(getView().getCreator())));
-    } else {
-      assertTrue(
-          vm2.invoke("Checking ViewCreator",
-              () -> system.getDistributedMember().equals(getView().getCreator())));
-    }
+    await().untilAsserted(() -> {
+      MemberIdentifier viewCreator = vm1.invoke(() -> getView().getCreator());
+      MemberIdentifier viewCreator2 = vm1.invoke(() -> getView().getCreator());
+
+      InternalDistributedMember member1 = vm1.invoke(this::getMember);
+      InternalDistributedMember member2 = vm2.invoke(this::getMember);
+
+      assertThat(viewCreator2).isEqualTo(viewCreator);
+      assertThat(viewCreator).isIn(member1, member2);
+      assertThat(member1).isNotEqualTo(member2);
+
+    });
+
   }
 
   /**
@@ -1339,17 +1413,8 @@ public class LocatorDUnitTest implements Serializable {
   public void testHostingMultipleLocators() throws Exception {
     Locator.startLocator(port1, null);
 
-    try {
-      Locator.startLocator(port2, null);
-      fail("expected second locator start to fail.");
-    } catch (IllegalStateException expected) {
-    }
-
-    String locators = hostName + "[" + port1 + "]," + hostName + "[" + port2 + "]";
-
-    Properties props = getBasicProperties(locators);
-
-    getConnectedDistributedSystem(props);
+    assertThatThrownBy(() -> Locator.startLocator(port2, null))
+        .isInstanceOf(IllegalStateException.class);
   }
 
   /**
@@ -1572,11 +1637,13 @@ public class LocatorDUnitTest implements Serializable {
     return props;
   }
 
-  private Properties getClusterProperties(String locators, String s) {
+  private Properties getClusterProperties(String locators,
+      String enableNetworkPartitionDetectionString) {
     Properties properties = getBasicProperties(locators);
     properties.setProperty(DISABLE_AUTO_RECONNECT, "true");
     properties.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
-    properties.setProperty(ENABLE_NETWORK_PARTITION_DETECTION, s);
+    properties.setProperty(ENABLE_NETWORK_PARTITION_DETECTION,
+        enableNetworkPartitionDetectionString);
     properties.setProperty(LOCATOR_WAIT_TIME, "10"); // seconds
     properties.setProperty(MEMBER_TIMEOUT, "2000");
     properties.setProperty(USE_CLUSTER_CONFIGURATION, "false");

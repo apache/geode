@@ -27,7 +27,7 @@ import java.net.ServerSocket;
 import org.junit.After;
 import org.junit.Test;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * multicast availability is tested in JGroupsMessengerJUnitTest
@@ -66,7 +66,7 @@ public class AvailablePortJUnitTest {
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     socket.bind(new InetSocketAddress((InetAddress) null, port));
     System.out.println(
-        "bind addr=" + System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "bind-address"));
+        "bind addr=" + System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + "bind-address"));
     assertFalse(AvailablePort.isPortAvailable(port, AvailablePort.SOCKET));
   }
 

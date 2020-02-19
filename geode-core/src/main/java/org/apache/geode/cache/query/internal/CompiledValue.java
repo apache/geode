@@ -26,7 +26,7 @@ import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 import org.apache.geode.cache.query.types.ObjectType;
-import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 public interface CompiledValue {
 
@@ -53,7 +53,7 @@ public interface CompiledValue {
   int DIVISION = -21;
   int MULTIPLICATION = -22;
   int INDEX_RESULT_THRESHOLD_DEFAULT = 100;
-  String INDX_THRESHOLD_PROP_STR = DistributionConfig.GEMFIRE_PREFIX + "Query.INDEX_THRESHOLD_SIZE";
+  String INDX_THRESHOLD_PROP_STR = GeodeGlossary.GEMFIRE_PREFIX + "Query.INDEX_THRESHOLD_SIZE";
   String INDEX_INFO = "index_info";
   int indexThresholdSize =
       Integer.getInteger(INDX_THRESHOLD_PROP_STR, INDEX_RESULT_THRESHOLD_DEFAULT);

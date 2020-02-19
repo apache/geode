@@ -31,7 +31,7 @@ import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementRealizationResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementResult.StatusCode;
-import org.apache.geode.management.api.ConfigurationResult;
+import org.apache.geode.management.api.EntityGroupInfo;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.configuration.RegionType;
@@ -134,7 +134,7 @@ public class ClusterManagementResultTest {
     String json = "{\"statusCode\":\"OK\"}";
     ClusterManagementListResult result =
         GeodeJsonMapper.getMapper().readValue(json, ClusterManagementListResult.class);
-    assertThat(result.getResult()).isNotNull().isEmpty();
+    assertThat(result.getEntityGroupInfo()).isNotNull().isEmpty();
   }
 
   @Test
@@ -142,7 +142,7 @@ public class ClusterManagementResultTest {
     ObjectMapper mapper = GeodeJsonMapper.getMapper();
     ClusterManagementListResult<Region, RuntimeRegionInfo> result =
         new ClusterManagementListResult<>();
-    ConfigurationResult<Region, RuntimeRegionInfo> response = new ConfigurationResult<>();
+    EntityGroupInfo<Region, RuntimeRegionInfo> response = new EntityGroupInfo<>();
     Region region = new Region();
     region.setName("region");
     region.setType(RegionType.REPLICATE);
@@ -152,7 +152,7 @@ public class ClusterManagementResultTest {
     RuntimeRegionInfo info = new RuntimeRegionInfo();
     info.setEntryCount(3);
     response.setRuntimeInfo(Collections.singletonList(info));
-    result.setResult(Collections.singletonList(response));
+    result.setEntityGroupInfo(Collections.singletonList(response));
 
     String json = mapper.writeValueAsString(result);
     System.out.println(json);

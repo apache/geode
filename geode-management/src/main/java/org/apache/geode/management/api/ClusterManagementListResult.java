@@ -14,13 +14,13 @@
  */
 package org.apache.geode.management.api;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.management.configuration.AbstractConfiguration;
@@ -34,28 +34,55 @@ import org.apache.geode.management.runtime.RuntimeInfo;
 @Experimental
 public class ClusterManagementListResult<T extends AbstractConfiguration<R>, R extends RuntimeInfo>
     extends ClusterManagementResult {
-  /**
-   * for internal use only
-   */
+
   public ClusterManagementListResult() {}
 
-  /**
-   * for internal use only
-   */
   public ClusterManagementListResult(StatusCode statusCode, String message) {
     super(statusCode, message);
   }
 
-  // Override the mapper setting so that we always show result
-  @JsonInclude
-  @JsonProperty
-  private List<ConfigurationResult<T, R>> result = new ArrayList<>();
+  private final Map<String, EntityInfo<T, R>> entities = new HashMap<>();
 
   /**
    * Returns the combined payload of the list call
    */
-  public List<ConfigurationResult<T, R>> getResult() {
-    return result;
+  @JsonIgnore
+  public List<EntityGroupInfo<T, R>> getEntityGroupInfo() {
+    return entities.values().stream()
+        .flatMap(x -> x.getGroups().stream())
+        .collect(Collectors.toList());
+  }
+
+  // this annotation makes sure we always show the result even though it's an empty list
+  @JsonInclude
+  public List<EntityInfo<T, R>> getResult() {
+    return entities.values().stream().collect(Collectors.toList());
+  }
+
+  public void setResult(List<EntityInfo<T, R>> entities) {
+    this.entities.clear();
+    for (EntityInfo entity : entities) {
+      this.entities.put(entity.getId(), entity);
+    }
+  }
+
+  public void addEntityInfo(EntityInfo<T, R> entityInfo) {
+    this.entities.put(entityInfo.getId(), entityInfo);
+  }
+
+  @JsonIgnore
+  public void setEntityGroupInfo(List<EntityGroupInfo<T, R>> entityGroupInfos) {
+    this.entities.clear();
+    for (EntityGroupInfo entityGroupInfo : entityGroupInfos) {
+      String id = entityGroupInfo.getConfiguration().getId();
+      EntityInfo<T, R> entity = this.entities.get(id);
+      if (entity == null) {
+        entity = new EntityInfo<>();
+        entity.setId(id);
+        this.entities.put(id, entity);
+      }
+      entity.getGroups().add(entityGroupInfo);
+    }
   }
 
   /**
@@ -63,7 +90,8 @@ public class ClusterManagementListResult<T extends AbstractConfiguration<R>, R e
    */
   @JsonIgnore
   public List<T> getConfigResult() {
-    return result.stream().map(ConfigurationResult::getConfiguration).collect(Collectors.toList());
+    return getEntityGroupInfo().stream().map(EntityGroupInfo::getConfiguration)
+        .collect(Collectors.toList());
   }
 
   /**
@@ -71,13 +99,7 @@ public class ClusterManagementListResult<T extends AbstractConfiguration<R>, R e
    */
   @JsonIgnore
   public List<R> getRuntimeResult() {
-    return result.stream().flatMap(r -> r.getRuntimeInfo().stream()).collect(Collectors.toList());
-  }
-
-  /**
-   * for internal use only
-   */
-  public void setResult(List<ConfigurationResult<T, R>> result) {
-    this.result = result;
+    return getEntityGroupInfo().stream().flatMap(r -> r.getRuntimeInfo().stream())
+        .collect(Collectors.toList());
   }
 }

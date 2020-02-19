@@ -77,7 +77,6 @@ import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessage;
 import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessageImpl;
 import org.apache.geode.internal.cache.tier.sockets.ConnectionListener;
 import org.apache.geode.internal.cache.tier.sockets.HAEventWrapper;
-import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.util.BlobHelper;
@@ -706,7 +705,7 @@ public class HARegionQueueIntegrationTest {
   private Set<HAEventWrapper> createAndPutHARegionQueuesSimulataneously(
       HAContainerWrapper haContainerWrapper, int numQueues, int numOperations) throws Exception {
     ConcurrentLinkedQueue<HARegionQueue> queues = new ConcurrentLinkedQueue<>();
-    final ConcurrentHashSet<HAEventWrapper> testValidationWrapperSet = new ConcurrentHashSet<>();
+    final Set<HAEventWrapper> testValidationWrapperSet = ConcurrentHashMap.newKeySet();
     final AtomicInteger count = new AtomicInteger();
 
     // create HARegionQueuesv

@@ -30,15 +30,15 @@ public class ManagementClientCreateRegion {
     ClusterManagementService cms;
     if (useSsl) {
       // The default SSLContext will pull in all necessary javax.net.ssl properties
-      cms =
-          ClusterManagementServiceBuilder.buildWithHostAddress()
-              .setHostAddress("localhost", httpPort)
-              .setSslContext(SSLContext.getDefault()).build();
+      cms = new ClusterManagementServiceBuilder()
+          .setPort(httpPort)
+          .setSslContext(SSLContext.getDefault())
+          .build();
+
     } else {
-      cms =
-          ClusterManagementServiceBuilder.buildWithHostAddress()
-              .setHostAddress("localhost", httpPort)
-              .build();
+      cms = new ClusterManagementServiceBuilder()
+          .setPort(httpPort)
+          .build();
     }
 
     // create region

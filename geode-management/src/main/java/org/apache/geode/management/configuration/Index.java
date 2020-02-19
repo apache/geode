@@ -16,13 +16,15 @@
 package org.apache.geode.management.configuration;
 
 
+import java.util.Objects;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.commons.lang3.StringUtils;
 
-import org.apache.geode.management.runtime.RuntimeInfo;
+import org.apache.geode.management.runtime.IndexInfo;
 
-public class Index extends GroupableConfiguration<RuntimeInfo> {
-
+public class Index extends AbstractConfiguration<IndexInfo> implements RegionScoped {
+  public static final String INDEXES = "/indexes";
   private String name;
   private String expression;
   private String regionPath;
@@ -102,10 +104,42 @@ public class Index extends GroupableConfiguration<RuntimeInfo> {
   public Links getLinks() {
     String regionName = getRegionName();
     if (StringUtils.isBlank(regionName)) {
-      return new Links(getId(), "/indexes");
+      return new Links(getId(), INDEXES);
     }
-    Links links = new Links(getId(), Region.REGION_CONFIG_ENDPOINT + "/" + regionName + "/indexes");
+    Links links = new Links(getId(), Region.REGION_CONFIG_ENDPOINT + "/" + regionName + INDEXES);
     links.addLink("region", Region.REGION_CONFIG_ENDPOINT + "/" + regionName);
     return links;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+
+    Index index = (Index) o;
+
+    if (!Objects.equals(name, index.name)) {
+      return false;
+    }
+    if (!Objects.equals(expression, index.expression)) {
+      return false;
+    }
+    if (!Objects.equals(regionPath, index.regionPath)) {
+      return false;
+    }
+    return indexType == index.indexType;
+  }
+
+  @Override
+  public int hashCode() {
+    int result = name != null ? name.hashCode() : 0;
+    result = 31 * result + (expression != null ? expression.hashCode() : 0);
+    result = 31 * result + (regionPath != null ? regionPath.hashCode() : 0);
+    result = 31 * result + (indexType != null ? indexType.hashCode() : 0);
+    return result;
   }
 }

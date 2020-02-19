@@ -36,9 +36,9 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * junit test for detecting read conflicts
@@ -68,7 +68,7 @@ public class TXDetectReadConflictJUnitTest {
 
   @Before
   public void setUp() throws Exception {
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "detectReadConflicts", "true");
+    System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "detectReadConflicts", "true");
     createCache();
   }
 

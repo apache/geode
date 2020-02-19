@@ -18,8 +18,8 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 import org.apache.geode.Statistics;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.lang.SystemUtils;
-import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.statistics.platform.LinuxProcFsStatistics;
 import org.apache.geode.internal.statistics.platform.LinuxProcessStats;
 import org.apache.geode.internal.statistics.platform.LinuxSystemStats;
@@ -134,7 +134,7 @@ public class OsStatisticsProvider {
   private String getHostSystemName() {
     String hostname = "unknownHostName";
     try {
-      InetAddress inetAddress = SocketCreator.getLocalHost();
+      InetAddress inetAddress = LocalHostUtil.getLocalHost();
       hostname = inetAddress.getCanonicalHostName();
     } catch (UnknownHostException ignored) {
     }

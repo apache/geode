@@ -40,6 +40,7 @@ import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
+import org.apache.geode.test.junit.rules.MemberStarterRule;
 
 public class RebalanceManagementDunitTest {
 
@@ -55,12 +56,13 @@ public class RebalanceManagementDunitTest {
 
   @BeforeClass
   public static void beforeClass() throws Exception {
-    locator = cluster.startLocatorVM(0, l -> l.withHttpService());
+    locator = cluster.startLocatorVM(0, MemberStarterRule::withHttpService);
     server1 = cluster.startServerVM(1, "group1", locator.getPort());
     server2 = cluster.startServerVM(2, "group2", locator.getPort());
 
-    client = ClusterManagementServiceBuilder.buildWithHostAddress()
-        .setHostAddress("localhost", locator.getHttpPort()).build();
+    client = new ClusterManagementServiceBuilder()
+        .setPort(locator.getHttpPort())
+        .build();
     gfsh.connect(locator);
 
     // create regions

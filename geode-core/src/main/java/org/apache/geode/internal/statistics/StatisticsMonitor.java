@@ -15,8 +15,8 @@
 package org.apache.geode.internal.statistics;
 
 import java.util.List;
-
-import org.apache.geode.internal.concurrent.ConcurrentHashSet;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * TODO: define another addStatistic for StatisticDescriptor which will enable static monitoring
@@ -29,9 +29,9 @@ public abstract class StatisticsMonitor {
 
   private final Object mutex = new Object();
 
-  private final ConcurrentHashSet<StatisticsListener> listeners = new ConcurrentHashSet<>();
+  private final Set<StatisticsListener> listeners = ConcurrentHashMap.newKeySet();
 
-  private final ConcurrentHashSet<StatisticId> statisticIds = new ConcurrentHashSet<>();
+  private final Set<StatisticId> statisticIds = ConcurrentHashMap.newKeySet();
 
   public StatisticsMonitor() {}
 
@@ -118,8 +118,11 @@ public abstract class StatisticsMonitor {
     return SampleCollector.getStatMonitorHandler();
   }
 
-  /** For testing only */
-  ConcurrentHashSet<StatisticsListener> getStatisticsListenersSnapshot() {
+  /**
+   * For testing only
+   *
+   */
+  Set<StatisticsListener> getStatisticsListenersSnapshot() {
     return this.listeners;
   }
 

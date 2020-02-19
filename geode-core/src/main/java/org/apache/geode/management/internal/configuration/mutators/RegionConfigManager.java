@@ -17,9 +17,10 @@
 
 package org.apache.geode.management.internal.configuration.mutators;
 
+import static java.util.stream.Collectors.toList;
+
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.NotImplementedException;
@@ -62,12 +63,12 @@ public class RegionConfigManager extends CacheConfigurationManager<Region> {
       stream = stream.filter(r -> filter.getName().equals(r.getName()));
     }
     return stream.map(converter::fromXmlObject).filter(Objects::nonNull)
-        .collect(Collectors.toList());
+        .collect(toList());
   }
 
   @Override
-  public Region get(String id, CacheConfig existing) {
-    return converter.fromXmlObject(Identifiable.find(existing.getRegions(), id));
+  public Region get(Region config, CacheConfig existing) {
+    return converter.fromXmlObject(Identifiable.find(existing.getRegions(), config.getId()));
   }
 
   @Override

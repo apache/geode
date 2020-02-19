@@ -216,7 +216,6 @@ public class PooledExecutorWithDMStats extends ThreadPoolExecutor {
           RejectedExecutionException e = new RejectedExecutionException(
               "interrupted");
           e.initCause(ie);
-          throw e;
         }
       }
     }

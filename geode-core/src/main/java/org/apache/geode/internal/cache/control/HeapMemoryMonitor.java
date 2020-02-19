@@ -42,7 +42,6 @@ import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.LowMemoryException;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
@@ -53,6 +52,7 @@ import org.apache.geode.internal.statistics.LocalStatListener;
 import org.apache.geode.internal.statistics.StatisticsManager;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Allows for the setting of eviction and critical thresholds. These thresholds are compared against
@@ -68,11 +68,11 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
 
   // Allow for an unknown heap pool for VMs we may support in the future.
   private static final String HEAP_POOL =
-      System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "ResourceManager.HEAP_POOL");
+      System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + "ResourceManager.HEAP_POOL");
 
   // Property for setting the JVM polling interval (below)
   public static final String POLLER_INTERVAL_PROP =
-      DistributionConfig.GEMFIRE_PREFIX + "heapPollerInterval";
+      GeodeGlossary.GEMFIRE_PREFIX + "heapPollerInterval";
 
   // Internal for polling the JVM for changes in heap memory usage.
   private static final int POLLER_INTERVAL = Integer.getInteger(POLLER_INTERVAL_PROP, 500);

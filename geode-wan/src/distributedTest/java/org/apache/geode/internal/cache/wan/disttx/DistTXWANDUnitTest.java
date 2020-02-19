@@ -20,12 +20,12 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.junit.categories.WanTest;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 @Category({WanTest.class})
 public class DistTXWANDUnitTest extends WANTestBase {
@@ -35,7 +35,7 @@ public class DistTXWANDUnitTest extends WANTestBase {
     Invoke.invokeInEveryVM(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
-        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + LOG_LEVEL,
+        System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + LOG_LEVEL,
             LogWriterUtils.getDUnitLogLevel());
         return null;
       }

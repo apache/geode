@@ -15,10 +15,12 @@ package org.apache.geode.management.internal.cli.commands;
  * the License.
  */
 import static java.util.stream.Collectors.toSet;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -31,6 +33,7 @@ import org.junit.Test;
 
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.GatewayReceiverMXBean;
+import org.apache.geode.management.GatewaySenderMXBean;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
@@ -48,6 +51,7 @@ public class ListGatewayCommandTest {
   private DistributedMember member;
   private SystemManagementService service;
   private GatewayReceiverMXBean receiverMXBean;
+  private GatewaySenderMXBean senderMXBean;
 
   @Before
   public void setup() {
@@ -62,6 +66,8 @@ public class ListGatewayCommandTest {
     doReturn(5407).when(receiverMXBean).getPort();
     doReturn(7).when(receiverMXBean).getClientConnectionCount();
     receiverBeans.put("10.118.19.46(server-ln-1:31527)<v1>:1026", receiverMXBean);
+
+    senderMXBean = mock(GatewaySenderMXBean.class);
   }
 
   @Test
@@ -104,5 +110,22 @@ public class ListGatewayCommandTest {
     new CommandResultAssert(new CommandResult(crd))
         .hasTableSection("gatewayReceivers")
         .hasColumn("Senders Connected").containsExactly("");
+  }
+
+  @Test
+  public void getGatewaySenderStatus() throws Exception {
+    when(senderMXBean.isRunning()).thenReturn(false);
+    assertThat(ListGatewayCommand.getStatus(senderMXBean)).isEqualTo("Not Running");
+
+    when(senderMXBean.isRunning()).thenReturn(true);
+    when(senderMXBean.isPaused()).thenReturn(true);
+    assertThat(ListGatewayCommand.getStatus(senderMXBean)).isEqualTo("Paused");
+
+    when(senderMXBean.isPaused()).thenReturn(false);
+    when(senderMXBean.isConnected()).thenReturn(false);
+    assertThat(ListGatewayCommand.getStatus(senderMXBean)).isEqualTo("Running, not Connected");
+
+    when(senderMXBean.isConnected()).thenReturn(true);
+    assertThat(ListGatewayCommand.getStatus(senderMXBean)).isEqualTo("Running and Connected");
   }
 }

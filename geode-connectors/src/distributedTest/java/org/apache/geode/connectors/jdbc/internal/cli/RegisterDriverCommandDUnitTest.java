@@ -60,7 +60,7 @@ public class RegisterDriverCommandDUnitTest {
   public void testRegisterDriverDoesNotThrowException() {
 
     // aquire the jar to be used
-    final String jdbcJarName = "mysql-connector-java-8.0.15.jar";
+    final String jdbcJarName = "mysql-connector-java-8.0.17.jar";
     File mySqlDriverFile = loadTestResource("/" + jdbcJarName);
     assertThat(mySqlDriverFile).exists();
     String jarFile = mySqlDriverFile.getAbsolutePath();

@@ -74,7 +74,7 @@ if [[ "${CONCOURSE_HOST}" == "concourse.apachegeode-ci.info" ]]; then
   CONCOURSE_SCHEME=https
 fi
 CONCOURSE_URL=${CONCOURSE_SCHEME:-"http"}://${CONCOURSE_HOST}
-FLY_TARGET=${CONCOURSE_HOST}
+FLY_TARGET=${CONCOURSE_HOST}-${CONCOURSE_TEAM}
 
 . ${SCRIPTDIR}/../shared/utilities.sh
 SANITIZED_GEODE_BRANCH=$(getSanitizedBranch ${GEODE_BRANCH})
@@ -110,7 +110,10 @@ YML
 
   set -e
   if [[ ${UPSTREAM_FORK} != "apache" ]]; then
-    fly -t ${FLY_TARGET} login -n ${CONCOURSE_TEAM}
+    fly -t ${FLY_TARGET} status || \
+    fly -t ${FLY_TARGET} login \
+           --team-name ${CONCOURSE_TEAM} \
+           --concourse-url=${CONCOURSE_URL}
   fi
 
   fly -t ${FLY_TARGET} sync
@@ -119,6 +122,7 @@ YML
     --config ${SCRIPTDIR}/generated-pipeline.yml \
     --var artifact-bucket=${ARTIFACT_BUCKET} \
     --var concourse-team=${CONCOURSE_TEAM} \
+    --var concourse-host=${CONCOURSE_HOST} \
     --var concourse-url=${CONCOURSE_URL} \
     --var gcp-project=${GCP_PROJECT} \
     --var geode-build-branch=${GEODE_BRANCH} \
@@ -274,11 +278,17 @@ unpausePipeline ${PIPELINE_PREFIX}main
 
 if [[ "$GEODE_FORK" == "${UPSTREAM_FORK}" ]]; then
   exposePipelines ${PIPELINE_PREFIX}main ${PIPELINE_PREFIX}images
-  enableFeature metrics
-  enableFeature examples
+  if [[ "${PUBLIC}" == "true" ]]; then
+    enableFeature metrics
+    enableFeature examples
+  fi
   if [[ "$GEODE_BRANCH" == "develop" ]]; then
     enableFeature pr
   fi
 fi
 
-echo "Successfully deployed ${CONCOURSE_URL}/teams/main/pipelines/${PIPELINE_PREFIX}main"
+echo "Successfully deployed ${CONCOURSE_URL}/teams/${CONCOURSE_TEAM}/pipelines/${PIPELINE_PREFIX}main"
+
+rm -f ${SCRIPTDIR}/generated-pipeline.yml
+rm -f ${SCRIPTDIR}/pipelineProperties.yml
+rm -f ${SCRIPTDIR}/repository.yml
