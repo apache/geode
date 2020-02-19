@@ -24,7 +24,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.lucene.LuceneIndexDestroyedException;
 import org.apache.geode.cache.lucene.LuceneSerializer;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RegionListener;
@@ -34,8 +33,6 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 public class LuceneRegionListener implements RegionListener {
 
   private final LuceneServiceImpl service;
-
-  private final InternalCache cache;
 
   private final String indexName;
 
@@ -57,11 +54,10 @@ public class LuceneRegionListener implements RegionListener {
 
   private static final Logger logger = LogService.getLogger();
 
-  public LuceneRegionListener(LuceneServiceImpl service, InternalCache cache, String indexName,
+  public LuceneRegionListener(LuceneServiceImpl service, String indexName,
       String regionPath, String[] fields, Analyzer analyzer, Map<String, Analyzer> fieldAnalyzers,
       LuceneSerializer serializer) {
     this.service = service;
-    this.cache = cache;
     this.indexName = indexName;
     this.regionPath = regionPath;
     this.fields = fields;
