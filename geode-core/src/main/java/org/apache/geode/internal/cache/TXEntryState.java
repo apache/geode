@@ -1970,7 +1970,7 @@ public class TXEntryState implements Releasable {
 
     @Override
     public boolean equals(Object o) {
-      if (o == null || !(o instanceof TxEntryEventImpl))
+      if (!(o instanceof TxEntryEventImpl))
         return false;
       return compareTo(o) == 0;
     }

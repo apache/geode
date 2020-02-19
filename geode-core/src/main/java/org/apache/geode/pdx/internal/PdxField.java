@@ -203,7 +203,7 @@ public class PdxField implements DataSerializable, Comparable<PdxField> {
     if (other == this) {
       return true;
     }
-    if (other == null || !(other instanceof PdxField)) {
+    if (!(other instanceof PdxField)) {
       return false;
     }
     PdxField otherVFT = (PdxField) other;

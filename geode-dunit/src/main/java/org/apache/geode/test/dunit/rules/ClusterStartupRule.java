@@ -83,14 +83,14 @@ public class ClusterStartupRule implements SerializableTestRule {
   }
 
   public static InternalLocator getLocator() {
-    if (memberStarter == null || !(memberStarter instanceof LocatorStarterRule)) {
+    if (!(memberStarter instanceof LocatorStarterRule)) {
       return null;
     }
     return ((LocatorStarterRule) memberStarter).getLocator();
   }
 
   public static CacheServer getServer() {
-    if (memberStarter == null || !(memberStarter instanceof ServerStarterRule)) {
+    if (!(memberStarter instanceof ServerStarterRule)) {
       return null;
     }
     return ((ServerStarterRule) memberStarter).getServer();
