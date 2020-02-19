@@ -29,6 +29,7 @@ import java.rmi.registry.Registry;
 import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -73,6 +74,7 @@ import org.apache.geode.management.internal.security.AccessControlMBean;
 import org.apache.geode.management.internal.security.MBeanServerWrapper;
 import org.apache.geode.management.internal.security.ResourceConstants;
 import org.apache.geode.management.internal.unsafe.ReadOpFileAccessController;
+import org.apache.geode.security.AuthTokenEnabledComponents;
 
 /**
  * Agent implementation that controls the JMX server end points for JMX clients to connect, such as
@@ -208,6 +210,12 @@ public class ManagementAgent {
         Map<String, Object> serviceAttributes = new HashMap<>();
         serviceAttributes.put(HttpService.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM,
             securityService);
+
+        String[] authEnabledComponents = config.getSecurityAuthTokenEnabledComponents();
+
+        boolean managementAuthTokenEnabled = Arrays.stream(authEnabledComponents)
+            .anyMatch(AuthTokenEnabledComponents::hasManagement);
+        serviceAttributes.put(HttpService.AUTH_TOKEN_ENABLED_PARAM, managementAuthTokenEnabled);
 
         // if jmx manager is running, admin rest should be available, either on locator or server
         if (agentUtil.isAnyWarFileAvailable(adminRestWar)) {
