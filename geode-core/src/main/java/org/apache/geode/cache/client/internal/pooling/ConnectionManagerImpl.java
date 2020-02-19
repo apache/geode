@@ -312,21 +312,28 @@ public class ConnectionManagerImpl implements ConnectionManager {
       boolean onlyUseExistingCnx)
       throws AllConnectionsInUseException, NoAvailableServersException, ServerOperationException {
 
+    PooledConnection connection =
+        availableConnectionManager.useFirst((c) -> c.getServer().equals(server));
+    if (null != connection) {
+      return connection;
+    }
+
+    if (!onlyUseExistingCnx) {
+      connection = forceCreateConnection(server);
+      if (null != connection) {
+        return connection;
+      }
+      throw new ServerConnectivityException(BORROW_CONN_ERROR_MSG + server);
+    }
+
     long waitStart = NOT_WAITING;
     try {
       long timeout = System.nanoTime() + MILLISECONDS.toNanos(acquireTimeout);
       while (true) {
-        PooledConnection connection =
+        connection =
             availableConnectionManager.useFirst((c) -> c.getServer().equals(server));
         if (null != connection) {
           return connection;
-        }
-
-        if (!onlyUseExistingCnx) {
-          connection = forceCreateConnection(server);
-          if (null != connection) {
-            return connection;
-          }
         }
 
         if (checkShutdownInterruptedOrTimeout(timeout)) {
@@ -342,10 +349,8 @@ public class ConnectionManagerImpl implements ConnectionManager {
     }
 
     cancelCriterion.checkCancelInProgress(null);
-    if (onlyUseExistingCnx) {
-      throw new AllConnectionsInUseException();
-    }
-    throw new ServerConnectivityException(BORROW_CONN_ERROR_MSG + server);
+
+    throw new AllConnectionsInUseException();
   }
 
   @Override
