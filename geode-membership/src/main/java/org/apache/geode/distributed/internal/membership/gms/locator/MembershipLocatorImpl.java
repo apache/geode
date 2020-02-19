@@ -23,6 +23,7 @@ import java.net.SocketAddress;
 import java.net.UnknownHostException;
 import java.nio.file.Path;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 import org.apache.logging.log4j.Logger;
@@ -181,10 +182,11 @@ public class MembershipLocatorImpl<ID extends MemberIdentifier> implements Membe
       }
 
       boolean interrupted = Thread.interrupted();
+      long waitTimeMillis = TcpServer.SHUTDOWN_WAIT_TIME * 2;
       try {
         // TcpServer up to SHUTDOWN_WAIT_TIME for its executor pool to shut down.
         // We wait 2 * SHUTDOWN_WAIT_TIME here to account for that shutdown, and then our own.
-        waitToShutdown(TcpServer.SHUTDOWN_WAIT_TIME * 2);
+        waitToShutdown(waitTimeMillis);
 
       } catch (InterruptedException ex) {
         interrupted = true;
@@ -198,7 +200,8 @@ public class MembershipLocatorImpl<ID extends MemberIdentifier> implements Membe
       }
 
       if (isAlive()) {
-        logger.fatal("Could not stop {} in 60 seconds", this);
+        logger.fatal("Could not stop {} in {} seconds", this,
+            TimeUnit.MILLISECONDS.toSeconds(waitTimeMillis));
       }
     }
   }

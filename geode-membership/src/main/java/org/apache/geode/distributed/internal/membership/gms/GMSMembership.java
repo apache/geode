@@ -1272,6 +1272,10 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
       services.setShutdownCause(e);
     }
 
+    if (cleanupTimer != null && !cleanupTimer.isShutdown()) {
+      cleanupTimer.shutdownNow();
+    }
+
     lifecycleListener.disconnect(e);
 
     // first shut down communication so we don't do any more harm to other
@@ -1914,7 +1918,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
         }
       }
 
-      if (cleanupTimer != null) {
+      if (cleanupTimer != null && !cleanupTimer.isShutdown()) {
         cleanupTimer.shutdown();
       }
 

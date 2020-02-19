@@ -53,7 +53,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  * <ul>
  * <li>registers an exception on the query via
  * {@link ExecutionContext#setQueryCanceledException(CacheRuntimeException)}</li>
- * <li>sets the {@link ExecutionContext#queryCanceled} thread-local variable to {@code true}
+ * <li>sets the {@link ExecutionContext#isCanceled} thread-local variable to {@code true}
  * so that subsequent calls to {@link #throwExceptionIfQueryOnCurrentThreadIsCanceled()} will throw
  * an exception</li>
  * </ul>
@@ -137,7 +137,7 @@ public class QueryMonitor {
     }
 
     executionContext
-        .setCancelationTask(scheduleCancelationTask(executionContext, maxQueryExecutionTime));
+        .setCancellationTask(scheduleCancelationTask(executionContext, maxQueryExecutionTime));
 
     if (logger.isDebugEnabled()) {
       logDebug(executionContext, "Adding thread to QueryMonitor.");
@@ -151,7 +151,7 @@ public class QueryMonitor {
    * ThreadLocal on the query thread!
    */
   public void stopMonitoringQueryExecution(final ExecutionContext executionContext) {
-    executionContext.getCancelationTask().ifPresent(task -> task.cancel(false));
+    executionContext.getCancellationTask().ifPresent(task -> task.cancel(false));
 
     if (logger.isDebugEnabled()) {
       logDebug(executionContext, "Query completed before cancelation.");
@@ -221,7 +221,7 @@ public class QueryMonitor {
 
     boolean isLowMemory();
 
-    CacheRuntimeException createCancelationException(long timeLimitMillis,
+    CacheRuntimeException createCancellationException(long timeLimitMillis,
         ExecutionContext executionContext);
   }
 
@@ -264,7 +264,7 @@ public class QueryMonitor {
       }
 
       @Override
-      public CacheRuntimeException createCancelationException(final long timeLimitMillis,
+      public CacheRuntimeException createCancellationException(final long timeLimitMillis,
           final ExecutionContext executionContext) {
         final String message = String.format(
             "Query execution canceled after exceeding max execution time %sms.",
@@ -311,13 +311,13 @@ public class QueryMonitor {
           final ScheduledExecutorService scheduledExecutorService,
           final ExecutionContext executionContext) {
         final CacheRuntimeException lowMemoryException =
-            createCancelationException(timeLimitMillis, executionContext);
+            createCancellationException(timeLimitMillis, executionContext);
         executionContext.setQueryCanceledException(lowMemoryException);
         throw lowMemoryException;
       }
 
       @Override
-      public CacheRuntimeException createCancelationException(final long timeLimitMillis,
+      public CacheRuntimeException createCancellationException(final long timeLimitMillis,
           final ExecutionContext executionContext) {
         return new QueryExecutionLowMemoryException(
             String.format(
@@ -371,7 +371,7 @@ public class QueryMonitor {
      */
     return memoryState.schedule(() -> {
       final CacheRuntimeException exception = memoryState
-          .createCancelationException(timeLimitMillis, executionContext);
+          .createCancellationException(timeLimitMillis, executionContext);
 
       executionContext.setQueryCanceledException(exception);
       queryCanceledThreadLocal.set(true);

@@ -66,7 +66,9 @@ import org.apache.geode.redis.internal.executor.list.LTrimExecutor;
 import org.apache.geode.redis.internal.executor.list.RPopExecutor;
 import org.apache.geode.redis.internal.executor.list.RPushExecutor;
 import org.apache.geode.redis.internal.executor.list.RPushXExecutor;
+import org.apache.geode.redis.internal.executor.pubsub.PsubscribeExecutor;
 import org.apache.geode.redis.internal.executor.pubsub.PublishExecutor;
+import org.apache.geode.redis.internal.executor.pubsub.PunsubscribeExecutor;
 import org.apache.geode.redis.internal.executor.pubsub.SubscribeExecutor;
 import org.apache.geode.redis.internal.executor.pubsub.UnsubscribeExecutor;
 import org.apache.geode.redis.internal.executor.set.SAddExecutor;
@@ -2624,6 +2626,10 @@ public enum RedisCommandType {
       return this.dataType;
     }
   },
+
+  /**
+   * PUBLISH channel message
+   */
   PUBLISH {
     private Executor executor;
 
@@ -2642,6 +2648,10 @@ public enum RedisCommandType {
       return this.dataType;
     }
   },
+
+  /**
+   * UNSUBSCRIBE channel...
+   */
   UNSUBSCRIBE {
     private Executor executor;
 
@@ -2649,6 +2659,52 @@ public enum RedisCommandType {
     public Executor getExecutor() {
       if (executor == null) {
         executor = new UnsubscribeExecutor();
+      }
+      return executor;
+    }
+
+    private final RedisDataType dataType = RedisDataType.REDIS_PUBSUB;
+
+    @Override
+    public RedisDataType getDataType() {
+      return this.dataType;
+    }
+  },
+
+  /**
+   * PSUBSCRIBE channel-pattern...
+   * <p>
+   * subscribe to channel
+   */
+  PSUBSCRIBE {
+    private Executor executor;
+
+    @Override
+    public Executor getExecutor() {
+      if (executor == null) {
+        executor = new PsubscribeExecutor();
+      }
+      return executor;
+    }
+
+    private final RedisDataType dataType = RedisDataType.REDIS_PUBSUB;
+
+    @Override
+    public RedisDataType getDataType() {
+      return this.dataType;
+    }
+  },
+
+  /**
+   * PUNSUBSCRIBE channel...
+   */
+  PUNSUBSCRIBE {
+    private Executor executor;
+
+    @Override
+    public Executor getExecutor() {
+      if (executor == null) {
+        executor = new PunsubscribeExecutor();
       }
       return executor;
     }

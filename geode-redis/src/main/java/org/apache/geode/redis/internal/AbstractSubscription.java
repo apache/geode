@@ -25,32 +25,39 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
-class Subscriber {
+public abstract class AbstractSubscription implements Subscription {
   private static final Logger logger = LogService.getLogger();
-  public final Client client;
-  public final String channel;
-  private ExecutionHandlerContext context;
+  private final Client client;
+  private final ExecutionHandlerContext context;
 
-  public Subscriber(Client client, String channel, ExecutionHandlerContext context) {
+  AbstractSubscription(Client client, ExecutionHandlerContext context) {
+    if (client == null) {
+      throw new IllegalArgumentException("client cannot be null");
+    }
+    if (context == null) {
+      throw new IllegalArgumentException("context cannot be null");
+    }
     this.client = client;
-    this.channel = channel;
     this.context = context;
   }
 
-  public boolean isEqualTo(String channel, Client client) {
-    if (channel == null || client == null) {
-      return false;
-    }
-    return channel.equals(this.channel) && client.equals(this.client);
-  }
-
-  public boolean publishMessage(String channel, String message) {
+  @Override
+  public PublishResult publishMessage(String channel, String message) {
     ByteBuf messageByteBuffer = constructResponse(channel, message);
     if (messageByteBuffer == null) {
-      return false;
+      return new PublishResult(client, false);
     }
 
-    return writeToChannelSynchronously(messageByteBuffer);
+    return new PublishResult(client, writeToChannelSynchronously(messageByteBuffer));
+  }
+
+  Client getClient() {
+    return client;
+  }
+
+  @Override
+  public boolean matchesClient(Client client) {
+    return this.client.equals(client);
   }
 
   private ByteBuf constructResponse(String channel, String message) {
@@ -66,9 +73,9 @@ class Subscriber {
   }
 
   /**
-   * This method turns the response into a synchronous call. We want to
-   * determine if the response, to the client, resulted in an error - for example if the client has
-   * disconnected and the write fails. In such cases we need to be able to notify the caller.
+   * This method turns the response into a synchronous call. We want to determine if the response,
+   * to the client, resulted in an error - for example if the client has disconnected and the write
+   * fails. In such cases we need to be able to notify the caller.
    */
   private boolean writeToChannelSynchronously(ByteBuf messageByteBuffer) {
     ChannelFuture channelFuture = context.writeToChannel(messageByteBuffer);
@@ -78,6 +85,7 @@ class Subscriber {
     } catch (InterruptedException | ExecutionException e) {
       return false;
     }
+
     return channelFuture.cause() == null;
   }
 }

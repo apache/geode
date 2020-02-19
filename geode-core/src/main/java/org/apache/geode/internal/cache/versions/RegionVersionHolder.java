@@ -756,7 +756,7 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
 
   @Override
   public boolean equals(Object obj) {
-    if (obj == null || !(obj instanceof RegionVersionHolder)) {
+    if (!(obj instanceof RegionVersionHolder)) {
       return false;
     }
     return sameAs((RegionVersionHolder) obj);

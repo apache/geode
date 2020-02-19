@@ -11,39 +11,33 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
+ *
  */
 
 package org.apache.geode.redis.internal;
 
-import java.util.Objects;
+/**
+ * Interface that represents the relationship between a channel or pattern and client.
+ */
+public interface Subscription {
+  /**
+   * Equality of a subscription is represented by a combination of client and one of channel or
+   * pattern
+   */
+  boolean isEqualTo(Object channelOrPattern, Client client);
 
-import io.netty.channel.Channel;
+  /**
+   * Will publish a message to the designated channel.
+   */
+  PublishResult publishMessage(String channel, String message);
 
-public class Client {
-  private Channel channel;
+  /**
+   * Verifies that the subscription is established with the designated client.
+   */
+  boolean matchesClient(Client client);
 
-  public Client(Channel remoteAddress) {
-    this.channel = remoteAddress;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    Client client = (Client) o;
-    return Objects.equals(channel, client.channel);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(channel);
-  }
-
-  public boolean isDead() {
-    return !this.channel.isOpen();
-  }
+  /**
+   * Verifies that the subscription channel or pattern matches the designated channel.
+   */
+  boolean matches(String channel);
 }

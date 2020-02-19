@@ -15,35 +15,24 @@
 
 package org.apache.geode.redis.internal;
 
-import java.util.Objects;
+/**
+ * Represents the results of publishing a message to a subscription. Contains the client the message
+ * was published to as well as whether or not the message was published successfully.
+ */
+public class PublishResult {
+  private final Client client;
+  private final boolean result;
 
-import io.netty.channel.Channel;
-
-public class Client {
-  private Channel channel;
-
-  public Client(Channel remoteAddress) {
-    this.channel = remoteAddress;
+  public PublishResult(Client client, boolean result) {
+    this.client = client;
+    this.result = result;
   }
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    Client client = (Client) o;
-    return Objects.equals(channel, client.channel);
+  public Client getClient() {
+    return client;
   }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(channel);
-  }
-
-  public boolean isDead() {
-    return !this.channel.isOpen();
+  public boolean isSuccessful() {
+    return result;
   }
 }
