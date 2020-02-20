@@ -41,8 +41,7 @@ class ReflectionLuceneSerializer implements LuceneSerializer {
   private static final Logger logger = LogService.getLogger();
 
   public ReflectionLuceneSerializer(Class<? extends Object> clazz, String[] indexedFields) {
-    Set<String> fieldSet = new HashSet<String>();
-    fieldSet.addAll(Arrays.asList(indexedFields));
+    Set<String> fieldSet = new HashSet<String>(Arrays.asList(indexedFields));
 
     // Iterate through all declared fields and save them
     // in a list if they are an indexed field and have the correct
