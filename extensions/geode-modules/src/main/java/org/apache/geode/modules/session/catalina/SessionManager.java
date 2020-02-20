@@ -40,6 +40,10 @@ public interface SessionManager {
 
   boolean getPreferDeserializedForm();
 
+  default SessionCache getSessionCache() {
+    return null;
+  };
+
   String getStatisticsName();
 
   Log getLogger();
