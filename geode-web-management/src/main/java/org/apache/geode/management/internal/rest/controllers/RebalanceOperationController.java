@@ -21,7 +21,6 @@ import static org.apache.geode.management.operation.RebalanceOperation.REBALANCE
 import java.util.Optional;
 
 import io.swagger.annotations.ApiOperation;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -35,8 +34,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.api.ClusterManagementListOperationsResult;
 import org.apache.geode.management.api.ClusterManagementOperationResult;
-import org.apache.geode.management.internal.ClusterManagementOperationStatusResult;
-import org.apache.geode.management.internal.operation.TaggedWithOperator;
 import org.apache.geode.management.operation.RebalanceOperation;
 import org.apache.geode.management.runtime.RebalanceResult;
 
@@ -46,45 +43,29 @@ public class RebalanceOperationController extends AbstractManagementController {
   @ApiOperation(value = "start rebalance")
   @PreAuthorize("@securityService.authorize('DATA', 'MANAGE')")
   @PostMapping(REBALANCE_ENDPOINT)
-  public ResponseEntity<ClusterManagementOperationResult<RebalanceResult>> startRebalance(
+  public ResponseEntity<ClusterManagementOperationResult<RebalanceOperation, RebalanceResult>> startRebalance(
       @RequestBody RebalanceOperation operation) {
-    ClusterManagementOperationResult<RebalanceResult> result =
-        clusterManagementService.start(new RebalanceOperationWithOperator(operation));
+    operation.setOperator(
+        Optional.ofNullable(securityService).map(SecurityService::getSubject).map(Object::toString)
+            .orElse(null));
+    ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> result =
+        clusterManagementService
+            .start(operation);
     return new ResponseEntity<>(result, HttpStatus.ACCEPTED);
   }
 
   @ApiOperation(value = "list rebalances")
   @PreAuthorize("@securityService.authorize('DATA', 'MANAGE')")
   @GetMapping(REBALANCE_ENDPOINT)
-  public ClusterManagementListOperationsResult<RebalanceResult> listRebalances() {
+  public ClusterManagementListOperationsResult<RebalanceOperation, RebalanceResult> listRebalances() {
     return clusterManagementService.list(new RebalanceOperation());
   }
 
-  @ApiOperation(value = "check rebalance")
+  @ApiOperation(value = "get rebalance")
   @PreAuthorize("@securityService.authorize('DATA', 'MANAGE')")
   @GetMapping(REBALANCE_ENDPOINT + "/{id:.+}")
-  public ResponseEntity<ClusterManagementOperationStatusResult<RebalanceResult>> checkRebalanceStatus(
+  public ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> getRebalance(
       @PathVariable String id) {
-    ClusterManagementOperationStatusResult<RebalanceResult> result =
-        clusterManagementService.checkStatus(id);
-    HttpHeaders headers = new HttpHeaders();
-    headers.add("Retry-After", "30");
-    return new ResponseEntity<>(result, headers, HttpStatus.OK);
-  }
-
-  private class RebalanceOperationWithOperator extends RebalanceOperation
-      implements TaggedWithOperator {
-    private String operator;
-
-    public RebalanceOperationWithOperator(RebalanceOperation other) {
-      super(other);
-      this.operator = Optional.ofNullable(securityService).map(SecurityService::getSubject)
-          .map(Object::toString).orElse(null);
-    }
-
-    @Override
-    public String getOperator() {
-      return operator;
-    }
+    return clusterManagementService.get(new RebalanceOperation(), id);
   }
 }

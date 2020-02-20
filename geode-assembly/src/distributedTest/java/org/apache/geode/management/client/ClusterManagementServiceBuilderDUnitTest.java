@@ -16,6 +16,7 @@
 package org.apache.geode.management.client;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -69,9 +70,11 @@ public class ClusterManagementServiceBuilderDUnitTest {
 
   @Test
   public void buildWithTransportOnlyHavingRestTemplate() {
-    assertThat(new ClusterManagementServiceBuilder().setTransport(
+    assertThatThrownBy(() -> new ClusterManagementServiceBuilder().setTransport(
         new RestTemplateClusterManagementServiceTransport(new RestTemplate())).build()
-        .isConnected()).isFalse();
+        .isConnected())
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("URI is not absolute");
   }
 
   @Test

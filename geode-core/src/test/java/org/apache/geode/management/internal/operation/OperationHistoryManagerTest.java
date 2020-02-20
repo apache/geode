@@ -15,169 +15,190 @@
 package org.apache.geode.management.internal.operation;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.same;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.management.api.ClusterManagementOperation;
-import org.apache.geode.management.internal.operation.OperationHistoryManager.OperationInstance;
 import org.apache.geode.management.runtime.OperationResult;
 
 public class OperationHistoryManagerTest {
   private OperationHistoryManager history;
+  private OperationStateStore operationStateStore;
 
   @Before
   public void setUp() throws Exception {
-    history = new OperationHistoryManager();
+    operationStateStore = mock(OperationStateStore.class);
+    history = new OperationHistoryManager(Duration.ofHours(2), operationStateStore);
   }
 
   @Test
   public void idNotFound() {
-    assertThat(history.getOperationInstance("foo")).isNull();
+    assertThat(history.get("foo")).isNull();
   }
 
   @Test
-  public void inProgressStatusIsConsistent() {
-    CompletableFuture<OperationResult> future = new CompletableFuture<>();
-    CompletableFuture<OperationResult> future2 = history.save(op("1", future)).getFutureResult();
-    assertThat(future2.isDone()).isFalse();
-    assertThat(history.getOperationInstance("1").getFutureResult().isDone()).isFalse();
-    assertThat(history.getOperationInstance("1").getFutureOperationEnded().isDone()).isFalse();
+  public void recordStartReturnsExpectedOpId() {
+    ClusterManagementOperation<?> op = mock(ClusterManagementOperation.class);
+    String expectedOpId = "12345";
+    when(operationStateStore.recordStart(same(op))).thenReturn(expectedOpId);
+
+    String opId = history.recordStart(op);
+    assertThat(opId).isSameAs(expectedOpId);
   }
 
   @Test
-  public void endDateIsSetBeforeOperationCompletedFires() {
-    CompletableFuture<OperationResult> future = new CompletableFuture<>();
-    future.whenComplete(
-        (r, e) -> assertThat(history.getOperationInstance("1").getFutureOperationEnded().isDone())
-            .isTrue());
-    future.complete(null);
+  public void recordStartDelegatesToPersistenceService() {
+    ClusterManagementOperation<?> op = mock(ClusterManagementOperation.class);
+
+    String opId = history.recordStart(op);
+    verify(operationStateStore).recordStart(same(op));
   }
 
   @Test
-  public void completedStatusIsConsistent() {
-    CompletableFuture<OperationResult> future = new CompletableFuture<>();
-    CompletableFuture<OperationResult> future2 = history.save(op("1", future)).getFutureResult();
-    future.complete(null);
-    assertThat(future2.isDone()).isTrue();
-    assertThat(history.getOperationInstance("1").getFutureResult().isDone()).isTrue();
-    assertThat(history.getOperationInstance("1").getFutureOperationEnded().isDone()).isTrue();
+  public void recordEndDelegatesToPersistenceService() {
+    String opId = "opId";
+    OperationResult result = mock(OperationResult.class);
+    Throwable cause = new Throwable();
+
+    history.recordEnd(opId, result, cause);
+    verify(operationStateStore).recordEnd(same(opId), same(result), same(cause));
   }
 
   @Test
-  public void completedStatusIsConsistentWhenResultOfSaveIsCompleted() {
-    CompletableFuture<OperationResult> future = new CompletableFuture<>();
-    CompletableFuture<OperationResult> future2 = history.save(op("1", future)).getFutureResult();
-    future2.complete(null);
-    assertThat(future.isDone()).isTrue();
-    assertThat(history.getOperationInstance("1").getFutureResult().isDone()).isTrue();
-    assertThat(history.getOperationInstance("1").getFutureOperationEnded().isDone()).isTrue();
+  public void expireHistoryRetainsHistoryInProgressOperations() {
+    List<OperationState<ClusterManagementOperation<OperationResult>, OperationResult>> sampleOps =
+        new ArrayList<>();
+    for (int i = 0; i < 3; i++) {
+      OperationState<ClusterManagementOperation<OperationResult>, OperationResult> operationInstance =
+          new OperationState<>("op-" + i, null, new Date());
+      // Have not called operation end, so operation is still in progress.
+      sampleOps.add(operationInstance);
+    }
+    doReturn(sampleOps).when(operationStateStore).list();
+
+    history.expireHistory();
+
+    verify(operationStateStore, never()).remove(any());
   }
 
   @Test
-  public void completedStatusIsConsistentEvenWhenReallyFast() {
-    CompletableFuture<OperationResult> future = new CompletableFuture<>();
-    future.complete(null);
-    CompletableFuture<OperationResult> future2 = history.save(op("1", future)).getFutureResult();
-    assertThat(future2.isDone()).isTrue();
-    assertThat(history.getOperationInstance("1").getFutureResult().isDone()).isTrue();
-    assertThat(history.getOperationInstance("1").getFutureOperationEnded().isDone()).isTrue();
+  public void expireHistoryRetainsUnexpiredCompletedOperations() {
+    List<OperationState<ClusterManagementOperation<OperationResult>, OperationResult>> sampleOps =
+        new ArrayList<>();
+    for (int i = 0; i < 5; i++) {
+      sampleOps.add(new OperationState<>("op-" + i, null, new Date()));
+      sampleOps.get(i).setOperationEnd(new Date(), null, null);
+    }
+
+    doReturn(sampleOps).when(operationStateStore).list();
+
+    history.expireHistory();
+
+    verify(operationStateStore, never()).remove(any());
   }
 
   @Test
-  public void retainsHistoryForAllInProgressOperations() {
-    history = new OperationHistoryManager(0, TimeUnit.MILLISECONDS);
-    history.save(op("1", new CompletableFuture<>()));
-    history.save(op("2", new CompletableFuture<>()));
-    assertThat(history.getOperationInstance("1")).isNotNull();
-    assertThat(history.getOperationInstance("2")).isNotNull();
+  public void expireHistoryRemovesExpiredCompletedOperations() {
+    long now = System.currentTimeMillis();
+    long twoAndAHalfHoursAgo = now - Duration.ofHours(2).plusMinutes(30).toMillis();
+
+    List<OperationState<?, ?>> sampleOps = new ArrayList<>();
+    for (int i = 0; i < 5; i++) {
+      sampleOps.add(new OperationState<>("op-" + i, null, new Date()));
+      sampleOps.get(i).setOperationEnd(new Date(twoAndAHalfHoursAgo), null, null);
+    }
+
+    doReturn(sampleOps).when(operationStateStore).list();
+
+    history.expireHistory();
+
+    verify(operationStateStore, times(5)).remove(any());
   }
 
   @Test
-  public void expiresHistoryForCompletedOperation() {
-    history = new OperationHistoryManager(0, TimeUnit.MILLISECONDS);
-    history.save(op("1", new CompletableFuture<>())).getFutureResult().complete(null);
-    assertThat(history.getOperationInstance("1")).isNull();
+  public void listFiltersByType() {
+    ClusterManagementOperation<OperationResult> opType1 = mock(ClusterManagementOperation.class);
+    ClusterManagementOperation<OperationResult> opType2 = new CmOperation();
+
+    List<OperationState<?, ?>> sampleOps = new ArrayList<>();
+    for (int i = 0; i < 9; i++) {
+      if (i % 2 == 0) {
+        sampleOps.add(new OperationState<>("op-" + i, opType1, new Date()));
+      } else {
+        sampleOps.add(new OperationState<>("op-" + i, opType2, new Date()));
+      }
+    }
+
+    doReturn(sampleOps).when(operationStateStore).list();
+
+    List<OperationState<ClusterManagementOperation<OperationResult>, OperationResult>> opList1 =
+        history.list(opType1);
+    List<OperationState<ClusterManagementOperation<OperationResult>, OperationResult>> opList2 =
+        history.list(opType2);
+
+    assertThat(opList1.size()).isEqualTo(5);
+    assertThat(opList2.size()).isEqualTo(4);
   }
 
   @Test
-  public void timestampsAreCorrectWhenFutureIsAlreadyCompleteBeforeSave() throws Exception {
-    CompletableFuture<OperationResult> future1 = new CompletableFuture<>();
-    future1.complete(null);
-    Date start = new Date();
-    history.save(op("1", future1, start));
-    assertThat(history.getOperationInstance("1").getOperationStart()).isEqualTo(start);
-    assertThat(history.getOperationInstance("1").getFutureOperationEnded().isDone()).isTrue();
-    assertThat(history.getOperationInstance("1").getFutureOperationEnded().get().getTime())
-        .isGreaterThanOrEqualTo(start.getTime());
+  public void listCallsDelegatesToPersistenceService() {
+    ClusterManagementOperation<OperationResult> op = mock(ClusterManagementOperation.class);
+
+    history.list(op);
+
+    // once for expireHistory, once directly
+    verify(operationStateStore, times(2)).list();
   }
 
   @Test
-  public void timestampsAreCorrectWhenFutureCompletesAfterSave() throws Exception {
-    CompletableFuture<OperationResult> future2 = new CompletableFuture<>();
-    Date start = new Date();
-    history.save(op("2", future2, start));
-    assertThat(history.getOperationInstance("2").getFutureOperationEnded().isDone()).isFalse();
-    future2.complete(null);
-    assertThat(history.getOperationInstance("2").getOperationStart()).isEqualTo(start);
-    assertThat(history.getOperationInstance("2").getFutureOperationEnded().isDone()).isTrue();
-    assertThat(history.getOperationInstance("2").getFutureOperationEnded().get().getTime())
-        .isGreaterThanOrEqualTo(start.getTime());
+  public void recordStartCallsExpireHistory() {
+    OperationHistoryManager historySpy = spy(history);
+
+    historySpy.recordStart(null);
+    verify(historySpy).expireHistory();
   }
 
   @Test
-  public void onlyExpiresOldOperations() {
-    // make op1 one ended yesterday
-    OperationInstance<?, ?> op1 = history.save(op("1", new CompletableFuture<>()));
-    op1.getFutureOperationEnded().complete(new Date(System.currentTimeMillis() - 86400000));
-    op1.getFutureResult().complete(null);
+  public void listCallsExpireHistory() {
+    OperationHistoryManager historySpy = spy(history);
 
-    // op2 ended just now
-    history.save(op("2", new CompletableFuture<>())).getFutureResult().complete(null);
-
-    assertThat(history.getOperationInstance("1")).isNull();
-    assertThat(history.getOperationInstance("2")).isNotNull();
+    historySpy.list(null);
+    verify(historySpy).expireHistory();
   }
 
   @Test
-  public void listOperationsFiltersByType() {
-    OperationInstance<OpType1, OperationResult> op1a = history.save(op("1a", new OpType1()));
-    OperationInstance<OpType1, OperationResult> op1b = history.save(op("1b", new OpType1()));
-    OperationInstance<OpType2, OperationResult> op2a = history.save(op("2a", new OpType2()));
-    assertThat(history.listOperationInstances(new OpType1()).size()).isEqualTo(2);
-    assertThat(history.listOperationInstances(new OpType2()).size()).isEqualTo(1);
+  public void getCallsExpireHistory() {
+    OperationHistoryManager historySpy = spy(history);
+
+    historySpy.get(null);
+    verify(historySpy).expireHistory();
   }
 
-  static class OpType1 implements ClusterManagementOperation<OperationResult> {
+  private static class CmOperation implements ClusterManagementOperation<OperationResult> {
+
     @Override
     public String getEndpoint() {
       return null;
     }
-  }
 
-  static class OpType2 implements ClusterManagementOperation<OperationResult> {
     @Override
-    public String getEndpoint() {
+    public String getOperator() {
       return null;
     }
-  }
-
-  private static <A extends ClusterManagementOperation<V>, V extends OperationResult> OperationInstance<A, V> op(
-      String id, CompletableFuture<V> future) {
-    return op(id, future, new Date());
-  }
-
-  private static <A extends ClusterManagementOperation<V>, V extends OperationResult> OperationInstance<A, V> op(
-      String id, CompletableFuture<V> future, Date startDate) {
-    return new OperationInstance<>(future, id, null, startDate);
-  }
-
-  private static <A extends ClusterManagementOperation<V>, V extends OperationResult> OperationInstance<A, V> op(
-      String id, A op) {
-    return new OperationInstance<>(new CompletableFuture<>(), id, op, new Date());
   }
 }

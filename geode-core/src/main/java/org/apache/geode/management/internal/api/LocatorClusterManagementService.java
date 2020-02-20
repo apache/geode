@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.NotImplementedException;
@@ -71,7 +70,6 @@ import org.apache.geode.management.configuration.Pdx;
 import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.configuration.RegionScoped;
 import org.apache.geode.management.internal.CacheElementOperation;
-import org.apache.geode.management.internal.ClusterManagementOperationStatusResult;
 import org.apache.geode.management.internal.configuration.mutators.CacheConfigurationManager;
 import org.apache.geode.management.internal.configuration.mutators.ConfigurationManager;
 import org.apache.geode.management.internal.configuration.mutators.DeploymentManager;
@@ -89,9 +87,9 @@ import org.apache.geode.management.internal.configuration.validators.RegionConfi
 import org.apache.geode.management.internal.exceptions.EntityExistsException;
 import org.apache.geode.management.internal.functions.CacheRealizationFunction;
 import org.apache.geode.management.internal.operation.OperationHistoryManager;
-import org.apache.geode.management.internal.operation.OperationHistoryManager.OperationInstance;
 import org.apache.geode.management.internal.operation.OperationManager;
-import org.apache.geode.management.internal.operation.TaggedWithOperator;
+import org.apache.geode.management.internal.operation.OperationState;
+import org.apache.geode.management.internal.operation.RegionOperationStateStore;
 import org.apache.geode.management.runtime.OperationResult;
 import org.apache.geode.management.runtime.RuntimeInfo;
 
@@ -108,7 +106,8 @@ public class LocatorClusterManagementService implements ClusterManagementService
       InternalConfigurationPersistenceService persistenceService) {
     this(persistenceService, new ConcurrentHashMap<>(), new ConcurrentHashMap<>(),
         new MemberValidator(cache, persistenceService), new CommonConfigurationValidator(),
-        new OperationManager(cache, new OperationHistoryManager()));
+        new OperationManager(cache,
+            new OperationHistoryManager(new RegionOperationStateStore(cache))));
     // initialize the list of managers
     managers.put(Region.class, new RegionConfigManager(persistenceService));
     managers.put(Pdx.class, new PdxManager(persistenceService));
@@ -400,97 +399,62 @@ public class LocatorClusterManagementService implements ClusterManagementService
   }
 
   @Override
-  public <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<V> start(
+  public <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<A, V> start(
       A op) {
-    OperationInstance<A, V> operationInstance = operationManager.submit(op);
-    if (op instanceof TaggedWithOperator) {
-      operationInstance.setOperator(((TaggedWithOperator) op).getOperator());
-    }
-
-    ClusterManagementResult result = new ClusterManagementResult(
-        StatusCode.ACCEPTED, "Operation started.  Use the URI to check its status.");
-
-    return assertSuccessful(toClusterManagementListOperationsResult(result, operationInstance));
+    OperationState<A, V> operationState = operationManager.submit(op);
+    return assertSuccessful(toClusterManagementOperationResult(StatusCode.ACCEPTED,
+        "Operation started.  Use the URI to check its status.", operationState));
   }
 
   @Override
-  public <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementListOperationsResult<V> list(
+  public <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementListOperationsResult<A, V> list(
       A opType) {
     return assertSuccessful(new ClusterManagementListOperationsResult<>(
-        operationManager.listOperationInstances(opType).stream()
-            .map(this::toClusterManagementListOperationsResult).collect(Collectors.toList())));
+        operationManager.list(opType).stream()
+            .map(this::toClusterManagementOperationResult).collect(Collectors.toList())));
   }
 
-  /**
-   * builds a base status from the state of a future result
-   */
-  private static <V extends OperationResult> ClusterManagementResult getStatus(
-      CompletableFuture<V> future) {
-    if (future.isCompletedExceptionally()) {
-      String error = "Operation failed.";
-      try {
-        future.get();
-      } catch (InterruptedException ignore) {
-        Thread.currentThread().interrupt();
-      } catch (ExecutionException e) {
-        error = e.getMessage();
-      }
-      return new ClusterManagementResult(StatusCode.ERROR, error);
-    } else if (future.isDone()) {
-      return new ClusterManagementResult(StatusCode.OK, "Operation finished successfully.");
-    } else {
-      return new ClusterManagementResult(StatusCode.IN_PROGRESS, "Operation in progress.");
+  private <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<A, V> toClusterManagementOperationResult(
+      StatusCode statusCode, String message, OperationState<A, V> operationState) {
+    ClusterManagementOperationResult<A, V> result =
+        new ClusterManagementOperationResult<>(statusCode, message,
+            operationState.getOperationStart(), operationState.getOperationEnd(),
+            operationState.getOperation(), operationState.getId(), operationState.getResult(),
+            operationState.getThrowable());
+    A operation = operationState.getOperation();
+    if (operation != null) {
+      result.setLinks(new Links(operationState.getId(), operation.getEndpoint()));
     }
-  }
-
-  /**
-   * builds a result object from a base status and an operation instance
-   */
-  private <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<V> toClusterManagementListOperationsResult(
-      ClusterManagementResult status, OperationInstance<A, V> operationInstance) {
-    ClusterManagementOperationResult<V> result = new ClusterManagementOperationResult<>(status,
-        operationInstance.getFutureResult(), operationInstance.getOperationStart(),
-        operationInstance.getFutureOperationEnded(), operationInstance.getOperator(),
-        operationInstance.getId());
-    result.setLinks(
-        new Links(operationInstance.getId(), operationInstance.getOperation().getEndpoint()));
     return result;
   }
 
-  /**
-   * builds a result object from an operation instance
-   */
-  private <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<V> toClusterManagementListOperationsResult(
-      OperationInstance<A, V> operationInstance) {
-    return toClusterManagementListOperationsResult(getStatus(operationInstance.getFutureResult()),
-        operationInstance);
-  }
-
-  /**
-   * this is intended for use by the REST controller. for Java usage, please use
-   * {@link ClusterManagementOperationResult#getFutureResult()}
-   */
-  public <V extends OperationResult> ClusterManagementOperationStatusResult<V> checkStatus(
-      String opId) {
-    final OperationInstance<?, V> operationInstance = operationManager.getOperationInstance(opId);
-    if (operationInstance == null) {
+  @Override
+  public <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<A, V> get(
+      A opType, String opId) {
+    final OperationState<A, V> operationState = operationManager.get(opId);
+    if (operationState == null) {
       raise(StatusCode.ENTITY_NOT_FOUND, "Operation '" + opId + "' does not exist.");
     }
-    final CompletableFuture<V> status = operationInstance.getFutureResult();
-    ClusterManagementOperationStatusResult<V> result =
-        new ClusterManagementOperationStatusResult<>(getStatus(status));
-    result.setOperator(operationInstance.getOperator());
-    result.setOperationStart(operationInstance.getOperationStart());
-    if (status.isDone() && !status.isCompletedExceptionally()) {
-      try {
-        result.setOperationEnded(operationInstance.getFutureOperationEnded().get());
-        result.setResult(status.get());
-      } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
-      } catch (ExecutionException ignore) {
-      }
+    return toClusterManagementOperationResult(operationState);
+  }
+
+  @Override
+  public <A extends ClusterManagementOperation<V>, V extends OperationResult> CompletableFuture<ClusterManagementOperationResult<A, V>> getFuture(
+      A opType, String opId) {
+    throw new IllegalStateException("This should never be called on locator");
+  }
+
+  private <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<A, V> toClusterManagementOperationResult(
+      OperationState<A, V> operationState) {
+    StatusCode resultStatus = StatusCode.OK;
+    String resultMessage = "";
+    if (operationState.getOperationEnd() == null) {
+      resultStatus = StatusCode.IN_PROGRESS;
+    } else if (operationState.getThrowable() != null) {
+      resultStatus = StatusCode.ERROR;
+      resultMessage = operationState.getThrowable().getMessage();
     }
-    return result;
+    return toClusterManagementOperationResult(resultStatus, resultMessage, operationState);
   }
 
   private <T extends ClusterManagementResult> T assertSuccessful(T result) {

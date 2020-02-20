@@ -35,6 +35,7 @@ public class RebalanceOperation implements ClusterManagementOperation<RebalanceR
   private List<String> includeRegions = new ArrayList<>();
   private List<String> excludeRegions = new ArrayList<>();
   private boolean simulate;
+  private String operator;
 
   /**
    * by default, requests all partitioned regions to be rebalanced
@@ -48,6 +49,7 @@ public class RebalanceOperation implements ClusterManagementOperation<RebalanceR
     this.setExcludeRegions(other.getExcludeRegions());
     this.setIncludeRegions(other.getIncludeRegions());
     this.setSimulate(other.isSimulate());
+    this.operator = other.getOperator();
   }
 
   /***
@@ -106,5 +108,14 @@ public class RebalanceOperation implements ClusterManagementOperation<RebalanceR
   @JsonIgnore
   public String getEndpoint() {
     return REBALANCE_ENDPOINT;
+  }
+
+  @Override
+  public String getOperator() {
+    return this.operator;
+  }
+
+  public void setOperator(String operator) {
+    this.operator = operator;
   }
 }

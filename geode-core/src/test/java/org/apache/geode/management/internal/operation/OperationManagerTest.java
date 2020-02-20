@@ -14,105 +14,163 @@
  */
 package org.apache.geode.management.internal.operation;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.ArgumentMatchers.same;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
+import java.util.function.BiFunction;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.cache.Cache;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.api.ClusterManagementOperation;
-import org.apache.geode.management.internal.operation.OperationHistoryManager.OperationInstance;
 import org.apache.geode.management.runtime.OperationResult;
 
 public class OperationManagerTest {
   private OperationManager executorManager;
+  private OperationHistoryManager operationHistoryManager;
+  private InternalCache cache;
 
   @Before
   public void setUp() throws Exception {
-    executorManager = new OperationManager(null, new OperationHistoryManager(1, TimeUnit.MINUTES));
-    executorManager.registerOperation(TestOperation.class, OperationManagerTest::perform);
+    operationHistoryManager = mock(OperationHistoryManager.class);
+    cache = mock(InternalCache.class);
+
+    executorManager = new OperationManager(cache, operationHistoryManager);
   }
 
   @Test
-  public void submitAndComplete() throws Exception {
-    TestOperation operation = new TestOperation();
-    OperationInstance<TestOperation, TestOperationResult> inst = executorManager.submit(operation);
-    CompletableFuture<TestOperationResult> future1 = inst.getFutureResult();
-    String id = inst.getId();
-    assertThat(id).isNotBlank();
+  public void submitPassesCacheAndOperationToPerformer() {
+    BiFunction<Cache, ClusterManagementOperation<OperationResult>, OperationResult> performer =
+        mock(BiFunction.class);
+    ClusterManagementOperation<OperationResult> operation = mock(ClusterManagementOperation.class);
+    executorManager.registerOperation(
+        (Class<ClusterManagementOperation<OperationResult>>) operation.getClass(), performer);
 
-    assertThat(executorManager.getOperationInstance(id)).isNotNull();
+    executorManager.submit(operation);
 
-    TestOperation operation2 = new TestOperation();
-    OperationInstance<TestOperation, TestOperationResult> inst2 =
-        executorManager.submit(operation2);
-    CompletableFuture<TestOperationResult> future2 = inst2.getFutureResult();
-    String id2 = inst2.getId();
-    assertThat(id2).isNotBlank();
-
-    operation.latch.countDown();
-    future1.get();
-
-    operation2.latch.countDown();
-    future2.get();
-
-    // time-based expiry so nothing should be bumped yet
-    assertThat(executorManager.getOperationInstance(id)).isNotNull();
-    assertThat(executorManager.getOperationInstance(id2)).isNotNull();
+    await().untilAsserted(() -> verify(performer).apply(same(cache), same(operation)));
   }
 
   @Test
-  public void submit() {
-    TestOperation operation = new TestOperation();
-    String id = executorManager.submit(operation).getId();
-    assertThat(id).isNotBlank();
+  public void submitReturnsOperationState() {
+    BiFunction<Cache, ClusterManagementOperation<OperationResult>, OperationResult> performer =
+        mock(BiFunction.class);
+    ClusterManagementOperation<OperationResult> operation = mock(ClusterManagementOperation.class);
+    String opId = "opId";
+    OperationState<ClusterManagementOperation<OperationResult>, OperationResult> expectedOpState =
+        mock(OperationState.class);
+    executorManager.registerOperation(
+        (Class<ClusterManagementOperation<OperationResult>>) operation.getClass(), performer);
 
-    assertThat(executorManager.getOperationInstance(id)).isNotNull();
+    when(operationHistoryManager.recordStart(operation)).thenReturn(opId);
+    when(operationHistoryManager.get(opId)).thenReturn(expectedOpState);
 
-    TestOperation operation2 = new TestOperation();
-    String id2 = executorManager.submit(operation2).getId();
-    assertThat(id2).isNotBlank();
+    OperationState<ClusterManagementOperation<OperationResult>, OperationResult> operationState =
+        executorManager.submit(operation);
 
-    // all in progress, none should be bumped
-    assertThat(executorManager.getOperationInstance(id)).isNotNull();
-    assertThat(executorManager.getOperationInstance(id2)).isNotNull();
+    assertThat(operationState).isSameAs(expectedOpState);
+  }
 
-    operation.latch.countDown();
-    operation2.latch.countDown();
+  @Test
+  public void submitUpdatesOperationStateWhenOperationCompletesSuccessfully() {
+    BiFunction<Cache, ClusterManagementOperation<OperationResult>, OperationResult> performer =
+        mock(BiFunction.class);
+    OperationResult operationResult = mock(OperationResult.class);
+    ClusterManagementOperation<OperationResult> operation = mock(ClusterManagementOperation.class);
+    executorManager.registerOperation(
+        (Class<ClusterManagementOperation<OperationResult>>) operation.getClass(), performer);
+
+    when(performer.apply(any(), any())).thenReturn(operationResult);
+    String opId = "my-op-id";
+    when(operationHistoryManager.recordStart(any())).thenReturn(opId);
+
+    executorManager.submit(operation);
+
+    await().untilAsserted(() -> {
+      verify(operationHistoryManager)
+          .recordEnd(eq(opId), same(operationResult), isNull());
+    });
+  }
+
+  @Test
+  public void submitUpdatesOperationStateWhenOperationCompletesExceptionally() {
+    BiFunction<Cache, ClusterManagementOperation<OperationResult>, OperationResult> performer =
+        mock(BiFunction.class);
+    ClusterManagementOperation<OperationResult> operation = mock(ClusterManagementOperation.class);
+    executorManager.registerOperation(
+        (Class<ClusterManagementOperation<OperationResult>>) operation.getClass(), performer);
+
+    RuntimeException thrownByPerformer = new RuntimeException();
+    doThrow(thrownByPerformer).when(performer).apply(any(), any());
+    String opId = "my-op-id";
+    when(operationHistoryManager.recordStart(any())).thenReturn(opId);
+
+    executorManager.submit(operation);
+
+    await().untilAsserted(() -> {
+      verify(operationHistoryManager)
+          .recordEnd(eq(opId), isNull(), same(thrownByPerformer));
+    });
+  }
+
+  @Test
+  public void submitCallsRecordEndOnlyAfterPerformerCompletes() throws InterruptedException {
+    ClusterManagementOperation<OperationResult> operation = mock(ClusterManagementOperation.class);
+    CountDownLatch performerIsInProgress = new CountDownLatch(1);
+    CountDownLatch performerHasTestPermissionToComplete = new CountDownLatch(1);
+
+    String opId = "my-op-id";
+    when(operationHistoryManager.recordStart(any())).thenReturn(opId);
+
+    OperationResult operationResult = mock(OperationResult.class);
+
+    BiFunction<Cache, ClusterManagementOperation<OperationResult>, OperationResult> performer =
+        (cache, op) -> {
+          try {
+            performerIsInProgress.countDown();
+            performerHasTestPermissionToComplete.await(10, SECONDS);
+          } catch (InterruptedException e) {
+            System.out.println("Countdown interrupted");
+          }
+          return operationResult;
+        };
+
+    executorManager.registerOperation(
+        (Class<ClusterManagementOperation<OperationResult>>) operation.getClass(), performer);
+
+    executorManager.submit(operation);
+
+    performerIsInProgress.await(10, SECONDS);
+
+    verify(operationHistoryManager, never()).recordEnd(any(), any(), any());
+
+    performerHasTestPermissionToComplete.countDown();
+
+    await().untilAsserted(() -> {
+      verify(operationHistoryManager)
+          .recordEnd(eq(opId), same(operationResult), isNull());
+    });
   }
 
   @Test
   public void submitRogueOperation() {
-    TestOperation operation = mock(TestOperation.class);
+    ClusterManagementOperation<?> operation = mock(ClusterManagementOperation.class);
     assertThatThrownBy(() -> executorManager.submit(operation))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining(" is not supported.");
-  }
-
-  static class TestOperation implements ClusterManagementOperation<TestOperationResult> {
-    CountDownLatch latch = new CountDownLatch(1);
-
-    @Override
-    public String getEndpoint() {
-      return "/operations/test";
-    }
-  }
-
-  static class TestOperationResult implements OperationResult {
-  }
-
-  static TestOperationResult perform(Cache cache, TestOperation operation) {
-    try {
-      operation.latch.await();
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-    }
-    return null;
   }
 }
