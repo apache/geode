@@ -28,6 +28,7 @@ import org.apache.geode.cache.TimeoutException;
 
 /**
  * {@code RegionFactoryImpl} extends RegionFactory adding {@link RegionShortcut} support.
+ * It also supports setting InternalRegionArguments.
  *
  * @since GemFire 6.5
  */
@@ -59,6 +60,25 @@ public class RegionFactoryImpl<K, V> extends RegionFactory<K, V> {
     this.internalRegionArguments = internalRegionArguments;
   }
 
+  public static InternalRegionArguments makeInternal(RegionFactory regionFactory) {
+    RegionFactoryImpl internalRegionFactory = (RegionFactoryImpl) regionFactory;
+    return internalRegionFactory.makeInternal();
+  }
+
+  public InternalRegionArguments makeInternal() {
+    if (internalRegionArguments == null) {
+      internalRegionArguments = new InternalRegionArguments();
+    }
+    return internalRegionArguments;
+  }
+
+  /**
+   * Returns the region attributes that would currently be used to create the region.
+   */
+  public RegionAttributes<K, V> getCreateAttributes() {
+    return getRegionAttributes();
+  }
+
   @Override
   public Region<K, V> create(String name)
       throws CacheExistsException, RegionExistsException, CacheWriterException, TimeoutException {
@@ -86,5 +106,4 @@ public class RegionFactoryImpl<K, V> extends RegionFactory<K, V> {
       throw new InternalGemFireError("unexpected exception", e);
     }
   }
-
 }
