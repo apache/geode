@@ -102,15 +102,6 @@ public class RebalanceManagementDunitTest {
     assertThat(firstRegionSummary.getRegionName()).isIn("customers1", "customers2");
   }
 
-  private ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> waitForStartToEnd(
-      ClusterManagementService client, String opId) {
-    final RebalanceOperation op = new RebalanceOperation();
-    GeodeAwaitility.await()
-        .untilAsserted(
-            () -> assertThat(client.get(op, opId).getOperationEnd()).isNotNull());
-    return client.get(op, opId);
-  }
-
   @Test
   public void rebalanceExistRegion() throws Exception {
     List<String> includeRegions = new ArrayList<>();
@@ -134,14 +125,15 @@ public class RebalanceManagementDunitTest {
   }
 
   @Test
-  public void rebalanceExcludedRegion() {
+  public void rebalanceExcludedRegion() throws Exception {
     RebalanceOperation op = new RebalanceOperation();
     op.setExcludeRegions(Collections.singletonList("customers1"));
     ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> cmr = client1.start(op);
     assertThat(cmr.isSuccessful()).isTrue();
 
     RebalanceResult result =
-        client1.get(new RebalanceOperation(), cmr.getOperationId()).getOperationResult();
+        client1.getFuture(new RebalanceOperation(), cmr.getOperationId()).get()
+            .getOperationResult();
     assertThat(result.getRebalanceRegionResults().size()).isEqualTo(1);
     RebalanceRegionResult firstRegionSummary = result.getRebalanceRegionResults().get(0);
     assertThat(firstRegionSummary.getRegionName()).isEqualTo("customers2");
