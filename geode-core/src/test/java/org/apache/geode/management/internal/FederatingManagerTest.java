@@ -45,7 +45,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.cache.HasCachePerfStats;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheForClientAccess;
-import org.apache.geode.internal.cache.RegionFactoryImpl;
+import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.test.junit.categories.JMXTest;
@@ -64,8 +64,8 @@ public class FederatingManagerTest {
   private StatisticsFactory statisticsFactory;
   private StatisticsClock statisticsClock;
   private InternalDistributedSystem system;
-  private RegionFactoryImpl regionFactory1;
-  private RegionFactoryImpl regionFactory2;
+  private InternalRegionFactory regionFactory1;
+  private InternalRegionFactory regionFactory2;
 
   @Before
   public void setUp() throws Exception {
@@ -80,8 +80,8 @@ public class FederatingManagerTest {
     statisticsClock = mock(StatisticsClock.class);
     statisticsFactory = mock(StatisticsFactory.class);
     system = mock(InternalDistributedSystem.class);
-    regionFactory1 = mock(RegionFactoryImpl.class);
-    regionFactory2 = mock(RegionFactoryImpl.class);
+    regionFactory1 = mock(InternalRegionFactory.class);
+    regionFactory2 = mock(InternalRegionFactory.class);
 
     DistributedSystemMXBean distributedSystemMXBean = mock(DistributedSystemMXBean.class);
 

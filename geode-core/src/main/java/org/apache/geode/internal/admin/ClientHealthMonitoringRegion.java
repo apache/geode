@@ -25,7 +25,7 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.internal.admin.remote.ClientHealthStats;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.RegionFactoryImpl;
+import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
@@ -74,7 +74,7 @@ public class ClientHealthMonitoringRegion {
    */
   private static void initialize(InternalCache cache) {
     try {
-      RegionFactoryImpl factory = cache.createInternalRegionFactory(RegionShortcut.LOCAL);
+      InternalRegionFactory factory = cache.createInternalRegionFactory(RegionShortcut.LOCAL);
       factory.setEntryTimeToLive(
           new ExpirationAttributes(ADMIN_REGION_EXPIRY_INTERVAL, ExpirationAction.DESTROY));
       if (logger.isDebugEnabled()) {

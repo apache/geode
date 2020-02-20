@@ -207,7 +207,7 @@ public class PartitionedRegionHelper {
         logger.debug("Creating root Partitioned Admin Region {}",
             PartitionedRegionHelper.PR_ROOT_REGION_NAME);
       }
-      RegionFactoryImpl factory = cache.createInternalRegionFactory(RegionShortcut.REPLICATE);
+      InternalRegionFactory factory = cache.createInternalRegionFactory(RegionShortcut.REPLICATE);
       factory.addCacheListener(new FixedPartitionAttributesListener());
       if (Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "PRDebug")) {
         factory.addCacheListener(new CacheListenerAdapter() {

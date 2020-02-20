@@ -49,7 +49,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.HasCachePerfStats;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.RegionFactoryImpl;
+import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.ManagementException;
@@ -401,7 +401,8 @@ public class FederatingManager extends Manager {
           };
 
           // Monitoring region for member is created
-          RegionFactoryImpl<String, Object> monitorFactory = cache.createInternalRegionFactory();
+          InternalRegionFactory<String, Object> monitorFactory =
+              cache.createInternalRegionFactory();
           monitorFactory.setScope(Scope.DISTRIBUTED_NO_ACK);
           monitorFactory.setDataPolicy(DataPolicy.REPLICATE);
           monitorFactory.setConcurrencyChecksEnabled(false);
@@ -412,7 +413,7 @@ public class FederatingManager extends Manager {
           monitorFactory.setCachePerfStatsHolder(monitoringRegionStats);
 
           // Notification region for member is created
-          RegionFactoryImpl<NotificationKey, Notification> notificationFactory =
+          InternalRegionFactory<NotificationKey, Notification> notificationFactory =
               cache.createInternalRegionFactory();
           notificationFactory.setScope(Scope.DISTRIBUTED_NO_ACK);
           notificationFactory.setDataPolicy(DataPolicy.REPLICATE);

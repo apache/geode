@@ -27,7 +27,7 @@ import org.junit.Test;
 
 import org.apache.geode.cache.Region;
 
-public class RegionFactoryImplTest {
+public class InternalRegionFactoryTest {
   private InternalCache cache;
 
   @Before
@@ -37,7 +37,7 @@ public class RegionFactoryImplTest {
 
   @Test
   public void createWithInternalRegionArgumentsCallsCreateVMRegion() throws Exception {
-    RegionFactoryImpl<Object, Object> regionFactory = new RegionFactoryImpl<>(cache);
+    InternalRegionFactory<Object, Object> regionFactory = new InternalRegionFactory<>(cache);
     regionFactory.setInternalRegion(true);
     InternalRegionArguments internalRegionArguments = regionFactory.getInternalRegionArguments();
     String regionName = "regionName";
@@ -50,7 +50,7 @@ public class RegionFactoryImplTest {
 
   @Test
   public void createWithInternalRegionArgumentsReturnsRegion() throws Exception {
-    RegionFactoryImpl<Object, Object> regionFactory = new RegionFactoryImpl<>(cache);
+    InternalRegionFactory<Object, Object> regionFactory = new InternalRegionFactory<>(cache);
     regionFactory.setInternalRegion(true);
     InternalRegionArguments internalRegionArguments = regionFactory.getInternalRegionArguments();
     String regionName = "regionName";
@@ -65,7 +65,7 @@ public class RegionFactoryImplTest {
 
   @Test
   public void createWithoutInternalRegionArgumentsCallsCreateRegion() throws Exception {
-    RegionFactoryImpl<Object, Object> regionFactory = new RegionFactoryImpl<>(cache);
+    InternalRegionFactory<Object, Object> regionFactory = new InternalRegionFactory<>(cache);
     String regionName = "regionName";
 
     regionFactory.create(regionName);
@@ -75,7 +75,7 @@ public class RegionFactoryImplTest {
 
   @Test
   public void createSubregionWithInternalRegionArgumentsReturnsRegion() throws Exception {
-    RegionFactoryImpl<Object, Object> regionFactory = new RegionFactoryImpl<>(cache);
+    InternalRegionFactory<Object, Object> regionFactory = new InternalRegionFactory<>(cache);
     regionFactory.setInternalRegion(true);
     InternalRegionArguments internalRegionArguments = regionFactory.getInternalRegionArguments();
     String regionName = "regionName";
@@ -92,7 +92,7 @@ public class RegionFactoryImplTest {
   @Test
   public void createSubregionWithoutInternalRegionArgumentsCallsParentCreateSubregion()
       throws Exception {
-    RegionFactoryImpl<Object, Object> regionFactory = new RegionFactoryImpl<>(cache);
+    InternalRegionFactory<Object, Object> regionFactory = new InternalRegionFactory<>(cache);
     String regionName = "regionName";
     Region<?, ?> parent = mock(InternalRegion.class);
 

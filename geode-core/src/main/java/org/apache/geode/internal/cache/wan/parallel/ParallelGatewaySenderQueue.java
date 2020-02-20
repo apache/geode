@@ -69,12 +69,12 @@ import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
+import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.LocalRegion.InitializationLevel;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.cache.PrimaryBucketException;
-import org.apache.geode.internal.cache.RegionFactoryImpl;
 import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.cache.partitioned.colocation.ColocationLoggerFactory;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
@@ -320,7 +320,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
       final String prQName = getQueueName(sender.getId(), userRegion.getFullPath());
       prQ = (PartitionedRegion) cache.getRegion(prQName);
       if (prQ == null) {
-        RegionFactoryImpl fact = cache.createInternalRegionFactory();
+        InternalRegionFactory fact = cache.createInternalRegionFactory();
         // Fix for 48621 - don't enable concurrency checks
         // for queue buckets., event with persistence
         fact.setConcurrencyChecksEnabled(false);
@@ -464,7 +464,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         } else {
           regionShortcut = RegionShortcut.PARTITION;
         }
-        RegionFactoryImpl fact = cache.createInternalRegionFactory(regionShortcut);
+        InternalRegionFactory fact = cache.createInternalRegionFactory(regionShortcut);
 
         fact.setConcurrencyChecksEnabled(false);
         PartitionAttributesFactory pfact = new PartitionAttributesFactory();

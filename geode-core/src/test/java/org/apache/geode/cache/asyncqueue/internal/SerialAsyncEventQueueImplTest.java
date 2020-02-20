@@ -33,8 +33,8 @@ import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.internal.cache.RegionFactoryImpl;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.GatewaySenderAdvisor;
 import org.apache.geode.internal.cache.wan.GatewaySenderAttributes;
@@ -54,13 +54,13 @@ public class SerialAsyncEventQueueImplTest {
   private StatisticsFactory statisticsFactory;
   private GatewaySenderAttributes gatewaySenderAttributes;
   private StatisticsClock statisticsClock;
-  private RegionFactoryImpl regionFactory;
+  private InternalRegionFactory regionFactory;
 
   @Before
   public void setUp() throws Exception {
     cache = Fakes.cache();
     when(cache.getRegion(any())).thenReturn(null);
-    regionFactory = mock(RegionFactoryImpl.class);
+    regionFactory = mock(InternalRegionFactory.class);
     when(regionFactory.create(any())).thenReturn(mock(LocalRegion.class));
     when(cache.createInternalRegionFactory(any())).thenReturn(regionFactory);
 

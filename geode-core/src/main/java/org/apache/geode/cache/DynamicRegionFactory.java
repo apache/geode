@@ -42,10 +42,10 @@ import org.apache.geode.internal.cache.InitialImageOperation;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.InternalRegionArguments;
+import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.RegionEventImpl;
-import org.apache.geode.internal.cache.RegionFactoryImpl;
 import org.apache.geode.security.GemFireSecurityException;
 
 /**
@@ -245,7 +245,7 @@ public abstract class DynamicRegionFactory {
       this.dynamicRegionList = theCache.getRegion(DYNAMIC_REGION_LIST_NAME);
       final boolean isClient = this.config.getPoolName() != null;
       if (this.dynamicRegionList == null) {
-        RegionFactoryImpl factory = cache.createInternalRegionFactory();
+        InternalRegionFactory factory = cache.createInternalRegionFactory();
         factory.setDestroyLockFlag(true).setInternalRegion(true).setSnapshotInputStream(null)
             .setImageTarget(null);
         if (this.config.getPersistBackup()) {

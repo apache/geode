@@ -71,7 +71,7 @@ import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.internal.JarDeployer;
 import org.apache.geode.internal.cache.ClusterConfigurationLoader;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.RegionFactoryImpl;
+import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
 import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
@@ -804,7 +804,7 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
       cache.createDiskStoreFactory().setDiskDirs(diskDirs).setAutoCompact(true)
           .setMaxOplogSize(10).create(CLUSTER_CONFIG_DISK_STORE_NAME);
 
-      RegionFactoryImpl<String, Configuration> regionFactory =
+      InternalRegionFactory<String, Configuration> regionFactory =
           cache.createInternalRegionFactory(RegionShortcut.REPLICATE_PERSISTENT);
       regionFactory.addCacheListener(new ConfigurationChangeListener(this, cache));
       regionFactory.setDiskStoreName(CLUSTER_CONFIG_DISK_STORE_NAME);

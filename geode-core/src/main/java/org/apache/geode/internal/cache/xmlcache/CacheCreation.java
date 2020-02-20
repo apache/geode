@@ -134,11 +134,11 @@ import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.internal.cache.InternalCacheServer;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.InternalRegionArguments;
+import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PoolFactoryImpl;
 import org.apache.geode.internal.cache.PoolManagerImpl;
-import org.apache.geode.internal.cache.RegionFactoryImpl;
 import org.apache.geode.internal.cache.RegionListener;
 import org.apache.geode.internal.cache.TXEntryStateFactory;
 import org.apache.geode.internal.cache.TXManagerImpl;
@@ -1111,25 +1111,25 @@ public class CacheCreation implements InternalCache {
   @Override
   public <K, V> RegionFactory<K, V> createRegionFactory(RegionShortcut shortcut) {
     throwIfClient();
-    return new RegionFactoryImpl<>(this, shortcut);
+    return new InternalRegionFactory<>(this, shortcut);
   }
 
   @Override
   public <K, V> RegionFactory<K, V> createRegionFactory() {
     throwIfClient();
-    return new RegionFactoryImpl<>(this);
+    return new InternalRegionFactory<>(this);
   }
 
   @Override
   public <K, V> RegionFactory<K, V> createRegionFactory(String regionAttributesId) {
     throwIfClient();
-    return new RegionFactoryImpl<>(this, regionAttributesId);
+    return new InternalRegionFactory<>(this, regionAttributesId);
   }
 
   @Override
   public <K, V> RegionFactory<K, V> createRegionFactory(RegionAttributes<K, V> regionAttributes) {
     throwIfClient();
-    return new RegionFactoryImpl<>(this, regionAttributes);
+    return new InternalRegionFactory<>(this, regionAttributes);
   }
 
   @Override

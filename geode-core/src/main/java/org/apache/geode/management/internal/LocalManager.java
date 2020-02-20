@@ -41,7 +41,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.HasCachePerfStats;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.RegionFactoryImpl;
+import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -125,7 +125,7 @@ public class LocalManager extends Manager {
         }
       };
 
-      RegionFactoryImpl<String, Object> monitorFactory = cache.createInternalRegionFactory();
+      InternalRegionFactory<String, Object> monitorFactory = cache.createInternalRegionFactory();
       monitorFactory.setScope(Scope.DISTRIBUTED_NO_ACK);
       monitorFactory.setDataPolicy(DataPolicy.REPLICATE);
       monitorFactory.setConcurrencyChecksEnabled(false);
@@ -134,7 +134,7 @@ public class LocalManager extends Manager {
       monitorFactory.setIsUsedForMetaRegion(true);
       monitorFactory.setCachePerfStatsHolder(monitoringRegionStats);
 
-      RegionFactoryImpl<NotificationKey, Notification> notificationFactory =
+      InternalRegionFactory<NotificationKey, Notification> notificationFactory =
           cache.createInternalRegionFactory();
       notificationFactory.setScope(Scope.DISTRIBUTED_NO_ACK);
       notificationFactory.setDataPolicy(DataPolicy.EMPTY);

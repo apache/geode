@@ -47,7 +47,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.CacheConfig;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.RegionFactoryImpl;
+import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXStateProxy;
 import org.apache.geode.internal.statistics.StatisticsManager;
@@ -65,7 +65,7 @@ public class PeerTypeRegistrationTest {
   @SuppressWarnings("unchecked")
   private final Region<Object, Object> region = mock(Region.class);
   private final TXManagerImpl txManager = mock(TXManagerImpl.class);
-  private final RegionFactoryImpl factory = mock(RegionFactoryImpl.class);
+  private final InternalRegionFactory factory = mock(InternalRegionFactory.class);
 
   @Before
   public void setUp() throws IOException, ClassNotFoundException {

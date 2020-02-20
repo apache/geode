@@ -574,11 +574,11 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime, Inte
 
   InternalQueryService getInternalQueryService();
 
-  default <K, V> RegionFactoryImpl<K, V> createInternalRegionFactory() {
-    return (RegionFactoryImpl) createRegionFactory();
+  default <K, V> InternalRegionFactory<K, V> createInternalRegionFactory() {
+    return (InternalRegionFactory) createRegionFactory();
   }
 
-  default <K, V> RegionFactoryImpl<K, V> createInternalRegionFactory(RegionShortcut shortcut) {
-    return (RegionFactoryImpl) createRegionFactory(shortcut);
+  default <K, V> InternalRegionFactory<K, V> createInternalRegionFactory(RegionShortcut shortcut) {
+    return (InternalRegionFactory) createRegionFactory(shortcut);
   }
 }

@@ -25,7 +25,7 @@ import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.RegionFactoryImpl;
+import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.management.api.ClusterManagementOperation;
 import org.apache.geode.management.runtime.OperationResult;
 
@@ -62,7 +62,7 @@ public class RegionOperationStateStore
       return region;
     }
 
-    RegionFactoryImpl<String, OperationState<ClusterManagementOperation<OperationResult>, OperationResult>> regionFactory =
+    InternalRegionFactory<String, OperationState<ClusterManagementOperation<OperationResult>, OperationResult>> regionFactory =
         cache.createInternalRegionFactory(RegionShortcut.REPLICATE);
     regionFactory.setIsUsedForMetaRegion(true).setMetaRegionWithTransactions(false);
     return regionFactory.create(OPERATION_STATE_REGION_NAME);

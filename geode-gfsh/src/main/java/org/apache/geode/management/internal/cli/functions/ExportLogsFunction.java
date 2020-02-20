@@ -35,7 +35,7 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheForClientAccess;
-import org.apache.geode.internal.cache.RegionFactoryImpl;
+import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.logging.internal.log4j.LogLevel;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -121,7 +121,7 @@ public class ExportLogsFunction implements InternalFunction {
     InternalCacheForClientAccess cacheForClientAccess = cache.getCacheForProcessingClientRequests();
     Region exportLogsRegion = cacheForClientAccess.getInternalRegion(EXPORT_LOGS_REGION);
     if (exportLogsRegion == null) {
-      RegionFactoryImpl<Object, Object> regionFactory =
+      InternalRegionFactory<Object, Object> regionFactory =
           cacheForClientAccess.createInternalRegionFactory(RegionShortcut.REPLICATE_PROXY);
       if (isInitiatingMember) {
         regionFactory.setCacheWriter(new ExportLogsCacheWriter());

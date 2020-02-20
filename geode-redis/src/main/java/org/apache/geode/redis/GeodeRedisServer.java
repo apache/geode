@@ -61,7 +61,7 @@ import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.RegionFactoryImpl;
+import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.internal.hll.HyperLogLogPlus;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
@@ -431,7 +431,7 @@ public class GeodeRedisServer {
         hLLRegion = regionFactory.create(HLL_REGION);
       }
       if ((redisMetaData = cache.getRegion(REDIS_META_DATA_REGION)) == null) {
-        RegionFactoryImpl<String, RedisDataType> redisMetaDataFactory =
+        InternalRegionFactory<String, RedisDataType> redisMetaDataFactory =
             gemFireCache.createInternalRegionFactory();
         redisMetaDataFactory.addCacheListener(metaListener);
         redisMetaDataFactory.setDataPolicy(DataPolicy.REPLICATE);

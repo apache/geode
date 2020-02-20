@@ -33,39 +33,32 @@ import org.apache.geode.internal.cache.persistence.PersistenceAdvisor;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 
 /**
- * {@code RegionFactoryImpl} extends RegionFactory adding {@link RegionShortcut} support.
- * It also supports setting InternalRegionArguments.
+ * {@code InternalRegionFactory} extends RegionFactory adding {@link RegionShortcut} support.
+ * It also supports setting {@link InternalRegionArguments}.
  *
  * @since GemFire 6.5
  */
-public class RegionFactoryImpl<K, V> extends RegionFactory<K, V> {
+public class InternalRegionFactory<K, V> extends RegionFactory<K, V> {
   private InternalRegionArguments internalRegionArguments;
 
-  public RegionFactoryImpl(InternalCache cache) {
+  public InternalRegionFactory(InternalCache cache) {
     super(cache);
   }
 
-  public RegionFactoryImpl(InternalCache cache, RegionShortcut pra) {
+  public InternalRegionFactory(InternalCache cache, RegionShortcut pra) {
     super(cache, pra);
   }
 
-  public RegionFactoryImpl(InternalCache cache, RegionAttributes<K, V> ra) {
+  public InternalRegionFactory(InternalCache cache, RegionAttributes<K, V> ra) {
     super(cache, ra);
   }
 
-  public RegionFactoryImpl(InternalCache cache, String regionAttributesId) {
+  public InternalRegionFactory(InternalCache cache, String regionAttributesId) {
     super(cache, regionAttributesId);
   }
 
-  public RegionFactoryImpl(RegionFactory<K, V> regionFactory) {
+  public InternalRegionFactory(RegionFactory<K, V> regionFactory) {
     super(regionFactory);
-  }
-
-  private InternalRegionArguments makeInternal() {
-    if (internalRegionArguments == null) {
-      internalRegionArguments = new InternalRegionArguments();
-    }
-    return internalRegionArguments;
   }
 
   /**
@@ -103,137 +96,147 @@ public class RegionFactoryImpl<K, V> extends RegionFactory<K, V> {
     }
   }
 
-  public RegionFactoryImpl<K, V> setIsUsedForPartitionedRegionAdmin(boolean adminFlag) {
+  public InternalRegionArguments getInternalRegionArguments() {
+    return internalRegionArguments;
+  }
+
+  public InternalRegionFactory<K, V> setIsUsedForPartitionedRegionAdmin(boolean adminFlag) {
     makeInternal().setIsUsedForPartitionedRegionAdmin(adminFlag);
     return this;
   }
 
-  public RegionFactoryImpl<K, V> setPartitionedRegionBucketRedundancy(int redundancy) {
+  public InternalRegionFactory<K, V> setPartitionedRegionBucketRedundancy(int redundancy) {
     makeInternal().setPartitionedRegionBucketRedundancy(redundancy);
     return this;
   }
 
-  public RegionFactoryImpl<K, V> setPartitionedRegionAdvisor(RegionAdvisor advisor) {
+  public InternalRegionFactory<K, V> setPartitionedRegionAdvisor(RegionAdvisor advisor) {
     makeInternal().setPartitionedRegionAdvisor(advisor);
     return this;
   }
 
-  public RegionFactoryImpl<K, V> setBucketAdvisor(BucketAdvisor advisor) {
+  public InternalRegionFactory<K, V> setBucketAdvisor(BucketAdvisor advisor) {
     makeInternal().setBucketAdvisor(advisor);
     return this;
   }
 
-  public RegionFactoryImpl<K, V> setPersistenceAdvisor(PersistenceAdvisor persistenceAdvisor) {
+  public InternalRegionFactory<K, V> setPersistenceAdvisor(PersistenceAdvisor persistenceAdvisor) {
     makeInternal().setPersistenceAdvisor(persistenceAdvisor);
     return this;
   }
 
-  public RegionFactoryImpl<K, V> setDiskRegion(DiskRegion diskRegion) {
+  public InternalRegionFactory<K, V> setDiskRegion(DiskRegion diskRegion) {
     makeInternal().setDiskRegion(diskRegion);
     return this;
   }
 
-  public RegionFactoryImpl<K, V> setIsUsedForMetaRegion(boolean isMetaRegion) {
+  public InternalRegionFactory<K, V> setIsUsedForMetaRegion(boolean isMetaRegion) {
     makeInternal().setIsUsedForMetaRegion(isMetaRegion);
     return this;
   }
 
-  public RegionFactoryImpl<K, V> setMetaRegionWithTransactions(boolean metaRegionWithTransactions) {
+  public InternalRegionFactory<K, V> setMetaRegionWithTransactions(
+      boolean metaRegionWithTransactions) {
     makeInternal().setMetaRegionWithTransactions(metaRegionWithTransactions);
     return this;
   }
 
-  public RegionFactoryImpl<K, V> setLoaderHelperFactory(LoaderHelperFactory loaderHelperFactory) {
+  public InternalRegionFactory<K, V> setLoaderHelperFactory(
+      LoaderHelperFactory loaderHelperFactory) {
     makeInternal().setLoaderHelperFactory(loaderHelperFactory);
     return this;
   }
 
-  public RegionFactoryImpl<K, V> setDestroyLockFlag(boolean getDestoryLock) {
+  public InternalRegionFactory<K, V> setDestroyLockFlag(boolean getDestoryLock) {
     makeInternal().setDestroyLockFlag(getDestoryLock);
     return this;
   }
 
-  public RegionFactoryImpl<K, V> setSnapshotInputStream(InputStream snapshotInputStream) {
+  public InternalRegionFactory<K, V> setSnapshotInputStream(InputStream snapshotInputStream) {
     makeInternal().setSnapshotInputStream(snapshotInputStream);
     return this;
   }
 
-  public RegionFactoryImpl<K, V> setImageTarget(InternalDistributedMember imageTarget) {
+  public InternalRegionFactory<K, V> setImageTarget(InternalDistributedMember imageTarget) {
     makeInternal().setImageTarget(imageTarget);
     return this;
   }
 
-  public RegionFactoryImpl<K, V> setRecreateFlag(boolean recreate) {
+  public InternalRegionFactory<K, V> setRecreateFlag(boolean recreate) {
     makeInternal().setRecreateFlag(recreate);
     return this;
   }
 
-  public RegionFactoryImpl<K, V> setInternalMetaRegion(LocalRegion r) {
+  public InternalRegionFactory<K, V> setInternalMetaRegion(LocalRegion r) {
     makeInternal().setInternalMetaRegion(r);
     return this;
   }
 
-  public RegionFactoryImpl<K, V> setCachePerfStatsHolder(HasCachePerfStats cachePerfStatsHolder) {
+  public InternalRegionFactory<K, V> setCachePerfStatsHolder(
+      HasCachePerfStats cachePerfStatsHolder) {
     makeInternal().setCachePerfStatsHolder(cachePerfStatsHolder);
     return this;
   }
 
-  public RegionFactoryImpl<K, V> setPartitionedRegion(PartitionedRegion partitionedRegion) {
+  public InternalRegionFactory<K, V> setPartitionedRegion(PartitionedRegion partitionedRegion) {
     makeInternal().setPartitionedRegion(partitionedRegion);
     return this;
   }
 
-  public RegionFactoryImpl<K, V> setTestCallable(LocalRegion.TestCallable c) {
+  public InternalRegionFactory<K, V> setTestCallable(LocalRegion.TestCallable c) {
     makeInternal().setTestCallable(c);
     return this;
   }
 
-  public RegionFactoryImpl<K, V> setUserAttribute(Object userAttr) {
+  public InternalRegionFactory<K, V> setUserAttribute(Object userAttr) {
     makeInternal().setUserAttribute(userAttr);
     return this;
   }
 
-  public RegionFactoryImpl<K, V> setIsUsedForSerialGatewaySenderQueue(boolean queueFlag) {
+  public InternalRegionFactory<K, V> setIsUsedForSerialGatewaySenderQueue(boolean queueFlag) {
     makeInternal().setIsUsedForSerialGatewaySenderQueue(queueFlag);
     return this;
   }
 
-  public RegionFactoryImpl<K, V> setIsUsedForParallelGatewaySenderQueue(boolean queueFlag) {
+  public InternalRegionFactory<K, V> setIsUsedForParallelGatewaySenderQueue(boolean queueFlag) {
     makeInternal().setIsUsedForParallelGatewaySenderQueue(queueFlag);
     return this;
   }
 
-  public RegionFactoryImpl<K, V> setParallelGatewaySender(AbstractGatewaySender pgSender) {
+  public InternalRegionFactory<K, V> setParallelGatewaySender(AbstractGatewaySender pgSender) {
     makeInternal().setParallelGatewaySender(pgSender);
     return this;
   }
 
-  public RegionFactoryImpl<K, V> setSerialGatewaySender(AbstractGatewaySender serialSender) {
+  public InternalRegionFactory<K, V> setSerialGatewaySender(AbstractGatewaySender serialSender) {
     makeInternal().setSerialGatewaySender(serialSender);
     return this;
   }
 
-  public RegionFactoryImpl<K, V> setIndexes(List indexes) {
+  public InternalRegionFactory<K, V> setIndexes(List indexes) {
     makeInternal().setIndexes(indexes);
     return this;
   }
 
-  public RegionFactoryImpl<K, V> addCacheServiceProfile(CacheServiceProfile profile) {
+  public InternalRegionFactory<K, V> addCacheServiceProfile(CacheServiceProfile profile) {
     makeInternal().addCacheServiceProfile(profile);
     return this;
   }
 
-  public RegionFactoryImpl<K, V> addInternalAsyncEventQueueId(String aeqId) {
+  public InternalRegionFactory<K, V> addInternalAsyncEventQueueId(String aeqId) {
     makeInternal().addInternalAsyncEventQueueId(aeqId);
     return this;
   }
 
-  public RegionFactoryImpl<K, V> setInternalRegion(final boolean internalRegion) {
+  public InternalRegionFactory<K, V> setInternalRegion(final boolean internalRegion) {
     makeInternal().setInternalRegion(internalRegion);
     return this;
   }
 
-  public InternalRegionArguments getInternalRegionArguments() {
+  private InternalRegionArguments makeInternal() {
+    if (internalRegionArguments == null) {
+      internalRegionArguments = new InternalRegionArguments();
+    }
     return internalRegionArguments;
   }
 }

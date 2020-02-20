@@ -57,8 +57,8 @@ import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
+import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.internal.cache.RegionFactoryImpl;
 import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.event.EventTracker;
@@ -853,7 +853,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
       } else {
         regionShortcut = RegionShortcut.REPLICATE;
       }
-      RegionFactoryImpl<Long, AsyncEvent> factory =
+      InternalRegionFactory<Long, AsyncEvent> factory =
           gemCache.createInternalRegionFactory(regionShortcut);
       if (NO_ACK) {
         factory.setScope(Scope.DISTRIBUTED_NO_ACK);

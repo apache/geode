@@ -36,7 +36,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.cache.HasCachePerfStats;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheForClientAccess;
-import org.apache.geode.internal.cache.RegionFactoryImpl;
+import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.management.DistributedSystemMXBean;
 
@@ -46,8 +46,8 @@ public class LocalManagerTest {
   private InternalDistributedSystem system;
   private SystemManagementService service;
   private InternalCache cache;
-  private RegionFactoryImpl regionFactory1;
-  private RegionFactoryImpl regionFactory2;
+  private InternalRegionFactory regionFactory1;
+  private InternalRegionFactory regionFactory2;
   private StatisticsFactory statisticsFactory;
   private StatisticsClock statisticsClock;
   private InternalCacheForClientAccess cacheForClientAccess;
@@ -58,8 +58,8 @@ public class LocalManagerTest {
     system = mock(InternalDistributedSystem.class);
     service = mock(SystemManagementService.class);
     cache = mock(InternalCache.class);
-    regionFactory1 = mock(RegionFactoryImpl.class);
-    regionFactory2 = mock(RegionFactoryImpl.class);
+    regionFactory1 = mock(InternalRegionFactory.class);
+    regionFactory2 = mock(InternalRegionFactory.class);
     statisticsFactory = mock(StatisticsFactory.class);
     statisticsClock = mock(StatisticsClock.class);
     cacheForClientAccess = mock(InternalCacheForClientAccess.class);

@@ -37,8 +37,8 @@ import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.internal.locks.DistributedMemberLock;
 import org.apache.geode.internal.cache.CacheFactoryStatics;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.cache.RegionFactoryImpl;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
 import org.apache.geode.management.internal.security.ResourcePermissions;
@@ -258,7 +258,7 @@ public class CreateRegionFunction implements Function, Declarable, DataSerializa
       return region;
     }
 
-    RegionFactoryImpl<String, RegionConfiguration> regionFactory =
+    InternalRegionFactory<String, RegionConfiguration> regionFactory =
         cache.createInternalRegionFactory(RegionShortcut.REPLICATE);
     regionFactory.addCacheListener(new RegionConfigurationCacheListener());
     regionFactory.setInternalRegion(true);

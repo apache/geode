@@ -48,7 +48,7 @@ import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.internal.CopyOnWriteHashSet;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.RegionFactoryImpl;
+import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXStateProxy;
 import org.apache.geode.internal.util.concurrent.CopyOnWriteHashMap;
@@ -137,7 +137,7 @@ public class PeerTypeRegistration implements TypeRegistration {
       logger.debug("Flushing TypeRegistry");
     }
 
-    RegionFactoryImpl factory = cache.createInternalRegionFactory();
+    InternalRegionFactory factory = cache.createInternalRegionFactory();
 
     factory.setScope(Scope.DISTRIBUTED_ACK);
     if (cache.getPdxPersistent()) {

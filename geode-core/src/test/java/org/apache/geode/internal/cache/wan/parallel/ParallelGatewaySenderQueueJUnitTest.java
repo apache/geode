@@ -42,9 +42,9 @@ import org.apache.geode.internal.cache.AbstractBucketRegionQueue;
 import org.apache.geode.internal.cache.BucketRegionQueue;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
-import org.apache.geode.internal.cache.RegionFactoryImpl;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
@@ -151,7 +151,7 @@ public class ParallelGatewaySenderQueueJUnitTest {
     when(mockMetaRegion.getDataStore()).thenReturn(dataStore);
     when(dataStore.getSizeOfLocalPrimaryBuckets()).thenReturn(3);
     when(metaRegionFactory.newMetataRegion(any(), any(), any(), any())).thenReturn(mockMetaRegion);
-    RegionFactoryImpl regionFactory = mock(RegionFactoryImpl.class);
+    InternalRegionFactory regionFactory = mock(InternalRegionFactory.class);
     when(regionFactory.create(any())).thenReturn(mockMetaRegion);
     when(cache.createInternalRegionFactory(any())).thenReturn(regionFactory);
 
