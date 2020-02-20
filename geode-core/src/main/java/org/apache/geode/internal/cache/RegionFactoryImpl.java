@@ -60,11 +60,6 @@ public class RegionFactoryImpl<K, V> extends RegionFactory<K, V> {
     this.internalRegionArguments = internalRegionArguments;
   }
 
-  public static InternalRegionArguments makeInternal(RegionFactory regionFactory) {
-    RegionFactoryImpl internalRegionFactory = (RegionFactoryImpl) regionFactory;
-    return internalRegionFactory.makeInternal();
-  }
-
   public InternalRegionArguments makeInternal() {
     if (internalRegionArguments == null) {
       internalRegionArguments = new InternalRegionArguments();

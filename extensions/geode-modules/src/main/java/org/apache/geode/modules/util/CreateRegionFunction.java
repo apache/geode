@@ -24,20 +24,19 @@ import java.util.Collection;
 import java.util.Collections;
 
 import org.apache.geode.DataSerializable;
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
-import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.internal.locks.DistributedMemberLock;
+import org.apache.geode.internal.cache.CacheFactoryStatics;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RegionFactoryImpl;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
@@ -53,11 +52,11 @@ public class CreateRegionFunction implements Function, Declarable, DataSerializa
   static final String REGION_CONFIGURATION_METADATA_REGION =
       "__regionConfigurationMetadata";
 
-  private final Cache cache;
+  private final InternalCache cache;
   private final Region<String, RegionConfiguration> regionConfigurationsRegion;
 
   public CreateRegionFunction() {
-    this.cache = CacheFactory.getAnyInstance();
+    this.cache = CacheFactoryStatics.getAnyInstance();
     this.regionConfigurationsRegion = createRegionConfigurationMetadataRegion();
   }
 
@@ -259,10 +258,10 @@ public class CreateRegionFunction implements Function, Declarable, DataSerializa
       return region;
     }
 
-    RegionFactory<String, RegionConfiguration> regionFactory =
-        cache.createRegionFactory(RegionShortcut.REPLICATE);
+    RegionFactoryImpl<String, RegionConfiguration> regionFactory =
+        cache.createInternalRegionFactory(RegionShortcut.REPLICATE);
     regionFactory.addCacheListener(new RegionConfigurationCacheListener());
-    RegionFactoryImpl.makeInternal(regionFactory).setInternalRegion(true);
+    regionFactory.makeInternal().setInternalRegion(true);
     return regionFactory.create(REGION_CONFIGURATION_METADATA_REGION);
   }
 

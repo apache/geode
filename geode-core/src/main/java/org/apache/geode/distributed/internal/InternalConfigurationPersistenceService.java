@@ -61,7 +61,6 @@ import org.xml.sax.SAXException;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
@@ -805,11 +804,11 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
       cache.createDiskStoreFactory().setDiskDirs(diskDirs).setAutoCompact(true)
           .setMaxOplogSize(10).create(CLUSTER_CONFIG_DISK_STORE_NAME);
 
-      RegionFactory<String, Configuration> regionFactory =
-          cache.createRegionFactory(RegionShortcut.REPLICATE_PERSISTENT);
+      RegionFactoryImpl<String, Configuration> regionFactory =
+          cache.createInternalRegionFactory(RegionShortcut.REPLICATE_PERSISTENT);
       regionFactory.addCacheListener(new ConfigurationChangeListener(this, cache));
       regionFactory.setDiskStoreName(CLUSTER_CONFIG_DISK_STORE_NAME);
-      RegionFactoryImpl.makeInternal(regionFactory).setIsUsedForMetaRegion(true)
+      regionFactory.makeInternal().setIsUsedForMetaRegion(true)
           .setMetaRegionWithTransactions(false);
       return regionFactory.create(CONFIG_REGION_NAME);
     } catch (RuntimeException e) {

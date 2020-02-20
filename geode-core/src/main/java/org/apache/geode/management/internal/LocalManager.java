@@ -35,7 +35,6 @@ import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.RegionExistsException;
-import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -126,22 +125,22 @@ public class LocalManager extends Manager {
         }
       };
 
-      RegionFactory<String, Object> monitorFactory = cache.createRegionFactory();
+      RegionFactoryImpl<String, Object> monitorFactory = cache.createInternalRegionFactory();
       monitorFactory.setScope(Scope.DISTRIBUTED_NO_ACK);
       monitorFactory.setDataPolicy(DataPolicy.REPLICATE);
       monitorFactory.setConcurrencyChecksEnabled(false);
       CacheListener<String, Object> localListener = new MonitoringRegionCacheListener(service);
       monitorFactory.addCacheListener(localListener);
-      RegionFactoryImpl.makeInternal(monitorFactory)
+      monitorFactory.makeInternal()
           .setIsUsedForMetaRegion(true)
           .setCachePerfStatsHolder(monitoringRegionStats);
 
-      RegionFactory<NotificationKey, Notification> notificationFactory =
-          cache.createRegionFactory();
+      RegionFactoryImpl<NotificationKey, Notification> notificationFactory =
+          cache.createInternalRegionFactory();
       notificationFactory.setScope(Scope.DISTRIBUTED_NO_ACK);
       notificationFactory.setDataPolicy(DataPolicy.EMPTY);
       notificationFactory.setConcurrencyChecksEnabled(false);
-      RegionFactoryImpl.makeInternal(notificationFactory)
+      notificationFactory.makeInternal()
           .setIsUsedForMetaRegion(true)
           .setCachePerfStatsHolder(monitoringRegionStats);
 

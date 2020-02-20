@@ -24,12 +24,11 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.internal.HttpService;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.cache.CacheFactoryStatics;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.RegionFactoryImpl;
 import org.apache.geode.internal.inet.LocalHostUtil;
@@ -149,14 +148,15 @@ public class RestAgent {
       if (logger.isDebugEnabled()) {
         logger.debug("Starting creation of  __ParameterizedQueries__ region");
       }
-      InternalCache cache = (InternalCache) CacheFactory.getAnyInstance();
+      InternalCache cache = CacheFactoryStatics.getAnyInstance();
       if (cache != null) {
-        RegionFactory<String, String> factory = cache.createRegionFactory(RegionShortcut.REPLICATE);
+        RegionFactoryImpl<String, String> factory =
+            cache.createInternalRegionFactory(RegionShortcut.REPLICATE);
         factory.setConcurrencyChecksEnabled(false);
         factory.setKeyConstraint(String.class);
         factory.setStatisticsEnabled(false);
         factory.setValueConstraint(String.class);
-        RegionFactoryImpl.makeInternal(factory).setIsUsedForMetaRegion(true);
+        factory.makeInternal().setIsUsedForMetaRegion(true);
         factory.create("__ParameterizedQueries__");
         if (logger.isDebugEnabled()) {
           logger.debug("Successfully created __ParameterizedQueries__ region");

@@ -39,7 +39,6 @@ import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.RegionExistsException;
-import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.client.internal.LocatorDiscoveryCallback;
@@ -1298,7 +1297,8 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     final InternalCache cache = sender.getCache();
     Region<String, Integer> region = cache.getRegion(META_DATA_REGION_NAME);
     if (region == null) {
-      RegionFactory<String, Integer> factory = cache.createRegionFactory(RegionShortcut.REPLICATE);
+      RegionFactoryImpl<String, Integer> factory =
+          cache.createInternalRegionFactory(RegionShortcut.REPLICATE);
 
       // Create a stats holder for the meta data stats
       final HasCachePerfStats statsHolder = new HasCachePerfStats() {
@@ -1308,7 +1308,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
               "RegionStats-" + META_DATA_REGION_NAME, sender.statisticsClock);
         }
       };
-      RegionFactoryImpl.makeInternal(factory)
+      factory.makeInternal()
           .setIsUsedForMetaRegion(true)
           .setCachePerfStatsHolder(statsHolder);
       try {

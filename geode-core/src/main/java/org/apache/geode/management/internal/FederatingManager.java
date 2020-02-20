@@ -41,7 +41,6 @@ import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.RegionExistsException;
-import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.distributed.DistributedMember;
@@ -402,20 +401,20 @@ public class FederatingManager extends Manager {
           };
 
           // Monitoring region for member is created
-          RegionFactory<String, Object> monitorFactory = cache.createRegionFactory();
+          RegionFactoryImpl<String, Object> monitorFactory = cache.createInternalRegionFactory();
           monitorFactory.setScope(Scope.DISTRIBUTED_NO_ACK);
           monitorFactory.setDataPolicy(DataPolicy.REPLICATE);
           monitorFactory.setConcurrencyChecksEnabled(false);
           ManagementCacheListener managementCacheListener =
               new ManagementCacheListener(proxyFactory);
           monitorFactory.addCacheListener(managementCacheListener);
-          RegionFactoryImpl.makeInternal(monitorFactory)
+          monitorFactory.makeInternal()
               .setIsUsedForMetaRegion(true)
               .setCachePerfStatsHolder(monitoringRegionStats);
 
           // Notification region for member is created
-          RegionFactory<NotificationKey, Notification> notificationFactory =
-              cache.createRegionFactory();
+          RegionFactoryImpl<NotificationKey, Notification> notificationFactory =
+              cache.createInternalRegionFactory();
           notificationFactory.setScope(Scope.DISTRIBUTED_NO_ACK);
           notificationFactory.setDataPolicy(DataPolicy.REPLICATE);
           notificationFactory.setConcurrencyChecksEnabled(false);
@@ -427,7 +426,7 @@ public class FederatingManager extends Manager {
 
           NotificationCacheListener notifListener = new NotificationCacheListener(proxyFactory);
           notificationFactory.addCacheListener(notifListener);
-          RegionFactoryImpl.makeInternal(notificationFactory)
+          notificationFactory.makeInternal()
               .setIsUsedForMetaRegion(true)
               .setCachePerfStatsHolder(monitoringRegionStats);
 
