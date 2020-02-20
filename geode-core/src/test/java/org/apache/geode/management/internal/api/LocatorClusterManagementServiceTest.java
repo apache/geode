@@ -17,7 +17,6 @@ package org.apache.geode.management.internal.api;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
@@ -42,8 +41,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.IntStream;
 
 import com.google.common.collect.Sets;
 import org.junit.Before;
@@ -71,7 +68,6 @@ import org.apache.geode.management.configuration.Member;
 import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.configuration.RegionType;
 import org.apache.geode.management.internal.CacheElementOperation;
-import org.apache.geode.management.internal.ClusterManagementOperationStatusResult;
 import org.apache.geode.management.internal.configuration.mutators.CacheConfigurationManager;
 import org.apache.geode.management.internal.configuration.mutators.ConfigurationManager;
 import org.apache.geode.management.internal.configuration.mutators.GatewayReceiverConfigManager;
@@ -80,11 +76,13 @@ import org.apache.geode.management.internal.configuration.validators.CommonConfi
 import org.apache.geode.management.internal.configuration.validators.ConfigurationValidator;
 import org.apache.geode.management.internal.configuration.validators.MemberValidator;
 import org.apache.geode.management.internal.configuration.validators.RegionConfigValidator;
-import org.apache.geode.management.internal.operation.OperationHistoryManager.OperationInstance;
 import org.apache.geode.management.internal.operation.OperationManager;
+import org.apache.geode.management.internal.operation.OperationState;
+import org.apache.geode.management.operation.RebalanceOperation;
 import org.apache.geode.management.runtime.IndexInfo;
 import org.apache.geode.management.runtime.MemberInformation;
 import org.apache.geode.management.runtime.OperationResult;
+import org.apache.geode.management.runtime.RebalanceResult;
 import org.apache.geode.management.runtime.RuntimeRegionInfo;
 
 public class LocatorClusterManagementServiceTest {
@@ -101,6 +99,7 @@ public class LocatorClusterManagementServiceTest {
   private CommonConfigurationValidator cacheElementValidator;
   private CacheConfigurationManager<Region> regionManager;
   private MemberValidator memberValidator;
+  private RebalanceOperation rebalanceOperation;
 
   @Before
   public void before() throws Exception {
@@ -131,10 +130,15 @@ public class LocatorClusterManagementServiceTest {
 
     regionConfig = new Region();
     regionConfig.setName("region1");
+
+    rebalanceOperation = new RebalanceOperation();
   }
 
   @Test
   public void create_persistenceIsNull() {
+    org.apache.geode.cache.Region<Object, Object> region =
+        mock(org.apache.geode.cache.Region.class);
+    when(cache.getRegion(any())).thenReturn(region);
     service = new LocatorClusterManagementService(cache, null);
     assertThatThrownBy(() -> service.create(regionConfig))
         .hasMessageContaining("Cluster configuration service needs to be enabled");
@@ -161,7 +165,6 @@ public class LocatorClusterManagementServiceTest {
     verify(cacheElementValidator).validate(CacheElementOperation.DELETE, regionConfig);
     verify(regionValidator).validate(CacheElementOperation.DELETE, regionConfig);
     verify(memberValidator).findGroupsWithThisElement(regionConfig, regionManager);
-    verify(memberValidator);
     memberValidator.findServers("cluster");
   }
 
@@ -195,7 +198,8 @@ public class LocatorClusterManagementServiceTest {
     CacheConfig cacheConfig = new CacheConfig();
     when(persistenceService.getCacheConfig("cluster", true)).thenReturn(cacheConfig);
     doReturn(null).when(persistenceService).getConfiguration(any());
-    org.apache.geode.cache.Region mockRegion = mock(org.apache.geode.cache.Region.class);
+    org.apache.geode.cache.Region<String, Object> mockRegion =
+        mock(org.apache.geode.cache.Region.class);
     doReturn(mockRegion).when(persistenceService).getConfigurationRegion();
 
     regionConfig.setName("test");
@@ -243,8 +247,8 @@ public class LocatorClusterManagementServiceTest {
     region1group1.setName("region1");
     region1group1.setType(RegionType.REPLICATE);
 
-    List group2Regions = Collections.singletonList(region1group2);
-    List group1Regions = Collections.singletonList(region1group1);
+    List<Region> group2Regions = Collections.singletonList(region1group2);
+    List<Region> group1Regions = Collections.singletonList(region1group1);
     CacheConfig mockCacheConfigGroup2 = mock(CacheConfig.class);
     CacheConfig mockCacheConfigGroup1 = mock(CacheConfig.class);
     doReturn(mockCacheConfigGroup2).when(persistenceService).getCacheConfig(eq("group2"),
@@ -330,7 +334,8 @@ public class LocatorClusterManagementServiceTest {
     config.getRegions().add(regionConfig);
     doReturn(config).when(persistenceService).getCacheConfig(eq("cluster"), anyBoolean());
     doReturn(null).when(persistenceService).getConfiguration(any());
-    org.apache.geode.cache.Region mockRegion = mock(org.apache.geode.cache.Region.class);
+    org.apache.geode.cache.Region<String, Object> mockRegion =
+        mock(org.apache.geode.cache.Region.class);
     doReturn(mockRegion).when(persistenceService).getConfigurationRegion();
 
     Region region = new Region();
@@ -350,7 +355,8 @@ public class LocatorClusterManagementServiceTest {
     doReturn(Collections.emptySet()).when(memberValidator);
     memberValidator.findServers();
     doReturn(null).when(persistenceService).getConfiguration(any());
-    org.apache.geode.cache.Region mockRegion = mock(org.apache.geode.cache.Region.class);
+    org.apache.geode.cache.Region<String, Object> mockRegion =
+        mock(org.apache.geode.cache.Region.class);
     doReturn(mockRegion).when(persistenceService).getConfigurationRegion();
 
     ClusterManagementRealizationResult result = service.delete(regionConfig);
@@ -367,32 +373,29 @@ public class LocatorClusterManagementServiceTest {
     ClusterManagementOperation<OperationResult> operation = mock(ClusterManagementOperation.class);
     when(operation.getEndpoint()).thenReturn(URI);
     when(executorManager.submit(any()))
-        .thenReturn(new OperationInstance<>(null, "42", operation, new Date()));
-    ClusterManagementOperationResult<?> result = service.start(operation);
+        .thenReturn(new OperationState<>("42", operation, new Date()));
+    ClusterManagementOperationResult<?, ?> result = service.start(operation);
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.ACCEPTED);
     assertThat(result.getStatusMessage()).contains("Operation started");
   }
 
   @Test
-  public void checkStatusForNotFound() {
-    assertThatThrownBy(() -> service.checkStatus("123"))
+  public void getRebalanceWithNoOpThrows() {
+    assertThatThrownBy(() -> service.get(rebalanceOperation, "123"))
         .isInstanceOf(ClusterManagementException.class);
   }
 
   @Test
-  public void checkStatus() {
-    CompletableFuture future = mock(CompletableFuture.class);
-    OperationInstance operationInstance = mock(OperationInstance.class);
-    when(operationInstance.getFutureResult()).thenReturn(future);
-    when(operationInstance.getFutureOperationEnded()).thenReturn(future);
-    when(executorManager.getOperationInstance(any())).thenReturn(operationInstance);
-    when(future.isDone()).thenReturn(false);
-    ClusterManagementOperationStatusResult<OperationResult> result = service.checkStatus("456");
+  public void getRebalance() {
+    OperationState operationState = mock(OperationState.class);
+    when(executorManager.get(any())).thenReturn(operationState);
+    ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> result =
+        service.get(rebalanceOperation, "456");
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.IN_PROGRESS);
-    assertThat(result.getResult()).isNull();
+    assertThat(result.getOperationResult()).isNull();
 
-    when(future.isDone()).thenReturn(true);
-    result = service.checkStatus("456");
+    when(operationState.getOperationEnd()).thenReturn(new Date());
+    result = service.get(rebalanceOperation, "456");
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
   }
 
@@ -407,7 +410,7 @@ public class LocatorClusterManagementServiceTest {
   }
 
   @Test
-  public void get_whenResponseHasNoConfigurationResults() throws Exception {
+  public void get_whenResponseHasNoConfigurationResults() {
     Region filter = new Region();
     ClusterManagementListResult<Region, RuntimeRegionInfo> result =
         mock(ClusterManagementListResult.class);
@@ -421,7 +424,7 @@ public class LocatorClusterManagementServiceTest {
   }
 
   @Test
-  public void get_whenResponseHasConfigurationResults() throws Exception {
+  public void get_whenResponseHasConfigurationResults() {
     Region filter = new Region();
     ClusterManagementListResult<Region, RuntimeRegionInfo> listResult =
         mock(ClusterManagementListResult.class);
@@ -457,9 +460,4 @@ public class LocatorClusterManagementServiceTest {
         .hasMessageContaining("ENTITY_NOT_FOUND");
   }
 
-  private static <T> List<T> listOf(int count, Class<T> type) {
-    return IntStream.range(0, count)
-        .mapToObj(i -> mock(type))
-        .collect(toList());
-  }
 }

@@ -63,12 +63,11 @@ public class ClientClusterManagementServiceDUnitTest {
   public ClusterStartupRule cluster = new ClusterStartupRule(3);
 
   private ClusterManagementService client;
-  private LocatorWebContext webContext;
 
   @Before
   public void before() {
     cluster.setSkipLocalDistributedSystemCleanup(true);
-    webContext = new LocatorWebContext(webApplicationContext);
+    LocatorWebContext webContext = new LocatorWebContext(webApplicationContext);
 
     client = new ClusterManagementServiceBuilder().setTransport(
         new RestTemplateClusterManagementServiceTransport(
