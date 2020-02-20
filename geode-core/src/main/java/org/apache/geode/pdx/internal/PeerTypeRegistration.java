@@ -137,7 +137,7 @@ public class PeerTypeRegistration implements TypeRegistration {
       logger.debug("Flushing TypeRegistry");
     }
 
-    RegionFactoryImpl factory = getRegionFactory();
+    RegionFactoryImpl factory = cache.createInternalRegionFactory();
 
     factory.setScope(Scope.DISTRIBUTED_ACK);
     if (cache.getPdxPersistent()) {
@@ -194,7 +194,8 @@ public class PeerTypeRegistration implements TypeRegistration {
 
     });
 
-    factory.makeInternal().setIsUsedForMetaRegion(true).setMetaRegionWithTransactions(true);
+    factory.setIsUsedForMetaRegion(true);
+    factory.setMetaRegionWithTransactions(true);
     try {
       idToType = factory.create(REGION_NAME);
     } catch (TimeoutException | RegionExistsException ex) {
@@ -770,11 +771,6 @@ public class PeerTypeRegistration implements TypeRegistration {
       return 0;
     }
     return getIdToType().size();
-  }
-
-  @VisibleForTesting
-  protected RegionFactoryImpl getRegionFactory() {
-    return (RegionFactoryImpl) cache.createRegionFactory();
   }
 
   @VisibleForTesting

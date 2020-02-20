@@ -126,7 +126,7 @@ public class ExportLogsFunction implements InternalFunction {
       if (isInitiatingMember) {
         regionFactory.setCacheWriter(new ExportLogsCacheWriter());
       }
-      regionFactory.makeInternal().setIsUsedForMetaRegion(true);
+      regionFactory.setIsUsedForMetaRegion(true);
       exportLogsRegion = regionFactory.create(EXPORT_LOGS_REGION);
     }
 

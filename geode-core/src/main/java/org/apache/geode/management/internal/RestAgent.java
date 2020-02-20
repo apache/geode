@@ -156,7 +156,7 @@ public class RestAgent {
         factory.setKeyConstraint(String.class);
         factory.setStatisticsEnabled(false);
         factory.setValueConstraint(String.class);
-        factory.makeInternal().setIsUsedForMetaRegion(true);
+        factory.setIsUsedForMetaRegion(true);
         factory.create("__ParameterizedQueries__");
         if (logger.isDebugEnabled()) {
           logger.debug("Successfully created __ParameterizedQueries__ region");

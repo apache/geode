@@ -83,9 +83,7 @@ public class ClientHealthMonitoringRegion {
       factory.addCacheListener(prepareCacheListener());
       factory.setValueConstraint(ClientHealthStats.class);
       factory.setStatisticsEnabled(true);
-      factory.makeInternal()
-          .setIsUsedForMetaRegion(true)
-          .setIsUsedForPartitionedRegionAdmin(false);
+      factory.setIsUsedForMetaRegion(true).setIsUsedForPartitionedRegionAdmin(false);
       currentInstance = factory.create(ADMIN_REGION_NAME);
     } catch (Exception ex) {
       logger.error("Error while creating an admin region", ex);

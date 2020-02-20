@@ -408,9 +408,8 @@ public class FederatingManager extends Manager {
           ManagementCacheListener managementCacheListener =
               new ManagementCacheListener(proxyFactory);
           monitorFactory.addCacheListener(managementCacheListener);
-          monitorFactory.makeInternal()
-              .setIsUsedForMetaRegion(true)
-              .setCachePerfStatsHolder(monitoringRegionStats);
+          monitorFactory.setIsUsedForMetaRegion(true);
+          monitorFactory.setCachePerfStatsHolder(monitoringRegionStats);
 
           // Notification region for member is created
           RegionFactoryImpl<NotificationKey, Notification> notificationFactory =
@@ -426,9 +425,8 @@ public class FederatingManager extends Manager {
 
           NotificationCacheListener notifListener = new NotificationCacheListener(proxyFactory);
           notificationFactory.addCacheListener(notifListener);
-          notificationFactory.makeInternal()
-              .setIsUsedForMetaRegion(true)
-              .setCachePerfStatsHolder(monitoringRegionStats);
+          notificationFactory.setIsUsedForMetaRegion(true);
+          notificationFactory.setCachePerfStatsHolder(monitoringRegionStats);
 
           Region<String, Object> proxyMonitoringRegion;
           try {

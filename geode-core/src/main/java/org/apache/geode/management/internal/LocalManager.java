@@ -131,18 +131,16 @@ public class LocalManager extends Manager {
       monitorFactory.setConcurrencyChecksEnabled(false);
       CacheListener<String, Object> localListener = new MonitoringRegionCacheListener(service);
       monitorFactory.addCacheListener(localListener);
-      monitorFactory.makeInternal()
-          .setIsUsedForMetaRegion(true)
-          .setCachePerfStatsHolder(monitoringRegionStats);
+      monitorFactory.setIsUsedForMetaRegion(true);
+      monitorFactory.setCachePerfStatsHolder(monitoringRegionStats);
 
       RegionFactoryImpl<NotificationKey, Notification> notificationFactory =
           cache.createInternalRegionFactory();
       notificationFactory.setScope(Scope.DISTRIBUTED_NO_ACK);
       notificationFactory.setDataPolicy(DataPolicy.EMPTY);
       notificationFactory.setConcurrencyChecksEnabled(false);
-      notificationFactory.makeInternal()
-          .setIsUsedForMetaRegion(true)
-          .setCachePerfStatsHolder(monitoringRegionStats);
+      notificationFactory.setIsUsedForMetaRegion(true);
+      notificationFactory.setCachePerfStatsHolder(monitoringRegionStats);
 
       String appender = MBeanJMXAdapter.getUniqueIDForMember(system.getDistributedMember());
 

@@ -808,8 +808,7 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
           cache.createInternalRegionFactory(RegionShortcut.REPLICATE_PERSISTENT);
       regionFactory.addCacheListener(new ConfigurationChangeListener(this, cache));
       regionFactory.setDiskStoreName(CLUSTER_CONFIG_DISK_STORE_NAME);
-      regionFactory.makeInternal().setIsUsedForMetaRegion(true)
-          .setMetaRegionWithTransactions(false);
+      regionFactory.setIsUsedForMetaRegion(true).setMetaRegionWithTransactions(false);
       return regionFactory.create(CONFIG_REGION_NAME);
     } catch (RuntimeException e) {
       status.set(SharedConfigurationStatus.STOPPED);

@@ -854,7 +854,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
         regionShortcut = RegionShortcut.REPLICATE;
       }
       RegionFactoryImpl<Long, AsyncEvent> factory =
-          (RegionFactoryImpl) gemCache.createRegionFactory(regionShortcut);
+          gemCache.createInternalRegionFactory(regionShortcut);
       if (NO_ACK) {
         factory.setScope(Scope.DISTRIBUTED_NO_ACK);
       }
@@ -888,7 +888,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
         SerialGatewaySenderQueueMetaRegion meta =
             new SerialGatewaySenderQueueMetaRegion(this.regionName, ra, null, gemCache, sender,
                 sender.getStatisticsClock());
-        factory.makeInternal()
+        factory
             .setInternalMetaRegion(meta)
             .setDestroyLockFlag(true)
             .setSnapshotInputStream(null)

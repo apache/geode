@@ -261,7 +261,7 @@ public class CreateRegionFunction implements Function, Declarable, DataSerializa
     RegionFactoryImpl<String, RegionConfiguration> regionFactory =
         cache.createInternalRegionFactory(RegionShortcut.REPLICATE);
     regionFactory.addCacheListener(new RegionConfigurationCacheListener());
-    regionFactory.makeInternal().setInternalRegion(true);
+    regionFactory.setInternalRegion(true);
     return regionFactory.create(REGION_CONFIGURATION_METADATA_REGION);
   }
 

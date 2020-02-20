@@ -246,8 +246,7 @@ public abstract class DynamicRegionFactory {
       final boolean isClient = this.config.getPoolName() != null;
       if (this.dynamicRegionList == null) {
         RegionFactoryImpl factory = cache.createInternalRegionFactory();
-        InternalRegionArguments ira = factory.makeInternal();
-        ira.setDestroyLockFlag(true).setInternalRegion(true).setSnapshotInputStream(null)
+        factory.setDestroyLockFlag(true).setInternalRegion(true).setSnapshotInputStream(null)
             .setImageTarget(null);
         if (this.config.getPersistBackup()) {
           factory.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
@@ -276,7 +275,8 @@ public abstract class DynamicRegionFactory {
               factory.setPoolName(cpName);
             }
           }
-          ira.setInternalMetaRegion(new LocalMetaRegion(factory.getCreateAttributes(), ira));
+          factory.setInternalMetaRegion(new LocalMetaRegion(factory.getCreateAttributes(),
+              factory.getInternalRegionArguments()));
         } else {
           factory.setScope(Scope.DISTRIBUTED_ACK);
           factory.setValueConstraint(DynamicRegionAttributes.class);
@@ -290,9 +290,7 @@ public abstract class DynamicRegionFactory {
             if (!gs.isParallel())
               factory.addGatewaySenderId(gs.getId());
           }
-          ira.setInternalMetaRegion(new DistributedMetaRegion(factory.getCreateAttributes())); // bug
-                                                                                               // fix
-                                                                                               // 35432
+          factory.setInternalMetaRegion(new DistributedMetaRegion(factory.getCreateAttributes()));
         }
         this.dynamicRegionList = factory.create(DYNAMIC_REGION_LIST_NAME);
         if (isClient) {

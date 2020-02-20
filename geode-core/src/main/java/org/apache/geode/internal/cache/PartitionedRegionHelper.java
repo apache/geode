@@ -267,7 +267,7 @@ public class PartitionedRegionHelper {
         }
       };
 
-      factory.makeInternal().setIsUsedForPartitionedRegionAdmin(true)
+      factory.setIsUsedForPartitionedRegionAdmin(true)
           .setInternalRegion(true).setCachePerfStatsHolder(prMetaStatsHolder);
 
       try {

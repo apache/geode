@@ -435,7 +435,7 @@ public class GeodeRedisServer {
             gemFireCache.createInternalRegionFactory();
         redisMetaDataFactory.addCacheListener(metaListener);
         redisMetaDataFactory.setDataPolicy(DataPolicy.REPLICATE);
-        redisMetaDataFactory.makeInternal().setInternalRegion(true).setIsUsedForMetaRegion(true);
+        redisMetaDataFactory.setInternalRegion(true).setIsUsedForMetaRegion(true);
         redisMetaData = redisMetaDataFactory.create(REDIS_META_DATA_REGION);
       }
       this.keyRegistrar = new KeyRegistrar(redisMetaData);

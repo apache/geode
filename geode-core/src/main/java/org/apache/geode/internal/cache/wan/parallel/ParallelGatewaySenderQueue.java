@@ -320,7 +320,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
       final String prQName = getQueueName(sender.getId(), userRegion.getFullPath());
       prQ = (PartitionedRegion) cache.getRegion(prQName);
       if (prQ == null) {
-        RegionFactoryImpl fact = (RegionFactoryImpl) cache.createRegionFactory();
+        RegionFactoryImpl fact = cache.createInternalRegionFactory();
         // Fix for 48621 - don't enable concurrency checks
         // for queue buckets., event with persistence
         fact.setConcurrencyChecksEnabled(false);
@@ -364,7 +364,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
             new ParallelGatewaySenderQueueMetaRegion(prQName, ra, null, cache, sender,
                 sender.getStatisticsClock());
 
-        fact.makeInternal().setInternalMetaRegion(meta).setDestroyLockFlag(true)
+        fact.setInternalMetaRegion(meta).setDestroyLockFlag(true)
             .setSnapshotInputStream(null).setImageTarget(null);
         prQ = (PartitionedRegion) fact.create(prQName);
 
@@ -458,14 +458,13 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
       final String prQName = sender.getId() + QSTRING + convertPathToName(userPR.getFullPath());
       prQ = (PartitionedRegion) cache.getRegion(prQName);
       if (prQ == null) {
-        // TODO:REF:Avoid deprecated apis
         RegionShortcut regionShortcut;
         if (sender.isPersistenceEnabled() && !isAccessor) {
           regionShortcut = RegionShortcut.PARTITION_PERSISTENT;
         } else {
           regionShortcut = RegionShortcut.PARTITION;
         }
-        RegionFactoryImpl fact = (RegionFactoryImpl) cache.createRegionFactory(regionShortcut);
+        RegionFactoryImpl fact = cache.createInternalRegionFactory(regionShortcut);
 
         fact.setConcurrencyChecksEnabled(false);
         PartitionAttributesFactory pfact = new PartitionAttributesFactory();
@@ -507,8 +506,11 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         ParallelGatewaySenderQueueMetaRegion meta =
             metaRegionFactory.newMetataRegion(cache, prQName, ra, sender);
 
-        fact.makeInternal().setInternalMetaRegion(meta).setDestroyLockFlag(true)
-            .setInternalRegion(true).setSnapshotInputStream(null).setImageTarget(null);
+        fact.setInternalMetaRegion(meta);
+        fact.setDestroyLockFlag(true);
+        fact.setInternalRegion(true);
+        fact.setSnapshotInputStream(null);
+        fact.setImageTarget(null);
         prQ = (PartitionedRegion) fact.create(prQName);
         // at this point we should be able to assert prQ == meta;
 

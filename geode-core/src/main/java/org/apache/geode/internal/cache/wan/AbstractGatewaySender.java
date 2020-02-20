@@ -1308,9 +1308,8 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
               "RegionStats-" + META_DATA_REGION_NAME, sender.statisticsClock);
         }
       };
-      factory.makeInternal()
-          .setIsUsedForMetaRegion(true)
-          .setCachePerfStatsHolder(statsHolder);
+      factory.setIsUsedForMetaRegion(true);
+      factory.setCachePerfStatsHolder(statsHolder);
       try {
         region = factory.create(META_DATA_REGION_NAME);
       } catch (RegionExistsException e) {
