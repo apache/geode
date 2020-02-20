@@ -284,6 +284,7 @@ public abstract class DeltaSessionManager extends ManagerBase
     return LOGGER;
   }
 
+  @Override
   public SessionCache getSessionCache() {
     return this.sessionCache;
   }

@@ -31,16 +31,15 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.apache.catalina.Manager;
-import org.apache.catalina.session.StandardSession;
-import org.apache.catalina.session.StandardSessionFacade;
 import org.awaitility.Duration;
 
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
-import org.apache.geode.modules.session.catalina.DeltaSessionManager;
+import org.apache.geode.modules.session.catalina.DeltaSession;
+import org.apache.geode.modules.session.catalina.DeltaSessionFacade;
+import org.apache.geode.modules.session.catalina.SessionManager;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public class CommandServlet extends HttpServlet {
@@ -111,9 +110,11 @@ public class CommandServlet extends HttpServlet {
           break;
         case WAIT_UNTIL_QUEUE_DRAINED:
           session = request.getSession();
-          DeltaSessionManager manager = (DeltaSessionManager) getSessionManager(session);
-          GeodeAwaitility.await().pollInterval(Duration.TWO_HUNDRED_MILLISECONDS)
-              .untilAsserted(() -> assertThat(checkQueueDrained(manager)).isTrue());
+          SessionManager manager = getSessionManager(session);
+          if (!checkQueueDrained(manager, true)) {
+            GeodeAwaitility.await().pollInterval(Duration.TWO_HUNDRED_MILLISECONDS)
+                .untilAsserted(() -> assertThat(checkQueueDrained(manager, false)).isTrue());
+          }
           break;
       }
     } catch (Exception e) {
@@ -122,15 +123,17 @@ public class CommandServlet extends HttpServlet {
     }
   }
 
-  private boolean checkQueueDrained(DeltaSessionManager manager) {
+  private boolean checkQueueDrained(SessionManager manager, boolean logQueues) {
     GemFireCache cache = manager.getSessionCache().getCache();
     Execution execution = FunctionService.onServers(cache);
 
     ResultCollector collector = execution.execute(GetQueueSize.ID);
     List list = (List) collector.getResult();
-    for (Object object : list) {
-      for (Object queue : ((Map) object).keySet()) {
-        manager.getLogger().info("client cache has queue: " + queue);
+    if (logQueues) {
+      for (Object object : list) {
+        for (Object queue : ((Map) object).keySet()) {
+          manager.getLogger().info("client cache has queue: " + queue);
+        }
       }
     }
     for (Object object : list) {
@@ -145,11 +148,11 @@ public class CommandServlet extends HttpServlet {
     return true;
   }
 
-  private Manager getSessionManager(HttpSession session) throws Exception {
-    Field facadeSessionField = StandardSessionFacade.class.getDeclaredField("session");
+  private SessionManager getSessionManager(HttpSession session) throws Exception {
+    Field facadeSessionField = DeltaSessionFacade.class.getDeclaredField("session");
     facadeSessionField.setAccessible(true);
-    StandardSession stdSession = (StandardSession) facadeSessionField.get(session);
+    DeltaSession deltaSession = (DeltaSession) facadeSessionField.get(session);
 
-    return stdSession.getManager();
+    return (SessionManager) deltaSession.getManager();
   }
 }
