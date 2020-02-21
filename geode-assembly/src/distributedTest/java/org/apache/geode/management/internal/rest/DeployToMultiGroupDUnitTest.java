@@ -70,8 +70,6 @@ public class DeployToMultiGroupDUnitTest {
         .setPort(locator.getHttpPort())
         .build();
 
-    // gfsh.connect(locator);
-
     Deployment deployment = new Deployment();
     deployment.setFile(jar);
     deployment.setGroup("group1");
@@ -83,11 +81,6 @@ public class DeployToMultiGroupDUnitTest {
 
     ClusterManagementRealizationResult deploymentGroup2 = client.create(deployment);
     assertThat(deploymentGroup2.isSuccessful()).isTrue();
-
-    // gfsh.executeAndAssertThat("deploy --group=group1 --jar=" + jar.getAbsolutePath())
-    // .statusIsSuccess();
-    // gfsh.executeAndAssertThat("deploy --group=group2 --jar=" + jar.getAbsolutePath())
-    // .statusIsSuccess();
   }
 
   @Test

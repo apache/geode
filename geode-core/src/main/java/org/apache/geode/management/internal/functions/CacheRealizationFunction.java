@@ -85,26 +85,21 @@ public class CacheRealizationFunction implements InternalFunction<List> {
     RemoteInputStream jarStream = (RemoteInputStream) context.getArguments().get(2);
 
     InternalCache cache = (InternalCache) context.getCache();
-
-    if (operation == CacheElementOperation.GET) {
-      try {
+    try {
+      if (operation == CacheElementOperation.GET) {
         context.getResultSender().lastResult(executeGet(context, cache, cacheElement));
-      } catch (Exception e) {
-        logger.error(e.getMessage(), e);
-        context.getResultSender().lastResult(null);
-      }
-    } else {
-      try {
+      } else {
         context.getResultSender()
             .lastResult(executeUpdate(context, cache, cacheElement, operation, jarStream));
-      } catch (Exception e) {
-        logger.error(e.getMessage(), e);
-        context.getResultSender().lastResult(new RealizationResult()
-            .setSuccess(false)
-            .setMemberName(context.getMemberName())
-            .setMessage(e.getMessage()));
       }
+    } catch (Exception e) {
+      logger.error(e.getMessage(), e);
+      context.getResultSender().lastResult(new RealizationResult()
+          .setSuccess(false)
+          .setMemberName(context.getMemberName())
+          .setMessage(e.getMessage()));
     }
+
   }
 
   public RuntimeInfo executeGet(FunctionContext<List> context,
@@ -126,7 +121,7 @@ public class CacheRealizationFunction implements InternalFunction<List> {
 
   public RealizationResult executeUpdate(FunctionContext<List> context,
       InternalCache cache, AbstractConfiguration cacheElement,
-      CacheElementOperation operation, RemoteInputStream jarStream) throws IOException {
+      CacheElementOperation operation, RemoteInputStream jarStream) throws Exception {
 
     ConfigurationRealizer realizer = realizers.get(cacheElement.getClass());
 

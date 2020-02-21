@@ -37,17 +37,13 @@ public class DeploymentRealizer
   static final String JAR_NOT_DEPLOYED = "Jar file not deployed on the server.";
 
   @Override
-  public RealizationResult create(Deployment config, InternalCache cache) {
+  public RealizationResult create(Deployment config, InternalCache cache) throws Exception {
     RealizationResult result = new RealizationResult();
     DeployedJar deployedJar = deploy(config.getFile());
     if (deployedJar == null) {
       result.setMessage("Already deployed");
     } else {
-      try {
-        result.setMessage(deployedJar.getFileCanonicalPath());
-      } catch (IOException e) {
-        throw new RuntimeException(e.getMessage(), e);
-      }
+      result.setMessage(deployedJar.getFileCanonicalPath());
     }
     return result;
   }
@@ -95,11 +91,7 @@ public class DeploymentRealizer
   }
 
   @VisibleForTesting
-  DeployedJar deploy(File jarFile) {
-    try {
-      return ClassPathLoader.getLatest().getJarDeployer().deploy(jarFile);
-    } catch (IOException | ClassNotFoundException e) {
-      throw new RuntimeException(e.getMessage(), e);
-    }
+  DeployedJar deploy(File jarFile) throws IOException, ClassNotFoundException {
+    return ClassPathLoader.getLatest().getJarDeployer().deploy(jarFile);
   }
 }

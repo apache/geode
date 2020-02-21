@@ -97,7 +97,7 @@ public class DeploymentRealizerTest {
   }
 
   @Test
-  public void createWithAlreadyExistingJar() {
+  public void createWithAlreadyExistingJar() throws Exception {
     doReturn(null).when(realizer).deploy(any(File.class));
     deployment.setFile(new File("/test/test.jar"));
 
@@ -121,7 +121,7 @@ public class DeploymentRealizerTest {
   }
 
   @Test
-  public void createWithFailedDeploy() {
+  public void createWithFailedDeploy() throws IOException, ClassNotFoundException {
     String eMessage = "test runtime exception";
     RuntimeException runtimeException = new RuntimeException(eMessage);
     doThrow(runtimeException).when(realizer).deploy(any(File.class));
@@ -141,8 +141,7 @@ public class DeploymentRealizerTest {
     deployment.setFile(new File("/test/test.jar"));
 
     assertThatThrownBy(() -> realizer.create(deployment, null))
-        .isInstanceOf(RuntimeException.class)
-        .hasMessageContaining(eMessage)
-        .hasCauseInstanceOf(IOException.class);
+        .isInstanceOf(IOException.class)
+        .hasMessageContaining(eMessage);
   }
 }
