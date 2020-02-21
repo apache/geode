@@ -52,6 +52,14 @@ public class DeployedJarTest {
   }
 
   @Test
+  public void throwsIfFileIsEmptyFile() throws Exception {
+    File emptyFile = createEmptyFile("empty.jar");
+
+    assertThatThrownBy(() -> new DeployedJar(emptyFile))
+        .isInstanceOf(IllegalArgumentException.class);
+  }
+
+  @Test
   public void getDeployedFileName() throws Exception {
     // deployed file name should always have .v# appended to it
     createJarFile("test.jar");
@@ -72,5 +80,9 @@ public class DeployedJarTest {
     jarFile = new File(temporaryFolder.getRoot(), jarName);
     JarBuilder jarBuilder = new JarBuilder();
     jarBuilder.buildJarFromClassNames(jarFile, "ExpectedClass");
+  }
+
+  File createEmptyFile(String fileName) {
+    return new File(temporaryFolder.getRoot(), fileName);
   }
 }

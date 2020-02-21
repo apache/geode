@@ -26,11 +26,11 @@ public class DeploymentValidator implements ConfigurationValidator<Deployment> {
   public void validate(CacheElementOperation operation, Deployment config)
       throws IllegalArgumentException {
     switch (operation) {
-      case UPDATE:
       case CREATE:
         validateCreate(config);
         break;
       case DELETE:
+      case UPDATE:
       default:
     }
   }

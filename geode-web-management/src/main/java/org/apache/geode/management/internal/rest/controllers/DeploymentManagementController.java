@@ -46,7 +46,6 @@ import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.management.configuration.HasFile;
 import org.apache.geode.management.internal.beans.FileUploader;
 import org.apache.geode.management.runtime.DeploymentInfo;
-import org.apache.geode.util.internal.GeodeJsonMapper;
 
 @RestController("deploymentManagement")
 @RequestMapping(URI_VERSION)
@@ -89,8 +88,9 @@ public class DeploymentManagementController extends AbstractManagementController
       @ApiResponse(code = 409, message = "Index already exists."),
       @ApiResponse(code = 500, message = "Internal error.")})
   @PreAuthorize("@securityService.authorize('CLUSTER', 'MANAGE', 'DEPLOY')")
-  //  @PostMapping(Deployment.DEPLOYMENT_ENDPOINT)
-  @PostMapping(value = Deployment.DEPLOYMENT_ENDPOINT, consumes = {"multipart/form-data","application/json"})
+  // @PostMapping(Deployment.DEPLOYMENT_ENDPOINT)
+  @PostMapping(value = Deployment.DEPLOYMENT_ENDPOINT,
+      consumes = {"multipart/form-data", "application/json"})
   public ResponseEntity<ClusterManagementResult> deploy(
       @RequestParam(HasFile.FILE_PARAM) MultipartFile file,
       @RequestParam(HasFile.CONFIG_PARAM) String json) throws IOException {

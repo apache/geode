@@ -364,7 +364,7 @@ public class LocatorClusterManagementServiceTest {
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getMemberStatuses()).hasSize(0);
     assertThat(result.getStatusMessage())
-        .contains("Successfully removed configuration for [cluster]");
+        .contains("Successfully updated configuration for cluster");
   }
 
   @Test
