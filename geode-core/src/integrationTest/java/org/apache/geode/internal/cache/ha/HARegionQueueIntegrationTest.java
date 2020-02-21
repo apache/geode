@@ -45,7 +45,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
 import util.TestException;
 
 import org.apache.geode.CancelCriterion;
@@ -94,7 +93,6 @@ public class HARegionQueueIntegrationTest {
 
   @Before
   public void setUp() throws Exception {
-    MockitoAnnotations.initMocks(this);
     cache = createCache();
     dataRegion = createDataRegion();
     ccn = createCacheClientNotifier();
@@ -103,8 +101,12 @@ public class HARegionQueueIntegrationTest {
 
   @After
   public void tearDown() throws Exception {
-    ccn.shutdown(0);
-    cache.close();
+    if (ccn != null) {
+      ccn.shutdown(0);
+    }
+    if (cache != null) {
+      cache.close();
+    }
   }
 
   private Cache createCache() {
@@ -580,7 +582,7 @@ public class HARegionQueueIntegrationTest {
     return haRegion;
   }
 
-  private HAContainerRegion createHAContainerRegion() throws Exception {
+  private HAContainerRegion createHAContainerRegion() {
     Region haContainerRegionRegion = createHAContainerRegionRegion();
 
     HAContainerRegion haContainerRegion = new HAContainerRegion(haContainerRegionRegion);
@@ -588,7 +590,7 @@ public class HARegionQueueIntegrationTest {
     return haContainerRegion;
   }
 
-  private Region createHAContainerRegionRegion() throws Exception {
+  private Region createHAContainerRegionRegion() {
     InternalCache internalCache = (InternalCache) cache;
     InternalRegionFactory factory = internalCache.createInternalRegionFactory();
     factory.setScope(Scope.LOCAL);
