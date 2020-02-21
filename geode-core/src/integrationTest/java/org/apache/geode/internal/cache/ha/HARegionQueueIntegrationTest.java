@@ -89,7 +89,7 @@ public class HARegionQueueIntegrationTest {
 
   private InternalDistributedMember member;
 
-  private static final int NUM_QUEUES = 100;
+  private static final int NUM_QUEUES = 10;
 
   @Before
   public void setUp() throws Exception {
