@@ -72,6 +72,7 @@ import org.junit.rules.TestName;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.internal.ByteBufferOutputStream;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
@@ -180,7 +181,8 @@ public class SSLSocketIntegrationTest {
     this.serverThread = startServer(this.serverSocket, 15000);
 
     int serverPort = this.serverSocket.getLocalPort();
-    this.clientSocket = this.socketCreator.connectForServer(this.localHost, serverPort);
+    this.clientSocket = this.socketCreator
+        .connectForServer(new HostAndPort(this.localHost.getHostAddress(), serverPort));
 
     // transmit expected string from Client to Server
     ObjectOutputStream output = new ObjectOutputStream(this.clientSocket.getOutputStream());
@@ -408,7 +410,8 @@ public class SSLSocketIntegrationTest {
       await("connect to server socket").until(() -> {
         try {
           Socket clientSocket = socketCreator.connectForClient(
-              LocalHostUtil.getLocalHost().getHostAddress(), serverSocketPort, 500);
+              new HostAndPort(LocalHostUtil.getLocalHost().getHostAddress(), serverSocketPort),
+              500);
           clientSocket.close();
           System.err.println(
               "client successfully connected to server but should not have been able to do so");

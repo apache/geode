@@ -33,8 +33,6 @@ import org.jgroups.util.UUID;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.annotations.internal.MutableForTesting;
-import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DurableClientAttributes;
 import org.apache.geode.distributed.Role;
@@ -65,11 +63,6 @@ public class InternalDistributedMember
   @Immutable
   public static final MemberIdentifierFactoryImpl MEMBER_IDENTIFIER_FACTORY =
       new MemberIdentifierFactoryImpl();
-
-  /** Retrieves an InetAddress given the provided hostname */
-  @MutableForTesting
-  protected static HostnameResolver hostnameResolver =
-      (location) -> InetAddress.getByName(location.getHostName());
 
   private final MemberIdentifier memberIdentifier;
 
@@ -145,7 +138,8 @@ public class InternalDistributedMember
 
   /**
    * Creates a new InternalDistributedMember for use in notifying listeners in client
-   * caches. The version information in the ID is set to Version.CURRENT.
+   * caches. The version information in the ID is set to Version.CURRENT and the host name
+   * is left unresolved (DistributedMember doesn't expose the InetAddress).
    *
    * @param location the coordinates of the server
    */
@@ -153,21 +147,11 @@ public class InternalDistributedMember
   public InternalDistributedMember(ServerLocation location) {
     memberIdentifier =
         MEMBER_IDENTIFIER_FACTORY.create(
-            MemberDataBuilder.newBuilder(getInetAddress(location), location.getHostName())
+            MemberDataBuilder.newBuilderForLocalHost(location.getHostName())
                 .setMembershipPort(location.getPort())
                 .setNetworkPartitionDetectionEnabled(false)
                 .setPreferredForCoordinator(true)
                 .build());
-  }
-
-  private static InetAddress getInetAddress(ServerLocation location) {
-    final InetAddress addr;
-    try {
-      addr = hostnameResolver.getInetAddress(location);
-    } catch (UnknownHostException e) {
-      throw new ServerConnectivityException("Unable to resolve server location " + location, e);
-    }
-    return addr;
   }
 
   /**
@@ -265,10 +249,6 @@ public class InternalDistributedMember
     final InternalDistributedMember mbr = new InternalDistributedMember();
     mbr._readEssentialData(in, InternalDistributedMember::getHostName);
     return mbr;
-  }
-
-  public static void setHostnameResolver(final HostnameResolver hostnameResolver) {
-    InternalDistributedMember.hostnameResolver = hostnameResolver;
   }
 
   /**

@@ -36,10 +36,10 @@ public interface TcpSocketCreator {
       boolean isBindAddress, boolean useNIO, int tcpBufferSize, int[] tcpPortRange,
       boolean sslConnection) throws IOException;
 
-  Socket connect(InetAddress inetadd, int port, int timeout,
+  Socket connect(HostAndPort addr, int timeout,
       ConnectionWatcher optionalWatcher, boolean clientSide) throws IOException;
 
-  Socket connect(InetAddress inetadd, int port, int timeout,
+  Socket connect(HostAndPort addr, int timeout,
       ConnectionWatcher optionalWatcher, boolean clientSide, int socketBufferSize,
       boolean sslConnection) throws IOException;
 

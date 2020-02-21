@@ -133,10 +133,11 @@ public class TcpServerJUnitTest {
 
     InfoRequest testInfoRequest = new InfoRequest();
     InfoResponse testInfoResponse =
-        (InfoResponse) tcpClient.requestToServer(localhost, port, testInfoRequest, TIMEOUT);
+        (InfoResponse) tcpClient.requestToServer(new HostAndPort(localhost.getHostAddress(), port),
+            testInfoRequest, TIMEOUT);
     assertThat(testInfoResponse.getInfo()[0]).contains("geode-tcp-server");
 
-    String[] requestedInfo = tcpClient.getInfo(localhost, port);
+    String[] requestedInfo = tcpClient.getInfo(new HostAndPort(localhost.getHostAddress(), port));
     assertNotNull(requestedInfo);
     assertTrue(requestedInfo.length > 1);
 
@@ -167,7 +168,8 @@ public class TcpServerJUnitTest {
       public void run() {
         Boolean delay = Boolean.valueOf(true);
         try {
-          tcpClient.requestToServer(localhost, port, delay, TIMEOUT);
+          tcpClient.requestToServer(new HostAndPort(localhost.getHostAddress(), port), delay,
+              TIMEOUT);
         } catch (IOException e) {
           e.printStackTrace();
         } catch (ClassNotFoundException e) {
@@ -180,7 +182,8 @@ public class TcpServerJUnitTest {
     try {
       Thread.sleep(500);
       assertFalse(done.get());
-      tcpClient.requestToServer(localhost, port, Boolean.valueOf(false), TIMEOUT);
+      tcpClient.requestToServer(new HostAndPort(localhost.getHostAddress(), port),
+          Boolean.valueOf(false), TIMEOUT);
       assertFalse(done.get());
 
       latch.countDown();
@@ -206,8 +209,9 @@ public class TcpServerJUnitTest {
 
     // Due to the mocked handler, an EOFException will be thrown on the client. This is expected.
     assertThatThrownBy(
-        () -> tcpClient.requestToServer(localhost, port, new TestObject(), TIMEOUT))
-            .isInstanceOf(EOFException.class);
+        () -> tcpClient.requestToServer(new HostAndPort(localhost.getHostAddress(), port),
+            new TestObject(), TIMEOUT))
+                .isInstanceOf(EOFException.class);
 
     // Change the mock handler behavior to echo the request back
     doAnswer(new Answer() {
@@ -221,7 +225,8 @@ public class TcpServerJUnitTest {
     TestObject test = new TestObject();
     test.id = 5;
     TestObject result =
-        (TestObject) tcpClient.requestToServer(localhost, port, test, TIMEOUT);
+        (TestObject) tcpClient.requestToServer(new HostAndPort(localhost.getHostAddress(), port),
+            test, TIMEOUT);
 
     assertEquals(test.id, result.id);
 
@@ -233,7 +238,7 @@ public class TcpServerJUnitTest {
 
   private void stopServer(final TcpClient tcpClient) throws InterruptedException {
     try {
-      tcpClient.stop(localhost, port);
+      tcpClient.stop(new HostAndPort(localhost.getHostAddress(), port));
     } catch (ConnectException ignore) {
       // must not be running
     }

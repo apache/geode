@@ -159,14 +159,14 @@ public class TcpSocketCreatorImpl implements TcpSocketCreator {
 
 
   @Override
-  public final Socket connect(InetAddress inetadd, int port, int timeout,
+  public final Socket connect(HostAndPort addr, int timeout,
       ConnectionWatcher optionalWatcher, boolean clientSide)
       throws IOException {
-    return connect(inetadd, port, timeout, optionalWatcher, clientSide, -1, useSSL());
+    return connect(addr, timeout, optionalWatcher, clientSide, -1, useSSL());
   }
 
   @Override
-  public Socket connect(InetAddress inetadd, int port, int timeout,
+  public Socket connect(HostAndPort addr, int timeout,
       ConnectionWatcher optionalWatcher, boolean clientSide,
       int socketBufferSize, boolean sslConnection) throws IOException {
     if (sslConnection) {
@@ -174,7 +174,7 @@ public class TcpSocketCreatorImpl implements TcpSocketCreator {
     }
     Socket socket = null;
     if (clientSide) {
-      socket = createCustomClientSocket(inetadd, port);
+      socket = createCustomClientSocket(addr);
     }
     if (socket == null) {
       socket = new Socket();
@@ -188,8 +188,11 @@ public class TcpSocketCreatorImpl implements TcpSocketCreator {
       if (optionalWatcher != null) {
         optionalWatcher.beforeConnect(socket);
       }
+      InetSocketAddress inetSocketAddress = addr.getSocketInetAddress();
       try {
-        socket.connect(new InetSocketAddress(inetadd, port), Math.max(timeout, 0));
+        socket.connect(
+            new InetSocketAddress(inetSocketAddress.getAddress(), inetSocketAddress.getPort()),
+            Math.max(timeout, 0));
       } finally {
         if (optionalWatcher != null) {
           optionalWatcher.afterConnect(socket);
@@ -205,7 +208,7 @@ public class TcpSocketCreatorImpl implements TcpSocketCreator {
    *
    * @return the socket, or null if no custom client socket factory is available
    */
-  protected Socket createCustomClientSocket(InetAddress inetaddr, int port) throws IOException {
+  protected Socket createCustomClientSocket(HostAndPort addr) throws IOException {
     throw new UnsupportedOperationException(
         "custom client socket factory is not supported by this socket creator");
   }

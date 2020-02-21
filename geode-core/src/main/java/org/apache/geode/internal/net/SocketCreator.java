@@ -73,6 +73,7 @@ import org.apache.geode.distributed.ClientSocketFactory;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.tcpserver.ConnectionWatcher;
+import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreatorImpl;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.admin.SSLConfig;
@@ -613,23 +614,23 @@ public class SocketCreator extends TcpSocketCreatorImpl {
   /**
    * Return a client socket. This method is used by client/server clients.
    */
-  public Socket connectForClient(String host, int port, int timeout) throws IOException {
-    return connect(InetAddress.getByName(host), port, timeout, null, true, -1);
+  public Socket connectForClient(HostAndPort addr, int timeout) throws IOException {
+    return connect(addr, timeout, null, true, -1);
   }
 
   /**
    * Return a client socket. This method is used by client/server clients.
    */
-  public Socket connectForClient(String host, int port, int timeout, int socketBufferSize)
+  public Socket connectForClient(HostAndPort addr, int timeout, int socketBufferSize)
       throws IOException {
-    return connect(InetAddress.getByName(host), port, timeout, null, true, socketBufferSize);
+    return connect(addr, timeout, null, true, socketBufferSize);
   }
 
   /**
    * Return a client socket. This method is used by peers.
    */
-  public Socket connectForServer(InetAddress inetadd, int port) throws IOException {
-    return connect(inetadd, port, 0, null, false, -1);
+  public Socket connectForServer(HostAndPort addr) throws IOException {
+    return connect(addr, 0, null, false, -1);
   }
 
   /**
@@ -637,10 +638,10 @@ public class SocketCreator extends TcpSocketCreatorImpl {
    * <i>timeout</i> is ignored if SSL is being used, as there is no timeout argument in the ssl
    * socket factory
    */
-  public Socket connect(InetAddress inetadd, int port, int timeout,
+  public Socket connect(HostAndPort addr, int timeout,
       ConnectionWatcher optionalWatcher, boolean clientSide, int socketBufferSize)
       throws IOException {
-    return connect(inetadd, port, timeout, optionalWatcher, clientSide, socketBufferSize,
+    return connect(addr, timeout, optionalWatcher, clientSide, socketBufferSize,
         sslConfig.isEnabled());
   }
 
@@ -650,21 +651,21 @@ public class SocketCreator extends TcpSocketCreatorImpl {
    * socket factory
    */
   @Override
-  public Socket connect(InetAddress inetadd, int port, int timeout,
+  public Socket connect(HostAndPort addr, int timeout,
       ConnectionWatcher optionalWatcher, boolean clientSide, int socketBufferSize,
       boolean sslConnection) throws IOException {
 
     printConfig();
 
     if (!sslConnection) {
-      return super.connect(inetadd, port, timeout, optionalWatcher, clientSide, socketBufferSize,
+      return super.connect(addr, timeout, optionalWatcher, clientSide, socketBufferSize,
           sslConnection);
     }
 
     // create an SSL connection
 
     Socket socket;
-    SocketAddress sockaddr = new InetSocketAddress(inetadd, port);
+    SocketAddress sockaddr = addr.getSocketInetAddress();
     if (this.sslContext == null) {
       throw new GemFireConfigException(
           "SSL not configured correctly, Please look at previous error");
@@ -698,9 +699,11 @@ public class SocketCreator extends TcpSocketCreatorImpl {
   }
 
   @Override
-  protected Socket createCustomClientSocket(InetAddress inetadd, int port) throws IOException {
+  protected Socket createCustomClientSocket(HostAndPort addr) throws IOException {
     if (this.clientSocketFactory != null) {
-      return this.clientSocketFactory.createSocket(inetadd, port);
+      InetSocketAddress inetSocketAddress = addr.getSocketInetAddress();
+      return this.clientSocketFactory.createSocket(inetSocketAddress.getAddress(),
+          inetSocketAddress.getPort());
     }
     return null;
   }

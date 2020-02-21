@@ -16,11 +16,11 @@ package org.apache.geode.management.internal.configuration.utils;
 
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.util.Properties;
 import java.util.Set;
 
 import org.apache.geode.distributed.LocatorLauncher;
+import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
@@ -37,15 +37,14 @@ public class ClusterConfigurationStatusRetriever {
       throws ClassNotFoundException, IOException {
     final StringBuilder buffer = new StringBuilder();
 
-    final InetAddress networkAddress = InetAddress.getByName(locatorHostName);
-
     TcpClient client = new TcpClient(
         new SocketCreator(SSLConfigurationFactory.getSSLConfigForComponent(configProps,
             SecurableCommunicationChannel.LOCATOR)),
         InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
         InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());
+    HostAndPort locatorAddress = new HostAndPort(locatorHostName, locatorPort);
     SharedConfigurationStatusResponse statusResponse =
-        (SharedConfigurationStatusResponse) client.requestToServer(networkAddress, locatorPort,
+        (SharedConfigurationStatusResponse) client.requestToServer(locatorAddress,
             new SharedConfigurationStatusRequest(), 10000, true);
 
     for (int i = 0; i < NUM_ATTEMPTS_FOR_SHARED_CONFIGURATION_STATUS; i++) {
@@ -54,8 +53,8 @@ public class ClusterConfigurationStatusRetriever {
           || statusResponse.getStatus().equals(
               org.apache.geode.management.internal.configuration.domain.SharedConfigurationStatus.NOT_STARTED)) {
         statusResponse =
-            (SharedConfigurationStatusResponse) client.requestToServer(networkAddress,
-                locatorPort, new SharedConfigurationStatusRequest(), 10000, true);
+            (SharedConfigurationStatusResponse) client.requestToServer(locatorAddress,
+                new SharedConfigurationStatusRequest(), 10000, true);
         try {
           Thread.sleep(5000);
         } catch (InterruptedException e) {

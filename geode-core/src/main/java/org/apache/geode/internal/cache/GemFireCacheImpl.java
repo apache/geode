@@ -2651,7 +2651,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         if (result == null) {
           result = new HashSet<>();
         }
-        result.add(new InetSocketAddress(serverLocation.getHostName(), serverLocation.getPort()));
+        result.add(InetSocketAddress.createUnresolved(serverLocation.getHostName(),
+            serverLocation.getPort()));
       }
     }
     if (result == null) {

@@ -35,6 +35,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.distributed.ClientSocketFactory;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
 /**
@@ -82,7 +83,8 @@ public class ClientSocketFactoryIntegrationTest {
   @Test
   public void testClientSocketFactory() throws Exception {
     assertThatThrownBy(() -> this.socket = SocketCreatorFactory
-        .getSocketCreatorForComponent(CLUSTER).connectForClient("localhost", 12345, 0))
+        .getSocketCreatorForComponent(CLUSTER)
+        .connectForClient(new HostAndPort("localhost", 12345), 0))
             .isExactlyInstanceOf(IOException.class).hasMessage(EXCEPTION_MESSAGE);
 
     assertThat(invokedCreateSocket).isTrue();

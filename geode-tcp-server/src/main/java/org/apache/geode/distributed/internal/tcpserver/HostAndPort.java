@@ -14,29 +14,24 @@
  */
 package org.apache.geode.distributed.internal.tcpserver;
 
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.Objects;
 
 import org.apache.commons.validator.routines.InetAddressValidator;
 
-public class LocatorAddress {
+public class HostAndPort {
 
   private final InetSocketAddress socketInetAddress;
 
-  public LocatorAddress(InetSocketAddress loc, String locStr) {
-    if (InetAddressValidator.getInstance().isValid(locStr)) {
-      socketInetAddress = new InetSocketAddress(locStr, loc.getPort());
+  public HostAndPort(String hostName, int port) {
+    if (InetAddressValidator.getInstance().isValid(hostName)) {
+      // numeric address - use as-is
+      socketInetAddress = new InetSocketAddress(hostName, port);
     } else {
-      socketInetAddress = cloneUnresolved(loc);
+      // non-numeric address - resolve hostname when needed
+      socketInetAddress = InetSocketAddress.createUnresolved(hostName, port);
     }
-  }
-
-  /**
-   * @deprecated Users should not care if literal IP or hostname is used.
-   */
-  @Deprecated
-  public boolean isIpString() {
-    return !socketInetAddress.isUnresolved();
   }
 
   /**
@@ -74,7 +69,7 @@ public class LocatorAddress {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    LocatorAddress that = (LocatorAddress) o;
+    HostAndPort that = (HostAndPort) o;
     return Objects.equals(socketInetAddress, that.socketInetAddress);
   }
 
@@ -88,4 +83,7 @@ public class LocatorAddress {
         inetSocketAddress.getPort());
   }
 
+  public InetAddress getAddress() {
+    return getSocketInetAddress().getAddress();
+  }
 }

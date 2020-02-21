@@ -79,6 +79,7 @@ import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.HighPriorityAckedMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.admin.remote.TailLogResponse;
 import org.apache.geode.internal.cache.DiskStoreImpl;
@@ -298,7 +299,7 @@ public class SystemAdmin {
             .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR),
             InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
             InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer())
-                .stop(addr, port);
+                .stop(new HostAndPort(addr.getHostName(), port));
       } catch (java.net.ConnectException ce) {
         System.out.println(
             "Unable to connect to Locator process. Possible causes are that an incorrect bind address/port combination was specified to the stop-locator command or the process is unresponsive.");

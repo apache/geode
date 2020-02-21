@@ -169,7 +169,9 @@ public class TcpServerProductVersionDUnitTest implements Serializable {
       }
 
       final Object response = tcpClient
-          .requestToServer(SocketCreator.getLocalHost(), locatorPort, requestMessage, 1000);
+          .requestToServer(
+              new HostAndPort(SocketCreator.getLocalHost().getHostAddress(), locatorPort),
+              requestMessage, 1000);
 
       final Class<?> responseClass = Class.forName(responseClassName);
 

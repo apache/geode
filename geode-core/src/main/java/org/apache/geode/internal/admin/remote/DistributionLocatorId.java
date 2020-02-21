@@ -16,18 +16,17 @@
 package org.apache.geode.internal.admin.remote;
 
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.validator.routines.InetAddressValidator;
 
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.net.SocketCreator;
@@ -221,24 +220,15 @@ public class DistributionLocatorId implements java.io.Serializable {
    * ipString Otherwise we create InetAddress each time.
    *
    **/
-  public InetSocketAddress getHost() throws UnknownHostException {
-    if (this.hostname != null) {
-      boolean isIpString = InetAddressValidator.getInstance().isValid(this.hostname);
-      if (isIpString) {
-        if (this.host == null) {
-          this.host = InetAddress.getByName(this.hostname);
-        }
-        return new InetSocketAddress(this.host, this.port);
-      }
-    }
-
-    if (this.hostname == null) {
-      if (this.host != null) {
-        return new InetSocketAddress(this.host, this.port);
-      }
+  public HostAndPort getHost() throws UnknownHostException {
+    if (host == null && hostname == null) {
       throw new UnknownHostException("locator ID has no hostname or resolved inet address");
     }
-    return new InetSocketAddress(this.hostname, this.port);
+    String addr = hostname;
+    if (host != null) {
+      addr = host.getHostAddress();
+    }
+    return new HostAndPort(addr, port);
   }
 
   /** returns the host name */

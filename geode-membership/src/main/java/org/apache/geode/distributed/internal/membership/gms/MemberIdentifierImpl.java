@@ -436,9 +436,9 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
     String host;
 
     InetAddress add = getInetAddress();
-    if (add.isMulticastAddress() || useIpAddress)
+    if ((add != null) && (add.isMulticastAddress() || useIpAddress)) {
       host = add.getHostAddress();
-    else {
+    } else {
       String hostName = memberData.getHostName();
       InetAddressValidator inetAddressValidator = InetAddressValidator.getInstance();
       boolean isIpAddress = inetAddressValidator.isValid(hostName);
