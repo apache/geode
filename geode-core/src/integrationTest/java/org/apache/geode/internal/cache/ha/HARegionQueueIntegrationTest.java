@@ -45,9 +45,11 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 import util.TestException;
 
 import org.apache.geode.CancelCriterion;
+import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
@@ -61,9 +63,10 @@ import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.EnumListenerEvent;
 import org.apache.geode.internal.cache.EventID;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.HARegion;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.InternalRegionFactory;
+import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.VMCachedDeserializable;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
@@ -89,10 +92,11 @@ public class HARegionQueueIntegrationTest {
 
   private InternalDistributedMember member;
 
-  private static final int NUM_QUEUES = 10;
+  private static final int NUM_QUEUES = 100;
 
   @Before
   public void setUp() throws Exception {
+    MockitoAnnotations.initMocks(this);
     cache = createCache();
     dataRegion = createDataRegion();
     ccn = createCacheClientNotifier();
@@ -101,12 +105,8 @@ public class HARegionQueueIntegrationTest {
 
   @After
   public void tearDown() throws Exception {
-    if (ccn != null) {
-      ccn.shutdown(0);
-    }
-    if (cache != null) {
-      cache.close();
-    }
+    ccn.shutdown(0);
+    cache.close();
   }
 
   private Cache createCache() {
@@ -582,7 +582,7 @@ public class HARegionQueueIntegrationTest {
     return haRegion;
   }
 
-  private HAContainerRegion createHAContainerRegion() {
+  private HAContainerRegion createHAContainerRegion() throws Exception {
     Region haContainerRegionRegion = createHAContainerRegionRegion();
 
     HAContainerRegion haContainerRegion = new HAContainerRegion(haContainerRegionRegion);
@@ -590,9 +590,8 @@ public class HARegionQueueIntegrationTest {
     return haContainerRegion;
   }
 
-  private Region createHAContainerRegionRegion() {
-    InternalCache internalCache = (InternalCache) cache;
-    InternalRegionFactory factory = internalCache.createInternalRegionFactory();
+  private Region createHAContainerRegionRegion() throws Exception {
+    AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.LOCAL);
     factory.setDiskStoreName(null);
     factory.setDiskSynchronous(true);
@@ -600,9 +599,10 @@ public class HARegionQueueIntegrationTest {
     factory.setStatisticsEnabled(true);
     factory.setEvictionAttributes(
         EvictionAttributes.createLIFOEntryAttributes(1000, EvictionAction.OVERFLOW_TO_DISK));
-    factory.setDestroyLockFlag(true).setRecreateFlag(false)
-        .setSnapshotInputStream(null).setImageTarget(null).setIsUsedForMetaRegion(true);
-    Region region = factory.create(CacheServerImpl.generateNameForClientMsgsRegion(0));
+    Region region = ((GemFireCacheImpl) cache).createVMRegion(
+        CacheServerImpl.generateNameForClientMsgsRegion(0), factory.create(),
+        new InternalRegionArguments().setDestroyLockFlag(true).setRecreateFlag(false)
+            .setSnapshotInputStream(null).setImageTarget(null).setIsUsedForMetaRegion(true));
     return region;
   }
 
