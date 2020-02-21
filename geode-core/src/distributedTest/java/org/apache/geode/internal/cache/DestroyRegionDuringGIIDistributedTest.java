@@ -30,6 +30,7 @@ import java.io.File;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
@@ -56,6 +57,7 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.SubscriptionAttributes;
 import org.apache.geode.compression.Compressor;
 import org.apache.geode.compression.SnappyCompressor;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.VM;
@@ -599,8 +601,14 @@ public class DestroyRegionDuringGIIDistributedTest implements Serializable {
   /**
    * Make sure all messages done on region r have been processed on the remote side.
    */
-  private void flushIfNecessary(Region r) {
+  private void flushIfNecessary(Region<?, ?> region) {
     // Only needed for no-ack regions
+    if (region.getAttributes().getScope().isDistributedNoAck()) {
+      DistributedRegion distributedRegion = (DistributedRegion) region;
+      Set<InternalDistributedMember> targets =
+          distributedRegion.getDistributionAdvisor().adviseCacheOp();
+      StateFlushOperation.flushTo(targets, distributedRegion);
+    }
   }
 
   /**
@@ -650,48 +658,41 @@ public class DestroyRegionDuringGIIDistributedTest implements Serializable {
 
   private enum RegionDefinition {
     DISTRIBUTED_ACK(Scope.DISTRIBUTED_ACK, DataPolicy.PRELOADED, NO_EVICTION, NULL_COMPRESSOR,
-        NULL_DISK_STORE_NAME, CONCURRENCY_CHECKS_DISABLED, NO_DISK, SUPPORTS_REPLICATION,
-        SUPPORTS_TRANSACTIONS),
+        NULL_DISK_STORE_NAME, CONCURRENCY_CHECKS_DISABLED, NO_DISK, SUPPORTS_REPLICATION),
     DISTRIBUTED_ACK_CCE(Scope.DISTRIBUTED_ACK, DataPolicy.REPLICATE, NO_EVICTION, NULL_COMPRESSOR,
-        NULL_DISK_STORE_NAME, CONCURRENCY_CHECKS_ENABLED, NO_DISK, SUPPORTS_REPLICATION,
-        SUPPORTS_TRANSACTIONS),
+        NULL_DISK_STORE_NAME, CONCURRENCY_CHECKS_ENABLED, NO_DISK, SUPPORTS_REPLICATION),
     DISTRIBUTED_ACK_COMPRESSION(Scope.DISTRIBUTED_ACK, DataPolicy.PRELOADED, NO_EVICTION,
         SNAPPY_COMPRESSOR, NULL_DISK_STORE_NAME, CONCURRENCY_CHECKS_DISABLED, NO_DISK,
-        SUPPORTS_REPLICATION, SUPPORTS_TRANSACTIONS),
+        SUPPORTS_REPLICATION),
     DISTRIBUTED_ACK_EVICTION_OVERFLOW_CCE(Scope.DISTRIBUTED_ACK, DataPolicy.REPLICATE,
         EVICTION_OVERFLOW_TO_DISK, NULL_COMPRESSOR, NULL_DISK_STORE_NAME,
-        CONCURRENCY_CHECKS_ENABLED, NO_DISK, SUPPORTS_REPLICATION, SUPPORTS_TRANSACTIONS),
+        CONCURRENCY_CHECKS_ENABLED, NO_DISK, SUPPORTS_REPLICATION),
     DISTRIBUTED_NO_ACK(Scope.DISTRIBUTED_NO_ACK, DataPolicy.PRELOADED, NO_EVICTION, NULL_COMPRESSOR,
-        NULL_DISK_STORE_NAME, CONCURRENCY_CHECKS_DISABLED, NO_DISK, SUPPORTS_REPLICATION,
-        SUPPORTS_TRANSACTIONS),
+        NULL_DISK_STORE_NAME, CONCURRENCY_CHECKS_DISABLED, NO_DISK, SUPPORTS_REPLICATION),
     DISTRIBUTED_NO_ACK_CCE(Scope.DISTRIBUTED_ACK, DataPolicy.REPLICATE, NO_EVICTION,
         NULL_COMPRESSOR, NULL_DISK_STORE_NAME, CONCURRENCY_CHECKS_ENABLED, NO_DISK,
-        SUPPORTS_REPLICATION, SUPPORTS_TRANSACTIONS),
+        SUPPORTS_REPLICATION),
     DISTRIBUTED_NO_ACK_PERSISTENT_REPLICATE_ASYNC(Scope.DISTRIBUTED_NO_ACK,
         DataPolicy.PERSISTENT_REPLICATE, NO_EVICTION, NULL_COMPRESSOR, NULL_DISK_STORE_NAME,
-        CONCURRENCY_CHECKS_ENABLED, NO_DISK, SUPPORTS_REPLICATION, SUPPORTS_TRANSACTIONS),
+        CONCURRENCY_CHECKS_ENABLED, NO_DISK, SUPPORTS_REPLICATION),
     DISTRIBUTED_NO_ACK_PERSISTENT_REPLICATE_CCE(Scope.DISTRIBUTED_NO_ACK,
         DataPolicy.PERSISTENT_REPLICATE, NO_EVICTION, NULL_COMPRESSOR, NULL_DISK_STORE_NAME,
-        CONCURRENCY_CHECKS_ENABLED, NO_DISK, SUPPORTS_REPLICATION, SUPPORTS_TRANSACTIONS),
+        CONCURRENCY_CHECKS_ENABLED, NO_DISK, SUPPORTS_REPLICATION),
     DISTRIBUTED_NO_ACK_PERSISTENT_REPLICATE_EVICTION_OVERFLOW_ASYNC(Scope.DISTRIBUTED_NO_ACK,
         DataPolicy.PERSISTENT_REPLICATE, EVICTION_OVERFLOW_TO_DISK, NULL_COMPRESSOR,
-        DISK_STORE_NAME, CONCURRENCY_CHECKS_ENABLED, DISK_ASYNCHRONOUS, SUPPORTS_REPLICATION,
-        SUPPORTS_TRANSACTIONS),
+        DISK_STORE_NAME, CONCURRENCY_CHECKS_ENABLED, DISK_ASYNCHRONOUS, SUPPORTS_REPLICATION),
     DISTRIBUTED_NO_ACK_PERSISTENT_REPLICATE_EVICTION_OVERFLOW_SYNC(Scope.DISTRIBUTED_NO_ACK,
         DataPolicy.PERSISTENT_REPLICATE, EVICTION_OVERFLOW_TO_DISK, NULL_COMPRESSOR,
-        DISK_STORE_NAME, CONCURRENCY_CHECKS_ENABLED, DISK_SYNCHRONOUS, SUPPORTS_REPLICATION,
-        SUPPORTS_TRANSACTIONS),
+        DISK_STORE_NAME, CONCURRENCY_CHECKS_ENABLED, DISK_SYNCHRONOUS, SUPPORTS_REPLICATION),
     GLOBAL(Scope.GLOBAL, DataPolicy.PRELOADED, NO_EVICTION, NULL_COMPRESSOR, NULL_DISK_STORE_NAME,
-        CONCURRENCY_CHECKS_DISABLED, NO_DISK, SUPPORTS_REPLICATION, SUPPORTS_TRANSACTIONS),
+        CONCURRENCY_CHECKS_DISABLED, NO_DISK, SUPPORTS_REPLICATION),
     GLOBAL_CCE(Scope.GLOBAL, DataPolicy.REPLICATE, NO_EVICTION, NULL_COMPRESSOR,
-        NULL_DISK_STORE_NAME, CONCURRENCY_CHECKS_ENABLED, NO_DISK, SUPPORTS_REPLICATION,
-        SUPPORTS_TRANSACTIONS),
+        NULL_DISK_STORE_NAME, CONCURRENCY_CHECKS_ENABLED, NO_DISK, SUPPORTS_REPLICATION),
     PARTITIONED_REGION(Scope.DISTRIBUTED_ACK, DataPolicy.PRELOADED, NO_EVICTION, NULL_COMPRESSOR,
-        NULL_DISK_STORE_NAME, CONCURRENCY_CHECKS_DISABLED, NO_DISK, NO_REPLICATION,
-        NO_TRANSACTIONS),
+        NULL_DISK_STORE_NAME, CONCURRENCY_CHECKS_DISABLED, NO_DISK, NO_REPLICATION),
     PARTITIONED_REGION_COMPRESSION(Scope.DISTRIBUTED_ACK, DataPolicy.PRELOADED, NO_EVICTION,
         SNAPPY_COMPRESSOR, NULL_DISK_STORE_NAME, CONCURRENCY_CHECKS_DISABLED, NO_DISK,
-        NO_REPLICATION, NO_TRANSACTIONS);
+        NO_REPLICATION);
 
     private final Scope scope;
     private final DataPolicy dataPolicy;
@@ -700,7 +701,6 @@ public class DestroyRegionDuringGIIDistributedTest implements Serializable {
     private final boolean concurrencyChecksEnabled;
     private final boolean diskSynchronous;
     private final boolean supportsReplication;
-    private final boolean supportsTransactions;
     private final Compressor compressor;
 
     RegionDefinition(Scope scope,
@@ -710,8 +710,7 @@ public class DestroyRegionDuringGIIDistributedTest implements Serializable {
         String diskStoreName,
         boolean concurrencyChecksEnabled,
         boolean diskSynchronous,
-        boolean supportsReplication,
-        boolean supportsTransactions) {
+        boolean supportsReplication) {
       this.scope = scope;
       this.dataPolicy = dataPolicy;
       this.evictionAttributes = evictionAttributes;
@@ -720,7 +719,6 @@ public class DestroyRegionDuringGIIDistributedTest implements Serializable {
       this.concurrencyChecksEnabled = concurrencyChecksEnabled;
       this.diskSynchronous = diskSynchronous;
       this.supportsReplication = supportsReplication;
-      this.supportsTransactions = supportsTransactions;
     }
 
     private <K, V> RegionFactory<K, V> createRegionFactory(Cache cache) {
@@ -747,24 +745,8 @@ public class DestroyRegionDuringGIIDistributedTest implements Serializable {
       return scope;
     }
 
-    private DataPolicy getDataPolicy() {
-      return dataPolicy;
-    }
-
-    private boolean hasCompression() {
-      return compressor != null;
-    }
-
-    private boolean hasConcurrencyChecksEnabled() {
-      return concurrencyChecksEnabled;
-    }
-
     private boolean supportsReplication() {
       return supportsReplication;
-    }
-
-    private boolean supportsTransactions() {
-      return supportsTransactions;
     }
   }
 
@@ -782,6 +764,4 @@ public class DestroyRegionDuringGIIDistributedTest implements Serializable {
   private static final boolean NO_DISK = false;
   private static final boolean SUPPORTS_REPLICATION = true;
   private static final boolean NO_REPLICATION = false;
-  private static final boolean SUPPORTS_TRANSACTIONS = true;
-  private static final boolean NO_TRANSACTIONS = false;
 }
