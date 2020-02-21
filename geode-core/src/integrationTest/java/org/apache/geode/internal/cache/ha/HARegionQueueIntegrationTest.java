@@ -49,7 +49,6 @@ import org.mockito.MockitoAnnotations;
 import util.TestException;
 
 import org.apache.geode.CancelCriterion;
-import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
@@ -63,10 +62,9 @@ import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.EnumListenerEvent;
 import org.apache.geode.internal.cache.EventID;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.HARegion;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.InternalRegionArguments;
+import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.VMCachedDeserializable;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
@@ -591,7 +589,8 @@ public class HARegionQueueIntegrationTest {
   }
 
   private Region createHAContainerRegionRegion() throws Exception {
-    AttributesFactory factory = new AttributesFactory();
+    InternalCache internalCache = (InternalCache) cache;
+    InternalRegionFactory factory = internalCache.createInternalRegionFactory();
     factory.setScope(Scope.LOCAL);
     factory.setDiskStoreName(null);
     factory.setDiskSynchronous(true);
@@ -599,10 +598,9 @@ public class HARegionQueueIntegrationTest {
     factory.setStatisticsEnabled(true);
     factory.setEvictionAttributes(
         EvictionAttributes.createLIFOEntryAttributes(1000, EvictionAction.OVERFLOW_TO_DISK));
-    Region region = ((GemFireCacheImpl) cache).createVMRegion(
-        CacheServerImpl.generateNameForClientMsgsRegion(0), factory.create(),
-        new InternalRegionArguments().setDestroyLockFlag(true).setRecreateFlag(false)
-            .setSnapshotInputStream(null).setImageTarget(null).setIsUsedForMetaRegion(true));
+    factory.setDestroyLockFlag(true).setRecreateFlag(false)
+        .setSnapshotInputStream(null).setImageTarget(null).setIsUsedForMetaRegion(true);
+    Region region = factory.create(CacheServerImpl.generateNameForClientMsgsRegion(0));
     return region;
   }
 
