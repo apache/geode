@@ -41,7 +41,6 @@ import java.security.cert.X509Certificate;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
 
 import javax.net.ServerSocketFactory;
 import javax.net.SocketFactory;
@@ -110,9 +109,6 @@ import org.apache.geode.util.internal.GeodeGlossary;
 public class SocketCreator extends TcpSocketCreatorImpl {
 
   private static final Logger logger = LogService.getLogger();
-
-  @MakeNotStatic
-  private static final ConcurrentHashMap<InetAddress, String> hostNames = new ConcurrentHashMap<>();
 
   /**
    * flag to force always using DNS (regardless of the fact that these lookups can hang)
@@ -184,39 +180,6 @@ public class SocketCreator extends TcpSocketCreatorImpl {
    */
   public static InetAddress getLocalHost() throws UnknownHostException {
     return LocalHostUtil.getLocalHost();
-  }
-
-  /**
-   * returns the host name for the given inet address, using a local cache of names to avoid dns
-   * hits and duplicate strings
-   */
-  public static String getHostName(InetAddress addr) {
-    String result = hostNames.get(addr);
-    if (result == null) {
-      result = addr.getHostName();
-      hostNames.put(addr, result);
-    }
-    return result;
-  }
-
-  /**
-   * returns the host name for the given inet address, using a local cache of names to avoid dns
-   * hits and duplicate strings
-   */
-  public static String getCanonicalHostName(InetAddress addr, String hostName) {
-    String result = hostNames.get(addr);
-    if (result == null) {
-      hostNames.put(addr, hostName);
-      return hostName;
-    }
-    return result;
-  }
-
-  /**
-   * Reset the hostNames caches
-   */
-  public static void resetHostNameCache() {
-    hostNames.clear();
   }
 
   // -------------------------------------------------------------------------

@@ -29,7 +29,6 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.inet.LocalHostUtil;
-import org.apache.geode.internal.net.SocketCreator;
 
 /**
  * Identifies the host, port, and bindAddress a distribution locator is listening on.
@@ -293,7 +292,7 @@ public class DistributionLocatorId implements java.io.Serializable {
       if (isMcastId()) {
         sb.append(this.host.getHostAddress());
       } else {
-        sb.append(SocketCreator.getHostName(this.host));
+        sb.append(this.host.getHostName());
       }
     }
 

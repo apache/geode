@@ -203,7 +203,7 @@ public abstract class AbstractConfig implements Config {
         // on Windows getHostName on mcast addrs takes ~5 seconds
         addrName = addr.getHostAddress();
       } else {
-        addrName = SocketCreator.getHostName(addr);
+        addrName = addr.getHostName();
       }
       return addrName;
     }

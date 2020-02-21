@@ -100,7 +100,7 @@ public class InternalDistributedMember
   }
 
   private static String getHostName(InetAddress i) {
-    return SocketCreator.resolve_dns ? SocketCreator.getHostName(i) : i.getHostAddress();
+    return SocketCreator.resolve_dns ? i.getHostName() : i.getHostAddress();
   }
 
   /**
@@ -312,7 +312,7 @@ public class InternalDistributedMember
     memberIdentifier.setProcessId(OSProcess.getId());
     try {
       if (SocketCreator.resolve_dns) {
-        setHostName(SocketCreator.getHostName(LocalHostUtil.getLocalHost()));
+        setHostName(LocalHostUtil.getLocalHost().getHostName());
       } else {
         setHostName(LocalHostUtil.getLocalHost().getHostAddress());
       }
