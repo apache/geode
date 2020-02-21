@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -75,8 +74,8 @@ public class ClientTypeRegistration implements TypeRegistration {
       try {
         newTypeId = getPdxIdFromPool(newType, (ExecutablePool) pool);
         newType.setTypeId(newTypeId);
-        localMap.save(newTypeId, newType);
         copyTypeToOtherPools(newType, newTypeId, pool);
+        localMap.save(newTypeId, newType);
         return newTypeId;
       } catch (ServerConnectivityException e) {
         logger.debug("Received an exception defining pdx type on pool {}, {}", pool,
@@ -157,18 +156,19 @@ public class ClientTypeRegistration implements TypeRegistration {
   Collection<Pool> getAllPools() {
     Collection<Pool> pools = getPools();
 
-    Collection<Pool> filteredPools = pools.stream()
+    // Remove all pools being used by gateways from the collection
+    pools = pools.stream()
         .filter(pool -> !((PoolImpl)pool).isUsedByGateway())
         .collect(Collectors.toSet());
 
-    if (filteredPools.isEmpty()) {
+    if (pools.isEmpty()) {
       if (this.cache.isClosed()) {
         throw cache.getCacheClosedException("PDX detected cache was closed");
       }
       throw cache.getCacheClosedException(
           "Client pools have been closed so the PDX type registry is not available.");
     }
-    return filteredPools;
+    return pools;
   }
 
   Collection<Pool> getPools() {
