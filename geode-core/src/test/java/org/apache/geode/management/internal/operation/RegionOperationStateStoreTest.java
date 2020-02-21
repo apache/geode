@@ -160,7 +160,7 @@ public class RegionOperationStateStoreTest {
     when(diskStoreFactory.setAutoCompact(true)).thenReturn(diskStoreFactory);
     when(diskStoreFactory.setMaxOplogSize(10)).thenReturn(diskStoreFactory);
     InternalRegionFactory regionFactory = mock(InternalRegionFactory.class);
-    when(cache.createRegionFactory(eq(RegionShortcut.REPLICATE))).thenReturn(regionFactory);
+    when(cache.createInternalRegionFactory(eq(RegionShortcut.REPLICATE))).thenReturn(regionFactory);
     Region region = mock(Region.class);
     when(regionFactory.create(OPERATION_STATE_REGION_NAME)).thenReturn(region);
 

@@ -64,7 +64,8 @@ public class RegionOperationStateStore
 
     InternalRegionFactory<String, OperationState<ClusterManagementOperation<OperationResult>, OperationResult>> regionFactory =
         cache.createInternalRegionFactory(RegionShortcut.REPLICATE);
-    regionFactory.setIsUsedForMetaRegion(true).setMetaRegionWithTransactions(false);
+    regionFactory.setIsUsedForMetaRegion(true);
+    regionFactory.setMetaRegionWithTransactions(false);
     return regionFactory.create(OPERATION_STATE_REGION_NAME);
   }
 
