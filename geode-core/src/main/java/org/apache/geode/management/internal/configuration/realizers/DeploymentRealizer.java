@@ -16,11 +16,13 @@
 package org.apache.geode.management.internal.configuration.realizers;
 
 import java.io.File;
+import java.io.IOException;
 import java.time.Instant;
 import java.util.Map;
 
 import org.apache.commons.lang3.NotImplementedException;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.DeployedJar;
 import org.apache.geode.internal.JarDeployer;
@@ -37,16 +39,15 @@ public class DeploymentRealizer
   @Override
   public RealizationResult create(Deployment config, InternalCache cache) {
     RealizationResult result = new RealizationResult();
-    try {
-      DeployedJar deployedJar =
-          ClassPathLoader.getLatest().getJarDeployer().deploy(config.getFile());
-      if (deployedJar == null) {
-        result.setMessage("Already deployed");
-      } else {
+    DeployedJar deployedJar = deploy(config.getFile());
+    if (deployedJar == null) {
+      result.setMessage("Already deployed");
+    } else {
+      try {
         result.setMessage(deployedJar.getFileCanonicalPath());
+      } catch (IOException e) {
+        throw new RuntimeException(e.getMessage(), e);
       }
-    } catch (Exception e) {
-      throw new RuntimeException(e.getMessage(), e);
     }
     return result;
   }
@@ -82,13 +83,23 @@ public class DeploymentRealizer
     throw new NotImplementedException("Not implemented");
   }
 
+  @VisibleForTesting
   String getDateString(long milliseconds) {
     return Instant.ofEpochMilli(milliseconds).toString();
   }
 
+  @VisibleForTesting
   Map<String, DeployedJar> getDeployedJars() {
     JarDeployer jarDeployer = ClassPathLoader.getLatest().getJarDeployer();
     return jarDeployer.getDeployedJars();
   }
 
+  @VisibleForTesting
+  DeployedJar deploy(File jarFile) {
+    try {
+      return ClassPathLoader.getLatest().getJarDeployer().deploy(jarFile);
+    } catch (IOException | ClassNotFoundException e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
+  }
 }
