@@ -267,8 +267,9 @@ public class PartitionedRegionHelper {
         }
       };
 
-      factory.setIsUsedForPartitionedRegionAdmin(true)
-          .setInternalRegion(true).setCachePerfStatsHolder(prMetaStatsHolder);
+      factory.setIsUsedForPartitionedRegionAdmin(true);
+      factory.setInternalRegion(true);
+      factory.setCachePerfStatsHolder(prMetaStatsHolder);
 
       try {
         root = (DistributedRegion) factory.create(PR_ROOT_REGION_NAME);
