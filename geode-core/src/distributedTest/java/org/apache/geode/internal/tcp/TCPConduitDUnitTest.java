@@ -16,7 +16,6 @@ package org.apache.geode.internal.tcp;
 
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
-import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.IOException;
@@ -110,47 +109,6 @@ public class TCPConduitDUnitTest extends DistributedTestCase {
           }
         });
       }
-      DistributedTestUtils.crashDistributedSystem(system);
-    }
-  }
-
-
-  @Test
-  public void testClosingOfSenderConnections() throws Exception {
-    final VM vm1 = VM.getVM(1);
-    final VM vm2 = VM.getVM(2);
-    final VM vm3 = VM.getVM(3);
-
-    disconnectAllFromDS();
-
-    int port = startLocator();
-    properties.put(ConfigurationProperties.LOCATORS, "localhost[" + port + "]");
-
-    vm1.invoke(() -> startServer(properties));
-    vm2.invoke(() -> startServer(properties));
-    vm3.invoke(() -> startServer(properties));
-
-    await().untilAsserted(() -> {
-      assertThat(ConnectionTable.getNumSenderSharedConnections()).isEqualTo(3);
-    });
-
-    try {
-      await("for message to be sent").until(() -> {
-        final SerialAckedMessage serialAckedMessage = new SerialAckedMessage();
-        serialAckedMessage.send(system.getAllOtherMembers(), false);
-        return true;
-      });
-    } finally {
-      // DUnit won't clean up properly if the sockets are hung; we have to crash the systems.
-      IgnoredException.addIgnoredException("ForcedDisconnectException|loss of quorum");
-      for (VM vm : Arrays.asList(vm1, vm2, vm3)) {
-        vm.invoke("crash system in case it's hung", () -> {
-          if (system != null && system.isConnected()) {
-            DistributedTestUtils.crashDistributedSystem(system);
-          }
-        });
-      }
-      assertThat(ConnectionTable.getNumSenderSharedConnections()).isEqualTo(0);
       DistributedTestUtils.crashDistributedSystem(system);
     }
   }
