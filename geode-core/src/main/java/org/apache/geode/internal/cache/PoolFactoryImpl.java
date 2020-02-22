@@ -286,6 +286,7 @@ public class PoolFactoryImpl implements InternalPoolFactory {
       throw new IllegalStateException(
           "A server has already been added. You can only add locators or servers; not both.");
     }
+    validatePort(port);
     HostAndPort address = new HostAndPort(host, port);
     attributes.locators.add(address);
     locatorAddresses.add(address);
@@ -298,8 +299,15 @@ public class PoolFactoryImpl implements InternalPoolFactory {
       throw new IllegalStateException(
           "A locator has already been added. You can only add locators or servers; not both.");
     }
+    validatePort(port);
     attributes.servers.add(new HostAndPort(host, port));
     return this;
+  }
+
+  private void validatePort(int port) {
+    if (port <= 0) {
+      throw new IllegalArgumentException("port must be greater than 0 but was " + port);
+    }
   }
 
   @Override

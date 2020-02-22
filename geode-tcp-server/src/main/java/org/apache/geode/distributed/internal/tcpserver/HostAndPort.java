@@ -25,7 +25,9 @@ public class HostAndPort {
   private final InetSocketAddress socketInetAddress;
 
   public HostAndPort(String hostName, int port) {
-    if (InetAddressValidator.getInstance().isValid(hostName)) {
+    if (hostName == null) {
+      socketInetAddress = new InetSocketAddress(port);
+    } else if (InetAddressValidator.getInstance().isValid(hostName)) {
       // numeric address - use as-is
       socketInetAddress = new InetSocketAddress(hostName, port);
     } else {

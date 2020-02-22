@@ -326,7 +326,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
           InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());
 
       return (LocatorStatusResponse) client.requestToServer(
-          new HostAndPort(bindAddress.getHostAddress(), port),
+          new HostAndPort(bindAddress == null ? null : bindAddress.getHostAddress(), port),
           new LocatorStatusRequest(), timeout, true);
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e);
