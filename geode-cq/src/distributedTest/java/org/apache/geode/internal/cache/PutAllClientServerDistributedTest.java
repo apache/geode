@@ -57,6 +57,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
+import com.sun.tools.javac.resources.version;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import junitparams.naming.TestCaseName;
@@ -496,7 +497,10 @@ public class PutAllClientServerDistributedTest implements Serializable {
       return versionsToReturn;
     });
 
-    assertThat(versions.getVersionTags()).isEqualTo(versionsAfterRetry.getVersionTags());
+    List<VersionTag> versionTags = versions.getVersionTags();
+    List<VersionTag> versionTagsAfterRetry = versionsAfterRetry.getVersionTags();
+    assertThat(versionTags.size()).isEqualTo(versionTagsAfterRetry.size());
+    assertThat(versionTags).containsAll(versionTagsAfterRetry);
   }
 
   /**
