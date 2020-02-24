@@ -16,6 +16,9 @@
 package org.apache.geode.management.internal.rest;
 
 
+import static org.apache.geode.test.junit.assertions.ClusterManagementListResultAssert.assertManagementListResult;
+import static org.apache.geode.test.junit.assertions.ClusterManagementRealizationResultAssert.assertManagementResult;
+
 import java.io.File;
 import java.io.IOException;
 
@@ -35,6 +38,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.context.WebApplicationContext;
 
 import org.apache.geode.management.api.ClusterManagementService;
+import org.apache.geode.management.api.EntityInfo;
 import org.apache.geode.management.api.RestTemplateClusterManagementServiceTransport;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.Deployment;
@@ -84,7 +88,20 @@ public class DeployManagementIntegrationTest {
   public void sanityCheck() {
     deployment.setFile(jar1);
     deployment.setGroup("group1");
-    client.create(deployment);
+    assertManagementResult(client.create(deployment)).isSuccessful();
+
+    deployment.setGroup("group2");
+    assertManagementResult(client.create(deployment)).isSuccessful();
+
+    deployment.setFile(jar2);
+    deployment.setGroup("group2");
+    assertManagementResult(client.create(deployment)).isSuccessful();
+
+    assertManagementListResult(client.list(new Deployment())).isSuccessful()
+        .hasEntityInfo()
+        .hasSize(2)
+        .extracting(EntityInfo::getId)
+        .containsExactlyInAnyOrder("jar1.jar", "jar2.jar");
   }
 
 
