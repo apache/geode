@@ -248,7 +248,7 @@ public class ExportLogsDistributedTestBase {
   }
 
   @Test
-  public void exportLogsRegionIsCleanedUpProperly() throws IOException, ClassNotFoundException {
+  public void exportLogsRegionIsCleanedUpProperly() {
     locator.invoke(() -> {
       GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
       ExportLogsFunction.createOrGetExistingExportLogsRegion(true, cache);

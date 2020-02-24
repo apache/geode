@@ -46,7 +46,6 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.oio.OioServerSocketChannel;
 import io.netty.util.concurrent.Future;
 
-import org.apache.geode.InternalGemFireError;
 import org.apache.geode.LogWriter;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.annotations.internal.MakeNotStatic;
@@ -62,8 +61,7 @@ import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.InternalRegionArguments;
-import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
+import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.internal.hll.HyperLogLogPlus;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
@@ -420,35 +418,25 @@ public class GeodeRedisServer {
       Region<ByteArrayWrapper, ByteArrayWrapper> stringsRegion;
 
       Region<ByteArrayWrapper, HyperLogLogPlus> hLLRegion;
-      Region<String, RedisDataType> redisMetaData;
+      Region redisMetaData;
       InternalCache gemFireCache = (InternalCache) cache;
-      try {
-        if ((stringsRegion = cache.getRegion(STRING_REGION)) == null) {
-          RegionFactory<ByteArrayWrapper, ByteArrayWrapper> regionFactory =
-              gemFireCache.createRegionFactory(this.DEFAULT_REGION_TYPE);
-          stringsRegion = regionFactory.create(STRING_REGION);
-        }
-        if ((hLLRegion = cache.getRegion(HLL_REGION)) == null) {
-          RegionFactory<ByteArrayWrapper, HyperLogLogPlus> regionFactory =
-              gemFireCache.createRegionFactory(this.DEFAULT_REGION_TYPE);
-          hLLRegion = regionFactory.create(HLL_REGION);
-        }
-        if ((redisMetaData = cache.getRegion(REDIS_META_DATA_REGION)) == null) {
-          RegionAttributesCreation regionAttributesCreation = new RegionAttributesCreation();
-          regionAttributesCreation.addCacheListener(metaListener);
-          regionAttributesCreation.setDataPolicy(DataPolicy.REPLICATE);
-          InternalRegionArguments ira =
-              new InternalRegionArguments().setInternalRegion(true).setIsUsedForMetaRegion(true);
-          redisMetaData =
-              gemFireCache.createVMRegion(REDIS_META_DATA_REGION, regionAttributesCreation, ira);
-        }
-
-      } catch (IOException | ClassNotFoundException e) {
-        // only if loading snapshot, not here
-        InternalGemFireError assErr = new InternalGemFireError(
-            "unexpected exception");
-        assErr.initCause(e);
-        throw assErr;
+      if ((stringsRegion = cache.getRegion(STRING_REGION)) == null) {
+        RegionFactory<ByteArrayWrapper, ByteArrayWrapper> regionFactory =
+            gemFireCache.createRegionFactory(this.DEFAULT_REGION_TYPE);
+        stringsRegion = regionFactory.create(STRING_REGION);
+      }
+      if ((hLLRegion = cache.getRegion(HLL_REGION)) == null) {
+        RegionFactory<ByteArrayWrapper, HyperLogLogPlus> regionFactory =
+            gemFireCache.createRegionFactory(this.DEFAULT_REGION_TYPE);
+        hLLRegion = regionFactory.create(HLL_REGION);
+      }
+      if ((redisMetaData = cache.getRegion(REDIS_META_DATA_REGION)) == null) {
+        InternalRegionFactory<String, RedisDataType> redisMetaDataFactory =
+            gemFireCache.createInternalRegionFactory();
+        redisMetaDataFactory.addCacheListener(metaListener);
+        redisMetaDataFactory.setDataPolicy(DataPolicy.REPLICATE);
+        redisMetaDataFactory.setInternalRegion(true).setIsUsedForMetaRegion(true);
+        redisMetaData = redisMetaDataFactory.create(REDIS_META_DATA_REGION);
       }
       this.keyRegistrar = new KeyRegistrar(redisMetaData);
       this.pubSub = new PubSubImpl(new Subscriptions());

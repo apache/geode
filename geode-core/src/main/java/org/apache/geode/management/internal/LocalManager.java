@@ -14,7 +14,6 @@
  */
 package org.apache.geode.management.internal;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -33,10 +32,8 @@ import org.apache.geode.GemFireException;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.DataPolicy;
-import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionExistsException;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.TimeoutException;
@@ -44,7 +41,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.HasCachePerfStats;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.InternalRegionArguments;
+import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -113,12 +110,6 @@ public class LocalManager extends Manager {
         logger.debug("Creating  Management Region :");
       }
 
-      /*
-       * Sharing the same Internal Argument for both notification region and monitoring region
-       */
-      InternalRegionArguments internalArgs = new InternalRegionArguments();
-      internalArgs.setIsUsedForMetaRegion(true);
-
       // Create anonymous stats holder for Management Regions
       HasCachePerfStats monitoringRegionStats = new HasCachePerfStats() {
 
@@ -134,46 +125,38 @@ public class LocalManager extends Manager {
         }
       };
 
-      internalArgs.setCachePerfStatsHolder(monitoringRegionStats);
-
-      AttributesFactory<String, Object> monitorRegionAttributeFactory =
-          new AttributesFactory<>();
-      monitorRegionAttributeFactory.setScope(Scope.DISTRIBUTED_NO_ACK);
-      monitorRegionAttributeFactory.setDataPolicy(DataPolicy.REPLICATE);
-      monitorRegionAttributeFactory.setConcurrencyChecksEnabled(false);
+      InternalRegionFactory<String, Object> monitorFactory = cache.createInternalRegionFactory();
+      monitorFactory.setScope(Scope.DISTRIBUTED_NO_ACK);
+      monitorFactory.setDataPolicy(DataPolicy.REPLICATE);
+      monitorFactory.setConcurrencyChecksEnabled(false);
       CacheListener<String, Object> localListener = new MonitoringRegionCacheListener(service);
-      monitorRegionAttributeFactory.addCacheListener(localListener);
+      monitorFactory.addCacheListener(localListener);
+      monitorFactory.setIsUsedForMetaRegion(true);
+      monitorFactory.setCachePerfStatsHolder(monitoringRegionStats);
 
-      RegionAttributes<String, Object> monitoringRegionAttrs =
-          monitorRegionAttributeFactory.create();
-
-      AttributesFactory<NotificationKey, Notification> notificationRegionAttributeFactory =
-          new AttributesFactory<>();
-      notificationRegionAttributeFactory.setScope(Scope.DISTRIBUTED_NO_ACK);
-      notificationRegionAttributeFactory.setDataPolicy(DataPolicy.EMPTY);
-      notificationRegionAttributeFactory.setConcurrencyChecksEnabled(false);
-
-      RegionAttributes<NotificationKey, Notification> notifRegionAttrs =
-          notificationRegionAttributeFactory.create();
+      InternalRegionFactory<NotificationKey, Notification> notificationFactory =
+          cache.createInternalRegionFactory();
+      notificationFactory.setScope(Scope.DISTRIBUTED_NO_ACK);
+      notificationFactory.setDataPolicy(DataPolicy.EMPTY);
+      notificationFactory.setConcurrencyChecksEnabled(false);
+      notificationFactory.setIsUsedForMetaRegion(true);
+      notificationFactory.setCachePerfStatsHolder(monitoringRegionStats);
 
       String appender = MBeanJMXAdapter.getUniqueIDForMember(system.getDistributedMember());
 
       try {
         repo.setLocalMonitoringRegion(
-            cache.createInternalRegion(ManagementConstants.MONITORING_REGION + "_" + appender,
-                monitoringRegionAttrs, internalArgs));
-
-      } catch (TimeoutException | RegionExistsException | ClassNotFoundException | IOException e) {
+            monitorFactory.create(ManagementConstants.MONITORING_REGION + "_" + appender));
+      } catch (TimeoutException | RegionExistsException e) {
         throw new ManagementException(e);
       }
 
       boolean notifRegionCreated = false;
       try {
         repo.setLocalNotificationRegion(
-            cache.createInternalRegion(ManagementConstants.NOTIFICATION_REGION + "_" + appender,
-                notifRegionAttrs, internalArgs));
+            notificationFactory.create(ManagementConstants.NOTIFICATION_REGION + "_" + appender));
         notifRegionCreated = true;
-      } catch (TimeoutException | ClassNotFoundException | IOException | RegionExistsException e) {
+      } catch (TimeoutException | RegionExistsException e) {
         throw new ManagementException(e);
       } finally {
         if (!notifRegionCreated) {

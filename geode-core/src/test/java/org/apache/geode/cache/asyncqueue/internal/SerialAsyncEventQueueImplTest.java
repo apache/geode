@@ -33,6 +33,7 @@ import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.GatewaySenderAdvisor;
@@ -53,12 +54,15 @@ public class SerialAsyncEventQueueImplTest {
   private StatisticsFactory statisticsFactory;
   private GatewaySenderAttributes gatewaySenderAttributes;
   private StatisticsClock statisticsClock;
+  private InternalRegionFactory regionFactory;
 
   @Before
   public void setUp() throws Exception {
     cache = Fakes.cache();
     when(cache.getRegion(any())).thenReturn(null);
-    when(cache.createVMRegion(any(), any(), any())).thenReturn(mock(LocalRegion.class));
+    regionFactory = mock(InternalRegionFactory.class);
+    when(regionFactory.create(any())).thenReturn(mock(LocalRegion.class));
+    when(cache.createInternalRegionFactory(any())).thenReturn(regionFactory);
 
     statisticsFactory = mock(StatisticsFactory.class);
     when(statisticsFactory.createAtomicStatistics(any(), any())).thenReturn(mock(Statistics.class));

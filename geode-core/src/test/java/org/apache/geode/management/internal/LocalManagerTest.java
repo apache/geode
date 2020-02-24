@@ -16,7 +16,6 @@ package org.apache.geode.management.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.when;
@@ -37,7 +36,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.cache.HasCachePerfStats;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheForClientAccess;
-import org.apache.geode.internal.cache.InternalRegionArguments;
+import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.management.DistributedSystemMXBean;
 
@@ -47,6 +46,8 @@ public class LocalManagerTest {
   private InternalDistributedSystem system;
   private SystemManagementService service;
   private InternalCache cache;
+  private InternalRegionFactory regionFactory1;
+  private InternalRegionFactory regionFactory2;
   private StatisticsFactory statisticsFactory;
   private StatisticsClock statisticsClock;
   private InternalCacheForClientAccess cacheForClientAccess;
@@ -57,6 +58,8 @@ public class LocalManagerTest {
     system = mock(InternalDistributedSystem.class);
     service = mock(SystemManagementService.class);
     cache = mock(InternalCache.class);
+    regionFactory1 = mock(InternalRegionFactory.class);
+    regionFactory2 = mock(InternalRegionFactory.class);
     statisticsFactory = mock(StatisticsFactory.class);
     statisticsClock = mock(StatisticsClock.class);
     cacheForClientAccess = mock(InternalCacheForClientAccess.class);
@@ -65,8 +68,10 @@ public class LocalManagerTest {
 
     when(cache.getCacheForProcessingClientRequests())
         .thenReturn(cacheForClientAccess);
-    when(cacheForClientAccess.createInternalRegion(any(), any(), any()))
-        .thenReturn(mock(Region.class));
+    when(cacheForClientAccess.createInternalRegionFactory())
+        .thenReturn(regionFactory1).thenReturn(regionFactory2);
+    when(regionFactory1.create(any())).thenReturn(mock(Region.class));
+    when(regionFactory2.create(any())).thenReturn(mock(Region.class));
     when(config.getJmxManagerUpdateRate())
         .thenReturn(Integer.MAX_VALUE);
     when(distributedSystemMXBean.getAlertLevel())
@@ -86,8 +91,7 @@ public class LocalManagerTest {
 
     localManager.startManager();
 
-    verify(cacheForClientAccess).createInternalRegion(eq("_monitoringRegion_null<v1>20"), any(),
-        any());
+    verify(regionFactory1).create("_monitoringRegion_null<v1>20");
   }
 
   @Test
@@ -99,14 +103,10 @@ public class LocalManagerTest {
 
     localManager.startManager();
 
-    ArgumentCaptor<InternalRegionArguments> captor =
-        ArgumentCaptor.forClass(InternalRegionArguments.class);
-    verify(cacheForClientAccess).createInternalRegion(eq("_monitoringRegion_null<v2>40"), any(),
-        captor.capture());
-
-    InternalRegionArguments internalRegionArguments = captor.getValue();
-    HasCachePerfStats hasCachePerfStats = internalRegionArguments.getCachePerfStatsHolder();
-    assertThat(hasCachePerfStats.hasOwnStats()).isTrue();
+    ArgumentCaptor<HasCachePerfStats> captor =
+        ArgumentCaptor.forClass(HasCachePerfStats.class);
+    verify(regionFactory1).setCachePerfStatsHolder(captor.capture());
+    assertThat(captor.getValue().hasOwnStats()).isTrue();
   }
 
   @Test
@@ -118,8 +118,7 @@ public class LocalManagerTest {
 
     localManager.startManager();
 
-    verify(cacheForClientAccess).createInternalRegion(eq("_notificationRegion_null<v3>60"), any(),
-        any());
+    verify(regionFactory2).create("_notificationRegion_null<v3>60");
   }
 
   @Test
@@ -131,14 +130,10 @@ public class LocalManagerTest {
 
     localManager.startManager();
 
-    ArgumentCaptor<InternalRegionArguments> captor =
-        ArgumentCaptor.forClass(InternalRegionArguments.class);
-    verify(cacheForClientAccess).createInternalRegion(eq("_notificationRegion_null<v4>80"), any(),
-        captor.capture());
-
-    InternalRegionArguments internalRegionArguments = captor.getValue();
-    HasCachePerfStats hasCachePerfStats = internalRegionArguments.getCachePerfStatsHolder();
-    assertThat(hasCachePerfStats.hasOwnStats()).isTrue();
+    ArgumentCaptor<HasCachePerfStats> captor =
+        ArgumentCaptor.forClass(HasCachePerfStats.class);
+    verify(regionFactory2).setCachePerfStatsHolder(captor.capture());
+    assertThat(captor.getValue().hasOwnStats()).isTrue();
   }
 
   private InternalDistributedMember member(int viewId, int port) {

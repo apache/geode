@@ -16,7 +16,6 @@ package org.apache.geode.internal.cache.wan.serial;
 
 import static org.apache.geode.cache.wan.GatewaySender.DEFAULT_BATCH_SIZE;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashMap;
@@ -33,7 +32,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.AttributesMutator;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
@@ -47,6 +45,7 @@ import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionDestroyedException;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.asyncqueue.AsyncEvent;
@@ -58,6 +57,7 @@ import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
+import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.cache.Token;
@@ -847,10 +847,17 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     final InternalCache gemCache = sender.getCache();
     this.region = gemCache.getRegion(this.regionName);
     if (this.region == null) {
-      AttributesFactory<Long, AsyncEvent> factory = new AttributesFactory<Long, AsyncEvent>();
-      factory.setScope(NO_ACK ? Scope.DISTRIBUTED_NO_ACK : Scope.DISTRIBUTED_ACK);
-      factory.setDataPolicy(
-          this.enablePersistence ? DataPolicy.PERSISTENT_REPLICATE : DataPolicy.REPLICATE);
+      RegionShortcut regionShortcut;
+      if (enablePersistence) {
+        regionShortcut = RegionShortcut.REPLICATE_PERSISTENT;
+      } else {
+        regionShortcut = RegionShortcut.REPLICATE;
+      }
+      InternalRegionFactory<Long, AsyncEvent> factory =
+          gemCache.createInternalRegionFactory(regionShortcut);
+      if (NO_ACK) {
+        factory.setScope(Scope.DISTRIBUTED_NO_ACK);
+      }
       if (logger.isDebugEnabled()) {
         logger.debug("The policy of region is {}",
             (this.enablePersistence ? DataPolicy.PERSISTENT_REPLICATE : DataPolicy.REPLICATE));
@@ -876,29 +883,22 @@ public class SerialGatewaySenderQueue implements RegionQueue {
       if (logger.isDebugEnabled()) {
         logger.debug("{}: Attempting to create queue region: {}", this, this.regionName);
       }
-      final RegionAttributes<Long, AsyncEvent> ra = factory.create();
+      final RegionAttributes<Long, AsyncEvent> ra = factory.getCreateAttributes();
       try {
         SerialGatewaySenderQueueMetaRegion meta =
             new SerialGatewaySenderQueueMetaRegion(this.regionName, ra, null, gemCache, sender,
                 sender.getStatisticsClock());
-        try {
-          this.region = gemCache.createVMRegion(this.regionName, ra,
-              new InternalRegionArguments().setInternalMetaRegion(meta).setDestroyLockFlag(true)
-                  .setSnapshotInputStream(null).setImageTarget(null)
-                  .setIsUsedForSerialGatewaySenderQueue(true).setInternalRegion(true)
-                  .setSerialGatewaySender(sender));
-
-          // Add overflow statistics to the mbean
-          addOverflowStatisticsToMBean(gemCache, sender);
-        } catch (IOException veryUnLikely) {
-          logger.fatal(String.format("Unexpected Exception during init of %s",
-              this.getClass()),
-              veryUnLikely);
-        } catch (ClassNotFoundException alsoUnlikely) {
-          logger.fatal(String.format("Unexpected Exception during init of %s",
-              this.getClass()),
-              alsoUnlikely);
-        }
+        factory
+            .setInternalMetaRegion(meta)
+            .setDestroyLockFlag(true)
+            .setSnapshotInputStream(null)
+            .setImageTarget(null)
+            .setIsUsedForSerialGatewaySenderQueue(true)
+            .setInternalRegion(true)
+            .setSerialGatewaySender(sender);
+        region = factory.create(regionName);
+        // Add overflow statistics to the mbean
+        addOverflowStatisticsToMBean(gemCache, sender);
         if (logger.isDebugEnabled()) {
           logger.debug("{}: Created queue region: {}", this, this.region);
         }

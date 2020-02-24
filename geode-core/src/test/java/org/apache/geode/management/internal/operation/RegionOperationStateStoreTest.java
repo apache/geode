@@ -38,7 +38,7 @@ import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.RegionFactoryImpl;
+import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.management.api.ClusterManagementOperation;
 import org.apache.geode.management.runtime.OperationResult;
 
@@ -159,8 +159,8 @@ public class RegionOperationStateStoreTest {
     when(diskStoreFactory.setDiskDirs(any())).thenReturn(diskStoreFactory);
     when(diskStoreFactory.setAutoCompact(true)).thenReturn(diskStoreFactory);
     when(diskStoreFactory.setMaxOplogSize(10)).thenReturn(diskStoreFactory);
-    RegionFactoryImpl regionFactory = mock(RegionFactoryImpl.class);
-    when(cache.createRegionFactory(eq(RegionShortcut.REPLICATE))).thenReturn(regionFactory);
+    InternalRegionFactory regionFactory = mock(InternalRegionFactory.class);
+    when(cache.createInternalRegionFactory(eq(RegionShortcut.REPLICATE))).thenReturn(regionFactory);
     Region region = mock(Region.class);
     when(regionFactory.create(OPERATION_STATE_REGION_NAME)).thenReturn(region);
 

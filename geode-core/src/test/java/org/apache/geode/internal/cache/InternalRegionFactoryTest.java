@@ -27,7 +27,7 @@ import org.junit.Test;
 
 import org.apache.geode.cache.Region;
 
-public class RegionFactoryImplTest {
+public class InternalRegionFactoryTest {
   private InternalCache cache;
 
   @Before
@@ -37,21 +37,22 @@ public class RegionFactoryImplTest {
 
   @Test
   public void createWithInternalRegionArgumentsCallsCreateVMRegion() throws Exception {
-    RegionFactoryImpl<Object, Object> regionFactory = new RegionFactoryImpl<>(cache);
-    InternalRegionArguments internalRegionArguments = mock(InternalRegionArguments.class);
-    regionFactory.setInternalRegionArguments(internalRegionArguments);
+    InternalRegionFactory<Object, Object> regionFactory = new InternalRegionFactory<>(cache);
+    regionFactory.setInternalRegion(true);
+    InternalRegionArguments internalRegionArguments = regionFactory.getInternalRegionArguments();
     String regionName = "regionName";
 
     regionFactory.create(regionName);
 
+    assertThat(internalRegionArguments).isNotNull();
     verify(cache).createVMRegion(same(regionName), any(), same(internalRegionArguments));
   }
 
   @Test
   public void createWithInternalRegionArgumentsReturnsRegion() throws Exception {
-    RegionFactoryImpl<Object, Object> regionFactory = new RegionFactoryImpl<>(cache);
-    InternalRegionArguments internalRegionArguments = mock(InternalRegionArguments.class);
-    regionFactory.setInternalRegionArguments(internalRegionArguments);
+    InternalRegionFactory<Object, Object> regionFactory = new InternalRegionFactory<>(cache);
+    regionFactory.setInternalRegion(true);
+    InternalRegionArguments internalRegionArguments = regionFactory.getInternalRegionArguments();
     String regionName = "regionName";
     Region<Object, Object> expectedRegion = mock(Region.class);
     when(cache.createVMRegion(same(regionName), any(), same(internalRegionArguments)))
@@ -64,12 +65,39 @@ public class RegionFactoryImplTest {
 
   @Test
   public void createWithoutInternalRegionArgumentsCallsCreateRegion() throws Exception {
-    RegionFactoryImpl<Object, Object> regionFactory = new RegionFactoryImpl<>(cache);
-    regionFactory.setInternalRegionArguments(null);
+    InternalRegionFactory<Object, Object> regionFactory = new InternalRegionFactory<>(cache);
     String regionName = "regionName";
 
     regionFactory.create(regionName);
 
     verify(cache).createRegion(same(regionName), any());
+  }
+
+  @Test
+  public void createSubregionWithInternalRegionArgumentsReturnsRegion() throws Exception {
+    InternalRegionFactory<Object, Object> regionFactory = new InternalRegionFactory<>(cache);
+    regionFactory.setInternalRegion(true);
+    InternalRegionArguments internalRegionArguments = regionFactory.getInternalRegionArguments();
+    String regionName = "regionName";
+    Region<Object, Object> expectedRegion = mock(Region.class);
+    InternalRegion parent = mock(InternalRegion.class);
+    when(parent.createSubregion(same(regionName), any(), same(internalRegionArguments)))
+        .thenReturn(expectedRegion);
+
+    Region<Object, Object> region = regionFactory.createSubregion(parent, regionName);
+
+    assertThat(region).isSameAs(expectedRegion);
+  }
+
+  @Test
+  public void createSubregionWithoutInternalRegionArgumentsCallsParentCreateSubregion()
+      throws Exception {
+    InternalRegionFactory<Object, Object> regionFactory = new InternalRegionFactory<>(cache);
+    String regionName = "regionName";
+    Region<?, ?> parent = mock(InternalRegion.class);
+
+    regionFactory.createSubregion(parent, regionName);
+
+    verify(parent).createSubregion(same(regionName), any());
   }
 }

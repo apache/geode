@@ -34,15 +34,17 @@ public class PRTXJUnitTest extends TXJUnitTest {
 
   @Override
   protected void createRegion() throws Exception {
-    AttributesFactory attributesFactory = new AttributesFactory();
+    InternalRegionFactory regionFactory = cache.createInternalRegionFactory();
     // test validation expects this behavior
-    attributesFactory.setConcurrencyChecksEnabled(false);
-    attributesFactory
+    regionFactory.setConcurrencyChecksEnabled(false);
+    regionFactory
         .setPartitionAttributes(new PartitionAttributesFactory().setTotalNumBuckets(3).create());
+    regionFactory.setDestroyLockFlag(true).setRecreateFlag(false)
+        .setSnapshotInputStream(null).setImageTarget(null);
 
-    this.region = new PRWithLocalOps(getClass().getSimpleName(), attributesFactory.create(), null,
-        this.cache, new InternalRegionArguments().setDestroyLockFlag(true).setRecreateFlag(false)
-            .setSnapshotInputStream(null).setImageTarget(null));
+    this.region =
+        new PRWithLocalOps(getClass().getSimpleName(), regionFactory.getCreateAttributes(), null,
+            this.cache, regionFactory.getInternalRegionArguments());
 
     ((PartitionedRegion) this.region).initialize(null, null, null);
     ((PartitionedRegion) this.region).postCreateRegion();

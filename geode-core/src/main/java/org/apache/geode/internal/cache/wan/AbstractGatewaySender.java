@@ -34,14 +34,12 @@ import org.apache.geode.InternalGemFireError;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MutableForTesting;
-import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.RegionExistsException;
-import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.client.internal.LocatorDiscoveryCallback;
 import org.apache.geode.cache.client.internal.PoolImpl;
@@ -64,7 +62,7 @@ import org.apache.geode.internal.cache.EnumListenerEvent;
 import org.apache.geode.internal.cache.HasCachePerfStats;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegion;
-import org.apache.geode.internal.cache.InternalRegionArguments;
+import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RegionQueue;
@@ -1294,17 +1292,13 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     return this.eventIdIndexMetaDataRegion;
   }
 
-  @SuppressWarnings({"rawtypes", "unchecked", "deprecation"})
   private static synchronized Region<String, Integer> initializeEventIdIndexMetaDataRegion(
       AbstractGatewaySender sender) {
     final InternalCache cache = sender.getCache();
     Region<String, Integer> region = cache.getRegion(META_DATA_REGION_NAME);
     if (region == null) {
-      // Create region attributes (must be done this way to use InternalRegionArguments)
-      AttributesFactory factory = new AttributesFactory();
-      factory.setScope(Scope.DISTRIBUTED_ACK);
-      factory.setDataPolicy(DataPolicy.REPLICATE);
-      RegionAttributes ra = factory.create();
+      InternalRegionFactory<String, Integer> factory =
+          cache.createInternalRegionFactory(RegionShortcut.REPLICATE);
 
       // Create a stats holder for the meta data stats
       final HasCachePerfStats statsHolder = new HasCachePerfStats() {
@@ -1314,14 +1308,10 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
               "RegionStats-" + META_DATA_REGION_NAME, sender.statisticsClock);
         }
       };
-
-      // Create internal region arguments
-      InternalRegionArguments ira = new InternalRegionArguments().setIsUsedForMetaRegion(true)
-          .setCachePerfStatsHolder(statsHolder);
-
-      // Create the region
+      factory.setIsUsedForMetaRegion(true);
+      factory.setCachePerfStatsHolder(statsHolder);
       try {
-        region = cache.createVMRegion(META_DATA_REGION_NAME, ra, ira);
+        region = factory.create(META_DATA_REGION_NAME);
       } catch (RegionExistsException e) {
         region = cache.getRegion(META_DATA_REGION_NAME);
       } catch (Exception e) {

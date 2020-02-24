@@ -15,7 +15,6 @@
 package org.apache.geode.cache;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -24,7 +23,6 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import org.apache.geode.InternalGemFireError;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.client.Pool;
@@ -44,6 +42,7 @@ import org.apache.geode.internal.cache.InitialImageOperation;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.InternalRegionArguments;
+import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.RegionEventImpl;
@@ -246,21 +245,21 @@ public abstract class DynamicRegionFactory {
       this.dynamicRegionList = theCache.getRegion(DYNAMIC_REGION_LIST_NAME);
       final boolean isClient = this.config.getPoolName() != null;
       if (this.dynamicRegionList == null) {
-        InternalRegionArguments ira = new InternalRegionArguments().setDestroyLockFlag(true)
-            .setInternalRegion(true).setSnapshotInputStream(null).setImageTarget(null);
-        AttributesFactory af = new AttributesFactory();
+        InternalRegionFactory factory = cache.createInternalRegionFactory();
+        factory.setDestroyLockFlag(true).setInternalRegion(true).setSnapshotInputStream(null)
+            .setImageTarget(null);
         if (this.config.getPersistBackup()) {
-          af.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
-          af.setDiskWriteAttributes(new DiskWriteAttributesFactory().create());
+          factory.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
+          factory.setDiskWriteAttributes(new DiskWriteAttributesFactory().create());
           if (this.config.getDiskDir() != null) {
-            af.setDiskDirs(new File[] {this.config.getDiskDir()});
+            factory.setDiskDirs(new File[] {this.config.getDiskDir()});
           }
         }
 
         if (isClient) {
-          af.setScope(Scope.LOCAL);
-          af.setDataPolicy(DataPolicy.NORMAL);
-          af.setStatisticsEnabled(true);
+          factory.setScope(Scope.LOCAL);
+          factory.setDataPolicy(DataPolicy.NORMAL);
+          factory.setStatisticsEnabled(true);
           String cpName = this.config.getPoolName();
           if (cpName != null) {
             Pool cp = PoolManager.find(cpName);
@@ -273,38 +272,27 @@ public abstract class DynamicRegionFactory {
                 throw new IllegalStateException(
                     "The client pool of a DynamicRegionFactory must be configured with queue-enabled set to true.");
               }
-              af.setPoolName(cpName);
+              factory.setPoolName(cpName);
             }
           }
-          ira.setInternalMetaRegion(new LocalMetaRegion(af.create(), ira));
+          factory.setInternalMetaRegion(new LocalMetaRegion(factory.getCreateAttributes(),
+              factory.getInternalRegionArguments()));
         } else {
-          af.setScope(Scope.DISTRIBUTED_ACK);
-          af.setValueConstraint(DynamicRegionAttributes.class);
+          factory.setScope(Scope.DISTRIBUTED_ACK);
+          factory.setValueConstraint(DynamicRegionAttributes.class);
 
           if (!this.config.getPersistBackup()) { // if persistBackup, the data policy has already
                                                  // been set
-            af.setDataPolicy(DataPolicy.REPLICATE);
+            factory.setDataPolicy(DataPolicy.REPLICATE);
           }
 
           for (GatewaySender gs : this.cache.getGatewaySenders()) {
             if (!gs.isParallel())
-              af.addGatewaySenderId(gs.getId());
+              factory.addGatewaySenderId(gs.getId());
           }
-          ira.setInternalMetaRegion(new DistributedMetaRegion(af.create())); // bug fix 35432
+          factory.setInternalMetaRegion(new DistributedMetaRegion(factory.getCreateAttributes()));
         }
-
-        try {
-          this.dynamicRegionList =
-              theCache.createVMRegion(DYNAMIC_REGION_LIST_NAME, af.create(), ira);
-        } catch (IOException e) {
-          // only if loading snapshot, not here
-          throw new InternalGemFireError(
-              "unexpected exception", e);
-        } catch (ClassNotFoundException e) {
-          // only if loading snapshot, not here
-          throw new InternalGemFireError(
-              "unexpected exception", e);
-        }
+        this.dynamicRegionList = factory.create(DYNAMIC_REGION_LIST_NAME);
         if (isClient) {
           this.dynamicRegionList.registerInterest("ALL_KEYS");
         }

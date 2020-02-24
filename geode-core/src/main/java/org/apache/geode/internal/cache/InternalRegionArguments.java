@@ -69,6 +69,9 @@ public class InternalRegionArguments {
 
   private Set<String> internalAsyncEventQueueIds;
 
+
+  public InternalRegionArguments() {}
+
   /* methods that set and retrieve internal state used to configure a Region */
 
   public InternalRegionArguments setIsUsedForPartitionedRegionAdmin(boolean adminFlag) {

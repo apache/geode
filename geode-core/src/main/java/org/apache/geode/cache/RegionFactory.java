@@ -108,8 +108,8 @@ public class RegionFactory<K, V> {
    */
   @VisibleForTesting
   protected RegionFactory(RegionFactory<K, V> regionFactory) {
-    this.attrsFactory = new AttributesFactory<>(regionFactory.attrsFactory.create());
-    this.cache = regionFactory.cache;
+    this.attrsFactory = new AttributesFactory<>(regionFactory.getRegionAttributes());
+    this.cache = regionFactory.getCache();
   }
 
   /**
@@ -244,10 +244,10 @@ public class RegionFactory<K, V> {
   }
 
   /**
-   * Returns the Region attributes used by this Region factory.
+   * Returns the attributes used by this factory to create a region.
    */
   protected RegionAttributes<K, V> getRegionAttributes() {
-    return this.attrsFactory.create();
+    return attrsFactory.create();
   }
 
   /**
@@ -767,12 +767,10 @@ public class RegionFactory<K, V> {
    *         region in another cache in the distributed system (see {@link AttributesFactory} for
    *         compatibility rules)
    */
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("deprecation")
   public Region<K, V> create(String name)
       throws CacheExistsException, RegionExistsException, CacheWriterException, TimeoutException {
-    @SuppressWarnings("deprecation")
-    RegionAttributes<K, V> ra = this.attrsFactory.create();
-    return getCache().createRegion(name, ra);
+    return getCache().createRegion(name, getRegionAttributes());
   }
 
   /**
@@ -789,12 +787,10 @@ public class RegionFactory<K, V> {
    * @throws CacheClosedException if the cache is closed
    * @since GemFire 7.0
    */
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({"deprecation", "unchecked"})
   public Region<K, V> createSubregion(Region<?, ?> parent, String name)
       throws RegionExistsException {
-    @SuppressWarnings("deprecation")
-    RegionAttributes<K, V> ra = this.attrsFactory.create();
-    return ((InternalRegion) parent).createSubregion(name, ra);
+    return ((InternalRegion) parent).createSubregion(name, getRegionAttributes());
   }
 
   /**
