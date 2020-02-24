@@ -4,7 +4,7 @@ org/apache/geode/management/api/RealizationResult,false,memberName:java/lang/Str
 org/apache/geode/management/configuration/AbstractConfiguration,false
 org/apache/geode/management/configuration/AutoSerializer,true,1,patterns:java/util/List,portable:java/lang/Boolean
 org/apache/geode/management/configuration/ClassName,true,1,className:java/lang/String,initProperties:java/util/Properties
-org/apache/geode/management/configuration/Deployment,false,deployedBy:java/lang/String,deployedTime:java/lang/String,jarFileName:java/lang/String
+org/apache/geode/management/configuration/Deployment,false,deployedBy:java/lang/String,deployedTime:java/lang/String,fileName:java/lang/String
 org/apache/geode/management/configuration/GatewayReceiver,false,endPort:java/lang/Integer,gatewayTransportFilters:java/util/List,manualStart:java/lang/Boolean,maximumTimeBetweenPings:java/lang/Integer,socketBufferSize:java/lang/Integer,startPort:java/lang/Integer
 org/apache/geode/management/configuration/GroupableConfiguration,false,group:java/lang/String
 org/apache/geode/management/configuration/Index,false,expression:java/lang/String,indexType:org/apache/geode/management/configuration/IndexType,name:java/lang/String,regionPath:java/lang/String

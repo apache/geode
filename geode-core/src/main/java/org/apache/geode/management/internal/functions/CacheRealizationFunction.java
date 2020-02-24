@@ -62,10 +62,6 @@ import org.apache.geode.management.runtime.RuntimeInfo;
 
 public class CacheRealizationFunction implements InternalFunction<List> {
   private static final Logger logger = LogService.getLogger();
-  public static final String ID = CacheRealizationFunction.class.getName();
-
-  private static final long serialVersionUID = 1L;
-
   @Immutable
   private static final Map<Class, ConfigurationRealizer> realizers = new HashMap<>();
 
@@ -202,21 +198,6 @@ public class CacheRealizationFunction implements InternalFunction<List> {
     }
 
     return stagedJars;
-  }
-
-  @Override
-  public String getId() {
-    return ID;
-  }
-
-  @Override
-  public boolean hasResult() {
-    return true;
-  }
-
-  @Override
-  public boolean optimizeForWrite() {
-    return false;
   }
 
   @Override

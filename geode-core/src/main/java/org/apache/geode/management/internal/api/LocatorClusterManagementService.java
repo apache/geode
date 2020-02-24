@@ -235,17 +235,18 @@ public class LocatorClusterManagementService implements ClusterManagementService
     return assertSuccessful(result);
   }
 
-  private void setResultStatus(ClusterManagementRealizationResult result,
+  @VisibleForTesting
+  void setResultStatus(ClusterManagementRealizationResult result,
       List<String> updatedGroups, List<String> failedGroups) {
     String successMessage = null;
     String failedMessage = null;
     if (!updatedGroups.isEmpty()) {
       successMessage =
-          "Successfully updated configuration for " + String.join(",", updatedGroups) + ".";
+          "Successfully updated configuration for " + String.join(", ", updatedGroups) + ".";
     }
     if (!failedGroups.isEmpty()) {
       failedMessage =
-          "Failed to update cluster configuration for " + String.join(",", failedGroups) + ".";
+          "Failed to update configuration for " + String.join(", ", failedGroups) + ".";
     }
 
     if (failedMessage == null) {

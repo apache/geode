@@ -32,7 +32,9 @@ public class Deployment extends GroupableConfiguration<DeploymentInfo> implement
   private String deployedTime;
   @ApiModelProperty(accessMode = READ_ONLY)
   private String deployedBy;
-  private File file;
+
+  // the file is not serialized over the wire
+  private transient File file;
 
   public Deployment() {}
 

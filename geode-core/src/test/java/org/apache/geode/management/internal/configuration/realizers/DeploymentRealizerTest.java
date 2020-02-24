@@ -144,4 +144,12 @@ public class DeploymentRealizerTest {
         .isInstanceOf(IOException.class)
         .hasMessageContaining(eMessage);
   }
+
+  @Test
+  public void alreadyDeployed() throws Exception {
+    doReturn(null).when(realizer).deploy(any());
+    RealizationResult realizationResult = realizer.create(deployment, null);
+    assertThat(realizationResult.isSuccess()).isTrue();
+    assertThat(realizationResult.getMessage()).isEqualTo("Already deployed");
+  }
 }

@@ -18,8 +18,6 @@ package org.apache.geode.management.internal.configuration.mutators;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
@@ -37,14 +35,10 @@ public class DeploymentManager implements ConfigurationManager<Deployment> {
   }
 
   @Override
-  public void add(Deployment config, String groupName) {
-    try {
-      persistenceService.addJarsToThisLocator(
-          Collections.singletonList(config.getFile().getAbsolutePath()),
-          new String[] {AbstractConfiguration.getGroupName(config.getGroup())});
-    } catch (IOException e) {
-      throw new UncheckedIOException(e.getMessage(), e);
-    }
+  public void add(Deployment config, String groupName) throws Exception {
+    persistenceService.addJarsToThisLocator(
+        Collections.singletonList(config.getFile().getAbsolutePath()),
+        new String[] {AbstractConfiguration.getGroupName(config.getGroup())});
   }
 
   @Override
