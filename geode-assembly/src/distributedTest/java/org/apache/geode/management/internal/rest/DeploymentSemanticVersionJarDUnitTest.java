@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.rest;
 
+import static org.apache.geode.test.junit.assertions.ClusterManagementListResultAssert.assertManagementListResult;
 import static org.apache.geode.test.junit.assertions.ClusterManagementRealizationResultAssert.assertManagementResult;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -35,9 +36,11 @@ import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.Deployment;
+import org.apache.geode.management.runtime.DeploymentInfo;
 import org.apache.geode.test.compiler.JarBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.junit.assertions.ClusterManagementListResultAssert;
 
 public class DeploymentSemanticVersionJarDUnitTest {
   @ClassRule
@@ -147,7 +150,8 @@ public class DeploymentSemanticVersionJarDUnitTest {
     // redeploy def-1.2 would not result in error but report already deployed
     deployment.setFile(semanticJarVersion2);
     assertManagementResult(client.create(deployment)).isSuccessful().hasMemberStatus().extracting(
-        RealizationResult::getMessage).contains("Already deployed");
+        RealizationResult::getMessage)
+        .containsExactlyInAnyOrder("Already deployed", "Already deployed");
     MemberVM.invokeInEveryMember(() -> {
       assertThat(Paths.get(".").resolve("cluster_config").resolve("cluster").toFile().list())
           .containsExactly("def-1.2.jar");
@@ -159,20 +163,32 @@ public class DeploymentSemanticVersionJarDUnitTest {
   @Test
   public void deploySameJarNameWithDifferentContent() throws Exception {
     deployment.setFile(semanticJarVersion0);
-    assertManagementResult(client.create(deployment)).isSuccessful();
+    assertManagementResult(client.create(deployment)).isSuccessful()
+        .hasMemberStatus()
+        .extracting(RealizationResult::getMessage).asString()
+        .contains("def-1.0.v1.jar");
     deployment.setFile(semanticJarVersion0b);
-    assertManagementResult(client.create(deployment)).isSuccessful();
-    // .containsOutput("def-1.0.v2.jar");
+    assertManagementResult(client.create(deployment)).isSuccessful()
+        .hasMemberStatus()
+        .extracting(RealizationResult::getMessage).asString()
+        .contains("def-1.0.v2.jar");
   }
 
   @Test
   public void deployWithPlainWillCleanSemanticVersion() throws Exception {
     // deploy def-1.0.jar
     deployment.setFile(semanticJarVersion0);
-    assertManagementResult(client.create(deployment)).isSuccessful();
+    assertManagementResult(client.create(deployment)).isSuccessful()
+        .hasMemberStatus()
+        .extracting(RealizationResult::getMessage).asString()
+        .containsOnlyOnce("def-1.0.v1.jar");
+
     // deploy def.jar
     deployment.setFile(semanticJarVersion0c);
-    assertManagementResult(client.create(deployment)).isSuccessful();
+    assertManagementResult(client.create(deployment)).isSuccessful()
+        .hasMemberStatus()
+        .extracting(RealizationResult::getMessage).asString()
+        .containsOnlyOnce("def.v2.jar");
     MemberVM.invokeInEveryMember(() -> {
       assertThat(Paths.get(".").resolve("cluster_config").resolve("cluster").toFile().list())
           .containsExactly("def.jar");
@@ -183,28 +199,12 @@ public class DeploymentSemanticVersionJarDUnitTest {
         .containsExactlyInAnyOrder("def-1.0.v1.jar", "def.v2.jar");
     server2.invoke(() -> verifyLoadAndHasVersion("def", "jddunit.function.Def", "version1c"));
 
-    // gfsh.executeAndAssertThat("list
-    // deployed").statusIsSuccess().hasTableSection().hasColumn("JAR")
-    // .contains("def.jar");
-    //
-    // gfsh.executeAndAssertThat("undeploy --jar=def-1.0.jar").statusIsSuccess()
-    // .containsOutput("def-1.0.jar not deployed");
-    // MemberVM.invokeInEveryMember(() -> {
-    // assertThat(Paths.get(".").resolve("cluster_config").resolve("cluster").toFile().list())
-    // .containsExactly("def.jar");
-    // Set<String> deployedJars = getDeployedJarsFromClusterConfig();
-    // assertThat(deployedJars).containsExactly("def.jar");
-    // }, locator0, locator1);
-    //
-    // gfsh.executeAndAssertThat("undeploy --jar=def.jar").statusIsSuccess()
-    // .containsOutput("def.v2.jar");
-    // MemberVM.invokeInEveryMember(() -> {
-    // assertThat(Paths.get(".").resolve("cluster_config").resolve("cluster").toFile().list())
-    // .isEmpty();
-    // Set<String> deployedJars = getDeployedJarsFromClusterConfig();
-    // assertThat(deployedJars).isEmpty();
-    // }, locator0, locator1);
-    // assertThat(server2.getWorkingDir().list()).isEmpty();
+    ClusterManagementListResultAssert<Deployment, DeploymentInfo> listAssert =
+        assertManagementListResult(client.list(new Deployment()));
+    listAssert.hasConfigurations().hasSize(1).extracting(Deployment::getFileName)
+        .containsExactly("def.jar");
+    listAssert.hasRuntimeInfos().hasSize(1).extracting(DeploymentInfo::getJarLocation).asString()
+        .containsOnlyOnce("def.v2.jar");
   }
 
   static Set<String> getDeployedJarsFromClusterConfig() {
