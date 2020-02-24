@@ -190,8 +190,12 @@ public class TcpSocketCreatorImpl implements TcpSocketCreator {
       }
       InetSocketAddress inetSocketAddress = addr.getSocketInetAddress();
       try {
+        InetAddress serverAddress = inetSocketAddress.getAddress();
+        if (serverAddress == null) {
+          serverAddress = InetAddress.getByName(inetSocketAddress.getHostName());
+        }
         socket.connect(
-            new InetSocketAddress(inetSocketAddress.getAddress(), inetSocketAddress.getPort()),
+            new InetSocketAddress(serverAddress, inetSocketAddress.getPort()),
             Math.max(timeout, 0));
       } finally {
         if (optionalWatcher != null) {

@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
@@ -122,6 +123,15 @@ public class TcpServerJUnitTest {
     } while (ports.contains(port));
     ports.add(port);
     return port;
+  }
+
+  @Test
+  public void testConnectToUnknownHost() throws Exception {
+    final TcpClient tcpClient = createTcpClient();
+    InfoRequest testInfoRequest = new InfoRequest();
+    assertThatThrownBy(() ->
+        tcpClient.requestToServer(new HostAndPort("unknown host name", port),
+            testInfoRequest, TIMEOUT)).isInstanceOf(UnknownHostException.class);
   }
 
   @Test

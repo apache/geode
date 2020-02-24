@@ -199,7 +199,7 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
 
   public void disconnectDurableClient(boolean keepAlive) {
     printClientProxyState("Before");
-    this.durableClientVM.invoke(() -> CacheServerTestUtil.closeCache(keepAlive));
+    this.durableClientVM.invoke("close durable client cache", () -> CacheServerTestUtil.closeCache(keepAlive));
     await()
         .until(CacheServerTestUtil::getCache, nullValue());
     printClientProxyState("after");

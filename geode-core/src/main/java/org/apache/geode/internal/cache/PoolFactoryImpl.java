@@ -17,7 +17,10 @@ package org.apache.geode.internal.cache;
 
 import java.io.DataInput;
 import java.io.DataOutput;
+import java.io.Externalizable;
 import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
@@ -414,7 +417,7 @@ public class PoolFactoryImpl implements InternalPoolFactory {
   /**
    * Not a true pool just the attributes. Serialization is used by unit tests
    */
-  public static class PoolAttributes implements Pool, DataSerializable {
+  public static class PoolAttributes implements Pool, Externalizable {
 
     private static final long serialVersionUID = 1L; // for findbugs
 
@@ -625,7 +628,6 @@ public class PoolFactoryImpl implements InternalPoolFactory {
     }
 
 
-    @Override
     public void toData(DataOutput out) throws IOException {
       DataSerializer.writePrimitiveInt(connectionTimeout, out);
       DataSerializer.writePrimitiveInt(connectionLifetime, out);
@@ -648,7 +650,6 @@ public class PoolFactoryImpl implements InternalPoolFactory {
       DataSerializer.writePrimitiveInt(socketConnectTimeout, out);
     }
 
-    @Override
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       connectionTimeout = DataSerializer.readPrimitiveInt(in);
       connectionLifetime = DataSerializer.readPrimitiveInt(in);
@@ -711,6 +712,16 @@ public class PoolFactoryImpl implements InternalPoolFactory {
           && Objects.equals(new HashSet<>(servers), new HashSet<>(that.servers))
           && Objects.equals(locatorCallback, that.locatorCallback)
           && Objects.equals(gatewaySender, that.gatewaySender);
+    }
+
+    @Override
+    public void writeExternal(ObjectOutput out) throws IOException {
+      toData(out);
+    }
+
+    @Override
+    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+      fromData(in);
     }
   }
 }

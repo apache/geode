@@ -33,6 +33,7 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.InternalCacheServer;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
@@ -311,6 +312,11 @@ public class DurableClientTestCase extends DurableClientTestBase {
     // Verify the durable client received the updates
     this.checkListenerEvents(1, 1, -1, this.durableClientVM);
 
+    server1VM.invoke("wait for client acknowledgement", () -> {
+      CacheClientProxy proxy = getClientProxy();
+      await().untilAsserted(() -> assertThat(proxy._messageDispatcher._messageQueue.stats.getEventsRemoved()).isGreaterThan(0));
+    });
+
     // Stop the durable client
     this.disconnectDurableClient(true);
 
@@ -324,12 +330,10 @@ public class DurableClientTestCase extends DurableClientTestBase {
     this.server1VM.invoke(new CacheSerializableRunnable("Verify durable client") {
       @Override
       public void run2() throws CacheException {
-        // Find the proxy
         CacheClientProxy proxy = getClientProxy();
         assertThat(proxy).isNotNull();
-
         // Verify the queue size
-        assertThat(1).isEqualTo(proxy.getQueueSize());
+        assertThat(proxy.getQueueSize()).isEqualTo(1);
       }
     });
 
