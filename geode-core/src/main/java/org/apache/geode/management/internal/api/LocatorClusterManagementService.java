@@ -45,6 +45,7 @@ import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.InternalCache;
@@ -552,35 +553,52 @@ public class LocatorClusterManagementService implements ClusterManagementService
     List<R> results = new ArrayList();
 
     File file = null;
-    RemoteStreamExporter exporter = null;
     if (configuration instanceof HasFile) {
-      ManagementAgent agent =
-          ((SystemManagementService) ManagementService.getExistingManagementService(cache))
-              .getManagementAgent();
-      exporter = agent.getRemoteStreamExporter();
       file = ((HasFile) configuration).getFile();
     }
 
-    for (DistributedMember member : targetMembers) {
-      RemoteInputStream remoteInputStream = null;
-      if (file != null && exporter != null) {
-        try {
-          remoteInputStream = exporter
-              .export(new SimpleRemoteInputStream(new FileInputStream(file.getAbsolutePath())));
-        } catch (Exception e) {
-          raise(StatusCode.ILLEGAL_ARGUMENT, "Invalid file: " + file.getAbsolutePath());
-        }
-      }
-      Execution execution = FunctionService.onMember(member)
-          .setArguments(Arrays.asList(configuration, operation, remoteInputStream));
+    if (file == null) {
+      Execution execution = FunctionService.onMembers(targetMembers)
+          .setArguments(Arrays.asList(configuration, operation, null));
       ((AbstractExecution) execution).setIgnoreDepartedMembers(true);
-      results.add(((List<R>) execution.execute(function).getResult()).get(0));
+      ResultCollector rc = execution.execute(function);
+      return (List<R>) rc.getResult();
+    }
 
-      if (remoteInputStream != null) {
+    // if we have file arguments, we need to export the file input stream for each member
+    RemoteStreamExporter exporter = null;
+    ManagementAgent agent =
+        ((SystemManagementService) ManagementService.getExistingManagementService(cache))
+            .getManagementAgent();
+    exporter = agent.getRemoteStreamExporter();
+
+    for (DistributedMember member : targetMembers) {
+      FileInputStream fileInputStream = null;
+      SimpleRemoteInputStream inputStream = null;
+      RemoteInputStream remoteInputStream = null;
+      try {
+        fileInputStream = new FileInputStream(file.getAbsolutePath());
+        inputStream = new SimpleRemoteInputStream(fileInputStream);
+        remoteInputStream = exporter.export(inputStream);
+        Execution execution = FunctionService.onMember(member)
+            .setArguments(Arrays.asList(configuration, operation, remoteInputStream));
+        ((AbstractExecution) execution).setIgnoreDepartedMembers(true);
+        results.add(((List<R>) execution.execute(function).getResult()).get(0));
+      } catch (IOException e) {
+        raise(StatusCode.ILLEGAL_ARGUMENT, "Invalid file: " + file.getAbsolutePath());
+      } finally {
         try {
-          remoteInputStream.close(true);
+          if (fileInputStream != null) {
+            fileInputStream.close();
+          }
+          if (inputStream != null) {
+            inputStream.close();
+          }
+          if (remoteInputStream != null) {
+            remoteInputStream.close(true);
+          }
         } catch (IOException ex) {
-          // Ignored. the stream may have already been closed.
+          // ignore
         }
       }
     }

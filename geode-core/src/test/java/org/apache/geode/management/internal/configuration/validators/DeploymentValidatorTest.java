@@ -18,9 +18,8 @@ package org.apache.geode.management.internal.configuration.validators;
 import static org.apache.geode.management.internal.CacheElementOperation.CREATE;
 import static org.apache.geode.management.internal.CacheElementOperation.DELETE;
 import static org.apache.geode.management.internal.CacheElementOperation.UPDATE;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.File;
 import java.io.IOException;
@@ -68,11 +67,9 @@ public class DeploymentValidatorTest {
   public void validateCreateWithIncorrectJarFile() {
     deployment.setFile(noJar);
 
-    Throwable throwable = catchThrowable(() -> deploymentValidator.validate(CREATE, deployment));
-
-    assertThat(throwable).isNotNull();
-    assertThat(throwable).isInstanceOf(IllegalArgumentException.class);
-    assertThat(throwable).hasMessageContaining("File does not contain valid JAR content:");
+    assertThatThrownBy(() -> deploymentValidator.validate(CREATE, deployment))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("File does not contain valid JAR content:");
   }
 
   @Test
