@@ -91,7 +91,8 @@ public class TCPConduitTest {
         tcpConduit.getConnection(member, false, false, 0L, 0L, 0L);
       });
 
-      assertThat(thrown).isInstanceOf(AlertingIOException.class);
+      assertThat(thrown)
+          .isInstanceOf(AlertingIOException.class);
     });
   }
 
@@ -116,7 +117,8 @@ public class TCPConduitTest {
 
     Connection value = tcpConduit.getConnection(member, false, false, 0L, 0L, 0L);
 
-    assertThat(value).isSameAs(connection);
+    assertThat(value)
+        .isSameAs(connection);
   }
 
   @Test
@@ -135,7 +137,9 @@ public class TCPConduitTest {
       tcpConduit.getConnection(member, false, false, 0L, 0L, 0L);
     });
 
-    assertThat(thrown).isNotInstanceOf(AlertingIOException.class);
+    assertThat(thrown)
+        .isInstanceOf(IOException.class)
+        .isNotInstanceOf(AlertingIOException.class);
   }
 
   @Test
@@ -184,8 +188,7 @@ public class TCPConduitTest {
 
     assertThat(thrown)
         .isInstanceOf(DistributedSystemDisconnectedException.class)
-        .hasMessage("Abandoned because shutdown is in progress")
-        .isNotInstanceOf(AlertingIOException.class);
+        .hasMessage("Abandoned because shutdown is in progress");
   }
 
   @Test
@@ -211,7 +214,6 @@ public class TCPConduitTest {
 
     assertThat(thrown)
         .isInstanceOf(DistributedSystemDisconnectedException.class)
-        .hasMessage("Abandoned because shutdown is in progress")
-        .isNotInstanceOf(AlertingIOException.class);
+        .hasMessage("Abandoned because shutdown is in progress");
   }
 }
