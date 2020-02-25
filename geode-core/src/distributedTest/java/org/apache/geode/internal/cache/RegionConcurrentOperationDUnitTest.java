@@ -141,13 +141,4 @@ public class RegionConcurrentOperationDUnitTest implements Serializable {
     @Override
     public void close() {}
   }
-
-  private class TestObject implements Serializable {
-    public String value;
-
-    public TestObject(String value) {
-      this.value = value;
-    }
-
-  }
 }
