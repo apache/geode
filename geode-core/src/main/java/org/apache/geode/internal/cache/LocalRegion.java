@@ -1570,9 +1570,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * @since GemFire 4.0
    */
   Object conditionalCopy(Object o) {
-    logger.info(" about to conditional copy");
     if (isCopyOnRead() && !Token.isInvalid(o) || isProxy()) {
-      logger.info(" conditional copy for " + o);
       return CopyHelper.copy(o);
     }
     return o;
