@@ -262,8 +262,10 @@ public class SystemAdmin {
     if (Thread.interrupted())
       throw new InterruptedException();
     InetAddress addr = null; // fix for bug 30810
-    if (addressOption == null)
+    if (addressOption == null) {
       addressOption = "";
+    }
+    addressOption = addressOption.trim();
     if (!addressOption.equals("")) {
       // make sure its a valid ip address
       try {
@@ -290,7 +292,7 @@ public class SystemAdmin {
       if (portOption == null || portOption.trim().length() == 0) {
         port = info.getManagerPort();
       }
-      if (addressOption.trim().length() == 0) {
+      if (addr == null) {
         addr = info.getManagerAddress();
       }
 
