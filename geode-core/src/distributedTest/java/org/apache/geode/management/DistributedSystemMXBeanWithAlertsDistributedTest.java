@@ -137,7 +137,6 @@ public class DistributedSystemMXBeanWithAlertsDistributedTest implements Seriali
     memberVM3 = getVM(3);
 
     managerMember = managerVM.invoke(() -> createManager());
-    IgnoredException.addIgnoredException("Cannot form connection to alert listener");
 
     for (VM memberVM : toArray(memberVM1, memberVM2, memberVM3)) {
       memberVM.invoke(() -> {
