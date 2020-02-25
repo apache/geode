@@ -32,6 +32,10 @@ All <%=vars.product_name%> REST interface classes and required JAR files are dis
 
 where _install-dir_ is the server installation directory and _n.n.n_ is a version number.
 
+Setting a `GEODE_HOME` environment variable with a path to the
+<%=vars.product_name%> installation directory allows a server launcher
+to find the WAR file without any changes to the CLASSPATH.
+
 # <a id="setup_config_enabling_rest" class="no-quick-link"></a>Enabling the REST API
 
 The REST API service for application development runs only on servers; you cannot run the service on a locator.
