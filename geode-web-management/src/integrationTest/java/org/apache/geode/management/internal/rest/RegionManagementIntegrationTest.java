@@ -216,7 +216,7 @@ public class RegionManagementIntegrationTest {
         .andExpect(jsonPath("$.statusCode", Matchers.is("OK")))
         .andExpect(jsonPath("$.statusMessage",
             Matchers
-                .containsString("Successfully removed configuration for [cluster].")));
+                .containsString("Successfully updated configuration for cluster.")));
 
     deleteRegion();
   }
@@ -232,7 +232,7 @@ public class RegionManagementIntegrationTest {
         .andExpect(jsonPath("$.statusCode", Matchers.is("OK")))
         .andExpect(jsonPath("$.statusMessage",
             Matchers
-                .containsString("Successfully removed configuration for [group1].")));
+                .containsString("Successfully updated configuration for group1.")));
 
     deleteRegion();
   }
@@ -249,7 +249,7 @@ public class RegionManagementIntegrationTest {
         .andExpect(jsonPath("$.statusCode", Matchers.is("OK")))
         .andExpect(jsonPath("$.statusMessage",
             Matchers
-                .containsString("Successfully removed configuration for [cluster]")));
+                .containsString("Successfully updated configuration for cluster")));
 
     deleteRegion();
   }
@@ -265,7 +265,7 @@ public class RegionManagementIntegrationTest {
         .andExpect(jsonPath("$.statusCode", Matchers.is("OK")))
         .andExpect(jsonPath("$.statusMessage",
             Matchers
-                .containsString("Successfully removed configuration for [group1]")));
+                .containsString("Successfully updated configuration for group1")));
 
     deleteRegion();
   }

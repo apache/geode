@@ -744,6 +744,7 @@ javadoc/org/apache/geode/management/configuration/ClassName.html
 javadoc/org/apache/geode/management/configuration/Deployment.html
 javadoc/org/apache/geode/management/configuration/GatewayReceiver.html
 javadoc/org/apache/geode/management/configuration/GroupableConfiguration.html
+javadoc/org/apache/geode/management/configuration/HasFile.html
 javadoc/org/apache/geode/management/configuration/Index.html
 javadoc/org/apache/geode/management/configuration/IndexType.html
 javadoc/org/apache/geode/management/configuration/Links.html
