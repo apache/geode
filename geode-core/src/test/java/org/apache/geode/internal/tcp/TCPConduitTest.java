@@ -76,8 +76,7 @@ public class TCPConduitTest {
       throws Exception {
     TCPConduit tcpConduit =
         new TCPConduit(membership, 0, localHost, false, directChannel, new Properties(),
-            TCPConduit -> connectionTable, socketCreator, () -> {
-            }, false);
+            TCPConduit -> connectionTable, socketCreator, doNothing(), false);
     InternalDistributedMember member = mock(InternalDistributedMember.class);
     doThrow(new IOException("Cannot form connection to alert listener"))
         .when(connectionTable).get(eq(member), anyBoolean(), anyLong(), anyLong(), anyLong());
@@ -100,8 +99,7 @@ public class TCPConduitTest {
   public void getConnectionRethrows_ifCaughtIOException_whileNotAlerting() throws Exception {
     TCPConduit tcpConduit =
         new TCPConduit(membership, 0, localHost, false, directChannel, new Properties(),
-            TCPConduit -> connectionTable, socketCreator, () -> {
-            }, false);
+            TCPConduit -> connectionTable, socketCreator, doNothing(), false);
     InternalDistributedMember member = mock(InternalDistributedMember.class);
     Connection connection = mock(Connection.class);
     when(connection.getRemoteAddress())
@@ -125,8 +123,7 @@ public class TCPConduitTest {
   public void getConnectionRethrows_ifCaughtIOException_whenMemberDoesNotExist() throws Exception {
     TCPConduit tcpConduit =
         new TCPConduit(membership, 0, localHost, false, directChannel, new Properties(),
-            TCPConduit -> connectionTable, socketCreator, () -> {
-            }, false);
+            TCPConduit -> connectionTable, socketCreator, doNothing(), false);
     InternalDistributedMember member = mock(InternalDistributedMember.class);
     doThrow(new IOException("Cannot form connection to alert listener"))
         .when(connectionTable).get(eq(member), anyBoolean(), anyLong(), anyLong(), anyLong());
@@ -146,8 +143,7 @@ public class TCPConduitTest {
   public void getConnectionRethrows_ifCaughtIOException_whenMemberIsShunned() throws Exception {
     TCPConduit tcpConduit =
         new TCPConduit(membership, 0, localHost, false, directChannel, new Properties(),
-            TCPConduit -> connectionTable, socketCreator, () -> {
-            }, false);
+            TCPConduit -> connectionTable, socketCreator, doNothing(), false);
     InternalDistributedMember member = mock(InternalDistributedMember.class);
     doThrow(new IOException("Cannot form connection to alert listener"))
         .when(connectionTable).get(same(member), anyBoolean(), anyLong(), anyLong(), anyLong());
@@ -170,8 +166,7 @@ public class TCPConduitTest {
       throws Exception {
     TCPConduit tcpConduit =
         new TCPConduit(membership, 0, localHost, false, directChannel, new Properties(),
-            TCPConduit -> connectionTable, socketCreator, () -> {
-            }, false);
+            TCPConduit -> connectionTable, socketCreator, doNothing(), false);
     InternalDistributedMember member = mock(InternalDistributedMember.class);
     doThrow(new IOException("Cannot form connection to alert listener"))
         .when(connectionTable).get(same(member), anyBoolean(), anyLong(), anyLong(), anyLong());
@@ -196,8 +191,7 @@ public class TCPConduitTest {
       throws Exception {
     TCPConduit tcpConduit =
         new TCPConduit(membership, 0, localHost, false, directChannel, new Properties(),
-            TCPConduit -> connectionTable, socketCreator, () -> {
-            }, false);
+            TCPConduit -> connectionTable, socketCreator, doNothing(), false);
     InternalDistributedMember member = mock(InternalDistributedMember.class);
     doThrow(new IOException("Cannot form connection to alert listener"))
         .when(connectionTable).get(same(member), anyBoolean(), anyLong(), anyLong(), anyLong());
@@ -215,5 +209,11 @@ public class TCPConduitTest {
     assertThat(thrown)
         .isInstanceOf(DistributedSystemDisconnectedException.class)
         .hasMessage("Abandoned because shutdown is in progress");
+  }
+
+  private Runnable doNothing() {
+    return () -> {
+      // nothing
+    };
   }
 }
