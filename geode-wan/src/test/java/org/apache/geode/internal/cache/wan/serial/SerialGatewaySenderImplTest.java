@@ -16,31 +16,29 @@ package org.apache.geode.internal.cache.wan.serial;
 
 import static org.apache.geode.cache.wan.GatewaySender.DEFAULT_DISTRIBUTED_SYSTEM_ID;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.Statistics;
+import org.apache.geode.StatisticsFactory;
 import org.apache.geode.distributed.DistributedLockService;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.InternalCacheForClientAccess;
+import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
+import org.apache.geode.internal.cache.wan.GatewaySenderAdvisor;
 import org.apache.geode.internal.cache.wan.GatewaySenderAttributes;
 import org.apache.geode.internal.statistics.StatisticsClock;
-import org.apache.geode.metrics.internal.InternalDistributedSystemMetricsService;
-import org.apache.geode.metrics.internal.MetricsService;
 import org.apache.geode.test.fake.Fakes;
 import org.apache.geode.test.junit.categories.WanTest;
-
 
 @Category(WanTest.class)
 public class SerialGatewaySenderImplTest {
@@ -48,14 +46,25 @@ public class SerialGatewaySenderImplTest {
   private InternalCache cache;
 
   private SerialGatewaySenderImpl serialGatewaySender;
+  private StatisticsFactory statisticsFactory;
   private GatewaySenderAttributes gatewaySenderAttributes;
   private StatisticsClock statisticsClock;
+  private InternalRegionFactory regionFactory;
+
+  AbstractGatewaySenderEventProcessor eventProcessor1;
+  AbstractGatewaySenderEventProcessor eventProcessor2;
+
 
   @Before
   public void setUp() throws Exception {
     cache = Fakes.cache();
     when(cache.getRegion(any())).thenReturn(null);
-    when(cache.createVMRegion(any(), any(), any())).thenReturn(mock(LocalRegion.class));
+    regionFactory = mock(InternalRegionFactory.class);
+    when(regionFactory.create(any())).thenReturn(mock(LocalRegion.class));
+    when(cache.createInternalRegionFactory(any())).thenReturn(regionFactory);
+
+    statisticsFactory = mock(StatisticsFactory.class);
+    when(statisticsFactory.createAtomicStatistics(any(), any())).thenReturn(mock(Statistics.class));
 
     gatewaySenderAttributes = mock(GatewaySenderAttributes.class);
     when(gatewaySenderAttributes.getId()).thenReturn("sender");
@@ -64,48 +73,63 @@ public class SerialGatewaySenderImplTest {
     when(gatewaySenderAttributes.getDispatcherThreads()).thenReturn(1);
     when(gatewaySenderAttributes.isForInternalUse()).thenReturn(false);
 
-    MetricsService.Builder metricsSessionBuilder =
-        new InternalDistributedSystemMetricsService.Builder()
-            .setIsClient(true);
-
-    InternalDistributedSystem.connectInternal(null, null, metricsSessionBuilder);
-    InternalCacheForClientAccess intCacheFCA = new InternalCacheForClientAccess(cache);
-    when(cache.getCacheForProcessingClientRequests()).thenReturn(intCacheFCA);
-
     statisticsClock = mock(StatisticsClock.class);
 
     DistributedLockService distributedLockService = mock(DistributedLockService.class);
     when(distributedLockService.lock(any(), anyLong(), anyLong())).thenReturn(true);
     when(cache.getGatewaySenderLockService()).thenReturn(distributedLockService);
+  }
 
-    serialGatewaySender =
-        new SerialGatewaySenderImpl(cache, statisticsClock,
-            gatewaySenderAttributes);
-    serialGatewaySender.setIsPrimary(true);
+  private SerialGatewaySenderImpl createSerialGatewaySenderImplSpy() {
+    GatewaySenderAdvisor gatewaySenderAdvisor = mock(GatewaySenderAdvisor.class);
+    when(gatewaySenderAdvisor.isPrimary()).thenReturn(true);
 
+    eventProcessor1 = mock(AbstractGatewaySenderEventProcessor.class);
+    eventProcessor2 = mock(AbstractGatewaySenderEventProcessor.class);
+
+    when(eventProcessor1.isStopped()).thenReturn(false);
+    when(eventProcessor1.getRunningStateLock()).thenReturn(mock(Object.class));
+
+    when(eventProcessor2.isStopped()).thenReturn(false);
+    when(eventProcessor2.getRunningStateLock()).thenReturn(mock(Object.class));
+
+    SerialGatewaySenderImpl serialGatewaySender =
+        new SerialGatewaySenderImpl(cache, statisticsClock, gatewaySenderAttributes);
+    SerialGatewaySenderImpl spySerialGatewaySender = spy(serialGatewaySender);
+    doReturn(gatewaySenderAdvisor).when(spySerialGatewaySender).getSenderAdvisor();
+    doReturn(eventProcessor1).when(spySerialGatewaySender).createEventProcessor(false);
+    doReturn(eventProcessor2).when(spySerialGatewaySender).createEventProcessor(true);
+
+    doReturn(null).when(spySerialGatewaySender).getQueues();
+
+    return spySerialGatewaySender;
   }
 
   @Test
   public void whenStartedShouldCreateEventProcessor() {
+    serialGatewaySender = createSerialGatewaySenderImplSpy();
+
     serialGatewaySender.start();
 
-    assertThat(serialGatewaySender.getEventProcessor()).isNotNull();
-    AbstractGatewaySenderEventProcessor processor = serialGatewaySender.getEventProcessor();
-    RegionQueue queue = processor.getQueue();
-    assertFalse(((SerialGatewaySenderQueue) queue).getCleanQueues());
-
+    assertThat(serialGatewaySender.getEventProcessor()).isEqualTo(eventProcessor1);
   }
 
   @Test
-  public void whenStartWithCleanQueueShouldCreateEventProcessor() {
+  public void whenStartedwithCleanShouldCreateEventProcessor() {
+    serialGatewaySender = createSerialGatewaySenderImplSpy();
+
     serialGatewaySender.startWithCleanQueue();
 
-    assertThat(serialGatewaySender.getEventProcessor()).isNotNull();
-    AbstractGatewaySenderEventProcessor processor = serialGatewaySender.getEventProcessor();
-    RegionQueue queue = processor.getQueue();
-    assertTrue(((SerialGatewaySenderQueue) queue).getCleanQueues());
-
+    assertThat(serialGatewaySender.getEventProcessor()).isEqualTo(eventProcessor2);
   }
 
+  @Test
+  public void whenStoppedShouldResetTheEventProcessor() {
+    serialGatewaySender = createSerialGatewaySenderImplSpy();
+
+    serialGatewaySender.stop();
+
+    assertThat(serialGatewaySender.getEventProcessor()).isNull();
+  }
 
 }

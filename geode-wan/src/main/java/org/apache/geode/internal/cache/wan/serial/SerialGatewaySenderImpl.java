@@ -31,6 +31,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.cache.UpdateAttributesProcessor;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
+import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.AbstractRemoteGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderAdvisor.GatewaySenderProfile;
 import org.apache.geode.internal.cache.wan.GatewaySenderAttributes;
@@ -87,13 +88,9 @@ public class SerialGatewaySenderImpl extends AbstractRemoteGatewaySender {
           getSenderAdvisor().makeSecondary();
         }
       }
-      if (getDispatcherThreads() > 1) {
-        eventProcessor = new RemoteConcurrentSerialGatewaySenderEventProcessor(
-            SerialGatewaySenderImpl.this, getThreadMonitorObj(), cleanQueues);
-      } else {
-        eventProcessor = new RemoteSerialGatewaySenderEventProcessor(SerialGatewaySenderImpl.this,
-            getId(), getThreadMonitorObj(), cleanQueues);
-      }
+
+      eventProcessor = createEventProcessor(cleanQueues);
+
       if (isStartEventProcessorInPausedState()) {
         this.pauseEvenIfProcessorStopped();
       }
@@ -117,6 +114,18 @@ public class SerialGatewaySenderImpl extends AbstractRemoteGatewaySender {
     } finally {
       this.getLifeCycleLock().writeLock().unlock();
     }
+  }
+
+  protected AbstractGatewaySenderEventProcessor createEventProcessor(boolean cleanQueues) {
+    AbstractGatewaySenderEventProcessor eventProcessor;
+    if (getDispatcherThreads() > 1) {
+      eventProcessor = new RemoteConcurrentSerialGatewaySenderEventProcessor(
+          SerialGatewaySenderImpl.this, getThreadMonitorObj(), cleanQueues);
+    } else {
+      eventProcessor = new RemoteSerialGatewaySenderEventProcessor(SerialGatewaySenderImpl.this,
+          getId(), getThreadMonitorObj(), cleanQueues);
+    }
+    return eventProcessor;
   }
 
   @Override
