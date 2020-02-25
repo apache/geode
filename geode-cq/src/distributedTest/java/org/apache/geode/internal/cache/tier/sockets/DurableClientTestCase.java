@@ -33,7 +33,6 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.InternalCacheServer;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
@@ -314,7 +313,9 @@ public class DurableClientTestCase extends DurableClientTestBase {
 
     server1VM.invoke("wait for client acknowledgement", () -> {
       CacheClientProxy proxy = getClientProxy();
-      await().untilAsserted(() -> assertThat(proxy._messageDispatcher._messageQueue.stats.getEventsRemoved()).isGreaterThan(0));
+      await().untilAsserted(
+          () -> assertThat(proxy._messageDispatcher._messageQueue.stats.getEventsRemoved())
+              .isGreaterThan(0));
     });
 
     // Stop the durable client

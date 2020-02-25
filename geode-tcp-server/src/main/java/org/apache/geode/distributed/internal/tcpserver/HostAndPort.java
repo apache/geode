@@ -30,8 +30,8 @@ import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
 
 /**
- * This class is serializable for testing.  A number of client/server and WAN tests
- * transmit PoolAttributes between unit test JVMs using RMI.  PoolAttributes are
+ * This class is serializable for testing. A number of client/server and WAN tests
+ * transmit PoolAttributes between unit test JVMs using RMI. PoolAttributes are
  * Externalizable for this purpose and use Geode serialization to transmit HostAndPort
  * objects along with other attributes.
  */

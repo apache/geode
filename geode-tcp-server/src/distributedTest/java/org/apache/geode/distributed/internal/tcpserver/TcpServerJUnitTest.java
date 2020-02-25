@@ -129,9 +129,8 @@ public class TcpServerJUnitTest {
   public void testConnectToUnknownHost() throws Exception {
     final TcpClient tcpClient = createTcpClient();
     InfoRequest testInfoRequest = new InfoRequest();
-    assertThatThrownBy(() ->
-        tcpClient.requestToServer(new HostAndPort("unknown host name", port),
-            testInfoRequest, TIMEOUT)).isInstanceOf(UnknownHostException.class);
+    assertThatThrownBy(() -> tcpClient.requestToServer(new HostAndPort("unknown host name", port),
+        testInfoRequest, TIMEOUT)).isInstanceOf(UnknownHostException.class);
   }
 
   @Test
