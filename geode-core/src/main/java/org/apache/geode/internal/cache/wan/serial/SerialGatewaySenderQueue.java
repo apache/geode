@@ -32,8 +32,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.AttributesMutator;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
@@ -46,7 +44,6 @@ import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
-import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.TimeoutException;
@@ -138,11 +135,6 @@ public class SerialGatewaySenderQueue implements RegionQueue {
   private boolean enablePersistence;
 
   private final boolean cleanQueues;
-
-  @VisibleForTesting
-  public boolean getCleanQueues() {
-    return cleanQueues;
-  }
 
   /**
    * Whether write to disk is synchronous.
