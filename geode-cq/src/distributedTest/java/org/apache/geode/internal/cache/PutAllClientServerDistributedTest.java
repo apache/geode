@@ -217,7 +217,7 @@ public class PutAllClientServerDistributedTest implements Serializable {
   /**
    * Tests putAll to one server.
    */
-
+  @Test
   public void testOneServer() throws Exception {
     int serverPort = server1.invoke(() -> new ServerBuilder()
         .regionShortcut(REPLICATE)
@@ -373,7 +373,7 @@ public class PutAllClientServerDistributedTest implements Serializable {
   /**
    * Tests putAll afterUpdate event contained oldValue.
    */
-
+  @Test
   public void testOldValueInEvent() {
     // set notifyBySubscription=false to test local-invalidates
     int serverPort1 = server1.invoke(() -> new ServerBuilder()
@@ -506,7 +506,7 @@ public class PutAllClientServerDistributedTest implements Serializable {
    * Tests putAll and removeAll to 2 servers. Use Case: 1) putAll from a single-threaded client to a
    * replicated region 2) putAll from a multi-threaded client to a replicated region 3)
    */
-
+  @Test
   public void test2Server() throws Exception {
     int serverPort1 = server1.invoke(() -> new ServerBuilder()
         .regionShortcut(REPLICATE)
@@ -834,7 +834,7 @@ public class PutAllClientServerDistributedTest implements Serializable {
     });
   }
 
-
+  @Test
   @Parameters({"true", "false"})
   @TestCaseName("{method}(concurrencyChecksEnabled={0})")
   public void test2NormalServer(boolean concurrencyChecksEnabled) {
@@ -1027,7 +1027,7 @@ public class PutAllClientServerDistributedTest implements Serializable {
     });
   }
 
-
+  @Test
   @Parameters({"PARTITION,1", "PARTITION,0", "REPLICATE,0"})
   @TestCaseName("{method}(isPR={0}, redundantCopies={1})")
   public void testPRServerRVDuplicatedKeys(RegionShortcut regionShortcut, int redundantCopies) {
@@ -1192,7 +1192,7 @@ public class PutAllClientServerDistributedTest implements Serializable {
    * 2) grep Object_82470 *.log and found the mismatched key is originated from 14640.
    * </pre>
    */
-
+  @Test
   @Parameters({"true", "false"})
   @TestCaseName("{method}(singleHop={0})")
   public void testBug51725(boolean singleHop) {
@@ -1293,7 +1293,7 @@ public class PutAllClientServerDistributedTest implements Serializable {
   /**
    * Tests putAll to 2 PR servers.
    */
-
+  @Test
   public void testPRServer() throws Exception {
     // set <true, false> means <PR=true, notifyBySubscription=false> to test local-invalidates
     int serverPort1 = server1.invoke(() -> new ServerBuilder()
@@ -1611,7 +1611,7 @@ public class PutAllClientServerDistributedTest implements Serializable {
    * Checks to see if a client does a destroy that throws an exception from CacheWriter
    * beforeDestroy that the size of the region is still correct. See bug 51583.
    */
-
+  @Test
   public void testClientDestroyOfUncreatedEntry() {
     // set <true, false> means <PR=true, notifyBySubscription=false> to test local-invalidates
     int serverPort1 = server1.invoke(() -> new ServerBuilder()
@@ -1659,7 +1659,7 @@ public class PutAllClientServerDistributedTest implements Serializable {
   /**
    * Tests partial key putAll and removeAll to 2 servers with local region
    */
-
+  @Test
   public void testPartialKeyInLocalRegion() {
     // set <true, false> means <PR=true, notifyBySubscription=false> to test local-invalidates
     int serverPort1 = server1.invoke(() -> new ServerBuilder()
@@ -1836,7 +1836,7 @@ public class PutAllClientServerDistributedTest implements Serializable {
    * Tests partial key putAll to 2 PR servers, because putting data at server side is different
    * between PR and LR. PR does it in postPutAll. It's not running in singleHop putAll
    */
-
+  @Test
   public void testPartialKeyInPR() throws Exception {
     // set <true, false> means <PR=true, notifyBySubscription=false> to test local-invalidates
     int serverPort1 = server1.invoke(() -> new ServerBuilder()
@@ -1988,7 +1988,7 @@ public class PutAllClientServerDistributedTest implements Serializable {
    * Tests partial key putAll to 2 PR servers, because putting data at server side is different
    * between PR and LR. PR does it in postPutAll. This is a singlehop putAll test.
    */
-
+  @Test
   public void testPartialKeyInPRSingleHop() throws Exception {
     // set <true, false> means <PR=true, notifyBySubscription=false> to test local-invalidates
     int serverPort1 = server1.invoke(() -> new ServerBuilder()
@@ -2147,7 +2147,7 @@ public class PutAllClientServerDistributedTest implements Serializable {
   /**
    * Set redundancy=1 to see if retry succeeded after PRE This is a singlehop putAll test.
    */
-
+  @Test
   public void testPartialKeyInPRSingleHopWithRedundancy() throws Exception {
     // set <true, false> means <PR=true, notifyBySubscription=false> to test local-invalidates
     int serverPort1 = server1.invoke(() -> new ServerBuilder()
@@ -2264,7 +2264,7 @@ public class PutAllClientServerDistributedTest implements Serializable {
    * Tests bug 41403: let 2 sub maps both failed with partial key applied. This is a singlehop
    * putAll test.
    */
-
+  @Test
   public void testEventIdMisorderInPRSingleHop() throws Exception {
     VM server3 = client2;
 
@@ -2370,7 +2370,7 @@ public class PutAllClientServerDistributedTest implements Serializable {
    * Tests while putAll to 2 distributed servers, one server failed over Add a listener to slow down
    * the processing of putAll
    */
-
+  @Test
   public void test2FailOverDistributedServer() throws Exception {
     // set notifyBySubscription=true to test register interest
     int serverPort1 = server1.invoke(() -> new ServerBuilder()
@@ -2452,7 +2452,7 @@ public class PutAllClientServerDistributedTest implements Serializable {
   /**
    * Tests while putAll timeout's exception
    */
-
+  @Test
   public void testClientTimeOut() {
     // set notifyBySubscription=true to test register interest
     int serverPort1 = server1.invoke(() -> new ServerBuilder()
@@ -2497,7 +2497,7 @@ public class PutAllClientServerDistributedTest implements Serializable {
   /**
    * Tests while putAll timeout at endpoint1 and switch to endpoint2
    */
-
+  @Test
   public void testEndPointSwitch() {
     // set notifyBySubscription=true to test register interest
     int serverPort1 = server1.invoke(() -> new ServerBuilder()
@@ -2558,7 +2558,7 @@ public class PutAllClientServerDistributedTest implements Serializable {
    * Tests while putAll to 2 distributed servers, one server failed over Add a listener to slow down
    * the processing of putAll
    */
-
+  @Test
   public void testHADRFailOver() throws Exception {
     addIgnoredException(DistributedSystemDisconnectedException.class);
 
@@ -2631,7 +2631,7 @@ public class PutAllClientServerDistributedTest implements Serializable {
     });
   }
 
-
+  @Test
   public void testVersionsOnClientsWithNotificationsOnly() {
     // set notifyBySubscription=true to test register interest
     int serverPort1 = server1.invoke(() -> new ServerBuilder()
@@ -2716,7 +2716,7 @@ public class PutAllClientServerDistributedTest implements Serializable {
   /**
    * basically same test as testVersionsOnClientsWithNotificationsOnly but also do a removeAll
    */
-
+  @Test
   public void testRAVersionsOnClientsWithNotificationsOnly() {
     // set notifyBySubscription=true to test register interest
     int serverPort1 = server1.invoke(() -> new ServerBuilder()
@@ -2803,7 +2803,7 @@ public class PutAllClientServerDistributedTest implements Serializable {
     }
   }
 
-
+  @Test
   public void testVersionsOnServersWithNotificationsOnly() {
     VM server3 = client2;
 
@@ -2891,7 +2891,7 @@ public class PutAllClientServerDistributedTest implements Serializable {
   /**
    * Same test as testVersionsOnServersWithNotificationsOnly but also does a removeAll
    */
-
+  @Test
   public void testRAVersionsOnServersWithNotificationsOnly() {
     VM server3 = client2;
 
@@ -2980,7 +2980,7 @@ public class PutAllClientServerDistributedTest implements Serializable {
     }
   }
 
-
+  @Test
   public void testVersionsOnReplicasAfterPutAllAndRemoveAll() {
     // set notifyBySubscription=true to test register interest
     int serverPort1 = server1.invoke(() -> new ServerBuilder()
@@ -3182,7 +3182,6 @@ public class PutAllClientServerDistributedTest implements Serializable {
 
       Properties config = getDistributedSystemProperties();
       config.setProperty(LOCATORS, locators);
-      config.setProperty("log-level", "debug");
 
       createCache(new CacheFactory(config));
 
