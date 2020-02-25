@@ -16,6 +16,9 @@
 
 package org.apache.geode.redis.internal;
 
+import java.util.List;
+
+
 /**
  * Interface that represents the relationship between a channel or pattern and client.
  */
@@ -40,4 +43,9 @@ public interface Subscription {
    * Verifies that the subscription channel or pattern matches the designated channel.
    */
   boolean matches(String channel);
+
+  /**
+   * The response dependent on the type of the subscription
+   */
+  List<String> createResponse(String channel, String message);
 }
