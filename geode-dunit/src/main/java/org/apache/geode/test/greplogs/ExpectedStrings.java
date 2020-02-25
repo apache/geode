@@ -126,7 +126,6 @@ public class ExpectedStrings {
         expected.add(Pattern.compile("fine 2"));
         expected.add(Pattern.compile("TESTING A VERY UNIQUE"));
         expected.add(Pattern.compile("-01-01"));
-        expected.add(Pattern.compile("testNBRegionDestructionDuringGetInitialImage"));
         expected.add(Pattern.compile("SQLException: Database 'newDB' not found"));
         expected.add(Pattern.compile("SQLException: Failed to start database 'newDB'"));
         expected.add(Pattern.compile("SQLException: Database 'newDB1' not found"));

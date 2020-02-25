@@ -19,7 +19,7 @@ import java.util.Objects;
 
 import io.netty.channel.Channel;
 
-class Client {
+public class Client {
   private Channel channel;
 
   public Client(Channel remoteAddress) {

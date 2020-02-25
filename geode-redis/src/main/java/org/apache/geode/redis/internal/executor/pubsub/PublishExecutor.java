@@ -22,10 +22,10 @@ import io.netty.buffer.ByteBuf;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.Executor;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
+import org.apache.geode.redis.internal.executor.AbstractExecutor;
 
-public class PublishExecutor implements Executor {
+public class PublishExecutor extends AbstractExecutor {
 
 
   @Override

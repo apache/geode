@@ -1008,7 +1008,7 @@ public class TXState implements TXStateInterface {
 
     @Override
     public boolean equals(Object o) {
-      if (o == null || !(o instanceof TXEntryStateWithRegionAndKey))
+      if (!(o instanceof TXEntryStateWithRegionAndKey))
         return false;
       return compareTo(o) == 0;
     }

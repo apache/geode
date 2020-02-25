@@ -19,6 +19,7 @@ package org.apache.geode.management.internal.rest;
 import static org.apache.geode.management.configuration.Links.URI_VERSION;
 import static org.apache.geode.management.operation.RebalanceOperation.REBALANCE_ENDPOINT;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -35,8 +36,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.context.WebApplicationContext;
 
-import org.apache.geode.management.api.ClusterManagementResult;
-import org.apache.geode.management.internal.ClusterManagementOperationStatusResult;
+import org.apache.geode.management.api.ClusterManagementOperationResult;
 import org.apache.geode.management.internal.api.LocatorClusterManagementService;
 
 @RunWith(SpringRunner.class)
@@ -65,17 +65,16 @@ public class RebalanceOperationControllerSpringTest {
   }
 
   @Test
-  public void checkStatusMappingRecognizesRebalanceIdWithDot() throws Exception {
+  public void getMappingRecognizesRebalanceIdWithDot() throws Exception {
     String rebalanceIdWithDot = "rebalance.id";
     String requestPath = URI_VERSION + REBALANCE_ENDPOINT + "/" + rebalanceIdWithDot;
 
-    when(cms.checkStatus(any()))
-        .thenReturn(new ClusterManagementOperationStatusResult<>(
-            new ClusterManagementResult()));
+    when(cms.get(any(), eq(rebalanceIdWithDot)))
+        .thenReturn(new ClusterManagementOperationResult<>());
 
     context.perform(get(requestPath))
         .andExpect(status().is2xxSuccessful());
 
-    verify(cms).checkStatus(rebalanceIdWithDot);
+    verify(cms).get(any(), eq(rebalanceIdWithDot));
   }
 }

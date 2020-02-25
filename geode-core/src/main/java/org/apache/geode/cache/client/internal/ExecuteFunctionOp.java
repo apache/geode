@@ -24,6 +24,7 @@ import java.util.function.Supplier;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.InternalGemFireError;
+import org.apache.geode.cache.client.NoAvailableServersException;
 import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.cache.execute.Function;
@@ -128,6 +129,9 @@ public class ExecuteFunctionOp {
       final Supplier<ExecuteFunctionOpImpl> executeFunctionOpSupplier) {
     final List<SingleHopOperationCallable> tasks = new ArrayList<>();
     List<ServerLocation> servers = pool.getConnectionSource().getAllServers();
+    if (servers == null) {
+      throw new NoAvailableServersException();
+    }
     for (ServerLocation server : servers) {
       final AbstractOp op = executeFunctionOpSupplier.get();
       SingleHopOperationCallable task =

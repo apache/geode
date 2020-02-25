@@ -112,7 +112,7 @@ public class PortfolioData implements Declarable, Serializable {
     if (this == p) {
       return true;
     }
-    if (p == null || !(p instanceof PortfolioData)) {
+    if (!(p instanceof PortfolioData)) {
       return false;
     }
     PortfolioData pd = (PortfolioData) p;

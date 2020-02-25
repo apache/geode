@@ -369,4 +369,130 @@ public class ListGatewaysCommandDUnitTest implements Serializable {
         .hasRowSize(1)
         .hasColumn("Sender Count").containsExactly("0");
   }
+
+  @Test
+  public void testListGatewaySenderOnlyReturnsOnlySenders() {
+    setupClusters();
+    final int expectedGwSenderSectionSize = 4;
+    String command = CliStrings.LIST_GATEWAY + " --" + CliStrings.LIST_GATEWAY__SHOW_SENDERS_ONLY;
+    CommandResultAssert commandAssert = gfsh.executeAndAssertThat(command).statusIsSuccess();
+    commandAssert
+        .hasTableSection("gatewaySenders").hasRowSize(expectedGwSenderSectionSize)
+        .hasColumns().contains("GatewaySender Id", "Member");
+    commandAssert.hasNoSection("gatewayReceivers");
+  }
+
+  @Test
+  public void testListGatewayReceiversOnlyReturnsOnlyReceivers() {
+    setupClusters();
+    final int expectedGwReceiverSectionSize = 1;
+    String command = CliStrings.LIST_GATEWAY + " --" + CliStrings.LIST_GATEWAY__SHOW_RECEIVERS_ONLY;
+    CommandResultAssert commandAssert = gfsh.executeAndAssertThat(command).statusIsSuccess();
+    commandAssert.hasNoSection("gatewaySenders");
+    commandAssert.hasTableSection("gatewayReceivers")
+        .hasRowSize(expectedGwReceiverSectionSize).hasColumns().contains("Port", "Member");
+  }
+
+  @Test
+  public void testListGatewaysSendersOnlyFalseReturnsSendersAndReceivers() {
+    setupClusters();
+    final int expectedGwSenderSectionSize = 4;
+    final int expectedGwReceiverSectionSize = 1;
+    String command =
+        CliStrings.LIST_GATEWAY + " --" + CliStrings.LIST_GATEWAY__SHOW_SENDERS_ONLY + "=false";
+    CommandResultAssert commandAssert = gfsh.executeAndAssertThat(command).statusIsSuccess();
+    commandAssert
+        .hasTableSection("gatewaySenders").hasRowSize(expectedGwSenderSectionSize)
+        .hasColumns().contains("GatewaySender Id", "Member");
+    commandAssert.hasTableSection("gatewayReceivers")
+        .hasRowSize(expectedGwReceiverSectionSize).hasColumns().contains("Port", "Member");
+  }
+
+  @Test
+  public void testListGatewaysReceiversOnlyFalseReturnsSendersAndReceivers() {
+    setupClusters();
+    final int expectedGwSenderSectionSize = 4;
+    final int expectedGwReceiverSectionSize = 1;
+    String command =
+        CliStrings.LIST_GATEWAY + " --" + CliStrings.LIST_GATEWAY__SHOW_RECEIVERS_ONLY + "=false";
+    CommandResultAssert commandAssert = gfsh.executeAndAssertThat(command).statusIsSuccess();
+    commandAssert
+        .hasTableSection("gatewaySenders").hasRowSize(expectedGwSenderSectionSize)
+        .hasColumns().contains("GatewaySender Id", "Member");
+    commandAssert.hasTableSection("gatewayReceivers")
+        .hasRowSize(expectedGwReceiverSectionSize).hasColumns().contains("Port", "Member");
+  }
+
+  @Test
+  public void testListGatewaySenderOnlyAndGatewayReceiverOnlyReturnsError() {
+    setupClusters();
+
+    String command =
+        CliStrings.LIST_GATEWAY + " --" + CliStrings.LIST_GATEWAY__SHOW_SENDERS_ONLY + " --"
+            + CliStrings.LIST_GATEWAY__SHOW_RECEIVERS_ONLY;
+    gfsh.executeAndAssertThat(command).statusIsError()
+        .containsOutput(CliStrings.LIST_GATEWAY__ERROR_ON_SHOW_PARAMETERS);
+  }
+
+  @Test
+  public void testListGatewaysReceiversOnlyFalseAndSendersOnlyFalseReturnsSendersAndReceivers() {
+    setupClusters();
+    final int expectedGwSenderSectionSize = 4;
+    final int expectedGwReceiverSectionSize = 1;
+    String command =
+        CliStrings.LIST_GATEWAY + " --" + CliStrings.LIST_GATEWAY__SHOW_RECEIVERS_ONLY + "=false --"
+            + CliStrings.LIST_GATEWAY__SHOW_SENDERS_ONLY + "=false";
+    CommandResultAssert commandAssert = gfsh.executeAndAssertThat(command).statusIsSuccess();
+    commandAssert
+        .hasTableSection("gatewaySenders").hasRowSize(expectedGwSenderSectionSize)
+        .hasColumns().contains("GatewaySender Id", "Member");
+    commandAssert.hasTableSection("gatewayReceivers")
+        .hasRowSize(expectedGwReceiverSectionSize).hasColumns().contains("Port", "Member");
+  }
+
+  void setupClusters() {
+    Integer lnPort = locatorSite1.getPort();
+    Integer nyPort = locatorSite2.getPort();
+
+    // setup servers in Site #1 (London)
+    server1 = clusterStartupRule.startServerVM(3, lnPort);
+    server2 = clusterStartupRule.startServerVM(4, lnPort);
+    server3 = clusterStartupRule.startServerVM(5, lnPort);
+
+    // servers in Site 2 (New York)
+    server4 = clusterStartupRule.startServerVM(6, nyPort);
+    server5 = clusterStartupRule.startServerVM(7, nyPort);
+
+    server4.invoke(() -> createAndStartReceiver(nyPort));
+
+    server1.invoke(() -> createSender("ln_Serial", 2, false, 100, 400, false, false, null, false));
+    server1.invoke(() -> createSender("ln_Parallel", 2, true, 100, 400, false, false, null, false));
+
+    server2.invoke(() -> createSender("ln_Parallel", 2, true, 100, 400, false, false, null, false));
+    server2.invoke(() -> createSender("ln_Serial", 2, false, 100, 400, false, false, null, false));
+
+    server3.invoke(() -> createAndStartReceiver(lnPort));
+
+    server5.invoke(() -> createSender("ln_Serial", 1, false, 100, 400, false, false, null, false));
+    server5.invoke(() -> createSender("ln_Parallel", 1, true, 100, 400, false, false, null, false));
+
+    locatorSite2.invoke(() -> validateGatewayReceiverMXBeanProxy(getMember(server4.getVM()), true));
+
+    locatorSite1.invoke(() -> validateGatewaySenderMXBeanProxy(getMember(server1.getVM()),
+        "ln_Serial", true, false));
+    locatorSite1.invoke(() -> validateGatewaySenderMXBeanProxy(getMember(server1.getVM()),
+        "ln_Parallel", true, false));
+
+    locatorSite1.invoke(() -> validateGatewaySenderMXBeanProxy(getMember(server2.getVM()),
+        "ln_Serial", true, false));
+    locatorSite1.invoke(() -> validateGatewaySenderMXBeanProxy(getMember(server2.getVM()),
+        "ln_Parallel", true, false));
+
+    locatorSite1.invoke(() -> validateGatewayReceiverMXBeanProxy(getMember(server3.getVM()), true));
+
+    locatorSite2.invoke(() -> validateGatewaySenderMXBeanProxy(getMember(server5.getVM()),
+        "ln_Serial", true, false));
+    locatorSite2.invoke(() -> validateGatewaySenderMXBeanProxy(getMember(server5.getVM()),
+        "ln_Parallel", true, false));
+  }
 }

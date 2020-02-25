@@ -29,27 +29,27 @@ import org.apache.geode.management.runtime.OperationResult;
  * @param <V> the result type associated with the operation type being listed
  */
 @Experimental
-public class ClusterManagementListOperationsResult<V extends OperationResult>
+public class ClusterManagementListOperationsResult<A extends ClusterManagementOperation<V>, V extends OperationResult>
     extends ClusterManagementResult {
+  // Override the mapper setting so that we always show result
+  @JsonInclude
+  @JsonProperty
+  private final List<ClusterManagementOperationResult<A, V>> result;
 
   /**
    * for internal use only
    */
   @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
   public ClusterManagementListOperationsResult(
-      @JsonProperty("result") List<ClusterManagementOperationResult<V>> result) {
+      @JsonProperty("result") List<ClusterManagementOperationResult<A, V>> result) {
     this.result = result;
   }
 
-  // Override the mapper setting so that we always show result
-  @JsonInclude
-  @JsonProperty
-  private final List<ClusterManagementOperationResult<V>> result;
 
   /**
    * Returns the payload of the list call
    */
-  public List<ClusterManagementOperationResult<V>> getResult() {
+  public List<ClusterManagementOperationResult<A, V>> getResult() {
     return result;
   }
 }

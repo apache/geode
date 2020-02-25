@@ -15,111 +15,61 @@
 package org.apache.geode.management.api;
 
 import java.util.Date;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.management.internal.Dormant;
 import org.apache.geode.management.runtime.OperationResult;
 
 /**
- * This is normally returned by
+ * Returned by
  * {@link ClusterManagementService#start(ClusterManagementOperation)} to convey status of
- * launching the async operation, and if successful, the {@link CompletableFuture} to access the
- * status, result, and start/end times of the async operation.
+ * launching the async operation,
+ * and by {@link ClusterManagementService#get(ClusterManagementOperation, String)} to
+ * describe the status of
+ * a started async operation.
  *
  * @param <V> the type of the operation's result
  */
 @Experimental
-public class ClusterManagementOperationResult<V extends OperationResult>
+public class ClusterManagementOperationResult<A extends ClusterManagementOperation<V>, V extends OperationResult>
     extends ClusterManagementResult {
-  @JsonIgnore
-  private final CompletableFuture<V> operationResult;
-  @JsonIgnore
-  private final CompletableFuture<Date> futureOperationEnded;
 
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
   private Date operationStart;
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
+  private volatile Date operationEnd;
   private String operationId;
-  private String operator;
+  private A operation;
+  private V operationResult;
+  private Throwable throwable;
 
   /**
    * for internal use only
    */
-  public ClusterManagementOperationResult() {
-    this.operationResult = null;
-    this.futureOperationEnded = null;
-    this.operator = null;
-  }
+  public ClusterManagementOperationResult() {}
 
   /**
    * normally called by {@link ClusterManagementService#start(ClusterManagementOperation)}
    */
-  public ClusterManagementOperationResult(ClusterManagementResult result,
-      CompletableFuture<V> operationResult, Date operationStart,
-      CompletableFuture<Date> futureOperationEnded, String operator, String operationId) {
-    super(result);
-    this.operationResult = operationResult;
+  public ClusterManagementOperationResult(StatusCode statusCode, String message,
+      Date operationStart, Date operationEnd,
+      A operation, String operationId, V operationResult,
+      Throwable throwable) {
+    super(statusCode, message);
     this.operationStart = operationStart;
-    this.futureOperationEnded = futureOperationEnded;
-    this.operator = operator;
+    this.operationEnd = operationEnd;
+    this.operation = operation;
     this.operationId = operationId;
+    this.operationResult = operationResult;
+    this.throwable = throwable;
   }
 
   /**
-   * Returns the future result of the async operation
+   * Returns the async operation.
    */
-  @JsonIgnore
-  public CompletableFuture<V> getFutureResult() {
-    if (operationResult instanceof Dormant)
-      ((Dormant) operationResult).wakeUp();
-    return operationResult;
-  }
-
-  /**
-   * Returns the completed result of the async operation (blocks until complete, if necessary)
-   */
-  @JsonIgnore
-  public V getResult() throws ExecutionException, InterruptedException {
-    return getFutureResult().get();
-  }
-
-  /**
-   * Returns the time at which the async operation was requested
-   */
-  public Date getOperationStart() {
-    return operationStart;
-  }
-
-  /**
-   * Returns the future time the async operation completed. This is guaranteed to complete before
-   * {@link #getFutureResult()}. Note: subsequent stages must be chained to
-   * {@link #getFutureResult()}, not here.
-   */
-  @JsonIgnore
-  public CompletableFuture<Date> getFutureOperationEnded() {
-    return futureOperationEnded;
-  }
-
-  /**
-   * Returns the actual time the async operation completed, or null if not yet completed
-   */
-  @JsonProperty
-  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
-  public Date getOperationEnded() {
-    return futureOperationEnded.getNow(null);
-  }
-
-  /**
-   * Returns the user who initiated the async operation, if initiated externally and security is
-   * enabled
-   */
-  public String getOperator() {
-    return operator;
+  public A getOperation() {
+    return operation;
   }
 
   /**
@@ -127,5 +77,35 @@ public class ClusterManagementOperationResult<V extends OperationResult>
    */
   public String getOperationId() {
     return operationId;
+  }
+
+  /**
+   * Returns the time the operation was started
+   */
+  public Date getOperationStart() {
+    return this.operationStart;
+  }
+
+  /**
+   * Returns the time the operation was completed. This value is null while the operation is in
+   * process.
+   */
+  public Date getOperationEnd() {
+    return this.operationEnd;
+  }
+
+  /**
+   * Returns the operation result as an extension of {@link OperationResult}
+   */
+  public V getOperationResult() {
+    return this.operationResult;
+  }
+
+  /**
+   * Returns any exceptions that might be returned as a result of the operation. Null in case
+   * no exceptions occurred.
+   */
+  public Throwable getThrowable() {
+    return this.throwable;
   }
 }

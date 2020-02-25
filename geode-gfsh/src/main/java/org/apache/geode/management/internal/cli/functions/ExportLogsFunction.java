@@ -17,7 +17,6 @@ package org.apache.geode.management.internal.cli.functions;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.Serializable;
 import java.nio.file.Path;
 import java.text.ParseException;
@@ -30,15 +29,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.cache.AttributesFactory;
-import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheForClientAccess;
-import org.apache.geode.internal.cache.InternalRegionArguments;
+import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.logging.internal.log4j.LogLevel;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -46,7 +43,6 @@ import org.apache.geode.management.internal.cli.commands.ExportLogsCommand;
 import org.apache.geode.management.internal.cli.util.ExportLogsCacheWriter;
 import org.apache.geode.management.internal.cli.util.LogExporter;
 import org.apache.geode.management.internal.cli.util.LogFilter;
-import org.apache.geode.management.internal.configuration.domain.Configuration;
 
 /**
  * this function extracts the logs using a LogExporter which creates a zip file, and then writes the
@@ -120,23 +116,18 @@ public class ExportLogsFunction implements InternalFunction {
   }
 
   public static Region createOrGetExistingExportLogsRegion(boolean isInitiatingMember,
-      InternalCache cache) throws IOException, ClassNotFoundException {
+      InternalCache cache) {
 
     InternalCacheForClientAccess cacheForClientAccess = cache.getCacheForProcessingClientRequests();
     Region exportLogsRegion = cacheForClientAccess.getInternalRegion(EXPORT_LOGS_REGION);
     if (exportLogsRegion == null) {
-      AttributesFactory<String, Configuration> regionAttrsFactory = new AttributesFactory<>();
-      regionAttrsFactory.setDataPolicy(DataPolicy.EMPTY);
-      regionAttrsFactory.setScope(Scope.DISTRIBUTED_ACK);
-
+      InternalRegionFactory<Object, Object> regionFactory =
+          cacheForClientAccess.createInternalRegionFactory(RegionShortcut.REPLICATE_PROXY);
       if (isInitiatingMember) {
-        regionAttrsFactory.setCacheWriter(new ExportLogsCacheWriter());
+        regionFactory.setCacheWriter(new ExportLogsCacheWriter());
       }
-      InternalRegionArguments internalArgs = new InternalRegionArguments();
-      internalArgs.setIsUsedForMetaRegion(true);
-      exportLogsRegion =
-          cacheForClientAccess.createInternalRegion(EXPORT_LOGS_REGION, regionAttrsFactory.create(),
-              internalArgs);
+      regionFactory.setIsUsedForMetaRegion(true);
+      exportLogsRegion = regionFactory.create(EXPORT_LOGS_REGION);
     }
 
     return exportLogsRegion;

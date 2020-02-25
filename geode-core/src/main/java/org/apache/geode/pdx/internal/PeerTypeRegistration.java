@@ -15,7 +15,6 @@
 
 package org.apache.geode.pdx.internal;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -27,12 +26,10 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionExistsException;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.TimeoutException;
@@ -51,7 +48,7 @@ import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.internal.CopyOnWriteHashSet;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.InternalRegionArguments;
+import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXStateProxy;
 import org.apache.geode.internal.util.concurrent.CopyOnWriteHashMap;
@@ -140,8 +137,7 @@ public class PeerTypeRegistration implements TypeRegistration {
       logger.debug("Flushing TypeRegistry");
     }
 
-    @SuppressWarnings("deprecation")
-    AttributesFactory<Object, Object> factory = getAttributesFactory();
+    InternalRegionFactory factory = cache.createInternalRegionFactory();
 
     factory.setScope(Scope.DISTRIBUTED_ACK);
     if (cache.getPdxPersistent()) {
@@ -198,14 +194,11 @@ public class PeerTypeRegistration implements TypeRegistration {
 
     });
 
-    RegionAttributes<Object, Object> regionAttrs = factory.create();
-
-    InternalRegionArguments internalArgs = new InternalRegionArguments();
-    internalArgs.setIsUsedForMetaRegion(true);
-    internalArgs.setMetaRegionWithTransactions(true);
+    factory.setIsUsedForMetaRegion(true);
+    factory.setMetaRegionWithTransactions(true);
     try {
-      idToType = cache.createVMRegion(REGION_NAME, regionAttrs, internalArgs);
-    } catch (IOException | TimeoutException | RegionExistsException | ClassNotFoundException ex) {
+      idToType = factory.create(REGION_NAME);
+    } catch (TimeoutException | RegionExistsException ex) {
       throw new PdxInitializationException("Could not create pdx registry", ex);
     }
 
@@ -778,12 +771,6 @@ public class PeerTypeRegistration implements TypeRegistration {
       return 0;
     }
     return getIdToType().size();
-  }
-
-  @VisibleForTesting
-  @SuppressWarnings("deprecation")
-  protected AttributesFactory<Object, Object> getAttributesFactory() {
-    return new AttributesFactory<>();
   }
 
   @VisibleForTesting

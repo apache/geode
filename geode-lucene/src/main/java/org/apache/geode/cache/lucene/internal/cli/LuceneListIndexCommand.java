@@ -64,8 +64,7 @@ public class LuceneListIndexCommand extends LuceneCommandBase {
 
     List<LuceneIndexDetails> sortedResults =
         results.stream().flatMap(Collection::stream).sorted().collect(Collectors.toList());
-    LinkedHashSet<LuceneIndexDetails> uniqResults = new LinkedHashSet<>();
-    uniqResults.addAll(sortedResults);
+    LinkedHashSet<LuceneIndexDetails> uniqResults = new LinkedHashSet<>(sortedResults);
     sortedResults.clear();
     sortedResults.addAll(uniqResults);
     return sortedResults;
