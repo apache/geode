@@ -31,6 +31,7 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Map;
 import java.util.Properties;
+import java.util.function.Function;
 
 import org.apache.logging.log4j.Logger;
 
@@ -38,6 +39,8 @@ import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.alerting.internal.spi.AlertingAction;
+import org.apache.geode.alerting.internal.spi.AlertingIOException;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
@@ -215,6 +218,23 @@ public class TCPConduit implements Runnable {
    */
   public TCPConduit(Membership mgr, int port, InetAddress address, boolean isBindAddress,
       DirectChannel receiver, Properties props) throws ConnectionException {
+    this(mgr, port, address, isBindAddress, receiver, props, ConnectionTable::create,
+        SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER),
+        () -> {
+          try {
+            LocalHostUtil.getLocalHost();
+          } catch (UnknownHostException e) {
+            throw new ConnectionException("Unable to resolve localHost address", e);
+          }
+        },
+        true);
+  }
+
+  @VisibleForTesting
+  TCPConduit(Membership mgr, int port, InetAddress address, boolean isBindAddress,
+      DirectChannel receiver, Properties props,
+      Function<TCPConduit, ConnectionTable> connectionTableFactory, SocketCreator socketCreator,
+      Runnable localHostValidation, boolean startAcceptor) throws ConnectionException {
     parseProperties(props);
 
     this.address = address;
@@ -232,21 +252,18 @@ public class TCPConduit implements Runnable {
       stats = new LonerDistributionManager.DummyDMStats();
     }
 
-    conTable = ConnectionTable.create(this);
+    conTable = connectionTableFactory.apply(this);
 
-    socketCreator =
-        SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER);
+    this.socketCreator = socketCreator;
     useSSL = socketCreator.useSSL();
 
     if (address == null) {
-      try {
-        LocalHostUtil.getLocalHost();
-      } catch (UnknownHostException e) {
-        throw new ConnectionException("Unable to resolve localHost address", e);
-      }
+      localHostValidation.run();
     }
 
-    startAcceptor();
+    if (startAcceptor) {
+      startAcceptor();
+    }
   }
 
   public static void init() {
@@ -858,10 +875,10 @@ public class TCPConduit implements Runnable {
           }
 
           if (breakLoop) {
-            if (!problem.getMessage().startsWith("Cannot form connection to alert listener")) {
-              logger.warn("Throwing IOException after finding breakLoop=true", problem);
-            }
             if (problem instanceof IOException) {
+              if (problem.getMessage().startsWith("Cannot form connection to alert listener")) {
+                throw new AlertingIOException((IOException) problem);
+              }
               throw (IOException) problem;
             }
             throw new IOException(

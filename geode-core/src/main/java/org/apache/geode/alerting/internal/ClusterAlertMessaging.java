@@ -18,11 +18,13 @@ import static org.apache.geode.logging.internal.executors.LoggingExecutors.newFi
 
 import java.time.Instant;
 import java.util.concurrent.ExecutorService;
+import java.util.function.Consumer;
 
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.alerting.internal.spi.AlertLevel;
 import org.apache.geode.alerting.internal.spi.AlertingAction;
+import org.apache.geode.alerting.internal.spi.AlertingIOException;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
@@ -34,29 +36,38 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class ClusterAlertMessaging implements AlertMessaging {
 
-  private static final Logger logger = LogService.getLogger();
+  private static final Logger LOGGER = LogService.getLogger();
 
   private final InternalDistributedSystem system;
   private final DistributionManager dm;
   private final AlertListenerMessageFactory alertListenerMessageFactory;
   private final ExecutorService executor;
+  private final Consumer<AlertingIOException> alertingIOExceptionLogger;
 
   public ClusterAlertMessaging(final InternalDistributedSystem system) {
     this(system,
         system.getDistributionManager(),
         new AlertListenerMessageFactory(),
-        newFixedThreadPool("AlertingMessaging Processor", true, 1));
+        newFixedThreadPool("AlertingMessaging Processor", true, 1),
+        LOGGER::warn);
   }
 
   @VisibleForTesting
-  ClusterAlertMessaging(final InternalDistributedSystem system,
-      final DistributionManager dm,
+  ClusterAlertMessaging(final InternalDistributedSystem system, final DistributionManager dm,
       final AlertListenerMessageFactory alertListenerMessageFactory,
       final ExecutorService executor) {
+    this(system, dm, alertListenerMessageFactory, executor, LOGGER::warn);
+  }
+
+  @VisibleForTesting
+  ClusterAlertMessaging(final InternalDistributedSystem system, final DistributionManager dm,
+      final AlertListenerMessageFactory alertListenerMessageFactory, final ExecutorService executor,
+      final Consumer<AlertingIOException> alertingIOExceptionLogger) {
     this.system = system;
     this.dm = dm;
     this.alertListenerMessageFactory = alertListenerMessageFactory;
     this.executor = executor;
+    this.alertingIOExceptionLogger = alertingIOExceptionLogger;
   }
 
   @Override
@@ -77,7 +88,7 @@ public class ClusterAlertMessaging implements AlertMessaging {
 
         if (member.equals(system.getDistributedMember())) {
           // process in local member
-          logger.debug("Processing local alert message: {}, {}, {}, {}, {}, {}, [{}], [{}].",
+          LOGGER.debug("Processing local alert message: {}, {}, {}, {}, {}, {}, [{}], [{}].",
               member, alertLevel, timestamp, connectionName, threadName, threadId,
               formattedMessage,
               stackTrace);
@@ -85,7 +96,7 @@ public class ClusterAlertMessaging implements AlertMessaging {
 
         } else {
           // send to remote member
-          logger.debug("Sending remote alert message: {}, {}, {}, {}, {}, {}, [{}], [{}].",
+          LOGGER.debug("Sending remote alert message: {}, {}, {}, {}, {}, {}, [{}], [{}].",
               member, alertLevel, timestamp, connectionName, threadName, threadId,
               formattedMessage,
               stackTrace);
@@ -94,6 +105,8 @@ public class ClusterAlertMessaging implements AlertMessaging {
       } catch (ReenteredConnectException ignore) {
         // OK. We can't send to this recipient because we're in the middle of
         // trying to connect to it.
+      } catch (AlertingIOException e) {
+        alertingIOExceptionLogger.accept(e);
       }
     }));
   }
