@@ -23,7 +23,6 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketAddress;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
@@ -628,7 +627,12 @@ public class SocketCreator extends TcpSocketCreatorImpl {
     // create an SSL connection
 
     Socket socket;
-    SocketAddress sockaddr = addr.getSocketInetAddress();
+    InetSocketAddress sockaddr = addr.getSocketInetAddress();
+    if (sockaddr.getAddress() == null) {
+      InetAddress address = InetAddress.getByName(sockaddr.getHostName());
+      sockaddr = new InetSocketAddress(address, sockaddr.getPort());
+    }
+
     if (this.sslContext == null) {
       throw new GemFireConfigException(
           "SSL not configured correctly, Please look at previous error");

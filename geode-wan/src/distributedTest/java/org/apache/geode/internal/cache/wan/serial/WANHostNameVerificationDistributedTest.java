@@ -44,6 +44,7 @@ import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventRemoteDispatcher;
 import org.apache.geode.internal.inet.LocalHostUtil;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -112,7 +113,12 @@ public class WANHostNameVerificationDistributedTest {
     locator_ln.waitUntilRegionIsReadyOnExactlyThisManyServers("/region", 1);
 
     // create gateway sender
-    server_ln.invoke(WANHostNameVerificationDistributedTest::createGatewaySender);
+    server_ln.invoke(() -> {
+      GeodeAwaitility.await().until(() -> {
+        WANHostNameVerificationDistributedTest.createGatewaySender();
+        return true;
+      });
+    });
 
     return locator_ln.getPort();
   }
@@ -141,7 +147,12 @@ public class WANHostNameVerificationDistributedTest {
     locator_ny.waitUntilRegionIsReadyOnExactlyThisManyServers("/region", 1);
 
     // create gateway sender
-    server_ny.invoke(WANHostNameVerificationDistributedTest::createGatewayReceiver);
+    server_ny.invoke(() -> {
+      GeodeAwaitility.await().until(() -> {
+        WANHostNameVerificationDistributedTest.createGatewayReceiver();
+        return true;
+      });
+    });
   }
 
   private static void createGatewayReceiver() {
