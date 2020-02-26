@@ -496,7 +496,10 @@ public class PutAllClientServerDistributedTest implements Serializable {
       return versionsToReturn;
     });
 
-    assertThat(versions.getVersionTags()).isEqualTo(versionsAfterRetry.getVersionTags());
+    List<VersionTag> versionTags = versions.getVersionTags();
+    List<VersionTag> versionTagsAfterRetry = versionsAfterRetry.getVersionTags();
+    assertThat(versionTags.size()).isEqualTo(versionTagsAfterRetry.size());
+    assertThat(versionTags).containsAll(versionTagsAfterRetry);
   }
 
   /**
