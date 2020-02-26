@@ -29,7 +29,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-
 /**
  * Unit tests for {@link SerializableTemporaryFolder}.
  */
@@ -39,7 +38,7 @@ public class SerializableTemporaryFolderTest {
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   @Test
-  public void hasTwoFields() throws Exception {
+  public void hasTwoFields() {
     Field[] fields = TemporaryFolder.class.getDeclaredFields();
     assertThat(fields.length).as("Fields: " + Arrays.asList(fields)).isEqualTo(2);
   }
@@ -58,7 +57,7 @@ public class SerializableTemporaryFolderTest {
 
   @Test
   public void fieldsCanBeRead() throws Exception {
-    File parentFolder = this.temporaryFolder.getRoot();
+    File parentFolder = temporaryFolder.getRoot();
 
     SerializableTemporaryFolder instance = new SerializableTemporaryFolder(parentFolder);
     instance.create();
@@ -70,19 +69,18 @@ public class SerializableTemporaryFolderTest {
   }
 
   @Test
-  public void isSerializable() throws Exception {
+  public void isSerializable() {
     assertThat(SerializableTemporaryFolder.class).isInstanceOf(Serializable.class);
   }
 
   @Test
   public void canBeSerialized() throws Exception {
-    File parentFolder = this.temporaryFolder.getRoot();
+    File parentFolder = temporaryFolder.getRoot();
 
     SerializableTemporaryFolder instance = new SerializableTemporaryFolder(parentFolder);
     instance.create();
 
-    SerializableTemporaryFolder cloned =
-        (SerializableTemporaryFolder) SerializationUtils.clone(instance);
+    SerializableTemporaryFolder cloned = SerializationUtils.clone(instance);
 
     assertThat(readField(TemporaryFolder.class, cloned, FIELD_PARENT_FOLDER))
         .isEqualTo(parentFolder);
