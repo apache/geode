@@ -36,13 +36,10 @@ RUN apk --no-cache add \
   && gcloud config set core/disable_usage_reporting true \
   && gcloud config set component_manager/disable_update_check true \
   && gcloud config set metrics/environment github_docker_image \
-  && mkdir -p gopath \
-  && cd gopath \
-  && export GOPATH=$(pwd) \
-  && go get github.com/masterzen/winrm-cli \
-  && cp ${GOPATH}/bin/winrm-cli /usr/local/bin/winrm \
-  && cd ${GOPATH}/.. \
-  && rm -rf ${GOPATH} \
+  && git clone https://github.com/masterzen/winrm-cli \
+  && (cd winrm-cli; git reset --hard 6f0c57dee4569c04f64c44c335752b415e5d73a7 ; GOPATH=$PWD PATH=$PATH:$PWD/bin make) \
+  && cp winrm-cli/bin/winrm /usr/local/bin/ \
+  && rm -rf winrm-cli \
   && gcloud components install -q beta \
   && printf "Host *\n  ServerAliveInterval 60 \n  ServerAliveCountMax 2\n" >> /etc/ssh/ssh_config \
   && pip2 install awscli \
