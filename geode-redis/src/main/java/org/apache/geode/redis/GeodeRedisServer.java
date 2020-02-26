@@ -16,10 +16,12 @@ package org.apache.geode.redis;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.security.KeyStore;
 import java.util.Collection;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
@@ -29,6 +31,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import javax.net.ssl.KeyManagerFactory;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -44,6 +48,8 @@ import io.netty.channel.oio.OioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.oio.OioServerSocketChannel;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.util.concurrent.Future;
 
 import org.apache.geode.LogWriter;
@@ -59,11 +65,14 @@ import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.internal.hll.HyperLogLogPlus;
 import org.apache.geode.internal.inet.LocalHostUtil;
+import org.apache.geode.internal.net.SSLConfigurationFactory;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.ByteToCommandDecoder;
 import org.apache.geode.redis.internal.Coder;
@@ -513,6 +522,7 @@ public class GeodeRedisServer {
     String pwd = system.getConfig().getRedisPassword();
     final byte[] pwdB = Coder.stringToBytes(pwd);
     ServerBootstrap b = new ServerBootstrap();
+
     b.group(bossGroup, workerGroup).channel(socketClass)
         .childHandler(new ChannelInitializer<SocketChannel>() {
           @Override
@@ -521,6 +531,7 @@ public class GeodeRedisServer {
               logger.fine("GeodeRedisServer-Connection established with " + ch.remoteAddress());
             }
             ChannelPipeline p = ch.pipeline();
+            addSSLIfEnabled(ch, p);
             p.addLast(ByteToCommandDecoder.class.getSimpleName(), new ByteToCommandDecoder());
             p.addLast(ExecutionHandlerContext.class.getSimpleName(),
                 new ExecutionHandlerContext(ch, cache, regionCache, GeodeRedisServer.this, pwdB,
@@ -544,6 +555,37 @@ public class GeodeRedisServer {
       this.logger.info(logMessage);
     }
     this.serverChannel = f.channel();
+  }
+
+  private void addSSLIfEnabled(SocketChannel ch, ChannelPipeline p) {
+
+    SSLConfig sslConfigForComponent =
+        SSLConfigurationFactory.getSSLConfigForComponent(
+            ((InternalDistributedSystem) cache.getDistributedSystem()).getConfig(),
+            SecurableCommunicationChannel.SERVER);
+
+    if (!sslConfigForComponent.isEnabled()) {
+      return;
+    }
+
+    SslContext sslContext;
+    try {
+      KeyStore ks = KeyStore.getInstance("JKS");
+      ks.load(new FileInputStream(sslConfigForComponent.getKeystore()),
+          sslConfigForComponent.getKeystorePassword().toCharArray()/**/);
+
+      // Set up key manager factory to use our key store
+      KeyManagerFactory kmf =
+          KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+      kmf.init(ks, sslConfigForComponent.getKeystorePassword().toCharArray());
+
+      SslContextBuilder sslContextBuilder = SslContextBuilder.forServer(kmf);
+      sslContext = sslContextBuilder.build();
+
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+    p.addLast(sslContext.newHandler(ch.alloc()));
   }
 
   /**

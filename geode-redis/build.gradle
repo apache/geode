@@ -32,6 +32,7 @@ dependencies {
   testCompile(project(':geode-junit'))
   testCompile('org.mockito:mockito-core')
 
+  integrationTestCompile(project(':geode-dunit'))
   integrationTestCompile(project(':geode-junit'))
   integrationTestCompile('redis.clients:jedis')
 
