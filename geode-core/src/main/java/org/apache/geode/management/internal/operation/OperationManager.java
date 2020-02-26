@@ -14,14 +14,11 @@
  */
 package org.apache.geode.management.internal.operation;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
 import java.util.function.BiFunction;
 
 import org.apache.geode.annotations.Experimental;
@@ -29,7 +26,6 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.management.api.ClusterManagementOperation;
-import org.apache.geode.management.internal.operation.OperationHistoryManager.OperationInstance;
 import org.apache.geode.management.operation.RebalanceOperation;
 import org.apache.geode.management.runtime.OperationResult;
 
@@ -58,55 +54,44 @@ public class OperationManager implements AutoCloseable {
     performers.put(operationClass, operationPerformer);
   }
 
-  public <A extends ClusterManagementOperation<V>, V extends OperationResult> OperationInstance<A, V> submit(
+  public <A extends ClusterManagementOperation<V>, V extends OperationResult> OperationState<A, V> submit(
       A op) {
-    String opId = UUID.randomUUID().toString();
-
     BiFunction<Cache, A, V> performer = getPerformer(op);
     if (performer == null) {
       throw new IllegalArgumentException(String.format("%s is not supported.",
           op.getClass().getSimpleName()));
     }
 
-    CompletableFuture<V> future =
-        CompletableFuture.supplyAsync(() -> performer.apply(cache, op), executor);
+    String opId = historyManager.recordStart(op);
 
-    OperationInstance<A, V> inst = new OperationInstance<>(future, opId, op, new Date());
+    CompletableFuture.supplyAsync(() -> performer.apply(cache, op), executor)
+        .whenComplete((result, exception) -> {
+          Throwable cause = exception == null ? null : exception.getCause();
+          historyManager.recordEnd(opId, result, cause);
+        });
 
-    // save the Future so we can check on it later
-    return historyManager.save(inst);
+    return historyManager.get(opId);
   }
 
   @SuppressWarnings("unchecked")
   private <C extends Cache, A extends ClusterManagementOperation<V>, V extends OperationResult> BiFunction<C, A, V> getPerformer(
       A op) {
-    Class<? extends ClusterManagementOperation> aClass = op.getClass();
-
-    if (op instanceof TaggedWithOperator
-        && ClusterManagementOperation.class.isAssignableFrom(aClass.getSuperclass())) {
-      aClass = (Class<? extends ClusterManagementOperation>) aClass.getSuperclass();
-    }
-
-    return performers.get(aClass);
+    return performers.get(op.getClass());
   }
 
   /**
    * looks up the future for an async operation by id
    */
-  public <A extends ClusterManagementOperation<V>, V extends OperationResult> OperationInstance<A, V> getOperationInstance(
+  public <A extends ClusterManagementOperation<V>, V extends OperationResult> OperationState<A, V> get(
       String opId) {
-    return historyManager.getOperationInstance(opId);
+    return historyManager.get(opId);
   }
 
-  public <A extends ClusterManagementOperation<V>, V extends OperationResult> List<OperationInstance<A, V>> listOperationInstances(
+  public <A extends ClusterManagementOperation<V>, V extends OperationResult> List<OperationState<A, V>> list(
       A opType) {
-    return historyManager.listOperationInstances(opType);
+    return historyManager.list(opType);
   }
 
   @Override
-  public void close() {
-    if (executor instanceof ExecutorService) {
-      ((ExecutorService) executor).shutdownNow();
-    }
-  }
+  public void close() {}
 }

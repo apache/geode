@@ -157,30 +157,32 @@ public enum RegionShortcut {
 
   /**
    * A LOCAL region only has local state and never sends operations to others. The actual
-   * RegionAttributes for a LOCAL region set the {@code DataPolicy} to {@code DataPolicy.NORMAL}.
+   * RegionAttributes for a LOCAL region set the {@code Scope} to {@code Scope.LOCAL}
+   * and the {@code DataPolicy} to {@code DataPolicy.NORMAL}.
    */
   LOCAL,
   /**
    * A LOCAL_PERSISTENT region only has local state and never sends operations to others but it does
    * write its state to disk and can recover that state when the region is created. The actual
-   * RegionAttributes for a LOCAL_PERSISTENT region set the {@code DataPolicy} to
-   * {@code DataPolicy.PERSISTENT_REPLICATE}.
+   * RegionAttributes for a LOCAL_PERSISTENT region set the {@code Scope} to {@code Scope.LOCAL}
+   * and the {@code DataPolicy} to {@code DataPolicy.PERSISTENT_REPLICATE}.
    */
   LOCAL_PERSISTENT,
 
   /**
    * A LOCAL_HEAP_LRU region only has local state and never sends operations to others. It will also
    * destroy entries once it detects that the java vm is running low of memory. The actual
-   * RegionAttributes for a LOCAL_HEAP_LRU region set the {@code DataPolicy} to
-   * {@code DataPolicy.NORMAL} and {@code EvictionAttributes} are set to
+   * RegionAttributes for a LOCAL_HEAP_LRU region set the the {@code Scope} to {@code Scope.LOCAL},
+   * the {@code DataPolicy} to {@code DataPolicy.NORMAL}, and {@code EvictionAttributes} are set to
    * {@code EvictionAlgorithm.LRU_HEAP} with {@code EvictionAction.LOCAL_DESTROY}.
    */
   LOCAL_HEAP_LRU,
   /**
    * A LOCAL_OVERFLOW region only has local state and never sends operations to others. It will also
    * move the values of entries to disk once it detects that the java vm is running low of memory.
-   * The actual RegionAttributes for a LOCAL_OVERFLOW region set the {@code DataPolicy} to
-   * {@code DataPolicy.NORMAL} and {@code EvictionAttributes} are set to
+   * The actual RegionAttributes for a LOCAL_OVERFLOW region set
+   * the {@code Scope} to {@code Scope.LOCAL},
+   * the {@code DataPolicy} to {@code DataPolicy.NORMAL}, and {@code EvictionAttributes} are set to
    * {@code EvictionAlgorithm.LRU_HEAP} with {@code EvictionAction.OVERFLOW_TO_DISK}.
    */
   LOCAL_OVERFLOW,
@@ -188,8 +190,9 @@ public enum RegionShortcut {
    * A LOCAL_PERSISTENT_OVERFLOW region only has local state and never sends operations to others
    * but it does write its state to disk and can recover that state when the region is created. It
    * will also remove the values of entries from memory once it detects that the java vm is running
-   * low of memory. The actual RegionAttributes for a LOCAL_PERSISTENT_OVERFLOW region set the
-   * {@code DataPolicy} to {@code DataPolicy.PERSISTENT_REPLICATE} and {@code EvictionAttributes}
+   * low of memory. The actual RegionAttributes for a LOCAL_PERSISTENT_OVERFLOW region set
+   * the {@code Scope} to {@code Scope.LOCAL}, the
+   * {@code DataPolicy} to {@code DataPolicy.PERSISTENT_REPLICATE}, and {@code EvictionAttributes}
    * are set to {@code EvictionAlgorithm.LRU_HEAP} with {@code EvictionAction.OVERFLOW_TO_DISK}.
    */
   LOCAL_PERSISTENT_OVERFLOW,

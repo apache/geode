@@ -2,6 +2,7 @@ org/apache/geode/GemFireCacheException
 org/apache/geode/admin/AlertLevel
 org/apache/geode/alerting/internal/AlertingSession$State
 org/apache/geode/alerting/internal/spi/AlertLevel
+org/apache/geode/alerting/internal/spi/AlertingIOException
 org/apache/geode/cache/operations/internal/UpdateOnlyMap
 org/apache/geode/cache/query/internal/index/CompactRangeIndex$1
 org/apache/geode/cache/query/internal/DefaultQuery$TestHook$SPOTS
@@ -70,7 +71,6 @@ org/apache/geode/management/internal/cli/commands/ShowMetricsCommand$Category
 org/apache/geode/management/internal/exceptions/UserErrorException
 org/apache/geode/management/internal/json/AbstractJSONFormatter$PreventReserializationModule
 org/apache/geode/management/internal/json/QueryResultFormatter$TypeSerializationEnforcerModule
-org/apache/geode/management/internal/operation/OperationHistoryManager$OperationInstance
 org/apache/geode/security/ResourcePermission
 org/apache/geode/security/ResourcePermission$Operation
 org/apache/geode/security/ResourcePermission$Resource

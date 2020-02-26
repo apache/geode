@@ -60,6 +60,7 @@ import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.internal.cache.PartitionRegionConfig;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegion.RetryTimeKeeper;
@@ -136,7 +137,9 @@ public class PartitionedRepositoryManagerJUnitTest {
     CacheDistributionAdvisor cda = mock(CacheDistributionAdvisor.class);
     when(prRoot.getDistributionAdvisor()).thenReturn(cda);
     doNothing().when(cda).addMembershipListener(any());
-    when(cache.createVMRegion(eq(PR_ROOT_REGION_NAME), any(), any())).thenReturn(prRoot);
+    InternalRegionFactory regionFactory = mock(InternalRegionFactory.class);
+    when(regionFactory.create(eq(PR_ROOT_REGION_NAME))).thenReturn(prRoot);
+    when(cache.createInternalRegionFactory(any())).thenReturn(regionFactory);
 
     prConfig = Mockito.mock(PartitionRegionConfig.class);
     when(prConfig.isColocationComplete()).thenReturn(true);

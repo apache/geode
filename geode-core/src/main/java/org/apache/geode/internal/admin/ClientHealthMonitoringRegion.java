@@ -17,17 +17,15 @@ package org.apache.geode.internal.admin;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.internal.MakeNotStatic;
-import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.ExpirationAction;
 import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionAttributes;
-import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.internal.admin.remote.ClientHealthStats;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.InternalRegionArguments;
+import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
@@ -76,8 +74,7 @@ public class ClientHealthMonitoringRegion {
    */
   private static void initialize(InternalCache cache) {
     try {
-      AttributesFactory factory = new AttributesFactory();
-      factory.setScope(Scope.LOCAL);
+      InternalRegionFactory factory = cache.createInternalRegionFactory(RegionShortcut.LOCAL);
       factory.setEntryTimeToLive(
           new ExpirationAttributes(ADMIN_REGION_EXPIRY_INTERVAL, ExpirationAction.DESTROY));
       if (logger.isDebugEnabled()) {
@@ -86,13 +83,8 @@ public class ClientHealthMonitoringRegion {
       factory.addCacheListener(prepareCacheListener());
       factory.setValueConstraint(ClientHealthStats.class);
       factory.setStatisticsEnabled(true);
-      RegionAttributes regionAttrs = factory.create();
-
-      InternalRegionArguments internalArgs = new InternalRegionArguments();
-      internalArgs.setIsUsedForMetaRegion(true);
-      internalArgs.setIsUsedForPartitionedRegionAdmin(false);
-
-      currentInstance = cache.createVMRegion(ADMIN_REGION_NAME, regionAttrs, internalArgs);
+      factory.setIsUsedForMetaRegion(true).setIsUsedForPartitionedRegionAdmin(false);
+      currentInstance = factory.create(ADMIN_REGION_NAME);
     } catch (Exception ex) {
       logger.error("Error while creating an admin region", ex);
     }
