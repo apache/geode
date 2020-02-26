@@ -225,7 +225,7 @@ public class DistributionLocatorId implements java.io.Serializable {
     }
     String addr = hostname;
     if (host != null) {
-      addr = host.getHostAddress();
+      addr = host.getHostName();
     }
     return new HostAndPort(addr, port);
   }

@@ -214,7 +214,8 @@ public class WANHostNameVerificationDistributedTest {
         // ClusterStartupRule uses 'localhost' as locator host
         .sanDnsName(InetAddress.getLoopbackAddress().getHostName())
         .sanDnsName(InetAddress.getLocalHost().getHostName())
-        .sanDnsName(LocalHostUtil.getLocalHost().getHostName())
+        .sanDnsName(InetAddress.getLocalHost().getHostAddress())
+        .sanDnsName(LocalHostUtil.getLocalHost().getCanonicalHostName())
         .sanIpAddress(InetAddress.getLocalHost())
         .sanIpAddress(InetAddress.getByName("0.0.0.0")) // to pass on windows
         .sanIpAddress(LocalHostUtil.getLocalHost())
@@ -225,6 +226,8 @@ public class WANHostNameVerificationDistributedTest {
         .issuedBy(ca)
         .sanDnsName(InetAddress.getLocalHost().getHostName())
         .sanDnsName(LocalHostUtil.getLocalHost().getHostName())
+        .sanDnsName(LocalHostUtil.getLocalHost().getCanonicalHostName())
+        .sanDnsName(InetAddress.getLocalHost().getHostAddress())
         .sanIpAddress(InetAddress.getLocalHost())
         .sanIpAddress(LocalHostUtil.getLocalHost())
         .generate();
@@ -236,7 +239,9 @@ public class WANHostNameVerificationDistributedTest {
         .sanDnsName(InetAddress.getLoopbackAddress().getHostName())
         .sanDnsName(InetAddress.getLocalHost().getHostName())
         .sanDnsName(InetAddress.getLocalHost().getCanonicalHostName())
+        .sanDnsName(LocalHostUtil.getLocalHost().getCanonicalHostName())
         .sanDnsName(LocalHostUtil.getLocalHost().getHostName())
+        .sanDnsName(InetAddress.getLocalHost().getHostAddress())
         .sanIpAddress(InetAddress.getLocalHost())
         .sanIpAddress(InetAddress.getByName("0.0.0.0")) // to pass on windows
         .sanIpAddress(LocalHostUtil.getLocalHost())
@@ -248,6 +253,8 @@ public class WANHostNameVerificationDistributedTest {
         .sanDnsName(InetAddress.getLocalHost().getHostName())
         .sanDnsName(InetAddress.getLocalHost().getCanonicalHostName())
         .sanDnsName(LocalHostUtil.getLocalHost().getHostName())
+        .sanDnsName(LocalHostUtil.getLocalHost().getCanonicalHostName())
+        .sanDnsName(InetAddress.getLocalHost().getHostAddress())
         .sanIpAddress(InetAddress.getLocalHost())
         .sanIpAddress(LocalHostUtil.getLocalHost())
         .generate();
