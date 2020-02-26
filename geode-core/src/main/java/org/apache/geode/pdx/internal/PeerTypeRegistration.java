@@ -116,7 +116,7 @@ public class PeerTypeRegistration implements TypeRegistration {
     return distributedSystemId;
   }
 
-  private Region<Object/* Integer or EnumCode */, Object/* PdxType or enum info */> getIdToType() {
+  private Region<Object/* Integer or EnumId */, Object/* PdxType or EnumInfo */> getIdToType() {
     if (idToType != null) {
       return idToType;
     } else {

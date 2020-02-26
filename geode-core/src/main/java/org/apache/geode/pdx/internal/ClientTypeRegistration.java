@@ -16,6 +16,7 @@ package org.apache.geode.pdx.internal;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -206,27 +207,32 @@ public class ClientTypeRegistration implements TypeRegistration {
     return processEnumInfoForEnumId(enumInfo);
   }
 
+  @Override
+  public int defineEnum(EnumInfo newInfo) {
+    return processEnumInfoForEnumId(newInfo);
+  }
+
   private int processEnumInfoForEnumId(EnumInfo enumInfo) {
     EnumId existingId = localMap.getIdForEnum(enumInfo);
     if (existingId != null) {
       return existingId.intValue();
     }
-
     Collection<Pool> pools = getAllPools();
     ServerConnectivityException lastException = null;
+    int newTypeId = -1;
     for (Pool pool : pools) {
       try {
-        int result = getEnumIdFromPool(enumInfo, (ExecutablePool) pool);
-        EnumId newId = new EnumId(result);
+        newTypeId = getEnumIdFromPool(enumInfo, (ExecutablePool) pool);
+        EnumId newId = new EnumId(newTypeId);
+        copyEnumToOtherPools(enumInfo, newTypeId, pool);
         localMap.save(newId, enumInfo);
-        copyEnumToOtherPools(enumInfo, result, pool);
-        return result;
+        return newTypeId;
       } catch (ServerConnectivityException e) {
         // ignore, try the next pool.
         lastException = e;
       }
     }
-    throw returnCorrectExceptionForFailure(-1, lastException);
+    throw returnCorrectExceptionForFailure(newTypeId, lastException);
   }
 
   int getEnumIdFromPool(EnumInfo enumInfo, ExecutablePool pool) {
@@ -250,7 +256,7 @@ public class ClientTypeRegistration implements TypeRegistration {
 
   private void sendEnumIdToPool(EnumInfo enumInfo, int id, Pool pool) {
     try {
-      AddPDXEnumOp.execute((ExecutablePool) pool, id, enumInfo);
+      addPdxEnum(enumInfo, id, (ExecutablePool) pool);
     } catch (ServerConnectivityException serverConnectivityException) {
       logger.debug("Received an exception sending pdx type to pool {}, {}", pool,
           serverConnectivityException.getMessage(), serverConnectivityException);
@@ -258,14 +264,13 @@ public class ClientTypeRegistration implements TypeRegistration {
     }
   }
 
-  @Override
-  public void addRemoteEnum(int enumId, EnumInfo newInfo) {
-    throw new UnsupportedOperationException("Clients will not be asked to add remote enums");
+  void addPdxEnum(EnumInfo enumInfo, int id, ExecutablePool pool) {
+    AddPDXEnumOp.execute(pool, id, enumInfo);
   }
 
   @Override
-  public int defineEnum(EnumInfo newInfo) {
-    return processEnumInfoForEnumId(newInfo);
+  public void addRemoteEnum(int enumId, EnumInfo newInfo) {
+    throw new UnsupportedOperationException("Clients will not be asked to add remote enums");
   }
 
   @Override
@@ -283,7 +288,6 @@ public class ClientTypeRegistration implements TypeRegistration {
         EnumInfo result = getEnumFromPool(enumId, (ExecutablePool) pool);
         if (result != null) {
           localMap.save(id, result);
-
           return result;
         }
       } catch (ServerConnectivityException e) {
@@ -293,7 +297,6 @@ public class ClientTypeRegistration implements TypeRegistration {
         lastException = e;
       }
     }
-
     throw returnCorrectExceptionForFailure(enumId, lastException);
   }
 
@@ -308,12 +311,16 @@ public class ClientTypeRegistration implements TypeRegistration {
     Map<Integer, PdxType> types = new HashMap<>();
     for (Pool p : pools) {
       try {
-        types.putAll(GetPDXTypesOp.execute((ExecutablePool) p));
+        types.putAll(getAllPdxTypesFromPool((ExecutablePool) p));
       } catch (Exception e) {
         e.printStackTrace();
       }
     }
     return types;
+  }
+
+  Map<Integer, PdxType> getAllPdxTypesFromPool(ExecutablePool p) {
+    return GetPDXTypesOp.execute(p);
   }
 
   @Override
@@ -322,39 +329,38 @@ public class ClientTypeRegistration implements TypeRegistration {
 
     Map<Integer, EnumInfo> enums = new HashMap<>();
     for (Pool p : pools) {
-      enums.putAll(GetPDXEnumsOp.execute((ExecutablePool) p));
+      enums.putAll(getAllEnumsFromPool((ExecutablePool) p));
     }
     return enums;
+  }
+
+  Map<Integer, EnumInfo> getAllEnumsFromPool(ExecutablePool p) {
+    return GetPDXEnumsOp.execute(p);
   }
 
 
   @Override
   public PdxType getPdxTypeForField(String fieldName, String className) {
-    //TODO check local maps first
-    for (Object value : types().values()) {
-      if (value instanceof PdxType) {
-        PdxType pdxType = (PdxType) value;
-        if (pdxType.getClassName().equals(className) && pdxType.getPdxField(fieldName) != null) {
-          return pdxType;
-        }
-      }
+    // Check local map first
+    PdxType type = findPdxTypeInMapByClassAndFieldNames(localMap.idToType, fieldName, className);
+    if (type != null) {
+      return type;
     }
-    return null;
+    return findPdxTypeInMapByClassAndFieldNames(types(), fieldName, className);
+  }
+
+  PdxType findPdxTypeInMapByClassAndFieldNames(Map<Integer, PdxType> map, String fieldName, String className) {
+    return map.values().stream()
+        .filter(pdxType -> pdxType.getClassName().equals(className) && (pdxType.getPdxField(fieldName) != null))
+        .findFirst()
+        .orElse(null);
   }
 
   @Override
   public Set<PdxType> getPdxTypesForClassName(String className) {
-    //TODO check local maps first
-    Set<PdxType> result = new HashSet<>();
-    for (Object value : types().values()) {
-      if (value instanceof PdxType) {
-        PdxType pdxType = (PdxType) value;
-        if (pdxType.getClassName().equals(className)) {
-          result.add(pdxType);
-        }
-      }
-    }
-    return result;
+    return types().values().stream()
+        .filter(pdxType -> pdxType.getClassName().equals(className))
+        .collect(Collectors.toSet());
   }
 
   @Override

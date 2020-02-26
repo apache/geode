@@ -17,9 +17,11 @@ package org.apache.geode.pdx.internal;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -30,7 +32,9 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.stream.IntStream;
 
 import org.junit.Before;
@@ -50,7 +54,8 @@ public class ClientTypeRegistrationTest {
   private final int numberOfPools = 2;
   private PdxType newType;
   private EnumInfo newEnum;
-  InternalCache mockCache;
+  private InternalCache mockCache;
+  private Collection<Pool> pools = new HashSet<>();
   private ClientTypeRegistration typeRegistration;
 
   @Before
@@ -58,7 +63,6 @@ public class ClientTypeRegistrationTest {
     newType = mock(PdxType.class);
     newEnum = mock(EnumInfo.class);
     mockCache = mock(InternalCache.class);
-    Collection<Pool> pools = new HashSet<>();
     IntStream.range(0, numberOfPools).forEach(i -> pools.add(mock(Pool.class, withSettings().extraInterfaces(ExecutablePool.class))));
     typeRegistration = spy(new ClientTypeRegistration(mockCache));
     doReturn(pools).when(typeRegistration).getAllPools();
@@ -189,38 +193,125 @@ public class ClientTypeRegistrationTest {
   }
 
   @Test
-  public void defineEnumReturnsCorrectEnumIdForNewEnumAndUpdatesLocalMap() {
-    doReturn(ENUM_ID).when(typeRegistration).getEnumIdFromPool(eq(newEnum),
-        any(ExecutablePool.class));
+  public void defineEnumDoesNotThrowExceptionAndUpdatesLocalMapWhenAtLeastOnePoolSucceedsGettingEnumId() {
+    assertThat(typeRegistration.getEnumToIdMap().size()).isZero();
+
+    doThrow(new ServerConnectivityException()).doReturn(ENUM_ID).when(typeRegistration).getEnumIdFromPool(eq(newEnum), any(ExecutablePool.class));
+    doNothing().when(typeRegistration).addPdxEnum(any(EnumInfo.class), anyInt(), any(ExecutablePool.class));
+
     assertThat(typeRegistration.defineEnum(newEnum)).isEqualTo(ENUM_ID);
 
-    // Confirm that we defined the new enum on a server
-    verify(typeRegistration, times(1)).getEnumIdFromPool(eq(newEnum), any(ExecutablePool.class));
+    // Confirm that we tried to get the EnumId on both the pools, since we failed on the first
+    verify(typeRegistration, times(numberOfPools)).getEnumIdFromPool(eq(newEnum), any(ExecutablePool.class));
 
-    assertThat(typeRegistration.getEnumById(ENUM_ID)).isSameAs(newEnum);
+    // Confirm that we correctly updated the local map
+    assertThat(typeRegistration.getEnumToIdMap().size()).isOne();
+    assertThat(typeRegistration.getEnumToIdMap()).containsKey(newEnum);
+    assertThat(typeRegistration.getEnumToIdMap().get(newEnum).intValue()).isEqualTo(ENUM_ID);
 
-    // Confirm that the enum we just got was retrieved locally
-    verify(typeRegistration, times(0)).getEnumFromPool(eq(ENUM_ID), any(ExecutablePool.class));
-
-    assertThat(typeRegistration.getEnumToIdMap().get(newEnum)).isEqualTo(new EnumId(ENUM_ID));
+    // Confirm that a second call to defineEnum() retrieves the EnumId locally and does not attempt to contact the pools
+    assertThat(typeRegistration.defineEnum(newEnum)).isEqualTo(ENUM_ID);
+    verify(typeRegistration, times(numberOfPools)).getEnumIdFromPool(eq(newEnum), any(ExecutablePool.class));
   }
 
   @Test
-  public void getEnumByIdReturnsCorrectEnumInfoForNewIdAndUpdatesLocalMap() {
-    doReturn(newEnum).when(typeRegistration).getEnumFromPool(eq(ENUM_ID),
-        any(ExecutablePool.class));
+  public void defineEnumThrowsLastExceptionAndDoesNotUpdateLocalMapWhenExceptionsAreEncounteredWhileGettingEnumIdOnEveryPool() {
+    String firstExceptionMessage = "firstExceptionMessage";
+    String secondExceptionMessage = "secondExceptionMessage";
+    doThrow(new ServerConnectivityException(firstExceptionMessage)).doThrow(new ServerConnectivityException(secondExceptionMessage)).when(typeRegistration).getEnumIdFromPool(eq(newEnum), any(ExecutablePool.class));
 
-    assertThat(typeRegistration.getEnumById(ENUM_ID)).isSameAs(newEnum);
+    assertThat(typeRegistration.getEnumToIdMap().size()).isZero();
+    assertThatThrownBy(() -> typeRegistration.defineEnum(newEnum)).isInstanceOf(ServerConnectivityException.class).hasMessageContaining(secondExceptionMessage);
 
-    // Confirm that we got the new enum from a server
-    verify(typeRegistration, times(1)).getEnumFromPool(eq(ENUM_ID), any(ExecutablePool.class));
+    // Confirm that we did not update the local map
+    assertThat(typeRegistration.getEnumToIdMap().size()).isZero();
+  }
 
-    assertThat(typeRegistration.getEnumById(ENUM_ID)).isSameAs(newEnum);
+  @Test
+  public void getEnumByIdDoesNotThrowExceptionAndUpdatesLocalMapWhenAtLeastOnePoolSucceedsGettingEnumInfo() {
+    assertThat(typeRegistration.getEnumToIdMap().size()).isZero();
 
-    // Confirm that the enum we just got was retrieved locally
-    verify(typeRegistration, times(1)).getEnumFromPool(eq(ENUM_ID), any(ExecutablePool.class));
+    doThrow(new ServerConnectivityException()).doReturn(newEnum).when(typeRegistration).getEnumFromPool(eq(ENUM_ID), any(ExecutablePool.class));
 
-    assertThat(typeRegistration.getEnumToIdMap().get(newEnum)).isEqualTo(new EnumId(ENUM_ID));
+    assertThat(typeRegistration.getEnumById(ENUM_ID)).isEqualTo(newEnum);
+
+    // Confirm that we tried to get the EnumInfo on both the pools, since we failed on the first
+    verify(typeRegistration, times(numberOfPools)).getEnumFromPool(eq(ENUM_ID), any(ExecutablePool.class));
+
+    // Confirm that we correctly updated the local map
+    assertThat(typeRegistration.getEnumToIdMap().size()).isOne();
+    assertThat(typeRegistration.getEnumToIdMap()).containsKey(newEnum);
+    assertThat(typeRegistration.getEnumToIdMap().get(newEnum).intValue()).isEqualTo(ENUM_ID);
+
+    // Confirm that a second call to getEnumById() retrieves the EnumInfo locally and does not attempt to contact the pools
+    assertThat(typeRegistration.getEnumById(ENUM_ID)).isEqualTo(newEnum);
+    verify(typeRegistration, times(numberOfPools)).getEnumFromPool(eq(ENUM_ID), any(ExecutablePool.class));
+  }
+
+  @Test
+  public void getEnumByIdThrowsLastExceptionAndDoesNotUpdateLocalMapWhenExceptionsAreEncounteredWhileGettingEnumInfoOnEveryPool() {
+    String firstExceptionMessage = "firstExceptionMessage";
+    String secondExceptionMessage = "secondExceptionMessage";
+    doThrow(new ServerConnectivityException(firstExceptionMessage)).doThrow(new ServerConnectivityException(secondExceptionMessage)).when(typeRegistration).getEnumFromPool(eq(ENUM_ID), any(ExecutablePool.class));
+
+    assertThat(typeRegistration.getEnumToIdMap().size()).isZero();
+    assertThatThrownBy(() -> typeRegistration.getEnumById(ENUM_ID)).isInstanceOf(ServerConnectivityException.class).hasMessageContaining(secondExceptionMessage);
+
+    // Confirm that we did not update the local map
+    assertThat(typeRegistration.getEnumToIdMap().size()).isZero();
+  }
+
+  @Test
+  public void getEnumByIdThrowsExceptionAndDoesNotUpdateLocalMapWhenNoPoolHasAnEnumInfoForAnEnumId() {
+    doReturn(null).when(typeRegistration).getEnumFromPool(eq(ENUM_ID), any(ExecutablePool.class));
+
+    assertThat(typeRegistration.getEnumToIdMap().size()).isZero();
+    assertThatThrownBy(() -> typeRegistration.getEnumById(ENUM_ID)).isInstanceOf(InternalGemFireError.class);
+
+    // Confirm that we tried to get the EnumInfo on both the pools
+    verify(typeRegistration, times(numberOfPools)).getEnumFromPool(eq(ENUM_ID), any(ExecutablePool.class));
+    // Confirm that we did not update the local map
+    assertThat(typeRegistration.getEnumToIdMap().size()).isZero();
+  }
+
+  @Test
+  public void typesAttemptsToGetPdxTypesFromAllPools() {
+    Integer firstId = 1;
+    PdxType mockFirstType = mock(PdxType.class);
+    Map<Integer, PdxType> firstPoolTypes = Collections.singletonMap(firstId, mockFirstType);
+    Integer secondId = 2;
+    PdxType mockSecondType = mock(PdxType.class);
+    Map<Integer, PdxType> secondPoolTypes = Collections.singletonMap(secondId, mockSecondType);
+
+    doReturn(firstPoolTypes).doReturn(secondPoolTypes).when(typeRegistration).getAllPdxTypesFromPool(any(ExecutablePool.class));
+
+    Map<Integer, PdxType> result = typeRegistration.types();
+
+    assertThat(result.size()).isEqualTo(2);
+    assertThat(result.get(firstId)).isEqualTo(mockFirstType);
+    assertThat(result.get(secondId)).isEqualTo(mockSecondType);
+
+    verify(typeRegistration, times(numberOfPools)).getAllPdxTypesFromPool(any(ExecutablePool.class));
+  }
+
+  @Test
+  public void enumsAttemptsToGetEnumInfosFromAllPools() {
+    Integer firstId = 1;
+    EnumInfo mockFirstType = mock(EnumInfo.class);
+    Map<Integer, EnumInfo> firstPoolEnums = Collections.singletonMap(firstId, mockFirstType);
+    Integer secondId = 2;
+    EnumInfo mockSecondType = mock(EnumInfo.class);
+    Map<Integer, EnumInfo> secondPoolEnums = Collections.singletonMap(secondId, mockSecondType);
+
+    doReturn(firstPoolEnums).doReturn(secondPoolEnums).when(typeRegistration).getAllEnumsFromPool(any(ExecutablePool.class));
+
+    Map<Integer, EnumInfo> result = typeRegistration.enums();
+
+    assertThat(result.size()).isEqualTo(2);
+    assertThat(result.get(firstId)).isEqualTo(mockFirstType);
+    assertThat(result.get(secondId)).isEqualTo(mockSecondType);
+
+    verify(typeRegistration, times(numberOfPools)).getAllEnumsFromPool(any(ExecutablePool.class));
   }
 
   @Test
