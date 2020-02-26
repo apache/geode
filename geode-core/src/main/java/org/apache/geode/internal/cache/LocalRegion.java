@@ -5039,7 +5039,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   }
 
   private void clearOptimizedGetFuture(Object key) {
-    if (isProxy() && getFutures != null) {
+    if (isProxy()) {
       getFutures.remove(key);
     }
   }
@@ -8587,9 +8587,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         }
       }
     } else {
-      if (getFutures != null) {
-        getFutures.clear();
-      }
+      getFutures.clear();
     }
 
     if (ISSUE_CALLBACKS_TO_CACHE_OBSERVER) {
