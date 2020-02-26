@@ -162,16 +162,14 @@ if [[ -z "${WINDOWS_PREFIX}" ]]; then
 else
   # Set up ssh access for Windows systems
   echo -n "Setting windows password via gcloud."
-  INSTANCE_AGENT_READY_LINE="GCEWindowsAgent: GCE Agent Started"
   INSTANCE_SETUP_FINSHED_LINE="GCEInstanceSetup: Instance setup finished"
-  SCRAPE_COMMAND_INSTANCE_READY="gcloud compute instances get-serial-port-output ${INSTANCE_NAME} --zone=${ZONE} | grep \"${INSTANCE_AGENT_READY_LINE}\" | wc -l"
   SCRAPE_COMMAND_SETUP_FINSHED="gcloud compute instances get-serial-port-output ${INSTANCE_NAME} --zone=${ZONE} | grep \"${INSTANCE_SETUP_FINSHED_LINE}\" | wc -l"
 
   while true; do
     # Check that the instance agent has started at least 2x (first boot, plus activation)
     # and that the "GCEInstanceSetup" script completed
     echo -n "Waiting for startup scripts and windows activation to complete"
-    while [[ 2 -ne $(eval ${SCRAPE_COMMAND_INSTANCE_READY} 2> /dev/null) ]] || [[ 1 -ne $(eval ${SCRAPE_COMMAND_SETUP_FINSHED} 2> /dev/null) ]]; do
+    while [[ 1 -ne $(eval ${SCRAPE_COMMAND_SETUP_FINSHED} 2> /dev/null) ]]; do
       echo -n .
       sleep 5
     done
