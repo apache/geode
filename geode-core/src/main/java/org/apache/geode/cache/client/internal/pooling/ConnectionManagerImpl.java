@@ -301,16 +301,11 @@ public class ConnectionManagerImpl implements ConnectionManager {
     throw new AllConnectionsInUseException();
   }
 
-  /**
-   * Borrow a connection to a specific server. This task currently allows us to break the connection
-   * limit, because it is used by tasks from the background thread that shouldn't be constrained by
-   * the limit. They will only violate the limit by 1 connection, and that connection will be
-   * destroyed when returned to the pool.
-   */
   @Override
   public PooledConnection borrowConnection(ServerLocation server, long acquireTimeout,
       boolean onlyUseExistingCnx)
-      throws AllConnectionsInUseException, NoAvailableServersException, ServerOperationException {
+      throws AllConnectionsInUseException, NoAvailableServersException,
+      ServerConnectivityException {
 
     PooledConnection connection =
         availableConnectionManager.useFirst((c) -> c.getServer().equals(server));
