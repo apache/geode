@@ -26,7 +26,6 @@ public class GetExecutor extends StringExecutor {
 
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
-    Region<ByteArrayWrapper, ByteArrayWrapper> r = context.getRegionProvider().getStringsRegion();
 
     if (command.getProcessedCommand().size() < 2) {
       command
@@ -36,6 +35,8 @@ public class GetExecutor extends StringExecutor {
 
     ByteArrayWrapper key = command.getKey();
     checkDataType(key, RedisDataType.REDIS_STRING, context);
+
+    Region<ByteArrayWrapper, ByteArrayWrapper> r = context.getRegionProvider().getStringsRegion();
     ByteArrayWrapper wrapper = r.get(key);
 
     respondBulkStrings(command, context, wrapper);

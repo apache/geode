@@ -59,7 +59,7 @@ public class ExecutionHandlerContextJUnitTest {
     byte[] pwd = null;
     ExecutionHandlerContext handler =
         new ExecutionHandlerContext(ch, cache, regionProvider, server, pwd, keyRegistrar, pubSub,
-            lockService, lockService);
+            lockService);
 
     Mockito.when(msg.getCommandType()).thenReturn(redisCommandType);
     Executor exec = Mockito.mock(Executor.class);

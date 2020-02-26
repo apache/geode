@@ -30,6 +30,7 @@ import org.apache.geode.redis.internal.executor.PTTLExecutor;
 import org.apache.geode.redis.internal.executor.PersistExecutor;
 import org.apache.geode.redis.internal.executor.PingExecutor;
 import org.apache.geode.redis.internal.executor.QuitExecutor;
+import org.apache.geode.redis.internal.executor.RenameExecutor;
 import org.apache.geode.redis.internal.executor.ScanExecutor;
 import org.apache.geode.redis.internal.executor.ShutDownExecutor;
 import org.apache.geode.redis.internal.executor.TTLExecutor;
@@ -427,6 +428,30 @@ public enum RedisCommandType {
     public Executor getExecutor() {
       if (executor == null) {
         executor = new PTTLExecutor();
+      }
+      return executor;
+    }
+
+    private final RedisDataType dataType = RedisDataType.NONE;
+
+    @Override
+    public RedisDataType getDataType() {
+      return this.dataType;
+    }
+  },
+
+  /**
+   * RENAME key
+   * <p>
+   * Renames a key
+   */
+  RENAME {
+    private Executor executor;
+
+    @Override
+    public Executor getExecutor() {
+      if (executor == null) {
+        executor = new RenameExecutor();
       }
       return executor;
     }

@@ -287,7 +287,7 @@ public class GeodeRedisServer {
   private KeyRegistrar keyRegistrar;
   private PubSub pubSub;
   private RedisLockService hashLockService;
-  private RedisLockService setLockService;
+
 
   /**
    * Determine the {@link RegionShortcut} type from a String value. If the String value doesn't map
@@ -484,7 +484,6 @@ public class GeodeRedisServer {
 
       this.keyRegistrar = new KeyRegistrar(redisMetaData);
       this.hashLockService = new RedisLockService();
-      this.setLockService = new RedisLockService();
       this.pubSub = new PubSubImpl(new Subscriptions());
       this.regionCache = new RegionProvider(stringsRegion, hLLRegion, this.keyRegistrar,
           expirationFutures, expirationExecutor, this.DEFAULT_REGION_TYPE, redisHash, redisSet);
@@ -575,7 +574,7 @@ public class GeodeRedisServer {
             p.addLast(ByteToCommandDecoder.class.getSimpleName(), new ByteToCommandDecoder());
             p.addLast(ExecutionHandlerContext.class.getSimpleName(),
                 new ExecutionHandlerContext(ch, cache, regionCache, GeodeRedisServer.this, pwdB,
-                    keyRegistrar, pubSub, hashLockService, setLockService));
+                    keyRegistrar, pubSub, hashLockService));
           }
         }).option(ChannelOption.SO_REUSEADDR, true).option(ChannelOption.SO_RCVBUF, getBufferSize())
         .childOption(ChannelOption.SO_KEEPALIVE, true)
