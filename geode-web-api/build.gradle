@@ -35,37 +35,37 @@ dependencies {
 
   compileOnly('javax.servlet:javax.servlet-api')
 
-  compile('org.apache.commons:commons-lang3')
-  compile('commons-fileupload:commons-fileupload') {
+  implementation('org.apache.commons:commons-lang3')
+  implementation('commons-fileupload:commons-fileupload') {
     exclude module: 'commons-io'
   }
   // jackson-annotations must be accessed from the geode classloader and not the webapp
   compileOnly('com.fasterxml.jackson.core:jackson-annotations')
-  compile('com.fasterxml.jackson.core:jackson-core')
-  compile('com.fasterxml.jackson.core:jackson-databind'){
+  implementation('com.fasterxml.jackson.core:jackson-core')
+  implementation('com.fasterxml.jackson.core:jackson-databind'){
     exclude module: 'jackson-annotations'
   }
 
   compileOnly('com.fasterxml.jackson.module:jackson-module-scala_2.10')
   compileOnly('io.swagger:swagger-annotations')
 
-  compile('io.springfox:springfox-swagger2') {
+  implementation('io.springfox:springfox-swagger2') {
     exclude module: 'slf4j-api'
     exclude module: 'jackson-annotations'
     exclude module: 'swagger-annotations'
   }
 
-  compile('io.springfox:springfox-swagger-ui') {
+  implementation('io.springfox:springfox-swagger-ui') {
     exclude module: 'slf4j-api'
   }
 
-  compile('org.springframework:spring-beans')
-  compile('org.springframework.security:spring-security-core')
-  compile('org.springframework.security:spring-security-web')
-  compile('org.springframework.security:spring-security-config')
-  compile('org.springframework:spring-web')
-  compile('org.springframework:spring-webmvc')
-  compile('org.springframework.hateoas:spring-hateoas') {
+  implementation('org.springframework:spring-beans')
+  implementation('org.springframework.security:spring-security-core')
+  implementation('org.springframework.security:spring-security-web')
+  implementation('org.springframework.security:spring-security-config')
+  implementation('org.springframework:spring-web')
+  implementation('org.springframework:spring-webmvc')
+  implementation('org.springframework.hateoas:spring-hateoas') {
     exclude module: 'aopalliance'
     exclude module: 'commons-logging'
     exclude module: 'objenesis'
@@ -73,11 +73,11 @@ dependencies {
     exclude module: 'spring-core'
     exclude module: 'spring-plugin-core'
   }
-  compile('org.springframework:spring-aspects') {
+  implementation('org.springframework:spring-aspects') {
     exclude module: 'aopalliance'
     exclude module: 'aspectjweaver'
   }
-  compile('org.springframework:spring-oxm') {
+  implementation('org.springframework:spring-oxm') {
     exclude module: 'commons-logging'
     exclude module: 'spring-core'
     exclude module: 'spring-beans'
@@ -85,20 +85,20 @@ dependencies {
   compileOnly('org.apache.logging.log4j:log4j-api')
 
 
-  testCompile(project(':geode-junit')) {
+  testImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
-  testCompile(project(':geode-core'))
-  testCompile('javax.servlet:javax.servlet-api')
+  testImplementation(project(':geode-core'))
+  testImplementation('javax.servlet:javax.servlet-api')
 
-  integrationTestCompile('org.springframework:spring-test')
-  integrationTestCompile('org.springframework.security:spring-security-test')
+  integrationTestImplementation('org.springframework:spring-test')
+  integrationTestImplementation('org.springframework.security:spring-security-test')
 
-  integrationTestCompile(project(':geode-core'))
-  integrationTestCompile(project(':geode-junit')) {
+  integrationTestImplementation(project(':geode-core'))
+  integrationTestImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
-  integrationTestCompile(project(':geode-dunit')) {
+  integrationTestImplementation(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
 }

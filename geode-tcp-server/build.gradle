@@ -27,10 +27,10 @@ dependencies {
 
     //Commons validator is used to validate inet addresses
     implementation('commons-validator:commons-validator')
-    testCompile(project(':geode-junit')) {
+    testImplementation(project(':geode-junit')) {
         exclude module: 'geode-core'
     }
-    testCompile('org.assertj:assertj-core')
+    testImplementation('org.assertj:assertj-core')
 
     testImplementation('com.tngtech.archunit:archunit-junit4')
 
@@ -38,6 +38,8 @@ dependencies {
     integrationTestImplementation('org.mockito:mockito-core')
     integrationTestImplementation(project(':geode-junit'))
 
+    distributedTestImplementation(project(':geode-gfsh'))
     distributedTestImplementation(project(':geode-dunit'))
-    distributedTestRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
+    distributedTestImplementation(project(':geode-membership'))
+    distributedTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
 }

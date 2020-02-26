@@ -34,10 +34,13 @@ dependencies {
     exclude module: 'geode-core'
   }
 
-  compile('commons-io:commons-io')
-  compile('javax.servlet:javax.servlet-api')
-  compile('junit:junit')
-  compile('org.httpunit:httpunit') {
+  implementation('org.assertj:assertj-core')
+  implementation('org.springframework:spring-core')
+  implementation('org.mockito:mockito-core')
+  implementation('commons-io:commons-io')
+  implementation('javax.servlet:javax.servlet-api')
+  implementation('junit:junit')
+  implementation('org.httpunit:httpunit') {
     // this version of httpunit contains very outdated xercesImpl
     exclude group: 'xerces'
   }

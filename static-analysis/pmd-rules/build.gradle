@@ -18,6 +18,7 @@
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 
 dependencies {
-    testCompile(group: 'net.sourceforge.pmd', name: 'pmd-test', version: '6.18.0')
-    compile(group: 'net.sourceforge.pmd', name: 'pmd-java', version: '6.18.0')
+    implementation(platform(project(':boms:geode-all-bom')))
+    implementation('net.sourceforge.pmd:pmd-java')
+    testImplementation('net.sourceforge.pmd:pmd-test')
 }

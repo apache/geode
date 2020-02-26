@@ -27,10 +27,10 @@ dependencies {
   compile(project(':geode-core'))
   implementation(project(':geode-logging'))
 
-  compile('javax.servlet:javax.servlet-api')
-  compile('mx4j:mx4j')
-  compile('org.apache.tomcat:servlet-api:' + DependencyConstraints.get('tomcat6.version'))
-  compile('org.slf4j:slf4j-api')
+  implementation('javax.servlet:javax.servlet-api')
+  implementation('mx4j:mx4j')
+  implementation('org.apache.tomcat:servlet-api:' + DependencyConstraints.get('tomcat6.version'))
+  implementation('org.slf4j:slf4j-api')
 }
 
 jar {

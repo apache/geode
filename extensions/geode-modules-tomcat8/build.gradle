@@ -25,58 +25,59 @@ evaluationDependsOn(":geode-core")
 
 dependencies {
   compile(platform(project(':boms:geode-all-bom')))
-  distributedTestCompile('junit:junit')
-  compile('mx4j:mx4j')
+  distributedTestImplementation('junit:junit')
+  implementation('mx4j:mx4j')
   distributedTestImplementation(project(':geode-logging'))
-  testCompile('org.httpunit:httpunit')
-  testCompile('org.apache.tomcat:tomcat-jaspic-api:' + DependencyConstraints.get('tomcat8.version'))
-  testCompile('org.httpunit:httpunit')
-  testCompile('junit:junit')
-  testCompile('org.assertj:assertj-core')
-  testCompile('org.mockito:mockito-core')
-  testCompile(project(':extensions:geode-modules-test'))
-  distributedTestCompile('org.httpunit:httpunit')
-  distributedTestCompile('org.apache.tomcat:tomcat-jaspic-api:' + DependencyConstraints.get('tomcat8.version'))
+  testImplementation('org.httpunit:httpunit')
+  testImplementation('org.apache.tomcat:tomcat-jaspic-api:' + DependencyConstraints.get('tomcat8.version'))
+  testImplementation('org.httpunit:httpunit')
+  testImplementation('junit:junit')
+  testImplementation('org.assertj:assertj-core')
+  testImplementation('org.mockito:mockito-core')
+  testImplementation(project(':extensions:geode-modules-test'))
+  distributedTestImplementation('org.httpunit:httpunit')
+  distributedTestImplementation('org.apache.tomcat:tomcat-jaspic-api:' + DependencyConstraints.get('tomcat8.version'))
+  distributedTestImplementation('org.springframework:spring-core')
   compile(project(':geode-core'))
   compile(project(':extensions:geode-modules')) {
     exclude group: 'org.apache.tomcat'
   }
-  testCompile(project(':extensions:geode-modules')) {
+  testImplementation(project(':extensions:geode-modules')) {
     exclude group: 'org.apache.tomcat'
   }
 
 
-  compile('org.apache.tomcat:tomcat-catalina:' + DependencyConstraints.get('tomcat8.version')) {
+  implementation('org.apache.tomcat:tomcat-catalina:' + DependencyConstraints.get('tomcat8.version')) {
     exclude module: 'tomcat-annotations-api'
     exclude module: 'tomcat-servlet-api'
   }
-  compile('org.apache.tomcat:tomcat-coyote:' + DependencyConstraints.get('tomcat8.version')) {
+  implementation('org.apache.tomcat:tomcat-coyote:' + DependencyConstraints.get('tomcat8.version')) {
     exclude module: 'tomcat-servlet-api'
   }
-  compile('org.apache.tomcat:tomcat-juli:' + DependencyConstraints.get('tomcat8.version'))
-  compile('javax.servlet:javax.servlet-api')
+  implementation('org.apache.tomcat:tomcat-juli:' + DependencyConstraints.get('tomcat8.version'))
+  implementation('javax.servlet:javax.servlet-api')
 
-  integrationTestCompile(project(':geode-dunit')) {
+  integrationTestImplementation(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
-  integrationTestCompile(project(':geode-junit')) {
+  integrationTestImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
-  integrationTestCompile(project(':extensions:geode-modules-test'))
-  integrationTestRuntime('xerces:xercesImpl')
-  integrationTestRuntime('javax.annotation:javax.annotation-api')
+  integrationTestImplementation(project(':extensions:geode-modules-test'))
+  integrationTestRuntimeOnly('xerces:xercesImpl')
+  integrationTestRuntimeOnly('javax.annotation:javax.annotation-api')
 
-  distributedTestCompile(project(':geode-dunit')) {
+  distributedTestImplementation(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
 
-  distributedTestCompile(project(':geode-junit')) {
+  distributedTestImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
-  distributedTestCompile(project(':extensions:geode-modules-test'))
+  distributedTestImplementation(project(':extensions:geode-modules-test'))
 
-  distributedTestRuntime('xerces:xercesImpl')
-  distributedTestRuntime('javax.annotation:javax.annotation-api')
+  distributedTestRuntimeOnly('xerces:xercesImpl')
+  distributedTestRuntimeOnly('javax.annotation:javax.annotation-api')
 }
 
 eclipse.classpath.file {

@@ -53,27 +53,7 @@
     </dependency>
     <dependency>
       <groupId>org.apache.geode</groupId>
-      <artifactId>geode-logging</artifactId>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.geode</groupId>
-      <artifactId>geode-membership</artifactId>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.geode</groupId>
-      <artifactId>geode-serialization</artifactId>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.geode</groupId>
-      <artifactId>geode-unsafe</artifactId>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.healthmarketscience.rmiio</groupId>
-      <artifactId>rmiio</artifactId>
+      <artifactId>geode-common</artifactId>
       <scope>compile</scope>
     </dependency>
     <dependency>
@@ -110,6 +90,46 @@
           <groupId>*</groupId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.geode</groupId>
+      <artifactId>geode-logging</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.geode</groupId>
+      <artifactId>geode-membership</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.geode</groupId>
+      <artifactId>geode-serialization</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.geode</groupId>
+      <artifactId>geode-unsafe</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-web</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.healthmarketscience.rmiio</groupId>
+      <artifactId>rmiio</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>net.sf.jopt-simple</groupId>

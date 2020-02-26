@@ -302,6 +302,18 @@
         <scope>compile</scope>
       </dependency>
       <dependency>
+        <groupId>net.sourceforge.pmd</groupId>
+        <artifactId>pmd-java</artifactId>
+        <version>6.20.0</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>net.sourceforge.pmd</groupId>
+        <artifactId>pmd-test</artifactId>
+        <version>6.20.0</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
         <groupId>net.spy</groupId>
         <artifactId>spymemcached</artifactId>
         <version>2.12.3</version>

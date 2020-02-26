@@ -29,63 +29,63 @@ dependencies {
   compileOnly(platform(project(':boms:geode-all-bom')))
   providedCompile(platform(project(':boms:geode-all-bom')))
 
-  compile('org.springframework.security:spring-security-core')
-  compile('javax.servlet:javax.servlet-api')
-  compile('mx4j:mx4j') {
+  implementation('org.springframework.security:spring-security-core')
+  implementation('javax.servlet:javax.servlet-api')
+  implementation('mx4j:mx4j') {
     ext.optional = true
   }
-  compile('mx4j:mx4j-remote') {
+  implementation('mx4j:mx4j-remote') {
     ext.optional = true
   }
-  integrationTestCompile('junit:junit')
-  uiTestCompile('junit:junit')
-  integrationTestCompile('org.hamcrest:hamcrest-core')
-  integrationTestCompile('org.hamcrest:hamcrest-library')
-  integrationTestCompile('org.hamcrest:hamcrest-all')
-  uiTestCompile('org.apache.httpcomponents:httpcore')
-  uiTestCompile('org.seleniumhq.selenium:selenium-api')
-  uiTestCompile('org.assertj:assertj-core')
-  uiTestCompile('org.apache.httpcomponents:httpclient')
-  uiTestCompile('org.seleniumhq.selenium:selenium-support')
-  compile('org.springframework:spring-beans')
+  integrationTestImplementation('junit:junit')
+  uiTestImplementation('junit:junit')
+  integrationTestImplementation('org.hamcrest:hamcrest-core')
+  integrationTestImplementation('org.hamcrest:hamcrest-library')
+  integrationTestImplementation('org.hamcrest:hamcrest-all')
+  uiTestImplementation('org.apache.httpcomponents:httpcore')
+  uiTestImplementation('org.seleniumhq.selenium:selenium-api')
+  uiTestImplementation('org.assertj:assertj-core')
+  uiTestImplementation('org.apache.httpcomponents:httpclient')
+  uiTestImplementation('org.seleniumhq.selenium:selenium-support')
+  implementation('org.springframework:spring-beans')
 
   // Needed to fully use log4j instead of commons-logging.
-  compile('org.apache.logging.log4j:log4j-jcl')
-  compile('org.apache.logging.log4j:log4j-api')
-//  compile('org.apache.logging.log4j:log4j-core')
+  implementation('org.apache.logging.log4j:log4j-jcl')
+  implementation('org.apache.logging.log4j:log4j-api')
+//  implementation('org.apache.logging.log4j:log4j-core')
 
-  compile('commons-beanutils:commons-beanutils')
-  compile('commons-collections:commons-collections')
-  compile('commons-digester:commons-digester')
-  compile('org.apache.commons:commons-lang3')
-  compile('org.springframework.ldap:spring-ldap-core')
+  implementation('commons-beanutils:commons-beanutils')
+  implementation('commons-collections:commons-collections')
+  implementation('commons-digester:commons-digester')
+  implementation('org.apache.commons:commons-lang3')
+  implementation('org.springframework.ldap:spring-ldap-core')
 
-  compile('org.springframework.security:spring-security-config') {
+  implementation('org.springframework.security:spring-security-config') {
     exclude module: 'aopalliance'
     exclude module: 'spring-expression'
   }
-  compile('org.springframework.security:spring-security-ldap') {
+  implementation('org.springframework.security:spring-security-ldap') {
     exclude module: 'aopalliance'
     exclude module: 'spring-asm'
     exclude module: 'spring-expression'
     exclude module: 'spring-jdbc'
   }
-  compile('org.springframework.security:spring-security-web') {
+  implementation('org.springframework.security:spring-security-web') {
     exclude module: 'aopalliance'
     exclude module: 'spring-asm'
     exclude module: 'spring-expression'
     exclude module: 'spring-jdbc'
   }
-  compile('org.springframework:spring-context')
-  compile('org.springframework:spring-web')
+  implementation('org.springframework:spring-context')
+  implementation('org.springframework:spring-web')
   runtimeOnly('org.springframework:spring-webmvc') {
     exclude module: 'aopalliance'
     exclude module: 'aspectjweaver'
   }
-  compile('org.springframework:spring-tx')
-  compile('com.fasterxml.jackson.core:jackson-annotations')
-  compile('com.fasterxml.jackson.core:jackson-core')
-  compile('com.fasterxml.jackson.core:jackson-databind')
+  implementation('org.springframework:spring-tx')
+  implementation('com.fasterxml.jackson.core:jackson-annotations')
+  implementation('com.fasterxml.jackson.core:jackson-core')
+  implementation('com.fasterxml.jackson.core:jackson-databind')
 
   compileOnly('org.mortbay.jetty:servlet-api')
 
@@ -97,42 +97,42 @@ dependencies {
   providedCompile('commons-logging:commons-logging')
 
 
-  testCompile(project(':geode-core'))
-  testCompile(project(':geode-junit')) {
+  testImplementation(project(':geode-core'))
+  testImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
   testImplementation(project(':geode-log4j')) {
     exclude module: 'geode-core'
   }
-  testCompile('org.springframework:spring-test')
-  testCompile('org.powermock:powermock-core')
-  testCompile('org.powermock:powermock-module-junit4')
-  testCompile('org.powermock:powermock-api-mockito2')
+  testImplementation('org.springframework:spring-test')
+  testImplementation('org.powermock:powermock-core')
+  testImplementation('org.powermock:powermock-module-junit4')
+  testImplementation('org.powermock:powermock-api-mockito2')
 
 
-  integrationTestCompile(project(':geode-core'))
-  integrationTestCompile(project(':geode-junit')) {
+  integrationTestImplementation(project(':geode-core'))
+  integrationTestImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
   integrationTestImplementation(project(':geode-log4j')) {
     exclude module: 'geode-core'
   }
-  integrationTestCompile(project(':geode-pulse:geode-pulse-test'))
-  integrationTestCompile('org.powermock:powermock-core')
-  integrationTestCompile('org.powermock:powermock-module-junit4')
-  integrationTestCompile('org.powermock:powermock-api-mockito2')
-  integrationTestCompile('org.springframework:spring-test')
+  integrationTestImplementation(project(':geode-pulse:geode-pulse-test'))
+  integrationTestImplementation('org.powermock:powermock-core')
+  integrationTestImplementation('org.powermock:powermock-module-junit4')
+  integrationTestImplementation('org.powermock:powermock-api-mockito2')
+  integrationTestImplementation('org.springframework:spring-test')
 
 
-  uiTestRuntime(project(':geode-core'))
-  uiTestCompile(project(':geode-junit')) {
+  uiTestRuntimeOnly(project(':geode-core'))
+  uiTestImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
   uiTestImplementation(project(':geode-log4j')) {
     exclude module: 'geode-core'
   }
-  uiTestCompile(project(':geode-pulse:geode-pulse-test'))
-  uiTestCompile('org.seleniumhq.selenium:selenium-remote-driver')
+  uiTestImplementation(project(':geode-pulse:geode-pulse-test'))
+  uiTestImplementation('org.seleniumhq.selenium:selenium-remote-driver')
 }
 
 def generatedResources = "$buildDir/generated-resources/main"

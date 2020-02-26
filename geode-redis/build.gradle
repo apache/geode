@@ -21,23 +21,26 @@ apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 
 dependencies {
   compile(platform(project(':boms:geode-all-bom')))
-  compile(project(':geode-core'))
-  compile(project(':geode-gfsh'))
-  compile('com.github.davidmoten:geo')
-  compile('io.netty:netty-all')
-  compile('org.apache.logging.log4j:log4j-api')
-  implementation(project(':geode-logging'))
   implementation(project(':geode-serialization'))
+  implementation(project(':geode-logging'))
+  implementation(project(':geode-core'))
+  implementation(project(':geode-gfsh'))
+  implementation('com.github.davidmoten:geo')
+  implementation('io.netty:netty-all')
+  implementation('org.apache.logging.log4j:log4j-api')
 
-  testCompile(project(':geode-junit'))
-  testCompile('org.mockito:mockito-core')
 
-  integrationTestCompile(project(':geode-dunit'))
-  integrationTestCompile(project(':geode-junit'))
-  integrationTestCompile('redis.clients:jedis')
+  testImplementation(project(':geode-junit'))
+  testImplementation('org.mockito:mockito-core')
+
+
+  integrationTestImplementation(project(':geode-dunit'))
+  integrationTestImplementation(project(':geode-junit'))
+  integrationTestImplementation('redis.clients:jedis')
 
   integrationTestRuntime(project(':geode-log4j'))
 
-  distributedTestCompile(project(':geode-dunit'))
-  distributedTestCompile('redis.clients:jedis')
+
+  distributedTestImplementation(project(':geode-dunit'))
+  distributedTestImplementation('redis.clients:jedis')
 }

@@ -49,12 +49,7 @@
     <dependency>
       <groupId>org.apache.geode</groupId>
       <artifactId>geode-core</artifactId>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.logging.log4j</groupId>
-      <artifactId>log4j-api</artifactId>
-      <scope>compile</scope>
+      <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.geode</groupId>
@@ -69,6 +64,11 @@
     <dependency>
       <groupId>org.apache.geode</groupId>
       <artifactId>geode-serialization</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-api</artifactId>
       <scope>runtime</scope>
     </dependency>
   </dependencies>

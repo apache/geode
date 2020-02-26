@@ -21,12 +21,12 @@ apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 
 dependencies {
   compile(platform(project(':boms:geode-all-bom')))
-  compile('org.apache.commons:commons-lang3')
-  compile('com.fasterxml.jackson.core:jackson-databind')
-  compile('com.fasterxml.jackson.core:jackson-core')
-  compile('com.fasterxml.jackson.core:jackson-annotations')
-  compile('org.springframework:spring-web')
-  compile('org.apache.httpcomponents:httpclient')
+  implementation('org.apache.commons:commons-lang3')
+  implementation('com.fasterxml.jackson.core:jackson-databind')
+  implementation('com.fasterxml.jackson.core:jackson-core')
+  implementation('com.fasterxml.jackson.core:jackson-annotations')
+  implementation('org.springframework:spring-web')
+  implementation('org.apache.httpcomponents:httpclient')
 
   compileOnly(project(':geode-common')) {
     exclude module: 'junit'
@@ -36,8 +36,8 @@ dependencies {
     exclude module: "jackson-annotations"
   }
 
-  testCompile(project(':geode-common'))
-  testCompile(project(':geode-junit')) {
+  testImplementation(project(':geode-common'))
+  testImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
 }

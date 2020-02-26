@@ -128,6 +128,8 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'net.java.dev.jna', name: 'jna-platform', version: '5.5.0')
         api(group: 'net.openhft', name: 'compiler', version: '2.3.4')
         api(group: 'net.sf.jopt-simple', name: 'jopt-simple', version: '5.0.4')
+        api(group: 'net.sourceforge.pmd', name: 'pmd-java', version: '6.20.0')
+        api(group: 'net.sourceforge.pmd', name: 'pmd-test', version: '6.20.0')
         api(group: 'net.spy', name: 'spymemcached', version: '2.12.3')
         api(group: 'org.apache.bcel', name: 'bcel', version: '6.2')
         api(group: 'org.apache.commons', name: 'commons-lang3', version: get('commons-lang3.version'))

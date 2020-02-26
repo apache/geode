@@ -20,8 +20,8 @@ apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 
 dependencies {
-  compile(platform(project(':boms:geode-all-bom')))
-  compile('com.fasterxml.jackson.core:jackson-databind')
-  testCompile('junit:junit')
-  testCompile('org.assertj:assertj-core')
+  implementation(platform(project(':boms:geode-all-bom')))
+  implementation('com.fasterxml.jackson.core:jackson-databind')
+  testImplementation('junit:junit')
+  testImplementation('org.assertj:assertj-core')
 }

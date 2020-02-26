@@ -29,41 +29,44 @@ dependencies {
   implementation(project(':geode-membership'))
   implementation(project(':geode-serialization'))
   compile(project(':geode-core'))
-  integrationTestCompile(project(':extensions:geode-modules-test')) {
+  integrationTestImplementation(project(':extensions:geode-modules-test')) {
     exclude module: 'geode-modules'
   }
-  integrationTestCompile(project(':geode-dunit')) {
+  integrationTestImplementation(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
-  integrationTestCompile(project(':geode-junit')) {
+  integrationTestImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
 
-  compile('javax.servlet:javax.servlet-api')
-  compile('mx4j:mx4j')
-  compile('org.apache.tomcat:catalina-ha:' + DependencyConstraints.get('tomcat6.version')) {
+  implementation('javax.servlet:javax.servlet-api')
+  implementation('mx4j:mx4j')
+  implementation('org.apache.tomcat:catalina-ha:' + DependencyConstraints.get('tomcat6.version')) {
     exclude module: 'annotations-api'
     exclude module: 'coyote'
     exclude module: 'tribes'
   }
-  compile('org.apache.tomcat:catalina:' + DependencyConstraints.get('tomcat6.version'))
-  compile('org.apache.tomcat:juli:' + DependencyConstraints.get('tomcat6.version'))
-  compile('org.apache.tomcat:servlet-api:' + DependencyConstraints.get('tomcat6.version'))
-  compile('org.slf4j:slf4j-api')
+  implementation('org.apache.tomcat:catalina:' + DependencyConstraints.get('tomcat6.version'))
+  implementation('org.apache.tomcat:juli:' + DependencyConstraints.get('tomcat6.version'))
+  implementation('org.apache.tomcat:servlet-api:' + DependencyConstraints.get('tomcat6.version'))
+  implementation('org.slf4j:slf4j-api')
 
-  testCompile('org.apache.bcel:bcel')
-  testCompile('junit:junit')
-  testCompile('org.assertj:assertj-core')
-  testCompile('org.mockito:mockito-core')
-  integrationTestCompile('junit:junit')
+  testImplementation('org.apache.bcel:bcel')
+  testImplementation('junit:junit')
+  testImplementation('org.assertj:assertj-core')
+  testImplementation('org.mockito:mockito-core')
 
-  integrationTestRuntime('org.apache.tomcat:coyote:' + DependencyConstraints.get('tomcat6.version'))
-  integrationTestRuntime('xerces:xercesImpl')
 
-  distributedTestCompile(project(':geode-junit')) {
+  integrationTestImplementation('junit:junit')
+  integrationTestImplementation('pl.pragmatists:JUnitParams')
+
+  integrationTestRuntimeOnly('org.apache.tomcat:coyote:' + DependencyConstraints.get('tomcat6.version'))
+  integrationTestRuntimeOnly('xerces:xercesImpl')
+
+  distributedTestImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
-  distributedTestCompile(project(':geode-dunit')) {
+  distributedTestImplementation(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
 }
