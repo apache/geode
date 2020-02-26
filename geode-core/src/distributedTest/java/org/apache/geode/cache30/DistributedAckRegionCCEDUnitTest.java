@@ -263,7 +263,6 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
     versionTestClearWithConcurrentEventsAsync();
   }
 
-  @Ignore("Enable after fix for bug GEODE-7600")
   @Test
   public void testClearOnNonReplicateWithConcurrentEvents() {
     versionTestClearOnNonReplicateWithConcurrentEvents();
