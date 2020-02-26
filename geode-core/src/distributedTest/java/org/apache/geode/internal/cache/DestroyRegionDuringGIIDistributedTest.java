@@ -96,7 +96,8 @@ public class DestroyRegionDuringGIIDistributedTest implements Serializable {
   @Rule
   public DistributedRule distributedRule = new DistributedRule();
   @Rule
-  public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
+  public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder()
+      .copyTo(new File(getClass().getSimpleName()));
   @Rule
   public SerializableTestName testName = new SerializableTestName();
   @Rule
