@@ -36,7 +36,7 @@ public class ProduceDateMessages {
 
       // Make sure that message state was reset
       Assert.assertTrue(message.getDate() == null);
-      Assert.assertTrue(message.getRecipientsArray() == null);
+      Assert.assertTrue(message.getRecipients() == null);
       Assert.assertTrue(message.getSender() == null);
 
       message.setRecipient(DistributionMessage.ALL_RECIPIENTS);

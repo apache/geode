@@ -17,7 +17,6 @@ package org.apache.geode.management.internal.messages;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -143,7 +142,7 @@ public class CompactRequest extends AdminRequest {
 
   @Override
   public String toString() {
-    return "Compact request sent to " + Arrays.toString(this.getRecipientsArray()) + " from "
+    return "Compact request sent to " + this.getRecipientsDescription() + " from "
         + this.getSender() + " for " + this.diskStoreName;
   }
 

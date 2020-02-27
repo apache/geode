@@ -18,7 +18,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -74,13 +73,6 @@ public abstract class DistributionMessage
 
   @Immutable
   protected static final InternalDistributedMember ALL_RECIPIENTS = null;
-
-  @Immutable
-  private static final InternalDistributedMember[] ALL_RECIPIENTS_ARRAY = {null};
-
-  @Immutable
-  private static final InternalDistributedMember[] EMPTY_RECIPIENTS_ARRAY =
-      new InternalDistributedMember[0];
 
   @Immutable
   private static final List<InternalDistributedMember> ALL_RECIPIENTS_LIST =
@@ -289,19 +281,6 @@ public abstract class DistributionMessage
   public void resetRecipients() {
     this.recipients = null;
     this.multicast = false;
-  }
-
-  /**
-   * Returns the intended recipient(s) of this message. If the message is intended to delivered to
-   * all distribution managers, then the array will contain ALL_RECIPIENTS. If the recipients have
-   * not been set null is returned.
-   */
-  public InternalDistributedMember[] getRecipientsArray() {
-    if (this.multicast || this.recipients == null) {
-      return ALL_RECIPIENTS_ARRAY;
-    }
-
-    return this.recipients.toArray(EMPTY_RECIPIENTS_ARRAY);
   }
 
   /**
@@ -550,7 +529,7 @@ public abstract class DistributionMessage
       }
 
       if (this.recipients != null && this.recipients.size() <= 10) { // set a limit on recipients
-        Breadcrumbs.setSendSide(procId + " recipients=" + Arrays.toString(getRecipientsArray()));
+        Breadcrumbs.setSendSide(procId + " recipients=" + getRecipients());
       } else {
         if (procId.length() > 0) {
           Breadcrumbs.setSendSide(procId);

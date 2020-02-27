@@ -17,7 +17,6 @@ package org.apache.geode.internal.admin.remote;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -236,7 +235,7 @@ public class ShutdownAllRequest extends AdminRequest {
 
   @Override
   public String toString() {
-    return "ShutdownAllRequest sent to " + Arrays.toString(this.getRecipientsArray()) + " from "
+    return "ShutdownAllRequest sent to " + this.getRecipientsDescription() + " from "
         + this.getSender();
   }
 

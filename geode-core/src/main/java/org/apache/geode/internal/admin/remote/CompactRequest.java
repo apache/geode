@@ -17,7 +17,6 @@ package org.apache.geode.internal.admin.remote;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -115,8 +114,8 @@ public class CompactRequest extends CliLegacyMessage {
 
   @Override
   public String toString() {
-    return "Compact request sent to " + Arrays.toString(this.getRecipientsArray())
-        + " from " + this.getSender();
+    return "Compact request sent to " + this.getRecipientsDescription() + " from "
+        + this.getSender();
   }
 
   private static class CompactReplyProcessor extends AdminMultipleReplyProcessor {
