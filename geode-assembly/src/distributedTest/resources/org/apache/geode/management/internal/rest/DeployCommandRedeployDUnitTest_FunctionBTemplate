@@ -12,22 +12,29 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+package PACKAGE_B;
 
-package org.apache.geode.codeAnalysis;
+import org.apache.geode.cache.execute.Function;
+import org.apache.geode.cache.execute.FunctionContext;
 
-import org.junit.experimental.categories.Category;
-
-import org.apache.geode.test.junit.categories.SerializationTest;
-
-@Category({SerializationTest.class})
-public class AnalyzeManagementSerializablesJUnitTest extends AnalyzeSerializablesJUnitTestBase {
-  @Override
-  protected String getModuleName() {
-    return "geode-management";
+public class FUNCTION_B implements Function {
+  public boolean hasResult() {
+    return true;
   }
 
-  @Override
-  // Override this method because all geode-management classes will be scanned by the core's
-  // data serializable test
-  public void testDataSerializables() throws Exception {}
+  public void execute(FunctionContext context) {
+    context.getResultSender().lastResult("VERSION");
+  }
+
+  public String getId() {
+    return "FUNCTION_B";
+  }
+
+  public boolean optimizeForWrite() {
+    return false;
+  }
+
+  public boolean isHA() {
+    return false;
+  }
 }

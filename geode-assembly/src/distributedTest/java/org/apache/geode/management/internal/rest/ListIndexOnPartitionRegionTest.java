@@ -131,8 +131,8 @@ public class ListIndexOnPartitionRegionTest {
 
     // delete the index
     ClusterManagementRealizationResult deleteResult = cms.delete(index);
-    assertThat(deleteResult.getStatusMessage()).contains("Successfully removed configuration")
-        .contains("group1").contains("group2").contains("group2").doesNotContain("group4");
+    assertThat(deleteResult.getStatusMessage()).contains("Successfully updated configuration")
+        .contains("group1").contains("group2").contains("group3").doesNotContain("group4");
 
     // create the index again
     cms.create(index);

@@ -28,7 +28,6 @@ import javax.management.QueryExp;
 
 import org.apache.logging.log4j.Logger;
 import org.springframework.core.io.FileSystemResource;
-import org.springframework.http.MediaType;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
@@ -348,7 +347,7 @@ public class HttpOperationInvoker implements OperationInvoker {
 
     try {
       return IOUtils.deserializeObject(
-          httpRequester.post(link, MediaType.MULTIPART_FORM_DATA, content, byte[].class));
+          httpRequester.post(link, content, byte[].class));
     } catch (IOException e) {
       throw new MBeanAccessException(String.format(
           "De-serializing the result from invoking operation (%1$s) on MBean (%2$s) failed!",
@@ -380,7 +379,7 @@ public class HttpOperationInvoker implements OperationInvoker {
     Object content = new QueryParameterSource(objectName, queryExpression);
     try {
       return (Set<ObjectName>) IOUtils
-          .deserializeObject(httpRequester.post(link, null, content, byte[].class));
+          .deserializeObject(httpRequester.post(link, content, byte[].class));
     } catch (Exception e) {
       throw new MBeanAccessException(String.format(
           "An error occurred while querying for MBean names using ObjectName pattern (%1$s) and Query expression (%2$s)!",
@@ -434,7 +433,7 @@ public class HttpOperationInvoker implements OperationInvoker {
       for (File file : command.getFileList()) {
         content.add(RESOURCES_REQUEST_PARAMETER, new FileSystemResource(file));
       }
-      return httpRequester.post(link, MediaType.MULTIPART_FORM_DATA, content, String.class);
+      return httpRequester.post(link, content, String.class);
     }
 
     // when no file data to upload, this handles file download over http

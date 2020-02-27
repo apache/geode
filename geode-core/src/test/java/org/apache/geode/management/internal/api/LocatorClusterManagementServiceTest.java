@@ -34,6 +34,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -125,7 +126,7 @@ public class LocatorClusterManagementServiceTest {
     doNothing().when(persistenceService).unlockSharedConfiguration();
     executorManager = mock(OperationManager.class);
     service =
-        spy(new LocatorClusterManagementService(persistenceService, managers, validators,
+        spy(new LocatorClusterManagementService(cache, persistenceService, managers, validators,
             memberValidator, cacheElementValidator, executorManager));
 
     regionConfig = new Region();
@@ -174,7 +175,7 @@ public class LocatorClusterManagementServiceTest {
     functionResults.add(new RealizationResult().setMemberName("member1"));
     functionResults.add(
         new RealizationResult().setMemberName("member2").setSuccess(false).setMessage("failed"));
-    doReturn(functionResults).when(service).executeAndGetFunctionResult(any(), any(), any());
+    doReturn(functionResults).when(service).executeAndGetFunctionResult(any(), any(), any(), any());
 
     doReturn(Collections.singleton(mock(DistributedMember.class))).when(memberValidator)
         .findServers();
@@ -190,7 +191,7 @@ public class LocatorClusterManagementServiceTest {
     List<RealizationResult> functionResults = new ArrayList<>();
     functionResults.add(new RealizationResult().setMemberName("member1"));
     functionResults.add(new RealizationResult().setMemberName("member2"));
-    doReturn(functionResults).when(service).executeAndGetFunctionResult(any(), any(), any());
+    doReturn(functionResults).when(service).executeAndGetFunctionResult(any(), any(), any(), any());
 
     doReturn(Collections.singleton(mock(DistributedMember.class))).when(memberValidator)
         .findServers();
@@ -293,7 +294,7 @@ public class LocatorClusterManagementServiceTest {
     functionResults.add(new RealizationResult().setMemberName("member1"));
     functionResults.add(
         new RealizationResult().setMemberName("member2").setSuccess(false).setMessage("failed"));
-    doReturn(functionResults).when(service).executeAndGetFunctionResult(any(), any(), any());
+    doReturn(functionResults).when(service).executeAndGetFunctionResult(any(), any(), any(), any());
 
     doReturn(new String[] {"cluster"}).when(memberValidator).findGroupsWithThisElement(any(),
         any());
@@ -321,7 +322,7 @@ public class LocatorClusterManagementServiceTest {
     List<RealizationResult> functionResults = new ArrayList<>();
     functionResults.add(new RealizationResult().setMemberName("member1"));
     functionResults.add(new RealizationResult().setMemberName("member2"));
-    doReturn(functionResults).when(service).executeAndGetFunctionResult(any(), any(), any());
+    doReturn(functionResults).when(service).executeAndGetFunctionResult(any(), any(), any(), any());
 
     doReturn(new String[] {"cluster"}).when(memberValidator).findGroupsWithThisElement(any(),
         any());
@@ -364,7 +365,7 @@ public class LocatorClusterManagementServiceTest {
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getMemberStatuses()).hasSize(0);
     assertThat(result.getStatusMessage())
-        .contains("Successfully removed configuration for [cluster]");
+        .contains("Successfully updated configuration for cluster");
   }
 
   @Test
@@ -460,4 +461,27 @@ public class LocatorClusterManagementServiceTest {
         .hasMessageContaining("ENTITY_NOT_FOUND");
   }
 
+  @Test
+  public void setResultStatus() {
+    ClusterManagementRealizationResult result = new ClusterManagementRealizationResult();
+    service.setResultStatus(result, Arrays.asList("group1"), Collections.EMPTY_LIST);
+    assertThat(result.isSuccessful()).isTrue();
+    assertThat(result.getStatusMessage())
+        .isEqualTo("Successfully updated configuration for group1.");
+
+    service.setResultStatus(result, Arrays.asList("group1", "group2"), Collections.EMPTY_LIST);
+    assertThat(result.isSuccessful()).isTrue();
+    assertThat(result.getStatusMessage())
+        .isEqualTo("Successfully updated configuration for group1, group2.");
+
+    service.setResultStatus(result, Collections.EMPTY_LIST, Arrays.asList("group1, group2"));
+    assertThat(result.isSuccessful()).isFalse();
+    assertThat(result.getStatusMessage())
+        .isEqualTo("Failed to update configuration for group1, group2.");
+
+    service.setResultStatus(result, Arrays.asList("group1"), Arrays.asList("group2"));
+    assertThat(result.isSuccessful()).isFalse();
+    assertThat(result.getStatusMessage()).isEqualTo(
+        "Successfully updated configuration for group1. Failed to update configuration for group2.");
+  }
 }

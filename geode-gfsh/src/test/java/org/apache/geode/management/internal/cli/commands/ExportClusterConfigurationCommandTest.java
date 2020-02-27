@@ -109,8 +109,8 @@ public class ExportClusterConfigurationCommandTest {
     properties.put("key1", "value1");
     properties.put("key2", "value2");
     configuration.setGemfireProperties(properties);
-    configuration.putDeployment(new Deployment("jar1.jar"));
-    configuration.putDeployment(new Deployment("jar2.jar"));
+    configuration.putDeployment(new Deployment("jar1.jar", null, null));
+    configuration.putDeployment(new Deployment("jar2.jar", null, null));
     gfsh.executeAndAssertThat(command, EXPORT_SHARED_CONFIG)
         .statusIsSuccess()
         .containsOutput("cluster.xml:")

@@ -17,6 +17,7 @@ package org.apache.geode.management.configuration;
 
 import static io.swagger.annotations.ApiModelProperty.AccessMode.READ_ONLY;
 
+import java.io.File;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -24,38 +25,47 @@ import io.swagger.annotations.ApiModelProperty;
 
 import org.apache.geode.management.runtime.DeploymentInfo;
 
-public class Deployment extends GroupableConfiguration<DeploymentInfo> {
+public class Deployment extends GroupableConfiguration<DeploymentInfo> implements HasFile {
   public static final String DEPLOYMENT_ENDPOINT = "/deployments";
-  private String jarFileName;
+  private String fileName;
   @ApiModelProperty(accessMode = READ_ONLY)
   private String deployedTime;
   @ApiModelProperty(accessMode = READ_ONLY)
   private String deployedBy;
 
+  // the file is not serialized over the wire
+  private transient File file;
+
   public Deployment() {}
 
-  public Deployment(String jarFileName) {
-    this(jarFileName, null, null);
-  }
-
-  public Deployment(String jarFileName, String deployedBy, String deployedTime) {
-    this.jarFileName = jarFileName;
+  public Deployment(String fileName, String deployedBy, String deployedTime) {
+    this.fileName = fileName;
     this.deployedBy = deployedBy;
     this.deployedTime = deployedTime;
+  }
+
+  @JsonIgnore
+  public File getFile() {
+    return file;
+  }
+
+  public void setFile(File file) {
+    this.file = file;
+    setFileName(file.getName());
   }
 
   @Override
   @JsonIgnore
   public String getId() {
-    return getJarFileName();
+    return getFileName();
   }
 
-  public String getJarFileName() {
-    return jarFileName;
+  public String getFileName() {
+    return fileName;
   }
 
-  public void setJarFileName(String jarFileName) {
-    this.jarFileName = jarFileName;
+  public void setFileName(String jarFileName) {
+    this.fileName = jarFileName;
   }
 
   public String getDeployedTime() {
@@ -88,7 +98,7 @@ public class Deployment extends GroupableConfiguration<DeploymentInfo> {
   @Override
   public String toString() {
     return "Deployment{" +
-        "jarFileName='" + jarFileName + '\'' +
+        "jarFileName='" + fileName + '\'' +
         ", deployedTime='" + deployedTime + '\'' +
         ", deployedBy='" + deployedBy + '\'' +
         '}';
@@ -103,13 +113,13 @@ public class Deployment extends GroupableConfiguration<DeploymentInfo> {
       return false;
     }
     Deployment that = (Deployment) o;
-    return Objects.equals(jarFileName, that.jarFileName) &&
+    return Objects.equals(fileName, that.fileName) &&
         Objects.equals(deployedTime, that.deployedTime) &&
         Objects.equals(deployedBy, that.deployedBy);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(jarFileName, deployedTime, deployedBy);
+    return Objects.hash(fileName, deployedTime, deployedBy);
   }
 }

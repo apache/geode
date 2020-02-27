@@ -99,14 +99,14 @@ public class RebalanceIntegrationTest {
       try {
         context.perform(get(futureUri.get()))
             .andExpect(status().isOk())
-            .andExpect(content().string(not(containsString("\"class\""))))
+            .andExpect(jsonPath("$.statusCode", Matchers.is("IN_PROGRESS")));
+      } catch (AssertionError t) {
+        context.perform(get(futureUri.get()))
+            .andExpect(status().isOk())
             .andExpect(jsonPath("$.operationResult.statusMessage",
                 Matchers.containsString("has no regions")))
             .andExpect(jsonPath("$.operationResult.success", Matchers.is(false)));
         return;
-      } catch (Throwable t) {
-        if (!t.getMessage().contains("Operation in progress"))
-          throw t;
       }
     }
   }

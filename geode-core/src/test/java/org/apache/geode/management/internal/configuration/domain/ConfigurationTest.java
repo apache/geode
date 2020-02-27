@@ -58,7 +58,7 @@ public class ConfigurationTest {
   @Test
   public void remembersDeployment() {
     Deployment deployment = new Deployment();
-    deployment.setJarFileName("jar1");
+    deployment.setFileName("jar1");
     configuration.putDeployment(deployment);
     assertThat(configuration.getDeployments()).containsExactlyInAnyOrder(deployment);
   }
@@ -66,10 +66,10 @@ public class ConfigurationTest {
   @Test
   public void remembersNewestDeploymentWithSameArtifactId() {
     Deployment deployment1 = new Deployment();
-    deployment1.setJarFileName("abc-1.0.jar");
+    deployment1.setFileName("abc-1.0.jar");
     configuration.putDeployment(deployment1);
     Deployment deployment2 = new Deployment();
-    deployment2.setJarFileName("abc-2.0.jar");
+    deployment2.setFileName("abc-2.0.jar");
     configuration.putDeployment(deployment2);
     assertThat(configuration.getDeployments()).containsExactlyInAnyOrder(deployment2);
   }
@@ -77,10 +77,10 @@ public class ConfigurationTest {
   @Test
   public void remembersAllDeploymentsWithDifferentArtifactIds() {
     Deployment deployment1 = new Deployment();
-    deployment1.setJarFileName("abc-1.0.jar");
+    deployment1.setFileName("abc-1.0.jar");
     configuration.putDeployment(deployment1);
     Deployment deployment2 = new Deployment();
-    deployment2.setJarFileName("def-2.0.jar");
+    deployment2.setFileName("def-2.0.jar");
     configuration.putDeployment(deployment2);
     assertThat(configuration.getDeployments()).containsExactlyInAnyOrder(deployment1, deployment2);
   }
@@ -88,15 +88,15 @@ public class ConfigurationTest {
   @Test
   public void getJarNamesReturnsJarNamesFromAllCurrentDeployments() {
     String originalAbcJarName = "abc-1.0.jar";
-    Deployment deployment1 = new Deployment(originalAbcJarName);
+    Deployment deployment1 = new Deployment(originalAbcJarName, null, null);
     configuration.putDeployment(deployment1);
 
     String updatedAbcJarName = "abc-2.0.jar";
     // Replace original abc with new version
-    configuration.putDeployment(new Deployment(updatedAbcJarName));
+    configuration.putDeployment(new Deployment(updatedAbcJarName, null, null));
 
     String defJarName = "def-1.0.jar";
-    Deployment deployment3 = new Deployment(defJarName);
+    Deployment deployment3 = new Deployment(defJarName, null, null);
     configuration.putDeployment(deployment3);
 
     assertThat(configuration.getJarNames())

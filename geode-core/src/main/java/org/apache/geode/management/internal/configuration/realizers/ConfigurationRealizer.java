@@ -29,7 +29,7 @@ import org.apache.geode.management.runtime.RuntimeInfo;
  */
 @Experimental
 public interface ConfigurationRealizer<T extends AbstractConfiguration<R>, R extends RuntimeInfo> {
-  RealizationResult create(T config, InternalCache cache);
+  RealizationResult create(T config, InternalCache cache) throws Exception;
 
   default boolean exists(T config, InternalCache cache) {
     return get(config, cache) != null;
@@ -37,9 +37,9 @@ public interface ConfigurationRealizer<T extends AbstractConfiguration<R>, R ext
 
   R get(T config, InternalCache cache);
 
-  RealizationResult update(T config, InternalCache cache);
+  RealizationResult update(T config, InternalCache cache) throws Exception;
 
-  RealizationResult delete(T config, InternalCache cache);
+  RealizationResult delete(T config, InternalCache cache) throws Exception;
 
   default boolean isReadyOnly() {
     return false;

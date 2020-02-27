@@ -28,6 +28,7 @@ import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.management.api.ClusterManagementGetResult;
 import org.apache.geode.management.api.ClusterManagementListResult;
+import org.apache.geode.management.api.ClusterManagementRealizationResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.Deployment;
@@ -69,12 +70,17 @@ public class DeployToMultiGroupDUnitTest {
         .setPort(locator.getHttpPort())
         .build();
 
-    gfsh.connect(locator);
+    Deployment deployment = new Deployment();
+    deployment.setFile(jar);
+    deployment.setGroup("group1");
 
-    gfsh.executeAndAssertThat("deploy --group=group1 --jar=" + jar.getAbsolutePath())
-        .statusIsSuccess();
-    gfsh.executeAndAssertThat("deploy --group=group2 --jar=" + jar.getAbsolutePath())
-        .statusIsSuccess();
+    ClusterManagementRealizationResult deploymentGroup1 = client.create(deployment);
+    assertThat(deploymentGroup1.isSuccessful()).isTrue();
+
+    deployment.setGroup("group2");
+
+    ClusterManagementRealizationResult deploymentGroup2 = client.create(deployment);
+    assertThat(deploymentGroup2.isSuccessful()).isTrue();
   }
 
   @Test
@@ -82,7 +88,7 @@ public class DeployToMultiGroupDUnitTest {
     ClusterManagementListResult<Deployment, DeploymentInfo> list = client.list(new Deployment());
     ClusterManagementListResultAssert<Deployment, DeploymentInfo> resultAssert =
         assertManagementListResult(list).isSuccessful();
-    resultAssert.hasConfigurations().extracting(Deployment::getJarFileName)
+    resultAssert.hasConfigurations().extracting(Deployment::getFileName)
         .containsExactlyInAnyOrder("lib.jar", "lib.jar");
     resultAssert.hasRuntimeInfos().extracting(DeploymentInfo::getJarLocation).extracting(
         FilenameUtils::getName)
@@ -96,7 +102,7 @@ public class DeployToMultiGroupDUnitTest {
     ClusterManagementListResult<Deployment, DeploymentInfo> list = client.list(filter);
     ClusterManagementListResultAssert<Deployment, DeploymentInfo> resultAssert =
         assertManagementListResult(list).isSuccessful();
-    resultAssert.hasConfigurations().extracting(Deployment::getJarFileName)
+    resultAssert.hasConfigurations().extracting(Deployment::getFileName)
         .containsExactlyInAnyOrder("lib.jar");
     resultAssert.hasRuntimeInfos().extracting(DeploymentInfo::getJarLocation).extracting(
         FilenameUtils::getName).containsExactlyInAnyOrder("lib.v1.jar");
@@ -105,11 +111,11 @@ public class DeployToMultiGroupDUnitTest {
   @Test
   public void listById() throws Exception {
     Deployment filter = new Deployment();
-    filter.setJarFileName("lib.jar");
+    filter.setFileName("lib.jar");
     ClusterManagementListResult<Deployment, DeploymentInfo> list = client.list(filter);
     ClusterManagementListResultAssert<Deployment, DeploymentInfo> resultAssert =
         assertManagementListResult(list).isSuccessful();
-    resultAssert.hasConfigurations().extracting(Deployment::getJarFileName)
+    resultAssert.hasConfigurations().extracting(Deployment::getFileName)
         .containsExactlyInAnyOrder("lib.jar", "lib.jar");
     resultAssert.hasRuntimeInfos().extracting(DeploymentInfo::getJarLocation).extracting(
         FilenameUtils::getName).containsExactlyInAnyOrder("lib.v1.jar", "lib.v1.jar");
@@ -118,7 +124,7 @@ public class DeployToMultiGroupDUnitTest {
   @Test
   public void getById() throws Exception {
     Deployment filter = new Deployment();
-    filter.setJarFileName("lib.jar");
+    filter.setFileName("lib.jar");
     ClusterManagementGetResult<Deployment, DeploymentInfo> getResult =
         client.get(filter);
     assertThat(getResult.getResult().getConfigurations()).extracting(Deployment::getGroup)

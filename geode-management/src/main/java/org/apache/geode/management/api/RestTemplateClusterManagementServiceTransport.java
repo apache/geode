@@ -19,6 +19,7 @@ package org.apache.geode.management.api;
 import static org.apache.geode.management.configuration.Links.URI_VERSION;
 import static org.apache.geode.management.internal.Constants.INCLUDE_CLASS_HEADER;
 
+import java.io.File;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -32,11 +33,14 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.LaxRedirectStrategy;
 import org.apache.http.message.BasicHeader;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.ResponseErrorHandler;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -44,6 +48,7 @@ import org.springframework.web.util.DefaultUriBuilderFactory;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.management.configuration.AbstractConfiguration;
+import org.apache.geode.management.configuration.HasFile;
 import org.apache.geode.management.internal.RestTemplateResponseErrorHandler;
 import org.apache.geode.management.runtime.OperationResult;
 import org.apache.geode.management.runtime.RuntimeInfo;
@@ -234,9 +239,18 @@ public class RestTemplateClusterManagementServiceTransport
         .getBody();
   }
 
-  private static <T> HttpEntity<T> makeEntity(T config) {
+  private static <T> HttpEntity makeEntity(T config) {
     HttpHeaders headers = new HttpHeaders();
     headers.add(INCLUDE_CLASS_HEADER, "true");
+    if (config instanceof HasFile) {
+      MultiValueMap<String, Object> content = new LinkedMultiValueMap<>();
+      File file = ((HasFile) config).getFile();
+      if (file != null) {
+        content.add(HasFile.FILE_PARAM, new FileSystemResource(file));
+        content.add(HasFile.CONFIG_PARAM, config);
+        return new HttpEntity(content, headers);
+      }
+    }
     return new HttpEntity<>(config, headers);
   }
 

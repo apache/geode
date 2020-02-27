@@ -113,7 +113,7 @@ public class InternalConfigurationPersistenceServiceDeployedJarTest {
 
   private Deployment createDeployment(String jarFileName, String deployedby, String deployedtime) {
     Deployment result = new Deployment();
-    result.setJarFileName(jarFileName);
+    result.setFileName(jarFileName);
     result.setDeployedBy(deployedby);
     result.setDeployedTime(deployedtime);
     return result;

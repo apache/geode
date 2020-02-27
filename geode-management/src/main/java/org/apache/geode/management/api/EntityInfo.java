@@ -109,7 +109,7 @@ public class EntityInfo<T extends AbstractConfiguration<R>, R extends RuntimeInf
   public String toString() {
     return "ConfigurationInfo{" +
         "id='" + id + '\'' +
-        ", configurationByGroup=" + groups +
+        ", groups=" + groups +
         '}';
   }
 }
