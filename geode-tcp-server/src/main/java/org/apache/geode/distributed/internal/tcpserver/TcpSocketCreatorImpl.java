@@ -150,30 +150,60 @@ public class TcpSocketCreatorImpl implements TcpSocketCreator {
       BindException throwMe =
           new BindException(String.format("Failed to create server socket on %s[%s]",
               bindAddr == null ? InetAddress.getLocalHost().getHostAddress() : bindAddr,
-              String.valueOf(nport)));
+              nport));
       throwMe.initCause(e);
       throw throwMe;
     }
     return result;
   }
 
+  private Socket connect(HostAndPort addr, int timeout,
+      ConnectionWatcher optionalWatcher, boolean clientSide, int socketBufferSize)
+      throws IOException {
+    return connect(addr, timeout, optionalWatcher, clientSide, socketBufferSize,
+        useSSL());
+  }
+
+  /**
+   * Return a client socket. This method is used by client/server clients.
+   */
+  public Socket connectForClient(HostAndPort addr, int timeout) throws IOException {
+    return connect(addr, timeout, null, true, -1);
+  }
+
+  /**
+   * Return a client socket. This method is used by client/server clients.
+   */
+  public Socket connectForClient(HostAndPort addr, int timeout, int socketBufferSize)
+      throws IOException {
+    return connect(addr, timeout, null, true, socketBufferSize);
+  }
+
+  /**
+   * Return a client socket. This method is used by peers.
+   */
+  public Socket connectForServer(HostAndPort addr) throws IOException {
+    return connect(addr, 0, null, false, -1);
+  }
+
+
 
   @Override
-  public final Socket connect(HostAndPort addr, int timeout,
-      ConnectionWatcher optionalWatcher, boolean clientSide)
+  public final Socket connectForServer(HostAndPort addr, int timeout,
+      ConnectionWatcher optionalWatcher)
       throws IOException {
-    return connect(addr, timeout, optionalWatcher, clientSide, -1, useSSL());
+    return connect(addr, timeout, optionalWatcher, false, -1, useSSL());
   }
 
   @Override
   public Socket connect(HostAndPort addr, int timeout,
-      ConnectionWatcher optionalWatcher, boolean clientSide,
-      int socketBufferSize, boolean sslConnection) throws IOException {
-    if (sslConnection) {
+      ConnectionWatcher optionalWatcher, boolean allowClientSocketFactory,
+      int socketBufferSize, boolean useSSL) throws IOException {
+    if (useSSL) {
       throw new IllegalArgumentException();
     }
     Socket socket = null;
-    if (clientSide) {
+    if (allowClientSocketFactory) {
       socket = createCustomClientSocket(addr);
     }
     if (socket == null) {

@@ -25,7 +25,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
-import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.security.GeneralSecurityException;
@@ -77,7 +76,6 @@ import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.cache.wan.TransportFilterServerSocket;
 import org.apache.geode.internal.cache.wan.TransportFilterSocketFactory;
-import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.util.ArgumentRedactor;
 import org.apache.geode.internal.util.PasswordUtil;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -87,23 +85,10 @@ import org.apache.geode.util.internal.GeodeGlossary;
 
 
 /**
- * Analyze configuration data (gemfire.properties) and configure sockets accordingly for SSL.
- * <p>
- * gemfire.useSSL = (true|false) default false.<br/>
- * gemfire.ssl.debug = (true|false) default false.<br/>
- * gemfire.ssl.needClientAuth = (true|false) default true.<br/>
- * gemfire.ssl.protocols = <i>list of protocols</i><br/>
- * gemfire.ssl.ciphers = <i>list of cipher suites</i><br/>
- * <p>
- * The following may be included to configure the certificates used by the Sun Provider.
- * <p>
- * javax.net.ssl.trustStore = <i>pathname</i><br/>
- * javax.net.ssl.trustStorePassword = <i>password</i><br/>
- * javax.net.ssl.keyStore = <i>pathname</i><br/>
- * javax.net.ssl.keyStorePassword = <i>password</i><br/>
- * <p>
- * Additional properties will be set as System properties to be available as needed by other
- * provider implementations.
+ * SocketCreators are built using a SocketCreatorFactory using Geode distributed-system properties.
+ * They know how to properly configure sockets for TLS (SSL) communications and perform
+ * handshakes. Connection-initiation uses a HostAndPort instance that is similar to an
+ * InetSocketAddress.
  */
 public class SocketCreator extends TcpSocketCreatorImpl {
 
@@ -169,17 +154,6 @@ public class SocketCreator extends TcpSocketCreatorImpl {
     initialize();
   }
 
-
-  // -------------------------------------------------------------------------
-  // Static instance accessors
-  // -------------------------------------------------------------------------
-
-  /**
-   * @deprecated use LocalHostUtil.getLocalHost()
-   */
-  public static InetAddress getLocalHost() throws UnknownHostException {
-    return LocalHostUtil.getLocalHost();
-  }
 
   // -------------------------------------------------------------------------
   // Initializers (change SocketCreator state)
@@ -574,54 +548,21 @@ public class SocketCreator extends TcpSocketCreatorImpl {
   }
 
   /**
-   * Return a client socket. This method is used by client/server clients.
-   */
-  public Socket connectForClient(HostAndPort addr, int timeout) throws IOException {
-    return connect(addr, timeout, null, true, -1);
-  }
-
-  /**
-   * Return a client socket. This method is used by client/server clients.
-   */
-  public Socket connectForClient(HostAndPort addr, int timeout, int socketBufferSize)
-      throws IOException {
-    return connect(addr, timeout, null, true, socketBufferSize);
-  }
-
-  /**
-   * Return a client socket. This method is used by peers.
-   */
-  public Socket connectForServer(HostAndPort addr) throws IOException {
-    return connect(addr, 0, null, false, -1);
-  }
-
-  /**
-   * Return a client socket, timing out if unable to connect and timeout > 0 (millis). The parameter
-   * <i>timeout</i> is ignored if SSL is being used, as there is no timeout argument in the ssl
-   * socket factory
-   */
-  public Socket connect(HostAndPort addr, int timeout,
-      ConnectionWatcher optionalWatcher, boolean clientSide, int socketBufferSize)
-      throws IOException {
-    return connect(addr, timeout, optionalWatcher, clientSide, socketBufferSize,
-        sslConfig.isEnabled());
-  }
-
-  /**
    * Return a client socket, timing out if unable to connect and timeout > 0 (millis). The parameter
    * <i>timeout</i> is ignored if SSL is being used, as there is no timeout argument in the ssl
    * socket factory
    */
   @Override
   public Socket connect(HostAndPort addr, int timeout,
-      ConnectionWatcher optionalWatcher, boolean clientSide, int socketBufferSize,
-      boolean sslConnection) throws IOException {
+      ConnectionWatcher optionalWatcher, boolean allowClientSocketFactory, int socketBufferSize,
+      boolean useSSL) throws IOException {
 
     printConfig();
 
-    if (!sslConnection) {
-      return super.connect(addr, timeout, optionalWatcher, clientSide, socketBufferSize,
-          sslConnection);
+    if (!useSSL) {
+      return super.connect(addr, timeout, optionalWatcher, allowClientSocketFactory,
+          socketBufferSize,
+          useSSL);
     }
 
     // create an SSL connection
