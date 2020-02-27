@@ -71,6 +71,20 @@ public abstract class DistributionMessage
 
   private static final Logger logger = LogService.getLogger();
 
+  @Immutable
+  protected static final InternalDistributedMember ALL_RECIPIENTS = null;
+
+  @Immutable
+  private static final InternalDistributedMember[] ALL_RECIPIENTS_ARRAY = {null};
+
+  @Immutable
+  private static final InternalDistributedMember[] EMPTY_RECIPIENTS_ARRAY =
+      new InternalDistributedMember[0];
+
+  @Immutable
+  private static final List<InternalDistributedMember> ALL_RECIPIENTS_LIST =
+      Collections.singletonList(null);
+
   // common flags used by operation messages
   /** Keep this compatible with the other GFE layer PROCESSOR_ID flags. */
   protected static final short HAS_PROCESSOR_ID = 0x1;
@@ -87,18 +101,6 @@ public abstract class DistributionMessage
 
   /** the unreserved flags start for child classes */
   protected static final short UNRESERVED_FLAGS_START = (HAS_PROCESSOR_TYPE << 1);
-
-  private final InternalDistributedMember[] EMPTY_RECIPIENTS_ARRAY =
-      new InternalDistributedMember[0];
-
-  private final List<InternalDistributedMember> ALL_RECIPIENTS_LIST =
-      Collections.singletonList(null);
-
-  private final InternalDistributedMember[] ALL_RECIPIENTS_ARRAY =
-      {null};
-
-  @Immutable
-  protected static final InternalDistributedMember ALL_RECIPIENTS = null;
 
   //////////////////// Instance Fields ////////////////////
 
