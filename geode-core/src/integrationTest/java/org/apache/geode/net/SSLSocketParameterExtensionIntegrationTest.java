@@ -58,6 +58,7 @@ import org.junit.rules.TestName;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
@@ -145,7 +146,8 @@ public class SSLSocketParameterExtensionIntegrationTest {
     this.serverThread = startServer(this.serverSocket, 15000);
 
     int serverPort = this.serverSocket.getLocalPort();
-    this.clientSocket = this.socketCreator.connectForServer(this.localHost, serverPort);
+    this.clientSocket = this.socketCreator
+        .connectForServer(new HostAndPort(this.localHost.getHostAddress(), serverPort));
 
     SSLSocket sslSocket = (SSLSocket) this.clientSocket;
 

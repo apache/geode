@@ -60,6 +60,7 @@ import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.cache.InternalCacheServer;
@@ -272,6 +273,6 @@ public class CacheConnectionIntegrationTest {
     sslConfigBuilder.setEndpointIdentificationEnabled(false);
 
     SocketCreator socketCreator = new SocketCreator(sslConfigBuilder.build());
-    return socketCreator.connectForClient("localhost", cacheServerPort, 5000);
+    return socketCreator.connectForClient(new HostAndPort("localhost", cacheServerPort), 5000);
   }
 }

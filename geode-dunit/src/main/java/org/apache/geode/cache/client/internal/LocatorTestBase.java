@@ -237,10 +237,12 @@ public abstract class LocatorTestBase extends JUnit4DistributedTestCase {
 
   protected void startBridgeClientInVM(VM vm, final String group, final String host, final int port,
       final String... regions) throws Exception {
-    PoolFactoryImpl pf = new PoolFactoryImpl(null);
-    pf.addLocator(host, port).setServerGroup(group).setPingInterval(200)
-        .setSubscriptionEnabled(true).setSubscriptionRedundancy(-1);
-    startBridgeClientInVM(vm, pf.getPoolAttributes(), regions);
+    vm.invoke(() -> {
+      PoolFactoryImpl pf = new PoolFactoryImpl(null);
+      pf.addLocator(host, port).setServerGroup(group).setPingInterval(200)
+          .setSubscriptionEnabled(true).setSubscriptionRedundancy(-1);
+      startBridgeClientInVM(null, pf.getPoolAttributes(), regions);
+    });
   }
 
   protected void startBridgeClientInVM(VM vm, final Pool pool, final String... regions)

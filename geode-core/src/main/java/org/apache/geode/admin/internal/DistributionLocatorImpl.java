@@ -212,7 +212,8 @@ public class DistributionLocatorImpl implements DistributionLocator, InternalMan
             found = locator.getHost().getHostName().equals(inetAddr.getHostName());
             if (!found) {
               found =
-                  locator.getHost().getAddress().getHostAddress().equals(inetAddr.getHostAddress());
+                  locator.getHost().getSocketInetAddress().getAddress()
+                      .getHostAddress().equals(inetAddr.getHostAddress());
             }
           } catch (UnknownHostException e) {
             // try config host as if it is an IP address instead of host name

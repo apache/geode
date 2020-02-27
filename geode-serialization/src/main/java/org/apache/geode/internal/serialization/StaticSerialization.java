@@ -266,6 +266,7 @@ public class StaticSerialization {
     }
 
     try {
+      // note: this does not throw UnknownHostException at this time
       InetAddress addr = InetAddress.getByAddress(address);
       return addr;
     } catch (UnknownHostException ex) {

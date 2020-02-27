@@ -34,6 +34,7 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.admin.SSLConfig;
@@ -107,7 +108,8 @@ public class GeodeConnectionConfig extends ConnectionConfig {
     cmsInfo = null;
     for (InetSocketAddress locator : locators) {
       try {
-        cmsInfo = (ClusterManagementServiceInfo) client.requestToServer(locator,
+        cmsInfo = (ClusterManagementServiceInfo) client.requestToServer(
+            new HostAndPort(locator.getHostName(), locator.getPort()),
             new ClusterManagementServiceInfoRequest(), 1000, true);
 
         // do not try anymore if we found one that has cms running

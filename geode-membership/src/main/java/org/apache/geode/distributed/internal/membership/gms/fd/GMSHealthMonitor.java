@@ -68,6 +68,7 @@ import org.apache.geode.distributed.internal.membership.gms.messages.HeartbeatRe
 import org.apache.geode.distributed.internal.membership.gms.messages.SuspectMembersMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.SuspectRequest;
 import org.apache.geode.distributed.internal.tcpserver.ConnectionWatcher;
+import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
 import org.apache.geode.internal.lang.JavaWorkarounds;
 import org.apache.geode.internal.serialization.Version;
@@ -574,7 +575,7 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
             suspectMember.getInetAddress(), port);
         clientSocket =
             socketCreator
-                .connect(suspectMember.getInetAddress(), port, (int) memberTimeout,
+                .connect(new HostAndPort(suspectMember.getHostName(), port), (int) memberTimeout,
                     new ConnectTimeoutTask(services.getTimer(), memberTimeout), false, -1, false);
         clientSocket.setTcpNoDelay(true);
         passed = doTCPCheckMember(suspectMember, clientSocket);

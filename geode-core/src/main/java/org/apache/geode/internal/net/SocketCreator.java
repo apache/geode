@@ -23,7 +23,6 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketAddress;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
@@ -41,7 +40,6 @@ import java.security.cert.X509Certificate;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
 
 import javax.net.ServerSocketFactory;
 import javax.net.SocketFactory;
@@ -73,6 +71,7 @@ import org.apache.geode.distributed.ClientSocketFactory;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.tcpserver.ConnectionWatcher;
+import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreatorImpl;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.admin.SSLConfig;
@@ -109,9 +108,6 @@ import org.apache.geode.util.internal.GeodeGlossary;
 public class SocketCreator extends TcpSocketCreatorImpl {
 
   private static final Logger logger = LogService.getLogger();
-
-  @MakeNotStatic
-  private static final ConcurrentHashMap<InetAddress, String> hostNames = new ConcurrentHashMap<>();
 
   /**
    * flag to force always using DNS (regardless of the fact that these lookups can hang)
@@ -183,39 +179,6 @@ public class SocketCreator extends TcpSocketCreatorImpl {
    */
   public static InetAddress getLocalHost() throws UnknownHostException {
     return LocalHostUtil.getLocalHost();
-  }
-
-  /**
-   * returns the host name for the given inet address, using a local cache of names to avoid dns
-   * hits and duplicate strings
-   */
-  public static String getHostName(InetAddress addr) {
-    String result = hostNames.get(addr);
-    if (result == null) {
-      result = addr.getHostName();
-      hostNames.put(addr, result);
-    }
-    return result;
-  }
-
-  /**
-   * returns the host name for the given inet address, using a local cache of names to avoid dns
-   * hits and duplicate strings
-   */
-  public static String getCanonicalHostName(InetAddress addr, String hostName) {
-    String result = hostNames.get(addr);
-    if (result == null) {
-      hostNames.put(addr, hostName);
-      return hostName;
-    }
-    return result;
-  }
-
-  /**
-   * Reset the hostNames caches
-   */
-  public static void resetHostNameCache() {
-    hostNames.clear();
   }
 
   // -------------------------------------------------------------------------
@@ -613,23 +576,23 @@ public class SocketCreator extends TcpSocketCreatorImpl {
   /**
    * Return a client socket. This method is used by client/server clients.
    */
-  public Socket connectForClient(String host, int port, int timeout) throws IOException {
-    return connect(InetAddress.getByName(host), port, timeout, null, true, -1);
+  public Socket connectForClient(HostAndPort addr, int timeout) throws IOException {
+    return connect(addr, timeout, null, true, -1);
   }
 
   /**
    * Return a client socket. This method is used by client/server clients.
    */
-  public Socket connectForClient(String host, int port, int timeout, int socketBufferSize)
+  public Socket connectForClient(HostAndPort addr, int timeout, int socketBufferSize)
       throws IOException {
-    return connect(InetAddress.getByName(host), port, timeout, null, true, socketBufferSize);
+    return connect(addr, timeout, null, true, socketBufferSize);
   }
 
   /**
    * Return a client socket. This method is used by peers.
    */
-  public Socket connectForServer(InetAddress inetadd, int port) throws IOException {
-    return connect(inetadd, port, 0, null, false, -1);
+  public Socket connectForServer(HostAndPort addr) throws IOException {
+    return connect(addr, 0, null, false, -1);
   }
 
   /**
@@ -637,10 +600,10 @@ public class SocketCreator extends TcpSocketCreatorImpl {
    * <i>timeout</i> is ignored if SSL is being used, as there is no timeout argument in the ssl
    * socket factory
    */
-  public Socket connect(InetAddress inetadd, int port, int timeout,
+  public Socket connect(HostAndPort addr, int timeout,
       ConnectionWatcher optionalWatcher, boolean clientSide, int socketBufferSize)
       throws IOException {
-    return connect(inetadd, port, timeout, optionalWatcher, clientSide, socketBufferSize,
+    return connect(addr, timeout, optionalWatcher, clientSide, socketBufferSize,
         sslConfig.isEnabled());
   }
 
@@ -650,21 +613,26 @@ public class SocketCreator extends TcpSocketCreatorImpl {
    * socket factory
    */
   @Override
-  public Socket connect(InetAddress inetadd, int port, int timeout,
+  public Socket connect(HostAndPort addr, int timeout,
       ConnectionWatcher optionalWatcher, boolean clientSide, int socketBufferSize,
       boolean sslConnection) throws IOException {
 
     printConfig();
 
     if (!sslConnection) {
-      return super.connect(inetadd, port, timeout, optionalWatcher, clientSide, socketBufferSize,
+      return super.connect(addr, timeout, optionalWatcher, clientSide, socketBufferSize,
           sslConnection);
     }
 
     // create an SSL connection
 
     Socket socket;
-    SocketAddress sockaddr = new InetSocketAddress(inetadd, port);
+    InetSocketAddress sockaddr = addr.getSocketInetAddress();
+    if (sockaddr.getAddress() == null) {
+      InetAddress address = InetAddress.getByName(sockaddr.getHostName());
+      sockaddr = new InetSocketAddress(address, sockaddr.getPort());
+    }
+
     if (this.sslContext == null) {
       throw new GemFireConfigException(
           "SSL not configured correctly, Please look at previous error");
@@ -698,9 +666,11 @@ public class SocketCreator extends TcpSocketCreatorImpl {
   }
 
   @Override
-  protected Socket createCustomClientSocket(InetAddress inetadd, int port) throws IOException {
+  protected Socket createCustomClientSocket(HostAndPort addr) throws IOException {
     if (this.clientSocketFactory != null) {
-      return this.clientSocketFactory.createSocket(inetadd, port);
+      InetSocketAddress inetSocketAddress = addr.getSocketInetAddress();
+      return this.clientSocketFactory.createSocket(inetSocketAddress.getAddress(),
+          inetSocketAddress.getPort());
     }
     return null;
   }

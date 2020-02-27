@@ -32,6 +32,7 @@ import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.internal.cache.tier.ClientSideHandshake;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
@@ -87,7 +88,8 @@ public class ConnectionImpl implements Connection {
       ClientSideHandshake handshake, int socketBufferSize, int handshakeTimeout, int readTimeout,
       CommunicationMode communicationMode, GatewaySender sender, SocketCreator sc)
       throws IOException {
-    theSocket = sc.connectForClient(location.getHostName(), location.getPort(), handshakeTimeout,
+    theSocket = sc.connectForClient(new HostAndPort(location.getHostName(), location.getPort()),
+        handshakeTimeout,
         socketBufferSize);
     theSocket.setTcpNoDelay(true);
     theSocket.setSendBufferSize(socketBufferSize);
