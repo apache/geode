@@ -301,31 +301,51 @@ public class ConnectionManagerImpl implements ConnectionManager {
     throw new AllConnectionsInUseException();
   }
 
-  /**
-   * Borrow a connection to a specific server. This task currently allows us to break the connection
-   * limit, because it is used by tasks from the background thread that shouldn't be constrained by
-   * the limit. They will only violate the limit by 1 connection, and that connection will be
-   * destroyed when returned to the pool.
-   */
   @Override
-  public PooledConnection borrowConnection(ServerLocation server,
-      boolean onlyUseExistingCnx) throws AllConnectionsInUseException, NoAvailableServersException {
+  public PooledConnection borrowConnection(ServerLocation server, long acquireTimeout,
+      boolean onlyUseExistingCnx)
+      throws AllConnectionsInUseException, NoAvailableServersException,
+      ServerConnectivityException {
+
     PooledConnection connection =
         availableConnectionManager.useFirst((c) -> c.getServer().equals(server));
     if (null != connection) {
       return connection;
     }
 
-    if (onlyUseExistingCnx) {
-      throw new AllConnectionsInUseException();
+    if (!onlyUseExistingCnx) {
+      connection = forceCreateConnection(server);
+      if (null != connection) {
+        return connection;
+      }
+      throw new ServerConnectivityException(BORROW_CONN_ERROR_MSG + server);
     }
 
-    connection = forceCreateConnection(server);
-    if (null != connection) {
-      return connection;
+    long waitStart = NOT_WAITING;
+    try {
+      long timeout = System.nanoTime() + MILLISECONDS.toNanos(acquireTimeout);
+      while (true) {
+        connection =
+            availableConnectionManager.useFirst((c) -> c.getServer().equals(server));
+        if (null != connection) {
+          return connection;
+        }
+
+        if (checkShutdownInterruptedOrTimeout(timeout)) {
+          break;
+        }
+
+        waitStart = beginConnectionWaitStatIfNotStarted(waitStart);
+
+        Thread.yield();
+      }
+    } finally {
+      endConnectionWaitStatIfStarted(waitStart);
     }
 
-    throw new ServerConnectivityException(BORROW_CONN_ERROR_MSG + server);
+    cancelCriterion.checkCancelInProgress(null);
+
+    throw new AllConnectionsInUseException();
   }
 
   @Override
