@@ -143,6 +143,10 @@ configurations {
     extendsFrom api
     description 'a dependency that exposes the compiled classes'
   }
+
+  jmh {
+    extendsFrom testImplementation
+  }
 }
 
 dependencies {
