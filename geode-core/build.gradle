@@ -144,9 +144,9 @@ configurations {
     description 'a dependency that exposes the compiled classes'
   }
 
-//  jmh {
-//    extendsFrom testImplementation
-//  }
+  jmh {
+    extendsFrom testImplementation
+  }
 }
 
 dependencies {
