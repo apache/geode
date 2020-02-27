@@ -663,7 +663,7 @@ public abstract class PartitionMessage extends DistributionMessage
   }
 
   public InternalDistributedMember getRecipient() {
-    return getRecipientsArray()[0];
+    return getRecipients().get(0);
   }
 
   public void setOperation(Operation op) {

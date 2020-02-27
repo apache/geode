@@ -15,6 +15,7 @@
 package org.apache.geode.distributed.internal;
 
 import java.io.NotSerializableException;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeoutException;
@@ -33,13 +34,11 @@ public interface Distribution {
 
   InternalDistributedMember getLocalMember();
 
-  Set<InternalDistributedMember> send(InternalDistributedMember[] destinations,
+  Set<InternalDistributedMember> send(List<InternalDistributedMember> destinations,
       DistributionMessage msg) throws NotSerializableException;
 
-  Set<InternalDistributedMember> directChannelSend(
-      InternalDistributedMember[] destinations,
-      DistributionMessage content)
-      throws NotSerializableException;
+  Set<InternalDistributedMember> directChannelSend(List<InternalDistributedMember> destinations,
+      DistributionMessage content) throws NotSerializableException;
 
   Map<String, Long> getMessageState(
       DistributedMember member, boolean includeMulticast);

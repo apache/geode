@@ -17,6 +17,7 @@ package org.apache.geode.internal.admin.remote;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -38,7 +39,6 @@ import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.util.ArrayUtils;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
@@ -115,13 +115,13 @@ public class CompactRequest extends CliLegacyMessage {
 
   @Override
   public String toString() {
-    return "Compact request sent to " + ArrayUtils.toString((Object[]) this.getRecipientsArray())
+    return "Compact request sent to " + Arrays.toString(this.getRecipientsArray())
         + " from " + this.getSender();
   }
 
   private static class CompactReplyProcessor extends AdminMultipleReplyProcessor {
     Map<DistributedMember, Set<PersistentID>> results =
-        Collections.synchronizedMap(new HashMap<DistributedMember, Set<PersistentID>>());
+        Collections.synchronizedMap(new HashMap<>());
 
     CompactReplyProcessor(DistributionManager dm, Collection initMembers) {
       super(dm, initMembers);

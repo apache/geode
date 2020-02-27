@@ -149,7 +149,7 @@ public class CompactRequest extends AdminRequest {
 
   private static class CompactReplyProcessor extends AdminMultipleReplyProcessor {
     Map<DistributedMember, PersistentID> results =
-        Collections.synchronizedMap(new HashMap<DistributedMember, PersistentID>());
+        Collections.synchronizedMap(new HashMap<>());
 
     public CompactReplyProcessor(DistributionManager dm, Collection<?> initMembers) {
       super(dm, initMembers);
