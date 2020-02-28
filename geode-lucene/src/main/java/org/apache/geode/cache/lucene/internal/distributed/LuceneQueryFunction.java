@@ -24,6 +24,7 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.search.Query;
 
+import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionContext;
@@ -125,7 +126,7 @@ public class LuceneQueryFunction implements InternalFunction<LuceneFunctionConte
       throw new IllegalArgumentException("Missing query provider");
     }
 
-    InternalLuceneIndex index = getLuceneIndex(region, searchContext);
+    InternalLuceneIndex index = getLuceneIndex(context.getCache(), region, searchContext);
     if (index == null) {
       throw new LuceneIndexNotFoundException(searchContext.getIndexName(), region.getFullPath());
     }
@@ -182,9 +183,9 @@ public class LuceneQueryFunction implements InternalFunction<LuceneFunctionConte
     }
   }
 
-  private InternalLuceneIndex getLuceneIndex(final Region region,
+  private InternalLuceneIndex getLuceneIndex(final Cache cache, final Region region,
       final LuceneFunctionContext<IndexResultCollector> searchContext) {
-    LuceneService service = LuceneServiceProvider.get(region.getCache());
+    LuceneService service = LuceneServiceProvider.get(cache);
     InternalLuceneIndex index = null;
     try {
       index = (InternalLuceneIndex) service.getIndex(searchContext.getIndexName(),
@@ -197,7 +198,7 @@ public class LuceneQueryFunction implements InternalFunction<LuceneFunctionConte
           } catch (InterruptedException e) {
             return null;
           }
-          region.getCache().getCancelCriterion().checkCancelInProgress(null);
+          cache.getCancelCriterion().checkCancelInProgress(null);
         }
         index = (InternalLuceneIndex) service.getIndex(searchContext.getIndexName(),
             region.getFullPath());
