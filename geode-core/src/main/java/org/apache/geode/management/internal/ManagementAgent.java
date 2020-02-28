@@ -209,12 +209,6 @@ public class ManagementAgent {
         serviceAttributes.put(HttpService.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM,
             securityService);
 
-        // String[] authEnabledComponents = config.getSecurityAuthTokenEnabledComponents();
-        //
-        // boolean managementAuthTokenEnabled = Arrays.stream(authEnabledComponents)
-        // .anyMatch(AuthTokenEnabledComponents::hasManagement);
-        // serviceAttributes.put(HttpService.AUTH_TOKEN_ENABLED_PARAM, managementAuthTokenEnabled);
-
         // if jmx manager is running, admin rest should be available, either on locator or server
         if (agentUtil.isAnyWarFileAvailable(adminRestWar)) {
           Path adminRestWarPath = Paths.get(adminRestWar);
