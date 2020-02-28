@@ -88,9 +88,10 @@ public class ConnectionImpl implements Connection {
       ClientSideHandshake handshake, int socketBufferSize, int handshakeTimeout, int readTimeout,
       CommunicationMode communicationMode, GatewaySender sender, SocketCreator sc)
       throws IOException {
-    theSocket = sc.connectForClient(new HostAndPort(location.getHostName(), location.getPort()),
-        handshakeTimeout,
-        socketBufferSize);
+    theSocket =
+        sc.forClient().connectForClient(new HostAndPort(location.getHostName(), location.getPort()),
+            handshakeTimeout,
+            socketBufferSize);
     theSocket.setTcpNoDelay(true);
     theSocket.setSendBufferSize(socketBufferSize);
 

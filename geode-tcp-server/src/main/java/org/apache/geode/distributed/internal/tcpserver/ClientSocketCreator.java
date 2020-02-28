@@ -12,28 +12,33 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.distributed.internal.tcpserver;
 
+import java.io.IOException;
+import java.net.Socket;
 
-
-/**
- * Create sockets for TcpServer (and TcpClient).
- */
-public interface TcpSocketCreator {
-  /**
-   * Returns a socket creator for server and peer-to-peer sockets
-   */
-  ServerSocketCreator forServer();
+public interface ClientSocketCreator {
 
   /**
-   * Returns a socket creator for client caches and WAN senders
+   * Returns true if this socket creator is configured to use SSL by default
    */
-  ClientSocketCreator forClient();
+  boolean useSSL();
 
   /**
-   * `
-   * Returns a socket creator for advanced use
+   * After creating a socket connection use this method to initiate the SSL
+   * handshake. If SSL is not enabled for the socket this method does nothing.
    */
-  AdvancedSocketCreator forAdvancedUse();
+  void handshakeIfSocketIsSSL(Socket socket, int timeout) throws IOException;
+
+  /**
+   * Create a connection to the given host/port using client-cache defaults for things
+   * like socket buffer size
+   */
+  Socket connectForClient(HostAndPort addr, int connectTimeout) throws IOException;
+
+  /**
+   * Creates a connection to the given host/port
+   */
+  Socket connectForClient(HostAndPort addr, int connectTimeout, int socketBufferSize)
+      throws IOException;
 }

@@ -55,7 +55,7 @@ public class ContextAwareSSLRMIClientSocketFactory implements RMIClientSocketFac
     try {
       socketCreator =
           SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.JMX);
-      return socketCreator.connectForClient(new HostAndPort(host, port), 0);
+      return socketCreator.forClient().connectForClient(new HostAndPort(host, port), 0);
     } catch (Exception exception) {
       try {
         // In gfsh the ssl config is stored within the GEODE_SSL_CONFIG_PROPERTIES system property.
@@ -65,7 +65,7 @@ public class ContextAwareSSLRMIClientSocketFactory implements RMIClientSocketFac
         SSLConfig sslConfig = SSLConfigurationFactory
             .getSSLConfigForComponent(gfProperties, SecurableCommunicationChannel.JMX);
         socketCreator = new SocketCreator(sslConfig);
-        return socketCreator.connectForClient(new HostAndPort(host, port), 0);
+        return socketCreator.forClient().connectForClient(new HostAndPort(host, port), 0);
       } catch (Exception finalException) {
         // Back off and use the default factory (javax.net.ssl properties are used to configure
         // SSL).

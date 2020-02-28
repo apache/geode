@@ -574,7 +574,7 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
         logger.debug("Checking member {} with TCP socket connection {}:{}.", suspectMember,
             suspectMember.getInetAddress(), port);
         clientSocket =
-            socketCreator
+            socketCreator.forAdvancedUse()
                 .connect(new HostAndPort(suspectMember.getHostName(), port), (int) memberTimeout,
                     new ConnectTimeoutTask(services.getTimer(), memberTimeout), false, -1, false);
         clientSocket.setTcpNoDelay(true);
@@ -681,7 +681,7 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
   }
 
   ServerSocket createServerSocket(InetAddress socketAddress, int[] portRange) throws IOException {
-    ServerSocket newSocket = socketCreator
+    ServerSocket newSocket = socketCreator.forAdvancedUse()
         .createServerSocketUsingPortRange(socketAddress, 50/* backlog */, true/* isBindAddress */,
             false/* useNIO */, 65536/* tcpBufferSize */, portRange, false);
     socketPort = newSocket.getLocalPort();

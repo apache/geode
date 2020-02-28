@@ -63,6 +63,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.SystemConnectException;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
@@ -158,6 +159,12 @@ public class SocketCreator extends TcpSocketCreatorImpl {
   // -------------------------------------------------------------------------
   // Initializers (change SocketCreator state)
   // -------------------------------------------------------------------------
+
+  protected void initializeCreators() {
+    serverSocketCreator = new SCServerSocketCreator();
+    clientSocketCreator = new SCClientSocketCreator();
+    advancedSocketCreator = new SCAdvancedSocketCreator();
+  }
 
   /**
    * Initialize this SocketCreator.
@@ -362,6 +369,7 @@ public class SocketCreator extends TcpSocketCreatorImpl {
     return extendedKeyManagers;
   }
 
+  @VisibleForTesting
   public SSLContext getSslContext() {
     return sslContext;
   }
@@ -456,165 +464,17 @@ public class SocketCreator extends TcpSocketCreatorImpl {
     }
   }
 
-  // -------------------------------------------------------------------------
-  // Public methods
-  // -------------------------------------------------------------------------
-
   /**
    * Returns true if this SocketCreator is configured to use SSL.
    */
   @Override
-  public boolean useSSL() {
+  protected boolean useSSL() {
     return this.sslConfig.isEnabled();
   }
 
-  public ServerSocket createServerSocket(int nport, int backlog, InetAddress bindAddr,
-      List<GatewayTransportFilter> transportFilters, int socketBufferSize) throws IOException {
-    if (transportFilters.isEmpty()) {
-      return createServerSocket(nport, backlog, bindAddr, socketBufferSize);
-    } else {
-      printConfig();
-      ServerSocket result = new TransportFilterServerSocket(transportFilters);
-      result.setReuseAddress(true);
-      // Set the receive buffer size before binding the socket so
-      // that large buffers will be allocated on accepted sockets (see
-      // java.net.ServerSocket.setReceiverBufferSize javadocs)
-      result.setReceiveBufferSize(socketBufferSize);
-      try {
-        result.bind(new InetSocketAddress(bindAddr, nport), backlog);
-      } catch (BindException e) {
-        BindException throwMe = new BindException(
-            String.format("Failed to create server socket on %s[%s]", bindAddr, nport));
-        throwMe.initCause(e);
-        throw throwMe;
-      }
-      return result;
-    }
-  }
-
-  public ServerSocket createServerSocket(int nport, int backlog, InetAddress bindAddr,
-      int socketBufferSize) throws IOException {
-    return createServerSocket(nport, backlog, bindAddr, socketBufferSize, sslConfig.isEnabled());
-  }
-
-  @Override
-  protected ServerSocket createServerSocket(int nport, int backlog, InetAddress bindAddr,
-      int socketBufferSize, boolean sslConnection) throws IOException {
-    printConfig();
-    if (!sslConnection) {
-      return super.createServerSocket(nport, backlog, bindAddr, socketBufferSize, sslConnection);
-    }
-    if (this.sslContext == null) {
-      throw new GemFireConfigException(
-          "SSL not configured correctly, Please look at previous error");
-    }
-    ServerSocketFactory ssf = this.sslContext.getServerSocketFactory();
-    SSLServerSocket serverSocket = (SSLServerSocket) ssf.createServerSocket();
-    serverSocket.setReuseAddress(true);
-    // If necessary, set the receive buffer size before binding the socket so
-    // that large buffers will be allocated on accepted sockets (see
-    // java.net.ServerSocket.setReceiverBufferSize javadocs)
-    if (socketBufferSize != -1) {
-      serverSocket.setReceiveBufferSize(socketBufferSize);
-    }
-    serverSocket.bind(new InetSocketAddress(bindAddr, nport), backlog);
-    finishServerSocket(serverSocket);
-    return serverSocket;
-  }
-
-  /**
-   * Creates or bind server socket to a random port selected from tcp-port-range which is same as
-   * membership-port-range.
-   *
-   *
-   * @return Returns the new server socket.
-   *
-   */
-  public ServerSocket createServerSocketUsingPortRange(InetAddress ba, int backlog,
-      boolean isBindAddress, boolean useNIO, int tcpBufferSize, int[] tcpPortRange)
-      throws IOException {
-    return createServerSocketUsingPortRange(ba, backlog, isBindAddress, useNIO, tcpBufferSize,
-        tcpPortRange, sslConfig.isEnabled());
-  }
-
-  @Override
-  protected RuntimeException problemCreatingSocketInPortRangeException(String s, IOException e) {
-    return new GemFireConfigException(s, e);
-  }
-
-  @Override
-  protected RuntimeException noFreePortException(String reason) {
-    return new SystemConnectException(reason);
-  }
-
-  /**
-   * Return a client socket, timing out if unable to connect and timeout > 0 (millis). The parameter
-   * <i>timeout</i> is ignored if SSL is being used, as there is no timeout argument in the ssl
-   * socket factory
-   */
-  @Override
-  public Socket connect(HostAndPort addr, int timeout,
-      ConnectionWatcher optionalWatcher, boolean allowClientSocketFactory, int socketBufferSize,
-      boolean useSSL) throws IOException {
-
-    printConfig();
-
-    if (!useSSL) {
-      return super.connect(addr, timeout, optionalWatcher, allowClientSocketFactory,
-          socketBufferSize,
-          useSSL);
-    }
-
-    // create an SSL connection
-
-    Socket socket;
-    InetSocketAddress sockaddr = addr.getSocketInetAddress();
-    if (sockaddr.getAddress() == null) {
-      InetAddress address = InetAddress.getByName(sockaddr.getHostName());
-      sockaddr = new InetSocketAddress(address, sockaddr.getPort());
-    }
-
-    if (this.sslContext == null) {
-      throw new GemFireConfigException(
-          "SSL not configured correctly, Please look at previous error");
-    }
-    SocketFactory sf = this.sslContext.getSocketFactory();
-    socket = sf.createSocket();
-
-    // Optionally enable SO_KEEPALIVE in the OS network protocol.
-    socket.setKeepAlive(ENABLE_TCP_KEEP_ALIVE);
-
-    // If necessary, set the receive buffer size before connecting the
-    // socket so that large buffers will be allocated on accepted sockets
-    // (see java.net.Socket.setReceiverBufferSize javadocs for details)
-    if (socketBufferSize != -1) {
-      socket.setReceiveBufferSize(socketBufferSize);
-    }
-
-    try {
-      if (optionalWatcher != null) {
-        optionalWatcher.beforeConnect(socket);
-      }
-      socket.connect(sockaddr, Math.max(timeout, 0));
-      configureClientSSLSocket(socket, timeout);
-      return socket;
-
-    } finally {
-      if (optionalWatcher != null) {
-        optionalWatcher.afterConnect(socket);
-      }
-    }
-  }
-
-  @Override
-  protected Socket createCustomClientSocket(HostAndPort addr) throws IOException {
-    if (this.clientSocketFactory != null) {
-      InetSocketAddress inetSocketAddress = addr.getSocketInetAddress();
-      return this.clientSocketFactory.createSocket(inetSocketAddress.getAddress(),
-          inetSocketAddress.getPort());
-    }
-    return null;
-  }
+  // -------------------------------------------------------------------------
+  // Public methods
+  // -------------------------------------------------------------------------
 
   /**
    * Returns an SSLEngine that can be used to perform TLS handshakes and communication
@@ -714,7 +574,7 @@ public class SocketCreator extends TcpSocketCreatorImpl {
    *
    * @param timeout the number of milliseconds allowed for the handshake to complete
    */
-  public void handshakeIfSocketIsSSL(Socket socket, int timeout) throws IOException {
+  void handshakeIfSocketIsSSL(Socket socket, int timeout) throws IOException {
     if (!(socket instanceof SSLSocket)) {
       return;
     }
@@ -746,6 +606,38 @@ public class SocketCreator extends TcpSocketCreatorImpl {
       }
     }
   }
+
+  /**
+   * Create a server socket with the given transport filters.<br>
+   * Note: This method is outside of the
+   * client/server/advanced interfaces because it references WAN classes that aren't
+   * available to them.
+   */
+  public ServerSocket createServerSocket(int nport, int backlog, InetAddress bindAddr,
+      List<GatewayTransportFilter> transportFilters, int socketBufferSize) throws IOException {
+    if (transportFilters.isEmpty()) {
+      return ((SCServerSocketCreator) forServer())
+          .createServerSocket(nport, backlog, bindAddr, socketBufferSize, useSSL());
+    } else {
+      printConfig();
+      ServerSocket result = new TransportFilterServerSocket(transportFilters);
+      result.setReuseAddress(true);
+      // Set the receive buffer size before binding the socket so
+      // that large buffers will be allocated on accepted sockets (see
+      // java.net.ServerSocket.setReceiverBufferSize javadocs)
+      result.setReceiveBufferSize(socketBufferSize);
+      try {
+        result.bind(new InetSocketAddress(bindAddr, nport), backlog);
+      } catch (BindException e) {
+        BindException throwMe = new BindException(
+            String.format("Failed to create server socket on %s[%s]", bindAddr, nport));
+        throwMe.initCause(e);
+        throw throwMe;
+      }
+      return result;
+    }
+  }
+
 
   // -------------------------------------------------------------------------
   // Private implementation methods
@@ -863,7 +755,6 @@ public class SocketCreator extends TcpSocketCreatorImpl {
     }
   }
 
-
   protected void initializeClientSocketFactory() {
     this.clientSocketFactory = null;
     String className =
@@ -892,4 +783,134 @@ public class SocketCreator extends TcpSocketCreatorImpl {
         .setGatewayTransportFilters(sender.getGatewayTransportFilters());
   }
 
+
+
+  class SCServerSocketCreator extends TcpSocketCreatorImpl.ServerSocketCreatorImpl {
+    @Override
+    public void handshakeIfSocketIsSSL(Socket socket, int timeout) throws IOException {
+      SocketCreator.this.handshakeIfSocketIsSSL(socket, timeout);
+    }
+
+    public ServerSocket createServerSocket(int nport, int backlog, InetAddress bindAddr,
+        int socketBufferSize) throws IOException {
+      return createServerSocket(nport, backlog, bindAddr, socketBufferSize, sslConfig.isEnabled());
+    }
+
+    @Override
+    protected ServerSocket createServerSocket(int nport, int backlog, InetAddress bindAddr,
+        int socketBufferSize, boolean sslConnection) throws IOException {
+      printConfig();
+      if (!sslConnection) {
+        return super.createServerSocket(nport, backlog, bindAddr, socketBufferSize, sslConnection);
+      }
+      if (sslContext == null) {
+        throw new GemFireConfigException(
+            "SSL not configured correctly, Please look at previous error");
+      }
+      ServerSocketFactory ssf = sslContext.getServerSocketFactory();
+      SSLServerSocket serverSocket = (SSLServerSocket) ssf.createServerSocket();
+      serverSocket.setReuseAddress(true);
+      // If necessary, set the receive buffer size before binding the socket so
+      // that large buffers will be allocated on accepted sockets (see
+      // java.net.ServerSocket.setReceiverBufferSize javadocs)
+      if (socketBufferSize != -1) {
+        serverSocket.setReceiveBufferSize(socketBufferSize);
+      }
+      serverSocket.bind(new InetSocketAddress(bindAddr, nport), backlog);
+      finishServerSocket(serverSocket);
+      return serverSocket;
+    }
+
+
+  }
+
+  class SCClientSocketCreator extends TcpSocketCreatorImpl.ClientSocketCreatorImpl {
+    @Override
+    public void handshakeIfSocketIsSSL(Socket socket, int timeout) throws IOException {
+      SocketCreator.this.handshakeIfSocketIsSSL(socket, timeout);
+    }
+  }
+
+  class SCAdvancedSocketCreator extends TcpSocketCreatorImpl.AdvancedSocketCreatorImpl {
+    @Override
+    public void handshakeIfSocketIsSSL(Socket socket, int timeout) throws IOException {
+      SocketCreator.this.handshakeIfSocketIsSSL(socket, timeout);
+    }
+
+    @Override
+    public Socket connect(HostAndPort addr, int timeout,
+        ConnectionWatcher optionalWatcher, boolean allowClientSocketFactory, int socketBufferSize,
+        boolean useSSL) throws IOException {
+
+      printConfig();
+
+      if (!useSSL) {
+        return super.connect(addr, timeout, optionalWatcher, allowClientSocketFactory,
+            socketBufferSize,
+            useSSL);
+      }
+
+      // create an SSL connection
+
+      Socket socket;
+      InetSocketAddress sockaddr = addr.getSocketInetAddress();
+      if (sockaddr.getAddress() == null) {
+        InetAddress address = InetAddress.getByName(sockaddr.getHostName());
+        sockaddr = new InetSocketAddress(address, sockaddr.getPort());
+      }
+
+      if (sslContext == null) {
+        throw new GemFireConfigException(
+            "SSL not configured correctly, Please look at previous error");
+      }
+      SocketFactory sf = sslContext.getSocketFactory();
+      socket = sf.createSocket();
+
+      // Optionally enable SO_KEEPALIVE in the OS network protocol.
+      socket.setKeepAlive(ENABLE_TCP_KEEP_ALIVE);
+
+      // If necessary, set the receive buffer size before connecting the
+      // socket so that large buffers will be allocated on accepted sockets
+      // (see java.net.Socket.setReceiverBufferSize javadocs for details)
+      if (socketBufferSize != -1) {
+        socket.setReceiveBufferSize(socketBufferSize);
+      }
+
+      try {
+        if (optionalWatcher != null) {
+          optionalWatcher.beforeConnect(socket);
+        }
+        socket.connect(sockaddr, Math.max(timeout, 0));
+        configureClientSSLSocket(socket, timeout);
+        return socket;
+
+      } finally {
+        if (optionalWatcher != null) {
+          optionalWatcher.afterConnect(socket);
+        }
+      }
+    }
+
+    @Override
+    protected RuntimeException problemCreatingSocketInPortRangeException(String s, IOException e) {
+      return new GemFireConfigException(s, e);
+    }
+
+    @Override
+    protected RuntimeException noFreePortException(String reason) {
+      return new SystemConnectException(reason);
+    }
+
+    @Override
+    protected Socket createCustomClientSocket(HostAndPort addr) throws IOException {
+      if (clientSocketFactory != null) {
+        InetSocketAddress inetSocketAddress = addr.getSocketInetAddress();
+        return clientSocketFactory.createSocket(inetSocketAddress.getAddress(),
+            inetSocketAddress.getPort());
+      }
+      return null;
+    }
+
+
+  }
 }

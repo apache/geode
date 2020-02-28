@@ -316,7 +316,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
       int socketBufferSize =
           Integer.getInteger("BridgeServer.SOCKET_BUFFER_SIZE", DEFAULT_SOCKET_BUFFER_SIZE);
 
-      mySock = socketCreator.connectForClient(
+      mySock = socketCreator.forClient().connectForClient(
           new HostAndPort(location.getHostName(), location.getPort()),
           handshakeTimeout, socketBufferSize);
       mySock.setTcpNoDelay(true);

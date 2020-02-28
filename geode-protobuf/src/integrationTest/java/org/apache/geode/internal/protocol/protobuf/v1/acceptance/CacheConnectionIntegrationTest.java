@@ -273,6 +273,7 @@ public class CacheConnectionIntegrationTest {
     sslConfigBuilder.setEndpointIdentificationEnabled(false);
 
     SocketCreator socketCreator = new SocketCreator(sslConfigBuilder.build());
-    return socketCreator.connectForClient(new HostAndPort("localhost", cacheServerPort), 5000);
+    return socketCreator.forClient().connectForClient(new HostAndPort("localhost", cacheServerPort),
+        5000);
   }
 }

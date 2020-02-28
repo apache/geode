@@ -105,10 +105,11 @@ public class MX4JServerSocketFactory implements mx4j.tools.adaptor.AdaptorServer
   public ServerSocket createServerSocket(int port, int backlog, String bindAddress)
       throws IOException {
     if ("".equals(bindAddress)) {
-      return socketCreator.createServerSocket(port, backlog);
+      return socketCreator.forServer().createServerSocket(port, backlog);
 
     } else {
-      return socketCreator.createServerSocket(port, backlog, toInetAddress(bindAddress));
+      return socketCreator.forServer().createServerSocket(port, backlog,
+          toInetAddress(bindAddress));
     }
   }
 
@@ -120,9 +121,10 @@ public class MX4JServerSocketFactory implements mx4j.tools.adaptor.AdaptorServer
   public ServerSocket createServerSocket(int port) throws IOException {
     ServerSocket sock = null;
     if ("".equals(bindAddress)) {
-      sock = socketCreator.createServerSocket(port, this.backlog);
+      sock = socketCreator.forServer().createServerSocket(port, this.backlog);
     } else {
-      sock = socketCreator.createServerSocket(port, this.backlog, toInetAddress(this.bindAddress));
+      sock = socketCreator.forServer().createServerSocket(port, this.backlog,
+          toInetAddress(this.bindAddress));
     }
 
     if (logger.isDebugEnabled()) {

@@ -83,7 +83,7 @@ public class ClientSocketFactoryIntegrationTest {
   @Test
   public void testClientSocketFactory() throws Exception {
     assertThatThrownBy(() -> this.socket = SocketCreatorFactory
-        .getSocketCreatorForComponent(CLUSTER)
+        .getSocketCreatorForComponent(CLUSTER).forClient()
         .connectForClient(new HostAndPort("localhost", 12345), 0))
             .isExactlyInstanceOf(IOException.class).hasMessage(EXCEPTION_MESSAGE);
 
