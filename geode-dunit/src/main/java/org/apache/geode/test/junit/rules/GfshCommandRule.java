@@ -311,7 +311,6 @@ public class GfshCommandRule extends DescribedExternalResource {
     return this;
   }
 
-
   public enum PortType {
     locator, jmxManager, http, https
   }
