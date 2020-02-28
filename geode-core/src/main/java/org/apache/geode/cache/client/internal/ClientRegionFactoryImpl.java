@@ -186,9 +186,8 @@ public class ClientRegionFactoryImpl<K, V> implements ClientRegionFactory<K, V> 
   }
 
   @Override
-  public ClientRegionFactory<K, V> setConcurrencyChecksEnabled(boolean concurrencyChecksEnabled) {
+  public void setConcurrencyChecksEnabled(boolean concurrencyChecksEnabled) {
     this.attrsFactory.setConcurrencyChecksEnabled(concurrencyChecksEnabled);
-    return this;
   }
 
   @Override
