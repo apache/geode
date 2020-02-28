@@ -390,7 +390,7 @@ public class ClientServerTransactionFailoverDistributedTest implements Serializa
             public void beforeSendMessage(ClusterDistributionManager dm,
                 DistributionMessage message) {
               if (message instanceof TXCommitMessage.CommitProcessForTXIdMessage) {
-                InternalDistributedMember m = message.getRecipientsArray()[0];
+                InternalDistributedMember m = message.getRecipients().get(0);
                 message.resetRecipients();
                 message.setRecipient(m);
               }
