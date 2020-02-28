@@ -20,7 +20,6 @@ import java.io.NotSerializableException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -1955,7 +1954,7 @@ public class ClusterDistributionManager implements DistributionManager {
     try {
       // m.resetTimestamp(); // nanotimers across systems don't match
       long startTime = DistributionStats.getStatTime();
-      sendViaMembershipManager(m.getRecipientsArray(), m, this, stats);
+      sendViaMembershipManager(m.getRecipients(), m, this, stats);
       stats.incSentMessages(1L);
       if (DistributionStats.enableClockStats) {
         stats.incSentMessagesTime(DistributionStats.getStatTime() - startTime);
@@ -1984,7 +1983,7 @@ public class ClusterDistributionManager implements DistributionManager {
     long startTime = DistributionStats.getStatTime();
 
     Set<InternalDistributedMember> result =
-        sendViaMembershipManager(message.getRecipientsArray(), message, this, stats);
+        sendViaMembershipManager(message.getRecipients(), message, this, stats);
     long endTime = 0L;
     if (DistributionStats.enableClockStats) {
       endTime = NanoTimer.getTime();
@@ -2036,7 +2035,7 @@ public class ClusterDistributionManager implements DistributionManager {
       if (message == null || message.forAll()) {
         return null;
       }
-      return new HashSet<>(Arrays.asList(message.getRecipientsArray()));
+      return new HashSet<>(message.getRecipients());
     }
   }
 
@@ -2046,17 +2045,16 @@ public class ClusterDistributionManager implements DistributionManager {
    * @throws NotSerializableException If content cannot be serialized
    */
   private Set<InternalDistributedMember> sendViaMembershipManager(
-      InternalDistributedMember[] destinations,
+      List<InternalDistributedMember> destinations,
       DistributionMessage content, ClusterDistributionManager dm, DistributionStats stats)
       throws NotSerializableException {
     if (distribution == null) {
       logger.warn("Attempting a send to a disconnected DistributionManager");
-      if (destinations.length == 1 && destinations[0] == Message.ALL_RECIPIENTS)
+      if (destinations.size() == 1 && destinations.get(0) == Message.ALL_RECIPIENTS)
         return null;
-      HashSet<InternalDistributedMember> result = new HashSet<>();
-      Collections.addAll(result, destinations);
-      return result;
+      return new HashSet<>(destinations);
     }
+
     return distribution.send(destinations, content);
   }
 

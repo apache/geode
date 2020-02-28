@@ -20,7 +20,6 @@ import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.EN
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
 
@@ -1076,7 +1075,7 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
               putMsg.setSendDelta(false);
               if (logger.isDebugEnabled()) {
                 logger.debug("Sending full object({}) to {}", putMsg,
-                    Arrays.toString(putMsg.getRecipientsArray()));
+                    putMsg.getRecipientsDescription());
               }
               dm.putOutgoing(putMsg);
 
