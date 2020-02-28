@@ -44,7 +44,7 @@ import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.inet.LocalHostUtil;
+import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.test.dunit.DistributedTestUtils;
@@ -175,12 +175,12 @@ public class TcpServerProductVersionDUnitTest implements Serializable {
         Method requestToServer =
             TcpClient.class.getMethod("requestToServer", InetAddress.class, int.class, Object.class,
                 int.class);
-        response = requestToServer.invoke(tcpClient, LocalHostUtil.getLocalHost(), locatorPort,
+        response = requestToServer.invoke(tcpClient, SocketCreator.getLocalHost(), locatorPort,
             requestMessage, 1000);
       } catch (NoSuchMethodException e) {
         response = tcpClient
             .requestToServer(
-                new HostAndPort(LocalHostUtil.getLocalHost().getHostAddress(), locatorPort),
+                new HostAndPort(SocketCreator.getLocalHost().getHostAddress(), locatorPort),
                 requestMessage, 1000);
       }
 

@@ -21,7 +21,7 @@ import java.io.UncheckedIOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import org.apache.geode.internal.inet.LocalHostUtil;
+import org.apache.geode.internal.net.SocketCreator;
 
 /**
  * {@code NetworkUtils} provides static utility methods to perform network DNS lookups or
@@ -52,7 +52,7 @@ public class NetworkUtils {
    */
   public static String getIPLiteral() {
     try {
-      return LocalHostUtil.getLocalHost().getHostAddress();
+      return SocketCreator.getLocalHost().getHostAddress();
     } catch (UnknownHostException e) {
       throw new Error("Problem determining host IP address", e);
     }
