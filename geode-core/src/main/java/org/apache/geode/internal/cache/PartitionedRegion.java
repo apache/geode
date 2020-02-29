@@ -2160,7 +2160,8 @@ public class PartitionedRegion extends LocalRegion
         }
 
         // create ClearPRMessage per bucket
-        ArrayList<ClearPRMessage> clearMsgList = (ArrayList<ClearPRMessage>) createClearPRMessages();
+        ArrayList<ClearPRMessage> clearMsgList =
+            (ArrayList<ClearPRMessage>) createClearPRMessages();
         for (ClearPRMessage clearPRMessage : clearMsgList) {
           int bucketId = clearPRMessage.getBucketId();
           checkReadiness();
