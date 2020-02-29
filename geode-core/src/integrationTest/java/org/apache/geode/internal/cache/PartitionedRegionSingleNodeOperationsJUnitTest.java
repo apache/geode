@@ -1309,12 +1309,7 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
       pr.put(new Integer(3), "three");
       pr.getEntry("key");
 
-      try {
-        pr.clear();
-        fail(
-            "PartitionedRegionSingleNodeOperationTest:testUnSupportedOps() operation failed on a blank PartitionedRegion");
-      } catch (UnsupportedOperationException expected) {
-      }
+      pr.clear();
 
       // try {
       // pr.entries(true);
