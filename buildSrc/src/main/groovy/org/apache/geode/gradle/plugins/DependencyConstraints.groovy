@@ -51,9 +51,9 @@ class DependencyConstraints implements Plugin<Project> {
     // specifying @zip in a dependency, the manner in which we consume them in custom configurations.
     // This would possibly be corrected if they were proper source sets.
     deps.put("tomcat6.version", "6.0.37")
-    deps.put("tomcat7.version", "7.0.96")
-    deps.put("tomcat8.version", "8.5.46")
-    deps.put("tomcat9.version", "9.0.12")
+    deps.put("tomcat7.version", "7.0.100")
+    deps.put("tomcat8.version", "8.5.51")
+    deps.put("tomcat9.version", "9.0.31")
 
     // The jetty version is also hard-coded in geode-assembly:test
     // at o.a.g.sessions.tests.GenericAppServerInstall.java
