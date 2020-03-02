@@ -2657,23 +2657,6 @@ TBA
 </dd>
 
 <!-- -------------------------------------------------------  -->
-<dt><strong>p2p.defaultConcurrencyLevel</strong></dt>
-<dd>
-<em>Public:</em> false
-<p>
-<em>Integer</em> (default is the number of processors on current machine,
-but no less than 2)
-<p>
-See <code>org.apache.geode.distributed.internal.direct.DirectChannel#DEFAULT_CONCURRENCY_LEVEL</code>.
-<p>
-<pre>
-   Return how many concurrent operations should be allowed by default.
-</pre>
-<p>
-TBA
-</dd>
-
-<!-- -------------------------------------------------------  -->
 <dt><strong>p2p.defaultLogLevel</strong></dt>
 <dd>
 <em>Public:</em> false
@@ -2781,23 +2764,6 @@ See <code>org.apache.geode.internal.tcp.TCPConduit#LISTENER_CLOSE_TIMEOUT</code>
 <p>
 <pre>
   max amount of time (ms) to wait for listener threads to stop
-</pre>
-<p>
-TBA
-</dd>
-
-<!-- -------------------------------------------------------  -->
-<dt><strong>p2p.maxConnectionSenders</strong></dt>
-<dd>
-<em>Public:</em> false
-<p>
-<em>Integer</em> (default is p2p.defaultConcurrencyLevel)
-<p>
-See <code>org.apache.geode.internal.tcp.Connection#MAX_SENDERS</code>.
-<p>
-<pre>
-  The maximum number of concurrent senders sending a message to a single
-  recipient.
 </pre>
 <p>
 TBA
