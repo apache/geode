@@ -26,6 +26,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.CacheException;
+import org.apache.geode.cache.Operation;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
@@ -54,11 +55,11 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 public class ClearPRMessage extends PartitionMessageWithDirectReply {
   private static final Logger logger = LogService.getLogger();
 
-  private RegionEventImpl regionEvent;
-
   private Integer bucketId;
 
-  /** The time in ms to wait for a lock to be obtained during doLocalClear() */
+  /**
+   * The time in ms to wait for a lock to be obtained during doLocalClear()
+   */
   public static final int LOCK_WAIT_TIMEOUT_MS = 1000;
   public static final String BUCKET_NON_PRIMARY_MESSAGE =
       "The bucket region on target member is no longer primary";
@@ -85,10 +86,6 @@ public class ClearPRMessage extends PartitionMessageWithDirectReply {
     this.posDup = false;
   }
 
-  public void setRegionEvent(RegionEventImpl event) {
-    regionEvent = event;
-  }
-
   public void initMessage(PartitionedRegion region, Set<InternalDistributedMember> recipients,
       DirectReplyProcessor replyProcessor) {
     this.resetRecipients();
@@ -109,14 +106,9 @@ public class ClearPRMessage extends PartitionMessageWithDirectReply {
     return true;
   }
 
-  public RegionEventImpl getRegionEvent() {
-    return regionEvent;
-  }
-
   public ClearResponse send(DistributedMember recipient, PartitionedRegion region)
       throws ForceReattemptException {
-    Set<InternalDistributedMember> recipients =
-        Collections.singleton((InternalDistributedMember) recipient);
+    Set recipients = Collections.singleton(recipient);
     ClearResponse clearResponse = new ClearResponse(region.getSystem(), recipients);
     initMessage(region, recipients, clearResponse);
     if (logger.isDebugEnabled()) {
@@ -143,7 +135,6 @@ public class ClearPRMessage extends PartitionMessageWithDirectReply {
     } else {
       InternalDataSerializer.writeSignedVL(bucketId, out);
     }
-    DataSerializer.writeObject(regionEvent, out);
   }
 
   @Override
@@ -151,12 +142,11 @@ public class ClearPRMessage extends PartitionMessageWithDirectReply {
       throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     this.bucketId = (int) InternalDataSerializer.readSignedVL(in);
-    this.regionEvent = DataSerializer.readObject(in);
   }
 
   @Override
   public EventID getEventID() {
-    return regionEvent.getEventId();
+    return null;
   }
 
   /**
@@ -169,7 +159,7 @@ public class ClearPRMessage extends PartitionMessageWithDirectReply {
   protected boolean operateOnPartitionedRegion(ClusterDistributionManager distributionManager,
       PartitionedRegion region, long startTime) {
     try {
-      result = doLocalClear(region);
+      result = doLocalClear(region, getBucketId());
     } catch (ForceReattemptException ex) {
       sendReply(getSender(), getProcessorId(), distributionManager, new ReplyException(ex), region,
           startTime);
@@ -179,39 +169,31 @@ public class ClearPRMessage extends PartitionMessageWithDirectReply {
     return false;
   }
 
-  public boolean doLocalClear(PartitionedRegion region) throws ForceReattemptException {
-    // Retrieve local bucket region which matches target bucketId
-    BucketRegion bucketRegion = region.getDataStore().getInitializedBucketForId(null, bucketId);
+  public int getBucketId() {
+    return this.bucketId;
+  }
 
+  public boolean doLocalClear(PartitionedRegion region, int bucketId)
+      throws ForceReattemptException {
+    // Retrieve local bucket region which matches target bucketId
+    BucketRegion bucketRegion =
+        region.getDataStore().getInitializedBucketForId(null, this.bucketId);
+
+    boolean lockedForPrimary = bucketRegion.doLockForPrimary(false);
     // Check if we are primary, throw exception if not
-    if (!bucketRegion.isPrimary()) {
+    if (!lockedForPrimary) {
       throw new ForceReattemptException(BUCKET_NON_PRIMARY_MESSAGE);
     }
-
-    DistributedLockService lockService = getPartitionRegionLockService();
-    String lockName = bucketRegion.getFullPath();
     try {
-      boolean locked = lockService.lock(lockName, LOCK_WAIT_TIMEOUT_MS, -1);
-
-      if (!locked) {
-        throw new ForceReattemptException(BUCKET_REGION_LOCK_UNAVAILABLE_MESSAGE);
-      }
-
-      // Double check if we are still primary, as this could have changed between our first check
-      // and obtaining the lock
-      if (!bucketRegion.isPrimary()) {
-        throw new ForceReattemptException(BUCKET_NON_PRIMARY_MESSAGE);
-      }
-
-      try {
-        bucketRegion.cmnClearRegion(regionEvent, true, true);
-      } catch (Exception ex) {
-        throw new ForceReattemptException(
-            EXCEPTION_THROWN_DURING_CLEAR_OPERATION + ex.getClass().getName(), ex);
-      }
-
+      RegionEventImpl regionEvent = new RegionEventImpl();
+      regionEvent.setOperation(Operation.REGION_CLEAR);
+      regionEvent.setRegion(bucketRegion);
+      bucketRegion.cmnClearRegion(regionEvent, true, true);
+    } catch (Exception ex) {
+      throw new ForceReattemptException(
+          EXCEPTION_THROWN_DURING_CLEAR_OPERATION + ex.getClass().getName(), ex);
     } finally {
-      lockService.unlock(lockName);
+      bucketRegion.doUnlockForPrimary();
     }
 
     return true;
@@ -277,7 +259,9 @@ public class ClearPRMessage extends PartitionMessageWithDirectReply {
   }
 
   public static class ClearReplyMessage extends ReplyMessage {
-    /** Result of the Clear operation */
+    /**
+     * Result of the Clear operation
+     */
     boolean result;
 
     @Override
@@ -298,7 +282,9 @@ public class ClearPRMessage extends PartitionMessageWithDirectReply {
       setException(ex);
     }
 
-    /** Send an ack */
+    /**
+     * Send an ack
+     */
     public static void send(InternalDistributedMember recipient, int processorId,
         ReplySender replySender,
         boolean result, ReplyException ex) {

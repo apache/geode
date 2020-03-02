@@ -20,7 +20,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.doNothing;
@@ -38,7 +37,6 @@ import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionManager;
@@ -50,6 +48,7 @@ import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.internal.cache.PartitionedRegionStats;
+import org.apache.geode.internal.cache.RegionEventImpl;
 
 public class ClearPRMessageTest {
 
@@ -61,64 +60,43 @@ public class ClearPRMessageTest {
   @Before
   public void setup() throws ForceReattemptException {
     message = spy(new ClearPRMessage());
+    InternalDistributedMember member = mock(InternalDistributedMember.class);
     region = mock(PartitionedRegion.class, RETURNS_DEEP_STUBS);
     dataStore = mock(PartitionedRegionDataStore.class);
     when(region.getDataStore()).thenReturn(dataStore);
+    when(region.getFullPath()).thenReturn("/test");
     bucketRegion = mock(BucketRegion.class);
     when(dataStore.getInitializedBucketForId(any(), any())).thenReturn(bucketRegion);
+    RegionEventImpl bucketRegionEventImpl = mock(RegionEventImpl.class);
+    // RegionEventImpl(bucketRegion, Operation.REGION_CLEAR, null, false, member, true);
   }
 
   @Test
   public void doLocalClearThrowsExceptionWhenBucketIsNotPrimaryAtFirstCheck() {
     when(bucketRegion.isPrimary()).thenReturn(false);
 
-    assertThatThrownBy(() -> message.doLocalClear(region))
+    assertThatThrownBy(() -> message.doLocalClear(region, 0))
         .isInstanceOf(ForceReattemptException.class)
         .hasMessageContaining(ClearPRMessage.BUCKET_NON_PRIMARY_MESSAGE);
   }
 
   @Test
   public void doLocalClearThrowsExceptionWhenLockCannotBeObtained() {
-    DistributedLockService mockLockService = mock(DistributedLockService.class);
-    doReturn(mockLockService).when(message).getPartitionRegionLockService();
+    when(bucketRegion.doLockForPrimary(false)).thenReturn(false);
 
-    when(mockLockService.lock(anyString(), anyLong(), anyLong())).thenReturn(false);
-    when(bucketRegion.isPrimary()).thenReturn(true);
-
-    assertThatThrownBy(() -> message.doLocalClear(region))
-        .isInstanceOf(ForceReattemptException.class)
-        .hasMessageContaining(ClearPRMessage.BUCKET_REGION_LOCK_UNAVAILABLE_MESSAGE);
-  }
-
-  @Test
-  public void doLocalClearThrowsExceptionWhenBucketIsNotPrimaryAfterObtainingLock() {
-    DistributedLockService mockLockService = mock(DistributedLockService.class);
-    doReturn(mockLockService).when(message).getPartitionRegionLockService();
-
-    // Be primary on the first check, then be not primary on the second check
-    when(bucketRegion.isPrimary()).thenReturn(true).thenReturn(false);
-    when(mockLockService.lock(any(), anyLong(), anyLong())).thenReturn(true);
-
-    assertThatThrownBy(() -> message.doLocalClear(region))
+    assertThatThrownBy(() -> message.doLocalClear(region, 0))
         .isInstanceOf(ForceReattemptException.class)
         .hasMessageContaining(ClearPRMessage.BUCKET_NON_PRIMARY_MESSAGE);
-    // Confirm that we actually obtained and released the lock
-    verify(mockLockService, times(1)).lock(any(), anyLong(), anyLong());
-    verify(mockLockService, times(1)).unlock(any());
   }
 
   @Test
   public void doLocalClearThrowsForceReattemptExceptionWhenAnExceptionIsThrownDuringClearOperation() {
-    DistributedLockService mockLockService = mock(DistributedLockService.class);
-    doReturn(mockLockService).when(message).getPartitionRegionLockService();
     NullPointerException exception = new NullPointerException("Error encountered");
     doThrow(exception).when(bucketRegion).cmnClearRegion(any(), anyBoolean(), anyBoolean());
 
-    // Be primary on the first check, then be not primary on the second check
-    when(bucketRegion.isPrimary()).thenReturn(true);
-    when(mockLockService.lock(any(), anyLong(), anyLong())).thenReturn(true);
+    when(bucketRegion.doLockForPrimary(false)).thenReturn(true);
 
-    assertThatThrownBy(() -> message.doLocalClear(region))
+    assertThatThrownBy(() -> message.doLocalClear(region, bucketRegion.getId()))
         .isInstanceOf(ForceReattemptException.class)
         .hasMessageContaining(ClearPRMessage.EXCEPTION_THROWN_DURING_CLEAR_OPERATION);
 
@@ -129,21 +107,13 @@ public class ClearPRMessageTest {
   @Test
   public void doLocalClearInvokesCmnClearRegionWhenBucketIsPrimaryAndLockIsObtained()
       throws ForceReattemptException {
-    DistributedLockService mockLockService = mock(DistributedLockService.class);
-    doReturn(mockLockService).when(message).getPartitionRegionLockService();
-
 
     // Be primary on the first check, then be not primary on the second check
-    when(bucketRegion.isPrimary()).thenReturn(true);
-    when(mockLockService.lock(any(), anyLong(), anyLong())).thenReturn(true);
-    assertThat(message.doLocalClear(region)).isTrue();
+    when(bucketRegion.doLockForPrimary(false)).thenReturn(true);
+    assertThat(message.doLocalClear(region, 0)).isTrue();
 
     // Confirm that cmnClearRegion was called
     verify(bucketRegion, times(1)).cmnClearRegion(any(), anyBoolean(), anyBoolean());
-
-    // Confirm that we actually obtained and released the lock
-    verify(mockLockService, times(1)).lock(any(), anyLong(), anyLong());
-    verify(mockLockService, times(1)).unlock(any());
   }
 
   @Test
@@ -197,7 +167,8 @@ public class ClearPRMessageTest {
     int processorId = 1000;
     int startTime = 0;
 
-    doReturn(true).when(message).doLocalClear(region);
+    doReturn(0).when(message).getBucketId();
+    doReturn(true).when(message).doLocalClear(region, 0);
     doReturn(sender).when(message).getSender();
     doReturn(processorId).when(message).getProcessorId();
 
@@ -222,7 +193,8 @@ public class ClearPRMessageTest {
     ForceReattemptException exception =
         new ForceReattemptException(ClearPRMessage.BUCKET_NON_PRIMARY_MESSAGE);
 
-    doThrow(exception).when(message).doLocalClear(region);
+    doReturn(0).when(message).getBucketId();
+    doThrow(exception).when(message).doLocalClear(region, 0);
     doReturn(sender).when(message).getSender();
     doReturn(processorId).when(message).getProcessorId();
 
