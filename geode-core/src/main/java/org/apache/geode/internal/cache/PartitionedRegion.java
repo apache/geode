@@ -2145,15 +2145,6 @@ public class PartitionedRegion extends LocalRegion
     throw new UnsupportedOperationException();
   }
 
-  /**
-   * @since GemFire 5.0
-   * @throws UnsupportedOperationException OVERRIDES
-   */
-  @Override
-  public void clear() {
-    super.clear();
-  }
-
   @Override
   void basicClear(RegionEventImpl regionEvent, boolean cacheWrite) {
     synchronized (clearLock) {
@@ -2169,8 +2160,7 @@ public class PartitionedRegion extends LocalRegion
         }
 
         // create ClearPRMessage per bucket
-        ArrayList<ClearPRMessage> clearMsgList =
-            (ArrayList<ClearPRMessage>) createClearPRMessages();
+        List<ClearPRMessage> clearMsgList = createClearPRMessages();
         for (ClearPRMessage clearPRMessage : clearMsgList) {
           int bucketId = clearPRMessage.getBucketId();
           checkReadiness();
@@ -2334,7 +2324,7 @@ public class PartitionedRegion extends LocalRegion
     }
   }
 
-  List createClearPRMessages() {
+  List<ClearPRMessage> createClearPRMessages() {
     if (cache.isCacheAtShutdownAll()) {
       throw cache.getCacheClosedException("Cache is shutting down");
     }
