@@ -92,8 +92,17 @@ public class ConnectionManagerImplTest {
   @Test
   public void borrowConnectionThrowsWhenUsingExistingConnectionsAndNoConnectionsExist() {
     ServerLocation serverLocation = mock(ServerLocation.class);
+    Connection connection = mock(Connection.class);
 
-    connectionManager = createDefaultConnectionManager();
+    when(connectionFactory.createClientToServerConnection(any())).thenReturn(connection);
+
+    connectionManager = new ConnectionManagerImpl(poolName, connectionFactory, endpointManager, 1,
+        0, idleTimeout, lifetimeTimeout, securityLogger, pingInterval, cancelCriterion,
+        poolStats);
+    connectionManager.start(backgroundProcessor);
+
+    assertThat(connectionManager.borrowConnection(timeout)).isInstanceOf(PooledConnection.class);
+
     assertThatThrownBy(() -> connectionManager.borrowConnection(serverLocation, timeout, true))
         .isInstanceOf(AllConnectionsInUseException.class);
 
