@@ -16,6 +16,7 @@ package org.apache.geode.management.internal.rest.security;
 
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -37,6 +38,8 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.web.multipart.MultipartResolver;
+import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.configuration.Links;
@@ -64,6 +67,22 @@ public class RestSecurityConfiguration extends WebSecurityConfigurerAdapter {
   @Override
   public AuthenticationManager authenticationManagerBean() throws Exception {
     return super.authenticationManagerBean();
+  }
+
+  @Bean
+  public MultipartResolver multipartResolver() {
+    return new CommonsMultipartResolver() {
+      @Override
+      public boolean isMultipart(HttpServletRequest request) {
+        String method = request.getMethod().toLowerCase();
+        // By default, only POST is allowed. Since this is an 'update' we should accept PUT.
+        if (!Arrays.asList("put", "post").contains(method)) {
+          return false;
+        }
+        String contentType = request.getContentType();
+        return (contentType != null && contentType.toLowerCase().startsWith("multipart/"));
+      }
+    };
   }
 
   protected void configure(HttpSecurity http) throws Exception {
