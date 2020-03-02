@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.test.dunit.rules.ClusterStartupRule.getCache;
+import static org.apache.geode.test.dunit.rules.ClusterStartupRule.getClientCache;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
@@ -27,6 +29,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -51,58 +54,76 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
     dataStore1 = cluster.startServerVM(1, locatorPort);
     dataStore2 = cluster.startServerVM(2, locatorPort);
     accessor = cluster.startServerVM(3, locatorPort);
-    client1 = cluster.startClientVM(4, c -> c.withLocatorConnection((locatorPort)));
-    client2 = cluster.startClientVM(5, c -> c.withLocatorConnection((locatorPort)));
-
-    prepare();
-  }
-
-  private void prepare() {
+    client1 = cluster.startClientVM(4,
+        c -> c.withPoolSubscription(true).withLocatorConnection((locatorPort)));
+    client2 = cluster.startClientVM(5,
+        c -> c.withPoolSubscription(true).withLocatorConnection((locatorPort)));
     dataStore1.invoke(this::initDataStore);
     dataStore2.invoke(this::initDataStore);
     accessor.invoke(this::initAccessor);
-
-    accessor.invoke(this::insertEntries);
-    dataStore1.invoke(this::verifyDataIsLoaded);
-    dataStore2.invoke(this::verifyDataIsLoaded);
+    // client1.invoke(this::initClientCache);
+    // client2.invoke(this::initClientCache);
   }
 
-  private void verifyDataIsLoaded() {
+  protected RegionShortcut getRegionShortCut() {
+    return RegionShortcut.PARTITION_REDUNDANT;
+  }
+
+  private void verifyDataIsLoadedAtServer() {
     Region region = getCache().getRegion(REGION_NAME);
     assertThat(region.size()).isEqualTo(NUM_ENTRIES);
   }
 
-  public Cache getCache() {
-    Cache cache = ClusterStartupRule.getCache();
-    assertThat(cache).isNotNull();
+  private void verifyDataIsLoadedAtClient() {
+    Region region = getClientCache().getRegion(REGION_NAME);
+    assertThat(region.size()).isEqualTo(NUM_ENTRIES);
+  }
 
-    return cache;
+  private void verifyRegionIsCleared() {
+    Region region = getCache().getRegion(REGION_NAME);
+    assertThat(region.size()).isEqualTo(0);
+  }
+
+  private void initClientCache() {
+    Region region = getClientCache().createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY)
+        .create(REGION_NAME);
+    region.registerInterest("ALL_KEYS");
   }
 
   private void initDataStore() {
     Cache cache = getCache();
-    cache.createRegionFactory(RegionShortcut.PARTITION_REDUNDANT)
+    cache.createRegionFactory(getRegionShortCut())
         .setPartitionAttributes(new PartitionAttributesFactory().setTotalNumBuckets(10).create())
         .create(REGION_NAME);
   }
 
   private void initAccessor() {
     Cache cache = getCache();
-    cache.createRegionFactory(RegionShortcut.PARTITION_REDUNDANT)
+    cache.createRegionFactory(getRegionShortCut())
         .setPartitionAttributes(
             new PartitionAttributesFactory().setTotalNumBuckets(10).setLocalMaxMemory(0).create())
         .create(REGION_NAME);
   }
 
-  private void insertEntries() {
+  private void feedFromServer() {
     Cache cache = getCache();
     Region region = cache.getRegion(REGION_NAME);
     IntStream.range(0, NUM_ENTRIES).forEach(i -> region.put(i, "value" + i));
     assertThat(region.size()).isEqualTo(NUM_ENTRIES);
   }
 
+  private void feedFromClient() {
+    Region region = getClientCache().getRegion(REGION_NAME);
+    IntStream.range(0, NUM_ENTRIES).forEach(i -> region.put(i, "value" + i));
+    assertThat(region.size()).isEqualTo(NUM_ENTRIES);
+  }
+
   @Test
   public void normalClearFromDataStore() {
+    accessor.invoke(this::feedFromServer);
+    dataStore1.invoke(this::verifyDataIsLoadedAtServer);
+    dataStore2.invoke(this::verifyDataIsLoadedAtServer);
+
     dataStore1.invoke(() -> {
       Region region = getCache().getRegion(REGION_NAME);
       assertThat(region.size()).isEqualTo(NUM_ENTRIES);
@@ -110,14 +131,15 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
       region.clear();
       assertThat(region.size()).isEqualTo(0);
     });
-    dataStore2.invoke(() -> {
-      Region region = getCache().getRegion(REGION_NAME);
-      assertThat(region.size()).isEqualTo(0);
-    });
+    dataStore2.invoke(this::verifyRegionIsCleared);
   }
 
   @Test
   public void normalClearFromAccessor() {
+    accessor.invoke(this::feedFromServer);
+    dataStore1.invoke(this::verifyDataIsLoadedAtServer);
+    dataStore2.invoke(this::verifyDataIsLoadedAtServer);
+
     accessor.invoke(() -> {
       Region region = getCache().getRegion(REGION_NAME);
       assertThat(region.size()).isEqualTo(NUM_ENTRIES);
@@ -125,9 +147,28 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
 
       assertThat(region.size()).isEqualTo(0);
     });
-    dataStore2.invoke(() -> {
-      Region region = getCache().getRegion(REGION_NAME);
-      assertThat(region.size()).isEqualTo(0);
-    });
+    dataStore1.invoke(this::verifyRegionIsCleared);
+    dataStore2.invoke(this::verifyRegionIsCleared);
   }
+
+  // @Test
+  // public void normalClearFromClient() {
+  // client1.invoke(this::feedFromClient);
+  // client2.invoke(this::verifyDataIsLoadedAtClient);
+  // dataStore1.invoke(this::verifyDataIsLoadedAtServer);
+  // dataStore2.invoke(this::verifyDataIsLoadedAtServer);
+  //
+  // client1.invoke(()->{
+  // Region region = getClientCache().getRegion(REGION_NAME);
+  // assertThat(region.size()).isEqualTo(NUM_ENTRIES);
+  // region.clear();
+  // assertThat(region.size()).isEqualTo(0);
+  // });
+  // dataStore1.invoke(this::verifyRegionIsCleared);
+  // dataStore2.invoke(this::verifyRegionIsCleared);
+  // client2.invoke(()-> {
+  // Region region = getClientCache().getRegion(REGION_NAME);
+  // assertThat(region.size()).isEqualTo(0);
+  // });
+  // }
 }
