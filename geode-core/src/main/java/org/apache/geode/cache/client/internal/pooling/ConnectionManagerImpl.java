@@ -307,32 +307,49 @@ public class ConnectionManagerImpl implements ConnectionManager {
       throws AllConnectionsInUseException, NoAvailableServersException,
       ServerConnectivityException {
 
-    PooledConnection connection =
-        availableConnectionManager.useFirst((c) -> c.getServer().equals(server));
-    if (null != connection) {
-      return connection;
-    }
-
-    if (!onlyUseExistingCnx) {
-      connection = forceCreateConnection(server);
-      if (null != connection) {
-        return connection;
-      }
-      throw new ServerConnectivityException(BORROW_CONN_ERROR_MSG + server);
-    }
+    PooledConnection connection;
+    logger.trace("Connection borrowConnection single hop connection");
 
     long waitStart = NOT_WAITING;
     try {
       long timeout = System.nanoTime() + MILLISECONDS.toNanos(acquireTimeout);
       while (true) {
+
         connection =
             availableConnectionManager.useFirst((c) -> c.getServer().equals(server));
+
         if (null != connection) {
           return connection;
         }
 
+        if (connectionAccounting.tryCreate()) {
+          try {
+            connection = createPooledConnection(server);
+
+            if (null != connection) {
+              return connection;
+            }
+            throw new NoAvailableServersException();
+          } finally {
+            if (connection == null) {
+              connectionAccounting.cancelTryCreate();
+              if (connectionAccounting.isUnderMinimum()) {
+                startBackgroundPrefill();
+              }
+            }
+          }
+        }
+
         if (checkShutdownInterruptedOrTimeout(timeout)) {
           break;
+        }
+
+        if (!onlyUseExistingCnx) {
+          connection = forceCreateConnection(server);
+          if (null != connection) {
+            return connection;
+          }
+          throw new ServerConnectivityException(BORROW_CONN_ERROR_MSG + server);
         }
 
         waitStart = beginConnectionWaitStatIfNotStarted(waitStart);
