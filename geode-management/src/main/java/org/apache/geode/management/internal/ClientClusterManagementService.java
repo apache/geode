@@ -63,7 +63,8 @@ public class ClientClusterManagementService implements ClusterManagementService 
 
   @Override
   public <T extends AbstractConfiguration<?>> ClusterManagementRealizationResult create(T config) {
-    ClusterManagementRealizationResult result = transport.submitMessage(config, CommandType.CREATE);
+    ClusterManagementRealizationResult result =
+        transport.submitMessage(config, config.getCreationCommandType());
     assertSuccessful(result);
     return result;
   }

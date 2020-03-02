@@ -32,7 +32,7 @@ import org.springframework.http.converter.json.Jackson2ObjectMapperFactoryBean;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -88,9 +88,8 @@ public class DeploymentManagementController extends AbstractManagementController
       @ApiResponse(code = 409, message = "Index already exists."),
       @ApiResponse(code = 500, message = "Internal error.")})
   @PreAuthorize("@securityService.authorize('CLUSTER', 'MANAGE', 'DEPLOY')")
-  // @PostMapping(Deployment.DEPLOYMENT_ENDPOINT)
-  @PostMapping(value = Deployment.DEPLOYMENT_ENDPOINT,
-      consumes = {"multipart/form-data", "application/json"})
+  @PutMapping(value = Deployment.DEPLOYMENT_ENDPOINT,
+      consumes = {"multipart/form-data"})
   public ResponseEntity<ClusterManagementResult> deploy(
       @RequestParam(HasFile.FILE_PARAM) MultipartFile file,
       @RequestParam(HasFile.CONFIG_PARAM) String json) throws IOException {
