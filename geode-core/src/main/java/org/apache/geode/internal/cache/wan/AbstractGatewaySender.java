@@ -791,7 +791,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     synchronized (this.eventProcessor.getRunningStateLock()) {
       while (this.eventProcessor.getException() == null && this.eventProcessor.isStopped()) {
         try {
-          this.eventProcessor.getRunningStateLock().wait();
+          this.eventProcessor.getRunningStateLock().wait(1000);
         } catch (InterruptedException e) {
           Thread.currentThread().interrupt();
         }

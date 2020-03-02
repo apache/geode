@@ -149,7 +149,8 @@ public class TcpServerGossipVersionDUnitTest extends JUnit4DistributedTestCase {
           .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR),
           InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
           InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer())
-              .requestToServer(LocalHostUtil.getLocalHost(), port0, req, 5000);
+              .requestToServer(new HostAndPort(LocalHostUtil.getLocalHost().getHostName(), port0),
+                  req, 5000);
       assertThat(response).isNotNull();
 
     } catch (IllegalStateException e) {

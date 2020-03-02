@@ -20,7 +20,6 @@ import static org.apache.geode.internal.serialization.DataSerializableFixedID.LE
 import static org.apache.geode.internal.serialization.DataSerializableFixedID.REMOVE_MEMBER_REQUEST;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -62,6 +61,7 @@ import org.apache.geode.distributed.internal.membership.gms.messages.LeaveReques
 import org.apache.geode.distributed.internal.membership.gms.messages.NetworkPartitionMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.RemoveMemberMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.ViewAckMessage;
+import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
@@ -179,7 +179,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
    */
   private GMSMembershipView<ID> lastConflictingView;
 
-  private List<HostAddress> locators;
+  private List<HostAndPort> locators;
 
   /**
    * a list of join/leave/crashes
@@ -1140,10 +1140,9 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
     state.locatorsContacted = 0;
 
     do {
-      for (HostAddress laddr : locators) {
+      for (HostAndPort laddr : locators) {
         try {
-          InetSocketAddress addr = laddr.getSocketInetAddress();
-          Object o = locatorClient.requestToServer(addr, request, connectTimeout, true);
+          Object o = locatorClient.requestToServer(laddr, request, connectTimeout, true);
           FindCoordinatorResponse<ID> response =
               (o instanceof FindCoordinatorResponse) ? (FindCoordinatorResponse<ID>) o : null;
           if (response != null) {

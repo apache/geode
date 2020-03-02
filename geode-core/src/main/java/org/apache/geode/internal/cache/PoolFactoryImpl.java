@@ -17,19 +17,19 @@ package org.apache.geode.internal.cache;
 
 import java.io.DataInput;
 import java.io.DataOutput;
+import java.io.Externalizable;
 import java.io.IOException;
-import java.net.InetAddress;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.CacheException;
@@ -40,7 +40,7 @@ import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.tcpserver.LocatorAddress;
+import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.pdx.internal.TypeRegistry;
@@ -58,7 +58,7 @@ public class PoolFactoryImpl implements InternalPoolFactory {
    */
   private PoolAttributes attributes = new PoolAttributes();
 
-  private final List<LocatorAddress> locatorAddresses = new ArrayList<>();
+  private final List<HostAndPort> locatorAddresses = new ArrayList<>();
 
   /**
    * The cache that created this factory
@@ -248,28 +248,6 @@ public class PoolFactoryImpl implements InternalPoolFactory {
     return this;
   }
 
-  private InetSocketAddress getInetSocketAddress(String host, int port) {
-    if (port == 0) {
-      throw new IllegalArgumentException("port must be greater than 0 but was " + port);
-      // the rest of the port validation is done by InetSocketAddress
-    }
-    InetSocketAddress sockAddr;
-    try {
-      InetAddress hostAddr = InetAddress.getByName(host);
-      sockAddr = new InetSocketAddress(hostAddr, port);
-    } catch (UnknownHostException ignore) {
-      // IllegalArgumentException ex = new IllegalArgumentException("Unknown host " + host);
-      // ex.initCause(cause);
-      // throw ex;
-      // Fix for #45348
-      logger.warn(
-          "Hostname is unknown: {}. Creating pool with unknown host in case the host becomes known later.",
-          host);
-      sockAddr = new InetSocketAddress(host, port);
-    }
-    return sockAddr;
-  }
-
   @Override
   public PoolFactory setSubscriptionAckInterval(int ackInterval) {
     if (ackInterval <= 0) {
@@ -286,9 +264,10 @@ public class PoolFactoryImpl implements InternalPoolFactory {
       throw new IllegalStateException(
           "A server has already been added. You can only add locators or servers; not both.");
     }
-    InetSocketAddress isa = getInetSocketAddress(host, port);
-    attributes.locators.add(isa);
-    locatorAddresses.add(new LocatorAddress(isa, host));
+    validatePort(port);
+    HostAndPort address = new HostAndPort(host, port);
+    attributes.locators.add(address);
+    locatorAddresses.add(address);
     return this;
   }
 
@@ -298,8 +277,15 @@ public class PoolFactoryImpl implements InternalPoolFactory {
       throw new IllegalStateException(
           "A locator has already been added. You can only add locators or servers; not both.");
     }
-    attributes.servers.add(getInetSocketAddress(host, port));
+    validatePort(port);
+    attributes.servers.add(new HostAndPort(host, port));
     return this;
+  }
+
+  private void validatePort(int port) {
+    if (port <= 0) {
+      throw new IllegalArgumentException("port must be greater than 0 but was " + port);
+    }
   }
 
   @Override
@@ -332,10 +318,11 @@ public class PoolFactoryImpl implements InternalPoolFactory {
     setSubscriptionAckInterval(cp.getSubscriptionAckInterval());
     setServerGroup(cp.getServerGroup());
     setMultiuserAuthentication(cp.getMultiuserAuthentication());
-    for (InetSocketAddress inetSocketAddress : cp.getLocators()) {
-      addLocator(inetSocketAddress.getHostName(), inetSocketAddress.getPort());
+    for (InetSocketAddress address : cp.getLocators()) {
+      addLocator(address.getHostName(), address.getPort());
     }
-    attributes.servers.addAll(cp.getServers());
+    attributes.servers.addAll(cp.getServers().stream()
+        .map(x -> new HostAndPort(x.getHostName(), x.getPort())).collect(Collectors.toList()));
   }
 
   public void init(GatewaySender sender) {
@@ -405,7 +392,7 @@ public class PoolFactoryImpl implements InternalPoolFactory {
   /**
    * Not a true pool just the attributes. Serialization is used by unit tests
    */
-  public static class PoolAttributes implements Pool, DataSerializable {
+  public static class PoolAttributes implements Pool, Externalizable {
 
     private static final long serialVersionUID = 1L; // for findbugs
 
@@ -430,8 +417,8 @@ public class PoolFactoryImpl implements InternalPoolFactory {
     int subscriptionTimeoutMultipler = DEFAULT_SUBSCRIPTION_TIMEOUT_MULTIPLIER;
     public String serverGroup = DEFAULT_SERVER_GROUP;
     boolean multiuserSecureModeEnabled = DEFAULT_MULTIUSER_AUTHENTICATION;
-    public ArrayList<InetSocketAddress> locators = new ArrayList<>();
-    public ArrayList<InetSocketAddress> servers = new ArrayList<>();
+    public ArrayList<HostAndPort> locators = new ArrayList<>();
+    public ArrayList<HostAndPort> servers = new ArrayList<>();
     public transient boolean startDisabled = false; // only used by junit tests
     public transient LocatorDiscoveryCallback locatorCallback = null; // only used by tests
     public GatewaySender gatewaySender = null;
@@ -567,7 +554,7 @@ public class PoolFactoryImpl implements InternalPoolFactory {
         throw new IllegalStateException(
             "At least one locator or server must be added before a connection pool can be created.");
       }
-      return Collections.unmodifiableList(new ArrayList<>(locators));
+      return locators.stream().map(x -> x.getSocketInetAddress()).collect(Collectors.toList());
     }
 
     @Override
@@ -582,7 +569,7 @@ public class PoolFactoryImpl implements InternalPoolFactory {
             "At least one locator or server must be added before a connection pool can be created.");
       }
       // needs to return a copy.
-      return Collections.unmodifiableList(new ArrayList<>(servers));
+      return servers.stream().map(x -> x.getSocketInetAddress()).collect(Collectors.toList());
     }
 
     @Override
@@ -616,7 +603,6 @@ public class PoolFactoryImpl implements InternalPoolFactory {
     }
 
 
-    @Override
     public void toData(DataOutput out) throws IOException {
       DataSerializer.writePrimitiveInt(connectionTimeout, out);
       DataSerializer.writePrimitiveInt(connectionLifetime, out);
@@ -639,7 +625,6 @@ public class PoolFactoryImpl implements InternalPoolFactory {
       DataSerializer.writePrimitiveInt(socketConnectTimeout, out);
     }
 
-    @Override
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       connectionTimeout = DataSerializer.readPrimitiveInt(in);
       connectionLifetime = DataSerializer.readPrimitiveInt(in);
@@ -702,6 +687,16 @@ public class PoolFactoryImpl implements InternalPoolFactory {
           && Objects.equals(new HashSet<>(servers), new HashSet<>(that.servers))
           && Objects.equals(locatorCallback, that.locatorCallback)
           && Objects.equals(gatewaySender, that.gatewaySender);
+    }
+
+    @Override
+    public void writeExternal(ObjectOutput out) throws IOException {
+      toData(out);
+    }
+
+    @Override
+    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+      fromData(in);
     }
   }
 }
