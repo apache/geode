@@ -177,12 +177,12 @@ public class SSLSocketIntegrationTest {
 
   @Test
   public void securedSocketTransmissionShouldWork() throws Exception {
-    this.serverSocket = this.socketCreator.forServer().createServerSocket(0, 0, this.localHost);
+    this.serverSocket = this.socketCreator.forCluster().createServerSocket(0, 0, this.localHost);
     this.serverThread = startServer(this.serverSocket, 15000);
 
     int serverPort = this.serverSocket.getLocalPort();
-    this.clientSocket = this.socketCreator.forServer()
-        .connectForServer(new HostAndPort(this.localHost.getHostAddress(), serverPort), 0, null);
+    this.clientSocket = this.socketCreator.forCluster()
+        .connect(new HostAndPort(this.localHost.getHostAddress(), serverPort), 0, null);
 
     // transmit expected string from Client to Server
     ObjectOutputStream output = new ObjectOutputStream(this.clientSocket.getOutputStream());
@@ -326,7 +326,7 @@ public class SSLSocketIntegrationTest {
 
   @Test(expected = SocketTimeoutException.class)
   public void handshakeCanTimeoutOnServer() throws Throwable {
-    this.serverSocket = this.socketCreator.forServer().createServerSocket(0, 0, this.localHost);
+    this.serverSocket = this.socketCreator.forCluster().createServerSocket(0, 0, this.localHost);
     this.serverThread = startServer(this.serverSocket, 1000);
 
     int serverPort = this.serverSocket.getLocalPort();
@@ -409,7 +409,7 @@ public class SSLSocketIntegrationTest {
     try {
       await("connect to server socket").until(() -> {
         try {
-          Socket clientSocket = socketCreator.forClient().connectForClient(
+          Socket clientSocket = socketCreator.forClient().connect(
               new HostAndPort(LocalHostUtil.getLocalHost().getHostAddress(), serverSocketPort),
               500);
           clientSocket.close();

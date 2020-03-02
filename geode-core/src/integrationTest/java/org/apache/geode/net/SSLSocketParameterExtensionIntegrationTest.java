@@ -142,12 +142,12 @@ public class SSLSocketParameterExtensionIntegrationTest {
 
   @Test
   public void securedSocketCheckExtensions() throws Exception {
-    this.serverSocket = this.socketCreator.forServer().createServerSocket(0, 0, this.localHost);
+    this.serverSocket = this.socketCreator.forCluster().createServerSocket(0, 0, this.localHost);
     this.serverThread = startServer(this.serverSocket, 15000);
 
     int serverPort = this.serverSocket.getLocalPort();
-    this.clientSocket = this.socketCreator.forServer()
-        .connectForServer(new HostAndPort(this.localHost.getHostAddress(), serverPort));
+    this.clientSocket = this.socketCreator.forCluster()
+        .connect(new HostAndPort(this.localHost.getHostAddress(), serverPort));
 
     SSLSocket sslSocket = (SSLSocket) this.clientSocket;
 
@@ -187,7 +187,7 @@ public class SSLSocketParameterExtensionIntegrationTest {
     Thread serverThread = new Thread(new MyThreadGroup(this.testName.getMethodName()), () -> {
       try {
         Socket socket = serverSocket.accept();
-        SocketCreatorFactory.getSocketCreatorForComponent(CLUSTER).forServer()
+        SocketCreatorFactory.getSocketCreatorForComponent(CLUSTER).forCluster()
             .handshakeIfSocketIsSSL(socket,
                 timeoutMillis);
         assertThat(socket.getSoTimeout()).isEqualTo(0);

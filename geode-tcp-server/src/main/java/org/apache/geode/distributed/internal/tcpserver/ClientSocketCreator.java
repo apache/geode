@@ -17,6 +17,10 @@ package org.apache.geode.distributed.internal.tcpserver;
 import java.io.IOException;
 import java.net.Socket;
 
+/**
+ * ClientSocketCreator should be used, in most cases, in client caches and for WAN
+ * connections. It allows the use of a socket factory in creating connections to servers.
+ */
 public interface ClientSocketCreator {
 
   /**
@@ -34,11 +38,11 @@ public interface ClientSocketCreator {
    * Create a connection to the given host/port using client-cache defaults for things
    * like socket buffer size
    */
-  Socket connectForClient(HostAndPort addr, int connectTimeout) throws IOException;
+  Socket connect(HostAndPort addr, int connectTimeout) throws IOException;
 
   /**
    * Creates a connection to the given host/port
    */
-  Socket connectForClient(HostAndPort addr, int connectTimeout, int socketBufferSize)
+  Socket connect(HostAndPort addr, int connectTimeout, int socketBufferSize)
       throws IOException;
 }

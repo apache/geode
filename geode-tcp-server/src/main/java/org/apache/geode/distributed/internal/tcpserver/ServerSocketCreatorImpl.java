@@ -21,7 +21,7 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public class ServerSocketCreatorImpl implements ServerSocketCreator {
+public class ServerSocketCreatorImpl implements ClusterSocketCreator {
   private final TcpSocketCreatorImpl socketCreator;
 
   protected ServerSocketCreatorImpl(TcpSocketCreatorImpl socketCreator) {
@@ -80,12 +80,12 @@ public class ServerSocketCreatorImpl implements ServerSocketCreator {
   /**
    * Return a client socket. This method is used by peers.
    */
-  public Socket connectForServer(HostAndPort addr) throws IOException {
+  public Socket connect(HostAndPort addr) throws IOException {
     return socketCreator.connect(addr, 0, null, false, -1);
   }
 
   @Override
-  public final Socket connectForServer(HostAndPort addr, int timeout,
+  public final Socket connect(HostAndPort addr, int timeout,
       ConnectionWatcher optionalWatcher)
       throws IOException {
     return socketCreator.advancedSocketCreator.connect(addr, timeout, optionalWatcher, false, -1,

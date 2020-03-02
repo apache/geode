@@ -21,9 +21,7 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -248,28 +246,6 @@ public class PoolFactoryImpl implements InternalPoolFactory {
   public PoolFactory setSubscriptionTimeoutMultiplier(int multiplier) {
     attributes.subscriptionTimeoutMultipler = multiplier;
     return this;
-  }
-
-  private InetSocketAddress getInetSocketAddress(String host, int port) {
-    if (port == 0) {
-      throw new IllegalArgumentException("port must be greater than 0 but was " + port);
-      // the rest of the port validation is done by InetSocketAddress
-    }
-    InetSocketAddress sockAddr;
-    try {
-      InetAddress hostAddr = InetAddress.getByName(host);
-      sockAddr = new InetSocketAddress(hostAddr, port);
-    } catch (UnknownHostException ignore) {
-      // IllegalArgumentException ex = new IllegalArgumentException("Unknown host " + host);
-      // ex.initCause(cause);
-      // throw ex;
-      // Fix for #45348
-      logger.warn(
-          "Hostname is unknown: {}. Creating pool with unknown host in case the host becomes known later.",
-          host);
-      sockAddr = new InetSocketAddress(host, port);
-    }
-    return sockAddr;
   }
 
   @Override

@@ -293,7 +293,7 @@ public abstract class LauncherIntegrationTestCase {
     try {
       socket = SocketCreatorFactory
           .createNonDefaultInstance(false, false, null, null, System.getProperties())
-          .forServer()
+          .forCluster()
           .createServerSocket(port, 50, bindAddress);
       assertThat(socket.isBound()).isTrue();
       assertThat(socket.isClosed()).isFalse();

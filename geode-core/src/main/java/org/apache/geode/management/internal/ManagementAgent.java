@@ -513,7 +513,7 @@ public class ManagementAgent {
 
     @Override
     public ServerSocket createServerSocket(int port) throws IOException {
-      return this.sc.forServer().createServerSocket(port, TCPConduit.getBackLog(), this.bindAddr);
+      return this.sc.forCluster().createServerSocket(port, TCPConduit.getBackLog(), this.bindAddr);
     }
   }
 }

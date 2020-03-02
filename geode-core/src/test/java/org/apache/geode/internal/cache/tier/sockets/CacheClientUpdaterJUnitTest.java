@@ -61,7 +61,7 @@ public class CacheClientUpdaterJUnitTest {
     SocketCreator socketCreator = mock(SocketCreator.class);
     ClientSocketCreator csc = mock(ClientSocketCreator.class);
     when(socketCreator.forClient()).thenReturn(csc);
-    when(csc.connectForClient(any(HostAndPort.class),
+    when(csc.connect(any(HostAndPort.class),
         any(Integer.class), any(Integer.class))).thenThrow(new SocketException("ouch"));
 
     // mock some stats that we can then use to ensure that they're closed when the problem occurs

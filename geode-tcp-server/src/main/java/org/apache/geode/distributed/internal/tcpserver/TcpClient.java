@@ -158,7 +158,7 @@ public class TcpClient {
     logger.debug("TcpClient sending {} to {}", request, addr);
 
     Socket sock =
-        socketCreator.forServer().connectForServer(addr, (int) newTimeout, null);
+        socketCreator.forCluster().connect(addr, (int) newTimeout, null);
     sock.setSoTimeout((int) newTimeout);
     DataOutputStream out = null;
     try {
@@ -208,7 +208,7 @@ public class TcpClient {
           // with the socket and is closing it. Aborting the connection by
           // setting SO_LINGER to zero will clean up the TIME_WAIT socket on
           // the locator's machine.
-          if (!sock.isClosed() && !socketCreator.forServer().useSSL()) {
+          if (!sock.isClosed() && !socketCreator.forCluster().useSSL()) {
             sock.setSoLinger(true, 0);
           }
         }
@@ -241,7 +241,7 @@ public class TcpClient {
     gossipVersion = TcpServer.getOldGossipVersion();
 
     try {
-      sock = socketCreator.forServer().connectForServer(addr, timeout, null);
+      sock = socketCreator.forCluster().connect(addr, timeout, null);
       sock.setSoTimeout(timeout);
     } catch (SSLException e) {
       throw new IllegalStateException("Unable to form SSL connection", e);

@@ -19,7 +19,11 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public interface ServerSocketCreator {
+/**
+ * ServerSocketCreator should be used to create connections between peers in
+ * a cluster.
+ */
+public interface ClusterSocketCreator {
 
   /**
    * Returns true if this socket creator is configured to use SSL by default
@@ -47,7 +51,7 @@ public interface ServerSocketCreator {
    * Creates a connection to the given host/port. This method ignores any
    * custom client-side socket factory that may be installed.
    */
-  Socket connectForServer(HostAndPort addr) throws IOException;
+  Socket connect(HostAndPort addr) throws IOException;
 
   /**
    * Creates a connection to the given host/port. The ConnectionWatcher may be null.
@@ -57,6 +61,6 @@ public interface ServerSocketCreator {
    * <p>
    * This method ignores any custom client-side socket factory that may be installed.
    */
-  Socket connectForServer(HostAndPort addr, int timeout,
+  Socket connect(HostAndPort addr, int timeout,
       ConnectionWatcher optionalWatcher) throws IOException;
 }

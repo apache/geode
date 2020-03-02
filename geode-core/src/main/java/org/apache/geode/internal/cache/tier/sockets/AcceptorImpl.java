@@ -511,7 +511,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
       final long tilt = System.currentTimeMillis() + timeLimitMillis;
 
       if (isSelector()) {
-        if (socketCreator.forServer().useSSL()) {
+        if (socketCreator.forCluster().useSSL()) {
           throw new IllegalArgumentException(
               "Selector thread pooling can not be used with client/server SSL. The selector can be disabled by setting max-threads=0.");
         }
@@ -1544,7 +1544,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
 
   private CommunicationMode getCommunicationModeForNonSelector(Socket socket) throws IOException {
     socket.setSoTimeout(0);
-    socketCreator.forServer().handshakeIfSocketIsSSL(socket, acceptTimeout);
+    socketCreator.forCluster().handshakeIfSocketIsSSL(socket, acceptTimeout);
     byte communicationModeByte = (byte) socket.getInputStream().read();
     if (communicationModeByte == -1) {
       throw new EOFException();

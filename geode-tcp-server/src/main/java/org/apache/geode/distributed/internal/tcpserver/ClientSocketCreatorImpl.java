@@ -39,14 +39,14 @@ public class ClientSocketCreatorImpl implements ClientSocketCreator {
   /**
    * Return a client socket. This method is used by client/server clients.
    */
-  public Socket connectForClient(HostAndPort addr, int timeout) throws IOException {
+  public Socket connect(HostAndPort addr, int timeout) throws IOException {
     return socketCreator.connect(addr, timeout, null, true, -1);
   }
 
   /**
    * Return a client socket. This method is used by client/server clients.
    */
-  public Socket connectForClient(HostAndPort addr, int timeout, int socketBufferSize)
+  public Socket connect(HostAndPort addr, int timeout, int socketBufferSize)
       throws IOException {
     return socketCreator.connect(addr, timeout, null, true, socketBufferSize);
   }

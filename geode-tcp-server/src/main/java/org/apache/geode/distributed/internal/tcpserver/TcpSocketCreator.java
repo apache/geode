@@ -24,7 +24,7 @@ public interface TcpSocketCreator {
   /**
    * Returns a socket creator for server and peer-to-peer sockets
    */
-  ServerSocketCreator forServer();
+  ClusterSocketCreator forCluster();
 
   /**
    * Returns a socket creator for client caches and WAN senders
@@ -32,7 +32,6 @@ public interface TcpSocketCreator {
   ClientSocketCreator forClient();
 
   /**
-   * `
    * Returns a socket creator for advanced use
    */
   AdvancedSocketCreator forAdvancedUse();

@@ -55,7 +55,7 @@ public class SocketCreatorJUnitTest {
     final SSLSocket socket = mock(SSLSocket.class);
 
     final int timeout = 1938236;
-    socketCreator.forServer().handshakeIfSocketIsSSL(socket, timeout);
+    socketCreator.forCluster().handshakeIfSocketIsSSL(socket, timeout);
     verify(socket).setSoTimeout(timeout);
   }
 
@@ -65,7 +65,7 @@ public class SocketCreatorJUnitTest {
     final Socket socket = mock(Socket.class);
     final int timeout = 1938236;
 
-    socketCreator.forServer().handshakeIfSocketIsSSL(socket, timeout);
+    socketCreator.forCluster().handshakeIfSocketIsSSL(socket, timeout);
     verify(socket, never()).setSoTimeout(timeout);
   }
 
@@ -85,10 +85,10 @@ public class SocketCreatorJUnitTest {
 
     ServerSocket serverSocket = null;
     try {
-      serverSocket = socketCreator.forServer().createServerSocket(11234, 10, inetAddress);
+      serverSocket = socketCreator.forCluster().createServerSocket(11234, 10, inetAddress);
       assertThatExceptionOfType(BindException.class).isThrownBy(() -> {
         // call twice on the same port to trigger exception
-        socketCreator.forServer().createServerSocket(11234, 10, inetAddress);
+        socketCreator.forCluster().createServerSocket(11234, 10, inetAddress);
       }).withMessageContaining("11234")
           .withMessageContaining(InetAddress.getLocalHost().getHostAddress());
     } finally {

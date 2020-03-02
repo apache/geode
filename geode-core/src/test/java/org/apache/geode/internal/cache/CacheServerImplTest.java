@@ -36,7 +36,7 @@ import org.apache.geode.StatisticsType;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ResourceEvent;
-import org.apache.geode.distributed.internal.tcpserver.ServerSocketCreator;
+import org.apache.geode.distributed.internal.tcpserver.ClusterSocketCreator;
 import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.OverflowAttributes;
 import org.apache.geode.internal.cache.tier.sockets.AcceptorBuilder;
@@ -68,8 +68,8 @@ public class CacheServerImplTest {
     config = mock(DistributionConfig.class);
     securityService = mock(SecurityService.class);
     socketCreator = mock(SocketCreator.class);
-    ServerSocketCreator ssc = mock(ServerSocketCreator.class);
-    when(socketCreator.forServer()).thenReturn(ssc);
+    ClusterSocketCreator ssc = mock(ClusterSocketCreator.class);
+    when(socketCreator.forCluster()).thenReturn(ssc);
     system = mock(InternalDistributedSystem.class);
     advisor = mock(CacheServerAdvisor.class);
 

@@ -54,7 +54,7 @@ public class TcpSocketCreatorImpl implements TcpSocketCreator {
 
 
   @Override
-  public ServerSocketCreator forServer() {
+  public ClusterSocketCreator forCluster() {
     return serverSocketCreator;
   }
 

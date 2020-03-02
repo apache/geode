@@ -19,6 +19,12 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+
+/**
+ * AdvancedSocketCreator provides a couple of methods for either client/server
+ * or cluster communications that don't fit neatly into either of the ClientSocketCreator
+ * or ClusterSocketCreator interfaces.
+ */
 public interface AdvancedSocketCreator {
   /**
    * Returns true if this socket creator is configured to use SSL by default
@@ -32,8 +38,8 @@ public interface AdvancedSocketCreator {
   void handshakeIfSocketIsSSL(Socket socket, int timeout) throws IOException;
 
   /**
-   * This method gives you pretty much full control over creating a server socket.
-   * Use it with care.
+   * This method is used to create a ServerSocket that uses a port in a specific
+   * range of values. You can also specify whether SSL is or is not used.
    */
   ServerSocket createServerSocketUsingPortRange(InetAddress ba, int backlog,
       boolean isBindAddress, boolean useNIO,

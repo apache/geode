@@ -89,7 +89,7 @@ public class ConnectionImpl implements Connection {
       CommunicationMode communicationMode, GatewaySender sender, SocketCreator sc)
       throws IOException {
     theSocket =
-        sc.forClient().connectForClient(new HostAndPort(location.getHostName(), location.getPort()),
+        sc.forClient().connect(new HostAndPort(location.getHostName(), location.getPort()),
             handshakeTimeout,
             socketBufferSize);
     theSocket.setTcpNoDelay(true);

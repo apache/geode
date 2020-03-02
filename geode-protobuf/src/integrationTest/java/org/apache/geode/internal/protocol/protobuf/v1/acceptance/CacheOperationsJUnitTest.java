@@ -402,7 +402,7 @@ public class CacheOperationsJUnitTest {
     sslConfigBuilder.setKeystorePassword("password");
 
     SocketCreator socketCreator = new SocketCreator(sslConfigBuilder.build());
-    return socketCreator.forClient().connectForClient(new HostAndPort("localhost", cacheServerPort),
+    return socketCreator.forClient().connect(new HostAndPort("localhost", cacheServerPort),
         5000);
   }
 }
