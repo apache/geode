@@ -140,7 +140,7 @@ public class PeerTypeRegistration implements TypeRegistration {
       logger.debug("Flushing TypeRegistry");
     }
 
-    InternalRegionFactory factory = cache.createInternalRegionFactory();
+    InternalRegionFactory<Object, Object> factory = cache.createInternalRegionFactory();
 
     factory.setScope(Scope.DISTRIBUTED_ACK);
     if (cache.getPdxPersistent()) {

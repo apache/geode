@@ -67,7 +67,8 @@ public class PeerTypeRegistrationTest {
   @SuppressWarnings("unchecked")
   private final Region<Object, Object> region = mock(Region.class);
   private final TXManagerImpl txManager = mock(TXManagerImpl.class);
-  private final InternalRegionFactory factory = mock(InternalRegionFactory.class);
+  @SuppressWarnings("unchecked")
+  private final InternalRegionFactory<Object, Object> factory = mock(InternalRegionFactory.class);
   private PeerTypeRegistration spyTypeRegistration;
 
   @Before
@@ -168,10 +169,8 @@ public class PeerTypeRegistrationTest {
   }
 
   @Test
-  public void pdxInitializationExceptionIsThrownInInitializeWhenRegionCreationFails()
-      throws IOException, ClassNotFoundException {
+  public void pdxInitializationExceptionIsThrownInInitializeWhenRegionCreationFails() {
     doThrow(new RegionExistsException(region)).when(factory).create(any());
-    doThrow(new IOException()).when(internalCache).createVMRegion(any(), any(), any());
     assertThatThrownBy(() -> spyTypeRegistration.initialize())
         .isInstanceOf(PdxInitializationException.class);
   }
