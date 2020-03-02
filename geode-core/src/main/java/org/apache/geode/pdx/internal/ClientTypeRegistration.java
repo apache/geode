@@ -16,9 +16,7 @@ package org.apache.geode.pdx.internal;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -48,7 +46,7 @@ public class ClientTypeRegistration implements TypeRegistration {
 
   private static final Logger logger = LogService.getLogger();
 
-  private final TypeRegistrationCachingMap localMap = new TypeRegistrationCachingMap();
+  private final TypeRegistrationCachingMap localMaps = new TypeRegistrationCachingMap();
 
   private final InternalCache cache;
 
@@ -63,7 +61,7 @@ public class ClientTypeRegistration implements TypeRegistration {
 
   @Override
   public int defineType(PdxType newType) {
-    Integer existingId = localMap.getIdForType(newType);
+    Integer existingId = localMaps.getIdForType(newType);
     if (existingId != null) {
       return existingId;
     }
@@ -76,7 +74,7 @@ public class ClientTypeRegistration implements TypeRegistration {
         newTypeId = getPdxIdFromPool(newType, (ExecutablePool) pool);
         newType.setTypeId(newTypeId);
         copyTypeToOtherPools(newType, newTypeId, pool);
-        localMap.save(newTypeId, newType);
+        localMaps.save(newTypeId, newType);
         return newTypeId;
       } catch (ServerConnectivityException e) {
         logger.debug("Received an exception defining pdx type on pool {}, {}", pool,
@@ -116,7 +114,7 @@ public class ClientTypeRegistration implements TypeRegistration {
 
   private void sendTypeToPool(PdxType type, int id, Pool pool) {
     try {
-      AddPDXTypeOp.execute((ExecutablePool) pool, id, type);
+      addPdxTypeToPool(type, id, (ExecutablePool) pool);
     } catch (ServerConnectivityException serverConnectivityException) {
       logger.debug("Received an exception sending pdx type to pool {}, {}", pool,
           serverConnectivityException.getMessage(), serverConnectivityException);
@@ -124,9 +122,13 @@ public class ClientTypeRegistration implements TypeRegistration {
     }
   }
 
+  void addPdxTypeToPool(PdxType type, int id, ExecutablePool pool) {
+    AddPDXTypeOp.execute(pool, id, type);
+  }
+
   @Override
   public PdxType getType(int typeId) {
-    PdxType existingType = localMap.getType(typeId);
+    PdxType existingType = localMaps.getType(typeId);
     if (existingType != null) {
       return existingType;
     }
@@ -137,7 +139,7 @@ public class ClientTypeRegistration implements TypeRegistration {
       try {
         PdxType type = getPdxTypeFromPool(typeId, (ExecutablePool) pool);
         if (type != null) {
-          localMap.save(typeId, type);
+          localMaps.save(typeId, type);
           return type;
         }
       } catch (ServerConnectivityException e) {
@@ -159,7 +161,7 @@ public class ClientTypeRegistration implements TypeRegistration {
 
     // Remove all pools being used by gateways from the collection
     pools = pools.stream()
-        .filter(pool -> !((PoolImpl)pool).isUsedByGateway())
+        .filter(pool -> !((PoolImpl) pool).isUsedByGateway())
         .collect(Collectors.toSet());
 
     if (pools.isEmpty()) {
@@ -213,7 +215,7 @@ public class ClientTypeRegistration implements TypeRegistration {
   }
 
   private int processEnumInfoForEnumId(EnumInfo enumInfo) {
-    EnumId existingId = localMap.getIdForEnum(enumInfo);
+    EnumId existingId = localMaps.getIdForEnum(enumInfo);
     if (existingId != null) {
       return existingId.intValue();
     }
@@ -225,7 +227,7 @@ public class ClientTypeRegistration implements TypeRegistration {
         newTypeId = getEnumIdFromPool(enumInfo, (ExecutablePool) pool);
         EnumId newId = new EnumId(newTypeId);
         copyEnumToOtherPools(enumInfo, newTypeId, pool);
-        localMap.save(newId, enumInfo);
+        localMaps.save(newId, enumInfo);
         return newTypeId;
       } catch (ServerConnectivityException e) {
         // ignore, try the next pool.
@@ -247,16 +249,16 @@ public class ClientTypeRegistration implements TypeRegistration {
     Collection<Pool> pools = getAllPoolsExcept(exception);
     for (Pool pool : pools) {
       try {
-        sendEnumIdToPool(enumInfo, newTypeId, pool);
+        sendEnumInfoToPool(enumInfo, newTypeId, pool);
       } catch (ServerConnectivityException e) {
         logger.debug("Received an exception sending pdx enum to pool {}, {}", pool, e.getMessage());
       }
     }
   }
 
-  private void sendEnumIdToPool(EnumInfo enumInfo, int id, Pool pool) {
+  private void sendEnumInfoToPool(EnumInfo enumInfo, int id, Pool pool) {
     try {
-      addPdxEnum(enumInfo, id, (ExecutablePool) pool);
+      addPdxEnumToPool(enumInfo, id, (ExecutablePool) pool);
     } catch (ServerConnectivityException serverConnectivityException) {
       logger.debug("Received an exception sending pdx type to pool {}, {}", pool,
           serverConnectivityException.getMessage(), serverConnectivityException);
@@ -264,7 +266,7 @@ public class ClientTypeRegistration implements TypeRegistration {
     }
   }
 
-  void addPdxEnum(EnumInfo enumInfo, int id, ExecutablePool pool) {
+  void addPdxEnumToPool(EnumInfo enumInfo, int id, ExecutablePool pool) {
     AddPDXEnumOp.execute(pool, id, enumInfo);
   }
 
@@ -276,7 +278,7 @@ public class ClientTypeRegistration implements TypeRegistration {
   @Override
   public EnumInfo getEnumById(int enumId) {
     EnumId id = new EnumId(enumId);
-    EnumInfo existingEnum = localMap.getEnum(id);
+    EnumInfo existingEnum = localMaps.getEnum(id);
     if (existingEnum != null) {
       return existingEnum;
     }
@@ -287,7 +289,7 @@ public class ClientTypeRegistration implements TypeRegistration {
       try {
         EnumInfo result = getEnumFromPool(enumId, (ExecutablePool) pool);
         if (result != null) {
-          localMap.save(id, result);
+          localMaps.save(id, result);
           return result;
         }
       } catch (ServerConnectivityException e) {
@@ -311,7 +313,12 @@ public class ClientTypeRegistration implements TypeRegistration {
     Map<Integer, PdxType> types = new HashMap<>();
     for (Pool p : pools) {
       try {
-        types.putAll(getAllPdxTypesFromPool((ExecutablePool) p));
+        Map<Integer, PdxType> typesFromPool = getAllPdxTypesFromPool((ExecutablePool) p);
+        // Store all retrieved PdxTypes in our local map while we're here
+        typesFromPool.forEach((key, value) -> {
+          types.put(key, value);
+          localMaps.save(key, value);
+        });
       } catch (Exception e) {
         e.printStackTrace();
       }
@@ -329,7 +336,12 @@ public class ClientTypeRegistration implements TypeRegistration {
 
     Map<Integer, EnumInfo> enums = new HashMap<>();
     for (Pool p : pools) {
-      enums.putAll(getAllEnumsFromPool((ExecutablePool) p));
+      Map<Integer, EnumInfo> enumsFromPool = getAllEnumsFromPool((ExecutablePool) p);
+      // Store all retrieved EnumInfos in our local map while we're here
+      enumsFromPool.forEach((key, value) -> {
+        enums.put(key, value);
+        localMaps.save(new EnumId(key), value);
+      });
     }
     return enums;
   }
@@ -342,16 +354,21 @@ public class ClientTypeRegistration implements TypeRegistration {
   @Override
   public PdxType getPdxTypeForField(String fieldName, String className) {
     // Check local map first
-    PdxType type = findPdxTypeInMapByClassAndFieldNames(localMap.idToType, fieldName, className);
+    PdxType type = findPdxTypeInMapByClassAndFieldNames(localMaps.idToType, fieldName, className);
     if (type != null) {
       return type;
     }
     return findPdxTypeInMapByClassAndFieldNames(types(), fieldName, className);
   }
 
-  PdxType findPdxTypeInMapByClassAndFieldNames(Map<Integer, PdxType> map, String fieldName, String className) {
+  PdxType findPdxTypeInMapByClassAndFieldNames(Map<Integer, PdxType> map, String fieldName,
+      String className) {
+    if (map == null) {
+      return null;
+    }
     return map.values().stream()
-        .filter(pdxType -> pdxType.getClassName().equals(className) && (pdxType.getPdxField(fieldName) != null))
+        .filter(pdxType -> pdxType.getClassName().equals(className)
+            && (pdxType.getPdxField(fieldName) != null))
         .findFirst()
         .orElse(null);
   }
@@ -383,7 +400,7 @@ public class ClientTypeRegistration implements TypeRegistration {
         throw returnCorrectExceptionForFailure(typeId, e);
       }
     }
-    localMap.save(typeId, importedType);
+    localMaps.save(typeId, importedType);
   }
 
   /**
@@ -397,13 +414,12 @@ public class ClientTypeRegistration implements TypeRegistration {
 
     for (Pool pool : pools) {
       try {
-        sendEnumIdToPool(importedInfo, enumId, pool);
+        sendEnumInfoToPool(importedInfo, enumId, pool);
       } catch (ServerConnectivityException e) {
         throw returnCorrectExceptionForFailure(enumId, e);
       }
     }
-    EnumId id = new EnumId(enumId);
-    localMap.save(id, importedInfo);
+    localMaps.save(new EnumId(enumId), importedInfo);
   }
 
   private RuntimeException returnCorrectExceptionForFailure(final int typeId,
@@ -417,26 +433,26 @@ public class ClientTypeRegistration implements TypeRegistration {
 
   @Override
   public int getLocalSize() {
-    return localMap.idToTypeSize() + localMap.idToEnumSize();
+    return localMaps.idToTypeSize() + localMaps.idToEnumSize();
   }
 
   @Override
   public Map<PdxType, Integer> getTypeToIdMap() {
-    return localMap.getTypeToId();
+    return localMaps.getTypeToId();
   }
 
   @Override
   public Map<EnumInfo, EnumId> getEnumToIdMap() {
-    return localMap.getEnumToId();
+    return localMaps.getEnumToId();
   }
 
   @Override
   public void clearLocalMaps() {
-    localMap.clear();
+    localMaps.clear();
   }
 
   @Override
   public void flushCache() {
-    localMap.flushEnumCache();
+    localMaps.flushEnumCache();
   }
 }

@@ -28,10 +28,8 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.Encryptor;
 import org.apache.geode.internal.cache.tier.ServerSideHandshake;
@@ -40,7 +38,6 @@ import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.internal.serialization.VersionedDataOutputStream;
 import org.apache.geode.internal.serialization.VersionedDataStream;
-import org.apache.geode.pdx.internal.PeerTypeRegistration;
 import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.security.AuthenticationRequiredException;
 
@@ -194,7 +191,8 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
 
     if ((communicationMode.isWAN()) && this.clientVersion.compareTo(Version.GFE_80) >= 0
         && currentServerVersion.compareTo(Version.GFE_80) >= 0) {
-      TypeRegistry registry = ((InternalDistributedSystem) this.system).getDistributionManager().getExistingCache().getPdxRegistry();
+      TypeRegistry registry = ((InternalDistributedSystem) this.system).getDistributionManager()
+          .getExistingCache().getPdxRegistry();
       int pdxSize = registry == null ? 0 : registry.getTypeRegistration().getLocalSize();
       dos.writeInt(pdxSize);
     }
