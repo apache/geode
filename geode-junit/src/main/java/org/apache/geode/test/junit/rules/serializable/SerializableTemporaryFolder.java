@@ -25,14 +25,18 @@ import java.io.InvalidObjectException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Predicate;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.Description;
+import org.junit.runners.model.MultipleFailureException;
 import org.junit.runners.model.Statement;
 
 /**
@@ -43,15 +47,39 @@ import org.junit.runners.model.Statement;
 public class SerializableTemporaryFolder extends TemporaryFolder implements SerializableTestRule {
   private static final Logger logger = LogManager.getLogger();
 
+  private final AtomicBoolean passed = new AtomicBoolean(true);
   private final AtomicBoolean delete = new AtomicBoolean(true);
   private final AtomicReference<File> copyTo = new AtomicReference<>();
+  private final AtomicReference<When> when = new AtomicReference<>();
   private final AtomicReference<String> methodName = new AtomicReference<>();
 
-  public SerializableTemporaryFolder() {
-    // super
+  /**
+   * Specifies conditions under which copyTo is performed
+   */
+  public enum When {
+    /** Perform {@code copyTo} only if test fails */
+    FAILS(passed -> !passed),
+    /** Perform {@code copyTo} only if test passes */
+    PASSES(passed -> passed),
+    /** Perform {@code copyTo} regardless if test fails or passes */
+    ALWAYS(passed -> true);
+
+    private final Predicate<Boolean> performCopyTo;
+
+    When(Predicate<Boolean> performCopyTo) {
+      this.performCopyTo = performCopyTo;
+    }
+
+    boolean test(boolean passed) {
+      return performCopyTo.test(passed);
+    }
   }
 
-  public SerializableTemporaryFolder(final File parentFolder) {
+  public SerializableTemporaryFolder() {
+    this(null);
+  }
+
+  public SerializableTemporaryFolder(File parentFolder) {
     super(parentFolder);
   }
 
@@ -72,6 +100,14 @@ public class SerializableTemporaryFolder extends TemporaryFolder implements Seri
     return this;
   }
 
+  /**
+   * Specifies conditions under which {@code copyTo} is performed. Default is {@code FAIL}.
+   */
+  public SerializableTemporaryFolder when(When when) {
+    this.when.set(when);
+    return this;
+  }
+
   @Override
   public Statement apply(Statement base, Description description) {
     return statement(base, description);
@@ -81,18 +117,26 @@ public class SerializableTemporaryFolder extends TemporaryFolder implements Seri
     return new Statement() {
       @Override
       public void evaluate() throws Throwable {
+        List<Throwable> errors = new ArrayList<>();
+
         before(description);
         try {
           base.evaluate();
+        } catch (Throwable e) {
+          errors.add(e);
+          passed.set(false);
         } finally {
           after();
         }
+
+        MultipleFailureException.assertEmpty(errors);
       }
     };
   }
 
   protected void before(Description description) throws Throwable {
     methodName.set(description.getMethodName());
+    passed.set(true);
     before();
     logger.info("SerializableTemporaryFolder root: {}", getRoot().getAbsolutePath());
   }
@@ -100,10 +144,10 @@ public class SerializableTemporaryFolder extends TemporaryFolder implements Seri
   @Override
   protected void after() {
     File directory = copyTo.get();
-    if (directory != null) {
-      directory.mkdir();
-      File destination = new File(directory, methodName.get());
-      destination.mkdir();
+    if (directory != null && when.get().test(passed.get())) {
+      File timestamp = new File(directory, String.valueOf(System.currentTimeMillis()));
+      File destination = new File(timestamp, methodName.get());
+      destination.mkdirs();
 
       copyTo(getRoot(), destination);
     }
@@ -123,7 +167,7 @@ public class SerializableTemporaryFolder extends TemporaryFolder implements Seri
     }
   }
 
-  private void readObject(final ObjectInputStream stream) throws InvalidObjectException {
+  private void readObject(ObjectInputStream stream) throws InvalidObjectException {
     throw new InvalidObjectException("SerializationProxy required");
   }
 
@@ -140,7 +184,7 @@ public class SerializableTemporaryFolder extends TemporaryFolder implements Seri
     private final File parentFolder;
     private final File folder;
 
-    private SerializationProxy(final SerializableTemporaryFolder instance) {
+    private SerializationProxy(SerializableTemporaryFolder instance) {
       parentFolder = (File) readField(TemporaryFolder.class, instance, FIELD_PARENT_FOLDER);
       folder = (File) readField(TemporaryFolder.class, instance, FIELD_FOLDER);
     }

@@ -16,6 +16,7 @@ package org.apache.geode.test.junit.runners;
 
 import static java.util.Arrays.asList;
 import static java.util.Objects.hash;
+import static java.util.Objects.requireNonNull;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
@@ -74,33 +75,67 @@ public class TestRunner {
   public static List<Failure> runTestWithExpectedFailures(Class<?> test,
       List<Throwable> expectedThrowables) {
     List<FailureInfo> expectedFailures = Streams.stream(expectedThrowables)
-        .map(f -> new FailureInfo(f.getClass(), f.getMessage()))
+        .map(t -> new FailureInfo(t.getClass(), t.getMessage()))
         .collect(Collectors.toList());
 
     JUnitCore junitCore = new JUnitCore();
     Result result = junitCore.run(Request.aClass(test).getRunner());
 
     List<Failure> failures = result.getFailures();
-    assertThat(failures).as("Actual failures").hasSameSizeAs(expectedFailures);
+    assertThat(failures)
+        .as("Actual failures")
+        .hasSameSizeAs(expectedFailures);
 
     List<FailureInfo> actualFailures = Streams.stream(failures)
-        .map(f -> new FailureInfo(f.getException().getClass(), f.getMessage()))
+        .map(t -> new FailureInfo(t.getException().getClass(), t.getMessage()))
         .collect(Collectors.toList());
 
-    assertThat(actualFailures).as("Actual failures info (Throwable and message)").hasSameElementsAs(
-        expectedFailures);
+    assertThat(actualFailures)
+        .as("Actual failures info (Throwable and message)")
+        .hasSameElementsAs(expectedFailures);
+
+    return failures;
+  }
+
+  @SafeVarargs
+  public static List<Failure> runTestWithExpectedFailureTypes(Class<?> test,
+      Class<? extends Throwable>... expectedThrowables) {
+    return runTestWithExpectedFailureTypes(test, asList(expectedThrowables));
+  }
+
+  public static List<Failure> runTestWithExpectedFailureTypes(Class<?> test,
+      List<Class<? extends Throwable>> expectedThrowables) {
+    List<FailureTypeInfo> expectedFailures = Streams.stream(expectedThrowables)
+        .map(t -> new FailureTypeInfo(t))
+        .collect(Collectors.toList());
+
+    JUnitCore junitCore = new JUnitCore();
+    Result result = junitCore.run(Request.aClass(test).getRunner());
+
+    List<Failure> failures = result.getFailures();
+    assertThat(failures)
+        .as("Actual failures")
+        .hasSameSizeAs(expectedFailures);
+
+    List<FailureTypeInfo> actualFailures = Streams.stream(failures)
+        .map(t -> new FailureTypeInfo(t.getException().getClass()))
+        .collect(Collectors.toList());
+
+    assertThat(actualFailures)
+        .as("Actual failures info (Throwable and message)")
+        .hasSameElementsAs(expectedFailures);
 
     return failures;
   }
 
   private static class FailureInfo {
 
-    final Class<? extends Throwable> thrownClass;
-    final String expectedMessage;
+    private final Class<? extends Throwable> thrownClass;
+    private final String expectedMessage;
 
-    FailureInfo(Class<? extends Throwable> thrownClass, String expectedMessage) {
-      this.thrownClass = thrownClass;
-      this.expectedMessage = expectedMessage;
+    private FailureInfo(Class<? extends Throwable> thrownClass, String expectedMessage) {
+      this.thrownClass = requireNonNull(thrownClass);
+      this.expectedMessage = requireNonNull(expectedMessage);
     }
 
     @Override
@@ -120,6 +155,47 @@ public class TestRunner {
       return thrownClass.equals(that.thrownClass) &&
           (expectedMessage.contains(that.expectedMessage) ||
               that.expectedMessage.contains(expectedMessage));
+    }
+
+    @Override
+    public String toString() {
+      return "FailureInfo{" +
+          "thrownClass=" + thrownClass +
+          ", expectedMessage=" + expectedMessage +
+          '}';
+    }
+  }
+
+  private static class FailureTypeInfo {
+
+    private final Class<? extends Throwable> thrownClass;
+
+    private FailureTypeInfo(Class<? extends Throwable> thrownClass) {
+      this.thrownClass = thrownClass;
+    }
+
+    @Override
+    public int hashCode() {
+      return hash(thrownClass);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj) {
+        return true;
+      }
+      if (obj == null || getClass() != obj.getClass()) {
+        return false;
+      }
+      FailureTypeInfo that = (FailureTypeInfo) obj;
+      return thrownClass.equals(that.thrownClass);
+    }
+
+    @Override
+    public String toString() {
+      return "FailureTypeInfo{" +
+          "thrownClass=" + thrownClass +
+          '}';
     }
   }
 }
