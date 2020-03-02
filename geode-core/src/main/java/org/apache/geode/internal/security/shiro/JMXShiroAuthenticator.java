@@ -56,7 +56,7 @@ public class JMXShiroAuthenticator implements JMXAuthenticator, NotificationList
       credProps.setProperty(ResourceConstants.USER_NAME, aCredentials[0]);
       credProps.setProperty(ResourceConstants.PASSWORD, aCredentials[1]);
     } else if (credentials instanceof String) {
-      username = "";
+      username = "token-" + credentials.hashCode();
       credProps.setProperty(ResourceConstants.TOKEN, (String) credentials);
     } else {
       throw new AuthenticationFailedException(MISSING_CREDENTIALS_MESSAGE);
