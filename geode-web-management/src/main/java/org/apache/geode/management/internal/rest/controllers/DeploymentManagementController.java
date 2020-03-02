@@ -35,6 +35,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -91,15 +92,14 @@ public class DeploymentManagementController extends AbstractManagementController
   @PutMapping(value = Deployment.DEPLOYMENT_ENDPOINT,
       consumes = {"multipart/form-data"})
   public ResponseEntity<ClusterManagementResult> deploy(
-      @RequestParam(HasFile.FILE_PARAM) MultipartFile file,
-      @RequestParam(HasFile.CONFIG_PARAM) String json) throws IOException {
+      @RequestPart(HasFile.FILE_PARAM) MultipartFile file,
+      @RequestPart(HasFile.CONFIG_PARAM) Deployment deployment) throws IOException {
     // save the file to the staging area
     if (file == null) {
       throw new IllegalArgumentException("No file uploaded");
     }
     Path tempDir = FileUploader.createSecuredTempDirectory("uploaded-");
     File dest = new File(tempDir.toFile(), file.getOriginalFilename());
-    Deployment deployment = objectMapper.getObject().readValue(json, Deployment.class);
     file.transferTo(dest);
     deployment.setFile(dest);
     ClusterManagementRealizationResult realizationResult =
