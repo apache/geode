@@ -91,6 +91,8 @@ public class ConnectionManagerJUnitTest {
     Properties properties = new Properties();
     properties.put(MCAST_PORT, "0");
     properties.put(LOCATORS, "");
+
+
     ds = DistributedSystem.connect(properties);
     background = Executors.newSingleThreadScheduledExecutor();
     poolStats = new PoolStats(ds, "connectionManagerJUnitTest");
@@ -360,6 +362,82 @@ public class ConnectionManagerJUnitTest {
     Assert.assertTrue("Elapsed = " + elapsedMillis,
         elapsedMillis >= BORROW_TIMEOUT_MILLIS - ALLOWABLE_ERROR_IN_MILLIS);
   }
+
+
+  @Test
+  public void testSingleHopRetryConnection()
+      throws InterruptedException, AllConnectionsInUseException, NoAvailableServersException {
+    final long idleTimeoutMillis = 300;
+    final long BORROW_TIMEOUT_MILLIS = 500;
+    manager =
+        new ConnectionManagerImpl("pool", factory, endpointManager, 5, 1, idleTimeoutMillis, -1,
+            logger, 60 * 1000, cancelCriterion, poolStats);
+    manager.start(background);
+
+    await().until(() -> manager.getConnectionCount() == 1);
+
+    Connection conn1 = manager.borrowConnection(BORROW_TIMEOUT_MILLIS);
+    Connection conn2 = manager.borrowConnection(BORROW_TIMEOUT_MILLIS);
+
+    Connection ping1 =
+        manager.borrowConnection(new ServerLocation("localhost", 5), BORROW_TIMEOUT_MILLIS, true);
+    Connection ping2 =
+        manager.borrowConnection(new ServerLocation("localhost", 5), BORROW_TIMEOUT_MILLIS, true);
+    Connection ping3 =
+        manager.borrowConnection(new ServerLocation("localhost", 5), BORROW_TIMEOUT_MILLIS, true);
+
+    // Return some connections, let them idle expire
+    manager.returnConnection(conn1);
+    manager.returnConnection(conn2);
+
+    long startNanos = nowNanos();
+    try {
+      manager.borrowConnection(new ServerLocation("localhost", 5), BORROW_TIMEOUT_MILLIS, true);
+    } catch (AllConnectionsInUseException e) {
+      fail("Didn't get connection");
+    }
+    long elapsedMillis = elapsedMillis(startNanos);
+    Assert.assertTrue("Elapsed = " + elapsedMillis,
+        elapsedMillis < BORROW_TIMEOUT_MILLIS - ALLOWABLE_ERROR_IN_MILLIS);
+  }
+
+  @Test
+  public void testSingleHopRetryConnection2()
+      throws InterruptedException, AllConnectionsInUseException, NoAvailableServersException {
+    final long idleTimeoutMillis = 800;
+    final long BORROW_TIMEOUT_MILLIS = 500;
+    manager =
+        new ConnectionManagerImpl("pool", factory, endpointManager, 5, 1, idleTimeoutMillis, -1,
+            logger, 60 * 1000, cancelCriterion, poolStats);
+    manager.start(background);
+
+    await().until(() -> manager.getConnectionCount() == 1);
+
+    Connection conn1 = manager.borrowConnection(BORROW_TIMEOUT_MILLIS);
+    Connection conn2 = manager.borrowConnection(BORROW_TIMEOUT_MILLIS);
+
+    Connection ping1 =
+        manager.borrowConnection(new ServerLocation("localhost", 5), BORROW_TIMEOUT_MILLIS, true);
+    Connection ping2 =
+        manager.borrowConnection(new ServerLocation("localhost", 5), BORROW_TIMEOUT_MILLIS, true);
+    Connection ping3 =
+        manager.borrowConnection(new ServerLocation("localhost", 5), BORROW_TIMEOUT_MILLIS, true);
+
+    // Return some connections, let them idle expire
+    manager.returnConnection(ping1);
+    manager.returnConnection(ping2);
+
+    long startNanos = nowNanos();
+    try {
+      manager.borrowConnection(new ServerLocation("localhost", 5), BORROW_TIMEOUT_MILLIS, true);
+    } catch (AllConnectionsInUseException e) {
+      fail("Didn't get connection");
+    }
+    long elapsedMillis = elapsedMillis(startNanos);
+    Assert.assertTrue("Elapsed = " + elapsedMillis,
+        elapsedMillis < BORROW_TIMEOUT_MILLIS - ALLOWABLE_ERROR_IN_MILLIS);
+  }
+
 
   @Test
   public void testLifetimeExpiration() throws InterruptedException, AllConnectionsInUseException,
