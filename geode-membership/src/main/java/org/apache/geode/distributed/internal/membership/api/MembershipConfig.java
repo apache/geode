@@ -38,7 +38,7 @@ public interface MembershipConfig {
   int DEFAULT_UDP_FRAGMENT_SIZE = 60000;
   String DEFAULT_START_LOCATOR = "";
   int DEFAULT_MEMBER_TIMEOUT = 5000;
-  int DEFAULT_LOSS_THRESHOLD = 51;
+  int DEFAULT_LOSS_THRESHOLD = 15;
   int DEFAULT_MEMBER_WEIGHT = 0;
   boolean DEFAULT_ENABLE_NETWORK_PARTITION_DETECTION = true;
   int DEFAULT_MCAST_PORT = 0;
@@ -224,7 +224,7 @@ public interface MembershipConfig {
     return MemberIdentifier.NORMAL_DM_TYPE;
   }
 
-  default Object getOldDSMembershipInfo() {
+  default Object getOldMembershipInfo() {
     return DEFAULT_OLD_MEMBERSHIP_INFO;
   }
 

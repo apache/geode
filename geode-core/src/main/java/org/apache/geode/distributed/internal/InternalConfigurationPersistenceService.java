@@ -59,11 +59,9 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.cache.AttributesFactory;
-import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedLockService;
@@ -73,7 +71,7 @@ import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.internal.JarDeployer;
 import org.apache.geode.internal.cache.ClusterConfigurationLoader;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.InternalRegionArguments;
+import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
 import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
@@ -806,17 +804,12 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
       cache.createDiskStoreFactory().setDiskDirs(diskDirs).setAutoCompact(true)
           .setMaxOplogSize(10).create(CLUSTER_CONFIG_DISK_STORE_NAME);
 
-      AttributesFactory<String, Configuration> regionAttrsFactory = new AttributesFactory<>();
-      regionAttrsFactory.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
-      regionAttrsFactory.setCacheListener(new ConfigurationChangeListener(this, cache));
-      regionAttrsFactory.setDiskStoreName(CLUSTER_CONFIG_DISK_STORE_NAME);
-      regionAttrsFactory.setScope(Scope.DISTRIBUTED_ACK);
-      InternalRegionArguments internalArgs = new InternalRegionArguments();
-      internalArgs.setIsUsedForMetaRegion(true);
-      internalArgs.setMetaRegionWithTransactions(false);
-
-      return cache.createVMRegion(CONFIG_REGION_NAME, regionAttrsFactory.create(),
-          internalArgs);
+      InternalRegionFactory<String, Configuration> regionFactory =
+          cache.createInternalRegionFactory(RegionShortcut.REPLICATE_PERSISTENT);
+      regionFactory.addCacheListener(new ConfigurationChangeListener(this, cache));
+      regionFactory.setDiskStoreName(CLUSTER_CONFIG_DISK_STORE_NAME);
+      regionFactory.setIsUsedForMetaRegion(true).setMetaRegionWithTransactions(false);
+      return regionFactory.create(CONFIG_REGION_NAME);
     } catch (RuntimeException e) {
       status.set(SharedConfigurationStatus.STOPPED);
       // throw RuntimeException as is

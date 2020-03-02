@@ -353,8 +353,8 @@ org/apache/geode/internal/cache/snapshot/SnapshotOptionsImpl,true,1,filter:org/a
 org/apache/geode/internal/cache/snapshot/WindowedExporter$WindowedArgs,true,1,exporter:org/apache/geode/distributed/DistributedMember,options:org/apache/geode/cache/snapshot/SnapshotOptions
 org/apache/geode/internal/cache/snapshot/WindowedExporter$WindowedExportFunction,true,1
 org/apache/geode/internal/cache/tier/BatchException,true,-6707074107791305564,_index:int
-org/apache/geode/internal/cache/tier/sockets/CacheClientProxy$MessageDispatcher$1,true,0,this$0:org/apache/geode/internal/cache/tier/sockets/CacheClientProxy$MessageDispatcher
 org/apache/geode/internal/cache/tier/sockets/ClientTombstoneMessage$TOperation,false
+org/apache/geode/internal/cache/tier/sockets/MessageDispatcher$1,true,0,this$0:org/apache/geode/internal/cache/tier/sockets/MessageDispatcher
 org/apache/geode/internal/cache/tier/sockets/MessageTooLargeException,true,-8970585803331525833
 org/apache/geode/internal/cache/tier/sockets/UnregisterAllInterest,true,5026160621257178459
 org/apache/geode/internal/cache/tx/TransactionalOperation$ServerRegionOperation,false
@@ -461,6 +461,7 @@ org/apache/geode/management/internal/functions/CacheRealizationFunction,false
 org/apache/geode/management/internal/functions/CliFunctionResult$StatusState,false
 org/apache/geode/management/internal/functions/GetMemberInformationFunction,true,1404642539058875565
 org/apache/geode/management/internal/functions/RebalanceFunction,true,1
+org/apache/geode/management/internal/operation/OperationState,false,opId:java/lang/String,operation:org/apache/geode/management/api/ClusterManagementOperation,operationEnd:java/util/Date,operationStart:java/util/Date,result:org/apache/geode/management/runtime/OperationResult,throwable:java/lang/Throwable
 org/apache/geode/management/internal/web/domain/QueryParameterSource,true,34131123582155,objectName:javax/management/ObjectName,queryExpression:javax/management/QueryExp
 org/apache/geode/management/internal/web/shell/MBeanAccessException,true,813768898269516238
 org/apache/geode/pdx/FieldType,false,defaultSerializedValue:java/nio/ByteBuffer,defaultValue:java/lang/Object,isFixedWidth:boolean,name:java/lang/String,width:int

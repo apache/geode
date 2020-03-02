@@ -29,7 +29,6 @@ import org.junit.ClassRule;
 import org.junit.Test;
 
 import org.apache.geode.cache.query.QueryService;
-import org.apache.geode.management.api.BaseConnectionConfig;
 import org.apache.geode.management.api.ClusterManagementGetResult;
 import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementRealizationResult;
@@ -63,8 +62,7 @@ public class ListIndexManagementDUnitTest {
     MemberVM server2 = lsRule.startServerVM(2, locator.getPort());
     MemberVM server3 = lsRule.startServerVM(3, "group1", locator.getPort());
 
-    cms = new ClusterManagementServiceBuilder().setConnectionConfig(
-        new BaseConnectionConfig("localhost", locator.getHttpPort()))
+    cms = new ClusterManagementServiceBuilder().setPort(locator.getHttpPort())
         .build();
 
     Region config = new Region();
@@ -156,7 +154,7 @@ public class ListIndexManagementDUnitTest {
           .isEqualTo("/region1");
       softly.assertThat(indexConfig.getExpression()).as("get index: expression").isEqualTo("id");
       EntityGroupInfo<Index, IndexInfo> entityGroupInfo =
-          cms.get(this.indexConfig).getResult().getConfigurationByGroup().get(0);
+          cms.get(this.indexConfig).getResult().getGroups().get(0);
       Index indexConfigTwo = entityGroupInfo.getConfiguration();
       softly.assertThat(indexConfigTwo.getLinks().getLinks()).as("get index: links key")
           .containsKey("region");

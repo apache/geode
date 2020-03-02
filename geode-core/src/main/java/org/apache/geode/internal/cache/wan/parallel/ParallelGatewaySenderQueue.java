@@ -17,7 +17,6 @@ package org.apache.geode.internal.cache.wan.parallel;
 import static org.apache.geode.cache.wan.GatewaySender.DEFAULT_BATCH_SIZE;
 import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.BEFORE_INITIAL_IMAGE;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -41,7 +40,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.internal.MutableForTesting;
-import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.AttributesMutator;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
@@ -54,6 +52,7 @@ import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionDestroyedException;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -70,6 +69,7 @@ import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
+import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.LocalRegion.InitializationLevel;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -320,8 +320,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
       final String prQName = getQueueName(sender.getId(), userRegion.getFullPath());
       prQ = (PartitionedRegion) cache.getRegion(prQName);
       if (prQ == null) {
-        // TODO:REF:Avoid deprecated apis
-        AttributesFactory fact = new AttributesFactory();
+        InternalRegionFactory fact = cache.createInternalRegionFactory();
         // Fix for 48621 - don't enable concurrency checks
         // for queue buckets., event with persistence
         fact.setConcurrencyChecksEnabled(false);
@@ -355,7 +354,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         fact.setEvictionAttributes(ea);
         fact.setPartitionAttributes(pfact.create());
 
-        final RegionAttributes ra = fact.create();
+        final RegionAttributes ra = fact.getCreateAttributes();
 
         if (logger.isDebugEnabled()) {
           logger.debug("{}: Attempting to create queue region: {}", this, prQName);
@@ -365,40 +364,30 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
             new ParallelGatewaySenderQueueMetaRegion(prQName, ra, null, cache, sender,
                 sender.getStatisticsClock());
 
-        try {
-          prQ = (PartitionedRegion) cache.createVMRegion(prQName, ra,
-              new InternalRegionArguments().setInternalMetaRegion(meta).setDestroyLockFlag(true)
-                  .setSnapshotInputStream(null).setImageTarget(null));
+        fact.setInternalMetaRegion(meta).setDestroyLockFlag(true)
+            .setSnapshotInputStream(null).setImageTarget(null);
+        prQ = (PartitionedRegion) fact.create(prQName);
 
-          if (logger.isDebugEnabled()) {
-            logger.debug("Region created  : {} partition Attributes : {}", prQ,
-                prQ.getPartitionAttributes());
-          }
-
-          // TODO This should not be set on the PR but on the GatewaySender
-          prQ.enableConflation(sender.isBatchConflationEnabled());
-
-          // Before going ahead, make sure all the buckets of shadowPR are
-          // loaded
-          // and primary nodes have been decided.
-          // This is required in case of persistent PR and sender.
-          if (prQ.getLocalMaxMemory() != 0) {
-            Iterator<Integer> itr = prQ.getRegionAdvisor().getBucketSet().iterator();
-            while (itr.hasNext()) {
-              itr.next();
-            }
-          }
-          // In case of Replicated Region it may not be necessary.
-
-        } catch (IOException veryUnLikely) {
-          logger.fatal("Unexpected Exception during init of " +
-              this.getClass(),
-              veryUnLikely);
-        } catch (ClassNotFoundException alsoUnlikely) {
-          logger.fatal("Unexpected Exception during init of " +
-              this.getClass(),
-              alsoUnlikely);
+        if (logger.isDebugEnabled()) {
+          logger.debug("Region created  : {} partition Attributes : {}", prQ,
+              prQ.getPartitionAttributes());
         }
+
+        // TODO This should not be set on the PR but on the GatewaySender
+        prQ.enableConflation(sender.isBatchConflationEnabled());
+
+        // Before going ahead, make sure all the buckets of shadowPR are
+        // loaded
+        // and primary nodes have been decided.
+        // This is required in case of persistent PR and sender.
+        if (prQ.getLocalMaxMemory() != 0) {
+          Iterator<Integer> itr = prQ.getRegionAdvisor().getBucketSet().iterator();
+          while (itr.hasNext()) {
+            itr.next();
+          }
+        }
+        // In case of Replicated Region it may not be necessary.
+
         if (logger.isDebugEnabled()) {
           logger.debug("{}: Created queue region: {}", this, prQ);
         }
@@ -469,9 +458,14 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
       final String prQName = sender.getId() + QSTRING + convertPathToName(userPR.getFullPath());
       prQ = (PartitionedRegion) cache.getRegion(prQName);
       if (prQ == null) {
-        // TODO:REF:Avoid deprecated apis
+        RegionShortcut regionShortcut;
+        if (sender.isPersistenceEnabled() && !isAccessor) {
+          regionShortcut = RegionShortcut.PARTITION_PERSISTENT;
+        } else {
+          regionShortcut = RegionShortcut.PARTITION;
+        }
+        InternalRegionFactory fact = cache.createInternalRegionFactory(regionShortcut);
 
-        AttributesFactory fact = new AttributesFactory();
         fact.setConcurrencyChecksEnabled(false);
         PartitionAttributesFactory pfact = new PartitionAttributesFactory();
         pfact.setTotalNumBuckets(userPR.getTotalNumberOfBuckets());
@@ -485,10 +479,6 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
 
         pfact.setStartupRecoveryDelay(userPR.getPartitionAttributes().getStartupRecoveryDelay());
         pfact.setRecoveryDelay(userPR.getPartitionAttributes().getRecoveryDelay());
-
-        if (sender.isPersistenceEnabled() && !isAccessor) {
-          fact.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
-        }
 
         fact.setDiskStoreName(sender.getDiskStoreName());
 
@@ -507,7 +497,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         fact.setEvictionAttributes(ea);
         fact.setPartitionAttributes(pfact.create());
 
-        final RegionAttributes ra = fact.create();
+        final RegionAttributes ra = fact.getCreateAttributes();
 
         if (logger.isDebugEnabled()) {
           logger.debug("{}: Attempting to create queue region: {}", this, prQName);
@@ -516,28 +506,25 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         ParallelGatewaySenderQueueMetaRegion meta =
             metaRegionFactory.newMetataRegion(cache, prQName, ra, sender);
 
-        try {
-          prQ = (PartitionedRegion) cache.createVMRegion(prQName, ra,
-              new InternalRegionArguments().setInternalMetaRegion(meta).setDestroyLockFlag(true)
-                  .setInternalRegion(true).setSnapshotInputStream(null).setImageTarget(null));
-          // at this point we should be able to assert prQ == meta;
+        fact.setInternalMetaRegion(meta);
+        fact.setDestroyLockFlag(true);
+        fact.setInternalRegion(true);
+        fact.setSnapshotInputStream(null);
+        fact.setImageTarget(null);
+        prQ = (PartitionedRegion) fact.create(prQName);
+        // at this point we should be able to assert prQ == meta;
 
-          // TODO This should not be set on the PR but on the GatewaySender
-          prQ.enableConflation(sender.isBatchConflationEnabled());
-          if (isAccessor)
-            return; // return from here if accessor node
+        // TODO This should not be set on the PR but on the GatewaySender
+        prQ.enableConflation(sender.isBatchConflationEnabled());
+        if (isAccessor)
+          return; // return from here if accessor node
 
-          // Add the overflow statistics to the mbean
-          addOverflowStatisticsToMBean(cache, prQ);
+        // Add the overflow statistics to the mbean
+        addOverflowStatisticsToMBean(cache, prQ);
 
-          // Wait for buckets to be recovered.
-          prQ.shadowPRWaitForBucketRecovery();
+        // Wait for buckets to be recovered.
+        prQ.shadowPRWaitForBucketRecovery();
 
-        } catch (IOException | ClassNotFoundException veryUnLikely) {
-          logger.fatal("Unexpected Exception during init of " +
-              this.getClass(),
-              veryUnLikely);
-        }
         if (logger.isDebugEnabled()) {
           logger.debug("{}: Created queue region: {}", this, prQ);
         }

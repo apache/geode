@@ -24,16 +24,13 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.cache.AttributesFactory;
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.DataPolicy;
-import org.apache.geode.cache.RegionAttributes;
-import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.internal.HttpService;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.cache.CacheFactoryStatics;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.InternalRegionArguments;
+import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -151,23 +148,16 @@ public class RestAgent {
       if (logger.isDebugEnabled()) {
         logger.debug("Starting creation of  __ParameterizedQueries__ region");
       }
-      InternalCache cache = (InternalCache) CacheFactory.getAnyInstance();
+      InternalCache cache = CacheFactoryStatics.getAnyInstance();
       if (cache != null) {
-        final InternalRegionArguments regionArguments = new InternalRegionArguments();
-        regionArguments.setIsUsedForMetaRegion(true);
-        final AttributesFactory<String, String> attributesFactory =
-            new AttributesFactory<String, String>();
-
-        attributesFactory.setConcurrencyChecksEnabled(false);
-        attributesFactory.setDataPolicy(DataPolicy.REPLICATE);
-        attributesFactory.setKeyConstraint(String.class);
-        attributesFactory.setScope(Scope.DISTRIBUTED_ACK);
-        attributesFactory.setStatisticsEnabled(false);
-        attributesFactory.setValueConstraint(String.class);
-
-        final RegionAttributes<String, String> regionAttributes = attributesFactory.create();
-
-        cache.createVMRegion("__ParameterizedQueries__", regionAttributes, regionArguments);
+        InternalRegionFactory<String, String> factory =
+            cache.createInternalRegionFactory(RegionShortcut.REPLICATE);
+        factory.setConcurrencyChecksEnabled(false);
+        factory.setKeyConstraint(String.class);
+        factory.setStatisticsEnabled(false);
+        factory.setValueConstraint(String.class);
+        factory.setIsUsedForMetaRegion(true);
+        factory.create("__ParameterizedQueries__");
         if (logger.isDebugEnabled()) {
           logger.debug("Successfully created __ParameterizedQueries__ region");
         }

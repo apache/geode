@@ -14,7 +14,6 @@
  */
 package org.apache.geode.management.internal;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -36,12 +35,10 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.RegionExistsException;
 import org.apache.geode.cache.Scope;
@@ -52,7 +49,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.HasCachePerfStats;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.InternalRegionArguments;
+import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.ManagementException;
@@ -388,10 +385,6 @@ public class FederatingManager extends Manager {
         // GII wont start at all if its interrupted
         if (!Thread.currentThread().isInterrupted()) {
 
-          // as the regions will be internal regions
-          InternalRegionArguments internalRegionArguments = new InternalRegionArguments();
-          internalRegionArguments.setIsUsedForMetaRegion(true);
-
           // Create anonymous stats holder for Management Regions
           HasCachePerfStats monitoringRegionStats = new HasCachePerfStats() {
 
@@ -407,49 +400,42 @@ public class FederatingManager extends Manager {
             }
           };
 
-          internalRegionArguments.setCachePerfStatsHolder(monitoringRegionStats);
-
           // Monitoring region for member is created
-          AttributesFactory<String, Object> monitorAttributesFactory = new AttributesFactory<>();
-          monitorAttributesFactory.setScope(Scope.DISTRIBUTED_NO_ACK);
-          monitorAttributesFactory.setDataPolicy(DataPolicy.REPLICATE);
-          monitorAttributesFactory.setConcurrencyChecksEnabled(false);
+          InternalRegionFactory<String, Object> monitorFactory =
+              cache.createInternalRegionFactory();
+          monitorFactory.setScope(Scope.DISTRIBUTED_NO_ACK);
+          monitorFactory.setDataPolicy(DataPolicy.REPLICATE);
+          monitorFactory.setConcurrencyChecksEnabled(false);
           ManagementCacheListener managementCacheListener =
               new ManagementCacheListener(proxyFactory);
-          monitorAttributesFactory.addCacheListener(managementCacheListener);
-
-          RegionAttributes<String, Object> monitoringRegionAttrs =
-              monitorAttributesFactory.create();
+          monitorFactory.addCacheListener(managementCacheListener);
+          monitorFactory.setIsUsedForMetaRegion(true);
+          monitorFactory.setCachePerfStatsHolder(monitoringRegionStats);
 
           // Notification region for member is created
-          AttributesFactory<NotificationKey, Notification> notificationAttributesFactory =
-              new AttributesFactory<>();
-          notificationAttributesFactory.setScope(Scope.DISTRIBUTED_NO_ACK);
-          notificationAttributesFactory.setDataPolicy(DataPolicy.REPLICATE);
-          notificationAttributesFactory.setConcurrencyChecksEnabled(false);
+          InternalRegionFactory<NotificationKey, Notification> notificationFactory =
+              cache.createInternalRegionFactory();
+          notificationFactory.setScope(Scope.DISTRIBUTED_NO_ACK);
+          notificationFactory.setDataPolicy(DataPolicy.REPLICATE);
+          notificationFactory.setConcurrencyChecksEnabled(false);
 
           // Fix for issue #49638, evict the internal region _notificationRegion
-          notificationAttributesFactory
+          notificationFactory
               .setEvictionAttributes(EvictionAttributes.createLRUEntryAttributes(
                   ManagementConstants.NOTIF_REGION_MAX_ENTRIES, EvictionAction.LOCAL_DESTROY));
 
           NotificationCacheListener notifListener = new NotificationCacheListener(proxyFactory);
-          notificationAttributesFactory.addCacheListener(notifListener);
-
-          RegionAttributes<NotificationKey, Notification> notifRegionAttrs =
-              notificationAttributesFactory.create();
+          notificationFactory.addCacheListener(notifListener);
+          notificationFactory.setIsUsedForMetaRegion(true);
+          notificationFactory.setCachePerfStatsHolder(monitoringRegionStats);
 
           Region<String, Object> proxyMonitoringRegion;
           try {
             if (!running) {
               return;
             }
-            proxyMonitoringRegion =
-                cache.createInternalRegion(monitoringRegionName, monitoringRegionAttrs,
-                    internalRegionArguments);
-
-          } catch (TimeoutException | RegionExistsException | IOException
-              | ClassNotFoundException e) {
+            proxyMonitoringRegion = monitorFactory.create(monitoringRegionName);
+          } catch (TimeoutException | RegionExistsException e) {
             if (logger.isDebugEnabled()) {
               logger.debug("Error During Internal Region creation", e);
             }
@@ -462,12 +448,9 @@ public class FederatingManager extends Manager {
             if (!running) {
               return;
             }
-            proxyNotificationRegion =
-                cache.createInternalRegion(notificationRegionName, notifRegionAttrs,
-                    internalRegionArguments);
+            proxyNotificationRegion = notificationFactory.create(notificationRegionName);
             proxyNotificationRegionCreated = true;
-          } catch (TimeoutException | RegionExistsException | IOException
-              | ClassNotFoundException e) {
+          } catch (TimeoutException | RegionExistsException e) {
             if (logger.isDebugEnabled()) {
               logger.debug("Error During Internal Region creation", e);
             }

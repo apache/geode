@@ -110,13 +110,13 @@ public class GiiDiskAccessExceptionRegressionTest extends CacheTestCase {
 
     DiskStore diskStore = diskStoreFactory.create(uniqueName);
 
-    AttributesFactory factory = new AttributesFactory();
+    InternalRegionFactory factory = getCache().createInternalRegionFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
     factory.setDiskSynchronous(false);
     factory.setDiskStoreName(diskStore.getName());
 
-    Region<Integer, Integer> region = getCache().createRegion(uniqueName, factory.create());
+    Region<Integer, Integer> region = factory.create(uniqueName);
 
     // Now put entries in the disk region
     for (int i = 0; i < 100; ++i) {
@@ -129,22 +129,22 @@ public class GiiDiskAccessExceptionRegressionTest extends CacheTestCase {
     // Now recreate the region but set the factory such that disk region entry object
     // used is customized by us to throw exception while writing to disk
 
-    DistributedRegion distributedRegion = new DistributedRegion(uniqueName, factory.create(), null,
-        getCache(), new InternalRegionArguments().setDestroyLockFlag(true).setRecreateFlag(false)
-            .setSnapshotInputStream(null).setImageTarget(null),
-        disabledClock());
+    DistributedRegion distributedRegion =
+        new DistributedRegion(uniqueName, factory.getCreateAttributes(), null,
+            getCache(),
+            new InternalRegionArguments().setDestroyLockFlag(true).setRecreateFlag(false)
+                .setSnapshotInputStream(null).setImageTarget(null),
+            disabledClock());
 
     distributedRegion.entries.setEntryFactory(new DiskRegionEntryThrowsFactory());
 
-    InternalRegionArguments internalRegionArguments = new InternalRegionArguments();
-    internalRegionArguments.setInternalMetaRegion(distributedRegion);
-    internalRegionArguments.setDestroyLockFlag(true);
-    internalRegionArguments.setSnapshotInputStream(null);
-    internalRegionArguments.setImageTarget(null);
+    factory.setInternalMetaRegion(distributedRegion);
+    factory.setDestroyLockFlag(true);
+    factory.setSnapshotInputStream(null);
+    factory.setImageTarget(null);
 
-    assertThatThrownBy(
-        () -> getCache().createVMRegion(uniqueName, factory.create(), internalRegionArguments))
-            .isInstanceOf(DiskAccessException.class);
+    assertThatThrownBy(() -> factory.create(uniqueName))
+        .isInstanceOf(DiskAccessException.class);
   }
 
   /**

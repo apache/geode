@@ -17,7 +17,7 @@ package org.apache.geode.distributed.internal;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -71,6 +71,13 @@ public abstract class DistributionMessage
 
   private static final Logger logger = LogService.getLogger();
 
+  @Immutable
+  protected static final InternalDistributedMember ALL_RECIPIENTS = null;
+
+  @Immutable
+  private static final List<InternalDistributedMember> ALL_RECIPIENTS_LIST =
+      Collections.singletonList(null);
+
   // common flags used by operation messages
   /** Keep this compatible with the other GFE layer PROCESSOR_ID flags. */
   protected static final short HAS_PROCESSOR_ID = 0x1;
@@ -88,25 +95,13 @@ public abstract class DistributionMessage
   /** the unreserved flags start for child classes */
   protected static final short UNRESERVED_FLAGS_START = (HAS_PROCESSOR_TYPE << 1);
 
-  private final InternalDistributedMember[] EMPTY_RECIPIENTS_ARRAY =
-      new InternalDistributedMember[0];
-
-  private final List<InternalDistributedMember> ALL_RECIPIENTS_LIST =
-      Collections.singletonList(null);
-
-  private final InternalDistributedMember[] ALL_RECIPIENTS_ARRAY =
-      {null};
-
-  @Immutable
-  protected static final InternalDistributedMember ALL_RECIPIENTS = null;
-
   //////////////////// Instance Fields ////////////////////
 
   /** The sender of this message */
   protected transient InternalDistributedMember sender;
 
   /** A set of recipients for this message, not serialized */
-  private transient InternalDistributedMember[] recipients = null;
+  private transient List<InternalDistributedMember> recipients = null;
 
   /** A timestamp, in nanos, associated with this message. Not serialized. */
   private transient long timeStamp;
@@ -223,7 +218,8 @@ public abstract class DistributionMessage
       throw new IllegalStateException(
           "Recipients can only be set once");
     }
-    this.recipients = new InternalDistributedMember[] {recipient};
+
+    this.recipients = Collections.singletonList(recipient);
   }
 
   /**
@@ -259,8 +255,7 @@ public abstract class DistributionMessage
    */
   @Override
   public void setRecipients(Collection recipients) {
-    this.recipients = (InternalDistributedMember[]) recipients
-        .toArray(EMPTY_RECIPIENTS_ARRAY);
+    this.recipients = new ArrayList<>(recipients);
   }
 
   @Override
@@ -275,31 +270,17 @@ public abstract class DistributionMessage
 
   @Override
   public List<InternalDistributedMember> getRecipients() {
-    InternalDistributedMember[] recipients = getRecipientsArray();
     if (recipients == null
-        || recipients.length == 1 && recipients[0] == ALL_RECIPIENTS) {
+        || recipients.size() == 1 && recipients.get(0) == ALL_RECIPIENTS) {
       return ALL_RECIPIENTS_LIST;
     }
-    return Arrays.asList(recipients);
-  }
 
+    return recipients;
+  }
 
   public void resetRecipients() {
     this.recipients = null;
     this.multicast = false;
-  }
-
-
-  /**
-   * Returns the intended recipient(s) of this message. If the message is intended to delivered to
-   * all distribution managers, then the array will contain ALL_RECIPIENTS. If the recipients have
-   * not been set null is returned.
-   */
-  public InternalDistributedMember[] getRecipientsArray() {
-    if (this.multicast || this.recipients == null) {
-      return ALL_RECIPIENTS_ARRAY;
-    }
-    return this.recipients;
   }
 
   /**
@@ -307,7 +288,7 @@ public abstract class DistributionMessage
    */
   public boolean forAll() {
     return (this.recipients == null) || (this.multicast)
-        || ((this.recipients.length > 0) && (this.recipients[0] == ALL_RECIPIENTS));
+        || ((!this.recipients.isEmpty()) && (this.recipients.get(0) == ALL_RECIPIENTS));
   }
 
   public String getRecipientsDescription() {
@@ -316,13 +297,14 @@ public abstract class DistributionMessage
     } else {
       StringBuffer sb = new StringBuffer(100);
       sb.append("recipients: <");
-      for (int i = 0; i < this.recipients.length; i++) {
+      for (int i = 0; i < this.recipients.size(); i++) {
         if (i != 0) {
           sb.append(", ");
         }
-        sb.append(this.recipients[i]);
+        sb.append(this.recipients.get(i));
       }
       sb.append(">");
+
       return sb.toString();
     }
   }
@@ -545,8 +527,9 @@ public abstract class DistributionMessage
       if (pid != 0) {
         procId = "processorId=" + pid;
       }
-      if (this.recipients != null && this.recipients.length <= 10) { // set a limit on recipients
-        Breadcrumbs.setSendSide(procId + " recipients=" + Arrays.toString(this.recipients));
+
+      if (this.recipients != null && this.recipients.size() <= 10) { // set a limit on recipients
+        Breadcrumbs.setSendSide(procId + " recipients=" + getRecipients());
       } else {
         if (procId.length() > 0) {
           Breadcrumbs.setSendSide(procId);

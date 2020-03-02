@@ -992,7 +992,7 @@ public class FilterProfile implements DataSerializableFixedID {
 
   private void sendProfileOperation(Long clientID, operationType opType, Object interest,
       boolean updatesAsInvalidates) {
-    if (this.region == null || !(this.region instanceof PartitionedRegion)) {
+    if (!(this.region instanceof PartitionedRegion)) {
       return;
     }
     OperationMessage msg = new OperationMessage();

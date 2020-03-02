@@ -27,9 +27,9 @@ import org.apache.geode.management.configuration.AbstractConfiguration;
 @Experimental
 public interface ConfigurationManager<T extends AbstractConfiguration> {
 
-  void add(T config, String groupName);
+  void add(T config, String groupName) throws Exception;
 
-  void delete(T config, String groupName);
+  void delete(T config, String groupName) throws Exception;
 
   void update(T config, String groupName);
 

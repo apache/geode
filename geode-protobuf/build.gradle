@@ -28,36 +28,36 @@ dependencies {
   implementation(project(':geode-membership'))
   compile(project(':geode-core'))
   compile(project(':geode-protobuf-messages'))
-  testCompile(project(':geode-core'))
-  testCompile(project(':geode-junit')) {
+  testImplementation(project(':geode-core'))
+  testImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
-  testCompile(project(':geode-protobuf:geode-protobuf-test'))
-  integrationTestCompile(project(':geode-dunit')) {
+  testImplementation(project(':geode-protobuf:geode-protobuf-test'))
+  integrationTestImplementation(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
-  integrationTestCompile(project(':geode-junit')) {
+  integrationTestImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
-  integrationTestCompile(project(':geode-protobuf:geode-protobuf-test'))
-  distributedTestCompile(project(':geode-dunit')){
+  integrationTestImplementation(project(':geode-protobuf:geode-protobuf-test'))
+  distributedTestImplementation(project(':geode-dunit')){
     exclude module: 'geode-core'
   }
-  distributedTestCompile(project(':geode-junit')) {
+  distributedTestImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
-  distributedTestCompile(project(':geode-protobuf:geode-protobuf-test'))
+  distributedTestImplementation(project(':geode-protobuf:geode-protobuf-test'))
 
-  compile('com.google.protobuf:protobuf-java')
-  compile('org.apache.logging.log4j:log4j-api')
-  compile('org.apache.shiro:shiro-core')
+  implementation('com.google.protobuf:protobuf-java')
+  implementation('org.apache.logging.log4j:log4j-api')
+  implementation('org.apache.shiro:shiro-core')
 
-  integrationTestCompile('com.github.stefanbirkner:system-rules') {
+  integrationTestImplementation('com.github.stefanbirkner:system-rules') {
     exclude module: 'junit-dep'
   }
-  integrationTestCompile('junit:junit')
-  integrationTestCompile('org.awaitility:awaitility')
+  integrationTestImplementation('junit:junit')
+  integrationTestImplementation('org.awaitility:awaitility')
 
-  distributedTestCompile('junit:junit')
-  distributedTestCompile('org.awaitility:awaitility')
+  distributedTestImplementation('junit:junit')
+  distributedTestImplementation('org.awaitility:awaitility')
 }

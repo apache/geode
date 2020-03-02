@@ -26,6 +26,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.apache.geode.management.configuration.AbstractConfiguration;
+import org.apache.geode.management.configuration.Links;
 import org.apache.geode.management.runtime.RuntimeInfo;
 
 /**
@@ -39,13 +40,13 @@ public class EntityInfo<T extends AbstractConfiguration<R>, R extends RuntimeInf
   private String id;
   @JsonInclude
   @JsonProperty
-  private List<EntityGroupInfo<T, R>> configurationByGroup = new ArrayList<>();
+  private List<EntityGroupInfo<T, R>> groups = new ArrayList<>();
 
   public EntityInfo() {}
 
-  public EntityInfo(String id, List<EntityGroupInfo<T, R>> configurationByGroup) {
+  public EntityInfo(String id, List<EntityGroupInfo<T, R>> groups) {
     this.id = id;
-    this.configurationByGroup = configurationByGroup;
+    this.groups = groups;
   }
 
   public String getId() {
@@ -56,26 +57,34 @@ public class EntityInfo<T extends AbstractConfiguration<R>, R extends RuntimeInf
     this.id = id;
   }
 
-  public List<EntityGroupInfo<T, R>> getConfigurationByGroup() {
-    return configurationByGroup;
+  public List<EntityGroupInfo<T, R>> getGroups() {
+    return groups;
   }
 
-  public void setConfigurationByGroup(List<EntityGroupInfo<T, R>> configurationByGroup) {
-    this.configurationByGroup = configurationByGroup;
+  public void setGroups(List<EntityGroupInfo<T, R>> groups) {
+    this.groups = groups;
   }
 
   @JsonIgnore
   public List<T> getConfigurations() {
-    return configurationByGroup.stream()
+    return groups.stream()
         .map(EntityGroupInfo::getConfiguration)
         .collect(toList());
   }
 
   @JsonIgnore
   public List<R> getRuntimeInfos() {
-    return configurationByGroup.stream()
+    return groups.stream()
         .flatMap(r -> r.getRuntimeInfo().stream())
         .collect(toList());
+  }
+
+  @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+  public Links getLinks() {
+    if (groups.isEmpty()) {
+      return null;
+    }
+    return groups.get(0).getLinks();
   }
 
   @Override
@@ -88,19 +97,19 @@ public class EntityInfo<T extends AbstractConfiguration<R>, R extends RuntimeInf
     }
     EntityInfo<?, ?> that = (EntityInfo<?, ?>) o;
     return Objects.equals(id, that.id) &&
-        Objects.equals(configurationByGroup, that.configurationByGroup);
+        Objects.equals(groups, that.groups);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, configurationByGroup);
+    return Objects.hash(id, groups);
   }
 
   @Override
   public String toString() {
     return "ConfigurationInfo{" +
         "id='" + id + '\'' +
-        ", configurationByGroup=" + configurationByGroup +
+        ", groups=" + groups +
         '}';
   }
 }

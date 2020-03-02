@@ -53,8 +53,19 @@ public class ListGatewayCommand extends GfshCommand {
           help = CliStrings.LIST_GATEWAY__MEMBER__HELP) String[] onMember,
       @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           optionContext = ConverterHint.MEMBERGROUP,
-          help = CliStrings.LIST_GATEWAY__GROUP__HELP) String[] onGroup)
+          help = CliStrings.LIST_GATEWAY__GROUP__HELP) String[] onGroup,
+      @CliOption(key = {CliStrings.LIST_GATEWAY__SHOW_RECEIVERS_ONLY},
+          specifiedDefaultValue = "true", unspecifiedDefaultValue = "false",
+          help = CliStrings.LIST_GATEWAY__SHOW_RECEIVERS_ONLY__HELP) boolean showReceiversOnly,
+      @CliOption(key = {CliStrings.LIST_GATEWAY__SHOW_SENDERS_ONLY},
+          specifiedDefaultValue = "true", unspecifiedDefaultValue = "false",
+          help = CliStrings.LIST_GATEWAY__SHOW_SENDERS_ONLY__HELP) boolean showSendersOnly)
+
       throws Exception {
+
+    if (showReceiversOnly && showSendersOnly) {
+      return ResultModel.createError(CliStrings.LIST_GATEWAY__ERROR_ON_SHOW_PARAMETERS);
+    }
 
     ResultModel result = new ResultModel();
     SystemManagementService service = getManagementService();
@@ -73,33 +84,39 @@ public class ListGatewayCommand extends GfshCommand {
       String memberName = member.getName();
       String memberNameOrId =
           (memberName != null && !memberName.isEmpty()) ? memberName : member.getId();
-      ObjectName gatewaySenderObjectNames[] = dsMXBean.listGatewaySenderObjectNames(memberNameOrId);
-      // gateway senders : a member can have multiple gateway senders defined
-      // on it
-      if (gatewaySenderObjectNames != null) {
-        for (ObjectName name : gatewaySenderObjectNames) {
-          GatewaySenderMXBean senderBean = service.getMBeanProxy(name, GatewaySenderMXBean.class);
-          if (senderBean != null) {
-            if (gatewaySenderBeans.containsKey(senderBean.getSenderId())) {
-              Map<String, GatewaySenderMXBean> memberToBeanMap =
-                  gatewaySenderBeans.get(senderBean.getSenderId());
-              memberToBeanMap.put(member.getId(), senderBean);
-            } else {
-              Map<String, GatewaySenderMXBean> memberToBeanMap = new TreeMap<>();
-              memberToBeanMap.put(member.getId(), senderBean);
-              gatewaySenderBeans.put(senderBean.getSenderId(), memberToBeanMap);
+
+      if (!showReceiversOnly) {
+        ObjectName gatewaySenderObjectNames[] =
+            dsMXBean.listGatewaySenderObjectNames(memberNameOrId);
+        // gateway senders : a member can have multiple gateway senders defined
+        // on it
+        if (gatewaySenderObjectNames != null) {
+          for (ObjectName name : gatewaySenderObjectNames) {
+            GatewaySenderMXBean senderBean = service.getMBeanProxy(name, GatewaySenderMXBean.class);
+            if (senderBean != null) {
+              if (gatewaySenderBeans.containsKey(senderBean.getSenderId())) {
+                Map<String, GatewaySenderMXBean> memberToBeanMap =
+                    gatewaySenderBeans.get(senderBean.getSenderId());
+                memberToBeanMap.put(member.getId(), senderBean);
+              } else {
+                Map<String, GatewaySenderMXBean> memberToBeanMap = new TreeMap<>();
+                memberToBeanMap.put(member.getId(), senderBean);
+                gatewaySenderBeans.put(senderBean.getSenderId(), memberToBeanMap);
+              }
             }
           }
         }
       }
       // gateway receivers : a member can have only one gateway receiver
-      ObjectName gatewayReceiverObjectName = MBeanJMXAdapter.getGatewayReceiverMBeanName(member);
-      if (gatewayReceiverObjectName != null) {
-        GatewayReceiverMXBean receiverBean;
-        receiverBean =
-            service.getMBeanProxy(gatewayReceiverObjectName, GatewayReceiverMXBean.class);
-        if (receiverBean != null) {
-          gatewayReceiverBeans.put(member.getId(), receiverBean);
+      if (!showSendersOnly) {
+        ObjectName gatewayReceiverObjectName = MBeanJMXAdapter.getGatewayReceiverMBeanName(member);
+        if (gatewayReceiverObjectName != null) {
+          GatewayReceiverMXBean receiverBean;
+          receiverBean =
+              service.getMBeanProxy(gatewayReceiverObjectName, GatewayReceiverMXBean.class);
+          if (receiverBean != null) {
+            gatewayReceiverBeans.put(member.getId(), receiverBean);
+          }
         }
       }
     }
@@ -110,6 +127,20 @@ public class ListGatewayCommand extends GfshCommand {
     accumulateListGatewayResult(result, gatewaySenderBeans, gatewayReceiverBeans);
 
     return result;
+  }
+
+  static String getStatus(GatewaySenderMXBean mbean) {
+    if (!mbean.isRunning()) {
+      return CliStrings.GATEWAY_NOT_RUNNING;
+    }
+    if (mbean.isPaused()) {
+      return CliStrings.SENDER_PAUSED;
+    }
+    if (mbean.isConnected()) {
+      return CliStrings.GATEWAY_RUNNING_CONNECTED;
+    }
+    // can only reach here when running, not paused and not connected
+    return CliStrings.GATEWAY_RUNNING_NOT_CONNECTED;
   }
 
   protected void accumulateListGatewayResult(ResultModel result,
@@ -127,8 +158,7 @@ public class ListGatewayCommand extends GfshCommand {
               memberToBean.getValue().getRemoteDSId() + "");
           gatewaySenders.accumulate(CliStrings.RESULT_TYPE, memberToBean.getValue().isParallel()
               ? CliStrings.SENDER_PARALLEL : CliStrings.SENDER_SERIAL);
-          gatewaySenders.accumulate(CliStrings.RESULT_STATUS, memberToBean.getValue().isRunning()
-              ? CliStrings.GATEWAY_RUNNING : CliStrings.GATEWAY_NOT_RUNNING);
+          gatewaySenders.accumulate(CliStrings.RESULT_STATUS, getStatus(memberToBean.getValue()));
           gatewaySenders.accumulate(CliStrings.RESULT_QUEUED_EVENTS,
               memberToBean.getValue().getEventQueueSize() + "");
           gatewaySenders.accumulate(CliStrings.RESULT_RECEIVER,

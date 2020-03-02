@@ -37,6 +37,7 @@ import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.NoSubscriptionServersAvailableException;
@@ -1022,10 +1023,8 @@ public class PoolImpl implements InternalPool {
     return result;
   }
 
-  /**
-   * Test hook that returns an int which the port of the primary server. -1 is returned if we have
-   * no primary.
-   */
+  @Override
+  @VisibleForTesting
   public int getPrimaryPort() {
     int result = -1;
     ServerLocation sl = getPrimary();

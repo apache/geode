@@ -21,14 +21,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-import org.apache.geode.management.api.BaseConnectionConfig;
+import org.apache.geode.management.api.ClusterManagementListOperationsResult;
 import org.apache.geode.management.api.ClusterManagementOperationResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
@@ -37,61 +37,66 @@ import org.apache.geode.management.configuration.RegionType;
 import org.apache.geode.management.operation.RebalanceOperation;
 import org.apache.geode.management.runtime.RebalanceRegionResult;
 import org.apache.geode.management.runtime.RebalanceResult;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.junit.rules.GfshCommandRule;
+import org.apache.geode.test.junit.rules.MemberStarterRule;
 
 public class RebalanceManagementDunitTest {
 
   @ClassRule
   public static ClusterStartupRule cluster = new ClusterStartupRule();
 
-  private static MemberVM locator, server1, server2;
-
-  private static ClusterManagementService client;
-
-  @ClassRule
-  public static GfshCommandRule gfsh = new GfshCommandRule();
+  private static ClusterManagementService client1, client2;
 
   @BeforeClass
-  public static void beforeClass() throws Exception {
-    locator = cluster.startLocatorVM(0, l -> l.withHttpService());
-    server1 = cluster.startServerVM(1, "group1", locator.getPort());
-    server2 = cluster.startServerVM(2, "group2", locator.getPort());
+  public static void beforeClass() {
+    MemberVM locator1 = cluster.startLocatorVM(0, MemberStarterRule::withHttpService);
+    int locator1Port = locator1.getPort();
+    MemberVM locator2 =
+        cluster.startLocatorVM(1, l -> l.withHttpService().withConnectionToLocator(locator1Port));
+    cluster.startServerVM(2, "group1", locator1Port);
+    cluster.startServerVM(3, "group2", locator1Port);
 
-    client = new ClusterManagementServiceBuilder().setConnectionConfig(
-        new BaseConnectionConfig("localhost", locator.getHttpPort()))
+    client1 = new ClusterManagementServiceBuilder()
+        .setHost("localhost")
+        .setPort(locator1.getHttpPort())
         .build();
-    gfsh.connect(locator);
+    client2 = new ClusterManagementServiceBuilder()
+        .setHost("localhost")
+        .setPort(locator2.getHttpPort())
+        .build();
 
     // create regions
     Region regionConfig = new Region();
     regionConfig.setName("customers1");
     regionConfig.setType(RegionType.PARTITION);
-    client.create(regionConfig);
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/customers1", 2);
+    client1.create(regionConfig);
+    locator1.waitUntilRegionIsReadyOnExactlyThisManyServers("/customers1", 2);
 
     regionConfig = new Region();
     regionConfig.setName("customers2");
     regionConfig.setType(RegionType.PARTITION);
-    client.create(regionConfig);
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/customers2", 2);
+    client1.create(regionConfig);
+    locator1.waitUntilRegionIsReadyOnExactlyThisManyServers("/customers2", 2);
   }
 
   @Test
   public void rebalance() throws Exception {
-    ClusterManagementOperationResult<RebalanceResult> cmr =
-        client.start(new RebalanceOperation());
-    assertThat(cmr.isSuccessful()).isTrue();
+    ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> startResult =
+        client1.start(new RebalanceOperation());
+    assertThat(startResult.isSuccessful()).isTrue();
     long now = System.currentTimeMillis();
-    assertThat(cmr.getOperationStart().getTime()).isBetween(now - 60000, now);
+    assertThat(startResult.getOperationStart().getTime()).isBetween(now - 60000, now);
 
-    RebalanceResult result = cmr.getFutureResult().get();
-    long end = cmr.getFutureOperationEnded().get().getTime();
+    ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> endResult =
+        client1.getFuture(new RebalanceOperation(), startResult.getOperationId()).get();
+    long end = endResult.getOperationEnd().getTime();
     now = System.currentTimeMillis();
     assertThat(end).isBetween(now - 60000, now)
-        .isGreaterThanOrEqualTo(cmr.getOperationStart().getTime());
+        .isGreaterThanOrEqualTo(endResult.getOperationStart().getTime());
+    RebalanceResult result = endResult.getOperationResult();
     assertThat(result.getRebalanceRegionResults().size()).isEqualTo(2);
     RebalanceRegionResult firstRegionSummary = result.getRebalanceRegionResults().get(0);
     assertThat(firstRegionSummary.getRegionName()).isIn("customers1", "customers2");
@@ -103,25 +108,32 @@ public class RebalanceManagementDunitTest {
     includeRegions.add("customers2");
     RebalanceOperation op = new RebalanceOperation();
     op.setIncludeRegions(includeRegions);
-    ClusterManagementOperationResult<RebalanceResult> cmr = client.start(op);
+    int initialSize = client1.list(op).getResult().size();
+    ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> cmr = client1.start(op);
     assertThat(cmr.isSuccessful()).isTrue();
 
-    RebalanceResult result = cmr.getFutureResult().get();
+    RebalanceResult result = client1.getFuture(new RebalanceOperation(), cmr.getOperationId()).get()
+        .getOperationResult();
     assertThat(result.getRebalanceRegionResults().size()).isEqualTo(1);
     RebalanceRegionResult firstRegionSummary = result.getRebalanceRegionResults().get(0);
     assertThat(firstRegionSummary.getRegionName()).isEqualTo("customers2");
     assertThat(firstRegionSummary.getBucketCreateBytes()).isEqualTo(0);
     assertThat(firstRegionSummary.getTimeInMilliseconds()).isGreaterThanOrEqualTo(0);
+
+    assertThat(client1.list(op).getResult()).hasSize(initialSize + 1);
+    assertThat(client2.list(op).getResult()).hasSize(initialSize + 1);
   }
 
   @Test
   public void rebalanceExcludedRegion() throws Exception {
     RebalanceOperation op = new RebalanceOperation();
     op.setExcludeRegions(Collections.singletonList("customers1"));
-    ClusterManagementOperationResult<RebalanceResult> cmr = client.start(op);
+    ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> cmr = client1.start(op);
     assertThat(cmr.isSuccessful()).isTrue();
 
-    RebalanceResult result = cmr.getFutureResult().get();
+    RebalanceResult result =
+        client1.getFuture(new RebalanceOperation(), cmr.getOperationId()).get()
+            .getOperationResult();
     assertThat(result.getRebalanceRegionResults().size()).isEqualTo(1);
     RebalanceRegionResult firstRegionSummary = result.getRebalanceRegionResults().get(0);
     assertThat(firstRegionSummary.getRegionName()).isEqualTo("customers2");
@@ -130,23 +142,43 @@ public class RebalanceManagementDunitTest {
   }
 
   @Test
-  public void rebalanceNonExistRegion() throws Exception {
+  public void rebalanceNonExistRegion() {
     IgnoredException.addIgnoredException(ExecutionException.class);
     IgnoredException.addIgnoredException(RuntimeException.class);
     RebalanceOperation op = new RebalanceOperation();
     op.setIncludeRegions(Collections.singletonList("nonexisting_region"));
-    ClusterManagementOperationResult<RebalanceResult> cmr = client.start(op);
+    ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> cmr = client1.start(op);
     assertThat(cmr.isSuccessful()).isTrue();
+    String id = cmr.getOperationId();
 
-    CompletableFuture<RebalanceResult> future = cmr.getFutureResult();
-    CompletableFuture<String> message = new CompletableFuture<>();
-    future.exceptionally((ex) -> {
-      message.complete(ex.getMessage());
-      return null;
-    }).get();
+    List<ClusterManagementOperationResult<RebalanceOperation, RebalanceResult>> resultArrayList =
+        new ArrayList<>();
+    GeodeAwaitility.await().untilAsserted(() -> {
+      ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> rebalanceResult =
+          getRebalanceResult(op, id);
+      if (rebalanceResult != null) {
+        resultArrayList.add(rebalanceResult);
+      }
+      assertThat(rebalanceResult).isNotNull();
+    });
 
-    assertThat(future.isCompletedExceptionally()).isTrue();
-    assertThat(message.get()).contains("For the region /nonexisting_region, no member was found");
+    assertThat(resultArrayList.get(0).isSuccessful()).isFalse();
+    assertThat(resultArrayList.get(0).getStatusMessage())
+        .contains("For the region /nonexisting_region, no member was found");
+
+  }
+
+  private ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> getRebalanceResult(
+      RebalanceOperation op, String id) {
+    ClusterManagementListOperationsResult<RebalanceOperation, RebalanceResult> listOperationsResult =
+        client1.list(op);
+    Optional<ClusterManagementOperationResult<RebalanceOperation, RebalanceResult>> rebalanceResult =
+        listOperationsResult.getResult()
+            .stream()
+            .filter(rbalresult -> rbalresult.getOperationId().equals(id)
+                && rbalresult.getOperationEnd() != null)
+            .findFirst();
+    return rebalanceResult.orElse(null);
   }
 
   @Test
@@ -155,10 +187,11 @@ public class RebalanceManagementDunitTest {
     IgnoredException.addIgnoredException(RuntimeException.class);
     RebalanceOperation op = new RebalanceOperation();
     op.setIncludeRegions(Arrays.asList("nonexisting_region", "customers1"));
-    ClusterManagementOperationResult<RebalanceResult> cmr = client.start(op);
+    ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> cmr = client1.start(op);
     assertThat(cmr.isSuccessful()).isTrue();
 
-    RebalanceResult result = cmr.getFutureResult().get();
+    RebalanceResult result = client1.getFuture(new RebalanceOperation(), cmr.getOperationId()).get()
+        .getOperationResult();
     assertThat(result.getRebalanceRegionResults().size()).isEqualTo(1);
     RebalanceRegionResult firstRegionSummary = result.getRebalanceRegionResults().get(0);
     assertThat(firstRegionSummary.getRegionName()).isEqualTo("customers1");

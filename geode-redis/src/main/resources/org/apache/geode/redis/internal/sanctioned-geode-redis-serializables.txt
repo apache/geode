@@ -1,6 +1,7 @@
 org/apache/geode/internal/hll/CardinalityMergeException,false
 org/apache/geode/redis/internal/CoderException,true,4707944288714910949
 org/apache/geode/redis/internal/MemberNotFoundException,true,4707944288714910949
+org/apache/geode/redis/internal/PubSubImpl$1,false,this$0:org/apache/geode/redis/internal/PubSubImpl
 org/apache/geode/redis/internal/RedisCommandParserException,true,4707944288714910949
 org/apache/geode/redis/internal/RedisCommandType,false
 org/apache/geode/redis/internal/RedisCommandType$1,false,dataType:org/apache/geode/redis/internal/RedisDataType,executor:org/apache/geode/redis/internal/Executor
@@ -27,6 +28,11 @@ org/apache/geode/redis/internal/RedisCommandType$117,false,dataType:org/apache/g
 org/apache/geode/redis/internal/RedisCommandType$118,false,dataType:org/apache/geode/redis/internal/RedisDataType,executor:org/apache/geode/redis/internal/Executor
 org/apache/geode/redis/internal/RedisCommandType$119,false,dataType:org/apache/geode/redis/internal/RedisDataType,executor:org/apache/geode/redis/internal/Executor
 org/apache/geode/redis/internal/RedisCommandType$12,false,dataType:org/apache/geode/redis/internal/RedisDataType,executor:org/apache/geode/redis/internal/Executor
+org/apache/geode/redis/internal/RedisCommandType$120,false,dataType:org/apache/geode/redis/internal/RedisDataType,executor:org/apache/geode/redis/internal/Executor
+org/apache/geode/redis/internal/RedisCommandType$121,false,dataType:org/apache/geode/redis/internal/RedisDataType,executor:org/apache/geode/redis/internal/Executor
+org/apache/geode/redis/internal/RedisCommandType$122,false,dataType:org/apache/geode/redis/internal/RedisDataType,executor:org/apache/geode/redis/internal/Executor
+org/apache/geode/redis/internal/RedisCommandType$123,false,dataType:org/apache/geode/redis/internal/RedisDataType,executor:org/apache/geode/redis/internal/Executor
+org/apache/geode/redis/internal/RedisCommandType$124,false,dataType:org/apache/geode/redis/internal/RedisDataType,executor:org/apache/geode/redis/internal/Executor
 org/apache/geode/redis/internal/RedisCommandType$13,false,dataType:org/apache/geode/redis/internal/RedisDataType,executor:org/apache/geode/redis/internal/Executor
 org/apache/geode/redis/internal/RedisCommandType$14,false,dataType:org/apache/geode/redis/internal/RedisDataType,executor:org/apache/geode/redis/internal/Executor
 org/apache/geode/redis/internal/RedisCommandType$15,false,dataType:org/apache/geode/redis/internal/RedisDataType,executor:org/apache/geode/redis/internal/Executor
@@ -131,6 +137,7 @@ org/apache/geode/redis/internal/RedisDataType$5,false
 org/apache/geode/redis/internal/RedisDataType$6,false
 org/apache/geode/redis/internal/RedisDataType$7,false
 org/apache/geode/redis/internal/RedisDataType$8,false
+org/apache/geode/redis/internal/RedisDataType$9,false
 org/apache/geode/redis/internal/RedisDataTypeMismatchException,true,-2451663685348513870
 org/apache/geode/redis/internal/RegionCreationException,true,8416820139078312997
 org/apache/geode/redis/internal/executor/ListQuery,false

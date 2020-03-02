@@ -33,7 +33,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.List;
@@ -59,7 +58,6 @@ import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
-import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.distributed.internal.ResourceEventsListener;
 import org.apache.geode.distributed.internal.locks.DLockBatch;
@@ -68,7 +66,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.distributed.internal.membership.api.MembershipManagerHelper;
 import org.apache.geode.internal.cache.CommitReplyException;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.InternalRegionArguments;
+import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.TXManagerImpl;
@@ -1434,27 +1432,17 @@ public class TXDistributedDUnitTest extends JUnit4CacheTestCase {
           new CacheSerializableRunnable("Initialize regions that cause trouble") {
             @Override
             public void run2() {
-              GemFireCacheImpl gfc = (GemFireCacheImpl) getCache();
-              InternalRegionArguments ira =
-                  new InternalRegionArguments().setTestCallable(new TXTroubleMaker());
-              try {
-                getCache().createDiskStoreFactory().setDiskDirs(getDiskDirs())
-                    .create(diskStoreName);
-                TXManagerImpl.ALLOW_PERSISTENT_TRANSACTIONS = true;
-                AttributesFactory af = new AttributesFactory();
-                af.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
-                af.setScope(Scope.DISTRIBUTED_ACK);
-                af.setDiskStoreName(diskStoreName);
-                gfc.createVMRegion(rgnName1, af.create(), ira);
-                gfc.createVMRegion(rgnName2, af.create(), ira);
-                gfc.getInternalDistributedSystem().addResourceListener(new ShutdownListener());
-              } catch (IOException ioe) {
-                fail(ioe.toString());
-              } catch (TimeoutException e) {
-                fail(e.toString());
-              } catch (ClassNotFoundException e) {
-                fail(e.toString());
-              }
+              getCache().createDiskStoreFactory().setDiskDirs(getDiskDirs())
+                  .create(diskStoreName);
+              TXManagerImpl.ALLOW_PERSISTENT_TRANSACTIONS = true;
+              InternalRegionFactory factory = getCache().createInternalRegionFactory();
+              factory.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
+              factory.setScope(Scope.DISTRIBUTED_ACK);
+              factory.setDiskStoreName(diskStoreName);
+              factory.setTestCallable(new TXTroubleMaker());
+              factory.create(rgnName1);
+              factory.create(rgnName2);
+              getCache().getInternalDistributedSystem().addResourceListener(new ShutdownListener());
             }
           };
       trouble1.invoke(initTroulbeRegions);

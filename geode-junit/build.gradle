@@ -29,28 +29,33 @@ dependencies {
   compileOnly(project(':geode-unsafe'))
   compileOnly(project(':geode-gfsh'))
 
-  compile('com.fasterxml.jackson.core:jackson-annotations')
-  compile('com.fasterxml.jackson.core:jackson-databind')
-  compile('com.github.stefanbirkner:system-rules') {
-    exclude module: 'junit-dep'
-  }
-  compile('com.google.guava:guava')
-  compile('com.jayway.jsonpath:json-path')
-  compile('commons-io:commons-io')
-  compile('junit:junit') {
+  api('junit:junit') {
     exclude module: 'hamcrest-core'
   }
-  compile('org.apache.commons:commons-lang3')
-  compile('org.apache.logging.log4j:log4j-api')
-  compile('org.assertj:assertj-core')
-  compile('org.awaitility:awaitility')
-  compile('org.bouncycastle:bcpkix-jdk15on')
-  compile('org.hamcrest:hamcrest-all')
-  compile('io.micrometer:micrometer-core')
-  compile('org.mockito:mockito-core')
-  compile('org.skyscreamer:jsonassert')
+  api('org.assertj:assertj-core')
+  api('org.mockito:mockito-core')
 
-  testCompile('pl.pragmatists:JUnitParams')
+
+  api('com.fasterxml.jackson.core:jackson-annotations')
+  api('com.fasterxml.jackson.core:jackson-databind')
+  api('com.github.stefanbirkner:system-rules') {
+    exclude module: 'junit-dep'
+  }
+  api('com.google.guava:guava')
+  api('com.jayway.jsonpath:json-path')
+  api('commons-io:commons-io')
+  
+  api('org.apache.commons:commons-lang3')
+  api('org.apache.logging.log4j:log4j-api')
+  
+  api('org.awaitility:awaitility')
+  api('org.bouncycastle:bcpkix-jdk15on')
+  api('org.hamcrest:hamcrest-all')
+  api('io.micrometer:micrometer-core')
+  
+  api('org.skyscreamer:jsonassert')
+
+  testImplementation('pl.pragmatists:JUnitParams')
 
   testRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
 }

@@ -127,6 +127,7 @@ INSTANCE_INFORMATION=$(gcloud compute --project=${GCP_PROJECT} instances create 
   --labels="${LABELS}" \
   --tags="heavy-lifter" \
   --scopes="default,storage-rw" \
+ `[[ ${USE_SCRATCH_SSD} == "true" ]] && echo "--local-ssd interface=scsi"` \
   --format=json)
 
 CREATE_RC=$?
@@ -145,6 +146,7 @@ INSTANCE_ID=$(echo ${INSTANCE_INFORMATION} | jq -r '.[].id')
 echo "Heavy lifter's Instance ID is: ${INSTANCE_ID}"
 
 echo "${INSTANCE_IP_ADDRESS}" > "instance-data/instance-ip-address"
+echo "${INSTANCE_ID}" > "instance-data/instance-id"
 
 if [[ -z "${WINDOWS_PREFIX}" ]]; then
   SSH_TIME=$(($(date +%s) + 60))
@@ -160,16 +162,14 @@ if [[ -z "${WINDOWS_PREFIX}" ]]; then
 else
   # Set up ssh access for Windows systems
   echo -n "Setting windows password via gcloud."
-  INSTANCE_AGENT_READY_LINE="GCEWindowsAgent: GCE Agent Started"
   INSTANCE_SETUP_FINSHED_LINE="GCEInstanceSetup: Instance setup finished"
-  SCRAPE_COMMAND_INSTANCE_READY="gcloud compute instances get-serial-port-output ${INSTANCE_NAME} --zone=${ZONE} | grep \"${INSTANCE_AGENT_READY_LINE}\" | wc -l"
   SCRAPE_COMMAND_SETUP_FINSHED="gcloud compute instances get-serial-port-output ${INSTANCE_NAME} --zone=${ZONE} | grep \"${INSTANCE_SETUP_FINSHED_LINE}\" | wc -l"
 
   while true; do
     # Check that the instance agent has started at least 2x (first boot, plus activation)
     # and that the "GCEInstanceSetup" script completed
     echo -n "Waiting for startup scripts and windows activation to complete"
-    while [[ 2 -ne $(eval ${SCRAPE_COMMAND_INSTANCE_READY} 2> /dev/null) ]] || [[ 1 -ne $(eval ${SCRAPE_COMMAND_SETUP_FINSHED} 2> /dev/null) ]]; do
+    while [[ 1 -ne $(eval ${SCRAPE_COMMAND_SETUP_FINSHED} 2> /dev/null) ]]; do
       echo -n .
       sleep 5
     done
@@ -188,4 +188,21 @@ else
   winrm -hostname ${INSTANCE_IP_ADDRESS} -username geode -password "${PASSWORD}" \
     -https -insecure -port 5986 \
     "powershell -command \"&{ mkdir c:\users\geode\.ssh -force; set-content -path c:\users\geode\.ssh\authorized_keys -encoding utf8 -value '${KEY}' }\""
+
+  if [[ ${USE_SCRATCH_SSD} == "true" ]]; then
+    set +e
+    echo "Setting up local scratch SSD on drive Z"
+    winrm -hostname ${INSTANCE_IP_ADDRESS} -username geode -password "${PASSWORD}" \
+      -https -insecure -port 5986 \
+      "powershell -command \"Get-Disk\""
+
+    winrm -hostname ${INSTANCE_IP_ADDRESS} -username geode -password "${PASSWORD}" \
+      -https -insecure -port 5986 \
+      "powershell -command \"Get-Disk | Where partitionstyle -eq 'raw' | Initialize-Disk -PartitionStyle MBR -PassThru | New-Partition -DriveLetter Z -UseMaximumSize | Format-Volume -FileSystem NTFS -NewFileSystemLabel \“disk2\” -Confirm:\$false\""
+
+    winrm -hostname ${INSTANCE_IP_ADDRESS} -username geode -password "${PASSWORD}" \
+      -https -insecure -port 5986 \
+      "powershell -command \"Get-PSDrive\""
+    set -e
+  fi
 fi

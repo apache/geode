@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.management.configuration.AbstractConfiguration;
@@ -87,8 +87,11 @@ public class EntityGroupInfo<T extends AbstractConfiguration<R>, R extends Runti
     this.runtimeInfo = runtimeInfo;
   }
 
-  @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+  @JsonIgnore
   public Links getLinks() {
+    if (configuration == null) {
+      return null;
+    }
     return configuration.getLinks();
   }
 

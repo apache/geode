@@ -84,7 +84,7 @@ public abstract class AbstractExecutor implements Executor {
    * @param expectedDataType Type to check to
    * @param context context
    */
-  protected void checkDataType(ByteArrayWrapper key, RedisDataType expectedDataType,
+  public void checkDataType(ByteArrayWrapper key, RedisDataType expectedDataType,
       ExecutionHandlerContext context) {
     context.getKeyRegistrar().validate(key, expectedDataType);
   }
@@ -142,7 +142,7 @@ public abstract class AbstractExecutor implements Executor {
     ByteBuf rsp;
     try {
       if (message instanceof Collection) {
-        rsp = Coder.getBulkStringArrayResponse(context.getByteBufAllocator(),
+        rsp = Coder.getArrayResponse(context.getByteBufAllocator(),
             (Collection<?>) message);
       } else {
         rsp = Coder.getBulkStringResponse(context.getByteBufAllocator(), message);

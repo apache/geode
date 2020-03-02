@@ -25,19 +25,22 @@ import javax.net.ssl.SSLContext;
 
 import org.apache.http.client.RedirectStrategy;
 import org.apache.http.impl.client.LaxRedirectStrategy;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.DefaultUriTemplateHandler;
 
-import org.apache.geode.management.api.BaseConnectionConfig;
 import org.apache.geode.management.api.ClusterManagementService;
 
 public class ClusterManagementServiceBuilderTest {
 
   private static final String HOST = "localhost";
   private static final int PORT = 7777;
+
+  @Rule
+  public final RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
   private <T> T getFieldValue(Object target, String fieldName) throws NoSuchFieldException {
 
@@ -56,44 +59,46 @@ public class ClusterManagementServiceBuilderTest {
 
   @Test
   public void hostAndPortAreSetCorrectly() throws NoSuchFieldException {
-    BaseConnectionConfig connectionConfig = new BaseConnectionConfig(HOST, PORT);
     ClusterManagementService cms =
-        new ClusterManagementServiceBuilder().setConnectionConfig(connectionConfig).build();
+        new ClusterManagementServiceBuilder().setHost(HOST).setPort(PORT).build();
 
     RestTemplate restTemplate = getFieldValue(getFieldValue(cms, "transport"), "restTemplate");
-    assertThat(((DefaultUriTemplateHandler) (restTemplate.getUriTemplateHandler())).getBaseUrl())
+    assertThat(restTemplate.getUriTemplateHandler().expand("").toString())
         .contains(HOST + ":" + PORT);
   }
 
   @Test
   public void settingSSLUsesHTTPS() throws NoSuchAlgorithmException, NoSuchFieldException {
-    BaseConnectionConfig connectionConfig = new BaseConnectionConfig(HOST, PORT);
-    connectionConfig.setSslContext(SSLContext.getDefault());
     ClusterManagementService cms =
-        new ClusterManagementServiceBuilder().setConnectionConfig(connectionConfig).build();
+        new ClusterManagementServiceBuilder()
+            .setHost(HOST)
+            .setPort(PORT)
+            .setSslContext(SSLContext.getDefault())
+            .build();
 
     RestTemplate restTemplate = getFieldValue(getFieldValue(cms, "transport"), "restTemplate");
-    assertThat(((DefaultUriTemplateHandler) (restTemplate.getUriTemplateHandler())).getBaseUrl())
+    assertThat(restTemplate.getUriTemplateHandler().expand("").toString())
         .contains("https://");
   }
 
   @Test
   public void notSettingSSLUsesHTTP() throws NoSuchAlgorithmException, NoSuchFieldException {
-    BaseConnectionConfig connectionConfig = new BaseConnectionConfig(HOST, PORT);
     ClusterManagementService cms =
-        new ClusterManagementServiceBuilder().setConnectionConfig(connectionConfig).build();
+        new ClusterManagementServiceBuilder().setHost(HOST).setPort(PORT).build();
 
     RestTemplate restTemplate = getFieldValue(getFieldValue(cms, "transport"), "restTemplate");
-    assertThat(((DefaultUriTemplateHandler) (restTemplate.getUriTemplateHandler())).getBaseUrl())
+    assertThat(restTemplate.getUriTemplateHandler().expand("").toString())
         .contains("http://");
   }
 
   @Test
   public void followRedirectsIsSetWhenEnabled() throws NoSuchFieldException {
-    BaseConnectionConfig connectionConfig = new BaseConnectionConfig(HOST, PORT);
-    connectionConfig.setFollowRedirects(true);
     ClusterManagementService cms =
-        new ClusterManagementServiceBuilder().setConnectionConfig(connectionConfig).build();
+        new ClusterManagementServiceBuilder()
+            .setFollowRedirects(true)
+            .setHost(HOST)
+            .setPort(PORT)
+            .build();
 
     RestTemplate restTemplate = getFieldValue(getFieldValue(cms, "transport"), "restTemplate");
     HttpComponentsClientHttpRequestFactory requestFactory =
@@ -106,10 +111,12 @@ public class ClusterManagementServiceBuilderTest {
 
   @Test
   public void followRedirectsIsNotSetWhenNotEnabled() throws NoSuchFieldException {
-    BaseConnectionConfig connectionConfig = new BaseConnectionConfig(HOST, PORT);
-    connectionConfig.setFollowRedirects(false);
     ClusterManagementService cms =
-        new ClusterManagementServiceBuilder().setConnectionConfig(connectionConfig).build();
+        new ClusterManagementServiceBuilder()
+            .setFollowRedirects(false)
+            .setHost(HOST)
+            .setPort(PORT)
+            .build();
 
     RestTemplate restTemplate = getFieldValue(getFieldValue(cms, "transport"), "restTemplate");
     HttpComponentsClientHttpRequestFactory requestFactory =

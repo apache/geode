@@ -19,8 +19,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.io.NotSerializableException;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -135,7 +133,7 @@ public class DistributionImpl implements Distribution {
           InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());
       final TcpSocketCreator socketCreator = SocketCreatorFactory
           .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER);
-      membership = MembershipBuilder.<InternalDistributedMember>newMembershipBuilder(
+      membership = MembershipBuilder.newMembershipBuilder(
           socketCreator,
           locatorClient,
           InternalDataSerializer.getDSFIDSerializer(),
@@ -235,7 +233,7 @@ public class DistributionImpl implements Distribution {
   }
 
   @Override
-  public Set<InternalDistributedMember> send(InternalDistributedMember[] destinations,
+  public Set<InternalDistributedMember> send(List<InternalDistributedMember> destinations,
       DistributionMessage msg) throws NotSerializableException {
     Set<InternalDistributedMember> result;
     boolean allDestinations = msg.forAll();
@@ -246,18 +244,16 @@ public class DistributionImpl implements Distribution {
 
     if (membership.isJoining()) {
       // If we get here, we are starting up, so just report a failure.
-      if (allDestinations)
+      if (allDestinations) {
         return null;
-      else {
-        result = new HashSet<>();
-        Collections.addAll(result, destinations);
-        return result;
+      } else {
+        return new HashSet<>(destinations);
       }
     }
 
     if (msg instanceof AdminMessageType && shutdownInProgress()) {
       // no admin messages while shutting down - this can cause threads to hang
-      return new HashSet<>(Arrays.asList(msg.getRecipientsArray()));
+      return new HashSet<>(msg.getRecipients());
     }
 
     // Handle trivial cases
@@ -267,7 +263,7 @@ public class DistributionImpl implements Distribution {
             msg);
       return null; // trivially: all recipients received the message
     }
-    if (destinations.length == 0) {
+    if (destinations.isEmpty()) {
       if (logger.isTraceEnabled())
         logger.trace(
             "Membership: Message send: returning early because empty destination list passed in: '{}'",
@@ -288,7 +284,7 @@ public class DistributionImpl implements Distribution {
     boolean sendViaMessenger = isForceUDPCommunications() || (msg instanceof ShutdownMessage);
 
     if (useMcast || tcpDisabled || sendViaMessenger) {
-      result = membership.send(destinations, msg);
+      result = membership.send(destinations.toArray(EMPTY_MEMBER_ARRAY), msg);
     } else {
       result = directChannelSend(destinations, msg);
     }
@@ -328,7 +324,7 @@ public class DistributionImpl implements Distribution {
    */
   @Override
   public Set<InternalDistributedMember> directChannelSend(
-      InternalDistributedMember[] destinations,
+      List<InternalDistributedMember> destinations,
       DistributionMessage content)
       throws NotSerializableException {
     MembershipStatistics theStats = clusterDistributionManager.getStats();
@@ -339,7 +335,7 @@ public class DistributionImpl implements Distribution {
       keys = membership.getAllMembers(EMPTY_MEMBER_ARRAY);
     } else {
       allDestinations = false;
-      keys = destinations;
+      keys = destinations.toArray(EMPTY_MEMBER_ARRAY);
     }
 
     int sentBytes;
@@ -919,7 +915,7 @@ public class DistributionImpl implements Distribution {
       // network-down testing
       InternalLocator loc = (InternalLocator) Locator.getLocator();
       if (loc != null) {
-        loc.stop(true, !distribution.disableAutoReconnect, false);
+        loc.stop(true, !distribution.disableAutoReconnect, true);
       }
     }
   }

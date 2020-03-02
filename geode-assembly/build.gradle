@@ -191,110 +191,119 @@ dependencies {
   javadocOnly project(':extensions:geode-modules-tomcat8')
   javadocOnly project(':geode-experimental-driver')
 
-  testCompile(project(':geode-core'))
-  testCompile(project(':geode-gfsh'))
-  testCompile(project(':geode-junit')) {
+  testImplementation(project(':geode-core'))
+  testImplementation(project(':geode-gfsh'))
+  testImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
-  testCompile(project(':geode-log4j')) {
+  testImplementation(project(':geode-log4j')) {
     exclude module: 'geode-core'
   }
   testRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
 
 
-  acceptanceTestRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
+  acceptanceTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
 
 
-  integrationTestCompile(project(':geode-core'))
-  integrationTestCompile(project(':geode-log4j')) {
+  integrationTestImplementation(project(':geode-core'))
+  integrationTestImplementation(project(':geode-gfsh'))
+  integrationTestImplementation(project(':geode-log4j')) {
     exclude module: 'geode-core'
   }
-  integrationTestCompile(project(':geode-junit')) {
+  integrationTestImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
-  integrationTestCompile(project(':geode-dunit')) {
+  integrationTestImplementation(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
-  integrationTestCompile(project(':geode-pulse'))
-  integrationTestCompile(project(':geode-assembly:geode-assembly-test'))
-  integrationTestCompile('org.apache.httpcomponents:httpclient')
-  integrationTestCompile('javax.annotation:javax.annotation-api')
+  integrationTestImplementation(project(':geode-pulse'))
+  integrationTestImplementation(project(':geode-assembly:geode-assembly-test'))
   integrationTestImplementation(project(':geode-logging'))
+  integrationTestImplementation('org.apache.httpcomponents:httpclient')
+  integrationTestImplementation('org.springframework:spring-beans')
+  integrationTestImplementation('org.springframework:spring-context')
+  integrationTestImplementation('org.springframework:spring-web')
+  integrationTestImplementation('javax.annotation:javax.annotation-api')
+  integrationTestImplementation('javax.servlet:javax.servlet-api')
 
 
-  integrationTestRuntime('io.swagger:swagger-annotations')
+  integrationTestRuntimeOnly('io.swagger:swagger-annotations')
   // these two modules are for testing only
-  integrationTestRuntime('com.fasterxml.jackson.datatype:jackson-datatype-joda')
-  integrationTestRuntime('joda-time:joda-time')
+  integrationTestRuntimeOnly('com.fasterxml.jackson.datatype:jackson-datatype-joda')
+  integrationTestRuntimeOnly('joda-time:joda-time')
 
 
+  distributedTestImplementation(project(':geode-gfsh'))
   distributedTestImplementation(project(':geode-logging'))
+  distributedTestImplementation(project(':geode-membership'))
   distributedTestImplementation(project(':geode-serialization'))
   distributedTestImplementation(project(':geode-tcp-server'))
-  distributedTestCompile(project(':geode-core'))
-  distributedTestCompile(project(':geode-log4j')) {
+  distributedTestImplementation(project(':geode-core'))
+  distributedTestImplementation(project(':geode-log4j')) {
     exclude module: 'geode-core'
   }
-  distributedTestCompile(project(':geode-dunit')){
+  distributedTestImplementation(project(':geode-dunit')){
     exclude module: 'geode-core'
   }
-  distributedTestCompile(project(':extensions:session-testing-war'))
-  distributedTestCompile(project(':geode-assembly:geode-assembly-test'))
-  distributedTestCompile('org.apache.httpcomponents:httpclient')
-  distributedTestCompile('org.springframework:spring-web')
-  distributedTestCompile(project(':geode-management'))
-  distributedTestCompile(project(':geode-web-management'))
-  distributedTestCompile('com.arakelian:java-jq')
+  distributedTestImplementation(project(':extensions:session-testing-war'))
+  distributedTestImplementation(project(':geode-assembly:geode-assembly-test'))
+  distributedTestImplementation('org.apache.httpcomponents:httpclient')
+  distributedTestImplementation('org.springframework:spring-web')
+  distributedTestImplementation(project(':geode-management'))
+  distributedTestImplementation(project(':geode-web-management'))
+  distributedTestImplementation('com.arakelian:java-jq')
+  distributedTestImplementation('javax.servlet:javax.servlet-api')
 
-  distributedTestRuntime(project(':extensions:geode-modules-session-internal')) {
+  distributedTestRuntimeOnly(project(':extensions:geode-modules-session-internal')) {
     exclude group: 'org.apache.tomcat'
   }
-  distributedTestRuntime('org.codehaus.cargo:cargo-core-uberjar')
-  distributedTestRuntime('io.swagger:swagger-annotations')
-  distributedTestRuntime(project(':geode-wan'))
+  distributedTestRuntimeOnly('org.codehaus.cargo:cargo-core-uberjar')
+  distributedTestRuntimeOnly('io.swagger:swagger-annotations')
+  distributedTestRuntimeOnly(project(':geode-wan'))
 
 
   // geodeArchives is a direct reflection of what is contained in geode-dependencies.jar. To that
   // end only add _test_ dependencies to acceptanceTestCompile/Runtime. All other product
   // dependencies should be a part of geodeArchives and should not need to be added as individual
   // dependencies here.
-  acceptanceTestCompile(configurations.geodeArchives)
-  acceptanceTestCompile(project(':geode-dunit')) {
+  acceptanceTestImplementation(configurations.geodeArchives)
+  acceptanceTestImplementation(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
-  acceptanceTestCompile(project(':geode-assembly:geode-assembly-test'))
+  acceptanceTestImplementation(project(':geode-assembly:geode-assembly-test'))
 
   // This is used by 'gradle within gradle' tests. No need to bump this version; but if you do,
   // don't have it be the same version as the outer gradle version.
-  acceptanceTestCompile('org.gradle:gradle-tooling-api:5.1.1')
+  acceptanceTestImplementation('org.gradle:gradle-tooling-api:5.1.1')
 
 
-  uiTestCompile(project(':geode-core'))
-  uiTestCompile(project(':geode-dunit')) {
+  uiTestImplementation(project(':geode-core'))
+  uiTestImplementation(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
-  uiTestCompile(project(':geode-pulse'))
-  uiTestCompile(project(':geode-pulse:geode-pulse-test'))
-  uiTestCompile(project(':geode-assembly:geode-assembly-test'))
-  uiTestCompile('org.seleniumhq.selenium:selenium-api')
-  uiTestCompile('org.seleniumhq.selenium:selenium-remote-driver')
-  uiTestCompile('org.seleniumhq.selenium:selenium-support')
+  uiTestImplementation(project(':geode-pulse'))
+  uiTestImplementation(project(':geode-pulse:geode-pulse-test'))
+  uiTestImplementation(project(':geode-assembly:geode-assembly-test'))
+  uiTestImplementation('org.seleniumhq.selenium:selenium-api')
+  uiTestImplementation('org.seleniumhq.selenium:selenium-remote-driver')
+  uiTestImplementation('org.seleniumhq.selenium:selenium-support')
 
-  uiTestRuntime(project(':geode-core'))
-  uiTestRuntime('org.seleniumhq.selenium:selenium-chrome-driver')
+  uiTestRuntimeOnly(project(':geode-core'))
+  uiTestRuntimeOnly('org.seleniumhq.selenium:selenium-chrome-driver')
 
-  upgradeTestImplementation project(':geode-logging')
-  upgradeTestImplementation project(':geode-serialization')
-  upgradeTestCompile(project(':geode-core'))
-  upgradeTestCompile(project(':geode-dunit')) {
+  upgradeTestImplementation(project(':geode-gfsh'))
+  upgradeTestImplementation(project(':geode-logging'))
+  upgradeTestImplementation(project(':geode-serialization'))
+  upgradeTestImplementation(project(':geode-core'))
+  upgradeTestImplementation(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
-  upgradeTestCompile(project(':geode-assembly:geode-assembly-test'))
+  upgradeTestImplementation(project(':geode-assembly:geode-assembly-test'))
 
-  upgradeTestRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
-  upgradeTestRuntime(project(':extensions:session-testing-war'))
-  upgradeTestRuntime('org.codehaus.cargo:cargo-core-uberjar')
-  upgradeTestRuntime('org.apache.httpcomponents:httpclient')
+  upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
+  upgradeTestRuntimeOnly(project(':extensions:session-testing-war'))
+  upgradeTestRuntimeOnly('org.codehaus.cargo:cargo-core-uberjar')
+  upgradeTestRuntimeOnly('org.apache.httpcomponents:httpclient')
   upgradeTestRuntime files({ downloadWebServers } )
 
   //Web servers used for session module testing

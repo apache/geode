@@ -140,7 +140,8 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
   /**
    * guarded by viewInstallationLock
    */
-  private volatile boolean isCoordinator;
+  @VisibleForTesting
+  volatile boolean isCoordinator;
 
   /**
    * a synch object that guards view installation
@@ -150,7 +151,8 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
   /**
    * the currently installed view. Guarded by viewInstallationLock
    */
-  private volatile GMSMembershipView<ID> currentView;
+  @VisibleForTesting
+  volatile GMSMembershipView<ID> currentView;
 
   /**
    * the previous view
@@ -1153,7 +1155,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
             if (response.getRegistrants() != null) {
               state.registrants.addAll(response.getRegistrants());
             }
-            logger.info("received {}", response);
+            logger.info("received {} from locator {}", response, laddr);
             if (!state.hasContactedAJoinedLocator && response.getSenderId() != null
                 && response.getSenderId().getVmViewId() >= 0) {
               logger.info("Locator's address indicates it is part of a distributed system "

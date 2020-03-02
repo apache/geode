@@ -18,10 +18,12 @@ package org.apache.geode.management.internal.configuration.mutators;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
+import org.apache.geode.management.configuration.AbstractConfiguration;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 
@@ -33,8 +35,10 @@ public class DeploymentManager implements ConfigurationManager<Deployment> {
   }
 
   @Override
-  public void add(Deployment config, String groupName) {
-    throw new IllegalStateException("Not implemented");
+  public void add(Deployment config, String groupName) throws Exception {
+    persistenceService.addJarsToThisLocator(
+        Collections.singletonList(config.getFile().getAbsolutePath()),
+        new String[] {AbstractConfiguration.getGroupName(config.getGroup())});
   }
 
   @Override
@@ -55,11 +59,11 @@ public class DeploymentManager implements ConfigurationManager<Deployment> {
     }
 
     return configuration.getDeployments().stream()
-        .filter(deploymentsForJarName(filter.getJarFileName()))
+        .filter(deploymentsForJarName(filter.getFileName()))
         .collect(toList());
   }
 
   private static Predicate<Deployment> deploymentsForJarName(String jarFileName) {
-    return jarFileName == null ? d -> true : d -> d.getJarFileName().equals(jarFileName);
+    return jarFileName == null ? d -> true : d -> d.getFileName().equals(jarFileName);
   }
 }

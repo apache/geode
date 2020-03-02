@@ -127,14 +127,14 @@ public class HttpRequester {
   }
 
   public <T> T get(URI url, Class<T> responseType) {
-    return exchange(url, HttpMethod.GET, null, null, responseType);
+    return exchange(url, HttpMethod.GET, null, responseType);
   }
 
-  public <T> T post(URI url, MediaType mediaType, Object content, Class<T> responseType) {
-    return exchange(url, HttpMethod.POST, mediaType, content, responseType);
+  public <T> T post(URI url, Object content, Class<T> responseType) {
+    return exchange(url, HttpMethod.POST, content, responseType);
   }
 
-  <T> T exchange(URI url, HttpMethod method, MediaType mediaType, Object content,
+  <T> T exchange(URI url, HttpMethod method, Object content,
       Class<T> responseType) {
     HttpHeaders headers = new HttpHeaders();
     addHeaderValues(headers);

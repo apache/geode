@@ -19,6 +19,7 @@ package org.apache.geode.internal.admin.remote;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.List;
 
 import org.apache.logging.log4j.Logger;
 
@@ -128,7 +129,7 @@ public abstract class AdminRequest extends PooledDistributionMessage {
    */
   @Override
   protected void process(ClusterDistributionManager dm) {
-    AdminResponse response = null;
+    AdminResponse response;
     InspectionClasspathManager cpMgr = InspectionClasspathManager.getInstance();
     try {
       cpMgr.jumpToModifiedClassLoader(modifiedClasspath);
@@ -176,17 +177,15 @@ public abstract class AdminRequest extends PooledDistributionMessage {
   }
 
   public InternalDistributedMember getRecipient() {
-    InternalDistributedMember[] recipients = getRecipientsArray();
-    int size = recipients.length;
+    List<InternalDistributedMember> recipients = getRecipients();
+    int size = recipients.size();
     if (size == 0) {
       return null;
     } else if (size > 1) {
-      throw new IllegalStateException(
-          String.format("Could not return one recipient because this message has %s recipients",
-              Integer.valueOf(size)));
+      throw new IllegalStateException(String
+          .format("Could not return one recipient because this message has %s recipients", size));
     } else {
-      return recipients[0];
+      return recipients.get(0);
     }
   }
-
 }

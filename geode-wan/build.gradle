@@ -22,57 +22,51 @@ apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 
 dependencies {
   compile(platform(project(':boms:geode-all-bom')))
-  gradleLint.ignore {
-    // See GEODE-6128 -- ignore xml-apis in linter to avoid changes with every run.
-    upgradeTestCompile('xml-apis:xml-apis:2.0.2')
-  }
+
+
   implementation(project(':geode-logging'))
   implementation(project(':geode-membership'))
   implementation(project(':geode-serialization'))
   implementation(project(':geode-tcp-server'))
-  compile(project(':geode-core'))
+  implementation(project(':geode-core'))
 
   compileOnly('org.apache.logging.log4j:log4j-api:2.12.1')
+  
+  testImplementation(project(':geode-junit'))
+  testImplementation('org.assertj:assertj-core')
+  testImplementation('junit:junit')
+  testImplementation('org.mockito:mockito-core')
 
-  testCompile(project(':geode-junit')) {
-    exclude module: 'geode-core'
-  }
+  integrationTestImplementation(project(':geode-junit'))
+  integrationTestImplementation('org.assertj:assertj-core')
+  integrationTestImplementation('junit:junit')
 
-  testCompile('org.assertj:assertj-core')
-  testCompile('junit:junit')
-  testCompile('org.mockito:mockito-core')
 
-  integrationTestCompile(project(':geode-junit')) {
-    exclude module: 'geode-core'
-  }
+  distributedTestImplementation(project(':geode-gfsh'))
+  distributedTestImplementation(project(':geode-dunit'))
+  distributedTestImplementation(project(':geode-junit'))
 
-  integrationTestCompile('org.assertj:assertj-core')
-  integrationTestCompile('junit:junit')
+  distributedTestImplementation('mx4j:mx4j')
+  distributedTestImplementation('org.awaitility:awaitility')
+  distributedTestImplementation('junit:junit')
+  distributedTestImplementation('org.hamcrest:hamcrest-core')
+  distributedTestImplementation('org.hamcrest:hamcrest-library')
+  distributedTestImplementation('org.mockito:mockito-core')
+  distributedTestImplementation('org.hamcrest:hamcrest-all')
+  distributedTestImplementation('org.apache.commons:commons-lang3')
+  distributedTestImplementation('commons-io:commons-io')
+  distributedTestImplementation('org.assertj:assertj-core')
+  distributedTestImplementation('pl.pragmatists:JUnitParams')
 
-  distributedTestCompile(project(':geode-dunit')){
-    exclude module: 'geode-core'
-  }
-  distributedTestCompile(project(':geode-junit'))
 
-  distributedTestCompile('mx4j:mx4j')
-  distributedTestCompile('org.awaitility:awaitility')
-  distributedTestCompile('junit:junit')
-  distributedTestCompile('org.hamcrest:hamcrest-core')
-  distributedTestCompile('org.hamcrest:hamcrest-library')
-  distributedTestCompile('org.mockito:mockito-core')
-  distributedTestCompile('org.hamcrest:hamcrest-all')
-  distributedTestCompile('org.apache.commons:commons-lang3')
-  distributedTestCompile('commons-io:commons-io')
-  distributedTestCompile('org.assertj:assertj-core')
-  distributedTestCompile('pl.pragmatists:JUnitParams')
+  upgradeTestImplementation(project(':geode-gfsh'))
+  upgradeTestImplementation(project(':geode-junit'))
+  upgradeTestImplementation(project(':geode-dunit'))
 
-  upgradeTestCompile(project(':geode-junit'))
-  upgradeTestCompile(project(':geode-dunit')) {
-    exclude module: 'geode-core'
-  }
-  upgradeTestCompile('org.awaitility:awaitility')
-  upgradeTestCompile('org.assertj:assertj-core')
-  upgradeTestCompile('junit:junit')
+  upgradeTestImplementation('org.awaitility:awaitility')
+  upgradeTestImplementation('org.assertj:assertj-core')
+  upgradeTestImplementation('junit:junit')
+  upgradeTestImplementation('xml-apis:xml-apis:2.0.2')
 
-  upgradeTestRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
+  upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
 }

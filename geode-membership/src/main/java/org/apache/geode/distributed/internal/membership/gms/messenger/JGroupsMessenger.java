@@ -330,12 +330,13 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
     // start the jgroups channel and establish the membership ID
     boolean reconnecting = false;
     try {
-      Object oldDSMembershipInfo = services.getConfig().getOldDSMembershipInfo();
+      Object oldDSMembershipInfo = services.getConfig().getOldMembershipInfo();
       if (oldDSMembershipInfo != null) {
         logger.debug("Reusing JGroups channel from previous system", properties);
         MembershipInformationImpl oldInfo = (MembershipInformationImpl) oldDSMembershipInfo;
         myChannel = oldInfo.getChannel();
         queuedMessagesFromReconnect = oldInfo.getQueuedMessages();
+        encrypt = oldInfo.getEncrypt();
 
         // scrub the old channel
         ViewId vid = new ViewId(new JGAddress(), 0);
@@ -417,7 +418,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
 
   @Override
   public void started() throws MemberStartupException {
-    if (queuedMessagesFromReconnect != null && !services.getConfig().isUDPSecurityEnabled()) {
+    if (queuedMessagesFromReconnect != null) {
       logger.info("Delivering {} messages queued by quorum checker",
           queuedMessagesFromReconnect.size());
       for (org.jgroups.Message message : queuedMessagesFromReconnect) {
@@ -1248,7 +1249,8 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
       }
     }
     GMSQuorumChecker<ID> qc =
-        new GMSQuorumChecker<>(view, services.getConfig().getLossThreshold(), this.myChannel);
+        new GMSQuorumChecker<>(view, services.getConfig().getLossThreshold(), this.myChannel,
+            encrypt);
     qc.initialize();
     return qc;
   }

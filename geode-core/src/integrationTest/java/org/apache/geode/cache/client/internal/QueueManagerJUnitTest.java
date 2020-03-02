@@ -313,6 +313,11 @@ public class QueueManagerJUnitTest {
     }
 
     @Override
+    public int getPrimaryPort() {
+      return 0;
+    }
+
+    @Override
     public Object execute(Op op, int retryAttempts) {
       return null;
     }

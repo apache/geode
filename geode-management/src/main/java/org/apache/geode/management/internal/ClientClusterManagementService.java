@@ -15,6 +15,9 @@
 
 package org.apache.geode.management.internal;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.apache.commons.lang3.NotImplementedException;
 
 import org.apache.geode.management.api.ClusterManagementException;
@@ -60,15 +63,17 @@ public class ClientClusterManagementService implements ClusterManagementService 
 
   @Override
   public <T extends AbstractConfiguration<?>> ClusterManagementRealizationResult create(T config) {
-    return assertSuccessful(transport
-        .submitMessage(config, CommandType.CREATE, ClusterManagementRealizationResult.class));
+    ClusterManagementRealizationResult result = transport.submitMessage(config, CommandType.CREATE);
+    assertSuccessful(result);
+    return result;
   }
 
   @Override
   public <T extends AbstractConfiguration<?>> ClusterManagementRealizationResult delete(
       T config) {
-    return assertSuccessful(transport.submitMessage(config, CommandType.DELETE,
-        ClusterManagementRealizationResult.class));
+    ClusterManagementRealizationResult result = transport.submitMessage(config, CommandType.DELETE);
+    assertSuccessful(result);
+    return result;
   }
 
   @Override
@@ -80,28 +85,65 @@ public class ClientClusterManagementService implements ClusterManagementService 
   @Override
   public <T extends AbstractConfiguration<R>, R extends RuntimeInfo> ClusterManagementListResult<T, R> list(
       T config) {
-    return assertSuccessful(
-        transport.submitMessageForList(config, ClusterManagementListResult.class));
+    ClusterManagementListResult<T, R> result = transport.submitMessageForList(config);
+    assertSuccessful(result);
+    return result;
   }
 
   @Override
   public <T extends AbstractConfiguration<R>, R extends RuntimeInfo> ClusterManagementGetResult<T, R> get(
       T config) {
-    return assertSuccessful(
-        transport.submitMessageForGet(config, ClusterManagementGetResult.class));
+    ClusterManagementGetResult<T, R> result = transport.submitMessageForGet(config);
+    assertSuccessful(result);
+    return result;
   }
 
   @Override
-  public <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<V> start(
+  public <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<A, V> start(
       A op) {
-    return transport.submitMessageForStart(op);
+    ClusterManagementOperationResult<A, V> result = transport.submitMessageForStart(op);
+    assertSuccessful(result);
+    return result;
   }
 
   @Override
-  public <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementListOperationsResult<V> list(
+  public <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<A, V> get(
+      A opType, String opId) {
+    ClusterManagementOperationResult<A, V> result =
+        transport.submitMessageForGetOperation(opType, opId);
+    assertSuccessful(result);
+    return result;
+  }
+
+  @Override
+  public <A extends ClusterManagementOperation<V>, V extends OperationResult> CompletableFuture<ClusterManagementOperationResult<A, V>> getFuture(
+      A opType, String opId) {
+    AtomicReference<CompletableFuture<ClusterManagementOperationResult<A, V>>> futureAtomicReference =
+        new AtomicReference<>();
+    futureAtomicReference.set(CompletableFuture.supplyAsync(() -> {
+      while (futureAtomicReference.get() == null || !futureAtomicReference.get().isCancelled()) {
+        ClusterManagementOperationResult<A, V> result = this.get(opType, opId);
+        if (result.getOperationEnd() != null) {
+          return result;
+        }
+        try {
+          Thread.sleep(1000L);
+        } catch (InterruptedException e) {
+          throw new ClusterManagementException(result, e);
+        }
+      }
+      return null;
+    }));
+    return futureAtomicReference.get();
+  }
+
+  @Override
+  public <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementListOperationsResult<A, V> list(
       A opType) {
-    return transport.submitMessageForListOperation(opType,
-        ClusterManagementListOperationsResult.class);
+    ClusterManagementListOperationsResult<A, V> result =
+        transport.submitMessageForListOperation(opType);
+    assertSuccessful(result);
+    return result;
   }
 
   @Override
@@ -114,7 +156,7 @@ public class ClientClusterManagementService implements ClusterManagementService 
     transport.close();
   }
 
-  private <T extends ClusterManagementResult> T assertSuccessful(T result) {
+  private void assertSuccessful(ClusterManagementResult result) {
     if (result == null) {
       ClusterManagementResult somethingVeryBadHappened = new ClusterManagementResult(
           ClusterManagementResult.StatusCode.ERROR, "Unable to parse server response.");
@@ -122,6 +164,5 @@ public class ClientClusterManagementService implements ClusterManagementService 
     } else if (!result.isSuccessful()) {
       throw new ClusterManagementException(result);
     }
-    return result;
   }
 }

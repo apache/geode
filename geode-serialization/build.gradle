@@ -58,8 +58,8 @@ dependencies {
     exclude module: 'geode-serialization'
   }
   distributedTestImplementation('pl.pragmatists:JUnitParams')
-  distributedTestRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
-  upgradeTestRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
+  distributedTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
+  upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
 }
 
 distributedTest {

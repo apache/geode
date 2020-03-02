@@ -360,7 +360,7 @@ public class LuceneQueryFunctionJUnitTest {
 
     searchArgs = new LuceneFunctionContext<IndexResultCollector>(queryProvider, "indexName");
 
-    when(mockRegion.getCache()).thenReturn(mockCache);
+    when(mockContext.getCache()).thenReturn(mockCache);
     when(mockRegion.getFullPath()).thenReturn(regionPath);
     when(mockCache.getService(any())).thenReturn(mockService);
     when(mockService.getIndex(eq("indexName"), eq(regionPath))).thenReturn(mockIndex);

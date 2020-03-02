@@ -89,6 +89,7 @@ task createVersionPropertiesFile(dependsOn: ':writeBuildInfo') {
         "Build-Id"          : "${System.env.USER} ${buildId}".toString(),
         "Build-Date"        : new Date().format('yyyy-MM-dd HH:mm:ss Z'),
         "Build-Platform"    : "${System.properties['os.name']} ${System.properties['os.version']} ${System.properties['os.arch']}".toString(),
+        "Build-Java-Vendor" : System.properties['java.vendor'],
         "Build-Java-Version": System.properties['java.version']
     ] as Properties
     props.putAll(scmInfo)
@@ -142,6 +143,10 @@ configurations {
     extendsFrom api
     description 'a dependency that exposes the compiled classes'
   }
+
+  jmh {
+    extendsFrom testImplementation
+  }
 }
 
 dependencies {
@@ -174,11 +179,14 @@ dependencies {
 
   //tools.jar seems to be used by gfsh is some cases to control processes using
   //the sun attach API? But this code path may not even be used?
-  compileOnly files("${System.getProperty('java.home')}/../lib/tools.jar")
+  compileOnly(files("${System.getProperty('java.home')}/../lib/tools.jar"))
 
   //Find bugs is used in multiple places in the code to suppress findbugs warnings
   compileOnly('com.github.stephenc.findbugs:findbugs-annotations')
   testCompileOnly('com.github.stephenc.findbugs:findbugs-annotations')
+
+  //Spring web is used for SerializableObjectHttpMessageConverter
+  implementation('org.springframework:spring-web')
 
   //Jgroups is a core component of our membership system.
   implementation('org.jgroups:jgroups')
@@ -263,10 +271,6 @@ dependencies {
   //Log4j is used everywhere
   implementation('org.apache.logging.log4j:log4j-api')
 
-  runtimeOnly(project(':geode-gfsh')) {
-    exclude module: 'geode-core'
-    ext.optional = true
-  }
 
   runtimeOnly('io.swagger:swagger-annotations') {
     ext.optional = true
@@ -307,20 +311,21 @@ dependencies {
 
   jcaCompile(sourceSets.main.output)
 
-  testCompile(project(':geode-junit')) {
+  testImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
-  testCompile(project(':geode-concurrency-test'))
-  testCompile('org.apache.bcel:bcel')
-  testCompile('org.mockito:mockito-core')
-  testCompile('com.pholser:junit-quickcheck-core')
-  testCompile('org.powermock:powermock-core')
-  testCompile('org.powermock:powermock-module-junit4')
-  testCompile('org.powermock:powermock-api-mockito2')
-  testCompile('pl.pragmatists:JUnitParams')
+  testImplementation(project(':geode-concurrency-test'))
+  testImplementation('org.apache.bcel:bcel')
+  testImplementation('org.assertj:assertj-core')
+  testImplementation('org.mockito:mockito-core')
+  testImplementation('com.pholser:junit-quickcheck-core')
+  testImplementation('org.powermock:powermock-core')
+  testImplementation('org.powermock:powermock-module-junit4')
+  testImplementation('org.powermock:powermock-api-mockito2')
+  testImplementation('pl.pragmatists:JUnitParams')
   testImplementation('com.tngtech.archunit:archunit-junit4')
 
-  testCompile files("${System.getProperty('java.home')}/../lib/tools.jar")
+  testImplementation(files("${System.getProperty('java.home')}/../lib/tools.jar"))
 
   testRuntime('commons-collections:commons-collections')
   testRuntime('commons-configuration:commons-configuration')
@@ -329,55 +334,56 @@ dependencies {
   testRuntime('com.pholser:junit-quickcheck-generators')
   testRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
 
-
-  integrationTestCompile(project(':geode-junit')) {
+  integrationTestImplementation(project(':geode-gfsh'))
+  integrationTestImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
-  integrationTestCompile(project(':geode-dunit')) {
+  integrationTestImplementation(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
   integrationTestImplementation(project(':geode-log4j')) {
     exclude module: 'geode-core'
   }
-  integrationTestCompile(project(':geode-concurrency-test'))
-  integrationTestCompile('org.apache.bcel:bcel')
-  integrationTestCompile('org.powermock:powermock-core')
-  integrationTestCompile('org.powermock:powermock-module-junit4')
-  integrationTestCompile('org.powermock:powermock-api-mockito2')
-  integrationTestCompile('pl.pragmatists:JUnitParams')
-  integrationTestCompile('com.tngtech.archunit:archunit-junit4')
+  integrationTestImplementation(project(':geode-concurrency-test'))
+  integrationTestImplementation('org.apache.bcel:bcel')
+  integrationTestImplementation('org.apache.logging.log4j:log4j-core')
+  integrationTestImplementation('org.powermock:powermock-core')
+  integrationTestImplementation('org.powermock:powermock-module-junit4')
+  integrationTestImplementation('org.powermock:powermock-api-mockito2')
+  integrationTestImplementation('pl.pragmatists:JUnitParams')
+  integrationTestImplementation('com.tngtech.archunit:archunit-junit4')
 
 
-  integrationTestRuntime('org.apache.derby:derby')
-  integrationTestRuntime('xerces:xercesImpl')
+  integrationTestRuntimeOnly('org.apache.derby:derby')
+  integrationTestRuntimeOnly('xerces:xercesImpl')
 
-
-  distributedTestCompile(project(':geode-junit')) {
+  distributedTestImplementation(project(':geode-gfsh'))
+  distributedTestImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
-  distributedTestCompile(project(':geode-dunit')) {
+  distributedTestImplementation(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
   distributedTestImplementation(project(':geode-log4j')) {
     exclude module: 'geode-core'
   }
-  distributedTestCompile('pl.pragmatists:JUnitParams')
-  distributedTestCompile('com.jayway.jsonpath:json-path-assert')
-  distributedTestCompile('net.openhft:compiler')
+  distributedTestImplementation('pl.pragmatists:JUnitParams')
+  distributedTestImplementation('com.jayway.jsonpath:json-path-assert')
+  distributedTestImplementation('net.openhft:compiler')
 
-  distributedTestRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
-  distributedTestRuntime('org.apache.derby:derby')
+  distributedTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
+  distributedTestRuntimeOnly('org.apache.derby:derby')
 
 
-  upgradeTestCompile(project(':geode-dunit')) {
+  upgradeTestImplementation(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
 
-  upgradeTestRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
-  upgradeTestRuntime(project(':geode-log4j'))
+  upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
+  upgradeTestRuntimeOnly(project(':geode-log4j'))
 
 
-  performanceTestCompile(project(':geode-junit')) {
+  performanceTestImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
   performanceTestImplementation(project(':geode-log4j'))

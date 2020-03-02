@@ -14,27 +14,33 @@
  */
 package org.apache.geode.alerting.internal;
 
+import static org.apache.geode.internal.cache.util.UncheckedUtils.cast;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.function.Consumer;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.mockito.ArgumentCaptor;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.mockito.quality.Strictness;
@@ -42,6 +48,7 @@ import org.mockito.stubbing.Answer;
 
 import org.apache.geode.alerting.internal.spi.AlertLevel;
 import org.apache.geode.alerting.internal.spi.AlertingAction;
+import org.apache.geode.alerting.internal.spi.AlertingIOException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -90,14 +97,14 @@ public class ClusterAlertMessagingTest {
 
   @Test
   public void sendAlertSendsMessageIfMemberIsRemote() {
-    DistributionManager dm = mock(ClusterDistributionManager.class);
+    DistributionManager distributionManager = mock(ClusterDistributionManager.class);
     ClusterAlertMessaging clusterAlertMessaging =
-        spyClusterAlertMessaging(dm, currentThreadExecutorService());
+        spyClusterAlertMessaging(distributionManager, currentThreadExecutorService());
 
     clusterAlertMessaging.sendAlert(remoteMember, AlertLevel.WARNING, Instant.now(), "threadName",
         Thread.currentThread().getId(), "formattedMessage", "stackTrace");
 
-    verify(dm).putOutgoing(eq(alertListenerMessage));
+    verify(distributionManager).putOutgoing(eq(alertListenerMessage));
   }
 
   @Test
@@ -118,15 +125,74 @@ public class ClusterAlertMessagingTest {
     ClusterDistributionManager distributionManager = mock(ClusterDistributionManager.class);
     ClusterAlertMessaging clusterAlertMessaging =
         spyClusterAlertMessaging(distributionManager, executor);
-    when(distributionManager.putOutgoing(any())).thenAnswer(invocation -> {
-      assertThat(AlertingAction.isThreadAlerting()).isTrue();
-      return null;
-    });
+    when(distributionManager.putOutgoing(any()))
+        .thenAnswer(invocation -> {
+          assertThat(AlertingAction.isThreadAlerting()).isTrue();
+          return null;
+        });
 
     clusterAlertMessaging.sendAlert(remoteMember, AlertLevel.WARNING, Instant.now(), "threadName",
         Thread.currentThread().getId(), "formattedMessage", "stackTrace");
 
     verify(distributionManager).putOutgoing(any());
+  }
+
+  @Test
+  public void sendAlertLogsWarning_ifAlertingIOExceptionIsCaught() {
+    ExecutorService executor = currentThreadExecutorService();
+    ClusterDistributionManager distributionManager = mock(ClusterDistributionManager.class);
+    Consumer<AlertingIOException> alertingIOExceptionLogger = cast(mock(Consumer.class));
+    ClusterAlertMessaging clusterAlertMessaging =
+        spyClusterAlertMessaging(distributionManager, executor, alertingIOExceptionLogger);
+    doThrow(new AlertingIOException(new IOException("Cannot form connection to alert listener")))
+        .when(distributionManager).putOutgoing(any());
+
+    clusterAlertMessaging.sendAlert(remoteMember, AlertLevel.WARNING, Instant.now(), "threadName",
+        Thread.currentThread().getId(), "formattedMessage", "stackTrace");
+
+    ArgumentCaptor<AlertingIOException> captor = ArgumentCaptor.forClass(AlertingIOException.class);
+    verify(alertingIOExceptionLogger).accept(captor.capture());
+
+    assertThat(captor.getValue())
+        .isInstanceOf(AlertingIOException.class)
+        .hasMessageContaining("Cannot form connection to alert listener");
+  }
+
+  @Test
+  public void sendAlertLogsWarningOnce_ifAlertingIOExceptionIsCaught() {
+    ExecutorService executor = currentThreadExecutorService();
+    ClusterDistributionManager distributionManager = mock(ClusterDistributionManager.class);
+    Consumer<AlertingIOException> alertingIOExceptionLogger = cast(mock(Consumer.class));
+    ClusterAlertMessaging clusterAlertMessaging =
+        spyClusterAlertMessaging(distributionManager, executor, alertingIOExceptionLogger);
+    doThrow(new AlertingIOException(new IOException("Cannot form connection to alert listener")))
+        .when(distributionManager).putOutgoing(any());
+
+    clusterAlertMessaging.sendAlert(remoteMember, AlertLevel.WARNING, Instant.now(), "threadName",
+        Thread.currentThread().getId(), "formattedMessage", "stackTrace");
+
+    ArgumentCaptor<AlertingIOException> captor = ArgumentCaptor.forClass(AlertingIOException.class);
+    verify(alertingIOExceptionLogger).accept(captor.capture());
+
+    assertThat(captor.getAllValues()).hasSize(1);
+  }
+
+  @Test
+  public void sendAlertDoesNotSend_ifAlertingIOExceptionIsCaught() {
+    ExecutorService executor = currentThreadExecutorService();
+    ClusterDistributionManager distributionManager = mock(ClusterDistributionManager.class);
+    ClusterAlertMessaging clusterAlertMessaging =
+        spyClusterAlertMessaging(distributionManager, executor);
+    when(distributionManager.putOutgoing(any()))
+        .thenAnswer(invocation -> {
+          assertThat(AlertingAction.isThreadAlerting()).isTrue();
+          return null;
+        });
+
+    clusterAlertMessaging.sendAlert(remoteMember, AlertLevel.WARNING, Instant.now(), "threadName",
+        Thread.currentThread().getId(), "formattedMessage", "stackTrace");
+
+    verifyZeroInteractions(distributionManager);
   }
 
   @Test
@@ -154,6 +220,22 @@ public class ClusterAlertMessagingTest {
         .thenReturn(localMember);
     return spy(new ClusterAlertMessaging(system, distributionManager, alertListenerMessageFactory,
         executorService));
+  }
+
+  private ClusterAlertMessaging spyClusterAlertMessaging(DistributionManager distributionManager,
+      ExecutorService executorService, Consumer<AlertingIOException> alertingIOExceptionLogger) {
+    when(alertListenerMessageFactory.createAlertListenerMessage(any(DistributedMember.class),
+        any(AlertLevel.class), any(Instant.class), anyString(), anyString(), anyLong(), anyString(),
+        anyString()))
+            .thenReturn(alertListenerMessage);
+    when(config.getName())
+        .thenReturn("name");
+    when(system.getConfig())
+        .thenReturn(config);
+    when(system.getDistributedMember())
+        .thenReturn(localMember);
+    return spy(new ClusterAlertMessaging(system, distributionManager, alertListenerMessageFactory,
+        executorService, alertingIOExceptionLogger));
   }
 
   private ExecutorService currentThreadExecutorService() {

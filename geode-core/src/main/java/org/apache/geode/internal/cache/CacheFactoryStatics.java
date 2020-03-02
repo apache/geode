@@ -80,7 +80,7 @@ public class CacheFactoryStatics {
    * @throws CacheClosedException if a cache has not been created or the only created one is
    *         {@link Cache#isClosed closed}
    */
-  public static Cache getAnyInstance() {
+  public static InternalCache getAnyInstance() {
     synchronized (InternalCacheBuilder.class) {
       InternalCache instance = GemFireCacheImpl.getInstance();
       if (instance == null) {

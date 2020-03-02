@@ -34,7 +34,6 @@ import org.apache.geode.GemFireIOException;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.InvalidValueException;
 import org.apache.geode.annotations.internal.MakeNotStatic;
-import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.ClientSession;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.DiskStoreFactory;
@@ -42,7 +41,6 @@ import org.apache.geode.cache.DynamicRegionFactory;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.InterestRegistrationListener;
-import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionExistsException;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.server.CacheServer;
@@ -593,17 +591,15 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
    */
   public static String clientMessagesRegion(InternalCache cache, String ePolicy, int capacity,
       int port, String overFlowDir, boolean isDiskStore) {
-    AttributesFactory factory =
-        getAttribFactoryForClientMessagesRegion(cache, ePolicy, capacity, overFlowDir, isDiskStore);
-    RegionAttributes attr = factory.create();
-
-    return createClientMessagesRegion(attr, cache, capacity, port);
+    InternalRegionFactory factory =
+        getRegionFactoryForClientMessagesRegion(cache, ePolicy, capacity, overFlowDir, isDiskStore);
+    return createClientMessagesRegion(factory, port);
   }
 
-  public static AttributesFactory getAttribFactoryForClientMessagesRegion(InternalCache cache,
+  private static InternalRegionFactory getRegionFactoryForClientMessagesRegion(InternalCache cache,
       String ePolicy, int capacity, String overflowDir, boolean isDiskStore)
       throws InvalidValueException, GemFireIOException {
-    AttributesFactory factory = new AttributesFactory();
+    InternalRegionFactory factory = cache.createInternalRegionFactory();
     factory.setScope(Scope.LOCAL);
 
     if (isDiskStore) {
@@ -655,27 +651,16 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
     return factory;
   }
 
-  private static String createClientMessagesRegion(RegionAttributes attr, InternalCache cache,
-      int capacity, int port) {
+  private static String createClientMessagesRegion(InternalRegionFactory factory, int port) {
     // generating unique name in VM for ClientMessagesRegion
     String regionName = generateNameForClientMsgsRegion(port);
     try {
-      cache.createVMRegion(regionName, attr,
-          new InternalRegionArguments().setDestroyLockFlag(true).setRecreateFlag(false)
-              .setSnapshotInputStream(null).setImageTarget(null).setIsUsedForMetaRegion(true));
+      factory.setDestroyLockFlag(true).setRecreateFlag(false)
+          .setSnapshotInputStream(null).setImageTarget(null).setIsUsedForMetaRegion(true);
+      factory.create(regionName);
     } catch (RegionExistsException ree) {
       InternalGemFireError assErr = new InternalGemFireError("unexpected exception");
       assErr.initCause(ree);
-      throw assErr;
-    } catch (IOException e) {
-      // only if loading snapshot, not here
-      InternalGemFireError assErr = new InternalGemFireError("unexpected exception");
-      assErr.initCause(e);
-      throw assErr;
-    } catch (ClassNotFoundException e) {
-      // only if loading snapshot, not here
-      InternalGemFireError assErr = new InternalGemFireError("unexpected exception");
-      assErr.initCause(e);
       throw assErr;
     }
     return regionName;

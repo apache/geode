@@ -38,34 +38,34 @@ dependencies {
     //Jgroups is a core component of our membership system.
     implementation('org.jgroups:jgroups')
 
-    testCompile(project(':geode-junit')) {
+    testImplementation(project(':geode-junit')) {
         exclude module: 'geode-logging'
     }
-    testCompile(project(':geode-concurrency-test'))
+    testImplementation(project(':geode-concurrency-test'))
 
-    testCompile('org.mockito:mockito-core')
-    testCompile('junit:junit')
-    testCompile('org.assertj:assertj-core')
+    testImplementation('org.mockito:mockito-core')
+    testImplementation('junit:junit')
+    testImplementation('org.assertj:assertj-core')
 
     testRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
 
-    integrationTestCompile(project(':geode-junit')) {
+    integrationTestImplementation(project(':geode-junit')) {
         exclude module: 'geode-logging'
     }
-    integrationTestCompile('pl.pragmatists:JUnitParams')
-    distributedTestCompile(project(':geode-junit')) {
+    integrationTestImplementation('pl.pragmatists:JUnitParams')
+    distributedTestImplementation(project(':geode-junit')) {
         exclude module: 'geode-logging'
     }
-    distributedTestCompile(project(':geode-dunit')) {
+    distributedTestImplementation(project(':geode-dunit')) {
         exclude module: 'geode-logging'
     }
-    distributedTestCompile('pl.pragmatists:JUnitParams')
-    distributedTestRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
-    upgradeTestRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
+    distributedTestImplementation('pl.pragmatists:JUnitParams')
+    distributedTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
+    upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
 
     testImplementation('com.tngtech.archunit:archunit-junit4')
 
-    integrationTestCompile('com.tngtech.archunit:archunit-junit4')
+    integrationTestImplementation('com.tngtech.archunit:archunit-junit4')
   
 }
 

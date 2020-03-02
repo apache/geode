@@ -73,7 +73,8 @@ public class RestSecurityConfiguration extends WebSecurityConfigurerAdapter {
         .antMatchers("/docs/**", "/swagger-ui.html", "/",
             Links.URI_VERSION + "/api-docs/**", "/webjars/springfox-swagger-ui/**",
             "/swagger-resources/**")
-        .permitAll().and().csrf().disable();
+        .permitAll()
+        .and().csrf().disable();
 
     if (this.authProvider.getSecurityService().isIntegratedSecurity()) {
       http.authorizeRequests().anyRequest().authenticated();

@@ -19,7 +19,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.apache.geode</groupId>
   <artifactId>geode-all-bom</artifactId>
-  <version>1.12.0-SNAPSHOT</version>
+  <version>1.13.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Apache Geode</name>
   <description>Apache Geode provides a database-like consistency model, reliable transaction processing and a shared-nothing architecture to maintain very low latency performance with high concurrency processing</description>
@@ -214,7 +214,7 @@
       <dependency>
         <groupId>io.netty</groupId>
         <artifactId>netty-all</artifactId>
-        <version>4.1.42.Final</version>
+        <version>4.1.45.Final</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
@@ -299,6 +299,18 @@
         <groupId>net.sf.jopt-simple</groupId>
         <artifactId>jopt-simple</artifactId>
         <version>5.0.4</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>net.sourceforge.pmd</groupId>
+        <artifactId>pmd-java</artifactId>
+        <version>6.20.0</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>net.sourceforge.pmd</groupId>
+        <artifactId>pmd-test</artifactId>
+        <version>6.20.0</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
@@ -472,7 +484,7 @@
       <dependency>
         <groupId>redis.clients</groupId>
         <artifactId>jedis</artifactId>
-        <version>2.9.0</version>
+        <version>3.2.0</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
@@ -790,193 +802,193 @@
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-common</artifactId>
-        <version>1.12.0-SNAPSHOT</version>
+        <version>1.13.0-SNAPSHOT</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-concurrency-test</artifactId>
-        <version>1.12.0-SNAPSHOT</version>
+        <version>1.13.0-SNAPSHOT</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-connectors</artifactId>
-        <version>1.12.0-SNAPSHOT</version>
+        <version>1.13.0-SNAPSHOT</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-core</artifactId>
-        <version>1.12.0-SNAPSHOT</version>
+        <version>1.13.0-SNAPSHOT</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-cq</artifactId>
-        <version>1.12.0-SNAPSHOT</version>
+        <version>1.13.0-SNAPSHOT</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-dunit</artifactId>
-        <version>1.12.0-SNAPSHOT</version>
+        <version>1.13.0-SNAPSHOT</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-experimental-driver</artifactId>
-        <version>1.12.0-SNAPSHOT</version>
+        <version>1.13.0-SNAPSHOT</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-gfsh</artifactId>
-        <version>1.12.0-SNAPSHOT</version>
+        <version>1.13.0-SNAPSHOT</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-http-service</artifactId>
-        <version>1.12.0-SNAPSHOT</version>
+        <version>1.13.0-SNAPSHOT</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-junit</artifactId>
-        <version>1.12.0-SNAPSHOT</version>
+        <version>1.13.0-SNAPSHOT</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-log4j</artifactId>
-        <version>1.12.0-SNAPSHOT</version>
+        <version>1.13.0-SNAPSHOT</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-logging</artifactId>
-        <version>1.12.0-SNAPSHOT</version>
+        <version>1.13.0-SNAPSHOT</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-lucene</artifactId>
-        <version>1.12.0-SNAPSHOT</version>
+        <version>1.13.0-SNAPSHOT</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-management</artifactId>
-        <version>1.12.0-SNAPSHOT</version>
+        <version>1.13.0-SNAPSHOT</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-membership</artifactId>
-        <version>1.12.0-SNAPSHOT</version>
+        <version>1.13.0-SNAPSHOT</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-memcached</artifactId>
-        <version>1.12.0-SNAPSHOT</version>
+        <version>1.13.0-SNAPSHOT</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-old-client-support</artifactId>
-        <version>1.12.0-SNAPSHOT</version>
+        <version>1.13.0-SNAPSHOT</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-protobuf</artifactId>
-        <version>1.12.0-SNAPSHOT</version>
+        <version>1.13.0-SNAPSHOT</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-protobuf-messages</artifactId>
-        <version>1.12.0-SNAPSHOT</version>
+        <version>1.13.0-SNAPSHOT</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-pulse</artifactId>
-        <version>1.12.0-SNAPSHOT</version>
+        <version>1.13.0-SNAPSHOT</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-rebalancer</artifactId>
-        <version>1.12.0-SNAPSHOT</version>
+        <version>1.13.0-SNAPSHOT</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-redis</artifactId>
-        <version>1.12.0-SNAPSHOT</version>
+        <version>1.13.0-SNAPSHOT</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-serialization</artifactId>
-        <version>1.12.0-SNAPSHOT</version>
+        <version>1.13.0-SNAPSHOT</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-tcp-server</artifactId>
-        <version>1.12.0-SNAPSHOT</version>
+        <version>1.13.0-SNAPSHOT</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-unsafe</artifactId>
-        <version>1.12.0-SNAPSHOT</version>
+        <version>1.13.0-SNAPSHOT</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-wan</artifactId>
-        <version>1.12.0-SNAPSHOT</version>
+        <version>1.13.0-SNAPSHOT</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-web</artifactId>
-        <version>1.12.0-SNAPSHOT</version>
+        <version>1.13.0-SNAPSHOT</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-web-api</artifactId>
-        <version>1.12.0-SNAPSHOT</version>
+        <version>1.13.0-SNAPSHOT</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-web-management</artifactId>
-        <version>1.12.0-SNAPSHOT</version>
+        <version>1.13.0-SNAPSHOT</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-lucene-test</artifactId>
-        <version>1.12.0-SNAPSHOT</version>
+        <version>1.13.0-SNAPSHOT</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-protobuf-test</artifactId>
-        <version>1.12.0-SNAPSHOT</version>
+        <version>1.13.0-SNAPSHOT</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-pulse-test</artifactId>
-        <version>1.12.0-SNAPSHOT</version>
+        <version>1.13.0-SNAPSHOT</version>
         <scope>compile</scope>
       </dependency>
     </dependencies>

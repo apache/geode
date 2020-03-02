@@ -15,96 +15,77 @@
 package org.apache.geode.distributed.internal.tcpserver;
 
 import java.net.InetSocketAddress;
+import java.util.Objects;
 
 import org.apache.commons.validator.routines.InetAddressValidator;
 
 public class LocatorAddress {
 
   private final InetSocketAddress socketInetAddress;
-  private final String hostname;
-  private final int port;
-  private final boolean isIpString;
 
   public LocatorAddress(InetSocketAddress loc, String locStr) {
-    this.socketInetAddress = loc;
-    this.hostname = locStr;
-    this.port = loc.getPort();
-    this.isIpString = InetAddressValidator.getInstance().isValid(locStr);
-  }
-
-  public boolean isIpString() {
-    return isIpString;
+    if (InetAddressValidator.getInstance().isValid(locStr)) {
+      socketInetAddress = new InetSocketAddress(locStr, loc.getPort());
+    } else {
+      socketInetAddress = cloneUnresolved(loc);
+    }
   }
 
   /**
-   * if host is ipString then it will return the cached InetSocketAddress Otherwise it will create
-   * the new instance of InetSocketAddress
+   * @deprecated Users should not care if literal IP or hostname is used.
+   */
+  @Deprecated
+  public boolean isIpString() {
+    return !socketInetAddress.isUnresolved();
+  }
+
+  /**
+   * If location is not litteral IP address a new resolved {@link InetSocketAddress} is returned.
+   *
+   * @return resolved {@link InetSocketAddress}, otherwise stored {@link InetSocketAddress} if
+   *         literal IP address is used.
    */
   public InetSocketAddress getSocketInetAddress() {
-    if (this.isIpString) {
-      return this.socketInetAddress;
+    if (socketInetAddress.isUnresolved()) {
+      return new InetSocketAddress(socketInetAddress.getHostString(), socketInetAddress.getPort());
     } else {
-      return new InetSocketAddress(hostname, this.socketInetAddress.getPort());
+      return this.socketInetAddress;
     }
   }
 
   public String getHostName() {
-    return hostname;
+    return socketInetAddress.getHostString();
   }
 
   public int getPort() {
-    return port;
-  }
-
-  /**
-   * If component has retry logic then use this method to get the InetSocketAddress address
-   * AutoConnectionSourceImpl for client has retry logic; This way client will not make DNS query
-   * each time
-   *
-   */
-  public InetSocketAddress getSocketInetAddressNoLookup() {
-    return this.socketInetAddress;
+    return socketInetAddress.getPort();
   }
 
   @Override
   public int hashCode() {
-    int prime = 31;
-    int result = 1;
-    result = prime * result + (isIpString ? 1231 : 1237);
-    result = prime * result + (socketInetAddress == null ? 0 : socketInetAddress.hashCode());
-    result = prime * result + (hostname == null ? 0 : hostname.hashCode());
-    return result;
+    return socketInetAddress.hashCode();
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj)
+  public boolean equals(Object o) {
+    if (this == o) {
       return true;
-    if (obj == null)
+    }
+    if (o == null || getClass() != o.getClass()) {
       return false;
-    if (getClass() != obj.getClass())
-      return false;
-    LocatorAddress other = (LocatorAddress) obj;
-    if (isIpString != other.isIpString)
-      return false;
-    if (socketInetAddress == null) {
-      if (other.socketInetAddress != null)
-        return false;
-    } else if (!socketInetAddress.equals(other.socketInetAddress))
-      return false;
-    if (hostname == null) {
-      if (other.hostname != null)
-        return false;
-    } else if (!hostname.equals(other.hostname))
-      return false;
-    return true;
+    }
+    LocatorAddress that = (LocatorAddress) o;
+    return Objects.equals(socketInetAddress, that.socketInetAddress);
   }
 
   @Override
   public String toString() {
-    return getClass().getSimpleName()
-        + " [socketInetAddress=" + socketInetAddress + ", hostname=" + hostname
-        + ", isIpString=" + isIpString + "]";
+    return getClass().getSimpleName() + " [socketInetAddress=" + socketInetAddress + "]";
+  }
+
+  private InetSocketAddress cloneUnresolved(final InetSocketAddress inetSocketAddress) {
+    return InetSocketAddress.createUnresolved(inetSocketAddress.getHostString(),
+        inetSocketAddress.getPort());
   }
 
 }

@@ -31,6 +31,7 @@ import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.internal.cache.entries.VersionedThinDiskRegionEntryHeapObjectKey;
 import org.apache.geode.test.dunit.VM;
@@ -140,22 +141,22 @@ public class ClearDuringGiiOplogWithMissingCreateRegressionTest extends CacheTes
 
     DiskStore diskStore = dsf.create(uniqueName);
 
-    AttributesFactory factory = new AttributesFactory();
-    factory.setScope(Scope.DISTRIBUTED_ACK);
-    factory.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
+    InternalRegionFactory factory =
+        getCache().createInternalRegionFactory(RegionShortcut.REPLICATE_PERSISTENT);
     factory.setDiskSynchronous(false);
     factory.setDiskStoreName(diskStore.getName());
 
-    DistributedRegion distRegion = new DistributedRegion(regionName, factory.create(), null,
-        getCache(), new InternalRegionArguments().setDestroyLockFlag(true).setRecreateFlag(false)
-            .setSnapshotInputStream(null).setImageTarget(null),
-        disabledClock());
+    DistributedRegion distRegion =
+        new DistributedRegion(regionName, factory.getCreateAttributes(), null,
+            getCache(),
+            new InternalRegionArguments().setDestroyLockFlag(true).setRecreateFlag(false)
+                .setSnapshotInputStream(null).setImageTarget(null),
+            disabledClock());
 
     distRegion.entries.setEntryFactory(new TestableDiskRegionEntryFactory());
-
-    getCache().createVMRegion(regionName, factory.create(),
-        new InternalRegionArguments().setInternalMetaRegion(distRegion).setDestroyLockFlag(true)
-            .setSnapshotInputStream(null).setImageTarget(null));
+    factory.setInternalMetaRegion(distRegion).setDestroyLockFlag(true)
+        .setSnapshotInputStream(null).setImageTarget(null);
+    factory.create(regionName);
   }
 
   /**

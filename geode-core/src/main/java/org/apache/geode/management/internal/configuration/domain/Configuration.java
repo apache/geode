@@ -133,8 +133,8 @@ public class Configuration implements DataSerializable {
   }
 
   public void putDeployment(Deployment deployment) {
-    String artifactId = getArtifactId(deployment.getJarFileName());
-    deployments.values().removeIf(d -> getArtifactId(d.getJarFileName()).equals(artifactId));
+    String artifactId = getArtifactId(deployment.getFileName());
+    deployments.values().removeIf(d -> getArtifactId(d.getFileName()).equals(artifactId));
     deployments.put(deployment.getId(), deployment);
   }
 
@@ -181,8 +181,8 @@ public class Configuration implements DataSerializable {
     if (jarNames != null) {
       // we are reading pre 1.12 data. So add each jar name to deployments
       jarNames.stream()
-          .map(Deployment::new)
-          .forEach(deployment -> deployments.put(deployment.getJarFileName(), deployment));
+          .map(x -> new Deployment(x, null, null))
+          .forEach(deployment -> deployments.put(deployment.getFileName(), deployment));
     } else {
       // version of the data we are reading (1.12 or later)
       Version version = Version.fromOrdinalNoThrow(Version.readOrdinal(in), true);

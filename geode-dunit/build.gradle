@@ -24,9 +24,10 @@ dependencies {
   compile(platform(project(':boms:geode-all-bom')))
   implementation(project(':geode-logging'))
   implementation(project(':geode-serialization'))
+  implementation(project(':geode-membership'))
   implementation(project(':geode-tcp-server'))
-  compile(project(':geode-core'))
-  compile(project(':geode-gfsh'))
+  implementation(project(':geode-core'))
+  implementation(project(':geode-gfsh'))
   implementation(project(':geode-log4j')) {
     exclude module: 'geode-core'
   }
@@ -35,12 +36,12 @@ dependencies {
     exclude module: 'geode-core'
   }
 
-  compile('com.jayway.jsonpath:json-path')
-  compile('org.apache.logging.log4j:log4j-api')
-  compile('org.apache.logging.log4j:log4j-core')
-  compile('commons-io:commons-io')
-  compile('org.apache.commons:commons-lang3')
-  compile('org.springframework.shell:spring-shell') {
+  implementation('com.jayway.jsonpath:json-path')
+  implementation('org.apache.logging.log4j:log4j-api')
+  implementation('org.apache.logging.log4j:log4j-core')
+  implementation('commons-io:commons-io')
+  implementation('org.apache.commons:commons-lang3')
+  implementation('org.springframework.shell:spring-shell') {
     exclude module: 'aopalliance'
     exclude module: 'asm'
     exclude module: 'cglib'
@@ -50,21 +51,21 @@ dependencies {
     exclude module: 'spring-core'
     ext.optional = true
   }
-  compile('com.google.guava:guava')
-  compile('com.github.stefanbirkner:system-rules') {
+  implementation('com.google.guava:guava')
+  implementation('com.github.stefanbirkner:system-rules') {
     exclude module: 'junit-dep'
   }
 
-  compile('org.assertj:assertj-core')
-  compile('org.mockito:mockito-core')
-  compile('org.awaitility:awaitility')
-  compile('pl.pragmatists:JUnitParams')
+  implementation('org.assertj:assertj-core')
+  implementation('org.mockito:mockito-core')
+  implementation('org.awaitility:awaitility')
+  implementation('pl.pragmatists:JUnitParams')
 
-  compile('junit:junit') {
+  implementation('junit:junit') {
     exclude module: 'hamcrest-core'
   }
 
-  distributedTestRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
+  distributedTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
 }
 
 distributedTest {

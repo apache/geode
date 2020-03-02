@@ -37,7 +37,7 @@ RUN apk --no-cache add \
   && gcloud config set component_manager/disable_update_check true \
   && gcloud config set metrics/environment github_docker_image \
   && git clone https://github.com/masterzen/winrm-cli \
-  && (cd winrm-cli; GOPATH=$PWD PATH=$PATH:$PWD/bin make) \
+  && (cd winrm-cli; git reset --hard 6f0c57dee4569c04f64c44c335752b415e5d73a7 ; GOPATH=$PWD PATH=$PATH:$PWD/bin make) \
   && cp winrm-cli/bin/winrm /usr/local/bin/ \
   && rm -rf winrm-cli \
   && gcloud components install -q beta \

@@ -25,6 +25,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.LongAdder;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.annotations.internal.MutableForTesting;
@@ -52,17 +54,19 @@ import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalDataSet;
-import org.apache.geode.internal.cache.PRQueryProcessor;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXStateProxy;
 import org.apache.geode.internal.statistics.StatisticsClock;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Thread-safe implementation of org.apache.persistence.query.Query
  */
 public class DefaultQuery implements Query {
+
+  private static final Logger logger = LogService.getLogger();
 
   private final CompiledValue compiledQuery;
 
@@ -78,7 +82,7 @@ public class DefaultQuery implements Query {
 
   private final QueryStatistics stats;
 
-  private boolean traceOn = false;
+  private boolean traceOn;
 
   @Immutable
   private static final Object[] EMPTY_ARRAY = new Object[0];
@@ -97,12 +101,6 @@ public class DefaultQuery implements Query {
 
   @MutableForTesting
   public static int TEST_COMPILED_QUERY_CLEAR_TIME = -1;
-
-  /**
-   * Use to represent null result. Used while adding PR results to the results-queue, which is a
-   * blocking queue.
-   */
-  public static final Object NULL_RESULT = new Object();
 
   private ProxyCache proxyCache;
 
@@ -136,7 +134,7 @@ public class DefaultQuery implements Query {
   private static final ThreadLocal<Map<String, Set<String>>> pdxClassToFieldsMap =
       ThreadLocal.withInitial(HashMap::new);
 
-  public static Map<String, Set<String>> getPdxClasstofieldsmap() {
+  static Map<String, Set<String>> getPdxClasstofieldsmap() {
     return pdxClassToFieldsMap.get();
   }
 
@@ -205,7 +203,6 @@ public class DefaultQuery implements Query {
   @Override
   public Object execute(Object[] params) throws FunctionDomainException, TypeMismatchException,
       NameResolutionException, QueryInvocationTargetException {
-
     // Local Query.
     if (params == null) {
       throw new IllegalArgumentException(
@@ -229,7 +226,7 @@ public class DefaultQuery implements Query {
 
     Object result = null;
     Boolean initialPdxReadSerialized = this.cache.getPdxReadSerializedOverride();
-    final ExecutionContext context = new QueryExecutionContext(params, this.cache, this);
+    final QueryExecutionContext context = new QueryExecutionContext(params, this.cache, this);
 
     try {
       // Setting the readSerialized flag for local queries
@@ -282,7 +279,7 @@ public class DefaultQuery implements Query {
       // have the OR condition
       boolean needsCopyOnReadWrapper =
           this.cache.getCopyOnRead() && !DefaultQueryService.COPY_ON_READ_AT_ENTRY_LEVEL
-              || (((QueryExecutionContext) context).isIndexUsed()
+              || (context.isIndexUsed()
                   && DefaultQueryService.COPY_ON_READ_AT_ENTRY_LEVEL);
       // For local queries returning pdx objects wrap the resultset with
       // ResultsCollectionPdxDeserializerWrapper
@@ -319,7 +316,7 @@ public class DefaultQuery implements Query {
 
   private Object executeOnServer(Object[] parameters) {
     long startTime = statisticsClock.getTime();
-    Object result = null;
+    Object result;
     try {
       if (this.proxyCache != null) {
         if (this.proxyCache.isClosed()) {
@@ -336,81 +333,9 @@ public class DefaultQuery implements Query {
     return result;
   }
 
-  /**
-   * Execute a PR Query on the specified bucket. Assumes query already meets restrictions for PR
-   * Query, and the first iterator in the FROM clause can be replaced with the BucketRegion.
-   */
-  public Object prExecuteOnBucket(Object[] parameters, PartitionedRegion pr, BucketRegion bukRgn)
-      throws FunctionDomainException, TypeMismatchException, NameResolutionException,
-      QueryInvocationTargetException {
-    if (parameters == null) {
-      parameters = EMPTY_ARRAY;
-    }
-
-    long startTime = 0L;
-    if (this.traceOn && this.cache != null) {
-      startTime = NanoTimer.getTime();
-    }
-
-    IndexTrackingQueryObserver indexObserver = null;
-    String otherObserver = null;
-    if (this.traceOn) {
-      QueryObserver qo = QueryObserverHolder.getInstance();
-      if (qo instanceof IndexTrackingQueryObserver) {
-        indexObserver = (IndexTrackingQueryObserver) qo;
-      } else if (!QueryObserverHolder.hasObserver()) {
-        indexObserver = new IndexTrackingQueryObserver();
-        QueryObserverHolder.setInstance(indexObserver);
-      } else {
-        otherObserver = qo.getClass().getName();
-      }
-    }
-
-    final ExecutionContext context = new QueryExecutionContext(parameters, this.cache, this);
-    context.setBucketRegion(pr, bukRgn);
-
-    // Check if QueryMonitor is enabled, if enabled add query to be monitored.
-    QueryMonitor queryMonitor = this.cache.getQueryMonitor();
-
-    // PRQueryProcessor executes the query using single thread(in-line) or ThreadPool.
-    // In case of threadPool each individual threads needs to be added into
-    // QueryMonitor Service.
-    if (queryMonitor != null && PRQueryProcessor.NUM_THREADS > 1) {
-      // Add current thread to be monitored by QueryMonitor.
-      queryMonitor.monitorQueryExecution(context);
-    }
-
-    Object result = null;
-    try {
-      result = executeUsingContext(context);
-    } finally {
-      if (queryMonitor != null && PRQueryProcessor.NUM_THREADS > 1) {
-        queryMonitor.stopMonitoringQueryExecution(context);
-      }
-
-      int resultSize = 0;
-      if (this.traceOn) {
-        if (result instanceof Collection) {
-          resultSize = ((Collection) result).size();
-        }
-      }
-
-      String queryVerboseMsg = DefaultQuery.getLogMessage(indexObserver, startTime, otherObserver,
-          resultSize, this.queryString, bukRgn);
-
-      if (this.traceOn) {
-        if (this.cache.getLogger().fineEnabled()) {
-          this.cache.getLogger().fine(queryVerboseMsg);
-        }
-      }
-    }
-    return result;
-  }
-
   public Object executeUsingContext(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     QueryObserver observer = QueryObserverHolder.getInstance();
-
     long startTime = statisticsClock.getTime();
     TXStateProxy tx = ((TXManagerImpl) this.cache.getCacheTransactionManager()).pauseTransaction();
     try {
@@ -449,7 +374,6 @@ public class DefaultQuery implements Query {
 
   QueryExecutor checkQueryOnPR(Object[] parameters)
       throws RegionNotFoundException, PartitionOfflineException {
-
     // check for PartitionedRegions. If a PartitionedRegion is referred to in the query,
     // then the following restrictions apply:
     // 1) the query must be just a SELECT expression; (preceded by zero or more IMPORT statements)
@@ -534,15 +458,12 @@ public class DefaultQuery implements Query {
 
       // By process of elimination, we know that the first iterator contains a reference
       // to the PR. Check to make sure there are no subqueries in this first iterator
-      itrDef.visitNodes(new CompiledValue.NodeVisitor() {
-        @Override
-        public boolean visit(CompiledValue node) {
-          if (node instanceof CompiledSelect) {
-            throw new UnsupportedOperationException(
-                "When querying a PartitionedRegion, the first FROM clause iterator must not contain a subquery");
-          }
-          return true;
+      itrDef.visitNodes(node -> {
+        if (node instanceof CompiledSelect) {
+          throw new UnsupportedOperationException(
+              "When querying a PartitionedRegion, the first FROM clause iterator must not contain a subquery");
         }
+        return true;
       });
 
       // the rest of the FROM clause iterators must not reference any regions
@@ -697,13 +618,11 @@ public class DefaultQuery implements Query {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder("Query String = ");
-    sb.append(this.queryString);
-    sb.append("; Total Executions = ");
-    sb.append(this.numExecutions);
-    sb.append("; Total Execution Time = ");
-    sb.append(this.totalExecutionTime);
-    return sb.toString();
+    return "Query String = " + this.queryString
+        + "; Total Executions = "
+        + this.numExecutions
+        + "; Total Execution Time = "
+        + this.totalExecutionTime;
   }
 
   void setProxyCache(ProxyCache proxyCache) {
@@ -801,7 +720,6 @@ public class DefaultQuery implements Query {
   public Object execute(RegionFunctionContext context, Object[] params)
       throws FunctionDomainException, TypeMismatchException, NameResolutionException,
       QueryInvocationTargetException {
-
     // Supported only with RegionFunctionContext
     if (context == null) {
       throw new IllegalArgumentException(
@@ -969,7 +887,7 @@ public class DefaultQuery implements Query {
       CREATE_PR_QUERY_TRACE_INFO_FROM_LOCAL_NODE,
       CREATE_PR_QUERY_TRACE_INFO_FOR_REMOTE_QUERY,
       POPULATING_TRACE_INFO_FOR_REMOTE_QUERY
-    };
+    }
 
     /**
      * Called (for side-effects) at various points in query processing, to facilitate

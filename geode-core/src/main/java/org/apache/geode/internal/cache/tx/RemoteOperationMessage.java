@@ -18,6 +18,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 
 import org.apache.logging.log4j.Logger;
 
@@ -417,18 +418,18 @@ public abstract class RemoteOperationMessage extends DistributionMessage
    */
   protected void appendFields(StringBuffer buff) {
     buff.append("; sender=").append(getSender()).append("; recipients=[");
-    InternalDistributedMember[] recips = getRecipientsArray();
-    for (int i = 0; i < recips.length - 1; i++) {
-      buff.append(recips[i]).append(',');
+    List<InternalDistributedMember> recipients = getRecipients();
+    for (int i = 0; i < recipients.size() - 1; i++) {
+      buff.append(recipients.get(i)).append(',');
     }
-    if (recips.length > 0) {
-      buff.append(recips[recips.length - 1]);
+    if (recipients.size() > 0) {
+      buff.append(recipients.get(recipients.size() - 1));
     }
     buff.append("]; processorId=").append(this.processorId);
   }
 
   public InternalDistributedMember getRecipient() {
-    return getRecipientsArray()[0];
+    return getRecipients().get(0);
   }
 
   public void setOperation(Operation op) {

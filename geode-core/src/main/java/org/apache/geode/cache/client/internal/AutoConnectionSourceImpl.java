@@ -93,6 +93,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
         }
       };
   private final List<LocatorAddress> initialLocators;
+
   private final String serverGroup;
   private AtomicReference<LocatorList> locators = new AtomicReference<>();
   private AtomicReference<LocatorList> onlineLocators = new AtomicReference<>();
@@ -206,12 +207,12 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
     Object returnObj = null;
     try {
       pool.getStats().incLocatorRequests();
-      returnObj = locatorConnection.requestToServer(locator.getSocketInetAddressNoLookup(), request,
+      returnObj = locatorConnection.requestToServer(locator.getSocketInetAddress(), request,
           connectionTimeout, true);
       ServerLocationResponse response = (ServerLocationResponse) returnObj;
       pool.getStats().incLocatorResponses();
       if (response != null) {
-        reportLiveLocator(locator.getSocketInetAddressNoLookup());
+        reportLiveLocator(locator.getSocketInetAddress());
       }
       return response;
     } catch (IOException | ToDataException ioe) {
@@ -219,8 +220,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
         logger.warn("Encountered ToDataException when communicating with a locator.  "
             + "This is expected if the locator is shutting down.", ioe);
       }
-      reportDeadLocator(locator.getSocketInetAddressNoLookup(), ioe);
-      updateLocatorInLocatorList(locator);
+      reportDeadLocator(locator.getSocketInetAddress(), ioe);
       return null;
     } catch (ClassNotFoundException e) {
       logger.warn("Received exception from locator {}", locator, e);
@@ -229,43 +229,9 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
       if (logger.isDebugEnabled()) {
         logger.debug("Received odd response object from the locator: {}", returnObj);
       }
-      reportDeadLocator(locator.getSocketInetAddressNoLookup(), e);
+      reportDeadLocator(locator.getSocketInetAddress(), e);
       return null;
     }
-  }
-
-  /**
-   * If connecting to the locator fails with an IOException, this may be because the locator's IP
-   * has changed. Add the locator back to the list of locators using host address rather than IP.
-   * This will cause another DNS lookup, hopefully finding the locator.
-   *
-   */
-  protected void updateLocatorInLocatorList(LocatorAddress locator) {
-    if (locator.getSocketInetAddressNoLookup().getHostName() != null && !locator.isIpString()) {
-      LocatorList locatorList = locators.get();
-      List<LocatorAddress> newLocatorsList = new ArrayList<>();
-
-      for (LocatorAddress tloc : locatorList.getLocatorAddresses()) {
-        if (tloc.equals(locator)) {
-          InetSocketAddress changeLoc = new InetSocketAddress(locator.getHostName(),
-              locator.getSocketInetAddressNoLookup().getPort());
-          LocatorAddress hostAddress = new LocatorAddress(changeLoc, locator.getHostName());
-          newLocatorsList.add(hostAddress);
-        } else {
-          newLocatorsList.add(tloc);
-        }
-      }
-
-      logger.debug("updateLocatorInLocatorList locator list from: {} to {}",
-          locatorList.getLocators(), newLocatorsList);
-
-      LocatorList newLocatorList = new LocatorList(newLocatorsList);
-      locators.set(newLocatorList);
-    }
-  }
-
-  protected List<InetSocketAddress> getCurrentLocators() {
-    return locators.get().getLocators();
   }
 
   private ServerLocationResponse queryLocators(ServerLocationRequest request) {
@@ -297,6 +263,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
     List<LocatorAddress> newOnlineLocators = new ArrayList<>(locatorResponse.size());
 
     Set<LocatorAddress> badLocators = new HashSet<>(initialLocators);
+
     for (ServerLocation locator : locatorResponse) {
       InetSocketAddress address = new InetSocketAddress(locator.getHostName(), locator.getPort());
       LocatorAddress hostAddress = new LocatorAddress(address, locator.getHostName());

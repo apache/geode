@@ -37,6 +37,7 @@ import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionExistsException;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
@@ -572,4 +573,12 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime, Inte
   void saveCacheXmlForReconnect();
 
   InternalQueryService getInternalQueryService();
+
+  default <K, V> InternalRegionFactory<K, V> createInternalRegionFactory() {
+    return (InternalRegionFactory) createRegionFactory();
+  }
+
+  default <K, V> InternalRegionFactory<K, V> createInternalRegionFactory(RegionShortcut shortcut) {
+    return (InternalRegionFactory) createRegionFactory(shortcut);
+  }
 }

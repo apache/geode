@@ -36,10 +36,9 @@ import org.springframework.web.client.ResourceAccessException;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
-import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.configuration.RegionType;
-import org.apache.geode.management.internal.api.GeodeConnectionConfig;
+import org.apache.geode.management.internal.builder.GeodeClusterManagementServiceBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 
@@ -77,8 +76,8 @@ public class ClusterManagementServiceOnServerTest implements Serializable {
 
     server.invoke(() -> {
       assertThatThrownBy(
-          () -> new ClusterManagementServiceBuilder().setConnectionConfig(
-              new GeodeConnectionConfig(ClusterStartupRule.getCache()))
+          () -> new GeodeClusterManagementServiceBuilder()
+              .setCache(ClusterStartupRule.getCache())
               .build())
                   .isInstanceOf(IllegalStateException.class);
     });
@@ -94,8 +93,9 @@ public class ClusterManagementServiceOnServerTest implements Serializable {
         s -> s.withConnectionToLocator(locatorPort).withProperties(serverProps));
 
     server.invoke(() -> {
-      ClusterManagementService service = new ClusterManagementServiceBuilder().setConnectionConfig(
-          new GeodeConnectionConfig(ClusterStartupRule.getCache())).build();
+      ClusterManagementService service = new GeodeClusterManagementServiceBuilder()
+          .setCache(ClusterStartupRule.getCache())
+          .build();
       assertThat(service).isNotNull();
       assertThatThrownBy(() -> service.create(regionConfig))
           .isInstanceOf(ResourceAccessException.class);
@@ -123,8 +123,8 @@ public class ClusterManagementServiceOnServerTest implements Serializable {
       System.setProperty("javax.net.ssl.trustStoreType", "JKS");
 
       ClusterManagementService service =
-          new ClusterManagementServiceBuilder().setConnectionConfig(
-              new GeodeConnectionConfig(ClusterStartupRule.getCache()))
+          new GeodeClusterManagementServiceBuilder()
+              .setCache(ClusterStartupRule.getCache())
               .build();
       assertThat(service).isNotNull();
       ClusterManagementResult clusterManagementResult =
@@ -149,8 +149,8 @@ public class ClusterManagementServiceOnServerTest implements Serializable {
       // default SSL context not set here, and ssl config inside sslProps is ignored because
       // use_default_ssl_context is true
       ClusterManagementService service =
-          new ClusterManagementServiceBuilder().setConnectionConfig(
-              new GeodeConnectionConfig(ClusterStartupRule.getCache()))
+          new GeodeClusterManagementServiceBuilder()
+              .setCache(ClusterStartupRule.getCache())
               .build();
       assertThat(service).isNotNull();
       assertThatThrownBy(() -> service.create(regionConfig))

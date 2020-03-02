@@ -60,19 +60,21 @@ public class SetExecutor extends StringExecutor {
       elem5 = Coder.bytesToString(commandElems.get(4));
       elem6 = Coder.bytesToString(commandElems.get(5));
 
-      if (elem4.equalsIgnoreCase("XX") || elem6.equalsIgnoreCase("XX"))
+      if (elem4.equalsIgnoreCase("XX") || elem6.equalsIgnoreCase("XX")) {
         XX = true;
-      else if (elem4.equalsIgnoreCase("NX") || elem6.equalsIgnoreCase("NX"))
+      } else if (elem4.equalsIgnoreCase("NX") || elem6.equalsIgnoreCase("NX")) {
         NX = true;
+      }
 
-      if (elem4.equalsIgnoreCase("PX"))
+      if (elem4.equalsIgnoreCase("PX")) {
         expiration = getExpirationMillis(elem4, elem5);
-      else if (elem5.equalsIgnoreCase("PX"))
+      } else if (elem5.equalsIgnoreCase("PX")) {
         expiration = getExpirationMillis(elem5, elem6);
-      else if (elem4.equalsIgnoreCase("EX"))
+      } else if (elem4.equalsIgnoreCase("EX")) {
         expiration = getExpirationMillis(elem4, elem5);
-      else if (elem5.equalsIgnoreCase("EX"))
+      } else if (elem5.equalsIgnoreCase("EX")) {
         expiration = getExpirationMillis(elem5, elem6);
+      }
 
     } else if (commandElems.size() >= 5) {
       String elem4;
@@ -85,20 +87,21 @@ public class SetExecutor extends StringExecutor {
     } else if (commandElems.size() >= 4) {
       byte[] elem4 = commandElems.get(3);
       if (elem4.length == 2 && Character.toUpperCase(elem4[1]) == 'X') {
-        if (Character.toUpperCase(elem4[0]) == 'N')
+        if (Character.toUpperCase(elem4[0]) == 'N') {
           NX = true;
-        else if (Character.toUpperCase(elem4[0]) == 'X')
+        } else if (Character.toUpperCase(elem4[0]) == 'X') {
           XX = true;
+        }
       }
     }
 
     boolean keyWasSet = false;
 
-    if (NX)
+    if (NX) {
       keyWasSet = setNX(r, command, key, valueWrapper, context);
-    else if (XX)
+    } else if (XX) {
       keyWasSet = setXX(r, command, key, valueWrapper, context);
-    else {
+    } else {
       checkAndSetDataType(key, context);
       r.put(key, valueWrapper);
       command.setResponse(Coder.getSimpleStringResponse(context.getByteBufAllocator(), SUCCESS));
@@ -145,12 +148,13 @@ public class SetExecutor extends StringExecutor {
       return 0L;
     }
 
-    if (expx.equalsIgnoreCase("EX"))
+    if (expx.equalsIgnoreCase("EX")) {
       return expiration * AbstractExecutor.millisInSecond;
-    else if (expx.equalsIgnoreCase("PX"))
+    } else if (expx.equalsIgnoreCase("PX")) {
       return expiration;
-    else
+    } else {
       return 0L;
+    }
   }
 
 }

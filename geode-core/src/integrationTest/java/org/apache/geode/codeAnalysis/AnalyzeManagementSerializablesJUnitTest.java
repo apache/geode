@@ -27,8 +27,7 @@ public class AnalyzeManagementSerializablesJUnitTest extends AnalyzeSerializable
   }
 
   @Override
-  // Override this method because geode-management module has no data serializable classes
-  public void testDataSerializables() throws Exception {
-
-  }
+  // Override this method because all geode-management classes will be scanned by the core's
+  // data serializable test
+  public void testDataSerializables() throws Exception {}
 }

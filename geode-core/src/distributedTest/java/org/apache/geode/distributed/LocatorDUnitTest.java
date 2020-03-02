@@ -14,6 +14,7 @@
  */
 package org.apache.geode.distributed;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_AUTO_RECONNECT;
@@ -22,6 +23,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_NETWOR
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATOR_WAIT_TIME;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.MEMBER_TIMEOUT;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
@@ -70,6 +72,7 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -100,9 +103,11 @@ import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.tcp.Connection;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.DUnitBlackboard;
 import org.apache.geode.test.dunit.DistributedTestUtils;
+import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.NetworkUtils;
@@ -248,6 +253,57 @@ public class LocatorDUnitTest implements Serializable {
       loc.stop();
       assertThat(Locator.hasLocator()).isFalse();
     }
+  }
+
+  @Test
+  @Ignore("GEODE=7760 - test sometimes hangs due to product issue")
+  public void testCrashLocatorMultipleTimes() throws Exception {
+    port1 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    DistributedTestUtils.deleteLocatorStateFile(port1);
+    File logFile = new File("");
+    File stateFile = new File("locator" + port1 + "state.dat");
+    VM vm = VM.getVM(0);
+    final Properties properties =
+        getBasicProperties(Host.getHost(0).getHostName() + "[" + port1 + "]");
+    int memberTimeoutMS = 3000;
+    properties.put(MEMBER_TIMEOUT, "" + memberTimeoutMS);
+    properties.put(MAX_WAIT_TIME_RECONNECT, "" + (3 * memberTimeoutMS));
+    // since we're restarting location services let's be a little forgiving about that service
+    // starting up so that stress-tests can pass
+    properties.put(LOCATOR_WAIT_TIME, "" + 3);
+    addDSProps(properties);
+    if (stateFile.exists()) {
+      assertThat(stateFile.delete()).isTrue();
+    }
+
+    IgnoredException
+        .addIgnoredException("Possible loss of quorum due to the loss of 1 cache processes");
+
+    Locator locator = Locator.startLocatorAndDS(port1, logFile, properties);
+    system = (InternalDistributedSystem) locator.getDistributedSystem();
+
+    vm.invoke(() -> {
+      getConnectedDistributedSystem(properties);
+      return null;
+    });
+
+    try {
+      for (int i = 0; i < 4; i++) {
+        forceDisconnect();
+        system.waitUntilReconnected(GeodeAwaitility.getTimeout().getValueInMS(), MILLISECONDS);
+        assertThat(system.getReconnectedSystem()).isNotNull();
+        system = (InternalDistributedSystem) system.getReconnectedSystem();
+      }
+      assertEquals(2, ((InternalDistributedSystem) locator.getDistributedSystem()).getDM()
+          .getViewMembers().size());
+    } finally {
+      vm.invoke("disconnect", () -> {
+        getConnectedDistributedSystem(properties).disconnect();
+        return null;
+      });
+      locator.stop();
+    }
+
   }
 
   /**
@@ -1581,11 +1637,13 @@ public class LocatorDUnitTest implements Serializable {
     return props;
   }
 
-  private Properties getClusterProperties(String locators, String s) {
+  private Properties getClusterProperties(String locators,
+      String enableNetworkPartitionDetectionString) {
     Properties properties = getBasicProperties(locators);
     properties.setProperty(DISABLE_AUTO_RECONNECT, "true");
     properties.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
-    properties.setProperty(ENABLE_NETWORK_PARTITION_DETECTION, s);
+    properties.setProperty(ENABLE_NETWORK_PARTITION_DETECTION,
+        enableNetworkPartitionDetectionString);
     properties.setProperty(LOCATOR_WAIT_TIME, "10"); // seconds
     properties.setProperty(MEMBER_TIMEOUT, "2000");
     properties.setProperty(USE_CLUSTER_CONFIGURATION, "false");

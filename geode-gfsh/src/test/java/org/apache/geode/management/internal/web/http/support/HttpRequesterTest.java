@@ -117,7 +117,7 @@ public class HttpRequesterTest {
     String result = requester.get(uri, String.class);
 
     assertThat(result).isEqualTo("done");
-    verify(requester).exchange(uri, HttpMethod.GET, null, null, String.class);
+    verify(requester).exchange(uri, HttpMethod.GET, null, String.class);
 
     verifyHeaderIsUpdated();
   }
@@ -126,10 +126,10 @@ public class HttpRequesterTest {
   public void post() throws Exception {
     requester = spy(new HttpRequester(securityProps, restTemplate));
     String result =
-        requester.post(uri, MediaType.APPLICATION_FORM_URLENCODED, "myData", String.class);
+        requester.post(uri, "myData", String.class);
 
     assertThat(result).isEqualTo("done");
-    verify(requester).exchange(uri, HttpMethod.POST, MediaType.APPLICATION_FORM_URLENCODED,
+    verify(requester).exchange(uri, HttpMethod.POST,
         "myData", String.class);
 
     verifyHeaderIsUpdated();

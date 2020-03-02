@@ -90,7 +90,7 @@ public class RebalanceIntegrationTest {
   @Test
   public void getStatus() throws Exception {
     String json = "{}";
-    CompletableFuture<String> futureUri = new CompletableFuture<String>();
+    CompletableFuture<String> futureUri = new CompletableFuture<>();
     context.perform(post("/v1/operations/rebalances").content(json))
         .andExpect(status().isAccepted())
         .andExpect(new ResponseBodyMatchers().containsObjectAsJson(futureUri))
@@ -99,13 +99,14 @@ public class RebalanceIntegrationTest {
       try {
         context.perform(get(futureUri.get()))
             .andExpect(status().isOk())
-            .andExpect(content().string(not(containsString("\"class\""))))
-            .andExpect(jsonPath("$.statusMessage",
-                Matchers.containsString("Operation finished successfully.")));
+            .andExpect(jsonPath("$.statusCode", Matchers.is("IN_PROGRESS")));
+      } catch (AssertionError t) {
+        context.perform(get(futureUri.get()))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.operationResult.statusMessage",
+                Matchers.containsString("has no regions")))
+            .andExpect(jsonPath("$.operationResult.success", Matchers.is(false)));
         return;
-      } catch (Throwable t) {
-        if (!t.getMessage().contains("Operation in progress"))
-          throw t;
       }
     }
   }
@@ -123,7 +124,7 @@ public class RebalanceIntegrationTest {
   }
 
   @Test
-  public void checkStatus() throws Exception {
+  public void checkStatusOperationDoesNotExist() throws Exception {
     context.perform(get("/v1/operations/rebalances/abc"))
         .andExpect(status().isNotFound())
         .andExpect(content().string(not(containsString("\"class\""))))
@@ -149,18 +150,17 @@ public class RebalanceIntegrationTest {
   @Test
   public void doOperation() throws Exception {
     RebalanceOperation rebalance = new RebalanceOperation();
-    ClusterManagementOperationResult<RebalanceResult> result = client.start(rebalance);
+    ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> result =
+        client.start(rebalance);
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusMessage())
         .isEqualTo("Operation started.  Use the URI to check its status.");
-    assertThat(result.getResult().getStatusMessage())
-        .isEqualTo("Distributed system has no regions that can be rebalanced.");
   }
 
   @Test
   public void doListOperations() {
     client.start(new RebalanceOperation());
-    ClusterManagementListOperationsResult<RebalanceResult> listResult =
+    ClusterManagementListOperationsResult<RebalanceOperation, RebalanceResult> listResult =
         client.list(new RebalanceOperation());
     assertThat(listResult.getResult().size()).isGreaterThanOrEqualTo(1);
     assertThat(listResult.getResult().get(0).getOperationStart()).isNotNull();

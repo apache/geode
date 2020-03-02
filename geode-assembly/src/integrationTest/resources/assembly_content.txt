@@ -691,7 +691,6 @@ javadoc/org/apache/geode/management/PersistentMemberDetails.html
 javadoc/org/apache/geode/management/RegionAttributesData.html
 javadoc/org/apache/geode/management/RegionMXBean.html
 javadoc/org/apache/geode/management/ServerLoadData.html
-javadoc/org/apache/geode/management/api/BaseConnectionConfig.html
 javadoc/org/apache/geode/management/api/ClusterManagementException.html
 javadoc/org/apache/geode/management/api/ClusterManagementGetResult.html
 javadoc/org/apache/geode/management/api/ClusterManagementListOperationsResult.html
@@ -714,6 +713,10 @@ javadoc/org/apache/geode/management/api/RestTemplateClusterManagementServiceTran
 javadoc/org/apache/geode/management/api/package-frame.html
 javadoc/org/apache/geode/management/api/package-summary.html
 javadoc/org/apache/geode/management/api/package-tree.html
+javadoc/org/apache/geode/management/builder/GeodeClusterManagementServiceBuilder.html
+javadoc/org/apache/geode/management/builder/package-frame.html
+javadoc/org/apache/geode/management/builder/package-summary.html
+javadoc/org/apache/geode/management/builder/package-tree.html
 javadoc/org/apache/geode/management/cli/CliFunction.html
 javadoc/org/apache/geode/management/cli/CliMetaData.AvailabilityMetadata.html
 javadoc/org/apache/geode/management/cli/CliMetaData.html
@@ -741,6 +744,7 @@ javadoc/org/apache/geode/management/configuration/ClassName.html
 javadoc/org/apache/geode/management/configuration/Deployment.html
 javadoc/org/apache/geode/management/configuration/GatewayReceiver.html
 javadoc/org/apache/geode/management/configuration/GroupableConfiguration.html
+javadoc/org/apache/geode/management/configuration/HasFile.html
 javadoc/org/apache/geode/management/configuration/Index.html
 javadoc/org/apache/geode/management/configuration/IndexType.html
 javadoc/org/apache/geode/management/configuration/Links.html
@@ -1037,7 +1041,7 @@ lib/micrometer-core-1.2.1.jar
 lib/mx4j-3.0.2.jar
 lib/mx4j-remote-3.0.2.jar
 lib/mx4j-tools-3.0.1.jar
-lib/netty-all-4.1.42.Final.jar
+lib/netty-all-4.1.45.Final.jar
 lib/protobuf-java-3.10.0.jar
 lib/ra.jar
 lib/rmiio-2.1.2.jar

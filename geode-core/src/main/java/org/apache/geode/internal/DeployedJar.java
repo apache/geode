@@ -124,11 +124,14 @@ public class DeployedJar {
     } catch (IOException ignore) {
       // Ignore this exception and just return false
     } finally {
-      try {
-        jarInputStream.close();
-      } catch (IOException ignored) {
-        // Ignore this exception and just return result
+      if (jarInputStream != null) {
+        try {
+          jarInputStream.close();
+        } catch (IOException e) {
+          // Ignore
+        }
       }
+
     }
 
     return valid;

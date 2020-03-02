@@ -46,7 +46,7 @@ public class GeoCoder {
         if (next == null) {
           tmp.writeBytes(Coder.bNIL);
         } else {
-          tmp.writeBytes(Coder.getBulkStringArrayResponse(alloc,
+          tmp.writeBytes(Coder.getArrayResponse(alloc,
               Arrays.asList(
                   Double.toString(next.getLon()),
                   Double.toString(next.getLat()))));
@@ -108,7 +108,7 @@ public class GeoCoder {
       }
     }
 
-    return Coder.getBulkStringArrayResponse(alloc, responseElements);
+    return Coder.getArrayResponse(alloc, responseElements);
   }
 
   /**

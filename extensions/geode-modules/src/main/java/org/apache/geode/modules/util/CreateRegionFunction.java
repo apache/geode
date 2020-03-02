@@ -24,23 +24,20 @@ import java.util.Collection;
 import java.util.Collections;
 
 import org.apache.geode.DataSerializable;
-import org.apache.geode.InternalGemFireError;
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
-import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.internal.locks.DistributedMemberLock;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.InternalRegionArguments;
+import org.apache.geode.internal.cache.CacheFactoryStatics;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
@@ -55,11 +52,11 @@ public class CreateRegionFunction implements Function, Declarable, DataSerializa
   static final String REGION_CONFIGURATION_METADATA_REGION =
       "__regionConfigurationMetadata";
 
-  private final Cache cache;
+  private final InternalCache cache;
   private final Region<String, RegionConfiguration> regionConfigurationsRegion;
 
   public CreateRegionFunction() {
-    this.cache = CacheFactory.getAnyInstance();
+    this.cache = CacheFactoryStatics.getAnyInstance();
     this.regionConfigurationsRegion = createRegionConfigurationMetadataRegion();
   }
 
@@ -251,7 +248,6 @@ public class CreateRegionFunction implements Function, Declarable, DataSerializa
     PartitionRegionHelper.assignBucketsToPartitions(region);
   }
 
-  @SuppressWarnings("unchecked")
   private Region<String, RegionConfiguration> createRegionConfigurationMetadataRegion() {
     // a sessionFactory in hibernate could have been re-started
     // so, it is possible that this region exists already
@@ -262,22 +258,11 @@ public class CreateRegionFunction implements Function, Declarable, DataSerializa
       return region;
     }
 
-    GemFireCacheImpl gemFireCache = (GemFireCacheImpl) cache;
-    InternalRegionArguments ira = new InternalRegionArguments().setInternalRegion(true);
-    RegionAttributesCreation regionAttributesCreation = new RegionAttributesCreation();
-    regionAttributesCreation.setScope(Scope.DISTRIBUTED_ACK);
-    regionAttributesCreation.setDataPolicy(DataPolicy.REPLICATE);
-    regionAttributesCreation.addCacheListener(new RegionConfigurationCacheListener());
-
-    try {
-      return gemFireCache.createVMRegion(REGION_CONFIGURATION_METADATA_REGION,
-          regionAttributesCreation, ira);
-    } catch (IOException | ClassNotFoundException e) {
-      InternalGemFireError assErr = new InternalGemFireError("unexpected exception");
-      assErr.initCause(e);
-
-      throw assErr;
-    }
+    InternalRegionFactory<String, RegionConfiguration> regionFactory =
+        cache.createInternalRegionFactory(RegionShortcut.REPLICATE);
+    regionFactory.addCacheListener(new RegionConfigurationCacheListener());
+    regionFactory.setInternalRegion(true);
+    return regionFactory.create(REGION_CONFIGURATION_METADATA_REGION);
   }
 
   private void writeCacheXml() {

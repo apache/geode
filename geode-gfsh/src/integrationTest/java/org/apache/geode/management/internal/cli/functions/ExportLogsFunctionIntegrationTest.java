@@ -64,14 +64,14 @@ public class ExportLogsFunctionIntegrationTest {
   }
 
   @Test
-  public void createOrGetExistingExportLogsRegionDoesNotBlowUp() throws Exception {
+  public void createOrGetExistingExportLogsRegionDoesNotBlowUp() {
     GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
     ExportLogsFunction.createOrGetExistingExportLogsRegion(false, cache);
     assertThat(cache.getRegion(ExportLogsFunction.EXPORT_LOGS_REGION)).isNotNull();
   }
 
   @Test
-  public void destroyExportLogsRegionWorksAsExpectedForInitiatingMember() throws Exception {
+  public void destroyExportLogsRegionWorksAsExpectedForInitiatingMember() {
     GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
     ExportLogsFunction.createOrGetExistingExportLogsRegion(true, cache);
     assertThat(cache.getRegion(ExportLogsFunction.EXPORT_LOGS_REGION)).isNotNull();

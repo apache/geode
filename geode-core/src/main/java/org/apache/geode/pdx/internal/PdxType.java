@@ -177,7 +177,7 @@ public class PdxType implements DataSerializable {
     if (other == this) {
       return true;
     }
-    if (other == null || !(other instanceof PdxType)) {
+    if (!(other instanceof PdxType)) {
       return false;
     }
     // Note: do not compare type id in equals
