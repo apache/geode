@@ -967,8 +967,10 @@ public class DeltaPropagationDUnitTest implements Serializable {
 
       LATCH.set(new CountDownLatch(1));
 
-      Region<String, Object> region = getClientCache()
-          .<String, Object>createClientRegionFactory(ClientRegionShortcut.LOCAL)
+      ClientRegionFactory<String, Object> clientRegionFactory =
+          getClientCache().createClientRegionFactory(ClientRegionShortcut.LOCAL);
+
+      clientRegionFactory
           .addCacheListener(new CacheListenerAdapter<String, Object>() {
             @Override
             public void afterRegionLive(RegionEvent event) {
@@ -977,10 +979,15 @@ public class DeltaPropagationDUnitTest implements Serializable {
                 LATCH.get().countDown();
               }
             }
-          })
-          .setConcurrencyChecksEnabled(false)
-          .setPoolName(pool.getName())
-          .create(regionName);
+          });
+
+      clientRegionFactory
+          .setConcurrencyChecksEnabled(false);
+
+      clientRegionFactory
+          .setPoolName(pool.getName());
+
+      Region<String, Object> region = clientRegionFactory.create(regionName);
 
       region.registerInterest("ALL_KEYS");
 
@@ -1016,17 +1023,24 @@ public class DeltaPropagationDUnitTest implements Serializable {
 
       AtomicReference<Object> afterCreateKey = new AtomicReference<>();
 
-      Region<String, Object> region = getClientCache()
-          .<String, Object>createClientRegionFactory(ClientRegionShortcut.LOCAL)
+      ClientRegionFactory<String, Object> clientRegionFactory =
+          getClientCache().createClientRegionFactory(ClientRegionShortcut.LOCAL);
+
+      clientRegionFactory
           .addCacheListener(new CacheListenerAdapter<String, Object>() {
             @Override
             public void afterCreate(EntryEvent<String, Object> event) {
               afterCreateKey.set(event.getKey());
             }
-          })
-          .setConcurrencyChecksEnabled(false)
-          .setPoolName(pool.getName())
-          .create(regionName);
+          });
+
+      clientRegionFactory
+          .setConcurrencyChecksEnabled(false);
+
+      clientRegionFactory
+          .setPoolName(pool.getName());
+
+      Region<String, Object> region = clientRegionFactory.create(regionName);
 
       region.registerInterest("ALL_KEYS");
 
@@ -1098,12 +1112,19 @@ public class DeltaPropagationDUnitTest implements Serializable {
           .setSubscriptionRedundancy(2)
           .create(getName() + "_pool");
 
-      Region<String, Object> region = getClientCache()
-          .<String, Object>createClientRegionFactory(ClientRegionShortcut.LOCAL)
-          .addCacheListener(new DurableClientListener(errorCollector))
-          .setConcurrencyChecksEnabled(false)
-          .setPoolName(pool.getName())
-          .create(regionName);
+      ClientRegionFactory<String, Object> clientRegionFactory =
+          getClientCache().createClientRegionFactory(ClientRegionShortcut.LOCAL);
+
+      clientRegionFactory
+          .addCacheListener(new DurableClientListener(errorCollector));
+
+      clientRegionFactory
+          .setConcurrencyChecksEnabled(false);
+
+      clientRegionFactory
+          .setPoolName(pool.getName());
+
+      Region<String, Object> region = clientRegionFactory.create(regionName);
 
       region.registerInterest("ALL_KEYS");
       getClientCache().readyForEvents();
@@ -1404,11 +1425,7 @@ public class DeltaPropagationDUnitTest implements Serializable {
 
       create(new ClientCacheFactory(clientProperties));
 
-      ClientRegionFactory<String, Object> regionFactory = getClientCache()
-          .createClientRegionFactory(ClientRegionShortcut.LOCAL);
-
       PoolFactory poolFactory = PoolManager.createFactory();
-
       for (int port : serverPorts) {
         poolFactory.addServer("localhost", port);
       }
@@ -1421,6 +1438,9 @@ public class DeltaPropagationDUnitTest implements Serializable {
           .setSubscriptionRedundancy(subscriptionRedundancy)
           .setSubscriptionAckInterval(1)
           .create(getName() + "_pool");
+
+      ClientRegionFactory<String, Object> regionFactory =
+          getClientCache().createClientRegionFactory(ClientRegionShortcut.LOCAL);
 
       regionFactory.setPoolName(pool.getName());
 
