@@ -53,10 +53,15 @@ import static org.apache.geode.distributed.ConfigurationProperties.SERVER_SSL_TR
 import static org.apache.geode.distributed.ConfigurationProperties.SERVER_SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENDPOINT_IDENTIFICATION_ENABLED;
 import static org.apache.geode.internal.security.SecurableCommunicationChannel.ALL;
+import static org.apache.geode.util.internal.GeodeGlossary.GEMFIRE_PREFIX;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
@@ -86,6 +91,7 @@ public class SSLConfigJUnitTest {
   private static final Properties SERVER_PROPS_SUBSET_MAP = new Properties();
   private static final Properties GATEWAY_SSL_PROPS_MAP = new Properties();
   private static final Properties GATEWAY_PROPS_SUBSET_MAP = new Properties();
+  private static final String sniProxyPropertyKey = GEMFIRE_PREFIX + "security.sni-proxy";;
 
   @BeforeClass
   public static void initializeSSLMaps() {
@@ -1097,6 +1103,54 @@ public class SSLConfigJUnitTest {
     props.put(SSL_ENDPOINT_IDENTIFICATION_ENABLED, "false");
     sslConfig = SSLConfigurationFactory.getSSLConfigForComponent(props, ALL);
     assertThat(sslConfig.doEndpointIdentification()).isFalse();
+  }
+
+  @Test
+  public void sniProxyIPv4() throws UnknownHostException {
+    final byte[] bytes = {1, 2, 3, 4};
+    testSniProxySetting("1.2.3.4:443", bytes, 443);
+  }
+
+  @Test
+  public void sniProxyIPv6() throws UnknownHostException {
+    final byte[] bytes = {0, 1, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1};
+    // notice we use URL-format for IPv6 address, surrounding the address in square brackets
+    testSniProxySetting("[1:2::1]:80", bytes, 80);
+  }
+
+  @Test
+  public void sniPortIsRequired() throws UnknownHostException {
+    final byte[] bytes = {1, 2, 3, 4};
+    assertThatThrownBy(() -> testSniProxySetting("1.2.3.4", bytes, 443))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("missing port");
+  }
+
+  @Test
+  public void sniDetectMalformedAddress() throws UnknownHostException {
+    final byte[] bytes = {1, 2, 3, 4};
+    assertThatThrownBy(() -> testSniProxySetting("1.2,3:443", bytes, 443))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("host part is malformed");
+  }
+
+  @Test
+  public void sniProxyNameResolution() throws UnknownHostException {
+    final byte[] bytes = InetAddress.getLoopbackAddress().getAddress();
+    testSniProxySetting("localhost:440", bytes, 440);
+  }
+
+  private void testSniProxySetting(final String setting, final byte[] addressBytes,
+      final int expectPort) throws UnknownHostException {
+    System.setProperty(sniProxyPropertyKey, setting);
+    try {
+      final InetSocketAddress proxyAddress = new SSLConfig.Builder().build().getSniProxyAddress();
+      final InetAddress expectAddress = InetAddress.getByAddress(addressBytes);
+      assertThat(proxyAddress.getAddress()).isEqualTo(expectAddress);
+      assertThat(proxyAddress.getPort()).isEqualTo(expectPort);
+    } finally {
+      System.clearProperty(sniProxyPropertyKey);
+    }
   }
 
   private static Properties getGfSecurityPropertiesSSL() {

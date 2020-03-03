@@ -92,7 +92,6 @@ class SCAdvancedSocketCreator extends AdvancedSocketCreatorImpl {
       final boolean provideSNI = sniProxyAddress != null;
 
       if (provideSNI) {
-        logger.error("DEBUG CREATING SSL PROXY SOCKET FOR {}", addr.getHostName());
         socket.connect(sniProxyAddress, Math.max(timeout, 0));
         coreSocketCreator.configureClientSSLSocket(socket, timeout, sslParameters -> {
           final List<SNIServerName> sniHostNames = new ArrayList<>(1);
