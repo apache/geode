@@ -13,25 +13,22 @@
 #or implied. See the License for the specific language governing permissions and limitations under
 #the License.
 
-SERVER_TYPE=""
-TEST_RUN_COUNT=10
 COMMAND_REPETITION_COUNT=100000
 REDIS_HOST=localhost
 REDIS_PORT=6379
+NUM_CLIENTS=5
+FILE_PREFIX=""
 
-while getopts ":rgt:c:h:p:" opt; do
+while getopts ":f:c:h:p:n:" opt; do
   case ${opt} in
-  r)
-    SERVER_TYPE='redis'
-    ;;
-  g)
-    SERVER_TYPE='geode'
-    ;;
-  t)
-    TEST_RUN_COUNT=${OPTARG}
-    ;;
   c)
     COMMAND_REPETITION_COUNT=${OPTARG}
+    ;;
+  n)
+    NUM_CLIENTS=${OPTARG}
+    ;;
+  f)
+    FILE_PREFIX=${OPTARG}_
     ;;
   h)
     REDIS_HOST=${OPTARG}
@@ -40,8 +37,7 @@ while getopts ":rgt:c:h:p:" opt; do
     REDIS_PORT=${OPTARG}
     ;;
   \?)
-    echo "Usage: ${0} -r (Redis) | -g (Geode) [-h host] [-p port] [-t (test run count)] [-c (command repetition count)]"
-    exit 0
+    echo "Usage: ${0} [-n number of clients] [-h host] [-p port] [-c (command repetition count)]"
     ;;
   :)
     echo "Invalid option: $OPTARG requires an argument" 1>&2
@@ -50,67 +46,50 @@ while getopts ":rgt:c:h:p:" opt; do
   esac
 done
 
-if [ -z ${SERVER_TYPE} ]; then
-  echo "Please specify native Redis (-r) or Geode Redis (-g)"
-  exit 1
-fi
+REDIS_BENCHMARK_COMMANDS=("SET" "GET" "INCR" "MSET")
 
-SCRIPT_DIR=$(
-  cd $(dirname $0)
-  pwd
-)
+rm -rf grbench-tmpdir
+mkdir grbench-tmpdir
 
-function kill_geode() {
-  pkill -9 -f ServerLauncher || true
-  pkill -9 -f LocatorLauncher || true
-  rm -rf server1
-  rm -rf locator1
-}
+echo "Command,Fastest Response Time (Msec),95th-99th Percentile (Msec),Slowest Response Time (Msec),Avg Requests Per Second" > ${FILE_PREFIX}benchmark_summary.csv
 
-nc -zv ${REDIS_HOST} ${REDIS_PORT} 1>&2
-SERVER_NOT_FOUND=$?
+for TEST_OP in ${REDIS_BENCHMARK_COMMANDS[@]}; do
+  echo "Testing " ${TEST_OP}
+  X=0
+  while [[ ${X} -lt ${NUM_CLIENTS} ]]; do
+    UNIQUE_NAME=${TEST_OP}-${X}
+    ./execute-operation.sh -h ${REDIS_HOST} -p ${REDIS_PORT} -o ${TEST_OP} -c ${COMMAND_REPETITION_COUNT} -n ${UNIQUE_NAME} &
+    pids[${X}]=$!
+    ((X = X + 1))
+  done
 
-if [ ${SERVER_TYPE} == "geode" ]; then
-  if [ ${SERVER_NOT_FOUND} -eq 0 ]; then
-    echo "Redis server detected already running at port ${REDIS_PORT}}"
-    echo "Please stop sever before running this script"
-    exit 1
-  fi
+  for pid in ${pids[@]}; do
+    echo "Waiting for " ${X} " commands to complete..."
+    wait $pid
+    ((X = X - 1))
+  done
 
-  GEODE_BASE=$(
-    cd $SCRIPT_DIR/../../..
-    pwd
-  )
+  ./summarize-batch-results.sh -o ${TEST_OP} -n ${NUM_CLIENTS} >> ${FILE_PREFIX}benchmark_summary.csv
+done
 
-  cd $GEODE_BASE
 
-  kill_geode
+echo "Testing commands in parallel..."
+X=0
+for TEST_OP in ${REDIS_BENCHMARK_COMMANDS[@]}; do
+    UNIQUE_NAME=${TEST_OP}-0
+    ./execute-operation.sh -h ${REDIS_HOST} -p ${REDIS_PORT} -o ${TEST_OP} -c ${COMMAND_REPETITION_COUNT} -n ${UNIQUE_NAME} &
+    otherpids[${X}]=$!
+    ((X = X + 1))
+done
 
-  ./gradlew devBuild installD
+for pid in ${otherpids[@]}; do
+  echo "Waiting for " ${X} " commands to complete..."
+  wait $pid
+  ((X = X - 1))
+done
 
-  GFSH=$PWD/geode-assembly/build/install/apache-geode/bin/gfsh
+for TEST_OP in ${REDIS_BENCHMARK_COMMANDS[@]}; do
+  ./summarize-batch-results.sh -p "Parallel" -o ${TEST_OP} -n 1 >> ${FILE_PREFIX}benchmark_summary.csv
+done
 
-  $GFSH -e "start locator --name=locator1"
-
-  $GFSH -e "start server
-          --name=server1
-          --log-level=none
-          --locators=localhost[10334]
-          --server-port=0
-          --redis-port=6379
-          --redis-bind-address=127.0.0.1"
-else
-  if [ ${SERVER_NOT_FOUND} -eq 1 ]; then
-    echo "No Redis server detected on host '${REDIS_HOST}' at port '${REDIS_PORT}'"
-    exit 1
-  fi
-fi
-
-cd ${SCRIPT_DIR}
-
-./aggregator.sh -h ${REDIS_HOST} -p ${REDIS_PORT} -t "${TEST_RUN_COUNT}" -c "${COMMAND_REPETITION_COUNT}"
-
-if [ ${SERVER_TYPE} == "geode" ]; then
-  kill_geode
-  sleep 1 # Back to back runs need this delay or 'nc' doesn't detect shutdown correctly
-fi
+rm -rf grbench-tmpdir

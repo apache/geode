@@ -13,17 +13,31 @@
 #or implied. See the License for the specific language governing permissions and limitations under
 #the License.
 
-while getopts ":b:c:" opt; do
+COMMAND_REPETITION_COUNT=100000
+REDIS_HOST=localhost
+REDIS_PORT=6379
+OPERATION=""
+UNIQUE_NAME=""
+
+while getopts ":o:n:c:h:p:" opt; do
   case ${opt} in
-  b)
-    BASELINE_COMMIT=${OPTARG}
+  o)
+    OPERATION=${OPTARG}
+    ;;
+  n)
+    UNIQUE_NAME=${OPTARG}
     ;;
   c)
-    COMPARISON_COMMIT=${OPTARG}
+    COMMAND_REPETITION_COUNT=${OPTARG}
+    ;;
+  h)
+    REDIS_HOST=${OPTARG}
+    ;;
+  p)
+    REDIS_PORT=${OPTARG}
     ;;
   \?)
-    echo "Usage: ${0} -b BASELINE_COMMIT -c COMPARISON_COMMIT"
-    exit 0
+    echo "Usage: ${0} -n name -o operation [-h host] [-p port] [-c (command repetition count)]"
     ;;
   :)
     echo "Invalid option: $OPTARG requires an argument" 1>&2
@@ -32,30 +46,14 @@ while getopts ":b:c:" opt; do
   esac
 done
 
-if [ -z ${BASELINE_COMMIT} ] || [ -z ${COMPARISON_COMMIT} ]; then
-  echo "Must specify both BASELINE_COMMIT and COMPARISON_COMMIT. Shame on you."
+if [ -z "${OPERATION}" ] || [ -z "${UNIQUE_NAME}" ]; then
+  echo "-o and -n arguments are mandatory"
   exit 1
 fi
 
-echo "BASELINE_COMMIT: ${BASELINE_COMMIT}"
-echo "COMPARISON_COMMIT: ${COMPARISON_COMMIT}"
+rm -rf grbench-tmpdir/${UNIQUE_NAME}-operation-results.txt
 
-ORIGINAL_BRANCH=$(git branch | sed -n -e 's/^\* \(.*\)/\1/p')
-echo " ORIGINAL_BRANCH: ${ORIGINAL_BRANCH}"
+redis-benchmark -h ${REDIS_HOST} -p ${REDIS_PORT} -t ${OPERATION} -n ${COMMAND_REPETITION_COUNT} -r 32767 >> grbench-tmpdir/${UNIQUE_NAME}-operation-results.txt
+./summarize-operation-results.sh grbench-tmpdir/${UNIQUE_NAME}-operation-results.txt >> grbench-tmpdir/${UNIQUE_NAME}-run-results.csv
 
-git checkout ${BASELINE_COMMIT}
-RETURN_CODE=$?
- if [[ ${RETURN_CODE} -ne 0 ]] ; then
-  echo "Please stash any uncommitted changes before using this script."
-  exit 1
-fi
-
-FILE_PREFIX=$(git rev-parse --short HEAD)
-bash environment-setup.sh -g -f ${FILE_PREFIX}
-
-git checkout ${COMPARISON_COMMIT}
-
-FILE_PREFIX=$(git rev-parse --short HEAD)
-bash environment-setup.sh -g -f ${FILE_PREFIX}
-
-git checkout ${ORIGINAL_BRANCH}
+rm -rf grbench-tmpdir/${UNIQUE_NAME}-operation-results.txt
