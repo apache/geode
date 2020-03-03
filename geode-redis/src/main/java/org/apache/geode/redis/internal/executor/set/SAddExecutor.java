@@ -34,7 +34,7 @@ public class SAddExecutor extends SetExecutor {
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
-    Long entriesAdded = 0L;
+    long entriesAdded = 0L;
 
     if (commandElems.size() < 3) {
       command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.SADD));
