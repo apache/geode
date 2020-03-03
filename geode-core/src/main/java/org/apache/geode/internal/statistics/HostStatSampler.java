@@ -30,6 +30,7 @@ import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.io.MainWithChildrenRollingFileHandler;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.process.UncheckedPidUnavailableException;
 import org.apache.geode.internal.statistics.platform.OsStatisticsFactory;
 import org.apache.geode.internal.util.concurrent.StoppableCountDownLatch;
@@ -152,7 +153,7 @@ public abstract class HostStatSampler
   @Override
   public String getSystemDirectoryPath() {
     try {
-      return LocalHostUtil.getLocalHost().getHostName();
+      return SocketCreator.getHostName(LocalHostUtil.getLocalHost());
     } catch (UnknownHostException ignore) {
       return "";
     }

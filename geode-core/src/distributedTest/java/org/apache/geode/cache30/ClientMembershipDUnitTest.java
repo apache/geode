@@ -838,6 +838,9 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     ClientCache clientCache = (ClientCache) getCache();
     Set<InetSocketAddress> servers = clientCache.getCurrentServers();
     assertTrue(!servers.isEmpty());
+    InetSocketAddress serverAddr = servers.iterator().next();
+    InetSocketAddress expectedAddr = new InetSocketAddress(serverMember.getHost(), ports[0]);
+    assertEquals(expectedAddr, serverAddr);
 
     // now check listener results
     assertTrue(fired[JOINED]);

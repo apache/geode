@@ -72,7 +72,6 @@ import org.junit.rules.TestName;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
-import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.internal.ByteBufferOutputStream;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
@@ -177,12 +176,11 @@ public class SSLSocketIntegrationTest {
 
   @Test
   public void securedSocketTransmissionShouldWork() throws Exception {
-    this.serverSocket = this.socketCreator.forCluster().createServerSocket(0, 0, this.localHost);
+    this.serverSocket = this.socketCreator.createServerSocket(0, 0, this.localHost);
     this.serverThread = startServer(this.serverSocket, 15000);
 
     int serverPort = this.serverSocket.getLocalPort();
-    this.clientSocket = this.socketCreator.forCluster()
-        .connect(new HostAndPort(this.localHost.getHostAddress(), serverPort), 0, null);
+    this.clientSocket = this.socketCreator.connectForServer(this.localHost, serverPort);
 
     // transmit expected string from Client to Server
     ObjectOutputStream output = new ObjectOutputStream(this.clientSocket.getOutputStream());
@@ -326,7 +324,7 @@ public class SSLSocketIntegrationTest {
 
   @Test(expected = SocketTimeoutException.class)
   public void handshakeCanTimeoutOnServer() throws Throwable {
-    this.serverSocket = this.socketCreator.forCluster().createServerSocket(0, 0, this.localHost);
+    this.serverSocket = this.socketCreator.createServerSocket(0, 0, this.localHost);
     this.serverThread = startServer(this.serverSocket, 1000);
 
     int serverPort = this.serverSocket.getLocalPort();
@@ -409,9 +407,8 @@ public class SSLSocketIntegrationTest {
     try {
       await("connect to server socket").until(() -> {
         try {
-          Socket clientSocket = socketCreator.forClient().connect(
-              new HostAndPort(LocalHostUtil.getLocalHost().getHostAddress(), serverSocketPort),
-              500);
+          Socket clientSocket = socketCreator.connectForClient(
+              LocalHostUtil.getLocalHost().getHostAddress(), serverSocketPort, 500);
           clientSocket.close();
           System.err.println(
               "client successfully connected to server but should not have been able to do so");

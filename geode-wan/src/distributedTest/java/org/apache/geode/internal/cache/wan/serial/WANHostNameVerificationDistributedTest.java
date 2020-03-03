@@ -43,8 +43,6 @@ import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventRemoteDispatcher;
-import org.apache.geode.internal.inet.LocalHostUtil;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -113,12 +111,7 @@ public class WANHostNameVerificationDistributedTest {
     locator_ln.waitUntilRegionIsReadyOnExactlyThisManyServers("/region", 1);
 
     // create gateway sender
-    server_ln.invoke(() -> {
-      GeodeAwaitility.await().until(() -> {
-        WANHostNameVerificationDistributedTest.createGatewaySender();
-        return true;
-      });
-    });
+    server_ln.invoke(WANHostNameVerificationDistributedTest::createGatewaySender);
 
     return locator_ln.getPort();
   }
@@ -147,12 +140,7 @@ public class WANHostNameVerificationDistributedTest {
     locator_ny.waitUntilRegionIsReadyOnExactlyThisManyServers("/region", 1);
 
     // create gateway sender
-    server_ny.invoke(() -> {
-      GeodeAwaitility.await().until(() -> {
-        WANHostNameVerificationDistributedTest.createGatewayReceiver();
-        return true;
-      });
-    });
+    server_ny.invoke(WANHostNameVerificationDistributedTest::createGatewayReceiver);
   }
 
   private static void createGatewayReceiver() {
@@ -214,22 +202,15 @@ public class WANHostNameVerificationDistributedTest {
         // ClusterStartupRule uses 'localhost' as locator host
         .sanDnsName(InetAddress.getLoopbackAddress().getHostName())
         .sanDnsName(InetAddress.getLocalHost().getHostName())
-        .sanDnsName(InetAddress.getLocalHost().getHostAddress())
-        .sanDnsName(LocalHostUtil.getLocalHost().getCanonicalHostName())
         .sanIpAddress(InetAddress.getLocalHost())
         .sanIpAddress(InetAddress.getByName("0.0.0.0")) // to pass on windows
-        .sanIpAddress(LocalHostUtil.getLocalHost())
         .generate();
 
     CertificateMaterial server_ln_cert = new CertificateBuilder()
         .commonName("server_ln")
         .issuedBy(ca)
         .sanDnsName(InetAddress.getLocalHost().getHostName())
-        .sanDnsName(LocalHostUtil.getLocalHost().getHostName())
-        .sanDnsName(LocalHostUtil.getLocalHost().getCanonicalHostName())
-        .sanDnsName(InetAddress.getLocalHost().getHostAddress())
         .sanIpAddress(InetAddress.getLocalHost())
-        .sanIpAddress(LocalHostUtil.getLocalHost())
         .generate();
 
     CertificateMaterial locator_ny_cert = new CertificateBuilder()
@@ -239,12 +220,8 @@ public class WANHostNameVerificationDistributedTest {
         .sanDnsName(InetAddress.getLoopbackAddress().getHostName())
         .sanDnsName(InetAddress.getLocalHost().getHostName())
         .sanDnsName(InetAddress.getLocalHost().getCanonicalHostName())
-        .sanDnsName(LocalHostUtil.getLocalHost().getCanonicalHostName())
-        .sanDnsName(LocalHostUtil.getLocalHost().getHostName())
-        .sanDnsName(InetAddress.getLocalHost().getHostAddress())
         .sanIpAddress(InetAddress.getLocalHost())
         .sanIpAddress(InetAddress.getByName("0.0.0.0")) // to pass on windows
-        .sanIpAddress(LocalHostUtil.getLocalHost())
         .generate();
 
     CertificateMaterial server_ny_cert = new CertificateBuilder()
@@ -252,11 +229,7 @@ public class WANHostNameVerificationDistributedTest {
         .issuedBy(ca)
         .sanDnsName(InetAddress.getLocalHost().getHostName())
         .sanDnsName(InetAddress.getLocalHost().getCanonicalHostName())
-        .sanDnsName(LocalHostUtil.getLocalHost().getHostName())
-        .sanDnsName(LocalHostUtil.getLocalHost().getCanonicalHostName())
-        .sanDnsName(InetAddress.getLocalHost().getHostAddress())
         .sanIpAddress(InetAddress.getLocalHost())
-        .sanIpAddress(LocalHostUtil.getLocalHost())
         .generate();
 
     setupWanSites(ca, locator_ln_cert, server_ln_cert, locator_ny_cert, server_ny_cert);

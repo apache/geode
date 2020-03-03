@@ -673,7 +673,6 @@ public interface DataSerializableFixedID extends SerializationVersions, BasicSer
   short GATEWAY_SENDER_QUEUE_ENTRY_SYNCHRONIZATION_ENTRY = 2182;
   short ABORT_BACKUP_REQUEST = 2183;
   short MEMBER_IDENTIFIER = 2184;
-  short HOST_AND_PORT = 2185;
 
   // NOTE, codes > 65535 will take 4 bytes to serialize
 

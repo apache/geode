@@ -15,24 +15,34 @@
 
 package org.apache.geode.distributed.internal.tcpserver;
 
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
 
 
 /**
  * Create sockets for TcpServer (and TcpClient).
  */
 public interface TcpSocketCreator {
-  /**
-   * Returns a socket creator for server and peer-to-peer sockets
-   */
-  ClusterSocketCreator forCluster();
+  boolean useSSL();
 
-  /**
-   * Returns a socket creator for client caches and WAN senders
-   */
-  ClientSocketCreator forClient();
+  ServerSocket createServerSocket(int nport, int backlog) throws IOException;
 
-  /**
-   * Returns a socket creator for advanced use
-   */
-  AdvancedSocketCreator forAdvancedUse();
+  ServerSocket createServerSocket(int nport, int backlog, InetAddress bindAddr)
+      throws IOException;
+
+  ServerSocket createServerSocketUsingPortRange(InetAddress ba, int backlog,
+      boolean isBindAddress, boolean useNIO, int tcpBufferSize, int[] tcpPortRange,
+      boolean sslConnection) throws IOException;
+
+  Socket connect(InetAddress inetadd, int port, int timeout,
+      ConnectionWatcher optionalWatcher, boolean clientSide) throws IOException;
+
+  Socket connect(InetAddress inetadd, int port, int timeout,
+      ConnectionWatcher optionalWatcher, boolean clientSide, int socketBufferSize,
+      boolean sslConnection) throws IOException;
+
+  void handshakeIfSocketIsSSL(Socket socket, int timeout) throws IOException;
+
 }

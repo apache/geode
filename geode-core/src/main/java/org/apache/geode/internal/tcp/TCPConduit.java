@@ -255,7 +255,7 @@ public class TCPConduit implements Runnable {
     conTable = connectionTableFactory.apply(this);
 
     this.socketCreator = socketCreator;
-    useSSL = socketCreator.forAdvancedUse().useSSL();
+    useSSL = socketCreator.useSSL();
 
     if (address == null) {
       localHostValidation.run();
@@ -366,9 +366,8 @@ public class TCPConduit implements Runnable {
 
     try {
       if (serverPort <= 0) {
-        socket = socketCreator.forAdvancedUse().createServerSocketUsingPortRange(bindAddress,
-            connectionRequestBacklog, isBindAddress, true, 0, tcpPortRange,
-            socketCreator.forAdvancedUse().useSSL());
+        socket = socketCreator.createServerSocketUsingPortRange(bindAddress,
+            connectionRequestBacklog, isBindAddress, true, 0, tcpPortRange);
 
       } else {
         ServerSocketChannel channel = ServerSocketChannel.open();

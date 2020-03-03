@@ -41,6 +41,7 @@ import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.util.internal.GeodeGlossary;
 
@@ -203,7 +204,7 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
   protected String getMachineInfo() {
     String machineInfo = System.getProperty("os.arch");
     try {
-      String hostName = LocalHostUtil.getLocalHost().getHostName();
+      String hostName = SocketCreator.getHostName(LocalHostUtil.getLocalHost());
       machineInfo += " " + hostName;
     } catch (UnknownHostException ignore) {
     }

@@ -68,7 +68,7 @@ import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ProtocolCheckerImpl;
 import org.apache.geode.distributed.internal.ServerLocation;
-import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
+import org.apache.geode.distributed.internal.tcpserver.LocatorAddress;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
@@ -81,6 +81,7 @@ import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.management.membership.ClientMembershipEvent;
 import org.apache.geode.management.membership.ClientMembershipListener;
+import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.util.internal.GeodeGlossary;
 
@@ -122,8 +123,8 @@ public class AutoConnectionSourceImplJUnitTest {
     InetAddress ia = InetAddress.getLocalHost();
     InetSocketAddress isa = new InetSocketAddress(ia, port);
     locators.add(isa);
-    List<HostAndPort> la = new ArrayList<>();
-    la.add(new HostAndPort(ia.getHostName(), port));
+    List<LocatorAddress> la = new ArrayList<>();
+    la.add(new LocatorAddress(isa, ia.getHostName()));
     source = new AutoConnectionSourceImpl(la, "", 60 * 1000);
     source.start(pool);
   }
@@ -162,7 +163,7 @@ public class AutoConnectionSourceImplJUnitTest {
         .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR),
         InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
         InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer())
-            .stop(new HostAndPort(InetAddress.getLocalHost().getHostName(), port));
+            .stop(InetAddress.getLocalHost(), port);
   }
 
   /**
@@ -178,18 +179,18 @@ public class AutoConnectionSourceImplJUnitTest {
     InetSocketAddress floc2 = new InetSocketAddress("fakeLocalHost2", port);
     locators.add(floc1);
     locators.add(floc2);
-    List<HostAndPort> la = new ArrayList<>();
-    la.add(new HostAndPort(floc1.getHostName(), floc1.getPort()));
-    la.add(new HostAndPort(floc2.getHostName(), floc2.getPort()));
+    List<LocatorAddress> la = new ArrayList<>();
+    la.add(new LocatorAddress(floc1, floc1.getHostName()));
+    la.add(new LocatorAddress(floc2, floc2.getHostName()));
     AutoConnectionSourceImpl src = new AutoConnectionSourceImpl(la, "", 60 * 1000);
 
 
     InetSocketAddress b1 = new InetSocketAddress("fakeLocalHost1", port);
     InetSocketAddress b2 = new InetSocketAddress("fakeLocalHost3", port);
 
-    Set<HostAndPort> bla = new HashSet<>();
-    bla.add(new HostAndPort(b1.getHostName(), b1.getPort()));
-    bla.add(new HostAndPort(b2.getHostName(), b2.getPort()));
+    Set<LocatorAddress> bla = new HashSet<>();
+    bla.add(new LocatorAddress(b1, b1.getHostName()));
+    bla.add(new LocatorAddress(b2, b2.getHostName()));
 
 
     src.addbadLocators(la, bla);
@@ -211,12 +212,13 @@ public class AutoConnectionSourceImplJUnitTest {
   @Test
   public void testSourceHandlesToDataException() throws IOException, ClassNotFoundException {
     TcpClient mockConnection = mock(TcpClient.class);
-    when(mockConnection.requestToServer(isA(HostAndPort.class), any(Object.class),
+    when(mockConnection.requestToServer(isA(InetSocketAddress.class), any(Object.class),
         isA(Integer.class), isA(Boolean.class))).thenThrow(new ToDataException("testing"));
     try {
-      source.queryOneLocatorUsingConnection(new HostAndPort("locator[1234]", 1234), mock(
+      InetSocketAddress address = new InetSocketAddress(NetworkUtils.getServerHostName(), 1234);
+      source.queryOneLocatorUsingConnection(new LocatorAddress(address, "locator[1234]"), mock(
           ServerLocationRequest.class), mockConnection);
-      verify(mockConnection).requestToServer(isA(HostAndPort.class),
+      verify(mockConnection).requestToServer(isA(InetSocketAddress.class),
           isA(ServerLocationRequest.class), isA(Integer.class), isA(Boolean.class));
     } catch (NoAvailableLocatorsException expected) {
       // do nothing

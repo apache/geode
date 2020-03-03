@@ -60,7 +60,6 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.client.internal.locator.LocatorStatusRequest;
 import org.apache.geode.cache.client.internal.locator.LocatorStatusResponse;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
 import org.apache.geode.internal.DistributionLocator;
@@ -325,8 +324,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
           InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
           InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());
 
-      return (LocatorStatusResponse) client.requestToServer(
-          new HostAndPort(bindAddress == null ? null : bindAddress.getCanonicalHostName(), port),
+      return (LocatorStatusResponse) client.requestToServer(bindAddress, port,
           new LocatorStatusRequest(), timeout, true);
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e);

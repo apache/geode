@@ -189,10 +189,10 @@ public class TcpServer {
   private void initializeServerSocket() throws IOException {
     if (srv_sock == null || srv_sock.isClosed()) {
       if (bind_address == null) {
-        srv_sock = socketCreator.forCluster().createServerSocket(port, backlogLimit);
+        srv_sock = socketCreator.createServerSocket(port, backlogLimit);
         bind_address = srv_sock.getInetAddress();
       } else {
-        srv_sock = socketCreator.forCluster().createServerSocket(port, backlogLimit, bind_address);
+        srv_sock = socketCreator.createServerSocket(port, backlogLimit, bind_address);
       }
       // GEODE-4176 - set the port from a wild-card bind so that handlers know the correct value
 
@@ -304,7 +304,7 @@ public class TcpServer {
       DataInputStream input = null;
       try {
         socket.setSoTimeout(readTimeout);
-        socketCreator.forCluster().handshakeIfSocketIsSSL(socket, readTimeout);
+        socketCreator.handshakeIfSocketIsSSL(socket, readTimeout);
 
         try {
           input = new DataInputStream(socket.getInputStream());

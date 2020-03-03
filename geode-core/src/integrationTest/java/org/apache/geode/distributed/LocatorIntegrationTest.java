@@ -29,6 +29,7 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -50,7 +51,6 @@ import org.junit.runners.Parameterized.UseParametersRunnerFactory;
 
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.ServerLocation;
-import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.InternalDataSerializer;
@@ -174,7 +174,7 @@ public class LocatorIntegrationTest {
         .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR),
         InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
         InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());
-    String[] info = client.getInfo(new HostAndPort("localhost", boundPort));
+    String[] info = client.getInfo(InetAddress.getLocalHost(), boundPort);
 
     assertThat(info).isNotNull();
     assertThat(info.length).isGreaterThanOrEqualTo(1);

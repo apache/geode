@@ -21,7 +21,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.distributed.internal.WanLocatorDiscoverer;
-import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
@@ -139,8 +138,8 @@ public class LocatorDiscovery {
     while (!getDiscoverer().isStopped()) {
       try {
         RemoteLocatorJoinResponse response =
-            (RemoteLocatorJoinResponse) locatorClient.requestToServer(locatorId.getHost(),
-                request, WanLocatorDiscoverer.WAN_LOCATOR_CONNECTION_TIMEOUT, true);
+            (RemoteLocatorJoinResponse) locatorClient.requestToServer(locatorId.getHost(), request,
+                WanLocatorDiscoverer.WAN_LOCATOR_CONNECTION_TIMEOUT, true);
         if (response != null) {
           LocatorHelper.addExchangedLocators(response.getLocators(), this.locatorListener);
           logger.info("Locator discovery task exchanged locator information {} with {}: {}.",
@@ -186,8 +185,7 @@ public class LocatorDiscovery {
       RemoteLocatorJoinResponse response;
       try {
         response =
-            (RemoteLocatorJoinResponse) locatorClient.requestToServer(
-                remoteLocator.getHost(),
+            (RemoteLocatorJoinResponse) locatorClient.requestToServer(remoteLocator.getHost(),
                 request, WanLocatorDiscoverer.WAN_LOCATOR_CONNECTION_TIMEOUT, true);
         if (response != null) {
           LocatorHelper.addExchangedLocators(response.getLocators(), this.locatorListener);
@@ -197,8 +195,7 @@ public class LocatorDiscovery {
           while (true) {
             Thread.sleep(WAN_LOCATOR_PING_INTERVAL);
             RemoteLocatorPingResponse pingResponse =
-                (RemoteLocatorPingResponse) locatorClient.requestToServer(
-                    new HostAndPort(remoteLocator.getHostName(), remoteLocator.getPort()),
+                (RemoteLocatorPingResponse) locatorClient.requestToServer(remoteLocator.getHost(),
                     pingRequest, WanLocatorDiscoverer.WAN_LOCATOR_CONNECTION_TIMEOUT, true);
             if (pingResponse != null) {
               continue;

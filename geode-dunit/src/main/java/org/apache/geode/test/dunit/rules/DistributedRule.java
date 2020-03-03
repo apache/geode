@@ -241,6 +241,7 @@ public class DistributedRule extends AbstractDistributedRule {
       QueryObserverHolder.reset();
       QueryTestUtils.setCache(null);
       RegionTestCase.preSnapshotRegion = null;
+      SocketCreator.resetHostNameCache();
       SocketCreator.resolve_dns = true;
       TcpClient.clearStaticData();
 

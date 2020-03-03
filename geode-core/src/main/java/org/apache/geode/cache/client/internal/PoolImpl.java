@@ -28,7 +28,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 
@@ -55,7 +54,7 @@ import org.apache.geode.distributed.PoolCancelledException;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
-import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
+import org.apache.geode.distributed.internal.tcpserver.LocatorAddress;
 import org.apache.geode.internal.admin.ClientStatsManager;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.InternalCache;
@@ -113,9 +112,9 @@ public class PoolImpl implements InternalPool {
   private final int subscriptionAckInterval;
   private final int subscriptionTimeoutMultiplier;
   private final String serverGroup;
-  private final List<HostAndPort> locatorAddresses;
-  private final List<HostAndPort> locators;
-  private final List<HostAndPort> servers;
+  private final List<LocatorAddress> locatorAddresses;
+  private final List<InetSocketAddress> locators;
+  private final List<InetSocketAddress> servers;
   private final boolean startDisabled;
   private final boolean usedByGateway;
   private final int maxConnections;
@@ -158,7 +157,7 @@ public class PoolImpl implements InternalPool {
   private final ThreadsMonitoring threadMonitoring;
 
   public static PoolImpl create(PoolManagerImpl pm, String name, Pool attributes,
-      List<HostAndPort> locatorAddresses, InternalDistributedSystem distributedSystem,
+      List<LocatorAddress> locatorAddresses, InternalDistributedSystem distributedSystem,
       InternalCache cache, ThreadsMonitoring tMonitoring) {
     PoolImpl pool =
         new PoolImpl(pm, name, attributes, locatorAddresses, distributedSystem, cache, tMonitoring);
@@ -188,7 +187,7 @@ public class PoolImpl implements InternalPool {
   }
 
   protected PoolImpl(PoolManagerImpl pm, String name, Pool attributes,
-      List<HostAndPort> locatorAddresses, InternalDistributedSystem distributedSystem,
+      List<LocatorAddress> locatorAddresses, InternalDistributedSystem distributedSystem,
       InternalCache cache, ThreadsMonitoring threadMonitoring) {
     this.pm = pm;
     this.name = name;
@@ -225,11 +224,8 @@ public class PoolImpl implements InternalPool {
     }
     serverGroup = attributes.getServerGroup();
     multiuserSecureModeEnabled = attributes.getMultiuserAuthentication();
-    locators = attributes.getLocators().stream()
-        .map(x -> new HostAndPort(x.getHostName(), x.getPort())).collect(Collectors.toList());
-    servers = attributes.getServers().stream()
-        .map(x -> new HostAndPort(x.getHostName(), x.getPort())).collect(
-            Collectors.toList());
+    locators = attributes.getLocators();
+    servers = attributes.getServers();
     startDisabled =
         ((PoolFactoryImpl.PoolAttributes) attributes).startDisabled || !pm.isNormal();
     usedByGateway = ((PoolFactoryImpl.PoolAttributes) attributes).isGateway();
@@ -482,7 +478,7 @@ public class PoolImpl implements InternalPool {
 
   @Override
   public List<InetSocketAddress> getLocators() {
-    return locators.stream().map(x -> x.getSocketInetAddress()).collect(Collectors.toList());
+    return locators;
   }
 
   @Override
@@ -492,7 +488,7 @@ public class PoolImpl implements InternalPool {
 
   @Override
   public List<InetSocketAddress> getServers() {
-    return servers.stream().map(x -> x.getSocketInetAddress()).collect(Collectors.toList());
+    return servers;
   }
 
   public GatewaySender getGatewaySender() {

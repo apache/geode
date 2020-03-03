@@ -22,6 +22,7 @@ import java.util.UUID;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.persistence.PersistentID;
+import org.apache.geode.internal.net.SocketCreator;
 
 /**
  * Implementation of the public PersistentID. It holds the region, host, directory, and timestamp.
@@ -95,7 +96,7 @@ public class PersistentMemberPattern implements PersistentID, Comparable<Persist
     result.append(diskStoreID);
     if (host != null) {
       result.append(" [");
-      result.append(host.getHostName());
+      result.append(SocketCreator.getHostName(host));
       result.append(":");
       result.append(directory);
       result.append(",revoked@").append(revokedTime);
