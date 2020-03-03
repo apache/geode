@@ -85,7 +85,7 @@ public class AdvancedSocketCreatorImpl implements AdvancedSocketCreator {
       try {
         InetAddress serverAddress = inetSocketAddress.getAddress();
         if (serverAddress == null) {
-          serverAddress = InetAddress.getByName(inetSocketAddress.getHostName());
+          serverAddress = InetAddress.getByName(inetSocketAddress.getHostString());
         }
         socket.connect(
             new InetSocketAddress(serverAddress, inetSocketAddress.getPort()),

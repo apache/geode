@@ -58,7 +58,7 @@ class SCAdvancedSocketCreator extends AdvancedSocketCreatorImpl {
     Socket socket;
     InetSocketAddress sockaddr = addr.getSocketInetAddress();
     if (sockaddr.getAddress() == null) {
-      InetAddress address = InetAddress.getByName(sockaddr.getHostName());
+      InetAddress address = InetAddress.getByName(sockaddr.getHostString());
       sockaddr = new InetSocketAddress(address, sockaddr.getPort());
     }
 

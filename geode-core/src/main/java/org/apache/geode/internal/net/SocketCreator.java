@@ -40,6 +40,7 @@ import java.security.cert.X509Certificate;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
@@ -113,6 +114,9 @@ public class SocketCreator extends TcpSocketCreatorImpl {
   @MakeNotStatic
   public static volatile boolean use_client_host_name = true;
 
+  @MakeNotStatic
+  private static final ConcurrentHashMap<InetAddress, String> hostNames = new ConcurrentHashMap<>();
+
   /**
    * Only print this SocketCreator's config once
    */
@@ -148,6 +152,41 @@ public class SocketCreator extends TcpSocketCreatorImpl {
   public static InetAddress getLocalHost() throws UnknownHostException {
     return LocalHostUtil.getLocalHost();
   }
+
+
+  /**
+   * returns the host name for the given inet address, using a local cache of names to avoid dns
+   * hits and duplicate strings
+   */
+  public static String getHostName(InetAddress addr) {
+    String result = hostNames.get(addr);
+    if (result == null) {
+      result = addr.getHostName();
+      hostNames.put(addr, result);
+    }
+    return result;
+  }
+
+  /**
+   * returns the host name for the given inet address, using a local cache of names to avoid dns
+   * hits and duplicate strings
+   */
+  public static String getCanonicalHostName(InetAddress addr, String hostName) {
+    String result = hostNames.get(addr);
+    if (result == null) {
+      hostNames.put(addr, hostName);
+      return hostName;
+    }
+    return result;
+  }
+
+  /**
+   * Reset the hostNames caches
+   */
+  public static void resetHostNameCache() {
+    hostNames.clear();
+  }
+
 
   // -------------------------------------------------------------------------
   // Constructor

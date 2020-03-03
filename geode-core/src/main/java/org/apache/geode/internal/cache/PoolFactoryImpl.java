@@ -319,10 +319,10 @@ public class PoolFactoryImpl implements InternalPoolFactory {
     setServerGroup(cp.getServerGroup());
     setMultiuserAuthentication(cp.getMultiuserAuthentication());
     for (InetSocketAddress address : cp.getLocators()) {
-      addLocator(address.getHostName(), address.getPort());
+      addLocator(address.getHostString(), address.getPort());
     }
     attributes.servers.addAll(cp.getServers().stream()
-        .map(x -> new HostAndPort(x.getHostName(), x.getPort())).collect(Collectors.toList()));
+        .map(x -> new HostAndPort(x.getHostString(), x.getPort())).collect(Collectors.toList()));
   }
 
   public void init(GatewaySender sender) {

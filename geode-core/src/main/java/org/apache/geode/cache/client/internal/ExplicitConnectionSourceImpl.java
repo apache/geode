@@ -61,7 +61,7 @@ public class ExplicitConnectionSourceImpl implements ConnectionSource {
   ExplicitConnectionSourceImpl(List<InetSocketAddress> contacts) {
     ArrayList<ServerLocation> serverList = new ArrayList<>(contacts.size());
     for (InetSocketAddress addr : contacts) {
-      serverList.add(new ServerLocation(addr.getHostName(), addr.getPort()));
+      serverList.add(new ServerLocation(addr.getHostString(), addr.getPort()));
     }
     shuffle(serverList);
     this.serverList = Collections.unmodifiableList(serverList);

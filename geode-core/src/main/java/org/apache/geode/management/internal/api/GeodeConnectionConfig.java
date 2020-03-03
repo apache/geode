@@ -109,7 +109,7 @@ public class GeodeConnectionConfig extends ConnectionConfig {
     for (InetSocketAddress locator : locators) {
       try {
         cmsInfo = (ClusterManagementServiceInfo) client.requestToServer(
-            new HostAndPort(locator.getHostName(), locator.getPort()),
+            new HostAndPort(locator.getHostString(), locator.getPort()),
             new ClusterManagementServiceInfoRequest(), 1000, true);
 
         // do not try anymore if we found one that has cms running

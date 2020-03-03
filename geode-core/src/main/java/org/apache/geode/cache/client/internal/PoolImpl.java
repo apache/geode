@@ -226,9 +226,9 @@ public class PoolImpl implements InternalPool {
     serverGroup = attributes.getServerGroup();
     multiuserSecureModeEnabled = attributes.getMultiuserAuthentication();
     locators = attributes.getLocators().stream()
-        .map(x -> new HostAndPort(x.getHostName(), x.getPort())).collect(Collectors.toList());
+        .map(x -> new HostAndPort(x.getHostString(), x.getPort())).collect(Collectors.toList());
     servers = attributes.getServers().stream()
-        .map(x -> new HostAndPort(x.getHostName(), x.getPort())).collect(
+        .map(x -> new HostAndPort(x.getHostString(), x.getPort())).collect(
             Collectors.toList());
     startDisabled =
         ((PoolFactoryImpl.PoolAttributes) attributes).startDisabled || !pm.isNormal();

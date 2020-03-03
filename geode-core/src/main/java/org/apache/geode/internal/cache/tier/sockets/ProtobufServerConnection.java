@@ -101,7 +101,7 @@ class ProtobufServerConnection extends ServerConnection {
 
   private void setClientProxyMembershipId() {
     ServerLocation serverLocation = new ServerLocation(
-        ((InetSocketAddress) getSocket().getRemoteSocketAddress()).getHostName(),
+        ((InetSocketAddress) getSocket().getRemoteSocketAddress()).getHostString(),
         getSocketPort());
     DistributedMember distributedMember = new InternalDistributedMember(serverLocation);
     // no handshake for new client protocol.

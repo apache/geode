@@ -178,7 +178,8 @@ public class MembershipLocatorImpl<ID extends MemberIdentifier> implements Membe
       logger.info("Stopping {}", this);
       try {
         locatorClient
-            .stop(new HostAndPort(((InetSocketAddress) getBindAddress()).getHostName(), getPort()));
+            .stop(
+                new HostAndPort(((InetSocketAddress) getBindAddress()).getHostString(), getPort()));
       } catch (ConnectException ignore) {
         // must not be running
       }

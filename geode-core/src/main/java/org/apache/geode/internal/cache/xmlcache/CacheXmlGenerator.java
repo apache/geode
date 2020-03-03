@@ -1215,7 +1215,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
       {
         for (InetSocketAddress addr : cp.getLocators()) {
           AttributesImpl sAtts = new AttributesImpl();
-          sAtts.addAttribute("", "", HOST, "", addr.getHostName());
+          sAtts.addAttribute("", "", HOST, "", addr.getHostString());
           sAtts.addAttribute("", "", PORT, "", String.valueOf(addr.getPort()));
           handler.startElement("", LOCATOR, LOCATOR, sAtts);
           handler.endElement("", LOCATOR, LOCATOR);
@@ -1224,7 +1224,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
       {
         for (InetSocketAddress addr : cp.getServers()) {
           AttributesImpl sAtts = new AttributesImpl();
-          sAtts.addAttribute("", "", HOST, "", addr.getHostName());
+          sAtts.addAttribute("", "", HOST, "", addr.getHostString());
           sAtts.addAttribute("", "", PORT, "", String.valueOf(addr.getPort()));
           handler.startElement("", SERVER, SERVER, sAtts);
           handler.endElement("", SERVER, SERVER);

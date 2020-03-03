@@ -100,7 +100,7 @@ public class InternalDistributedMember
   }
 
   private static String getHostName(InetAddress i) {
-    return SocketCreator.resolve_dns ? i.getHostName() : i.getHostAddress();
+    return SocketCreator.resolve_dns ? SocketCreator.getHostName(i) : i.getHostAddress();
   }
 
   /**
