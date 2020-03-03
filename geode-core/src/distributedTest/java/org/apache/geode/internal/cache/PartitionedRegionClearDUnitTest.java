@@ -25,7 +25,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
@@ -69,19 +68,16 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
     return RegionShortcut.PARTITION_REDUNDANT;
   }
 
-  private void verifyDataIsLoadedAtServer() {
-    Region region = getCache().getRegion(REGION_NAME);
-    assertThat(region.size()).isEqualTo(NUM_ENTRIES);
+  private Region getRegion(boolean isClient) {
+    if (isClient) {
+      return getClientCache().getRegion(REGION_NAME);
+    } else {
+      return getCache().getRegion(REGION_NAME);
+    }
   }
 
-  private void verifyDataIsLoadedAtClient() {
-    Region region = getClientCache().getRegion(REGION_NAME);
-    assertThat(region.size()).isEqualTo(NUM_ENTRIES);
-  }
-
-  private void verifyRegionIsCleared() {
-    Region region = getCache().getRegion(REGION_NAME);
-    assertThat(region.size()).isEqualTo(0);
+  private void verifyRegionSize(boolean isClient, int expectedNum) {
+    assertThat(getRegion(isClient).size()).isEqualTo(expectedNum);
   }
 
   private void initClientCache() {
@@ -91,64 +87,48 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
   }
 
   private void initDataStore() {
-    Cache cache = getCache();
-    cache.createRegionFactory(getRegionShortCut())
+    getCache().createRegionFactory(getRegionShortCut())
         .setPartitionAttributes(new PartitionAttributesFactory().setTotalNumBuckets(10).create())
         .create(REGION_NAME);
   }
 
   private void initAccessor() {
-    Cache cache = getCache();
-    cache.createRegionFactory(getRegionShortCut())
+    getCache().createRegionFactory(getRegionShortCut())
         .setPartitionAttributes(
             new PartitionAttributesFactory().setTotalNumBuckets(10).setLocalMaxMemory(0).create())
         .create(REGION_NAME);
   }
 
   private void feedFromServer() {
-    Cache cache = getCache();
-    Region region = cache.getRegion(REGION_NAME);
+    Region region = getRegion(false);
     IntStream.range(0, NUM_ENTRIES).forEach(i -> region.put(i, "value" + i));
-    assertThat(region.size()).isEqualTo(NUM_ENTRIES);
   }
 
   private void feedFromClient() {
-    Region region = getClientCache().getRegion(REGION_NAME);
+    Region region = getRegion(true);
     IntStream.range(0, NUM_ENTRIES).forEach(i -> region.put(i, "value" + i));
-    assertThat(region.size()).isEqualTo(NUM_ENTRIES);
   }
 
   @Test
   public void normalClearFromDataStore() {
     accessor.invoke(this::feedFromServer);
-    dataStore1.invoke(this::verifyDataIsLoadedAtServer);
-    dataStore2.invoke(this::verifyDataIsLoadedAtServer);
+    dataStore1.invoke(() -> verifyRegionSize(false, NUM_ENTRIES));
+    dataStore2.invoke(() -> verifyRegionSize(false, NUM_ENTRIES));
 
-    dataStore1.invoke(() -> {
-      Region region = getCache().getRegion(REGION_NAME);
-      assertThat(region.size()).isEqualTo(NUM_ENTRIES);
-
-      region.clear();
-      assertThat(region.size()).isEqualTo(0);
-    });
-    dataStore2.invoke(this::verifyRegionIsCleared);
+    dataStore1.invoke(() -> getRegion(false).clear());
+    dataStore1.invoke(() -> verifyRegionSize(false, 0));
+    dataStore2.invoke(() -> verifyRegionSize(false, 0));
   }
 
   @Test
   public void normalClearFromAccessor() {
     accessor.invoke(this::feedFromServer);
-    dataStore1.invoke(this::verifyDataIsLoadedAtServer);
-    dataStore2.invoke(this::verifyDataIsLoadedAtServer);
+    dataStore1.invoke(() -> verifyRegionSize(false, NUM_ENTRIES));
+    dataStore2.invoke(() -> verifyRegionSize(false, NUM_ENTRIES));
 
-    accessor.invoke(() -> {
-      Region region = getCache().getRegion(REGION_NAME);
-      assertThat(region.size()).isEqualTo(NUM_ENTRIES);
-      region.clear();
-
-      assertThat(region.size()).isEqualTo(0);
-    });
-    dataStore1.invoke(this::verifyRegionIsCleared);
-    dataStore2.invoke(this::verifyRegionIsCleared);
+    accessor.invoke(() -> getRegion(false).clear());
+    dataStore1.invoke(() -> verifyRegionSize(false, 0));
+    dataStore2.invoke(() -> verifyRegionSize(false, 0));
   }
 
   // @Test
