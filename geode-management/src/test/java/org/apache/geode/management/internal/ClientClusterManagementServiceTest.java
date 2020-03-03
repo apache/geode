@@ -74,6 +74,7 @@ public class ClientClusterManagementServiceTest {
   @Test
   public void createCallsSubmitMessageAndReturnsResult() {
     when(serviceTransport.submitMessage(any(), any())).thenReturn(successRealizationResult);
+    when(configuration.getCreationCommandType()).thenReturn(CommandType.CREATE);
 
     ClusterManagementRealizationResult realizationResult = service.create(configuration);
 
