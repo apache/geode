@@ -86,10 +86,12 @@ public class ConnectCommand extends OfflineGfshCommand {
           unspecifiedDefaultValue = "false",
           help = CliStrings.CONNECT__USE_HTTP__HELP) boolean useHttp,
       @CliOption(key = {CliStrings.CONNECT__URL}, help = CliStrings.CONNECT__URL__HELP) String url,
-      @CliOption(key = {CliStrings.CONNECT__USERNAME},
+      @CliOption(key = {CliStrings.CONNECT__USERNAME}, specifiedDefaultValue = "",
           help = CliStrings.CONNECT__USERNAME__HELP) String userName,
-      @CliOption(key = {CliStrings.CONNECT__PASSWORD},
+      @CliOption(key = {CliStrings.CONNECT__PASSWORD}, specifiedDefaultValue = "",
           help = CliStrings.CONNECT__PASSWORD__HELP) String password,
+      @CliOption(key = {CliStrings.CONNECT__TOKEN}, specifiedDefaultValue = "",
+          help = CliStrings.CONNECT__TOKEN__HELP) String token,
       @CliOption(key = {CliStrings.CONNECT__KEY_STORE},
           help = CliStrings.CONNECT__KEY_STORE__HELP) String keystore,
       @CliOption(key = {CliStrings.CONNECT__KEY_STORE_PASSWORD},
@@ -124,6 +126,14 @@ public class ConnectCommand extends OfflineGfshCommand {
       useSsl = true;
     }
 
+    if ("".equals(token)) {
+      return ResultModel.createError("--token requires a value, for example --token=foo");
+    }
+
+    if (token != null && (userName != null || password != null)) {
+      return ResultModel.createError("--token cannot be combined with --user or --password");
+    }
+
     // ssl options are passed in in the order defined in USER_INPUT_PROPERTIES, note the two types
     // are null, because we don't have connect command options for them yet
     Properties gfProperties = resolveSslProperties(gfsh, useSsl, null, gfSecurityPropertiesFile,
@@ -137,12 +147,14 @@ public class ConnectCommand extends OfflineGfshCommand {
     // if username is specified in the option but password is not, prompt for the password
     // note if gfProperties has username but no password, we would not prompt for password yet,
     // because we may not need username/password combination to connect.
-    if (userName != null) {
+    if (userName != null && !"".equals(userName)) {
       gfProperties.setProperty(ResourceConstants.USER_NAME, userName);
-      if (password == null) {
+      if (password == null || "".equals(password)) {
         password = UserInputProperty.PASSWORD.promptForAcceptableValue(gfsh);
       }
       gfProperties.setProperty(UserInputProperty.PASSWORD.getKey(), password);
+    } else if (token != null) {
+      gfProperties.setProperty(ResourceConstants.TOKEN, token);
     }
 
     if (StringUtils.isNotEmpty(url)) {
@@ -287,7 +299,8 @@ public class ConnectCommand extends OfflineGfshCommand {
     } catch (SecurityException | AuthenticationFailedException e) {
       // if it's security exception, and we already sent in username and password, still returns the
       // connection error
-      if (gfProperties.containsKey(ResourceConstants.USER_NAME)) {
+      if (gfProperties.containsKey(ResourceConstants.USER_NAME)
+          || gfProperties.containsKey(ResourceConstants.TOKEN)) {
         return handleException(e);
       }
 
@@ -363,7 +376,8 @@ public class ConnectCommand extends OfflineGfshCommand {
     } catch (SecurityException | AuthenticationFailedException e) {
       // if it's security exception, and we already sent in username and password, still returns the
       // connection error
-      if (gfProperties.containsKey(ResourceConstants.USER_NAME)) {
+      if (gfProperties.containsKey(ResourceConstants.USER_NAME)
+          || gfProperties.containsKey(ResourceConstants.TOKEN)) {
         return handleException(e, jmxHostPortToConnect);
       }
 

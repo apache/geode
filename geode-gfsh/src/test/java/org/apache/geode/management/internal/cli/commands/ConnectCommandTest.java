@@ -86,6 +86,58 @@ public class ConnectCommandTest {
   }
 
   @Test
+  public void whenGfshIsNotConnected() throws Exception {
+    when(gfsh.isConnectedAndReady()).thenReturn(false);
+    when(resultModel.getStatus()).thenReturn(Result.Status.OK);
+    gfshParserRule.executeAndAssertThat(connectCommand, "connect")
+        .statusIsSuccess();
+  }
+
+  @Test
+  public void tokenIsGiven() {
+    when(resultModel.getStatus()).thenReturn(Result.Status.OK);
+    gfshParserRule.executeAndAssertThat(connectCommand, "connect --token=FOO_BAR")
+        .statusIsSuccess();
+  }
+
+  @Test
+  public void tokenIsGivenWithUserName() {
+    gfshParserRule.executeAndAssertThat(connectCommand, "connect --token=FOO_BAR --user")
+        .containsOutput("--token cannot be combined with --user or --password")
+        .statusIsError();
+  }
+
+  @Test
+  public void tokenIsGivenWithPassword() {
+    gfshParserRule.executeAndAssertThat(connectCommand, "connect --token=FOO_BAR --password")
+        .containsOutput("--token cannot be combined with --user or --password")
+        .statusIsError();
+  }
+
+  @Test
+  public void tokenIsGivenWithUserNameAndPassword() {
+    gfshParserRule.executeAndAssertThat(connectCommand, "connect --token=FOO_BAR --user --password")
+        .containsOutput("--token cannot be combined with --user or --password")
+        .statusIsError();
+  }
+
+  @Test
+  public void tokenIsGivenWithNoValue() {
+    gfshParserRule.executeAndAssertThat(connectCommand, "connect --token")
+        .containsOutput("--token requires a value, for example --token=foo")
+        .statusIsError();
+  }
+
+  @Test
+  public void givenTokenIsSetInProperties() throws Exception {
+    doReturn(properties).when(connectCommand).resolveSslProperties(any(), anyBoolean(), any(),
+        any());
+    gfshParserRule.executeAndAssertThat(connectCommand, "connect --token=FOO_BAR");
+
+    assertThat(properties.getProperty("security-token")).isEqualTo("FOO_BAR");
+  }
+
+  @Test
   public void promptForPasswordIfUsernameIsGiven() throws Exception {
     doReturn(properties).when(connectCommand).resolveSslProperties(any(), anyBoolean(), any(),
         any());

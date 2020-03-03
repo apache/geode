@@ -95,13 +95,20 @@ public class LoginHandlerInterceptor extends HandlerInterceptorAdapter
 
     ENV.set(requestParameterValues);
 
+    String token = request.getHeader(ResourceConstants.TOKEN);
     String username = request.getHeader(ResourceConstants.USER_NAME);
     String password = request.getHeader(ResourceConstants.PASSWORD);
     Properties credentials = new Properties();
-    if (username != null)
-      credentials.put(ResourceConstants.USER_NAME, username);
-    if (password != null)
-      credentials.put(ResourceConstants.PASSWORD, password);
+    if (token != null) {
+      credentials.put(ResourceConstants.TOKEN, token);
+    } else {
+      if (username != null) {
+        credentials.put(ResourceConstants.USER_NAME, username);
+      }
+      if (password != null) {
+        credentials.put(ResourceConstants.PASSWORD, password);
+      }
+    }
     this.securityService.login(credentials);
 
     return true;
