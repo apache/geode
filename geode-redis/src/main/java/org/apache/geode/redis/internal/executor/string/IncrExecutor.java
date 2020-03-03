@@ -83,7 +83,6 @@ public class IncrExecutor extends StringExecutor {
     stringValue = "" + value;
     r.put(key, new ByteArrayWrapper(Coder.stringToBytes(stringValue)));
 
-
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), value));
 
   }

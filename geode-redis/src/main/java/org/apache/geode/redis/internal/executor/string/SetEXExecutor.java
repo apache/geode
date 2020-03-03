@@ -66,8 +66,9 @@ public class SetEXExecutor extends StringExecutor implements Extendable {
       return;
     }
 
-    if (!timeUnitMillis())
+    if (!timeUnitMillis()) {
       expiration *= AbstractExecutor.millisInSecond;
+    }
 
     checkAndSetDataType(key, context);
     r.put(key, new ByteArrayWrapper(value));

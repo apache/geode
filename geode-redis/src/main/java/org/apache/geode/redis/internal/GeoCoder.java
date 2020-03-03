@@ -67,8 +67,9 @@ public class GeoCoder {
   public static ByteBuf geoRadiusResponse(ByteBufAllocator alloc,
       Collection<GeoRadiusResponseElement> list)
       throws CoderException {
-    if (list.isEmpty())
+    if (list.isEmpty()) {
       return Coder.getEmptyArrayResponse(alloc);
+    }
 
     List<Object> responseElements = new ArrayList<>();
     for (GeoRadiusResponseElement element : list) {

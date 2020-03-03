@@ -15,13 +15,13 @@
 package org.apache.geode.redis.internal.executor.set;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.TimeoutException;
+import org.apache.geode.redis.internal.AutoCloseableLock;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
@@ -32,74 +32,93 @@ import org.apache.geode.redis.internal.RegionProvider;
 
 public abstract class SetOpExecutor extends SetExecutor implements Extendable {
 
-  @SuppressWarnings("unchecked")
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
     int setsStartIndex = isStorage() ? 2 : 1;
+
     if (commandElems.size() < setsStartIndex + 1) {
       command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), getArgsError()));
       return;
     }
-    RegionProvider rC = context.getRegionProvider();
+
+    RegionProvider regionProvider = context.getRegionProvider();
     ByteArrayWrapper destination = null;
-    if (isStorage())
+    if (isStorage()) {
       destination = command.getKey();
+    }
 
     ByteArrayWrapper firstSetKey = new ByteArrayWrapper(commandElems.get(setsStartIndex++));
-    if (!isStorage())
-      checkDataType(firstSetKey, RedisDataType.REDIS_SET, context);
-    Region<ByteArrayWrapper, Boolean> region =
-        (Region<ByteArrayWrapper, Boolean>) rC.getRegion(firstSetKey);
-    Set<ByteArrayWrapper> firstSet = null;
-    if (region != null) {
-      firstSet = new HashSet<ByteArrayWrapper>(region.keySet());
+    if (destination != null) {
+      try (AutoCloseableLock regionLock = withRegionLock(context, destination)) {
+        doActualSetOperation(command, context, commandElems, setsStartIndex, regionProvider,
+            destination, firstSetKey);
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        command.setResponse(
+            Coder.getErrorResponse(context.getByteBufAllocator(), "Thread interrupted."));
+      } catch (TimeoutException e) {
+        command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(),
+            "Timeout acquiring lock. Please try again."));
+      }
+    } else {
+      doActualSetOperation(command, context, commandElems, setsStartIndex, regionProvider,
+          destination, firstSetKey);
     }
-    ArrayList<Set<ByteArrayWrapper>> setList = new ArrayList<Set<ByteArrayWrapper>>();
+  }
+
+  private boolean doActualSetOperation(Command command, ExecutionHandlerContext context,
+      List<byte[]> commandElems, int setsStartIndex,
+      RegionProvider regionProvider, ByteArrayWrapper destination,
+      ByteArrayWrapper firstSetKey) {
+    Region<ByteArrayWrapper, Set<ByteArrayWrapper>> region = this.getRegion(context);
+    Set<ByteArrayWrapper> firstSet = region.get(firstSetKey);
+
+    List<Set<ByteArrayWrapper>> setList = new ArrayList<>();
     for (int i = setsStartIndex; i < commandElems.size(); i++) {
       ByteArrayWrapper key = new ByteArrayWrapper(commandElems.get(i));
-      checkDataType(key, RedisDataType.REDIS_SET, context);
-      region = (Region<ByteArrayWrapper, Boolean>) rC.getRegion(key);
-      if (region != null)
-        setList.add(region.keySet());
-      else if (this instanceof SInterExecutor)
-        setList.add(null);
-    }
-    if (setList.isEmpty()) {
-      if (isStorage()) {
-        command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), 0));
-        context.getRegionProvider().removeKey(destination);
-      } else {
-        respondBulkStrings(command, context, firstSet);
+
+      Set<ByteArrayWrapper> entry = region.get(key);
+      if (entry != null) {
+        setList.add(entry);
+      } else if (this instanceof SInterExecutor) {
+        setList.add(new HashSet<>());
       }
-      return;
+    }
+
+    if (setList.isEmpty() && !isStorage()) {
+      respondBulkStrings(command, context, firstSet);
+      return true;
     }
 
     Set<ByteArrayWrapper> resultSet = setOp(firstSet, setList);
     if (isStorage()) {
-      Region<ByteArrayWrapper, Boolean> newRegion = null; // (Region<ByteArrayWrapper, Boolean>)
-                                                          // rC.getRegion(destination);
-      rC.removeKey(destination);
+      Set<ByteArrayWrapper> newSet = null;
+      regionProvider.removeKey(destination);
       if (resultSet != null) {
-        Map<ByteArrayWrapper, Boolean> map = new HashMap<ByteArrayWrapper, Boolean>();
-        for (ByteArrayWrapper entry : resultSet)
-          map.put(entry, Boolean.TRUE);
-        if (!map.isEmpty()) {
-          newRegion = (Region<ByteArrayWrapper, Boolean>) rC.getOrCreateRegion(destination,
-              RedisDataType.REDIS_SET, context);
-          newRegion.putAll(map);
+        Set<ByteArrayWrapper> set = new HashSet<>();
+        for (ByteArrayWrapper entry : resultSet) {
+          set.add(entry);
+        }
+        if (!set.isEmpty()) {
+          newSet = new HashSet<>(set);
+          region.put(destination, newSet);
+          context.getKeyRegistrar().register(destination, RedisDataType.REDIS_SET);
         }
         command
-            .setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), resultSet.size()));
+            .setResponse(
+                Coder.getIntegerResponse(context.getByteBufAllocator(), resultSet.size()));
       } else {
         command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), 0));
       }
     } else {
-      if (resultSet == null || resultSet.isEmpty())
+      if (resultSet == null || resultSet.isEmpty()) {
         command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));
-      else
+      } else {
         respondBulkStrings(command, context, resultSet);
+      }
     }
+    return false;
   }
 
   protected abstract boolean isStorage();

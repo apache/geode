@@ -14,11 +14,11 @@
  */
 package org.apache.geode.redis.internal.executor.hash;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.geode.cache.Region;
+import org.apache.geode.cache.TimeoutException;
+import org.apache.geode.redis.internal.AutoCloseableLock;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
@@ -26,36 +26,63 @@ import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 import org.apache.geode.redis.internal.RedisDataType;
 
+/**
+ * <pre>
+ *
+ * Implements the HMSet command.
+ *
+ * This command will set the specified fields to their given values in the hash stored at key.
+ * This command overwrites any specified fields already in the hash.
+ * A new key holding a hash is created, if the key does not exist.
+ *
+ * Examples:
+ *
+ * redis> HMSET myhash field1 "Hello" field2 "World"
+ * "OK"
+ * redis> HGET myhash field1
+ * "Hello"
+ * redis> HGET myhash field2
+ * "World"
+ *
+ * </pre>
+ */
 public class HMSetExecutor extends HashExecutor {
 
-  private final String SUCCESS = "OK";
+  private static final String SUCCESS = "OK";
 
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
-    if (commandElems.size() < 3 || commandElems.size() % 2 == 1) {
+    if (commandElems.size() < 4 || commandElems.size() % 2 == 1) {
       command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.HMSET));
       return;
     }
 
     ByteArrayWrapper key = command.getKey();
+    try (AutoCloseableLock regionLock = withRegionLock(context, key)) {
+      Map<ByteArrayWrapper, ByteArrayWrapper> map = getMap(context, key);
 
-    Region<ByteArrayWrapper, ByteArrayWrapper> keyRegion =
-        getOrCreateRegion(context, key, RedisDataType.REDIS_HASH);
+      for (int i = 2; i < commandElems.size(); i += 2) {
+        byte[] fieldArray = commandElems.get(i);
+        ByteArrayWrapper field = new ByteArrayWrapper(fieldArray);
+        byte[] value = commandElems.get(i + 1);
+        map.put(field, new ByteArrayWrapper(value));
+      }
 
-    Map<ByteArrayWrapper, ByteArrayWrapper> map = new HashMap<ByteArrayWrapper, ByteArrayWrapper>();
-    for (int i = 2; i < commandElems.size(); i += 2) {
-      byte[] fieldArray = commandElems.get(i);
-      ByteArrayWrapper field = new ByteArrayWrapper(fieldArray);
-      byte[] value = commandElems.get(i + 1);
-      map.put(field, new ByteArrayWrapper(value));
+      saveMap(map, context, key);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      command.setResponse(
+          Coder.getErrorResponse(context.getByteBufAllocator(), "Thread interrupted."));
+      return;
+    } catch (TimeoutException e) {
+      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(),
+          "Timeout acquiring lock. Please try again."));
+      return;
     }
-
-    keyRegion.putAll(map);
-
+    context.getKeyRegistrar().register(key, RedisDataType.REDIS_HASH);
     command.setResponse(Coder.getSimpleStringResponse(context.getByteBufAllocator(), SUCCESS));
-
   }
 
 }

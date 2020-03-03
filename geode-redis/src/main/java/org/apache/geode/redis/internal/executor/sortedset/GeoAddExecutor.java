@@ -67,8 +67,9 @@ public class GeoAddExecutor extends GeoSortedSetExecutor {
 
     for (ByteArrayWrapper m : tempMap.keySet()) {
       Object oldVal = keyRegion.put(m, tempMap.get(m));
-      if (oldVal == null)
+      if (oldVal == null) {
         numberOfAdds++;
+      }
     }
 
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), numberOfAdds));

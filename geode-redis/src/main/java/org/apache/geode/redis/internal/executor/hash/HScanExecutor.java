@@ -18,20 +18,22 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
-import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.executor.AbstractScanExecutor;
 
+/**
+ * Implementation of the HScan command used to incrementally iterate over a collection of elements.
+ */
 public class HScanExecutor extends AbstractScanExecutor {
 
   @Override
@@ -44,13 +46,12 @@ public class HScanExecutor extends AbstractScanExecutor {
     }
 
     ByteArrayWrapper key = command.getKey();
-    @SuppressWarnings("unchecked")
-    Region<ByteArrayWrapper, ByteArrayWrapper> keyRegion =
-        (Region<ByteArrayWrapper, ByteArrayWrapper>) context.getRegionProvider().getRegion(key);
-    checkDataType(key, RedisDataType.REDIS_HASH, context);
-    if (keyRegion == null) {
-      command.setResponse(
-          Coder.getScanResponse(context.getByteBufAllocator(), new ArrayList<String>()));
+
+    Map<ByteArrayWrapper, ByteArrayWrapper> map =
+        context.getRegionProvider().getHashRegion().get(key);
+
+    if (map == null || map.isEmpty()) {
+      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_CURSOR));
       return;
     }
     byte[] cAr = commandElems.get(2);
@@ -119,7 +120,7 @@ public class HScanExecutor extends AbstractScanExecutor {
     }
 
     List<Object> returnList =
-        getIteration(new HashSet(keyRegion.entrySet()), matchPattern, count, cursor);
+        getIteration(new HashSet<Object>(map.entrySet()), matchPattern, count, cursor);
 
     command.setResponse(Coder.getScanResponse(context.getByteBufAllocator(), returnList));
   }
@@ -152,14 +153,16 @@ public class HScanExecutor extends AbstractScanExecutor {
           returnList.add(value);
           numElements++;
         }
-      } else
+      } else {
         break;
+      }
     }
 
-    if (i == size - 1)
+    if (i == size - 1) {
       returnList.add(0, String.valueOf(0));
-    else
+    } else {
       returnList.add(0, String.valueOf(i));
+    }
     return returnList;
   }
 

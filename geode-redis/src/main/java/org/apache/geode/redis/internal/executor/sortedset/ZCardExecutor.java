@@ -27,7 +27,7 @@ import org.apache.geode.redis.internal.RedisDataType;
 
 public class ZCardExecutor extends SortedSetExecutor {
 
-  private final int NOT_EXISTS = 0;
+  private static final int NOT_EXISTS = 0;
 
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
@@ -43,11 +43,12 @@ public class ZCardExecutor extends SortedSetExecutor {
     Region<ByteArrayWrapper, DoubleWrapper> keyRegion = getRegion(context, key);
     checkDataType(key, RedisDataType.REDIS_SORTEDSET, context);
 
-    if (keyRegion == null)
+    if (keyRegion == null) {
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_EXISTS));
-    else
+    } else {
       command
           .setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), keyRegion.size()));
+    }
 
   }
 }
