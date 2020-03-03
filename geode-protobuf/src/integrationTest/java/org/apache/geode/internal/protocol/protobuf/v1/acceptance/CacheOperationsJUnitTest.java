@@ -53,7 +53,6 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.net.SocketCreator;
@@ -402,7 +401,6 @@ public class CacheOperationsJUnitTest {
     sslConfigBuilder.setKeystorePassword("password");
 
     SocketCreator socketCreator = new SocketCreator(sslConfigBuilder.build());
-    return socketCreator.forClient().connect(new HostAndPort("localhost", cacheServerPort),
-        5000);
+    return socketCreator.connectForClient("localhost", cacheServerPort, 5000);
   }
 }

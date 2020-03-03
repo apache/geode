@@ -45,7 +45,6 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.direct.DirectChannel;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.api.Membership;
-import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.net.SocketCreator;
 
@@ -65,7 +64,7 @@ public class TCPConduitTest {
     membership = cast(mock(Membership.class));
     directChannel = mock(DirectChannel.class);
     connectionTable = mock(ConnectionTable.class);
-    socketCreator = new SocketCreator(new SSLConfig.Builder().build());
+    socketCreator = mock(SocketCreator.class);
     localHost = LocalHostUtil.getLocalHost();
 
     when(directChannel.getDM())

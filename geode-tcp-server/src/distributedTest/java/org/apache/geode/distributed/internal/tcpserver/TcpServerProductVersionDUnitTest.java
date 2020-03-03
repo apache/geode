@@ -23,8 +23,6 @@ import java.io.File;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -170,19 +168,8 @@ public class TcpServerProductVersionDUnitTest implements Serializable {
         tcpClient = getLegacyTcpClient();
       }
 
-      Object response;
-      try {
-        Method requestToServer =
-            TcpClient.class.getMethod("requestToServer", InetAddress.class, int.class, Object.class,
-                int.class);
-        response = requestToServer.invoke(tcpClient, SocketCreator.getLocalHost(), locatorPort,
-            requestMessage, 1000);
-      } catch (NoSuchMethodException e) {
-        response = tcpClient
-            .requestToServer(
-                new HostAndPort(SocketCreator.getLocalHost().getHostAddress(), locatorPort),
-                requestMessage, 1000);
-      }
+      final Object response = tcpClient
+          .requestToServer(SocketCreator.getLocalHost(), locatorPort, requestMessage, 1000);
 
       final Class<?> responseClass = Class.forName(responseClassName);
 

@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.util.List;
 
 import junitparams.JUnitParamsRunner;
@@ -28,7 +29,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.apache.geode.distributed.internal.membership.api.MembershipConfigurationException;
-import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
+import org.apache.geode.distributed.internal.membership.gms.membership.HostAddress;
 
 @RunWith(JUnitParamsRunner.class)
 public class GMSUtilTest {
@@ -48,7 +49,8 @@ public class GMSUtilTest {
         parseLocators(RESOLVEABLE_LOOPBACK_HOST + "[" + PORT + "]",
             InetAddress.getLoopbackAddress()))
                 .contains(
-                    new HostAndPort(RESOLVEABLE_LOOPBACK_HOST, PORT));
+                    new HostAddress(new InetSocketAddress(RESOLVEABLE_LOOPBACK_HOST, PORT),
+                        RESOLVEABLE_LOOPBACK_HOST));
   }
 
   @Test
@@ -71,10 +73,11 @@ public class GMSUtilTest {
 
   @Test
   public void unresolveableAddressNotChecked() throws MembershipConfigurationException {
-    final List<HostAndPort> HostAndPortes =
+    final List<HostAddress> hostAddresses =
         parseLocators(UNRESOLVEABLE_HOST + "[" + PORT + "]", (InetAddress) null);
-    assertThat(HostAndPortes)
-        .contains(new HostAndPort(UNRESOLVEABLE_HOST, PORT));
+    assertThat(hostAddresses)
+        .contains(new HostAddress(new InetSocketAddress(UNRESOLVEABLE_HOST, PORT),
+            UNRESOLVEABLE_HOST));
   }
 
   @Test
@@ -83,7 +86,8 @@ public class GMSUtilTest {
     final String locatorsString = RESOLVEABLE_LOOPBACK_HOST + "[" + validPort + "]";
     assertThat(parseLocators(locatorsString, InetAddress.getLoopbackAddress()))
         .contains(
-            new HostAndPort(RESOLVEABLE_LOOPBACK_HOST, validPort));
+            new HostAddress(new InetSocketAddress(RESOLVEABLE_LOOPBACK_HOST, validPort),
+                RESOLVEABLE_LOOPBACK_HOST));
   }
 
   @Test
@@ -102,7 +106,7 @@ public class GMSUtilTest {
       throws MembershipConfigurationException {
     assertThat(parseLocators(locatorsString, (InetAddress) null))
         .contains(
-            new HostAndPort("127.0.0.1", 1234));
+            new HostAddress(new InetSocketAddress("127.0.0.1", 1234), "127.0.0.1"));
   }
 
   @Test
@@ -111,20 +115,23 @@ public class GMSUtilTest {
       throws MembershipConfigurationException {
     assertThat(parseLocators(locatorsString, (InetAddress) null))
         .contains(
-            new HostAndPort("fdf0:76cf:a0ed:9449::5", 12233));
+            new HostAddress(new InetSocketAddress("fdf0:76cf:a0ed:9449::5", 12233),
+                "fdf0:76cf:a0ed:9449::5"));
   }
 
   @Test
   public void multipleHosts() throws MembershipConfigurationException {
-    final List<HostAndPort> addys =
+    final List<HostAddress> addys =
         parseLocators(
             "geodecluster-sample-locator-0.geodecluster-sample-locator[10334],"
                 + "geodecluster-sample-locator-1.geodecluster-sample-locator[10334],"
                 + "geodecluster-sample-locator-2.geodecluster-sample-locator[10334]",
             (InetAddress) null);
     assertThat(addys).contains(
-        new HostAndPort("geodecluster-sample-locator-2.geodecluster-sample-locator",
-            10334));
+        new HostAddress(
+            new InetSocketAddress("geodecluster-sample-locator-2.geodecluster-sample-locator",
+                10334),
+            "geodecluster-sample-locator-2.geodecluster-sample-locator"));
     assertThat(addys).hasSize(3);
   }
 
@@ -142,11 +149,12 @@ public class GMSUtilTest {
   @Test
   public void nonLoopbackBindAddressDoesNotResolveLocatorAddress()
       throws MembershipConfigurationException {
-    final List<HostAndPort> hostAndPorts =
+    final List<HostAddress> hostAddresses =
         parseLocators(UNRESOLVEABLE_HOST + "[" + PORT + "]",
             RESOLVEABLE_NON_LOOPBACK_HOST);
-    assertThat(hostAndPorts)
-        .contains(new HostAndPort(UNRESOLVEABLE_HOST, PORT));
+    assertThat(hostAddresses)
+        .contains(new HostAddress(new InetSocketAddress(UNRESOLVEABLE_HOST, PORT),
+            UNRESOLVEABLE_HOST));
   }
 
 }

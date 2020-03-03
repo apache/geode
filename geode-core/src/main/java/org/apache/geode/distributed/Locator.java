@@ -23,6 +23,7 @@ import java.util.Properties;
 
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.inet.LocalHostUtil;
+import org.apache.geode.internal.net.SocketCreator;
 
 /**
  * Represents a distribution locator server that provides discovery information to members and
@@ -385,7 +386,7 @@ public abstract class Locator {
     Object ba = this.bindAddress;
     if (ba == null) {
       try {
-        ba = LocalHostUtil.getLocalHost().getHostName();
+        ba = SocketCreator.getHostName(LocalHostUtil.getLocalHost());
       } catch (java.net.UnknownHostException uh) {
       }
     }

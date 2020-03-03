@@ -35,6 +35,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -81,7 +82,6 @@ import org.apache.geode.distributed.internal.membership.gms.messages.NetworkPart
 import org.apache.geode.distributed.internal.membership.gms.messages.RemoveMemberMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.ViewAckMessage;
 import org.apache.geode.distributed.internal.membership.gms.util.MemberIdentifierUtil;
-import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.test.junit.categories.MembershipTest;
@@ -211,7 +211,7 @@ public class GMSJoinLeaveJUnitTest {
     initMocks(false);
     when(mockConfig.getLocatorWaitTime()).thenReturn(15000);
 
-    when(locatorClient.requestToServer(isA(HostAndPort.class),
+    when(locatorClient.requestToServer(isA(InetSocketAddress.class),
         isA(FindCoordinatorRequest.class), anyInt(), anyBoolean()))
             .thenThrow(new IOException("Connection refused"));
 
@@ -222,7 +222,7 @@ public class GMSJoinLeaveJUnitTest {
         .isInstanceOf(MemberStartupException.class)
         .hasMessageContaining("Interrupted while trying to contact locators");
     assertThat(Thread.currentThread().interrupted()).isTrue();
-    verify(locatorClient, times(1)).requestToServer(isA(HostAndPort.class),
+    verify(locatorClient, times(1)).requestToServer(isA(InetSocketAddress.class),
         isA(FindCoordinatorRequest.class), anyInt(), anyBoolean());
   }
 
@@ -429,7 +429,7 @@ public class GMSJoinLeaveJUnitTest {
 
   @Test
   public void multipleLocatorsWithSameAddressAreCanonicalized() throws Exception {
-    List<HostAndPort> locators = GMSUtil.parseLocators(
+    List<HostAddress> locators = GMSUtil.parseLocators(
         "localhost[1234],localhost[1234],localhost[1234]", (InetAddress) null);
     assertThat(locators.size()).isEqualTo(1);
   }
@@ -1428,7 +1428,7 @@ public class GMSJoinLeaveJUnitTest {
     FindCoordinatorResponse fcr = new FindCoordinatorResponse(mockMembers[0], mockMembers[0], false,
         null, registrants, false, true, null);
 
-    when(locatorClient.requestToServer(isA(HostAndPort.class),
+    when(locatorClient.requestToServer(isA(InetSocketAddress.class),
         isA(FindCoordinatorRequest.class), anyInt(), anyBoolean()))
             .thenReturn(fcr);
 
@@ -1449,7 +1449,7 @@ public class GMSJoinLeaveJUnitTest {
       JoinResponseMessage jrm = new JoinResponseMessage(mockMembers[0], view, 0);
       gmsJoinLeave.setJoinResponseMessage(jrm);
 
-      when(locatorClient.requestToServer(eq(new HostAndPort("localhost", 12346)),
+      when(locatorClient.requestToServer(eq(new InetSocketAddress("localhost", 12346)),
           isA(FindCoordinatorRequest.class), anyInt(), anyBoolean()))
               .thenReturn(fcr);
 

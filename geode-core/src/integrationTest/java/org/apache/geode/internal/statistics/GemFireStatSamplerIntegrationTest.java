@@ -34,6 +34,7 @@ import static org.apache.geode.internal.GemFireVersion.getSourceDate;
 import static org.apache.geode.internal.cache.control.HeapMemoryMonitor.getTenuredMemoryPoolMXBean;
 import static org.apache.geode.internal.cache.control.HeapMemoryMonitor.getTenuredPoolStatistics;
 import static org.apache.geode.internal.inet.LocalHostUtil.getLocalHost;
+import static org.apache.geode.internal.net.SocketCreator.getHostName;
 import static org.apache.geode.internal.statistics.HostStatSampler.TEST_FILE_SIZE_LIMIT_IN_KB_PROPERTY;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -135,7 +136,7 @@ public class GemFireStatSamplerIntegrationTest extends StatSamplerTestCase {
         .isLessThanOrEqualTo(currentTimeMillis());
     assertThat(statSampler.getSystemDirectoryPath())
         .as("system directory path")
-        .isEqualTo(getLocalHost().getHostName());
+        .isEqualTo(getHostName(getLocalHost()));
 
     assertThat(statSampler.getVMStats())
         .as("vm stats")

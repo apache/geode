@@ -76,13 +76,13 @@ public class MemberDataBuilderImpl implements MemberDataBuilder {
     this.hostName = hostName;
   }
 
-  private MemberDataBuilderImpl(String hostName) {
+  private MemberDataBuilderImpl(String fakeHostName) {
     try {
       inetAddress = LocalHostUtil.getLocalHost();
     } catch (UnknownHostException e2) {
       throw new RuntimeException("Unable to resolve local host address", e2);
     }
-    this.hostName = hostName;
+    hostName = fakeHostName;
   }
 
   public MemberDataBuilderImpl setMembershipPort(int membershipPort) {

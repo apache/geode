@@ -59,7 +59,6 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem.DisconnectListener;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalInstantiator;
@@ -316,8 +315,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
       int socketBufferSize =
           Integer.getInteger("BridgeServer.SOCKET_BUFFER_SIZE", DEFAULT_SOCKET_BUFFER_SIZE);
 
-      mySock = socketCreator.forClient().connect(
-          new HostAndPort(location.getHostName(), location.getPort()),
+      mySock = socketCreator.connectForClient(location.getHostName(), location.getPort(),
           handshakeTimeout, socketBufferSize);
       mySock.setTcpNoDelay(true);
       mySock.setSendBufferSize(socketBufferSize);

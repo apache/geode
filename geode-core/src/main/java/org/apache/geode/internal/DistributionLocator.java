@@ -27,7 +27,6 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
@@ -74,9 +73,8 @@ public class DistributionLocator {
       new TcpClient(SocketCreatorFactory
           .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR),
           InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
-          InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer())
-              .stop(new HostAndPort(addr.getHostName(),
-                  port));
+          InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer()).stop(addr,
+              port);
     } catch (ConnectException ignore) {
       // must not be running
     }

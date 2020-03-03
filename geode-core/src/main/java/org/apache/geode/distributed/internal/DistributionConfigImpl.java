@@ -89,6 +89,7 @@ import org.apache.geode.InternalGemFireException;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.ConfigSource;
 import org.apache.geode.internal.inet.LocalHostUtil;
+import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.process.ProcessLauncherContext;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.security.AuthTokenEnabledComponents;
@@ -1776,7 +1777,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
         return bindAddress + "[" + startLocatorPort + "]";
       }
       try {
-        return LocalHostUtil.getLocalHost().getHostName() + "[" + startLocatorPort
+        return SocketCreator.getHostName(LocalHostUtil.getLocalHost()) + "[" + startLocatorPort
             + "]";
       } catch (UnknownHostException ignore) {
         // punt and use this.startLocator instead

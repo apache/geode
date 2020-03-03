@@ -146,8 +146,7 @@ public class TCPClientSSLIntegrationTest {
 
     startServerAndClient(serverCertificate, clientCertificate, true);
     String response =
-        (String) client.requestToServer(new HostAndPort(localhost.getHostName(), port),
-            Boolean.valueOf(false), 5 * 1000);
+        (String) client.requestToServer(localhost, port, Boolean.valueOf(false), 5 * 1000);
     assertThat(response).isEqualTo("Running!");
   }
 
@@ -166,8 +165,7 @@ public class TCPClientSSLIntegrationTest {
 
     startServerAndClient(serverCertificate, clientCertificate, false);
     String response =
-        (String) client.requestToServer(new HostAndPort(localhost.getHostName(), port),
-            Boolean.valueOf(false), 5 * 1000);
+        (String) client.requestToServer(localhost, port, Boolean.valueOf(false), 5 * 1000);
     assertThat(response).isEqualTo("Running!");
   }
 
@@ -186,8 +184,7 @@ public class TCPClientSSLIntegrationTest {
     startServerAndClient(serverCertificate, clientCertificate, true);
 
     assertThatExceptionOfType(IllegalStateException.class)
-        .isThrownBy(() -> client.requestToServer(new HostAndPort(localhost.getHostName(), port),
-            Boolean.valueOf(false), 5 * 1000))
+        .isThrownBy(() -> client.requestToServer(localhost, port, Boolean.valueOf(false), 5 * 1000))
         .withCauseInstanceOf(SSLHandshakeException.class)
         .withStackTraceContaining("No name matching " + localhost.getHostName() + " found");
   }
@@ -208,8 +205,7 @@ public class TCPClientSSLIntegrationTest {
     startServerAndClient(serverCertificate, clientCertificate, true);
 
     assertThatExceptionOfType(IllegalStateException.class)
-        .isThrownBy(() -> client.requestToServer(new HostAndPort(localhost.getHostName(), port),
-            Boolean.valueOf(false), 5 * 1000))
+        .isThrownBy(() -> client.requestToServer(localhost, port, Boolean.valueOf(false), 5 * 1000))
         .withCauseInstanceOf(SSLHandshakeException.class)
         .withStackTraceContaining("No subject alternative DNS name matching "
             + localhost.getHostName() + " found.");

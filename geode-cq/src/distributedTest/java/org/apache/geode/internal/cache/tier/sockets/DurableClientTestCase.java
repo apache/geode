@@ -311,13 +311,6 @@ public class DurableClientTestCase extends DurableClientTestBase {
     // Verify the durable client received the updates
     this.checkListenerEvents(1, 1, -1, this.durableClientVM);
 
-    server1VM.invoke("wait for client acknowledgement", () -> {
-      CacheClientProxy proxy = getClientProxy();
-      await().untilAsserted(
-          () -> assertThat(proxy._messageDispatcher._messageQueue.stats.getEventsRemoved())
-              .isGreaterThan(0));
-    });
-
     // Stop the durable client
     this.disconnectDurableClient(true);
 
@@ -331,10 +324,12 @@ public class DurableClientTestCase extends DurableClientTestBase {
     this.server1VM.invoke(new CacheSerializableRunnable("Verify durable client") {
       @Override
       public void run2() throws CacheException {
+        // Find the proxy
         CacheClientProxy proxy = getClientProxy();
         assertThat(proxy).isNotNull();
+
         // Verify the queue size
-        assertThat(proxy.getQueueSize()).isEqualTo(1);
+        assertThat(1).isEqualTo(proxy.getQueueSize());
       }
     });
 
