@@ -60,8 +60,8 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
     dataStore1.invoke(this::initDataStore);
     dataStore2.invoke(this::initDataStore);
     accessor.invoke(this::initAccessor);
-    // client1.invoke(this::initClientCache);
-    // client2.invoke(this::initClientCache);
+    client1.invoke(this::initClientCache);
+    client2.invoke(this::initClientCache);
   }
 
   protected RegionShortcut getRegionShortCut() {
@@ -99,19 +99,14 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
         .create(REGION_NAME);
   }
 
-  private void feedFromServer() {
-    Region region = getRegion(false);
-    IntStream.range(0, NUM_ENTRIES).forEach(i -> region.put(i, "value" + i));
-  }
-
-  private void feedFromClient() {
-    Region region = getRegion(true);
+  private void feed(boolean isClient) {
+    Region region = getRegion(isClient);
     IntStream.range(0, NUM_ENTRIES).forEach(i -> region.put(i, "value" + i));
   }
 
   @Test
   public void normalClearFromDataStore() {
-    accessor.invoke(this::feedFromServer);
+    accessor.invoke(() -> feed(false));
     dataStore1.invoke(() -> verifyRegionSize(false, NUM_ENTRIES));
     dataStore2.invoke(() -> verifyRegionSize(false, NUM_ENTRIES));
 
@@ -122,7 +117,7 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
 
   @Test
   public void normalClearFromAccessor() {
-    accessor.invoke(this::feedFromServer);
+    accessor.invoke(() -> feed(false));
     dataStore1.invoke(() -> verifyRegionSize(false, NUM_ENTRIES));
     dataStore2.invoke(() -> verifyRegionSize(false, NUM_ENTRIES));
 
@@ -131,24 +126,17 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
     dataStore2.invoke(() -> verifyRegionSize(false, 0));
   }
 
-  // @Test
-  // public void normalClearFromClient() {
-  // client1.invoke(this::feedFromClient);
-  // client2.invoke(this::verifyDataIsLoadedAtClient);
-  // dataStore1.invoke(this::verifyDataIsLoadedAtServer);
-  // dataStore2.invoke(this::verifyDataIsLoadedAtServer);
-  //
-  // client1.invoke(()->{
-  // Region region = getClientCache().getRegion(REGION_NAME);
-  // assertThat(region.size()).isEqualTo(NUM_ENTRIES);
-  // region.clear();
-  // assertThat(region.size()).isEqualTo(0);
-  // });
-  // dataStore1.invoke(this::verifyRegionIsCleared);
-  // dataStore2.invoke(this::verifyRegionIsCleared);
-  // client2.invoke(()-> {
-  // Region region = getClientCache().getRegion(REGION_NAME);
-  // assertThat(region.size()).isEqualTo(0);
-  // });
-  // }
+  @Test
+  public void normalClearFromClient() {
+    client1.invoke(() -> feed(true));
+    client2.invoke(() -> verifyRegionSize(true, NUM_ENTRIES));
+    dataStore1.invoke(() -> verifyRegionSize(false, NUM_ENTRIES));
+    dataStore2.invoke(() -> verifyRegionSize(false, NUM_ENTRIES));
+
+    client1.invoke(() -> getRegion(true).clear());
+    dataStore1.invoke(() -> verifyRegionSize(false, 0));
+    dataStore2.invoke(() -> verifyRegionSize(false, 0));
+    client1.invoke(() -> verifyRegionSize(true, 0));
+    client2.invoke(() -> verifyRegionSize(true, 0));
+  }
 }

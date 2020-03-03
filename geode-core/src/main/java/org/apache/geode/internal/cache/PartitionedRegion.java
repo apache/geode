@@ -2193,6 +2193,7 @@ public class PartitionedRegion extends LocalRegion
       }
 
       // notify bridge clients at PR level
+      regionEvent.setEventType(EnumListenerEvent.AFTER_REGION_CLEAR);
       notifyBridgeClients(regionEvent);
     }
   }
