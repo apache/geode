@@ -99,10 +99,18 @@ public class RegionCreateFunction implements InternalFunction {
     } catch (IllegalArgumentException e) {
       resultSender.lastResult(handleException(memberNameOrId, e.getMessage(), e));
     } catch (RegionExistsException e) {
-      String exceptionMsg =
-          CliStrings.format(CliStrings.CREATE_REGION__MSG__REGION_PATH_0_ALREADY_EXISTS_ON_1,
-              regionCreateArgs.getRegionPath(), memberNameOrId);
-      resultSender.lastResult(handleException(memberNameOrId, exceptionMsg, e));
+      if (regionCreateArgs.isIfNotExists()) {
+        resultSender
+            .lastResult(new CliFunctionResult(memberNameOrId, CliFunctionResult.StatusState.OK,
+                CliStrings.format(
+                    CliStrings.CREATE_REGION__MSG__SKIPPING_0_REGION_PATH_1_ALREADY_EXISTS,
+                    memberNameOrId, regionCreateArgs.getRegionPath())));
+      } else {
+        String exceptionMsg =
+            CliStrings.format(CliStrings.CREATE_REGION__MSG__REGION_PATH_0_ALREADY_EXISTS_ON_1,
+                regionCreateArgs.getRegionPath(), memberNameOrId);
+        resultSender.lastResult(handleException(memberNameOrId, exceptionMsg, e));
+      }
     } catch (Exception e) {
       String exceptionMsg = e.getMessage();
       if (exceptionMsg == null) {
