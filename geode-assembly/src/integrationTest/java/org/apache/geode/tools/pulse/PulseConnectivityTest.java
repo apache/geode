@@ -57,11 +57,7 @@ public class PulseConnectivityTest {
 
   @Parameterized.Parameters(name = "JMXBindAddress: {0}")
   public static Collection<String> bindAddresses() throws Exception {
-    String nonDefaultJmxBindAddress = InetAddress.getLocalHost().getHostName();
-    if ("localhost".equals(nonDefaultJmxBindAddress)) {
-      nonDefaultJmxBindAddress = InetAddress.getLocalHost().getHostAddress();
-    }
-    return Arrays.asList(new String[] {"localhost", nonDefaultJmxBindAddress});
+    return Arrays.asList(new String[] {"localhost"});
   }
 
   @Before
