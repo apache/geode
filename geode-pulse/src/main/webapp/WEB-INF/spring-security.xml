@@ -55,11 +55,11 @@
 
 	</http>
 
-	<beans:bean name="customLogoutSuccessHandler" 
+	<beans:bean name="customLogoutSuccessHandler"
 	class="org.apache.geode.tools.pulse.internal.security.LogoutHandler">
 		<beans:constructor-arg value="/login.html"/>
 	</beans:bean>
-	
+
 	<beans:bean id="authenticationFailureHandler"
 		class="org.springframework.security.web.authentication.ExceptionMappingAuthenticationFailureHandler">
 		<beans:property name="exceptionMappings">
@@ -71,8 +71,8 @@
 			</beans:props>
 		</beans:property>
 	</beans:bean>
-	
-	<beans:bean id="gemAuthenticationProvider" 
+
+	<beans:bean id="gemAuthenticationProvider"
 		class="org.apache.geode.tools.pulse.internal.security.GemFireAuthenticationProvider">
   </beans:bean>
 

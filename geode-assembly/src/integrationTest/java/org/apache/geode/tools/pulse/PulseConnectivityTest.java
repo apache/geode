@@ -19,7 +19,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_B
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Properties;
