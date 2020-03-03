@@ -18,7 +18,11 @@ import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_C
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_ENABLED;
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_PROTOCOLS;
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_REQUIRE_AUTHENTICATION;
+import static org.apache.geode.util.internal.GeodeGlossary.GEMFIRE_PREFIX;
 
+import java.net.InetSocketAddress;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.security.KeyStore;
 import java.util.Iterator;
 import java.util.Properties;
@@ -68,6 +72,8 @@ public class SSLConfig {
   @Immutable
   private final SSLParameterExtension sslParameterExtension;
 
+  private final InetSocketAddress sniProxyAddress;
+
   private SSLConfig(boolean endpointIdentification,
       boolean useDefaultSSLContext,
       boolean enabled,
@@ -83,7 +89,8 @@ public class SSLConfig {
       String alias,
       SecurableCommunicationChannel securableCommunicationChannel,
       Properties properties,
-      SSLParameterExtension sslParameterExtension) {
+      SSLParameterExtension sslParameterExtension,
+      final InetSocketAddress sniProxyAddress) {
     this.endpointIdentification = endpointIdentification;
     this.useDefaultSSLContext = useDefaultSSLContext;
     this.enabled = enabled;
@@ -100,6 +107,7 @@ public class SSLConfig {
     this.securableCommunicationChannel = securableCommunicationChannel;
     this.properties = properties;
     this.sslParameterExtension = sslParameterExtension;
+    this.sniProxyAddress = sniProxyAddress;
   }
 
   public String getAlias() {
@@ -174,6 +182,10 @@ public class SSLConfig {
     return sslParameterExtension;
   }
 
+  public InetSocketAddress getSniProxyAddress() {
+    return sniProxyAddress;
+  }
+
   @Override
   public String toString() {
     return "SSLConfig{" + "enabled=" + enabled + ", protocols='" + protocols + '\'' + ", ciphers='"
@@ -237,10 +249,26 @@ public class SSLConfig {
     public Builder() {}
 
     public SSLConfig build() {
+
+      final String sniProxyProperty = System.getProperty(GEMFIRE_PREFIX + "security.sni-proxy");
+      final InetSocketAddress sniProxyAddress;
+      if (sniProxyProperty == null) {
+        sniProxyAddress = null;
+      } else {
+        try {
+          final URL parser = new URL("http://" + sniProxyProperty);
+          final String host = parser.getHost();
+          final int port = parser.getPort();
+          sniProxyAddress = new InetSocketAddress(host, port);
+        } catch (MalformedURLException e) {
+          throw new RuntimeException(e);
+        }
+      }
+
       return new SSLConfig(endpointIdentification, useDefaultSSLContext, enabled,
           protocols, ciphers, requireAuth, keystore, keystoreType, keystorePassword,
           truststore, truststorePassword, truststoreType, alias, securableCommunicationChannel,
-          properties, sslParameterExtension);
+          properties, sslParameterExtension, sniProxyAddress);
     }
 
     public Builder setAlias(final String alias) {
