@@ -56,7 +56,7 @@ public class HostAndPort implements DataSerializableFixedID {
   }
 
   /**
-   * If location is not litteral IP address a new resolved {@link InetSocketAddress} is returned.
+   * If location is not literal IP address a new resolved {@link InetSocketAddress} is returned.
    *
    * @return resolved {@link InetSocketAddress}, otherwise stored {@link InetSocketAddress} if
    *         literal IP address is used.

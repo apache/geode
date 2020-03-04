@@ -100,8 +100,9 @@ class SCAdvancedSocketCreator extends AdvancedSocketCreatorImpl {
         });
       } else {
         final InetSocketAddress sockaddr;
-        InetSocketAddress sockaddrTemp = addr.getSocketInetAddress();
+        final InetSocketAddress sockaddrTemp = addr.getSocketInetAddress();
         if (sockaddrTemp.getAddress() == null) {
+          // first address resolution attempt failed; try again, usually throwing an exception
           final InetAddress address = InetAddress.getByName(sockaddrTemp.getHostString());
           sockaddr = new InetSocketAddress(address, sockaddrTemp.getPort());
         } else {
@@ -140,7 +141,5 @@ class SCAdvancedSocketCreator extends AdvancedSocketCreatorImpl {
     }
     return null;
   }
-
-
 
 }
