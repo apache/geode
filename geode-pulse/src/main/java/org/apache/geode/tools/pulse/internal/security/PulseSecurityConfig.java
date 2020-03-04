@@ -67,7 +67,7 @@ public class PulseSecurityConfig {
         .permitAll();
 
     httpSecurity.authorizeRequests()
-        .mvcMatchers("/dataBrowser*", "/getQueryStatisticsGridModel/*")
+        .mvcMatchers("/dataBrowser*", "/getQueryStatisticsGridModel*")
         .access("hasRole('CLUSTER:READ') and hasRole('DATA:READ')")
         .mvcMatchers("/*")
         .hasRole("CLUSTER:READ")
@@ -81,7 +81,10 @@ public class PulseSecurityConfig {
         .and()
         .logout()
         .logoutUrl("/clusterLogout")
-        .logoutSuccessHandler(customLogoutSuccessHandler());
+        .logoutSuccessHandler(customLogoutSuccessHandler())
+        .and()
+        .exceptionHandling()
+        .accessDeniedPage("/accessDenied.html");
 
     httpSecurity.headers()
         .frameOptions().deny();
@@ -109,7 +112,7 @@ public class PulseSecurityConfig {
             .passwordEncoder(NoOpPasswordEncoder.getInstance())
             .withUser("admin")
             .password("admin")
-            .roles("CLUSTER:READ,DATA:READ");
+            .roles("CLUSTER:READ", "DATA:READ");
       }
     };
   }

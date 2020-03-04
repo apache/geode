@@ -28,7 +28,7 @@ import org.apache.geode.test.junit.rules.GeodeHttpClientRule;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
 @Category({PulseTest.class})
-public class PulseSecurityConfigTest {
+public class PulseSecurityConfigDefaultProfileTest {
   @ClassRule
   public static LocatorStarterRule locator =
       new LocatorStarterRule().withHttpService().withAutoStart();
@@ -48,6 +48,13 @@ public class PulseSecurityConfigTest {
   public void loginPage() throws Exception {
     HttpResponse response = client.get("/pulse/login.html");
     assertResponse(response).hasStatusCode(200).hasResponseBody().contains("<html>");
+  }
+
+  @Test
+  public void getQueryStatisticsGridModel() throws Exception {
+    client.loginToPulseAndVerify("admin", "admin");
+    HttpResponse httpResponse = client.get("/pulse/getQueryStatisticsGridModel");
+    assertResponse(httpResponse).hasStatusCode(200);
   }
 
   @Test
