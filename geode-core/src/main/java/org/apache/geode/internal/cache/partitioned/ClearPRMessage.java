@@ -27,6 +27,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.Operation;
+import org.apache.geode.cache.persistence.PartitionOfflineException;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
@@ -190,6 +191,10 @@ public class ClearPRMessage extends PartitionMessageWithDirectReply {
       regionEvent.setOperation(Operation.REGION_CLEAR);
       regionEvent.setRegion(bucketRegion);
       bucketRegion.cmnClearRegion(regionEvent, true, true);
+    } catch (PartitionOfflineException poe) {
+      logger.info("There is no member to hold bukcet {}, not to retry any more", this.bucketId,
+          poe);
+      throw poe;
     } catch (Exception ex) {
       throw new ForceReattemptException(
           EXCEPTION_THROWN_DURING_CLEAR_OPERATION + ex.getClass().getName(), ex);
