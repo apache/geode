@@ -192,7 +192,7 @@ public class ClearPRMessage extends PartitionMessageWithDirectReply {
       regionEvent.setRegion(bucketRegion);
       bucketRegion.cmnClearRegion(regionEvent, true, true);
     } catch (PartitionOfflineException poe) {
-      logger.info("There is no member to hold bukcet {}, not to retry any more", this.bucketId,
+      logger.info("There is no member to hold bucket {}, not to retry any more", this.bucketId,
           poe);
       throw poe;
     } catch (Exception ex) {

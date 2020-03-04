@@ -21,14 +21,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.Serializable;
 import java.util.stream.IntStream;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionEvent;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -40,8 +44,10 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
 
   protected int locatorPort;
   protected MemberVM locator;
-  protected MemberVM dataStore1, dataStore2, accessor;
+  protected MemberVM dataStore1, dataStore2, dataStore3, accessor;
   protected ClientVM client1, client2;
+
+  private static final Logger logger = LogManager.getLogger();
 
   @Rule
   public ClusterStartupRule cluster = new ClusterStartupRule(6);
@@ -52,13 +58,15 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
     locatorPort = locator.getPort();
     dataStore1 = cluster.startServerVM(1, locatorPort);
     dataStore2 = cluster.startServerVM(2, locatorPort);
-    accessor = cluster.startServerVM(3, locatorPort);
-    client1 = cluster.startClientVM(4,
+    dataStore3 = cluster.startServerVM(3, locatorPort);
+    accessor = cluster.startServerVM(4, locatorPort);
+    client1 = cluster.startClientVM(5,
         c -> c.withPoolSubscription(true).withLocatorConnection((locatorPort)));
-    client2 = cluster.startClientVM(5,
+    client2 = cluster.startClientVM(6,
         c -> c.withPoolSubscription(true).withLocatorConnection((locatorPort)));
     dataStore1.invoke(this::initDataStore);
     dataStore2.invoke(this::initDataStore);
+    dataStore3.invoke(this::initDataStore);
     accessor.invoke(this::initAccessor);
     client1.invoke(this::initClientCache);
     client2.invoke(this::initClientCache);
@@ -89,6 +97,19 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
   private void initDataStore() {
     getCache().createRegionFactory(getRegionShortCut())
         .setPartitionAttributes(new PartitionAttributesFactory().setTotalNumBuckets(10).create())
+        .addCacheListener(new CacheListenerAdapter() {
+          @Override
+          public void afterRegionDestroy(RegionEvent event) {
+            Region region = event.getRegion();
+            logger.info("Region " + region.getFullPath() + " is destroyed.");
+          }
+
+          @Override
+          public void afterRegionClear(RegionEvent event) {
+            Region region = event.getRegion();
+            logger.info("Region " + region.getFullPath() + " is cleared.");
+          }
+        })
         .create(REGION_NAME);
   }
 
@@ -109,10 +130,12 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
     accessor.invoke(() -> feed(false));
     dataStore1.invoke(() -> verifyRegionSize(false, NUM_ENTRIES));
     dataStore2.invoke(() -> verifyRegionSize(false, NUM_ENTRIES));
+    dataStore3.invoke(() -> verifyRegionSize(false, NUM_ENTRIES));
 
     dataStore1.invoke(() -> getRegion(false).clear());
     dataStore1.invoke(() -> verifyRegionSize(false, 0));
     dataStore2.invoke(() -> verifyRegionSize(false, 0));
+    dataStore3.invoke(() -> verifyRegionSize(false, 0));
   }
 
   @Test
@@ -120,10 +143,12 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
     accessor.invoke(() -> feed(false));
     dataStore1.invoke(() -> verifyRegionSize(false, NUM_ENTRIES));
     dataStore2.invoke(() -> verifyRegionSize(false, NUM_ENTRIES));
+    dataStore3.invoke(() -> verifyRegionSize(false, NUM_ENTRIES));
 
     accessor.invoke(() -> getRegion(false).clear());
     dataStore1.invoke(() -> verifyRegionSize(false, 0));
     dataStore2.invoke(() -> verifyRegionSize(false, 0));
+    dataStore3.invoke(() -> verifyRegionSize(false, 0));
   }
 
   @Test
@@ -132,10 +157,12 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
     client2.invoke(() -> verifyRegionSize(true, NUM_ENTRIES));
     dataStore1.invoke(() -> verifyRegionSize(false, NUM_ENTRIES));
     dataStore2.invoke(() -> verifyRegionSize(false, NUM_ENTRIES));
+    dataStore3.invoke(() -> verifyRegionSize(false, NUM_ENTRIES));
 
     client1.invoke(() -> getRegion(true).clear());
     dataStore1.invoke(() -> verifyRegionSize(false, 0));
     dataStore2.invoke(() -> verifyRegionSize(false, 0));
+    dataStore3.invoke(() -> verifyRegionSize(false, 0));
     client1.invoke(() -> verifyRegionSize(true, 0));
     // TODO: notify register clients
     // client2.invoke(() -> verifyRegionSize(true, 0));
