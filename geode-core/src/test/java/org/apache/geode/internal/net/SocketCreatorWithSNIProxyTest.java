@@ -32,6 +32,8 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
@@ -81,6 +83,8 @@ public class SocketCreatorWithSNIProxyTest {
     Region<String, String> region =
         cache.<String, String>createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY)
             .create("jellyfish");
+    region.destroy("hello");
     region.put("hello", "world");
+    assertThat(region.get("hello")).isEqualTo("world");
   }
 }
