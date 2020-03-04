@@ -27,6 +27,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
+import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionEvent;
@@ -91,7 +92,7 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
   private void initClientCache() {
     Region region = getClientCache().createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY)
         .create(REGION_NAME);
-    region.registerInterest("ALL_KEYS");
+    region.registerInterestForAllKeys(InterestResultPolicy.KEYS);
   }
 
   private void initDataStore() {

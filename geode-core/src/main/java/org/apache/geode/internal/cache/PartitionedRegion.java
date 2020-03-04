@@ -2289,21 +2289,17 @@ public class PartitionedRegion extends LocalRegion
         if (result) {
           return;
         }
-      } catch (ForceReattemptException prce) {
+      } catch (ForceReattemptException fre) {
         checkReadiness();
         InternalDistributedMember lastTarget = currentTarget;
         if (retryTime == null) {
           retryTime = new RetryTimeKeeper(this.retryTimeout);
         }
         currentTarget = getNodeForBucketWrite(bucketId, retryTime);
-        if (logger.isDebugEnabled()) {
-          logger.debug("PR.sendMsgByBucket: Old target was {}, Retrying {}", lastTarget,
-              currentTarget);
-        }
         if (lastTarget.equals(currentTarget)) {
           if (logger.isDebugEnabled()) {
             logger.debug("PR.sendClearMsgByBucket: Retrying at the same node:{} due to {}",
-                currentTarget, prce.getMessage());
+                currentTarget, fre.getMessage());
           }
           if (retryTime.overMaximum()) {
             PRHARedundancyProvider.timedOut(this, null, null, "update an entry",
@@ -2311,6 +2307,11 @@ public class PartitionedRegion extends LocalRegion
             // NOTREACHED
           }
           retryTime.waitToRetryNode();
+        } else {
+          if (logger.isDebugEnabled()) {
+            logger.debug("PR.sendMsgByBucket: Old target was {}, Retrying {}", lastTarget,
+                currentTarget);
+          }
         }
       }
 
@@ -3304,6 +3305,7 @@ public class PartitionedRegion extends LocalRegion
    * @param retryTime the RetryTimeKeeper to track retry times
    * @param event the event used to get the entry size in the event a new bucket should be created
    * @param bucketId the identity of the bucket should it be created
+   * @param createIfNotExist boolean to indicate if to create a bucket if found not exist
    * @return a Node which contains the bucket, potentially null
    */
   private InternalDistributedMember waitForNodeOrCreateBucket(RetryTimeKeeper retryTime,
