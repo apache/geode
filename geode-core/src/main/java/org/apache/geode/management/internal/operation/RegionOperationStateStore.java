@@ -82,7 +82,11 @@ public class RegionOperationStateStore
   @Override
   public <A extends ClusterManagementOperation<V>, V extends OperationResult> OperationState<A, V> get(
       String opId) {
-    return (OperationState<A, V>) region.get(opId).createCopy();
+    OperationState<A, V> result = (OperationState<A, V>) region.get(opId);
+    if (result != null) {
+      result = result.createCopy();
+    }
+    return result;
   }
 
   @VisibleForTesting
