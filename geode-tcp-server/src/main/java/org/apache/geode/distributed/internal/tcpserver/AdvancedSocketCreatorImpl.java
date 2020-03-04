@@ -29,7 +29,7 @@ public class AdvancedSocketCreatorImpl implements AdvancedSocketCreator {
   public static final boolean ENABLE_TCP_KEEP_ALIVE;
 
   static {
-    // bug #49484 - customers want tcp/ip keep-alive turned on by default
+    // customers want tcp/ip keep-alive turned on by default
     // to avoid dropped connections. It can be turned off by setting this
     // property to false
     String str = System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + "setTcpKeepAlive");

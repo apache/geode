@@ -168,19 +168,6 @@ public class SocketCreator extends TcpSocketCreatorImpl {
   }
 
   /**
-   * returns the host name for the given inet address, using a local cache of names to avoid dns
-   * hits and duplicate strings
-   */
-  public static String getCanonicalHostName(InetAddress addr, String hostName) {
-    String result = hostNames.get(addr);
-    if (result == null) {
-      hostNames.put(addr, hostName);
-      return hostName;
-    }
-    return result;
-  }
-
-  /**
    * Reset the hostNames caches
    */
   public static void resetHostNameCache() {

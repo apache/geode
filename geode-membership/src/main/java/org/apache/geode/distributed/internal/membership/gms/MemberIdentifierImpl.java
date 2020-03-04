@@ -435,9 +435,9 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
     // issues will occur in the case of clients with subscriptions during rolling upgrade.
     String host;
 
-    InetAddress add = getInetAddress();
-    if ((add != null) && (add.isMulticastAddress() || useIpAddress)) {
-      host = add.getHostAddress();
+    InetAddress inetAddress = getInetAddress();
+    if ((inetAddress != null) && (inetAddress.isMulticastAddress() || useIpAddress)) {
+      host = inetAddress.getHostAddress();
     } else {
       String hostName = memberData.getHostName();
       InetAddressValidator inetAddressValidator = InetAddressValidator.getInstance();
