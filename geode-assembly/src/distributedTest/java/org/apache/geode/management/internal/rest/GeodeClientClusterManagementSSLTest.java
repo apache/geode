@@ -32,7 +32,7 @@ import org.junit.Test;
 
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.management.api.ClusterManagementService;
-import org.apache.geode.management.internal.builder.GeodeClusterManagementServiceBuilder;
+import org.apache.geode.management.builder.GeodeClusterManagementServiceBuilder;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
