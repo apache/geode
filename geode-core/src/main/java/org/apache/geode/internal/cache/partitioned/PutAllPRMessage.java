@@ -193,7 +193,8 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
       throws ForceReattemptException {
     // Assert.assertTrue(recipient != null, "PutAllPRMessage NULL recipient"); recipient can be null
     // for event notifications
-    Set recipients = Collections.singleton(recipient);
+    Set<InternalDistributedMember> recipients =
+        Collections.singleton((InternalDistributedMember) recipient);
     PutAllResponse p = new PutAllResponse(r.getSystem(), recipients);
     initMessage(r, recipients, false, p);
     setTransactionDistributed(r.getCache().getTxManager().isDistributed());

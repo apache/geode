@@ -68,14 +68,13 @@ public class ClearPRMessageTest {
     bucketRegion = mock(BucketRegion.class);
     when(dataStore.getInitializedBucketForId(any(), any())).thenReturn(bucketRegion);
     RegionEventImpl bucketRegionEventImpl = mock(RegionEventImpl.class);
-    // RegionEventImpl(bucketRegion, Operation.REGION_CLEAR, null, false, member, true);
   }
 
   @Test
   public void doLocalClearThrowsExceptionWhenBucketIsNotPrimaryAtFirstCheck() {
     when(bucketRegion.isPrimary()).thenReturn(false);
 
-    assertThatThrownBy(() -> message.doLocalClear(region, 0))
+    assertThatThrownBy(() -> message.doLocalClear(region))
         .isInstanceOf(ForceReattemptException.class)
         .hasMessageContaining(ClearPRMessage.BUCKET_NON_PRIMARY_MESSAGE);
   }
@@ -84,7 +83,7 @@ public class ClearPRMessageTest {
   public void doLocalClearThrowsExceptionWhenLockCannotBeObtained() {
     when(bucketRegion.doLockForPrimary(false)).thenReturn(false);
 
-    assertThatThrownBy(() -> message.doLocalClear(region, 0))
+    assertThatThrownBy(() -> message.doLocalClear(region))
         .isInstanceOf(ForceReattemptException.class)
         .hasMessageContaining(ClearPRMessage.BUCKET_NON_PRIMARY_MESSAGE);
   }
@@ -96,7 +95,7 @@ public class ClearPRMessageTest {
 
     when(bucketRegion.doLockForPrimary(false)).thenReturn(true);
 
-    assertThatThrownBy(() -> message.doLocalClear(region, bucketRegion.getId()))
+    assertThatThrownBy(() -> message.doLocalClear(region))
         .isInstanceOf(ForceReattemptException.class)
         .hasMessageContaining(ClearPRMessage.EXCEPTION_THROWN_DURING_CLEAR_OPERATION);
 
@@ -110,7 +109,7 @@ public class ClearPRMessageTest {
 
     // Be primary on the first check, then be not primary on the second check
     when(bucketRegion.doLockForPrimary(false)).thenReturn(true);
-    assertThat(message.doLocalClear(region, 0)).isTrue();
+    assertThat(message.doLocalClear(region)).isTrue();
 
     // Confirm that cmnClearRegion was called
     verify(bucketRegion, times(1)).cmnClearRegion(any(), anyBoolean(), anyBoolean());
@@ -168,7 +167,7 @@ public class ClearPRMessageTest {
     int startTime = 0;
 
     doReturn(0).when(message).getBucketId();
-    doReturn(true).when(message).doLocalClear(region, 0);
+    doReturn(true).when(message).doLocalClear(region);
     doReturn(sender).when(message).getSender();
     doReturn(processorId).when(message).getProcessorId();
 
@@ -194,7 +193,7 @@ public class ClearPRMessageTest {
         new ForceReattemptException(ClearPRMessage.BUCKET_NON_PRIMARY_MESSAGE);
 
     doReturn(0).when(message).getBucketId();
-    doThrow(exception).when(message).doLocalClear(region, 0);
+    doThrow(exception).when(message).doLocalClear(region);
     doReturn(sender).when(message).getSender();
     doReturn(processorId).when(message).getProcessorId();
 

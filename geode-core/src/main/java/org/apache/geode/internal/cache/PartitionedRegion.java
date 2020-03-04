@@ -2153,6 +2153,7 @@ public class PartitionedRegion extends LocalRegion
         lockService.lock("_clearOperation", -1, -1);
       } catch (IllegalStateException e) {
         lockCheckReadiness();
+        throw e;
       }
       try {
         if (cache.isCacheAtShutdownAll()) {
@@ -2273,7 +2274,7 @@ public class PartitionedRegion extends LocalRegion
       try {
         final boolean isLocal = (this.localMaxMemory > 0) && currentTarget.equals(getMyId());
         if (isLocal) {
-          result = clearPRMessage.doLocalClear(this, bucketId);
+          result = clearPRMessage.doLocalClear(this);
         } else {
           ClearPRMessage.ClearResponse response = clearPRMessage.send(currentTarget, this);
           if (response != null) {

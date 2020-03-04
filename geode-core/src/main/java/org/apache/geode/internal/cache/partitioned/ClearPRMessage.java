@@ -159,7 +159,7 @@ public class ClearPRMessage extends PartitionMessageWithDirectReply {
   protected boolean operateOnPartitionedRegion(ClusterDistributionManager distributionManager,
       PartitionedRegion region, long startTime) {
     try {
-      result = doLocalClear(region, getBucketId());
+      result = doLocalClear(region);
     } catch (ForceReattemptException ex) {
       sendReply(getSender(), getProcessorId(), distributionManager, new ReplyException(ex), region,
           startTime);
@@ -173,14 +173,14 @@ public class ClearPRMessage extends PartitionMessageWithDirectReply {
     return this.bucketId;
   }
 
-  public boolean doLocalClear(PartitionedRegion region, int bucketId)
+  public boolean doLocalClear(PartitionedRegion region)
       throws ForceReattemptException {
     // Retrieve local bucket region which matches target bucketId
     BucketRegion bucketRegion =
         region.getDataStore().getInitializedBucketForId(null, this.bucketId);
 
     boolean lockedForPrimary = bucketRegion.doLockForPrimary(false);
-    // Check if we are primary, throw exception if not
+    // Check if we obtained primary lock, throw exception if not
     if (!lockedForPrimary) {
       throw new ForceReattemptException(BUCKET_NON_PRIMARY_MESSAGE);
     }
