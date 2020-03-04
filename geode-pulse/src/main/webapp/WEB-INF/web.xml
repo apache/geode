@@ -16,7 +16,10 @@
   limitations under the License.
 -->
 
-<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd" id="WebApp_ID" version="3.0">
+<web-app xmlns="http://java.sun.com/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+         version="3.0">
   <display-name>Pulse</display-name>
   <welcome-file-list>
     <welcome-file>index.html</welcome-file>
@@ -26,25 +29,24 @@
         <mime-type>text/x-java-properties</mime-type>
   </mime-mapping>
   <servlet>
-    <servlet-name>mvc-dispatcher</servlet-name>
+    <servlet-name>pulse</servlet-name>
     <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
     <load-on-startup>1</load-on-startup>
   </servlet>
+
   <servlet-mapping>
-    <servlet-name>mvc-dispatcher</servlet-name>
+    <servlet-name>pulse</servlet-name>
     <url-pattern>/</url-pattern>
-    <!-- We expect Pulse to receive requests to URLs like /pulse/pulseVersion, but Jetty will match /pulse/
-    to the web app context for this WAR and only pass /pulseVersion into the servlet configured with this <url-pattern/>
-  -->
   </servlet-mapping>
+
   <listener>
     <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
   </listener>
   <context-param>
     <param-name>contextConfigLocation</param-name>
     <param-value>
-			/WEB-INF/mvc-dispatcher-servlet.xml
-		</param-value>
+			/WEB-INF/pulse-servlet.xml
+    </param-value>
   </context-param>
   <context-param>
     <param-name>spring.profiles.default</param-name>

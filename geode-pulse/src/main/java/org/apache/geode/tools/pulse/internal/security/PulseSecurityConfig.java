@@ -21,20 +21,22 @@ import java.util.Map;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.CredentialsExpiredException;
+import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.web.authentication.ExceptionMappingAuthenticationFailureHandler;
 
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
-// @ComponentScan("org.apache.geode.tools.pulse.internal")
 public class PulseSecurityConfig {
-
   public GemFireAuthenticationProvider gemAuthenticationProvider() {
     return new GemFireAuthenticationProvider();
   }
@@ -47,14 +49,11 @@ public class PulseSecurityConfig {
     ExceptionMappingAuthenticationFailureHandler exceptionMappingAuthenticationFailureHandler =
         new ExceptionMappingAuthenticationFailureHandler();
     Map<String, String> exceptionMappings = new HashMap<>();
-    exceptionMappings.put("org.springframework.security.authentication.BadCredentialsException",
-        "/login.html?error=BAD_CREDS");
-    exceptionMappings.put("org.springframework.security.authentication.CredentialsExpiredException",
+    exceptionMappings.put(BadCredentialsException.class.getName(), "/login.html?error=BAD_CREDS");
+    exceptionMappings.put(CredentialsExpiredException.class.getName(),
         "/login.html?error=CRED_EXP");
-    exceptionMappings.put("org.springframework.security.authentication.LockedException",
-        "/login.html?error=ACC_LOCKED");
-    exceptionMappings.put("org.springframework.security.authentication.DisabledException",
-        "/login.html?error=ACC_DISABLED");
+    exceptionMappings.put(LockedException.class.getName(), "/login.html?error=ACC_LOCKED");
+    exceptionMappings.put(DisabledException.class.getName(), "/login.html?error=ACC_DISABLED");
     exceptionMappingAuthenticationFailureHandler.setExceptionMappings(exceptionMappings);
     return exceptionMappingAuthenticationFailureHandler;
   }
@@ -68,26 +67,19 @@ public class PulseSecurityConfig {
         .permitAll();
 
     httpSecurity.authorizeRequests()
-        .mvcMatchers(
-            "/accessDenied*")
-        .authenticated();
-
-    httpSecurity.authorizeRequests()
-        .mvcMatchers(
-            "/dataBrowser*", "/getQueryStatisticsGridModel/*")
-        .access("hasRole('CLUSTER:READ') and hasRole('DATA:READ')");
-
-    httpSecurity.authorizeRequests()
-        .mvcMatchers(
-            "/*")
-        .hasRole("CLUSTER:READ");
-
-    httpSecurity.formLogin()
+        .mvcMatchers("/dataBrowser*", "/getQueryStatisticsGridModel/*")
+        .access("hasRole('CLUSTER:READ') and hasRole('DATA:READ')")
+        .mvcMatchers("/*")
+        .hasRole("CLUSTER:READ")
+        .anyRequest().authenticated()
+        .and()
+        .formLogin()
         .loginPage("/login.html")
+        .loginProcessingUrl("/login")
         .failureHandler(authenticationFailureHandler())
-        .defaultSuccessUrl("/clusterDetail.html", true);
-
-    httpSecurity.logout()
+        .defaultSuccessUrl("/clusterDetail.html", true)
+        .and()
+        .logout()
         .logoutUrl("/clusterLogout")
         .logoutSuccessHandler(customLogoutSuccessHandler());
 
@@ -105,12 +97,6 @@ public class PulseSecurityConfig {
   @Profile("pulse.authentication.default")
   public WebSecurityConfigurerAdapter basic() {
     return new WebSecurityConfigurerAdapter() {
-      @Bean
-      @Override
-      public AuthenticationManager authenticationManagerBean() throws Exception {
-        return super.authenticationManagerBean();
-      }
-
       @Override
       protected void configure(HttpSecurity httpSecurity) throws Exception {
         configureSecurity(httpSecurity);
@@ -120,6 +106,7 @@ public class PulseSecurityConfig {
       protected void configure(AuthenticationManagerBuilder authenticationManagerBuilder)
           throws Exception {
         authenticationManagerBuilder.inMemoryAuthentication()
+            .passwordEncoder(NoOpPasswordEncoder.getInstance())
             .withUser("admin")
             .password("admin")
             .roles("CLUSTER:READ,DATA:READ");
@@ -131,12 +118,6 @@ public class PulseSecurityConfig {
   @Profile("pulse.authentication.gemfire")
   public WebSecurityConfigurerAdapter gemfire() {
     return new WebSecurityConfigurerAdapter() {
-      @Bean
-      @Override
-      public AuthenticationManager authenticationManagerBean() throws Exception {
-        return super.authenticationManagerBean();
-      }
-
       @Override
       protected void configure(HttpSecurity httpSecurity) throws Exception {
         configureSecurity(httpSecurity);
