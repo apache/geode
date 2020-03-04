@@ -18,8 +18,8 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionExistsException;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
@@ -66,21 +66,9 @@ public class RegionCreateFunction implements InternalFunction {
 
     CreateRegionFunctionArgs regionCreateArgs = (CreateRegionFunctionArgs) context.getArguments();
 
-    if (regionCreateArgs.isIfNotExists()) {
-      Region<Object, Object> region = cache.getRegion(regionCreateArgs.getRegionPath());
-      if (region != null) {
-        resultSender
-            .lastResult(new CliFunctionResult(memberNameOrId, CliFunctionResult.StatusState.OK,
-                CliStrings.format(
-                    CliStrings.CREATE_REGION__MSG__SKIPPING_0_REGION_PATH_1_ALREADY_EXISTS,
-                    memberNameOrId, regionCreateArgs.getRegionPath())));
-        return;
-      }
-    }
-
     try {
       RegionPath regionPath = new RegionPath(regionCreateArgs.getRegionPath());
-      realizer.create(regionCreateArgs.getConfig(), regionCreateArgs.getRegionPath(),
+      getRealizer().create(regionCreateArgs.getConfig(), regionCreateArgs.getRegionPath(),
           (InternalCache) cache);
       XmlEntity xmlEntity = new XmlEntity(CacheXml.REGION, "name", regionPath.getRootRegionName());
       resultSender.lastResult(new CliFunctionResult(memberNameOrId, xmlEntity.getXmlDefinition(),
@@ -137,5 +125,10 @@ public class RegionCreateFunction implements InternalFunction {
   @Override
   public String getId() {
     return ID;
+  }
+
+  @VisibleForTesting
+  protected RegionConfigRealizer getRealizer() {
+    return realizer;
   }
 }
