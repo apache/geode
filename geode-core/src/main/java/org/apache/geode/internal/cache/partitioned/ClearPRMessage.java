@@ -108,7 +108,8 @@ public class ClearPRMessage extends PartitionMessageWithDirectReply {
 
   public ClearResponse send(DistributedMember recipient, PartitionedRegion region)
       throws ForceReattemptException {
-    Set recipients = Collections.singleton(recipient);
+    Set<InternalDistributedMember> recipients =
+        Collections.singleton((InternalDistributedMember) recipient);
     ClearResponse clearResponse = new ClearResponse(region.getSystem(), recipients);
     initMessage(region, recipients, clearResponse);
     if (logger.isDebugEnabled()) {
