@@ -120,8 +120,8 @@ public class RegionOperationStateStoreTest {
   public void getReturnsOperationFromRegion() {
     String opId = "doomed-operation";
     OperationState recordedOperationState = mock(OperationState.class);
-
     when(region.get(opId)).thenReturn(recordedOperationState);
+    when(recordedOperationState.createCopy()).thenReturn(recordedOperationState);
 
     OperationState operationState = service.get(opId);
 

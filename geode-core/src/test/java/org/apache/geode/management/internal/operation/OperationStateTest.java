@@ -114,4 +114,36 @@ public class OperationStateTest {
     assertThat(operationState1).isNotEqualTo(operationState2);
   }
 
+  @Test
+  public void createCopyProducesEqualInstance() {
+    ClusterManagementOperation operation = mock(ClusterManagementOperation.class);
+    Date start = new Date();
+    Date end = new Date();
+    OperationState<?, OperationResult> operationState =
+        new OperationState<>("opId", operation, start);
+    OperationResult result = mock(OperationResult.class);
+    Throwable throwable = new Throwable();
+    operationState.setOperationEnd(end, result, throwable);
+
+    OperationState<?, OperationResult> operationStateCopy = operationState.createCopy();
+
+    assertThat(operationStateCopy).isEqualTo(operationState);
+  }
+
+  @Test
+  public void createCopyResultIsNotChangedBySubsequentOperationEndCalls() {
+    ClusterManagementOperation operation = mock(ClusterManagementOperation.class);
+    Date start = new Date();
+    Date end = new Date();
+    OperationState<?, OperationResult> operationState =
+        new OperationState<>("opId", operation, start);
+
+    OperationState<?, OperationResult> operationStateCopy = operationState.createCopy();
+    operationState.setOperationEnd(end, null, null);
+
+    assertThat(operationStateCopy).isNotSameAs(operationState);
+    assertThat(operationState.getOperationEnd()).isNotNull();
+    assertThat(operationStateCopy.getOperationEnd()).isNull();
+  }
+
 }
