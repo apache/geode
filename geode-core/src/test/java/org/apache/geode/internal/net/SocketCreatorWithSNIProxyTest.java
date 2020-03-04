@@ -25,14 +25,13 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTOR
 import static org.apache.geode.security.AuthInitialize.SECURITY_PASSWORD;
 import static org.apache.geode.security.AuthInitialize.SECURITY_USERNAME;
 import static org.apache.geode.util.internal.GeodeGlossary.GEMFIRE_PREFIX;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Properties;
 
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.ClientCache;
