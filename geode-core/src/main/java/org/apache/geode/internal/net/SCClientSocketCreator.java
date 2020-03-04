@@ -12,16 +12,24 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.distributed.internal.membership.gms.membership;
+package org.apache.geode.internal.net;
 
-import java.net.InetSocketAddress;
+import java.io.IOException;
+import java.net.Socket;
 
-import org.apache.geode.distributed.internal.tcpserver.LocatorAddress;
+import org.apache.geode.distributed.internal.tcpserver.ClientSocketCreatorImpl;
 
-public class HostAddress extends LocatorAddress {
+class SCClientSocketCreator extends ClientSocketCreatorImpl {
+  private final SocketCreator coreSocketCreator;
 
-  public HostAddress(InetSocketAddress loc, String locStr) {
-    super(loc, locStr);
+  protected SCClientSocketCreator(SocketCreator socketCreator) {
+    super(socketCreator);
+    coreSocketCreator = socketCreator;
+  }
+
+  @Override
+  public void handshakeIfSocketIsSSL(Socket socket, int timeout) throws IOException {
+    coreSocketCreator.handshakeIfSocketIsSSL(socket, timeout);
   }
 
 }

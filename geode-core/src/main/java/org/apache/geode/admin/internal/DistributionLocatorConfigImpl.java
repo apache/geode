@@ -15,7 +15,6 @@
 package org.apache.geode.admin.internal;
 
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.apache.geode.internal.net.InetAddressUtilsWithLogging.toInetAddress;
 import static org.apache.geode.internal.net.InetAddressUtilsWithLogging.validateHost;
 
 import java.net.InetAddress;
@@ -24,6 +23,7 @@ import java.util.Properties;
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.admin.DistributionLocator;
 import org.apache.geode.admin.DistributionLocatorConfig;
+import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.net.SocketCreatorFactory;
@@ -65,8 +65,6 @@ public class DistributionLocatorConfigImpl extends ManagedEntityConfigImpl
    * Contacts a distribution locator on the given host and port and creates a
    * <code>DistributionLocatorConfig</code> for it.
    *
-   * @see TcpClient#getLocatorInfo
-   *
    * @return <code>null</code> if the locator cannot be contacted
    */
   static DistributionLocatorConfig createConfigFor(String host, int port, InetAddress bindAddress) {
@@ -78,9 +76,9 @@ public class DistributionLocatorConfigImpl extends ManagedEntityConfigImpl
           InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
           InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());
       if (bindAddress != null) {
-        info = client.getInfo(bindAddress, port);
+        info = client.getInfo(new HostAndPort(bindAddress.getHostAddress(), port));
       } else {
-        info = client.getInfo(toInetAddress(host), port);
+        info = client.getInfo(new HostAndPort(host, port));
       }
       if (info == null) {
         return null;

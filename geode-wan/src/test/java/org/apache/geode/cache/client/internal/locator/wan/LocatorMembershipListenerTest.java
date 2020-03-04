@@ -30,7 +30,6 @@ import static org.mockito.Mockito.when;
 
 import java.io.EOFException;
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -50,6 +49,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 import org.apache.geode.test.junit.ResultCaptor;
@@ -211,7 +211,7 @@ public class LocatorMembershipListenerTest {
         any(DistributionLocatorId.class), anyMap(), any(DistributionLocatorId.class), anyInt());
     locatorMembershipListener.locatorJoined(2, joiningLocator, locator1Site1);
     joinLocatorsDistributorThread(resultCaptor);
-    verify(tcpClient, times(0)).requestToServer(any(InetSocketAddress.class),
+    verify(tcpClient, times(0)).requestToServer(any(HostAndPort.class),
         any(LocatorJoinMessage.class), anyInt(), anyBoolean());
   }
 

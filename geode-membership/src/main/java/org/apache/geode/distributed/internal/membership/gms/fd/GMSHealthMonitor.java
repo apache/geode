@@ -68,6 +68,7 @@ import org.apache.geode.distributed.internal.membership.gms.messages.HeartbeatRe
 import org.apache.geode.distributed.internal.membership.gms.messages.SuspectMembersMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.SuspectRequest;
 import org.apache.geode.distributed.internal.tcpserver.ConnectionWatcher;
+import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
 import org.apache.geode.internal.lang.JavaWorkarounds;
 import org.apache.geode.internal.serialization.Version;
@@ -573,8 +574,8 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
         logger.debug("Checking member {} with TCP socket connection {}:{}.", suspectMember,
             suspectMember.getInetAddress(), port);
         clientSocket =
-            socketCreator
-                .connect(suspectMember.getInetAddress(), port, (int) memberTimeout,
+            socketCreator.forAdvancedUse()
+                .connect(new HostAndPort(suspectMember.getHostName(), port), (int) memberTimeout,
                     new ConnectTimeoutTask(services.getTimer(), memberTimeout), false, -1, false);
         clientSocket.setTcpNoDelay(true);
         passed = doTCPCheckMember(suspectMember, clientSocket);
@@ -680,7 +681,7 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
   }
 
   ServerSocket createServerSocket(InetAddress socketAddress, int[] portRange) throws IOException {
-    ServerSocket newSocket = socketCreator
+    ServerSocket newSocket = socketCreator.forAdvancedUse()
         .createServerSocketUsingPortRange(socketAddress, 50/* backlog */, true/* isBindAddress */,
             false/* useNIO */, 65536/* tcpBufferSize */, portRange, false);
     socketPort = newSocket.getLocalPort();

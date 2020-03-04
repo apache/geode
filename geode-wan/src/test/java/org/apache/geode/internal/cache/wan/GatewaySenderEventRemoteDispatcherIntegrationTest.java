@@ -22,8 +22,6 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.LinkedList;
 import java.util.Properties;
 
@@ -83,26 +81,11 @@ public class GatewaySenderEventRemoteDispatcherIntegrationTest {
         new GatewaySenderEventRemoteDispatcher(eventProcessor, connection);
 
     /*
-     * Set a HostnameResolver which simulates a failed
-     * hostname lookup resulting in an UnknownHostException
-     */
-    InternalDistributedMember.setHostnameResolver(ignored -> {
-      throw new UnknownHostException("a.b.c");
-    });
-
-    /*
      * We have mocked our connection to throw a RuntimeException when readAcknowledgement() is
      * called, then in the exception handling for that RuntimeException, the UnknownHostException
      * will be thrown when trying to notify listeners of the crash.
      */
     dispatcher.readAcknowledgement();
-
-    /*
-     * Need to reset the hostname resolver to a real InetAddress resolver as it is static state and
-     * we do not want it to throw an UnknownHostException in subsequent test runs.
-     */
-    InternalDistributedMember
-        .setHostnameResolver((location) -> InetAddress.getByName(location.getHostName()));
 
     /*
      * The handling of the UnknownHostException should not result in the event processor being

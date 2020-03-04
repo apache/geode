@@ -244,7 +244,8 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
       DistributionLocatorId advertisedLocator = locatorJoinMessage.getLocator();
 
       try {
-        tcpClient.requestToServer(targetLocator.getHost(), locatorJoinMessage, memberTimeout,
+        tcpClient.requestToServer(targetLocator.getHost(),
+            locatorJoinMessage, memberTimeout,
             false);
       } catch (Exception exception) {
         if (logger.isDebugEnabled()) {
@@ -266,7 +267,8 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
       DistributionLocatorId advertisedLocator = locatorJoinMessage.getLocator();
 
       try {
-        tcpClient.requestToServer(targetLocator.getHost(), locatorJoinMessage, memberTimeout,
+        tcpClient.requestToServer(targetLocator.getHost(),
+            locatorJoinMessage, memberTimeout,
             false);
 
         return true;

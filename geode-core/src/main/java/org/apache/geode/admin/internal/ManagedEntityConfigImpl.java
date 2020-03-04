@@ -25,7 +25,6 @@ import org.apache.geode.admin.ManagedEntityConfig;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.admin.GemFireVM;
 import org.apache.geode.internal.inet.LocalHostUtil;
-import org.apache.geode.internal.net.SocketCreator;
 
 /**
  * The abstract superclass of objects that configure a managed entity such as a GemFire cache server
@@ -115,7 +114,7 @@ public abstract class ManagedEntityConfigImpl implements ManagedEntityConfig {
    * <code>GemFireVM</code>
    */
   protected ManagedEntityConfigImpl(GemFireVM vm) {
-    this.host = SocketCreator.getHostName(vm.getHost());
+    this.host = vm.getHost().getHostName();
     this.workingDirectory = vm.getWorkingDirectory().getAbsolutePath();
     this.productDirectory = vm.getGeodeHomeDir().getAbsolutePath();
     this.remoteCommand = null;
