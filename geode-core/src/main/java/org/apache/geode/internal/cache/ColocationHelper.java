@@ -209,8 +209,6 @@ public class ColocationHelper {
       for (DiskStore diskStore : stores) {
         // Look at all of the partitioned regions.
 
-        boolean anyChildOnline = checkAnyChildOnline(diskStore, region);
-
         for (Map.Entry<String, PRPersistentConfig> entry : ((DiskStoreImpl) diskStore).getAllPRs()
             .entrySet()) {
 
@@ -224,7 +222,7 @@ public class ColocationHelper {
             if (childRegion == null) {
               // If the child region is offline, return true
               // unless it is a parallel queue that the user has removed.
-              if (!ignoreUnrecoveredQueue(region, childName, anyChildOnline)) {
+              if (!ignoreUnrecoveredQueue(region, childName)) {
                 region.addMissingColocatedRegionLogger(childName);
                 hasOfflineChildren = true;
               }
@@ -245,31 +243,7 @@ public class ColocationHelper {
     return hasOfflineChildren;
   }
 
-
-  private static boolean checkAnyChildOnline(DiskStore diskStore, PartitionedRegion region) {
-    // Check if any of child regions is ParallelGatewaySenderQueue and is online
-    InternalCache cache = region.getCache();
-
-    for (Map.Entry<String, PRPersistentConfig> entry : ((DiskStoreImpl) diskStore).getAllPRs()
-        .entrySet()) {
-
-      PRPersistentConfig config = entry.getValue();
-      String childName = entry.getKey();
-
-      // Check to see if they're colocated with this region.
-      if (region.getFullPath().equals(config.getColocatedWith())) {
-        PartitionedRegion childRegion = (PartitionedRegion) cache.getRegion(childName);
-        if (childRegion != null && ParallelGatewaySenderQueue.isParallelQueue(childName)) {
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
-
-  private static boolean ignoreUnrecoveredQueue(PartitionedRegion region, String childName,
-      boolean anyChildOnline) {
+  private static boolean ignoreUnrecoveredQueue(PartitionedRegion region, String childName) {
     // Hack for #50120 if the childRegion is an async queue, but we
     // no longer define the async queue, ignore it.
     if (!ParallelGatewaySenderQueue.isParallelQueue(childName)) {
@@ -277,10 +251,6 @@ public class ColocationHelper {
     }
 
     String senderId = ParallelGatewaySenderQueue.getSenderId(childName);
-
-    if (anyChildOnline && region.getParallelGatewaySenderIds().contains(senderId)) {
-      return true;
-    }
 
     if (!region.getAsyncEventQueueIds().contains(senderId)
         && !region.getParallelGatewaySenderIds().contains(senderId) && IGNORE_UNRECOVERED_QUEUE) {
