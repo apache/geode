@@ -655,7 +655,7 @@ public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTes
     vm7.invoke(() -> WANTestBase.stopSender("ln"));
 
     // SECOND RUN: do some of the puts after the senders are stopped
-    vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 800));
+    vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 1000));
 
     // Region size on remote site should remain same and below the number of puts done in the FIRST
     // RUN

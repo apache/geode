@@ -910,17 +910,13 @@ public class SerialGatewaySenderQueue implements RegionQueue {
             new Object[] {this, this.regionName}),
             e);
       }
-      if ((this.region != null) && this.cleanQueues) {
-        this.region.clear();
-      }
-
     } else {
       if (listener != null) {
         addCacheListener(listener);
       }
-      if (this.cleanQueues) {
-        this.region.clear();
-      }
+    }
+    if ((this.region != null) && this.cleanQueues) {
+      this.region.clear();
     }
   }
 
