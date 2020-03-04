@@ -2147,6 +2147,7 @@ public class PartitionedRegion extends LocalRegion
 
   @Override
   void basicClear(RegionEventImpl regionEvent, boolean cacheWrite) {
+    final boolean isDebugEnabled = logger.isDebugEnabled();
     synchronized (clearLock) {
       final DistributedLockService lockService = getPartitionedRegionLockService();
       try {
@@ -2166,6 +2167,9 @@ public class PartitionedRegion extends LocalRegion
           int bucketId = clearPRMessage.getBucketId();
           checkReadiness();
           long then = 0;
+          if (isDebugEnabled) {
+            then = System.currentTimeMillis();
+          }
           try {
             sendClearMsgByBucket(bucketId, clearPRMessage);
           } catch (PartitionOfflineException poe) {
@@ -2176,7 +2180,7 @@ public class PartitionedRegion extends LocalRegion
             logger.info("PR.sendClearMsgByBucket encountered exception at bucket " + bucketId, e);
           }
 
-          if (logger.isDebugEnabled()) {
+          if (isDebugEnabled) {
             long now = System.currentTimeMillis();
             if (now - then > 10000) {
               logger.debug("PR.sendClearMsgByBucket for bucket {} took {} ms", bucketId,
