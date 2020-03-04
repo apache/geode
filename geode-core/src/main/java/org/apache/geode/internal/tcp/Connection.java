@@ -38,7 +38,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -70,7 +69,6 @@ import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.ReplySender;
-import org.apache.geode.distributed.internal.direct.DirectChannel;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.api.MemberShunnedException;
 import org.apache.geode.distributed.internal.membership.api.Membership;
@@ -85,7 +83,6 @@ import org.apache.geode.internal.net.NioPlainEngine;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.tcp.MsgReader.Header;
-import org.apache.geode.internal.util.concurrent.ReentrantSemaphore;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
@@ -158,8 +155,6 @@ public class Connection implements Runnable {
    * The idle timeout timer task for this connection
    */
   private SystemTimerTask idleTask;
-
-  private static final ThreadLocal<Boolean> isReaderThread = withInitial(() -> FALSE);
 
   /**
    * If true then readers for thread owned sockets will send all messages on thread owned senders.
@@ -254,18 +249,6 @@ public class Connection implements Runnable {
 
   /** used for async writes */
   private Thread pusherThread;
-
-  /**
-   * The maximum number of concurrent senders sending a message to a single recipient.
-   */
-  private static final int MAX_SENDERS = Integer
-      .getInteger("p2p.maxConnectionSenders", DirectChannel.DEFAULT_CONCURRENCY_LEVEL);
-  /**
-   * This semaphore is used to throttle how many threads will try to do sends on this connection
-   * concurrently. A thread must acquire this semaphore before it is allowed to start serializing
-   * its message.
-   */
-  private final Semaphore senderSem = new ReentrantSemaphore(MAX_SENDERS);
 
   /** Set to true once the handshake has been read */
   private volatile boolean handshakeRead;
@@ -513,20 +496,6 @@ public class Connection implements Runnable {
 
   public boolean isSharedResource() {
     return sharedResource;
-  }
-
-  public static void makeReaderThread() {
-    // mark this thread as a reader thread
-    makeReaderThread(true);
-  }
-
-  private static void makeReaderThread(boolean v) {
-    isReaderThread.set(v);
-  }
-
-  // return true if this thread is a reader thread
-  private static boolean isReaderThread() {
-    return isReaderThread.get();
   }
 
   @VisibleForTesting
@@ -1336,7 +1305,6 @@ public class Connection implements Runnable {
             }
           }
           connected = false;
-          closeSenderSem();
 
           final DMStats stats = owner.getConduit().getStats();
           if (finishedConnecting) {
@@ -1467,7 +1435,7 @@ public class Connection implements Runnable {
     readerThread = Thread.currentThread();
     readerThread.setName(p2pReaderName());
     ConnectionTable.threadWantsSharedResources();
-    makeReaderThread(isReceiver);
+
     try {
       readMessages();
     } finally {
@@ -3272,53 +3240,6 @@ public class Connection implements Runnable {
    */
   long getMessagesSent() {
     return messagesSent;
-  }
-
-  public void acquireSendPermission() throws ConnectionException {
-    if (!connected) {
-      throw new ConnectionException("connection is closed");
-    }
-    if (isReaderThread()) {
-      // reader threads send replies and we always want to permit those without waiting
-      return;
-    }
-    boolean interrupted = false;
-    try {
-      for (;;) {
-        owner.getConduit().getCancelCriterion().checkCancelInProgress(null);
-        try {
-          senderSem.acquire();
-          break;
-        } catch (InterruptedException ex) {
-          interrupted = true;
-        }
-      }
-    } finally {
-      if (interrupted) {
-        Thread.currentThread().interrupt();
-      }
-    }
-    if (!connected) {
-      senderSem.release();
-      owner.getConduit().getCancelCriterion().checkCancelInProgress(null);
-      throw new ConnectionException("connection is closed");
-    }
-  }
-
-  public void releaseSendPermission() {
-    if (isReaderThread()) {
-      return;
-    }
-    senderSem.release();
-  }
-
-  private void closeSenderSem() {
-    // All we need to do is increase the number of permits by one
-    // just in case 1 or more connections are currently waiting to acquire.
-    // One of them will get the permit, then find out the connection is closed
-    // and release the permit until all the connections currently waiting to acquire
-    // will complete by throwing a ConnectionException.
-    releaseSendPermission();
   }
 
   private class BatchBufferFlusher extends Thread {
