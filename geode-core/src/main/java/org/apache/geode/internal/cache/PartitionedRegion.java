@@ -2189,7 +2189,7 @@ public class PartitionedRegion extends LocalRegion
         }
       } finally {
         try {
-          lockService.unlock("_clearOperation");
+          lockService.unlock("_clearOperation" + this.getFullPath().replace('/', '_'));
         } catch (IllegalStateException e) {
           lockCheckReadiness();
         }

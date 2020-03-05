@@ -299,7 +299,7 @@ public class ClearPRMessage extends PartitionMessageWithDirectReply {
 
     public void setResponse(ClearReplyMessage response) {
       if (response.getException() == null) {
-        this.returnValue = (Boolean) response.getReturnValue();
+        this.returnValue = (boolean) response.getReturnValue();
       }
     }
 
