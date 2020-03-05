@@ -55,11 +55,11 @@ public class RenameTest {
   @BeforeClass
   public static void setUp() {
     rand = new Random();
-    CacheFactory cf = new CacheFactory();
-    cf.set(LOG_LEVEL, "info");
-    cf.set(MCAST_PORT, "0");
-    cf.set(LOCATORS, "");
-    cache = cf.create();
+    CacheFactory cacheFactory = new CacheFactory();
+    cacheFactory.set(LOG_LEVEL, "info");
+    cacheFactory.set(MCAST_PORT, "0");
+    cacheFactory.set(LOCATORS, "");
+    cache = cacheFactory.create();
     port = AvailablePortHelper.getRandomAvailableTCPPort();
     server = new GeodeRedisServer("localhost", port);
     client = new Jedis("localhost", port, 100000);
