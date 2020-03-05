@@ -68,7 +68,7 @@ import org.apache.geode.tools.pulse.internal.data.Repository;
 @RunWith(PowerMockRunner.class)
 @PowerMockRunnerDelegate(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
-@ContextConfiguration("classpath*:mvc-dispatcher-servlet.xml")
+@ContextConfiguration("classpath*:pulse-servlet.xml")
 @PowerMockIgnore({"javax.management.*", "javax.xml.*", "org.xml.*", "org.w3c.*"})
 public class PulseControllerJUnitTest {
 

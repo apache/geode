@@ -18,6 +18,7 @@ package org.apache.geode.tools.pulse.internal.security;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -36,15 +37,14 @@ import org.springframework.security.web.authentication.ExceptionMappingAuthentic
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
-public class PulseSecurityConfig {
-  public GemFireAuthenticationProvider gemAuthenticationProvider() {
-    return new GemFireAuthenticationProvider();
-  }
-
+@Profile("pulse.authentication.default")
+public class DefaultSecurityConfig extends WebSecurityConfigurerAdapter {
+  @Bean
   public LogoutHandler customLogoutSuccessHandler() {
     return new LogoutHandler("/login.html");
   }
 
+  @Bean
   public ExceptionMappingAuthenticationFailureHandler authenticationFailureHandler() {
     ExceptionMappingAuthenticationFailureHandler exceptionMappingAuthenticationFailureHandler =
         new ExceptionMappingAuthenticationFailureHandler();
@@ -58,7 +58,14 @@ public class PulseSecurityConfig {
     return exceptionMappingAuthenticationFailureHandler;
   }
 
-  public void configureSecurity(HttpSecurity httpSecurity) throws Exception {
+  @Autowired
+  private LogoutHandler logoutHandler;
+
+  @Autowired
+  private ExceptionMappingAuthenticationFailureHandler failureHandler;
+
+  @Override
+  protected void configure(HttpSecurity httpSecurity) throws Exception {
     httpSecurity.csrf().disable();
 
     httpSecurity.authorizeRequests()
@@ -76,12 +83,12 @@ public class PulseSecurityConfig {
         .formLogin()
         .loginPage("/login.html")
         .loginProcessingUrl("/login")
-        .failureHandler(authenticationFailureHandler())
+        .failureHandler(failureHandler)
         .defaultSuccessUrl("/clusterDetail.html", true)
         .and()
         .logout()
         .logoutUrl("/clusterLogout")
-        .logoutSuccessHandler(customLogoutSuccessHandler())
+        .logoutSuccessHandler(logoutHandler)
         .and()
         .exceptionHandling()
         .accessDeniedPage("/accessDenied.html");
@@ -96,40 +103,13 @@ public class PulseSecurityConfig {
         .contentTypeOptions();
   }
 
-  @Bean
-  @Profile("pulse.authentication.default")
-  public WebSecurityConfigurerAdapter basic() {
-    return new WebSecurityConfigurerAdapter() {
-      @Override
-      protected void configure(HttpSecurity httpSecurity) throws Exception {
-        configureSecurity(httpSecurity);
-      }
-
-      @Override
-      protected void configure(AuthenticationManagerBuilder authenticationManagerBuilder)
-          throws Exception {
-        authenticationManagerBuilder.inMemoryAuthentication()
-            .passwordEncoder(NoOpPasswordEncoder.getInstance())
-            .withUser("admin")
-            .password("admin")
-            .roles("CLUSTER:READ", "DATA:READ");
-      }
-    };
-  }
-
-  @Bean
-  @Profile("pulse.authentication.gemfire")
-  public WebSecurityConfigurerAdapter gemfire() {
-    return new WebSecurityConfigurerAdapter() {
-      @Override
-      protected void configure(HttpSecurity httpSecurity) throws Exception {
-        configureSecurity(httpSecurity);
-      }
-
-      @Override
-      protected void configure(AuthenticationManagerBuilder authenticationManagerBuilder) {
-        authenticationManagerBuilder.authenticationProvider(gemAuthenticationProvider());
-      }
-    };
+  @Override
+  protected void configure(AuthenticationManagerBuilder authenticationManagerBuilder)
+      throws Exception {
+    authenticationManagerBuilder.inMemoryAuthentication()
+        .passwordEncoder(NoOpPasswordEncoder.getInstance())
+        .withUser("admin")
+        .password("admin")
+        .roles("CLUSTER:READ", "DATA:READ");
   }
 }
