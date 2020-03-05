@@ -66,41 +66,31 @@ public class DefaultSecurityConfig extends WebSecurityConfigurerAdapter {
 
   @Override
   protected void configure(HttpSecurity httpSecurity) throws Exception {
-    httpSecurity.csrf().disable();
-
-    httpSecurity.authorizeRequests()
-        .mvcMatchers(
-            "/login.html", "/authenticateUser", "/pulseVersion")
-        .permitAll();
-
-    httpSecurity.authorizeRequests()
+    httpSecurity.authorizeRequests(authorize -> authorize
+        .mvcMatchers("/login.html", "/authenticateUser", "/pulseVersion", "/scripts/**",
+            "/images/**", "/css/**", "/properties/**")
+        .permitAll()
         .mvcMatchers("/dataBrowser*", "/getQueryStatisticsGridModel*")
         .access("hasRole('CLUSTER:READ') and hasRole('DATA:READ')")
         .mvcMatchers("/*")
         .hasRole("CLUSTER:READ")
-        .anyRequest().authenticated()
-        .and()
-        .formLogin()
-        .loginPage("/login.html")
-        .loginProcessingUrl("/login")
-        .failureHandler(failureHandler)
-        .defaultSuccessUrl("/clusterDetail.html", true)
-        .and()
-        .logout()
-        .logoutUrl("/clusterLogout")
-        .logoutSuccessHandler(logoutHandler)
-        .and()
-        .exceptionHandling()
-        .accessDeniedPage("/accessDenied.html");
-
-    httpSecurity.headers()
-        .frameOptions().deny();
-
-    httpSecurity.headers()
-        .xssProtection().xssProtectionEnabled(true).block(true);
-
-    httpSecurity.headers()
-        .contentTypeOptions();
+        .anyRequest().authenticated()).formLogin(form -> form
+            .loginPage("/login.html")
+            .loginProcessingUrl("/login")
+            .failureHandler(failureHandler)
+            .defaultSuccessUrl("/clusterDetail.html", true))
+        .logout(logout -> logout
+            .logoutUrl("/clusterLogout")
+            .logoutSuccessHandler(logoutHandler))
+        .exceptionHandling(exception -> exception
+            .accessDeniedPage("/accessDenied.html"))
+        .headers(header -> header
+            .frameOptions().deny()
+            .xssProtection(xss -> xss
+                .xssProtectionEnabled(true)
+                .block(true))
+            .contentTypeOptions())
+        .csrf().disable();
   }
 
   @Override
