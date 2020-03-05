@@ -19,6 +19,8 @@ import static org.apache.geode.test.dunit.rules.ClusterStartupRule.getClientCach
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
+import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
 import org.apache.logging.log4j.LogManager;
@@ -34,10 +36,10 @@ import org.apache.geode.cache.RegionEvent;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.util.CacheListenerAdapter;
+import org.apache.geode.test.dunit.SerializableCallableIF;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
-
 
 public class PartitionedRegionClearDUnitTest implements Serializable {
   protected static final String REGION_NAME = "testPR";
@@ -57,10 +59,10 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
   public void setUp() throws Exception {
     locator = cluster.startLocatorVM(0);
     locatorPort = locator.getPort();
-    dataStore1 = cluster.startServerVM(1, locatorPort);
-    dataStore2 = cluster.startServerVM(2, locatorPort);
-    dataStore3 = cluster.startServerVM(3, locatorPort);
-    accessor = cluster.startServerVM(4, locatorPort);
+    dataStore1 = cluster.startServerVM(1, getProperties(), locatorPort);
+    dataStore2 = cluster.startServerVM(2, getProperties(), locatorPort);
+    dataStore3 = cluster.startServerVM(3, getProperties(), locatorPort);
+    accessor = cluster.startServerVM(4, getProperties(), locatorPort);
     client1 = cluster.startClientVM(5,
         c -> c.withPoolSubscription(true).withLocatorConnection((locatorPort)));
     client2 = cluster.startClientVM(6,
@@ -75,6 +77,12 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
 
   protected RegionShortcut getRegionShortCut() {
     return RegionShortcut.PARTITION_REDUNDANT;
+  }
+
+  protected Properties getProperties() {
+    Properties properties = new Properties();
+    properties.setProperty("log-level", "debug");
+    return properties;
   }
 
   private Region getRegion(boolean isClient) {
@@ -98,19 +106,7 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
   private void initDataStore() {
     getCache().createRegionFactory(getRegionShortCut())
         .setPartitionAttributes(new PartitionAttributesFactory().setTotalNumBuckets(10).create())
-        .addCacheListener(new CacheListenerAdapter() {
-          @Override
-          public void afterRegionDestroy(RegionEvent event) {
-            Region region = event.getRegion();
-            logger.info("Region " + region.getFullPath() + " is destroyed.");
-          }
-
-          @Override
-          public void afterRegionClear(RegionEvent event) {
-            Region region = event.getRegion();
-            logger.info("Region " + region.getFullPath() + " is cleared.");
-          }
-        })
+        .addCacheListener(new CountingCacheListener())
         .create(REGION_NAME);
   }
 
@@ -118,6 +114,8 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
     getCache().createRegionFactory(getRegionShortCut())
         .setPartitionAttributes(
             new PartitionAttributesFactory().setTotalNumBuckets(10).setLocalMaxMemory(0).create())
+        .setPartitionAttributes(new PartitionAttributesFactory().setTotalNumBuckets(10).create())
+        .addCacheListener(new CountingCacheListener())
         .create(REGION_NAME);
   }
 
@@ -126,46 +124,80 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
     IntStream.range(0, NUM_ENTRIES).forEach(i -> region.put(i, "value" + i));
   }
 
+  private void verifyServerRegionSize(int expectedNum) {
+    accessor.invoke(() -> verifyRegionSize(false, expectedNum));
+    dataStore1.invoke(() -> verifyRegionSize(false, expectedNum));
+    dataStore2.invoke(() -> verifyRegionSize(false, expectedNum));
+    dataStore3.invoke(() -> verifyRegionSize(false, expectedNum));
+  }
+
+  private void verifyClientRegionSize(int expectedNum) {
+    client1.invoke(() -> verifyRegionSize(true, expectedNum));
+    // TODO: notify register clients
+    // client2.invoke(()->verifyRegionSize(true, expectedNum));
+  }
+
+  private void verifyCacheListenerTriggerCount(MemberVM serverVM) {
+    SerializableCallableIF<Integer> getListenerTriggerCount = () -> {
+      CountingCacheListener countingCacheListener =
+          (CountingCacheListener) getRegion(false).getAttributes()
+              .getCacheListeners()[0];
+      return countingCacheListener.getClears();
+    };
+
+    int count = accessor.invoke(getListenerTriggerCount)
+        + dataStore1.invoke(getListenerTriggerCount)
+        + dataStore2.invoke(getListenerTriggerCount)
+        + dataStore3.invoke(getListenerTriggerCount);
+    assertThat(count).isEqualTo(1);
+
+    if (serverVM != null) {
+      assertThat(serverVM.invoke(getListenerTriggerCount)).isEqualTo(1);
+    }
+  }
+
   @Test
   public void normalClearFromDataStore() {
     accessor.invoke(() -> feed(false));
-    dataStore1.invoke(() -> verifyRegionSize(false, NUM_ENTRIES));
-    dataStore2.invoke(() -> verifyRegionSize(false, NUM_ENTRIES));
-    dataStore3.invoke(() -> verifyRegionSize(false, NUM_ENTRIES));
-
+    verifyServerRegionSize(NUM_ENTRIES);
     dataStore1.invoke(() -> getRegion(false).clear());
-    dataStore1.invoke(() -> verifyRegionSize(false, 0));
-    dataStore2.invoke(() -> verifyRegionSize(false, 0));
-    dataStore3.invoke(() -> verifyRegionSize(false, 0));
+    verifyServerRegionSize(0);
+    verifyCacheListenerTriggerCount(dataStore1);
   }
 
   @Test
   public void normalClearFromAccessor() {
     accessor.invoke(() -> feed(false));
-    dataStore1.invoke(() -> verifyRegionSize(false, NUM_ENTRIES));
-    dataStore2.invoke(() -> verifyRegionSize(false, NUM_ENTRIES));
-    dataStore3.invoke(() -> verifyRegionSize(false, NUM_ENTRIES));
-
+    verifyServerRegionSize(NUM_ENTRIES);
     accessor.invoke(() -> getRegion(false).clear());
-    dataStore1.invoke(() -> verifyRegionSize(false, 0));
-    dataStore2.invoke(() -> verifyRegionSize(false, 0));
-    dataStore3.invoke(() -> verifyRegionSize(false, 0));
+    verifyServerRegionSize(0);
+    verifyCacheListenerTriggerCount(accessor);
   }
 
   @Test
   public void normalClearFromClient() {
     client1.invoke(() -> feed(true));
-    client2.invoke(() -> verifyRegionSize(true, NUM_ENTRIES));
-    dataStore1.invoke(() -> verifyRegionSize(false, NUM_ENTRIES));
-    dataStore2.invoke(() -> verifyRegionSize(false, NUM_ENTRIES));
-    dataStore3.invoke(() -> verifyRegionSize(false, NUM_ENTRIES));
+    verifyClientRegionSize(NUM_ENTRIES);
+    verifyServerRegionSize(NUM_ENTRIES);
 
     client1.invoke(() -> getRegion(true).clear());
-    dataStore1.invoke(() -> verifyRegionSize(false, 0));
-    dataStore2.invoke(() -> verifyRegionSize(false, 0));
-    dataStore3.invoke(() -> verifyRegionSize(false, 0));
-    client1.invoke(() -> verifyRegionSize(true, 0));
-    // TODO: notify register clients
-    // client2.invoke(() -> verifyRegionSize(true, 0));
+    verifyServerRegionSize(0);
+    verifyClientRegionSize(0);
+    verifyCacheListenerTriggerCount(null);
+  }
+
+  private static class CountingCacheListener extends CacheListenerAdapter {
+    private final AtomicInteger clears = new AtomicInteger();
+
+    @Override
+    public void afterRegionClear(RegionEvent event) {
+      Region region = event.getRegion();
+      logger.info("Region " + region.getFullPath() + " is cleared.");
+      clears.incrementAndGet();
+    }
+
+    int getClears() {
+      return clears.get();
+    }
   }
 }

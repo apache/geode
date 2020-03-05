@@ -2151,7 +2151,7 @@ public class PartitionedRegion extends LocalRegion
     synchronized (clearLock) {
       final DistributedLockService lockService = getPartitionedRegionLockService();
       try {
-        lockService.lock("_clearOperation", -1, -1);
+        lockService.lock("_clearOperation" + this.getFullPath().replace('/', '_'), -1, -1);
       } catch (IllegalStateException e) {
         lockCheckReadiness();
         throw e;
@@ -2166,9 +2166,9 @@ public class PartitionedRegion extends LocalRegion
         for (ClearPRMessage clearPRMessage : clearMsgList) {
           int bucketId = clearPRMessage.getBucketId();
           checkReadiness();
-          long then = 0;
+          long sendMessagesStartTime = 0;
           if (isDebugEnabled) {
-            then = System.currentTimeMillis();
+            sendMessagesStartTime = System.currentTimeMillis();
           }
           try {
             sendClearMsgByBucket(bucketId, clearPRMessage);
@@ -2182,10 +2182,8 @@ public class PartitionedRegion extends LocalRegion
 
           if (isDebugEnabled) {
             long now = System.currentTimeMillis();
-            if (now - then > 10000) {
-              logger.debug("PR.sendClearMsgByBucket for bucket {} took {} ms", bucketId,
-                  (now - then));
-            }
+            logger.debug("PR.sendClearMsgByBucket for bucket {} took {} ms", bucketId,
+                (now - sendMessagesStartTime));
           }
           // TODO add psStats
         }
@@ -2199,7 +2197,12 @@ public class PartitionedRegion extends LocalRegion
 
       // notify bridge clients at PR level
       regionEvent.setEventType(EnumListenerEvent.AFTER_REGION_CLEAR);
+      boolean hasListener = hasListener();
+      if (hasListener) {
+        dispatchListenerEvent(EnumListenerEvent.AFTER_REGION_CLEAR, regionEvent);
+      }
       notifyBridgeClients(regionEvent);
+      logger.info("Partitioned region {} finsihed clear operation.", this.getFullPath());
     }
   }
 
@@ -2213,7 +2216,7 @@ public class PartitionedRegion extends LocalRegion
 
     long timeOut = 0;
     int count = 0;
-    for (;;) {
+    while (true) {
       switch (count) {
         case 0:
           // Note we don't check for DM cancellation in common case.
@@ -2302,14 +2305,14 @@ public class PartitionedRegion extends LocalRegion
                 currentTarget, fre.getMessage());
           }
           if (retryTime.overMaximum()) {
-            PRHARedundancyProvider.timedOut(this, null, null, "update an entry",
+            PRHARedundancyProvider.timedOut(this, null, null, "clear a bucket",
                 this.retryTimeout);
             // NOTREACHED
           }
           retryTime.waitToRetryNode();
         } else {
           if (logger.isDebugEnabled()) {
-            logger.debug("PR.sendMsgByBucket: Old target was {}, Retrying {}", lastTarget,
+            logger.debug("PR.sendClearMsgByBucket: Old target was {}, Retrying {}", lastTarget,
                 currentTarget);
           }
         }
@@ -2332,10 +2335,6 @@ public class PartitionedRegion extends LocalRegion
   }
 
   List<ClearPRMessage> createClearPRMessages() {
-    if (cache.isCacheAtShutdownAll()) {
-      throw cache.getCacheClosedException("Cache is shutting down");
-    }
-
     ArrayList<ClearPRMessage> clearMsgList = new ArrayList<>();
     for (int bucketId = 0; bucketId < this.totalNumberOfBuckets; bucketId++) {
       ClearPRMessage clearPRMessage = new ClearPRMessage(bucketId);

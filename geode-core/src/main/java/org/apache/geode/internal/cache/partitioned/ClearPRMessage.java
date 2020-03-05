@@ -149,8 +149,7 @@ public class ClearPRMessage extends PartitionMessageWithDirectReply {
           startTime);
       return false;
     }
-    sendReply(getSender(), getProcessorId(), distributionManager, null, region, startTime);
-    return false;
+    return this.result;
   }
 
   public Integer getBucketId() {
@@ -174,7 +173,9 @@ public class ClearPRMessage extends PartitionMessageWithDirectReply {
       regionEvent.setRegion(bucketRegion);
       bucketRegion.cmnClearRegion(regionEvent, true, true);
     } catch (PartitionOfflineException poe) {
-      logger.info("There is no member to hold bucket {}, not to retry any more", this.bucketId,
+      logger.info(
+          "All members holding data for bucket {} are offline, no more retries will be attempted",
+          this.bucketId,
           poe);
       throw poe;
     } catch (Exception ex) {
@@ -239,7 +240,7 @@ public class ClearPRMessage extends PartitionMessageWithDirectReply {
     public static void send(InternalDistributedMember recipient, int processorId,
         ReplySender replySender,
         boolean result, ReplyException ex) {
-      Assert.assertTrue(recipient != null, "ClearReplyMessage NULL recipient.");
+      Assert.assertNotNull(recipient, "ClearReplyMessage recipient was NULL.");
       ClearReplyMessage message = new ClearReplyMessage(processorId, result, ex);
       message.setRecipient(recipient);
       replySender.putOutgoing(message);
@@ -298,7 +299,7 @@ public class ClearPRMessage extends PartitionMessageWithDirectReply {
 
     public void setResponse(ClearReplyMessage response) {
       if (response.getException() == null) {
-        this.returnValue = (boolean) response.getReturnValue();
+        this.returnValue = (Boolean) response.getReturnValue();
       }
     }
 
