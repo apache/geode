@@ -170,6 +170,13 @@ public class RebalanceCommand extends GfshCommand {
     resultStr.append(CliStrings.REBALANCE__MSG__TOTALTIME).append(" = ").append(rstlist.get(8))
         .append(newLine);
 
+    table1.accumulate("Rebalanced Stats", CliStrings.REBALANCE__MSG__MEMBER_COUNT);
+    table1.accumulate("Value", String.valueOf(cache.getMembers().size()));
+    resultStr.append(CliStrings.REBALANCE__MSG__MEMBER_COUNT).append(" = ")
+        .append(cache.getMembers().size())
+        .append(newLine);
+
+
     String headerText;
     if (simulate) {
       headerText = "Simulated partition regions";
