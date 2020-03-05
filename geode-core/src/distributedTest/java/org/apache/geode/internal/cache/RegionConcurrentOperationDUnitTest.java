@@ -43,7 +43,7 @@ public class RegionConcurrentOperationDUnitTest implements Serializable {
   private static DUnitBlackboard blackboard;
 
   Object key = "KEY";
-  String value = "VALUE";
+  String[] value = new String[] {"VALUE"};
 
   private static DUnitBlackboard getBlackboard() {
     if (blackboard == null) {
@@ -93,7 +93,6 @@ public class RegionConcurrentOperationDUnitTest implements Serializable {
 
     Object get1value = get1.get();
     Object get2value = get2.get();
-
     assertThat(get1value).isNotSameAs(get2value);
   }
 

@@ -100,7 +100,6 @@ public class ClientRegionGetRegressionTest implements Serializable {
 
   @Test
   public void getOnProxyRegionFromMultipleThreadsReturnsDifferentObjects() throws Exception {
-
     ClientRegionFactory<String, String> crf = clientCacheRule.getClientCache()
         .createClientRegionFactory(ClientRegionShortcut.PROXY);
     crf.create(regionName);
