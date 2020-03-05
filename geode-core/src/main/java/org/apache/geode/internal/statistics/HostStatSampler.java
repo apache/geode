@@ -152,7 +152,7 @@ public abstract class HostStatSampler
   @Override
   public String getSystemDirectoryPath() {
     try {
-      return LocalHostUtil.getLocalHost().getHostName();
+      return LocalHostUtil.getLocalHostName();
     } catch (UnknownHostException ignore) {
       return "";
     }

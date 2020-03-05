@@ -187,6 +187,12 @@ public class SocketCreator extends TcpSocketCreatorImpl {
     initialize();
   }
 
+  /** returns the hostname or address for this client */
+  public static String getClientHostName() throws UnknownHostException {
+    InetAddress hostAddr = LocalHostUtil.getLocalHost();
+    return SocketCreator.use_client_host_name ? hostAddr.getCanonicalHostName()
+        : hostAddr.getHostAddress();
+  }
 
   // -------------------------------------------------------------------------
   // Initializers (change SocketCreator state)

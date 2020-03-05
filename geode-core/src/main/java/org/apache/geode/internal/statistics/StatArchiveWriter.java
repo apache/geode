@@ -203,7 +203,7 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
   protected String getMachineInfo() {
     String machineInfo = System.getProperty("os.arch");
     try {
-      String hostName = LocalHostUtil.getLocalHost().getHostName();
+      String hostName = LocalHostUtil.getLocalHostName();
       machineInfo += " " + hostName;
     } catch (UnknownHostException ignore) {
     }

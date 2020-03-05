@@ -2747,7 +2747,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   private PoolFactory createDefaultPF() {
     PoolFactory defaultPoolFactory = PoolManager.createFactory();
     try {
-      String localHostName = LocalHostUtil.getLocalHost().getHostName();
+      String localHostName = LocalHostUtil.getLocalHostName();
       defaultPoolFactory.addServer(localHostName, CacheServer.DEFAULT_PORT);
     } catch (UnknownHostException ex) {
       throw new IllegalStateException("Could not determine local host name", ex);
@@ -2772,7 +2772,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     if (poolFactoryImpl.getPoolAttributes().locators.isEmpty()
         && poolFactoryImpl.getPoolAttributes().servers.isEmpty()) {
       try {
-        String localHostName = LocalHostUtil.getLocalHost().getHostName();
+        String localHostName = LocalHostUtil.getLocalHostName();
         poolFactoryImpl.addServer(localHostName, CacheServer.DEFAULT_PORT);
       } catch (UnknownHostException ex) {
         throw new IllegalStateException("Could not determine local host name", ex);

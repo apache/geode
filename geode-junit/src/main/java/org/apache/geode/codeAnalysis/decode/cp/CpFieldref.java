@@ -29,6 +29,14 @@ public class CpFieldref extends Cp {
     name_and_type_index = source.readUnsignedShort();
   }
 
+  public String className(CompiledClass info) {
+    return ((CpClass) info.constant_pool[class_index]).className(info);
+  }
+
+  public String methodName(CompiledClass info) {
+    return ((CpNameAndType) info.constant_pool[name_and_type_index]).name(info);
+  }
+
   public String returnType(CompiledClass info) {
     return "not yet implemented";
   }

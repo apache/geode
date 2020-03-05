@@ -149,7 +149,7 @@ public class TcpServerGossipVersionDUnitTest extends JUnit4DistributedTestCase {
           .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR),
           InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
           InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer())
-              .requestToServer(new HostAndPort(LocalHostUtil.getLocalHost().getHostName(), port0),
+              .requestToServer(new HostAndPort(LocalHostUtil.getLocalHostName(), port0),
                   req, 5000);
       assertThat(response).isNotNull();
 

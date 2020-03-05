@@ -1776,7 +1776,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
         return bindAddress + "[" + startLocatorPort + "]";
       }
       try {
-        return LocalHostUtil.getLocalHost().getHostName() + "[" + startLocatorPort
+        return LocalHostUtil.getLocalHostName() + "[" + startLocatorPort
             + "]";
       } catch (UnknownHostException ignore) {
         // punt and use this.startLocator instead

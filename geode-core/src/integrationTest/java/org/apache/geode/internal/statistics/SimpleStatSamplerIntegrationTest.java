@@ -99,7 +99,7 @@ public class SimpleStatSamplerIntegrationTest extends StatSamplerTestCase {
     assertTrue(statsCount > 0);
 
     assertTrue(statSampler.getSystemStartTime() <= System.currentTimeMillis());
-    assertEquals(LocalHostUtil.getLocalHost().getHostName(),
+    assertEquals(LocalHostUtil.getLocalHostName(),
         statSampler.getSystemDirectoryPath());
 
     VMStatsContract vmStats = statSampler.getVMStats();
