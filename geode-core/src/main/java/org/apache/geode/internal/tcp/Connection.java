@@ -311,6 +311,9 @@ public class Connection implements Runnable {
   /** the buffer used for message receipt */
   private ByteBuffer inputBuffer;
 
+  /** Lock used to protect the input buffer */
+  public final Object inputBufferLock = new Object();
+
   /** the length of the next message to be dispatched */
   private int messageLength;
 
@@ -1475,10 +1478,12 @@ public class Connection implements Runnable {
   }
 
   private void releaseInputBuffer() {
-    ByteBuffer tmp = inputBuffer;
-    if (tmp != null) {
-      inputBuffer = null;
-      getBufferPool().releaseReceiveBuffer(tmp);
+    synchronized (inputBufferLock) {
+      ByteBuffer tmp = inputBuffer;
+      if (tmp != null) {
+        inputBuffer = null;
+        getBufferPool().releaseReceiveBuffer(tmp);
+      }
     }
   }
 
