@@ -12,16 +12,11 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.net;
+package org.apache.geode.admin.internal;
 
 import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.Enumeration;
 
-import org.apache.geode.GemFireIOException;
-import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.inet.LocalHostUtil;
 
 /**
@@ -31,25 +26,8 @@ import org.apache.geode.internal.inet.LocalHostUtil;
 @SuppressWarnings("unused")
 public class InetAddressUtils {
 
-  @Immutable
-  private static final InetAddress LOCALHOST = getLocalHost();
-
-  private static final String LOOPBACK_ADDRESS =
-      LocalHostUtil.preferIPv6Addresses() ? "::1" : "127.0.0.1";
-
-  @Immutable
-  private static final InetAddress LOOPBACK = toInetAddress(LOOPBACK_ADDRESS);
-
   private InetAddressUtils() {
     // prevent construction
-  }
-
-  public static InetAddress getLoopback() {
-    return LOOPBACK;
-  }
-
-  public static String getLoopbackAddress() {
-    return LOOPBACK_ADDRESS;
   }
 
   /**
@@ -73,25 +51,6 @@ public class InetAddressUtils {
   }
 
   /**
-   * Converts the string host to an instance of {@code InetAddress}. Returns null if the string is
-   * empty. Any leading slashes on host will be ignored. The checked exception
-   * {@code UnknownHostException} is captured and an AssertionError is generated instead.
-   *
-   * @param host The string version the InetAddress
-   *
-   * @return The host converted to InetAddress instance
-   *
-   * @throws AssertionError If conversion of host results in {@code UnknownHostException}
-   */
-  public static InetAddress toInetAddress(String host) {
-    try {
-      return toInetAddressOrThrow(host);
-    } catch (UnknownHostException e) {
-      throw new AssertionError("Failed to get InetAddress: " + host, e);
-    }
-  }
-
-  /**
    * Validates the host by making sure it can successfully be used to get an instance of
    * InetAddress. Any leading slashes on host will be ignored. If the host string is null, empty or
    * would result in {@code java.lang.UnknownHostException} then null is returned.
@@ -106,53 +65,6 @@ public class InetAddressUtils {
     } catch (UnknownHostException e) {
       return null;
     }
-  }
-
-  /**
-   * Returns true if host matches the LOCALHOST.
-   */
-  public static boolean isLocalHost(InetAddress host) {
-    if (LOCALHOST.equals(host)) {
-      return true;
-    }
-
-    try {
-      Enumeration en = NetworkInterface.getNetworkInterfaces();
-      while (en.hasMoreElements()) {
-        NetworkInterface i = (NetworkInterface) en.nextElement();
-        for (Enumeration en2 = i.getInetAddresses(); en2.hasMoreElements();) {
-          InetAddress addr = (InetAddress) en2.nextElement();
-          if (host.equals(addr)) {
-            return true;
-          }
-        }
-      }
-
-      return false;
-    } catch (SocketException e) {
-      throw new GemFireIOException("Unable to query network interface", e);
-    }
-  }
-
-  /**
-   * Returns true if host matches the LOCALHOST.
-   */
-  public static boolean isLocalHost(String host) {
-    return isLocalHost(toInetAddress(host));
-  }
-
-  /**
-   * Returns true if host matches the LOOPBACK (127.0.0.1).
-   */
-  public static boolean isLoopback(InetAddress host) {
-    return LOOPBACK.equals(host);
-  }
-
-  /**
-   * Returns true if host matches the LOOPBACK (127.0.0.1).
-   */
-  public static boolean isLoopback(String host) {
-    return isLoopback(toInetAddress(host));
   }
 
   /**

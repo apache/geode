@@ -14,7 +14,7 @@
  */
 package org.apache.geode.admin.jmx.internal;
 
-import static org.apache.geode.internal.net.InetAddressUtilsWithLogging.toInetAddress;
+import static org.apache.geode.admin.internal.InetAddressUtilsWithLogging.toInetAddress;
 
 import java.io.IOException;
 import java.net.ServerSocket;

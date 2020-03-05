@@ -19,7 +19,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_E
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_PROTOCOLS;
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_REQUIRE_AUTHENTICATION;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.apache.geode.internal.net.InetAddressUtils.isLocalHost;
 
 import java.io.File;
 import java.util.Iterator;
@@ -32,6 +31,7 @@ import org.apache.geode.admin.DistributedSystemConfig;
 import org.apache.geode.admin.ManagedEntity;
 import org.apache.geode.admin.ManagedEntityConfig;
 import org.apache.geode.internal.ProcessOutputReader;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.util.internal.GeodeGlossary;
@@ -170,7 +170,7 @@ class EnabledManagedEntityController implements ManagedEntityController {
   private String arrangeRemoteCommand(InternalManagedEntity entity, String cmd) {
 
     String host = entity.getEntityConfig().getHost();
-    if (isLocalHost(host)) {
+    if (LocalHostUtil.isLocalHost(host)) {
       // No arranging necessary
       return cmd;
     }

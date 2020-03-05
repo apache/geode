@@ -121,6 +121,22 @@ public class CompiledMethod implements Comparable {
     return args;
   }
 
+  public boolean hasArgumentOfType(String compiledClassName) {
+    int argCount, idx;
+
+    if (args == null) {
+      return false;
+    }
+    argCount = ((CpUtf8) myclass.constant_pool[descriptor_index]).argCount();
+    for (idx = 1; idx <= argCount; idx++) {
+      // use a cheap check here that doesn't require all of the work of decodeClassName()
+      String str = ((CpUtf8) myclass.constant_pool[descriptor_index]).stringValue();
+      if (compiledClassName.equals(str)) {
+        return true;
+      }
+    }
+    return false;
+  }
 
   public String signature() {
     if (signature == null)

@@ -272,6 +272,14 @@ public class CompiledClass implements Comparable {
         return true;
       }
     }
+    for (CompiledMethod compiledMethod : methods) {
+      if (compiledMethod == null) {
+        continue;
+      }
+      if (compiledMethod.descriptor().equals(name) || compiledMethod.hasArgumentOfType(name)) {
+        return true;
+      }
+    }
     return false;
   }
 

@@ -14,6 +14,8 @@
  */
 package org.apache.geode.admin.jmx.internal;
 
+import static org.apache.geode.admin.internal.InetAddressUtils.toHostString;
+import static org.apache.geode.admin.internal.InetAddressUtilsWithLogging.validateHost;
 import static org.apache.geode.distributed.ConfigurationProperties.BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_CIPHERS;
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_ENABLED;
@@ -27,8 +29,6 @@ import static org.apache.geode.distributed.internal.DistributionConfig.DEFAULT_S
 import static org.apache.geode.distributed.internal.DistributionConfig.DEFAULT_SSL_ENABLED;
 import static org.apache.geode.distributed.internal.DistributionConfig.DEFAULT_SSL_PROTOCOLS;
 import static org.apache.geode.distributed.internal.DistributionConfig.DEFAULT_SSL_REQUIRE_AUTHENTICATION;
-import static org.apache.geode.internal.net.InetAddressUtils.toHostString;
-import static org.apache.geode.internal.net.InetAddressUtilsWithLogging.validateHost;
 
 import java.io.File;
 import java.io.FileInputStream;

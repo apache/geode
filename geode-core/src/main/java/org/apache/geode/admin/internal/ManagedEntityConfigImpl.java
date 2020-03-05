@@ -14,7 +14,7 @@
  */
 package org.apache.geode.admin.internal;
 
-import static org.apache.geode.internal.net.InetAddressUtilsWithLogging.validateHost;
+import static org.apache.geode.admin.internal.InetAddressUtilsWithLogging.validateHost;
 
 import java.io.File;
 import java.net.InetAddress;
