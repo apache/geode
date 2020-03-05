@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.internal.Assert.fail;
 import static org.apache.geode.test.dunit.rules.ClusterStartupRule.getCache;
 import static org.apache.geode.test.dunit.rules.ClusterStartupRule.getClientCache;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -81,7 +82,7 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
 
   protected Properties getProperties() {
     Properties properties = new Properties();
-    properties.setProperty("log-level", "debug");
+    properties.setProperty("log-level", "info");
     return properties;
   }
 
@@ -111,7 +112,21 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
   }
 
   private void initAccessor() {
-    getCache().createRegionFactory(getRegionShortCut())
+    RegionShortcut shortcut = getRegionShortCut();
+    if (shortcut.isPersistent()) {
+      if (shortcut == RegionShortcut.PARTITION_PERSISTENT) {
+        shortcut = RegionShortcut.PARTITION;
+      } else if (shortcut == RegionShortcut.PARTITION_PERSISTENT_OVERFLOW) {
+        shortcut = RegionShortcut.PARTITION_OVERFLOW;
+      } else if (shortcut == RegionShortcut.PARTITION_REDUNDANT_PERSISTENT) {
+        shortcut = RegionShortcut.PARTITION_REDUNDANT;
+      } else if (shortcut == RegionShortcut.PARTITION_REDUNDANT_PERSISTENT_OVERFLOW) {
+        shortcut = RegionShortcut.PARTITION_REDUNDANT_OVERFLOW;
+      } else {
+        fail("Wrong region type:" + shortcut);
+      }
+    }
+    getCache().createRegionFactory(shortcut)
         .setPartitionAttributes(
             new PartitionAttributesFactory().setTotalNumBuckets(10).setLocalMaxMemory(0).create())
         .setPartitionAttributes(new PartitionAttributesFactory().setTotalNumBuckets(10).create())
