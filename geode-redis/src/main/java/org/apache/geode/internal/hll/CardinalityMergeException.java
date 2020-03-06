@@ -14,6 +14,7 @@
 package org.apache.geode.internal.hll;
 
 
+
 @SuppressWarnings("serial")
 public abstract class CardinalityMergeException extends Exception {
 

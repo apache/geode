@@ -48,11 +48,10 @@ public class SetNXExecutor extends StringExecutor {
 
     Object oldValue = r.putIfAbsent(key, new ByteArrayWrapper(value));
 
-    if (oldValue != null) {
+    if (oldValue != null)
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_SET));
-    } else {
+    else
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), SET));
-    }
 
   }
 

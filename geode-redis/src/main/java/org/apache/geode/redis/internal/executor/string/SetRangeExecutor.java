@@ -63,9 +63,8 @@ public class SetRangeExecutor extends StringExecutor {
     } else if (value.length == 0) {
       int length = wrapper == null ? 0 : wrapper.toBytes().length;
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), length));
-      if (wrapper == null) {
+      if (wrapper == null)
         context.getRegionProvider().removeKey(key);
-      }
       return;
     }
 

@@ -14,8 +14,6 @@
  */
 package org.apache.geode.redis.internal.executor;
 
-import java.util.Collection;
-
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
@@ -25,23 +23,8 @@ public class UnkownExecutor extends AbstractExecutor {
 
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
-
-    StringBuilder commandProcessedText = new StringBuilder();
-
-    Collection<byte[]> processedCmds = command.getProcessedCommand();
-
-    if (processedCmds != null && !processedCmds.isEmpty()) {
-
-      for (byte[] bytes : processedCmds) {
-        if (bytes == null || bytes.length == 0) {
-          continue; // skip blanks
-        }
-
-        commandProcessedText.append(Coder.bytesToString(bytes)).append(" ");
-      }
-    }
-
-    command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(),
-        RedisConstants.ERROR_UNKOWN_COMMAND + " " + commandProcessedText));
+    command.setResponse(
+        Coder.getErrorResponse(context.getByteBufAllocator(), RedisConstants.ERROR_UNKOWN_COMMAND));
   }
+
 }

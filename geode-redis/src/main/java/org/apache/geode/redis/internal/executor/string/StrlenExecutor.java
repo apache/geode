@@ -43,13 +43,13 @@ public class StrlenExecutor extends StringExecutor {
     checkDataType(key, RedisDataType.REDIS_STRING, context);
     ByteArrayWrapper valueWrapper = r.get(key);
 
-    if (valueWrapper == null) {
+
+    if (valueWrapper == null)
       command
           .setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), KEY_DOES_NOT_EXIST));
-    } else {
+    else
       command.setResponse(
           Coder.getIntegerResponse(context.getByteBufAllocator(), valueWrapper.toBytes().length));
-    }
 
   }
 

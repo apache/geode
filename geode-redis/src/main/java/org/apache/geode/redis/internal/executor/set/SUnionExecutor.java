@@ -31,8 +31,12 @@ public class SUnionExecutor extends SetOpExecutor {
   @Override
   protected Set<ByteArrayWrapper> setOp(Set<ByteArrayWrapper> firstSet,
       List<Set<ByteArrayWrapper>> setList) {
-    Set<ByteArrayWrapper> addSet = firstSet == null ? new HashSet<>() : new HashSet<>(firstSet);
+    Set<ByteArrayWrapper> addSet = firstSet;
     for (Set<ByteArrayWrapper> set : setList) {
+      if (addSet == null) {
+        addSet = new HashSet<ByteArrayWrapper>(set);
+        continue;
+      }
       addSet.addAll(set);
     }
     return addSet;

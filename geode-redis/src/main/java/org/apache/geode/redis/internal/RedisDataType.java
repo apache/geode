@@ -30,6 +30,7 @@ import org.apache.geode.redis.GeodeRedisServer;
  * <li>{@link RedisDataType#REDIS_SET}</li>
  * <li>{@link RedisDataType#REDIS_SORTEDSET}</li>
  * <li>{@link RedisDataType#REDIS_PROTECTED}</li>
+ *
  */
 public enum RedisDataType {
   /**
@@ -102,9 +103,7 @@ public enum RedisDataType {
     }
   },
 
-  /**
-   * Pubsub
-   */
+  /** Pubsub */
   REDIS_PUBSUB {
     @Override
     public String toString() {

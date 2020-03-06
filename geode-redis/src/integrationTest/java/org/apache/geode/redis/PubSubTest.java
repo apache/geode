@@ -40,7 +40,7 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.junit.categories.RedisTest;
 
 @Category({RedisTest.class})
-public class PubSubIntegrationTest {
+public class PubSubTest {
   private static final int REDIS_CLIENT_TIMEOUT = 100000;
   private static GeodeRedisServer server;
   private static GemFireCache cache;

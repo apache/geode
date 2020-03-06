@@ -33,6 +33,8 @@ import org.apache.geode.redis.internal.RegionProvider;
 
 /**
  * The AbstractExecutor is the base of all {@link Executor} types for the {@link GeodeRedisServer}.
+ *
+ *
  */
 public abstract class AbstractExecutor implements Executor {
 
@@ -56,7 +58,7 @@ public abstract class AbstractExecutor implements Executor {
    * given name does not exist. Before getting or creating a Region, a check is first done to make
    * sure the desired key doesn't already exist with a different {@link RedisDataType}. If there is
    * a data type mismatch this method will throw a {@link RuntimeException}.
-   * <p>
+   *
    * ********************** IMPORTANT NOTE ********************************************** This
    * method will not fail in returning a Region unless an internal error occurs, so if a Region is
    * destroyed right after it is created, it will attempt to retry until a reference to that Region
@@ -75,7 +77,8 @@ public abstract class AbstractExecutor implements Executor {
 
   /**
    * Checks if the given key is associated with the passed expectedDataType. If there is a mismatch,
-   * a {@link RuntimeException} is thrown
+   * a
+   * {@link RuntimeException} is thrown
    *
    * @param key Key to check
    * @param expectedDataType Type to check to
@@ -92,53 +95,46 @@ public abstract class AbstractExecutor implements Executor {
 
   protected boolean removeEntry(ByteArrayWrapper key, RedisDataType type,
       ExecutionHandlerContext context) {
-
+    if (type == null || type == RedisDataType.REDIS_PROTECTED)
+      return false;
     RegionProvider rC = context.getRegionProvider();
     return rC.removeKey(key, type);
   }
 
   protected int getBoundedStartIndex(int index, int size) {
-    if (size < 0) {
+    if (size < 0)
       throw new IllegalArgumentException("Size < 0, really?");
-    }
-    if (index >= 0) {
+    if (index >= 0)
       return Math.min(index, size);
-    } else {
+    else
       return Math.max(index + size, 0);
-    }
   }
 
   protected int getBoundedEndIndex(int index, int size) {
-    if (size < 0) {
+    if (size < 0)
       throw new IllegalArgumentException("Size < 0, really?");
-    }
-    if (index >= 0) {
+    if (index >= 0)
       return Math.min(index, size);
-    } else {
+    else
       return Math.max(index + size, -1);
-    }
   }
 
   protected long getBoundedStartIndex(long index, long size) {
-    if (size < 0L) {
+    if (size < 0L)
       throw new IllegalArgumentException("Size < 0, really?");
-    }
-    if (index >= 0L) {
+    if (index >= 0L)
       return Math.min(index, size);
-    } else {
+    else
       return Math.max(index + size, 0);
-    }
   }
 
   protected long getBoundedEndIndex(long index, long size) {
-    if (size < 0L) {
+    if (size < 0L)
       throw new IllegalArgumentException("Size < 0, really?");
-    }
-    if (index >= 0L) {
+    if (index >= 0L)
       return Math.min(index, size);
-    } else {
+    else
       return Math.max(index + size, -1);
-    }
   }
 
   protected void respondBulkStrings(Command command, ExecutionHandlerContext context,

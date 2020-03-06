@@ -18,35 +18,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
-import org.apache.geode.cache.TimeoutException;
-import org.apache.geode.redis.internal.AutoCloseableLock;
+import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
+import org.apache.geode.redis.internal.RedisDataType;
 
-/**
- * <pre>
- * Implements the Redis HGETALL command to return
- *
- * Returns all fields and values of the hash stored at key.
- *
- * Examples:
- *
- * redis> HSET myhash field1 "Hello"
- * (integer) 1
- * redis> HSET myhash field2 "World"
- * (integer) 1
- * redis> HGETALL myhash
- * 1) "field1"
- * 2) "Hello"
- * 3) "field2"
- * 4) "World"
- * </pre>
- */
 public class HGetAllExecutor extends HashExecutor {
 
   @Override
@@ -57,33 +37,22 @@ public class HGetAllExecutor extends HashExecutor {
       command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.HGETALL));
       return;
     }
-    Collection<Entry<ByteArrayWrapper, ByteArrayWrapper>> entries;
+
     ByteArrayWrapper key = command.getKey();
-    try (AutoCloseableLock regionLock = withRegionLock(context, key)) {
-      Map<ByteArrayWrapper, ByteArrayWrapper> results = getMap(context, key);
 
-      if (results == null || results.isEmpty()) {
-        command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));
-        return;
-      }
+    checkDataType(key, RedisDataType.REDIS_HASH, context);
+    Region<ByteArrayWrapper, ByteArrayWrapper> keyRegion = getRegion(context, key);
 
-      entries = results.entrySet();
-
-      if (entries == null || entries.isEmpty()) {
-        command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));
-        return;
-      }
-
-      // create a copy
-      entries = new ArrayList<>(entries);
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      command.setResponse(
-          Coder.getErrorResponse(context.getByteBufAllocator(), "Thread interrupted."));
+    if (keyRegion == null) {
+      command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));
       return;
-    } catch (TimeoutException e) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(),
-          "Timeout acquiring lock. Please try again."));
+    }
+
+    Collection<Map.Entry<ByteArrayWrapper, ByteArrayWrapper>> entries =
+        new ArrayList(keyRegion.entrySet()); // This creates a CopyOnRead behavior
+
+    if (entries.isEmpty()) {
+      command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));
       return;
     }
 

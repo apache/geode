@@ -12,28 +12,30 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.redis;
+package org.apache.geode.redis.internal.executor;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-import com.github.davidmoten.geo.LatLong;
+import java.util.regex.Pattern;
+
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
-import org.apache.geode.redis.internal.CoderException;
-import org.apache.geode.redis.internal.GeoCoder;
+import org.apache.geode.test.junit.categories.RedisTest;
 
-public class GeoCoderIntegrationTest {
-  @Test
-  public void testGeoHash() throws CoderException {
-    String hash = GeoCoder.geohash(Double.toString(13.361389).getBytes(),
-        Double.toString(38.115556).getBytes());
-    assertEquals("sqc8b49rnyte", hash);
-  }
+@Category({RedisTest.class})
+public class AbstractScanExecutorTest {
 
   @Test
-  public void testGeoPos() throws CoderException {
-    LatLong pos = GeoCoder.geoPos("sqc8b49rnyte");
-    assertEquals(13.361389, pos.getLon(), 0.000001);
-    assertEquals(38.115556, pos.getLat(), 0.000001);
+  public void shouldBeMockable() throws Exception {
+    AbstractScanExecutor mockAbstractScanExecutor = mock(AbstractScanExecutor.class);
+    Pattern pattern = Pattern.compile(".");
+
+    when(mockAbstractScanExecutor.convertGlobToRegex(eq("pattern"))).thenReturn(pattern);
+
+    assertThat(mockAbstractScanExecutor.convertGlobToRegex("pattern")).isSameAs(pattern);
   }
 }

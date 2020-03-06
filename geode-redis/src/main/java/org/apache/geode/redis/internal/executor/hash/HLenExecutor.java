@@ -15,29 +15,15 @@
 package org.apache.geode.redis.internal.executor.hash;
 
 import java.util.List;
-import java.util.Map;
 
-import org.apache.geode.cache.TimeoutException;
-import org.apache.geode.redis.internal.AutoCloseableLock;
+import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
+import org.apache.geode.redis.internal.RedisDataType;
 
-/**
- * <pre>
- * Implements the HLEN command to return the count of fields in the hash stored with a given key.
- *
- * Examples:
- *
- * redis> HSET myhash field1 "Hello"
- * (integer) 1
- * redis> HSET myhash field2 "World"
- * (integer) 1
- * redis> HLEN myhash
- * </pre>
- */
 public class HLenExecutor extends HashExecutor {
 
   private final int NOT_EXISTS = 0;
@@ -52,29 +38,18 @@ public class HLenExecutor extends HashExecutor {
     }
 
     ByteArrayWrapper key = command.getKey();
-    final int size;
+    checkDataType(key, RedisDataType.REDIS_HASH, context);
 
-    try (AutoCloseableLock regionLock = withRegionLock(context, key)) {
-      Map<ByteArrayWrapper, ByteArrayWrapper> map = getMap(context, key);
+    Region<ByteArrayWrapper, ByteArrayWrapper> keyRegion = getRegion(context, key);
 
-      if (map == null) {
-        command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_EXISTS));
-        return;
-      }
-
-      size = map.size();
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      command.setResponse(
-          Coder.getErrorResponse(context.getByteBufAllocator(), "Thread interrupted."));
-      return;
-    } catch (TimeoutException e) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(),
-          "Timeout acquiring lock. Please try again."));
+    if (keyRegion == null) {
+      command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_EXISTS));
       return;
     }
 
-    command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), size));
+    final int regionSize = keyRegion.size();
+
+    command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), regionSize));
   }
 
 }

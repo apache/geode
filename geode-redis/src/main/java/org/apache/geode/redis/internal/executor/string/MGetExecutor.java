@@ -57,9 +57,8 @@ public class MGetExecutor extends StringExecutor {
     /*
      * This is done to preserve order in the output
      */
-    for (ByteArrayWrapper key : keys) {
+    for (ByteArrayWrapper key : keys)
       values.add(results.get(key));
-    }
 
     respondBulkStrings(command, context, values);
   }

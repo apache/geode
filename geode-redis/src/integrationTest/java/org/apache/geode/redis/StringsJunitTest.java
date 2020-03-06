@@ -42,7 +42,7 @@ import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.test.junit.categories.RedisTest;
 
 @Category({RedisTest.class})
-public class StringsIntegrationTest {
+public class StringsJunitTest {
 
   private static Jedis jedis;
   private static GeodeRedisServer server;

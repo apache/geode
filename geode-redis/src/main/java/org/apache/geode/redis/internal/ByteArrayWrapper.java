@@ -26,6 +26,8 @@ import org.apache.geode.DataSerializer;
  * This class is a wrapper for the any Regions that need to store a byte[]. The only data this an
  * instance will store is a byte[] for the data but it is also serializable and comparable so it is
  * able to be used in querying
+ *
+ *
  */
 public class ByteArrayWrapper implements DataSerializable, Comparable<ByteArrayWrapper> {
   /**
@@ -52,6 +54,7 @@ public class ByteArrayWrapper implements DataSerializable, Comparable<ByteArrayW
 
   /**
    * Default constructor constructs a ValueWrapper and initialize the {@link #value}
+   *
    */
   public ByteArrayWrapper(byte[] value) {
     this.value = value;
@@ -65,15 +68,14 @@ public class ByteArrayWrapper implements DataSerializable, Comparable<ByteArrayW
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.value = DataSerializer.readByteArray(in);
+    this.value = DataSerializer.readByteArray(in);;
     this.hashCode = Arrays.hashCode(this.value);
   }
 
   @Override
   public String toString() {
-    if (toString == null) {
+    if (toString == null)
       toString = Coder.bytesToString(this.value);
-    }
     return toString;
   }
 
@@ -113,9 +115,9 @@ public class ByteArrayWrapper implements DataSerializable, Comparable<ByteArrayW
    */
   @Override
   public boolean equals(Object other) {
-    if (other instanceof ByteArrayWrapper) {
+    if (other instanceof ByteArrayWrapper)
       return Arrays.equals(value, ((ByteArrayWrapper) other).value);
-    } else if (other instanceof String) {
+    else if (other instanceof String) {
       return Arrays.equals(value, Coder.stringToBytes((String) other));
     }
     return false;
@@ -140,9 +142,8 @@ public class ByteArrayWrapper implements DataSerializable, Comparable<ByteArrayW
    * @return 1 if A > B, -1 if B > A, 0 if A == B
    */
   private int arrayCmp(byte[] A, byte[] B) {
-    if (A == B) {
+    if (A == B)
       return 0;
-    }
     if (A == null) {
       return -1;
     } else if (B == null) {
@@ -155,18 +156,16 @@ public class ByteArrayWrapper implements DataSerializable, Comparable<ByteArrayW
       byte a = A[i];
       byte b = B[i];
       int diff = a - b;
-      if (diff > 0) {
+      if (diff > 0)
         return 1;
-      } else if (diff < 0) {
+      else if (diff < 0)
         return -1;
-      }
     }
 
-    if (A.length > B.length) {
+    if (A.length > B.length)
       return 1;
-    } else if (B.length > A.length) {
+    else if (B.length > A.length)
       return -1;
-    }
 
     return 0;
   }

@@ -30,9 +30,7 @@ public abstract class ListExecutor extends AbstractExecutor {
 
   protected enum ListDirection {
     LEFT, RIGHT
-  }
-
-  ;
+  };
 
   protected static QueryService getQueryService() {
     return GemFireCacheImpl.getInstance().getQueryService();
@@ -41,8 +39,7 @@ public abstract class ListExecutor extends AbstractExecutor {
   @SuppressWarnings("unchecked")
   @Override
   protected Region<Integer, ByteArrayWrapper> getOrCreateRegion(ExecutionHandlerContext context,
-      ByteArrayWrapper key,
-      RedisDataType type) {
+      ByteArrayWrapper key, RedisDataType type) {
     return (Region<Integer, ByteArrayWrapper>) context.getRegionProvider().getOrCreateRegion(key,
         type, context);
   }
@@ -68,17 +65,15 @@ public abstract class ListExecutor extends AbstractExecutor {
    * @param context Context of this push
    */
   protected void pushElements(ByteArrayWrapper key, List<byte[]> commandElems, int startIndex,
-      int endIndex, Region keyRegion, ListDirection pushType,
-      ExecutionHandlerContext context) {
+      int endIndex, Region keyRegion, ListDirection pushType, ExecutionHandlerContext context) {
 
     String indexKey = pushType == ListDirection.LEFT ? "head" : "tail";
     String oppositeKey = pushType == ListDirection.RIGHT ? "head" : "tail";
     Integer index = (Integer) keyRegion.get(indexKey);
     Integer opp = (Integer) keyRegion.get(oppositeKey);
-    if (index != null && (!index.equals(opp))) {
+    if (index != null && (!index.equals(opp)))
       index += pushType == ListDirection.LEFT ? -1 : 1; // Subtract index if left push, add if right
-    }
-    // push
+                                                        // push
 
     /*
      * Multi push command
@@ -101,7 +96,7 @@ public abstract class ListExecutor extends AbstractExecutor {
         oldValue = keyRegion.putIfAbsent(index, wrapper);
         if (oldValue != null) {
           index += pushType == ListDirection.LEFT ? -1 : 1; // Subtract index if left push, add if
-          // right push
+                                                            // right push
         }
       } while (oldValue != null);
 
@@ -133,11 +128,10 @@ public abstract class ListExecutor extends AbstractExecutor {
       do {
         Integer existingIndex = (Integer) keyRegion.get(indexKey);
         if (index != null && ((pushType == ListDirection.RIGHT && existingIndex < index)
-            || (pushType == ListDirection.LEFT && existingIndex > index))) {
+            || (pushType == ListDirection.LEFT && existingIndex > index)))
           indexSet = keyRegion.replace(indexKey, existingIndex, index);
-        } else {
+        else
           break;
-        }
       } while (!indexSet);
 
     }

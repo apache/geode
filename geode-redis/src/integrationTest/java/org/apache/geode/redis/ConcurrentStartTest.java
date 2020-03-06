@@ -33,7 +33,7 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.test.junit.categories.RedisTest;
 
 @Category({RedisTest.class})
-public class ConcurrentStartIntegrationTest {
+public class ConcurrentStartTest {
 
   private Cache cache;
   private int numServers = 10;

@@ -48,7 +48,7 @@ import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.test.junit.categories.RedisTest;
 
 @Category({RedisTest.class})
-public class SortedSetsIntegrationTest {
+public class SortedSetsJUnitTest {
   private static Jedis jedis;
   private static GeodeRedisServer server;
   private static GemFireCache cache;

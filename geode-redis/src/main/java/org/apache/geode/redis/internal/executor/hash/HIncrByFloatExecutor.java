@@ -15,38 +15,15 @@
 package org.apache.geode.redis.internal.executor.hash;
 
 import java.util.List;
-import java.util.Map;
 
-import org.apache.geode.cache.TimeoutException;
-import org.apache.geode.redis.internal.AutoCloseableLock;
+import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
+import org.apache.geode.redis.internal.RedisDataType;
 
-/**
- * <pre>
- * Implementation of HINCRBYFLOAT Redis command.
- * The purpose is to increment the specified field of a hash for a given key.
- *  The value is floating number (represented as a double), by the specified increment.
- *
- * Examples:
- *
- * redis> HSET mykey field 10.50
- * (integer) 1
- * redis> HINCRBYFLOAT mykey field 0.1
- * "10.6"
- * redis> HINCRBYFLOAT mykey field -5
- * "5.6"
- * redis> HSET mykey field 5.0e3
- * (integer) 0
- * redis> HINCRBYFLOAT mykey field 2.0e2
- * "5200"
- *
- *
- * </pre>
- */
 public class HIncrByFloatExecutor extends HashExecutor {
 
   private final String ERROR_FIELD_NOT_USABLE =
@@ -81,61 +58,46 @@ public class HIncrByFloatExecutor extends HashExecutor {
     }
 
     ByteArrayWrapper key = command.getKey();
-    double value;
 
-    try (AutoCloseableLock regionLock = withRegionLock(context, key)) {
-      Map<ByteArrayWrapper, ByteArrayWrapper> map = getMap(context, key);
+    Region<ByteArrayWrapper, ByteArrayWrapper> keyRegion =
+        getOrCreateRegion(context, key, RedisDataType.REDIS_HASH);
 
-      byte[] byteField = commandElems.get(FIELD_INDEX);
-      ByteArrayWrapper field = new ByteArrayWrapper(byteField);
+    byte[] byteField = commandElems.get(FIELD_INDEX);
+    ByteArrayWrapper field = new ByteArrayWrapper(byteField);
 
-      /*
-       * Put increment as value if field doesn't exist
-       */
+    /*
+     * Put incrememnt as value if field doesn't exist
+     */
 
-      ByteArrayWrapper oldValue = map.get(field);
+    ByteArrayWrapper oldValue = keyRegion.get(field);
 
-      if (oldValue == null) {
-        map.put(field, new ByteArrayWrapper(incrArray));
-
-        this.saveMap(map, context, key);
-
-        respondBulkStrings(command, context, increment);
-        return;
-      }
-
-      /*
-       * If the field did exist then increment the field
-       */
-      String valueS = oldValue.toString();
-      if (valueS.contains(" ")) {
-        command.setResponse(
-            Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_FIELD_NOT_USABLE));
-        return;
-      }
-
-      try {
-        value = Coder.stringToDouble(valueS);
-      } catch (NumberFormatException e) {
-        command.setResponse(
-            Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_FIELD_NOT_USABLE));
-        return;
-      }
-
-      value += increment;
-      map.put(field, new ByteArrayWrapper(Coder.doubleToBytes(value)));
-
-      this.saveMap(map, context, key);
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      command.setResponse(
-          Coder.getErrorResponse(context.getByteBufAllocator(), "Thread interrupted."));
-      return;
-    } catch (TimeoutException e) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(),
-          "Timeout acquiring lock. Please try again."));
+    if (oldValue == null) {
+      keyRegion.put(field, new ByteArrayWrapper(incrArray));
+      respondBulkStrings(command, context, increment);
       return;
     }
+
+    /*
+     * If the field did exist then increment the field
+     */
+    String valueS = oldValue.toString();
+    if (valueS.contains(" ")) {
+      command.setResponse(
+          Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_FIELD_NOT_USABLE));
+      return;
+    }
+    double value;
+
+    try {
+      value = Coder.stringToDouble(valueS);
+    } catch (NumberFormatException e) {
+      command.setResponse(
+          Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_FIELD_NOT_USABLE));
+      return;
+    }
+
+    value += increment;
+    keyRegion.put(field, new ByteArrayWrapper(Coder.doubleToBytes(value)));
     respondBulkStrings(command, context, value);
   }
 

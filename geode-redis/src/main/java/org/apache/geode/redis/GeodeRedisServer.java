@@ -23,9 +23,7 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.security.KeyStore;
 import java.util.Collection;
-import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
@@ -83,7 +81,6 @@ import org.apache.geode.redis.internal.KeyRegistrar;
 import org.apache.geode.redis.internal.PubSub;
 import org.apache.geode.redis.internal.PubSubImpl;
 import org.apache.geode.redis.internal.RedisDataType;
-import org.apache.geode.redis.internal.RedisLockService;
 import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.Subscriptions;
 
@@ -239,19 +236,6 @@ public class GeodeRedisServer {
   public static final String STRING_REGION = "ReDiS_StRiNgS";
 
   /**
-   * TThe field that defines the name of the {@link Region} which holds non-named hash. The current
-   * value of this field is {@value #HASH_REGION}.
-   */
-  public static final String HASH_REGION = "ReDiS_HASH";
-
-  /**
-   * TThe field that defines the name of the {@link Region} which holds sets. The current value of
-   * this field is {@value #SET_REGION}.
-   */
-  public static final String SET_REGION = "ReDiS_SET";
-
-
-  /**
    * The field that defines the name of the {@link Region} which holds all of the HyperLogLogs. The
    * current value of this field is {@code HLL_REGION}.
    */
@@ -286,8 +270,6 @@ public class GeodeRedisServer {
   private boolean started;
   private KeyRegistrar keyRegistrar;
   private PubSub pubSub;
-  private RedisLockService hashLockService;
-  private RedisLockService setLockService;
 
   /**
    * Determine the {@link RegionShortcut} type from a String value. If the String value doesn't map
@@ -445,11 +427,8 @@ public class GeodeRedisServer {
       Region<ByteArrayWrapper, ByteArrayWrapper> stringsRegion;
 
       Region<ByteArrayWrapper, HyperLogLogPlus> hLLRegion;
-      Region<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>> redisHash;
-      Region<String, RedisDataType> redisMetaData;
-      Region<ByteArrayWrapper, Set<ByteArrayWrapper>> redisSet;
+      Region redisMetaData;
       InternalCache gemFireCache = (InternalCache) cache;
-
       if ((stringsRegion = cache.getRegion(STRING_REGION)) == null) {
         RegionFactory<ByteArrayWrapper, ByteArrayWrapper> regionFactory =
             gemFireCache.createRegionFactory(this.DEFAULT_REGION_TYPE);
@@ -460,19 +439,6 @@ public class GeodeRedisServer {
             gemFireCache.createRegionFactory(this.DEFAULT_REGION_TYPE);
         hLLRegion = regionFactory.create(HLL_REGION);
       }
-
-      if ((redisHash = cache.getRegion(HASH_REGION)) == null) {
-        RegionFactory<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>> regionFactory =
-            gemFireCache.createRegionFactory(this.DEFAULT_REGION_TYPE);
-        redisHash = regionFactory.create(HASH_REGION);
-      }
-
-      if ((redisSet = cache.getRegion(SET_REGION)) == null) {
-        RegionFactory<ByteArrayWrapper, Set<ByteArrayWrapper>> regionFactory =
-            gemFireCache.createRegionFactory(this.DEFAULT_REGION_TYPE);
-        redisSet = regionFactory.create(SET_REGION);
-      }
-
       if ((redisMetaData = cache.getRegion(REDIS_META_DATA_REGION)) == null) {
         InternalRegionFactory<String, RedisDataType> redisMetaDataFactory =
             gemFireCache.createInternalRegionFactory();
@@ -481,20 +447,14 @@ public class GeodeRedisServer {
         redisMetaDataFactory.setInternalRegion(true).setIsUsedForMetaRegion(true);
         redisMetaData = redisMetaDataFactory.create(REDIS_META_DATA_REGION);
       }
-
       this.keyRegistrar = new KeyRegistrar(redisMetaData);
-      this.hashLockService = new RedisLockService();
-      this.setLockService = new RedisLockService();
       this.pubSub = new PubSubImpl(new Subscriptions());
       this.regionCache = new RegionProvider(stringsRegion, hLLRegion, this.keyRegistrar,
-          expirationFutures, expirationExecutor, this.DEFAULT_REGION_TYPE, redisHash, redisSet);
+          expirationFutures, expirationExecutor, this.DEFAULT_REGION_TYPE);
       redisMetaData.put(REDIS_META_DATA_REGION, RedisDataType.REDIS_PROTECTED);
       redisMetaData.put(HLL_REGION, RedisDataType.REDIS_PROTECTED);
       redisMetaData.put(STRING_REGION, RedisDataType.REDIS_PROTECTED);
-      redisMetaData.put(SET_REGION, RedisDataType.REDIS_PROTECTED);
-      redisMetaData.put(HASH_REGION, RedisDataType.REDIS_PROTECTED);
     }
-
     checkForRegions();
   }
 
@@ -575,7 +535,7 @@ public class GeodeRedisServer {
             p.addLast(ByteToCommandDecoder.class.getSimpleName(), new ByteToCommandDecoder());
             p.addLast(ExecutionHandlerContext.class.getSimpleName(),
                 new ExecutionHandlerContext(ch, cache, regionCache, GeodeRedisServer.this, pwdB,
-                    keyRegistrar, pubSub, hashLockService, setLockService));
+                    keyRegistrar, pubSub));
           }
         }).option(ChannelOption.SO_REUSEADDR, true).option(ChannelOption.SO_RCVBUF, getBufferSize())
         .childOption(ChannelOption.SO_KEEPALIVE, true)
