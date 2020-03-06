@@ -340,16 +340,16 @@ public class ConnectionManagerImpl implements ConnectionManager {
           }
         }
 
-        if (checkShutdownInterruptedOrTimeout(timeout)) {
-          break;
-        }
-
         if (!onlyUseExistingCnx) {
           connection = forceCreateConnection(server);
           if (null != connection) {
             return connection;
           }
           throw new ServerConnectivityException(BORROW_CONN_ERROR_MSG + server);
+        }
+
+        if (checkShutdownInterruptedOrTimeout(timeout)) {
+          break;
         }
 
         waitStart = beginConnectionWaitStatIfNotStarted(waitStart);

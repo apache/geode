@@ -88,6 +88,15 @@ public class PoolFactoryImpl implements InternalPoolFactory {
   }
 
   @Override
+  public PoolFactory setServerConnectionTimeout(int connectionTimeout) {
+    if (connectionTimeout < -1) {
+      throw new IllegalArgumentException("connectionTimeout must be greater than or equal to -1");
+    }
+    attributes.serverConnectionTimeout = connectionTimeout;
+    return this;
+  }
+
+  @Override
   public PoolFactory setLoadConditioningInterval(int connectionLifetime) {
     if (connectionLifetime < -1) {
       throw new IllegalArgumentException("connectionLifetime must be greater than or equal to -1");
@@ -301,6 +310,7 @@ public class PoolFactoryImpl implements InternalPoolFactory {
   public void init(Pool cp) {
     setSocketConnectTimeout(cp.getSocketConnectTimeout());
     setFreeConnectionTimeout(cp.getFreeConnectionTimeout());
+    setServerConnectionTimeout(cp.getServerConnectionTimeout());
     setLoadConditioningInterval(cp.getLoadConditioningInterval());
     setSocketBufferSize(cp.getSocketBufferSize());
     setReadTimeout(cp.getReadTimeout());
@@ -398,6 +408,7 @@ public class PoolFactoryImpl implements InternalPoolFactory {
 
     int socketConnectTimeout = DEFAULT_SOCKET_CONNECT_TIMEOUT;
     int connectionTimeout = DEFAULT_FREE_CONNECTION_TIMEOUT;
+    int serverConnectionTimeout = DEFAULT_SERVER_CONNECTION_TIMEOUT;
     int connectionLifetime = DEFAULT_LOAD_CONDITIONING_INTERVAL;
     public int socketBufferSize = DEFAULT_SOCKET_BUFFER_SIZE;
     @Deprecated
@@ -435,6 +446,11 @@ public class PoolFactoryImpl implements InternalPoolFactory {
     @Override
     public int getFreeConnectionTimeout() {
       return connectionTimeout;
+    }
+
+    @Override
+    public int getServerConnectionTimeout() {
+      return serverConnectionTimeout;
     }
 
     @Override
@@ -605,6 +621,7 @@ public class PoolFactoryImpl implements InternalPoolFactory {
 
     public void toData(DataOutput out) throws IOException {
       DataSerializer.writePrimitiveInt(connectionTimeout, out);
+      DataSerializer.writePrimitiveInt(serverConnectionTimeout, out);
       DataSerializer.writePrimitiveInt(connectionLifetime, out);
       DataSerializer.writePrimitiveInt(socketBufferSize, out);
       DataSerializer.writePrimitiveInt(readTimeout, out);
@@ -627,6 +644,7 @@ public class PoolFactoryImpl implements InternalPoolFactory {
 
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       connectionTimeout = DataSerializer.readPrimitiveInt(in);
+      serverConnectionTimeout = DataSerializer.readPrimitiveInt(in);
       connectionLifetime = DataSerializer.readPrimitiveInt(in);
       socketBufferSize = DataSerializer.readPrimitiveInt(in);
       readTimeout = DataSerializer.readPrimitiveInt(in);

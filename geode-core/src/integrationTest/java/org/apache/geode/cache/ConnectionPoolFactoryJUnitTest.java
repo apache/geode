@@ -129,6 +129,8 @@ public class ConnectionPoolFactoryJUnitTest {
       // now add a source and try defaults again
       assertEquals(PoolFactory.DEFAULT_FREE_CONNECTION_TIMEOUT,
           defaultAttr.getFreeConnectionTimeout());
+      assertEquals(PoolFactory.DEFAULT_SERVER_CONNECTION_TIMEOUT,
+          defaultAttr.getServerConnectionTimeout());
       assertEquals(PoolFactory.DEFAULT_THREAD_LOCAL_CONNECTIONS,
           defaultAttr.getThreadLocalConnections());
       assertEquals(PoolFactory.DEFAULT_READ_TIMEOUT, defaultAttr.getReadTimeout());
@@ -147,6 +149,7 @@ public class ConnectionPoolFactoryJUnitTest {
      */
 
     int connectionTimeout = -1;
+    int serverConnectionTimeout = -2;
     int connectionLifetime = -2;
     boolean threadLocalConnections = false;
     int readTimeout = -1;
@@ -167,6 +170,14 @@ public class ConnectionPoolFactoryJUnitTest {
     } catch (IllegalArgumentException iae) {
       // this is what we want
     }
+
+    try {
+      cpf.setServerConnectionTimeout(serverConnectionTimeout);
+      assertTrue("This should have failed with IllegalArgumentException", false);
+    } catch (IllegalArgumentException iae) {
+      // this is what we want
+    }
+
     try {
       cpf.setLoadConditioningInterval(connectionLifetime);
       assertTrue("This should have failed with IllegalArgumentException", false);
@@ -254,6 +265,8 @@ public class ConnectionPoolFactoryJUnitTest {
     assertEquals("Attribute should match default, but doesn't",
         defaultAttr.getFreeConnectionTimeout(), PoolFactory.DEFAULT_FREE_CONNECTION_TIMEOUT);
     assertEquals("Attribute should match default, but doesn't",
+        defaultAttr.getServerConnectionTimeout(), PoolFactory.DEFAULT_SERVER_CONNECTION_TIMEOUT);
+    assertEquals("Attribute should match default, but doesn't",
         defaultAttr.getLoadConditioningInterval(), PoolFactory.DEFAULT_LOAD_CONDITIONING_INTERVAL);
     assertEquals("Attribute should match default, but doesn't",
         defaultAttr.getThreadLocalConnections(), PoolFactory.DEFAULT_THREAD_LOCAL_CONNECTIONS);
@@ -275,6 +288,7 @@ public class ConnectionPoolFactoryJUnitTest {
     /* Lets do a legitimate one now */
 
     connectionTimeout = 30;
+    serverConnectionTimeout = 0;
     connectionLifetime = -1;
     threadLocalConnections = true;
     readTimeout = 3;
@@ -290,6 +304,7 @@ public class ConnectionPoolFactoryJUnitTest {
 
 
     cpf.setFreeConnectionTimeout(connectionTimeout);
+    cpf.setServerConnectionTimeout(serverConnectionTimeout);
     cpf.setLoadConditioningInterval(connectionLifetime);
     cpf.setThreadLocalConnections(threadLocalConnections);
     cpf.setReadTimeout(readTimeout);
@@ -308,6 +323,7 @@ public class ConnectionPoolFactoryJUnitTest {
     try {
 
       assertEquals(connectionTimeout, cpa.getFreeConnectionTimeout());
+      assertEquals(serverConnectionTimeout, cpa.getServerConnectionTimeout());
       assertEquals(connectionLifetime, cpa.getLoadConditioningInterval());
       assertEquals(threadLocalConnections, cpa.getThreadLocalConnections());
       assertEquals(true, cpa.getSubscriptionEnabled());

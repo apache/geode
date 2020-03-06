@@ -487,6 +487,11 @@ public class AutoConnectionSourceImplJUnitTest {
     }
 
     @Override
+    public int getServerConnectionTimeout() {
+      return 0;
+    }
+
+    @Override
     public int getLoadConditioningInterval() {
       return 0;
     }

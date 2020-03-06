@@ -74,6 +74,14 @@ public interface PoolFactory {
   int DEFAULT_FREE_CONNECTION_TIMEOUT = 10000;
 
   /**
+   * The default amount of time, in milliseconds, which we will wait for a server connection if max
+   * connections is set and there is no free connections towards designated server.
+   * <p>
+   * Current value: <code>-1</code>.
+   */
+  int DEFAULT_SERVER_CONNECTION_TIMEOUT = -1;
+
+  /**
    * The default interval in which the pool will check to see if a connection to a given server
    * should be moved to a different server to improve the load balance.
    * <p>
@@ -237,6 +245,25 @@ public interface PoolFactory {
    *         <code>0</code>.
    */
   PoolFactory setFreeConnectionTimeout(int connectionTimeout);
+
+
+  /**
+   * Sets the server connection timeout for this pool. If the pool has a max connections setting,
+   * operations will block if there is no free connection towards specific server. The server
+   * connection timeout
+   * specifies how long those operations will block waiting for a free connection towards specific
+   * server before
+   * receiving an {@link AllConnectionsInUseException}. If max connections is not set this setting
+   * has no
+   * effect.
+   *
+   * @see #setMaxConnections(int)
+   * @param connectionTimeout the connection timeout in milliseconds
+   * @return a reference to <code>this</code>
+   * @throws IllegalArgumentException if <code>connectionTimeout</code> is less than
+   *         <code>-1</code>.
+   */
+  PoolFactory setServerConnectionTimeout(int connectionTimeout);
 
   /**
    * Sets the load conditioning interval for this pool. This interval controls how frequently the
