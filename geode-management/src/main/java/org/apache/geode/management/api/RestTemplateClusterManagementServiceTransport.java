@@ -152,7 +152,9 @@ public class RestTemplateClusterManagementServiceTransport
       T configMessage, CommandType command) {
     switch (command) {
       case CREATE:
-        return create(configMessage);
+        return create(configMessage, HttpMethod.POST);
+      case CREATE_OR_UPDATE:
+        return create(configMessage, HttpMethod.PUT);
       case DELETE:
         return delete(configMessage);
     }
@@ -221,10 +223,11 @@ public class RestTemplateClusterManagementServiceTransport
     longRunningStatusPollingThreadPool.shutdownNow();
   }
 
-  private <T extends AbstractConfiguration<?>> ClusterManagementRealizationResult create(T config) {
+  private <T extends AbstractConfiguration<?>> ClusterManagementRealizationResult create(T config,
+      HttpMethod method) {
     String endPoint = URI_VERSION + config.getLinks().getList();
     // the response status code info is represented by the ClusterManagementResult.errorCode already
-    return restTemplate.exchange(endPoint, HttpMethod.POST, makeEntity(config),
+    return restTemplate.exchange(endPoint, method, makeEntity(config),
         ClusterManagementRealizationResult.class)
         .getBody();
   }

@@ -11,21 +11,35 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
+ *
  */
-package org.apache.geode.codeAnalysis;
 
+package org.apache.geode.redis.mocks;
 
-import org.apache.geode.redis.internal.GeodeRedisService;
+import java.util.ArrayList;
+import java.util.List;
 
-public class AnalyzeRedisSerializablesJUnitTest extends AnalyzeSerializablesJUnitTestBase {
+import redis.clients.jedis.BinaryJedisPubSub;
 
-  @Override
-  protected String getModuleName() {
-    return "geode-redis";
+public class MockBinarySubscriber extends BinaryJedisPubSub {
+  private List<byte[]> receivedMessages = new ArrayList<>();
+  private List<byte[]> receivedPMessages = new ArrayList<>();
+
+  public List<byte[]> getReceivedMessages() {
+    return receivedMessages;
+  }
+
+  public List<byte[]> getReceivedPMessages() {
+    return receivedPMessages;
   }
 
   @Override
-  protected Class getModuleClass() {
-    return GeodeRedisService.class;
+  public void onMessage(byte[] channel, byte[] message) {
+    receivedMessages.add(message);
+  }
+
+  @Override
+  public void onPMessage(byte[] pattern, byte[] channel, byte[] message) {
+    receivedPMessages.add(message);
   }
 }

@@ -83,6 +83,7 @@ import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.client.ClientCacheFactory;
+import org.apache.geode.cache.client.ClientRegionFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.PoolManager;
@@ -3293,10 +3294,16 @@ public class PutAllClientServerDistributedTest implements Serializable {
           .setSubscriptionRedundancy(subscriptionRedundancy)
           .create(poolName);
 
-      Region<String, TickerData> region = getClientCache()
-          .<String, TickerData>createClientRegionFactory(ClientRegionShortcut.LOCAL)
-          .setConcurrencyChecksEnabled(concurrencyChecksEnabled)
-          .setPoolName(poolName)
+      ClientRegionFactory<String, TickerData> clientRegionFactory =
+          getClientCache().createClientRegionFactory(ClientRegionShortcut.LOCAL);
+
+      clientRegionFactory
+          .setConcurrencyChecksEnabled(concurrencyChecksEnabled);
+
+      clientRegionFactory
+          .setPoolName(poolName);
+
+      Region<String, TickerData> region = clientRegionFactory
           .create(regionName);
 
       if (registerInterest) {

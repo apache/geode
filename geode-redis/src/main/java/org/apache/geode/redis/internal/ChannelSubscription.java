@@ -35,7 +35,7 @@ class ChannelSubscription extends AbstractSubscription {
   }
 
   @Override
-  public List<String> createResponse(String channel, String message) {
+  public List<Object> createResponse(String channel, byte[] message) {
     return Arrays.asList("message", channel, message);
   }
 

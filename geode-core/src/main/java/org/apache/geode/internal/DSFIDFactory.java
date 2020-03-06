@@ -96,6 +96,7 @@ import org.apache.geode.distributed.internal.membership.gms.messages.RemoveMembe
 import org.apache.geode.distributed.internal.membership.gms.messages.SuspectMembersMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.ViewAckMessage;
 import org.apache.geode.distributed.internal.streaming.StreamingOperation.StreamingReplyMessage;
+import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.internal.admin.ClientMembershipMessage;
 import org.apache.geode.internal.admin.remote.AddHealthListenerRequest;
 import org.apache.geode.internal.admin.remote.AddHealthListenerResponse;
@@ -975,6 +976,7 @@ public class DSFIDFactory implements DataSerializableFixedID {
     serializer.registerDSFID(ABORT_BACKUP_REQUEST, AbortBackupRequest.class);
     serializer.registerDSFID(PR_CLEAR_MESSAGE, ClearPRMessage.class);
     serializer.registerDSFID(PR_CLEAR_REPLY_MESSAGE, ClearPRMessage.ClearReplyMessage.class);
+    serializer.registerDSFID(HOST_AND_PORT, HostAndPort.class);
   }
 
   /**

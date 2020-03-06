@@ -12,28 +12,24 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.redis;
+package org.apache.geode.internal.net;
 
-import static org.junit.Assert.assertEquals;
+import java.io.IOException;
+import java.net.Socket;
 
-import com.github.davidmoten.geo.LatLong;
-import org.junit.Test;
+import org.apache.geode.distributed.internal.tcpserver.ClientSocketCreatorImpl;
 
-import org.apache.geode.redis.internal.CoderException;
-import org.apache.geode.redis.internal.GeoCoder;
+class SCClientSocketCreator extends ClientSocketCreatorImpl {
+  private final SocketCreator coreSocketCreator;
 
-public class GeoCoderTest {
-  @Test
-  public void testGeoHash() throws CoderException {
-    String hash = GeoCoder.geohash(Double.toString(13.361389).getBytes(),
-        Double.toString(38.115556).getBytes());
-    assertEquals("sqc8b49rnyte", hash);
+  protected SCClientSocketCreator(SocketCreator socketCreator) {
+    super(socketCreator);
+    coreSocketCreator = socketCreator;
   }
 
-  @Test
-  public void testGeoPos() throws CoderException {
-    LatLong pos = GeoCoder.geoPos("sqc8b49rnyte");
-    assertEquals(13.361389, pos.getLon(), 0.000001);
-    assertEquals(38.115556, pos.getLat(), 0.000001);
+  @Override
+  public void handshakeIfSocketIsSSL(Socket socket, int timeout) throws IOException {
+    coreSocketCreator.handshakeIfSocketIsSSL(socket, timeout);
   }
+
 }

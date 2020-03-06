@@ -30,7 +30,7 @@ public interface PubSub {
    * @param message to publish
    * @return the number of messages published
    */
-  long publish(String channel, String message);
+  long publish(String channel, byte[] message);
 
   /**
    * Subscribe to a channel

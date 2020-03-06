@@ -28,6 +28,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 
@@ -54,7 +55,7 @@ import org.apache.geode.distributed.PoolCancelledException;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
-import org.apache.geode.distributed.internal.tcpserver.LocatorAddress;
+import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.internal.admin.ClientStatsManager;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.InternalCache;
@@ -112,9 +113,9 @@ public class PoolImpl implements InternalPool {
   private final int subscriptionAckInterval;
   private final int subscriptionTimeoutMultiplier;
   private final String serverGroup;
-  private final List<LocatorAddress> locatorAddresses;
-  private final List<InetSocketAddress> locators;
-  private final List<InetSocketAddress> servers;
+  private final List<HostAndPort> locatorAddresses;
+  private final List<HostAndPort> locators;
+  private final List<HostAndPort> servers;
   private final boolean startDisabled;
   private final boolean usedByGateway;
   private final int maxConnections;
@@ -157,7 +158,7 @@ public class PoolImpl implements InternalPool {
   private final ThreadsMonitoring threadMonitoring;
 
   public static PoolImpl create(PoolManagerImpl pm, String name, Pool attributes,
-      List<LocatorAddress> locatorAddresses, InternalDistributedSystem distributedSystem,
+      List<HostAndPort> locatorAddresses, InternalDistributedSystem distributedSystem,
       InternalCache cache, ThreadsMonitoring tMonitoring) {
     PoolImpl pool =
         new PoolImpl(pm, name, attributes, locatorAddresses, distributedSystem, cache, tMonitoring);
@@ -187,7 +188,7 @@ public class PoolImpl implements InternalPool {
   }
 
   protected PoolImpl(PoolManagerImpl pm, String name, Pool attributes,
-      List<LocatorAddress> locatorAddresses, InternalDistributedSystem distributedSystem,
+      List<HostAndPort> locatorAddresses, InternalDistributedSystem distributedSystem,
       InternalCache cache, ThreadsMonitoring threadMonitoring) {
     this.pm = pm;
     this.name = name;
@@ -224,8 +225,11 @@ public class PoolImpl implements InternalPool {
     }
     serverGroup = attributes.getServerGroup();
     multiuserSecureModeEnabled = attributes.getMultiuserAuthentication();
-    locators = attributes.getLocators();
-    servers = attributes.getServers();
+    locators = attributes.getLocators().stream()
+        .map(x -> new HostAndPort(x.getHostString(), x.getPort())).collect(Collectors.toList());
+    servers = attributes.getServers().stream()
+        .map(x -> new HostAndPort(x.getHostString(), x.getPort())).collect(
+            Collectors.toList());
     startDisabled =
         ((PoolFactoryImpl.PoolAttributes) attributes).startDisabled || !pm.isNormal();
     usedByGateway = ((PoolFactoryImpl.PoolAttributes) attributes).isGateway();
@@ -478,7 +482,7 @@ public class PoolImpl implements InternalPool {
 
   @Override
   public List<InetSocketAddress> getLocators() {
-    return locators;
+    return locators.stream().map(x -> x.getSocketInetAddress()).collect(Collectors.toList());
   }
 
   @Override
@@ -488,7 +492,7 @@ public class PoolImpl implements InternalPool {
 
   @Override
   public List<InetSocketAddress> getServers() {
-    return servers;
+    return servers.stream().map(x -> x.getSocketInetAddress()).collect(Collectors.toList());
   }
 
   public GatewaySender getGatewaySender() {
@@ -918,14 +922,10 @@ public class PoolImpl implements InternalPool {
   }
 
   /**
-   * Borrows a connection to a specific server from the pool.. Used by gateway and tests. Any
-   * connection
-   * that is acquired using this method must be returned using returnConnection, even if it is
-   * destroyed.
-   *
+   * Test hook that acquires and returns a connection from the pool with a given ServerLocation.
    */
   public Connection acquireConnection(ServerLocation loc) {
-    return manager.borrowConnection(loc, 15000L, false);
+    return manager.borrowConnection(loc, false);
   }
 
   /**

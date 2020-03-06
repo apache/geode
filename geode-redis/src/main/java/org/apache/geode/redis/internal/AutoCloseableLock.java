@@ -13,29 +13,24 @@
  * the License.
  *
  */
+package org.apache.geode.redis.internal;
 
-package org.apache.geode.management.internal.builder;
+import java.util.concurrent.locks.Lock;
 
-import org.apache.geode.cache.GemFireCache;
-import org.apache.geode.management.api.ConnectionConfig;
-import org.apache.geode.management.internal.api.BaseManagementServiceBuilder;
-import org.apache.geode.management.internal.api.GeodeConnectionConfig;
+/**
+ * Created by gosullivan on 3/10/17.
+ */
+public class AutoCloseableLock implements AutoCloseable {
+  private final Lock lock;
+  private final ByteArrayWrapper key;
 
-public class GeodeClusterManagementServiceBuilder
-    extends BaseManagementServiceBuilder<GeodeClusterManagementServiceBuilder> {
-
-  private GemFireCache cache;
-
-  public GemFireCache getCache() {
-    return cache;
+  public AutoCloseableLock(ByteArrayWrapper key, Lock lock) {
+    this.key = key;
+    this.lock = lock;
   }
 
-  public GeodeClusterManagementServiceBuilder setCache(GemFireCache cache) {
-    this.cache = cache;
-    return this;
-  }
-
-  protected ConnectionConfig createConnectionConfig() {
-    return new GeodeConnectionConfig(cache);
+  @Override
+  public void close() {
+    lock.unlock();
   }
 }

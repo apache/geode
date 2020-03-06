@@ -24,6 +24,7 @@ import org.apache.geode.annotations.Experimental;
 @Experimental
 public enum CommandType {
   CREATE,
+  CREATE_OR_UPDATE,
   READ,
   LIST,
   UPDATE,

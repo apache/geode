@@ -227,8 +227,8 @@ public class ManagementAgent {
               SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.JMX);
           final SocketCreator locatorSocketCreator = SocketCreatorFactory
               .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR);
-          System.setProperty(PULSE_USESSL_MANAGER, jmxSocketCreator.useSSL() + "");
-          System.setProperty(PULSE_USESSL_LOCATOR, locatorSocketCreator.useSSL() + "");
+          System.setProperty(PULSE_USESSL_MANAGER, jmxSocketCreator.forClient().useSSL() + "");
+          System.setProperty(PULSE_USESSL_LOCATOR, locatorSocketCreator.forClient().useSSL() + "");
 
           serviceAttributes.put(HttpService.GEODE_SSLCONFIG_SERVLET_CONTEXT_PARAM,
               createSslProps());
@@ -326,7 +326,7 @@ public class ManagementAgent {
     final SocketCreator socketCreator =
         SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.JMX);
 
-    final boolean ssl = socketCreator.useSSL();
+    final boolean ssl = socketCreator.forClient().useSSL();
 
     if (logger.isDebugEnabled()) {
       logger.debug("Starting jmx manager agent on port {}{}", port,
@@ -513,7 +513,7 @@ public class ManagementAgent {
 
     @Override
     public ServerSocket createServerSocket(int port) throws IOException {
-      return this.sc.createServerSocket(port, TCPConduit.getBackLog(), this.bindAddr);
+      return this.sc.forCluster().createServerSocket(port, TCPConduit.getBackLog(), this.bindAddr);
     }
   }
 }

@@ -16,7 +16,23 @@ package org.apache.geode.redis.internal.executor.hash;
 
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 
-
+/**
+ * <pre>
+ * Implements the HSETNX Redis command.
+ * This command sets field in the hash stored at key with the given value
+ *
+ * A new key holding a hash is created if key does not exist, .
+ * Nothing will be changed if field already exists.
+ *
+ * Examples:
+ *
+ * redis> HSETNX myhash field "Hello"
+ * (integer) 1
+ * redis> HSETNX myhash field "World"
+ * (integer) 0
+ * redis> HGET myhash field
+ * </pre>
+ */
 public class HSetNXExecutor extends HSetExecutor {
 
   @Override

@@ -20,15 +20,14 @@ import java.net.InetSocketAddress;
 
 import org.junit.Test;
 
-public class LocatorAddressTest {
+public class HostAndPortTest {
 
   /**
    * Test that getSocketInentAddress returns resolved InetSocketAddress
    */
   @Test
   public void Test_getSocketInentAddress_returns_resolved_SocketAddress() {
-    InetSocketAddress host1address = new InetSocketAddress(8080);
-    LocatorAddress locator1 = new LocatorAddress(host1address, "localhost");
+    HostAndPort locator1 = new HostAndPort("localhost", 8080);
 
     InetSocketAddress actual = locator1.getSocketInetAddress();
 
@@ -40,8 +39,7 @@ public class LocatorAddressTest {
    */
   @Test
   public void Test_getSocketInentAddress_returns_unresolved_SocketAddress() {
-    InetSocketAddress host1address = InetSocketAddress.createUnresolved("fakelocalhost", 8090);
-    LocatorAddress locator1 = new LocatorAddress(host1address, "fakelocalhost");
+    HostAndPort locator1 = new HostAndPort("fakelocalhost", 8090);
 
     InetSocketAddress actual = locator1.getSocketInetAddress();
 
@@ -49,61 +47,43 @@ public class LocatorAddressTest {
   }
 
   /**
-   * Test whether LocatorAddress are equal, when created from resolved and unresolved
+   * Test whether HostAndPort are equal, when created from resolved and unresolved
    * InetSocketAddress
    */
   @Test
   public void Test_equals_LocatorAddress_from_resolved_and_unresolved_SocketAddress() {
-    InetSocketAddress host1address = InetSocketAddress.createUnresolved("localhost", 8090);
-    LocatorAddress locator1 = new LocatorAddress(host1address, "localhost");
+    HostAndPort locator1 = new HostAndPort("localhost", 8080);
 
     InetSocketAddress host2address = locator1.getSocketInetAddress();
-    LocatorAddress locator2 = new LocatorAddress(host2address, "localhost");
+    HostAndPort locator2 = new HostAndPort("localhost", host2address.getPort());
 
-    assertThat(host1address.isUnresolved()).isTrue();
     assertThat(host2address.isUnresolved()).isFalse();
     assertThat(locator1.equals(locator2)).isTrue();
   }
 
   @Test
   public void Test_getPort_returns_port() {
-    InetSocketAddress host1address = InetSocketAddress.createUnresolved("localhost", 8090);
-    LocatorAddress locator1 = new LocatorAddress(host1address, "localhost");
+    HostAndPort locator1 = new HostAndPort("localhost", 8090);
     assertThat(locator1.getPort()).isEqualTo(8090);
   }
 
   @Test
   public void Test_getHostName_returns_hostname() {
-    InetSocketAddress host1address = InetSocketAddress.createUnresolved("fakelocalhost", 8091);
-    LocatorAddress locator1 = new LocatorAddress(host1address, "fakelocalhost");
+    HostAndPort locator1 = new HostAndPort("fakelocalhost", 8091);
     assertThat(locator1.getHostName()).isEqualTo("fakelocalhost");
   }
 
   @Test
   public void Test_hashCode_of_SocketAddress() {
     InetSocketAddress host1address = InetSocketAddress.createUnresolved("fakelocalhost", 8091);
-    LocatorAddress locator1 = new LocatorAddress(host1address, "fakelocalhost");
+    HostAndPort locator1 = new HostAndPort("fakelocalhost", 8091);
     assertThat(locator1.hashCode()).isEqualTo(host1address.hashCode());
   }
 
   @Test
   public void Test_toString_LocatorAddress() {
-    InetSocketAddress host1address = InetSocketAddress.createUnresolved("fakelocalhost", 8091);
-    LocatorAddress locator1 = new LocatorAddress(host1address, "fakelocalhost");
+    HostAndPort locator1 = new HostAndPort("fakelocalhost", 8091);
     assertThat(locator1.toString()).contains("socketInetAddress");
   }
 
-  @Test
-  public void Test_isIpString_for_LocatorAddress_constructed_from_IPstring() {
-    InetSocketAddress host1address = new InetSocketAddress(8080);
-    LocatorAddress locator1 = new LocatorAddress(host1address, "127.0.0.1");
-    assertThat(locator1.isIpString()).isTrue();
-  }
-
-  @Test
-  public void Test_isIpString_for_LocatorAddress_constructed_from_hostname() {
-    InetSocketAddress host1address = new InetSocketAddress(8080);
-    LocatorAddress locator1 = new LocatorAddress(host1address, "localhost");
-    assertThat(locator1.isIpString()).isFalse();
-  }
 }

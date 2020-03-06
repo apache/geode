@@ -12,16 +12,28 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.distributed.internal.membership.gms.membership;
+package org.apache.geode.redis;
 
-import java.net.InetSocketAddress;
+import static org.junit.Assert.assertEquals;
 
-import org.apache.geode.distributed.internal.tcpserver.LocatorAddress;
+import com.github.davidmoten.geo.LatLong;
+import org.junit.Test;
 
-public class HostAddress extends LocatorAddress {
+import org.apache.geode.redis.internal.CoderException;
+import org.apache.geode.redis.internal.GeoCoder;
 
-  public HostAddress(InetSocketAddress loc, String locStr) {
-    super(loc, locStr);
+public class GeoCoderIntegrationTest {
+  @Test
+  public void testGeoHash() throws CoderException {
+    String hash = GeoCoder.geohash(Double.toString(13.361389).getBytes(),
+        Double.toString(38.115556).getBytes());
+    assertEquals("sqc8b49rnyte", hash);
   }
 
+  @Test
+  public void testGeoPos() throws CoderException {
+    LatLong pos = GeoCoder.geoPos("sqc8b49rnyte");
+    assertEquals(13.361389, pos.getLon(), 0.000001);
+    assertEquals(38.115556, pos.getLat(), 0.000001);
+  }
 }

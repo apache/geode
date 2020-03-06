@@ -1268,7 +1268,6 @@ public class HyperLogLogPlus implements ICardinality, Serializable {
    * <p/>
    * Has two procedures based on current mode. 'Normal' mode works similar to HLL but has some new
    * bias corrections. 'Sparse' mode is linear counting.
-   *
    */
   @Override
   public long cardinality() {
@@ -1810,7 +1809,7 @@ public class HyperLogLogPlus implements ICardinality, Serializable {
   /**
    * This class exists to support Externalizable semantics for HyperLogLog objects without having to
    * expose a public constructor, public write/read methods, or pretend final fields aren't final.
-   *
+   * <p>
    * In short, Externalizable allows you to skip some of the more verbose meta-data default
    * Serializable gets you, but still includes the class name. In that sense, there is some cost to
    * this holder object because it has a longer class name. I imagine people who care about

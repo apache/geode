@@ -11,31 +11,42 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
+ *
  */
 package org.apache.geode.redis.internal.executor;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import java.util.regex.Pattern;
-
+import io.netty.buffer.UnpooledByteBufAllocator;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.mockito.Mockito;
 
-import org.apache.geode.test.junit.categories.RedisTest;
+import org.apache.geode.redis.internal.Command;
+import org.apache.geode.redis.internal.ExecutionHandlerContext;
 
-@Category({RedisTest.class})
-public class AbstractScanExecutorTest {
-
+/**
+ * Test for the UnkownExecutor
+ *
+ *
+ */
+public class UnkownExecutorJUnitTest {
+  /**
+   * Test the execution method
+   */
   @Test
-  public void shouldBeMockable() throws Exception {
-    AbstractScanExecutor mockAbstractScanExecutor = mock(AbstractScanExecutor.class);
-    Pattern pattern = Pattern.compile(".");
+  public void testExecuteCommand() {
+    UnkownExecutor exe = new UnkownExecutor();
 
-    when(mockAbstractScanExecutor.convertGlobToRegex(eq("pattern"))).thenReturn(pattern);
+    Command command = Mockito.mock(Command.class);
+    ExecutionHandlerContext context = Mockito.mock(ExecutionHandlerContext.class);
 
-    assertThat(mockAbstractScanExecutor.convertGlobToRegex("pattern")).isSameAs(pattern);
+
+    UnpooledByteBufAllocator byteBuf = new UnpooledByteBufAllocator(false);
+    Mockito.when(context.getByteBufAllocator()).thenReturn(byteBuf);
+
+    exe.executeCommand(command, context);
+
+    // verify the response was set
+    Mockito.verify(command).setResponse(Mockito.any());
+
   }
+
 }

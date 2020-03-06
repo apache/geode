@@ -36,7 +36,8 @@ You can also connect to a remote locator using the HTTP protocol, as illustrated
 
 ``` pre
 connect [--locator=value] [--jmx-manager=value] [--use-http(=value)?] [--url=value]
-    [--user=value][--password=value] [--key-store=value] [--key-store-password=value]
+    [--user=value] [--password=value] [--token=value]
+    [--key-store=value] [--key-store-password=value]
     [--trust-store=value] [--trust-store-password=value] [--ciphers=value]
     [--protocols=value] [--security-properties-file=value] [--use-ssl(=value)?]
     [--skip-ssl-validation(=value)?]
@@ -87,13 +88,25 @@ connect [--locator=value] [--jmx-manager=value] [--use-http(=value)?] [--url=val
 <td>The user name of the credential to use in authentication when connecting
 to the JMX manager.
 When specified, if the <code>--password</code> option is not also specified,
-<code>gfsh</code> will prompt for the password.</td>
+<code>gfsh</code> will prompt for the password.
+This option cannot be used with <code>--token</code>.
+</td>
 <td> </td>
 </tr>
 <tr>
 <td><span class="keyword parmname">\-\-password</span></td>
 <td>The password portion of the credential to use in authentication 
 when connecting to the JMX manager.
+This option cannot be used with <code>--token</code>.
+</td>
+<td> </td>
+</tr>
+<tr>
+<td><span class="keyword parmname">\-\-token</span></td>
+<td>The OAuth token to use in authentication
+when connecting to the JMX manager. This token will be given to
+<code>SecurityManager.authenticate</code> on the JMX manager.
+This option cannot be used with <code>--user</code> or <code>--password</code>.
 </td>
 <td> </td>
 </tr>
@@ -184,5 +197,7 @@ http://myLocatorHost.example.com:8080/gemfire/v1
 "jmx password must be specified.";
 "Could not connect to : {0}. {1}";
 "Could not find a GemFire jmx-manager service running at {0}.";
+"--token requires a value, for example --token=foo";
+"--token cannot be combined with --user or --password";
 "Could not connect to GemFire Locator service at {0}."
 ```

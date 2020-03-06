@@ -38,7 +38,6 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.monitoring.ThreadsMonitoringImpl;
 import org.apache.geode.internal.monitoring.ThreadsMonitoringImplDummy;
-import org.apache.geode.internal.tcp.Connection;
 import org.apache.geode.internal.tcp.ConnectionTable;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
@@ -375,7 +374,6 @@ public class ClusterOperationExecutors implements OperationExecutors {
     FunctionExecutionPooledExecutor.setIsFunctionExecutionThread(Boolean.TRUE);
     try {
       ConnectionTable.threadWantsSharedResources();
-      Connection.makeReaderThread();
       runUntilShutdown(command);
     } finally {
       ConnectionTable.releaseThreadsSockets();
@@ -388,7 +386,6 @@ public class ClusterOperationExecutors implements OperationExecutors {
     stats.incNumProcessingThreads(1);
     try {
       ConnectionTable.threadWantsSharedResources();
-      Connection.makeReaderThread();
       runUntilShutdown(command);
     } finally {
       ConnectionTable.releaseThreadsSockets();
@@ -400,7 +397,6 @@ public class ClusterOperationExecutors implements OperationExecutors {
     stats.incHighPriorityThreads(1);
     try {
       ConnectionTable.threadWantsSharedResources();
-      Connection.makeReaderThread();
       runUntilShutdown(command);
     } finally {
       ConnectionTable.releaseThreadsSockets();
@@ -412,7 +408,6 @@ public class ClusterOperationExecutors implements OperationExecutors {
     stats.incWaitingThreads(1);
     try {
       ConnectionTable.threadWantsSharedResources();
-      Connection.makeReaderThread();
       runUntilShutdown(command);
     } finally {
       ConnectionTable.releaseThreadsSockets();
@@ -424,7 +419,6 @@ public class ClusterOperationExecutors implements OperationExecutors {
     stats.incPartitionedRegionThreads(1);
     try {
       ConnectionTable.threadWantsSharedResources();
-      Connection.makeReaderThread();
       runUntilShutdown(command);
     } finally {
       ConnectionTable.releaseThreadsSockets();
@@ -436,7 +430,6 @@ public class ClusterOperationExecutors implements OperationExecutors {
     stats.incNumSerialThreads(1);
     try {
       ConnectionTable.threadWantsSharedResources();
-      Connection.makeReaderThread();
       runUntilShutdown(command);
     } finally {
       ConnectionTable.releaseThreadsSockets();
@@ -816,7 +809,6 @@ public class ClusterOperationExecutors implements OperationExecutors {
 
     private void doSerialPooledThread(Runnable command) {
       ConnectionTable.threadWantsSharedResources();
-      Connection.makeReaderThread();
       try {
         command.run();
       } finally {

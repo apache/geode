@@ -22,7 +22,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 
 import org.apache.geode.examples.SimpleSecurityManager;
-import org.apache.geode.management.internal.builder.GeodeClusterManagementServiceBuilder;
+import org.apache.geode.management.builder.GeodeClusterManagementServiceBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.ClientCacheRule;

@@ -23,6 +23,7 @@ import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
 
+import org.apache.geode.management.api.CommandType;
 import org.apache.geode.management.runtime.DeploymentInfo;
 
 public class Deployment extends GroupableConfiguration<DeploymentInfo> implements HasFile {
@@ -121,5 +122,10 @@ public class Deployment extends GroupableConfiguration<DeploymentInfo> implement
   @Override
   public int hashCode() {
     return Objects.hash(fileName, deployedTime, deployedBy);
+  }
+
+  @Override
+  public CommandType getCreationCommandType() {
+    return CommandType.CREATE_OR_UPDATE;
   }
 }

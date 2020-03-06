@@ -41,11 +41,12 @@ public class PersistExecutor extends AbstractExecutor {
 
     boolean canceled = context.getRegionProvider().cancelKeyExpiration(key);
 
-    if (canceled)
+    if (canceled) {
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), TIMEOUT_REMOVED));
-    else
+    } else {
       command.setResponse(
           Coder.getIntegerResponse(context.getByteBufAllocator(), KEY_NOT_EXIST_OR_NO_TIMEOUT));
+    }
   }
 
 }

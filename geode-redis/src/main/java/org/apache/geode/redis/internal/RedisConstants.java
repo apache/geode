@@ -199,7 +199,7 @@ public class RedisConstants {
     public static final String SMOVE =
         "The wrong number of arguments or syntax was provided, the format for the SMOVE command is \"SMOVE source destination member\"";
     public static final String SPOP =
-        "The wrong number of arguments or syntax was provided, the format for the SPOP command is \"SPOP key\"";
+        "The wrong number of arguments or syntax was provided, the format for the SPOP command is \"SPOP key [count]\"";
     public static final String SRANDMEMBER =
         "The wrong number of arguments or syntax was provided, the format for the SRANDMEMBER command is \"SRANDMEMBER key [count]\"";
     public static final String SREM =
