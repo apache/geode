@@ -327,6 +327,7 @@ public class RebalanceOperationPerformer {
 
     if (listMemberRegion.size() == 0) {
       rebalanceResult.setStatusMessage(CliStrings.REBALANCE__MSG__NO_REBALANCING_REGIONS_ON_DS);
+      rebalanceResult.setSuccess(true);
       return rebalanceResult;
     }
 
@@ -384,11 +385,10 @@ public class RebalanceOperationPerformer {
                 break;
               } else {
                 if (i == memberPR.dsMemberList.size() - 1) {
-                  errors.add(
-                      MessageFormat.format(
-                          CliStrings.REBALANCE__MSG__NO_EXECUTION_FOR_REGION_0_ON_MEMBERS_1,
-                          memberPR.region, listOfAllMembers(memberPR.dsMemberList)) + ", " +
-                          CliStrings.REBALANCE__MSG__MEMBERS_MIGHT_BE_DEPARTED);
+                  // The last member hosting this region departed so no need to rebalance it.
+                  // So act as if we never tried to rebalance this region.
+                  // Break to get out of this inner loop and try the next region (if any).
+                  break;
                 } else {
                   continue;
                 }
