@@ -54,7 +54,7 @@ public class TXFailoverOpTest {
   }
 
   private OpExecutorImpl getTestableOpExecutorImpl() {
-    return new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, 3, 10,
+    return new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, 3, 10, -1,
         cancelCriterion, mockPool) {
 
       @Override

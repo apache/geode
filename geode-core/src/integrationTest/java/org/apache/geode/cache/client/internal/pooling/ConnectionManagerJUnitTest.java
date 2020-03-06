@@ -363,9 +363,12 @@ public class ConnectionManagerJUnitTest {
         elapsedMillis >= BORROW_TIMEOUT_MILLIS - ALLOWABLE_ERROR_IN_MILLIS);
   }
 
-
+  /*
+   * Test borrow connection toward specific server. Max connection is 5, and there are free
+   * connections in pool.
+   */
   @Test
-  public void testSingleHopRetryConnection()
+  public void test_borrow_connection_toward_specific_server_freeConnections()
       throws InterruptedException, AllConnectionsInUseException, NoAvailableServersException {
     final long idleTimeoutMillis = 300;
     final long BORROW_TIMEOUT_MILLIS = 500;
@@ -376,9 +379,44 @@ public class ConnectionManagerJUnitTest {
 
     await().until(() -> manager.getConnectionCount() == 1);
 
+    // seize connection toward any server
     Connection conn1 = manager.borrowConnection(BORROW_TIMEOUT_MILLIS);
     Connection conn2 = manager.borrowConnection(BORROW_TIMEOUT_MILLIS);
 
+    long startNanos = nowNanos();
+    try {
+      manager.borrowConnection(new ServerLocation("localhost", 5), BORROW_TIMEOUT_MILLIS, true);
+    } catch (AllConnectionsInUseException e) {
+      fail("Didn't get connection");
+    }
+
+  }
+
+
+  /*
+   * Test borrow connection toward specific server. Max connection is 5, and there is no free
+   * connections in pool.
+   * After connection is returned to pool, since is not toward this specific server, wait for
+   * idleTimeoutMillis,
+   * so after expire (and pool size is reduced to 4) it can be seized.
+   */
+  @Test
+  public void test_borrow_connection_toward_specific_server_no_freeConnection_wait_idleTimeout_to_expire()
+      throws InterruptedException, AllConnectionsInUseException, NoAvailableServersException {
+    final long idleTimeoutMillis = 300;
+    final long BORROW_TIMEOUT_MILLIS = 500;
+    manager =
+        new ConnectionManagerImpl("pool", factory, endpointManager, 5, 1, idleTimeoutMillis, -1,
+            logger, 60 * 1000, cancelCriterion, poolStats);
+    manager.start(background);
+
+    await().until(() -> manager.getConnectionCount() == 1);
+
+    // seize connection toward any server
+    Connection conn1 = manager.borrowConnection(BORROW_TIMEOUT_MILLIS);
+    Connection conn2 = manager.borrowConnection(BORROW_TIMEOUT_MILLIS);
+
+    // Seize connection toward this specific server
     Connection ping1 =
         manager.borrowConnection(new ServerLocation("localhost", 5), BORROW_TIMEOUT_MILLIS, true);
     Connection ping2 =
@@ -396,13 +434,20 @@ public class ConnectionManagerJUnitTest {
     } catch (AllConnectionsInUseException e) {
       fail("Didn't get connection");
     }
+
     long elapsedMillis = elapsedMillis(startNanos);
     Assert.assertTrue("Elapsed = " + elapsedMillis,
-        elapsedMillis < BORROW_TIMEOUT_MILLIS - ALLOWABLE_ERROR_IN_MILLIS);
+        elapsedMillis >= idleTimeoutMillis - ALLOWABLE_ERROR_IN_MILLIS);
   }
 
+  /*
+   * Test borrow connection toward specific server (use). Max connection is 5, and there is no free
+   * connections in pool.
+   * We are waiting for returnConnection for connection toward this specific server.
+   * After it is returned, we will reuse it.
+   */
   @Test
-  public void testSingleHopRetryConnection2()
+  public void test_borrow_connection_toward_specific_server_no_freeConnection_wait_returnConnection_toward_this_server()
       throws InterruptedException, AllConnectionsInUseException, NoAvailableServersException {
     final long idleTimeoutMillis = 800;
     final long BORROW_TIMEOUT_MILLIS = 500;
@@ -413,9 +458,11 @@ public class ConnectionManagerJUnitTest {
 
     await().until(() -> manager.getConnectionCount() == 1);
 
+    // seize connection toward any server
     Connection conn1 = manager.borrowConnection(BORROW_TIMEOUT_MILLIS);
     Connection conn2 = manager.borrowConnection(BORROW_TIMEOUT_MILLIS);
 
+    // Seize connection toward this specific server
     Connection ping1 =
         manager.borrowConnection(new ServerLocation("localhost", 5), BORROW_TIMEOUT_MILLIS, true);
     Connection ping2 =
@@ -435,7 +482,7 @@ public class ConnectionManagerJUnitTest {
     }
     long elapsedMillis = elapsedMillis(startNanos);
     Assert.assertTrue("Elapsed = " + elapsedMillis,
-        elapsedMillis < BORROW_TIMEOUT_MILLIS - ALLOWABLE_ERROR_IN_MILLIS);
+        elapsedMillis < idleTimeoutMillis - ALLOWABLE_ERROR_IN_MILLIS);
   }
 
 

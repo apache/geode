@@ -172,6 +172,7 @@ public class AcceptorImplDUnitTest extends JUnit4DistributedTestCase {
         clientCacheFactory.setPoolRetryAttempts(1);
         clientCacheFactory.setPoolMaxConnections(1);
         clientCacheFactory.setPoolFreeConnectionTimeout(1000);
+        clientCacheFactory.setPoolServerConnectionTimeout(1000);
         ClientCache clientCache = clientCacheFactory.create();
         Region<Object, Object> clientRegion1 =
             clientCache.createClientRegionFactory(ClientRegionShortcut.PROXY).create("region1");

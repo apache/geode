@@ -90,7 +90,7 @@ public class ConnectionManagerImplTest {
   }
 
   @Test
-  public void borrowConnectionThrowsWhenUsingExistingConnectionsAndNoConnectionsExist() {
+  public void borrowConnectionThrowsWhenUsingExistingConnectionsAndNoFreeConnectionsExist() {
     ServerLocation serverLocation = mock(ServerLocation.class);
     Connection connection = mock(Connection.class);
 
