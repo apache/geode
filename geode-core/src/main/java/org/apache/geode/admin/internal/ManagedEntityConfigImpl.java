@@ -61,7 +61,7 @@ public abstract class ManagedEntityConfigImpl implements ManagedEntityConfig {
    */
   protected static String getLocalHostName() {
     try {
-      return LocalHostUtil.getLocalHost().getCanonicalHostName();
+      return LocalHostUtil.getCanonicalLocalHostName();
 
     } catch (UnknownHostException ex) {
       IllegalStateException ex2 = new IllegalStateException(

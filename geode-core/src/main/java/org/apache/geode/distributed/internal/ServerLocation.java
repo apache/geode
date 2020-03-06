@@ -112,7 +112,7 @@ public class ServerLocation implements DataSerializable, Comparable<ServerLocati
     } else if (!hostName.equals(other.hostName)) {
       String canonicalHostName;
       try {
-        canonicalHostName = LocalHostUtil.getLocalHost().getCanonicalHostName();
+        canonicalHostName = LocalHostUtil.getCanonicalLocalHostName();
       } catch (UnknownHostException e) {
         throw new IllegalStateException("getLocalHost failed with " + e);
       }

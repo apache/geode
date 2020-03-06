@@ -1318,7 +1318,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
   public void onConnect(InternalDistributedSystem sys) {
     try {
       locatorStats.hookupStats(sys,
-          LocalHostUtil.getLocalHost().getCanonicalHostName() + '-' + membershipLocator
+          LocalHostUtil.getCanonicalLocalHostName() + '-' + membershipLocator
               .getBindAddress());
     } catch (UnknownHostException e) {
       logger.warn(e);

@@ -95,7 +95,7 @@ public class ServerLocator implements TcpHandler, RestartHandler, DistributionAd
 
   ServerLocator() throws IOException {
     this.port = 10334;
-    this.hostName = LocalHostUtil.getLocalHost().getCanonicalHostName();
+    this.hostName = LocalHostUtil.getCanonicalLocalHostName();
     this.hostNameForClients = this.hostName;
     this.logFile = null;
     this.memberName = null;
@@ -114,7 +114,7 @@ public class ServerLocator implements TcpHandler, RestartHandler, DistributionAd
     this.port = port;
 
     if (bindAddress == null) {
-      this.hostName = LocalHostUtil.getLocalHost().getCanonicalHostName();
+      this.hostName = LocalHostUtil.getCanonicalLocalHostName();
     } else {
       this.hostName = bindAddress.getHostAddress();
     }

@@ -562,9 +562,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
         return getServerBindAddress().getCanonicalHostName();
       }
 
-      final InetAddress localhost = LocalHostUtil.getLocalHost();
-
-      return localhost.getCanonicalHostName();
+      return LocalHostUtil.getCanonicalLocalHostName();
     } catch (UnknownHostException handled) {
       // Returning localhost/127.0.0.1 implies the serverBindAddress was null and no IP address
       // for localhost could be found

@@ -147,6 +147,9 @@ public class SocketCreator extends TcpSocketCreatorImpl {
   // -------------------------------------------------------------------------
 
   /**
+   * This method has migrated to LocalHostUtil but is kept in place here for
+   * backward-compatibility testing.
+   *
    * @deprecated use LocalHostUtil.getLocalHost()
    */
   public static InetAddress getLocalHost() throws UnknownHostException {
