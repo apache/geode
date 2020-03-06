@@ -192,10 +192,6 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   @MutableForTesting
   public static boolean ignoreReconnect = false;
 
-  /**
-   * Lock to prevent multiple threads on this member from performing a clear at the same time.
-   */
-  private final Object clearLock = new Object();
   private final ReentrantReadWriteLock failedInitialImageLock = new ReentrantReadWriteLock(true);
 
   @MakeNotStatic
@@ -931,11 +927,6 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
       logger.fatal("Unexpected exception:",
           e);
     }
-  }
-
-  private void lockCheckReadiness() {
-    cache.getCancelCriterion().checkCancelInProgress(null);
-    checkReadiness();
   }
 
   @Override
