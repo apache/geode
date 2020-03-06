@@ -470,6 +470,11 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   private final Lock clientMetaDataLock = new ReentrantLock();
 
   /**
+   * Lock to prevent multiple threads on this member from performing a clear at the same time.
+   */
+  protected final Object clearLock = new Object();
+
+  /**
    * Lock for updating the cache service profile for the region.
    */
   private final Lock cacheServiceProfileUpdateLock = new ReentrantLock();
@@ -2755,6 +2760,11 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   @Override
   public void checkReadiness() {
     checkRegionDestroyed(true);
+  }
+
+  protected void lockCheckReadiness() {
+    cache.getCancelCriterion().checkCancelInProgress(null);
+    checkReadiness();
   }
 
   /**
