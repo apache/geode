@@ -105,7 +105,7 @@ public class RebalanceIntegrationTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.operationResult.statusMessage",
                 Matchers.containsString("has no regions")))
-            .andExpect(jsonPath("$.operationResult.success", Matchers.is(false)));
+            .andExpect(jsonPath("$.operationResult.success", Matchers.is(true)));
         return;
       }
     }
