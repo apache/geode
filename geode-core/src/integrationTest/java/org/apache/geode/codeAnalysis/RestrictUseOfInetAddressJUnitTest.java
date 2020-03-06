@@ -33,6 +33,18 @@ import org.junit.Test;
 import org.apache.geode.codeAnalysis.decode.CompiledClass;
 import org.apache.geode.test.junit.rules.ClassAnalysisRule;
 
+/**
+ * This test restricts use of certain classes and interfaces for early detection of
+ * potential problems for client caches that access servers through a gateway. Those
+ * caches will not be able to resolve locator or server host names, so we limit the
+ * use of host name resolution.
+ * <p>
+ *
+ * Each test has an exclusion list that holds the paths of classes that are allowed
+ * to reference the restricted classes/methods. Adding a class to that list will
+ * keep the test from complaining about any references it makes to the restricted
+ * classes/methods.
+ */
 public class RestrictUseOfInetAddressJUnitTest {
 
   @Rule
@@ -52,7 +64,7 @@ public class RestrictUseOfInetAddressJUnitTest {
   @Test
   public void restrictUseOfInetAddressMethods() {
     Map<String, CompiledClass> classes = classProvider.getClasses();
-    Set<String> exclusions = getExclusions();
+    Set<String> exclusions = getSanctionedReferencersOfInetAddress();
 
     assertExcludedClassesExist(classes, exclusions);
 
@@ -79,10 +91,93 @@ public class RestrictUseOfInetAddressJUnitTest {
   }
 
   /**
+   * The deprecated Admin service holds two InetAddress utiltity classes that
+   * should not be used outside of the admin package.
+   */
+  @Test
+  public void restrictUseOfDeprecatedAdminInetAddressUtils() {
+    Map<String, CompiledClass> classes = classProvider.getClasses();
+    Set<String> exclusions = new HashSet<>(Arrays.asList(
+        "org/apache/geode/admin/internal/AdminDistributedSystemImpl",
+        "org/apache/geode/admin/internal/ConfigurationParameterImpl",
+        "org/apache/geode/admin/internal/DistributedSystemConfigImpl",
+        "org/apache/geode/admin/internal/DistributionLocatorConfigImpl",
+        "org/apache/geode/admin/internal/ManagedEntityConfigImpl",
+        "org/apache/geode/admin/internal/SystemMemberImpl",
+        "org/apache/geode/admin/jmx/internal/AgentConfigImpl",
+        "org/apache/geode/admin/jmx/internal/MX4JServerSocketFactory"));
+
+    assertExcludedClassesExist(classes, exclusions);
+
+    StringWriter writer = new StringWriter();
+
+    final List<String> classNames = Arrays.asList(
+        "org/apache/geode/admin/internal/InetAddressUtils",
+        "org/apache/geode/admin/internal/InetAddressUtilsWithLogging");
+
+    for (String className : classNames) {
+      classes.remove(className);
+    }
+
+    assertExclusionsUseClasses(classes, exclusions, classNames);
+    searchForClassReferences(classes, exclusions, classNames, writer);
+
+    // use an assertion on the StringWriter rather than the failure count so folks can
+    // tell what failed
+    String actual = writer.toString();
+    String expected = "";
+    assertThat(actual)
+        .withFailMessage(
+            "Unexpected use of restricted InetAddress utility methods need to be sanctioned by this test.\n"
+                + "Use of these methods can cause off-platform errors when using a service gateway.\n"
+                + actual)
+        .isEqualTo(expected);
+  }
+
+  /**
+   * Look for new uses of restricted classes
+   */
+  private void searchForClassReferences(Map<String, CompiledClass> classes, Set<String> exclusions,
+      List<String> referencedClasses, StringWriter writer) {
+    final List<String> keys = new ArrayList<>(classes.keySet());
+    Collections.sort(keys);
+    for (String className : keys) {
+      if (exclusions.contains(className)) {
+        continue;
+      }
+      CompiledClass compiledClass = classes.get(className);
+      for (String referencedClass : referencedClasses) {
+        if (compiledClass.refersToClass(referencedClass)) {
+          writer.append(className).append(" uses ").append(referencedClass).append("\n");
+        }
+      }
+    }
+  }
+
+  /**
+   * Ensure that the classes in the exclusions list still reference restricted classes.
+   */
+  private void assertExclusionsUseClasses(Map<String, CompiledClass> classes,
+      Set<String> exclusions, List<String> referencedClasses) {
+    for (String className : exclusions) {
+      boolean foundOne = false;
+      CompiledClass excludedClass = classes.get(className);
+      for (String referencedClass : referencedClasses) {
+        if (excludedClass.refersToClass(referencedClass)) {
+          foundOne = true;
+          break;
+        }
+      }
+      assertThat(foundOne).withFailMessage(className + " no longer references restricted "
+          + "classes and should be removed from this tests exclusion list");
+    }
+  }
+
+  /**
    * These classes are known to use restricted methods and references to those methods
    * will not cause the test to fail.
    */
-  private HashSet<String> getExclusions() {
+  private HashSet<String> getSanctionedReferencersOfInetAddress() {
     return new HashSet<>(Arrays.asList(
         // old admin API
         "org/apache/geode/admin/GemFireMemberStatus",
