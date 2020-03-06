@@ -35,18 +35,18 @@ import org.apache.geode.util.internal.GeodeGlossary;
  *
  * @since 8.0
  */
-public class ChangeLogLevelFunction implements InternalFunction {
+public class ChangeLogLevelFunction implements InternalFunction<Object[]> {
   private static final Logger logger = LogService.getLogger();
   private static final long serialVersionUID = 1L;
 
   public static final String ID = ChangeLogLevelFunction.class.getName();
 
   @Override
-  public void execute(FunctionContext context) {
+  public void execute(FunctionContext<Object[]> context) {
     InternalCache cache = (InternalCache) context.getCache();
     Map<String, String> result = new HashMap<>();
     try {
-      Object[] args = (Object[]) context.getArguments();
+      Object[] args = context.getArguments();
       String logLevel = (String) args[0];
 
       Level log4jLevel = LogLevel.getLevel(logLevel);

@@ -21,7 +21,6 @@ import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.execute.FunctionContext;
@@ -42,6 +41,7 @@ public class ExportConfigFunction implements InternalFunction<Object> {
   private static final long serialVersionUID = 1L;
 
   @Override
+  @SuppressWarnings("deprecation")
   public void execute(FunctionContext<Object> context) {
     // Declared here so that it's available when returning a Throwable
     String memberId = "";
@@ -104,11 +104,11 @@ public class ExportConfigFunction implements InternalFunction<Object> {
       context.getResultSender().lastResult(result);
 
     } catch (VirtualMachineError e) {
-      SystemFailure.initiateFailure(e);
+      org.apache.geode.SystemFailure.initiateFailure(e);
       throw e;
 
     } catch (Throwable th) {
-      SystemFailure.checkFailure();
+      org.apache.geode.SystemFailure.checkFailure();
       logger.error("Could not export config {}", th.getMessage(), th);
       CliFunctionResult result = new CliFunctionResult(memberId, th, null);
       context.getResultSender().lastResult(result);

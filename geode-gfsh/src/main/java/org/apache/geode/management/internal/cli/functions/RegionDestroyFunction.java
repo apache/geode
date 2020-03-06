@@ -30,7 +30,7 @@ import org.apache.geode.management.internal.functions.CliFunctionResult;
  *
  * @since GemFire 7.0
  */
-public class RegionDestroyFunction implements InternalFunction {
+public class RegionDestroyFunction implements InternalFunction<String> {
   private static final long serialVersionUID = 9172773671865750685L;
 
   @Immutable
@@ -44,21 +44,20 @@ public class RegionDestroyFunction implements InternalFunction {
   }
 
   @Override
-  public void execute(FunctionContext context) {
-    String regionPath = null;
+  @SuppressWarnings("deprecation")
+  public void execute(FunctionContext<String> context) {
+    String regionPath = context.getArguments();
     String memberName = context.getMemberName();
 
     try {
       String functionId = context.getFunctionId();
-      Object arguments = context.getArguments();
 
-      if (!getId().equals(functionId) || arguments == null) {
+      if (!getId().equals(functionId) || regionPath == null) {
         context.getResultSender().lastResult(new CliFunctionResult("", false,
             "Function Id mismatch or arguments is not available."));
         return;
       }
 
-      regionPath = (String) arguments;
       Cache cache = ((InternalCache) context.getCache()).getCacheForProcessingClientRequests();
       Region<?, ?> region = cache.getRegion(regionPath);
       // the region is already destroyed by another member

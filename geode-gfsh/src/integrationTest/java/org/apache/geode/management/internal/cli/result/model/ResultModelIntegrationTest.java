@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -37,7 +38,7 @@ public class ResultModelIntegrationTest {
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     result = new ResultModel();
     result.addFile("test1.txt", "hello");
     result.addFile("test2.txt", "hello again");
@@ -51,7 +52,7 @@ public class ResultModelIntegrationTest {
   }
 
   @Test
-  public void savesToNullThrowException() throws IOException {
+  public void savesToNullThrowException() {
     assertThatThrownBy(() -> result.saveFileTo(null)).isInstanceOf(NullPointerException.class);
   }
 
@@ -64,7 +65,7 @@ public class ResultModelIntegrationTest {
   @Test
   public void dirNotExistBefore() throws IOException {
     File dir = temporaryFolder.newFolder("test");
-    dir.delete();
+    Files.delete(dir.toPath());
 
     result.saveFileTo(dir);
     assertThat(dir).exists();
@@ -79,6 +80,7 @@ public class ResultModelIntegrationTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   public void modelCommandResultShouldNotDealWithFiles() throws IOException {
     result.saveFileTo(temporaryFolder.newFolder("test"));
     CommandResult commandResult = new CommandResult(result);

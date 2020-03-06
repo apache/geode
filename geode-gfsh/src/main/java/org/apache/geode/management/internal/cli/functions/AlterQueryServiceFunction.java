@@ -41,6 +41,8 @@ public class AlterQueryServiceFunction extends CliFunction<Object[]> {
       "MethodInvocationAuthorizer class name must not be empty.";
   public static final String SECURITY_NOT_ENABLED_MESSAGE =
       "Integrated security is not enabled for this distributed system. Updating the method authorizer requires integrated security to be enabled.";
+
+  @SuppressWarnings("deprecation")
   public static final String DEPRECATED_PROPERTY_ERROR = "Deprecated System Property: \""
       + ALLOW_UNTRUSTED_METHOD_INVOCATION_SYSTEM_PROPERTY
       + "\" is set to TRUE. In order to use a MethodInvocationAuthorizer, this property must be FALSE or undefined.";

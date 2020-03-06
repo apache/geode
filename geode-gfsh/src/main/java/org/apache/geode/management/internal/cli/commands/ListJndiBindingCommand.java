@@ -19,16 +19,13 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.logging.log4j.Logger;
 import org.springframework.shell.core.annotation.CliCommand;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.JndiBindingsType;
-import org.apache.geode.cache.execute.Function;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.functions.ListJndiBindingFunction;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
@@ -39,13 +36,12 @@ import org.apache.geode.security.ResourcePermission;
 
 public class ListJndiBindingCommand extends GfshCommand {
 
-  private static final Logger logger = LogService.getLogger();
-
   public static final String LIST_JNDIBINDING = "list jndi-binding";
   private static final String LIST_JNDIBINDING__HELP =
       "List all jndi bindings, active and configured. An active binding is one that is bound to the server's jndi context (and also listed in the cluster config). A configured binding is one that is listed in the cluster config, but may not be active on the servers.";
   @Immutable
-  private static final Function LIST_BINDING_FUNCTION = new ListJndiBindingFunction();
+  private static final ListJndiBindingFunction LIST_BINDING_FUNCTION =
+      new ListJndiBindingFunction();
 
   @CliCommand(value = LIST_JNDIBINDING, help = LIST_JNDIBINDING__HELP)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
@@ -55,7 +51,7 @@ public class ListJndiBindingCommand extends GfshCommand {
     TabularResultModel configTable = null;
 
     InternalConfigurationPersistenceService ccService =
-        (InternalConfigurationPersistenceService) getConfigurationPersistenceService();
+        getConfigurationPersistenceService();
     if (ccService != null) {
       configTable = resultModel.addTable("clusterConfiguration");
       // we don't support creating jndi binding with random group name yet
@@ -88,7 +84,7 @@ public class ListJndiBindingCommand extends GfshCommand {
 
     memberTable.setHeader("Active JNDI bindings found on each member: ");
     for (CliFunctionResult oneResult : rc) {
-      Serializable[] serializables = oneResult.getSerializables();
+      Serializable[] serializables = getSerializables(oneResult);
       for (int i = 0; i < serializables.length; i += 2) {
         memberTable.accumulate("Member", oneResult.getMemberIdOrName());
         memberTable.accumulate("JNDI Name", (String) serializables[i]);
@@ -96,5 +92,10 @@ public class ListJndiBindingCommand extends GfshCommand {
       }
     }
     return resultModel;
+  }
+
+  @SuppressWarnings("deprecation")
+  private Serializable[] getSerializables(CliFunctionResult oneResult) {
+    return oneResult.getSerializables();
   }
 }

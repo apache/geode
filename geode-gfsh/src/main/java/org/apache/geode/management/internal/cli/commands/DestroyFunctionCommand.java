@@ -15,7 +15,6 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -25,7 +24,6 @@ import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.execute.Execution;
-import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.DistributedMember;
@@ -82,28 +80,30 @@ public class DestroyFunctionCommand extends GfshCommand {
   private ResultModel executeFunction(Cache cache, Set<DistributedMember> DsMembers,
       String functionId) {
     // unregister on a set of of members
-    Function unregisterFunction = new UnregisterFunction();
+    UnregisterFunction unregisterFunction = new UnregisterFunction();
     FunctionService.registerFunction(unregisterFunction);
-    List resultList;
 
     if (DsMembers.isEmpty()) {
       return ResultModel.createInfo("No members for execution");
     }
-    Object[] obj = new Object[1];
-    obj[0] = functionId;
 
-    Execution execution = FunctionService.onMembers(DsMembers).setArguments(obj);
+    @SuppressWarnings("unchecked")
+    Execution<Object[], String, List<String>> execution =
+        FunctionService.onMembers(DsMembers).setArguments(new Object[] {functionId});
 
     if (execution == null) {
       cache.getLogger().error("executeUnregister execution is null");
       return ResultModel.createError(CliStrings.DESTROY_FUNCTION__MSG__CANNOT_EXECUTE);
     }
+
+    final List<String> resultList;
     try {
-      resultList = (ArrayList) execution.execute(unregisterFunction).getResult();
+      resultList = execution.execute(unregisterFunction).getResult();
     } catch (FunctionException ex) {
       return ResultModel.createError(ex.getMessage());
     }
-    String resultStr = ((String) resultList.get(0));
+
+    String resultStr = resultList.get(0);
     if (resultStr.equals("Succeeded in unregistering")) {
       StringBuilder members = new StringBuilder();
       for (DistributedMember member : DsMembers) {

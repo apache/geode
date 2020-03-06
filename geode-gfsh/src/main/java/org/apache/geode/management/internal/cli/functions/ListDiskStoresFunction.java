@@ -35,13 +35,12 @@ import org.apache.geode.management.internal.cli.domain.DiskStoreDetails;
  *
  * @see org.apache.geode.cache.DiskStore
  * @see org.apache.geode.cache.execute.Function
- * @see org.apache.geode.cache.execute.FunctionAdapter
  * @see org.apache.geode.cache.execute.FunctionContext
  * @see org.apache.geode.internal.InternalEntity
  * @see org.apache.geode.management.internal.cli.domain.DiskStoreDetails
  * @since GemFire 7.0
  */
-public class ListDiskStoresFunction implements InternalFunction {
+public class ListDiskStoresFunction implements InternalFunction<Void> {
 
   @SuppressWarnings("unused")
   public void init(final Properties props) {}
@@ -52,8 +51,8 @@ public class ListDiskStoresFunction implements InternalFunction {
   }
 
   @Override
-  public void execute(final FunctionContext context) {
-    final Set<DiskStoreDetails> memberDiskStores = new HashSet<DiskStoreDetails>();
+  public void execute(final FunctionContext<Void> context) {
+    final Set<DiskStoreDetails> memberDiskStores = new HashSet<>();
 
     try {
       final Cache cache = context.getCache();

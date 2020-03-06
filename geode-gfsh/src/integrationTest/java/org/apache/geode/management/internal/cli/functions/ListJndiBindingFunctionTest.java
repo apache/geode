@@ -42,16 +42,16 @@ import org.apache.geode.test.junit.categories.GfshTest;
 public class ListJndiBindingFunctionTest {
 
   private ListJndiBindingFunction listJndiBindingFunction;
-  private FunctionContext context;
-  private DistributedSystem distributedSystem;
-  private ResultSender resultSender;
+  private FunctionContext<Void> context;
+  private ResultSender<Object> resultSender;
   private ArgumentCaptor<CliFunctionResult> resultCaptor;
 
+  @SuppressWarnings({"unchecked", "deprecation"})
   @Before
   public void setup() throws Exception {
     listJndiBindingFunction = spy(new ListJndiBindingFunction());
     context = mock(FunctionContext.class);
-    distributedSystem = mock(DistributedSystem.class);
+    DistributedSystem distributedSystem = mock(DistributedSystem.class);
     resultSender = mock(ResultSender.class);
     resultCaptor = ArgumentCaptor.forClass(CliFunctionResult.class);
 
@@ -70,8 +70,9 @@ public class ListJndiBindingFunctionTest {
         CreateJndiBindingFunction.convert(config.getConfigProperties()));
   }
 
+  @SuppressWarnings("deprecation")
   @Test
-  public void listJndiBindingIsSuccessful() throws Exception {
+  public void listJndiBindingIsSuccessful() {
     when(context.getResultSender()).thenReturn(resultSender);
 
     listJndiBindingFunction.execute(context);

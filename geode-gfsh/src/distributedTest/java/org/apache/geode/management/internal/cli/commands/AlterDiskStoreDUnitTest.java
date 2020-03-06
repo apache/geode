@@ -111,7 +111,7 @@ public class AlterDiskStoreDUnitTest {
   public void alterDiskStoreWithRemoveDoesRemoveRegion() throws IOException {
     // Verify to start that there exists the data in the region
     server1.invoke(() -> {
-      Region region = ClusterStartupRule.getCache().getRegion(regionName);
+      Region<?, ?> region = ClusterStartupRule.getCache().getRegion(regionName);
       assertThat(region).isNotNull();
       assertThat(region.get(aKey)).isNotNull();
     });
@@ -125,7 +125,7 @@ public class AlterDiskStoreDUnitTest {
     // Restart the member and see that the disk store / region is gone.
     startupRule.startServerVM(1, locator.getPort());
     server1.invoke(() -> {
-      Region region = ClusterStartupRule.getCache().getRegion(regionName);
+      Region<?, ?> region = ClusterStartupRule.getCache().getRegion(regionName);
       assertThat(region).isNull();
     });
   }

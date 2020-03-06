@@ -18,7 +18,7 @@ import static java.lang.Math.abs;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
-import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Properties;
 
@@ -57,13 +57,14 @@ public class RebalanceCommandDUnitTest {
   @Rule
   public ClusterStartupRule cluster = new ClusterStartupRule();
 
-  private MemberVM locator, server1, server2;
+  private MemberVM server1;
+  private MemberVM server2;
   private static int server1SharedRegionInitialSize, server2SharedRegionInitialSize,
       server1Region1InitialSize, server2Region2InitialSize;
 
   @Before
   public void before() throws Exception {
-    locator = cluster.startLocatorVM(0, locatorProperties());
+    MemberVM locator = cluster.startLocatorVM(0, locatorProperties());
     server1 = cluster.startServerVM(1, locator.getPort());
     server2 = cluster.startServerVM(2, locator.getPort());
 
@@ -72,9 +73,9 @@ public class RebalanceCommandDUnitTest {
     server1.invoke(() -> {
       Cache cache = ClusterStartupRule.getCache();
 
-      RegionFactory<Integer, Integer> dataRegionFactory =
+      RegionFactory<String, String> dataRegionFactory =
           cache.createRegionFactory(RegionShortcut.PARTITION);
-      Region region = dataRegionFactory.create(SHARED_REGION_NAME);
+      Region<String, String> region = dataRegionFactory.create(SHARED_REGION_NAME);
       for (int i = 0; i < SERVER1_SHARED_REGION_SIZE; i++) {
         region.put("key" + (i + 200), "value" + (i + 200));
       }
@@ -86,10 +87,10 @@ public class RebalanceCommandDUnitTest {
 
     server2.invoke(() -> {
       Cache cache = ClusterStartupRule.getCache();
-      RegionFactory<Integer, Integer> dataRegionFactory =
+      RegionFactory<String, String> dataRegionFactory =
           cache.createRegionFactory(RegionShortcut.PARTITION);
 
-      Region region = dataRegionFactory.create(SHARED_REGION_NAME);
+      Region<String, String> region = dataRegionFactory.create(SHARED_REGION_NAME);
       for (int i = 0; i < SERVER2_SHARED_REGION_SIZE; i++) {
         region.put("key" + (i + 400), "value" + (i + 400));
       }
@@ -101,7 +102,7 @@ public class RebalanceCommandDUnitTest {
     });
 
     // check if DistributedRegionMXBean is available so that command will not fail
-    locator.invoke(() -> waitForManagerMBean());
+    locator.invoke(RebalanceCommandDUnitTest::waitForManagerMBean);
 
     server1SharedRegionInitialSize =
         server1.invoke(() -> getLocalDataSizeForRegion(SHARED_REGION_NAME));
@@ -169,9 +170,9 @@ public class RebalanceCommandDUnitTest {
   public void testWithTwoSharedRegions() {
     server1.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
-      RegionFactory<Integer, Integer> dataRegionFactory =
+      RegionFactory<String, String> dataRegionFactory =
           cache.createRegionFactory(RegionShortcut.PARTITION);
-      Region region = dataRegionFactory.create(REGION2_NAME);
+      Region<String, String> region = dataRegionFactory.create(REGION2_NAME);
       for (int i = 0; i < 15; i++) {
         region.put("key" + (i + 210), "value" + (i + 210));
       }
@@ -283,7 +284,7 @@ public class RebalanceCommandDUnitTest {
 
   private static Integer getLocalDataSizeForRegion(String regionName) {
     InternalCache cache = ClusterStartupRule.getCache();
-    Region region = cache.getInternalRegionByPath("/" + regionName);
+    Region<?, ?> region = cache.getInternalRegionByPath("/" + regionName);
     return PartitionRegionHelper.getLocalData(region).size();
   }
 

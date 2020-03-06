@@ -43,7 +43,7 @@ public class RepeatedRebalanceDUnitTest {
   private static final int INITIAL_SERVERS = 4;
   private static final int NUMBER_OF_ENTRIES = 30000;
 
-  private List<MemberVM> memberList = new ArrayList();
+  private List<MemberVM> memberList = new ArrayList<>();
   private MemberVM locator1;
 
   @Rule

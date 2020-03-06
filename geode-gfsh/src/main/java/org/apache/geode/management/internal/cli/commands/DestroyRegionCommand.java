@@ -51,8 +51,7 @@ public class DestroyRegionCommand extends GfshCommand {
       @CliOption(key = CliStrings.DESTROY_REGION__REGION, optionContext = ConverterHint.REGION_PATH,
           mandatory = true, help = CliStrings.DESTROY_REGION__REGION__HELP) String regionPath,
       @CliOption(key = CliStrings.IFEXISTS, help = CliStrings.IFEXISTS_HELP,
-          specifiedDefaultValue = "true", unspecifiedDefaultValue = "false") boolean ifExists)
-      throws Throwable {
+          specifiedDefaultValue = "true", unspecifiedDefaultValue = "false") boolean ifExists) {
 
     // this finds all the members that host this region. destroy will be called on each of these
     // members since the region might be a scope.LOCAL region
@@ -94,6 +93,7 @@ public class DestroyRegionCommand extends GfshCommand {
     return result;
   }
 
+  @SuppressWarnings("deprecation")
   private XmlEntity findXmlEntity(List<CliFunctionResult> functionResults) {
     return functionResults.stream().filter(CliFunctionResult::isSuccessful)
         .map(CliFunctionResult::getXmlEntity).filter(Objects::nonNull).findFirst().orElse(null);
@@ -109,14 +109,14 @@ public class DestroyRegionCommand extends GfshCommand {
       return;
     }
 
-    Set<String> groupNames = new HashSet<String>(ccService.getGroups());
+    Set<String> groupNames = new HashSet<>(ccService.getGroups());
     groupNames.add("cluster");
     for (String groupName : groupNames) {
       CacheConfig cacheConfig = ccService.getCacheConfig(groupName);
       if (cacheConfig != null) {
         RegionConfig regionConfig = find(cacheConfig.getRegions(), regionName);
         if (regionConfig != null) {
-          Identifiable element =
+          Identifiable<?> element =
               find(regionConfig.getCustomRegionElements(), "jdbc-mapping");
           if (element != null) {
             throw new IllegalStateException("Cannot destroy region \"" + regionName

@@ -64,8 +64,8 @@ public class CreateJndiBindingFunction extends CliFunction<Object[]> {
             context.getMemberName()));
   }
 
-  static Map getParamsAsMap(JndiBindingsType.JndiBinding binding) {
-    Map params = new HashMap();
+  static Map<String, String> getParamsAsMap(JndiBindingsType.JndiBinding binding) {
+    Map<String, String> params = new HashMap<>();
     params.put("blocking-timeout-seconds", binding.getBlockingTimeoutSeconds());
     params.put("conn-pooled-datasource-class", binding.getConnPooledDatasourceClass());
     params.put("connection-url", binding.getConnectionUrl());

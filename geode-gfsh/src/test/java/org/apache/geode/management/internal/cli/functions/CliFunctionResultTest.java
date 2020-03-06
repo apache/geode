@@ -21,31 +21,31 @@ import org.junit.Test;
 
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 
-
+@SuppressWarnings("deprecation")
 public class CliFunctionResultTest {
 
   private CliFunctionResult result;
 
   @Test
-  public void getStatusWithSuccessMessage() throws Exception {
+  public void getStatusWithSuccessMessage() {
     result = new CliFunctionResult("memberName", true, "message");
     assertThat(result.getLegacyStatus()).isEqualTo("message");
   }
 
   @Test
-  public void getStatusWithErrorMessage() throws Exception {
+  public void getStatusWithErrorMessage() {
     result = new CliFunctionResult("memberName", false, "message");
     assertThat(result.getLegacyStatus()).isEqualTo("ERROR: message");
   }
 
   @Test
-  public void getStatusWithExceptionOnly() throws Exception {
+  public void getStatusWithExceptionOnly() {
     result = new CliFunctionResult("memberName", new Exception("exception message"), null);
     assertThat(result.getLegacyStatus()).isEqualTo("ERROR: java.lang.Exception: exception message");
   }
 
   @Test
-  public void getStatusWithExceptionAndSameErrorMessage() throws Exception {
+  public void getStatusWithExceptionAndSameErrorMessage() {
     result = new CliFunctionResult("memberName", new Exception("exception message"),
         "exception message");
     assertThat(result.getLegacyStatus()).isEqualTo("ERROR: java.lang.Exception: exception message");
@@ -53,7 +53,7 @@ public class CliFunctionResultTest {
   }
 
   @Test
-  public void getStatusWithExceptionAndDifferentErrorMessage() throws Exception {
+  public void getStatusWithExceptionAndDifferentErrorMessage() {
     result = new CliFunctionResult("memberName", new Exception("exception message"),
         "some other message");
     assertThat(result.getLegacyStatus())

@@ -45,13 +45,12 @@ import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
  *
  * @see org.apache.geode.cache.DiskStore
  * @see org.apache.geode.cache.execute.Function
- * @see org.apache.geode.cache.execute.FunctionAdapter
  * @see org.apache.geode.cache.execute.FunctionContext
  * @see org.apache.geode.internal.InternalEntity
  * @see org.apache.geode.management.internal.cli.domain.DiskStoreDetails
  * @since GemFire 7.0
  */
-public class DescribeDiskStoreFunction implements InternalFunction {
+public class DescribeDiskStoreFunction implements InternalFunction<String> {
 
   private static final Logger logger = LogService.getLogger();
 
@@ -71,7 +70,7 @@ public class DescribeDiskStoreFunction implements InternalFunction {
   public void init(final Properties props) {}
 
   @Override
-  public void execute(final FunctionContext context) {
+  public void execute(final FunctionContext<String> context) {
     Cache cache = context.getCache();
 
     try {
@@ -80,7 +79,7 @@ public class DescribeDiskStoreFunction implements InternalFunction {
 
         DistributedMember member = gemfireCache.getMyId();
 
-        String diskStoreName = (String) context.getArguments();
+        String diskStoreName = context.getArguments();
         String memberId = member.getId();
         String memberName = member.getName();
 
@@ -137,22 +136,22 @@ public class DescribeDiskStoreFunction implements InternalFunction {
     }
   }
 
-  protected String getDiskStoreName(final Region region) {
+  protected String getDiskStoreName(final Region<?, ?> region) {
     return StringUtils.defaultIfBlank(region.getAttributes().getDiskStoreName(),
         DiskStoreDetails.DEFAULT_DISK_STORE_NAME);
   }
 
-  protected boolean isOverflowToDisk(final Region region) {
+  protected boolean isOverflowToDisk(final Region<?, ?> region) {
     return (region.getAttributes().getEvictionAttributes() != null
         && EvictionAction.OVERFLOW_TO_DISK
             .equals(region.getAttributes().getEvictionAttributes().getAction()));
   }
 
-  protected boolean isPersistent(final Region region) {
+  protected boolean isPersistent(final Region<?, ?> region) {
     return region.getAttributes().getDataPolicy().withPersistence();
   }
 
-  protected boolean isUsingDiskStore(final Region region, final DiskStore diskStore) {
+  protected boolean isUsingDiskStore(final Region<?, ?> region, final DiskStore diskStore) {
     return ((isPersistent(region) || isOverflowToDisk(region))
         && ObjectUtils.equals(getDiskStoreName(region), diskStore.getName()));
   }

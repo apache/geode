@@ -54,7 +54,6 @@ public class DestroyJndiBindingCommandTest {
   public static GfshParserRule gfsh = new GfshParserRule();
 
   private DestroyJndiBindingCommand command;
-  private InternalCache cache;
   private CacheConfig cacheConfig;
   private InternalConfigurationPersistenceService ccService;
 
@@ -62,7 +61,7 @@ public class DestroyJndiBindingCommandTest {
 
   @Before
   public void setUp() throws Exception {
-    cache = mock(InternalCache.class);
+    InternalCache cache = mock(InternalCache.class);
     command = spy(DestroyJndiBindingCommand.class);
     doReturn(cache).when(command).getCache();
     cacheConfig = mock(CacheConfig.class);
@@ -77,7 +76,9 @@ public class DestroyJndiBindingCommandTest {
       return null;
     }).when(ccService).updateCacheConfig(any(), any());
 
-    when(ccService.getConfigurationRegion()).thenReturn(mock(Region.class));
+    @SuppressWarnings("unchecked")
+    final Region<String, Configuration> configurationRegion = mock(Region.class);
+    when(ccService.getConfigurationRegion()).thenReturn(configurationRegion);
     when(ccService.getConfiguration(any())).thenReturn(mock(Configuration.class));
   }
 
@@ -137,6 +138,7 @@ public class DestroyJndiBindingCommandTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   public void whenMembersFoundAndNoClusterConfigRunningThenOnlyInvokeFunction() {
     Set<DistributedMember> members = new HashSet<>();
     members.add(mock(DistributedMember.class));
@@ -161,6 +163,7 @@ public class DestroyJndiBindingCommandTest {
         ArgumentCaptor.forClass(DestroyJndiBindingFunction.class);
     ArgumentCaptor<Object[]> arguments = ArgumentCaptor.forClass(Object[].class);
 
+    @SuppressWarnings("unchecked")
     ArgumentCaptor<Set<DistributedMember>> targetMembers = ArgumentCaptor.forClass(Set.class);
     verify(command, times(1)).executeAndGetFunctionResult(function.capture(), arguments.capture(),
         targetMembers.capture());
@@ -175,6 +178,7 @@ public class DestroyJndiBindingCommandTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   public void whenMembersFoundAndClusterConfigRunningThenUpdateClusterConfigAndInvokeFunction() {
     List<JndiBindingsType.JndiBinding> bindings = new ArrayList<>();
     JndiBindingsType.JndiBinding jndiBinding = new JndiBindingsType.JndiBinding();
@@ -205,6 +209,7 @@ public class DestroyJndiBindingCommandTest {
         ArgumentCaptor.forClass(DestroyJndiBindingFunction.class);
     ArgumentCaptor<Object[]> arguments = ArgumentCaptor.forClass(Object[].class);
 
+    @SuppressWarnings("unchecked")
     ArgumentCaptor<Set<DistributedMember>> targetMembers = ArgumentCaptor.forClass(Set.class);
     verify(command, times(1)).executeAndGetFunctionResult(function.capture(), arguments.capture(),
         targetMembers.capture());

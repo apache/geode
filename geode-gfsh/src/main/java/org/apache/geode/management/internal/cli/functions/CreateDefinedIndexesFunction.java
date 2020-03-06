@@ -25,7 +25,6 @@ import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.cache.query.Index;
-import org.apache.geode.cache.query.IndexType;
 import org.apache.geode.cache.query.MultiIndexCreationException;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.internal.cache.execute.InternalFunction;
@@ -42,6 +41,7 @@ public class CreateDefinedIndexesFunction implements InternalFunction<Set<Region
   }
 
   @Override
+  @SuppressWarnings("deprecation")
   public void execute(FunctionContext<Set<RegionConfig.Index>> context) {
     Cache cache = context.getCache();
     QueryService queryService = cache.getQueryService();
@@ -54,11 +54,12 @@ public class CreateDefinedIndexesFunction implements InternalFunction<Set<Region
         String indexName = indexDefinition.getName();
         String regionPath = indexDefinition.getFromClause();
         String indexedExpression = indexDefinition.getExpression();
-        IndexType indexType = IndexType.valueOfSynonym(indexDefinition.getType());
+        org.apache.geode.cache.query.IndexType indexType =
+            org.apache.geode.cache.query.IndexType.valueOfSynonym(indexDefinition.getType());
 
-        if (indexType == IndexType.PRIMARY_KEY) {
+        if (indexType == org.apache.geode.cache.query.IndexType.PRIMARY_KEY) {
           queryService.defineKeyIndex(indexName, indexedExpression, regionPath);
-        } else if (indexType == IndexType.HASH) {
+        } else if (indexType == org.apache.geode.cache.query.IndexType.HASH) {
           queryService.defineHashIndex(indexName, indexedExpression, regionPath);
         } else {
           queryService.defineIndex(indexName, indexedExpression, regionPath);

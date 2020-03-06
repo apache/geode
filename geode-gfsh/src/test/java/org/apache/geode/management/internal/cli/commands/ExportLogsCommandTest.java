@@ -20,6 +20,7 @@ import static org.apache.geode.management.internal.cli.commands.ExportLogsComman
 import static org.apache.geode.management.internal.cli.commands.ExportLogsCommand.TERABYTE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
@@ -34,7 +35,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.mockito.Matchers;
 
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.ResultCollector;
@@ -179,17 +179,17 @@ public class ExportLogsCommandTest {
     testMembers.add(member1);
     testMembers.add(member2);
 
-    ResultCollector testResults1 = new CustomCollector();
+    CustomCollector testResults1 = new CustomCollector();
     testResults1.addResult(member1, 75 * MEGABYTE);
-    ResultCollector testResults2 = new CustomCollector();
+    CustomCollector testResults2 = new CustomCollector();
     testResults2.addResult(member2, 60 * MEGABYTE);
 
     doReturn(mockCache).when(spyCmd).getCache();
     doReturn(testMembers).when(spyCmd).getMembersIncludingLocators(null, null);
     doReturn(testResults1).when(spyCmd)
-        .estimateLogSize(Matchers.any(SizeExportLogsFunction.Args.class), eq(member1));
+        .estimateLogSize(any(SizeExportLogsFunction.Args.class), eq(member1));
     doReturn(testResults2).when(spyCmd)
-        .estimateLogSize(Matchers.any(SizeExportLogsFunction.Args.class), eq(member2));
+        .estimateLogSize(any(SizeExportLogsFunction.Args.class), eq(member2));
     doReturn(10 * MEGABYTE).when(spyCmd).getLocalDiskAvailable();
 
     ResultModel res = spyCmd.exportLogs("working dir", null, null, logLevel,
@@ -222,17 +222,17 @@ public class ExportLogsCommandTest {
     testMembers.add(member1);
     testMembers.add(member2);
 
-    ResultCollector testResults1 = new CustomCollector();
+    CustomCollector testResults1 = new CustomCollector();
     testResults1.addResult(member1, 75 * MEGABYTE);
-    ResultCollector testResults2 = new CustomCollector();
+    CustomCollector testResults2 = new CustomCollector();
     testResults2.addResult(member2, 60 * MEGABYTE);
 
     doReturn(mockCache).when(spyCmd).getCache();
     doReturn(testMembers).when(spyCmd).getMembersIncludingLocators(null, null);
     doReturn(testResults1).when(spyCmd)
-        .estimateLogSize(Matchers.any(SizeExportLogsFunction.Args.class), eq(member1));
+        .estimateLogSize(any(SizeExportLogsFunction.Args.class), eq(member1));
     doReturn(testResults2).when(spyCmd)
-        .estimateLogSize(Matchers.any(SizeExportLogsFunction.Args.class), eq(member2));
+        .estimateLogSize(any(SizeExportLogsFunction.Args.class), eq(member2));
     doReturn(GIGABYTE).when(spyCmd).getLocalDiskAvailable();
 
     ResultModel res = spyCmd.exportLogs("working dir", null, null, logLevel,
@@ -263,17 +263,17 @@ public class ExportLogsCommandTest {
     testMembers.add(member1);
 
     BytesToString bytesToString = new BytesToString();
-    ResultCollector testResults1 = new CustomCollector();
-    StringBuilder sb = new StringBuilder().append("Estimated disk space required (")
-        .append(bytesToString.of(GIGABYTE)).append(") to consolidate logs on member ")
-        .append(member1.getName()).append(" will exceed available disk space (")
-        .append(bytesToString.of(500 * MEGABYTE)).append(")");
-    testResults1.addResult(member1, new ManagementException(sb.toString()));
+    CustomCollector testResults1 = new CustomCollector();
+    String sb = "Estimated disk space required (" +
+        bytesToString.of(GIGABYTE) + ") to consolidate logs on member " +
+        member1.getName() + " will exceed available disk space (" +
+        bytesToString.of(500 * MEGABYTE) + ")";
+    testResults1.addResult(member1, new ManagementException(sb));
 
     doReturn(mockCache).when(spyCmd).getCache();
     doReturn(testMembers).when(spyCmd).getMembersIncludingLocators(null, null);
     doReturn(testResults1).when(spyCmd)
-        .estimateLogSize(Matchers.any(SizeExportLogsFunction.Args.class), eq(member1));
+        .estimateLogSize(any(SizeExportLogsFunction.Args.class), eq(member1));
 
     ResultModel res = spyCmd.exportLogs("working dir", null, null, logLevel,
         onlyLogLevel, false, start, end, logsOnly, statsOnly, "125m");

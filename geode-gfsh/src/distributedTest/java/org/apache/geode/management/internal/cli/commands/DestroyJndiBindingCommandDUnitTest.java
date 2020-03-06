@@ -58,6 +58,7 @@ public class DestroyJndiBindingCommandDUnitTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   public void testDestroyJndiBinding() {
     // assert that there is a datasource
     VMProvider

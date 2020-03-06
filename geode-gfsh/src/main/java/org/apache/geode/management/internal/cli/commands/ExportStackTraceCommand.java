@@ -97,6 +97,7 @@ public class ExportStackTraceCommand extends GfshCommand {
     InfoResultModel resultData = result.addInfo();
 
     ResultCollector<?, ?> rc = executeFunction(getStackTracesFunction, null, targetMembers);
+    @SuppressWarnings("unchecked")
     ArrayList<Object> resultList = (ArrayList<Object>) rc.getResult();
 
     for (Object resultObj : resultList) {

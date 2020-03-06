@@ -65,6 +65,7 @@ public class CountDurableCQEventsCommand extends GfshCommand {
     params[1] = cqName;
     final ResultCollector<?, ?> rc =
         executeFunction(new GetSubscriptionQueueSizeFunction(), params, targetMembers);
+    @SuppressWarnings("unchecked")
     final List<CliFunctionResult> funcResults = (List<CliFunctionResult>) rc.getResult();
 
     ResultModel result = new ResultModel();

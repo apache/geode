@@ -26,6 +26,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import com.google.common.collect.Sets;
@@ -42,6 +43,7 @@ import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
+import org.apache.geode.management.runtime.RuntimeRegionInfo;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
 public class CreateIndexCommandTest {
@@ -49,14 +51,14 @@ public class CreateIndexCommandTest {
   public GfshParserRule gfshParser = new GfshParserRule();
 
   private CreateIndexCommand command;
-  private ResultCollector rc;
   private InternalConfigurationPersistenceService ccService;
   private ClusterManagementService cms;
 
   @Before
-  public void before() throws Exception {
+  public void before() {
     command = spy(CreateIndexCommand.class);
-    rc = mock(ResultCollector.class);
+    @SuppressWarnings("unchecked")
+    ResultCollector<Object, List<Object>> rc = mock(ResultCollector.class);
     when(rc.getResult()).thenReturn(Collections.emptyList());
     doReturn(Collections.emptyList()).when(command).executeAndGetFunctionResult(any(), any(),
         any());
@@ -65,7 +67,7 @@ public class CreateIndexCommandTest {
   }
 
   @Test
-  public void missingName() throws Exception {
+  public void missingName() {
     gfshParser.executeAndAssertThat(command,
         "create index --expression=abc --region=abc")
         .statusIsError()
@@ -73,21 +75,21 @@ public class CreateIndexCommandTest {
   }
 
   @Test
-  public void missingExpression() throws Exception {
+  public void missingExpression() {
     gfshParser.executeAndAssertThat(command, "create index --name=abc --region=abc")
         .statusIsError()
         .containsOutput("Invalid command");
   }
 
   @Test
-  public void missingRegion() throws Exception {
+  public void missingRegion() {
     gfshParser.executeAndAssertThat(command, "create index --name=abc --expression=abc")
         .statusIsError()
         .containsOutput("Invalid command");
   }
 
   @Test
-  public void invalidIndexType() throws Exception {
+  public void invalidIndexType() {
     gfshParser.executeAndAssertThat(command,
         "create index --name=abc --expression=abc --region=abc --type=abc")
         .statusIsError()
@@ -95,7 +97,7 @@ public class CreateIndexCommandTest {
   }
 
   @Test
-  public void validIndexType() throws Exception {
+  public void validIndexType() {
     doReturn(Collections.EMPTY_SET).when(command).findMembers(any(), any());
     gfshParser.executeAndAssertThat(command,
         "create index --name=abc --expression=abc --region=abc --type=range")
@@ -104,7 +106,7 @@ public class CreateIndexCommandTest {
   }
 
   @Test
-  public void validRegionPath() throws Exception {
+  public void validRegionPath() {
     doReturn(ccService).when(command).getConfigurationPersistenceService();
     gfshParser.executeAndAssertThat(command,
         "create index --name=abc --expression=abc --region=\"region.entrySet() z\" --type=range")
@@ -112,7 +114,7 @@ public class CreateIndexCommandTest {
   }
 
   @Test
-  public void validIndexType2() throws Exception {
+  public void validIndexType2() {
     doReturn(Collections.EMPTY_SET).when(command).findMembers(any(), any());
     gfshParser.executeAndAssertThat(command,
         "create index --name=abc --expression=abc --region=abc --type=hash")
@@ -121,7 +123,7 @@ public class CreateIndexCommandTest {
   }
 
   @Test
-  public void noMemberFound() throws Exception {
+  public void noMemberFound() {
     doReturn(Collections.EMPTY_SET).when(command).findMembers(any(), any());
     gfshParser.executeAndAssertThat(command,
         "create index --name=abc --expression=abc --region=abc")
@@ -130,7 +132,7 @@ public class CreateIndexCommandTest {
   }
 
   @Test
-  public void defaultIndexType() throws Exception {
+  public void defaultIndexType() {
     DistributedMember member = mock(DistributedMember.class);
     doReturn(Collections.singleton(member)).when(command).findMembers(any(), any());
 
@@ -202,7 +204,7 @@ public class CreateIndexCommandTest {
   }
 
   @Test
-  public void csServiceIsDisabled() throws Exception {
+  public void csServiceIsDisabled() {
     doReturn(null).when(command).getConfigurationPersistenceService();
     Set<DistributedMember> targetMembers = Collections.singleton(mock(DistributedMember.class));
     doReturn(targetMembers).when(command).findMembers(any(),
@@ -222,7 +224,7 @@ public class CreateIndexCommandTest {
   }
 
   @Test
-  public void commandWithMember() throws Exception {
+  public void commandWithMember() {
     doReturn(ccService).when(command).getConfigurationPersistenceService();
     Set<DistributedMember> targetMembers = Collections.singleton(mock(DistributedMember.class));
     doReturn(targetMembers).when(command).findMembers(any(), any());
@@ -241,10 +243,12 @@ public class CreateIndexCommandTest {
   }
 
   @Test
-  public void regionBelongsToCluster() throws Exception {
+  public void regionBelongsToCluster() {
     doReturn(ccService).when(command).getConfigurationPersistenceService();
     Region region = mock(Region.class);
-    ClusterManagementListResult listResult = mock(ClusterManagementListResult.class);
+    @SuppressWarnings("unchecked")
+    ClusterManagementListResult<Region, RuntimeRegionInfo> listResult =
+        mock(ClusterManagementListResult.class);
     when(cms.list(any(Region.class))).thenReturn(listResult);
     when(listResult.getConfigResult()).thenReturn(Collections.singletonList(region));
 

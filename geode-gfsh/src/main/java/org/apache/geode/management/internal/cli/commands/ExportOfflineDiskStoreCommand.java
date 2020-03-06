@@ -20,7 +20,6 @@ import java.io.File;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.SystemFailure;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.SingleGfshCommand;
@@ -32,6 +31,7 @@ public class ExportOfflineDiskStoreCommand extends SingleGfshCommand {
   @CliCommand(value = CliStrings.EXPORT_OFFLINE_DISK_STORE,
       help = CliStrings.EXPORT_OFFLINE_DISK_STORE__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GEODE_DISKSTORE})
+  @SuppressWarnings("deprecation")
   public ResultModel exportOfflineDiskStore(
       @CliOption(key = CliStrings.EXPORT_OFFLINE_DISK_STORE__DISKSTORENAME, mandatory = true,
           help = CliStrings.EXPORT_OFFLINE_DISK_STORE__DISKSTORENAME__HELP) String diskStoreName,
@@ -56,10 +56,10 @@ public class ExportOfflineDiskStoreCommand extends SingleGfshCommand {
       return ResultModel.createInfo(
           CliStrings.format(CliStrings.EXPORT_OFFLINE_DISK_STORE__SUCCESS, diskStoreName, dir));
     } catch (VirtualMachineError e) {
-      SystemFailure.initiateFailure(e);
+      org.apache.geode.SystemFailure.initiateFailure(e);
       throw e;
     } catch (Throwable th) {
-      SystemFailure.checkFailure();
+      org.apache.geode.SystemFailure.checkFailure();
       LogWrapper.getInstance(getCache()).warning(th.getMessage(), th);
       return ResultModel.createError(CliStrings.format(CliStrings.EXPORT_OFFLINE_DISK_STORE__ERROR,
           diskStoreName, th.toString()));

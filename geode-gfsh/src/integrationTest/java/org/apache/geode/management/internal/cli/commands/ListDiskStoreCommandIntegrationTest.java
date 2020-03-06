@@ -43,6 +43,7 @@ public class ListDiskStoreCommandIntegrationTest {
   public GfshCommandRule gfsh = new GfshCommandRule().withTimeout(1);
 
   @Test
+  @SuppressWarnings("deprecation")
   public void commandSucceedsWhenConnected() throws Exception {
     Cache cache = server.getCache();
     DiskStore ds = cache.createDiskStoreFactory().create(DISK_STORE_NAME);
@@ -56,7 +57,7 @@ public class ListDiskStoreCommandIntegrationTest {
   }
 
   @Test
-  public void commandFailsWhenNotConnected() throws Exception {
+  public void commandFailsWhenNotConnected() {
     gfsh.executeAndAssertThat("list disk-stores").statusIsError().containsOutput("Command",
         "was found but is not currently available");
   }

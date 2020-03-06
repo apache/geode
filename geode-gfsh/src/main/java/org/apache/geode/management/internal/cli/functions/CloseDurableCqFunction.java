@@ -27,17 +27,17 @@ import org.apache.geode.management.internal.i18n.CliStrings;
  * Function to close a durable cq
  *
  */
-public class CloseDurableCqFunction implements InternalFunction {
+public class CloseDurableCqFunction implements InternalFunction<String[]> {
 
   private static final long serialVersionUID = 1L;
 
   @Override
-  public void execute(FunctionContext context) {
+  public void execute(FunctionContext<String[]> context) {
 
     final Cache cache = context.getCache();
     final String memberNameOrId =
         CliUtil.getMemberNameOrId(cache.getDistributedSystem().getDistributedMember());
-    String[] args = (String[]) context.getArguments();
+    String[] args = context.getArguments();
     String durableClientId = args[0];
     String cqName = args[1];
 

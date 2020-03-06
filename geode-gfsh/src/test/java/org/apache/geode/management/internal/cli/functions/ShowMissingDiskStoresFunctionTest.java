@@ -55,11 +55,11 @@ import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
 public class ShowMissingDiskStoresFunctionTest {
 
   private InternalCache cache;
-  private FunctionContext functionContext;
+  private FunctionContext<Void> functionContext;
   private PersistentMemberManager persistentMemberManager;
   private PartitionedRegion region1;
   private PartitionedRegion region2;
-  private CollectingResultSender resultSender;
+  private CollectingResultSender<Object> resultSender;
 
   private ShowMissingDiskStoresFunction showMissingDiskStoresFunction;
 
@@ -67,12 +67,13 @@ public class ShowMissingDiskStoresFunctionTest {
   public MockitoRule mockitoRule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS);
 
   @Before
+  @SuppressWarnings("unchecked")
   public void setUp() throws Exception {
     cache = mock(InternalCache.class);
     persistentMemberManager = mock(PersistentMemberManager.class);
     region1 = mock(PartitionedRegion.class);
     region2 = mock(PartitionedRegion.class);
-    resultSender = new CollectingResultSender();
+    resultSender = new CollectingResultSender<>();
 
     functionContext = new FunctionContextImpl(cache, "testFunction", null, resultSender);
     showMissingDiskStoresFunction = new ShowMissingDiskStoresFunction();
@@ -228,14 +229,17 @@ public class ShowMissingDiskStoresFunctionTest {
         .isEqualTo(ShowMissingDiskStoresFunction.class.getName());
   }
 
+  @SuppressWarnings({"unchecked", "rawtypes"})
   private static List<Set<?>> getResults(ResultSender<?> resultSender) {
     return ((CollectingResultSender) resultSender).getResults();
   }
 
+  @SuppressWarnings("unchecked")
   private static Set<PersistentMemberPattern> missingDiskStores(Set<?> results) {
     return (Set<PersistentMemberPattern>) results;
   }
 
+  @SuppressWarnings("unchecked")
   private static Set<ColocatedRegionDetails> missingColocatedRegions(Set<?> results) {
     return (Set<ColocatedRegionDetails>) results;
   }
@@ -254,6 +258,7 @@ public class ShowMissingDiskStoresFunctionTest {
     return member;
   }
 
+  @SafeVarargs
   private static <T> Set<T> asSet(T... values) {
     Set<T> set = new HashSet<>();
     addAll(set, values);

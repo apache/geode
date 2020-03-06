@@ -67,7 +67,7 @@ public class ExportDataIntegrationTest {
   }
 
   @Test
-  public void testExport() throws Exception {
+  public void testExport() {
     String exportCommand = buildBaseExportCommand()
         .addOption(CliStrings.EXPORT_DATA__FILE, snapshotFile.toString()).getCommandString();
     gfsh.executeAndAssertThat(exportCommand).statusIsSuccess();
@@ -75,7 +75,7 @@ public class ExportDataIntegrationTest {
   }
 
   @Test
-  public void testParallelExport() throws Exception {
+  public void testParallelExport() {
     String exportCommand =
         buildBaseExportCommand().addOption(CliStrings.EXPORT_DATA__DIR, snapshotDir.toString())
             .addOption(CliStrings.EXPORT_DATA__PARALLEL, "true").getCommandString();
@@ -84,7 +84,7 @@ public class ExportDataIntegrationTest {
   }
 
   @Test
-  public void testInvalidMember() throws Exception {
+  public void testInvalidMember() {
     String invalidMemberName = "invalidMember";
     String invalidMemberCommand = new CommandStringBuilder(CliStrings.EXPORT_DATA)
         .addOption(CliStrings.MEMBER, invalidMemberName)
@@ -95,7 +95,7 @@ public class ExportDataIntegrationTest {
   }
 
   @Test
-  public void testNonExistentRegion() throws Exception {
+  public void testNonExistentRegion() {
     String nonExistentRegionCommand = new CommandStringBuilder(CliStrings.EXPORT_DATA)
         .addOption(CliStrings.MEMBER, server.getName())
         .addOption(CliStrings.EXPORT_DATA__REGION, "/nonExistentRegion")
@@ -106,7 +106,8 @@ public class ExportDataIntegrationTest {
   }
 
   @Test
-  public void testInvalidFile() throws Exception {
+  @SuppressWarnings("deprecation")
+  public void testInvalidFile() {
     String invalidFileCommand = buildBaseExportCommand()
         .addOption(CliStrings.EXPORT_DATA__FILE, snapshotFile.toString() + ".invalid")
         .getCommandString();
@@ -116,7 +117,8 @@ public class ExportDataIntegrationTest {
   }
 
   @Test
-  public void testMissingRegion() throws Exception {
+  @SuppressWarnings("deprecation")
+  public void testMissingRegion() {
     String missingRegionCommand = new CommandStringBuilder(CliStrings.EXPORT_DATA)
         .addOption(CliStrings.MEMBER, server.getName())
         .addOption(CliStrings.EXPORT_DATA__FILE, snapshotFile.toString()).getCommandString();
@@ -125,14 +127,16 @@ public class ExportDataIntegrationTest {
   }
 
   @Test
-  public void testMissingFileAndDirectory() throws Exception {
+  @SuppressWarnings("deprecation")
+  public void testMissingFileAndDirectory() {
     String missingFileAndDirCommand = buildBaseExportCommand().getCommandString();
     gfsh.executeCommand(missingFileAndDirCommand);
     assertThat(gfsh.getGfshOutput()).contains("Must specify a location to save snapshot");
   }
 
   @Test
-  public void testParallelExportWithOnlyFile() throws Exception {
+  @SuppressWarnings("deprecation")
+  public void testParallelExportWithOnlyFile() {
     String exportCommand =
         buildBaseExportCommand().addOption(CliStrings.EXPORT_DATA__FILE, snapshotFile.toString())
             .addOption(CliStrings.EXPORT_DATA__PARALLEL, "true").getCommandString();
@@ -141,7 +145,8 @@ public class ExportDataIntegrationTest {
   }
 
   @Test
-  public void testSpecifyingDirectoryAndFileCommands() throws Exception {
+  @SuppressWarnings("deprecation")
+  public void testSpecifyingDirectoryAndFileCommands() {
     String exportCommand =
         buildBaseExportCommand().addOption(CliStrings.EXPORT_DATA__FILE, snapshotFile.toString())
             .addOption(CliStrings.EXPORT_DATA__DIR, snapshotDir.toString()).getCommandString();

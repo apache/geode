@@ -22,11 +22,11 @@ import java.util.Set;
 import joptsimple.OptionException;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.shell.core.ExitShellRequest;
 
 import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.GemFireVersion;
-import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.util.ArgumentRedactor;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.shell.GfshConfig;
@@ -81,6 +81,7 @@ public class Launcher {
 
   private static final String MSG_INVALID_COMMAND_OR_OPTION = "Invalid command or option : {0}."
       + GfshParser.LINE_SEPARATOR + "Use 'gfsh help' to display additional information.";
+  public static final String SEPARATOR = ", ";
 
   private final Set<String> allowedCommandLineCommands;
   private final OptionParser commandLineParser;
@@ -163,7 +164,7 @@ public class Launcher {
 
         if (!commandIsAllowed) {
           System.err.println(
-              CliStrings.format(MSG_INVALID_COMMAND_OR_OPTION, StringUtils.arrayToString(args)));
+              CliStrings.format(MSG_INVALID_COMMAND_OR_OPTION, StringUtils.join(args, SEPARATOR)));
           exitRequest = ExitShellRequest.FATAL_EXIT;
         } else {
           if (!gfsh.executeScriptLine(commandLineCommand)) {
@@ -185,7 +186,7 @@ public class Launcher {
       parsedOptions = this.commandLineParser.parse(args);
     } catch (OptionException e) {
       System.err.println(
-          CliStrings.format(MSG_INVALID_COMMAND_OR_OPTION, StringUtils.arrayToString(args)));
+          CliStrings.format(MSG_INVALID_COMMAND_OR_OPTION, StringUtils.join(args, SEPARATOR)));
       return ExitShellRequest.FATAL_EXIT.getExitCode();
     }
     boolean launchShell = true;
@@ -261,7 +262,6 @@ public class Launcher {
 
   private void printUsage(final Gfsh gfsh, final PrintStream stream) {
     int terminalWidth = gfsh.getTerminalWidth();
-    StringBuilder usageBuilder = new StringBuilder();
     stream.print("Pivotal GemFire(R) v");
     stream.print(GemFireVersion.getGemFireVersion());
     stream.println(" Command Line Shell" + GfshParser.LINE_SEPARATOR);
@@ -291,16 +291,6 @@ public class Launcher {
         "Connect to a running Locator using the default connection information and run the \"list members\" command.",
         1, terminalWidth));
     stream.println();
-
-    printExecuteUsage(stream);
-
-    stream.print(usageBuilder);
-  }
-
-  private void printExecuteUsage(final PrintStream printStream) {
-    StringBuilder usageBuilder = new StringBuilder();
-
-    printStream.print(usageBuilder);
   }
 
   private static class StartupTimeLogHelper {

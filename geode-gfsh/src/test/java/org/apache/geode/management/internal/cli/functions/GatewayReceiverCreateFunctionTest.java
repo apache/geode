@@ -37,11 +37,13 @@ public class GatewayReceiverCreateFunctionTest {
 
   private GatewayReceiverCreateFunction function = mock(GatewayReceiverCreateFunction.class);
 
-  private FunctionContext context = mock(FunctionContext.class);
+  @SuppressWarnings("unchecked")
+  private FunctionContext<Object[]> context = mock(FunctionContext.class);
   private Cache cache = mock(Cache.class);
   private GatewayReceiverConfig args = mock(GatewayReceiverConfig.class);
   private GatewayReceiver receiver = mock(GatewayReceiver.class);
-  private ResultSender resultSender = mock(ResultSender.class);
+  @SuppressWarnings("unchecked")
+  private ResultSender<Object> resultSender = mock(ResultSender.class);
 
   @Before
   public void setup() {

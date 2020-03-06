@@ -14,6 +14,8 @@
  */
 package org.apache.geode.management.internal.cli.util;
 
+import static org.apache.commons.lang3.StringUtils.join;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
@@ -25,7 +27,6 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.internal.cache.DiskStoreImpl;
-import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.i18n.CliStrings;
 
@@ -33,16 +34,9 @@ public class DiskStoreUpgrader {
 
   public static final String STACKTRACE_START = "--------------------------";
 
+  private static final String DIR_ARRAY_SEPARATOR = ", ";
+
   public static void main(String[] args) {
-    String errorString = null;
-    String stackTraceString = null;
-
-    String diskStoreName = null;
-    String diskDirsStr = null;
-    String[] diskDirs = null;
-    String maxOpLogSize = null;
-    long maxOplogSize = -1;
-
     if (args.length < 3) {
       throw new IllegalArgumentException(
           "Requires 3 arguments : <diskStoreName> <diskDirs> <maxOpLogSize>");
@@ -58,12 +52,16 @@ public class DiskStoreUpgrader {
     }
 
     boolean errored = false;
+    String errorString = null;
+    String stackTraceString = null;
+    String diskStoreName = null;
+    String[] diskDirs = null;
     try {
       diskStoreName = prop.getProperty(CliStrings.UPGRADE_OFFLINE_DISK_STORE__NAME);
-      diskDirsStr = prop.getProperty(CliStrings.UPGRADE_OFFLINE_DISK_STORE__DISKDIRS);
+      String diskDirsStr = prop.getProperty(CliStrings.UPGRADE_OFFLINE_DISK_STORE__DISKDIRS);
       diskDirs = diskDirsStr.split(",");
-      maxOpLogSize = prop.getProperty(CliStrings.UPGRADE_OFFLINE_DISK_STORE__MAXOPLOGSIZE);
-      maxOplogSize = Long.valueOf(maxOpLogSize);
+      String maxOpLogSize = prop.getProperty(CliStrings.UPGRADE_OFFLINE_DISK_STORE__MAXOPLOGSIZE);
+      long maxOplogSize = Long.parseLong(maxOpLogSize);
 
       upgrade(diskStoreName, diskDirs, maxOplogSize);
     } catch (GemFireIOException e) {
@@ -76,7 +74,7 @@ public class DiskStoreUpgrader {
             message)) {
           errorString = CliStrings.format(
               CliStrings.UPGRADE_OFFLINE_DISK_STORE__MSG__CANNOT_LOCATE_0_DISKSTORE_IN_1,
-              diskStoreName, StringUtils.arrayToString(diskDirs));
+              diskStoreName, join(diskDirs, DIR_ARRAY_SEPARATOR));
         } else {
           errorString = message;
         }
@@ -95,7 +93,7 @@ public class DiskStoreUpgrader {
         if (!isKnownCause) {
           errorString = CliStrings.format(
               CliStrings.UPGRADE_OFFLINE_DISK_STORE__MSG__CANNOT_ACCESS_DISKSTORE_0_FROM_1_CHECK_GFSH_LOGS,
-              new Object[] {diskStoreName, StringUtils.arrayToString(diskDirs)});
+              diskStoreName, join(diskDirs, DIR_ARRAY_SEPARATOR));
         }
       } else {
         errorString = e.getMessage(); // which are other known exceptions?
@@ -133,10 +131,10 @@ public class DiskStoreUpgrader {
     } catch (Exception ex) {
       String fieldsMessage = (maxOplogSize != -1
           ? CliStrings.UPGRADE_OFFLINE_DISK_STORE__MAXOPLOGSIZE + "=" + maxOplogSize + "," : "");
-      fieldsMessage += StringUtils.arrayToString(dirs);
+      fieldsMessage += join(dirs, DIR_ARRAY_SEPARATOR);
       throw new GemFireIOException(CliStrings.format(
           CliStrings.UPGRADE_OFFLINE_DISK_STORE__MSG__ERROR_WHILE_COMPACTING_DISKSTORE_0_WITH_1_REASON_2,
-          new Object[] {diskStoreName, fieldsMessage, ex.getMessage()}), ex);
+          diskStoreName, fieldsMessage, ex.getMessage()), ex);
     }
   }
 

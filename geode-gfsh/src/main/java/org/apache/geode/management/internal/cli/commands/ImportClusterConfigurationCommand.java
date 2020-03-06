@@ -14,7 +14,6 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toSet;
 
 import java.io.File;
@@ -73,7 +72,7 @@ public class ImportClusterConfigurationCommand extends GfshCommand {
 
   public enum Action {
     APPLY, STAGE
-  };
+  }
 
   @CliCommand(value = {CliStrings.IMPORT_SHARED_CONFIG},
       help = CliStrings.IMPORT_SHARED_CONFIG__HELP)
@@ -81,7 +80,6 @@ public class ImportClusterConfigurationCommand extends GfshCommand {
       interceptor = "org.apache.geode.management.internal.cli.commands.ImportClusterConfigurationCommand$ImportInterceptor",
       isFileUploaded = true, relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG})
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE)
-  @SuppressWarnings("unchecked")
   public ResultModel importSharedConfig(
       @CliOption(key = CliStrings.GROUP,
           specifiedDefaultValue = ConfigurationPersistenceService.CLUSTER_CONFIG,
@@ -96,8 +94,7 @@ public class ImportClusterConfigurationCommand extends GfshCommand {
       return ResultModel.createError("Cluster configuration service is not running.");
     }
 
-    InternalConfigurationPersistenceService ccService =
-        (InternalConfigurationPersistenceService) getConfigurationPersistenceService();
+    InternalConfigurationPersistenceService ccService = getConfigurationPersistenceService();
     Set<DistributedMember> servers = findMembers(group);
     File file = getUploadedFile();
 
@@ -120,7 +117,7 @@ public class ImportClusterConfigurationCommand extends GfshCommand {
 
         if (!regionsOnServers.isEmpty()) {
           return ResultModel.createError("Can not configure servers with existing regions: "
-              + regionsOnServers.stream().collect(joining(",")));
+              + String.join(",", regionsOnServers));
         }
       }
 
@@ -178,8 +175,7 @@ public class ImportClusterConfigurationCommand extends GfshCommand {
 
   File getUploadedFile() {
     List<String> filePathFromShell = CommandExecutionContext.getFilePathFromShell();
-    File file = new File(filePathFromShell.get(0));
-    return file;
+    return new File(filePathFromShell.get(0));
   }
 
   Set<DistributedMember> findMembers(String group) {
@@ -193,7 +189,8 @@ public class ImportClusterConfigurationCommand extends GfshCommand {
   }
 
   private Set<String> getRegionNamesOnServer(DistributedMember server) {
-    ResultCollector rc = executeFunction(new GetRegionNamesFunction(), null, server);
+    ResultCollector<?, ?> rc = executeFunction(new GetRegionNamesFunction(), null, server);
+    @SuppressWarnings("unchecked")
     List<Set<String>> results = (List<Set<String>>) rc.getResult();
 
     return results.get(0);

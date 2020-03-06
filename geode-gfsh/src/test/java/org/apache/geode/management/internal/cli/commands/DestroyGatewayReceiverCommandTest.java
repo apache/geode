@@ -44,16 +44,16 @@ public class DestroyGatewayReceiverCommandTest {
   public static GfshParserRule gfsh = new GfshParserRule();
 
   private DestroyGatewayReceiverCommand command;
-  private InternalCache cache;
   private List<CliFunctionResult> functionResults;
-  private InternalConfigurationPersistenceService ccService;
   private CliFunctionResult result1;
 
   @Before
+  @SuppressWarnings("unchecked")
   public void setUp() throws Exception {
     command = spy(DestroyGatewayReceiverCommand.class);
-    ccService = mock(InternalConfigurationPersistenceService.class);
-    cache = mock(InternalCache.class);
+    InternalConfigurationPersistenceService ccService =
+        mock(InternalConfigurationPersistenceService.class);
+    InternalCache cache = mock(InternalCache.class);
     doReturn(cache).when(command).getCache();
     doReturn(ccService).when(command).getConfigurationPersistenceService();
     functionResults = new ArrayList<>();
@@ -70,6 +70,7 @@ public class DestroyGatewayReceiverCommandTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   public void memberNoGroup_isOK() {
     result1 = new CliFunctionResult("member1", CliFunctionResult.StatusState.OK, "result1");
     functionResults.add(result1);
@@ -83,6 +84,7 @@ public class DestroyGatewayReceiverCommandTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   public void groupNoMember_isOK() {
     result1 = new CliFunctionResult("member1", CliFunctionResult.StatusState.OK, "result1");
     functionResults.add(result1);

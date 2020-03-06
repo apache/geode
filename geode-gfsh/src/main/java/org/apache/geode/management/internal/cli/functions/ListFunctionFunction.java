@@ -31,7 +31,7 @@ import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 
-public class ListFunctionFunction implements InternalFunction {
+public class ListFunctionFunction implements InternalFunction<Object[]> {
   private static final Logger logger = LogService.getLogger();
 
   public static final String ID = ListFunctionFunction.class.getName();
@@ -39,12 +39,12 @@ public class ListFunctionFunction implements InternalFunction {
   private static final long serialVersionUID = 1L;
 
   @Override
-  public void execute(FunctionContext context) {
+  public void execute(FunctionContext<Object[]> context) {
     // Declared here so that it's available when returning a Throwable
     String memberId = "";
 
     try {
-      final Object[] args = (Object[]) context.getArguments();
+      final Object[] args = context.getArguments();
       final String stringPattern = (String) args[0];
 
       Cache cache = context.getCache();
@@ -56,10 +56,11 @@ public class ListFunctionFunction implements InternalFunction {
         memberId = member.getName();
       }
 
+      @SuppressWarnings("rawtypes")
       final Map<String, Function> functions = FunctionService.getRegisteredFunctions();
       CliFunctionResult result;
       if (stringPattern == null || stringPattern.isEmpty()) {
-        result = new CliFunctionResult(memberId, new HashSet(functions.keySet()), null);
+        result = new CliFunctionResult(memberId, new HashSet<>(functions.keySet()), null);
       } else {
         Pattern pattern = Pattern.compile(stringPattern);
         Set<String> resultSet = new HashSet<>();

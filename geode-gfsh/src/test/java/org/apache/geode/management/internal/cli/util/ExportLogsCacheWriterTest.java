@@ -39,7 +39,8 @@ public class ExportLogsCacheWriterTest {
   @Test
   public void writerReturnsPathIfWritten() throws Exception {
     writer.startFile("server-1");
-    EntryEvent event = mock(EntryEvent.class);
+    @SuppressWarnings("unchecked")
+    EntryEvent<String, byte[]> event = mock(EntryEvent.class);
     when(event.getNewValue()).thenReturn(new byte[] {});
     writer.beforeCreate(event);
     assertThat(writer.endFile()).isNotNull();

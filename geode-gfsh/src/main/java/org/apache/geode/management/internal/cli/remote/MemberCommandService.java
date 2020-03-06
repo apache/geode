@@ -18,9 +18,7 @@ import java.util.Map;
 
 import org.apache.geode.cache.internal.CommandProcessor;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.management.cli.CommandService;
 import org.apache.geode.management.cli.CommandServiceException;
-import org.apache.geode.management.cli.CommandStatement;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
@@ -28,8 +26,8 @@ import org.apache.geode.management.internal.cli.result.model.ResultModel;
 /**
  * @deprecated since 1.3 use OnlineCommandProcessor directly
  */
-
-public class MemberCommandService extends CommandService {
+@Deprecated
+public class MemberCommandService extends org.apache.geode.management.cli.CommandService {
   private final Object modLock = new Object();
 
   private InternalCache cache;
@@ -59,13 +57,15 @@ public class MemberCommandService extends CommandService {
 
   @Override
   @Deprecated
-  public CommandStatement createCommandStatement(String commandString) {
+  public org.apache.geode.management.cli.CommandStatement createCommandStatement(
+      String commandString) {
     return this.createCommandStatement(commandString, EMPTY_ENV);
   }
 
   @Override
   @Deprecated
-  public CommandStatement createCommandStatement(String commandString, Map<String, String> env) {
+  public org.apache.geode.management.cli.CommandStatement createCommandStatement(
+      String commandString, Map<String, String> env) {
     if (!isUsable()) {
       throw new IllegalStateException("Cache instance is not available.");
     }

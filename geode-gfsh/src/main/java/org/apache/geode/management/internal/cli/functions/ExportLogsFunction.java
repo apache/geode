@@ -51,7 +51,7 @@ import org.apache.geode.management.internal.cli.util.LogFilter;
  *
  * The function only extracts .log and .gfs files under server's working directory
  */
-public class ExportLogsFunction implements InternalFunction {
+public class ExportLogsFunction implements InternalFunction<ExportLogsFunction.Args> {
   private static final Logger logger = LogService.getLogger();
 
   public static final String EXPORT_LOGS_REGION = "__exportLogsRegion";
@@ -60,17 +60,18 @@ public class ExportLogsFunction implements InternalFunction {
   private static final int BUFFER_SIZE = 1024;
 
   @Override
-  public void execute(final FunctionContext context) {
+  public void execute(final FunctionContext<Args> context) {
     try {
       InternalCache cache = (InternalCache) context.getCache();
       DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
 
+      @SuppressWarnings("deprecation")
       String memberId = cache.getDistributedSystem().getMemberId();
       logger.info("ExportLogsFunction started for member {}", memberId);
 
-      Region exportLogsRegion = createOrGetExistingExportLogsRegion(false, cache);
+      Region<String, byte[]> exportLogsRegion = createOrGetExistingExportLogsRegion(false, cache);
 
-      Args args = (Args) context.getArguments();
+      Args args = context.getArguments();
       File baseLogFile = null;
       File baseStatsFile = null;
 
@@ -115,13 +116,15 @@ public class ExportLogsFunction implements InternalFunction {
     }
   }
 
-  public static Region createOrGetExistingExportLogsRegion(boolean isInitiatingMember,
+  public static Region<String, byte[]> createOrGetExistingExportLogsRegion(
+      boolean isInitiatingMember,
       InternalCache cache) {
 
     InternalCacheForClientAccess cacheForClientAccess = cache.getCacheForProcessingClientRequests();
-    Region exportLogsRegion = cacheForClientAccess.getInternalRegion(EXPORT_LOGS_REGION);
+    Region<String, byte[]> exportLogsRegion =
+        cacheForClientAccess.getInternalRegion(EXPORT_LOGS_REGION);
     if (exportLogsRegion == null) {
-      InternalRegionFactory<Object, Object> regionFactory =
+      InternalRegionFactory<String, byte[]> regionFactory =
           cacheForClientAccess.createInternalRegionFactory(RegionShortcut.REPLICATE_PROXY);
       if (isInitiatingMember) {
         regionFactory.setCacheWriter(new ExportLogsCacheWriter());
@@ -134,7 +137,7 @@ public class ExportLogsFunction implements InternalFunction {
   }
 
   public static void destroyExportLogsRegion(InternalCache cache) {
-    Region exportLogsRegion =
+    Region<?, ?> exportLogsRegion =
         cache.getCacheForProcessingClientRequests().getInternalRegion(EXPORT_LOGS_REGION);
     if (exportLogsRegion == null) {
       return;

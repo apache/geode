@@ -263,6 +263,7 @@ public class ConnectCommand extends OfflineGfshCommand {
     return sslOptions != null && Arrays.stream(sslOptions).anyMatch(Objects::nonNull);
   }
 
+  @SuppressWarnings("deprecation")
   static boolean containsLegacySSLConfig(Properties properties) {
     return properties.stringPropertyNames().stream()
         .anyMatch(key -> key.startsWith(CLUSTER_SSL_PREFIX)

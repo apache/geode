@@ -56,7 +56,8 @@ public class CreatePooledJndiBindingDUnitTest {
   }
 
   @Test
-  public void testCreateJndiBinding() throws Exception {
+  @SuppressWarnings("deprecation")
+  public void testCreateJndiBinding() {
     // assert that is no datasource
     VMProvider.invokeInEveryMember(
         () -> assertThat(JNDIInvoker.getNoOfAvailableDataSources()).isEqualTo(0), server1, server2);

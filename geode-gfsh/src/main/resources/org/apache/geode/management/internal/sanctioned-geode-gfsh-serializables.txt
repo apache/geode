@@ -37,6 +37,7 @@ org/apache/geode/management/internal/cli/functions/CloseDurableClientFunction,tr
 org/apache/geode/management/internal/cli/functions/CloseDurableCqFunction,true,1
 org/apache/geode/management/internal/cli/functions/ContinuousQueryFunction,true,1
 org/apache/geode/management/internal/cli/functions/ContinuousQueryFunction$ClientInfo,true,1,isDurable:java/lang/String,primaryServer:java/lang/String,secondaryServer:java/lang/String,this$0:org/apache/geode/management/internal/cli/functions/ContinuousQueryFunction
+org/apache/geode/management/internal/cli/functions/ContinuousQueryFunction$ClientInfo,true,1,isDurable:java/lang/String,primaryServer:java/lang/String,secondaryServer:java/lang/String
 org/apache/geode/management/internal/cli/functions/CreateAsyncEventQueueFunction,true,1
 org/apache/geode/management/internal/cli/functions/CreateDefinedIndexesFunction,true,6756381106602823693
 org/apache/geode/management/internal/cli/functions/CreateDiskStoreFunction,true,1

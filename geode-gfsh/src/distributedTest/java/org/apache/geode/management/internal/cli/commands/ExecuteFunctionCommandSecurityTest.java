@@ -113,6 +113,7 @@ public class ExecuteFunctionCommandSecurityTest implements Serializable {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   public void dataWriterCanNotExecuteReadFunction() throws Exception {
     gfsh.secureConnectAndVerify(locator.getPort(), GfshCommandRule.PortType.locator, "dataWrite",
         "dataWrite");
@@ -122,6 +123,7 @@ public class ExecuteFunctionCommandSecurityTest implements Serializable {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   public void readOnlyUserOnReplicatedRegion() throws Exception {
     gfsh.secureConnectAndVerify(locator.getPort(), GfshCommandRule.PortType.locator, "dataRead",
         "dataRead");
@@ -136,6 +138,7 @@ public class ExecuteFunctionCommandSecurityTest implements Serializable {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   public void readOnlyUserOnPartitionedRegion() throws Exception {
     gfsh.secureConnectAndVerify(locator.getPort(), GfshCommandRule.PortType.locator, "dataRead",
         "dataRead");

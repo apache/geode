@@ -59,21 +59,21 @@ public class RegionAlterFunctionTest {
   private RegionAttributesType regionAttributes;
   private InternalCacheForClientAccess cache;
   private FunctionContext<RegionConfig> context;
-  private AttributesMutator mutator;
+  private AttributesMutator<Object, Object> mutator;
   private EvictionAttributesMutator evictionMutator;
   private AbstractRegion region;
 
-  public static class MyCustomExpiry implements CustomExpiry, Declarable {
+  public static class MyCustomExpiry implements CustomExpiry<Object, Object>, Declarable {
     @Override
-    public ExpirationAttributes getExpiry(Region.Entry entry) {
+    public ExpirationAttributes getExpiry(Region.Entry<Object, Object> entry) {
       return null;
     }
   }
 
-  public static class MyCacheListener extends CacheListenerAdapter {
+  public static class MyCacheListener extends CacheListenerAdapter<Object, Object> {
   }
 
-  public static class MyCacheWriter extends CacheWriterAdapter {
+  public static class MyCacheWriter extends CacheWriterAdapter<Object, Object> {
   }
 
   @Before
@@ -274,14 +274,17 @@ public class RegionAlterFunctionTest {
   @Test
   public void updateWithCacheListeners() {
     // suppose region has one cacheListener, and we want to replace the oldOne one with the new one
-    CacheListener oldOne = mock(CacheListener.class);
+    @SuppressWarnings("unchecked")
+    CacheListener<Object, Object> oldOne = mock(CacheListener.class);
     when(region.getCacheListeners()).thenReturn(new CacheListener[] {oldOne});
 
     DeclarableType newCacheListenerType = mock(DeclarableType.class);
     when(newCacheListenerType.getClassName()).thenReturn(MyCacheListener.class.getName());
     regionAttributes.getCacheListeners().add(newCacheListenerType);
 
-    ArgumentCaptor<CacheListener> argument = ArgumentCaptor.forClass(CacheListener.class);
+    @SuppressWarnings("unchecked")
+    ArgumentCaptor<CacheListener<Object, Object>> argument =
+        ArgumentCaptor.forClass(CacheListener.class);
 
     function.alterRegion(cache, config);
     verify(mutator).removeCacheListener(oldOne);
@@ -292,7 +295,8 @@ public class RegionAlterFunctionTest {
   @Test
   public void updateWithEmptyCacheListeners() {
     // suppose region has on listener, and we want to delete that one
-    CacheListener oldOne = mock(CacheListener.class);
+    @SuppressWarnings("unchecked")
+    CacheListener<Object, Object> oldOne = mock(CacheListener.class);
     when(region.getCacheListeners()).thenReturn(new CacheListener[] {oldOne});
     regionAttributes.getCacheListeners().add(DeclarableType.EMPTY);
 

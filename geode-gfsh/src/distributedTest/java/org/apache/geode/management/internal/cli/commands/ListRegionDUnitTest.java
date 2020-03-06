@@ -48,10 +48,8 @@ public class ListRegionDUnitTest {
 
   private static final String SERVER1_NAME = "Server-1";
   private static final String SERVER2_NAME = "Server-2";
-  private static final String LOCATOR_NAME = "Locator";
   private static final String GROUP1_NAME = "G1";
   private static final String GROUP2_NAME = "G2";
-  private static final String GROUP3_NAME = "G3";
 
   @ClassRule
   public static ClusterStartupRule lsRule = new ClusterStartupRule();
@@ -85,14 +83,14 @@ public class ListRegionDUnitTest {
   }
 
   @Test
-  public void listAllRegions() throws Exception {
+  public void listAllRegions() {
     String listRegions = new CommandStringBuilder(LIST_REGION).toString();
     gfsh.executeAndAssertThat(listRegions).statusIsSuccess().containsOutput(PR1,
         LOCALREGIONONSERVER1, REGION1, REGION2, REGION3);
   }
 
   @Test
-  public void listRegionsOnManager() throws Exception {
+  public void listRegionsOnManager() {
     String listRegions =
         new CommandStringBuilder(LIST_REGION).addOption(MEMBER, SERVER1_NAME).toString();
     gfsh.executeAndAssertThat(listRegions).statusIsSuccess().containsOutput(PR1,
@@ -100,7 +98,7 @@ public class ListRegionDUnitTest {
   }
 
   @Test
-  public void listRegionsOnServer() throws Exception {
+  public void listRegionsOnServer() {
     CommandStringBuilder csb = new CommandStringBuilder(LIST_REGION);
     csb.addOption(MEMBER, SERVER2_NAME);
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess().containsOutput(PR1, REGION1,
@@ -108,7 +106,7 @@ public class ListRegionDUnitTest {
   }
 
   @Test
-  public void listRegionsInGroup1() throws Exception {
+  public void listRegionsInGroup1() {
     CommandStringBuilder csb = new CommandStringBuilder(LIST_REGION);
     csb.addOption(GROUP, GROUP1_NAME);
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess().containsOutput(PR1,
@@ -116,7 +114,7 @@ public class ListRegionDUnitTest {
   }
 
   @Test
-  public void listRegionsInGroup2() throws Exception {
+  public void listRegionsInGroup2() {
     CommandStringBuilder csb = new CommandStringBuilder(LIST_REGION);
     csb.addOption(GROUP, GROUP2_NAME);
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess().containsOutput(PR1, REGION1,
@@ -138,6 +136,7 @@ public class ListRegionDUnitTest {
     dataRegionFactory.create(regionName);
   }
 
+  @SuppressWarnings("deprecation")
   private static void createRegionsWithSubRegions() {
     final Cache cache = CacheFactory.getAnyInstance();
 

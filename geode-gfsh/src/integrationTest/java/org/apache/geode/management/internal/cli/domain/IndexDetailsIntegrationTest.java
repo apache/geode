@@ -25,7 +25,6 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.query.Index;
-import org.apache.geode.cache.query.IndexType;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
@@ -35,7 +34,11 @@ public class IndexDetailsIntegrationTest {
   private static final String INDEX_REGION_NAME = "/REGION1";
   private static final String INDEX_1 = "INDEX1";
 
-  private Region region;
+  @SuppressWarnings("deprecation")
+  private static final org.apache.geode.cache.query.IndexType FUNCTIONAL =
+      org.apache.geode.cache.query.IndexType.FUNCTIONAL;
+
+  private Region<Integer, Stock> region;
 
   @Rule
   public ServerStarterRule serverRule =
@@ -66,7 +69,7 @@ public class IndexDetailsIntegrationTest {
     assertThat(details.getMemberName()).isEqualTo(member.getName());
     assertThat(details.getFromClause()).isEqualTo(INDEX_REGION_NAME);
     assertThat(details.getIndexedExpression()).isEqualTo("key");
-    assertThat(details.getIndexType()).isEqualTo(IndexType.FUNCTIONAL);
+    assertThat(details.getIndexType()).isEqualTo(FUNCTIONAL);
     assertThat(details.getProjectionAttributes()).isEqualTo("*");
     assertThat(details.getIsValid()).isEqualTo(true);
 

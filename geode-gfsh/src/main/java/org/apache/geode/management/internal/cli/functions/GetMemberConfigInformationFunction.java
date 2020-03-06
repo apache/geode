@@ -40,14 +40,14 @@ import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.cli.domain.MemberConfigurationInfo;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 
-public class GetMemberConfigInformationFunction extends CliFunction {
+public class GetMemberConfigInformationFunction extends CliFunction<Boolean> {
   private static final long serialVersionUID = 1L;
 
 
   @Override
-  public CliFunctionResult executeFunction(FunctionContext context) throws Exception {
-    Object argsObject = context.getArguments();
-    boolean hideDefaults = ((Boolean) argsObject).booleanValue();
+  @SuppressWarnings("deprecation")
+  public CliFunctionResult executeFunction(FunctionContext<Boolean> context) {
+    boolean hideDefaults = context.getArguments();
 
     Cache cache = context.getCache();
     InternalDistributedSystem system = (InternalDistributedSystem) cache.getDistributedSystem();
@@ -67,7 +67,7 @@ public class GetMemberConfigInformationFunction extends CliFunction {
     memberConfigInfo.setGfePropsSetFromFile(distConfigImpl.getConfigPropsDefinedUsingFiles());
 
     // CacheAttributes
-    Map<String, String> cacheAttributes = new HashMap<String, String>();
+    Map<String, String> cacheAttributes = new HashMap<>();
 
     cacheAttributes.put("copy-on-read", Boolean.toString(cache.getCopyOnRead()));
     cacheAttributes.put("is-server", Boolean.toString(cache.isServer()));
@@ -93,12 +93,12 @@ public class GetMemberConfigInformationFunction extends CliFunction {
 
     memberConfigInfo.setCacheAttributes(cacheAttributes);
 
-    List<Map<String, String>> cacheServerAttributesList = new ArrayList<Map<String, String>>();
+    List<Map<String, String>> cacheServerAttributesList = new ArrayList<>();
     List<CacheServer> cacheServers = cache.getCacheServers();
 
     if (cacheServers != null)
       for (CacheServer cacheServer : cacheServers) {
-        Map<String, String> cacheServerAttributes = new HashMap<String, String>();
+        Map<String, String> cacheServerAttributes = new HashMap<>();
 
         cacheServerAttributes.put("bind-address", cacheServer.getBindAddress());
         cacheServerAttributes.put("hostname-for-clients", cacheServer.getHostnameForClients());
@@ -137,8 +137,7 @@ public class GetMemberConfigInformationFunction extends CliFunction {
    * @return a map containing the cache attributes - default values
    */
   private Map<String, String> getCacheAttributesDefaultValues() {
-    String d = CacheConfig.DEFAULT_PDX_DISK_STORE;
-    Map<String, String> cacheAttributesDefault = new HashMap<String, String>();
+    Map<String, String> cacheAttributesDefault = new HashMap<>();
     cacheAttributesDefault.put("pdx-disk-store", "");
     cacheAttributesDefault.put("pdx-read-serialized",
         Boolean.toString(CacheConfig.DEFAULT_PDX_READ_SERIALIZED));
@@ -166,7 +165,7 @@ public class GetMemberConfigInformationFunction extends CliFunction {
    * @return a map containing the cache server attributes - default values
    */
   private Map<String, String> getCacheServerAttributesDefaultValues() {
-    Map<String, String> csAttributesDefault = new HashMap<String, String>();
+    Map<String, String> csAttributesDefault = new HashMap<>();
     csAttributesDefault.put("bind-address", CacheServer.DEFAULT_BIND_ADDRESS);
     csAttributesDefault.put("hostname-for-clients", CacheServer.DEFAULT_HOSTNAME_FOR_CLIENTS);
     csAttributesDefault.put("max-connections",
@@ -196,7 +195,7 @@ public class GetMemberConfigInformationFunction extends CliFunction {
   private void removeDefaults(Map<String, String> attributesMap,
       Map<String, String> defaultAttributesMap) {
     // Make a copy to avoid the CME's
-    Set<String> attributesSet = new HashSet<String>(attributesMap.keySet());
+    Set<String> attributesSet = new HashSet<>(attributesMap.keySet());
 
     for (String attribute : attributesSet) {
       String attributeValue = attributesMap.get(attribute);
