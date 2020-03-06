@@ -31,6 +31,7 @@ import org.apache.logging.log4j.core.appender.ConsoleAppender;
 import org.apache.logging.log4j.core.appender.ConsoleAppender.Target;
 import org.apache.logging.log4j.core.appender.ManagerFactory;
 import org.apache.logging.log4j.core.appender.OutputStreamManager;
+import org.apache.logging.log4j.core.config.Property;
 import org.apache.logging.log4j.core.config.plugins.Plugin;
 import org.apache.logging.log4j.core.config.plugins.PluginBuilderAttribute;
 import org.apache.logging.log4j.core.config.plugins.PluginBuilderFactory;
@@ -84,7 +85,7 @@ public class GeodeConsoleAppender extends AbstractOutputStreamAppender<OutputStr
       final boolean startPaused,
       final boolean debug,
       final ConsoleAppender delegate) {
-    super(name, layout, filter, ignoreExceptions, true, manager);
+    super(name, layout, filter, ignoreExceptions, true, Property.EMPTY_ARRAY, manager);
     this.delegate = delegate;
     this.debug = debug;
     if (debug) {
@@ -168,12 +169,12 @@ public class GeodeConsoleAppender extends AbstractOutputStreamAppender<OutputStr
 
     @Override
     public GeodeConsoleAppender build() {
-      ConsoleAppender.Builder delegate = new ConsoleAppender.Builder();
+      ConsoleAppender.Builder<?> delegate = new ConsoleAppender.Builder<>();
       // AbstractAppender
-      delegate.withFilter(getFilter());
-      delegate.withName(getName() + "_DELEGATE");
-      delegate.withIgnoreExceptions(isIgnoreExceptions());
-      delegate.withLayout(getLayout());
+      delegate.setFilter(getFilter());
+      delegate.setName(getName() + "_DELEGATE");
+      delegate.setIgnoreExceptions(isIgnoreExceptions());
+      delegate.setLayout(getLayout());
       // AbstractOutputStreamAppender
       delegate.withImmediateFlush(isImmediateFlush());
       delegate.withBufferedIo(isBufferedIo());

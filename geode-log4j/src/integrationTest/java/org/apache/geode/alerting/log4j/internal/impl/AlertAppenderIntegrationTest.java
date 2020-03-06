@@ -61,6 +61,7 @@ import org.apache.geode.test.junit.categories.LoggingTest;
  * Integration tests for {@link AlertAppender}.
  */
 @Category({AlertingTest.class, LoggingTest.class})
+@SuppressWarnings("deprecation")
 public class AlertAppenderIntegrationTest {
 
   private static final String CONFIG_FILE_NAME = "AlertAppenderIntegrationTest_log4j2.xml";
