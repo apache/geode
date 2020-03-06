@@ -62,9 +62,11 @@ public class ShowMissingDiskStoreCommandDUnitTest {
   }
 
   @Test
-  public void showMissingDiskStoresDoesNotDuplicateDiskStores() throws Exception {
+  public void showMissingDiskStoresDoesNotDuplicateDiskStores() {
     MemberVM server1 = lsRule.startServerVM(1, locator.getPort());
+    @SuppressWarnings("unused")
     MemberVM server2 = lsRule.startServerVM(2, locator.getPort());
+    @SuppressWarnings("unused")
     MemberVM server3 = lsRule.startServerVM(3, locator.getPort());
 
     final String testRegionName = "regionA";
@@ -88,8 +90,9 @@ public class ShowMissingDiskStoreCommandDUnitTest {
     lsRule.stop(1);
 
     csb = new CommandStringBuilder(CliStrings.SHOW_MISSING_DISK_STORE);
+    @SuppressWarnings("deprecation")
     ResultModel result =
-        (ResultModel) gfshConnector.executeCommand(csb.getCommandString()).getResultData();
+        gfshConnector.executeCommand(csb.getCommandString()).getResultData();
     TabularResultModel tableSection = result.getTableSection("missing-disk-stores");
     List<String> missingDiskStoreIds = tableSection.getValuesInColumn("Disk Store ID");
     assertThat(missingDiskStoreIds).hasSize(1);
@@ -102,10 +105,13 @@ public class ShowMissingDiskStoreCommandDUnitTest {
   }
 
   @Test
-  public void stoppingAndRestartingMemberDoesNotResultInMissingDiskStore() throws Exception {
+  public void stoppingAndRestartingMemberDoesNotResultInMissingDiskStore() {
     MemberVM server1 = lsRule.startServerVM(1, locator.getPort());
+    @SuppressWarnings("unused")
     MemberVM server2 = lsRule.startServerVM(2, locator.getPort());
+    @SuppressWarnings("unused")
     MemberVM server3 = lsRule.startServerVM(3, locator.getPort());
+    @SuppressWarnings("unused")
     MemberVM server4 = lsRule.startServerVM(4, locator.getPort());
 
     final String testRegionName = "regionA";
@@ -142,6 +148,7 @@ public class ShowMissingDiskStoreCommandDUnitTest {
     lsRule.startServerVM(2, locator.getPort());
 
     csb = new CommandStringBuilder(CliStrings.SHOW_MISSING_DISK_STORE);
+    @SuppressWarnings("deprecation")
     CommandResult commandResult = gfshConnector.executeCommand(csb.getCommandString());
     ResultModel result = commandResult.getResultData();
     TabularResultModel tableSection = result.getTableSection("missing-disk-stores");

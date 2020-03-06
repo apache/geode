@@ -68,10 +68,12 @@ public class ImportDataCommand extends GfshCommand {
     ResultModel result;
     try {
       String path = dirPath != null ? dirPath : filePath;
-      final Object args[] = {regionName, path, invokeCallbacks, parallel};
+      final Object[] args = {regionName, path, invokeCallbacks, parallel};
 
       ResultCollector<?, ?> rc = executeFunction(importDataFunction, args, targetMember);
-      result = ResultModel.createMemberStatusResult((List<CliFunctionResult>) rc.getResult());
+      @SuppressWarnings("unchecked")
+      final List<CliFunctionResult> results = (List<CliFunctionResult>) rc.getResult();
+      result = ResultModel.createMemberStatusResult(results);
     } catch (CacheClosedException e) {
       result = ResultModel.createError(e.getMessage());
     } catch (FunctionInvocationTargetException e) {

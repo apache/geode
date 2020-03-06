@@ -18,7 +18,6 @@ import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResourc
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
-import java.net.URISyntaxException;
 import java.util.List;
 
 import org.junit.Before;
@@ -40,7 +39,6 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolde
 
 @Category({FunctionServiceTest.class})
 public class DeployCommandFunctionRegistrationDUnitTest {
-  private MemberVM locator;
   private MemberVM server;
 
   @Rule
@@ -54,7 +52,7 @@ public class DeployCommandFunctionRegistrationDUnitTest {
 
   @Before
   public void setup() throws Exception {
-    locator = lsRule.startLocatorVM(0);
+    MemberVM locator = lsRule.startLocatorVM(0);
     server = lsRule.startServerVM(1, locator.getPort());
 
     gfshConnector.connectAndVerify(locator);
@@ -94,7 +92,7 @@ public class DeployCommandFunctionRegistrationDUnitTest {
         "ExtendsFunctionAdapterResult"));
   }
 
-  private File loadTestResource(String fileName) throws URISyntaxException {
+  private File loadTestResource(String fileName) {
     String filePath =
         createTempFileFromResource(this.getClass(), fileName).getAbsolutePath();
     assertThat(filePath).isNotNull();
@@ -103,10 +101,13 @@ public class DeployCommandFunctionRegistrationDUnitTest {
   }
 
   private static void assertThatFunctionHasVersion(String functionId, String version) {
+    @SuppressWarnings("deprecation")
     GemFireCacheImpl gemFireCache = GemFireCacheImpl.getInstance();
     DistributedSystem distributedSystem = gemFireCache.getDistributedSystem();
-    Execution execution = FunctionService.onMember(distributedSystem.getDistributedMember());
-    List<String> result = (List<String>) execution.execute(functionId).getResult();
+    @SuppressWarnings("unchecked")
+    Execution<Void, String, List<String>> execution =
+        FunctionService.onMember(distributedSystem.getDistributedMember());
+    List<String> result = execution.execute(functionId).getResult();
     assertThat(result.get(0)).isEqualTo(version);
   }
 

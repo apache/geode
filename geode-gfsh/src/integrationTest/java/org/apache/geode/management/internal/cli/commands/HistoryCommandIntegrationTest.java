@@ -40,7 +40,7 @@ public class HistoryCommandIntegrationTest {
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   @After
-  public void tearDown() throws Exception {
+  public void tearDown() {
     gfsh.getGfsh().clearHistory();
   }
 
@@ -63,10 +63,11 @@ public class HistoryCommandIntegrationTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   public void testHistoryWithFileName() throws IOException {
     gfsh.executeCommand("echo --string=string");
     File historyFile = temporaryFolder.newFile("history.txt");
-    historyFile.delete();
+    Files.deleteIfExists(historyFile.toPath());
     assertThat(historyFile).doesNotExist();
 
     String command = "history --file=" + historyFile.getAbsolutePath();
@@ -89,10 +90,11 @@ public class HistoryCommandIntegrationTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   public void testHistoryContainsRedactedPasswordWithEquals() throws IOException {
     gfsh.executeCommand("connect --password=redacted");
     File historyFile = temporaryFolder.newFile("history.txt");
-    historyFile.delete();
+    Files.deleteIfExists(historyFile.toPath());
     assertThat(historyFile).doesNotExist();
 
     String command = "history --file=" + historyFile.getAbsolutePath();
@@ -105,10 +107,11 @@ public class HistoryCommandIntegrationTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   public void testHistoryContainsRedactedPasswordWithoutEquals() throws IOException {
     gfsh.executeCommand("connect --password redacted");
     File historyFile = temporaryFolder.newFile("history.txt");
-    historyFile.delete();
+    Files.deleteIfExists(historyFile.toPath());
     assertThat(historyFile).doesNotExist();
 
     String command = "history --file=" + historyFile.getAbsolutePath();

@@ -16,6 +16,7 @@ package org.apache.geode.management.internal.cli.functions;
 
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.InternalFunction;
@@ -28,15 +29,16 @@ import org.apache.geode.management.internal.functions.CliFunctionResult;
  *
  * @since GemFire 8.0
  */
-public class DestroyDiskStoreFunction implements InternalFunction {
+public class DestroyDiskStoreFunction implements InternalFunction<DestroyDiskStoreFunctionArgs> {
   private static final long serialVersionUID = 1L;
 
   @Override
-  public void execute(FunctionContext context) {
+  @SuppressWarnings("deprecation")
+  public void execute(FunctionContext<DestroyDiskStoreFunctionArgs> context) {
     // Declared here so that it's available when returning a Throwable
     String memberId;
 
-    final DestroyDiskStoreFunctionArgs args = (DestroyDiskStoreFunctionArgs) context.getArguments();
+    final DestroyDiskStoreFunctionArgs args = context.getArguments();
 
     InternalCache cache = (InternalCache) context.getCache();
 
@@ -67,6 +69,7 @@ public class DestroyDiskStoreFunction implements InternalFunction {
     } catch (IllegalStateException ex) {
       result = new CliFunctionResult(memberId, false, ex.getMessage());
     }
-    context.getResultSender().lastResult(result);
+    final ResultSender<CliFunctionResult> resultSender = context.getResultSender();
+    resultSender.lastResult(result);
   }
 }

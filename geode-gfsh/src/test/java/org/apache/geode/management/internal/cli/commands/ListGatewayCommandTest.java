@@ -46,18 +46,16 @@ public class ListGatewayCommandTest {
   @ClassRule
   public static GfshParserRule gfsh = new GfshParserRule();
 
-  private final Map<String, GatewayReceiverMXBean> receiverBeans = new HashMap<>();;
+  private final Map<String, GatewayReceiverMXBean> receiverBeans = new HashMap<>();
   private ListGatewayCommand command;
-  private DistributedMember member;
-  private SystemManagementService service;
   private GatewayReceiverMXBean receiverMXBean;
   private GatewaySenderMXBean senderMXBean;
 
   @Before
   public void setup() {
     command = spy(ListGatewayCommand.class);
-    member = mock(DistributedMember.class);
-    service = mock(SystemManagementService.class);
+    DistributedMember member = mock(DistributedMember.class);
+    SystemManagementService service = mock(SystemManagementService.class);
 
     doReturn(Stream.of(member).collect(toSet())).when(command).findMembers(any(), any());
     doReturn(service).when(command).getManagementService();
@@ -79,7 +77,7 @@ public class ListGatewayCommandTest {
         "10.118.19.31(server-ny-1:33206)<v1>:1028"}).when(receiverMXBean)
             .getConnectedGatewaySenders();
 
-    command.accumulateListGatewayResult(crd, Collections.EMPTY_MAP, receiverBeans);
+    command.accumulateListGatewayResult(crd, Collections.emptyMap(), receiverBeans);
     new CommandResultAssert(new CommandResult(crd))
         .hasTableSection("gatewayReceivers")
         .hasColumn("Senders Connected")
@@ -93,7 +91,7 @@ public class ListGatewayCommandTest {
 
     doReturn(new String[0]).when(receiverMXBean).getConnectedGatewaySenders();
 
-    command.accumulateListGatewayResult(crd, Collections.EMPTY_MAP, receiverBeans);
+    command.accumulateListGatewayResult(crd, Collections.emptyMap(), receiverBeans);
     new CommandResultAssert(new CommandResult(crd))
         .hasTableSection("gatewayReceivers")
         .hasColumn("Senders Connected").containsExactly("");
@@ -105,7 +103,7 @@ public class ListGatewayCommandTest {
 
     doReturn(null).when(receiverMXBean).getConnectedGatewaySenders();
 
-    command.accumulateListGatewayResult(crd, Collections.EMPTY_MAP, receiverBeans);
+    command.accumulateListGatewayResult(crd, Collections.emptyMap(), receiverBeans);
 
     new CommandResultAssert(new CommandResult(crd))
         .hasTableSection("gatewayReceivers")
@@ -113,7 +111,7 @@ public class ListGatewayCommandTest {
   }
 
   @Test
-  public void getGatewaySenderStatus() throws Exception {
+  public void getGatewaySenderStatus() {
     when(senderMXBean.isRunning()).thenReturn(false);
     assertThat(ListGatewayCommand.getStatus(senderMXBean)).isEqualTo("Not Running");
 

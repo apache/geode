@@ -68,13 +68,13 @@ public class IndexCommandsShareConfigurationDUnitTest {
             + "--key-constraint=java.lang.String --value-constraint=org.apache.geode.management.internal.cli.domain.Stock");
 
     serverVM.invoke(() -> {
-      Region region = ClusterStartupRule.getCache().getRegion(partitionedRegionName);
+      Region<String, Stock> region = ClusterStartupRule.getCache().getRegion(partitionedRegionName);
       region.put("VMW", new Stock("VMW", 98));
     });
   }
 
   @Test
-  public void testCreateAndDestroyUpdatesSharedConfiguration() throws Exception {
+  public void testCreateAndDestroyUpdatesSharedConfiguration() {
     CommandStringBuilder createStringBuilder = new CommandStringBuilder(CliStrings.CREATE_INDEX);
     createStringBuilder.addOption(CliStrings.CREATE_INDEX__NAME, indexName);
     createStringBuilder.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "key");
@@ -111,7 +111,7 @@ public class IndexCommandsShareConfigurationDUnitTest {
     serverVM.invoke(() -> {
       InternalCache restartedCache = ClusterStartupRule.getCache();
       assertNotNull(restartedCache);
-      Region region = restartedCache.getRegion(partitionedRegionName);
+      Region<?, ?> region = restartedCache.getRegion(partitionedRegionName);
       assertNotNull(region);
       Index index = restartedCache.getQueryService().getIndex(region, indexName);
       assertNull(index);

@@ -31,42 +31,48 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.management.internal.i18n.CliStrings;
 
-public class AlterRuntimeConfigFunction implements InternalFunction {
+public class AlterRuntimeConfigFunction implements InternalFunction<Map<String, String>> {
 
   private static final long serialVersionUID = 1L;
 
   private static final Logger logger = LogService.getLogger();
 
   @Override
-  public void execute(FunctionContext context) {
+  public void execute(FunctionContext<Map<String, String>> context) {
     String memberId = "";
 
     try {
-      Object arg = context.getArguments();
       InternalCache cache = (InternalCache) context.getCache();
       DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
       memberId = cache.getDistributedSystem().getDistributedMember().getId();
 
-      Map<String, String> runtimeAttributes = (Map<String, String>) arg;
+      Map<String, String> runtimeAttributes = context.getArguments();
       Set<Entry<String, String>> entries = runtimeAttributes.entrySet();
 
       for (Entry<String, String> entry : entries) {
         String attributeName = entry.getKey();
         String attributeValue = entry.getValue();
 
-        if (attributeName.equals(CliStrings.ALTER_RUNTIME_CONFIG__COPY__ON__READ)) {
-          cache.setCopyOnRead(Boolean.parseBoolean(attributeValue));
-        } else if (attributeName.equals(CliStrings.ALTER_RUNTIME_CONFIG__LOCK__LEASE)) {
-          cache.setLockLease(Integer.parseInt(attributeValue));
-        } else if (attributeName.equals(CliStrings.ALTER_RUNTIME_CONFIG__LOCK__TIMEOUT)) {
-          int lockTimeout = Integer.parseInt(attributeValue);
-          cache.setLockTimeout(lockTimeout);
-        } else if (attributeName.equals(CliStrings.ALTER_RUNTIME_CONFIG__SEARCH__TIMEOUT)) {
-          cache.setSearchTimeout(Integer.parseInt(attributeValue));
-        } else if (attributeName.equals(CliStrings.ALTER_RUNTIME_CONFIG__MESSAGE__SYNC__INTERVAL)) {
-          cache.setMessageSyncInterval(Integer.parseInt(attributeValue));
-        } else {
-          config.setAttribute(attributeName, attributeValue, ConfigSource.runtime());
+        switch (attributeName) {
+          case CliStrings.ALTER_RUNTIME_CONFIG__COPY__ON__READ:
+            cache.setCopyOnRead(Boolean.parseBoolean(attributeValue));
+            break;
+          case CliStrings.ALTER_RUNTIME_CONFIG__LOCK__LEASE:
+            cache.setLockLease(Integer.parseInt(attributeValue));
+            break;
+          case CliStrings.ALTER_RUNTIME_CONFIG__LOCK__TIMEOUT:
+            int lockTimeout = Integer.parseInt(attributeValue);
+            cache.setLockTimeout(lockTimeout);
+            break;
+          case CliStrings.ALTER_RUNTIME_CONFIG__SEARCH__TIMEOUT:
+            cache.setSearchTimeout(Integer.parseInt(attributeValue));
+            break;
+          case CliStrings.ALTER_RUNTIME_CONFIG__MESSAGE__SYNC__INTERVAL:
+            cache.setMessageSyncInterval(Integer.parseInt(attributeValue));
+            break;
+          default:
+            config.setAttribute(attributeName, attributeValue, ConfigSource.runtime());
+            break;
         }
       }
 

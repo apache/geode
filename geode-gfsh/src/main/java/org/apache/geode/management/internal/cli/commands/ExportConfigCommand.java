@@ -56,6 +56,7 @@ public class ExportConfigCommand extends GfshCommand {
       relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG})
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.READ)
+  @SuppressWarnings("deprecation")
   public ResultModel exportConfig(
       @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
           optionContext = ConverterHint.ALL_MEMBER_IDNAME,
@@ -71,7 +72,7 @@ public class ExportConfigCommand extends GfshCommand {
 
     Set<DistributedMember> targetMembers = findMembers(group, member);
     if (targetMembers.isEmpty()) {
-      crm.createError(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
+      ResultModel.createError(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
       return crm;
     }
 

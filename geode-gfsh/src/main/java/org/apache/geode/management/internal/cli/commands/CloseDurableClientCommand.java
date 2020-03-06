@@ -58,6 +58,7 @@ public class CloseDurableClientCommand extends GfshCommand {
 
     final ResultCollector<?, ?> rc =
         executeFunction(new CloseDurableClientFunction(), durableClientId, targetMembers);
+    @SuppressWarnings("unchecked")
     final List<CliFunctionResult> results = (List<CliFunctionResult>) rc.getResult();
 
     return ResultModel.createMemberStatusResult(results);

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.shell;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.geode.internal.Assert.assertState;
 
 import java.io.IOException;
@@ -70,9 +71,9 @@ public class MXBeanProvider {
     try {
       String objectNamePattern = ManagementConstants.OBJECTNAME__PREFIX;
 
-      objectNamePattern += (org.apache.geode.internal.lang.StringUtils.isBlank(serviceName)
-          ? org.apache.geode.internal.lang.StringUtils.EMPTY
-          : "service=" + serviceName + org.apache.geode.internal.lang.StringUtils.COMMA_DELIMITER);
+      objectNamePattern += (isBlank(serviceName)
+          ? ""
+          : "service=" + serviceName + ",");
       objectNamePattern += "type=Member,*";
 
       // NOTE throws a MalformedObjectNameException, however, this should not happen since the

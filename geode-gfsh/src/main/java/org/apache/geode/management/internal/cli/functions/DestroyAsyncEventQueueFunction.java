@@ -26,18 +26,17 @@ import org.apache.geode.management.internal.functions.CliFunctionResult;
  * Function used by the 'destroy async-event-queue' gfsh command to destroy an asynchronous event
  * queue on a member.
  */
-public class DestroyAsyncEventQueueFunction implements InternalFunction {
+public class DestroyAsyncEventQueueFunction
+    implements InternalFunction<DestroyAsyncEventQueueFunctionArgs> {
 
   private static final long serialVersionUID = -7754359270344102817L;
 
   @Override
-  public void execute(FunctionContext context) {
-    String memberId = "";
-
+  public void execute(FunctionContext<DestroyAsyncEventQueueFunctionArgs> context) {
     DestroyAsyncEventQueueFunctionArgs aeqArgs =
-        (DestroyAsyncEventQueueFunctionArgs) context.getArguments();
+        context.getArguments();
     String aeqId = aeqArgs.getId();
-    memberId = context.getMemberName();
+    String memberId = context.getMemberName();
 
     try {
       AsyncEventQueueImpl aeq = (AsyncEventQueueImpl) context.getCache().getAsyncEventQueue(aeqId);
@@ -59,9 +58,13 @@ public class DestroyAsyncEventQueueFunction implements InternalFunction {
 
         aeq.stop();
         aeq.destroy();
+
+        @SuppressWarnings("deprecation")
+        final CliFunctionResult lastResult =
+            new CliFunctionResult(memberId, xmlEntity, String.format(
+                DestroyAsyncEventQueueCommand.DESTROY_ASYNC_EVENT_QUEUE__AEQ_0_DESTROYED, aeqId));
         context.getResultSender()
-            .lastResult(new CliFunctionResult(memberId, xmlEntity, String.format(
-                DestroyAsyncEventQueueCommand.DESTROY_ASYNC_EVENT_QUEUE__AEQ_0_DESTROYED, aeqId)));
+            .lastResult(lastResult);
       }
     } catch (Exception e) {
       context.getResultSender().lastResult(new CliFunctionResult(memberId, e, e.getMessage()));
@@ -69,8 +72,7 @@ public class DestroyAsyncEventQueueFunction implements InternalFunction {
   }
 
   XmlEntity getAEQXmlEntity(String key, String value) {
-    XmlEntity xmlEntity = new XmlEntity(CacheXml.ASYNC_EVENT_QUEUE, key, value);
-    return xmlEntity;
+    return new XmlEntity(CacheXml.ASYNC_EVENT_QUEUE, key, value);
   }
 
   @Override

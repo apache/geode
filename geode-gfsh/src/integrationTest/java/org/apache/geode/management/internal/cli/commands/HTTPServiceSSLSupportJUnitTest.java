@@ -25,6 +25,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_T
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.util.Properties;
@@ -77,6 +78,7 @@ public class HTTPServiceSSLSupportJUnitTest {
 
   // @Ignore("disabled for unknown reason")
   @Test
+  @SuppressWarnings("deprecation")
   public void testSSLWithClusterSSL() throws Exception {
 
     Properties localProps = new Properties();
@@ -92,17 +94,18 @@ public class HTTPServiceSSLSupportJUnitTest {
 
     DistributionConfigImpl config = new DistributionConfigImpl(localProps);
 
-    assertEquals(config.getHttpServiceSSLEnabled(), true);
+    assertTrue(config.getHttpServiceSSLEnabled());
     assertEquals(config.getHttpServiceSSLKeyStore(), jks.getCanonicalPath());
     assertEquals(config.getHttpServiceSSLKeyStorePassword(), "password");
     assertEquals(config.getHttpServiceSSLKeyStoreType(), "JKS");
     assertEquals(config.getHttpServiceSSLProtocols(), "SSL");
-    assertEquals(config.getHttpServiceSSLRequireAuthentication(), true);
+    assertTrue(config.getHttpServiceSSLRequireAuthentication());
     assertEquals(config.getHttpServiceSSLTrustStore(), jks.getCanonicalPath());
     assertEquals(config.getHttpServiceSSLTrustStorePassword(), "password");
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   public void testSSLWithDeprecatedClusterSSL_HTTPService() throws Exception {
 
     Properties localProps = new Properties();
@@ -122,9 +125,9 @@ public class HTTPServiceSSLSupportJUnitTest {
 
     DistributionConfigImpl config = new DistributionConfigImpl(localProps);
 
-    assertEquals(true, config.getHttpServiceSSLEnabled());
+    assertTrue(config.getHttpServiceSSLEnabled());
     assertEquals("SSL", config.getHttpServiceSSLProtocols());
-    assertEquals(true, config.getHttpServiceSSLRequireAuthentication());
+    assertTrue(config.getHttpServiceSSLRequireAuthentication());
 
     assertEquals(jks.getCanonicalPath(),
         config.getHttpServiceSSLProperties().get("javax.net.ssl.keyStore"));
@@ -139,6 +142,7 @@ public class HTTPServiceSSLSupportJUnitTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   public void testSSLWithDeprecatedClusterSSL_HTTPService_WithSSL_Properties() throws Exception {
 
     Properties localProps = new Properties();
@@ -158,9 +162,9 @@ public class HTTPServiceSSLSupportJUnitTest {
 
     DistributionConfigImpl config = new DistributionConfigImpl(localProps);
 
-    assertEquals(config.getHttpServiceSSLEnabled(), true);
+    assertTrue(config.getHttpServiceSSLEnabled());
     assertEquals(config.getHttpServiceSSLProtocols(), "SSL");
-    assertEquals(config.getHttpServiceSSLRequireAuthentication(), true);
+    assertTrue(config.getHttpServiceSSLRequireAuthentication());
 
     assertEquals(jks.getCanonicalPath(),
         config.getHttpServiceSSLProperties().get("javax.net.ssl.keyStore"));

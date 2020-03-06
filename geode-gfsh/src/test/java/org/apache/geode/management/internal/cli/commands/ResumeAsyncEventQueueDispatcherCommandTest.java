@@ -44,13 +44,13 @@ public class ResumeAsyncEventQueueDispatcherCommandTest {
   private ResumeAsyncEventQueueDispatcherCommand command;
 
   @Before
-  public void before() throws Exception {
+  public void before() {
     command = spy(ResumeAsyncEventQueueDispatcherCommand.class);
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   public void resumeAsyncEventQueueSuccessful() {
-    String queueId = "queueId";
     List<CliFunctionResult> functionResults = new ArrayList<>();
     functionResults
         .add(new CliFunctionResult("member1", CliFunctionResult.StatusState.OK, "SUCCESS"));

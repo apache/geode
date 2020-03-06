@@ -22,6 +22,7 @@ package org.apache.geode.cache.query;
  *
  * @since GemFire 4.0
  */
+@Deprecated
 public enum IndexType {
   /**
    * The index type of a functional index. A functional index is used for the comparison of some

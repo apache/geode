@@ -25,7 +25,6 @@ import static org.mockito.Mockito.verify;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.junit.Before;
@@ -33,13 +32,10 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
-import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.functions.DestroyAsyncEventQueueFunction;
 import org.apache.geode.management.internal.cli.functions.DestroyAsyncEventQueueFunctionArgs;
-import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
@@ -48,20 +44,17 @@ public class DestroyAsyncEventQueueCommandTest {
   public static GfshParserRule gfsh = new GfshParserRule();
 
   private DestroyAsyncEventQueueCommand command;
-  private InternalConfigurationPersistenceService service;
-  private Map<String, Configuration> configurationMap;
   private DistributedMember member1 = mock(DistributedMember.class);
   private DistributedMember member2 = mock(DistributedMember.class);
   private Set<DistributedMember> members;
-  private ResultCollector collector;
-  private InternalCache cache;
   private List<CliFunctionResult> functionResults;
 
   @Before
+  @SuppressWarnings("unchecked")
   public void setUp() throws Exception {
     command = spy(DestroyAsyncEventQueueCommand.class);
 
-    cache = mock(InternalCache.class);
+    InternalCache cache = mock(InternalCache.class);
     doReturn(cache).when(command).getCache();
 
 
@@ -75,13 +68,13 @@ public class DestroyAsyncEventQueueCommandTest {
   }
 
   @Test
-  public void mandatoryOption() throws Exception {
+  public void mandatoryOption() {
     gfsh.executeAndAssertThat(command, "destroy async-event-queue").statusIsError()
         .containsOutput("Invalid command");
   }
 
   @Test
-  public void noOptionalGroup_successful() throws Exception {
+  public void noOptionalGroup_successful() {
     members.add(member1);
     members.add(member2);
     functionResults.add(new CliFunctionResult("member2", true, String.format(
@@ -94,7 +87,7 @@ public class DestroyAsyncEventQueueCommandTest {
   }
 
   @Test
-  public void ifExistsSpecified_defaultIsTrue() throws Exception {
+  public void ifExistsSpecified_defaultIsTrue() {
     members.add(member1);
     members.add(member2);
     functionResults.add(new CliFunctionResult("member1", true,
@@ -116,7 +109,7 @@ public class DestroyAsyncEventQueueCommandTest {
   }
 
   @Test
-  public void ifExistsNotSpecified_isFalse() throws Exception {
+  public void ifExistsNotSpecified_isFalse() {
     members.add(member1);
     members.add(member2);
     functionResults.add(new CliFunctionResult("member1", false,
@@ -135,7 +128,7 @@ public class DestroyAsyncEventQueueCommandTest {
   }
 
   @Test
-  public void ifExistsSpecifiedFalse() throws Exception {
+  public void ifExistsSpecifiedFalse() {
     members.add(member1);
     members.add(member2);
     ArgumentCaptor<DestroyAsyncEventQueueFunctionArgs> argCaptor =
@@ -148,7 +141,7 @@ public class DestroyAsyncEventQueueCommandTest {
   }
 
   @Test
-  public void ifExistsSpecifiedTrue() throws Exception {
+  public void ifExistsSpecifiedTrue() {
     members.add(member1);
     members.add(member2);
     functionResults.add(new CliFunctionResult("member1", false,
@@ -167,7 +160,7 @@ public class DestroyAsyncEventQueueCommandTest {
   }
 
   @Test
-  public void mixedFunctionResults_returnsSuccess() throws Exception {
+  public void mixedFunctionResults_returnsSuccess() {
     members.add(member1);
     members.add(member2);
     functionResults.add(new CliFunctionResult("member2", false, String.format(
@@ -179,7 +172,7 @@ public class DestroyAsyncEventQueueCommandTest {
   }
 
   @Test
-  public void mixedFunctionResultsWithIfExists_returnsSuccess() throws Exception {
+  public void mixedFunctionResultsWithIfExists_returnsSuccess() {
     members.add(member1);
     members.add(member2);
     functionResults.add(new CliFunctionResult("member1", true,

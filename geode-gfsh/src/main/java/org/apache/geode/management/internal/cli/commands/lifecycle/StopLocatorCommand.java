@@ -14,17 +14,18 @@
  */
 package org.apache.geode.management.internal.cli.commands.lifecycle;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.geode.management.internal.cli.shell.MXBeanProvider.getMemberMXBean;
 import static org.apache.geode.management.internal.i18n.CliStrings.LOCATOR_TERM_NAME;
 
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.distributed.AbstractLauncher;
 import org.apache.geode.distributed.LocatorLauncher;
-import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.util.StopWatch;
 import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.management.cli.CliMetaData;
@@ -51,7 +52,7 @@ public class StopLocatorCommand extends OfflineGfshCommand {
       throws Exception {
 
     LocatorLauncher.LocatorState locatorState;
-    if (StringUtils.isNotBlank(member)) {
+    if (isNotBlank(member)) {
       if (isConnectedAndReady()) {
         final MemberMXBean locatorProxy = getMemberMXBean(member);
 

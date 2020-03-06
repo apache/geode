@@ -186,8 +186,7 @@ public class ShowMetricsCommand extends GfshCommand {
   private ResultModel getMemberMetrics(DistributedMember distributedMember,
       String export_to_report_to, String[] categoriesArr, int cacheServerPort,
       StringBuilder csvBuilder) {
-    final SystemManagementService managementService =
-        (SystemManagementService) getManagementService();
+    final SystemManagementService managementService = getManagementService();
 
     ObjectName memberMBeanName = managementService.getMemberMBeanName(distributedMember);
     MemberMXBean memberMxBean =
@@ -347,6 +346,7 @@ public class ShowMetricsCommand extends GfshCommand {
     }
   }
 
+  @SuppressWarnings("deprecation")
   private void writeMemberMetricValues(MemberMXBean memberMxBean, JVMMetrics jvmMetrics,
       TabularResultModel metricsTable, StringBuilder csvBuilder,
       Set<Category> categoriesToDisplay) {
@@ -559,6 +559,7 @@ public class ShowMetricsCommand extends GfshCommand {
     }
   }
 
+  @SuppressWarnings("deprecation")
   private void writeSystemRegionMetricValues(DistributedRegionMXBean regionMxBean,
       TabularResultModel metricsTable, StringBuilder csvBuilder,
       Set<Category> categoriesToDisplay) {
@@ -632,6 +633,7 @@ public class ShowMetricsCommand extends GfshCommand {
     }
   }
 
+  @SuppressWarnings("deprecation")
   private void writeRegionMetricValues(RegionMXBean regionMxBean, TabularResultModel metricsTable,
       StringBuilder csvBuilder, Set<Category> categoriesToDisplay) {
     if (categoriesToDisplay.contains(Category.region)) {

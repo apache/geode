@@ -40,7 +40,6 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.logging.internal.spi.LogConfig;
 import org.apache.geode.test.junit.categories.LoggingTest;
@@ -57,10 +56,12 @@ public class ChangeLogLevelFunctionIntegrationTest {
   private InternalCache cache;
   private Logger geodeLogger;
   private Logger applicationLogger;
-  private InternalLogWriter mainLogWriter;
-  private InternalLogWriter securityLogWriter;
+  @SuppressWarnings("deprecation")
+  private org.apache.geode.internal.logging.InternalLogWriter mainLogWriter;
+  @SuppressWarnings("deprecation")
+  private org.apache.geode.internal.logging.InternalLogWriter securityLogWriter;
   private LogConfig logConfig;
-  private FunctionContext functionContext;
+  private FunctionContext<Object[]> functionContext;
 
   private ChangeLogLevelFunction changeLogLevelFunction;
 
@@ -68,6 +69,7 @@ public class ChangeLogLevelFunctionIntegrationTest {
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
   @Before
+  @SuppressWarnings("unchecked")
   public void setUp() {
     Properties config = new Properties();
     config.setProperty(LOCATORS, "");
@@ -77,11 +79,7 @@ public class ChangeLogLevelFunctionIntegrationTest {
     cache = (InternalCache) new CacheFactory(config).create();
     InternalDistributedSystem system = cache.getInternalDistributedSystem();
 
-    mainLogWriter = (InternalLogWriter) cache.getLogger();
-    assertThat(mainLogWriter.getLogWriterLevel()).isEqualTo(INFO.intLevel());
-
-    securityLogWriter = (InternalLogWriter) cache.getSecurityLogger();
-    assertThat(securityLogWriter.getLogWriterLevel()).isEqualTo(INFO.intLevel());
+    setupInternalLogWriter();
 
     geodeLogger = LogService.getLogger();
     applicationLogger = LogManager.getLogger(APPLICATION_LOGGER_NAME);
@@ -98,8 +96,18 @@ public class ChangeLogLevelFunctionIntegrationTest {
     changeLogLevelFunction = new ChangeLogLevelFunction();
   }
 
+  @SuppressWarnings("deprecation")
+  private void setupInternalLogWriter() {
+    mainLogWriter = (org.apache.geode.internal.logging.InternalLogWriter) cache.getLogger();
+    assertThat(mainLogWriter.getLogWriterLevel()).isEqualTo(INFO.intLevel());
+
+    securityLogWriter =
+        (org.apache.geode.internal.logging.InternalLogWriter) cache.getSecurityLogger();
+    assertThat(securityLogWriter.getLogWriterLevel()).isEqualTo(INFO.intLevel());
+  }
+
   @After
-  public void tearDown() throws Exception {
+  public void tearDown() {
     if (cache != null) {
       cache.close();
     }

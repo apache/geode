@@ -14,6 +14,8 @@
  */
 package org.apache.geode.management.internal.cli.util;
 
+import static org.apache.commons.lang3.StringUtils.join;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
@@ -25,7 +27,6 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.internal.cache.DiskStoreImpl;
-import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.i18n.CliStrings;
 
@@ -36,16 +37,14 @@ import org.apache.geode.management.internal.i18n.CliStrings;
  */
 public class DiskStoreCompacter {
   public static final String STACKTRACE_START = "--------------------------";
+  private static final String DIR_ARRAY_SEPARATOR = ", ";
 
   public static void main(String[] args) {
     String errorString = null;
     String stackTraceString = null;
 
     String diskStoreName = null;
-    String diskDirsStr = null;;
-    String[] diskDirs = null;;
-    String maxOpLogSize = null;;
-    long maxOplogSize = -1;
+    String[] diskDirs = null;
     boolean errored = false;
     try {
       if (args.length < 3) {
@@ -63,10 +62,10 @@ public class DiskStoreCompacter {
       }
 
       diskStoreName = prop.getProperty(CliStrings.COMPACT_OFFLINE_DISK_STORE__NAME);
-      diskDirsStr = prop.getProperty(CliStrings.COMPACT_OFFLINE_DISK_STORE__DISKDIRS);
+      String diskDirsStr = prop.getProperty(CliStrings.COMPACT_OFFLINE_DISK_STORE__DISKDIRS);
       diskDirs = diskDirsStr.split(",");
-      maxOpLogSize = prop.getProperty(CliStrings.COMPACT_OFFLINE_DISK_STORE__MAXOPLOGSIZE);
-      maxOplogSize = Long.valueOf(maxOpLogSize);
+      String maxOpLogSize = prop.getProperty(CliStrings.COMPACT_OFFLINE_DISK_STORE__MAXOPLOGSIZE);
+      long maxOplogSize = Long.valueOf(maxOpLogSize);
 
       compact(diskStoreName, diskDirs, maxOplogSize);
     } catch (GemFireIOException e) {
@@ -79,7 +78,7 @@ public class DiskStoreCompacter {
             message)) {
           errorString = CliStrings.format(
               CliStrings.COMPACT_OFFLINE_DISK_STORE__MSG__VERIFY_WHETHER_DISKSTORE_EXISTS_IN_0,
-              StringUtils.arrayToString(diskDirs));
+              join(diskDirs, DIR_ARRAY_SEPARATOR));
         } else {
           errorString = message;
         }
@@ -98,7 +97,7 @@ public class DiskStoreCompacter {
         if (!isKnownCause) {
           errorString = CliStrings.format(
               CliStrings.COMPACT_OFFLINE_DISK_STORE__MSG__CANNOT_ACCESS_DISKSTORE_0_FROM_1_CHECK_GFSH_LOGS,
-              new Object[] {diskStoreName, StringUtils.arrayToString(diskDirs)});
+              diskStoreName, join(diskDirs, DIR_ARRAY_SEPARATOR));
         }
       } else {
         errorString = e.getMessage(); // which are other known exceptions?
@@ -136,10 +135,10 @@ public class DiskStoreCompacter {
     } catch (Exception ex) {
       String fieldsMessage = (maxOplogSize != -1
           ? CliStrings.COMPACT_OFFLINE_DISK_STORE__MAXOPLOGSIZE + "=" + maxOplogSize + "," : "");
-      fieldsMessage += StringUtils.arrayToString(dirs);
+      fieldsMessage += join(dirs, DIR_ARRAY_SEPARATOR);
       throw new GemFireIOException(CliStrings.format(
           CliStrings.COMPACT_OFFLINE_DISK_STORE__MSG__ERROR_WHILE_COMPACTING_DISKSTORE_0_WITH_1_REASON_2,
-          new Object[] {diskStoreName, fieldsMessage, ex.getMessage()}), ex);
+          diskStoreName, fieldsMessage, ex.getMessage()), ex);
     }
   }
 

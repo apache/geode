@@ -23,6 +23,7 @@ import java.io.Serializable;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
@@ -63,23 +64,25 @@ public class CreateRegionCommandDUnitTest {
 
   private static MemberVM locator, server1, server2;
 
-  public static class TestCacheListener extends CacheListenerAdapter implements Serializable {
+  public static class TestCacheListener<K, V> extends CacheListenerAdapter<K, V>
+      implements Serializable {
   }
 
-  public static class AnotherTestCacheListener extends CacheListenerAdapter
+  public static class AnotherTestCacheListener<K, V> extends CacheListenerAdapter<K, V>
       implements Serializable {
   }
 
   public static class DummyAEQListener implements AsyncEventListener, Declarable {
     @Override
+    @SuppressWarnings("rawtypes")
     public boolean processEvents(List<AsyncEvent> events) {
       return false;
     }
   }
 
-  public static class DummyPartitionResolver implements PartitionResolver, Declarable {
+  public static class DummyPartitionResolver<K, V> implements PartitionResolver<K, V>, Declarable {
     @Override
-    public Object getRoutingObject(EntryOperation opDetails) {
+    public Object getRoutingObject(EntryOperation<K, V> opDetails) {
       return null;
     }
 
@@ -123,7 +126,7 @@ public class CreateRegionCommandDUnitTest {
   }
 
   @Test
-  public void multipleTemplateRegionTypes() throws Exception {
+  public void multipleTemplateRegionTypes() {
     String regionName = testName.getMethodName();
     gfsh.executeAndAssertThat(
         "create region --name=" + regionName + " --type=REPLICATE --group=group1")
@@ -139,7 +142,8 @@ public class CreateRegionCommandDUnitTest {
   }
 
   @Test
-  public void testCreateRegionWithGoodCompressor() throws Exception {
+  @SuppressWarnings("deprecation")
+  public void testCreateRegionWithGoodCompressor() {
     String regionName = testName.getMethodName();
     gfsh.executeAndAssertThat("create region --name=" + regionName
         + " --type=REPLICATE --compressor=" + RegionEntryContext.DEFAULT_COMPRESSION_PROVIDER)
@@ -147,7 +151,7 @@ public class CreateRegionCommandDUnitTest {
 
     server1.invoke(() -> {
       Cache cache = ClusterStartupRule.getCache();
-      Region region = cache.getRegion(regionName);
+      Region<?, ?> region = cache.getRegion(regionName);
       assertThat(region).isNotNull();
       assertThat(region.getAttributes().getCompressor())
           .isEqualTo(SnappyCompressor.getDefaultInstance());
@@ -161,7 +165,7 @@ public class CreateRegionCommandDUnitTest {
   }
 
   @Test
-  public void testCreateRegionWithBadCompressor() throws Exception {
+  public void testCreateRegionWithBadCompressor() {
     String regionName = testName.getMethodName();
     gfsh.executeAndAssertThat(
         "create region --name=" + regionName + " --type=REPLICATE --compressor=BAD_COMPRESSOR")
@@ -169,27 +173,27 @@ public class CreateRegionCommandDUnitTest {
 
     server1.invoke(() -> {
       Cache cache = ClusterStartupRule.getCache();
-      Region region = cache.getRegion(regionName);
+      Region<?, ?> region = cache.getRegion(regionName);
       assertThat(region).isNull();
     });
   }
 
   @Test
-  public void testCreateRegionWithNoCompressor() throws Exception {
+  public void testCreateRegionWithNoCompressor() {
     String regionName = testName.getMethodName();
     gfsh.executeAndAssertThat("create region --name=" + regionName + " --type=REPLICATE")
         .statusIsSuccess();
 
     server1.invoke(() -> {
       Cache cache = ClusterStartupRule.getCache();
-      Region region = cache.getRegion(regionName);
+      Region<?, ?> region = cache.getRegion(regionName);
       assertThat(region).isNotNull();
       assertThat(region.getAttributes().getCompressor()).isNull();
     });
   }
 
   @Test
-  public void testCreateRegionWithSubregion() throws Exception {
+  public void testCreateRegionWithSubregion() {
     String regionName = testName.getMethodName();
     gfsh.executeAndAssertThat("create region --name=" + regionName + " --type=REPLICATE")
         .statusIsSuccess();
@@ -208,13 +212,13 @@ public class CreateRegionCommandDUnitTest {
 
     server1.invoke(() -> {
       Cache cache = ClusterStartupRule.getCache();
-      Region region = cache.getRegion(regionName);
+      Region<?, ?> region = cache.getRegion(regionName);
       assertThat(region).isNotNull();
 
-      Region subRegion = cache.getRegion(subRegionPath);
+      Region<?, ?> subRegion = cache.getRegion(subRegionPath);
       assertThat(subRegion).isNotNull();
 
-      Region subSubRegion = cache.getRegion(subSubRegionPath);
+      Region<?, ?> subSubRegion = cache.getRegion(subSubRegionPath);
       assertThat(subSubRegion).isNotNull();
     });
 
@@ -254,14 +258,14 @@ public class CreateRegionCommandDUnitTest {
     server1.invoke(() -> {
       Cache cache = ClusterStartupRule.getCache();
       PartitionedRegion region = (PartitionedRegion) cache.getRegion(regionName);
-      PartitionResolver resolver = region.getPartitionAttributes().getPartitionResolver();
+      PartitionResolver<?, ?> resolver = region.getPartitionAttributes().getPartitionResolver();
       assertThat(resolver).isNotNull();
       assertThat(resolver.getName()).isEqualTo("TestPartitionResolver");
     });
   }
 
   @Test
-  public void testCreateRegionWithInvalidPartitionResolver() throws Exception {
+  public void testCreateRegionWithInvalidPartitionResolver() {
     gfsh.executeAndAssertThat("create region --name=" + testName.getMethodName()
         + " --type=PARTITION --partition-resolver=InvalidPartitionResolver")
         .statusIsError()
@@ -269,7 +273,7 @@ public class CreateRegionCommandDUnitTest {
   }
 
   @Test
-  public void testCreateRegionWithInvalidCustomExpiry() throws Exception {
+  public void testCreateRegionWithInvalidCustomExpiry() {
     gfsh.executeAndAssertThat("create region --name=" + testName.getMethodName()
         + " --type=REPLICATE --entry-time-to-live-custom-expiry=InvalidCustomExpiry" +
         " --enable-statistics=true")
@@ -284,7 +288,7 @@ public class CreateRegionCommandDUnitTest {
   }
 
   @Test
-  public void testCreateRegionWithInvalidCacheLoader() throws Exception {
+  public void testCreateRegionWithInvalidCacheLoader() {
     gfsh.executeAndAssertThat("create region --name=" + testName.getMethodName()
         + " --type=REPLICATE --cache-loader=InvalidCacheLoader")
         .statusIsError()
@@ -292,7 +296,7 @@ public class CreateRegionCommandDUnitTest {
   }
 
   @Test
-  public void testCreateRegionWithInvalidCacheWriter() throws Exception {
+  public void testCreateRegionWithInvalidCacheWriter() {
     gfsh.executeAndAssertThat("create region --name=" + testName.getMethodName()
         + " --type=REPLICATE --cache-writer=InvalidCacheWriter")
         .statusIsError()
@@ -300,7 +304,7 @@ public class CreateRegionCommandDUnitTest {
   }
 
   @Test
-  public void testCreateRegionWithInvalidCacheListeners() throws Exception {
+  public void testCreateRegionWithInvalidCacheListeners() {
     gfsh.executeAndAssertThat("create region --name=" + testName.getMethodName()
         + " --type=REPLICATE --cache-listener=" + TestCacheListener.class.getName()
         + ",InvalidCacheListener")
@@ -326,7 +330,7 @@ public class CreateRegionCommandDUnitTest {
   }
 
   @Test
-  public void overrideListenerFromTemplate() throws Exception {
+  public void overrideListenerFromTemplate() {
     gfsh.executeAndAssertThat("create region --name=/TEMPLATE --type=PARTITION_REDUNDANT"
         + " --cache-listener=" + TestCacheListener.class.getName()).statusIsSuccess();
 
@@ -334,7 +338,7 @@ public class CreateRegionCommandDUnitTest {
         + " --cache-listener=" + AnotherTestCacheListener.class.getName()).statusIsSuccess();
 
     server1.getVM().invoke(() -> {
-      Region copy = ClusterStartupRule.getCache().getRegion("/COPY");
+      Region<?, ?> copy = ClusterStartupRule.getCache().getRegion("/COPY");
 
       assertThat(Arrays.stream(copy.getAttributes().getCacheListeners())
           .map(c -> c.getClass().getName()).collect(Collectors.toSet()))
@@ -399,7 +403,7 @@ public class CreateRegionCommandDUnitTest {
         .statusIsSuccess();
 
     server1.getVM().invoke(() -> {
-      Region copy = ClusterStartupRule.getCache().getRegion("/COPY");
+      Region<?, ?> copy = ClusterStartupRule.getCache().getRegion("/COPY");
 
       assertThat(Arrays.stream(copy.getAttributes().getCacheListeners())
           .map(c -> c.getClass().getName()).collect(Collectors.toSet()))
@@ -440,7 +444,7 @@ public class CreateRegionCommandDUnitTest {
         .statusIsSuccess();
 
     server1.getVM().invoke(() -> {
-      Region copy = ClusterStartupRule.getCache().getRegion("/COPY");
+      Region<?, ?> copy = ClusterStartupRule.getCache().getRegion("/COPY");
 
       assertThat(Arrays.stream(copy.getAttributes().getCacheListeners())
           .map(c -> c.getClass().getName()).collect(Collectors.toSet()))
@@ -484,7 +488,7 @@ public class CreateRegionCommandDUnitTest {
         .statusIsSuccess();
 
     server1.getVM().invoke(() -> {
-      Region copy = ClusterStartupRule.getCache().getRegion("/COPY");
+      Region<?, ?> copy = ClusterStartupRule.getCache().getRegion("/COPY");
 
       assertThat(Arrays.stream(copy.getAttributes().getCacheListeners())
           .map(c -> c.getClass().getName()).collect(Collectors.toSet()))
@@ -506,6 +510,7 @@ public class CreateRegionCommandDUnitTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   public void startWithNonProxyRegion() {
     String regionName = testName.getMethodName();
     gfsh.executeAndAssertThat("create region --type=REPLICATE --group=group1 --name=" + regionName)
@@ -528,6 +533,7 @@ public class CreateRegionCommandDUnitTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   public void startWithReplicateProxyRegion() {
     String regionName = testName.getMethodName();
     gfsh.executeAndAssertThat(
@@ -546,7 +552,8 @@ public class CreateRegionCommandDUnitTest {
   }
 
   @Test
-  public void startWithReplicateProxyThenPartitionRegion() throws Exception {
+  @SuppressWarnings("deprecation")
+  public void startWithReplicateProxyThenPartitionRegion() {
     String regionName = testName.getMethodName();
     gfsh.executeAndAssertThat(
         "create region --type=REPLICATE_PROXY --group=group1 --name=" + regionName)
@@ -562,6 +569,7 @@ public class CreateRegionCommandDUnitTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   public void startWithPartitionProxyThenReplicate() {
     String regionName = testName.getMethodName();
     gfsh.executeAndAssertThat(
@@ -577,6 +585,7 @@ public class CreateRegionCommandDUnitTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   public void startWithLocalPersistent() {
     String regionName = testName.getMethodName();
     gfsh.executeAndAssertThat(
@@ -591,6 +600,7 @@ public class CreateRegionCommandDUnitTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   public void startWithReplicateHeapLRU() {
     String regionName = testName.getMethodName();
     gfsh.executeAndAssertThat(
@@ -606,6 +616,7 @@ public class CreateRegionCommandDUnitTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   public void startWithReplicateThenPartition() {
     String regionName = testName.getMethodName();
     gfsh.executeAndAssertThat("create region --type=REPLICATE --group=group1 --name=" + regionName)
@@ -623,6 +634,7 @@ public class CreateRegionCommandDUnitTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   public void startWithPartitionThenReplicate() {
     String regionName = testName.getMethodName();
     gfsh.executeAndAssertThat("create region --type=PARTITION --group=group1 --name=" + regionName)
@@ -640,6 +652,7 @@ public class CreateRegionCommandDUnitTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   public void startWithPartitionProxyRegion() {
     String regionName = testName.getMethodName();
     gfsh.executeAndAssertThat(
@@ -746,11 +759,13 @@ public class CreateRegionCommandDUnitTest {
         .statusIsSuccess();
 
     server1.invoke(() -> {
-      Region regionFromTemplate = ClusterStartupRule.getCache()
+      Region<?, ?> regionFromTemplate = ClusterStartupRule.getCache()
           .getRegion(regionName + "-from-template");
       assertThat(regionFromTemplate).isNotNull();
-      assertThat(((InternalRegion) regionFromTemplate).getAsyncEventQueueIds())
-          .contains(queueId);
+      @SuppressWarnings("unchecked")
+      final Set<String> asyncEventQueueIds =
+          ((InternalRegion) regionFromTemplate).getAsyncEventQueueIds();
+      assertThat(asyncEventQueueIds).contains(queueId);
     });
   }
 
@@ -768,7 +783,7 @@ public class CreateRegionCommandDUnitTest {
         + " --template-region=" + regionName).statusIsSuccess();
 
     server1.invoke(() -> {
-      Region regionFromTemplate = ClusterStartupRule.getCache()
+      Region<?, ?> regionFromTemplate = ClusterStartupRule.getCache()
           .getRegion(regionName + "-from-template");
       assertThat(regionFromTemplate).isNotNull();
       assertThat(((InternalRegion) regionFromTemplate).getPartitionAttributes()
@@ -781,7 +796,8 @@ public class CreateRegionCommandDUnitTest {
   }
 
   @Test
-  public void createRegionCommandCreateCorrectClusterConfigXml() throws Exception {
+  @SuppressWarnings("deprecation")
+  public void createRegionCommandCreateCorrectClusterConfigXml() {
     URL xmlResource =
         CreateRegionCommandDUnitTest.class.getResource("CreateRegionCommandDUnitTest.xml");
 
@@ -808,7 +824,7 @@ public class CreateRegionCommandDUnitTest {
   }
 
   private String getUniversalClassCode(String classname) {
-    String code = "package io.pivotal;" + "import org.apache.geode.cache.CacheLoader;"
+    return "package io.pivotal;" + "import org.apache.geode.cache.CacheLoader;"
         + "import org.apache.geode.cache.CacheLoaderException;"
         + "import org.apache.geode.cache.CacheWriter;"
         + "import org.apache.geode.cache.CacheWriterException;"
@@ -827,7 +843,6 @@ public class CreateRegionCommandDUnitTest {
         + "public Object load(LoaderHelper helper) throws CacheLoaderException { return null; }"
         + "public byte[] compress(byte[] input) { return new byte[0]; }"
         + "public byte[] decompress(byte[] input) { return new byte[0]; }" + "}";
-    return code;
   }
 
 }

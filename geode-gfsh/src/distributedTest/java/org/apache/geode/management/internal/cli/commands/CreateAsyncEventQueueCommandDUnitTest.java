@@ -49,6 +49,7 @@ public class CreateAsyncEventQueueCommandDUnitTest {
   private static MemberVM locator, server;
 
   @Test
+  @SuppressWarnings("deprecation")
   public void createQueueWithInvalidClass() throws Exception {
     server = lsRule.startServerVM(0, MemberStarterRule::withJMXManager);
     gfsh.connectAndVerify(server.getJmxPort(), GfshCommandRule.PortType.jmxManager);
@@ -60,6 +61,7 @@ public class CreateAsyncEventQueueCommandDUnitTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   public void createQueueWithoutCC() throws Exception {
     server = lsRule.startServerVM(0, MemberStarterRule::withJMXManager);
     gfsh.connectAndVerify(server.getJmxPort(), GfshCommandRule.PortType.jmxManager);
@@ -69,6 +71,7 @@ public class CreateAsyncEventQueueCommandDUnitTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   public void create_async_event_queue() throws Exception {
     locator = lsRule.startLocatorVM(0);
     lsRule.startServerVM(1, "group1", locator.getPort());
@@ -110,6 +113,7 @@ public class CreateAsyncEventQueueCommandDUnitTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   public void create_paused_async_event_queue() throws Exception {
     locator = lsRule.startLocatorVM(0);
     lsRule.startServerVM(1, locator.getPort());
@@ -145,6 +149,7 @@ public class CreateAsyncEventQueueCommandDUnitTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   public void create_queue_updates_cc() throws Exception {
     locator = lsRule.startLocatorVM(0);
     server = lsRule.startServerVM(1, locator.getPort());
@@ -164,7 +169,7 @@ public class CreateAsyncEventQueueCommandDUnitTest {
       InternalConfigurationPersistenceService service =
           ClusterStartupRule.getLocator().getConfigurationPersistenceService();
       Configuration configuration = service.getConfiguration("cluster");
-      configuration.getCacheXmlContent().contains("id=queue");
+      assertThat(configuration.getCacheXmlContent()).contains("id=\"queue\"");
     });
   }
 }

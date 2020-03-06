@@ -55,7 +55,6 @@ public class CreateJndiBindingCommandTest {
   public static GfshParserRule gfsh = new GfshParserRule();
 
   private CreateJndiBindingCommand command;
-  private InternalCache cache;
   JndiBindingsType.JndiBinding binding;
   List<JndiBindingsType.JndiBinding> bindings;
 
@@ -63,7 +62,7 @@ public class CreateJndiBindingCommandTest {
 
   @Before
   public void setUp() throws Exception {
-    cache = mock(InternalCache.class);
+    InternalCache cache = mock(InternalCache.class);
     when(cache.getDistributionManager()).thenReturn(mock(DistributionManager.class));
     command = spy(CreateJndiBindingCommand.class);
     command.setCache(cache);
@@ -222,6 +221,7 @@ public class CreateJndiBindingCommandTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   public void whenMembersFoundAndNoClusterConfigRunningThenOnlyInvokeFunction() {
     Set<DistributedMember> members = new HashSet<>();
     members.add(mock(DistributedMember.class));
@@ -246,6 +246,7 @@ public class CreateJndiBindingCommandTest {
         ArgumentCaptor.forClass(CreateJndiBindingFunction.class);
     ArgumentCaptor<Object[]> arguments =
         ArgumentCaptor.forClass(Object[].class);
+    @SuppressWarnings("unchecked")
     ArgumentCaptor<Set<DistributedMember>> targetMembers = ArgumentCaptor.forClass(Set.class);
     verify(command, times(1)).executeAndGetFunctionResult(function.capture(), arguments.capture(),
         targetMembers.capture());
@@ -261,6 +262,7 @@ public class CreateJndiBindingCommandTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   public void whenMembersFoundAndClusterConfigRunningThenUpdateClusterConfigAndInvokeFunction() {
     Set<DistributedMember> members = new HashSet<>();
     members.add(mock(DistributedMember.class));
@@ -297,6 +299,7 @@ public class CreateJndiBindingCommandTest {
         ArgumentCaptor.forClass(CreateJndiBindingFunction.class);
     ArgumentCaptor<Object[]> arguments =
         ArgumentCaptor.forClass(Object[].class);
+    @SuppressWarnings("unchecked")
     ArgumentCaptor<Set<DistributedMember>> targetMembers = ArgumentCaptor.forClass(Set.class);
     verify(command, times(1)).executeAndGetFunctionResult(function.capture(), arguments.capture(),
         targetMembers.capture());

@@ -51,6 +51,7 @@ public class ExecuteFunctionCommandDUnitTest {
   private static String command = "execute function --id=" + functionId + " ";
 
   @BeforeClass
+  @SuppressWarnings("deprecation")
   public static void setUpClass() throws Exception {
     MemberVM locator = cluster.startLocatorVM(0);
     gfsh.connectAndVerify(locator);
@@ -282,15 +283,15 @@ public class ExecuteFunctionCommandDUnitTest {
   }
 
   @SuppressWarnings("unused")
-  public static class MyPartitionResolver implements FixedPartitionResolver {
+  public static class MyPartitionResolver implements FixedPartitionResolver<String, String> {
     @Override
-    public String getPartitionName(final EntryOperation opDetails,
-        @Deprecated final Set targetPartitions) {
-      return (String) opDetails.getKey();
+    public String getPartitionName(final EntryOperation<String, String> opDetails,
+        @Deprecated final Set<String> targetPartitions) {
+      return opDetails.getKey();
     }
 
     @Override
-    public Object getRoutingObject(final EntryOperation opDetails) {
+    public Object getRoutingObject(final EntryOperation<String, String> opDetails) {
       return opDetails.getKey();
     }
 
@@ -305,7 +306,7 @@ public class ExecuteFunctionCommandDUnitTest {
     }
   }
 
-  public static class GenericFunctionOp implements Function {
+  public static class GenericFunctionOp implements Function<Object> {
     private String functionId;
 
     GenericFunctionOp(String functionId) {
@@ -313,12 +314,12 @@ public class ExecuteFunctionCommandDUnitTest {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public void execute(FunctionContext context) {
+    public void execute(FunctionContext<Object> context) {
       String filter = null;
       if (context instanceof RegionFunctionContext) {
         RegionFunctionContext rContext = (RegionFunctionContext) context;
-        Set filters = rContext.getFilter();
+        @SuppressWarnings("unchecked")
+        Set<Object> filters = (Set<Object>) rContext.getFilter();
         filter = Strings.join(filters, ',');
       }
 
@@ -346,7 +347,7 @@ public class ExecuteFunctionCommandDUnitTest {
   }
 
 
-  public static class FireAndForgetFunction implements Function {
+  public static class FireAndForgetFunction implements Function<Void> {
 
     FireAndForgetFunction() {}
 
@@ -366,7 +367,7 @@ public class ExecuteFunctionCommandDUnitTest {
     }
 
     @Override
-    public void execute(FunctionContext context) {
+    public void execute(FunctionContext<Void> context) {
       // Do Nothing.
     }
   }

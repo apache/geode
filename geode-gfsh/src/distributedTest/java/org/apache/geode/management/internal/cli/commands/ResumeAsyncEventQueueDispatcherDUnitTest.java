@@ -39,11 +39,10 @@ public class ResumeAsyncEventQueueDispatcherDUnitTest {
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();
 
-  private static MemberVM locator;
-
   @Test
+  @SuppressWarnings("deprecation")
   public void create_sync_event_queue() throws Exception {
-    locator = lsRule.startLocatorVM(0);
+    MemberVM locator = lsRule.startLocatorVM(0);
     lsRule.startServerVM(1, locator.getPort());
     gfsh.connectAndVerify(locator);
 

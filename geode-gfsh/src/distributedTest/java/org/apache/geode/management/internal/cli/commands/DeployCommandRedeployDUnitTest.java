@@ -123,6 +123,7 @@ public class DeployCommandRedeployDUnitTest {
   public void redeployJarsWithNewVersionsOfFunctionsAndMultipleLocators() throws Exception {
     Properties props = new Properties();
     props.setProperty("locators", "localhost[" + locator.getPort() + "]");
+    @SuppressWarnings("unused")
     MemberVM locator2 = lsRule.startLocatorVM(2, props);
 
     gfshConnector.executeAndAssertThat("deploy --jar=" + jarAVersion1.getCanonicalPath())
@@ -183,7 +184,7 @@ public class DeployCommandRedeployDUnitTest {
     classContents = classContents.replaceAll("FUNCTION_A", FUNCTION_A);
     classContents = classContents.replaceAll("VERSION", version);
 
-    File jar = new File(temporaryFolder.newFolder(JAR_NAME_A + version), this.JAR_NAME_A);
+    File jar = new File(temporaryFolder.newFolder(JAR_NAME_A + version), JAR_NAME_A);
     ClassBuilder functionClassBuilder = new ClassBuilder();
     functionClassBuilder.writeJarFromContent(FUNCTION_A, classContents, jar);
 
@@ -200,7 +201,7 @@ public class DeployCommandRedeployDUnitTest {
     classContents = classContents.replaceAll("FUNCTION_B", FUNCTION_B);
     classContents = classContents.replaceAll("VERSION", version);
 
-    File jar = new File(temporaryFolder.newFolder(JAR_NAME_B + version), this.JAR_NAME_B);
+    File jar = new File(temporaryFolder.newFolder(JAR_NAME_B + version), JAR_NAME_B);
     ClassBuilder functionClassBuilder = new ClassBuilder();
     functionClassBuilder.writeJarFromContent("jddunit/function/" + FUNCTION_B, classContents, jar);
 
@@ -208,10 +209,13 @@ public class DeployCommandRedeployDUnitTest {
   }
 
   private static void assertThatFunctionHasVersion(String functionId, String version) {
+    @SuppressWarnings("deprecation")
     GemFireCacheImpl gemFireCache = GemFireCacheImpl.getInstance();
     DistributedSystem distributedSystem = gemFireCache.getDistributedSystem();
-    Execution execution = FunctionService.onMember(distributedSystem.getDistributedMember());
-    List<String> result = (List<String>) execution.execute(functionId).getResult();
+    @SuppressWarnings("unchecked")
+    Execution<Void, String, List<String>> execution =
+        FunctionService.onMember(distributedSystem.getDistributedMember());
+    List<String> result = execution.execute(functionId).getResult();
     assertThat(result.get(0)).isEqualTo(version);
   }
 
@@ -230,6 +234,7 @@ public class DeployCommandRedeployDUnitTest {
     public void startExecuting(String functionId) {
       ExecutorService EXECUTOR_SERVICE = Executors.newSingleThreadExecutor();
       EXECUTOR_SERVICE.submit(() -> {
+        @SuppressWarnings("deprecation")
         GemFireCacheImpl gemFireCache = GemFireCacheImpl.getInstance();
         DistributedSystem distributedSystem = gemFireCache.getDistributedSystem();
 

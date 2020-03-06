@@ -81,7 +81,8 @@ public class CreateGatewaySenderCommand extends SingleGfshCommand {
           help = CliStrings.CREATE_GATEWAYSENDER__PARALLEL__HELP) boolean parallel,
 
       // Users must avoid this feature, it might cause data loss and other issues during startup.
-      @Deprecated @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__MANUALSTART,
+      @SuppressWarnings("deprecation") @CliOption(
+          key = CliStrings.CREATE_GATEWAYSENDER__MANUALSTART,
           unspecifiedDefaultValue = "false",
           help = CliStrings.CREATE_GATEWAYSENDER__MANUALSTART__HELP) Boolean manualStart,
 

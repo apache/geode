@@ -111,7 +111,7 @@ public class ExportLogsCommand extends GfshCommand {
           SizeExportLogsFunction.Args args = new SizeExportLogsFunction.Args(start, end, logLevel,
               onlyLogLevel, logsOnly, statsOnly);
 
-          List<Object> results = (List<Object>) estimateLogSize(args, server).getResult();
+          List<Object> results = estimateLogSize(args, server).getResult();
           if (!results.isEmpty()) {
             if (results.get(0) instanceof Long) {
               long estimatedSize = (Long) results.get(0);
@@ -132,20 +132,20 @@ public class ExportLogsCommand extends GfshCommand {
         }
         // then check if total estimated file size exceeds user specified value
         if (totalEstimatedExportSize > userSpecifiedLimit) {
-          StringBuilder sb = new StringBuilder();
-          sb.append("Estimated exported logs expanded file size = ")
-              .append(totalEstimatedExportSize).append(", ")
-              .append(CliStrings.EXPORT_LOGS__FILESIZELIMIT).append(" = ")
-              .append(userSpecifiedLimit).append(
-                  ". To disable exported logs file size check use option \"--file-size-limit=0\".");
-          return ResultModel.createError(sb.toString());
+          String sb = "Estimated exported logs expanded file size = " +
+              totalEstimatedExportSize + ", " +
+              CliStrings.EXPORT_LOGS__FILESIZELIMIT + " = " +
+              userSpecifiedLimit +
+              ". To disable exported logs file size check use option \"--file-size-limit=0\".";
+          return ResultModel.createError(sb);
         }
       }
 
       // get zipped files from all servers next
       Map<String, Path> zipFilesFromMembers = new HashMap<>();
       for (DistributedMember server : targetMembers) {
-        Region region = ExportLogsFunction.createOrGetExistingExportLogsRegion(true, cache);
+        Region<String, byte[]> region =
+            ExportLogsFunction.createOrGetExistingExportLogsRegion(true, cache);
 
         ExportLogsCacheWriter cacheWriter =
             (ExportLogsCacheWriter) region.getAttributes().getCacheWriter();
@@ -206,8 +206,11 @@ public class ExportLogsCommand extends GfshCommand {
   /**
    * Wrapper to enable stubbing of static method call for unit testing
    */
-  ResultCollector estimateLogSize(SizeExportLogsFunction.Args args, DistributedMember member) {
-    return executeFunction(new SizeExportLogsFunction(), args, member);
+  @SuppressWarnings("unchecked")
+  ResultCollector<Object, List<Object>> estimateLogSize(SizeExportLogsFunction.Args args,
+      DistributedMember member) {
+    return (ResultCollector<Object, List<Object>>) executeFunction(new SizeExportLogsFunction(),
+        args, member);
   }
 
   /**

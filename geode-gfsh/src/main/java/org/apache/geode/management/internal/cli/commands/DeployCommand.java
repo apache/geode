@@ -94,7 +94,7 @@ public class DeployCommand extends GfshCommand {
     Set<DistributedMember> targetMembers;
     targetMembers = findMembers(groups, null);
 
-    List results = new ArrayList();
+    List<List<Object>> results = new ArrayList<>();
     ManagementAgent agent = ((SystemManagementService) getManagementService()).getManagementAgent();
     RemoteStreamExporter exporter = agent.getRemoteStreamExporter();
 
@@ -111,7 +111,10 @@ public class DeployCommand extends GfshCommand {
       ResultCollector<?, ?> resultCollector =
           executeFunction(this.deployFunction, new Object[] {jarNames, remoteStreams}, member);
 
-      results.add(((List) resultCollector.getResult()).get(0));
+      @SuppressWarnings("unchecked")
+      final List<List<Object>> resultCollectorResult =
+          (List<List<Object>>) resultCollector.getResult();
+      results.add(resultCollectorResult.get(0));
 
       for (RemoteInputStream ris : remoteStreams) {
         try {
@@ -124,6 +127,22 @@ public class DeployCommand extends GfshCommand {
 
     List<CliFunctionResult> cleanedResults = CliFunctionResult.cleanResults(results);
 
+    createDeployedJarTable(result, deployResult, cleanedResults);
+
+    if (result.getStatus() == Result.Status.OK) {
+      InternalConfigurationPersistenceService sc = getConfigurationPersistenceService();
+      if (sc == null) {
+        result.addInfo().addLine(CommandExecutor.SERVICE_NOT_RUNNING_CHANGE_NOT_PERSISTED);
+      } else {
+        sc.addJarsToThisLocator(jarFullPaths, groups);
+      }
+    }
+    return result;
+  }
+
+  @SuppressWarnings("deprecation")
+  private void createDeployedJarTable(ResultModel result, TabularResultModel deployResult,
+      List<CliFunctionResult> cleanedResults) {
     deployResult.setColumnHeader("Member", "Deployed JAR", "Deployed JAR Location");
     for (CliFunctionResult cliResult : cleanedResults) {
       if (cliResult.getThrowable() != null) {
@@ -138,16 +157,6 @@ public class DeployCommand extends GfshCommand {
         }
       }
     }
-
-    if (result.getStatus() == Result.Status.OK) {
-      InternalConfigurationPersistenceService sc = getConfigurationPersistenceService();
-      if (sc == null) {
-        result.addInfo().addLine(CommandExecutor.SERVICE_NOT_RUNNING_CHANGE_NOT_PERSISTED);
-      } else {
-        sc.addJarsToThisLocator(jarFullPaths, groups);
-      }
-    }
-    return result;
   }
 
   private void verifyJarContent(List<String> jarNames) {

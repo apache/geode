@@ -74,6 +74,7 @@ public class UndeployCommand extends GfshCommand {
         result.setStatus(Result.Status.ERROR);
       }
 
+      @SuppressWarnings("unchecked")
       Map<String, String> undeployedJars = (Map<String, String>) cliResult.getResultObject();
       if (undeployedJars == null) {
         continue;

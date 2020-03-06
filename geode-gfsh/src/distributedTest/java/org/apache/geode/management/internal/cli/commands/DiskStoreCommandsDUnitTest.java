@@ -28,7 +28,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import junitparams.JUnitParamsRunner;
@@ -84,6 +83,7 @@ public class DiskStoreCommandsDUnitTest implements Serializable {
         REGION_1, DISKSTORE, GROUP)).statusIsSuccess();
   }
 
+  @SuppressWarnings("deprecation")
   private void createDiskStore(MemberVM jmxManager, int serverCount, String group) {
     gfsh.executeAndAssertThat(String.format(
         "create disk-store --name=%s --dir=%s --group=%s --auto-compact=false --compaction-threshold=99 --max-oplog-size=1 --allow-force-compaction=true",
@@ -91,10 +91,9 @@ public class DiskStoreCommandsDUnitTest implements Serializable {
         .statusIsSuccess()
         .doesNotContainOutput("Did not complete waiting");
 
-    List<String> diskStores =
-        IntStream.rangeClosed(1, serverCount).mapToObj(x -> DISKSTORE).collect(Collectors.toList());
     gfsh.executeAndAssertThat("list disk-stores").statusIsSuccess()
-        .tableHasColumnWithValuesContaining("Disk Store Name", diskStores.toArray(new String[0]));
+        .tableHasColumnWithValuesContaining("Disk Store Name",
+            IntStream.rangeClosed(1, serverCount).mapToObj(x -> DISKSTORE).toArray(String[]::new));
   }
 
   private static SerializableRunnableIF dataProducer() {
@@ -112,6 +111,7 @@ public class DiskStoreCommandsDUnitTest implements Serializable {
     props.setProperty("groups", GROUP);
 
     MemberVM locator = rule.startLocatorVM(0);
+    @SuppressWarnings("unused")
     MemberVM server1 = rule.startServerVM(1, props, locator.getPort());
 
     gfsh.connectAndVerify(locator);
@@ -127,9 +127,6 @@ public class DiskStoreCommandsDUnitTest implements Serializable {
 
   @Test
   public void createDuplicateDiskStoreFailsNoServers() throws Exception {
-    Properties props = new Properties();
-    props.setProperty("groups", GROUP);
-
     MemberVM locator = rule.startLocatorVM(0);
 
     gfsh.connectAndVerify(locator);
@@ -315,6 +312,7 @@ public class DiskStoreCommandsDUnitTest implements Serializable {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   public void testBackupDiskStore() throws Exception {
     Properties props = new Properties();
     props.setProperty("groups", GROUP);
@@ -432,7 +430,7 @@ public class DiskStoreCommandsDUnitTest implements Serializable {
 
     server1.invoke(() -> {
       Cache cache = ClusterStartupRule.getCache();
-      Region r = cache.getRegion(REGION_1);
+      Region<String, String> r = cache.getRegion(REGION_1);
       r.put("A", "B");
     });
 
@@ -537,25 +535,21 @@ public class DiskStoreCommandsDUnitTest implements Serializable {
         .doesNotContainOutput("Did not complete waiting");
 
     // Verify the server defines the disk store with the disk-dir path
-    server.invoke(() -> {
-      verifyDiskStoreInServer(DISKSTORE, diskDirectoryName);
-    });
+    server.invoke(() -> verifyDiskStoreInServer(DISKSTORE, diskDirectoryName));
 
     // Verify the cluster config stores the disk store with the input disk-dir path
-    locator.invoke(() -> {
-      verifyDiskStoreInClusterConfiguration(diskDirectoryName);
-    });
+    locator.invoke(() -> verifyDiskStoreInClusterConfiguration(diskDirectoryName));
 
     // Stop and start the server
     rule.stop(1);
     server = rule.startServerVM(2, locator.getPort());
 
     // Verify the server still defines the disk store with the disk-dir path
-    server.invoke(() -> {
-      verifyDiskStoreInServer(DISKSTORE, diskDirectoryName);
-    });
+    server.invoke(() -> verifyDiskStoreInServer(DISKSTORE, diskDirectoryName));
   }
 
+  // Invoked via JUnit params
+  @SuppressWarnings("unused")
   private String[] getDiskDirNames() throws IOException {
     tempDir.create();
     return new String[] {tempDir.newFolder(DISKSTORE).getAbsolutePath(), DISKSTORE};

@@ -43,16 +43,12 @@ public class DataCommandFunctionJUnitTest {
 
   private static Cache cache;
 
-  private static Region region1;
-
   private static final String PARTITIONED_REGION = "part_region";
 
   public static class StringCheese {
     private String cheese;
 
-    public StringCheese() {
-      // Empty constructor
-    }
+    public StringCheese() {}
 
     public StringCheese(final String cheese) {
       this.cheese = cheese;
@@ -69,8 +65,7 @@ public class DataCommandFunctionJUnitTest {
 
     @Override
     public int hashCode() {
-      int h = this.cheese.hashCode();
-      return h;
+      return this.cheese.hashCode();
     }
 
     public boolean equals(Object other) {
@@ -85,17 +80,17 @@ public class DataCommandFunctionJUnitTest {
   }
 
   @BeforeClass
-  public static void setUp() throws Exception {
+  public static void setUp() {
     cache = new CacheFactory().set(MCAST_PORT, "0").create();
-    RegionFactory factory = cache.createRegionFactory(RegionShortcut.PARTITION);
-    region1 = factory.create(PARTITIONED_REGION);
+    RegionFactory<Object, String> factory = cache.createRegionFactory(RegionShortcut.PARTITION);
+    Region<Object, String> region1 = factory.create(PARTITIONED_REGION);
 
     region1.put(new StringCheese("key_1"), "value_1");
     region1.put("key_2", "value_2");
   }
 
   @AfterClass
-  public static void tearDown() throws Exception {
+  public static void tearDown() {
     cache.close();
     cache = null;
   }
@@ -104,7 +99,7 @@ public class DataCommandFunctionJUnitTest {
    * This test addresses GEODE-184
    */
   @Test
-  public void testLocateKeyIsObject() throws Exception {
+  public void testLocateKeyIsObject() {
     DataCommandFunction dataCmdFn = new DataCommandFunction();
 
     DataCommandResult result =
@@ -118,7 +113,7 @@ public class DataCommandFunctionJUnitTest {
   }
 
   @Test
-  public void testLocateKeyIsString() throws Exception {
+  public void testLocateKeyIsString() {
     DataCommandFunction dataCmdFn = new DataCommandFunction();
 
     DataCommandResult result = dataCmdFn.locateEntry("key_2", String.class.getName(),
