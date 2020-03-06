@@ -176,8 +176,9 @@ public class ClearPRMessageTest {
     doNothing().when(message).sendReply(any(), anyInt(), any(), any(), any(), anyLong());
 
     message.operateOnPartitionedRegion(distributionManager, region, startTime);
+    assertThat(message.result).isTrue();
 
-    verify(message, times(1)).sendReply(sender, processorId, distributionManager, null, region,
+    verify(message, times(0)).sendReply(sender, processorId, distributionManager, null, region,
         startTime);
   }
 

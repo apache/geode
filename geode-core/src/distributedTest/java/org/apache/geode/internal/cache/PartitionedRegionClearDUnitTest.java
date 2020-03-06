@@ -54,7 +54,7 @@ public class PartitionedRegionClearDUnitTest implements Serializable {
   private static final Logger logger = LogManager.getLogger();
 
   @Rule
-  public ClusterStartupRule cluster = new ClusterStartupRule(6);
+  public ClusterStartupRule cluster = new ClusterStartupRule(7);
 
   @Before
   public void setUp() throws Exception {
