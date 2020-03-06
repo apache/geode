@@ -17,7 +17,6 @@ package org.apache.geode.internal;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.ConnectException;
 import java.net.InetAddress;
 import java.util.Properties;
 
@@ -27,10 +26,6 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
-import org.apache.geode.distributed.internal.tcpserver.TcpClient;
-import org.apache.geode.internal.net.SocketCreatorFactory;
-import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.util.internal.GeodeGlossary;
@@ -68,20 +63,6 @@ public class DistributionLocator {
       }
     }
   }
-
-  public static void stop(InetAddress addr, int port) {
-    try {
-      new TcpClient(SocketCreatorFactory
-          .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR),
-          InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
-          InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer())
-              .stop(new HostAndPort(addr.getHostName(),
-                  port));
-    } catch (ConnectException ignore) {
-      // must not be running
-    }
-  }
-
 
   @MakeNotStatic
   private static boolean shutdown = false;

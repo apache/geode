@@ -158,17 +158,19 @@ public class RestrictUseOfInetAddressJUnitTest {
         "org/apache/geode/admin/internal/ConfigurationParameterImpl",
         "org/apache/geode/admin/internal/DistributionLocatorConfigImpl",
         "org/apache/geode/admin/internal/DistributionLocatorImpl",
+        "org/apache/geode/admin/internal/DistributedSystemHealthMonitor",
         "org/apache/geode/admin/internal/GemFireHealthImpl",
-        "org/apache/geode/admin/internal/ManagedEntityConfigImpl",
         "org/apache/geode/admin/internal/InetAddressUtils",
         "org/apache/geode/admin/internal/InetAddressUtilsWithLogging",
-
+        "org/apache/geode/admin/internal/ManagedEntityConfigImpl",
+        "org/apache/geode/admin/internal/SystemMemberImpl",
         "org/apache/geode/admin/jmx/internal/AdminDistributedSystemJmxImpl",
         "org/apache/geode/admin/jmx/internal/AgentConfigImpl",
         "org/apache/geode/admin/jmx/internal/MemberInfoWithStatsMBean",
         "org/apache/geode/admin/jmx/internal/RMIServerSocketFactoryImpl",
         "org/apache/geode/internal/admin/remote/DistributionLocatorId",
         "org/apache/geode/internal/admin/remote/FetchHostResponse",
+        "org/apache/geode/internal/admin/remote/RemoteGemFireVM",
 
         // server-side locator launcher
         "org/apache/geode/distributed/AbstractLauncher",
@@ -195,6 +197,7 @@ public class RestrictUseOfInetAddressJUnitTest {
         "org/apache/geode/distributed/internal/membership/InternalDistributedMember",
         "org/apache/geode/distributed/internal/membership/adapter/ServiceConfig",
         "org/apache/geode/internal/tcp/ConnectionTable",
+        "org/apache/geode/internal/tcp/ConnectionTable$ConnectingSocketInfo",
         "org/apache/geode/internal/tcp/TCPConduit",
 
         // server-side location service
@@ -205,8 +208,10 @@ public class RestrictUseOfInetAddressJUnitTest {
         // local address lookup used by launchers and tests
         "org/apache/geode/internal/AvailablePort",
 
-        // old, unused command-line interface replaced by gfsh
+        // old main() method used by deprecated main() method in Locator
         "org/apache/geode/internal/DistributionLocator",
+
+        // old, unused command-line interface replaced by gfsh
         "org/apache/geode/internal/SystemAdmin",
         "org/apache/geode/internal/ManagerInfo",
 
@@ -222,12 +227,13 @@ public class RestrictUseOfInetAddressJUnitTest {
         "org/apache/geode/internal/cache/tier/sockets/CacheClientUpdater",
         "org/apache/geode/internal/cache/tier/sockets/ClientHealthMonitor",
         "org/apache/geode/internal/cache/tier/sockets/ServerConnection",
+        "org/apache/geode/internal/cache/IncomingGatewayStatus",
 
         // socket-creator is allowed to use InetAddress in clients and in servers
         "org/apache/geode/internal/net/SCAdvancedSocketCreator",
         "org/apache/geode/internal/net/SocketCreator",
 
-        // problematic code used by persistence but in "util" package
+        // code used only by persistence but in "org.apache.geode.internal.util" package
         "org/apache/geode/internal/util/TransformUtils$2",
 
         // management API
@@ -240,14 +246,7 @@ public class RestrictUseOfInetAddressJUnitTest {
         "org/apache/geode/management/internal/beans/DistributedSystemBridge",
         "org/apache/geode/management/internal/beans/LocatorMBeanBridge",
         "org/apache/geode/management/internal/configuration/handlers/ClusterManagementServiceInfoRequestHandler",
-        "org/apache/geode/management/internal/util/HostUtils",
-
-        // having methods with InetAddress in their signature
-        "org/apache/geode/admin/internal/DistributedSystemHealthMonitor",
-        "org/apache/geode/admin/internal/SystemMemberImpl",
-        "org/apache/geode/internal/admin/remote/RemoteGemFireVM",
-        "org/apache/geode/internal/cache/IncomingGatewayStatus",
-        "org/apache/geode/internal/tcp/ConnectionTable$ConnectingSocketInfo"
+        "org/apache/geode/management/internal/util/HostUtils"
 
     );
   }
