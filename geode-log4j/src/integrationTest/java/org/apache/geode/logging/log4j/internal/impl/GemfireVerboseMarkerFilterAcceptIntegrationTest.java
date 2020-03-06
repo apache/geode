@@ -44,6 +44,7 @@ import org.apache.geode.test.junit.categories.LoggingTest;
  * {@code onMatch} of {@code ACCEPT} and {@code onMismatch} of {@code DENY}.
  */
 @Category(LoggingTest.class)
+@SuppressWarnings("deprecation")
 public class GemfireVerboseMarkerFilterAcceptIntegrationTest {
 
   private static final String CONFIG_FILE_NAME =

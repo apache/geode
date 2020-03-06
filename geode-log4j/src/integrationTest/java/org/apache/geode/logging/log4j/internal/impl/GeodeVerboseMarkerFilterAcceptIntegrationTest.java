@@ -104,6 +104,7 @@ public class GeodeVerboseMarkerFilterAcceptIntegrationTest {
    * GEMFIRE_VERBOSE.
    */
   @Test
+  @SuppressWarnings("deprecation")
   public void gemfireVerboseShouldNotLogIfGeodeVerboseIsAccept() {
     logger.info(LogMarker.GEMFIRE_VERBOSE, logMessage);
 

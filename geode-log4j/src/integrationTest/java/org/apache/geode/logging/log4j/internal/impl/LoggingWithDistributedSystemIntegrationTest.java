@@ -47,7 +47,6 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
-import org.apache.geode.LogWriter;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -63,6 +62,7 @@ import org.apache.geode.test.junit.categories.LoggingTest;
  * Integration tests for logging with {@link InternalDistributedSystem} lifecycle.
  */
 @Category(LoggingTest.class)
+@SuppressWarnings("deprecation")
 public class LoggingWithDistributedSystemIntegrationTest {
 
   private static final String APPLICATION_LOGGER_NAME = "com.application";
@@ -179,7 +179,7 @@ public class LoggingWithDistributedSystemIntegrationTest {
       assertThat(fis.available()).isGreaterThan(0);
     }
 
-    LogWriter logWriter = logWriterLogger;
+    org.apache.geode.LogWriter logWriter = logWriterLogger;
     assertThat(logWriter.finestEnabled()).isFalse();
     assertThat(logWriter.finerEnabled()).isFalse();
     assertThat(logWriter.fineEnabled()).isFalse();
@@ -198,7 +198,7 @@ public class LoggingWithDistributedSystemIntegrationTest {
     assertThat(logWriterFastLogger.isErrorEnabled()).isTrue();
     assertThat(logWriterFastLogger.isFatalEnabled()).isTrue();
 
-    LogWriter securityLogWriter = securityLogWriterLogger;
+    org.apache.geode.LogWriter securityLogWriter = securityLogWriterLogger;
     assertThat(securityLogWriter.finestEnabled()).isFalse();
     assertThat(securityLogWriter.finerEnabled()).isFalse();
     assertThat(securityLogWriter.fineEnabled()).isFalse();
