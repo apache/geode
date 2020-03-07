@@ -15,37 +15,20 @@
 package org.apache.geode.redis.internal.executor.hash;
 
 import java.util.List;
-import java.util.Map;
 
-import org.apache.geode.cache.TimeoutException;
-import org.apache.geode.redis.internal.AutoCloseableLock;
+import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
+import org.apache.geode.redis.internal.RedisDataType;
 
-/**
- * <pre>
- *
- * Implements the Redis HEXISTS command to determine if a hash field exists for a given key.
- *
- * Examples:
- *
- * redis> HSET myhash field1 "foo"
- * (integer) 1
- * redis> HEXISTS myhash field1
- * (integer) 1
- * redis> HEXISTS myhash field2
- * (integer) 0
- *
- * </pre>
- */
 public class HExistsExecutor extends HashExecutor {
 
-  private static final int NOT_EXISTS = 0;
+  private final int NOT_EXISTS = 0;
 
-  private static final int EXISTS = 1;
+  private final int EXISTS = 1;
 
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
@@ -56,34 +39,25 @@ public class HExistsExecutor extends HashExecutor {
       return;
     }
 
-    boolean hasField;
+    ByteArrayWrapper key = command.getKey();
+
+    checkDataType(key, RedisDataType.REDIS_HASH, context);
+    Region<ByteArrayWrapper, ByteArrayWrapper> keyRegion = getRegion(context, key);
+
+    if (keyRegion == null) {
+      command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_EXISTS));
+      return;
+    }
+
     byte[] byteField = commandElems.get(FIELD_INDEX);
     ByteArrayWrapper field = new ByteArrayWrapper(byteField);
-    ByteArrayWrapper key = command.getKey();
-    try (AutoCloseableLock regionLock = withRegionLock(context, key)) {
-      Map<ByteArrayWrapper, ByteArrayWrapper> map = getMap(context, key);
 
-      if (map == null || map.isEmpty()) {
-        command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_EXISTS));
-        return;
-      }
-      hasField = map.containsKey(field);
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      command.setResponse(
-          Coder.getErrorResponse(context.getByteBufAllocator(), "Thread interrupted."));
-      return;
-    } catch (TimeoutException e) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(),
-          "Timeout acquiring lock. Please try again."));
-      return;
-    }
+    boolean hasField = keyRegion.containsKey(field);
 
-    if (hasField) {
+    if (hasField)
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), EXISTS));
-    } else {
+    else
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_EXISTS));
-    }
 
   }
 

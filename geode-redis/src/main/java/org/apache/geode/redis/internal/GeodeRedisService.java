@@ -73,9 +73,8 @@ public class GeodeRedisService implements CacheService, ResourceEventsListener {
   }
 
   private void stopRedisServer() {
-    if (this.redisServer != null) {
+    if (this.redisServer != null)
       this.redisServer.shutdown();
-    }
   }
 
   @Override

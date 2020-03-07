@@ -17,7 +17,7 @@ package org.apache.geode.codeAnalysis;
 
 import org.apache.geode.redis.internal.GeodeRedisService;
 
-public class AnalyzeRedisSerializablesIntegrationTest extends AnalyzeSerializablesJUnitTestBase {
+public class AnalyzeRedisSerializablesJUnitTest extends AnalyzeSerializablesJUnitTestBase {
 
   @Override
   protected String getModuleName() {

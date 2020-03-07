@@ -17,15 +17,16 @@ package org.apache.geode.redis;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.internal.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -46,14 +47,16 @@ import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.test.junit.categories.RedisTest;
 
 @Category({RedisTest.class})
-public class GeoIntegrationTest {
+public class GeoJUnitTest {
   private static Jedis jedis;
   private static GeodeRedisServer server;
   private static GemFireCache cache;
+  private static Random rand;
   private static int port = 6379;
 
   @BeforeClass
   public static void setUp() throws IOException {
+    rand = new Random();
     CacheFactory cf = new CacheFactory();
     // cf.set("log-file", "redis.log");
     cf.set(LOG_LEVEL, "error");
@@ -66,12 +69,6 @@ public class GeoIntegrationTest {
     server.start();
     jedis = new Jedis("localhost", port, 10000000);
   }
-
-  @After
-  public void cleanup() {
-    jedis.zrem("Sicily", "Palermo", "Catania");
-  }
-
 
   @Test
   public void testGeoAdd() {

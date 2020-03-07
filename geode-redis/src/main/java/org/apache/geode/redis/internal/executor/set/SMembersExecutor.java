@@ -19,14 +19,10 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.TimeoutException;
-import org.apache.geode.redis.internal.AutoCloseableLock;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
-import org.apache.geode.redis.internal.CoderException;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 import org.apache.geode.redis.internal.RedisDataType;
 
@@ -36,44 +32,23 @@ public class SMembersExecutor extends SetExecutor {
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
 
-    if (commandElems.size() != 2) {
+    if (commandElems.size() < 2) {
       command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.SMEMBERS));
       return;
     }
 
     ByteArrayWrapper key = command.getKey();
     checkDataType(key, RedisDataType.REDIS_SET, context);
+    @SuppressWarnings("unchecked")
+    Region<ByteArrayWrapper, Boolean> keyRegion =
+        (Region<ByteArrayWrapper, Boolean>) context.getRegionProvider().getRegion(key);
 
-    Set<ByteArrayWrapper> members;
-    try (AutoCloseableLock regionLock = withRegionLock(context, key)) {
-      Region<ByteArrayWrapper, Set<ByteArrayWrapper>> region = getRegion(context);
-
-      // companies:ea64fe8c-e0a0-4439-a05d-d0738dd5ef80:idx
-      Set<ByteArrayWrapper> set = region.get(key);
-
-      if (set == null) {
-        command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));
-        return;
-      }
-
-      members = new HashSet<>(set); // Emulate copy on read
-
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      command.setResponse(
-          Coder.getErrorResponse(context.getByteBufAllocator(), "Thread interrupted."));
-      return;
-    } catch (TimeoutException e) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(),
-          "Timeout acquiring lock. Please try again."));
+    if (keyRegion == null) {
+      command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));
       return;
     }
 
-    try {
-      command.setResponse(Coder.getArrayResponse(context.getByteBufAllocator(), members));
-    } catch (CoderException e) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(),
-          RedisConstants.SERVER_ERROR_MESSAGE));
-    }
+    Set<ByteArrayWrapper> members = new HashSet(keyRegion.keySet()); // Emulate copy on read
+    respondBulkStrings(command, context, members);
   }
 }

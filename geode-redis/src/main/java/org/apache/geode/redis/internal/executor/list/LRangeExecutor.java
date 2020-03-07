@@ -48,6 +48,7 @@ public class LRangeExecutor extends ListExecutor {
     int redisStart;
     int redisStop;
 
+
     checkDataType(key, RedisDataType.REDIS_LIST, context);
     Region<Integer, ByteArrayWrapper> keyRegion = getRegion(context, key);
 
@@ -70,6 +71,7 @@ public class LRangeExecutor extends ListExecutor {
       return;
     }
 
+
     redisStart = getBoundedStartIndex(redisStart, listSize);
     redisStop = getBoundedEndIndex(redisStop, listSize);
     if (redisStart > redisStop) {
@@ -79,6 +81,7 @@ public class LRangeExecutor extends ListExecutor {
     redisStart = Math.min(redisStart, listSize - 1);
     redisStop = Math.min(redisStop, listSize - 1);
 
+
     List<Struct> range;
     try {
       range = getRange(context, key, redisStart, redisStop, keyRegion);
@@ -86,12 +89,11 @@ public class LRangeExecutor extends ListExecutor {
       throw new RuntimeException(e);
     }
 
-    if (range == null) {
+    if (range == null)
       command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));
-    } else {
+    else
       command.setResponse(
           Coder.getBulkStringArrayResponseOfValues(context.getByteBufAllocator(), range));
-    }
   }
 
   private List<Struct> getRange(ExecutionHandlerContext context, ByteArrayWrapper key, int start,

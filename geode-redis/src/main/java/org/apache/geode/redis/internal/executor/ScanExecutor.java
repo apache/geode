@@ -115,10 +115,8 @@ public class ScanExecutor extends AbstractScanExecutor {
     int i = -1;
     for (String key : (Collection<String>) list) {
       if (key.equals(GeodeRedisServer.REDIS_META_DATA_REGION)
-          || key.equals(GeodeRedisServer.STRING_REGION) || key
-              .equals(GeodeRedisServer.HLL_REGION)) {
+          || key.equals(GeodeRedisServer.STRING_REGION) || key.equals(GeodeRedisServer.HLL_REGION))
         continue;
-      }
       i++;
       if (beforeCursor < cursor) {
         beforeCursor++;
@@ -133,16 +131,14 @@ public class ScanExecutor extends AbstractScanExecutor {
           returnList.add(key);
           numElements++;
         }
-      } else {
+      } else
         break;
-      }
     }
 
-    if (i == size - (NUM_DEFAULT_REGIONS + 1)) {
+    if (i == size - (NUM_DEFAULT_REGIONS + 1))
       returnList.add(0, String.valueOf(0));
-    } else {
+    else
       returnList.add(0, String.valueOf(i));
-    }
     return returnList;
   }
 

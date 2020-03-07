@@ -22,6 +22,8 @@ import io.netty.buffer.ByteBuf;
 /**
  * The command class is used in holding a received Redis command. Each sent command resides in an
  * instance of this class. This class is designed to be used strictly by getter and setter methods.
+ *
+ *
  */
 public class Command {
 
@@ -38,18 +40,17 @@ public class Command {
    * @param commandElems List of elements in command
    */
   public Command(List<byte[]> commandElems) {
-    if (commandElems == null || commandElems.isEmpty()) {
+    if (commandElems == null || commandElems.isEmpty())
       throw new IllegalArgumentException(
           "List of command elements cannot be empty -> List:" + commandElems);
-    }
     this.commandElems = commandElems;
     this.response = null;
 
     RedisCommandType type;
-    String commandName = null;
+
     try {
       byte[] charCommand = commandElems.get(0);
-      commandName = Coder.bytesToString(charCommand).toUpperCase();
+      String commandName = Coder.bytesToString(charCommand).toUpperCase();
       type = RedisCommandType.valueOf(commandName);
     } catch (Exception e) {
       type = RedisCommandType.UNKNOWN;
@@ -95,13 +96,11 @@ public class Command {
   }
 
   public boolean hasError() {
-    if (response == null) {
+    if (response == null)
       return false;
-    }
 
-    if (response.getByte(0) == Coder.ERROR_ID) {
+    if (response.getByte(0) == Coder.ERROR_ID)
       return true;
-    }
 
     return false;
   }
@@ -118,24 +117,20 @@ public class Command {
       if (this.bytes == null) {
         this.bytes = new ByteArrayWrapper(this.commandElems.get(1));
         this.key = this.bytes.toString();
-      } else if (this.key == null) {
+      } else if (this.key == null)
         this.key = this.bytes.toString();
-      }
       return this.key;
-    } else {
+    } else
       return null;
-    }
   }
 
   public ByteArrayWrapper getKey() {
     if (this.commandElems.size() > 1) {
-      if (this.bytes == null) {
+      if (this.bytes == null)
         this.bytes = new ByteArrayWrapper(this.commandElems.get(1));
-      }
       return this.bytes;
-    } else {
+    } else
       return null;
-    }
   }
 
   @Override

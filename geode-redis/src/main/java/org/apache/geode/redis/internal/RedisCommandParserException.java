@@ -16,6 +16,8 @@ package org.apache.geode.redis.internal;
 
 /**
  * Exception thrown by CommandParser (non-existent class) when a command has illegal syntax
+ *
+ *
  */
 public class RedisCommandParserException extends Exception {
 

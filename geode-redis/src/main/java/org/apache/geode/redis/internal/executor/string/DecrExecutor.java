@@ -40,7 +40,7 @@ public class DecrExecutor extends StringExecutor {
     List<byte[]> commandElems = command.getProcessedCommand();
 
     RegionProvider rC = context.getRegionProvider();
-    Region<ByteArrayWrapper, ByteArrayWrapper> r = rC.getStringsRegion();
+    Region<ByteArrayWrapper, ByteArrayWrapper> r = rC.getStringsRegion();;
 
     if (commandElems.size() < 2) {
       command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.DECR));

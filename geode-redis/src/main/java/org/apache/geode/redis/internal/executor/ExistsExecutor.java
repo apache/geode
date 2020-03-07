@@ -38,11 +38,10 @@ public class ExistsExecutor extends AbstractExecutor {
     ByteArrayWrapper key = command.getKey();
     boolean exists = context.getKeyRegistrar().isRegistered(key);
 
-    if (exists) {
+    if (exists)
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), EXISTS));
-    } else {
+    else
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_EXISTS));
-    }
 
   }
 }

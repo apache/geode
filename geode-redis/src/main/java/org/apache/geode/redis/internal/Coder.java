@@ -33,7 +33,6 @@ import org.apache.geode.cache.query.Struct;
  */
 public class Coder {
 
-
   /*
    * Take no chances on char to byte conversions with default charsets on jvms, so we'll hard code
    * the UTF-8 symbol values as bytes here
@@ -232,10 +231,6 @@ public class Coder {
   }
 
   public static ByteBuf getScanResponse(ByteBufAllocator alloc, List<?> items) {
-    if (items == null || items.isEmpty()) {
-      return null;
-    }
-
     ByteBuf response = alloc.buffer();
 
     response.writeByte(ARRAY_ID);

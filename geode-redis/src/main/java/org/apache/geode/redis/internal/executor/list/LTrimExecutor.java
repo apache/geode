@@ -51,6 +51,7 @@ public class LTrimExecutor extends ListExecutor {
     int redisStart;
     int redisStop;
 
+
     checkDataType(key, RedisDataType.REDIS_LIST, context);
     Region keyRegion = getRegion(context, key);
 
@@ -96,9 +97,8 @@ public class LTrimExecutor extends ListExecutor {
     }
 
     for (Object keyElement : keyRegion.keySet()) {
-      if (!keepList.contains(keyElement) && keyElement instanceof Integer) {
+      if (!keepList.contains(keyElement) && keyElement instanceof Integer)
         keyRegion.remove(keyElement);
-      }
     }
 
     // Reset indexes in meta data region

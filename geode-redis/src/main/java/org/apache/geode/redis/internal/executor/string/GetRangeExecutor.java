@@ -59,6 +59,7 @@ public class GetRangeExecutor extends StringExecutor {
     long start;
     long end;
 
+
     try {
       byte[] startI = commandElems.get(startIndex);
       byte[] stopI = commandElems.get(stopIndex);
@@ -81,9 +82,8 @@ public class GetRangeExecutor extends StringExecutor {
     /*
      * 1 is added to end because the end in copyOfRange is exclusive but in Redis it is inclusive
      */
-    if (end != length) {
+    if (end != length)
       end++;
-    }
     byte[] returnRange = Arrays.copyOfRange(value, (int) start, (int) end);
     if (returnRange == null || returnRange.length == 0) {
       command.setResponse(Coder.getNilResponse(context.getByteBufAllocator()));

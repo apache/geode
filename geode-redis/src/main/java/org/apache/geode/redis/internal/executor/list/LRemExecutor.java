@@ -49,6 +49,7 @@ public class LRemExecutor extends ListExecutor {
 
     int count;
 
+
     checkDataType(key, RedisDataType.REDIS_LIST, context);
     Region<Integer, ByteArrayWrapper> keyRegion = getRegion(context, key);
 
@@ -81,9 +82,8 @@ public class LRemExecutor extends ListExecutor {
     for (Struct entry : removeList) {
       Integer removeKey = (Integer) entry.getFieldValues()[0];
       Object oldVal = keyRegion.remove(removeKey);
-      if (oldVal != null) {
+      if (oldVal != null)
         numRemoved++;
-      }
     }
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), numRemoved));
   }
@@ -102,6 +102,7 @@ public class LRemExecutor extends ListExecutor {
       query = getQuery(key, ListQuery.LREME, context);
       params = new Object[] {value};
     }
+
 
     SelectResults<Struct> results = (SelectResults<Struct>) query.execute(params);
 

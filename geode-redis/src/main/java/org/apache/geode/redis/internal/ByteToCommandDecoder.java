@@ -34,12 +34,14 @@ import io.netty.handler.codec.ByteToMessageDecoder;
  * amount of cpu time. The simplicity of the Redis protocol allows us to just back out and wait for
  * more data, while exceptions are left to malformed requests which should never happen if using a
  * proper Redis client.
+ *
+ *
  */
 public class ByteToCommandDecoder extends ByteToMessageDecoder {
 
   /**
    * Important note
-   * <p>
+   *
    * Do not use '' <-- java primitive chars. Redis uses {@link Coder#CHARSET} encoding so we should
    * not risk java handling char to byte conversions, rather just hard code {@link Coder#CHARSET}
    * chars as bytes
@@ -68,23 +70,19 @@ public class ByteToCommandDecoder extends ByteToMessageDecoder {
   }
 
   private Command parse(ByteBuf buffer) throws RedisCommandParserException {
-    if (buffer == null) {
+    if (buffer == null)
       throw new NullPointerException();
-    }
-    if (!buffer.isReadable()) {
+    if (!buffer.isReadable())
       return null;
-    }
 
     byte firstB = buffer.readByte();
-    if (firstB != arrayID) {
+    if (firstB != arrayID)
       throw new RedisCommandParserException(
           "Expected: " + (char) arrayID + " Actual: " + (char) firstB);
-    }
     ArrayList<byte[]> commandElems = new ArrayList<byte[]>();
 
-    if (!parseArray(commandElems, buffer)) {
+    if (!parseArray(commandElems, buffer))
       return null;
-    }
 
     return new Command(commandElems);
   }
@@ -93,28 +91,23 @@ public class ByteToCommandDecoder extends ByteToMessageDecoder {
       throws RedisCommandParserException {
     byte currentChar;
     int arrayLength = parseCurrentNumber(buffer);
-    if (arrayLength == Integer.MIN_VALUE || !parseRN(buffer)) {
+    if (arrayLength == Integer.MIN_VALUE || !parseRN(buffer))
       return false;
-    }
-    if (arrayLength < 0 || arrayLength > 1000000000) {
+    if (arrayLength < 0 || arrayLength > 1000000000)
       throw new RedisCommandParserException("invalid multibulk length");
-    }
 
     for (int i = 0; i < arrayLength; i++) {
-      if (!buffer.isReadable()) {
+      if (!buffer.isReadable())
         return false;
-      }
       currentChar = buffer.readByte();
       if (currentChar == bulkStringID) {
         byte[] newBulkString = parseBulkString(buffer);
-        if (newBulkString == null) {
+        if (newBulkString == null)
           return false;
-        }
         commandElems.add(newBulkString);
-      } else {
+      } else
         throw new RedisCommandParserException(
             "expected: \'$\', got \'" + (char) currentChar + "\'");
-      }
     }
     return true;
   }
@@ -128,26 +121,21 @@ public class ByteToCommandDecoder extends ByteToMessageDecoder {
    */
   private byte[] parseBulkString(ByteBuf buffer) throws RedisCommandParserException {
     int bulkStringLength = parseCurrentNumber(buffer);
-    if (bulkStringLength == Integer.MIN_VALUE) {
+    if (bulkStringLength == Integer.MIN_VALUE)
       return null;
-    }
-    if (bulkStringLength > MAX_BULK_STRING_LENGTH) {
+    if (bulkStringLength > MAX_BULK_STRING_LENGTH)
       throw new RedisCommandParserException(
           "invalid bulk length, cannot exceed max length of " + MAX_BULK_STRING_LENGTH);
-    }
-    if (!parseRN(buffer)) {
+    if (!parseRN(buffer))
       return null;
-    }
 
-    if (!buffer.isReadable(bulkStringLength)) {
+    if (!buffer.isReadable(bulkStringLength))
       return null;
-    }
     byte[] bulkString = new byte[bulkStringLength];
     buffer.readBytes(bulkString);
 
-    if (!parseRN(buffer)) {
+    if (!parseRN(buffer))
       return null;
-    }
 
     return bulkString;
   }
@@ -163,9 +151,8 @@ public class ByteToCommandDecoder extends ByteToMessageDecoder {
     int readerIndex = buffer.readerIndex();
     byte b = 0;
     while (true) {
-      if (!buffer.isReadable()) {
+      if (!buffer.isReadable())
         return Integer.MIN_VALUE;
-      }
       b = buffer.readByte();
       if (Character.isDigit(b)) {
         number = number * 10 + (int) (b - '0');
@@ -185,19 +172,16 @@ public class ByteToCommandDecoder extends ByteToMessageDecoder {
    * @throws RedisCommandParserException Thrown when the next two characters are not "\r\n"
    */
   private boolean parseRN(ByteBuf buffer) throws RedisCommandParserException {
-    if (!buffer.isReadable(2)) {
+    if (!buffer.isReadable(2))
       return false;
-    }
     byte b = buffer.readByte();
-    if (b != rID) {
+    if (b != rID)
       throw new RedisCommandParserException(
           "expected \'" + (char) rID + "\', got \'" + (char) b + "\'");
-    }
     b = buffer.readByte();
-    if (b != nID) {
+    if (b != nID)
       throw new RedisCommandParserException(
           "expected: \'" + (char) nID + "\', got \'" + (char) b + "\'");
-    }
     return true;
   }
 
