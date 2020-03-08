@@ -618,6 +618,7 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
   public static final String SUBSCRIPTION_TIMEOUT_MULTIPLIER = "subscription-timeout-multiplier";
   public static final String SOCKET_CONNECT_TIMEOUT = "socket-connect-timeout";
   public static final String FREE_CONNECTION_TIMEOUT = "free-connection-timeout";
+  public static final String SERVER_CONNECTION_TIMEOUT = "server-connection-timeout";
   public static final String LOAD_CONDITIONING_INTERVAL = "load-conditioning-interval";
   public static final String MIN_CONNECTIONS = "min-connections";
   public static final String RETRY_ATTEMPTS = "retry-attempts";

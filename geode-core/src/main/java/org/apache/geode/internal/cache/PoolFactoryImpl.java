@@ -88,11 +88,12 @@ public class PoolFactoryImpl implements InternalPoolFactory {
   }
 
   @Override
-  public PoolFactory setServerConnectionTimeout(int connectionTimeout) {
-    if (connectionTimeout < -1) {
-      throw new IllegalArgumentException("connectionTimeout must be greater than or equal to -1");
+  public PoolFactory setServerConnectionTimeout(int serverConnectionTimeout) {
+    if (serverConnectionTimeout < -1) {
+      throw new IllegalArgumentException(
+          "serverConnectionTimeout must be greater than or equal to -1");
     }
-    attributes.serverConnectionTimeout = connectionTimeout;
+    attributes.serverConnectionTimeout = serverConnectionTimeout;
     return this;
   }
 
@@ -668,7 +669,8 @@ public class PoolFactoryImpl implements InternalPoolFactory {
     @Override
     public int hashCode() {
       return Objects
-          .hash(socketConnectTimeout, connectionTimeout, connectionLifetime, socketBufferSize,
+          .hash(socketConnectTimeout, connectionTimeout, serverConnectionTimeout,
+              connectionLifetime, socketBufferSize,
               threadLocalConnections, readTimeout, minConnections, maxConnections, idleTimeout,
               retryAttempts, pingInterval, statisticInterval, queueEnabled, prSingleHopEnabled,
               queueRedundancyLevel, queueMessageTrackingTimeout, queueAckInterval,
@@ -687,6 +689,7 @@ public class PoolFactoryImpl implements InternalPoolFactory {
       PoolAttributes that = (PoolAttributes) o;
       return socketConnectTimeout == that.socketConnectTimeout
           && connectionTimeout == that.connectionTimeout
+          && serverConnectionTimeout == that.serverConnectionTimeout
           && connectionLifetime == that.connectionLifetime
           && socketBufferSize == that.socketBufferSize
           && threadLocalConnections == that.threadLocalConnections
