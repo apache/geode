@@ -197,6 +197,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     assertEquals(0, cp.getServers().size());
     assertEquals(createINSA(ALIAS2, 3777), cp.getLocators().get(0));
     assertEquals(PoolFactory.DEFAULT_FREE_CONNECTION_TIMEOUT, cp.getFreeConnectionTimeout());
+    assertEquals(PoolFactory.DEFAULT_SERVER_CONNECTION_TIMEOUT, cp.getServerConnectionTimeout());
     assertEquals(PoolFactory.DEFAULT_LOAD_CONDITIONING_INTERVAL, cp.getLoadConditioningInterval());
     assertEquals(PoolFactory.DEFAULT_SOCKET_BUFFER_SIZE, cp.getSocketBufferSize());
     assertEquals(PoolFactory.DEFAULT_THREAD_LOCAL_CONNECTIONS, cp.getThreadLocalConnections());

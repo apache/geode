@@ -67,6 +67,7 @@ import org.apache.geode.annotations.Experimental;
  *       &lt;attribute name="subscription-timeout-multiplier" type="{http://www.w3.org/2001/XMLSchema}string" />
  *       &lt;attribute name="socket-connect-timeout" type="{http://www.w3.org/2001/XMLSchema}string" />
  *       &lt;attribute name="free-connection-timeout" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *       &lt;attribute name="server-connection-timeout" type="{http://www.w3.org/2001/XMLSchema}string" />
  *       &lt;attribute name="load-conditioning-interval" type="{http://www.w3.org/2001/XMLSchema}string" />
  *       &lt;attribute name="min-connections" type="{http://www.w3.org/2001/XMLSchema}string" />
  *       &lt;attribute name="max-connections" type="{http://www.w3.org/2001/XMLSchema}string" />
@@ -108,6 +109,8 @@ public class PoolType {
   private String socketConnectTimeout;
   @XmlAttribute(name = "free-connection-timeout")
   protected String freeConnectionTimeout;
+  @XmlAttribute(name = "server-connection-timeout")
+  protected String serverConnectionTimeout;
   @XmlAttribute(name = "load-conditioning-interval")
   protected String loadConditioningInterval;
   @XmlAttribute(name = "min-connections")
@@ -270,6 +273,28 @@ public class PoolType {
    */
   public void setFreeConnectionTimeout(String value) {
     freeConnectionTimeout = value;
+  }
+
+  /**
+   * Gets the value of the serverConnectionTimeout property.
+   *
+   * possible object is
+   * {@link String }
+   *
+   */
+  public String getServerConnectionTimeout() {
+    return serverConnectionTimeout;
+  }
+
+  /**
+   * Sets the value of the serverConnectionTimeout property.
+   *
+   * allowed object is
+   * {@link String }
+   *
+   */
+  public void setServerConnectionTimeout(String value) {
+    serverConnectionTimeout = value;
   }
 
   /**

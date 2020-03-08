@@ -328,8 +328,7 @@ public class ClientCacheFactory {
    * connection timeout
    * specifies how long those operations will block waiting for a connection toward server before
    * receiving an {@link AllConnectionsInUseException}. If max connections is not set this setting
-   * has no
-   * effect.
+   * has no effect.
    *
    * @param connectionTimeout the connection timeout in milliseconds
    * @return a reference to <code>this</code>

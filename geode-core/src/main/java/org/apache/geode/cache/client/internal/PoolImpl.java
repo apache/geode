@@ -694,7 +694,7 @@ public class PoolImpl implements InternalPool {
       throw new RuntimeException(
           String.format("Pool %s is different", "connectionTimeout"));
     }
-    if (getServerConnectionTimeout() == other.getServerConnectionTimeout()) {
+    if (getServerConnectionTimeout() != other.getServerConnectionTimeout()) {
       throw new RuntimeException(
           String.format("Pool %s is different", "serverConnectionTimeout"));
     }

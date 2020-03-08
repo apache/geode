@@ -413,6 +413,10 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     if (v != null) {
       f.setFreeConnectionTimeout(parseInt(v));
     }
+    v = atts.getValue(SERVER_CONNECTION_TIMEOUT);
+    if (v != null) {
+      f.setServerConnectionTimeout(parseInt(v));
+    }
     v = atts.getValue(LOAD_CONDITIONING_INTERVAL);
     if (v != null) {
       f.setLoadConditioningInterval(parseInt(v));

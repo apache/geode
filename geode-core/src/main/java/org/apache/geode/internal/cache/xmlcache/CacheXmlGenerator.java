@@ -1147,6 +1147,10 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
           atts.addAttribute("", "", SOCKET_CONNECT_TIMEOUT, "",
               String.valueOf(cp.getSocketConnectTimeout()));
         }
+        if (generateDefaults()
+            || cp.getServerConnectionTimeout() != PoolFactory.DEFAULT_SERVER_CONNECTION_TIMEOUT)
+          atts.addAttribute("", "", SERVER_CONNECTION_TIMEOUT, "",
+              String.valueOf(cp.getServerConnectionTimeout()));
       }
       if (generateDefaults()
           || cp.getFreeConnectionTimeout() != PoolFactory.DEFAULT_FREE_CONNECTION_TIMEOUT)

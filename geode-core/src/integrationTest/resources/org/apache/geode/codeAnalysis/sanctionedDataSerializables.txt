@@ -1151,8 +1151,8 @@ fromData,207
 toData,178
 
 org/apache/geode/internal/cache/PoolFactoryImpl$PoolAttributes,2
-fromData,153
-toData,153
+fromData,161
+toData,161
 
 org/apache/geode/internal/cache/PreferBytesCachedDeserializable,2
 fromData,9
