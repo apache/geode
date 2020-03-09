@@ -88,8 +88,9 @@ public class GeoRadiusExecutor extends GeoSortedSetExecutor {
           double dist = GeoCoder.geoDist(params.centerHashPrecise, hash) * params.distScale;
 
           // Post-filter for accuracy
-          if (dist > (params.radius * params.distScale))
+          if (dist > (params.radius * params.distScale)) {
             continue;
+          }
 
           Optional<LatLong> coord =
               params.withCoord ? Optional.of(GeoCoder.geoPos(hash)) : Optional.empty();

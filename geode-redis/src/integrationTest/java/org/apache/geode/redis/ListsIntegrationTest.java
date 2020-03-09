@@ -38,7 +38,7 @@ import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.test.junit.categories.RedisTest;
 
 @Category({RedisTest.class})
-public class ListsJUnitTest {
+public class ListsIntegrationTest {
 
   private static Jedis jedis;
   private static GeodeRedisServer server;
@@ -185,8 +185,10 @@ public class ListsJUnitTest {
 
     jedis.del(key);
 
-    assertTrue(jedis.lpushx(key, randString()) == 0);
-    assertTrue(jedis.rpushx(key, randString()) == 0);
+    long response = jedis.lpushx(key, randString());
+    assertTrue("response:" + response, response == 0);
+    response = jedis.lpushx(key, randString());
+    assertTrue("response:" + response, jedis.rpushx(key, randString()) == 0);
   }
 
   @Test

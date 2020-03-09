@@ -52,7 +52,8 @@ import org.apache.geode.redis.internal.executor.hll.HllExecutor;
  * https://github.com/yammer/probablyjs
  * <p>
  * Note that this implementation does not include the long range correction function defined in the
- * original paper. Empirical evidence shows that the correction function causes more harm than good.
+ * original paper. Empirical evidence shows that the correction function causes more harm than
+ * good.
  * </p>
  * <p/>
  * <p>
@@ -209,8 +210,8 @@ public class HyperLogLog implements ICardinality, Serializable {
   @Override
   public ICardinality merge(ICardinality... estimators) throws CardinalityMergeException {
     HyperLogLog merged = new HyperLogLog(HllExecutor.DEFAULT_HLL_STD_DEV);// new HyperLogLog(log2m,
-                                                                          // new
-                                                                          // RegisterSet(this.registerSet.count));
+    // new
+    // RegisterSet(this.registerSet.count));
     merged.addAll(this);
 
     if (estimators == null) {
@@ -235,7 +236,7 @@ public class HyperLogLog implements ICardinality, Serializable {
   /**
    * This class exists to support Externalizable semantics for HyperLogLog objects without having to
    * expose a public constructor, public write/read methods, or pretend final fields aren't final.
-   *
+   * <p>
    * In short, Externalizable allows you to skip some of the more verbose meta-data default
    * Serializable gets you, but still includes the class name. In that sense, there is some cost to
    * this holder object because it has a longer class name. I imagine people who care about

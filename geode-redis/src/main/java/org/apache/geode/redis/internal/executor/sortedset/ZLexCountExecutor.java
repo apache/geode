@@ -87,7 +87,6 @@ public class ZLexCountExecutor extends SortedSetExecutor {
       return;
     }
 
-
     int count;
     try {
       count = getCount(key, keyRegion, context, Coder.stringToByteArrayWrapper(startString),
@@ -101,12 +100,14 @@ public class ZLexCountExecutor extends SortedSetExecutor {
   }
 
   private int getCount(ByteArrayWrapper key, Region<ByteArrayWrapper, DoubleWrapper> keyRegion,
-      ExecutionHandlerContext context, ByteArrayWrapper start, ByteArrayWrapper stop,
+      ExecutionHandlerContext context, ByteArrayWrapper start,
+      ByteArrayWrapper stop,
       boolean startInclusive, boolean stopInclusive) throws Exception {
-    if (start.equals(minus) && stop.equals(plus))
+    if (start.equals(minus) && stop.equals(plus)) {
       return keyRegion.size();
-    else if (start.equals(plus) || stop.equals(minus))
+    } else if (start.equals(plus) || stop.equals(minus)) {
       return 0;
+    }
 
     Query query;
     Object[] params;

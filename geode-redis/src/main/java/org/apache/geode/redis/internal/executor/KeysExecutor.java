@@ -54,13 +54,15 @@ public class KeysExecutor extends AbstractExecutor {
     for (String key : allKeys) {
       if (!(key.equals(GeodeRedisServer.REDIS_META_DATA_REGION)
           || key.equals(GeodeRedisServer.STRING_REGION) || key.equals(GeodeRedisServer.HLL_REGION))
-          && pattern.matcher(key).matches())
+          && pattern.matcher(key).matches()) {
         matchingKeys.add(key);
+      }
     }
 
-    if (matchingKeys.isEmpty())
+    if (matchingKeys.isEmpty()) {
       command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));
-    else
+    } else {
       respondBulkStrings(command, context, matchingKeys);
+    }
   }
 }

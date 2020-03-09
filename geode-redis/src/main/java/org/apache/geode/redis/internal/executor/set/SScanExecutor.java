@@ -17,6 +17,7 @@ package org.apache.geode.redis.internal.executor.set;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -43,10 +44,11 @@ public class SScanExecutor extends AbstractScanExecutor {
 
     ByteArrayWrapper key = command.getKey();
     checkDataType(key, RedisDataType.REDIS_SET, context);
-    @SuppressWarnings("unchecked")
-    Region<ByteArrayWrapper, Boolean> keyRegion =
-        (Region<ByteArrayWrapper, Boolean>) context.getRegionProvider().getRegion(key);
-    if (keyRegion == null) {
+
+    Region<ByteArrayWrapper, Set<ByteArrayWrapper>> region = getRegion(context);
+    Set<ByteArrayWrapper> set = region.get(key);
+
+    if (set == null) {
       command.setResponse(
           Coder.getScanResponse(context.getByteBufAllocator(), new ArrayList<String>()));
       return;
@@ -114,16 +116,21 @@ public class SScanExecutor extends AbstractScanExecutor {
 
     @SuppressWarnings("unchecked")
     List<ByteArrayWrapper> returnList =
-        (List<ByteArrayWrapper>) getIteration(new ArrayList(keyRegion.keySet()), matchPattern,
+        (List<ByteArrayWrapper>) getIteration(new ArrayList<>(set), matchPattern,
             count, cursor);
 
     command.setResponse(Coder.getScanResponse(context.getByteBufAllocator(), returnList));
   }
 
+  private Region<ByteArrayWrapper, Set<ByteArrayWrapper>> getRegion(
+      ExecutionHandlerContext context) {
+    return context.getRegionProvider().getSetRegion();
+  }
+
   @SuppressWarnings("unchecked")
   @Override
   protected List<?> getIteration(Collection<?> list, Pattern matchPattern, int count, int cursor) {
-    List<Object> returnList = new ArrayList<Object>();
+    List<Object> returnList = new ArrayList<>();
     int size = list.size();
     int beforeCursor = 0;
     int numElements = 0;
@@ -144,14 +151,16 @@ public class SScanExecutor extends AbstractScanExecutor {
           returnList.add(value);
           numElements++;
         }
-      } else
+      } else {
         break;
+      }
     }
 
-    if (i == size - 1)
+    if (i == size - 1) {
       returnList.add(0, String.valueOf(0));
-    else
+    } else {
       returnList.add(0, String.valueOf(i));
+    }
     return returnList;
   }
 }

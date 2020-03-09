@@ -23,8 +23,6 @@ import org.apache.geode.DataSerializer;
 
 /**
  * This is a wrapper class for doubles, similar to {@link ByteArrayWrapper}
- *
- *
  */
 public class DoubleWrapper implements DataSerializable, Comparable<Object> {
 
@@ -56,20 +54,23 @@ public class DoubleWrapper implements DataSerializable, Comparable<Object> {
       other = ((DoubleWrapper) arg0).score;
     } else if (arg0 instanceof Double) {
       other = (Double) arg0;
-    } else
+    } else {
       return 0;
+    }
     double diff = this.score - other;
-    if (diff > 0)
+    if (diff > 0) {
       return 1;
-    else if (diff < 0)
+    } else if (diff < 0) {
       return -1;
-    else
+    } else {
       return 0;
+    }
   }
 
   public String toString() {
-    if (this.toString == null)
+    if (this.toString == null) {
       this.toString = Coder.doubleToString(score);
+    }
     return this.toString;
   }
 

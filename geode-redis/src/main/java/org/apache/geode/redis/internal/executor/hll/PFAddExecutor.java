@@ -44,22 +44,25 @@ public class PFAddExecutor extends HllExecutor {
 
     boolean changed = false;
 
-    if (hll == null)
+    if (hll == null) {
       hll = new HyperLogLogPlus(DEFAULT_HLL_DENSE);
+    }
 
     for (int i = 2; i < commandElems.size(); i++) {
       byte[] bytes = commandElems.get(i);
       boolean offerChange = hll.offer(bytes);
-      if (offerChange)
+      if (offerChange) {
         changed = true;
+      }
     }
 
     keyRegion.put(key, hll);
 
-    if (changed)
+    if (changed) {
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), 1));
-    else
+    } else {
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), 0));
+    }
   }
 
 }

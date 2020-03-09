@@ -80,8 +80,9 @@ public class ZAddExecutor extends SortedSetExecutor {
           getOrCreateRegion(context, key, RedisDataType.REDIS_SORTEDSET);
       Object oldVal = keyRegion.put(new ByteArrayWrapper(memberArray), new DoubleWrapper(score));
 
-      if (oldVal == null)
+      if (oldVal == null) {
         numberOfAdds = 1;
+      }
     }
 
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), numberOfAdds));

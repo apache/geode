@@ -11,29 +11,26 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
+ *
  */
-package org.apache.geode.redis;
+package org.apache.geode.redis.internal;
 
-import static org.junit.Assert.assertEquals;
+import java.util.concurrent.locks.Lock;
 
-import com.github.davidmoten.geo.LatLong;
-import org.junit.Test;
+/**
+ * Created by gosullivan on 3/10/17.
+ */
+public class AutoCloseableLock implements AutoCloseable {
+  private final Lock lock;
+  private final ByteArrayWrapper key;
 
-import org.apache.geode.redis.internal.CoderException;
-import org.apache.geode.redis.internal.GeoCoder;
-
-public class GeoCoderTest {
-  @Test
-  public void testGeoHash() throws CoderException {
-    String hash = GeoCoder.geohash(Double.toString(13.361389).getBytes(),
-        Double.toString(38.115556).getBytes());
-    assertEquals("sqc8b49rnyte", hash);
+  public AutoCloseableLock(ByteArrayWrapper key, Lock lock) {
+    this.key = key;
+    this.lock = lock;
   }
 
-  @Test
-  public void testGeoPos() throws CoderException {
-    LatLong pos = GeoCoder.geoPos("sqc8b49rnyte");
-    assertEquals(13.361389, pos.getLon(), 0.000001);
-    assertEquals(38.115556, pos.getLat(), 0.000001);
+  @Override
+  public void close() {
+    lock.unlock();
   }
 }
