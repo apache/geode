@@ -74,7 +74,7 @@ public class PubSubDUnitTest {
     Thread subscriberThread2 = new Thread(runnable2);
     subscriberThread2.start();
 
-    assertThat(latch.await(2, TimeUnit.SECONDS))
+    assertThat(latch.await(30, TimeUnit.SECONDS))
         .as("channel subscription was not received")
         .isTrue();
 
