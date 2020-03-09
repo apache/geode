@@ -28,7 +28,7 @@ import org.apache.geode.distributed.internal.SerialAckedMessage;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 
-public class ConnectionChangeHangTest implements Serializable {
+public class TestServerStartupWhenAsyncDistributionTimeoutIsSet implements Serializable {
   int serversToStart = 3;
 
   protected static InternalDistributedSystem system =
@@ -45,7 +45,6 @@ public class ConnectionChangeHangTest implements Serializable {
   @Before
   public void setUp() throws Exception {
     locator = cluster.startLocatorVM(0);
-
   }
 
   private MemberVM startServer(final int vmIndex) {
@@ -55,8 +54,7 @@ public class ConnectionChangeHangTest implements Serializable {
   }
 
   @Test
-
-  public void testNoHanging() {
+  public void testServerStartupDoesNotHangWhenAsyncDistributionTimeoutIsSet() {
     server1 = startServer(1);
     server2 = startServer(2);
     server3 = startServer(3);
@@ -64,15 +62,10 @@ public class ConnectionChangeHangTest implements Serializable {
       assertThat(ConnectionTable.getNumSenderSharedConnections()).isEqualTo(3);
     }));
 
-
-    try {
-      locator.invoke(() -> await("for message to be sent").until(() -> {
-        final SerialAckedMessage serialAckedMessage = new SerialAckedMessage();
-        serialAckedMessage.send(system.getAllOtherMembers(), false);
-        return true;
-      }));
-    } finally {
-
-    }
+    locator.invoke(() -> await("for message to be sent").until(() -> {
+      final SerialAckedMessage serialAckedMessage = new SerialAckedMessage();
+      serialAckedMessage.send(system.getAllOtherMembers(), false);
+      return true;
+    }));
   }
 }
