@@ -1347,15 +1347,14 @@ public class CqServiceImpl implements CqService {
           boolean error = false;
           {
             try {
-              synchronized (cQuery) {
-                // Apply query on new value.
-                if (!cqUnfilteredEventsSet_newValue.isEmpty()) {
-                  executionStartTime = this.stats.startCqQueryExecution();
-
+              // Apply query on new value.
+              if (!cqUnfilteredEventsSet_newValue.isEmpty()) {
+                executionStartTime = this.stats.startCqQueryExecution();
+                synchronized (cQuery) {
                   b_cqResults_newValue =
                       evaluateQuery(cQuery, new Object[] {cqUnfilteredEventsSet_newValue});
-                  this.stats.endCqQueryExecution(executionStartTime);
                 }
+                this.stats.endCqQueryExecution(executionStartTime);
               }
 
               // In case of Update, destroy and invalidate.
@@ -1390,19 +1389,19 @@ public class CqServiceImpl implements CqService {
                     }
                   }
 
-                  synchronized (cQuery) {
-                    // Apply query on old value.
-                    if (!cqUnfilteredEventsSet_oldValue.isEmpty()) {
-                      executionStartTime = this.stats.startCqQueryExecution();
+                  // Apply query on old value.
+                  if (!cqUnfilteredEventsSet_oldValue.isEmpty()) {
+                    executionStartTime = this.stats.startCqQueryExecution();
+                    synchronized (cQuery) {
                       b_cqResults_oldValue =
                           evaluateQuery(cQuery, new Object[] {cqUnfilteredEventsSet_oldValue});
-                      this.stats.endCqQueryExecution(executionStartTime);
-                    } else {
-                      if (isDebugEnabled) {
-                        logger.debug(
-                            "old value for event with key {} is null - query execution not performed",
-                            eventKey);
-                      }
+                    }
+                    this.stats.endCqQueryExecution(executionStartTime);
+                  } else {
+                    if (isDebugEnabled) {
+                      logger.debug(
+                          "old value for event with key {} is null - query execution not performed",
+                          eventKey);
                     }
                   }
                 } // Query oldValue
