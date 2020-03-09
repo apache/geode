@@ -17,10 +17,7 @@ package org.apache.geode.redis;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -28,6 +25,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -49,12 +52,12 @@ public class StringsJunitTest {
   private static GemFireCache cache;
   private static Random rand;
   private static int port = 6379;
+  private static int ITERATION_COUNT = 4000;
 
   @BeforeClass
   public static void setUp() throws IOException {
     rand = new Random();
     CacheFactory cf = new CacheFactory();
-    // cf.set("log-file", "redis.log");
     cf.set(LOG_LEVEL, "error");
     cf.set(MCAST_PORT, "0");
     cf.set(LOCATORS, "");
@@ -79,9 +82,9 @@ public class StringsJunitTest {
       full += rand;
     }
     String ret = jedis.get(key);
-    assertTrue(ret.length() == len);
-    assertTrue(full.equals(ret));
-    assertTrue(full.length() == jedis.strlen(key));
+    assertThat(ret.length()).isEqualTo(len);
+    assertThat(full.equals(ret));
+    assertThat(new Long(full.length())).isEqualTo(jedis.strlen(key));
   }
 
   @Test
@@ -98,9 +101,9 @@ public class StringsJunitTest {
     jedis.decr(key1);
     jedis.decr(key3);
     jedis.decr(key2);
-    assertTrue(jedis.get(key1).equals("" + (num1 - 1)));
-    assertTrue(jedis.get(key2).equals("" + (num2 - 1)));
-    assertTrue(jedis.get(key3).equals("" + (-1)));
+    assertThat(jedis.get(key1)).isEqualTo("" + (num1 - 1));
+    assertThat(jedis.get(key2)).isEqualTo("" + (num2 - 1));
+    assertThat(jedis.get(key3)).isEqualTo("" + (-1));
   }
 
   @Test
@@ -118,9 +121,9 @@ public class StringsJunitTest {
     jedis.incr(key3);
     jedis.incr(key2);
 
-    assertTrue(jedis.get(key1).equals("" + (num1 + 1)));
-    assertTrue(jedis.get(key2).equals("" + (num2 + 1)));
-    assertTrue(jedis.get(key3).equals("" + (+1)));
+    assertThat(jedis.get(key1)).isEqualTo("" + (num1 + 1));
+    assertThat(jedis.get(key2)).isEqualTo("" + (num2 + 1));
+    assertThat(jedis.get(key3)).isEqualTo("" + (+1));
   }
 
   @Test
@@ -140,8 +143,8 @@ public class StringsJunitTest {
     jedis.decrBy(key1, decr1);
     jedis.decrBy(key2, decr2);
 
-    assertTrue(jedis.get(key1).equals("" + (num1 - decr1 * 1)));
-    assertTrue(jedis.get(key2).equals("" + (num2 - decr2 * 1)));
+    assertThat(jedis.get(key1)).isEqualTo("" + (num1 - decr1 * 1));
+    assertThat(jedis.get(key2)).isEqualTo("" + (num2 - decr2 * 1));
 
     Exception ex = null;
     try {
@@ -149,7 +152,7 @@ public class StringsJunitTest {
     } catch (Exception e) {
       ex = e;
     }
-    assertNotNull(ex);
+    assertThat(ex).isNotNull();
 
   }
 
@@ -169,8 +172,8 @@ public class StringsJunitTest {
 
     jedis.incrBy(key1, incr1);
     jedis.incrBy(key2, incr2);
-    assertTrue(jedis.get(key1).equals("" + (num1 + incr1 * 1)));
-    assertTrue(jedis.get(key2).equals("" + (num2 + incr2 * 1)));
+    assertThat(jedis.get(key1)).isEqualTo("" + (num1 + incr1 * 1));
+    assertThat(jedis.get(key2)).isEqualTo("" + (num2 + incr2 * 1));
 
     Exception ex = null;
     try {
@@ -178,7 +181,7 @@ public class StringsJunitTest {
     } catch (Exception e) {
       ex = e;
     }
-    assertNotNull(ex);
+    assertThat(ex).isNotNull();
   }
 
   @Test
@@ -188,9 +191,9 @@ public class StringsJunitTest {
     jedis.set(sent, contents);
     for (int i = 0; i < sent.length(); i++) {
       String range = jedis.getrange(sent, i, -1);
-      assertTrue(contents.substring(i).equals(range));
+      assertThat(contents.substring(i)).isEqualTo(range);
     }
-    assertNull(jedis.getrange(sent, 2, 0));
+    assertThat(jedis.getrange(sent, 2, 0)).isNull();
   }
 
   @Test
@@ -200,8 +203,28 @@ public class StringsJunitTest {
     jedis.set(key, contents);
     String newContents = randString();
     String oldContents = jedis.getSet(key, newContents);
-    assertTrue(oldContents.equals(contents));
+    assertThat(oldContents).isEqualTo(contents);
     contents = newContents;
+  }
+
+  @Test
+  public void testDel() {
+    String key1 = "firstKey";
+    String key2 = "secondKey";
+    String key3 = "thirdKey";
+    jedis.set(key1, randString());
+
+    assertThat(jedis.del(key1)).isEqualTo(1L);
+    assertThat(jedis.get(key1)).isNull();
+
+    jedis.set(key1, randString());
+    jedis.set(key2, randString());
+
+    assertThat(jedis.del(key1, key2, key3)).isEqualTo(2L);
+    assertThat(jedis.get(key1)).isNull();
+    assertThat(jedis.get(key2)).isNull();
+
+    assertThat(jedis.del("ceci nest pas un clavier")).isEqualTo(0L);
   }
 
   @Test
@@ -224,7 +247,47 @@ public class StringsJunitTest {
     List<String> ret = jedis.mget(keys);
     Object[] retArray = ret.toArray();
 
-    assertTrue(Arrays.equals(vals, retArray));
+    assertThat(Arrays.equals(vals, retArray));
+  }
+
+  @Test
+  public void testConcurrentDel_differentClients() throws InterruptedException, ExecutionException {
+    String keyBaseName = "DELBASE";
+
+    Jedis jedis2 = new Jedis("localhost", port, 10000000);
+
+    doABunchOfSets(keyBaseName, jedis);
+
+    CountDownLatch latch = new CountDownLatch(1);
+    ExecutorService pool = Executors.newFixedThreadPool(2);
+    Callable<Integer> callable1 = () -> doABunchOfDels(keyBaseName, 0, jedis);
+    Callable<Integer> callable2 = () -> doABunchOfDels(keyBaseName, 1, jedis2);
+    Future<Integer> future1 = pool.submit(callable1);
+    Future<Integer> future2 = pool.submit(callable2);
+
+    latch.countDown();
+    assertThat(future1.get() + future2.get()).isEqualTo(ITERATION_COUNT);
+
+    for (int i = 0; i < ITERATION_COUNT; i++) {
+      assertThat(jedis.get(keyBaseName + i)).isNull();
+    }
+
+    pool.shutdown();
+  }
+
+  private void doABunchOfSets(String keyBaseName, Jedis jedis) {
+    for (int i = 0; i < ITERATION_COUNT; i++) {
+      jedis.set(keyBaseName + i, "value" + i);
+    }
+  }
+
+  private int doABunchOfDels(String keyBaseName, int start, Jedis jedis) {
+    int delCount = 0;
+    for (int i = start; i < ITERATION_COUNT; i += 2) {
+      delCount += jedis.del(keyBaseName + i);
+      Thread.yield();
+    }
+    return delCount;
   }
 
   @Test
@@ -235,12 +298,12 @@ public class StringsJunitTest {
     String[] array = strings.toArray(new String[0]);
     long response = jedis.msetnx(array);
 
-    assertTrue(response == 1);
+    assertThat(response).isEqualTo(1);
 
     long response2 = jedis.msetnx(array[0], randString());
 
-    assertTrue(response2 == 0);
-    assertEquals(array[1], jedis.get(array[0]));
+    assertThat(response2).isEqualTo(0);
+    assertThat(array[1]).isEqualTo(jedis.get(array[0]));
   }
 
   @Test
@@ -255,9 +318,9 @@ public class StringsJunitTest {
     long response2 = jedis.setnx(key2, key2);
     long response3 = jedis.setnx(key1, key2);
 
-    assertTrue(response1 == 1);
-    assertTrue(response2 == 1);
-    assertTrue(response3 == 0);
+    assertThat(response1).isEqualTo(1);
+    assertThat(response2).isEqualTo(1);
+    assertThat(response3).isEqualTo(0);
   }
 
   @Test
@@ -275,7 +338,7 @@ public class StringsJunitTest {
     }
     String result = jedis.get(key);
     // System.out.println(result);
-    assertNull(result);
+    assertThat(result).isNull();
 
     int psetex = r.nextInt(5000);
     if (psetex == 0)
@@ -290,8 +353,8 @@ public class StringsJunitTest {
     }
     long stop = System.currentTimeMillis();
     result = jedis.get(key);
-    assertTrue(stop - start >= psetex);
-    assertNull(result);
+    assertThat(stop - start).isGreaterThanOrEqualTo(psetex);
+    assertThat(result).isNull();
   }
 
   private String randString() {

@@ -43,8 +43,9 @@ public class DelExecutor extends AbstractExecutor {
       byte[] byteKey = commandElems.get(i);
       ByteArrayWrapper key = new ByteArrayWrapper(byteKey);
       RedisDataType type = context.getKeyRegistrar().getType(key);
-      if (removeEntry(key, type, context))
+      if (removeEntry(key, type, context)) {
         numRemoved++;
+      }
     }
 
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), numRemoved));
