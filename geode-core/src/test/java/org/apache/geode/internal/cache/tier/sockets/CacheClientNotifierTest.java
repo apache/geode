@@ -41,6 +41,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import org.apache.geode.internal.cache.EntryEventImpl;
+import org.apache.geode.internal.cache.EnumListenerEvent;
+import org.apache.geode.internal.cache.LocalRegion;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -156,6 +159,31 @@ public class CacheClientNotifierTest {
     }
 
     verify(cacheClientProxy, times(1)).deliverMessage(isA(HAEventWrapper.class));
+  }
+
+  @Test
+  public void initializingMessageShouldntSerializeValuePrematurely() throws Exception {
+    InternalCache internalCache = Fakes.cache();
+    CacheServerStats cacheServerStats = mock(CacheServerStats.class);
+    ConnectionListener connectionListener = mock(ConnectionListener.class);
+    ClientProxyMembershipID clientProxyMembershipID = mock(ClientProxyMembershipID.class);
+    ClientRegistrationMetadata clientRegistrationMetadata = mock(ClientRegistrationMetadata.class);
+    StatisticsClock statisticsClock = mock(StatisticsClock.class);
+
+    when(clientRegistrationMetadata.getClientProxyMembershipID()).thenReturn(
+            clientProxyMembershipID);
+
+    CacheClientNotifier cacheClientNotifier = CacheClientNotifier.getInstance(internalCache,
+            new ClientRegistrationEventQueueManager(), statisticsClock, cacheServerStats, 0, 0,
+            connectionListener, null, false);
+    LocalRegion region = mock(LocalRegion.class);
+
+    EntryEventImpl entryEvent = mock(EntryEventImpl.class);
+    when(entryEvent.getEventType()).thenReturn(EnumListenerEvent.AFTER_CREATE);
+    when(entryEvent.getOperation()).thenReturn(Operation.CREATE);
+    when(entryEvent.getRegion()).thenReturn(region);
+    cacheClientNotifier.constructClientMessage(entryEvent);
+    verify(entryEvent, times(0)).exportNewValue(any());
   }
 
   @Test
