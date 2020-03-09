@@ -56,6 +56,8 @@ public class ClearPRMessage extends PartitionMessageWithDirectReply {
 
   private Integer bucketId;
 
+  private EventID eventID;
+
   public static final String BUCKET_NON_PRIMARY_MESSAGE =
       "The bucket region on target member is no longer primary";
   public static final String EXCEPTION_THROWN_DURING_CLEAR_OPERATION =
@@ -71,8 +73,9 @@ public class ClearPRMessage extends PartitionMessageWithDirectReply {
    */
   public ClearPRMessage() {}
 
-  public ClearPRMessage(int bucketId) {
+  public ClearPRMessage(int bucketId, EventID eventID) {
     this.bucketId = bucketId;
+    this.eventID = eventID;
   }
 
   public void initMessage(PartitionedRegion region, Set<InternalDistributedMember> recipients,
@@ -119,6 +122,7 @@ public class ClearPRMessage extends PartitionMessageWithDirectReply {
     } else {
       InternalDataSerializer.writeSignedVL(bucketId, out);
     }
+    DataSerializer.writeObject(this.eventID, out);
   }
 
   @Override
@@ -126,6 +130,7 @@ public class ClearPRMessage extends PartitionMessageWithDirectReply {
       throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     this.bucketId = (int) InternalDataSerializer.readSignedVL(in);
+    this.eventID = (EventID) DataSerializer.readObject(in);
   }
 
   @Override
@@ -168,9 +173,8 @@ public class ClearPRMessage extends PartitionMessageWithDirectReply {
       throw new ForceReattemptException(BUCKET_NON_PRIMARY_MESSAGE);
     }
     try {
-      RegionEventImpl regionEvent = new RegionEventImpl();
-      regionEvent.setOperation(Operation.REGION_CLEAR);
-      regionEvent.setRegion(bucketRegion);
+      RegionEventImpl regionEvent = new RegionEventImpl(bucketRegion, Operation.REGION_CLEAR, null,
+          false, region.getMyId(), eventID);
       bucketRegion.cmnClearRegion(regionEvent, true, true);
     } catch (PartitionOfflineException poe) {
       logger.info(
