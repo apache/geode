@@ -56,17 +56,18 @@ public interface ConnectionManager {
    * no connection is available.
    *
    * @param server The server the connection needs to be to.
+   * @param aquireTimeout The amount of time to wait for a connection to become available, if
+   *        onlyUseExistingCnx is set to true.
    * @param onlyUseExistingCnx if true, will not create a new connection if none are available.
    * @return A connection to use.
    * @throws AllConnectionsInUseException If there is no available connection on the desired server,
    *         and onlyUseExistingCnx is set.
-   * @throws ServerOperationException If there is an issue creating the connection due to security
    * @throws NoAvailableServersException If we can't connect to any server
    * @throws ServerConnectivityException If finding a connection and creating a connection both fail
    *         to return a connection
    *
    */
-  Connection borrowConnection(ServerLocation server, boolean onlyUseExistingCnx)
+  Connection borrowConnection(ServerLocation server, long aquireTimeout, boolean onlyUseExistingCnx)
       throws AllConnectionsInUseException, NoAvailableServersException;
 
   /**

@@ -197,6 +197,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     assertEquals(0, cp.getServers().size());
     assertEquals(createINSA(ALIAS2, 3777), cp.getLocators().get(0));
     assertEquals(PoolFactory.DEFAULT_FREE_CONNECTION_TIMEOUT, cp.getFreeConnectionTimeout());
+    assertEquals(PoolFactory.DEFAULT_SERVER_CONNECTION_TIMEOUT, cp.getServerConnectionTimeout());
     assertEquals(PoolFactory.DEFAULT_LOAD_CONDITIONING_INTERVAL, cp.getLoadConditioningInterval());
     assertEquals(PoolFactory.DEFAULT_SOCKET_BUFFER_SIZE, cp.getSocketBufferSize());
     assertEquals(PoolFactory.DEFAULT_THREAD_LOCAL_CONNECTIONS, cp.getThreadLocalConnections());
@@ -265,7 +266,8 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     CacheCreation cache = new CacheCreation();
     PoolFactory f = cache.createPoolFactory();
     f.addServer(ALIAS2, 3777).addServer(ALIAS1, 3888);
-    f.setFreeConnectionTimeout(12345).setLoadConditioningInterval(12345).setSocketBufferSize(12345)
+    f.setFreeConnectionTimeout(12345).setServerConnectionTimeout(111)
+        .setLoadConditioningInterval(12345).setSocketBufferSize(12345)
         .setThreadLocalConnections(true).setPRSingleHopEnabled(true).setReadTimeout(12345)
         .setMinConnections(12346).setMaxConnections(12347).setRetryAttempts(12348)
         .setIdleTimeout(12349).setPingInterval(12350).setStatisticInterval(12351)
@@ -293,6 +295,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     assertEquals(createINSA(ALIAS2, 3777), cp.getServers().get(0));
     assertEquals(createINSA(ALIAS1, 3888), cp.getServers().get(1));
     assertEquals(12345, cp.getFreeConnectionTimeout());
+    assertEquals(111, cp.getServerConnectionTimeout());
     assertEquals(12345, cp.getLoadConditioningInterval());
     assertEquals(12345, cp.getSocketBufferSize());
     assertEquals(true, cp.getThreadLocalConnections());

@@ -101,6 +101,7 @@ public class PoolImpl implements InternalPool {
   private final String name;
   private final int socketConnectTimeout;
   private final int freeConnectionTimeout;
+  private final int serverConnectionTimeout;
   private final int loadConditioningInterval;
   private final int socketBufferSize;
   @Deprecated
@@ -203,6 +204,7 @@ public class PoolImpl implements InternalPool {
 
     socketConnectTimeout = attributes.getSocketConnectTimeout();
     freeConnectionTimeout = attributes.getFreeConnectionTimeout();
+    serverConnectionTimeout = attributes.getServerConnectionTimeout();
     loadConditioningInterval = attributes.getLoadConditioningInterval();
     socketBufferSize = attributes.getSocketBufferSize();
     threadLocalConnections = attributes.getThreadLocalConnections();
@@ -275,7 +277,7 @@ public class PoolImpl implements InternalPool {
     // Fix for 43468 - make sure we check the cache cancel criterion if we get
     // an exception, by passing in the poolOrCache stopper
     executor = new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, retryAttempts,
-        freeConnectionTimeout, new PoolOrCacheStopper(), this);
+        freeConnectionTimeout, serverConnectionTimeout, new PoolOrCacheStopper(), this);
     if (multiuserSecureModeEnabled) {
       proxyCacheList = new ArrayList<>();
     } else {
@@ -293,6 +295,7 @@ public class PoolImpl implements InternalPool {
     if (p == null)
       return false;
     return getFreeConnectionTimeout() == p.getFreeConnectionTimeout()
+        && getServerConnectionTimeout() == p.getServerConnectionTimeout()
         && getSocketConnectTimeout() == p.getSocketConnectTimeout()
         && getLoadConditioningInterval() == p.getLoadConditioningInterval()
         && getSocketBufferSize() == p.getSocketBufferSize()
@@ -393,6 +396,11 @@ public class PoolImpl implements InternalPool {
   @Override
   public int getFreeConnectionTimeout() {
     return freeConnectionTimeout;
+  }
+
+  @Override
+  public int getServerConnectionTimeout() {
+    return serverConnectionTimeout;
   }
 
   @Override
@@ -681,6 +689,10 @@ public class PoolImpl implements InternalPool {
       throw new RuntimeException(
           String.format("Pool %s is different", "connectionTimeout"));
     }
+    if (getServerConnectionTimeout() != other.getServerConnectionTimeout()) {
+      throw new RuntimeException(
+          String.format("Pool %s is different", "serverConnectionTimeout"));
+    }
     if (getLoadConditioningInterval() != other.getLoadConditioningInterval()) {
       throw new RuntimeException(
           String.format("Pool %s is different", "connectionLifetime"));
@@ -922,10 +934,14 @@ public class PoolImpl implements InternalPool {
   }
 
   /**
-   * Test hook that acquires and returns a connection from the pool with a given ServerLocation.
+   * Borrows a connection to a specific server from the pool.. Used by gateway and tests. Any
+   * connection
+   * that is acquired using this method must be returned using returnConnection, even if it is
+   * destroyed.
+   *
    */
   public Connection acquireConnection(ServerLocation loc) {
-    return manager.borrowConnection(loc, false);
+    return manager.borrowConnection(loc, serverConnectionTimeout, false);
   }
 
   /**
