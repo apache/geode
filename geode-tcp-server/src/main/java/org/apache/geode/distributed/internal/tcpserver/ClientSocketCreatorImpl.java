@@ -17,6 +17,10 @@ package org.apache.geode.distributed.internal.tcpserver;
 import java.io.IOException;
 import java.net.Socket;
 
+/**
+ * ClientSocketCreatorImpl is constructed and held by a TcpSocketCreator. It is
+ * accessed through the method {@link TcpSocketCreator#forClient()}.
+ */
 public class ClientSocketCreatorImpl implements ClientSocketCreator {
   protected final TcpSocketCreatorImpl socketCreator;
 

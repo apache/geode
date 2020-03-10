@@ -26,7 +26,7 @@ import java.net.Socket;
 public class TcpSocketCreatorImpl implements TcpSocketCreator {
 
 
-  protected ServerSocketCreatorImpl serverSocketCreator;
+  protected ClusterSocketCreatorImpl clusterSocketCreator;
   protected ClientSocketCreatorImpl clientSocketCreator;
   protected AdvancedSocketCreatorImpl advancedSocketCreator;
 
@@ -35,7 +35,7 @@ public class TcpSocketCreatorImpl implements TcpSocketCreator {
   }
 
   protected void initializeCreators() {
-    serverSocketCreator = new ServerSocketCreatorImpl(this);
+    clusterSocketCreator = new ClusterSocketCreatorImpl(this);
     clientSocketCreator = new ClientSocketCreatorImpl(this);
     advancedSocketCreator = new AdvancedSocketCreatorImpl(this);
   }
@@ -55,7 +55,7 @@ public class TcpSocketCreatorImpl implements TcpSocketCreator {
 
   @Override
   public ClusterSocketCreator forCluster() {
-    return serverSocketCreator;
+    return clusterSocketCreator;
   }
 
   @Override

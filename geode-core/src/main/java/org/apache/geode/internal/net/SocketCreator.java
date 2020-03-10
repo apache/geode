@@ -202,7 +202,7 @@ public class SocketCreator extends TcpSocketCreatorImpl {
   // -------------------------------------------------------------------------
 
   protected void initializeCreators() {
-    serverSocketCreator = new SCServerSocketCreator(this);
+    clusterSocketCreator = new SCClusterSocketCreator(this);
     clientSocketCreator = new SCClientSocketCreator(this);
     advancedSocketCreator = new SCAdvancedSocketCreator(this);
   }
@@ -675,7 +675,7 @@ public class SocketCreator extends TcpSocketCreatorImpl {
   public ServerSocket createServerSocket(int nport, int backlog, InetAddress bindAddr,
       List<GatewayTransportFilter> transportFilters, int socketBufferSize) throws IOException {
     if (transportFilters.isEmpty()) {
-      return ((SCServerSocketCreator) forCluster())
+      return ((SCClusterSocketCreator) forCluster())
           .createServerSocket(nport, backlog, bindAddr, socketBufferSize, useSSL());
     } else {
       printConfig();

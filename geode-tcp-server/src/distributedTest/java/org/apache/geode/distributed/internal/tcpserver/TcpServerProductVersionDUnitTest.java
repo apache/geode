@@ -41,16 +41,20 @@ import org.junit.runners.Parameterized;
 
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.internal.DUnitLauncher;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 import org.apache.geode.test.version.TestVersion;
@@ -83,9 +87,9 @@ public class TcpServerProductVersionDUnitTest implements Serializable {
     SocketCreatorFactory.close();
   }
 
+
   private static final TestVersion oldProductVersion = getOldProductVersion();
-  private static final TestVersion currentProductVersion =
-      TestVersion.valueOf(VersionManager.CURRENT_VERSION);
+  private static final TestVersion currentProductVersion = TestVersion.CURRENT_VERSION;
 
   @Parameterized.Parameters(name = "{0}")
   public static Collection<VersionConfiguration> data() {
@@ -113,11 +117,8 @@ public class TcpServerProductVersionDUnitTest implements Serializable {
   }
 
   private enum VersionConfiguration {
-
-    // OLD_OLD(oldProductVersion, oldProductVersion),
     OLD_CURRENT(oldProductVersion, currentProductVersion),
     CURRENT_OLD(currentProductVersion, oldProductVersion);
-    // CURRENT_CURRENT(currentProductVersion, currentProductVersion);
 
     final TestVersion clientProductVersion;
     final TestVersion locatorProductVersion;
@@ -138,8 +139,13 @@ public class TcpServerProductVersionDUnitTest implements Serializable {
 
   @Test
   public void testAllMessageTypes() {
-    VM clientVM = Host.getHost(0).getVM(versions.clientProductVersion.toString(), 0);
-    VM locatorVM = Host.getHost(0).getVM(versions.locatorProductVersion.toString(), 1);
+    int clientVMNumber = versions.clientProductVersion.isSameAs(Version.CURRENT)
+        ? DUnitLauncher.DEBUGGING_VM_NUM : 0;
+    int locatorVMNumber = versions.locatorProductVersion.isSameAs(Version.CURRENT)
+        ? DUnitLauncher.DEBUGGING_VM_NUM : 0;
+    VM clientVM = Host.getHost(0).getVM(versions.clientProductVersion.toString(), clientVMNumber);
+    VM locatorVM =
+        Host.getHost(0).getVM(versions.locatorProductVersion.toString(), locatorVMNumber);
     int locatorPort = createLocator(locatorVM, true);
 
     clientVM.invoke("issue version request",
@@ -151,6 +157,13 @@ public class TcpServerProductVersionDUnitTest implements Serializable {
     clientVM.invoke("issue shutdown request",
         createRequestResponseFunction(locatorPort, ShutdownRequest.class.getName(),
             ShutdownResponse.class.getName()));
+    locatorVM.invoke("wait for locator to stop", () -> {
+      Locator locator = Locator.getLocator();
+      if (locator != null) {
+        ((InternalLocator) locator).stop(false, false, false);
+        GeodeAwaitility.await().until(() -> ((InternalLocator) locator).isStopped());
+      }
+    });
   }
 
   private SerializableRunnableIF createRequestResponseFunction(

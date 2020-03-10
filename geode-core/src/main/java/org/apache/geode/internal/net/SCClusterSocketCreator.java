@@ -25,14 +25,14 @@ import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLServerSocket;
 
 import org.apache.geode.GemFireConfigException;
-import org.apache.geode.distributed.internal.tcpserver.ServerSocketCreatorImpl;
+import org.apache.geode.distributed.internal.tcpserver.ClusterSocketCreatorImpl;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.net.SSLParameterExtension;
 
-class SCServerSocketCreator extends ServerSocketCreatorImpl {
+class SCClusterSocketCreator extends ClusterSocketCreatorImpl {
   private final SocketCreator coreSocketCreator;
 
-  protected SCServerSocketCreator(SocketCreator socketCreator) {
+  protected SCClusterSocketCreator(SocketCreator socketCreator) {
     super(socketCreator);
     coreSocketCreator = socketCreator;
   }

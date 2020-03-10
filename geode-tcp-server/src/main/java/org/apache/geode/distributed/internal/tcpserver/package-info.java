@@ -12,26 +12,17 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.distributed.internal.tcpserver;
-
-import java.net.Socket;
-
 /**
- * ConnectionWatcher is used to observe tcp/ip connection formation in socket-creator
- * implementations.
- *
- * @see AdvancedSocketCreator#connect(HostAndPort, int, ConnectionWatcher, boolean, int, boolean)
+ * The tcpserver package implements a request/response framework that is used by Geode's
+ * Locator service to process location requests. A TcpServer listens on a TCP/IP
+ * server socket and passes requests to the TcpHandler installed in the server. A TcpClient
+ * can be used to communicate with a TcpServer.
+ * <p>
+ * The tcpserver package also provides TcpSocketCreator and its dependent interfaces
+ * ClientSocketCreator, ClusterSocketCreator and AdvancedSocketCreator. Geode has versions
+ * of these in a higher-level package that support TLS as configured via Geode's "ssl"
+ * properties.
+ * <p>
+ * You can create a TcpSocketCreator with the implementation TcpSocketCreatorImpl.
  */
-public interface ConnectionWatcher {
-  /**
-   * this is invoked with the connecting socket just prior to issuing a connect() call. It can be
-   * used to start another thread or task to monitor the connection attempt.
-   */
-  void beforeConnect(Socket socket);
-
-  /**
-   * this is invoked after the connection attempt has finished. It can be used to cancel the task
-   * started by beforeConnect
-   */
-  void afterConnect(Socket socket);
-}
+package org.apache.geode.distributed.internal.tcpserver;
