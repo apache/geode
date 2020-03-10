@@ -79,9 +79,9 @@ public interface PoolFactory {
    * The default amount of time, in milliseconds, which we will wait for a server connection if max
    * connections is set and there is no free connections towards designated server.
    * <p>
-   * Current value: <code>-1</code>.
+   * Current value: <code>0</code>.
    */
-  int DEFAULT_SERVER_CONNECTION_TIMEOUT = -1;
+  int DEFAULT_SERVER_CONNECTION_TIMEOUT = 0;
 
   /**
    * The default interval in which the pool will check to see if a connection to a given server
@@ -271,7 +271,7 @@ public interface PoolFactory {
    * @param serverConnectionTimeout the connection timeout in milliseconds
    * @return a reference to <code>this</code>
    * @throws IllegalArgumentException if <code>serverConnectionTimeout</code> is less than
-   *         <code>-1</code>.
+   *         <code>0</code>.
    */
   PoolFactory setServerConnectionTimeout(int serverConnectionTimeout);
 

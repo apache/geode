@@ -333,7 +333,7 @@ public class ClientCacheFactory {
    * @param connectionTimeout the connection timeout in milliseconds
    * @return a reference to <code>this</code>
    * @throws IllegalArgumentException if <code>connectionTimeout</code> is less than
-   *         <code>-1</code>.
+   *         <code>0</code>.
    * @see #setPoolMaxConnections(int)
    */
   public ClientCacheFactory setPoolServerConnectionTimeout(int connectionTimeout) {
