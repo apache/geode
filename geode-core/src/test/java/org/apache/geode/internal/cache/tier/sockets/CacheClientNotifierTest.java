@@ -41,9 +41,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import org.apache.geode.internal.cache.EntryEventImpl;
-import org.apache.geode.internal.cache.EnumListenerEvent;
-import org.apache.geode.internal.cache.LocalRegion;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -51,10 +48,13 @@ import org.junit.Test;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.query.internal.cq.ServerCQ;
 import org.apache.geode.internal.cache.DistributedRegion;
+import org.apache.geode.internal.cache.EntryEventImpl;
+import org.apache.geode.internal.cache.EnumListenerEvent;
 import org.apache.geode.internal.cache.FilterProfile;
 import org.apache.geode.internal.cache.FilterRoutingInfo;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheEvent;
+import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RegionQueueException;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.test.fake.Fakes;
@@ -171,11 +171,11 @@ public class CacheClientNotifierTest {
     StatisticsClock statisticsClock = mock(StatisticsClock.class);
 
     when(clientRegistrationMetadata.getClientProxyMembershipID()).thenReturn(
-            clientProxyMembershipID);
+        clientProxyMembershipID);
 
     CacheClientNotifier cacheClientNotifier = CacheClientNotifier.getInstance(internalCache,
-            new ClientRegistrationEventQueueManager(), statisticsClock, cacheServerStats, 0, 0,
-            connectionListener, null, false);
+        new ClientRegistrationEventQueueManager(), statisticsClock, cacheServerStats, 0, 0,
+        connectionListener, null, false);
     LocalRegion region = mock(LocalRegion.class);
 
     EntryEventImpl entryEvent = mock(EntryEventImpl.class);
