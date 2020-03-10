@@ -40,4 +40,7 @@ dependencies {
   testImplementation(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
+
+  testCompileOnly(platform(project(':boms:geode-all-bom')))
+  testCompileOnly('io.swagger:swagger-annotations')
 }
