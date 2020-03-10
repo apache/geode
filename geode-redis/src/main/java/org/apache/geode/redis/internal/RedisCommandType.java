@@ -142,8 +142,6 @@ import org.apache.geode.redis.internal.executor.transactions.WatchExecutor;
 /**
  * The redis command type used by the server. Each command is directly from the redis protocol and
  * calling {@link #getExecutor()} on a type returns the executor class for that command.
- *
- *
  */
 public enum RedisCommandType {
 
@@ -975,7 +973,7 @@ public enum RedisCommandType {
 
   /**
    * SETBIT key offset value
-   * <P>
+   * <p>
    * Sets or clears the bit at offset in the string value stored at key
    */
   SETBIT {
@@ -2554,7 +2552,7 @@ public enum RedisCommandType {
 
   /**
    * ZSCAN key cursor [MATCH pattern] [COUNT count]
-   * <P>
+   * <p>
    * Incrementally iterate sorted sets elements and associated scores
    */
   ZSCAN {
@@ -2716,7 +2714,6 @@ public enum RedisCommandType {
       return this.dataType;
     }
   },
-
 
   /**************************************
    * Geospatial commands ****************

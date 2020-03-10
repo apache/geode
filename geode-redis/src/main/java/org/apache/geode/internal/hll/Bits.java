@@ -31,7 +31,8 @@ public class Bits {
   }
 
   /**
-   * This method might be better described as "byte array to int array" or "data input to int array"
+   * This method might be better described as "byte array to int array" or "data input to int
+   * array"
    */
   public static int[] getBits(DataInput dataIn, int byteLength) throws IOException {
     int bitSize = byteLength / 4;

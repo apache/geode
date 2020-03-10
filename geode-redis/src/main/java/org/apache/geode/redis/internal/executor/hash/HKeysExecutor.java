@@ -16,16 +16,35 @@ package org.apache.geode.redis.internal.executor.hash;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
-import org.apache.geode.cache.Region;
+import org.apache.geode.cache.TimeoutException;
+import org.apache.geode.redis.internal.AutoCloseableLock;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
-import org.apache.geode.redis.internal.RedisDataType;
 
+/**
+ * <pre>
+ * Implementation for the
+ * HKEYS command to return list of fields in the hash.
+ * It will return an empty list if the key does not exist.
+ *
+ * Examples:
+ *
+ * redis> HSET myhash field1 "Hello"
+ * (integer) 1
+ * redis> HSET myhash field2 "World"
+ * (integer) 1
+ * redis> HKEYS myhash
+ * 1) "field1"
+ * 2) "field2"
+ *
+ * </pre>
+ */
 public class HKeysExecutor extends HashExecutor {
 
   @Override
@@ -38,16 +57,26 @@ public class HKeysExecutor extends HashExecutor {
     }
 
     ByteArrayWrapper key = command.getKey();
+    Set<ByteArrayWrapper> keys;
+    try (AutoCloseableLock regionLock = withRegionLock(context, key)) {
+      Map<ByteArrayWrapper, ByteArrayWrapper> keyMap = getMap(context, key);
 
-    checkDataType(key, RedisDataType.REDIS_HASH, context);
-    Region<ByteArrayWrapper, ByteArrayWrapper> keyRegion = getRegion(context, key);
+      if (keyMap == null || keyMap.isEmpty()) {
+        command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));
+        return;
+      }
 
-    if (keyRegion == null) {
-      command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));
+      keys = new HashSet<>(keyMap.keySet());
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      command.setResponse(
+          Coder.getErrorResponse(context.getByteBufAllocator(), "Thread interrupted."));
+      return;
+    } catch (TimeoutException e) {
+      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(),
+          "Timeout acquiring lock. Please try again."));
       return;
     }
-
-    Set<ByteArrayWrapper> keys = new HashSet(keyRegion.keySet());
 
     if (keys.isEmpty()) {
       command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));

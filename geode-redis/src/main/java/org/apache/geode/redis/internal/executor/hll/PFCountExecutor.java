@@ -47,8 +47,9 @@ public class PFCountExecutor extends HllExecutor {
       ByteArrayWrapper k = new ByteArrayWrapper(commandElems.get(i));
       checkDataType(k, RedisDataType.REDIS_HLL, context);
       HyperLogLogPlus h = keyRegion.get(k);
-      if (h != null)
+      if (h != null) {
         hlls.add(h);
+      }
     }
     if (hlls.isEmpty()) {
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), 0));

@@ -38,7 +38,7 @@ import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.test.junit.categories.RedisTest;
 
 @Category({RedisTest.class})
-public class AuthJUnitTest {
+public class AuthIntegrationTest {
 
   private static final String PASSWORD = "pwd";
   Jedis jedis;

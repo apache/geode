@@ -85,10 +85,11 @@ public class KeyRegistrar {
   }
 
   private void throwDataTypeException(ByteArrayWrapper key, RedisDataType dataType) {
-    if (dataType == RedisDataType.REDIS_PROTECTED)
+    if (dataType == RedisDataType.REDIS_PROTECTED) {
       throw new RedisDataTypeMismatchException("The key name \"" + key + "\" is protected");
-    else
+    } else {
       throw new RedisDataTypeMismatchException(
           "The key name \"" + key + "\" is already used by a " + dataType.toString());
+    }
   }
 }

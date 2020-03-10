@@ -34,9 +34,9 @@ import org.apache.geode.redis.internal.executor.SortedSetQuery;
 
 public class ZCountExecutor extends SortedSetExecutor {
 
-  private final String ERROR_NOT_NUMERIC = "The number provided is not numeric";
+  private static final String ERROR_NOT_NUMERIC = "The number provided is not numeric";
 
-  private final int NOT_EXISTS = 0;
+  private static final int NOT_EXISTS = 0;
 
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
@@ -84,7 +84,6 @@ public class ZCountExecutor extends SortedSetExecutor {
       return;
     }
 
-
     int count;
     try {
       count = getCount(key, keyRegion, context, start, stop, startInclusive, stopInclusive);
@@ -92,18 +91,19 @@ public class ZCountExecutor extends SortedSetExecutor {
       throw new RuntimeException(e);
     }
 
-
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), count));
   }
 
   private int getCount(ByteArrayWrapper key, Region<ByteArrayWrapper, DoubleWrapper> keyRegion,
-      ExecutionHandlerContext context, double start, double stop, boolean startInclusive,
+      ExecutionHandlerContext context, double start, double stop,
+      boolean startInclusive,
       boolean stopInclusive) throws FunctionDomainException, TypeMismatchException,
       NameResolutionException, QueryInvocationTargetException {
-    if (start == Double.NEGATIVE_INFINITY && stop == Double.POSITIVE_INFINITY)
+    if (start == Double.NEGATIVE_INFINITY && stop == Double.POSITIVE_INFINITY) {
       return keyRegion.size();
-    else if (start == Double.POSITIVE_INFINITY || stop == Double.NEGATIVE_INFINITY)
+    } else if (start == Double.POSITIVE_INFINITY || stop == Double.NEGATIVE_INFINITY) {
       return 0;
+    }
 
     Query query;
     Object[] params;
