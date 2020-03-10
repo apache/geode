@@ -944,7 +944,6 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
           }
         }
       }
-      return;
     }
 
     if (locatorDiscoverer != null) {
@@ -953,7 +952,9 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
     }
 
     // stop the TCPServer
-    membershipLocator.stop();
+    if (!membershipLocator.isShuttingDown()) {
+      membershipLocator.stop();
+    }
 
     removeLocator(this);
 
