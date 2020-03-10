@@ -336,7 +336,9 @@ public interface DistributionManager extends ReplySender {
    */
   boolean areOnEquivalentHost(InternalDistributedMember member1, InternalDistributedMember member2);
 
-  Set<InetAddress> getEquivalents(InetAddress in);
+  default Set<InetAddress> getEquivalents(InetAddress in) {
+    throw new UnsupportedOperationException();
+  }
 
   Set<DistributedMember> getGroupMembers(String group);
 

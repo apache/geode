@@ -450,9 +450,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
         return getBindAddress().getCanonicalHostName();
       }
 
-      InetAddress localhost = LocalHostUtil.getLocalHost();
-
-      return localhost.getCanonicalHostName();
+      return LocalHostUtil.getCanonicalLocalHostName();
     } catch (UnknownHostException handled) {
       // Returning localhost/127.0.0.1 implies the bindAddress was null and no IP address for
       // localhost could be found

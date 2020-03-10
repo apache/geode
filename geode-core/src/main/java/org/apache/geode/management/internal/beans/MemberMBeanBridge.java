@@ -212,7 +212,7 @@ public class MemberMBeanBridge {
     initGemfireProperties();
 
     try {
-      hostname = LocalHostUtil.getLocalHost().getHostName();
+      hostname = LocalHostUtil.getLocalHostName();
     } catch (UnknownHostException ignore) {
       hostname = ManagementConstants.DEFAULT_HOST_NAME;
     }

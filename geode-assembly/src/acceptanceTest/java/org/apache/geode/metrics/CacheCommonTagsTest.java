@@ -56,7 +56,7 @@ public class CacheCommonTagsTest {
 
       assertThat(meter.getId().getTags())
           .as("Tags for meter with name " + meterId.getName())
-          .contains(Tag.of("host", LocalHostUtil.getLocalHost().getHostName()));
+          .contains(Tag.of("host", LocalHostUtil.getLocalHostName()));
     }
   }
 

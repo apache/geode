@@ -294,9 +294,9 @@ public abstract class ServerConnection implements Runnable {
 
       if (isDebugEnabled) {
         logger.debug(
-            "{}: Accepted client connection from {}[client host name={}; client host address={}; client port={}]",
-            getName(), communicationModeStr, socket.getInetAddress().getCanonicalHostName(),
-            socket.getInetAddress().getHostAddress(), socket.getPort());
+            "{}: Accepted client connection from {}[client host={}; client port={}]",
+            getName(), communicationModeStr, socket.getInetAddress(),
+            socket.getPort());
       }
       handshakeTimeout = hsTimeout;
     } catch (Exception e) {

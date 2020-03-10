@@ -312,7 +312,7 @@ public class InternalDistributedMember
     memberIdentifier.setProcessId(OSProcess.getId());
     try {
       if (SocketCreator.resolve_dns) {
-        setHostName(LocalHostUtil.getLocalHost().getHostName());
+        setHostName(LocalHostUtil.getLocalHostName());
       } else {
         setHostName(LocalHostUtil.getLocalHost().getHostAddress());
       }

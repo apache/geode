@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.statistics;
 
-import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 import org.apache.geode.Statistics;
@@ -132,12 +131,10 @@ public class OsStatisticsProvider {
    * @return this machine's fully qualified hostname or "unknownHostName" if one cannot be found.
    */
   private String getHostSystemName() {
-    String hostname = "unknownHostName";
     try {
-      InetAddress inetAddress = LocalHostUtil.getLocalHost();
-      hostname = inetAddress.getCanonicalHostName();
+      return LocalHostUtil.getCanonicalLocalHostName();
     } catch (UnknownHostException ignored) {
     }
-    return hostname;
+    return "unknownHostName";
   }
 }

@@ -31,11 +31,8 @@ import java.io.InvalidClassException;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -43,8 +40,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Set;
-import java.util.stream.Collectors;
 
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -65,6 +62,7 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.test.junit.categories.SerializationTest;
+import org.apache.geode.test.junit.rules.ClassAnalysisRule;
 import org.apache.geode.unsafe.internal.sun.reflect.ReflectionFactory;
 
 @Category({SerializationTest.class})
@@ -96,6 +94,9 @@ public abstract class AnalyzeSerializablesJUnitTestBase {
   @Rule
   public TestName testName = new TestName();
 
+  @Rule
+  public ClassAnalysisRule classProvider = new ClassAnalysisRule(getModuleName());
+
   private void loadExpectedDataSerializables() throws Exception {
     this.expectedDataSerializablesFile = getResourceAsFile("sanctionedDataSerializables.txt");
     assertThat(this.expectedDataSerializablesFile).exists().canRead();
@@ -114,18 +115,23 @@ public abstract class AnalyzeSerializablesJUnitTestBase {
   }
 
   public void findClasses() throws Exception {
-    this.classes = new HashMap<>();
+    classes = classProvider.getClasses();
 
-    loadClasses();
+    List<String> excludedClasses = loadExcludedClasses(getResourceAsFile(EXCLUDED_CLASSES_TXT));
+    List<String> openBugs = loadOpenBugs(getResourceAsFile(OPEN_BUGS_TXT));
+
+    excludedClasses.addAll(openBugs);
+    removeExclusions(classes, excludedClasses);
   }
 
   @Before
   public void setUp() throws Exception {
-    // assumeThat(
-    // "AnalyzeSerializables requires Java 8 but tests are running with v"
-    // + SystemUtils.JAVA_VERSION,
-    // isJavaVersionAtLeast(JavaVersion.JAVA_1_8), is(true));
     TypeRegistry.init();
+  }
+
+  @AfterClass
+  public static void afterClass() {
+    ClassAnalysisRule.clearCache();
   }
 
   private List<DistributedSystemService> initializeServices() {
@@ -413,51 +419,6 @@ public abstract class AnalyzeSerializablesJUnitTestBase {
         "src" + File.separator + testOrMain + File.separator + "resources");
   }
 
-  private void loadClasses() throws IOException {
-    System.out.println("loadClasses starting");
-
-    List<String> excludedClasses = loadExcludedClasses(getResourceAsFile(EXCLUDED_CLASSES_TXT));
-    List<String> openBugs = loadOpenBugs(getResourceAsFile(OPEN_BUGS_TXT));
-
-    excludedClasses.addAll(openBugs);
-
-    String classpath = System.getProperty("java.class.path");
-    System.out.println("java classpath is " + classpath);
-
-    List<File> entries =
-        Arrays.stream(classpath.split(File.pathSeparator)).map(x -> new File(x)).collect(
-            Collectors.toList());
-    String gradleBuildDirName =
-        Paths.get(getModuleName(), "build", "classes", "java", "main").toString();
-    System.out.println("gradleBuildDirName is " + gradleBuildDirName);
-    String ideaBuildDirName = Paths.get(getModuleName(), "out", "production", "classes").toString();
-    System.out.println("ideaBuildDirName is " + ideaBuildDirName);
-    String ideaFQCNBuildDirName = Paths.get("out", "production",
-        "geode." + getModuleName() + ".main").toString();
-    System.out.println("idea build path with full package names is " + ideaFQCNBuildDirName);
-    String buildDir = null;
-
-    for (File entry : entries) {
-      System.out.println("examining '" + entry + "'");
-      if (entry.toString().endsWith(gradleBuildDirName)
-          || entry.toString().endsWith(ideaBuildDirName)
-          || entry.toString().endsWith(ideaFQCNBuildDirName)) {
-        buildDir = entry.toString();
-        break;
-      }
-    }
-
-    assertThat(buildDir).isNotNull();
-    System.out.println("loading class files from " + buildDir);
-
-    long start = System.currentTimeMillis();
-    loadClassesFromBuild(new File(buildDir), excludedClasses);
-    long finish = System.currentTimeMillis();
-
-    System.out.println("done loading " + this.classes.size() + " classes.  elapsed time = "
-        + (finish - start) / 1000 + " seconds");
-  }
-
   private List<String> loadExcludedClasses(File exclusionsFile) throws IOException {
     List<String> excludedClasses = new LinkedList<>();
     FileReader fr = new FileReader(exclusionsFile);
@@ -504,12 +465,6 @@ public abstract class AnalyzeSerializablesJUnitTestBase {
       exclusion = exclusion.replace('.', '/');
       classes.remove(exclusion);
     }
-  }
-
-  private void loadClassesFromBuild(File buildDir, List<String> excludedClasses) {
-    Map<String, CompiledClass> newClasses = CompiledClassUtils.parseClassFilesInDir(buildDir);
-    removeExclusions(newClasses, excludedClasses);
-    this.classes.putAll(newClasses);
   }
 
   private List<ClassAndMethods> findToDatasAndFromDatas() {

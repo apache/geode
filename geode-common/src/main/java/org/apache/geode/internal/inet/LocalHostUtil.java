@@ -283,4 +283,17 @@ public class LocalHostUtil {
       throw new IllegalArgumentException(e.getMessage());
     }
   }
+
+  public static String getLocalHostName() throws UnknownHostException {
+    return getLocalHost().getHostName();
+  }
+
+  public static String getLocalHostString() throws UnknownHostException {
+    return getLocalHost().toString();
+  }
+
+  public static String getCanonicalLocalHostName() throws UnknownHostException {
+    return getLocalHost().getCanonicalHostName();
+
+  }
 }

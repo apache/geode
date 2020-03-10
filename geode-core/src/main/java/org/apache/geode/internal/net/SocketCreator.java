@@ -147,6 +147,9 @@ public class SocketCreator extends TcpSocketCreatorImpl {
   // -------------------------------------------------------------------------
 
   /**
+   * This method has migrated to LocalHostUtil but is kept in place here for
+   * backward-compatibility testing.
+   *
    * @deprecated use LocalHostUtil.getLocalHost()
    */
   public static InetAddress getLocalHost() throws UnknownHostException {
@@ -187,6 +190,12 @@ public class SocketCreator extends TcpSocketCreatorImpl {
     initialize();
   }
 
+  /** returns the hostname or address for this client */
+  public static String getClientHostName() throws UnknownHostException {
+    InetAddress hostAddr = LocalHostUtil.getLocalHost();
+    return SocketCreator.use_client_host_name ? hostAddr.getCanonicalHostName()
+        : hostAddr.getHostAddress();
+  }
 
   // -------------------------------------------------------------------------
   // Initializers (change SocketCreator state)

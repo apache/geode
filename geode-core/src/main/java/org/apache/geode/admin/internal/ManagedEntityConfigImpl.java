@@ -14,7 +14,7 @@
  */
 package org.apache.geode.admin.internal;
 
-import static org.apache.geode.internal.net.InetAddressUtilsWithLogging.validateHost;
+import static org.apache.geode.admin.internal.InetAddressUtilsWithLogging.validateHost;
 
 import java.io.File;
 import java.net.InetAddress;
@@ -61,7 +61,7 @@ public abstract class ManagedEntityConfigImpl implements ManagedEntityConfig {
    */
   protected static String getLocalHostName() {
     try {
-      return LocalHostUtil.getLocalHost().getCanonicalHostName();
+      return LocalHostUtil.getCanonicalLocalHostName();
 
     } catch (UnknownHostException ex) {
       IllegalStateException ex2 = new IllegalStateException(

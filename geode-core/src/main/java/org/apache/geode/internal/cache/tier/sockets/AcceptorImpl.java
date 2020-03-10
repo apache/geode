@@ -1179,7 +1179,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
   public String getServerName() {
     String name = serverSock.getLocalSocketAddress().toString();
     try {
-      name = LocalHostUtil.getLocalHost().getCanonicalHostName() + "-" + name;
+      name = LocalHostUtil.getCanonicalLocalHostName() + "-" + name;
     } catch (Exception e) {
     }
     return name;
@@ -1766,7 +1766,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
     }
     if (needCanonicalHostName) {
       try {
-        result = LocalHostUtil.getLocalHost().getCanonicalHostName();
+        result = LocalHostUtil.getCanonicalLocalHostName();
       } catch (UnknownHostException ex) {
         throw new IllegalStateException("getLocalHost failed with " + ex);
       }
