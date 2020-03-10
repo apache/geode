@@ -35,9 +35,8 @@ import org.mockito.ArgumentCaptor;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.Executor;
-import org.apache.geode.redis.internal.executor.DelExecutor;
 
-public class DelExecutorTest {
+public class StrlenExecutorJUnitTest {
   private ExecutionHandlerContext context;
   private Command command;
   private UnpooledByteBufAllocator byteBuf;
@@ -50,17 +49,39 @@ public class DelExecutorTest {
   }
 
   @Test
-  public void testTooFewOptions() {
-    Executor delExecutor = new DelExecutor();
+  public void calledWithTooFewOptions_returnsError() {
+    Executor strlenExecutor = new StrlenExecutor();
     List<byte[]> commandsAsBytes = new ArrayList<>();
-    commandsAsBytes.add("DEL".getBytes());
+    commandsAsBytes.add("STRLEN".getBytes());
 
     ArgumentCaptor<ByteBuf> argsErrorCaptor = ArgumentCaptor.forClass(ByteBuf.class);
 
     when(context.getByteBufAllocator()).thenReturn(byteBuf);
     when(command.getProcessedCommand()).thenReturn(commandsAsBytes);
 
-    delExecutor.executeCommand(command, context);
+    strlenExecutor.executeCommand(command, context);
+
+    verify(command, times(1)).setResponse(argsErrorCaptor.capture());
+
+    List<ByteBuf> capturedErrors = argsErrorCaptor.getAllValues();
+    assertThat(capturedErrors.get(0).toString(Charset.defaultCharset()))
+        .startsWith("-ERR The wrong number of arguments or syntax was provided");
+  }
+
+  @Test
+  public void calledWithTooManyOptions_returnsError() {
+    Executor strlenExecutor = new StrlenExecutor();
+    List<byte[]> commandsAsBytes = new ArrayList<>();
+    commandsAsBytes.add("APPEND".getBytes());
+    commandsAsBytes.add("key".getBytes());
+    commandsAsBytes.add("BONUS!".getBytes());
+
+    ArgumentCaptor<ByteBuf> argsErrorCaptor = ArgumentCaptor.forClass(ByteBuf.class);
+
+    when(context.getByteBufAllocator()).thenReturn(byteBuf);
+    when(command.getProcessedCommand()).thenReturn(commandsAsBytes);
+
+    strlenExecutor.executeCommand(command, context);
 
     verify(command, times(1)).setResponse(argsErrorCaptor.capture());
 

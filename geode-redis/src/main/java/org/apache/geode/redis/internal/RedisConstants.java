@@ -63,6 +63,8 @@ public class RedisConstants {
       "Attemping to authenticate with an invalid password";
   public static final String ERROR_NOT_AUTH = "Must authenticate before sending any requests";
   public static final String ERROR_ZSET_MEMBER_NOT_FOUND = "could not decode requested zset member";
+  public static final String ERROR_WRONG_TYPE =
+      "WRONGTYPE Operation against a key holding the wrong kind of value";
 
   public static class ArityDef {
 
