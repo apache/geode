@@ -238,7 +238,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
       return true;
     }
 
-    return timeout < System.nanoTime();
+    return timeout <= System.nanoTime();
 
   }
 

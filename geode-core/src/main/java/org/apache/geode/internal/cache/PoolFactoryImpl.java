@@ -89,9 +89,9 @@ public class PoolFactoryImpl implements InternalPoolFactory {
 
   @Override
   public PoolFactory setServerConnectionTimeout(int serverConnectionTimeout) {
-    if (serverConnectionTimeout < -1) {
+    if (serverConnectionTimeout < 0) {
       throw new IllegalArgumentException(
-          "serverConnectionTimeout must be greater than or equal to -1");
+          "serverConnectionTimeout must be greater than or equal to 0");
     }
     attributes.serverConnectionTimeout = serverConnectionTimeout;
     return this;
