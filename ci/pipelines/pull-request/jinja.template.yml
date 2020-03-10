@@ -102,6 +102,8 @@ jobs:
         trigger: true
         version: every
         attempts: 2
+        params:
+          integration_tool: rebase
       - get: geode-ci
         attempts: 2
       - get: {{ build_test.PLATFORM }}-builder-image-family
@@ -260,6 +262,8 @@ jobs:
         trigger: true
         version: every
         attempts: 2
+        params:
+          integration_tool: rebase
       - get: geode-ci
         attempts: 2
       - get: {{ test.PLATFORM }}-builder-image-family
