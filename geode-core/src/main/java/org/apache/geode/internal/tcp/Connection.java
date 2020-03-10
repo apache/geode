@@ -311,6 +311,9 @@ public class Connection implements Runnable {
   /** the buffer used for message receipt */
   private ByteBuffer inputBuffer;
 
+  /** Lock used to protect the input buffer */
+  public final Object inputBufferLock = new Object();
+
   /** the length of the next message to be dispatched */
   private int messageLength;
 
@@ -339,6 +342,7 @@ public class Connection implements Runnable {
 
   private boolean directAck;
 
+  private boolean asyncMode;
 
   /** is this connection used for serial message delivery? */
   boolean preserveOrder;
@@ -483,6 +487,7 @@ public class Connection implements Runnable {
     handshakeRead = false;
     handshakeCancelled = false;
     connected = true;
+    asyncMode = false;
 
     try {
       socket.setTcpNoDelay(true);
@@ -1137,6 +1142,7 @@ public class Connection implements Runnable {
     handshakeRead = false;
     handshakeCancelled = false;
     connected = true;
+    asyncMode = false;
 
     uniqueId = ID_COUNTER.getAndIncrement();
 
@@ -1470,6 +1476,10 @@ public class Connection implements Runnable {
         }
         asyncClose(false);
         owner.removeAndCloseThreadOwnedSockets();
+      } else {
+        if (sharedResource && !asyncMode) {
+          asyncClose(false);
+        }
       }
       releaseInputBuffer();
 
@@ -1484,10 +1494,12 @@ public class Connection implements Runnable {
   }
 
   private void releaseInputBuffer() {
-    ByteBuffer tmp = inputBuffer;
-    if (tmp != null) {
-      inputBuffer = null;
-      getBufferPool().releaseReceiveBuffer(tmp);
+    synchronized (inputBufferLock) {
+      ByteBuffer tmp = inputBuffer;
+      if (tmp != null) {
+        inputBuffer = null;
+        getBufferPool().releaseReceiveBuffer(tmp);
+      }
     }
   }
 
@@ -1609,10 +1621,9 @@ public class Connection implements Runnable {
             }
             return;
           }
-
           processInputBuffer();
 
-          if (!isReceiver && (handshakeRead || handshakeCancelled)) {
+          if (!isHandShakeReader && !isReceiver && (handshakeRead || handshakeCancelled)) {
             if (logger.isDebugEnabled()) {
               if (handshakeRead) {
                 logger.debug("handshake has been read {}", this);
@@ -1621,8 +1632,13 @@ public class Connection implements Runnable {
               }
             }
             isHandShakeReader = true;
-            // Once we have read the handshake the reader can go away
-            break;
+
+            // Once we have read the handshake for unshared connections, the reader can skip
+            // processing messages
+            if (!sharedResource || asyncMode) {
+              break;
+            }
+
           }
         } catch (CancelException e) {
           if (logger.isDebugEnabled()) {
@@ -1676,7 +1692,7 @@ public class Connection implements Runnable {
         }
       }
     } finally {
-      if (!isHandShakeReader) {
+      if (!isHandShakeReader || (sharedResource && !asyncMode)) {
         synchronized (stateLock) {
           connectionState = STATE_IDLE;
         }
@@ -3107,6 +3123,10 @@ public class Connection implements Runnable {
           remoteVersion = Version.readVersion(dis, true);
           ioFilter.doneReading(peerDataBuffer);
           notifyHandshakeWaiter(true);
+          if (preserveOrder && asyncDistributionTimeout != 0) {
+            asyncMode = true;
+          }
+
           return;
         default:
           String err =

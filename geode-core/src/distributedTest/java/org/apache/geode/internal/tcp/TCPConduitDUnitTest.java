@@ -94,7 +94,9 @@ public class TCPConduitDUnitTest extends DistributedTestCase {
     vm2.invoke(() -> startServer(properties));
     vm3.invoke(() -> startServer(properties));
 
-    Thread.sleep(5000);
+    await().untilAsserted(() -> {
+      assertThat(ConnectionTable.getNumSenderSharedConnections()).isEqualTo(3);
+    });
 
     // ensure that the closing of a shared/unordered connection to another node does not
     // remove all connections for that node
