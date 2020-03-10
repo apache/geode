@@ -49,6 +49,8 @@ dependencies {
     distributedTestImplementation('pl.pragmatists:JUnitParams')
     distributedTestRuntimeOnly('org.apache.derby:derby')
 
+    testCompileOnly(platform(project(':boms:geode-all-bom')))
+    testCompileOnly('io.swagger:swagger-annotations')
 
     implementation('net.sf.jopt-simple:jopt-simple')
 

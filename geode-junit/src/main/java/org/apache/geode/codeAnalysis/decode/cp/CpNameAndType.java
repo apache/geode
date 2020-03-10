@@ -17,6 +17,8 @@ package org.apache.geode.codeAnalysis.decode.cp;
 import java.io.DataInputStream;
 import java.io.IOException;
 
+import org.apache.geode.codeAnalysis.decode.CompiledClass;
+
 public class CpNameAndType extends Cp {
   int name_index; // utf8 unqualified field/method name
   int descriptor_index; // utf8
@@ -24,5 +26,13 @@ public class CpNameAndType extends Cp {
   CpNameAndType(DataInputStream source) throws IOException {
     name_index = source.readUnsignedShort();
     descriptor_index = source.readUnsignedShort();
+  }
+
+  public String name(CompiledClass info) {
+    return ((CpUtf8) info.constant_pool[name_index]).stringValue();
+  }
+
+  public String type(CompiledClass info) {
+    return ((CpUtf8) info.constant_pool[descriptor_index]).stringValue();
   }
 }

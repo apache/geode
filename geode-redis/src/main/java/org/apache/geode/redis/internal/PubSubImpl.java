@@ -44,10 +44,10 @@ public class PubSubImpl implements PubSub {
   }
 
   @Override
-  public long publish(String channel, String message) {
+  public long publish(String channel, byte[] message) {
     ResultCollector<String[], List<Long>> subscriberCountCollector = FunctionService
         .onMembers()
-        .setArguments(new String[] {channel, message})
+        .setArguments(new Object[] {channel, message})
         .execute(REDIS_PUB_SUB_FUNCTION_ID);
 
     List<Long> subscriberCounts = subscriberCountCollector.getResult();
@@ -77,16 +77,17 @@ public class PubSubImpl implements PubSub {
   }
 
   private void registerPublishFunction() {
-    FunctionService.registerFunction(new Function<String[]>() {
+    FunctionService.registerFunction(new Function<Object[]>() {
       @Override
       public String getId() {
         return REDIS_PUB_SUB_FUNCTION_ID;
       }
 
       @Override
-      public void execute(FunctionContext<String[]> context) {
-        String[] publishMessage = context.getArguments();
-        long subscriberCount = publishMessageToSubscribers(publishMessage[0], publishMessage[1]);
+      public void execute(FunctionContext<Object[]> context) {
+        Object[] publishMessage = context.getArguments();
+        long subscriberCount =
+            publishMessageToSubscribers((String) publishMessage[0], (byte[]) publishMessage[1]);
         context.getResultSender().lastResult(subscriberCount);
       }
     });
@@ -105,7 +106,7 @@ public class PubSubImpl implements PubSub {
   }
 
   @VisibleForTesting
-  long publishMessageToSubscribers(String channel, String message) {
+  long publishMessageToSubscribers(String channel, byte[] message) {
 
     Map<Boolean, List<PublishResult>> results = this.subscriptions
         .findSubscriptions(channel)

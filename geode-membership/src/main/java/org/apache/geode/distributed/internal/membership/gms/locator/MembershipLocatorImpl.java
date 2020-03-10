@@ -37,6 +37,7 @@ import org.apache.geode.distributed.internal.membership.api.MembershipLocator;
 import org.apache.geode.distributed.internal.membership.api.MembershipLocatorStatistics;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembership;
 import org.apache.geode.distributed.internal.membership.gms.Services;
+import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.distributed.internal.tcpserver.ProtocolChecker;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
@@ -71,7 +72,7 @@ public class MembershipLocatorImpl<ID extends MemberIdentifier> implements Membe
       MembershipConfig config)
       throws MembershipConfigurationException, UnknownHostException {
     handler = new PrimaryHandler(fallbackHandler, config.getLocatorWaitTime());
-    String host = bindAddress == null ? LocalHostUtil.getLocalHost().getHostName()
+    String host = bindAddress == null ? LocalHostUtil.getLocalHostName()
         : bindAddress.getHostName();
     String threadName = "Distribution Locator on " + host + ": " + port;
 
@@ -176,7 +177,9 @@ public class MembershipLocatorImpl<ID extends MemberIdentifier> implements Membe
     if (isAlive()) {
       logger.info("Stopping {}", this);
       try {
-        locatorClient.stop(((InetSocketAddress) getBindAddress()).getAddress(), getPort());
+        locatorClient
+            .stop(
+                new HostAndPort(((InetSocketAddress) getBindAddress()).getHostString(), getPort()));
       } catch (ConnectException ignore) {
         // must not be running
       }

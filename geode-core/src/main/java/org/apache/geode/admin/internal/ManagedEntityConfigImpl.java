@@ -14,7 +14,7 @@
  */
 package org.apache.geode.admin.internal;
 
-import static org.apache.geode.internal.net.InetAddressUtilsWithLogging.validateHost;
+import static org.apache.geode.admin.internal.InetAddressUtilsWithLogging.validateHost;
 
 import java.io.File;
 import java.net.InetAddress;
@@ -25,7 +25,6 @@ import org.apache.geode.admin.ManagedEntityConfig;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.admin.GemFireVM;
 import org.apache.geode.internal.inet.LocalHostUtil;
-import org.apache.geode.internal.net.SocketCreator;
 
 /**
  * The abstract superclass of objects that configure a managed entity such as a GemFire cache server
@@ -62,7 +61,7 @@ public abstract class ManagedEntityConfigImpl implements ManagedEntityConfig {
    */
   protected static String getLocalHostName() {
     try {
-      return LocalHostUtil.getLocalHost().getCanonicalHostName();
+      return LocalHostUtil.getCanonicalLocalHostName();
 
     } catch (UnknownHostException ex) {
       IllegalStateException ex2 = new IllegalStateException(
@@ -115,7 +114,7 @@ public abstract class ManagedEntityConfigImpl implements ManagedEntityConfig {
    * <code>GemFireVM</code>
    */
   protected ManagedEntityConfigImpl(GemFireVM vm) {
-    this.host = SocketCreator.getHostName(vm.getHost());
+    this.host = vm.getHost().getHostName();
     this.workingDirectory = vm.getWorkingDirectory().getAbsolutePath();
     this.productDirectory = vm.getGeodeHomeDir().getAbsolutePath();
     this.remoteCommand = null;

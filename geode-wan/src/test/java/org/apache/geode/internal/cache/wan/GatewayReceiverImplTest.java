@@ -64,7 +64,7 @@ public class GatewayReceiverImplTest {
     GatewayReceiver gateway = new GatewayReceiverImpl(cache, 2000, 2001, 5, 100, null, null, null,
         true, true, 2000);
 
-    assertThat(gateway.getHost()).isEqualTo(LocalHostUtil.getLocalHost().getHostName());
+    assertThat(gateway.getHost()).isEqualTo(LocalHostUtil.getLocalHostName());
   }
 
   @Test

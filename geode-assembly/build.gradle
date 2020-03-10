@@ -233,6 +233,8 @@ dependencies {
   integrationTestRuntimeOnly('joda-time:joda-time')
 
 
+  distributedTestCompileOnly(platform(project(':boms:geode-all-bom')))
+  distributedTestCompileOnly('io.swagger:swagger-annotations')
   distributedTestImplementation(project(':geode-gfsh'))
   distributedTestImplementation(project(':geode-logging'))
   distributedTestImplementation(project(':geode-membership'))
@@ -299,6 +301,9 @@ dependencies {
     exclude module: 'geode-core'
   }
   upgradeTestImplementation(project(':geode-assembly:geode-assembly-test'))
+
+  upgradeTestCompileOnly(platform(project(':boms:geode-all-bom')))
+  upgradeTestCompileOnly('io.swagger:swagger-annotations')
 
   upgradeTestRuntimeOnly(project(path: ':geode-old-versions', configuration: 'testOutput'))
   upgradeTestRuntimeOnly(project(':extensions:session-testing-war'))

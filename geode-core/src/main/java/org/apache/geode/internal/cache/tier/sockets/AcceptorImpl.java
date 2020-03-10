@@ -365,7 +365,6 @@ public class AcceptorImpl implements Acceptor, Runnable {
    * @param maxThreads the maximum number of threads allowed in the server pool
    * @param securityService the SecurityService to use for authentication and authorization
    *
-   * @see SocketCreator#createServerSocket(int, int, InetAddress)
    * @see ClientHealthMonitor
    *
    * @since GemFire 5.7
@@ -512,7 +511,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
       final long tilt = System.currentTimeMillis() + timeLimitMillis;
 
       if (isSelector()) {
-        if (socketCreator.useSSL()) {
+        if (socketCreator.forCluster().useSSL()) {
           throw new IllegalArgumentException(
               "Selector thread pooling can not be used with client/server SSL. The selector can be disabled by setting max-threads=0.");
         }
@@ -1180,7 +1179,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
   public String getServerName() {
     String name = serverSock.getLocalSocketAddress().toString();
     try {
-      name = LocalHostUtil.getLocalHost().getCanonicalHostName() + "-" + name;
+      name = LocalHostUtil.getCanonicalLocalHostName() + "-" + name;
     } catch (Exception e) {
     }
     return name;
@@ -1545,7 +1544,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
 
   private CommunicationMode getCommunicationModeForNonSelector(Socket socket) throws IOException {
     socket.setSoTimeout(0);
-    socketCreator.handshakeIfSocketIsSSL(socket, acceptTimeout);
+    socketCreator.forCluster().handshakeIfSocketIsSSL(socket, acceptTimeout);
     byte communicationModeByte = (byte) socket.getInputStream().read();
     if (communicationModeByte == -1) {
       throw new EOFException();
@@ -1767,7 +1766,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
     }
     if (needCanonicalHostName) {
       try {
-        result = LocalHostUtil.getLocalHost().getCanonicalHostName();
+        result = LocalHostUtil.getCanonicalLocalHostName();
       } catch (UnknownHostException ex) {
         throw new IllegalStateException("getLocalHost failed with " + ex);
       }

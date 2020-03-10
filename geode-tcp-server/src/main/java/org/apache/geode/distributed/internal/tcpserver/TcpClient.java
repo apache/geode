@@ -21,8 +21,6 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
@@ -54,7 +52,7 @@ public class TcpClient {
   private static final int DEFAULT_REQUEST_TIMEOUT = 60 * 2 * 1000;
 
   @MakeNotStatic
-  private static final Map<InetSocketAddress, Short> serverVersions =
+  private static final Map<HostAndPort, Short> serverVersions =
       new HashMap<>();
 
   private final TcpSocketCreator socketCreator;
@@ -76,17 +74,17 @@ public class TcpClient {
   /**
    * Stops the Locator running on a given host and port
    */
-  public void stop(InetAddress addr, int port) throws java.net.ConnectException {
+  public void stop(HostAndPort addr) throws java.net.ConnectException {
     try {
       ShutdownRequest request = new ShutdownRequest();
-      requestToServer(addr, port, request, DEFAULT_REQUEST_TIMEOUT);
+      requestToServer(addr, request, DEFAULT_REQUEST_TIMEOUT);
     } catch (java.net.ConnectException ce) {
       // must not be running, rethrow so the caller can handle.
       // In most cases this Exception should be ignored.
       throw ce;
     } catch (Exception ex) {
       logger.error(
-          "TcpClient.stop(): exception connecting to locator " + addr + ":" + port + ": " + ex);
+          "TcpClient.stop(): exception connecting to locator " + addr + ex);
     }
   }
 
@@ -95,17 +93,17 @@ public class TcpClient {
    * <code>String</code>s are returned: the first string is the working directory of the locator
    * and the second string is the product directory of the locator.
    */
-  public String[] getInfo(InetAddress addr, int port) {
+  public String[] getInfo(HostAndPort addr) {
     try {
       InfoRequest request = new InfoRequest();
       InfoResponse response =
-          (InfoResponse) requestToServer(addr, port, request, DEFAULT_REQUEST_TIMEOUT);
+          (InfoResponse) requestToServer(addr, request, DEFAULT_REQUEST_TIMEOUT);
       return response.getInfo();
     } catch (java.net.ConnectException ignore) {
       return null;
     } catch (Exception ex) {
       logger.error(
-          "TcpClient.getInfo(): exception connecting to locator " + addr + ":" + port + ": " + ex);
+          "TcpClient.getInfo(): exception connecting to locator " + addr + ": " + ex);
       return null;
     }
 
@@ -115,53 +113,31 @@ public class TcpClient {
    * Send a request to a Locator and expect a reply
    *
    * @param addr The locator's address
-   * @param port The locator's tcp/ip port
    * @param request The request message
    * @param timeout Timeout for sending the message and receiving a reply
    * @return the reply
    */
-  public Object requestToServer(InetAddress addr, int port, Object request, int timeout)
+  public Object requestToServer(HostAndPort addr, Object request, int timeout)
       throws IOException, ClassNotFoundException {
 
-    return requestToServer(addr, port, request, timeout, true);
+    return requestToServer(addr, request, timeout, true);
   }
 
   /**
    * Send a request to a Locator
    *
    * @param addr The locator's address
-   * @param port The locator's tcp/ip port
-   * @param request The request message
-   * @param timeout Timeout for sending the message and receiving a reply
-   * @param replyExpected Whether to wait for a reply
-   * @return the reply
-   */
-  public Object requestToServer(InetAddress addr, int port, Object request, int timeout,
-      boolean replyExpected) throws IOException, ClassNotFoundException {
-    InetSocketAddress ipAddr;
-    if (addr == null) {
-      ipAddr = new InetSocketAddress(port);
-    } else {
-      ipAddr = new InetSocketAddress(addr, port); // fix for bug 30810
-    }
-    return requestToServer(ipAddr, request, timeout, replyExpected);
-  }
-
-  /**
-   * Send a request to a Locator
-   *
-   * @param ipAddr The locator's inet socket address
    * @param request The request message
    * @param timeout Timeout for sending the message and receiving a reply
    * @param replyExpected Whether to wait for a reply
    * @return The reply, or null if no reply is expected
    */
-  public Object requestToServer(InetSocketAddress ipAddr, Object request, int timeout,
+  public Object requestToServer(HostAndPort addr, Object request, int timeout,
       boolean replyExpected) throws IOException, ClassNotFoundException {
     long giveupTime = System.currentTimeMillis() + timeout;
 
     // Get the GemFire version of the TcpServer first, before sending any other request.
-    short serverVersion = getServerVersion(ipAddr, timeout);
+    short serverVersion = getServerVersion(addr, timeout);
 
     if (serverVersion > Version.CURRENT_ORDINAL) {
       serverVersion = Version.CURRENT_ORDINAL;
@@ -179,10 +155,10 @@ public class TcpClient {
       return null;
     }
 
-    logger.debug("TcpClient sending {} to {}", request, ipAddr);
+    logger.debug("TcpClient sending {} to {}", request, addr);
 
     Socket sock =
-        socketCreator.connect(ipAddr.getAddress(), ipAddr.getPort(), (int) newTimeout, null, false);
+        socketCreator.forCluster().connect(addr, (int) newTimeout, null);
     sock.setSoTimeout((int) newTimeout);
     DataOutputStream out = null;
     try {
@@ -210,7 +186,7 @@ public class TcpClient {
           return response;
         } catch (EOFException ex) {
           logger.debug("requestToServer EOFException ", ex);
-          EOFException eof = new EOFException("Locator at " + ipAddr
+          EOFException eof = new EOFException("Locator at " + addr
               + " did not respond. This is normal if the locator was shutdown. If it wasn't check its log for exceptions.");
           eof.initCause(ex);
           throw eof;
@@ -232,7 +208,7 @@ public class TcpClient {
           // with the socket and is closing it. Aborting the connection by
           // setting SO_LINGER to zero will clean up the TIME_WAIT socket on
           // the locator's machine.
-          if (!sock.isClosed() && !socketCreator.useSSL()) {
+          if (!sock.isClosed() && !socketCreator.forCluster().useSSL()) {
             sock.setSoLinger(true, 0);
           }
         }
@@ -246,7 +222,7 @@ public class TcpClient {
     }
   }
 
-  private Short getServerVersion(InetSocketAddress ipAddr, int timeout)
+  private Short getServerVersion(HostAndPort addr, int timeout)
       throws IOException, ClassNotFoundException {
 
     int gossipVersion;
@@ -255,7 +231,7 @@ public class TcpClient {
 
     // Get GemFire version of TcpServer first, before sending any other request.
     synchronized (serverVersions) {
-      serverVersion = serverVersions.get(ipAddr);
+      serverVersion = serverVersions.get(addr);
     }
 
     if (serverVersion != null) {
@@ -265,7 +241,7 @@ public class TcpClient {
     gossipVersion = TcpServer.getOldGossipVersion();
 
     try {
-      sock = socketCreator.connect(ipAddr.getAddress(), ipAddr.getPort(), timeout, null, false);
+      sock = socketCreator.forCluster().connect(addr, timeout, null);
       sock.setSoTimeout(timeout);
     } catch (SSLException e) {
       throw new IllegalStateException("Unable to form SSL connection", e);
@@ -296,7 +272,7 @@ public class TcpClient {
         VersionResponse response = (VersionResponse) readObject;
         serverVersion = response.getVersionOrdinal();
         synchronized (serverVersions) {
-          serverVersions.put(ipAddr, serverVersion);
+          serverVersions.put(addr, serverVersion);
         }
 
         return serverVersion;
@@ -318,7 +294,7 @@ public class TcpClient {
 
     }
     synchronized (serverVersions) {
-      serverVersions.put(ipAddr, Version.GFE_57.ordinal());
+      serverVersions.put(addr, Version.GFE_57.ordinal());
     }
     return Short.valueOf(Version.GFE_57.ordinal());
   }

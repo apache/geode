@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -45,8 +44,8 @@ import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Locator;
-import org.apache.geode.distributed.internal.membership.gms.membership.HostAddress;
 import org.apache.geode.distributed.internal.membership.gms.messenger.GMSMemberWrapper;
+import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
@@ -73,7 +72,7 @@ public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID>, Tcp
   private final boolean networkPartitionDetectionEnabled;
   private final String securityUDPDHAlgo;
   private final String locatorString;
-  private final List<HostAddress> locators;
+  private final List<HostAndPort> locators;
   private final MembershipLocatorStatistics locatorStats;
   private final Set<ID> registrants = new HashSet<>();
   private final Map<GMSMemberWrapper, byte[]> publicKeys =
@@ -412,8 +411,8 @@ public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID>, Tcp
   }
 
   private boolean recoverFromOtherLocators() {
-    for (HostAddress other : locators) {
-      if (recover(other.getSocketInetAddress())) {
+    for (HostAndPort other : locators) {
+      if (recover(other)) {
         logger.info("Peer locator recovered state from {}", other);
         return true;
       }
@@ -421,10 +420,10 @@ public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID>, Tcp
     return false;
   }
 
-  private boolean recover(InetSocketAddress other) {
+  private boolean recover(HostAndPort other) {
     try {
       logger.info("Peer locator attempting to recover from {}", other);
-      Object response = locatorClient.requestToServer(other.getAddress(), other.getPort(),
+      Object response = locatorClient.requestToServer(other,
           new GetViewRequest(), 20000, true);
       if (response instanceof GetViewResponse) {
         view = ((GetViewResponse<ID>) response).getView();

@@ -379,6 +379,7 @@ A "pool" element specifies a client to server connection pool.
 <!ELEMENT pool (locator+|server+)>
 <!ATTLIST pool
   free-connection-timeout                CDATA #IMPLIED
+  server-connection-timeout              CDATA #IMPLIED
   load-conditioning-interval             CDATA #IMPLIED
   min-connections                        CDATA #IMPLIED
   max-connections                        CDATA #IMPLIED

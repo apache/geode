@@ -44,7 +44,7 @@ public class PubSubImplJUnitTest {
 
     PubSubImpl subject = new PubSubImpl(subscriptions);
 
-    Long numberOfSubscriptions = subject.publishMessageToSubscribers("sally", "message");
+    Long numberOfSubscriptions = subject.publishMessageToSubscribers("sally", "message".getBytes());
 
     assertThat(numberOfSubscriptions).isEqualTo(0);
     assertThat(subscriptions.findSubscriptions(deadClient)).isEmpty();

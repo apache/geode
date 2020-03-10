@@ -32,7 +32,7 @@ public interface Subscription {
   /**
    * Will publish a message to the designated channel.
    */
-  PublishResult publishMessage(String channel, String message);
+  PublishResult publishMessage(String channel, byte[] message);
 
   /**
    * Verifies that the subscription is established with the designated client.
@@ -47,5 +47,5 @@ public interface Subscription {
   /**
    * The response dependent on the type of the subscription
    */
-  List<String> createResponse(String channel, String message);
+  List<Object> createResponse(String channel, byte[] message);
 }

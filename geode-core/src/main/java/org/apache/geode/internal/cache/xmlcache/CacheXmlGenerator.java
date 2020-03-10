@@ -1153,6 +1153,10 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
         atts.addAttribute("", "", FREE_CONNECTION_TIMEOUT, "",
             String.valueOf(cp.getFreeConnectionTimeout()));
       if (generateDefaults()
+          || cp.getServerConnectionTimeout() != PoolFactory.DEFAULT_SERVER_CONNECTION_TIMEOUT)
+        atts.addAttribute("", "", SERVER_CONNECTION_TIMEOUT, "",
+            String.valueOf(cp.getServerConnectionTimeout()));
+      if (generateDefaults()
           || cp.getLoadConditioningInterval() != PoolFactory.DEFAULT_LOAD_CONDITIONING_INTERVAL)
         atts.addAttribute("", "", LOAD_CONDITIONING_INTERVAL, "",
             String.valueOf(cp.getLoadConditioningInterval()));
@@ -1215,7 +1219,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
       {
         for (InetSocketAddress addr : cp.getLocators()) {
           AttributesImpl sAtts = new AttributesImpl();
-          sAtts.addAttribute("", "", HOST, "", addr.getHostName());
+          sAtts.addAttribute("", "", HOST, "", addr.getHostString());
           sAtts.addAttribute("", "", PORT, "", String.valueOf(addr.getPort()));
           handler.startElement("", LOCATOR, LOCATOR, sAtts);
           handler.endElement("", LOCATOR, LOCATOR);
@@ -1224,7 +1228,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
       {
         for (InetSocketAddress addr : cp.getServers()) {
           AttributesImpl sAtts = new AttributesImpl();
-          sAtts.addAttribute("", "", HOST, "", addr.getHostName());
+          sAtts.addAttribute("", "", HOST, "", addr.getHostString());
           sAtts.addAttribute("", "", PORT, "", String.valueOf(addr.getPort()));
           handler.startElement("", SERVER, SERVER, sAtts);
           handler.endElement("", SERVER, SERVER);

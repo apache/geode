@@ -28,7 +28,7 @@ public class HostUtils {
 
   public static String getLocalHost() {
     try {
-      return LocalHostUtil.getLocalHost().getCanonicalHostName();
+      return LocalHostUtil.getCanonicalLocalHostName();
     } catch (UnknownHostException ignore) {
       return LOCALHOST;
     }

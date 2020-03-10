@@ -28,7 +28,7 @@ import java.util.StringTokenizer;
 
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.api.MembershipConfigurationException;
-import org.apache.geode.distributed.internal.membership.gms.membership.HostAddress;
+import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
@@ -46,7 +46,7 @@ public class GMSUtil {
    * @param bindAddress optional address to check for loopback compatibility
    * @return addresses of locators
    */
-  public static List<HostAddress> parseLocators(String locatorsString, String bindAddress)
+  public static List<HostAndPort> parseLocators(String locatorsString, String bindAddress)
       throws MembershipConfigurationException {
     InetAddress addr = null;
 
@@ -82,12 +82,10 @@ public class GMSUtil {
    * @param locatorsString a DistributionConfig "locators" string
    * @param bindAddress optional address to check for loopback compatibility
    * @return addresses of locators
-   *
-   * @see org.apache.geode.distributed.ConfigurationProperties#LOCATORS for format
    */
-  public static List<HostAddress> parseLocators(String locatorsString, InetAddress bindAddress)
+  public static List<HostAndPort> parseLocators(String locatorsString, InetAddress bindAddress)
       throws MembershipConfigurationException {
-    List<HostAddress> result = new ArrayList<>(2);
+    List<HostAndPort> result = new ArrayList<>(2);
     Set<InetSocketAddress> inetAddresses = new HashSet<>();
     String host;
     final boolean isLoopback = ((bindAddress != null) && bindAddress.isLoopbackAddress());
@@ -149,10 +147,10 @@ public class GMSUtil {
         }
       }
 
-      HostAddress la = new HostAddress(isa, host);
+      HostAndPort hostAndPort = new HostAndPort(host, port);
       if (!inetAddresses.contains(isa)) {
         inetAddresses.add(isa);
-        result.add(la);
+        result.add(hostAndPort);
       }
     }
 

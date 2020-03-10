@@ -245,10 +245,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
   private static final ConcurrentHashMap<String, SerializerAttributesHolder> supportedClassesToHolders =
       new ConcurrentHashMap<>();
   private static final Object listenersSync = new Object();
-  @MakeNotStatic
-  private static final ConcurrentMap<Integer, String> dsfidToClassMap =
-      logger.isTraceEnabled(LogMarker.SERIALIZER_WRITE_DSFID_VERBOSE) ? new ConcurrentHashMap<>()
-          : null;
+
   private static final ThreadLocal<Boolean> pdxSerializationInProgress = new ThreadLocal<>();
   @MakeNotStatic
   private static final CopyOnWriteHashMap<String, WeakReference<Class<?>>> classCache =

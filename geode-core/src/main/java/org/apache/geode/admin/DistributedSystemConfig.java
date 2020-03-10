@@ -14,6 +14,7 @@
  */
 package org.apache.geode.admin;
 
+import static org.apache.geode.admin.internal.InetAddressUtils.toHostString;
 import static org.apache.geode.distributed.ConfigurationProperties.BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_DISK_SPACE_LIMIT;
@@ -25,7 +26,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.MEMBERSHIP_PORT_RANGE;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.TCP_PORT;
-import static org.apache.geode.internal.net.InetAddressUtils.toHostString;
 
 import java.util.Properties;
 

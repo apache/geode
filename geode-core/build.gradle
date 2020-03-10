@@ -187,6 +187,8 @@ dependencies {
 
   //Spring web is used for SerializableObjectHttpMessageConverter
   implementation('org.springframework:spring-web')
+  // find bugs leaks in from spring, needed to remove warnings.
+  compileOnly('com.google.code.findbugs:jsr305')
 
   //Jgroups is a core component of our membership system.
   implementation('org.jgroups:jgroups')
@@ -272,7 +274,7 @@ dependencies {
   implementation('org.apache.logging.log4j:log4j-api')
 
 
-  runtimeOnly('io.swagger:swagger-annotations') {
+  implementation('io.swagger:swagger-annotations')  {
     ext.optional = true
   }
 

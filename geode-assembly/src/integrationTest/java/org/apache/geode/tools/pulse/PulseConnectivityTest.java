@@ -24,7 +24,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Properties;
 
-import org.apache.http.HttpResponse;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -34,7 +33,6 @@ import org.junit.runners.Parameterized;
 
 import org.apache.geode.test.junit.categories.PulseTest;
 import org.apache.geode.test.junit.rules.EmbeddedPulseRule;
-import org.apache.geode.test.junit.rules.GeodeHttpClientRule;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 import org.apache.geode.tools.pulse.internal.data.Cluster;
@@ -48,9 +46,6 @@ public class PulseConnectivityTest {
 
   @Rule
   public EmbeddedPulseRule pulse = new EmbeddedPulseRule();
-
-  @Rule
-  public GeodeHttpClientRule client = new GeodeHttpClientRule(locator::getHttpPort);
 
   @Parameterized.Parameter
   public static String jmxBindAddress;
@@ -70,15 +65,6 @@ public class PulseConnectivityTest {
     if (!"localhost".equals(jmxBindAddress))
       locatorProperties.setProperty(JMX_MANAGER_BIND_ADDRESS, jmxBindAddress);
     locator.withProperties(locatorProperties).startLocator();
-  }
-
-  @Test
-  public void testLogin() throws Exception {
-    HttpResponse response = client.loginToPulse("admin", "wrongPassword");
-    assertThat(response.getStatusLine().getStatusCode()).isEqualTo(302);
-    assertThat(response.getFirstHeader("Location").getValue())
-        .contains("/pulse/login.html?error=BAD_CREDS");
-    client.loginToPulseAndVerify("admin", "admin");
   }
 
   @Test

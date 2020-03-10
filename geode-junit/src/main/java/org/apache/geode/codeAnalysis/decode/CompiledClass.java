@@ -29,13 +29,22 @@ import org.apache.geode.codeAnalysis.decode.cp.Cp;
 import org.apache.geode.codeAnalysis.decode.cp.CpClass;
 import org.apache.geode.codeAnalysis.decode.cp.CpDouble;
 import org.apache.geode.codeAnalysis.decode.cp.CpLong;
+import org.apache.geode.codeAnalysis.decode.cp.CpMethodref;
 import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.logging.PureLogWriter;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 
 
 /**
- * Decoder represents a jdk ClassFile header
+ * Decoder represents a jdk ClassFile header. See "The Java Virtual Machine Specification"
+ * for a detailed description of all of the fields in this and other classes in this
+ * package and the "cp" (constant pool) package
+ * <p>
+ * Basically, all of the other classes hold indexes into one of the fields in this
+ * class. Cp classes hold indexes into the constant_pool, which holds all of the Cp
+ * instances associated with this CompiledClass. A CpMethodref, for instance, holds an
+ * index into the constant_pool to locate the CpClass implementing the method as well
+ * as an index into the constant_pool of the CpNameAndType of the method itself.
  */
 
 public class CompiledClass implements Comparable {
@@ -256,4 +265,34 @@ public class CompiledClass implements Comparable {
     ExitCode.NORMAL.doSystemExit();
   }
 
+  public boolean refersToClass(String name) {
+    for (Cp constantPoolEntry : constant_pool) {
+      if (constantPoolEntry instanceof CpClass &&
+          ((CpClass) constantPoolEntry).className(this).equals(name)) {
+        return true;
+      }
+    }
+    for (CompiledMethod compiledMethod : methods) {
+      if (compiledMethod == null) {
+        continue;
+      }
+      if (compiledMethod.descriptor().equals(name) || compiledMethod.hasArgumentOfType(name)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  public boolean refersToMethod(String className, String methodName) {
+    for (Cp constantPoolEntry : constant_pool) {
+      if (constantPoolEntry instanceof CpMethodref) {
+        CpMethodref methodref = (CpMethodref) constantPoolEntry;
+        if (methodref.className(this).equals(className)
+            && methodref.methodName(this).equals(methodName)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
 }

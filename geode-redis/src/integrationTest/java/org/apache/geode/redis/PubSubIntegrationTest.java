@@ -34,6 +34,7 @@ import redis.clients.jedis.Jedis;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.redis.mocks.MockBinarySubscriber;
 import org.apache.geode.redis.mocks.MockSubscriber;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.junit.categories.RedisTest;
@@ -93,6 +94,33 @@ public class PubSubIntegrationTest {
     waitFor(() -> !subscriberThread.isAlive());
 
     assertThat(mockSubscriber.getReceivedMessages()).isEqualTo(expectedMessages);
+  }
+
+  @Test
+  public void testPublishBinaryData() {
+    byte[] expectedMessage = new byte[256];
+    for (int i = 0; i < 256; i++) {
+      expectedMessage[i] = (byte) i;
+    }
+
+    MockBinarySubscriber mockSubscriber = new MockBinarySubscriber();
+
+    Runnable runnable = () -> {
+      subscriber.subscribe(mockSubscriber, "salutations".getBytes());
+    };
+
+    Thread subscriberThread = new Thread(runnable);
+    subscriberThread.start();
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
+
+    Long result = publisher.publish("salutations".getBytes(), expectedMessage);
+    assertThat(result).isEqualTo(1);
+
+    mockSubscriber.unsubscribe("salutations".getBytes());
+    waitFor(() -> mockSubscriber.getSubscribedChannels() == 0);
+    waitFor(() -> !subscriberThread.isAlive());
+
+    assertThat(mockSubscriber.getReceivedMessages().get(0)).isEqualTo(expectedMessage);
   }
 
   @Test

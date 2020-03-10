@@ -119,7 +119,7 @@ public class GatewayReceiverImpl implements GatewayReceiver {
     }
 
     try {
-      return LocalHostUtil.getLocalHost().getHostName();
+      return LocalHostUtil.getLocalHostName();
     } catch (UnknownHostException e) {
       throw new IllegalStateException("Could not get host name", e);
     }

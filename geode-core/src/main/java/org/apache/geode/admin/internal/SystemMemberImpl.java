@@ -14,8 +14,8 @@
  */
 package org.apache.geode.admin.internal;
 
-import static org.apache.geode.internal.net.InetAddressUtils.toHostString;
-import static org.apache.geode.internal.net.InetAddressUtilsWithLogging.toInetAddress;
+import static org.apache.geode.admin.internal.InetAddressUtils.toHostString;
+import static org.apache.geode.admin.internal.InetAddressUtilsWithLogging.toInetAddress;
 
 import java.net.InetAddress;
 import java.util.ArrayList;

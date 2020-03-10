@@ -164,8 +164,9 @@ public class HashesIntegrationTest {
     String field = randString();
 
     Long incr = (long) rand.nextInt(50);
-    if (incr == 0)
+    if (incr == 0) {
       incr++;
+    }
 
     long response1 = jedis.hincrBy(key, field, incr);
     assertTrue(response1 == incr);
@@ -175,7 +176,6 @@ public class HashesIntegrationTest {
 
     long response3 = jedis.hincrBy(key, field, incr);
     assertTrue(response3 + "=" + 2 * incr, response3 == 2 * incr);
-
 
     String field1 = randString();
     Exception ex = null;
@@ -195,8 +195,9 @@ public class HashesIntegrationTest {
     String field = randString();
 
     double incr = rand.nextDouble();
-    if (incr == 0)
+    if (incr == 0) {
       incr = incr + 1;
+    }
 
     Double response1 = jedis.hincrByFloat(key, field, incr);
     assertTrue(response1 == incr);
@@ -251,7 +252,6 @@ public class HashesIntegrationTest {
 
     ScanResult<Entry<String, String>> results = null;
 
-
     try {
       results = jedis.hscan(key, "0");
       fail("Must throw exception for invalid cursor");
@@ -302,7 +302,6 @@ public class HashesIntegrationTest {
 
   /**
    * Test the HVALS command
-   *
    */
   @Test
   public void testHVals() throws Exception {
@@ -405,11 +404,11 @@ public class HashesIntegrationTest {
 
   /**
    * Test the Redis HGETALL command to return
-   *
+   * <p>
    * Returns all fields and values of the hash stored at key.
-   *
+   * <p>
    * Examples:
-   *
+   * <p>
    * redis> HSET myhash field1 "Hello" (integer) 1 redis> HSET myhash field2 "World" (integer) 1
    * redis> HGETALL myhash 1) "field1" 2) "Hello" 3) "field2" 4) "World"
    */
@@ -429,10 +428,8 @@ public class HashesIntegrationTest {
     Long result = jedis.hset(key, field1, field1Value);
     assertEquals(Long.valueOf(1), result);
 
-
     result = jedis.hset(key, field2, field2Value);
     assertEquals(Long.valueOf(1), result);
-
 
     map = jedis.hgetAll(key);
     assertNotNull(map);
@@ -544,10 +541,6 @@ public class HashesIntegrationTest {
     latch.countDown();
     assertThat(future1.get() + future2.get()).isEqualTo(ITERATION_COUNT);
 
-    System.out.println("T1: " + future1.get() + " T2: " + future2.get());
-    assertThat(future1.get()).isGreaterThan(0);
-    assertThat(future2.get()).isGreaterThan(0);
-
     pool.shutdown();
   }
 
@@ -555,11 +548,10 @@ public class HashesIntegrationTest {
       Jedis jedis, CountDownLatch latch) throws InterruptedException {
     int successes = 0;
 
-    // latch.await();
+    latch.await();
     for (int i = 0; i < ITERATION_COUNT; i++) {
       if (jedis.hsetnx(key, fields.get(i), fieldValue) == 1) {
         successes++;
-        // Thread.sleep(randSleepMillis());
         Thread.yield();
       }
     }
@@ -698,7 +690,8 @@ public class HashesIntegrationTest {
   }
 
   private void doABunchOfHDelsWithBlockingQueue(String key,
-      ArrayBlockingQueue<String> blockingQueue, Jedis jedis) {
+      ArrayBlockingQueue<String> blockingQueue,
+      Jedis jedis) {
     String field;
     for (int i = 0; i < ITERATION_COUNT; i++) {
       try {
@@ -711,7 +704,8 @@ public class HashesIntegrationTest {
   }
 
   private void doABunchOfHSetsWithBlockingQueue(String key,
-      ArrayBlockingQueue<String> blockingQueue, Jedis jedis) {
+      ArrayBlockingQueue<String> blockingQueue,
+      Jedis jedis) {
     String field;
     String fieldValue;
     for (int i = 0; i < ITERATION_COUNT; i++) {

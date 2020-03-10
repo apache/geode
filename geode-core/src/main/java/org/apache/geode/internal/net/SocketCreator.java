@@ -23,7 +23,6 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketAddress;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
@@ -43,8 +42,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.net.ServerSocketFactory;
-import javax.net.SocketFactory;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
@@ -54,7 +51,6 @@ import javax.net.ssl.SSLHandshakeException;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLProtocolException;
-import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
@@ -64,15 +60,15 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.GemFireConfigException;
-import org.apache.geode.SystemConnectException;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.distributed.ClientSocketFactory;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
-import org.apache.geode.distributed.internal.tcpserver.ConnectionWatcher;
+import org.apache.geode.distributed.internal.tcpserver.AdvancedSocketCreatorImpl;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreatorImpl;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.admin.SSLConfig;
@@ -88,30 +84,17 @@ import org.apache.geode.util.internal.GeodeGlossary;
 
 
 /**
- * Analyze configuration data (gemfire.properties) and configure sockets accordingly for SSL.
+ * SocketCreators are built using a SocketCreatorFactory using Geode distributed-system properties.
+ * They know how to properly configure sockets for TLS (SSL) communications and perform
+ * handshakes. Connection-initiation uses a HostAndPort instance that is similar to an
+ * InetSocketAddress.
  * <p>
- * gemfire.useSSL = (true|false) default false.<br/>
- * gemfire.ssl.debug = (true|false) default false.<br/>
- * gemfire.ssl.needClientAuth = (true|false) default true.<br/>
- * gemfire.ssl.protocols = <i>list of protocols</i><br/>
- * gemfire.ssl.ciphers = <i>list of cipher suites</i><br/>
- * <p>
- * The following may be included to configure the certificates used by the Sun Provider.
- * <p>
- * javax.net.ssl.trustStore = <i>pathname</i><br/>
- * javax.net.ssl.trustStorePassword = <i>password</i><br/>
- * javax.net.ssl.keyStore = <i>pathname</i><br/>
- * javax.net.ssl.keyStorePassword = <i>password</i><br/>
- * <p>
- * Additional properties will be set as System properties to be available as needed by other
- * provider implementations.
+ * SocketCreator also supports a client-socket-factory that is designated with the property
+ * gemfire.clientSocketFactory for use in creating client->server connections.
  */
 public class SocketCreator extends TcpSocketCreatorImpl {
 
   private static final Logger logger = LogService.getLogger();
-
-  @MakeNotStatic
-  private static final ConcurrentHashMap<InetAddress, String> hostNames = new ConcurrentHashMap<>();
 
   /**
    * flag to force always using DNS (regardless of the fact that these lookups can hang)
@@ -131,6 +114,9 @@ public class SocketCreator extends TcpSocketCreatorImpl {
   @MakeNotStatic
   public static volatile boolean use_client_host_name = true;
 
+  @MakeNotStatic
+  private static final ConcurrentHashMap<InetAddress, String> hostNames = new ConcurrentHashMap<>();
+
   /**
    * Only print this SocketCreator's config once
    */
@@ -141,17 +127,11 @@ public class SocketCreator extends TcpSocketCreatorImpl {
   private boolean hostnameValidationDisabledLogShown = false;
 
 
-  /**
-   * context for SSL socket factories
-   */
   private SSLContext sslContext;
 
   private final SSLConfig sslConfig;
 
 
-  /**
-   * A factory used to create client <code>Sockets</code>.
-   */
   private ClientSocketFactory clientSocketFactory;
 
   /**
@@ -159,31 +139,23 @@ public class SocketCreator extends TcpSocketCreatorImpl {
    * gemfire.setTcpKeepAlive java system property. If not set then GemFire will enable keep-alive on
    * server->client and p2p connections.
    */
-  public static final boolean ENABLE_TCP_KEEP_ALIVE = TcpSocketCreatorImpl.ENABLE_TCP_KEEP_ALIVE;
-
-  // -------------------------------------------------------------------------
-  // Constructor
-  // -------------------------------------------------------------------------
-
-  /**
-   * Constructs new SocketCreator instance.
-   */
-  public SocketCreator(final SSLConfig sslConfig) {
-    this.sslConfig = sslConfig;
-    initialize();
-  }
-
+  public static final boolean ENABLE_TCP_KEEP_ALIVE =
+      AdvancedSocketCreatorImpl.ENABLE_TCP_KEEP_ALIVE;
 
   // -------------------------------------------------------------------------
   // Static instance accessors
   // -------------------------------------------------------------------------
 
   /**
+   * This method has migrated to LocalHostUtil but is kept in place here for
+   * backward-compatibility testing.
+   *
    * @deprecated use LocalHostUtil.getLocalHost()
    */
   public static InetAddress getLocalHost() throws UnknownHostException {
     return LocalHostUtil.getLocalHost();
   }
+
 
   /**
    * returns the host name for the given inet address, using a local cache of names to avoid dns
@@ -199,28 +171,41 @@ public class SocketCreator extends TcpSocketCreatorImpl {
   }
 
   /**
-   * returns the host name for the given inet address, using a local cache of names to avoid dns
-   * hits and duplicate strings
-   */
-  public static String getCanonicalHostName(InetAddress addr, String hostName) {
-    String result = hostNames.get(addr);
-    if (result == null) {
-      hostNames.put(addr, hostName);
-      return hostName;
-    }
-    return result;
-  }
-
-  /**
    * Reset the hostNames caches
    */
   public static void resetHostNameCache() {
     hostNames.clear();
   }
 
+
+  // -------------------------------------------------------------------------
+  // Constructor
+  // -------------------------------------------------------------------------
+
+  /**
+   * Constructs new SocketCreator instance.
+   */
+  public SocketCreator(final SSLConfig sslConfig) {
+    this.sslConfig = sslConfig;
+    initialize();
+  }
+
+  /** returns the hostname or address for this client */
+  public static String getClientHostName() throws UnknownHostException {
+    InetAddress hostAddr = LocalHostUtil.getLocalHost();
+    return SocketCreator.use_client_host_name ? hostAddr.getCanonicalHostName()
+        : hostAddr.getHostAddress();
+  }
+
   // -------------------------------------------------------------------------
   // Initializers (change SocketCreator state)
   // -------------------------------------------------------------------------
+
+  protected void initializeCreators() {
+    serverSocketCreator = new SCServerSocketCreator(this);
+    clientSocketCreator = new SCClientSocketCreator(this);
+    advancedSocketCreator = new SCAdvancedSocketCreator(this);
+  }
 
   /**
    * Initialize this SocketCreator.
@@ -230,7 +215,7 @@ public class SocketCreator extends TcpSocketCreatorImpl {
   private void initialize() {
     try {
       try {
-        if (this.sslConfig.isEnabled() && sslContext == null) {
+        if (this.sslConfig.isEnabled() && getSslContext() == null) {
           sslContext = createAndConfigureSSLContext();
         }
       } catch (Exception e) {
@@ -425,10 +410,29 @@ public class SocketCreator extends TcpSocketCreatorImpl {
     return extendedKeyManagers;
   }
 
+  /**
+   * context for SSL socket factories
+   */
+  @VisibleForTesting
   public SSLContext getSslContext() {
     return sslContext;
   }
 
+  /**
+   * A factory used to create client <code>Sockets</code>.
+   */
+  public ClientSocketFactory getClientSocketFactory() {
+    return clientSocketFactory;
+  }
+
+  public SSLConfig getSslConfig() {
+    return sslConfig;
+  }
+
+  /**
+   * ExtendedAliasKeyManager supports use of certificate aliases in distributed system
+   * properties.
+   */
   private static class ExtendedAliasKeyManager extends X509ExtendedKeyManager {
 
     private final X509ExtendedKeyManager delegate;
@@ -519,197 +523,23 @@ public class SocketCreator extends TcpSocketCreatorImpl {
     }
   }
 
+  /**
+   * Returns true if this SocketCreator is configured to use SSL.
+   */
+  @Override
+  protected boolean useSSL() {
+    return this.sslConfig.isEnabled();
+  }
+
   // -------------------------------------------------------------------------
   // Public methods
   // -------------------------------------------------------------------------
 
   /**
-   * Returns true if this SocketCreator is configured to use SSL.
-   */
-  @Override
-  public boolean useSSL() {
-    return this.sslConfig.isEnabled();
-  }
-
-  public ServerSocket createServerSocket(int nport, int backlog, InetAddress bindAddr,
-      List<GatewayTransportFilter> transportFilters, int socketBufferSize) throws IOException {
-    if (transportFilters.isEmpty()) {
-      return createServerSocket(nport, backlog, bindAddr, socketBufferSize);
-    } else {
-      printConfig();
-      ServerSocket result = new TransportFilterServerSocket(transportFilters);
-      result.setReuseAddress(true);
-      // Set the receive buffer size before binding the socket so
-      // that large buffers will be allocated on accepted sockets (see
-      // java.net.ServerSocket.setReceiverBufferSize javadocs)
-      result.setReceiveBufferSize(socketBufferSize);
-      try {
-        result.bind(new InetSocketAddress(bindAddr, nport), backlog);
-      } catch (BindException e) {
-        BindException throwMe = new BindException(
-            String.format("Failed to create server socket on %s[%s]", bindAddr, nport));
-        throwMe.initCause(e);
-        throw throwMe;
-      }
-      return result;
-    }
-  }
-
-  public ServerSocket createServerSocket(int nport, int backlog, InetAddress bindAddr,
-      int socketBufferSize) throws IOException {
-    return createServerSocket(nport, backlog, bindAddr, socketBufferSize, sslConfig.isEnabled());
-  }
-
-  @Override
-  protected ServerSocket createServerSocket(int nport, int backlog, InetAddress bindAddr,
-      int socketBufferSize, boolean sslConnection) throws IOException {
-    printConfig();
-    if (!sslConnection) {
-      return super.createServerSocket(nport, backlog, bindAddr, socketBufferSize, sslConnection);
-    }
-    if (this.sslContext == null) {
-      throw new GemFireConfigException(
-          "SSL not configured correctly, Please look at previous error");
-    }
-    ServerSocketFactory ssf = this.sslContext.getServerSocketFactory();
-    SSLServerSocket serverSocket = (SSLServerSocket) ssf.createServerSocket();
-    serverSocket.setReuseAddress(true);
-    // If necessary, set the receive buffer size before binding the socket so
-    // that large buffers will be allocated on accepted sockets (see
-    // java.net.ServerSocket.setReceiverBufferSize javadocs)
-    if (socketBufferSize != -1) {
-      serverSocket.setReceiveBufferSize(socketBufferSize);
-    }
-    serverSocket.bind(new InetSocketAddress(bindAddr, nport), backlog);
-    finishServerSocket(serverSocket);
-    return serverSocket;
-  }
-
-  /**
-   * Creates or bind server socket to a random port selected from tcp-port-range which is same as
-   * membership-port-range.
-   *
-   *
-   * @return Returns the new server socket.
-   *
-   */
-  public ServerSocket createServerSocketUsingPortRange(InetAddress ba, int backlog,
-      boolean isBindAddress, boolean useNIO, int tcpBufferSize, int[] tcpPortRange)
-      throws IOException {
-    return createServerSocketUsingPortRange(ba, backlog, isBindAddress, useNIO, tcpBufferSize,
-        tcpPortRange, sslConfig.isEnabled());
-  }
-
-  @Override
-  protected RuntimeException problemCreatingSocketInPortRangeException(String s, IOException e) {
-    return new GemFireConfigException(s, e);
-  }
-
-  @Override
-  protected RuntimeException noFreePortException(String reason) {
-    return new SystemConnectException(reason);
-  }
-
-  /**
-   * Return a client socket. This method is used by client/server clients.
-   */
-  public Socket connectForClient(String host, int port, int timeout) throws IOException {
-    return connect(InetAddress.getByName(host), port, timeout, null, true, -1);
-  }
-
-  /**
-   * Return a client socket. This method is used by client/server clients.
-   */
-  public Socket connectForClient(String host, int port, int timeout, int socketBufferSize)
-      throws IOException {
-    return connect(InetAddress.getByName(host), port, timeout, null, true, socketBufferSize);
-  }
-
-  /**
-   * Return a client socket. This method is used by peers.
-   */
-  public Socket connectForServer(InetAddress inetadd, int port) throws IOException {
-    return connect(inetadd, port, 0, null, false, -1);
-  }
-
-  /**
-   * Return a client socket, timing out if unable to connect and timeout > 0 (millis). The parameter
-   * <i>timeout</i> is ignored if SSL is being used, as there is no timeout argument in the ssl
-   * socket factory
-   */
-  public Socket connect(InetAddress inetadd, int port, int timeout,
-      ConnectionWatcher optionalWatcher, boolean clientSide, int socketBufferSize)
-      throws IOException {
-    return connect(inetadd, port, timeout, optionalWatcher, clientSide, socketBufferSize,
-        sslConfig.isEnabled());
-  }
-
-  /**
-   * Return a client socket, timing out if unable to connect and timeout > 0 (millis). The parameter
-   * <i>timeout</i> is ignored if SSL is being used, as there is no timeout argument in the ssl
-   * socket factory
-   */
-  @Override
-  public Socket connect(InetAddress inetadd, int port, int timeout,
-      ConnectionWatcher optionalWatcher, boolean clientSide, int socketBufferSize,
-      boolean sslConnection) throws IOException {
-
-    printConfig();
-
-    if (!sslConnection) {
-      return super.connect(inetadd, port, timeout, optionalWatcher, clientSide, socketBufferSize,
-          sslConnection);
-    }
-
-    // create an SSL connection
-
-    Socket socket;
-    SocketAddress sockaddr = new InetSocketAddress(inetadd, port);
-    if (this.sslContext == null) {
-      throw new GemFireConfigException(
-          "SSL not configured correctly, Please look at previous error");
-    }
-    SocketFactory sf = this.sslContext.getSocketFactory();
-    socket = sf.createSocket();
-
-    // Optionally enable SO_KEEPALIVE in the OS network protocol.
-    socket.setKeepAlive(ENABLE_TCP_KEEP_ALIVE);
-
-    // If necessary, set the receive buffer size before connecting the
-    // socket so that large buffers will be allocated on accepted sockets
-    // (see java.net.Socket.setReceiverBufferSize javadocs for details)
-    if (socketBufferSize != -1) {
-      socket.setReceiveBufferSize(socketBufferSize);
-    }
-
-    try {
-      if (optionalWatcher != null) {
-        optionalWatcher.beforeConnect(socket);
-      }
-      socket.connect(sockaddr, Math.max(timeout, 0));
-      configureClientSSLSocket(socket, timeout);
-      return socket;
-
-    } finally {
-      if (optionalWatcher != null) {
-        optionalWatcher.afterConnect(socket);
-      }
-    }
-  }
-
-  @Override
-  protected Socket createCustomClientSocket(InetAddress inetadd, int port) throws IOException {
-    if (this.clientSocketFactory != null) {
-      return this.clientSocketFactory.createSocket(inetadd, port);
-    }
-    return null;
-  }
-
-  /**
    * Returns an SSLEngine that can be used to perform TLS handshakes and communication
    */
   public SSLEngine createSSLEngine(String hostName, int port) {
-    return sslContext.createSSLEngine(hostName, port);
+    return getSslContext().createSSLEngine(hostName, port);
   }
 
   /**
@@ -803,7 +633,7 @@ public class SocketCreator extends TcpSocketCreatorImpl {
    *
    * @param timeout the number of milliseconds allowed for the handshake to complete
    */
-  public void handshakeIfSocketIsSSL(Socket socket, int timeout) throws IOException {
+  void handshakeIfSocketIsSSL(Socket socket, int timeout) throws IOException {
     if (!(socket instanceof SSLSocket)) {
       return;
     }
@@ -836,46 +666,48 @@ public class SocketCreator extends TcpSocketCreatorImpl {
     }
   }
 
+  /**
+   * Create a server socket with the given transport filters.<br>
+   * Note: This method is outside of the
+   * client/server/advanced interfaces because it references WAN classes that aren't
+   * available to them.
+   */
+  public ServerSocket createServerSocket(int nport, int backlog, InetAddress bindAddr,
+      List<GatewayTransportFilter> transportFilters, int socketBufferSize) throws IOException {
+    if (transportFilters.isEmpty()) {
+      return ((SCServerSocketCreator) forCluster())
+          .createServerSocket(nport, backlog, bindAddr, socketBufferSize, useSSL());
+    } else {
+      printConfig();
+      ServerSocket result = new TransportFilterServerSocket(transportFilters);
+      result.setReuseAddress(true);
+      // Set the receive buffer size before binding the socket so
+      // that large buffers will be allocated on accepted sockets (see
+      // java.net.ServerSocket.setReceiverBufferSize javadocs)
+      result.setReceiveBufferSize(socketBufferSize);
+      try {
+        result.bind(new InetSocketAddress(bindAddr, nport), backlog);
+      } catch (BindException e) {
+        BindException throwMe = new BindException(
+            String.format("Failed to create server socket on %s[%s]", bindAddr, nport));
+        throwMe.initCause(e);
+        throw throwMe;
+      }
+      return result;
+    }
+  }
+
+
   // -------------------------------------------------------------------------
   // Private implementation methods
   // -------------------------------------------------------------------------
 
-  /**
-   * Configure the SSLServerSocket based on this SocketCreator's settings.
-   */
-  private void finishServerSocket(SSLServerSocket serverSocket) {
-    serverSocket.setUseClientMode(false);
-    if (this.sslConfig.isRequireAuth()) {
-      // serverSocket.setWantClientAuth( true );
-      serverSocket.setNeedClientAuth(true);
-    }
-    serverSocket.setEnableSessionCreation(true);
-
-    // restrict protocols
-    String[] protocols = this.sslConfig.getProtocolsAsStringArray();
-    if (!"any".equalsIgnoreCase(protocols[0])) {
-      serverSocket.setEnabledProtocols(protocols);
-    }
-    // restrict ciphers
-    String[] ciphers = this.sslConfig.getCiphersAsStringArray();
-    if (!"any".equalsIgnoreCase(ciphers[0])) {
-      serverSocket.setEnabledCipherSuites(ciphers);
-    }
-
-    SSLParameterExtension sslParameterExtension = this.sslConfig.getSSLParameterExtension();
-    if (sslParameterExtension != null) {
-      SSLParameters modifiedParams =
-          sslParameterExtension.modifySSLServerSocketParameters(serverSocket.getSSLParameters());
-      serverSocket.setSSLParameters(modifiedParams);
-    }
-
-  }
 
   /**
    * When a socket is accepted from a server socket, it should be passed to this method for SSL
    * configuration.
    */
-  private void configureClientSSLSocket(Socket socket, int timeout) throws IOException {
+  void configureClientSSLSocket(Socket socket, int timeout) throws IOException {
     if (socket instanceof SSLSocket) {
       SSLSocket sslSocket = (SSLSocket) socket;
 
@@ -934,7 +766,7 @@ public class SocketCreator extends TcpSocketCreatorImpl {
   /**
    * Print current configured state to log.
    */
-  private void printConfig() {
+  void printConfig() {
     if (!configShown && logger.isDebugEnabled()) {
       configShown = true;
       StringBuilder sb = new StringBuilder();
@@ -951,7 +783,6 @@ public class SocketCreator extends TcpSocketCreatorImpl {
       logger.debug(sb.toString());
     }
   }
-
 
   protected void initializeClientSocketFactory() {
     this.clientSocketFactory = null;
@@ -980,5 +811,4 @@ public class SocketCreator extends TcpSocketCreatorImpl {
     this.clientSocketFactory = new TransportFilterSocketFactory()
         .setGatewayTransportFilters(sender.getGatewayTransportFilters());
   }
-
 }
