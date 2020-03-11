@@ -87,7 +87,7 @@ public class LiveServerPinger extends EndpointListenerAdapter {
     public void run2() {
       if (endpoint.timeToPing(pingIntervalNanos)) {
         try {
-          PingOp.execute(pool, endpoint.getLocation());
+          PingOp.execute(pool, endpoint);
         } catch (Exception e) {
           if (logger.isDebugEnabled()) {
             logger.debug("Error occurred while pinging server: {} - {}", endpoint.getLocation(),
