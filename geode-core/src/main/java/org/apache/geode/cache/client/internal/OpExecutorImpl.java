@@ -373,8 +373,21 @@ public class OpExecutorImpl implements ExecutablePool {
       }
     }
     if (conn == null) {
-      conn = connectionManager.borrowConnection(endpoint.getLocation(), singleServerTimeout,
-          onlyUseExistingCnx);
+      boolean wantedEndpointConnected = false;
+      while (!wantedEndpointConnected) {
+        conn = connectionManager.borrowConnection(endpoint.getLocation(), singleServerTimeout,
+            onlyUseExistingCnx);
+        if (endpoint.getMemberId().equals(conn.getEndpoint().getMemberId())) {
+          wantedEndpointConnected = true;
+        } else {
+          try {
+            conn.close(false);
+          } catch (Exception e) {
+            logger.info("Exception while closing connection.");
+            logger.error(e.getStackTrace());
+          }
+        }
+      }
     }
     try {
       return executeWithPossibleReAuthentication(conn, op);
