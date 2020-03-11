@@ -691,6 +691,12 @@ public class CacheClientNotifier {
       wrapper.incrementPutInProgressCounter("notify clients");
       conflatable = wrapper;
     }
+    if (!filterClients.isEmpty()) {
+      if (event.getOperation().isEntry()) {
+        EntryEventImpl entryEvent = (EntryEventImpl) event;
+        entryEvent.exportNewValue(clientMessage);
+      }
+    }
 
     clientRegistrationEventQueueManager.add(event, conflatable, filterClients, this);
 
@@ -1024,12 +1030,6 @@ public class CacheClientNotifier {
     ClientUpdateMessageImpl clientUpdateMsg =
         new ClientUpdateMessageImpl(operation, (LocalRegion) event.getRegion(), keyOfInterest, null,
             delta, (byte) 0x01, callbackArgument, membershipID, eventIdentifier, versionTag);
-
-    if (event.getOperation().isEntry()) {
-      EntryEventImpl entryEvent = (EntryEventImpl) event;
-      // only need a value if notifyBySubscription is true
-      entryEvent.exportNewValue(clientUpdateMsg);
-    }
 
     if (isNetLoad) {
       clientUpdateMsg.setIsNetLoad(isNetLoad);
