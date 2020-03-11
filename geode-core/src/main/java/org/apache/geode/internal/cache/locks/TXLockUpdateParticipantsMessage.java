@@ -39,8 +39,6 @@ import org.apache.geode.internal.serialization.SerializationContext;
  * Lessor (the origin VM of the transaction) crashes/departs before or while sending the
  * TXCommitMessage but after making the reservation for the transaction.
  *
- * @see org.apache.geode.internal.cache.TXCommitMessage#send(TXLockId)
- * @see org.apache.geode.internal.cache.TXCommitMessage#updateLockMembers
  * @see org.apache.geode.distributed.internal.locks.DLockGrantor#getLockBatch(Object)
  * @see org.apache.geode.distributed.internal.locks.DLockGrantor#updateLockBatch(Object,
  *      org.apache.geode.distributed.internal.locks.DLockBatch)

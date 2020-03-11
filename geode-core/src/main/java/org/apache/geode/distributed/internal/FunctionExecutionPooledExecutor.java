@@ -271,7 +271,7 @@ public class FunctionExecutionPooledExecutor extends ThreadPoolExecutor {
    */
   public FunctionExecutionPooledExecutor(BlockingQueue<Runnable> q, int poolSize,
       PoolStatHelper stats, ThreadFactory tf, ThreadsMonitoring tMonitoring) {
-    /**
+    /*
      * How long an idle thread will wait, in milliseconds, before it is removed from its thread
      * pool. Default is (30000 * 60) ms (30 minutes). It is not static so it can be set at runtime
      * and pick up different values.
@@ -283,7 +283,7 @@ public class FunctionExecutionPooledExecutor extends ThreadPoolExecutor {
 
   public FunctionExecutionPooledExecutor(BlockingQueue<Runnable> q, int poolSize,
       PoolStatHelper stats, ThreadFactory tf, boolean forFnExec, ThreadsMonitoring tMonitoring) {
-    /**
+    /*
      * How long an idle thread will wait, in milliseconds, before it is removed from its thread
      * pool. Default is (30000 * 60) ms (30 minutes). It is not static so it can be set at runtime
      * and pick up different values.

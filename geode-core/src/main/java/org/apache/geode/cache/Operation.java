@@ -64,7 +64,7 @@ public class Operation implements java.io.Serializable {
   private static final int OP_DETAILS_GUARANTEES_OLD_VALUE = 64;
   private static final int OP_DETAILS_REMOVEALL = 128;
 
-  /**
+  /*
    * TAKE NOTE!!! The order if the following static constructors calls must be maintained for
    * backwards compatibility. Any new operations need to be added to the end.
    */

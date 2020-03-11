@@ -85,7 +85,7 @@ public class FunctionExecutionNodePruner {
     int[] currentBucketArray = new int[buckets.size() + 1];
     currentBucketArray[0] = 0;
 
-    /**
+    /*
      * First Logic: Just implement the Greedy algorithm where you keep adding nodes which has the
      * biggest set of non-currentBucketSet. // Deterministic but it (almost)always chooses minimum
      * no of nodes to execute the function on.

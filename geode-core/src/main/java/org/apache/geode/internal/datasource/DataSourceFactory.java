@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.datasource;
 
-/**
+/*
  * This class models a datasource factory.The datasource factory has funtions to create 3 types of
  * datasources. 1) Basic datasource without any connection pooling. 2) Datasource with pooled
  * connections. 3) Datasource with pooled connection and transaction capabilities.

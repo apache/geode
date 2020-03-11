@@ -93,7 +93,7 @@ public interface GatewayReceiver {
    * Destroys this {@code GatewayReceiver}and removes the {@code GatewayReceiverMBean}
    * associated with this {@code GatewayReceiver}. This method does not remove
    * the {@code GatewayReceiver} from cluster configuration.
-   * The {@link #stop() stop} method should be called before calling {@link #destroy() destroy}
+   * The {@link #stop() stop} method should be called before calling destroy}
    *
    *
    * @throws GatewayReceiverException if {@code GatewayReceiver} has not been stopped before

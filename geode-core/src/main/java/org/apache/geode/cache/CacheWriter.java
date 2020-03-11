@@ -101,7 +101,7 @@ public interface CacheWriter<K, V> extends CacheCallback {
    * cascading subregion destroys. This method is <em>not</em> called as a result of
    * {@link Region#close}, {@link Cache#close}, or {@link Region#localDestroyRegion()}. However, the
    * {@link Region#close} method is invoked regardless of whether a region is destroyed locally. A
-   * non-local region destroy results in an invocation of {@link #beforeRegionDestroy} followed by
+   * non-local region destroy results in an invocation of this method is followed by
    * an invocation of {@link Region#close}.
    * <p>
    * WARNING: This method should not destroy or create any regions itself or a deadlock will occur.

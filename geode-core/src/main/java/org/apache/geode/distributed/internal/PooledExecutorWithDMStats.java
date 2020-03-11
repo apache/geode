@@ -144,7 +144,7 @@ public class PooledExecutorWithDMStats extends ThreadPoolExecutor {
   public PooledExecutorWithDMStats(BlockingQueue<Runnable> q, int poolSize, PoolStatHelper stats,
       ThreadFactory tf, ThreadsMonitoring tMonitoring,
       String systemPropertyPrefix) {
-    /**
+    /*
      * How long an idle thread will wait, in milliseconds, before it is removed from its thread
      * pool. Default is (30000 * 60) ms (30 minutes). It is not static so it can be set at runtime
      * and pick up different values.

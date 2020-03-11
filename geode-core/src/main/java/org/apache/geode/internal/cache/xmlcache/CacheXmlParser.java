@@ -188,7 +188,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
    */
   public static CacheXmlParser parse(InputStream is) {
 
-    /**
+    /*
      * The API doc http://java.sun.com/javase/6/docs/api/org/xml/sax/InputSource.html for the SAX
      * InputSource says: "... standard processing of both byte and character streams is to close
      * them on as part of end-of-parse cleanup, so applications should not attempt to re-use such

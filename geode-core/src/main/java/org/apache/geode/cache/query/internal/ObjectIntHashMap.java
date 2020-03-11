@@ -406,7 +406,7 @@ public class ObjectIntHashMap implements Cloneable, Serializable {
     int hash = (key == null) ? 0 : hash(hashingStrategy.hashCode(key));
     int i = indexFor(hash, table.length);
 
-    /**
+    /*
      * Look for preexisting entry for key. This will never happen for clone or deserialize. It will
      * only happen for construction if the input Map is a sorted map whose ordering is inconsistent
      * w/ equals.

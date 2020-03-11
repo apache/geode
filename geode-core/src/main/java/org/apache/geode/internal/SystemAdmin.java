@@ -194,10 +194,10 @@ public class SystemAdmin {
       throw new GemFireIOException("Unable to delete " + logFile.getAbsolutePath());
     }
     boolean treatAsPure = true;
-    /**
+    /*
      * A counter used by PureJava to determine when its waited too long to start the locator
      * process. countDown * 250 = how many seconds to wait before giving up.
-     **/
+     */
     int countDown = 60;
     // NYI: wait around until we can attach
     while (!ManagerInfo.isLocatorStarted(directory)) {

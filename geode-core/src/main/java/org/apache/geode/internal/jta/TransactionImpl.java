@@ -14,13 +14,6 @@
  */
 package org.apache.geode.internal.jta;
 
-/**
- * TransactionImpl implements the JTA Transaction interface.
- *
- * @deprecated as of Geode 1.2.0 user should use a third party JTA transaction manager to manage JTA
- *             transactions.
- */
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -36,6 +29,12 @@ import javax.transaction.xa.XAResource;
 
 import org.apache.geode.LogWriter;
 
+/**
+ * TransactionImpl implements the JTA Transaction interface.
+ *
+ * @deprecated as of Geode 1.2.0 user should use a third party JTA transaction manager to manage JTA
+ *             transactions.
+ */
 @Deprecated
 public class TransactionImpl implements Transaction {
 

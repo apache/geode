@@ -255,7 +255,8 @@ public class InitialImageOperation {
    * @param targetReinitialized true if candidate should wait until initialized before responding
    * @param recoveredRVV recovered rvv
    * @return true if succeeded to get image
-   * @throws org.apache.geode.cache.TimeoutException
+   * @throws org.apache.geode.cache.TimeoutException when it is unable to get a reply within the
+   *         limit.
    */
   GIIStatus getFromOne(Set recipientSet, boolean targetReinitialized,
       CacheDistributionAdvisor.InitialImageAdvice advice, boolean recoveredFromDisk,
@@ -263,7 +264,7 @@ public class InitialImageOperation {
     final boolean isDebugEnabled = logger.isDebugEnabled();
 
     if (VMOTION_DURING_GII) {
-      /**
+      /*
        * TODO (ashetkar): recipientSet may contain more than one member. Ensure only the gii-source
        * member is vMotioned. The test hook may need to be placed at another point.
        */
@@ -3907,7 +3908,7 @@ public class InitialImageOperation {
             ex.getMessage(), ex);
       }
 
-      /**
+      /*
        * now that interest is in place we need to flush operations to the image provider
        */
       for (String regionName : regionsWithInterest) {

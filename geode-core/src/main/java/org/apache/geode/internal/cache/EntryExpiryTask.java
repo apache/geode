@@ -15,7 +15,7 @@
 
 package org.apache.geode.internal.cache;
 
-/**
+/*
  * EntryExpiryTask represents a timeout event for a region entry.
  */
 

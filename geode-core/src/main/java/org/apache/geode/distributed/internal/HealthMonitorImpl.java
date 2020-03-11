@@ -51,8 +51,8 @@ public class HealthMonitorImpl implements HealthMonitor, Runnable {
   @MakeNotStatic
   private static int idCtr = 0;
 
-  /********** Constructors *********/
-  /**
+  /* Constructors */
+  /*
    * Creates a health monitor given its owner, configuration, and its dm
    */
   public HealthMonitorImpl(InternalDistributedMember owner, GemFireHealthConfig config,
@@ -91,7 +91,7 @@ public class HealthMonitorImpl implements HealthMonitor, Runnable {
     }
   }
 
-  /********** HealthMonitorImpl public methods **********/
+  /* HealthMonitorImpl public methods */
   /**
    * Starts the monitor so that it will periodically do health checks.
    */
@@ -107,7 +107,7 @@ public class HealthMonitorImpl implements HealthMonitor, Runnable {
     this.t.start();
   }
 
-  /********** Runnable interface implementation **********/
+  /* Runnable interface implementation */
 
   @Override
   public void run() {
