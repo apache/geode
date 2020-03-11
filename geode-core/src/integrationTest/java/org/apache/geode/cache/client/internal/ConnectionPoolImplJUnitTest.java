@@ -169,7 +169,7 @@ public class ConnectionPoolImplJUnitTest {
     assertTrue(pool2.isDestroyed());
   }
 
-  @Test
+  @Test(timeout = 5000)
   public void testExecuteOp() throws Exception {
     CacheServer server1 = cache.addCacheServer();
     CacheServer server2 = cache.addCacheServer();
