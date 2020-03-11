@@ -593,6 +593,12 @@ public class AutoConnectionSourceImplJUnitTest {
     }
 
     @Override
+    public Object executeOn(Endpoint endpoint, Op op, boolean accessed,
+        boolean onlyUseExistingCnx) {
+      return null;
+    }
+
+    @Override
     public Object executeOnPrimary(Op op) {
       return null;
     }
