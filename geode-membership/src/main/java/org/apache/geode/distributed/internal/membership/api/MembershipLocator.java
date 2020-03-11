@@ -38,7 +38,7 @@ public interface MembershipLocator<ID extends MemberIdentifier> {
 
   void restarting() throws IOException;
 
-  SocketAddress getBindAddress();
+  SocketAddress getSocketAddress();
 
   void setMembership(Membership<ID> membership);
 

@@ -224,7 +224,7 @@ public class TcpServer {
    * @param millis how long to wait
    */
   public void join(long millis) throws InterruptedException {
-    if (serverThread != null) {
+    if (isAlive()) {
       serverThread.join(millis);
     }
   }
@@ -233,7 +233,7 @@ public class TcpServer {
    * Wait on the server-socket thread using {@link Thread#join()}
    */
   public void join() throws InterruptedException {
-    if (serverThread != null) {
+    if (isAlive()) {
       serverThread.join();
     }
   }
@@ -258,7 +258,7 @@ public class TcpServer {
    *
    * @see ServerSocket#getLocalSocketAddress()
    */
-  public SocketAddress getBindAddress() {
+  public SocketAddress getSocketAddress() {
     return srv_sock.getLocalSocketAddress();
   }
 
