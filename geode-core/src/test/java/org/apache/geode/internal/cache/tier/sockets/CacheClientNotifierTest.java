@@ -48,10 +48,13 @@ import org.junit.Test;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.query.internal.cq.ServerCQ;
 import org.apache.geode.internal.cache.DistributedRegion;
+import org.apache.geode.internal.cache.EntryEventImpl;
+import org.apache.geode.internal.cache.EnumListenerEvent;
 import org.apache.geode.internal.cache.FilterProfile;
 import org.apache.geode.internal.cache.FilterRoutingInfo;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheEvent;
+import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RegionQueueException;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.test.fake.Fakes;
@@ -156,6 +159,31 @@ public class CacheClientNotifierTest {
     }
 
     verify(cacheClientProxy, times(1)).deliverMessage(isA(HAEventWrapper.class));
+  }
+
+  @Test
+  public void initializingMessageShouldntSerializeValuePrematurely() throws Exception {
+    InternalCache internalCache = Fakes.cache();
+    CacheServerStats cacheServerStats = mock(CacheServerStats.class);
+    ConnectionListener connectionListener = mock(ConnectionListener.class);
+    ClientProxyMembershipID clientProxyMembershipID = mock(ClientProxyMembershipID.class);
+    ClientRegistrationMetadata clientRegistrationMetadata = mock(ClientRegistrationMetadata.class);
+    StatisticsClock statisticsClock = mock(StatisticsClock.class);
+
+    when(clientRegistrationMetadata.getClientProxyMembershipID()).thenReturn(
+        clientProxyMembershipID);
+
+    CacheClientNotifier cacheClientNotifier = CacheClientNotifier.getInstance(internalCache,
+        new ClientRegistrationEventQueueManager(), statisticsClock, cacheServerStats, 0, 0,
+        connectionListener, null, false);
+    LocalRegion region = mock(LocalRegion.class);
+
+    EntryEventImpl entryEvent = mock(EntryEventImpl.class);
+    when(entryEvent.getEventType()).thenReturn(EnumListenerEvent.AFTER_CREATE);
+    when(entryEvent.getOperation()).thenReturn(Operation.CREATE);
+    when(entryEvent.getRegion()).thenReturn(region);
+    cacheClientNotifier.constructClientMessage(entryEvent);
+    verify(entryEvent, times(0)).exportNewValue(any());
   }
 
   @Test
