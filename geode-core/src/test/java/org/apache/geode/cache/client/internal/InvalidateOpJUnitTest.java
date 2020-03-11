@@ -88,7 +88,7 @@ public class InvalidateOpJUnitTest {
     when(pool.getConnectionCount()).thenReturn(2);
 
     InvalidateOp.execute(pool, "testregion", event, true, region);
-    verify(pool).executeOn(any(), any(), eq(true), eq(false));
+    verify(pool).executeOn((ServerLocation) any(), any(), eq(true), eq(false));
   }
 
   @Test
@@ -103,6 +103,6 @@ public class InvalidateOpJUnitTest {
     when(pool.getConnectionCount()).thenReturn(10);
 
     InvalidateOp.execute(pool, "testregion", event, true, region);
-    verify(pool).executeOn(any(), any(), eq(true), eq(true));
+    verify(pool).executeOn((ServerLocation) any(), any(), eq(true), eq(true));
   }
 }

@@ -349,7 +349,8 @@ public class OpExecutorImpl implements ExecutablePool {
     }
   }
 
-  protected Object executeOn(Endpoint endpoint, Op op, boolean accessed,
+  @Override
+  public Object executeOn(Endpoint endpoint, Op op, boolean accessed,
       boolean onlyUseExistingCnx) {
     boolean returnCnx = true;
     boolean pingOp = (op instanceof PingOp.PingOpImpl);
@@ -372,7 +373,8 @@ public class OpExecutorImpl implements ExecutablePool {
       }
     }
     if (conn == null) {
-      conn = connectionManager.borrowConnection(endpoint.getLocation(), onlyUseExistingCnx);
+      conn = connectionManager.borrowConnection(endpoint.getLocation(), singleServerTimeout,
+          onlyUseExistingCnx);
     }
     try {
       return executeWithPossibleReAuthentication(conn, op);

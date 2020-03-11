@@ -38,7 +38,7 @@ public class PingOp {
 
   public static void execute(ExecutablePool pool, Endpoint endpoint) {
     AbstractOp op = new PingOpImpl();
-    ((OpExecutorImpl) pool).executeOn(endpoint, op, false, false);
+    pool.executeOn(endpoint, op, false, false);
   }
 
   private PingOp() {
