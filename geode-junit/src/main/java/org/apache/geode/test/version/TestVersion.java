@@ -17,10 +17,14 @@ package org.apache.geode.test.version;
 import java.io.Serializable;
 import java.util.Objects;
 
+import org.apache.geode.internal.serialization.Version;
+
 public class TestVersion implements Comparable, Serializable {
+  public static final TestVersion CURRENT_VERSION = new TestVersion(VersionManager.CURRENT_VERSION);
+
   private final int major;
   private final int minor;
-  private final int patch;
+  private final int release;
 
   public static TestVersion valueOf(final String versionString) {
     return new TestVersion(versionString);
@@ -36,7 +40,7 @@ public class TestVersion implements Comparable, Serializable {
     if (split[2].contains("-incubating")) {
       split[2] = split[2].substring(0, split[2].length() - "-incubating".length());
     }
-    patch = Integer.parseInt(split[2]);
+    release = Integer.parseInt(split[2]);
   }
 
   /**
@@ -47,9 +51,18 @@ public class TestVersion implements Comparable, Serializable {
     return new TestVersion(version1).compareTo(new TestVersion(version2));
   }
 
+  public boolean isSameAs(Version version) {
+    if (equals(CURRENT_VERSION) && version.equals(Version.getCurrentVersion())) {
+      return true;
+    }
+    return release == version.getRelease()
+        && minor == version.getMinorVersion()
+        && major == version.getMajorVersion();
+  }
+
   @Override
   public String toString() {
-    return "" + major + "." + minor + "." + patch;
+    return "" + major + "." + minor + "." + release;
   }
 
 
@@ -64,18 +77,18 @@ public class TestVersion implements Comparable, Serializable {
     TestVersion that = (TestVersion) o;
     return major == that.major &&
         minor == that.minor &&
-        patch == that.patch;
+        release == that.release;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(major, minor, patch);
+    return Objects.hash(major, minor, release);
   }
 
-  public TestVersion(int major, int minor, int patch) {
+  public TestVersion(int major, int minor, int release) {
     this.major = major;
     this.minor = minor;
-    this.patch = patch;
+    this.release = release;
   }
 
   @Override
@@ -92,7 +105,7 @@ public class TestVersion implements Comparable, Serializable {
     if (comparison != 0) {
       return comparison;
     }
-    return Integer.compare(patch, other.patch);
+    return Integer.compare(release, other.release);
   }
 
   public int compareTo(int major, int minor, int patch) {

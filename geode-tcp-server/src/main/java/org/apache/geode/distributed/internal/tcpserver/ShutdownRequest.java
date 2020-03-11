@@ -21,7 +21,8 @@ import org.apache.geode.internal.serialization.BasicSerializable;
 /**
  * A request to the TCP server to shutdown
  *
- * @since GemFire 5.7
+ * @see TcpClient#requestToServer(HostAndPort, Object, int)
+ * @see ShutdownResponse
  */
 public class ShutdownRequest implements BasicSerializable {
 }

@@ -24,9 +24,9 @@ import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 
 /**
- * Get GemFire version of the member running TcpServer.
+ * An internal message sent back to TcpClient from a TcpServer to respond to a
  *
- * @since GemFire 7.1
+ * @{link VersionRequest}
  */
 public class VersionResponse implements BasicSerializable {
   private short versionOrdinal = Version.TOKEN.ordinal();

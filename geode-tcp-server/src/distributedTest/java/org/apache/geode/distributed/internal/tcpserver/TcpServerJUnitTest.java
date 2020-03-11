@@ -49,19 +49,21 @@ import org.junit.experimental.categories.Category;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import org.apache.geode.DataSerializable;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.InfoRequestHandler;
-import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.PoolStatHelper;
 import org.apache.geode.distributed.internal.ProtocolCheckerImpl;
+import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.internal.AvailablePort;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.client.protocol.ClientProtocolServiceLoader;
 import org.apache.geode.internal.logging.CoreLoggingExecutors;
 import org.apache.geode.internal.net.SocketCreatorFactory;
-import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.internal.serialization.BasicSerializable;
+import org.apache.geode.internal.serialization.DSFIDSerializer;
+import org.apache.geode.internal.serialization.DSFIDSerializerFactory;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.test.junit.categories.MembershipTest;
 import org.apache.geode.util.internal.GeodeGlossary;
 
@@ -69,8 +71,8 @@ import org.apache.geode.util.internal.GeodeGlossary;
 public class TcpServerJUnitTest {
 
   private static final int TIMEOUT = 60 * 1000;
-  private/* GemStoneAddition */ InetAddress localhost;
-  private/* GemStoneAddition */ int port;
+  private InetAddress localhost;
+  private int port;
   private SimpleStats stats;
   private TcpServer server;
 
@@ -90,16 +92,17 @@ public class TcpServerJUnitTest {
 
     stats = new SimpleStats();
 
+    DSFIDSerializer serializer = new DSFIDSerializerFactory().create();
+    Services.registerSerializables(serializer);
     server = new TcpServer(port, localhost, handler,
         "server thread", new ProtocolCheckerImpl(null, new ClientProtocolServiceLoader()),
         DistributionStats::getStatTime,
         () -> CoreLoggingExecutors.newThreadPoolWithSynchronousFeed("locator request thread ",
-            InternalLocator.MAX_POOL_SIZE, stats, InternalLocator.POOL_IDLE_TIMEOUT,
+            100, stats, TIMEOUT,
             new ThreadPoolExecutor.CallerRunsPolicy()),
-        SocketCreatorFactory
-            .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR),
-        InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
-        InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer(),
+        null,
+        serializer.getObjectSerializer(),
+        serializer.getObjectDeserializer(),
         GeodeGlossary.GEMFIRE_PREFIX + "TcpServer.READ_TIMEOUT",
         GeodeGlossary.GEMFIRE_PREFIX + "TcpServer.BACKLOG");
     server.start();
@@ -158,10 +161,11 @@ public class TcpServerJUnitTest {
   }
 
   private TcpClient createTcpClient() {
-    return new TcpClient(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR),
-        InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
-        InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());
+    DSFIDSerializer serializer = new DSFIDSerializerFactory().create();
+    Services.registerSerializables(serializer);
+    return new TcpClient(new TcpSocketCreatorImpl(),
+        serializer.getObjectSerializer(),
+        serializer.getObjectDeserializer());
   }
 
   @Test
@@ -177,7 +181,8 @@ public class TcpServerJUnitTest {
       public void run() {
         Boolean delay = Boolean.valueOf(true);
         try {
-          tcpClient.requestToServer(new HostAndPort(localhost.getHostAddress(), port), delay,
+          tcpClient.requestToServer(new HostAndPort(localhost.getHostAddress(), port),
+              new TestObject(1),
               TIMEOUT);
         } catch (IOException e) {
           e.printStackTrace();
@@ -192,7 +197,7 @@ public class TcpServerJUnitTest {
       Thread.sleep(500);
       assertFalse(done.get());
       tcpClient.requestToServer(new HostAndPort(localhost.getHostAddress(), port),
-          Boolean.valueOf(false), TIMEOUT);
+          new TestObject(0), TIMEOUT);
       assertFalse(done.get());
 
       latch.countDown();
@@ -255,28 +260,30 @@ public class TcpServerJUnitTest {
     assertFalse(server.isAlive());
   }
 
-  private static class TestObject implements DataSerializable {
+  private static class TestObject implements BasicSerializable {
     int id;
 
-    public TestObject() {
+    public TestObject() {}
 
+    public TestObject(int id) {
+      this.id = id;
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException {
+    public void fromData(DataInput in, DeserializationContext context) throws IOException {
       id = in.readInt();
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
+    public void toData(DataOutput out, SerializationContext context) throws IOException {
       out.writeInt(id);
     }
 
   }
 
-  private/* GemStoneAddition */ static class EchoHandler implements TcpHandler {
+  private static class EchoHandler implements TcpHandler {
 
-    protected/* GemStoneAddition */ boolean shutdown;
+    protected boolean shutdown;
 
 
     @Override
@@ -316,8 +323,8 @@ public class TcpServerJUnitTest {
 
     @Override
     public Object processRequest(Object request) throws IOException {
-      Boolean delay = (Boolean) request;
-      if (delay.booleanValue()) {
+      TestObject delay = (TestObject) request;
+      if (delay.id > 0) {
         try {
           latch.await(120 * 1000, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {

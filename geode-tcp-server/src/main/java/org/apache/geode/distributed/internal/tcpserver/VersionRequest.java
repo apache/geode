@@ -16,9 +16,10 @@ package org.apache.geode.distributed.internal.tcpserver;
 
 
 import org.apache.geode.internal.serialization.BasicSerializable;
+import org.apache.geode.internal.serialization.Version;
 
 /**
- * @since GemFire 7.1
+ * An internal message used by TcpClient to determine the {@linkplain Version} of a TcpServer
  */
 public class VersionRequest implements BasicSerializable {
 }

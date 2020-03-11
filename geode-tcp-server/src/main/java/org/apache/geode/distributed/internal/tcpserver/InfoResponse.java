@@ -25,9 +25,10 @@ import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
 
 /**
- * A response from the TCP server with information about the server
+ * A response to an InfoRequest message
  *
- * @since GemFire 5.7
+ * @see TcpClient#getInfo(HostAndPort)
+ * @deprecated this was created for the deprecated Admin API
  */
 public class InfoResponse implements BasicSerializable {
   private String[] info;

@@ -16,6 +16,10 @@ package org.apache.geode.distributed.internal.tcpserver;
 
 import java.io.IOException;
 
+/**
+ * A TcpHandler is the handler of messages not directly processed by TcpServer itself.
+ * The messages handled by TcpServer are those in this package.
+ */
 public interface TcpHandler {
   /**
    * Process a request and return a response

@@ -24,6 +24,10 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import org.apache.geode.util.internal.GeodeGlossary;
 
+/**
+ * AdvancedSocketCreatorImpl is constructed and held by a TcpSocketCreator. It is
+ * accessed through the method {@link TcpSocketCreator#forAdvancedUse()}.
+ */
 public class AdvancedSocketCreatorImpl implements AdvancedSocketCreator {
 
   public static final boolean ENABLE_TCP_KEEP_ALIVE;
@@ -133,7 +137,7 @@ public class AdvancedSocketCreatorImpl implements AdvancedSocketCreator {
                 new InetSocketAddress(isBindAddress ? ba : null, localPort);
             socket.bind(address, backlog);
           } else {
-            socket = socketCreator.serverSocketCreator.createServerSocket(localPort,
+            socket = socketCreator.clusterSocketCreator.createServerSocket(localPort,
                 backlog, isBindAddress ? ba : null,
                 tcpBufferSize, sslConnection);
           }
