@@ -1,0 +1,370 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+{% from 'shared_jinja.yml' import pipeline_prefix with context %}
+{% from 'shared_jinja.yml' import github_access with context %}
+{% from 'shared_jinja.yml' import init_retry with context %}
+
+---
+
+{% macro plan_resource_gets(test) %}
+- get: geode-ci
+#  passed:
+#  - Build
+- aggregate:
+  - get: geode
+    trigger: true
+#    passed:
+#    - Build
+  - get: geode-build-version
+#    trigger: true
+#    passed:
+#    - Build
+{% endmacro %}
+
+{%- macro deep_merge(a, b): %}
+  {%- if b is defined %}
+    {%- for k,v in b.items(): %}
+      {%- if v is not defined: %}
+        {%- do a.pop(k) %}
+      {%- else: %}
+        {%- if v is mapping: %}
+          {%- if a[k] is not mapping: %}
+            {%- do a.update({ k: { } }) %}
+          {%- endif %}
+          {%- do deep_merge(a[k], v) %}
+        {%- else: %}
+          {%- do a.update({ k: v }) %}
+        {%- endif %}
+      {% endif %}
+    {%- endfor %}
+  {%- endif %}
+{%- endmacro %}
+
+{%- do deep_merge(a, b) %}
+
+{% macro common_instance_params(test) -%}
+GCP_PROJECT: ((gcp-project))
+CPUS: {{ test.CPUS }}
+RAM: {{ test.RAM }}
+{%- endmacro %}
+
+{% macro common_test_params(test) -%}
+  {%- if test.CALL_STACK_TIMEOUT -%}
+CALL_STACK_TIMEOUT: {{ test.CALL_STACK_TIMEOUT }}
+  {%- endif %}
+  {%- if test.GRADLE_TASK_OPTIONS -%}
+GRADLE_TASK_OPTIONS: {{ test.GRADLE_TASK_OPTIONS }}
+  {%- endif %}
+DUNIT_PARALLEL_FORKS: {{ test.DUNIT_PARALLEL_FORKS }}
+MAINTENANCE_VERSION: ((geode-build-branch ))
+BUILD_BRANCH: ((geode-build-branch))
+PARALLEL_DUNIT: {{ test.PARALLEL_DUNIT }}
+{% if test.PARALLEL_GRADLE is defined %}
+PARALLEL_GRADLE: {{ test.PARALLEL_GRADLE }}
+{% else %}
+PARALLEL_GRADLE: true
+{% endif %}
+ARTIFACT_BUCKET: ((artifact-bucket))
+SERVICE_ACCOUNT: ((concourse-gcp-account))
+GRADLE_GLOBAL_ARGS: ((gradle-global-args))
+{%- endmacro %}
+
+groups:
+- name: main
+  jobs:
+  {%- for test in (tests) if test.name=="Distributed" -%}
+    {% for java_test_version in (java_test_versions) if java_test_version.name=="OpenJDK8" %}
+  - {{test.name}}Test{{java_test_version.name}}
+    {%- endfor -%}
+  {%- endfor %}
+  - PinGeode
+  - TriggerMassRun
+
+resources:
+- name: weekly
+  type: time
+  source:
+    interval: 168h
+- name: concourse-metadata-resource
+  type: concourse-metadata-resource
+  source: {}
+- name: geode
+  type: git
+  source:
+    branch: ((geode-build-branch))
+    ignore_paths:
+      - ci/*
+      - dev-tools/release/*
+      - "*.md"
+    {{ github_access() | indent(4) }}
+- name: geode-ci
+  type: git
+  source:
+    branch: ((geode-build-branch))
+    depth: 1
+    paths:
+    - ci/*
+    {{ github_access() | indent(4) }}
+- name: geode-build-version
+  type: semver
+  source:
+    bucket: ((artifact-bucket))
+    driver: gcs
+    initial_version: {{ metadata.initial_version }}
+    json_key: ((!concourse-gcp-key))
+    key: semvers/((pipeline-prefix))((geode-build-branch))/version
+- name: alpine-tools-image
+  type: docker-image
+  source:
+    username: ((docker-username))
+    password: ((docker-password))
+    repository: gcr.io/((gcp-project))/((pipeline-prefix))alpine-tools
+    tag: latest
+- name: linux-builder-image-family
+  type: gci
+  source:
+    key: ((concourse-gcp-key))
+    family_project: ((gcp-project))
+    family: ((pipeline-prefix))linux-geode-builder
+
+resource_types:
+- name: gci
+  type: registry-image
+  source:
+    repository: smgoller/gci-resource
+- name: concourse-metadata-resource
+  type: docker-image
+  source:
+    password: ((docker-password))
+    repository: gcr.io/((gcp-project))/((pipeline-prefix))concourse-metadata-resource
+    tag: latest
+    username: ((docker-username))
+- name: gcs-resource
+  type: docker-image
+  source:
+    repository: frodenas/gcs-resource
+
+jobs:
+- name: TriggerMassRun
+  max_in_flight: 1
+  plan:
+  - get: weekly
+    trigger: true
+    passed: [PinGeode]
+  - get: alpine-tools-image
+  - task: run-distributed-test-N-times
+    image: alpine-tools-image
+    config:
+      platform: linux
+      params:
+        CONCOURSE_URL: ((concourse-url))
+        CONCOURSE_TEAM: ((concourse-team))
+        PIPELINE_PREFIX: ((pipeline-prefix))
+        MASS_RUN_NUMBER: 2
+      {%- if repository.upstream_fork!="apache" %}
+        CONCOURSE_USERNAME: ((concourse-username))
+        CONCOURSE_PASSWORD: ((concourse-password))
+      {%- endif %}
+      run:
+        path: bash
+        args:
+        - -exc
+        - |
+          BASE_DIR=$(pwd)
+          curl "${CONCOURSE_URL}/api/v1/cli?arch=amd64&platform=linux" --output fly
+          chmod +x fly
+          TARGET_NAME=concourse
+          ./fly -t ${TARGET_NAME} login -c "${CONCOURSE_URL}" -n "${CONCOURSE_TEAM}" -u "${CONCOURSE_USERNAME}" -p "${CONCOURSE_PASSWORD}"
+          for t in $(seq ${MASS_RUN_NUMBER}); do
+            ./fly -t ${TARGET_NAME} trigger-job -j ${PIPELINE_PREFIX}mass-test-run/DistributedTestOpenJDK8
+          done
+
+{%- for test in tests if test.name=="Distributed" %}
+  {%- set parameters = {} %}
+  {%- do deep_merge(parameters, test) %}
+  {%- for java_test_version in (java_test_versions) if java_test_version.name=="OpenJDK8" -%}
+    {%- if java_test_version.override is defined and java_test_version.override[test.name] is defined %}
+      {%- do deep_merge(parameters, java_test_version.override[test.name]) %}
+    {%- endif %}
+- name: {{test.name}}Test{{java_test_version.name}}
+  max_in_flight: 5
+  plan:
+  - do:
+    {{- plan_resource_gets(test) |indent(4) }}
+      - put: concourse-metadata-resource
+      - get: alpine-tools-image
+      - get: {{ test.PLATFORM}}-builder-image-family
+    - do:
+      {{ init_retry()|indent(6) }}
+      - task: create_instance-{{java_test_version.name}}
+        image: alpine-tools-image
+        config:
+          platform: linux
+          params:
+            {{ common_instance_params(parameters) | indent(12) }}
+            GEODE_BRANCH: {{repository.branch}}
+            GEODE_FORK: {{repository.fork}}
+            JAVA_BUILD_VERSION: {{ java_build_version.version }}
+            JAVA_TEST_VERSION: {{ java_test_version.version }}
+            IMAGE_FAMILY_NAME: ((pipeline-prefix)){{ test.PLATFORM }}-geode-builder
+          run:
+            path: geode-ci/ci/scripts/create_instance.sh
+          inputs:
+          - name: concourse-metadata-resource
+          - name: geode-ci
+          - name: geode
+          - name: attempts-log
+            path: old
+          outputs:
+          - name: instance-data-{{java_test_version.name}}
+            path: instance-data
+          - name: attempts-log
+            path: new
+        timeout: 20m
+        attempts: 5
+      - do:
+        - task: rsync_code_up-{{java_test_version.name}}
+          image: alpine-tools-image
+          config:
+            platform: linux
+            run:
+              path: geode-ci/ci/scripts/rsync_code_up.sh
+            inputs:
+            - name: geode-ci
+            - name: geode
+            - name: instance-data-{{java_test_version.name}}
+              path: instance-data
+          timeout: 15m
+          attempts: 5
+        - task: execute_tests-{{java_test_version.name}}
+          image: alpine-tools-image
+          config:
+            platform: linux
+            params:
+              ARTIFACT_SLUG: {{test.ARTIFACT_SLUG}}-{{java_test_version.name}}
+              JAVA_BUILD_VERSION: {{ java_build_version.version }}
+              JAVA_TEST_VERSION: {{ java_test_version.version }}
+              GRADLE_TASK: {{test.GRADLE_TASK}}
+              {{ common_test_params(parameters) | indent(14) }}
+            run:
+              path: geode-ci/ci/scripts/execute_tests.sh
+            inputs:
+            - name: geode-ci
+            - name: geode
+            - name: instance-data-{{java_test_version.name}}
+              path: instance-data
+          timeout: {{parameters.EXECUTE_TEST_TIMEOUT}}
+        ensure:
+          do:
+          - task: rsync_code_down-{{java_test_version.name}}
+            image: alpine-tools-image
+            config:
+              platform: linux
+              params:
+                JAVA_BUILD_VERSION: {{ java_build_version.version }}
+                ARTIFACT_SLUG: {{test.ARTIFACT_SLUG}}-{{java_test_version.name}}
+              run:
+                path: geode-ci/ci/scripts/rsync_code_down.sh
+              inputs:
+              - name: geode-ci
+              - name: instance-data-{{java_test_version.name}}
+                path: instance-data
+              outputs:
+              - name: geode-results-{{java_test_version.name}}
+                path: geode-results
+            timeout: 15m
+            attempts: 5
+          ensure:
+            do:
+            - aggregate:
+              - task: archive_results-{{java_test_version.name}}
+                image: alpine-tools-image
+                config:
+                  platform: linux
+                  params:
+                    ARTIFACT_SLUG: {{test.ARTIFACT_SLUG}}-{{java_test_version.name}}
+                    GRADLE_TASK: {{test.GRADLE_TASK}}
+                    MAINTENANCE_VERSION: ((geode-build-branch))
+                    ARTIFACT_BUCKET: ((artifact-bucket))
+                    SERVICE_ACCOUNT: ((!concourse-gcp-account))
+                  run:
+                    path: geode-ci/ci/scripts/archive_results.sh
+                  inputs:
+                    - name: concourse-metadata-resource
+                    - name: geode-ci
+                    - name: geode-build-version
+                    - name: geode-results-{{java_test_version.name}}
+                      path: geode-results
+                timeout: 1h
+              - task: delete_instance-{{java_test_version.name}}
+                image: alpine-tools-image
+                config:
+                  platform: linux
+                  run:
+                    path: geode-ci/ci/scripts/delete_instance.sh
+                  inputs:
+                  - name: geode-ci
+                  - name: instance-data-{{java_test_version.name}}
+                    path: instance-data
+                timeout: 1h
+{% endfor -%}
+{% endfor -%}
+
+- name: PinGeode
+  max_in_flight: 1
+  plan:
+  - get: weekly
+    trigger: true
+  - get: geode
+  - get: geode-ci
+  - get: alpine-tools-image
+  - task: pin-geode-resource
+    image: alpine-tools-image
+    config:
+      platform: linux
+      inputs:
+      - name: geode
+      - name: geode-ci
+      params:
+        CONCOURSE_URL: ((concourse-url))
+        CONCOURSE_TEAM: ((concourse-team))
+        PIPELINE_PREFIX: ((pipeline-prefix))
+      {%- if repository.upstream_fork!="apache" %}
+        CONCOURSE_USERNAME: ((concourse-username))
+        CONCOURSE_PASSWORD: ((concourse-password))
+      {%- endif %}
+      run:
+        path: bash
+        args:
+        - -exc
+        - |
+          BASE_DIR=$(pwd)
+          pushd geode
+            GEODE_REF=$(git rev-parse HEAD)
+          popd
+          pushd geode-ci
+            GEODE_CI_REF=$(git rev-parse HEAD)
+          popd
+          curl "${CONCOURSE_URL}/api/v1/cli?arch=amd64&platform=linux" --output fly
+          chmod +x fly
+          TARGET_NAME=concourse
+          set +x
+          ./fly -t ${TARGET_NAME} login -c "${CONCOURSE_URL}" -n "${CONCOURSE_TEAM}" -u "${CONCOURSE_USERNAME}" -p "${CONCOURSE_PASSWORD}"
+          set -x
+          ./fly -t ${TARGET_NAME} pin-resource --resource ${PIPELINE_PREFIX}mass-test-run/geode --version ref:${GEODE_REF}
+          ./fly -t ${TARGET_NAME} pin-resource --resource ${PIPELINE_PREFIX}mass-test-run/geode-ci --version ref:${GEODE_CI_REF}
