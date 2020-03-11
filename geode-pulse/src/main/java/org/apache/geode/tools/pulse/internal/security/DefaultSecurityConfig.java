@@ -40,12 +40,12 @@ import org.springframework.security.web.authentication.ExceptionMappingAuthentic
 @Profile("pulse.authentication.default")
 public class DefaultSecurityConfig extends WebSecurityConfigurerAdapter {
   @Bean
-  public LogoutHandler customLogoutSuccessHandler() {
+  public LogoutHandler logoutHandler() {
     return new LogoutHandler("/login.html");
   }
 
   @Bean
-  public ExceptionMappingAuthenticationFailureHandler authenticationFailureHandler() {
+  public ExceptionMappingAuthenticationFailureHandler failureHandler() {
     ExceptionMappingAuthenticationFailureHandler exceptionMappingAuthenticationFailureHandler =
         new ExceptionMappingAuthenticationFailureHandler();
     Map<String, String> exceptionMappings = new HashMap<>();

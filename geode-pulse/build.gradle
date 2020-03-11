@@ -37,11 +37,8 @@ dependencies {
   implementation('mx4j:mx4j-remote') {
     ext.optional = true
   }
-  integrationTestImplementation('junit:junit')
+
   uiTestImplementation('junit:junit')
-  integrationTestImplementation('org.hamcrest:hamcrest-core')
-  integrationTestImplementation('org.hamcrest:hamcrest-library')
-  integrationTestImplementation('org.hamcrest:hamcrest-all')
   uiTestImplementation('org.apache.httpcomponents:httpcore')
   uiTestImplementation('org.seleniumhq.selenium:selenium-api')
   uiTestImplementation('org.assertj:assertj-core')
@@ -117,12 +114,23 @@ dependencies {
   integrationTestImplementation(project(':geode-log4j')) {
     exclude module: 'geode-core'
   }
+
+  integrationTestImplementation(project(':geode-pulse'))
   integrationTestImplementation(project(':geode-pulse:geode-pulse-test'))
   integrationTestImplementation('org.powermock:powermock-core')
   integrationTestImplementation('org.powermock:powermock-module-junit4')
   integrationTestImplementation('org.powermock:powermock-api-mockito2')
   integrationTestImplementation('org.springframework:spring-test')
+  integrationTestImplementation('org.springframework:spring-webmvc')
+  integrationTestImplementation('org.springframework.security:spring-security-test')
 
+  integrationTestRuntimeOnly('org.apache.logging.log4j:log4j-slf4j-impl') {
+    exclude module: 'slf4j-api'
+  }
+  integrationTestImplementation('junit:junit')
+  integrationTestImplementation('org.hamcrest:hamcrest-core')
+  integrationTestImplementation('org.hamcrest:hamcrest-library')
+  integrationTestImplementation('org.hamcrest:hamcrest-all')
 
   uiTestRuntimeOnly(project(':geode-core'))
   uiTestImplementation(project(':geode-junit')) {
@@ -144,7 +152,7 @@ sourceSets {
 
   integrationTest {
     resources {
-      srcDir 'src/main/webapp/WEB-INF'
+      srcDir "${projectDir}/src/main/webapp"
     }
   }
 }
