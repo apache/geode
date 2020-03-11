@@ -142,7 +142,7 @@ public class ExecuteRegionFunctionSingleHopOpRetryTest {
     testSupport = new ExecuteFunctionTestSupport(haStatus, failureModeArg,
         (pool, failureMode) -> ExecuteFunctionTestSupport.thenThrow(when(
             pool.executeOn(
-                ArgumentMatchers.any(),
+                (ServerLocation) ArgumentMatchers.any(),
                 ArgumentMatchers.any(),
                 ArgumentMatchers.anyBoolean(),
                 ArgumentMatchers.anyBoolean())),
@@ -216,7 +216,7 @@ public class ExecuteRegionFunctionSingleHopOpRetryTest {
 
     verify(executablePool, times(expectTries))
         .executeOn(
-            ArgumentMatchers.any(),
+            (ServerLocation) ArgumentMatchers.any(),
             ArgumentMatchers.any(),
             ArgumentMatchers.anyBoolean(),
             ArgumentMatchers.anyBoolean());
