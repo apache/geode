@@ -314,13 +314,14 @@ public class OpExecutorImpl implements ExecutablePool {
       if (queueManager != null) {
         // see if our QueueManager has a connection to this server that we can send
         // the ping on.
-        Endpoint ep = endpointManager.getEndpointMap().get(p_server);
-        if (ep != null) {
-          QueueConnections qcs = queueManager.getAllConnectionsNoWait();
-          conn = qcs.getConnection(ep);
-          if (conn != null) {
-            // we found one to do the ping on
-            returnCnx = false;
+        for (Endpoint ep : endpointManager.getEndpointMap().values()) {
+          if (ep.getLocation().equals(p_server)) {
+            QueueConnections qcs = queueManager.getAllConnectionsNoWait();
+            conn = qcs.getConnection(ep);
+            if (conn != null) {
+              // we found one to do the ping on
+              returnCnx = false;
+            }
           }
         }
       }
