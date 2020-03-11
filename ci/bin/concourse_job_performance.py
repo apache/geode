@@ -29,7 +29,9 @@ from typing import List
 from urllib.parse import urlparse
 
 import requests
+# from sseclient-py
 import sseclient
+# from ansicolors
 from colors import color
 from tqdm import tqdm
 import yaml
@@ -58,7 +60,7 @@ def main(url, team, pipeline, job, number_of_builds, authorization_cookie, threa
     builds = get_builds_summary_sheet(url, team, pipeline, job, number_of_builds+10, authorization_cookie)
 
     build_to_examine = get_builds_to_examine(builds, number_of_builds)
-    expected_failed_builds = [int(b['name']) for b in build_to_examine if b['status'] == 'failed']
+    expected_failed_builds = [int(b['name']) for b in build_to_examine if b['status'] in ['failed', 'succeeded']]
     expected_failed_builds_count = len(expected_failed_builds)
     logging.info(f"Expecting {expected_failed_builds_count} runs to have failure strings: {expected_failed_builds}")
 
