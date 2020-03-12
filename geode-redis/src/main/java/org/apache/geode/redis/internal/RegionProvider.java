@@ -137,6 +137,34 @@ public class RegionProvider implements Closeable {
 
   }
 
+  public Region<ByteArrayWrapper, ? extends Object> getRegionForType(RedisDataType redisDataType) {
+    if (redisDataType == null) {
+      return null;
+    }
+
+    switch (redisDataType) {
+      case REDIS_STRING:
+        return stringsRegion;
+
+      case REDIS_HASH:
+        return hashRegion;
+
+      case REDIS_SET:
+      case REDIS_SORTEDSET:
+        return setRegion;
+
+      case REDIS_HLL:
+        return hLLRegion;
+
+      case REDIS_PROTECTED:
+      case REDIS_PUBSUB:
+      case NONE:
+      case REDIS_LIST:
+      default:
+        return null;
+    }
+  }
+
   public void removeRegionReferenceLocally(ByteArrayWrapper key, RedisDataType type) {
     Lock lock = this.locks.get(key.toString());
     boolean locked = false;

@@ -33,6 +33,7 @@ org/apache/geode/redis/internal/RedisCommandType$121,false,dataType:org/apache/g
 org/apache/geode/redis/internal/RedisCommandType$122,false,dataType:org/apache/geode/redis/internal/RedisDataType,executor:org/apache/geode/redis/internal/Executor
 org/apache/geode/redis/internal/RedisCommandType$123,false,dataType:org/apache/geode/redis/internal/RedisDataType,executor:org/apache/geode/redis/internal/Executor
 org/apache/geode/redis/internal/RedisCommandType$124,false,dataType:org/apache/geode/redis/internal/RedisDataType,executor:org/apache/geode/redis/internal/Executor
+org/apache/geode/redis/internal/RedisCommandType$125,false,dataType:org/apache/geode/redis/internal/RedisDataType,executor:org/apache/geode/redis/internal/Executor
 org/apache/geode/redis/internal/RedisCommandType$13,false,dataType:org/apache/geode/redis/internal/RedisDataType,executor:org/apache/geode/redis/internal/Executor
 org/apache/geode/redis/internal/RedisCommandType$14,false,dataType:org/apache/geode/redis/internal/RedisDataType,executor:org/apache/geode/redis/internal/Executor
 org/apache/geode/redis/internal/RedisCommandType$15,false,dataType:org/apache/geode/redis/internal/RedisDataType,executor:org/apache/geode/redis/internal/Executor

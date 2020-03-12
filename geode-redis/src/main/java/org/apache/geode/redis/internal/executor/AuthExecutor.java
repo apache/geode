@@ -34,13 +34,13 @@ public class AuthExecutor implements Executor {
       command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.AUTH));
       return;
     }
-    byte[] pwd = context.getAuthPwd();
-    if (pwd == null) {
+    byte[] password = context.getAuthPassword();
+    if (password == null) {
       command.setResponse(
           Coder.getErrorResponse(context.getByteBufAllocator(), RedisConstants.ERROR_NO_PASS));
       return;
     }
-    boolean correct = Arrays.equals(commandElems.get(1), pwd);
+    boolean correct = Arrays.equals(commandElems.get(1), password);
 
     if (correct) {
       context.setAuthenticationVerified();

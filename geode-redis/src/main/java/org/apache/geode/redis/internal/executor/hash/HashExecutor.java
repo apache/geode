@@ -57,7 +57,7 @@ public abstract class HashExecutor extends AbstractExecutor {
 
   protected AutoCloseableLock withRegionLock(ExecutionHandlerContext context, ByteArrayWrapper key)
       throws InterruptedException, TimeoutException {
-    RedisLockService lockService = context.getHashLockService();
+    RedisLockService lockService = context.getLockService();
 
     return lockService.lock(key);
   }
