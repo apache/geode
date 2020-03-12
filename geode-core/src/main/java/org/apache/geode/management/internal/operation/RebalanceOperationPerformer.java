@@ -62,7 +62,7 @@ public class RebalanceOperationPerformer {
 
       List<RebalanceRegionResult> rebalanceRegionResults = new ArrayList<>();
 
-      RuntimeException latestNoMembersException = null;
+      NoMembersException latestNoMembersException = null;
 
       for (String regionName : includeRegions) {
 
@@ -82,10 +82,10 @@ public class RebalanceOperationPerformer {
       }
 
       if (latestNoMembersException != null && !result.getSuccess()) {
-        throw latestNoMembersException;
+        result.setStatusMessage(latestNoMembersException.getMessage());
+      } else {
+        result.setRebalanceSummary(rebalanceRegionResults);
       }
-
-      result.setRebalanceSummary(rebalanceRegionResults);
 
       return result;
     } else {
