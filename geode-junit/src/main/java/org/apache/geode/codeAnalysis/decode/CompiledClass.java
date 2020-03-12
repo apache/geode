@@ -17,22 +17,14 @@ package org.apache.geode.codeAnalysis.decode;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintStream;
-import java.io.Serializable;
 
-import org.apache.geode.DataSerializable;
-import org.apache.geode.LogWriter;
 import org.apache.geode.codeAnalysis.decode.cp.Cp;
 import org.apache.geode.codeAnalysis.decode.cp.CpClass;
 import org.apache.geode.codeAnalysis.decode.cp.CpDouble;
 import org.apache.geode.codeAnalysis.decode.cp.CpLong;
 import org.apache.geode.codeAnalysis.decode.cp.CpMethodref;
-import org.apache.geode.internal.ExitCode;
-import org.apache.geode.internal.logging.PureLogWriter;
-import org.apache.geode.internal.serialization.DataSerializableFixedID;
 
 
 /**
@@ -64,18 +56,6 @@ public class CompiledClass implements Comparable {
   public CompiledMethod methods[];
   public int attributes_count;
   public CompiledAttribute attributes[];
-
-  static LogWriter debugLog;
-  static PrintStream debugStream;
-
-  static {
-    try {
-      debugStream = new PrintStream("loadedClasses.log");
-      debugLog = new PureLogWriter(PureLogWriter.ALL_LEVEL, debugStream);
-    } catch (FileNotFoundException e) {
-      e.printStackTrace();
-    }
-  }
 
   public static CompiledClass getInstance(File classFile) throws IOException {
     FileInputStream fstream = new FileInputStream(classFile);
@@ -181,31 +161,6 @@ public class CompiledClass implements Comparable {
     return (access_flags & 0x0200) != 0;
   }
 
-  public boolean isSerializableAndNotDataSerializable() {
-    // these classes throw exceptions or log ugly messages when you try to load them
-    // in junit
-    String name = fullyQualifiedName().replace('/', '.');
-    if (name.startsWith("org.apache.geode.internal.shared.NativeCallsJNAImpl")
-        || name.startsWith("org.apache.geode.internal.statistics.HostStatHelper")) {
-      return false;
-    }
-    try {
-      debugLog.info("isSerializableAndNotDataSerializable loading class " + name);
-      debugStream.flush();
-      Class realClass = Class.forName(name);
-      return Serializable.class.isAssignableFrom(realClass)
-          && !DataSerializable.class.isAssignableFrom(realClass)
-          && !DataSerializableFixedID.class.isAssignableFrom(realClass);
-    } catch (UnsatisfiedLinkError e) {
-      System.out.println("Unable to load actual class " + name + " external JNI dependencies");
-    } catch (NoClassDefFoundError e) {
-      System.out.println("Unable to load actual class " + name + " not in JUnit classpath");
-    } catch (Throwable e) {
-      System.out.println("Unable to load actual class " + name + ": " + e);
-    }
-    return false;
-  }
-
   public String fullyQualifiedName() {
     return ((CpClass) constant_pool[this_class]).className(this);
   }
@@ -221,48 +176,6 @@ public class CompiledClass implements Comparable {
     }
     String otherName = ((CompiledClass) other).fullyQualifiedName();
     return this.fullyQualifiedName().compareTo(otherName);
-  }
-
-  public static void main(String argv[]) {
-    File classFile;
-    CompiledClass instance;
-    int idx;
-
-    classFile = null;
-    try {
-      classFile = new File(argv[0]);
-    } catch (NullPointerException e) {
-      System.err.println("You must give the name of a class file on the command line");
-      System.exit(3);
-    }
-    if (!classFile.canRead()) {
-      System.err.println("Unable to read " + argv[0]);
-      System.exit(3);
-    }
-    try {
-      instance = getInstance(classFile);
-      System.out.println("Class name is " + instance.fullyQualifiedName());
-      System.out.println("Class access is " + instance.accessString());
-      System.out.println("Superclass name is " + instance.superClassName());
-      System.out.println("Fields:");
-      for (idx = 0; idx < instance.fields_count; idx++) {
-        System.out.println("    " + instance.fields[idx].signature());
-      }
-      System.out.println("Methods:");
-      for (idx = 0; idx < instance.methods_count; idx++) {
-        System.out.println("    " + instance.methods[idx].signature());
-        // if (idx == 0) {
-        System.out.println("..method attributes");
-        for (int i = 0; i < instance.methods[idx].attributes_count; i++) {
-          System.out.println(".." + instance.methods[idx].attributes[i].name(instance));
-        }
-        // }
-      }
-    } catch (Throwable e) {
-      System.err.println("Error reading file: " + e.getMessage());
-      System.exit(3);
-    }
-    ExitCode.NORMAL.doSystemExit();
   }
 
   public boolean refersToClass(String name) {

@@ -1,3 +1,5 @@
+org/apache/geode/management/api/ClusterManagementException,false,result:org/apache/geode/management/api/ClusterManagementResult
+org/apache/geode/management/api/ClusterManagementRealizationException,false,result:org/apache/geode/management/api/ClusterManagementRealizationResult
 org/apache/geode/management/api/ClusterManagementResult$StatusCode,false
 org/apache/geode/management/api/CommandType,false
 org/apache/geode/management/api/RealizationResult,false,memberName:java/lang/String,message:java/lang/String,success:boolean
