@@ -25,6 +25,8 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Callable;
@@ -76,7 +78,7 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
 
   @Rule
   public DistributedRestoreSystemProperties restoreSystemProperties =
-      new DistributedRestoreSystemProperties();
+          new DistributedRestoreSystemProperties();
 
   @Before
   public void setUp() throws Exception {
@@ -96,9 +98,9 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     vm5.invoke(() -> createCacheWithSSL(lnPort));
 
     vm4.invoke(() -> createConcurrentSender("ln", 2, true, 100, 10, false, true, null, true, 5,
-        GatewaySender.OrderPolicy.KEY));
+            GatewaySender.OrderPolicy.KEY));
     vm5.invoke(() -> createConcurrentSender("ln", 2, true, 100, 10, false, true, null, true, 5,
-        GatewaySender.OrderPolicy.KEY));
+            GatewaySender.OrderPolicy.KEY));
 
     String regionName = getUniqueName() + "_PR";
     vm4.invoke(() -> createPartitionedRegion(regionName, "ln", 1, 100, isOffHeap()));
@@ -251,14 +253,14 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     vm5.invoke(() -> createSender("ln", 2, true, 100, 10, false, false, null, true));
 
     vm4.invoke(
-        () -> createPartitionedRegion(getUniqueName() + "_PR", "ln", 1, 100, isOffHeap()));
+            () -> createPartitionedRegion(getUniqueName() + "_PR", "ln", 1, 100, isOffHeap()));
     vm5.invoke(
-        () -> createPartitionedRegion(getUniqueName() + "_PR", "ln", 1, 100, isOffHeap()));
+            () -> createPartitionedRegion(getUniqueName() + "_PR", "ln", 1, 100, isOffHeap()));
 
     vm2.invoke(
-        () -> createPartitionedRegion(getUniqueName() + "_PR", null, 1, 100, isOffHeap()));
+            () -> createPartitionedRegion(getUniqueName() + "_PR", null, 1, 100, isOffHeap()));
     vm3.invoke(
-        () -> createPartitionedRegion(getUniqueName() + "_PR", null, 1, 100, isOffHeap()));
+            () -> createPartitionedRegion(getUniqueName() + "_PR", null, 1, 100, isOffHeap()));
 
     startSenderInVMs("ln", vm4, vm5);
 
@@ -455,13 +457,13 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
 
       async.join();
       vm4List =
-          (ArrayList<Integer>) vm4.invoke(() -> WANTestBase.getSenderStatsForDroppedEvents("ln"));
+              (ArrayList<Integer>) vm4.invoke(() -> WANTestBase.getSenderStatsForDroppedEvents("ln"));
       vm5List =
-          (ArrayList<Integer>) vm5.invoke(() -> WANTestBase.getSenderStatsForDroppedEvents("ln"));
+              (ArrayList<Integer>) vm5.invoke(() -> WANTestBase.getSenderStatsForDroppedEvents("ln"));
       vm6List =
-          (ArrayList<Integer>) vm6.invoke(() -> WANTestBase.getSenderStatsForDroppedEvents("ln"));
+              (ArrayList<Integer>) vm6.invoke(() -> WANTestBase.getSenderStatsForDroppedEvents("ln"));
       vm7List =
-          (ArrayList<Integer>) vm7.invoke(() -> WANTestBase.getSenderStatsForDroppedEvents("ln"));
+              (ArrayList<Integer>) vm7.invoke(() -> WANTestBase.getSenderStatsForDroppedEvents("ln"));
       if (vm4List.get(0) + vm5List.get(0) + vm6List.get(0) + vm7List.get(0) > 0) {
         foundEventsDroppedDueToPrimarySenderNotRunning = true;
       }
@@ -476,8 +478,158 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     // remote site.
 
     vm4.invoke(() -> validateQueueContents("ln", 0));
+
+
   }
 
+
+  /**
+   * Normal scenario in which a sender is stopped and then started again.
+   */
+  @Test
+  public void testSenderShouldqueueWhenStopped() throws Exception {
+    addIgnoredException("Broken pipe");
+    Integer[] locatorPorts = createLNAndNYLocators();
+    Integer lnPort = locatorPorts[0];
+    Integer nyPort = locatorPorts[1];
+    String regionName = getUniqueName() + "_PR";
+
+    createCacheInVMs(nyPort, vm2, vm3);
+    createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
+
+    vm2.invoke(() -> createPartitionedRegion(regionName, "ln", 1, 100, isOffHeap()));
+    vm3.invoke(() -> createPartitionedRegion(regionName, "ln", 1, 100, isOffHeap()));
+
+    createReceiverInVMs(vm2, vm3);
+
+    vm4.invoke(() -> createPartitionedRegion(regionName, "ln", 1, 100, isOffHeap()));
+    vm5.invoke(() -> createPartitionedRegion(regionName, "ln", 1, 100, isOffHeap()));
+    vm6.invoke(() -> createPartitionedRegion(regionName, "ln", 1, 100, isOffHeap()));
+    vm7.invoke(() -> createPartitionedRegion(regionName, "ln", 1, 100, isOffHeap()));
+
+    vm4.invoke(() -> createSender("ln", 2, true, 100, 10, false, false, null, true));
+    vm5.invoke(() -> createSender("ln", 2, true, 100, 10, false, false, null, true));
+    vm6.invoke(() -> createSender("ln", 2, true, 100, 10, false, false, null, true));
+    vm7.invoke(() -> createSender("ln", 2, true, 100, 10, false, false, null, true));
+
+    startSenderInVMs("ln", vm4, vm5, vm6, vm7);
+
+    // make sure all the senders are running before doing any puts
+    vm4.invoke(() -> waitForSenderRunningState("ln"));
+    vm5.invoke(() -> waitForSenderRunningState("ln"));
+    vm6.invoke(() -> waitForSenderRunningState("ln"));
+    vm7.invoke(() -> waitForSenderRunningState("ln"));
+
+    // FIRST RUN: now, the senders are started. So, do some of the puts
+    vm4.invoke(() -> doPuts(regionName, 200));
+
+    vm2.invoke(() -> validateRegionSizeRemainsSame(regionName, 200));
+
+    // now, stop all of the senders
+    vm4.invoke(() -> stopSender("ln"));
+    vm5.invoke(() -> stopSender("ln"));
+    vm6.invoke(() -> stopSender("ln"));
+    vm7.invoke(() -> stopSender("ln"));
+
+    // Region size on remote site should remain same and below the number of puts done in the FIRST
+    // RUN
+    vm2.invoke(() -> validateRegionSizeRemainsSame(regionName, 200));
+
+    vm4.invoke(() -> verifySenderStoppedState("ln"));
+    // SECOND RUN: do some of the puts after the senders are stopped
+    vm4.invoke(() -> doPuts(regionName, 1000));
+
+    vm4.invoke(() -> validateParallelSenderQueueAllBucketsDrained("ln"));
+
+    // Region size on remote site should remain same and below the number of puts done in the FIRST
+    // RUN
+    vm2.invoke(() -> validateRegionSizeRemainsSame(regionName, 200));
+
+    // start the senders again
+    startSenderInVMs("ln", vm4, vm5, vm6, vm7);
+
+    vm4.invoke(() -> waitForSenderRunningState("ln"));
+    vm5.invoke(() -> waitForSenderRunningState("ln"));
+    vm6.invoke(() -> waitForSenderRunningState("ln"));
+    vm7.invoke(() -> waitForSenderRunningState("ln"));
+
+    // Region size on remote site should remain same and below the number of puts done in the FIRST
+    // RUN
+    vm2.invoke(() -> validateRegionSizeRemainsSame(regionName, 200));
+
+    // SECOND RUN: do some more puts
+    vm4.invoke(() -> doPuts(regionName, 1000));
+
+    // verify all the buckets on all the sender nodes are drained
+    validateParallelSenderQueueAllBucketsDrained();
+
+    // verify the events propagate to remote site
+    vm2.invoke(() -> validateRegionSize(regionName, 1000));
+
+    vm4.invoke(() -> validateQueueSizeStat("ln", 0));
+    vm5.invoke(() -> validateQueueSizeStat("ln", 0));
+    vm6.invoke(() -> validateQueueSizeStat("ln", 0));
+    vm7.invoke(() -> validateQueueSizeStat("ln", 0));
+  }
+
+
+  @Test
+  public void test() throws Exception {
+    addIgnoredException("Broken pipe");
+    Integer[] locatorPorts = createLNAndNYLocators();
+    Integer lnPort = locatorPorts[0];
+    Integer nyPort = locatorPorts[1];
+
+    createSendersReceiversAndPartitionedRegion(lnPort, nyPort, false, true);
+
+    // make sure all the senders are running before doing any puts
+    waitForSendersRunning();
+
+    // FIRST RUN: now, the senders are started. So, do some of the puts
+    vm4.invoke(() -> doPuts(getUniqueName() + "_PR", 200));
+
+    // Make sure the puts make it to the remote side
+    vm2.invoke(() -> validateRegionSize(getUniqueName() + "_PR", 200));
+    vm3.invoke(() -> validateRegionSize(getUniqueName() + "_PR", 200));
+    long startTime = System.currentTimeMillis();
+    List<AsyncInvocation> asyncs = new ArrayList<>();
+    while (System.currentTimeMillis() - startTime < 60000) {
+      asyncs.add(vm4.invokeAsync(() -> doRandomOps(getUniqueName() + "_PR", 200)));
+      asyncs.add(vm4.invokeAsync(() -> doRandomSenderOp("ln")));
+      asyncs.add(vm5.invokeAsync(() -> doRandomSenderOp("ln")));
+      asyncs.add(vm6.invokeAsync(() -> doRandomSenderOp("ln")));
+      asyncs.add(vm7.invokeAsync(() -> doRandomSenderOp("ln")));
+
+      while (asyncs.size() > 50) {
+        Iterator<AsyncInvocation> iterator = asyncs.iterator();
+        while(iterator.hasNext()) {
+          if (!iterator.next().isAlive()) {
+            iterator.remove();
+          }
+        }
+      }
+    }
+
+
+    asyncs.stream().forEach(a -> {
+      try {
+        a.get();
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+    });
+//    vm4.invoke(() -> stopSender("ln"));
+//    vm5.invoke(() -> stopSender("ln"));
+//    vm6.invoke(() -> stopSender("ln"));
+//    vm7.invoke(() -> stopSender("ln"));
+//    startOrResumeSenderInVMs("ln", vm4, vm5, vm6, vm7);
+
+//    vm4.invoke(() -> validateQueueContents("ln", 0));
+//    vm5.invoke(() -> validateQueueContents("ln", 0));
+//    vm6.invoke(() -> validateQueueContents("ln", 0));
+//    vm7.invoke(() -> validateQueueContents("ln", 0));
+
+  }
   /**
    * Normal scenario in which a sender is stopped and then started again on accessor node.
    */
@@ -675,8 +827,8 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     vm4.invoke(() -> {
       AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender("ln");
       GeodeAwaitility.await()
-          .untilAsserted(() -> assertThat(System.getProperty(MAX_MESSAGE_SIZE_PROPERTY))
-              .isEqualTo(String.valueOf(1024 * 1024)));
+              .untilAsserted(() -> assertThat(System.getProperty(MAX_MESSAGE_SIZE_PROPERTY))
+                      .isEqualTo(String.valueOf(1024 * 1024)));
       GeodeAwaitility.await().untilAsserted(() -> {
         assertThat(sender.getStatistics().getBatchesResized()).isGreaterThan(0);
       });
@@ -685,7 +837,7 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
 
   @Test
   public void testParallelGatewaySenderConcurrentPutClearNoOffheapOrphans()
-      throws Exception {
+          throws Exception {
     MemberVM locator = clusterStartupRule.startLocatorVM(1, new Properties());
     Properties properties = new Properties();
     properties.put(OFF_HEAP_MEMORY_SIZE_NAME, "100");
@@ -697,11 +849,11 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
       IgnoredException ie = addIgnoredException("could not get remote locator");
       InternalCache cache = ClusterStartupRule.getCache();
       GatewaySender sender =
-          cache.createGatewaySenderFactory().setParallel(true).create(gatewaySenderId, 1);
+              cache.createGatewaySenderFactory().setParallel(true).create(gatewaySenderId, 1);
       Region userRegion = cache.createRegionFactory(RegionShortcut.PARTITION).setOffHeap(true)
-          .addGatewaySenderId("ln").create(regionName);
+              .addGatewaySenderId("ln").create(regionName);
       PartitionedRegion shadowRegion = (PartitionedRegion) ((AbstractGatewaySender) sender)
-          .getEventProcessor().getQueue().getRegion();
+              .getEventProcessor().getQueue().getRegion();
       CacheWriter mockCacheWriter = mock(CacheWriter.class);
       CountDownLatch cacheWriterLatch = new CountDownLatch(1);
       CountDownLatch shadowRegionClearLatch = new CountDownLatch(1);
@@ -749,7 +901,7 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
                 cacheWriterLatch.await();
               } catch (InterruptedException e) {
                 throw new TestException(
-                    "Thread was interrupted while waiting for mocked cache writer to be invoked");
+                        "Thread was interrupted while waiting for mocked cache writer to be invoked");
               }
 
               clearShadowBucketRegions(shadowRegion);
@@ -770,32 +922,32 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
           future.get();
         } catch (Exception ex) {
           throw new TestException(
-              "Exception thrown while executing put and clear concurrently",
-              ex);
+                  "Exception thrown while executing put and clear concurrently",
+                  ex);
         }
       }
 
       userRegion.close();
 
       await("Waiting for off-heap to be freed").until(
-          () -> 0 == ((MemoryAllocatorImpl) cache.getOffHeapStore()).getOrphans(cache).size());
+              () -> 0 == ((MemoryAllocatorImpl) cache.getOffHeapStore()).getOrphans(cache).size());
     });
   }
 
   private void clearShadowBucketRegions(PartitionedRegion shadowRegion) {
     PartitionedRegionDataStore.BucketVisitor bucketVisitor =
-        new PartitionedRegionDataStore.BucketVisitor() {
-          @Override
-          public void visit(Integer bucketId, Region r) {
-            ((BucketRegion) r).clearEntries(null);
-          }
-        };
+            new PartitionedRegionDataStore.BucketVisitor() {
+              @Override
+              public void visit(Integer bucketId, Region r) {
+                ((BucketRegion) r).clearEntries(null);
+              }
+            };
 
     shadowRegion.getDataStore().visitBuckets(bucketVisitor);
   }
 
   private void createSendersReceiversAndPartitionedRegion(Integer lnPort, Integer nyPort,
-      boolean createAccessors, boolean startSenders) {
+                                                          boolean createAccessors, boolean startSenders) {
     createSendersAndReceivers(lnPort, nyPort);
 
     createPartitionedRegions(createAccessors);
