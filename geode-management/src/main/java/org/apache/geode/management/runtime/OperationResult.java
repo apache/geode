@@ -22,7 +22,8 @@ import org.apache.geode.management.api.ClusterManagementOperation;
 import org.apache.geode.management.api.JsonSerializable;
 
 /**
- * Describes the result of a starting or checking the status of a {@link ClusterManagementOperation}.
+ * Describes the result of a starting or checking the status of a
+ * {@link ClusterManagementOperation}.
  */
 @Experimental
 public interface OperationResult extends JsonSerializable, Serializable {
@@ -30,6 +31,7 @@ public interface OperationResult extends JsonSerializable, Serializable {
    * Returns true if the operation was successful; false if it failed.
    */
   boolean getSuccess();
+
   /**
    * Returns details about what caused the operation to fail or succeed.
    * If the operation failed then a description of what was wrong will
