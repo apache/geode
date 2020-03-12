@@ -202,7 +202,7 @@ public class ExecuteCQ61 extends BaseCQCommand {
     } else {
       // Don't execute query for cq.execute and
       // if it is a PR query with execute query and maintain keys flags not set
-      cqQuery.cqResultKeysInitialized = true;
+      cqQuery.setCqResultsCacheInitialized();
       successQuery = true;
     }
 
