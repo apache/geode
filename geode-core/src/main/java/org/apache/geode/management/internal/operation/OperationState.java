@@ -44,7 +44,7 @@ public class OperationState<A extends ClusterManagementOperation<V>, V extends O
       return false;
     }
     OperationState<?, ?> that = (OperationState<?, ?>) o;
-    return Objects.equals(opId, that.opId) &&
+    return Objects.equals(getId(), that.getId()) &&
         Objects.equals(getOperation(), that.getOperation()) &&
         Objects.equals(getOperationStart(), that.getOperationStart()) &&
         Objects.equals(getOperationEnd(), that.getOperationEnd()) &&
@@ -77,9 +77,28 @@ public class OperationState<A extends ClusterManagementOperation<V>, V extends O
   }
 
   public void setOperationEnd(Date operationEnd, V result, Throwable exception) {
-    this.result = result;
-    this.throwable = exception;
-    this.operationEnd = operationEnd;
+    synchronized (this) {
+      this.result = result;
+      this.throwable = exception;
+      this.operationEnd = operationEnd;
+    }
+  }
+
+  /**
+   * Creates and returns a copy of this operation state that will have
+   * a consistent view of all the fields. In particular, it will have
+   * all or nothing of fields that are being concurrently modified
+   * when the copy is made.
+   */
+  OperationState<A, V> createCopy() {
+    OperationState<A, V> result =
+        new OperationState(this.opId, this.operation, this.operationStart);
+    synchronized (this) {
+      result.operationEnd = this.operationEnd;
+      result.result = this.result;
+      result.throwable = this.throwable;
+    }
+    return result;
   }
 
   public Date getOperationEnd() {

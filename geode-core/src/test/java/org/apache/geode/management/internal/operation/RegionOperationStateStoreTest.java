@@ -117,11 +117,21 @@ public class RegionOperationStateStoreTest {
   }
 
   @Test
+  public void getReturnsNullIfNotInRegion() {
+    String opId = "doomed-operation";
+    when(region.get(opId)).thenReturn(null);
+
+    OperationState operationState = service.get(opId);
+
+    assertThat(operationState).isNull();
+  }
+
+  @Test
   public void getReturnsOperationFromRegion() {
     String opId = "doomed-operation";
     OperationState recordedOperationState = mock(OperationState.class);
-
     when(region.get(opId)).thenReturn(recordedOperationState);
+    when(recordedOperationState.createCopy()).thenReturn(recordedOperationState);
 
     OperationState operationState = service.get(opId);
 

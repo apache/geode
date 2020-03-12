@@ -82,7 +82,11 @@ public class RegionOperationStateStore
   @Override
   public <A extends ClusterManagementOperation<V>, V extends OperationResult> OperationState<A, V> get(
       String opId) {
-    return (OperationState<A, V>) region.get(opId);
+    OperationState<A, V> result = (OperationState<A, V>) region.get(opId);
+    if (result != null) {
+      result = result.createCopy();
+    }
+    return result;
   }
 
   @VisibleForTesting
@@ -92,7 +96,12 @@ public class RegionOperationStateStore
 
   @Override
   public <A extends ClusterManagementOperation<V>, V extends OperationResult> List<OperationState<A, V>> list() {
-    return new ArrayList(region.values());
+    ArrayList<OperationState<A, V>> result = new ArrayList<>();
+    for (OperationState<ClusterManagementOperation<OperationResult>, OperationResult> operationState : region
+        .values()) {
+      result.add((OperationState<A, V>) operationState.createCopy());
+    }
+    return result;
   }
 
   @Override
