@@ -45,7 +45,6 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.LogWriter;
 import org.apache.geode.cache.client.NoAvailableServersException;
-import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.cache.client.internal.pooling.ConnectionManager;
@@ -100,7 +99,7 @@ public class OpExecutorImplJUnitTest {
   @Test
   public void testExecute() throws Exception {
     OpExecutorImpl exec = new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, 3,
-        10, PoolFactory.DEFAULT_SERVER_CONNECTION_TIMEOUT, cancelCriterion, null);
+        10, cancelCriterion, null);
     Object result = exec.execute(new Op() {
       @Override
       public Object attempt(Connection cnx) throws Exception {
@@ -183,7 +182,7 @@ public class OpExecutorImplJUnitTest {
   @Test
   public void testExecuteOncePerServer() throws Exception {
     OpExecutorImpl exec = new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, -1,
-        10, PoolFactory.DEFAULT_SERVER_CONNECTION_TIMEOUT, cancelCriterion, null);
+        10, cancelCriterion, null);
 
     manager.numServers = 5;
     try {
@@ -207,7 +206,7 @@ public class OpExecutorImplJUnitTest {
   @Test
   public void testRetryFailedServers() throws Exception {
     OpExecutorImpl exec = new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, 10,
-        10, PoolFactory.DEFAULT_SERVER_CONNECTION_TIMEOUT, cancelCriterion, null);
+        10, cancelCriterion, null);
 
     manager.numServers = 5;
     try {
@@ -231,7 +230,7 @@ public class OpExecutorImplJUnitTest {
   @Test
   public void testExecuteOn() throws Exception {
     OpExecutorImpl exec = new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, 3,
-        10, PoolFactory.DEFAULT_SERVER_CONNECTION_TIMEOUT, cancelCriterion, null);
+        10, cancelCriterion, null);
     ServerLocation server = new ServerLocation("localhost", -1);
     Object result = exec.executeOn(server, new Op() {
       @Override
@@ -313,7 +312,7 @@ public class OpExecutorImplJUnitTest {
   @Test
   public void testExecuteOnAllQueueServers() {
     OpExecutorImpl exec = new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, 3,
-        10, PoolFactory.DEFAULT_SERVER_CONNECTION_TIMEOUT, cancelCriterion, null);
+        10, cancelCriterion, null);
     exec.executeOnAllQueueServers(new Op() {
       @Override
       public Object attempt(Connection cnx) throws Exception {
@@ -368,8 +367,7 @@ public class OpExecutorImplJUnitTest {
   public void executeWithServerAffinityDoesNotChangeInitialRetryCountOfZero() {
     OpExecutorImpl opExecutor =
         new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, -1,
-            10, PoolFactory.DEFAULT_SERVER_CONNECTION_TIMEOUT, cancelCriterion,
-            mock(PoolImpl.class));
+            10, cancelCriterion, mock(PoolImpl.class));
     Op txSynchronizationOp = mock(TXSynchronizationOp.Impl.class);
     ServerLocation serverLocation = mock(ServerLocation.class);
     opExecutor.setAffinityRetryCount(0);
@@ -383,8 +381,7 @@ public class OpExecutorImplJUnitTest {
   public void executeWithServerAffinityWithNonZeroAffinityRetryCountWillNotSetToZero() {
     OpExecutorImpl opExecutor =
         new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, -1,
-            10, PoolFactory.DEFAULT_SERVER_CONNECTION_TIMEOUT, cancelCriterion,
-            mock(PoolImpl.class));
+            10, cancelCriterion, mock(PoolImpl.class));
 
     Op txSynchronizationOp = mock(TXSynchronizationOp.Impl.class);
     ServerLocation serverLocation = mock(ServerLocation.class);
@@ -399,8 +396,7 @@ public class OpExecutorImplJUnitTest {
   public void executeWithServerAffinityWithServerConnectivityExceptionIncrementsRetryCountAndResetsToZero() {
     OpExecutorImpl opExecutor =
         spy(new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, -1,
-            10, PoolFactory.DEFAULT_SERVER_CONNECTION_TIMEOUT, cancelCriterion,
-            mock(PoolImpl.class)));
+            10, cancelCriterion, mock(PoolImpl.class)));
 
     Op txSynchronizationOp = mock(TXSynchronizationOp.Impl.class);
     ServerLocation serverLocation = mock(ServerLocation.class);
@@ -422,8 +418,7 @@ public class OpExecutorImplJUnitTest {
   public void executeWithServerAffinityAndRetryCountGreaterThansTxRetryAttemptThrowsServerConnectivityException() {
     OpExecutorImpl opExecutor =
         spy(new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, -1,
-            10, PoolFactory.DEFAULT_SERVER_CONNECTION_TIMEOUT, cancelCriterion,
-            mock(PoolImpl.class)));
+            10, cancelCriterion, mock(PoolImpl.class)));
 
     Op txSynchronizationOp = mock(TXSynchronizationOp.Impl.class);
     ServerLocation serverLocation = mock(ServerLocation.class);
@@ -458,7 +453,7 @@ public class OpExecutorImplJUnitTest {
     }
 
     @Override
-    public Connection borrowConnection(ServerLocation server, long aquireTimeout,
+    public Connection borrowConnection(ServerLocation server,
         boolean onlyUseExistingCnx) {
       borrows++;
       return new DummyConnection(server);

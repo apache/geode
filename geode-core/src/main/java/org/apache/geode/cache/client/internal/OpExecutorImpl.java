@@ -78,8 +78,6 @@ public class OpExecutorImpl implements ExecutablePool {
   private final ConnectionManager connectionManager;
   private final int retryAttempts;
   private final long serverTimeout;
-  private final long singleServerTimeout;
-
   private final EndpointManager endpointManager;
   private final RegisterInterestTracker riTracker;
   private final QueueManager queueManager;
@@ -93,7 +91,7 @@ public class OpExecutorImpl implements ExecutablePool {
 
   public OpExecutorImpl(ConnectionManager connectionManager, QueueManager queueManager,
       EndpointManager endpointManager, RegisterInterestTracker riTracker, int retryAttempts,
-      long serverTimeout, long singleServerTimeout, CancelCriterion cancelCriterion,
+      long serverTimeout, CancelCriterion cancelCriterion,
       PoolImpl pool) {
     this.connectionManager = connectionManager;
     this.queueManager = queueManager;
@@ -101,7 +99,6 @@ public class OpExecutorImpl implements ExecutablePool {
     this.riTracker = riTracker;
     this.retryAttempts = retryAttempts;
     this.serverTimeout = serverTimeout;
-    this.singleServerTimeout = singleServerTimeout;
     this.cancelCriterion = cancelCriterion;
     this.pool = pool;
   }
@@ -326,7 +323,7 @@ public class OpExecutorImpl implements ExecutablePool {
       }
     }
     if (conn == null) {
-      conn = connectionManager.borrowConnection(p_server, singleServerTimeout, onlyUseExistingCnx);
+      conn = connectionManager.borrowConnection(p_server, onlyUseExistingCnx);
     }
     try {
       return executeWithPossibleReAuthentication(conn, op);
