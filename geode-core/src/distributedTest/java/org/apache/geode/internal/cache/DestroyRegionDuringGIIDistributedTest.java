@@ -38,6 +38,7 @@ import junitparams.Parameters;
 import junitparams.naming.TestCaseName;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -302,6 +303,7 @@ public class DestroyRegionDuringGIIDistributedTest implements Serializable {
     }
   }
 
+  @Ignore("TODO: test is disabled for 51542")
   @Test
   @Parameters(method = "getDefinitionParameters")
   @TestCaseName("{method}_{0}_{1}")

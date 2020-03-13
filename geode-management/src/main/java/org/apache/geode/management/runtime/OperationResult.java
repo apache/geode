@@ -22,7 +22,8 @@ import org.apache.geode.management.api.ClusterManagementOperation;
 import org.apache.geode.management.api.JsonSerializable;
 
 /**
- * marker interface for the final result of a {@link ClusterManagementOperation}
+ * Describes the result of a starting or checking the status of a
+ * {@link ClusterManagementOperation}.
  */
 @Experimental
 public interface OperationResult extends JsonSerializable, Serializable {
