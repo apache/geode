@@ -627,6 +627,7 @@ public class ClusterDistributionManager implements DistributionManager {
     return enforceUniqueZone;
   }
 
+  @Override
   public String getRedundancyZone(InternalDistributedMember member) {
     return redundancyZones.get(member);
   }
