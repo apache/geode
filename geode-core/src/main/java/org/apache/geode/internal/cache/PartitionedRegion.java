@@ -2336,7 +2336,7 @@ public class PartitionedRegion extends LocalRegion
 
   List<ClearPRMessage> createClearPRMessages(EventID eventID) {
     ArrayList<ClearPRMessage> clearMsgList = new ArrayList<>();
-    for (int bucketId = 0; bucketId < this.totalNumberOfBuckets; bucketId++) {
+    for (int bucketId = 0; bucketId < getTotalNumberOfBuckets(); bucketId++) {
       ClearPRMessage clearPRMessage = new ClearPRMessage(bucketId, eventID);
       clearMsgList.add(clearPRMessage);
     }
