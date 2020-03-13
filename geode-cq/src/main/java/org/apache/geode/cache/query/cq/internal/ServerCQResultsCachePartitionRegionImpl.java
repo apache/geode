@@ -15,17 +15,20 @@
 package org.apache.geode.cache.query.cq.internal;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
-class ServerCQCacheReplicateRegionImpl implements ServerCQCache {
+/**
+ * Internal CQ cache implementation for CQs operating on partitioned regions.
+ */
+class ServerCQResultsCachePartitionRegionImpl implements ServerCQResultsCache {
   private static final Logger logger = LogService.getLogger();
 
   /**
@@ -40,20 +43,10 @@ class ServerCQCacheReplicateRegionImpl implements ServerCQCache {
    * NOTE: In case of RR this map is populated and used as intended. In case of PR this map will not
    * be populated. If executeCQ happens after update operations this map will remain empty.
    */
-  private final Map<Object, Object> cqResultKeys;
+  private final ConcurrentMap<Object, Object> cqResultKeys;
 
-  /**
-   * This maintains the keys that are destroyed while the Results Cache is getting constructed. This
-   * avoids any keys that are destroyed (after query execution) but is still part of the CQs result.
-   */
-  private final Set<Object> destroysWhileCqResultsInProgress;
-
-  // Synchronize operations on cqResultKeys & destroysWhileCqResultsInProgress
-  private final Object LOCK = new Object();
-
-  public ServerCQCacheReplicateRegionImpl() {
-    cqResultKeys = new HashMap<>();
-    destroysWhileCqResultsInProgress = new HashSet<>();
+  public ServerCQResultsCachePartitionRegionImpl() {
+    cqResultKeys = new ConcurrentHashMap<>();
   }
 
   @Override
@@ -68,37 +61,22 @@ class ServerCQCacheReplicateRegionImpl implements ServerCQCache {
 
   @Override
   public void add(Object key) {
-    synchronized (LOCK) {
-      cqResultKeys.put(key, TOKEN);
-
-      if (!isInitialized()) {
-        // This key could be coming after add, destroy.
-        // Remove this from destroy queue.
-        destroysWhileCqResultsInProgress.remove(key);
-      }
-    }
+    cqResultKeys.put(key, TOKEN);
   }
 
   @Override
   public void remove(Object key, boolean isTokenMode) {
-    synchronized (LOCK) {
-      if (isTokenMode && cqResultKeys.get(key) != Token.DESTROYED) {
-        return;
-      }
-
-      cqResultKeys.remove(key);
-      if (!isInitialized()) {
-        destroysWhileCqResultsInProgress.add(key);
-      }
+    if (isTokenMode && cqResultKeys.get(key) != Token.DESTROYED) {
+      return;
     }
+
+    cqResultKeys.remove(key);
   }
 
   @Override
   public void invalidate() {
-    synchronized (LOCK) {
-      cqResultKeys.clear();
-      cqResultKeysInitialized = false;
-    }
+    cqResultKeys.clear();
+    cqResultKeysInitialized = false;
   }
 
   /**
@@ -117,11 +95,6 @@ class ServerCQCacheReplicateRegionImpl implements ServerCQCache {
       return false;
     }
 
-    synchronized (LOCK) {
-      destroysWhileCqResultsInProgress.forEach(cqResultKeys::remove);
-      destroysWhileCqResultsInProgress.clear();
-    }
-
     return cqResultKeys.containsKey(key);
   }
 
@@ -130,20 +103,12 @@ class ServerCQCacheReplicateRegionImpl implements ServerCQCache {
    */
   @Override
   public void markAsDestroyed(Object key) {
-    synchronized (LOCK) {
-      cqResultKeys.put(key, Token.DESTROYED);
-
-      if (!isInitialized()) {
-        destroysWhileCqResultsInProgress.add(key);
-      }
-    }
+    cqResultKeys.put(key, Token.DESTROYED);
   }
 
   @Override
   public int size() {
-    synchronized (LOCK) {
-      return cqResultKeys.size();
-    }
+    return cqResultKeys.size();
   }
 
   /**
@@ -153,9 +118,7 @@ class ServerCQCacheReplicateRegionImpl implements ServerCQCache {
    */
   @Override
   public Set<Object> getKeys() {
-    synchronized (LOCK) {
-      return Collections.synchronizedSet(new HashSet<>(cqResultKeys.keySet()));
-    }
+    return Collections.synchronizedSet(new HashSet<>(cqResultKeys.keySet()));
   }
 
   @Override
@@ -165,9 +128,6 @@ class ServerCQCacheReplicateRegionImpl implements ServerCQCache {
 
   @Override
   public void clear() {
-    // Clean-up the CQ Results Cache.
-    synchronized (LOCK) {
-      cqResultKeys.clear();
-    }
+    cqResultKeys.clear();
   }
 }

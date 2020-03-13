@@ -51,15 +51,14 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class ServerCQImpl extends CqQueryImpl implements DataSerializable, ServerCQ {
   private static final Logger logger = LogService.getLogger();
-  /* No-Op cache, used only when cq.MAINTAIN_KEYS is false */
-  private static final ServerCQCache NO_OP_CACHE = new ServerCQCache() {};
+  private static final ServerCQResultsCache NO_OP_CACHE = new ServerCQResultsCacheNoOpImpl();
 
   /**
    * NOTE: In case of Replicated Regions this cache is populated and used as intended. In case of
    * Partition Regions this cache will not be populated. If executeCQ happens after update
    * operations this cache will remain empty.
    */
-  private volatile ServerCQCache serverCQCache = NO_OP_CACHE;
+  private volatile ServerCQResultsCache serverCQResultsCache = NO_OP_CACHE;
 
   /** Boolean flag to see if the CQ is on Partitioned Region */
   volatile boolean isPR = false;
@@ -225,10 +224,10 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
       // Only the events which are seen during event processing is
       // added to the results cache (not from the CQ Results).
       if (this.isPR) {
-        serverCQCache = new ServerCQCachePartitionRegionImpl();
+        serverCQResultsCache = new ServerCQResultsCachePartitionRegionImpl();
         setCqResultsCacheInitialized();
       } else {
-        serverCQCache = new ServerCQCacheReplicateRegionImpl();
+        serverCQResultsCache = new ServerCQResultsCacheReplicateRegionImpl();
       }
     }
 
@@ -252,7 +251,7 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
    */
   @VisibleForTesting
   public Set<Object> getCqResultKeyCache() {
-    return serverCQCache.getKeys();
+    return serverCQResultsCache.getKeys();
   }
 
   /**
@@ -285,39 +284,39 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
    * @return true if key is in the Results Cache.
    */
   public boolean isPartOfCqResult(Object key) {
-    return serverCQCache.contains(key);
+    return serverCQResultsCache.contains(key);
   }
 
   @Override
   public void addToCqResultKeys(Object key) {
-    serverCQCache.add(key);
+    serverCQResultsCache.add(key);
   }
 
   @Override
   public void removeFromCqResultKeys(Object key, boolean isTokenMode) {
-    serverCQCache.remove(key, isTokenMode);
+    serverCQResultsCache.remove(key, isTokenMode);
   }
 
   @Override
   public void invalidateCqResultKeys() {
-    serverCQCache.invalidate();
+    serverCQResultsCache.invalidate();
   }
 
   /**
    * Marks the key as destroyed in the CQ Results key cache.
    */
   void markAsDestroyedInCqResultKeys(Object key) {
-    serverCQCache.markAsDestroyed(key);
+    serverCQResultsCache.markAsDestroyed(key);
   }
 
   @Override
   public void setCqResultsCacheInitialized() {
-    serverCQCache.setInitialized();
+    serverCQResultsCache.setInitialized();
   }
 
   @Override
   public boolean isCqResultsCacheInitialized() {
-    return serverCQCache.isInitialized();
+    return serverCQResultsCache.isInitialized();
   }
 
   /**
@@ -326,12 +325,12 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
    * @return size of CQ Result key cache.
    */
   public int getCqResultKeysSize() {
-    return serverCQCache.size();
+    return serverCQResultsCache.size();
   }
 
   @Override
   public boolean isOldValueRequiredForQueryProcessing(Object key) {
-    return serverCQCache.isOldValueRequiredForQueryProcessing(key);
+    return serverCQResultsCache.isOldValueRequiredForQueryProcessing(key);
   }
 
   /**
@@ -375,7 +374,7 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
       }
 
       // Clean-up the CQ Results Cache.
-      serverCQCache.clear();
+      serverCQResultsCache.clear();
 
       // Set the state to close, and update stats
       this.cqState.setState(CqStateImpl.CLOSED);

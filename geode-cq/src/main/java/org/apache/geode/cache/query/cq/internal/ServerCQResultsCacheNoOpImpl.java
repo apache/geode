@@ -18,43 +18,51 @@ import java.util.Collections;
 import java.util.Set;
 
 /**
- * Holds the keys that are part of the CQ query results.
- * Using this, the CQ engine can determine whether to execute query on an old value from EntryEvent
- * or not,which is an expensive operation.
+ * No op implementation, used when the property CqServiceProvider.MAINTAIN_KEYS is set as false.
  */
-interface ServerCQCache {
-  Object TOKEN = new Object();
-  Set<Object> EMPTY_CACHE = Collections.emptySet();
+class ServerCQResultsCacheNoOpImpl implements ServerCQResultsCache {
+  private static final Set<Object> EMPTY_CACHE = Collections.emptySet();
 
-  default void setInitialized() {}
+  @Override
+  public void setInitialized() {}
 
-  default boolean isInitialized() {
+  @Override
+  public boolean isInitialized() {
     return false;
   }
 
-  default void add(Object key) {}
+  @Override
+  public void add(Object key) {}
 
-  default void remove(Object key, boolean isTokenMode) {}
+  @Override
+  public void remove(Object key, boolean isTokenMode) {}
 
-  default void invalidate() {}
+  @Override
+  public void invalidate() {}
 
-  default boolean contains(Object key) {
+  @Override
+  public boolean contains(Object key) {
     return false;
   }
 
-  default void markAsDestroyed(Object key) {}
+  @Override
+  public void markAsDestroyed(Object key) {}
 
-  default int size() {
+  @Override
+  public int size() {
     return 0;
   }
 
-  default Set<Object> getKeys() {
+  @Override
+  public Set<Object> getKeys() {
     return EMPTY_CACHE;
   }
 
-  default boolean isOldValueRequiredForQueryProcessing(Object key) {
+  @Override
+  public boolean isOldValueRequiredForQueryProcessing(Object key) {
     return true;
   }
 
-  default void clear() {}
+  @Override
+  public void clear() {}
 }
