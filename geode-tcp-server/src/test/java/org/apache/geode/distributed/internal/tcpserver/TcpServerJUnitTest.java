@@ -33,39 +33,23 @@ import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.HashSet;
-import java.util.Properties;
-import java.util.Set;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import org.apache.geode.distributed.internal.DistributionConfigImpl;
-import org.apache.geode.distributed.internal.DistributionStats;
-import org.apache.geode.distributed.internal.InfoRequestHandler;
-import org.apache.geode.distributed.internal.PoolStatHelper;
-import org.apache.geode.distributed.internal.ProtocolCheckerImpl;
-import org.apache.geode.distributed.internal.membership.gms.Services;
-import org.apache.geode.internal.AvailablePort;
-import org.apache.geode.internal.cache.client.protocol.ClientProtocolServiceLoader;
-import org.apache.geode.internal.logging.CoreLoggingExecutors;
-import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.serialization.BasicSerializable;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
 import org.apache.geode.internal.serialization.DSFIDSerializerFactory;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.test.junit.categories.MembershipTest;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 @Category({MembershipTest.class})
 public class TcpServerJUnitTest {
@@ -73,59 +57,33 @@ public class TcpServerJUnitTest {
   private static final int TIMEOUT = 60 * 1000;
   private InetAddress localhost;
   private int port;
-  private SimpleStats stats;
   private TcpServer server;
 
-  @Before
-  public void setup() {
-    SocketCreatorFactory.setDistributionConfig(new DistributionConfigImpl(new Properties()));
-  }
-
-  @After
-  public void teardown() {
-    SocketCreatorFactory.close();
-  }
-
-  private void start(TcpHandler handler) throws IOException {
+  private void startTcpServerWithHandler(TcpHandler handler) throws IOException {
     localhost = InetAddress.getLocalHost();
-    port = getNeverUsedPort();
-
-    stats = new SimpleStats();
 
     DSFIDSerializer serializer = new DSFIDSerializerFactory().create();
-    Services.registerSerializables(serializer);
     server = new TcpServer(port, localhost, handler,
-        "server thread", new ProtocolCheckerImpl(null, new ClientProtocolServiceLoader()),
-        DistributionStats::getStatTime,
-        () -> CoreLoggingExecutors.newThreadPoolWithSynchronousFeed("locator request thread ",
-            100, stats, TIMEOUT,
-            new ThreadPoolExecutor.CallerRunsPolicy()),
+        "server thread",
+        (x, y, z) -> false, // protobuf hook - not needed here
+        () -> 0, // stats time
+        () -> LoggingExecutors.newCachedThreadPool("test thread", true),
         null,
         serializer.getObjectSerializer(),
         serializer.getObjectDeserializer(),
-        GeodeGlossary.GEMFIRE_PREFIX + "TcpServer.READ_TIMEOUT",
-        GeodeGlossary.GEMFIRE_PREFIX + "TcpServer.BACKLOG");
+        "blahblahblah",
+        "blahblahblah");
     server.start();
+    port = server.getPort();
+    assertThat(port).isGreaterThan(0);
+    assertThat(server.isShuttingDown()).isFalse();
+    assertThat(server.getSocketAddress()).isNotNull();
+    assertThat(server.isAlive()).isTrue();
   }
 
-  /*
-   * TcpClient keeps a static map of server port to server version. If a test happens to reuse a
-   * port
-   * (as happens sometimes in stress test, which runs a test many times) the number of requests
-   * to the server will vary, since TcpClient elides the VersionRequest if there is already an
-   * entry in the map for the given server.
-   *
-   * Make sure we never reuse a server port, so we never encounter this nondeterminism.
-   */
-  private static Set<Integer> ports = new HashSet<>();
-
-  private static int getNeverUsedPort() {
-    int port;
-    do {
-      port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    } while (ports.contains(port));
-    ports.add(port);
-    return port;
+  @Before
+  public void setup() {
+    TcpClient.clearStaticData();
   }
 
   @Test
@@ -139,7 +97,7 @@ public class TcpServerJUnitTest {
   @Test
   public void testClientGetInfo() throws Exception {
     TcpHandler handler = new InfoRequestHandler();
-    start(handler);
+    startTcpServerWithHandler(handler);
 
     final TcpClient tcpClient = createTcpClient();
 
@@ -152,18 +110,15 @@ public class TcpServerJUnitTest {
     String[] requestedInfo = tcpClient.getInfo(new HostAndPort(localhost.getHostAddress(), port));
     assertNotNull(requestedInfo);
     assertTrue(requestedInfo.length > 1);
+    assertThat(requestedInfo[0]).contains("geode-tcp-server");
 
     stopServer(tcpClient);
-
-    assertEquals(4, stats.started.get());
-    assertEquals(4, stats.ended.get());
-
   }
 
   private TcpClient createTcpClient() {
     DSFIDSerializer serializer = new DSFIDSerializerFactory().create();
-    Services.registerSerializables(serializer);
-    return new TcpClient(new TcpSocketCreatorImpl(),
+    TcpSocketCreator socketCreator = new TcpSocketCreatorImpl();
+    return new TcpClient(socketCreator,
         serializer.getObjectSerializer(),
         serializer.getObjectDeserializer());
   }
@@ -172,7 +127,7 @@ public class TcpServerJUnitTest {
   public void testConcurrency() throws Exception {
     CountDownLatch latch = new CountDownLatch(1);
     DelayHandler handler = new DelayHandler(latch);
-    start(handler);
+    startTcpServerWithHandler(handler);
     final TcpClient tcpClient = createTcpClient();
 
     final AtomicBoolean done = new AtomicBoolean();
@@ -218,7 +173,7 @@ public class TcpServerJUnitTest {
     // can recover and serve new client requests after a SocketException is thrown.
     TcpHandler mockTcpHandler = mock(TcpHandler.class);
     doThrow(SocketException.class).when(mockTcpHandler).processRequest(any(Object.class));
-    start(mockTcpHandler);
+    startTcpServerWithHandler(mockTcpHandler);
     final TcpClient tcpClient = createTcpClient();
 
     // Due to the mocked handler, an EOFException will be thrown on the client. This is expected.
@@ -245,9 +200,6 @@ public class TcpServerJUnitTest {
     assertEquals(test.id, result.id);
 
     stopServer(tcpClient);
-
-    assertEquals(4, stats.started.get());
-    assertEquals(4, stats.ended.get());
   }
 
   private void stopServer(final TcpClient tcpClient) throws InterruptedException {
@@ -278,35 +230,6 @@ public class TcpServerJUnitTest {
     public void toData(DataOutput out, SerializationContext context) throws IOException {
       out.writeInt(id);
     }
-
-  }
-
-  private static class EchoHandler implements TcpHandler {
-
-    protected boolean shutdown;
-
-
-    @Override
-    public void init(TcpServer tcpServer) {
-      // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public Object processRequest(Object request) throws IOException {
-      return request;
-    }
-
-    @Override
-    public void shutDown() {
-      shutdown = true;
-    }
-
-    @Override
-    public void endRequest(Object request, long startTime) {}
-
-    @Override
-    public void endResponse(Object request, long startTime) {}
 
   }
 
@@ -344,19 +267,29 @@ public class TcpServerJUnitTest {
     public void endResponse(Object request, long startTime) {}
   }
 
-  private/* GemStoneAddition */ static class SimpleStats implements PoolStatHelper {
-    AtomicInteger ended = new AtomicInteger();
-    AtomicInteger started = new AtomicInteger();
 
+  public class InfoRequestHandler implements TcpHandler {
+    public InfoRequestHandler() {}
 
     @Override
-    public void endJob() {
-      ended.incrementAndGet();
+    public Object processRequest(final Object request) throws IOException {
+      String[] info = new String[2];
+      info[0] = System.getProperty("user.dir");
+      info[1] = System.getProperty("java.version");
+      return new InfoResponse(info);
     }
 
     @Override
-    public void startJob() {
-      started.incrementAndGet();
-    }
+    public void endRequest(final Object request, final long startTime) {}
+
+    @Override
+    public void endResponse(final Object request, final long startTime) {}
+
+    @Override
+    public void shutDown() {}
+
+    @Override
+    public void init(final TcpServer tcpServer) {}
   }
+
 }

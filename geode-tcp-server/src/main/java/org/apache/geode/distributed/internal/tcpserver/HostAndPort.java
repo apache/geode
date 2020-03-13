@@ -108,11 +108,6 @@ public class HostAndPort implements DataSerializableFixedID {
     return getClass().getSimpleName() + " [socketInetAddress=" + socketInetAddress + "]";
   }
 
-  private InetSocketAddress cloneUnresolved(final InetSocketAddress inetSocketAddress) {
-    return InetSocketAddress.createUnresolved(inetSocketAddress.getHostString(),
-        inetSocketAddress.getPort());
-  }
-
   public InetAddress getAddress() {
     return getSocketInetAddress().getAddress();
   }
@@ -157,7 +152,7 @@ public class HostAndPort implements DataSerializableFixedID {
 
   @Override
   public Version[] getSerializationVersions() {
-    return new Version[0];
+    return null;
   }
 
 

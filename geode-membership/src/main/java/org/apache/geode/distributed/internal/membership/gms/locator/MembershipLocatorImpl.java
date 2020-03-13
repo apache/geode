@@ -140,8 +140,8 @@ public class MembershipLocatorImpl<ID extends MemberIdentifier> implements Membe
   }
 
   @Override
-  public SocketAddress getBindAddress() {
-    return server.getBindAddress();
+  public SocketAddress getSocketAddress() {
+    return server.getSocketAddress();
   }
 
   @Override
@@ -179,7 +179,8 @@ public class MembershipLocatorImpl<ID extends MemberIdentifier> implements Membe
       try {
         locatorClient
             .stop(
-                new HostAndPort(((InetSocketAddress) getBindAddress()).getHostString(), getPort()));
+                new HostAndPort(((InetSocketAddress) getSocketAddress()).getHostString(),
+                    getPort()));
       } catch (ConnectException ignore) {
         // must not be running
       }
@@ -211,6 +212,6 @@ public class MembershipLocatorImpl<ID extends MemberIdentifier> implements Membe
 
   @Override
   public String toString() {
-    return "Locator on " + getBindAddress() + ":" + getPort();
+    return "Locator on " + getSocketAddress() + ":" + getPort();
   }
 }

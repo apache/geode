@@ -24,10 +24,13 @@ import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.junit.ArchUnitRunner;
 import com.tngtech.archunit.junit.CacheMode;
 import com.tngtech.archunit.lang.ArchRule;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
+import org.apache.geode.test.junit.categories.MembershipTest;
 
 
+@Category({MembershipTest.class})
 @RunWith(ArchUnitRunner.class)
 @AnalyzeClasses(packages = "org.apache.geode.distributed.internal.tcpserver",
     cacheMode = CacheMode.PER_CLASS,
