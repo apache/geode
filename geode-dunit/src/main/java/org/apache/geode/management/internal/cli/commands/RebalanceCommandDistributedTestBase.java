@@ -26,8 +26,10 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.junit.assertions.TabularResultModelAssert;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @SuppressWarnings("serial")
@@ -67,6 +69,29 @@ public class RebalanceCommandDistributedTestBase {
     String command = "rebalance --simulate=true --time-out=-1";
 
     gfsh.executeAndAssertThat(command).statusIsSuccess();
+  }
+
+  @Test
+  public void testRebalanceResultOutput() {
+    // check if DistributedRegionMXBean is available so that command will not fail
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/region-1", 2);
+
+    String command = "rebalance";
+
+    TabularResultModelAssert rebalanceResult =
+        gfsh.executeAndAssertThat(command).statusIsSuccess().hasTableSection();
+
+    rebalanceResult.hasHeader().contains("Rebalanced partition regions");
+    rebalanceResult.hasRow(0).contains(CliStrings.REBALANCE__MSG__TOTALBUCKETCREATEBYTES);
+    rebalanceResult.hasRow(1).contains(CliStrings.REBALANCE__MSG__TOTALBUCKETCREATETIM);
+    rebalanceResult.hasRow(2).contains(CliStrings.REBALANCE__MSG__TOTALBUCKETCREATESCOMPLETED);
+    rebalanceResult.hasRow(3).contains(CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERBYTES);
+    rebalanceResult.hasRow(4).contains(CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERTIME);
+    rebalanceResult.hasRow(5).contains(CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERSCOMPLETED);
+    rebalanceResult.hasRow(6).contains(CliStrings.REBALANCE__MSG__TOTALPRIMARYTRANSFERTIME);
+    rebalanceResult.hasRow(7).contains(CliStrings.REBALANCE__MSG__TOTALPRIMARYTRANSFERSCOMPLETED);
+    rebalanceResult.hasRow(8).contains(CliStrings.REBALANCE__MSG__TOTALTIME);
+    rebalanceResult.hasRow(9).contains(CliStrings.REBALANCE__MSG__MEMBER_COUNT);
   }
 
   private static void setUpRegions() {
