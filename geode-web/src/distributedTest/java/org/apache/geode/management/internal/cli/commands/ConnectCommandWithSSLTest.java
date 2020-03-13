@@ -15,30 +15,6 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_CIPHERS;
-import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_ENABLED;
-import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_KEYSTORE;
-import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_KEYSTORE_PASSWORD;
-import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_KEYSTORE_TYPE;
-import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_PROTOCOLS;
-import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_TRUSTSTORE;
-import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_TRUSTSTORE_PASSWORD;
-import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_SSL_CIPHERS;
-import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_SSL_ENABLED;
-import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_SSL_KEYSTORE;
-import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_SSL_KEYSTORE_PASSWORD;
-import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_SSL_KEYSTORE_TYPE;
-import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_SSL_PROTOCOLS;
-import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_SSL_TRUSTSTORE;
-import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD;
-import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_CIPHERS;
-import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_ENABLED;
-import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_KEYSTORE;
-import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_KEYSTORE_PASSWORD;
-import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_KEYSTORE_TYPE;
-import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_PROTOCOLS;
-import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_TRUSTSTORE;
-import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_CIPHERS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENABLED_COMPONENTS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE;
@@ -104,48 +80,83 @@ public class ConnectCommandWithSSLTest {
     }
   };
 
+  @SuppressWarnings("deprecation")
   private static final Properties jmxSslProperties = new Properties() {
     {
-      setProperty(JMX_MANAGER_SSL_ENABLED, "true");
-      setProperty(JMX_MANAGER_SSL_KEYSTORE, jks.getAbsolutePath());
-      setProperty(JMX_MANAGER_SSL_KEYSTORE_PASSWORD, "password");
-      setProperty(JMX_MANAGER_SSL_KEYSTORE_TYPE, "JKS");
-      setProperty(JMX_MANAGER_SSL_TRUSTSTORE, jks.getAbsolutePath());
-      setProperty(JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD, "password");
-      setProperty(JMX_MANAGER_SSL_CIPHERS, "any");
-      setProperty(JMX_MANAGER_SSL_PROTOCOLS, "any");
+      setProperty(org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_ENABLED,
+          "true");
+      setProperty(org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_KEYSTORE,
+          jks.getAbsolutePath());
+      setProperty(
+          org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_KEYSTORE_PASSWORD,
+          "password");
+      setProperty(
+          org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_KEYSTORE_TYPE,
+          "JKS");
+      setProperty(org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_TRUSTSTORE,
+          jks.getAbsolutePath());
+      setProperty(
+          org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD,
+          "password");
+      setProperty(org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_CIPHERS,
+          "any");
+      setProperty(org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_PROTOCOLS,
+          "any");
     }
   };
 
+  @SuppressWarnings("deprecation")
   private static final Properties clusterSslProperties = new Properties() {
     {
-      setProperty(CLUSTER_SSL_ENABLED, "true");
-      setProperty(CLUSTER_SSL_KEYSTORE, jks.getAbsolutePath());
-      setProperty(CLUSTER_SSL_KEYSTORE_PASSWORD, "password");
-      setProperty(CLUSTER_SSL_KEYSTORE_TYPE, "JKS");
-      setProperty(CLUSTER_SSL_TRUSTSTORE, jks.getAbsolutePath());
-      setProperty(CLUSTER_SSL_TRUSTSTORE_PASSWORD, "password");
-      setProperty(CLUSTER_SSL_CIPHERS, "any");
-      setProperty(CLUSTER_SSL_PROTOCOLS, "any");
+      setProperty(org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_ENABLED, "true");
+      setProperty(org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_KEYSTORE,
+          jks.getAbsolutePath());
+      setProperty(
+          org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_KEYSTORE_PASSWORD,
+          "password");
+      setProperty(org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_KEYSTORE_TYPE,
+          "JKS");
+      setProperty(org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_TRUSTSTORE,
+          jks.getAbsolutePath());
+      setProperty(
+          org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_TRUSTSTORE_PASSWORD,
+          "password");
+      setProperty(org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_CIPHERS, "any");
+      setProperty(org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_PROTOCOLS,
+          "any");
     }
   };
 
+  @SuppressWarnings("deprecation")
   private static final Properties httpSslProperties = new Properties() {
     {
-      setProperty(HTTP_SERVICE_SSL_ENABLED, "true");
-      setProperty(HTTP_SERVICE_SSL_KEYSTORE, jks.getAbsolutePath());
-      setProperty(HTTP_SERVICE_SSL_KEYSTORE_PASSWORD, "password");
-      setProperty(HTTP_SERVICE_SSL_KEYSTORE_TYPE, "JKS");
-      setProperty(HTTP_SERVICE_SSL_TRUSTSTORE, jks.getAbsolutePath());
-      setProperty(HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD, "password");
-      setProperty(HTTP_SERVICE_SSL_CIPHERS, "any");
-      setProperty(HTTP_SERVICE_SSL_PROTOCOLS, "any");
+      setProperty(org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_SSL_ENABLED,
+          "true");
+      setProperty(org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_SSL_KEYSTORE,
+          jks.getAbsolutePath());
+      setProperty(
+          org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_SSL_KEYSTORE_PASSWORD,
+          "password");
+      setProperty(
+          org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_SSL_KEYSTORE_TYPE,
+          "JKS");
+      setProperty(org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_SSL_TRUSTSTORE,
+          jks.getAbsolutePath());
+      setProperty(
+          org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD,
+          "password");
+      setProperty(org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_SSL_CIPHERS,
+          "any");
+      setProperty(org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_SSL_PROTOCOLS,
+          "any");
     }
   };
 
+  @SuppressWarnings("deprecation")
   private static final Properties httpSslPropertiesSkipValidation = new Properties() {
     {
-      setProperty(HTTP_SERVICE_SSL_ENABLED, "true");
+      setProperty(org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_SSL_ENABLED,
+          "true");
     }
   };
 

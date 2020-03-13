@@ -48,13 +48,9 @@ public class ExportLogsStatsOverHttpDistributedTest extends ExportLogsStatsDistr
   public void testExportWithDir() throws Exception {
     connectIfNeeded();
     File dir = temporaryFolder.newFolder();
-    // export the logs
-    connector.executeCommand("export logs --dir=" + dir.getAbsolutePath());
-    // verify that the message contains a path to the user.dir
+    connector.executeAndAssertThat("export logs --dir=" + dir.getAbsolutePath())
+        .containsOutput("Logs exported to: ", dir.getAbsolutePath());
     String message = connector.getGfshOutput();
-    assertThat(message).contains("Logs exported to: ");
-    assertThat(message).contains(dir.getAbsolutePath());
-
     String zipPath = getZipPathFromCommandResult(message);
     Set<String> actualZipEntries =
         new ZipFile(zipPath).stream().map(ZipEntry::getName).collect(Collectors.toSet());
