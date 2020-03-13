@@ -102,7 +102,6 @@ public class ConnectionPoolImplJUnitTest {
     // check defaults
     assertEquals(PoolFactory.DEFAULT_SOCKET_CONNECT_TIMEOUT, pool.getSocketConnectTimeout());
     assertEquals(PoolFactory.DEFAULT_FREE_CONNECTION_TIMEOUT, pool.getFreeConnectionTimeout());
-    assertEquals(PoolFactory.DEFAULT_SERVER_CONNECTION_TIMEOUT, pool.getServerConnectionTimeout());
     assertEquals(PoolFactory.DEFAULT_SOCKET_BUFFER_SIZE, pool.getSocketBufferSize());
     assertEquals(PoolFactory.DEFAULT_READ_TIMEOUT, pool.getReadTimeout());
     assertEquals(PoolFactory.DEFAULT_MIN_CONNECTIONS, pool.getMinConnections());

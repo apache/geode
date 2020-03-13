@@ -75,13 +75,6 @@ public interface Pool {
   int getFreeConnectionTimeout();
 
   /**
-   * Returns the server connection timeout of this pool.
-   *
-   * @see PoolFactory#setServerConnectionTimeout
-   */
-  int getServerConnectionTimeout();
-
-  /**
    * Returns the load conditioning interval of this pool.
    *
    * @see PoolFactory#setLoadConditioningInterval
