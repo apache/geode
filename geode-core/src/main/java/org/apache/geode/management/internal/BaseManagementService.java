@@ -21,6 +21,7 @@ import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -82,6 +83,14 @@ public abstract class BaseManagementService extends ManagementService {
 
       }
       return service;
+    }
+  }
+
+  @VisibleForTesting
+  public static void setManagementService(InternalCacheForClientAccess cache,
+      BaseManagementService service) {
+    synchronized (instances) {
+      instances.put(cache, service);
     }
   }
 
