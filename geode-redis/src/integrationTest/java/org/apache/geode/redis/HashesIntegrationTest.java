@@ -689,6 +689,36 @@ public class HashesIntegrationTest {
     assertThat(result).isEmpty();
   }
 
+  @Test
+  public void testConcurrentHGetAll() throws InterruptedException, ExecutionException {
+    String key1 = "HSET" + randString();
+    HashMap<String, String> record = new HashMap<>();
+
+    Jedis jedis2 = new Jedis("localhost", port, 10000000);
+    doABunchOfHSets(key1, record, jedis);
+
+    ExecutorService pool = Executors.newFixedThreadPool(2);
+    Callable<Integer> callable1 = () -> doABunchOfHGetAlls(key1, jedis);
+    Callable<Integer> callable2 = () -> doABunchOfHGetAlls(key1, jedis2);
+    Future<Integer> future1 = pool.submit(callable1);
+    Future<Integer> future2 = pool.submit(callable2);
+
+    assertThat(future1.get()).isEqualTo(ITERATION_COUNT);
+    assertThat(future2.get()).isEqualTo(ITERATION_COUNT);
+
+    pool.shutdown();
+  }
+
+  private int doABunchOfHGetAlls(String key, Jedis jedis) {
+    int returnedCount = 0;
+    for (int i = 0; i < ITERATION_COUNT; i++) {
+      if (jedis.hgetAll(key).size() == ITERATION_COUNT) {
+        returnedCount++;
+      }
+    }
+    return returnedCount;
+  }
+
   private void doABunchOfHDelsWithBlockingQueue(String key,
       ArrayBlockingQueue<String> blockingQueue,
       Jedis jedis) {

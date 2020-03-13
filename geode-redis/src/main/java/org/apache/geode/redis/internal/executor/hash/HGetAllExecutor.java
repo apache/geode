@@ -20,8 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.geode.cache.TimeoutException;
-import org.apache.geode.redis.internal.AutoCloseableLock;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
@@ -59,33 +57,23 @@ public class HGetAllExecutor extends HashExecutor {
     }
     Collection<Entry<ByteArrayWrapper, ByteArrayWrapper>> entries;
     ByteArrayWrapper key = command.getKey();
-    try (AutoCloseableLock regionLock = withRegionLock(context, key)) {
-      Map<ByteArrayWrapper, ByteArrayWrapper> results = getMap(context, key);
 
-      if (results == null || results.isEmpty()) {
-        command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));
-        return;
-      }
+    Map<ByteArrayWrapper, ByteArrayWrapper> results = getMap(context, key);
 
-      entries = results.entrySet();
-
-      if (entries == null || entries.isEmpty()) {
-        command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));
-        return;
-      }
-
-      // create a copy
-      entries = new ArrayList<>(entries);
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      command.setResponse(
-          Coder.getErrorResponse(context.getByteBufAllocator(), "Thread interrupted."));
-      return;
-    } catch (TimeoutException e) {
-      command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(),
-          "Timeout acquiring lock. Please try again."));
+    if (results == null || results.isEmpty()) {
+      command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));
       return;
     }
+
+    entries = results.entrySet();
+
+    if (entries == null || entries.isEmpty()) {
+      command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));
+      return;
+    }
+
+    // create a copy
+    entries = new ArrayList<>(entries);
 
     command.setResponse(Coder.getKeyValArrayResponse(context.getByteBufAllocator(), entries));
   }
