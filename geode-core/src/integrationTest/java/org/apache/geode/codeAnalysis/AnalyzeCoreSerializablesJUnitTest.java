@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.codeAnalysis;
 
 import org.junit.experimental.categories.Category;
@@ -20,14 +19,10 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
 @Category({SerializationTest.class})
-public class AnalyzeManagementSerializablesJUnitTest extends AnalyzeSerializablesJUnitTestBase {
-  @Override
-  protected String getModuleName() {
-    return "geode-management";
-  }
+public class AnalyzeCoreSerializablesJUnitTest extends AnalyzeSerializablesJUnitTestBase {
 
   @Override
-  // Override this method because all geode-management classes will be scanned by the core's
-  // data serializable test
-  public void testDataSerializables() throws Exception {}
+  protected String getModuleName() {
+    return "geode-core";
+  }
 }
