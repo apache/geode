@@ -61,6 +61,7 @@ public class TcpClient {
   private final TcpSocketCreator socketCreator;
   private final ObjectSerializer objectSerializer;
   private final ObjectDeserializer objectDeserializer;
+  private TcpSocketFactory socketFactory;
 
   /**
    * Constructs a new TcpClient
@@ -70,10 +71,11 @@ public class TcpClient {
    * @param objectDeserializer deserializer for responses from the TcpServer
    */
   public TcpClient(TcpSocketCreator socketCreator, final ObjectSerializer objectSerializer,
-      final ObjectDeserializer objectDeserializer) {
+      final ObjectDeserializer objectDeserializer, TcpSocketFactory socketFactory) {
     this.socketCreator = socketCreator;
     this.objectSerializer = objectSerializer;
     this.objectDeserializer = objectDeserializer;
+    this.socketFactory = socketFactory;
   }
 
   /**
@@ -169,7 +171,7 @@ public class TcpClient {
     logger.debug("TcpClient sending {} to {}", request, addr);
 
     Socket sock =
-        socketCreator.forCluster().connect(addr, (int) newTimeout, null);
+        socketCreator.forCluster().connect(addr, (int) newTimeout, null, socketFactory);
     sock.setSoTimeout((int) newTimeout);
     DataOutputStream out = null;
     try {
@@ -252,7 +254,7 @@ public class TcpClient {
     gossipVersion = TcpServer.getOldGossipVersion();
 
     try {
-      sock = socketCreator.forCluster().connect(addr, timeout, null);
+      sock = socketCreator.forCluster().connect(addr, timeout, null, socketFactory);
       sock.setSoTimeout(timeout);
     } catch (SSLException e) {
       throw new IllegalStateException("Unable to form SSL connection", e);

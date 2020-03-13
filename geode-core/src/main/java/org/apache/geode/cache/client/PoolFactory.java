@@ -17,9 +17,11 @@ package org.apache.geode.cache.client;
 
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.client.proxy.Proxies;
 import org.apache.geode.cache.query.CqAttributes;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.net.SSLParameterExtension;
 
 
 /**
@@ -218,6 +220,13 @@ public interface PoolFactory {
    * @since GemFire 6.5
    */
   boolean DEFAULT_MULTIUSER_AUTHENTICATION = false;
+
+  /**
+   * The default value for the socket factory
+   *
+   * Current value {@link SocketFactory#DEFAULT}
+   */
+  SocketFactory DEFAULT_SOCKET_FACTORY = SocketFactory.DEFAULT;
 
   /**
    * Sets the socket connect timeout for this pool. The number of milli seconds specified as socket
@@ -555,5 +564,25 @@ public interface PoolFactory {
    * @since GemFire 6.5
    */
   PoolFactory setMultiuserAuthentication(boolean enabled);
+
+  /**
+   * Set the socket factory used by this pool to create connections to both locators (if
+   * configured using {@link #addLocator(String, int)}) and servers.
+   *
+   * Sockets returned by this factory will have the rest of the configuration options
+   * specified on this pool and on the {@link ClientCache} applied to them. In particular,
+   * sockets returned by this factory will be wrapped with SSLSockets if ssl is enabled
+   * for this client cache.
+   *
+   * This factory can be used for configuring a proxy, or overriding various socket settings.
+   * For modifying SSL settings, see {@link SSLParameterExtension}
+   *
+   * See {@link Proxies}
+   *
+   * @param socketFactory The {@link SocketFactory} to use
+   * @return a reference to <code> this </code>
+   * @since Geode 1.13
+   */
+  PoolFactory setSocketFactory(SocketFactory socketFactory);
 
 }

@@ -45,6 +45,7 @@ import org.apache.geode.cache.RegionService;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.ServerConnectivityException;
+import org.apache.geode.cache.client.SocketFactory;
 import org.apache.geode.cache.client.SubscriptionNotEnabledException;
 import org.apache.geode.cache.client.internal.pooling.ConnectionManager;
 import org.apache.geode.cache.client.internal.pooling.ConnectionManagerImpl;
@@ -157,6 +158,7 @@ public class PoolImpl implements InternalPool {
   private final AtomicInteger primaryQueueSize = new AtomicInteger(PRIMARY_QUEUE_NOT_AVAILABLE);
 
   private final ThreadsMonitoring threadMonitoring;
+  private final SocketFactory socketFactory;
 
   public static PoolImpl create(PoolManagerImpl pm, String name, Pool attributes,
       List<HostAndPort> locatorAddresses, InternalDistributedSystem distributedSystem,
@@ -221,6 +223,7 @@ public class PoolImpl implements InternalPool {
     subscriptionMessageTrackingTimeout = attributes.getSubscriptionMessageTrackingTimeout();
     subscriptionAckInterval = attributes.getSubscriptionAckInterval();
     subscriptionTimeoutMultiplier = attributes.getSubscriptionTimeoutMultiplier();
+    socketFactory = attributes.getSocketFactory();
     if (subscriptionTimeoutMultiplier < 0) {
       throw new IllegalArgumentException(
           "The subscription timeout multiplier must not be negative");
@@ -259,7 +262,8 @@ public class PoolImpl implements InternalPool {
         : new PoolStats(statFactory, getName() + "->"
             + (isEmpty(serverGroup) ? "[any servers]" : "[" + getServerGroup() + "]"));
 
-    source = getSourceImpl(((PoolFactoryImpl.PoolAttributes) attributes).locatorCallback);
+    source =
+        getSourceImpl(((PoolFactoryImpl.PoolAttributes) attributes).locatorCallback, socketFactory);
     endpointManager = new EndpointManagerImpl(name, distributedSystem, cancelCriterion,
         stats);
     connectionFactory = new ConnectionFactoryImpl(source, endpointManager, distributedSystem,
@@ -654,13 +658,14 @@ public class PoolImpl implements InternalPool {
   }
 
 
-  private ConnectionSource getSourceImpl(LocatorDiscoveryCallback locatorDiscoveryCallback) {
+  private ConnectionSource getSourceImpl(LocatorDiscoveryCallback locatorDiscoveryCallback,
+      SocketFactory socketFactory) {
     List<InetSocketAddress> locators = getLocators();
     if (locators.isEmpty()) {
       return new ExplicitConnectionSourceImpl(getServers());
     } else {
       AutoConnectionSourceImpl source = new AutoConnectionSourceImpl(locatorAddresses,
-          getServerGroup(), socketConnectTimeout);
+          getServerGroup(), socketConnectTimeout, socketFactory);
       if (locatorDiscoveryCallback != null) {
         source.setLocatorDiscoveryCallback(locatorDiscoveryCallback);
       }
@@ -1596,6 +1601,11 @@ public class PoolImpl implements InternalPool {
   @Override
   public int getSubscriptionTimeoutMultiplier() {
     return subscriptionTimeoutMultiplier;
+  }
+
+  @Override
+  public SocketFactory getSocketFactory() {
+    return socketFactory;
   }
 
   public int calculateRetryAttempts(Throwable cause) {

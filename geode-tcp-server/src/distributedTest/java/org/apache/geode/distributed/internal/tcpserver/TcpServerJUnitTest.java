@@ -165,7 +165,7 @@ public class TcpServerJUnitTest {
     Services.registerSerializables(serializer);
     return new TcpClient(new TcpSocketCreatorImpl(),
         serializer.getObjectSerializer(),
-        serializer.getObjectDeserializer());
+        serializer.getObjectDeserializer(), TcpSocketFactory.DEFAULT);
   }
 
   @Test

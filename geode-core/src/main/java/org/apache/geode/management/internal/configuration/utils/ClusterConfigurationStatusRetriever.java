@@ -22,6 +22,7 @@ import java.util.Set;
 import org.apache.geode.distributed.LocatorLauncher;
 import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
+import org.apache.geode.distributed.internal.tcpserver.TcpSocketFactory;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
@@ -41,7 +42,8 @@ public class ClusterConfigurationStatusRetriever {
         new SocketCreator(SSLConfigurationFactory.getSSLConfigForComponent(configProps,
             SecurableCommunicationChannel.LOCATOR)),
         InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
-        InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());
+        InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer(),
+        TcpSocketFactory.DEFAULT);
     HostAndPort locatorAddress = new HostAndPort(locatorHostName, locatorPort);
     SharedConfigurationStatusResponse statusResponse =
         (SharedConfigurationStatusResponse) client.requestToServer(locatorAddress,

@@ -318,4 +318,11 @@ public interface Pool {
    * @return The timeout multiplier
    */
   int getSubscriptionTimeoutMultiplier();
+
+  /**
+   * The socket factory used by this pool to create socket connections to servers and locators.
+   *
+   * @see PoolFactory#setSocketFactory(SocketFactory)
+   */
+  SocketFactory getSocketFactory();
 }

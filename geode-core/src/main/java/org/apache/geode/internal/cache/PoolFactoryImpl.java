@@ -35,6 +35,7 @@ import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolFactory;
+import org.apache.geode.cache.client.SocketFactory;
 import org.apache.geode.cache.client.internal.LocatorDiscoveryCallback;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.query.QueryService;
@@ -223,6 +224,12 @@ public class PoolFactoryImpl implements InternalPoolFactory {
     return this;
   }
 
+  @Override
+  public PoolFactory setSocketFactory(SocketFactory socketFactory) {
+    attributes.socketFactory = socketFactory;
+    return this;
+  }
+
   public PoolFactory setStartDisabled(boolean disable) {
     attributes.startDisabled = disable;
     return this;
@@ -408,6 +415,7 @@ public class PoolFactoryImpl implements InternalPoolFactory {
     private static final long serialVersionUID = 1L; // for findbugs
 
     int socketConnectTimeout = DEFAULT_SOCKET_CONNECT_TIMEOUT;
+    SocketFactory socketFactory = DEFAULT_SOCKET_FACTORY;
     int connectionTimeout = DEFAULT_FREE_CONNECTION_TIMEOUT;
     int serverConnectionTimeout = DEFAULT_SERVER_CONNECTION_TIMEOUT;
     int connectionLifetime = DEFAULT_LOAD_CONDITIONING_INTERVAL;
@@ -563,6 +571,11 @@ public class PoolFactoryImpl implements InternalPoolFactory {
     @Override
     public int getSubscriptionTimeoutMultiplier() {
       return subscriptionTimeoutMultipler;
+    }
+
+    @Override
+    public SocketFactory getSocketFactory() {
+      return socketFactory;
     }
 
     @Override

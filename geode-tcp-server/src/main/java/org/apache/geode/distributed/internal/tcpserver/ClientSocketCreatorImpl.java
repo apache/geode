@@ -50,9 +50,17 @@ public class ClientSocketCreatorImpl implements ClientSocketCreator {
   /**
    * Return a client socket. This method is used by client/server clients.
    */
+  @Override
   public Socket connect(HostAndPort addr, int timeout, int socketBufferSize)
       throws IOException {
-    return socketCreator.connect(addr, timeout, null, true, socketBufferSize);
+    return connect(addr, timeout, socketBufferSize, null);
+  }
+
+  @Override
+  public Socket connect(HostAndPort addr, int timeout, int socketBufferSize,
+      TcpSocketFactory socketFactory)
+      throws IOException {
+    return socketCreator.connect(addr, timeout, null, true, socketBufferSize, socketFactory);
   }
 
 }

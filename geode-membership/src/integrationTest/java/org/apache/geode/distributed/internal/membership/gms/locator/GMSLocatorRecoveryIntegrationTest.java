@@ -52,6 +52,7 @@ import org.apache.geode.distributed.internal.membership.gms.util.MemberIdentifie
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreatorImpl;
+import org.apache.geode.distributed.internal.tcpserver.TcpSocketFactory;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
 import org.apache.geode.internal.serialization.Version;
@@ -86,7 +87,8 @@ public class GMSLocatorRecoveryIntegrationTest {
         false, new MembershipLocatorStatisticsNoOp(), "",
         temporaryFolder.getRoot().toPath(), new TcpClient(new TcpSocketCreatorImpl(),
             serializer.getObjectSerializer(),
-            serializer.getObjectDeserializer()),
+            serializer.getObjectDeserializer(),
+            TcpSocketFactory.DEFAULT),
         serializer.getObjectSerializer(),
         serializer.getObjectDeserializer());
     gmsLocator.setViewFile(stateFile);
@@ -158,7 +160,7 @@ public class GMSLocatorRecoveryIntegrationTest {
     try {
       final TcpClient locatorClient =
           new TcpClient(socketCreator, serializer.getObjectSerializer(),
-              serializer.getObjectDeserializer());
+              serializer.getObjectDeserializer(), TcpSocketFactory.DEFAULT);
 
       MembershipConfig membershipConfig = new MembershipConfig() {
         public String getLocators() {
