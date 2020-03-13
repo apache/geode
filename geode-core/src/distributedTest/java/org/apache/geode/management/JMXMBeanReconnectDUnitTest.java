@@ -32,9 +32,7 @@ import static org.apache.geode.distributed.internal.membership.api.MembershipMan
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
-import static org.apache.geode.test.dunit.Disconnect.disconnectAllFromDS;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
-import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.apache.geode.test.dunit.VM.getVMId;
 import static org.apache.geode.test.dunit.VM.toArray;
@@ -61,6 +59,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.ForcedDisconnectException;
+import org.apache.geode.alerting.internal.spi.AlertingIOException;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.LocatorLauncher;
@@ -82,7 +81,6 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolde
 @SuppressWarnings("serial")
 public class JMXMBeanReconnectDUnitTest implements Serializable {
 
-  private static final long TIMEOUT_MILLIS = getTimeout().getValueInMS();
   private static final LocatorLauncher DUMMY_LOCATOR = mock(LocatorLauncher.class);
   private static final ServerLauncher DUMMY_SERVER = mock(ServerLauncher.class);
 
@@ -157,6 +155,7 @@ public class JMXMBeanReconnectDUnitTest implements Serializable {
     String createRegionCommand = "create region --type=REPLICATE --name=" + SEPARATOR + regionName;
     gfsh.executeAndAssertThat(createRegionCommand).statusIsSuccess();
 
+    addIgnoredException(AlertingIOException.class);
     addIgnoredException(CacheClosedException.class);
     addIgnoredException(CancelException.class);
     addIgnoredException(DistributedSystemDisconnectedException.class);
@@ -202,13 +201,14 @@ public class JMXMBeanReconnectDUnitTest implements Serializable {
 
   @After
   public void tearDown() {
-    invokeInEveryVM(() -> {
-      BEFORE.get().countDown();
-      AFTER.get().countDown();
-      SERVER.getAndSet(DUMMY_SERVER).stop();
-      LOCATOR.getAndSet(DUMMY_LOCATOR).stop();
-    });
-    disconnectAllFromDS();
+    for (VM vm : asList(serverVM, locator2VM, locator1VM)) {
+      vm.invoke(() -> {
+        BEFORE.get().countDown();
+        AFTER.get().countDown();
+        SERVER.getAndSet(DUMMY_SERVER).stop();
+        LOCATOR.getAndSet(DUMMY_LOCATOR).stop();
+      });
+    }
   }
 
   @Test
@@ -241,7 +241,8 @@ public class JMXMBeanReconnectDUnitTest implements Serializable {
       await().untilAsserted(() -> {
         assertThat(getPlatformMBeanServer().queryNames(getInstance("GemFire:*"), null))
             .as("GemFire mbeans on locator1")
-            .containsAll(expectedLocatorMXBeans(locator1Name));
+            .containsAll(expectedLocatorMXBeans(locator1Name))
+            .containsAll(expectedLocatorMXBeans(locator2Name));
       });
     });
 
@@ -249,7 +250,8 @@ public class JMXMBeanReconnectDUnitTest implements Serializable {
       await().untilAsserted(() -> {
         assertThat(getPlatformMBeanServer().queryNames(getInstance("GemFire:*"), null))
             .as("GemFire mbeans on locator2")
-            .containsAll(expectedLocatorMXBeans(locator2Name));
+            .containsAll(expectedLocatorMXBeans(locator2Name))
+            .containsAll(expectedLocatorMXBeans(locator1Name));
       });
     });
   }
@@ -348,7 +350,7 @@ public class JMXMBeanReconnectDUnitTest implements Serializable {
             .isTrue();
       });
 
-      system.waitUntilReconnected(TIMEOUT_MILLIS, MILLISECONDS);
+      system.waitUntilReconnected(getTimeout().getValueInMS(), MILLISECONDS);
 
       await().untilAsserted(() -> {
         assertThat(getPlatformMBeanServer().queryNames(getInstance("GemFire:*"), null))
@@ -382,7 +384,7 @@ public class JMXMBeanReconnectDUnitTest implements Serializable {
         @Override
         public void reconnecting(InternalDistributedSystem oldSystem) {
           try {
-            BEFORE.get().await(TIMEOUT_MILLIS, MILLISECONDS);
+            BEFORE.get().await(getTimeout().getValueInMS(), MILLISECONDS);
           } catch (InterruptedException e) {
             errorCollector.addError(e);
           }
@@ -443,7 +445,7 @@ public class JMXMBeanReconnectDUnitTest implements Serializable {
         @Override
         public void reconnecting(InternalDistributedSystem oldSystem) {
           try {
-            BEFORE.get().await(TIMEOUT_MILLIS, MILLISECONDS);
+            BEFORE.get().await(getTimeout().getValueInMS(), MILLISECONDS);
           } catch (InterruptedException e) {
             errorCollector.addError(e);
           }
@@ -478,7 +480,7 @@ public class JMXMBeanReconnectDUnitTest implements Serializable {
 
     serverVM.invoke(() -> {
       BEFORE.get().countDown();
-      AFTER.get().await(TIMEOUT_MILLIS, MILLISECONDS);
+      AFTER.get().await(getTimeout().getValueInMS(), MILLISECONDS);
 
       await().untilAsserted(() -> {
         assertThat(getPlatformMBeanServer().queryNames(getInstance("GemFire:*"), null))
@@ -507,6 +509,7 @@ public class JMXMBeanReconnectDUnitTest implements Serializable {
   private static void startLocator(String name, File workingDirectory, int locatorPort, int jmxPort,
       String locators) {
     LOCATOR.set(new LocatorLauncher.Builder()
+        .setDeletePidFileOnStop(true)
         .setMemberName(name)
         .setPort(locatorPort)
         .setWorkingDirectory(workingDirectory.getAbsolutePath())
@@ -532,6 +535,7 @@ public class JMXMBeanReconnectDUnitTest implements Serializable {
 
   private static void startServer(String name, File workingDirectory, String locators) {
     SERVER.set(new ServerLauncher.Builder()
+        .setDeletePidFileOnStop(true)
         .setDisableDefaultServer(true)
         .setMemberName(name)
         .setWorkingDirectory(workingDirectory.getAbsolutePath())

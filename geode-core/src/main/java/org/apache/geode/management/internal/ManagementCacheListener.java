@@ -19,47 +19,41 @@ import javax.management.ObjectName;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.Region;
 import org.apache.geode.cache.util.CacheListenerAdapter;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
- * This listener is attached to the Monitoring Region to receive any addition or deletion of MBEans
- *
- * It updates the last refreshed time of proxy once it gets the update request from the Managed Node
- *
- *
+ * This listener is attached to the Monitoring Region to receive any addition or deletion of MBeans.
+ * It updates the last refreshed time of proxy once it gets the update request from the Managed
+ * Node.
  */
-public class ManagementCacheListener extends CacheListenerAdapter<String, Object> {
-
+class ManagementCacheListener extends CacheListenerAdapter<String, Object> {
   private static final Logger logger = LogService.getLogger();
 
-  private MBeanProxyFactory proxyHelper;
+  private final MBeanProxyFactory proxyHelper;
 
-  private volatile boolean readyForEvents;
-
-  public ManagementCacheListener(MBeanProxyFactory proxyHelper) {
+  ManagementCacheListener(MBeanProxyFactory proxyHelper) {
     this.proxyHelper = proxyHelper;
-    this.readyForEvents = false;
   }
 
   @Override
   public void afterCreate(EntryEvent<String, Object> event) {
-    if (!readyForEvents) {
-      return;
-    }
     ObjectName objectName = null;
 
     try {
       objectName = ObjectName.getInstance(event.getKey());
       Object newObject = event.getNewValue();
-      proxyHelper.createProxy(event.getDistributedMember(), objectName, event.getRegion(),
+      DistributedMember distributedMember = event.getDistributedMember();
+      Region<String, Object> region = event.getRegion();
+      proxyHelper.createProxy(distributedMember, objectName, region,
           newObject);
     } catch (Exception e) {
       if (logger.isDebugEnabled()) {
         logger.debug("Proxy Create failed for {} with exception {}", objectName, e.getMessage(), e);
       }
     }
-
   }
 
   @Override
@@ -76,16 +70,12 @@ public class ManagementCacheListener extends CacheListenerAdapter<String, Object
             e);
       }
     }
-
   }
 
   @Override
   public void afterUpdate(EntryEvent<String, Object> event) {
     ObjectName objectName = null;
     try {
-      if (!readyForEvents) {
-        return;
-      }
       objectName = ObjectName.getInstance(event.getKey());
 
       ProxyInfo proxyInfo = proxyHelper.findProxyInfo(objectName);
@@ -104,13 +94,6 @@ public class ManagementCacheListener extends CacheListenerAdapter<String, Object
       if (logger.isDebugEnabled()) {
         logger.debug("Proxy Update failed for {} with exception {}", objectName, e.getMessage(), e);
       }
-
     }
-
   }
-
-  void markReady() {
-    readyForEvents = true;
-  }
-
 }
