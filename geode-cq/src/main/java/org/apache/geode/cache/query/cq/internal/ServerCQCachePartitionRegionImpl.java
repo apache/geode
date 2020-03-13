@@ -40,7 +40,7 @@ class ServerCQCachePartitionRegionImpl implements ServerCQCache {
    * NOTE: In case of RR this map is populated and used as intended. In case of PR this map will not
    * be populated. If executeCQ happens after update operations this map will remain empty.
    */
-  private volatile ConcurrentMap<Object, Object> cqResultKeys;
+  private final ConcurrentMap<Object, Object> cqResultKeys;
 
   public ServerCQCachePartitionRegionImpl() {
     cqResultKeys = new ConcurrentHashMap<>();

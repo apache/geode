@@ -40,13 +40,13 @@ class ServerCQCacheReplicateRegionImpl implements ServerCQCache {
    * NOTE: In case of RR this map is populated and used as intended. In case of PR this map will not
    * be populated. If executeCQ happens after update operations this map will remain empty.
    */
-  private volatile Map<Object, Object> cqResultKeys;
+  private final Map<Object, Object> cqResultKeys;
 
   /**
    * This maintains the keys that are destroyed while the Results Cache is getting constructed. This
    * avoids any keys that are destroyed (after query execution) but is still part of the CQs result.
    */
-  private Set<Object> destroysWhileCqResultsInProgress;
+  private final Set<Object> destroysWhileCqResultsInProgress;
 
   // Synchronize operations on cqResultKeys & destroysWhileCqResultsInProgress
   private final Object LOCK = new Object();
@@ -118,7 +118,7 @@ class ServerCQCacheReplicateRegionImpl implements ServerCQCache {
     }
 
     synchronized (LOCK) {
-      destroysWhileCqResultsInProgress.forEach(k -> cqResultKeys.remove(k));
+      destroysWhileCqResultsInProgress.forEach(cqResultKeys::remove);
       destroysWhileCqResultsInProgress.clear();
     }
 
