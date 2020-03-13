@@ -149,6 +149,7 @@ public class StaticSerialization {
       int utfLen = len; // added for bug 40932
       for (int i = 0; i < len; i++) {
         char c = value.charAt(i);
+        // noinspection StatementWithEmptyBody
         if ((c <= 0x007F) && (c >= 0x0001)) {
           // nothing needed
         } else if (c > 0x07FF) {
@@ -243,7 +244,9 @@ public class StaticSerialization {
     }
     byte[] buf = getThreadLocalByteArray(len);
     dataInput.readFully(buf, 0, len);
-    return new String(buf, 0, 0, len); // intentionally using deprecated constructor
+    @SuppressWarnings("deprecation") // intentionally using deprecated constructor
+    final String string = new String(buf, 0, 0, len);
+    return string;
   }
 
   /**
@@ -267,8 +270,7 @@ public class StaticSerialization {
 
     try {
       // note: this does not throw UnknownHostException at this time
-      InetAddress addr = InetAddress.getByAddress(address);
-      return addr;
+      return InetAddress.getByAddress(address);
     } catch (UnknownHostException ex) {
       throw new IOException("While reading an InetAddress", ex);
     }
@@ -303,8 +305,8 @@ public class StaticSerialization {
     } else {
       HashMap<K, V> map = new HashMap<>(size);
       for (int i = 0; i < size; i++) {
-        K key = (K) context.getDeserializer().readObject(in);
-        V value = (V) context.getDeserializer().readObject(in);
+        K key = context.getDeserializer().readObject(in);
+        V value = context.getDeserializer().readObject(in);
         map.put(key, value);
       }
 
@@ -444,7 +446,7 @@ public class StaticSerialization {
   /**
    * Writes the type code for a primitive type Class to {@code DataOutput}.
    */
-  public static void writePrimitiveClass(Class c, DataOutput out) throws IOException {
+  public static void writePrimitiveClass(Class<?> c, DataOutput out) throws IOException {
     if (c == Boolean.TYPE) {
       out.writeByte(DSCODE.BOOLEAN_TYPE.toByte());
     } else if (c == Character.TYPE) {
