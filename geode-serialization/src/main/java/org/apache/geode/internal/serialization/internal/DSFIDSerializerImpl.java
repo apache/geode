@@ -49,7 +49,7 @@ public class DSFIDSerializerImpl implements DSFIDSerializer {
   private final Constructor<?>[] dsfidMap = new Constructor<?>[256];
 
   @Immutable("This maybe should be wrapped in an unmodifiableMap?")
-  private final Int2ObjectOpenHashMap dsfidMap2 = new Int2ObjectOpenHashMap(800);
+  private final Int2ObjectOpenHashMap<Constructor<?>> dsfidMap2 = new Int2ObjectOpenHashMap<>(800);
 
   private final ObjectSerializer objectSerializer;
   private final ObjectDeserializer objectDeserializer;
@@ -88,9 +88,10 @@ public class DSFIDSerializerImpl implements DSFIDSerializer {
 
   private ObjectDeserializer createDefaultObjectDeserializer() {
     return new ObjectDeserializer() {
+      @SuppressWarnings("unchecked")
       @Override
       public <T> T readObject(DataInput input) throws IOException, ClassNotFoundException {
-        return (T) DSFIDSerializerImpl.this.readDSFID(input);
+        return (T) readDSFID(input);
       }
 
       @Override
@@ -155,7 +156,7 @@ public class DSFIDSerializerImpl implements DSFIDSerializer {
       writeDSFIDHeader(id, out);
     } else {
       out.writeByte(DSCODE.DATA_SERIALIZABLE.toByte());
-      final Class c = bs.getClass();
+      final Class<?> c = bs.getClass();
       StaticSerialization.writeClass(c, out);
     }
   }
@@ -309,9 +310,8 @@ public class DSFIDSerializerImpl implements DSFIDSerializer {
       Version v = context.getSerializationVersion();
       if (!v.isCurrentVersion() && ds instanceof SerializationVersions) {
         // get versions where DataOutput was upgraded
-        Version[] versions = null;
         SerializationVersions vds = (SerializationVersions) ds;
-        versions = vds.getSerializationVersions();
+        Version[] versions = vds.getSerializationVersions();
         // check if the version of the peer or diskstore is different and
         // there has been a change in the message
         if (versions != null) {
@@ -351,9 +351,9 @@ public class DSFIDSerializerImpl implements DSFIDSerializer {
 
 
   @Override
-  public void registerDSFID(int dsfid, Class dsfidClass) {
+  public void registerDSFID(int dsfid, Class<?> dsfidClass) {
     try {
-      Constructor<?> cons = dsfidClass.getConstructor((Class[]) null);
+      Constructor<?> cons = dsfidClass.getConstructor((Class<Object>[]) null);
       cons.setAccessible(true);
       if (!cons.isAccessible()) {
         throw new IllegalArgumentException(
@@ -375,17 +375,15 @@ public class DSFIDSerializerImpl implements DSFIDSerializer {
     if (dsfid >= Byte.MIN_VALUE && dsfid <= Byte.MAX_VALUE) {
       cons = dsfidMap[dsfid + Byte.MAX_VALUE + 1];
     } else {
-      cons = (Constructor<?>) dsfidMap2.get(dsfid);
+      cons = dsfidMap2.get(dsfid);
     }
     if (cons != null) {
       try {
         Object ds = cons.newInstance((Object[]) null);
         invokeFromData(ds, in);
         return ds;
-      } catch (InstantiationException ie) {
+      } catch (InstantiationException | IllegalAccessException ie) {
         throw new IOException(ie.getMessage(), ie);
-      } catch (IllegalAccessException iae) {
-        throw new IOException(iae.getMessage(), iae);
       } catch (InvocationTargetException ite) {
         Throwable targetEx = ite.getTargetException();
         if (targetEx instanceof IOException) {
@@ -426,7 +424,7 @@ public class DSFIDSerializerImpl implements DSFIDSerializer {
     return dsfidMap;
   }
 
-  public Int2ObjectOpenHashMap getDsfidmap2() {
+  public Int2ObjectOpenHashMap<Constructor<?>> getDsfidmap2() {
     return dsfidMap2;
   }
 
