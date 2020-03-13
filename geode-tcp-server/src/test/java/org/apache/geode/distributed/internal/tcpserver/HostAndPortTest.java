@@ -37,7 +37,7 @@ public class HostAndPortTest {
    * Test that getSocketInentAddress returns resolved InetSocketAddress
    */
   @Test
-  public void getSocketInentAddress_returns_resolved_SocketAddress() {
+  public void getSocketInetAddress_returns_resolved_SocketAddress() {
     HostAndPort locator1 = new HostAndPort("localhost", 8080);
 
     InetSocketAddress actual = locator1.getSocketInetAddress();
