@@ -58,7 +58,7 @@ public class ProtobufRegion<K, V> implements Region<K, V> {
    */
   ProtobufRegion(String name, ProtobufChannel channel, ValueEncoder valueEncoder) {
     this.name = name;
-    this.protobufChannel = channel;
+    protobufChannel = channel;
     this.valueEncoder = valueEncoder;
   }
 
@@ -78,7 +78,7 @@ public class ProtobufRegion<K, V> implements Region<K, V> {
         .build();
     final Message response = protobufChannel.sendRequest(request, MessageTypeCase.GETRESPONSE);
 
-    return (V) valueEncoder.decodeValue(response.getGetResponse().getResult());
+    return valueEncoder.decodeValue(response.getGetResponse().getResult());
   }
 
   @Override
@@ -104,8 +104,8 @@ public class ProtobufRegion<K, V> implements Region<K, V> {
       throw new IOException("Unable to process the following keys: " + failures);
     }
     for (BasicTypes.Entry entry : getAllResponse.getEntriesList()) {
-      values.put((K) valueEncoder.decodeValue(entry.getKey()),
-          (V) valueEncoder.decodeValue(entry.getValue()));
+      values.put(valueEncoder.decodeValue(entry.getKey()),
+          valueEncoder.decodeValue(entry.getValue()));
     }
 
     return values;
@@ -160,7 +160,7 @@ public class ProtobufRegion<K, V> implements Region<K, V> {
         .sendRequest(request, MessageTypeCase.PUTIFABSENTRESPONSE).getPutIfAbsentResponse();
 
 
-    return (V) valueEncoder.decodeValue(putIfAbsentResponse.getOldValue());
+    return valueEncoder.decodeValue(putIfAbsentResponse.getOldValue());
   }
 
   @Override
@@ -182,7 +182,7 @@ public class ProtobufRegion<K, V> implements Region<K, V> {
 
     Set<K> keys = new HashSet<>(keySetResponse.getKeysCount());
     for (BasicTypes.EncodedValue value : keySetResponse.getKeysList()) {
-      keys.add((K) valueEncoder.decodeValue(value));
+      keys.add(valueEncoder.decodeValue(value));
     }
     return keys;
   }

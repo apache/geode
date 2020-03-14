@@ -57,9 +57,9 @@ public class ProtobufDriver implements Driver {
   ProtobufDriver(Set<InetSocketAddress> locators, String username, String password,
       String keyStorePath, String trustStorePath, String protocols, String ciphers,
       ValueSerializer serializer) throws GeneralSecurityException, IOException {
-    this.channel = new ProtobufChannel(locators, username, password, keyStorePath, trustStorePath,
+    channel = new ProtobufChannel(locators, username, password, keyStorePath, trustStorePath,
         protocols, ciphers, serializer);
-    this.valueEncoder = new ValueEncoder(serializer);
+    valueEncoder = new ValueEncoder(serializer);
   }
 
   @Override
@@ -80,7 +80,7 @@ public class ProtobufDriver implements Driver {
 
   @Override
   public <K, V> Region<K, V> getRegion(String regionName) {
-    return new ProtobufRegion(regionName, channel, valueEncoder);
+    return new ProtobufRegion<>(regionName, channel, valueEncoder);
   }
 
   @Override
@@ -110,7 +110,7 @@ public class ProtobufDriver implements Driver {
       // NOP
     } finally {
       try {
-        this.channel.close();
+        channel.close();
       } catch (IOException e) {
         // ignore
       }
@@ -119,7 +119,7 @@ public class ProtobufDriver implements Driver {
 
   @Override
   public boolean isConnected() {
-    return !this.channel.isClosed();
+    return !channel.isClosed();
   }
 
 }

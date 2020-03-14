@@ -17,7 +17,6 @@ package org.apache.geode.experimental.driver;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
@@ -27,8 +26,6 @@ import org.apache.geode.internal.protocol.protobuf.v1.FunctionAPI;
 public class ProtobufFunction<T> implements Function<T> {
   private final String functionId;
   private final ProtobufChannel channel;
-  private Set<String> members;
-  private Set<String> groups;
   private final ValueEncoder valueEncoder;
 
   public ProtobufFunction(String functionId, ProtobufChannel channel, ValueEncoder valueEncoder) {
@@ -40,7 +37,7 @@ public class ProtobufFunction<T> implements Function<T> {
   @Override
   public List<T> executeOnRegion(Object arguments, String regionName, Object... keyFilters)
       throws IOException {
-    List<BasicTypes.EncodedValue> encodedFilters = Arrays.asList(keyFilters).stream()
+    List<BasicTypes.EncodedValue> encodedFilters = Arrays.stream(keyFilters)
         .map(valueEncoder::encodeValue).collect(Collectors.toList());
     ClientProtocol.Message request = ClientProtocol.Message.newBuilder()
         .setExecuteFunctionOnRegionRequest(FunctionAPI.ExecuteFunctionOnRegionRequest.newBuilder()
@@ -50,7 +47,7 @@ public class ProtobufFunction<T> implements Function<T> {
         .sendRequest(request,
             ClientProtocol.Message.MessageTypeCase.EXECUTEFUNCTIONONREGIONRESPONSE)
         .getExecuteFunctionOnRegionResponse();
-    return response.getResultsList().stream().map(value -> (T) valueEncoder.decodeValue(value))
+    return response.getResultsList().stream().map(valueEncoder::<T>decodeValue)
         .collect(Collectors.toList());
   }
 
@@ -65,7 +62,7 @@ public class ProtobufFunction<T> implements Function<T> {
         .sendRequest(request,
             ClientProtocol.Message.MessageTypeCase.EXECUTEFUNCTIONONMEMBERRESPONSE)
         .getExecuteFunctionOnMemberResponse();
-    return response.getResultsList().stream().map(value -> (T) valueEncoder.decodeValue(value))
+    return response.getResultsList().stream().map(valueEncoder::<T>decodeValue)
         .collect(Collectors.toList());
   }
 
@@ -79,7 +76,7 @@ public class ProtobufFunction<T> implements Function<T> {
     final FunctionAPI.ExecuteFunctionOnGroupResponse response = channel
         .sendRequest(request, ClientProtocol.Message.MessageTypeCase.EXECUTEFUNCTIONONGROUPRESPONSE)
         .getExecuteFunctionOnGroupResponse();
-    return response.getResultsList().stream().map(value -> (T) valueEncoder.decodeValue(value))
+    return response.getResultsList().stream().map(valueEncoder::<T>decodeValue)
         .collect(Collectors.toList());
   }
 }

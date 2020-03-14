@@ -43,8 +43,8 @@ class ProtobufQueryService implements QueryService {
   }
 
   @Override
-  public <T> Query newQuery(final String queryString) {
-    return new ProtobufQuery<T>(queryString);
+  public <T> Query<T> newQuery(final String queryString) {
+    return new ProtobufQuery<>(queryString);
   }
 
   class ProtobufQuery<T> implements Query<T> {
@@ -57,8 +57,8 @@ class ProtobufQueryService implements QueryService {
 
     @Override
     public List<T> execute(final Object... bindParameters) throws IOException {
-      List<EncodedValue> encodedParameters = Arrays.asList(bindParameters).stream()
-          .map(valueEncoder::encodeValue).collect(Collectors.toList());;
+      List<EncodedValue> encodedParameters = Arrays.stream(bindParameters)
+          .map(valueEncoder::encodeValue).collect(Collectors.toList());
       Message request = Message.newBuilder().setOqlQueryRequest(
           OQLQueryRequest.newBuilder().addAllBindParameter(encodedParameters).setQuery(queryString))
           .build();
@@ -66,11 +66,13 @@ class ProtobufQueryService implements QueryService {
           channel.sendRequest(request, MessageTypeCase.OQLQUERYRESPONSE).getOqlQueryResponse();
       switch (response.getResultCase()) {
         case SINGLERESULT:
-          return (List<T>) parseSingleResult(response);
+          return parseSingleResult(response);
         case LISTRESULT:
           return parseListResult(response);
         case TABLERESULT:
-          return (List<T>) parseTableResult(response);
+          @SuppressWarnings("unchecked")
+          final List<T> tableResult = (List<T>) parseTableResult(response);
+          return tableResult;
         default:
           throw new RuntimeException("Unexpected response: " + response);
       }
@@ -96,10 +98,10 @@ class ProtobufQueryService implements QueryService {
 
     private List<T> parseListResult(final OQLQueryResponse response) {
       return response.getListResult().getElementList().stream()
-          .map(value -> (T) valueEncoder.decodeValue(value)).collect(Collectors.toList());
+          .map(valueEncoder::<T>decodeValue).collect(Collectors.toList());
     }
 
-    private List<Object> parseSingleResult(final OQLQueryResponse response) {
+    private List<T> parseSingleResult(final OQLQueryResponse response) {
       return Collections.singletonList(valueEncoder.decodeValue(response.getSingleResult()));
     }
   }
