@@ -49,6 +49,7 @@ public class ClusterManagementGetResultTest {
 
     System.out.println(json);
 
+    @SuppressWarnings("unchecked")
     ClusterManagementGetResult<Region, RuntimeRegionInfo> deserialized =
         mapper.readValue(json, ClusterManagementGetResult.class);
 

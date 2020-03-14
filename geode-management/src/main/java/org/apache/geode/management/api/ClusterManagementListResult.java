@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.api;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,30 +57,30 @@ public class ClusterManagementListResult<T extends AbstractConfiguration<R>, R e
   // this annotation makes sure we always show the result even though it's an empty list
   @JsonInclude
   public List<EntityInfo<T, R>> getResult() {
-    return entities.values().stream().collect(Collectors.toList());
+    return new ArrayList<>(entities.values());
   }
 
   public void setResult(List<EntityInfo<T, R>> entities) {
     this.entities.clear();
-    for (EntityInfo entity : entities) {
+    for (EntityInfo<T, R> entity : entities) {
       this.entities.put(entity.getId(), entity);
     }
   }
 
   public void addEntityInfo(EntityInfo<T, R> entityInfo) {
-    this.entities.put(entityInfo.getId(), entityInfo);
+    entities.put(entityInfo.getId(), entityInfo);
   }
 
   @JsonIgnore
   public void setEntityGroupInfo(List<EntityGroupInfo<T, R>> entityGroupInfos) {
-    this.entities.clear();
-    for (EntityGroupInfo entityGroupInfo : entityGroupInfos) {
+    entities.clear();
+    for (EntityGroupInfo<T, R> entityGroupInfo : entityGroupInfos) {
       String id = entityGroupInfo.getConfiguration().getId();
-      EntityInfo<T, R> entity = this.entities.get(id);
+      EntityInfo<T, R> entity = entities.get(id);
       if (entity == null) {
         entity = new EntityInfo<>();
         entity.setId(id);
-        this.entities.put(id, entity);
+        entities.put(id, entity);
       }
       entity.getGroups().add(entityGroupInfo);
     }

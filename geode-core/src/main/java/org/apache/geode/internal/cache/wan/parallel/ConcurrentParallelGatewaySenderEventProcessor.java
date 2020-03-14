@@ -255,7 +255,7 @@ public class ConcurrentParallelGatewaySenderEventProcessor
           if (logger.isDebugEnabled()) {
             logger.debug(
                 "ConcurrentParallelGatewaySenderEventProcessor: {} stopped dispatching: {}",
-                (b ? "Successfully" : "Unsuccesfully"), this);
+                (b ? "Successfully" : "Unsuccessfully"), this);
           }
         } catch (ExecutionException e) {
           // we don't expect any exception but if caught then eat it and log warning
