@@ -48,7 +48,6 @@ public class PostProcessingIntegrationTest {
   private Locator locator;
   private Cache cache;
   private Driver driver;
-  private int locatorPort;
   private org.apache.geode.cache.Region<Object, Object> serverRegion;
 
   @Before
@@ -64,7 +63,7 @@ public class PostProcessingIntegrationTest {
 
     // Start a locator
     locator = Locator.startLocatorAndDS(0, null, new Properties());
-    locatorPort = locator.getPort();
+    int locatorPort = locator.getPort();
 
     serverRegion = cache.createRegionFactory(RegionShortcut.REPLICATE).create("region");
 
@@ -86,7 +85,7 @@ public class PostProcessingIntegrationTest {
   @Test
   public void getResultIsPostProcessed() throws Exception {
     serverRegion.put("key", "value");
-    Region region = driver.getRegion(REGION_NAME);
+    Region<String, String> region = driver.getRegion(REGION_NAME);
     assertEquals(SPAM, region.get("key"));
   }
 

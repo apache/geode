@@ -89,8 +89,7 @@ class ValueEncoder {
 
   private ByteString customSerialize(Object unencodedValue) {
     try {
-      ByteString customBytes = valueSerializer.serialize(unencodedValue);
-      return customBytes;
+      return valueSerializer.serialize(unencodedValue);
     } catch (IOException e) {
       throw new IllegalStateException(e);
     }
@@ -102,7 +101,12 @@ class ValueEncoder {
    * @param encodedValue Encoded value to decode.
    * @return Decoded Java object.
    */
-  Object decodeValue(BasicTypes.EncodedValue encodedValue) {
+  @SuppressWarnings("unchecked")
+  <T> T decodeValue(BasicTypes.EncodedValue encodedValue) {
+    return (T) decodeValueObject(encodedValue);
+  }
+
+  private Object decodeValueObject(BasicTypes.EncodedValue encodedValue) {
     switch (encodedValue.getValueCase()) {
       case BINARYRESULT:
         return encodedValue.getBinaryResult().toByteArray();
