@@ -192,6 +192,7 @@ public class RestAccessControllerTest {
         .with(POST_PROCESSOR))
         .andExpect(status().isConflict());
 
+    @SuppressWarnings("unchecked")
     List<PdxInstance> entries = (List<PdxInstance>) orderRegion.get("1");
     Order order = (Order) entries.get(0).getObject();
     assertThat(order).as("order should not be null").isNotNull();
@@ -523,6 +524,7 @@ public class RestAccessControllerTest {
         .andExpect(jsonPath("$.cause", is("Request method 'POST' not supported")));
   }
 
+  @SuppressWarnings("unchecked")
   @Test
   @WithMockUser
   public void getCustomers() throws Exception {
@@ -692,6 +694,7 @@ public class RestAccessControllerTest {
                 containsInAnyOrder("selectOrder", "selectCustomer", "selectHighRoller")));
   }
 
+  @SuppressWarnings("unchecked")
   @Test
   @WithMockUser
   public void executeQueryWithParams() throws Exception {
@@ -973,9 +976,9 @@ public class RestAccessControllerTest {
     }
   }
 
-  static class SimpleCacheLoader implements CacheLoader, Declarable {
+  static class SimpleCacheLoader implements CacheLoader<Object, Object>, Declarable {
     @Override
-    public Object load(LoaderHelper helper) {
+    public Object load(LoaderHelper<Object, Object> helper) {
       // throws TimeoutException
       throw new TimeoutException("Could not load entry. Request timed out.");
     }
@@ -985,40 +988,42 @@ public class RestAccessControllerTest {
       // nothing
     }
 
+    @SuppressWarnings("deprecation")
+    @Deprecated
     @Override
     public void init(Properties props) {
       // nothing
     }
   }
 
-  static class SimpleCacheWriter implements CacheWriter {
+  static class SimpleCacheWriter implements CacheWriter<Object, Object> {
     @Override
     public void close() {
       // nothing
     }
 
     @Override
-    public void beforeUpdate(EntryEvent event) throws CacheWriterException {
+    public void beforeUpdate(EntryEvent<Object, Object> event) throws CacheWriterException {
       // nothing
     }
 
     @Override
-    public void beforeCreate(EntryEvent event) throws CacheWriterException {
+    public void beforeCreate(EntryEvent<Object, Object> event) throws CacheWriterException {
       throw new CacheWriterException("Put request failed as gemfire has thrown an error.");
     }
 
     @Override
-    public void beforeDestroy(EntryEvent event) throws CacheWriterException {
+    public void beforeDestroy(EntryEvent<Object, Object> event) throws CacheWriterException {
       throw new RegionDestroyedException("Region has already been destroyed.", "dummyRegion");
     }
 
     @Override
-    public void beforeRegionDestroy(RegionEvent event) throws CacheWriterException {
+    public void beforeRegionDestroy(RegionEvent<Object, Object> event) throws CacheWriterException {
       // nothing
     }
 
     @Override
-    public void beforeRegionClear(RegionEvent event) throws CacheWriterException {
+    public void beforeRegionClear(RegionEvent<Object, Object> event) throws CacheWriterException {
       // nothing
     }
   }

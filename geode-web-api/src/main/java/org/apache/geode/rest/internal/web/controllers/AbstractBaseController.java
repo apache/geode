@@ -98,7 +98,7 @@ public abstract class AbstractBaseController implements InitializingBean {
   private static final String UTF_8 = "UTF-8";
   private static final String DEFAULT_ENCODING = UTF_8;
   private static final Logger logger = LogService.getLogger();
-  private static final AtomicLong ID_SEQUENCE = new AtomicLong(0l);
+  private static final AtomicLong ID_SEQUENCE = new AtomicLong(0L);
 
   @Autowired
   protected RestSecurityService securityService;
@@ -195,10 +195,12 @@ public abstract class AbstractBaseController implements InitializingBean {
     }
   }
 
-  ResponseEntity<String> processQueryResponse(Query query, Object args[], Object queryResult) {
-    if (queryResult instanceof Collection<?>) {
-      Collection processedResults = new ArrayList(((Collection) queryResult).size());
-      for (Object result : (Collection) queryResult) {
+  ResponseEntity<String> processQueryResponse(Query query, Object[] args, Object queryResult) {
+    if (queryResult instanceof Collection) {
+      @SuppressWarnings("unchecked")
+      final Collection<Object> queryResultCollection = (Collection<Object>) queryResult;
+      Collection<Object> processedResults = new ArrayList<>(queryResultCollection.size());
+      for (Object result : queryResultCollection) {
         processedResults.add(securityService.postProcess(null, null, result, false));
       }
       String queryResultAsJson = JSONUtils.convertCollectionToJson(processedResults);
@@ -489,7 +491,7 @@ public abstract class AbstractBaseController implements InitializingBean {
   }
 
   protected void putValues(final String regionNamePath, String[] keys, List<?> values) {
-    Map<Object, Object> map = new HashMap<Object, Object>();
+    Map<Object, Object> map = new HashMap<>();
     if (keys.length != values.size()) {
       throw new GemfireRestException("Bad request, Keys and Value size does not match");
     }
@@ -614,10 +616,10 @@ public abstract class AbstractBaseController implements InitializingBean {
   }
 
   List<String> checkForMultipleKeysExist(String region, String... keys) {
-    List<String> unknownKeys = new ArrayList<String>();
-    for (int index = 0; index < keys.length; index++) {
-      if (!getRegion(region).containsKey(keys[index])) {
-        unknownKeys.add(keys[index]);
+    List<String> unknownKeys = new ArrayList<>();
+    for (String key : keys) {
+      if (!getRegion(region).containsKey(key)) {
+        unknownKeys.add(key);
       }
     }
     return unknownKeys;
@@ -633,8 +635,10 @@ public abstract class AbstractBaseController implements InitializingBean {
       final Region<Object, T> region = getRegion(regionNamePath);
       final Map<Object, T> entries = region.getAll(Arrays.asList(getKeys(regionNamePath, keys)));
       for (Object key : entries.keySet()) {
-        entries.put(key,
-            (T) securityService.postProcess(regionNamePath, key, entries.get(key), false));
+        @SuppressWarnings("unchecked")
+        final T value =
+            (T) securityService.postProcess(regionNamePath, key, entries.get(key), false);
+        entries.put(key, value);
       }
       return entries;
     } catch (SerializationException se) {
@@ -660,13 +664,14 @@ public abstract class AbstractBaseController implements InitializingBean {
     getRegion(regionNamePath).remove(key);
   }
 
-  void deleteValues(final String regionNamePath, final Object... keys) {
+  @SafeVarargs
+  final <T> void deleteValues(final String regionNamePath, final T... keys) {
     // Check whether all keys exist in cache or not
-    for (final Object key : keys) {
+    for (final T key : keys) {
       checkForKeyExist(regionNamePath, key.toString());
     }
 
-    for (final Object key : keys) {
+    for (final T key : keys) {
       deleteValue(regionNamePath, key);
     }
   }
@@ -688,7 +693,7 @@ public abstract class AbstractBaseController implements InitializingBean {
   @SuppressWarnings("unchecked")
   private <T> T introspectAndConvert(final T value) {
     if (value instanceof Map) {
-      final Map rawDataBinding = (Map) value;
+      final Map<Object, Object> rawDataBinding = (Map<Object, Object>) value;
 
       if (isForm(rawDataBinding)) {
         rawDataBinding.put(OLD_META_DATA_PROPERTY,
@@ -735,7 +740,7 @@ public abstract class AbstractBaseController implements InitializingBean {
   }
 
   private Map<?, ?> convertJsonToMap(final String jsonString) {
-    Map<String, String> map = new HashMap<String, String>();
+    Map<String, String> map;
 
     // convert JSON string to Map
     try {
@@ -812,7 +817,7 @@ public abstract class AbstractBaseController implements InitializingBean {
 
     final HttpHeaders headers = new HttpHeaders();
     headers.setLocation(toUri(region, key));
-    return new ResponseEntity<String>(existingValue, headers,
+    return new ResponseEntity<>(existingValue, headers,
         (existingValue == null ? HttpStatus.OK : HttpStatus.CONFLICT));
   }
 
@@ -832,7 +837,7 @@ public abstract class AbstractBaseController implements InitializingBean {
           "Each key must have corresponding value (JSON document) specified in the request");
     }
 
-    Map<Object, PdxInstance> map = new HashMap<Object, PdxInstance>();
+    Map<Object, PdxInstance> map = new HashMap<>();
     for (int i = 0; i < keys.length; i++) {
       if (logger.isDebugEnabled()) {
         logger.debug("Updating (put) Json document ({}) having key ({}) in Region ({})", json,
@@ -878,7 +883,6 @@ public abstract class AbstractBaseController implements InitializingBean {
     return getCache().getQueryService();
   }
 
-  @SuppressWarnings("unchecked")
   protected <T> T getValue(final String regionNamePath, final Object key) {
     return getValue(regionNamePath, key, true);
   }
@@ -886,13 +890,17 @@ public abstract class AbstractBaseController implements InitializingBean {
   protected <T> T getValue(final String regionNamePath, final Object key, boolean postProcess) {
     Assert.notNull(key, "The Cache Region key to read the value for cannot be null!");
 
-    Region r = getRegion(regionNamePath);
+    Region<?, ?> r = getRegion(regionNamePath);
     try {
       Object value = r.get(key);
       if (postProcess) {
-        return (T) securityService.postProcess(regionNamePath, key, value, false);
+        @SuppressWarnings("unchecked")
+        final T v = (T) securityService.postProcess(regionNamePath, key, value, false);
+        return v;
       } else {
-        return (T) value;
+        @SuppressWarnings("unchecked")
+        final T v = (T) value;
+        return v;
       }
     } catch (SerializationException se) {
       throw new DataTypeNotSupportedException(

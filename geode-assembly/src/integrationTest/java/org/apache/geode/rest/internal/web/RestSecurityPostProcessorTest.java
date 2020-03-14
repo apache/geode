@@ -76,7 +76,7 @@ public class RestSecurityPostProcessorTest {
     JsonNode jsonNode =
         assertResponse(restClient.doGet("/customers/1", "dataReader", "1234567"))
             .hasStatusCode(200)
-            .hasContentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
+            .hasContentType(MediaType.APPLICATION_JSON_VALUE)
             .getJsonObject();
 
     assertEquals("*********", jsonNode.get("ssn").asText());
@@ -86,7 +86,7 @@ public class RestSecurityPostProcessorTest {
     jsonNode =
         assertResponse(restClient.doGet("/customers/1", "super-user", "1234567"))
             .hasStatusCode(200)
-            .hasContentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
+            .hasContentType(MediaType.APPLICATION_JSON_VALUE)
             .getJsonObject();
     assertEquals("555555555", jsonNode.get("ssn").asText());
     assertEquals(1L, jsonNode.get("id").asLong());
@@ -98,7 +98,7 @@ public class RestSecurityPostProcessorTest {
     JsonNode jsonNode =
         assertResponse(restClient.doGet("/customers/1,3", "dataReader", "1234567"))
             .hasStatusCode(200)
-            .hasContentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
+            .hasContentType(MediaType.APPLICATION_JSON_VALUE)
             .getJsonObject();
 
     JsonNode customers = jsonNode.get("customers");
@@ -116,7 +116,7 @@ public class RestSecurityPostProcessorTest {
   public void getRegion() throws Exception {
     JsonNode jsonNode = assertResponse(restClient.doGet("/customers", "dataReader", "1234567"))
         .hasStatusCode(200)
-        .hasContentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
+        .hasContentType(MediaType.APPLICATION_JSON_VALUE)
         .getJsonObject();
 
     JsonNode customers = jsonNode.get("customers");
@@ -134,7 +134,7 @@ public class RestSecurityPostProcessorTest {
         + URLEncoder.encode("SELECT * FROM /customers order by customerId", "UTF-8");
     JsonNode jsonArray = assertResponse(restClient.doGet(query, "dataReader", "1234567"))
         .hasStatusCode(200)
-        .hasContentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
+        .hasContentType(MediaType.APPLICATION_JSON_VALUE)
         .getJsonObject();
 
     final int length = jsonArray.size();
@@ -160,7 +160,7 @@ public class RestSecurityPostProcessorTest {
     String query = "/queries";
     assertResponse(restClient.doGet(query, "dataReader", "1234567"))
         .hasStatusCode(200)
-        .hasContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+        .hasContentType(MediaType.APPLICATION_JSON_VALUE);
 
     // Execute the query
     JsonNode jsonArray =

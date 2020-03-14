@@ -43,37 +43,39 @@ public class Order implements PdxSerializable {
   private double totalPrice;
 
   public Order() {
-    items = new ArrayList<Item>();
+    items = new ArrayList<>();
   }
 
   public Order(final Long orderNo) {
-    this.purchaseOrderNo = orderNo;
+    purchaseOrderNo = orderNo;
   }
 
   public Order(final Long orderNo, final Long custId, final String desc, final Date odate,
       final Date ddate, final String contact, final String email, final String phone,
       final List<Item> items, final double tprice) {
-    this.purchaseOrderNo = orderNo;
-    this.customerId = custId;
-    this.description = desc;
-    this.orderDate = odate;
-    this.deliveryDate = ddate;
+    purchaseOrderNo = orderNo;
+    customerId = custId;
+    description = desc;
+    orderDate = odate;
+    deliveryDate = ddate;
     this.contact = contact;
     this.email = email;
     this.phone = phone;
     this.items = items;
-    this.totalPrice = tprice;
+    totalPrice = tprice;
   }
 
   public void addItem(final Item item) {
     if (item != null)
-      this.items.add(item);
+      items.add(item);
   }
 
+  @SuppressWarnings("unused")
   public Long getPurchaseOrderNo() {
     return purchaseOrderNo;
   }
 
+  @SuppressWarnings("unused")
   public void setPurchaseOrderNo(Long purchaseOrderNo) {
     this.purchaseOrderNo = purchaseOrderNo;
   }
@@ -94,12 +96,14 @@ public class Order implements PdxSerializable {
     this.description = description;
   }
 
+  @SuppressWarnings("unused")
   public Date getDeliveryDate() {
     return deliveryDate;
   }
 
+  @SuppressWarnings("unused")
   public void setDeliveryDate(Date date) {
-    this.deliveryDate = date;
+    deliveryDate = date;
   }
 
   public String getContact() {
@@ -110,18 +114,22 @@ public class Order implements PdxSerializable {
     this.contact = contact;
   }
 
+  @SuppressWarnings("unused")
   public String getEmail() {
     return email;
   }
 
+  @SuppressWarnings("unused")
   public void setEmail(String email) {
     this.email = email;
   }
 
+  @SuppressWarnings("unused")
   public String getPhone() {
     return phone;
   }
 
+  @SuppressWarnings("unused")
   public void setPhone(String phone) {
     this.phone = phone;
   }
@@ -132,16 +140,17 @@ public class Order implements PdxSerializable {
 
   public void setItems(List<Item> items) {
     if (this.items == null)
-      this.items = new ArrayList<Item>();
+      this.items = new ArrayList<>();
 
-    for (Item it : items)
-      this.items.add(it);
+    this.items.addAll(items);
   }
 
+  @SuppressWarnings("unused")
   public Date getOrderDate() {
     return orderDate;
   }
 
+  @SuppressWarnings("unused")
   public void setOrderDate(Date orderDate) {
     this.orderDate = orderDate;
   }
@@ -178,7 +187,9 @@ public class Order implements PdxSerializable {
     contact = reader.readString("contact");
     email = reader.readString("email");
     phone = reader.readString("phone");
-    items = (List<Item>) reader.readObject("items");
+    @SuppressWarnings("unchecked")
+    final List<Item> items = (List<Item>) reader.readObject("items");
+    this.items = items;
     totalPrice = reader.readDouble("totalPrice");
 
   }

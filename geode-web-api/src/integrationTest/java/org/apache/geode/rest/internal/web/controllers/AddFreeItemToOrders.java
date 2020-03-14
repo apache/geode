@@ -16,7 +16,6 @@ package org.apache.geode.rest.internal.web.controllers;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Vector;
 
@@ -38,35 +37,30 @@ import org.apache.geode.pdx.PdxInstance;
  * Gemfire function to add free items in the existing order if the total price for that order is
  * greater then the argument
  */
-public class AddFreeItemToOrders implements Function {
+public class AddFreeItemToOrders implements Function<Object> {
 
   @Override
-  public void execute(FunctionContext context) {
-    Region region = null;
-    List<Object> vals = new ArrayList<Object>();
-    List<Object> keys = new ArrayList<Object>();
-    List<Object> argsList = new ArrayList<Object>();
-    Object[] argsArray = null;
+  public void execute(FunctionContext<Object> context) {
+    List<Object> argsList = new ArrayList<>();
+    Object[] argsArray;
 
-    if (context.getArguments() instanceof Boolean) {
-
-    } else if (context.getArguments() instanceof String) {
-      String arg = (String) context.getArguments();
-    } else if (context.getArguments() instanceof Vector) {
-
-    } else if (context.getArguments() instanceof Object[]) {
+    if (context.getArguments() instanceof Object[]) {
       argsArray = (Object[]) context.getArguments();
       argsList = Arrays.asList(argsArray);
-    } else {
+    } else if (!((context.getArguments() instanceof Boolean)
+        || (context.getArguments() instanceof Vector)
+        || (context.getArguments() instanceof String))) {
       System.out.println("AddFreeItemToOrders : Invalid Arguments");
     }
 
-    InternalCache cache = null;
+    InternalCache cache;
+    Region<Object, Order> region;
     try {
       cache = (InternalCache) CacheFactory.getAnyInstance();
       cache.getCacheConfig().setPdxReadSerialized(true);
       region = cache.getRegion("orders");
     } catch (CacheClosedException ex) {
+      List<Object> vals = new ArrayList<>();
       vals.add("NoCacheFoundResult");
       context.getResultSender().lastResult(vals);
       throw ex;
@@ -74,19 +68,18 @@ public class AddFreeItemToOrders implements Function {
 
     String oql =
         "SELECT DISTINCT entry.key FROM /orders.entries entry WHERE entry.value.totalPrice > $1";
-    Object queryArgs[] = new Object[1];
+    Object[] queryArgs = new Object[1];
     queryArgs[0] = argsList.get(0);
 
     final Query query = cache.getQueryService().newQuery(oql);
 
-    SelectResults result = null;
+    SelectResults<?> result;
+    List<Object> keys = new ArrayList<>();
     try {
-      result = (SelectResults) query.execute(queryArgs);
-
-      if (result instanceof Collection<?>)
-        for (Object item : result) {
-          keys.add(item);
-        }
+      result = (SelectResults<?>) query.execute(queryArgs);
+      if (result != null) {
+        keys.addAll(result);
+      }
     } catch (FunctionDomainException e) {
       cache.getLogger()
           .info("Caught FunctionDomainException while executing function AddFreeItemToOrders: "
@@ -120,8 +113,6 @@ public class AddFreeItemToOrders implements Function {
       }
 
       context.getResultSender().lastResult("success");
-    } catch (ClassCastException e) {
-      context.getResultSender().lastResult("failure");
     } catch (Exception e) {
       context.getResultSender().lastResult("failure");
     }

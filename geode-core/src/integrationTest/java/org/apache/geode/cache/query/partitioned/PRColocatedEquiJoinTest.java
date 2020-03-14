@@ -47,44 +47,48 @@ public class PRColocatedEquiJoinTest {
     QueryService qs = cache.getQueryService();
 
     // create a local and Partition region for 1st select query
-    Region r1 = server.createRegion(RegionShortcut.LOCAL, "region1",
+    Region<Integer, Portfolio> r1 = server.createRegion(RegionShortcut.LOCAL, "region1",
         rf -> rf.setValueConstraint(Portfolio.class));
     qs.createIndex("IdIndex1", "r.ID", "/region1 r, r.positions.values pos");
-    Region r2 = server.createRegion(RegionShortcut.PARTITION, "region2",
+    Region<Integer, NewPortfolio> r2 = server.createRegion(RegionShortcut.PARTITION, "region2",
         rf -> rf.setValueConstraint(NewPortfolio.class));
     qs.createIndex("IdIndex2", "r.id", "/region2 r");
 
     // create two local regions for 2nd select query to compare the result set
-    Region r3 = server.createRegion(RegionShortcut.LOCAL, "region3",
+    Region<Integer, Portfolio> r3 = server.createRegion(RegionShortcut.LOCAL, "region3",
         rf -> rf.setValueConstraint(Portfolio.class));
-    Region r4 = server.createRegion(RegionShortcut.LOCAL, "region4",
+    Region<Integer, NewPortfolio> r4 = server.createRegion(RegionShortcut.LOCAL, "region4",
         rf -> rf.setValueConstraint(NewPortfolio.class));
 
     Portfolio[] portfolio = createPortfoliosAndPositions(count);
     NewPortfolio[] newPortfolio = createNewPortfoliosAndPositions(count);
 
     for (int i = 0; i < count; i++) {
-      r1.put(new Integer(i), portfolio[i]);
-      r2.put(new Integer(i), newPortfolio[i]);
-      r3.put(new Integer(i), portfolio[i]);
-      r4.put(new Integer(i), newPortfolio[i]);
+      r1.put(i, portfolio[i]);
+      r2.put(i, newPortfolio[i]);
+      r3.put(i, portfolio[i]);
+      r4.put(i, newPortfolio[i]);
     }
 
-    ArrayList results[][] = new ArrayList[whereClauses.length][2];
+    ArrayList<?>[][] results = new ArrayList<?>[whereClauses.length][2];
     for (int i = 0; i < whereClauses.length; i++) {
       // issue the first select on region 1 and region 2
-      SelectResults selectResults = (SelectResults) qs.newQuery("<trace> Select "
-          + (whereClauses[i].contains("ORDER BY") ? "DISTINCT" : "")
-          + "* from /region1 r1, /region2 r2 where " + whereClauses[i])
-          .execute();
-      results[i][0] = (ArrayList) selectResults.asList();
+      @SuppressWarnings("unchecked")
+      SelectResults<ArrayList<ArrayList<?>>> selectResults =
+          (SelectResults<ArrayList<ArrayList<?>>>) qs.newQuery("<trace> Select "
+              + (whereClauses[i].contains("ORDER BY") ? "DISTINCT" : "")
+              + "* from /region1 r1, /region2 r2 where " + whereClauses[i])
+              .execute();
+      results[i][0] = (ArrayList<?>) selectResults.asList();
 
       // issue the second select on region 3 and region 4
-      SelectResults queryResult = (SelectResults) qs.newQuery("<trace> Select "
-          + (whereClauses[i].contains("ORDER BY") ? "DISTINCT" : "")
-          + "* from /region3 r1, /region4 r2 where " + whereClauses[i])
-          .execute();
-      results[i][1] = (ArrayList) queryResult.asList();
+      @SuppressWarnings("unchecked")
+      SelectResults<ArrayList<ArrayList<?>>> queryResult =
+          (SelectResults<ArrayList<ArrayList<?>>>) qs.newQuery("<trace> Select "
+              + (whereClauses[i].contains("ORDER BY") ? "DISTINCT" : "")
+              + "* from /region3 r1, /region4 r2 where " + whereClauses[i])
+              .execute();
+      results[i][1] = (ArrayList<?>) queryResult.asList();
     }
 
     // compare the resultsets and expect them to be equal
