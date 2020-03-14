@@ -62,7 +62,7 @@ public abstract class CommonCrudController extends AbstractBaseController {
    *
    * @return JSON document containing result
    */
-  @RequestMapping(method = RequestMethod.GET, produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+  @RequestMapping(method = RequestMethod.GET, produces = {MediaType.APPLICATION_JSON_VALUE})
   @ApiOperation(value = "list all resources (Regions)",
       notes = "List all available resources (Regions) in the Geode cluster")
   @ApiResponses({@ApiResponse(code = 200, message = "OK."),
@@ -89,7 +89,7 @@ public abstract class CommonCrudController extends AbstractBaseController {
    * @return JSON document containing result
    */
   @RequestMapping(method = RequestMethod.GET, value = "/{region}/keys",
-      produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+      produces = {MediaType.APPLICATION_JSON_VALUE})
   @ApiOperation(value = "list all keys", notes = "List all keys in region")
   @ApiResponses({@ApiResponse(code = 200, message = "OK"),
       @ApiResponse(code = 401, message = "Invalid Username or Password."),
@@ -134,7 +134,7 @@ public abstract class CommonCrudController extends AbstractBaseController {
 
     region = decode(region);
 
-    deleteValues(region, (Object[]) keys);
+    deleteValues(region, keys);
     return new ResponseEntity<>(HttpStatus.OK);
   }
 
@@ -174,7 +174,7 @@ public abstract class CommonCrudController extends AbstractBaseController {
   }
 
   @RequestMapping(method = {RequestMethod.GET}, value = "/servers",
-      produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+      produces = {MediaType.APPLICATION_JSON_VALUE})
   @ApiOperation(value = "fetch all REST enabled servers in the DS",
       notes = "Find all gemfire node where developer REST service is up and running!")
   @ApiResponses({@ApiResponse(code = 200, message = "OK"),
@@ -185,7 +185,7 @@ public abstract class CommonCrudController extends AbstractBaseController {
   public ResponseEntity<?> servers() {
     logger.debug("Executing function to get REST enabled gemfire nodes in the DS!");
 
-    Execution function;
+    Execution<?, ?, ?> function;
     try {
       function = FunctionService.onMembers(getAllMembersInDS());
     } catch (FunctionException fe) {
@@ -195,15 +195,18 @@ public abstract class CommonCrudController extends AbstractBaseController {
     }
 
     try {
-      final ResultCollector<?, ?> results = function.withCollector(new RestServersResultCollector())
-          .execute(FindRestEnabledServersFunction.FIND_REST_ENABLED_SERVERS_FUNCTION_ID);
+      final ResultCollector<?, ?> results =
+          function.withCollector(new RestServersResultCollector<>())
+              .execute(FindRestEnabledServersFunction.FIND_REST_ENABLED_SERVERS_FUNCTION_ID);
       Object functionResult = results.getResult();
 
       if (functionResult instanceof List<?>) {
         final HttpHeaders headers = new HttpHeaders();
         headers.setLocation(toUri("servers"));
+        @SuppressWarnings("unchecked")
+        final ArrayList<Object> functionResultList = (ArrayList<Object>) functionResult;
         String functionResultAsJson =
-            JSONUtils.convertCollectionToJson((ArrayList<Object>) functionResult);
+            JSONUtils.convertCollectionToJson(functionResultList);
         return new ResponseEntity<>(functionResultAsJson, headers, HttpStatus.OK);
       } else {
         throw new GemfireRestException(

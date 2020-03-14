@@ -15,6 +15,7 @@
 
 package org.apache.geode.rest.internal.web.util;
 
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -45,7 +46,7 @@ public abstract class ArrayUtils {
 
     if (array != null) {
       for (Object element : array) {
-        buffer.append(count++ > 0 ? ", " : "").append(String.valueOf(element));
+        buffer.append(count++ > 0 ? ", " : "").append(element);
       }
     }
 
@@ -58,11 +59,9 @@ public abstract class ArrayUtils {
     return toString((Object[]) array);
   }
 
-  public static Set asSet(String[] filter) {
-    LinkedHashSet linkedHashSet = new LinkedHashSet(filter.length);
-    for (int i = 0; i < filter.length; i++) {
-      linkedHashSet.add(filter[i]);
-    }
+  public static Set<String> asSet(String[] filter) {
+    LinkedHashSet<String> linkedHashSet = new LinkedHashSet<>(filter.length);
+    Collections.addAll(linkedHashSet, filter);
     return linkedHashSet;
   }
 }

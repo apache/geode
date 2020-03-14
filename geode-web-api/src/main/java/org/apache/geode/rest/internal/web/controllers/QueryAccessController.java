@@ -58,8 +58,7 @@ import org.apache.geode.rest.internal.web.util.ValidationUtils;
  * @since GemFire 8.0
  */
 @Controller("queryController")
-@Api(value = "queries", description = "Rest api for geode query execution",
-    produces = MediaType.APPLICATION_JSON_VALUE, tags = "queries")
+@Api(value = "queries", produces = MediaType.APPLICATION_JSON_VALUE, tags = "queries")
 @RequestMapping(QueryAccessController.REST_API_VERSION + "/queries")
 @SuppressWarnings("unused")
 public class QueryAccessController extends AbstractBaseController {
@@ -88,7 +87,7 @@ public class QueryAccessController extends AbstractBaseController {
    *
    * @return result as a JSON document.
    */
-  @RequestMapping(method = RequestMethod.GET, produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+  @RequestMapping(method = RequestMethod.GET, produces = {MediaType.APPLICATION_JSON_VALUE})
   @ApiOperation(value = "list all parametrized queries",
       notes = "List all parametrized queries by id/name")
   @ApiResponses({@ApiResponse(code = 200, message = "OK."),
@@ -159,7 +158,7 @@ public class QueryAccessController extends AbstractBaseController {
    * @return query result as a JSON document
    */
   @RequestMapping(method = RequestMethod.GET, value = "/adhoc",
-      produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+      produces = {MediaType.APPLICATION_JSON_VALUE})
   @ApiOperation(value = "run an adhoc query",
       notes = "Run an unnamed (unidentified), ad-hoc query passed as a URL parameter")
   @ApiResponses({@ApiResponse(code = 200, message = "OK."),
@@ -239,7 +238,7 @@ public class QueryAccessController extends AbstractBaseController {
       // Its a compiled query.
 
       // Convert arguments into Object[]
-      Object args[] = jsonToObjectArray(arguments);
+      Object[] args = jsonToObjectArray(arguments);
 
       Query compiledQuery = compiledQueries.get(queryId);
       if (compiledQuery == null) {
