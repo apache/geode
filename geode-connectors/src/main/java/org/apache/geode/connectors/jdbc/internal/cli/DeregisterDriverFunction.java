@@ -39,7 +39,7 @@ public class DeregisterDriverFunction extends CliFunction<Object[]> {
       DriverJarUtil util = getDriverJarUtil();
       util.deregisterDriver(driverClassName);
       return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.OK,
-          driverClassName + " was succesfully deregistered.");
+          driverClassName + " was successfully deregistered.");
     } catch (Exception ex) {
       return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
           ex.getMessage());

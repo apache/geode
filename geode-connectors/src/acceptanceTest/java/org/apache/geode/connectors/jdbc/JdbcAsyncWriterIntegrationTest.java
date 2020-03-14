@@ -50,7 +50,7 @@ public abstract class JdbcAsyncWriterIntegrationTest {
   private static final String REGION_TABLE_NAME = "employees";
 
   private InternalCache cache;
-  private Region<Object, PdxInstance> employees;
+  private Region<Object, Object> employees;
   private Connection connection;
   private Statement statement;
   private JdbcAsyncWriter jdbcWriter;
@@ -136,8 +136,7 @@ public abstract class JdbcAsyncWriterIntegrationTest {
   @Test
   public void putNonPdxInstanceFails() throws RegionMappingExistsException {
     setupRegion("id");
-    Region nonPdxEmployees = this.employees;
-    nonPdxEmployees.put("1", "non pdx instance");
+    employees.put("1", "non pdx instance");
 
     awaitUntil(() -> assertThat(jdbcWriter.getTotalEvents()).isEqualTo(1));
 
@@ -148,9 +147,8 @@ public abstract class JdbcAsyncWriterIntegrationTest {
   public void putNonPdxInstanceThatIsPdxSerializable()
       throws SQLException, RegionMappingExistsException {
     setupRegion("id");
-    Region nonPdxEmployees = this.employees;
     Employee value = new Employee("2", "Emp2", 22);
-    nonPdxEmployees.put("2", value);
+    employees.put("2", value);
 
     awaitUntil(() -> assertThat(jdbcWriter.getSuccessfulEvents()).isEqualTo(1));
 
@@ -324,13 +322,13 @@ public abstract class JdbcAsyncWriterIntegrationTest {
     assertThat(resultSet.getObject("age")).isEqualTo(employee.getAge());
   }
 
-  private Region<Object, PdxInstance> createRegionWithJDBCAsyncWriter(String regionName, String ids,
+  private Region<Object, Object> createRegionWithJDBCAsyncWriter(String regionName, String ids,
       List<FieldMapping> fieldMappings)
       throws RegionMappingExistsException {
     jdbcWriter = new JdbcAsyncWriter(createSqlHandler(regionName, ids, fieldMappings), cache);
     cache.createAsyncEventQueueFactory().setBatchSize(1).setBatchTimeInterval(1)
         .create("jdbcAsyncQueue", jdbcWriter);
-    RegionFactory<Object, PdxInstance> regionFactory = cache.createRegionFactory(REPLICATE);
+    RegionFactory<Object, Object> regionFactory = cache.createRegionFactory(REPLICATE);
     regionFactory.addAsyncEventQueueId("jdbcAsyncQueue");
     return regionFactory.create(regionName);
   }

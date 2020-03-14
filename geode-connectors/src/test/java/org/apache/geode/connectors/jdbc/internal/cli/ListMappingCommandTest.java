@@ -58,7 +58,7 @@ public class ListMappingCommandTest {
   public static GfshParserRule gfsh = new GfshParserRule();
 
   @Before
-  public void setUp() throws PreconditionException {
+  public void setUp() {
     command = spy(ListMappingCommand.class);
     doReturn(configService).when(command).getConfigurationPersistenceService();
   }
@@ -72,7 +72,7 @@ public class ListMappingCommandTest {
   }
 
   @Test
-  public void whenClusterConfigDisabled() throws PreconditionException {
+  public void whenClusterConfigDisabled() {
     doReturn(null).when(command).getConfigurationPersistenceService();
     gfsh.executeAndAssertThat(command, COMMAND).statusIsError()
         .containsOutput("Cluster Configuration must be enabled.");
@@ -85,11 +85,12 @@ public class ListMappingCommandTest {
     gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess().containsOutput(NO_MAPPINGS_FOUND);
   }
 
+  @SuppressWarnings("unchecked")
   @Test
   public void whenMappingExists() {
     when(configService.getCacheConfig(eq(ConfigurationPersistenceService.CLUSTER_CONFIG)))
         .thenReturn(cacheConfig);
-    List<RegionConfig> regions = new ArrayList<RegionConfig>();
+    List<RegionConfig> regions = new ArrayList<>();
     regions.add(region1Config);
     regions.add(region2Config);
     when(region1Config.getName()).thenReturn("region1");
@@ -100,14 +101,14 @@ public class ListMappingCommandTest {
         new RegionMapping("region1", "class1", "table1", "name1", null, null, null);
     RegionMapping mapping2 =
         new RegionMapping("region2", "class2", "table2", "name2", null, null, null);
-    List<CacheElement> mappingList1 = new ArrayList<CacheElement>();
+    List<CacheElement> mappingList1 = new ArrayList<>();
     mappingList1.add(mapping1);
-    List<CacheElement> mappingList2 = new ArrayList<CacheElement>();
+    List<CacheElement> mappingList2 = new ArrayList<>();
     mappingList2.add(mapping2);
     when(region1Config.getCustomRegionElements()).thenReturn(mappingList1);
     when(region2Config.getCustomRegionElements()).thenReturn(mappingList2);
 
-    ResultCollector rc = mock(ResultCollector.class);
+    ResultCollector<CliFunctionResult, List<CliFunctionResult>> rc = mock(ResultCollector.class);
     doReturn(rc).when(command).executeFunction(any(), any(), any(Set.class));
     when(rc.getResult()).thenReturn(Collections.singletonList(new CliFunctionResult("server-1",
         Stream.of(mapping1, mapping2).collect(toSet()), "success")));
@@ -116,10 +117,11 @@ public class ListMappingCommandTest {
         "region2");
   }
 
+  @SuppressWarnings("unchecked")
   @Test
   public void whenMappingExistsForServerGroup() {
     when(configService.getCacheConfig(TEST_GROUP1)).thenReturn(cacheConfig);
-    List<RegionConfig> regions = new ArrayList<RegionConfig>();
+    List<RegionConfig> regions = new ArrayList<>();
     regions.add(region1Config);
     regions.add(region2Config);
     when(region1Config.getName()).thenReturn("region1");
@@ -130,14 +132,14 @@ public class ListMappingCommandTest {
         new RegionMapping("region1", "class1", "table1", "name1", null, null, null);
     RegionMapping mapping2 =
         new RegionMapping("region2", "class2", "table2", "name2", null, null, null);
-    List<CacheElement> mappingList1 = new ArrayList<CacheElement>();
+    List<CacheElement> mappingList1 = new ArrayList<>();
     mappingList1.add(mapping1);
-    List<CacheElement> mappingList2 = new ArrayList<CacheElement>();
+    List<CacheElement> mappingList2 = new ArrayList<>();
     mappingList2.add(mapping2);
     when(region1Config.getCustomRegionElements()).thenReturn(mappingList1);
     when(region2Config.getCustomRegionElements()).thenReturn(mappingList2);
 
-    ResultCollector rc = mock(ResultCollector.class);
+    ResultCollector<CliFunctionResult, List<CliFunctionResult>> rc = mock(ResultCollector.class);
     doReturn(rc).when(command).executeFunction(any(), any(), any(Set.class));
     when(rc.getResult()).thenReturn(Collections.singletonList(new CliFunctionResult("server-1",
         Stream.of(mapping1, mapping2).collect(toSet()), "success")));

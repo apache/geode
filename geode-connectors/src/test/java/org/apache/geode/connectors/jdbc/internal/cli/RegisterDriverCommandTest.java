@@ -43,6 +43,7 @@ public class RegisterDriverCommandTest {
   private CliFunctionResult result;
   private final String DRIVER_CLASS_NAME = "test-jdbc-driver-class-name";
 
+  @SuppressWarnings("unchecked")
   @Before
   public void setUp() {
     command = spy(new RegisterDriverCommand());
@@ -56,12 +57,13 @@ public class RegisterDriverCommandTest {
     when(memberSet.size()).thenReturn(1);
 
     result = new CliFunctionResult("Server1", CliFunctionResult.StatusState.OK,
-        DRIVER_CLASS_NAME + " was succesfully registered.");
+        DRIVER_CLASS_NAME + " was successfully registered.");
     resultList.add(result);
 
     ResultModel resultModel = command.registerDriver(DRIVER_CLASS_NAME);
 
-    assertThat(resultModel.toString()).contains(DRIVER_CLASS_NAME + " was succesfully registered.");
+    assertThat(resultModel.toString())
+        .contains(DRIVER_CLASS_NAME + " was successfully registered.");
     assertThat(resultModel.getStatus()).isEqualTo(Result.Status.OK);
 
     resultList.clear();

@@ -26,11 +26,9 @@ import org.junit.Test;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
-import org.apache.geode.util.test.TestUtil;
+import org.apache.geode.test.util.ResourceUtils;
 
 public class DeregisterDriverCommandDUnitTest {
-
-  private static MemberVM locator, server1, server2;
 
   @ClassRule
   public static ClusterStartupRule cluster = new ClusterStartupRule();
@@ -41,9 +39,11 @@ public class DeregisterDriverCommandDUnitTest {
 
   @BeforeClass
   public static void before() throws Exception {
-    locator = cluster.startLocatorVM(0);
-    server1 = cluster.startServerVM(1, "group1", locator.getPort());
-    server2 = cluster.startServerVM(2, "group1", locator.getPort());
+    MemberVM locator = cluster.startLocatorVM(0);
+    @SuppressWarnings("unused")
+    MemberVM server1 = cluster.startServerVM(1, "group1", locator.getPort());
+    @SuppressWarnings("unused")
+    MemberVM server2 = cluster.startServerVM(2, "group1", locator.getPort());
 
     gfsh.connectAndVerify(locator);
   }
@@ -74,7 +74,7 @@ public class DeregisterDriverCommandDUnitTest {
   }
 
   private File loadTestResource(String fileName) {
-    String filePath = TestUtil.getResourcePath(this.getClass(), fileName);
+    String filePath = ResourceUtils.getResource(this.getClass(), fileName).getPath();
     Assertions.assertThat(filePath).isNotNull();
 
     return new File(filePath);

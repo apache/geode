@@ -83,7 +83,7 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
             + " --pooled=false"
             + " --url=\"jdbc:derby:memory:newDB;create=true\"")
         .statusIsSuccess();
-    executeSql(server, "connection",
+    executeSql(server,
         "create table mySchema.testTable (myId varchar(10) primary key, name varchar(10))");
   }
 
@@ -95,11 +95,11 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
   private void teardownDatabase() {
     if (setupDatabase) {
       setupDatabase = false;
-      executeSql(server, "connection", "drop table mySchema.testTable");
+      executeSql(server, "drop table mySchema.testTable");
     }
   }
 
-  private void executeSql(MemberVM targetMember, String dataSource, String sql) {
+  private void executeSql(MemberVM targetMember, String sql) {
     targetMember.invoke(() -> {
       try {
         DataSource ds = JNDIInvoker.getDataSource("connection");
@@ -137,14 +137,14 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
 
     @Override
     public void toData(PdxWriter writer) {
-      writer.writeString("myid", this.id);
-      writer.writeString("name", this.name);
+      writer.writeString("myid", id);
+      writer.writeString("name", name);
     }
 
     @Override
     public void fromData(PdxReader reader) {
-      this.id = reader.readString("myid");
-      this.name = reader.readString("name");
+      id = reader.readString("myid");
+      name = reader.readString("name");
     }
   }
 
@@ -171,17 +171,18 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
 
     @Override
     public void toData(PdxWriter writer) {
-      writer.writeString("myid2", this.id);
-      writer.writeString("name", this.name);
+      writer.writeString("myid2", id);
+      writer.writeString("name", name);
     }
 
     @Override
     public void fromData(PdxReader reader) {
-      this.id = reader.readString("myid2");
-      this.name = reader.readString("name");
+      id = reader.readString("myid2");
+      name = reader.readString("name");
     }
   }
 
+  @SuppressWarnings("deprecation")
   @Test
   public void describesExistingSynchronousMapping() throws Exception {
     String regionName = "/" + TEST_REGION;
@@ -220,6 +221,7 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     commandResultAssert.containsKeyValuePair(ID_NAME, "myId");
   }
 
+  @SuppressWarnings("deprecation")
   @Test
   public void describesExistingSynchronousMappingWithGroups() throws Exception {
     String regionName = TEST_REGION;
@@ -261,6 +263,7 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     commandResultAssert.containsKeyValuePair(ID_NAME, "myId");
   }
 
+  @SuppressWarnings("deprecation")
   @Test
   public void describesExistingAsyncMapping() throws Exception {
     String regionName = "/" + TEST_REGION;
@@ -301,6 +304,7 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     commandResultAssert.containsKeyValuePair(SCHEMA_NAME, "mySchema");
   }
 
+  @SuppressWarnings("deprecation")
   @Test
   public void describesExistingAsyncMappingWithGroup() throws Exception {
     String regionName = TEST_REGION;
@@ -345,6 +349,7 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     commandResultAssert.containsKeyValuePair(SCHEMA_NAME, "mySchema");
   }
 
+  @SuppressWarnings({"DuplicatedCode", "deprecation"})
   @Test
   public void describesExistingAsyncMappingsWithSameRegionOnDifferentGroups()
       throws Exception {
@@ -357,7 +362,7 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
 
     gfsh.connectAndVerify(locator);
     setupDatabase();
-    executeSql(server2, "connection",
+    executeSql(server2,
         "create table mySchema.testTable (myId varchar(10) primary key, name varchar(10))");
     gfsh.executeAndAssertThat("create region --name=" + regionName + " --type=REPLICATE --group="
         + groupName1 + "," + groupName2)
@@ -395,10 +400,11 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
       commandResultAssert.containsKeyValuePair(ID_NAME, "myId");
       commandResultAssert.containsKeyValuePair(SCHEMA_NAME, "mySchema");
     } finally {
-      executeSql(server2, "connection", "drop table mySchema.testTable");
+      executeSql(server2, "drop table mySchema.testTable");
     }
   }
 
+  @SuppressWarnings("deprecation")
   @Test
   public void describesExistingAsyncMappingsWithSameRegionOnDifferentGroupsWithDifferentMappings()
       throws Exception {
@@ -433,7 +439,7 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
             + " --pooled=false"
             + " --url=\"jdbc:derby:memory:newDB;create=true\"")
         .statusIsSuccess();
-    executeSql(server2, "connection2",
+    executeSql(server2,
         "create table mySchema2.testTable2 (myId2 varchar(10) primary key, name varchar(10))");
     try {
       csb = new CommandStringBuilder(CREATE_MAPPING);
@@ -449,7 +455,7 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
 
       gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
     } finally {
-      executeSql(server2, "connection2", "drop table mySchema2.testTable2");
+      executeSql(server2, "drop table mySchema2.testTable2");
     }
 
     csb = new CommandStringBuilder(DESCRIBE_MAPPING).addOption(REGION_NAME,
@@ -502,7 +508,7 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
 
     commandResultAssert.statusIsError();
     commandResultAssert.containsOutput(
-        String.format("A region named nonExisting must already exist."));
+        "A region named nonExisting must already exist.");
   }
 
   @Test
@@ -520,6 +526,6 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
 
     commandResultAssert.statusIsError();
     commandResultAssert.containsOutput(
-        String.format("JDBC mapping for region '" + TEST_REGION + "' not found"));
+        "JDBC mapping for region '" + TEST_REGION + "' not found");
   }
 }

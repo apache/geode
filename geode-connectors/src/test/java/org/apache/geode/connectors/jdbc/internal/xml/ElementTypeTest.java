@@ -14,6 +14,7 @@
  */
 package org.apache.geode.connectors.jdbc.internal.xml;
 
+import static java.util.Collections.singletonList;
 import static org.apache.geode.connectors.jdbc.internal.xml.ElementType.FIELD_MAPPING;
 import static org.apache.geode.connectors.jdbc.internal.xml.ElementType.JDBC_MAPPING;
 import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.CATALOG;
@@ -32,7 +33,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
-import java.util.Arrays;
 import java.util.Stack;
 
 import org.junit.Before;
@@ -50,14 +50,14 @@ public class ElementTypeTest {
 
   private Attributes attributes;
   private RegionCreation regionCreation;
-  private ExtensionPoint<Region<?, ?>> extensionPoint;
   private Stack<Object> stack;
 
   @Before
   public void setup() {
     attributes = mock(Attributes.class);
     regionCreation = mock(RegionCreation.class);
-    extensionPoint = mock(ExtensionPoint.class);
+    @SuppressWarnings("unchecked")
+    ExtensionPoint<Region<?, ?>> extensionPoint = mock(ExtensionPoint.class);
 
     when(regionCreation.getExtensionPoint()).thenReturn(extensionPoint);
 
@@ -136,7 +136,7 @@ public class ElementTypeTest {
     ElementType.FIELD_MAPPING.startElement(stack, attributes);
 
     RegionMapping mapping1 = (RegionMapping) stack.pop();
-    assertThat(mapping1.getFieldMappings()).isEqualTo(Arrays.asList(expected));
+    assertThat(mapping1.getFieldMappings()).isEqualTo(singletonList(expected));
   }
 
   @Test

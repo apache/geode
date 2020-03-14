@@ -56,7 +56,6 @@ public class CreateDataSourceCommandTest {
   public static GfshParserRule gfsh = new GfshParserRule();
 
   private CreateDataSourceCommand command;
-  private InternalCache cache;
   JndiBindingsType.JndiBinding binding;
   List<JndiBindingsType.JndiBinding> bindings;
 
@@ -64,7 +63,7 @@ public class CreateDataSourceCommandTest {
 
   @Before
   public void setUp() {
-    cache = mock(InternalCache.class);
+    InternalCache cache = mock(InternalCache.class);
     when(cache.getDistributionManager()).thenReturn(mock(DistributionManager.class));
     command = Mockito.spy(CreateDataSourceCommand.class);
     command.setCache(cache);
@@ -236,6 +235,7 @@ public class CreateDataSourceCommandTest {
     verify(command).updateConfigForGroup(eq("cluster"), eq(cacheConfig), isNotNull());
   }
 
+  @SuppressWarnings("deprecation")
   @Test
   public void whenMembersFoundAndNoClusterConfigRunningThenOnlyInvokeFunction() {
     Set<DistributedMember> members = new HashSet<>();
@@ -261,6 +261,7 @@ public class CreateDataSourceCommandTest {
         ArgumentCaptor.forClass(CreateJndiBindingFunction.class);
     ArgumentCaptor<Object[]> arguments =
         ArgumentCaptor.forClass(Object[].class);
+    @SuppressWarnings("unchecked")
     ArgumentCaptor<Set<DistributedMember>> targetMembers = ArgumentCaptor.forClass(Set.class);
     verify(command, times(1)).executeAndGetFunctionResult(function.capture(), arguments.capture(),
         targetMembers.capture());
@@ -276,6 +277,7 @@ public class CreateDataSourceCommandTest {
     assertThat(targetMembers.getValue()).isEqualTo(members);
   }
 
+  @SuppressWarnings("deprecation")
   @Test
   public void whenMembersFoundAndClusterConfigRunningThenUpdateClusterConfigAndInvokeFunction() {
     Set<DistributedMember> members = new HashSet<>();
@@ -313,6 +315,7 @@ public class CreateDataSourceCommandTest {
         ArgumentCaptor.forClass(CreateJndiBindingFunction.class);
     ArgumentCaptor<Object[]> arguments =
         ArgumentCaptor.forClass(Object[].class);
+    @SuppressWarnings("unchecked")
     ArgumentCaptor<Set<DistributedMember>> targetMembers = ArgumentCaptor.forClass(Set.class);
     verify(command, times(1)).executeAndGetFunctionResult(function.capture(), arguments.capture(),
         targetMembers.capture());

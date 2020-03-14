@@ -57,7 +57,7 @@ public class JDBCConnectorFunctionsSecurityTest {
   public GfshCommandRule gfsh =
       new GfshCommandRule(server::getJmxPort, GfshCommandRule.PortType.jmxManager);
 
-  private static Map<Function, String> functionStringMap = new HashMap<>();
+  private static Map<Function<?>, String> functionStringMap = new HashMap<>();
 
   @BeforeClass
   public static void setupClass() {
@@ -67,17 +67,15 @@ public class JDBCConnectorFunctionsSecurityTest {
     functionStringMap.keySet().forEach(FunctionService::registerFunction);
   }
 
+  @SuppressWarnings("deprecation")
   @Test
   @ConnectionConfiguration(user = "user", password = "user")
-  public void functionRequireExpectedPermission() throws Exception {
-    functionStringMap.entrySet().stream().forEach(entry -> {
-      Function function = entry.getKey();
-      String permission = entry.getValue();
-      gfsh.executeAndAssertThat("execute function --id=" + function.getId())
-          .tableHasRowCount(1)
-          .tableHasRowWithValues("Message",
-              "Exception: user not authorized for " + permission)
-          .statusIsError();
-    });
+  public void functionRequireExpectedPermission() {
+    functionStringMap.forEach((function, permission) -> gfsh
+        .executeAndAssertThat("execute function --id=" + function.getId())
+        .tableHasRowCount(1)
+        .tableHasRowWithValues("Message",
+            "Exception: user not authorized for " + permission)
+        .statusIsError());
   }
 }
