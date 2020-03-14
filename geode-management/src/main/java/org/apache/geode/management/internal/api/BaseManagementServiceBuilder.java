@@ -24,7 +24,7 @@ import org.apache.geode.management.api.ConnectionConfig;
 import org.apache.geode.management.api.RestTemplateClusterManagementServiceTransport;
 import org.apache.geode.management.internal.ClientClusterManagementService;
 
-public abstract class BaseManagementServiceBuilder<T extends BaseManagementServiceBuilder> {
+public abstract class BaseManagementServiceBuilder<T extends BaseManagementServiceBuilder<?>> {
 
   private ClusterManagementServiceTransport transport;
 
@@ -53,40 +53,44 @@ public abstract class BaseManagementServiceBuilder<T extends BaseManagementServi
     return transport;
   }
 
-
-  public T setTransport(ClusterManagementServiceTransport transport) {
-    this.transport = transport;
+  @SuppressWarnings("unchecked")
+  private T self() {
     return (T) this;
   }
 
+  public T setTransport(ClusterManagementServiceTransport transport) {
+    this.transport = transport;
+    return self();
+  }
+
   public T setAuthToken(String token) {
-    this.authToken = token;
-    return (T) this;
+    authToken = token;
+    return self();
   }
 
   public T setSslContext(SSLContext sslContext) {
     this.sslContext = sslContext;
-    return (T) this;
+    return self();
   }
 
   public T setUsername(String username) {
     this.username = username;
-    return (T) this;
+    return self();
   }
 
   public T setPassword(String password) {
     this.password = password;
-    return (T) this;
+    return self();
   }
 
   public T setHostnameVerifier(HostnameVerifier hostnameVerifier) {
     this.hostnameVerifier = hostnameVerifier;
-    return (T) this;
+    return self();
   }
 
   public T setFollowRedirects(boolean followRedirects) {
     this.followRedirects = followRedirects;
-    return (T) this;
+    return self();
   }
 
   protected abstract ConnectionConfig createConnectionConfig();
