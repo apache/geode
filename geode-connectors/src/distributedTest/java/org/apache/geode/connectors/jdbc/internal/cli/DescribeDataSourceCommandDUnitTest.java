@@ -42,7 +42,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 public class DescribeDataSourceCommandDUnitTest {
 
-  private MemberVM locator, server;
+  private MemberVM server;
 
   @Rule
   public ClusterStartupRule cluster = new ClusterStartupRule();
@@ -52,12 +52,13 @@ public class DescribeDataSourceCommandDUnitTest {
 
   @Before
   public void before() throws Exception {
-    locator = cluster.startLocatorVM(0);
+    MemberVM locator = cluster.startLocatorVM(0);
     server = cluster.startServerVM(1, new Properties(), locator.getPort());
 
     gfsh.connectAndVerify(locator);
   }
 
+  @SuppressWarnings("deprecation")
   @Test
   public void describeDataSourceForSimpleDataSource() {
     gfsh.executeAndAssertThat(
@@ -122,17 +123,18 @@ public class DescribeDataSourceCommandDUnitTest {
 
     @Override
     public void toData(PdxWriter writer) {
-      writer.writeString("myId", this.id);
-      writer.writeString("name", this.name);
+      writer.writeString("myId", id);
+      writer.writeString("name", name);
     }
 
     @Override
     public void fromData(PdxReader reader) {
-      this.id = reader.readString("myId");
-      this.name = reader.readString("name");
+      id = reader.readString("myId");
+      name = reader.readString("name");
     }
   }
 
+  @SuppressWarnings("deprecation")
   @Test
   public void describeDataSourceUsedByRegionsListsTheRegionsInOutput() {
     gfsh.executeAndAssertThat(
@@ -164,6 +166,7 @@ public class DescribeDataSourceCommandDUnitTest {
     }
   }
 
+  @SuppressWarnings("deprecation")
   @Test
   public void describeDataSourceForPooledDataSource() {
     gfsh.executeAndAssertThat(

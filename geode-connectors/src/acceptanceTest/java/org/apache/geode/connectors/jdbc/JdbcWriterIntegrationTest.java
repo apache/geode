@@ -54,10 +54,10 @@ public abstract class JdbcWriterIntegrationTest {
   protected static final String REGION_TABLE_NAME = "employees";
 
   protected InternalCache cache;
-  protected Region<Object, PdxInstance> employees;
+  protected Region<Object, Object> employees;
   protected Connection connection;
   protected Statement statement;
-  protected JdbcWriter jdbcWriter;
+  protected JdbcWriter<Object, Object> jdbcWriter;
   protected PdxInstance pdx1;
   protected PdxInstance pdx2;
   protected Employee employee1;
@@ -250,8 +250,7 @@ public abstract class JdbcWriterIntegrationTest {
   public void putNonPdxInstanceFails() throws Exception {
     createTable();
     setupRegion("id");
-    Region nonPdxEmployees = this.employees;
-    Throwable thrown = catchThrowable(() -> nonPdxEmployees.put("1", "non pdx instance"));
+    Throwable thrown = catchThrowable(() -> employees.put("1", "non pdx instance"));
     assertThat(thrown).isInstanceOf(IllegalArgumentException.class);
   }
 
@@ -260,9 +259,8 @@ public abstract class JdbcWriterIntegrationTest {
       throws SQLException, RegionMappingExistsException {
     createTable();
     setupRegion("id");
-    Region nonPdxEmployees = this.employees;
     Employee value = new Employee("2", "Emp2", 22);
-    nonPdxEmployees.put("2", value);
+    employees.put("2", value);
 
     ResultSet resultSet =
         statement.executeQuery("select * from " + REGION_TABLE_NAME + " order by id asc");
@@ -404,13 +402,13 @@ public abstract class JdbcWriterIntegrationTest {
     assertThat(resultSet.next()).isFalse();
   }
 
-  protected Region<Object, PdxInstance> createRegionWithJDBCSynchronousWriter(String regionName,
+  protected Region<Object, Object> createRegionWithJDBCSynchronousWriter(String regionName,
       String ids, String catalog, String schema, List<FieldMapping> fieldMappings)
       throws RegionMappingExistsException {
     jdbcWriter =
-        new JdbcWriter(createSqlHandler(regionName, ids, catalog, schema, fieldMappings), cache);
+        new JdbcWriter<>(createSqlHandler(regionName, ids, catalog, schema, fieldMappings), cache);
 
-    RegionFactory<Object, PdxInstance> regionFactory =
+    RegionFactory<Object, Object> regionFactory =
         cache.createRegionFactory(RegionShortcut.REPLICATE);
     regionFactory.setCacheWriter(jdbcWriter);
     return regionFactory.create(regionName);

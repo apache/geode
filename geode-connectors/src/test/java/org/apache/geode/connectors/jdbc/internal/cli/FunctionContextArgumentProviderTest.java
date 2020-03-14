@@ -33,19 +33,16 @@ public class FunctionContextArgumentProviderTest {
 
   private FunctionContext<?> context;
   private DistributedMember distributedMember;
-  private ResultSender<Object> resultSender;
-  private JdbcConnectorService service;
 
-  private FunctionContextArgumentProvider jdbcCommandFunctionContext;
-
+  @SuppressWarnings("unchecked")
   @Before
   public void setUp() {
     context = mock(FunctionContext.class);
-    resultSender = mock(ResultSender.class);
+    ResultSender<Object> resultSender = mock(ResultSender.class);
     InternalCache cache = mock(InternalCache.class);
     DistributedSystem system = mock(DistributedSystem.class);
     distributedMember = mock(DistributedMember.class);
-    service = mock(JdbcConnectorService.class);
+    JdbcConnectorService service = mock(JdbcConnectorService.class);
 
     when(context.getResultSender()).thenReturn(resultSender);
     when(context.getCache()).thenReturn(cache);
@@ -53,24 +50,23 @@ public class FunctionContextArgumentProviderTest {
     when(system.getDistributedMember()).thenReturn(distributedMember);
     when(cache.getService(eq(JdbcConnectorService.class))).thenReturn(service);
 
-    jdbcCommandFunctionContext = new FunctionContextArgumentProvider();
   }
 
   @Test
-  public void getMemberReturnsMemberNameInsteadOfId() throws Exception {
+  public void getMemberReturnsMemberNameInsteadOfId() {
     when(distributedMember.getId()).thenReturn("myId");
     when(distributedMember.getName()).thenReturn("myName");
 
-    String member = jdbcCommandFunctionContext.getMember(context);
+    String member = FunctionContextArgumentProvider.getMember(context);
 
     assertThat(member).isEqualTo("myName");
   }
 
   @Test
-  public void getMemberReturnsMemberIdIfNameIsMissing() throws Exception {
+  public void getMemberReturnsMemberIdIfNameIsMissing() {
     when(distributedMember.getId()).thenReturn("myId");
 
-    String member = jdbcCommandFunctionContext.getMember(context);
+    String member = FunctionContextArgumentProvider.getMember(context);
 
     assertThat(member).isEqualTo("myId");
   }

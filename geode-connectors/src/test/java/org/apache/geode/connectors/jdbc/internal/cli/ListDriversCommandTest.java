@@ -42,6 +42,7 @@ public class ListDriversCommandTest {
   private List<CliFunctionResult> resultList = new ArrayList<>();
   private CliFunctionResult result;
 
+  @SuppressWarnings("unchecked")
   @Before
   public void setUp() {
     command = spy(new ListDriversCommand());

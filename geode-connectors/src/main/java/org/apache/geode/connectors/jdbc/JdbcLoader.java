@@ -47,6 +47,7 @@ public class JdbcLoader<K, V> extends AbstractJdbcCallback implements CacheLoade
    *         parameter is set to.
    */
   @Override
+  @SuppressWarnings("unchecked")
   public V load(LoaderHelper<K, V> helper) throws CacheLoaderException {
     checkInitialized(helper.getRegion());
     try {

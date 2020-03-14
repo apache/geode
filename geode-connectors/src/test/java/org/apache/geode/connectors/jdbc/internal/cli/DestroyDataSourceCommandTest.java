@@ -58,15 +58,15 @@ public class DestroyDataSourceCommandTest {
   public static GfshParserRule gfsh = new GfshParserRule();
 
   private DestroyDataSourceCommand command;
-  private InternalCache cache;
   private CacheConfig cacheConfig;
   private InternalConfigurationPersistenceService ccService;
 
   private static String COMMAND = "destroy data-source ";
 
+  @SuppressWarnings("unchecked")
   @Before
   public void setUp() {
-    cache = mock(InternalCache.class);
+    InternalCache cache = mock(InternalCache.class);
     command = spy(DestroyDataSourceCommand.class);
     doReturn(cache).when(command).getCache();
     cacheConfig = mock(CacheConfig.class);
@@ -237,6 +237,7 @@ public class DestroyDataSourceCommandTest {
         .containsOutput("Data source named \"name\" does not exist.");
   }
 
+  @SuppressWarnings("deprecation")
   @Test
   public void whenMembersFoundAllReturnErrorAndIfExistsTrueThenSuccess() {
     Set<DistributedMember> members = new HashSet<>();
@@ -257,6 +258,7 @@ public class DestroyDataSourceCommandTest {
         .tableHasColumnOnlyWithValues("Message", "Data source \"name\" not found on \"server1\"");
   }
 
+  @SuppressWarnings("deprecation")
   @Test
   public void whenMembersFoundPartialReturnErrorAndIfExistsFalseThenSuccess() {
     Set<DistributedMember> members = new HashSet<>();
@@ -282,6 +284,7 @@ public class DestroyDataSourceCommandTest {
             "Data source \"name\" destroyed on \"server2\"");
   }
 
+  @SuppressWarnings("deprecation")
   @Test
   public void whenMembersFoundAndNoClusterConfigRunningThenOnlyInvokeFunction() {
     Set<DistributedMember> members = new HashSet<>();
@@ -307,6 +310,7 @@ public class DestroyDataSourceCommandTest {
         ArgumentCaptor.forClass(DestroyJndiBindingFunction.class);
     ArgumentCaptor<Object[]> arguments = ArgumentCaptor.forClass(Object[].class);
 
+    @SuppressWarnings("unchecked")
     ArgumentCaptor<Set<DistributedMember>> targetMembers = ArgumentCaptor.forClass(Set.class);
     verify(command, times(1)).executeAndGetFunctionResult(function.capture(), arguments.capture(),
         targetMembers.capture());
@@ -320,6 +324,7 @@ public class DestroyDataSourceCommandTest {
     assertThat(targetMembers.getValue()).isEqualTo(members);
   }
 
+  @SuppressWarnings("deprecation")
   @Test
   public void whenMembersFoundAndClusterConfigRunningThenUpdateClusterConfigAndInvokeFunction() {
     List<JndiBindingsType.JndiBinding> bindings = new ArrayList<>();
@@ -352,6 +357,7 @@ public class DestroyDataSourceCommandTest {
         ArgumentCaptor.forClass(DestroyJndiBindingFunction.class);
     ArgumentCaptor<Object[]> arguments = ArgumentCaptor.forClass(Object[].class);
 
+    @SuppressWarnings("unchecked")
     ArgumentCaptor<Set<DistributedMember>> targetMembers = ArgumentCaptor.forClass(Set.class);
     verify(command, times(1)).executeAndGetFunctionResult(function.capture(), arguments.capture(),
         targetMembers.capture());

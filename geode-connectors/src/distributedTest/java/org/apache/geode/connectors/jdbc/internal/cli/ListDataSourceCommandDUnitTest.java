@@ -37,7 +37,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 public class ListDataSourceCommandDUnitTest {
 
-  private MemberVM locator, server;
+  private MemberVM server;
 
   @Rule
   public ClusterStartupRule cluster = new ClusterStartupRule();
@@ -47,12 +47,13 @@ public class ListDataSourceCommandDUnitTest {
 
   @Before
   public void before() throws Exception {
-    locator = cluster.startLocatorVM(0);
+    MemberVM locator = cluster.startLocatorVM(0);
     server = cluster.startServerVM(1, new Properties(), locator.getPort());
 
     gfsh.connectAndVerify(locator);
   }
 
+  @SuppressWarnings("deprecation")
   @Test
   public void listDataSourceForSimpleDataSource() {
     gfsh.executeAndAssertThat(
@@ -114,17 +115,18 @@ public class ListDataSourceCommandDUnitTest {
 
     @Override
     public void toData(PdxWriter writer) {
-      writer.writeString("id", this.id);
-      writer.writeString("name", this.name);
+      writer.writeString("id", id);
+      writer.writeString("name", name);
     }
 
     @Override
     public void fromData(PdxReader reader) {
-      this.id = reader.readString("id");
-      this.name = reader.readString("name");
+      id = reader.readString("id");
+      name = reader.readString("name");
     }
   }
 
+  @SuppressWarnings("deprecation")
   @Test
   public void listDataSourceUsedByRegionsHasCorrectOutput() {
     gfsh.executeAndAssertThat(
@@ -150,6 +152,7 @@ public class ListDataSourceCommandDUnitTest {
             "jdbc:derby:memory:newDB;create=true");
   }
 
+  @SuppressWarnings("deprecation")
   @Test
   public void listDataSourceForPooledDataSource() {
     gfsh.executeAndAssertThat(
@@ -162,6 +165,7 @@ public class ListDataSourceCommandDUnitTest {
             "jdbc:derby:memory:newDB;create=true");
   }
 
+  @SuppressWarnings("deprecation")
   @Test
   public void listDataSourceForPooledDataSourceByDefault() {
     gfsh.executeAndAssertThat(
@@ -174,6 +178,7 @@ public class ListDataSourceCommandDUnitTest {
             "jdbc:derby:memory:newDB;create=true");
   }
 
+  @SuppressWarnings("deprecation")
   @Test
   public void listDataSourceWithMultipleDataSourcesListsAll() {
     gfsh.executeAndAssertThat(
