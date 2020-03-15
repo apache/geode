@@ -18,15 +18,15 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 
-public class RunOutOfMemoryFunction implements Function {
+public class RunOutOfMemoryFunction implements Function<Void> {
 
   @Override
-  public void execute(FunctionContext context) {
+  public void execute(FunctionContext<Void> context) {
     byte[] bytes = new byte[Integer.MAX_VALUE / 2];
     byte[] bytes1 = new byte[Integer.MAX_VALUE / 2];
     byte[] bytes2 = new byte[Integer.MAX_VALUE / 2];
 
-    Region testRegion = context.getCache().getRegion("/testRegion");
+    Region<String, byte[]> testRegion = context.getCache().getRegion("/testRegion");
     testRegion.put("byteArray", bytes);
     testRegion.put("byteArray1", bytes1);
     testRegion.put("byteArray2", bytes2);

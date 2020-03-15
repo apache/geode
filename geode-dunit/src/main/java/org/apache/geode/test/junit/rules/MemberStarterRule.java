@@ -417,8 +417,9 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
     return regionFactory.create(name);
   }
 
-  public Region createRegion(RegionShortcut type, String name) {
-    return getCache().createRegionFactory(type).create(name);
+  public <K, V> Region<K, V> createRegion(RegionShortcut type, String name) {
+    final RegionFactory<K, V> regionFactory = getCache().createRegionFactory(type);
+    return regionFactory.create(name);
   }
 
   /**

@@ -40,6 +40,7 @@ import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResourc
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 import com.jayway.jsonpath.JsonPath;
@@ -98,6 +99,7 @@ public class PulseSecurityWithSSLTest {
     assertThat(JsonPath.parse(body).read("$.SystemAlerts.connectedFlag", Boolean.class)).isTrue();
   }
 
+  @SuppressWarnings("deprecation")
   @Test
   public void loginWithDeprecatedSSLOptions() throws Exception {
     Properties securityProps = new Properties();
@@ -127,7 +129,7 @@ public class PulseSecurityWithSSLTest {
     // Ensure that the backend JMX connection is working too
     HttpResponse response = client.post("/pulse/pulseUpdate", "pulseData",
         "{\"SystemAlerts\": {\"pageNumber\":\"1\"},\"ClusterDetails\":{}}");
-    String body = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
+    String body = IOUtils.toString(response.getEntity().getContent(), StandardCharsets.UTF_8);
 
     assertThat(JsonPath.parse(body).read("$.SystemAlerts.connectedFlag", Boolean.class)).isTrue();
   }

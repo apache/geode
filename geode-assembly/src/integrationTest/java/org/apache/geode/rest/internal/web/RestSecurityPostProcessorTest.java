@@ -18,7 +18,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANA
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
 import static org.apache.geode.test.junit.rules.HttpResponseAssert.assertResponse;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.net.URLEncoder;
 
@@ -59,8 +58,9 @@ public class RestSecurityPostProcessorTest {
   public RequiresGeodeHome requiresGeodeHome = new RequiresGeodeHome();
 
   @BeforeClass
-  public static void before() throws Exception {
-    Region region = serverStarter.createRegion(RegionShortcut.REPLICATE, "customers");
+  public static void before() {
+    Region<String, Customer> region =
+        serverStarter.createRegion(RegionShortcut.REPLICATE, "customers");
     region.put("1", new Customer(1L, "John", "Doe", "555555555"));
     region.put("2", new Customer(2L, "Richard", "Roe", "222533554"));
     region.put("3", new Customer(3L, "Jane", "Doe", "555223333"));
@@ -169,7 +169,7 @@ public class RestSecurityPostProcessorTest {
                 .hasStatusCode(200)
                 .getJsonObject();
 
-    assertTrue(jsonArray.size() == 1);
+    assertEquals(1, jsonArray.size());
     JsonNode customer = jsonArray.get(0);
     assertEquals("*********", customer.get("ssn").asText());
     assertEquals(1L, customer.get("id").asLong());

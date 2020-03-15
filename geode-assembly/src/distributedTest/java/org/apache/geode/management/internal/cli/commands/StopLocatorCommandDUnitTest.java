@@ -14,8 +14,6 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.management.cli.Result.Status.ERROR;
-import static org.apache.geode.management.cli.Result.Status.OK;
 import static org.apache.geode.management.internal.i18n.CliStrings.GROUP;
 import static org.apache.geode.management.internal.i18n.CliStrings.START_LOCATOR;
 import static org.apache.geode.management.internal.i18n.CliStrings.START_LOCATOR__DIR;
@@ -55,7 +53,6 @@ import org.junit.rules.TemporaryFolder;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.lang.ObjectUtils;
-import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
@@ -69,7 +66,7 @@ public class StopLocatorCommandDUnitTest {
   private static final String groupName = "locatorGroup";
   private static String locatorConnectionString;
   private File workingDir;
-  private static Integer locatorPort, jmxPort, toStopJmxPort;
+  private static Integer jmxPort;
 
   @Rule
   public final TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -105,28 +102,28 @@ public class StopLocatorCommandDUnitTest {
   public void before() throws Exception {
     workingDir = temporaryFolder.newFolder();
     int[] availablePorts = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-    locatorPort = availablePorts[0];
-    toStopJmxPort = availablePorts[1];
+    int locatorPort = availablePorts[0];
+    int toStopJmxPort = availablePorts[1];
 
     final String command = new CommandStringBuilder(START_LOCATOR)
         .addOption(START_LOCATOR__MEMBER_NAME, memberName)
         .addOption(START_LOCATOR__LOCATORS, locatorConnectionString)
-        .addOption(START_LOCATOR__PORT, locatorPort.toString())
+        .addOption(START_LOCATOR__PORT, Integer.toString(locatorPort))
         .addOption(GROUP, groupName)
         .addOption(START_LOCATOR__J,
-            "-D" + GEMFIRE_PREFIX + "jmx-manager-port=" + toStopJmxPort.toString())
+            "-D" + GEMFIRE_PREFIX + "jmx-manager-port=" + toStopJmxPort)
         .addOption(START_LOCATOR__J,
             "-D" + GEMFIRE_PREFIX + "jmx-manager-hostname-for-clients=localhost")
         .addOption(START_LOCATOR__DIR, workingDir.getCanonicalPath())
         .getCommandString();
 
     gfsh.connectAndVerify(locator);
-    gfsh.executeCommand(command);
+    gfsh.executeAndAssertThat(command).statusIsSuccess();
   }
 
   @After
   public void after() throws IOException {
-    gfsh.executeCommand("stop locator --dir=" + workingDir.getCanonicalPath());
+    gfsh.executeAndAssertThat("stop locator --dir=" + workingDir.getCanonicalPath()).hasOutput();
   }
 
   @Test
@@ -180,10 +177,8 @@ public class StopLocatorCommandDUnitTest {
   }
 
   private void waitForCommandToSucceed(String command) {
-    GeodeAwaitility.await().untilAsserted(() -> {
-      CommandResult result = gfsh.executeCommand(command);
-      assertThat(result.getStatus()).isEqualTo(OK);
-    });
+    GeodeAwaitility.await()
+        .untilAsserted(() -> gfsh.executeAndAssertThat(command).statusIsSuccess());
   }
 
   @Test
@@ -192,9 +187,7 @@ public class StopLocatorCommandDUnitTest {
         .addOption(STOP_LOCATOR__DIR, workingDir.getCanonicalPath())
         .getCommandString();
 
-    CommandResult result = gfsh.executeCommand(command);
-
-    assertThat(result.getStatus()).isEqualTo(OK);
+    gfsh.executeAndAssertThat(command).statusIsSuccess();
     gfsh.executeAndAssertThat("list members").doesNotContainOutput(memberName);
   }
 
@@ -208,11 +201,10 @@ public class StopLocatorCommandDUnitTest {
         .addOption(STOP_LOCATOR__DIR, workingDir.getCanonicalPath())
         .getCommandString();
 
-    CommandResult result = gfsh.executeCommand(command);
+    gfsh.executeAndAssertThat(command).statusIsSuccess();
 
     gfsh.connect(locator);
 
-    assertThat(result.getStatus()).isEqualTo(OK);
     gfsh.executeAndAssertThat("list members").doesNotContainOutput(memberName);
   }
 
@@ -222,9 +214,7 @@ public class StopLocatorCommandDUnitTest {
         .addOption(STOP_LOCATOR__MEMBER, "invalidMemberName")
         .getCommandString();
 
-    CommandResult result = gfsh.executeCommand(command);
-
-    assertThat(result.getStatus()).isEqualTo(ERROR);
+    gfsh.executeAndAssertThat(command).statusIsError();
     gfsh.executeAndAssertThat("list members").containsOutput(memberName);
   }
 
@@ -234,9 +224,7 @@ public class StopLocatorCommandDUnitTest {
         .addOption(STOP_LOCATOR__MEMBER, "42")
         .getCommandString();
 
-    CommandResult result = gfsh.executeCommand(command);
-
-    assertThat(result.getStatus()).isEqualTo(ERROR);
+    gfsh.executeAndAssertThat(command).statusIsError();
     gfsh.executeAndAssertThat("list members").containsOutput(memberName);
   }
 
