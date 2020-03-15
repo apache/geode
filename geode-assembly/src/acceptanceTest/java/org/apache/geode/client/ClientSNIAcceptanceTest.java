@@ -58,12 +58,14 @@ public class ClientSNIAcceptanceTest {
   public void before() throws IOException, InterruptedException {
     System.setProperty(GEMFIRE_PREFIX + "security.sni-proxy",
         "localhost:15443");
-    keyStorePath = createTempFileFromResource(ClientSNIAcceptanceTest.class, "geode-config/keystore.jks")
-        .getAbsolutePath();
-    trustStorePath = createTempFileFromResource(ClientSNIAcceptanceTest.class, "geode-config/truststore.jks")
-        .getAbsolutePath();
-    docker.exec(options("-T"),"geode",
-        arguments("gfsh","run", "--file=/geode/scripts/geode-starter.gfsh"));
+    keyStorePath =
+        createTempFileFromResource(ClientSNIAcceptanceTest.class, "geode-config/keystore.jks")
+            .getAbsolutePath();
+    trustStorePath =
+        createTempFileFromResource(ClientSNIAcceptanceTest.class, "geode-config/truststore.jks")
+            .getAbsolutePath();
+    docker.exec(options("-T"), "geode",
+        arguments("gfsh", "run", "--file=/geode/scripts/geode-starter.gfsh"));
   }
 
   @Test
@@ -71,11 +73,11 @@ public class ClientSNIAcceptanceTest {
     Properties gemFireProps = new Properties();
     gemFireProps.setProperty(SSL_ENABLED_COMPONENTS, "all");
     gemFireProps.setProperty(SSL_KEYSTORE_TYPE, "jks");
-//    gemFireProps.setProperty(SECURITY_CLIENT_AUTH_INIT,
-//        "org.apache.geode.internal.net.ClientAuthInitialize");
+    // gemFireProps.setProperty(SECURITY_CLIENT_AUTH_INIT,
+    // "org.apache.geode.internal.net.ClientAuthInitialize");
     gemFireProps.setProperty(SSL_REQUIRE_AUTHENTICATION, "false");
-//    gemFireProps.setProperty(SECURITY_USERNAME, "");
-//    gemFireProps.setProperty(SECURITY_PASSWORD, "");
+    // gemFireProps.setProperty(SECURITY_USERNAME, "");
+    // gemFireProps.setProperty(SECURITY_PASSWORD, "");
 
     gemFireProps.setProperty(SSL_KEYSTORE, keyStorePath);
     gemFireProps.setProperty(SSL_KEYSTORE_PASSWORD, "geode");
