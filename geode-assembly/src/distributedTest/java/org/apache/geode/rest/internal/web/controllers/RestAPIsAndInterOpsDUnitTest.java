@@ -61,7 +61,6 @@ import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
-import org.apache.geode.cache.client.internal.LocatorTestBase;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.InternalCache;
@@ -77,10 +76,12 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
  *
  * @since GemFire 8.0
  */
+@SuppressWarnings("deprecation")
 @Category({RestAPITest.class})
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
-public class RestAPIsAndInterOpsDUnitTest extends LocatorTestBase {
+public class RestAPIsAndInterOpsDUnitTest
+    extends org.apache.geode.cache.client.internal.LocatorTestBase {
 
   private static final String PEOPLE_REGION_NAME = "People";
 
@@ -195,14 +196,14 @@ public class RestAPIsAndInterOpsDUnitTest extends LocatorTestBase {
     props.setProperty(HTTP_SERVICE_BIND_ADDRESS, hostName);
     props.setProperty(HTTP_SERVICE_PORT, String.valueOf(serverPort));
 
-    InternalCache cache = (InternalCache) new CacheFactory(props).create();
-    cache.setReadSerializedForTest(true);
+    InternalCache cache =
+        (InternalCache) new CacheFactory(props).setPdxReadSerialized(true).create();
     CacheServer server = createRegionAndStartCacheServer(regions, cache);
 
     remoteObjects.put(CACHE_KEY, cache);
     server.getPort();
 
-    return "http://" + hostName + ":" + serverPort + this.urlContext + "/v1";
+    return "http://" + hostName + ":" + serverPort + urlContext + "/v1";
   }
 
   private void doPutsInClientCache() {

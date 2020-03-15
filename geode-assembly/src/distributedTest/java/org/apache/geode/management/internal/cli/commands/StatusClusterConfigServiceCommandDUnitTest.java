@@ -44,14 +44,15 @@ public class StatusClusterConfigServiceCommandDUnitTest {
     gfsh.executeAndAssertThat("status cluster-config-service")
         .statusIsSuccess()
         .tableHasRowCount(2)
-        .tableHasRowWithValues("Name", "Status", "locator-0", "RUNNING")
-        .tableHasRowWithValues("Name", "Status", "locator-1", "RUNNING");
+        .hasTableSection().hasColumn("Name").containsOnly(locator1.getName(), locator2.getName())
+        .hasColumn("Status").containsOnly("RUNNING", "RUNNING");
 
     locator2.stop();
 
     gfsh.executeAndAssertThat("status cluster-config-service")
         .statusIsSuccess()
         .tableHasRowCount(1)
-        .tableHasRowWithValues("Name", "Status", "locator-0", "RUNNING");
+        .hasTableSection().hasColumn("Name").containsOnly(locator1.getName()).hasColumn("Status")
+        .containsOnly("RUNNING");
   }
 }

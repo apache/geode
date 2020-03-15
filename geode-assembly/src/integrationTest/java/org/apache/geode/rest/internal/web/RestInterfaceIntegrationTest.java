@@ -51,7 +51,6 @@ import org.junit.experimental.categories.Category;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpResponse;
-import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.Jackson2ObjectMapperFactoryBean;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.util.Assert;
@@ -65,7 +64,6 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
-import org.apache.geode.cache.RegionService;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.util.IOUtils;
@@ -104,7 +102,6 @@ public class RestInterfaceIntegrationTest {
 
   protected static final String REST_API_SERVICE_ENDPOINT =
       "http://localhost:%1$d/gemfire-api/v1/%2$s/%3$s";
-  protected static final String UTF_8 = "UTF-8";
 
   @Autowired
   private Cache gemfireCache;
@@ -225,10 +222,6 @@ public class RestInterfaceIntegrationTest {
     return dateTime.getTime();
   }
 
-  protected Person createPerson(final String firstName, final String lastName) {
-    return createPerson(firstName, lastName, null);
-  }
-
   protected Person createPerson(final String firstName, final String lastName,
       final Date birthDate) {
     return new Person(firstName, lastName, birthDate);
@@ -241,7 +234,7 @@ public class RestInterfaceIntegrationTest {
     httpMessageConverter.setObjectMapper(getObjectMapper());
 
     return setErrorHandler(
-        new RestTemplate(Collections.<HttpMessageConverter<?>>singletonList(httpMessageConverter)));
+        new RestTemplate(Collections.singletonList(httpMessageConverter)));
   }
 
   private RestTemplate setErrorHandler(final RestTemplate restTemplate) {
@@ -257,8 +250,8 @@ public class RestInterfaceIntegrationTest {
         errorStatuses.add(HttpStatus.NOT_ACCEPTABLE);
         errorStatuses.add(HttpStatus.REQUEST_TIMEOUT);
         errorStatuses.add(HttpStatus.CONFLICT);
-        errorStatuses.add(HttpStatus.REQUEST_ENTITY_TOO_LARGE);
-        errorStatuses.add(HttpStatus.REQUEST_URI_TOO_LONG);
+        errorStatuses.add(HttpStatus.PAYLOAD_TOO_LARGE);
+        errorStatuses.add(HttpStatus.URI_TOO_LONG);
         errorStatuses.add(HttpStatus.UNSUPPORTED_MEDIA_TYPE);
         errorStatuses.add(HttpStatus.TOO_MANY_REQUESTS);
         errorStatuses.add(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -302,7 +295,7 @@ public class RestInterfaceIntegrationTest {
   }
 
   @Test
-  public void testRegionObjectWithDatePropertyAccessedWithRestApi() throws Exception {
+  public void testRegionObjectWithDatePropertyAccessedWithRestApi() {
     String key = "1";
     Person jonDoe = createPerson("Jon", "Doe", createDate(1977, Calendar.OCTOBER, 31));
 
@@ -356,15 +349,6 @@ public class RestInterfaceIntegrationTest {
     assertEquals(jonDoe, jonDoeResource);
   }
 
-  private Object runQueryUsingApi(final RegionService regionService, final String queryString)
-      throws Exception {
-    return regionService.getQueryService().newQuery(queryString).execute();
-  }
-
-  // @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.NONE)
-  // @JsonIgnoreProperties(ignoreUnknown = true)
-  // @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property =
-  // "@type")
   public static class Person implements PdxSerializable {
 
     protected static final String DEFAULT_BIRTH_DATE_FORMAT_PATTERN = "MM/dd/yyyy";
@@ -374,8 +358,10 @@ public class RestInterfaceIntegrationTest {
     private String firstName;
     private String lastName;
 
+    @SuppressWarnings("unused")
     public Person() {}
 
+    @SuppressWarnings("unused")
     public Person(final String firstName, final String lastName) {
       this(firstName, lastName, null);
     }
@@ -450,9 +436,9 @@ public class RestInterfaceIntegrationTest {
 
       Person that = (Person) obj;
 
-      return ObjectUtils.nullSafeEquals(this.getFirstName(), that.getFirstName())
-          && ObjectUtils.nullSafeEquals(this.getLastName(), that.getLastName())
-          && ObjectUtils.nullSafeEquals(this.getBirthDate(), that.getBirthDate());
+      return ObjectUtils.nullSafeEquals(getFirstName(), that.getFirstName())
+          && ObjectUtils.nullSafeEquals(getLastName(), that.getLastName())
+          && ObjectUtils.nullSafeEquals(getBirthDate(), that.getBirthDate());
     }
 
     @Override

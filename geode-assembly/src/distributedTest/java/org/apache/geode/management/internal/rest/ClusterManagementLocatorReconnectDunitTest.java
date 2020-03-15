@@ -19,6 +19,7 @@ import static org.apache.geode.lang.Identifiable.exists;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -34,6 +35,7 @@ import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GeodeDevRestClient;
+import org.apache.geode.test.junit.rules.MemberStarterRule;
 import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 
 public class ClusterManagementLocatorReconnectDunitTest {
@@ -50,7 +52,7 @@ public class ClusterManagementLocatorReconnectDunitTest {
   @Test
   public void clusterManagementRestServiceStillWorksAfterLocatorReconnects() throws Exception {
     IgnoredException.addIgnoredException("org.apache.geode.ForcedDisconnectException: for testing");
-    locator = rule.startLocatorVM(0, l -> l.withHttpService());
+    locator = rule.startLocatorVM(0, MemberStarterRule::withHttpService);
     server = rule.startServerVM(1, locator.getPort());
     restClient =
         new GeodeDevRestClient("/management/v1", "localhost", locator.getHttpPort(),
@@ -62,7 +64,7 @@ public class ClusterManagementLocatorReconnectDunitTest {
 
     // wait till locator is disconnected and reconnected
     await().pollInterval(1, TimeUnit.SECONDS).until(() -> locator.invoke("waitTillRestarted",
-        () -> ClusterStartupRule.getLocator().isReconnected()));
+        () -> Objects.requireNonNull(ClusterStartupRule.getLocator()).isReconnected()));
 
     makeRestCallAndVerifyResult("orders");
   }
@@ -85,7 +87,8 @@ public class ClusterManagementLocatorReconnectDunitTest {
 
     // make sure region is created
     server.invoke(() -> {
-      org.apache.geode.cache.Region region = ClusterStartupRule.getCache().getRegion(regionName);
+      org.apache.geode.cache.Region<?, ?> region =
+          ClusterStartupRule.getCache().getRegion(regionName);
       assertThat(region).isNotNull();
     });
 
