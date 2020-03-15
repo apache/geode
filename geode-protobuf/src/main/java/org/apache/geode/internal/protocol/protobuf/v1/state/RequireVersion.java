@@ -40,13 +40,16 @@ public class RequireVersion implements ConnectionState {
   }
 
   @Override
-  public void validateOperation(ProtobufOperationContext operationContext)
+  public void validateOperation(
+      @SuppressWarnings("rawtypes") ProtobufOperationContext operationContext)
       throws ConnectionStateException {
     throw new ConnectionStateException(BasicTypes.ErrorCode.INVALID_REQUEST,
         "Connection processing should never be asked to validate an operation");
   }
 
-  private ConnectionState nextConnectionState(MessageExecutionContext executionContext) {
+  @SuppressWarnings("deprecation")
+  private ConnectionState nextConnectionState(
+      @SuppressWarnings("unused") MessageExecutionContext executionContext) {
     if (securityService.isIntegratedSecurity()) {
       return new RequireAuthentication();
     } else if (securityService.isPeerSecurityRequired()

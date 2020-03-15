@@ -14,7 +14,8 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -34,17 +35,18 @@ import org.apache.geode.internal.protocol.protobuf.v1.Success;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
 @Category({ClientServerTest.class})
-public class ClearRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTest {
+public class ClearRequestOperationHandlerJUnitTest
+    extends OperationHandlerJUnitTest<RegionAPI.ClearRequest, RegionAPI.ClearResponse> {
   private final String TEST_REGION = "test region";
   private final String MISSING_REGION = "missing region";
-  private Region regionStub;
 
   @Rule
   public final ExpectedException expectedException = ExpectedException.none();
 
   @Before
   public void setUp() throws Exception {
-    regionStub = mock(Region.class);
+    @SuppressWarnings("unchecked")
+    Region<Object, Object> regionStub = mock(Region.class);
 
     when(cacheStub.getRegion(TEST_REGION)).thenReturn(regionStub);
     when(cacheStub.getRegion(MISSING_REGION)).thenReturn(null);
@@ -55,18 +57,17 @@ public class ClearRequestOperationHandlerJUnitTest extends OperationHandlerJUnit
   public void processReturnsSuccessForValidRegion() throws Exception {
     RegionAPI.ClearRequest removeRequest =
         ProtobufRequestUtilities.createClearRequest(TEST_REGION).getClearRequest();
-    Result result = operationHandler.process(serializationService, removeRequest,
+    Result<?> result = operationHandler.process(serializationService, removeRequest,
         TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
-
-    assertTrue(result instanceof Success);
+    assertThat(result).isInstanceOf(Success.class);
   }
 
   @Test
   public void processReturnsFailureForInvalidRegion() throws Exception {
     RegionAPI.ClearRequest removeRequest =
         ProtobufRequestUtilities.createClearRequest(MISSING_REGION).getClearRequest();
-    expectedException.expect(RegionDestroyedException.class);
-    Result result = operationHandler.process(serializationService, removeRequest,
-        TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
+    assertThatThrownBy(() -> operationHandler.process(serializationService, removeRequest,
+        TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub)))
+            .isInstanceOf(RegionDestroyedException.class);
   }
 }

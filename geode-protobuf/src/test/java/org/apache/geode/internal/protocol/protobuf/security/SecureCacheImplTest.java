@@ -21,7 +21,6 @@ import static org.apache.geode.security.ResourcePermission.Resource.DATA;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.data.MapEntry.entry;
-import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
@@ -66,14 +65,15 @@ public class SecureCacheImplTest {
   private SecureCacheImpl authorizingCache;
   private InternalCache cache;
   private Security security;
-  private Region region;
+  private Region<String, Object> region;
 
+  @SuppressWarnings("unchecked")
   @Before
   public void setUp() {
     cache = mock(InternalCacheForClientAccess.class);
     doReturn(cache).when(cache).getCacheForProcessingClientRequests();
     region = mock(Region.class);
-    when(cache.getRegion(REGION)).thenReturn(region);
+    when(cache.<String, Object>getRegion(REGION)).thenReturn(region);
     security = mock(Security.class);
     doThrow(NotAuthorizedException.class).when(security).authorize(any());
     doThrow(NotAuthorizedException.class).when(security).authorize(any(), any(), any(), any());
@@ -160,7 +160,7 @@ public class SecureCacheImplTest {
   public void get() {
     authorize(DATA, READ, REGION, "a");
     when(region.get("a")).thenReturn("value");
-    assertEquals("value", authorizingCache.get(REGION, "a"));
+    assertThat(authorizingCache.<String, String>get(REGION, "a")).isEqualTo("value");
   }
 
   @Test
@@ -174,7 +174,7 @@ public class SecureCacheImplTest {
     authorize(DATA, READ, REGION, "a");
     when(security.postProcess(REGION, "a", "value")).thenReturn("spam");
     when(region.get("a")).thenReturn("value");
-    assertEquals("spam", authorizingCache.get(REGION, "a"));
+    assertThat(authorizingCache.<String, String>get(REGION, "a")).isEqualTo("spam");
   }
 
   @Test
@@ -261,7 +261,7 @@ public class SecureCacheImplTest {
     when(security.postProcess(REGION, "a", "value")).thenReturn("spam");
     Object value = authorizingCache.remove(REGION, "a");
     verify(region).remove("a");
-    assertEquals("spam", value);
+    assertThat(value).isEqualTo("spam");
   }
 
   @Test
@@ -271,10 +271,12 @@ public class SecureCacheImplTest {
     regions.add(region);
     when(cache.rootRegions()).thenReturn(regions);
 
-    Set subregions = new HashSet<>();
-    Region region2 = mock(Region.class);
+    Set<Region<?, ?>> subregions = new HashSet<>();
+    @SuppressWarnings("unchecked")
+    Region<Object, Object> region2 = mock(Region.class);
     subregions.add(region2);
-    Region region3 = mock(Region.class);
+    @SuppressWarnings("unchecked")
+    Region<Object, Object> region3 = mock(Region.class);
     subregions.add(region3);
     when(region.getFullPath()).thenReturn("region1");
     when(region2.getFullPath()).thenReturn("region2");
@@ -334,7 +336,7 @@ public class SecureCacheImplTest {
   @Test
   public void putIfAbsent() {
     authorize(DATA, WRITE, REGION, "a");
-    String oldValue = authorizingCache.putIfAbsent(REGION, "a", "b");
+    authorizingCache.putIfAbsent(REGION, "a", "b");
     verify(region).putIfAbsent("a", "b");
   }
 
@@ -345,7 +347,7 @@ public class SecureCacheImplTest {
     when(security.postProcess(REGION, "a", "value")).thenReturn("spam");
     String oldValue = authorizingCache.putIfAbsent(REGION, "a", "b");
     verify(region).putIfAbsent("a", "b");
-    assertEquals("spam", oldValue);
+    assertThat(oldValue).isEqualTo("spam");
   }
 
   @Test
@@ -372,7 +374,7 @@ public class SecureCacheImplTest {
     Object[] bindParameters = {"a"};
     when(query.execute(bindParameters)).thenReturn("value");
     Object result = authorizingCache.query(queryString, bindParameters);
-    assertEquals("spam", result);
+    assertThat(result).isEqualTo("spam");
   }
 
   @Test
@@ -383,14 +385,16 @@ public class SecureCacheImplTest {
     String queryString = "select * from /region";
     Object[] bindParameters = {"a"};
 
-    SelectResults results = new ResultsBag();
+    @SuppressWarnings("unchecked")
+    SelectResults<String> results = new ResultsBag();
     results.setElementType(new ObjectTypeImpl(Object.class));
     results.add("value1");
     results.add("value2");
     when(query.execute((Object[]) any())).thenReturn(results);
+    @SuppressWarnings("unchecked")
     SelectResults<String> result =
         (SelectResults<String>) authorizingCache.query(queryString, bindParameters);
-    assertEquals(Arrays.asList("spam", "spam"), result.asList());
+    assertThat(result.asList()).containsExactly("spam", "spam");
   }
 
   @Test
@@ -403,12 +407,15 @@ public class SecureCacheImplTest {
     String queryString = "select * from /region";
     Object[] bindParameters = {"a"};
     when(query.execute((Object[]) any())).thenReturn(results);
-    SelectResults<String> result =
-        (SelectResults<String>) authorizingCache.query(queryString, bindParameters);
-    assertEquals(buildListOfStructs("spam", "spam").asList(), result.asList());
+    @SuppressWarnings("unchecked")
+    SelectResults<Struct> result =
+        (SelectResults<Struct>) authorizingCache.query(queryString, bindParameters);
+    assertThat(result.asList())
+        .containsExactlyInAnyOrderElementsOf(buildListOfStructs("spam", "spam").asList());
   }
 
   private SelectResults<Struct> buildListOfStructs(String... values) {
+    @SuppressWarnings("unchecked")
     SelectResults<Struct> results = new StructBag();
     StructTypeImpl elementType = new StructTypeImpl(new String[] {"field1"});
     results.setElementType(elementType);

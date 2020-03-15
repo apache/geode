@@ -14,7 +14,8 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.mock;
@@ -32,6 +33,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.internal.protocol.TestExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
+import org.apache.geode.internal.protocol.protobuf.v1.Failure;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufRequestUtilities;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
@@ -43,17 +45,19 @@ import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufUtilitie
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
 @Category({ClientServerTest.class})
-public class PutRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTest {
+public class PutRequestOperationHandlerJUnitTest
+    extends OperationHandlerJUnitTest<RegionAPI.PutRequest, RegionAPI.PutResponse> {
   private final String TEST_KEY = "my key";
   private final String TEST_VALUE = "99";
   private final String TEST_REGION = "test region";
-  private Region regionMock;
+  private Region<Object, Object> regionMock;
 
   @Rule
   public ExpectedException expectedException = ExpectedException.none();
 
+  @SuppressWarnings("unchecked")
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     regionMock = mock(Region.class);
     when(regionMock.put(TEST_KEY, TEST_VALUE)).thenReturn(1);
 
@@ -63,17 +67,17 @@ public class PutRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
   @Test
   public void test_puttingTheEncodedEntryIntoRegion() throws Exception {
     PutRequestOperationHandler operationHandler = new PutRequestOperationHandler();
-    Result result = operationHandler.process(serializationService, generateTestRequest(),
+    Result<?> result = operationHandler.process(serializationService, generateTestRequest(),
         TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
 
-    assertTrue(result instanceof Success);
+    assertThat(result).isInstanceOf(Success.class);
 
     verify(regionMock).put(TEST_KEY, TEST_VALUE);
     verify(regionMock, times(1)).put(anyString(), anyString());
   }
 
-  @Test(expected = DecodingException.class)
-  public void processThrowsExceptionWhenUnableToDecode() throws Exception {
+  @Test
+  public void processThrowsExceptionWhenUnableToDecode() {
     String exceptionText = "unsupported type!";
     Exception exception = new DecodingException(exceptionText);
     ProtobufSerializationService serializationServiceStub =
@@ -89,8 +93,9 @@ public class PutRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
     BasicTypes.Entry testEntry = ProtobufUtilities.createEntry(encodedKey, testValue);
     RegionAPI.PutRequest putRequest =
         ProtobufRequestUtilities.createPutRequest(TEST_REGION, testEntry).getPutRequest();
-    operationHandler.process(serializationServiceStub, putRequest,
-        TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
+    assertThatThrownBy(() -> operationHandler.process(serializationServiceStub, putRequest,
+        TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub)))
+            .isInstanceOf(DecodingException.class);
   }
 
   @Test
@@ -98,8 +103,9 @@ public class PutRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
     when(cacheStub.getRegion(TEST_REGION)).thenReturn(null);
     PutRequestOperationHandler operationHandler = new PutRequestOperationHandler();
     expectedException.expect(RegionDestroyedException.class);
-    Result result = operationHandler.process(serializationService, generateTestRequest(),
+    Result<?> result = operationHandler.process(serializationService, generateTestRequest(),
         TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
+    assertThat(result).isInstanceOf(Failure.class);
 
   }
 

@@ -14,16 +14,17 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.ExpectedException;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
@@ -39,27 +40,26 @@ import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.En
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
 @Category({ClientServerTest.class})
-public class GetRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTest {
-  private final String TEST_KEY = "my key";
-  private final String TEST_VALUE = "my value";
-  private final String TEST_REGION = "test region";
-  private final String MISSING_REGION = "missing region";
-  private final String MISSING_KEY = "missing key";
-  private final String NULLED_KEY = "nulled key";
-
-  @Rule
-  public ExpectedException expectedException = ExpectedException.none();
+public class GetRequestOperationHandlerJUnitTest
+    extends OperationHandlerJUnitTest<RegionAPI.GetRequest, RegionAPI.GetResponse> {
+  private static final String TEST_KEY = "my key";
+  private static final String TEST_VALUE = "my value";
+  private static final String TEST_REGION = "test region";
+  private static final String MISSING_REGION = "missing region";
+  private static final String MISSING_KEY = "missing key";
+  private static final String NULLED_KEY = "nulled key";
 
   @Before
-  public void setUp() throws Exception {
-    Region regionStub = mock(Region.class);
+  public void setUp() {
+    @SuppressWarnings("unchecked")
+    Region<String, String> regionStub = mock(Region.class);
     when(regionStub.get(TEST_KEY)).thenReturn(TEST_VALUE);
     when(regionStub.get(MISSING_KEY)).thenReturn(null);
     when(regionStub.get(NULLED_KEY)).thenReturn(null);
     when(regionStub.containsKey(MISSING_KEY)).thenReturn(false);
     when(regionStub.containsKey(NULLED_KEY)).thenReturn(true);
 
-    when(cacheStub.getRegion(TEST_REGION)).thenReturn(regionStub);
+    when(cacheStub.<String, String>getRegion(TEST_REGION)).thenReturn(regionStub);
     when(cacheStub.getRegion(MISSING_REGION)).thenReturn(null);
     operationHandler = new GetRequestOperationHandler();
   }
@@ -67,11 +67,12 @@ public class GetRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
   @Test
   public void processReturnsTheEncodedValueFromTheRegion() throws Exception {
     RegionAPI.GetRequest getRequest = generateTestRequest(false, false, false);
-    Result result = operationHandler.process(serializationService, getRequest,
-        TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
+    Result<RegionAPI.GetResponse> result =
+        operationHandler.process(serializationService, getRequest,
+            TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
 
-    Assert.assertTrue(result instanceof Success);
-    RegionAPI.GetResponse response = (RegionAPI.GetResponse) result.getMessage();
+    assertThat(result).isInstanceOf(Success.class);
+    RegionAPI.GetResponse response = result.getMessage();
     Assert.assertEquals(BasicTypes.EncodedValue.ValueCase.STRINGRESULT,
         response.getResult().getValueCase());
     String actualValue = response.getResult().getStringResult();
@@ -79,21 +80,21 @@ public class GetRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
   }
 
   @Test
-  public void processReturnsUnsucessfulResponseForInvalidRegion() throws Exception {
+  public void processReturnsUnsuccessfulResponseForInvalidRegion() {
     RegionAPI.GetRequest getRequest = generateTestRequest(true, false, false);
-    expectedException.expect(RegionDestroyedException.class);
-    Result response = operationHandler.process(serializationService, getRequest,
-        TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
+    Assertions.assertThatThrownBy(() -> operationHandler.process(serializationService, getRequest,
+        TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub)))
+        .isInstanceOf(RegionDestroyedException.class);
 
   }
 
   @Test
   public void processReturnsKeyNotFoundWhenKeyIsNotFound() throws Exception {
     RegionAPI.GetRequest getRequest = generateTestRequest(false, true, false);
-    Result response = operationHandler.process(serializationService, getRequest,
+    Result<?> response = operationHandler.process(serializationService, getRequest,
         TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
 
-    Assert.assertTrue(response instanceof Success);
+    assertThat(response).isInstanceOf(Success.class);
   }
 
   @Test
@@ -102,12 +103,13 @@ public class GetRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
     Result<RegionAPI.GetResponse> response = operationHandler.process(serializationService,
         getRequest, TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
 
-    Assert.assertTrue(response instanceof Success);
-    Assert.assertNull(serializationService.decode(response.getMessage().getResult()));
+    assertThat(response).isInstanceOf(Success.class);
+
+    assertThat(serializationService.decode(response.getMessage().getResult())).isNull();
   }
 
-  @Test(expected = DecodingException.class)
-  public void processThrowsExceptionWhenUnableToDecodeRequest() throws Exception {
+  @Test
+  public void processThrowsExceptionWhenUnableToDecodeRequest() {
     Exception exception = new DecodingException("error finding codec for type");
     ProtobufSerializationService serializationServiceStub =
         mock(ProtobufSerializationService.class);
@@ -118,8 +120,9 @@ public class GetRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
     RegionAPI.GetRequest getRequest =
         ProtobufRequestUtilities.createGetRequest(TEST_REGION, encodedKey).getGetRequest();
 
-    operationHandler.process(serializationServiceStub, getRequest,
-        TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
+    assertThatThrownBy(() -> operationHandler.process(serializationServiceStub, getRequest,
+        TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub)))
+            .isInstanceOf(DecodingException.class);
   }
 
   private RegionAPI.GetRequest generateTestRequest(boolean missingRegion, boolean missingKey,

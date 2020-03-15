@@ -66,7 +66,7 @@ public class JsonPdxConverterJUnitTest {
   private Cache cache;
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     CacheFactory cacheFactory = new CacheFactory();
     cacheFactory.set(ConfigurationProperties.MCAST_PORT, "0");
     cacheFactory.set(ConfigurationProperties.USE_CLUSTER_CONFIGURATION, "false");
@@ -75,14 +75,14 @@ public class JsonPdxConverterJUnitTest {
   }
 
   @After
-  public void tearDown() throws Exception {
+  public void tearDown() {
     if (cache != null) {
       cache.close();
     }
   }
 
   @Test
-  public void testSimpleJSONEncode() throws Exception {
+  public void testSimpleJSONEncode() {
     PdxInstanceFactory pdxInstanceFactory =
         ((GemFireCacheImpl) cache).createPdxInstanceFactory(JSONFormatter.JSON_CLASSNAME, false);
 
@@ -97,7 +97,7 @@ public class JsonPdxConverterJUnitTest {
   }
 
   @Test
-  public void testComplexJSONEncode() throws Exception {
+  public void testComplexJSONEncode() {
     PdxInstance pdxInstanceForComplexJSONString = createPDXInstanceForComplexJSONString();
     PdxInstance decodedJSONPdxInstance = new JsonPdxConverter().decode(complexJSONString);
 
@@ -124,6 +124,7 @@ public class JsonPdxConverterJUnitTest {
    * collections LinkedList&lt;String&gt; it will return an ArrayList&lt;String&gt; or in the case
    * of a LinkedList&lt;PdxInstance&gt; it will return an ArrayList&lt;ArrayList&lt;String&gt;&gt;.
    */
+  @SuppressWarnings({"unchecked", "rawtypes"})
   private Object pdxFieldValues(PdxInstance pdxInstance, String fieldName) {
     Object fieldValue = pdxInstance.getField(fieldName);
     // Check if the value is of type PDXInstance. If so, then iterate over its fields and return an
@@ -139,7 +140,8 @@ public class JsonPdxConverterJUnitTest {
     // collection
     // contains a collection of PdxInstance.
     else if (fieldValue instanceof LinkedList) {
-      LinkedList value = (LinkedList) fieldValue;
+      @SuppressWarnings("unchecked")
+      LinkedList<Object> value = (LinkedList) fieldValue;
       // if the first value of the LinkedList is not a PDXInstance return the LinkedList
       if (!value.isEmpty() && !(value.getFirst() instanceof PdxInstance)) {
         return value;
@@ -149,7 +151,7 @@ public class JsonPdxConverterJUnitTest {
         // each pdxInstance into and ArrayList of the pdx's values.
         ArrayList<Object> objects = new ArrayList<>();
         value.forEach(internalPdxInstance -> {
-          ArrayList innerObject = new ArrayList();
+          ArrayList<Object> innerObject = new ArrayList<>();
           ((PdxInstance) internalPdxInstance).getFieldNames()
               .forEach(internalFieldName -> innerObject
                   .add(pdxFieldValues((PdxInstance) internalPdxInstance, internalFieldName)));
@@ -215,7 +217,7 @@ public class JsonPdxConverterJUnitTest {
   }
 
   @Test
-  public void testJSONDecode() throws Exception {
+  public void testJSONDecode() {
     PdxInstance pdxInstance = new JsonPdxConverter().decode(complexJSONString);
 
     assertNotNull(pdxInstance);
