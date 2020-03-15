@@ -51,7 +51,7 @@ public class ValueSerializerIntegrationTest {
 
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
-  private Region region;
+  private Region<String, Object> region;
 
   @Before
   public void setUp() throws Exception {
@@ -67,7 +67,7 @@ public class ValueSerializerIntegrationTest {
     cacheServer.setPort(cacheServerPort);
     cacheServer.start();
 
-    RegionFactory<Object, Object> regionFactory = cache.createRegionFactory();
+    RegionFactory<String, Object> regionFactory = cache.createRegionFactory();
     regionFactory.setDataPolicy(DataPolicy.PARTITION);
     region = regionFactory.create(TEST_REGION);
 
@@ -148,7 +148,7 @@ public class ValueSerializerIntegrationTest {
 
   @Test
   public void serializerWithoutPrimitiveSupportIsNotInvokedForPrimitives()
-      throws IOException, ClassNotFoundException {
+      throws IOException {
     sendHandshake(new TestValueSerializer().getID());
     region.put("key", "value");
 
@@ -185,6 +185,7 @@ public class ValueSerializerIntegrationTest {
 
     public String field;
 
+    @SuppressWarnings("unused")
     public DataSerializableObject() {
 
     }
@@ -200,7 +201,7 @@ public class ValueSerializerIntegrationTest {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    public void fromData(DataInput in) throws IOException {
       field = in.readUTF();
     }
 

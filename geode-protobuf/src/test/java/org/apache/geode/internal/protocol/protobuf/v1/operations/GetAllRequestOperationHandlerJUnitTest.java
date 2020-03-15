@@ -14,8 +14,8 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -41,6 +41,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufRequestUtilities;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
+import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI.GetAllResponse;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
@@ -48,7 +49,8 @@ import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.En
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
 @Category({ClientServerTest.class})
-public class GetAllRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTest {
+public class GetAllRequestOperationHandlerJUnitTest
+    extends OperationHandlerJUnitTest<RegionAPI.GetAllRequest, GetAllResponse> {
   private static final String TEST_KEY1 = "my key1";
   private static final String TEST_VALUE1 = "my value1";
   private static final String TEST_KEY2 = "my key2";
@@ -58,13 +60,14 @@ public class GetAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
   private static final String TEST_REGION = "test region";
   private static final String TEST_INVALID_KEY = "I'm a naughty key!";
   private static final String NO_VALUE_PRESENT_FOR_THIS_KEY = "no value present for this key";
-  private Region regionStub;
+  private Region<String, String> regionStub;
 
   @Rule
   public ExpectedException expectedException = ExpectedException.none();
 
+  @SuppressWarnings("unchecked")
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     regionStub = mock(Region.class);
     when(regionStub.get(TEST_KEY1)).thenReturn(TEST_VALUE1);
     when(regionStub.get(TEST_KEY2)).thenReturn(TEST_VALUE2);
@@ -73,7 +76,7 @@ public class GetAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
     when(regionStub.get(TEST_INVALID_KEY))
         .thenThrow(new CacheLoaderException("Let's pretend that didn't work"));
 
-    when(cacheStub.getRegion(TEST_REGION)).thenReturn(regionStub);
+    when(cacheStub.<String, String>getRegion(TEST_REGION)).thenReturn(regionStub);
     operationHandler = new GetAllRequestOperationHandler();
   }
 
@@ -105,35 +108,35 @@ public class GetAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
 
   @Test
   public void processReturnsExpectedValuesForValidKeys() throws Exception {
-    Result result = operationHandler.process(serializationService, generateTestRequest(true, false),
-        TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
+    Result<GetAllResponse> result =
+        operationHandler.process(serializationService, generateTestRequest(true, false),
+            TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
 
-    assertTrue(result instanceof Success);
+    assertThat(result).isInstanceOf(Success.class);
 
-    RegionAPI.GetAllResponse response = (RegionAPI.GetAllResponse) result.getMessage();
+    GetAllResponse response = result.getMessage();
 
-    assertEquals(3, response.getEntriesCount());
+    assertThat(response.getEntriesCount()).isEqualTo(3);
 
     List<BasicTypes.Entry> entriesList = response.getEntriesList();
     Map<String, String> responseEntries = convertEntryListToMap(entriesList);
 
-    assertEquals(TEST_VALUE1, responseEntries.get(TEST_KEY1));
-    assertEquals(TEST_VALUE2, responseEntries.get(TEST_KEY2));
-    assertEquals(TEST_VALUE3, responseEntries.get(TEST_KEY3));
+    assertThat(responseEntries).containsExactly(entry(TEST_KEY1, TEST_VALUE1),
+        entry(TEST_KEY2, TEST_VALUE2), entry(TEST_KEY3, TEST_VALUE3));
   }
 
   @Test
   public void processReturnsNoEntriesForNoKeysRequested() throws Exception {
-    Result result =
+    Result<GetAllResponse> result =
         operationHandler.process(serializationService, generateTestRequest(false, false),
             TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
 
-    assertTrue(result instanceof Success);
+    assertThat(result).isInstanceOf(Success.class);
 
-    RegionAPI.GetAllResponse response = (RegionAPI.GetAllResponse) result.getMessage();
+    GetAllResponse response = result.getMessage();
     List<BasicTypes.Entry> entriesList = response.getEntriesList();
     Map<String, String> responseEntries = convertEntryListToMap(entriesList);
-    assertEquals(0, responseEntries.size());
+    assertThat(responseEntries).isEmpty();
   }
 
   @Test
@@ -142,38 +145,40 @@ public class GetAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
     testKeys.add(serializationService.encode(NO_VALUE_PRESENT_FOR_THIS_KEY));
     RegionAPI.GetAllRequest getAllRequest =
         ProtobufRequestUtilities.createGetAllRequest(TEST_REGION, testKeys);
-    Result result = operationHandler.process(serializationService, getAllRequest,
+    Result<GetAllResponse> result = operationHandler.process(serializationService, getAllRequest,
         TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
 
-    assertTrue(result instanceof Success);
-    RegionAPI.GetAllResponse message = (RegionAPI.GetAllResponse) result.getMessage();
-    assertEquals(1, message.getEntriesCount());
-    assertEquals(null, serializationService.decode(message.getEntries(0).getValue()));
-    assertEquals(NO_VALUE_PRESENT_FOR_THIS_KEY, message.getEntries(0).getKey().getStringResult());
+    assertThat(result).isInstanceOf(Success.class);
+    GetAllResponse message = result.getMessage();
+    assertThat(message.getEntriesCount()).isEqualTo(1);
+    final BasicTypes.Entry entry = message.getEntries(0);
+    assertThat(serializationService.decode(entry.getValue())).isNull();
+    assertThat(entry.getKey().getStringResult()).isEqualTo(NO_VALUE_PRESENT_FOR_THIS_KEY);
 
     verify(regionStub, times(1)).get(NO_VALUE_PRESENT_FOR_THIS_KEY);
   }
 
   @Test
   public void multipleKeysWhereOneThrows() throws Exception {
-    Result result = operationHandler.process(serializationService, generateTestRequest(true, true),
-        TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
+    Result<GetAllResponse> result =
+        operationHandler.process(serializationService, generateTestRequest(true, true),
+            TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
 
-    assertTrue(result instanceof Success);
+    assertThat(result).isInstanceOf(Success.class);
 
-    RegionAPI.GetAllResponse response = (RegionAPI.GetAllResponse) result.getMessage();
+    GetAllResponse response = result.getMessage();
 
-    assertEquals(3, response.getEntriesCount());
+    assertThat(response.getEntriesCount()).isEqualTo(3);
 
     List<BasicTypes.Entry> entriesList = response.getEntriesList();
     Map<String, String> responseEntries = convertEntryListToMap(entriesList);
 
-    assertEquals(TEST_VALUE1, responseEntries.get(TEST_KEY1));
-    assertEquals(TEST_VALUE2, responseEntries.get(TEST_KEY2));
-    assertEquals(TEST_VALUE3, responseEntries.get(TEST_KEY3));
+    assertThat(responseEntries).containsExactly(entry(TEST_KEY1, TEST_VALUE1),
+        entry(TEST_KEY2, TEST_VALUE2), entry(TEST_KEY3, TEST_VALUE3));
 
-    assertEquals(1, response.getFailuresCount());
-    assertEquals(TEST_INVALID_KEY, response.getFailures(0).getKey().getStringResult());
+    assertThat(response.getFailuresCount()).isEqualTo(1);
+    assertThat(response.getFailuresList())
+        .allSatisfy((p) -> assertThat(p.getKey().getStringResult()).isEqualTo(TEST_INVALID_KEY));
   }
 
   private RegionAPI.GetAllRequest generateTestRequest(boolean addKeys, boolean useInvalid)
@@ -194,10 +199,12 @@ public class GetAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
     Map<String, String> result = new HashMap<>();
     for (BasicTypes.Entry entry : entriesList) {
       BasicTypes.EncodedValue encodedKey = entry.getKey();
-      assertEquals(BasicTypes.EncodedValue.ValueCase.STRINGRESULT, encodedKey.getValueCase());
+      assertThat(encodedKey.getValueCase())
+          .isSameAs(BasicTypes.EncodedValue.ValueCase.STRINGRESULT);
       String key = encodedKey.getStringResult();
       BasicTypes.EncodedValue encodedValue = entry.getValue();
-      assertEquals(BasicTypes.EncodedValue.ValueCase.STRINGRESULT, encodedValue.getValueCase());
+      assertThat(encodedValue.getValueCase())
+          .isSameAs(BasicTypes.EncodedValue.ValueCase.STRINGRESULT);
       String value = encodedValue.getStringResult();
       result.put(key, value);
     }

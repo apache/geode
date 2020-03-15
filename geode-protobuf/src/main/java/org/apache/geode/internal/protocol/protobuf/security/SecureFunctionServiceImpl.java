@@ -43,16 +43,18 @@ public class SecureFunctionServiceImpl implements SecureFunctionService {
   public List<Object> executeFunctionOnRegion(String functionID, String regionName,
       Object arguments, Set<?> keyFilter) {
 
-    Function function = authorizeAndGetFunction(regionName, functionID, arguments);
-    Region region = getRegion(regionName);
-    Execution execution = FunctionService.onRegion(region);
+    Function<Object> function = authorizeAndGetFunction(regionName, functionID, arguments);
+    Region<?, ?> region = getRegion(regionName);
+    @SuppressWarnings("unchecked")
+    Execution<Object, Object, List<Object>> execution = FunctionService.onRegion(region);
     if (keyFilter != null) {
       execution = execution.withFilter(keyFilter);
     }
     return executeFunction(execution, functionID, function, arguments);
   }
 
-  private List<Object> executeFunction(Execution execution, String functionID, Function function,
+  private List<Object> executeFunction(Execution<Object, Object, List<Object>> execution,
+      String functionID, Function<Object> function,
       Object arguments) {
     if (arguments != null) {
       execution = execution.setArguments(arguments);
@@ -65,9 +67,10 @@ public class SecureFunctionServiceImpl implements SecureFunctionService {
     }
   }
 
-  private Function<?> authorizeAndGetFunction(String regionName, String functionID,
+  private <T> Function<T> authorizeAndGetFunction(String regionName, String functionID,
       Object arguments) {
-    final Function<?> function = FunctionService.getFunction(functionID);
+    @SuppressWarnings("unchecked")
+    final Function<T> function = FunctionService.getFunction(functionID);
     if (function == null) {
       throw new IllegalArgumentException(
           String.format("Function named %s is not registered to FunctionService",
@@ -82,16 +85,20 @@ public class SecureFunctionServiceImpl implements SecureFunctionService {
   public List<Object> executeFunctionOnMember(String functionID, Object arguments,
       List<String> memberNameList) {
 
-    Function function = authorizeAndGetFunction(null, functionID, arguments);
-    Execution execution = FunctionService.onMembers(getMemberIDs(functionID, memberNameList));
+    Function<Object> function = authorizeAndGetFunction(null, functionID, arguments);
+    @SuppressWarnings("unchecked")
+    Execution<Object, Object, List<Object>> execution =
+        FunctionService.onMembers(getMemberIDs(functionID, memberNameList));
     return executeFunction(execution, functionID, function, arguments);
   }
 
   @Override
   public List<Object> executeFunctionOnGroups(String functionID, Object arguments,
       List<String> groupNameList) {
-    Function function = authorizeAndGetFunction(null, functionID, arguments);
-    Execution execution = FunctionService.onMember(groupNameList.toArray(new String[0]));
+    Function<Object> function = authorizeAndGetFunction(null, functionID, arguments);
+    @SuppressWarnings("unchecked")
+    Execution<Object, Object, List<Object>> execution =
+        FunctionService.onMember(groupNameList.toArray(new String[0]));
     return executeFunction(execution, functionID, function, arguments);
   }
 

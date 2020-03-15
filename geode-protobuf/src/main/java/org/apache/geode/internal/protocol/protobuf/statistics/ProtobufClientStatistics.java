@@ -22,7 +22,6 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 
 public class ProtobufClientStatistics implements ClientStatistics {
   public static final String PROTOBUF_CLIENT_STATISTICS = "ProtobufProtocolStats";
-  private final StatisticsType statType;
   private final Statistics stats;
   private final int currentClientConnectionsId;
   private final int clientConnectionTerminationsId;
@@ -40,11 +39,11 @@ public class ProtobufClientStatistics implements ClientStatistics {
       statisticsFactory = InternalDistributedSystem.getAnyInstance();
     }
     StatisticDescriptor[] serverStatDescriptors = new StatisticDescriptor[] {
-        statisticsFactory.createIntGauge("currentClientConnections",
+        statisticsFactory.createLongGauge("currentClientConnections",
             "Number of sockets accepted and used for client to server messaging.", "sockets"),
-        statisticsFactory.createIntCounter("clientConnectionStarts",
+        statisticsFactory.createLongCounter("clientConnectionStarts",
             "Number of sockets accepted and used for client to server messaging.", "sockets"),
-        statisticsFactory.createIntCounter("clientConnectionTerminations",
+        statisticsFactory.createLongCounter("clientConnectionTerminations",
             "Number of sockets that were used for client to server messaging.", "sockets"),
         statisticsFactory.createLongCounter("authenticationFailures", "Authentication failures",
             "attemptss"),
@@ -60,19 +59,20 @@ public class ProtobufClientStatistics implements ClientStatistics {
             "messages"),
         statisticsFactory.createLongCounter("operationTime", "Time spent performing operations",
             "nanoseconds")};
-    statType = statisticsFactory.createType(getStatsName(), "Protobuf client/server statistics",
-        serverStatDescriptors);
-    this.stats = statisticsFactory.createAtomicStatistics(statType, statisticsName);
-    currentClientConnectionsId = this.stats.nameToId("currentClientConnections");
-    clientConnectionStartsId = this.stats.nameToId("clientConnectionStarts");
-    clientConnectionTerminationsId = this.stats.nameToId("clientConnectionTerminations");
-    authorizationViolationsId = this.stats.nameToId("authorizationViolations");
-    authenticationFailuresId = this.stats.nameToId("authenticationFailures");
-    bytesReceivedId = this.stats.nameToId("bytesReceived");
-    bytesSentId = this.stats.nameToId("bytesSent");
-    messagesReceivedId = this.stats.nameToId("messagesReceived");
-    messagesSentId = this.stats.nameToId("messagesSent");
-    operationTimeId = this.stats.nameToId("operationTime");
+    StatisticsType statType =
+        statisticsFactory.createType(getStatsName(), "Protobuf client/server statistics",
+            serverStatDescriptors);
+    stats = statisticsFactory.createAtomicStatistics(statType, statisticsName);
+    currentClientConnectionsId = stats.nameToId("currentClientConnections");
+    clientConnectionStartsId = stats.nameToId("clientConnectionStarts");
+    clientConnectionTerminationsId = stats.nameToId("clientConnectionTerminations");
+    authorizationViolationsId = stats.nameToId("authorizationViolations");
+    authenticationFailuresId = stats.nameToId("authenticationFailures");
+    bytesReceivedId = stats.nameToId("bytesReceived");
+    bytesSentId = stats.nameToId("bytesSent");
+    messagesReceivedId = stats.nameToId("messagesReceived");
+    messagesSentId = stats.nameToId("messagesSent");
+    operationTimeId = stats.nameToId("operationTime");
   }
 
 
@@ -83,14 +83,14 @@ public class ProtobufClientStatistics implements ClientStatistics {
 
   @Override
   public void clientConnected() {
-    stats.incInt(currentClientConnectionsId, 1);
-    stats.incInt(clientConnectionStartsId, 1);
+    stats.incLong(currentClientConnectionsId, 1);
+    stats.incLong(clientConnectionStartsId, 1);
   }
 
   @Override
   public void clientDisconnected() {
-    stats.incInt(currentClientConnectionsId, -1);
-    stats.incInt(clientConnectionTerminationsId, 1);
+    stats.incLong(currentClientConnectionsId, -1);
+    stats.incLong(clientConnectionTerminationsId, 1);
   }
 
   @Override
