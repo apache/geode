@@ -29,8 +29,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +39,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import org.apache.geode.tools.pulse.internal.data.Cluster;
-import org.apache.geode.tools.pulse.internal.data.PulseConstants;
 import org.apache.geode.tools.pulse.internal.data.PulseVersion;
 import org.apache.geode.tools.pulse.internal.data.Repository;
 import org.apache.geode.tools.pulse.internal.service.PulseService;
@@ -58,26 +57,21 @@ public class PulseController {
 
   private static final Logger logger = LogManager.getLogger();
 
-  // CONSTANTS
-  private final String DEFAULT_EXPORT_FILENAME = "DataBrowserQueryResult.json";
-  private final String QUERYSTRING_PARAM_ACTION = "action";
-  private final String QUERYSTRING_PARAM_QUERYID = "queryId";
-  private final String ACTION_VIEW = "view";
-  private final String ACTION_DELETE = "delete";
+  private static final String QUERYSTRING_PARAM_ACTION = "action";
+  private static final String QUERYSTRING_PARAM_QUERYID = "queryId";
+  private static final String ACTION_VIEW = "view";
+  private static final String ACTION_DELETE = "delete";
 
-  private String STATUS_REPSONSE_SUCCESS = "success";
-  private String STATUS_REPSONSE_FAIL = "fail";
+  private static final String STATUS_REPSONSE_SUCCESS = "success";
+  private static final String STATUS_REPSONSE_FAIL = "fail";
 
-  private String ERROR_REPSONSE_QUERYNOTFOUND = "No queries found";
-  private String ERROR_REPSONSE_QUERYIDMISSING = "Query id is missing";
+  private static final String ERROR_REPSONSE_QUERYNOTFOUND = "No queries found";
+  private static final String ERROR_REPSONSE_QUERYIDMISSING = "Query id is missing";
 
   private static final String EMPTY_JSON = "{}";
 
   // Shared object to hold pulse version details
   public static PulseVersion pulseVersion = new PulseVersion();
-
-  // default is gemfire
-  private static String pulseProductSupport = PulseConstants.PRODUCT_NAME_GEMFIRE;
 
   private final ObjectMapper mapper = new ObjectMapper();
 
@@ -91,11 +85,8 @@ public class PulseController {
 
     ObjectNode responseMap = mapper.createObjectNode();
 
-    JsonNode requestMap = null;
-
-
     try {
-      requestMap = mapper.readTree(pulseData);
+      JsonNode requestMap = mapper.readTree(pulseData);
       Iterator<?> keys = requestMap.fieldNames();
 
       // Execute Services
@@ -103,7 +94,7 @@ public class PulseController {
         String serviceName = keys.next().toString();
         try {
           PulseService pulseService = pulseServiceFactory.getPulseServiceInstance(serviceName);
-          responseMap.put(serviceName, pulseService.execute(request));
+          responseMap.set(serviceName, pulseService.execute(request));
         } catch (Exception serviceException) {
           logger.warn("serviceException [for service {}] = {}", serviceName,
               serviceException.getMessage());
@@ -119,13 +110,12 @@ public class PulseController {
   }
 
   @RequestMapping(value = "/authenticateUser", method = RequestMethod.GET)
-  public void authenticateUser(HttpServletRequest request, HttpServletResponse response)
-      throws IOException {
+  public void authenticateUser(HttpServletRequest request, HttpServletResponse response) {
     // json object to be sent as response
     ObjectNode responseJSON = mapper.createObjectNode();
 
     try {
-      responseJSON.put("isUserLoggedIn", this.isUserLoggedIn(request));
+      responseJSON.put("isUserLoggedIn", isUserLoggedIn(request));
       // Send json response
       response.getOutputStream().write(responseJSON.toString().getBytes());
     } catch (Exception e) {
@@ -142,7 +132,8 @@ public class PulseController {
   }
 
   @RequestMapping(value = "/pulseVersion", method = RequestMethod.GET)
-  public void pulseVersion(HttpServletRequest request, HttpServletResponse response)
+  public void pulseVersion(@SuppressWarnings("unused") HttpServletRequest request,
+      HttpServletResponse response)
       throws IOException {
 
     // json object to be sent as response
@@ -172,7 +163,7 @@ public class PulseController {
     ObjectNode responseJSON = mapper.createObjectNode();
 
     try {
-      alertType = Integer.valueOf(request.getParameter("alertType"));
+      alertType = Integer.parseInt(request.getParameter("alertType"));
     } catch (NumberFormatException e) {
       // Empty json response
       response.getOutputStream().write(responseJSON.toString().getBytes());
@@ -181,12 +172,12 @@ public class PulseController {
     }
 
     try {
-      boolean isClearAll = Boolean.valueOf(request.getParameter("clearAll"));
+      boolean isClearAll = Boolean.parseBoolean(request.getParameter("clearAll"));
       // get cluster object
       Cluster cluster = Repository.get().getCluster();
       cluster.clearAlerts(alertType, isClearAll);
       responseJSON.put("status", "deleted");
-      responseJSON.put("systemAlerts",
+      responseJSON.set("systemAlerts",
           SystemAlertsService.getAlertsJson(cluster, cluster.getNotificationPageNumber()));
       responseJSON.put("pageNumber", cluster.getNotificationPageNumber());
 
@@ -212,7 +203,7 @@ public class PulseController {
     ObjectNode responseJSON = mapper.createObjectNode();
 
     try {
-      alertId = Integer.valueOf(request.getParameter("alertId"));
+      alertId = Integer.parseInt(request.getParameter("alertId"));
     } catch (NumberFormatException e) {
       // Empty json response
       response.getOutputStream().write(responseJSON.toString().getBytes());
@@ -228,7 +219,7 @@ public class PulseController {
       cluster.acknowledgeAlert(alertId);
       responseJSON.put("status", "deleted");
     } catch (Exception e) {
-      logger.debug("Exception Occurred : {}", e);
+      logger.debug("Exception Occurred", e);
     }
 
     // Send json response
@@ -236,24 +227,24 @@ public class PulseController {
   }
 
   @RequestMapping(value = "/dataBrowserRegions", method = RequestMethod.GET)
-  public void dataBrowserRegions(HttpServletRequest request, HttpServletResponse response)
+  public void dataBrowserRegions(@SuppressWarnings("unused") HttpServletRequest request,
+      HttpServletResponse response)
       throws IOException {
     // get cluster object
     Cluster cluster = Repository.get().getCluster();
 
     // json object to be sent as response
     ObjectNode responseJSON = mapper.createObjectNode();
-    ArrayNode regionsData = mapper.createArrayNode();
 
     try {
       // getting cluster's Regions
       responseJSON.put("clusterName", cluster.getServerName());
-      regionsData = getRegionsJson(cluster);
-      responseJSON.put("clusterRegions", regionsData);
+      ArrayNode regionsData = getRegionsJson(cluster);
+      responseJSON.set("clusterRegions", regionsData);
       responseJSON.put("connectedFlag", cluster.isConnectedFlag());
       responseJSON.put("connectedErrorMsg", cluster.getConnectionErrorMsg());
     } catch (Exception e) {
-      logger.debug("Exception Occurred : {}", e);
+      logger.debug("Exception Occurred", e);
     }
 
     // Send json response
@@ -287,17 +278,17 @@ public class PulseController {
         List<String> regionsMembers = region.getMemberName();
         ArrayNode jsonRegionMembers = mapper.createArrayNode();
 
-        for (int i = 0; i < regionsMembers.size(); i++) {
-          Cluster.Member member = cluster.getMembersHMap().get(regionsMembers.get(i));
+        for (String regionsMember : regionsMembers) {
+          Cluster.Member member = cluster.getMembersHMap().get(regionsMember);
           ObjectNode jsonMember = mapper.createObjectNode();
-          jsonMember.put("key", regionsMembers.get(i));
+          jsonMember.put("key", regionsMember);
           jsonMember.put("id", member.getId());
           jsonMember.put("name", member.getName());
 
           jsonRegionMembers.add(jsonMember);
         }
 
-        regionJSON.put("members", jsonRegionMembers);
+        regionJSON.set("members", jsonRegionMembers);
         regionsListJson.add(regionJSON);
       }
     }
@@ -310,10 +301,10 @@ public class PulseController {
     // get query string
     String query = request.getParameter("query");
     String members = request.getParameter("members");
-    int limit = 0;
+    int limit;
 
     try {
-      limit = Integer.valueOf(request.getParameter("limit"));
+      limit = Integer.parseInt(request.getParameter("limit"));
     } catch (NumberFormatException e) {
       limit = 0;
       logger.debug(e);
@@ -328,8 +319,6 @@ public class PulseController {
   public void dataBrowserQueryHistory(HttpServletRequest request, HttpServletResponse response)
       throws IOException {
     ObjectNode responseJSON = mapper.createObjectNode();
-    ArrayNode queryResult = null;
-    String action = "";
 
     try {
       // get cluster object
@@ -337,7 +326,7 @@ public class PulseController {
       String userName = request.getUserPrincipal().getName();
 
       // get query string
-      action = request.getParameter(QUERYSTRING_PARAM_ACTION);
+      String action = request.getParameter(QUERYSTRING_PARAM_ACTION);
       if (StringUtils.isBlank(action)) {
         action = ACTION_VIEW;
       }
@@ -360,8 +349,8 @@ public class PulseController {
       }
 
       // Get list of past executed queries
-      queryResult = cluster.getQueryHistoryByUserId(userName);
-      responseJSON.put("queryHistory", queryResult);
+      ArrayNode queryResult = cluster.getQueryHistoryByUserId(userName);
+      responseJSON.set("queryHistory", queryResult);
     } catch (Exception e) {
       logger.debug("Exception Occurred : ", e);
     }
@@ -377,10 +366,10 @@ public class PulseController {
     // get query string
     String query = request.getParameter("query");
     String members = request.getParameter("members");
-    int limit = 0;
+    int limit;
 
     try {
-      limit = Integer.valueOf(request.getParameter("limit"));
+      limit = Integer.parseInt(request.getParameter("limit"));
     } catch (NumberFormatException e) {
       limit = 0;
       logger.debug(e);
@@ -394,8 +383,8 @@ public class PulseController {
   }
 
   @RequestMapping(value = "/getQueryStatisticsGridModel", method = RequestMethod.GET)
-  public void getQueryStatisticsGridModel(HttpServletRequest request, HttpServletResponse response)
-      throws IOException {
+  public void getQueryStatisticsGridModel(HttpServletRequest request,
+      HttpServletResponse response) {
 
     ObjectNode responseJSON = mapper.createObjectNode();
     // get cluster object
@@ -408,8 +397,8 @@ public class PulseController {
       int[] arrColWidths = Cluster.Statement.getGridColumnWidths();
 
       ArrayNode colNamesList = mapper.createArrayNode();
-      for (int i = 0; i < arrColNames.length; ++i) {
-        colNamesList.add(arrColNames[i]);
+      for (String arrColName : arrColNames) {
+        colNamesList.add(arrColName);
       }
 
       ArrayNode colModelList = mapper.createArrayNode();
@@ -423,8 +412,8 @@ public class PulseController {
         colModelList.add(columnJSON);
       }
 
-      responseJSON.put("columnNames", colNamesList);
-      responseJSON.put("columnModels", colModelList);
+      responseJSON.set("columnNames", colNamesList);
+      responseJSON.set("columnModels", colModelList);
       responseJSON.put("clusterName", cluster.getServerName());
       responseJSON.put("userName", userName);
 

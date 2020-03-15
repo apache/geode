@@ -45,41 +45,27 @@ import org.junit.Test;
 @Ignore
 public class ClusterSelectedRegionsMemberServiceTest extends BaseServiceTest {
 
-  /**
-   * @throws java.lang.Exception
-   *
-   */
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
     doLogin();
     System.out.println("\n\nClusterSelectedRegionsMemberServiceTest :: Setup done");
   }
 
-  /**
-   * @throws java.lang.Exception
-   *
-   */
   @AfterClass
   public static void tearDownAfterClass() throws Exception {
     doLogout();
     System.out.println("ClusterSelectedRegionsMemberServiceTest :: Teardown done");
   }
 
-  /**
-   * @throws java.lang.Exception
-   */
   @Override
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     System.out.println("running setup -- ClusterSelectedRegionsMemberServiceTest");
   }
 
-  /**
-   * @throws java.lang.Exception
-   */
   @Override
   @After
-  public void tearDown() throws Exception {
+  public void tearDown() {
     System.out.println("running teardown -- ClusterSelectedRegionsMemberServiceTest");
   }
 
@@ -95,8 +81,7 @@ public class ClusterSelectedRegionsMemberServiceTest extends BaseServiceTest {
       try {
         HttpUriRequest pulseupdate = RequestBuilder.post().setUri(new URI(PULSE_UPDATE_URL))
             .addParameter(PULSE_UPDATE_PARAM, PULSE_UPDATE_3_VALUE).build();
-        CloseableHttpResponse response = httpclient.execute(pulseupdate);
-        try {
+        try (CloseableHttpResponse response = httpclient.execute(pulseupdate)) {
           HttpEntity entity = response.getEntity();
 
           System.out.println("ClusterSelectedRegionsMemberServiceTest :: HTTP request status : "
@@ -106,7 +91,7 @@ public class ClusterSelectedRegionsMemberServiceTest extends BaseServiceTest {
               new BufferedReader(new InputStreamReader(entity.getContent()));
           StringWriter sw = new StringWriter();
           PrintWriter pw = new PrintWriter(sw);
-          String sz = null;
+          String sz;
           while ((sz = respReader.readLine()) != null) {
             pw.print(sz);
           }
@@ -119,8 +104,6 @@ public class ClusterSelectedRegionsMemberServiceTest extends BaseServiceTest {
           Assert.assertNotNull(
               "ClusterSelectedRegionsMemberServiceTest :: Server returned null response for ClusterSelectedRegionsMember",
               jsonObj.getJSONObject("ClusterSelectedRegionsMember"));
-        } finally {
-          response.close();
         }
       } catch (Exception failed) {
         logException(failed);
@@ -146,8 +129,7 @@ public class ClusterSelectedRegionsMemberServiceTest extends BaseServiceTest {
       try {
         HttpUriRequest pulseupdate = RequestBuilder.post().setUri(new URI(PULSE_UPDATE_URL))
             .addParameter(PULSE_UPDATE_PARAM, PULSE_UPDATE_3_VALUE).build();
-        CloseableHttpResponse response = httpclient.execute(pulseupdate);
-        try {
+        try (CloseableHttpResponse response = httpclient.execute(pulseupdate)) {
           HttpEntity entity = response.getEntity();
 
           System.out.println("ClusterSelectedRegionsMemberServiceTest :: HTTP request status : "
@@ -157,7 +139,7 @@ public class ClusterSelectedRegionsMemberServiceTest extends BaseServiceTest {
               new BufferedReader(new InputStreamReader(entity.getContent()));
           StringWriter sw = new StringWriter();
           PrintWriter pw = new PrintWriter(sw);
-          String sz = null;
+          String sz;
           while ((sz = respReader.readLine()) != null) {
             pw.print(sz);
           }
@@ -180,8 +162,6 @@ public class ClusterSelectedRegionsMemberServiceTest extends BaseServiceTest {
               "ClusterSelectedRegionsMemberServiceTest :: Server returned wrong user name. Expected was admin. Server returned = "
                   + szUser,
               szUser, "admin");
-        } finally {
-          response.close();
         }
       } catch (Exception failed) {
         logException(failed);
@@ -208,8 +188,7 @@ public class ClusterSelectedRegionsMemberServiceTest extends BaseServiceTest {
       try {
         HttpUriRequest pulseupdate = RequestBuilder.post().setUri(new URI(PULSE_UPDATE_URL))
             .addParameter(PULSE_UPDATE_PARAM, PULSE_UPDATE_3_VALUE).build();
-        CloseableHttpResponse response = httpclient.execute(pulseupdate);
-        try {
+        try (CloseableHttpResponse response = httpclient.execute(pulseupdate)) {
           HttpEntity entity = response.getEntity();
 
           System.out.println("ClusterSelectedRegionsMemberServiceTest :: HTTP request status : "
@@ -219,7 +198,7 @@ public class ClusterSelectedRegionsMemberServiceTest extends BaseServiceTest {
               new BufferedReader(new InputStreamReader(entity.getContent()));
           StringWriter sw = new StringWriter();
           PrintWriter pw = new PrintWriter(sw);
-          String sz = null;
+          String sz;
           while ((sz = respReader.readLine()) != null) {
             pw.print(sz);
           }
@@ -239,6 +218,7 @@ public class ClusterSelectedRegionsMemberServiceTest extends BaseServiceTest {
           Assert.assertNotNull(
               "ClusterSelectedRegionsMemberServiceTest :: Server returned null response for selectedRegionsMembers",
               jsonObjRegion);
+          @SuppressWarnings("unchecked")
           Iterator<String> itrMemberNames = jsonObjRegion.keys();
           Assert.assertNotNull(
               "ClusterSelectedRegionsMemberServiceTest :: Server returned null region on member info",
@@ -260,8 +240,6 @@ public class ClusterSelectedRegionsMemberServiceTest extends BaseServiceTest {
                 "ClusterSelectedRegionsMemberServiceTest :: Server returned wrong region path for region on member",
                 szPath, "/GlobalVilage_2/GlobalVilage_9");
           }
-        } finally {
-          response.close();
         }
       } catch (Exception failed) {
         logException(failed);
@@ -289,8 +267,7 @@ public class ClusterSelectedRegionsMemberServiceTest extends BaseServiceTest {
         System.out.println("Test for non-existent region : /Rubbish");
         HttpUriRequest pulseupdate = RequestBuilder.post().setUri(new URI(PULSE_UPDATE_URL))
             .addParameter(PULSE_UPDATE_PARAM, PULSE_UPDATE_4_VALUE).build();
-        CloseableHttpResponse response = httpclient.execute(pulseupdate);
-        try {
+        try (CloseableHttpResponse response = httpclient.execute(pulseupdate)) {
           HttpEntity entity = response.getEntity();
 
           System.out.println("ClusterSelectedRegionsMemberServiceTest :: HTTP request status : "
@@ -300,7 +277,7 @@ public class ClusterSelectedRegionsMemberServiceTest extends BaseServiceTest {
               new BufferedReader(new InputStreamReader(entity.getContent()));
           StringWriter sw = new StringWriter();
           PrintWriter pw = new PrintWriter(sw);
-          String sz = null;
+          String sz;
           while ((sz = respReader.readLine()) != null) {
             pw.print(sz);
           }
@@ -323,8 +300,6 @@ public class ClusterSelectedRegionsMemberServiceTest extends BaseServiceTest {
           Assert.assertTrue(
               "ClusterSelectedRegionsMemberServiceTest :: Server did not return error on non-existent region",
               jsonObjRegion.has("errorOnRegion"));
-        } finally {
-          response.close();
         }
       } catch (Exception failed) {
         logException(failed);
@@ -351,8 +326,7 @@ public class ClusterSelectedRegionsMemberServiceTest extends BaseServiceTest {
       try {
         HttpUriRequest pulseupdate = RequestBuilder.post().setUri(new URI(PULSE_UPDATE_URL))
             .addParameter(PULSE_UPDATE_PARAM, PULSE_UPDATE_3_VALUE).build();
-        CloseableHttpResponse response = httpclient.execute(pulseupdate);
-        try {
+        try (CloseableHttpResponse response = httpclient.execute(pulseupdate)) {
           HttpEntity entity = response.getEntity();
 
           System.out.println("ClusterSelectedRegionsMemberServiceTest :: HTTP request status : "
@@ -362,7 +336,7 @@ public class ClusterSelectedRegionsMemberServiceTest extends BaseServiceTest {
               new BufferedReader(new InputStreamReader(entity.getContent()));
           StringWriter sw = new StringWriter();
           PrintWriter pw = new PrintWriter(sw);
-          String sz = null;
+          String sz;
           while ((sz = respReader.readLine()) != null) {
             pw.print(sz);
           }
@@ -382,6 +356,7 @@ public class ClusterSelectedRegionsMemberServiceTest extends BaseServiceTest {
           Assert.assertNotNull(
               "ClusterSelectedRegionsMemberServiceTest :: Server returned null response for selectedRegionsMembers",
               jsonObjRegion);
+          @SuppressWarnings("unchecked")
           Iterator<String> itrMemberNames = jsonObjRegion.keys();
           Assert.assertNotNull(
               "ClusterSelectedRegionsMemberServiceTest :: Server returned null region on member info",
@@ -403,8 +378,6 @@ public class ClusterSelectedRegionsMemberServiceTest extends BaseServiceTest {
                 "ClusterSelectedRegionsMemberServiceTest :: Server returned non-boolean value for accessor attribute",
                 ((szAccessor.equalsIgnoreCase("True")) || (szAccessor.equalsIgnoreCase("False"))));
           }
-        } finally {
-          response.close();
         }
       } catch (Exception failed) {
         logException(failed);

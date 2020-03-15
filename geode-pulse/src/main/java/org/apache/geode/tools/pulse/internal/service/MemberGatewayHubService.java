@@ -70,7 +70,7 @@ public class MemberGatewayHubService implements PulseService {
       // get gateway receiver
       Cluster.GatewayReceiver gatewayReceiver = clusterMember.getGatewayReceiver();
 
-      Boolean isGateway = false;
+      boolean isGateway = false;
 
       if (gatewayReceiver != null) {
         responseJSON.put("isGatewayReceiver", true);
@@ -107,7 +107,7 @@ public class MemberGatewayHubService implements PulseService {
         gatewaySendersJsonList.add(gatewaySenderJSON);
       }
       // senders response
-      responseJSON.put("gatewaySenders", gatewaySendersJsonList);
+      responseJSON.set("gatewaySenders", gatewaySendersJsonList);
 
       // async event queues
       Cluster.AsyncEventQueue[] asyncEventQueues = clusterMember.getMemberAsyncEventQueueList();
@@ -127,12 +127,11 @@ public class MemberGatewayHubService implements PulseService {
 
         asyncEventQueueJsonList.add(asyncEventQueueJSON);
       }
-      responseJSON.put("asyncEventQueues", asyncEventQueueJsonList);
+      responseJSON.set("asyncEventQueues", asyncEventQueueJsonList);
 
       Map<String, Cluster.Region> clusterRegions = cluster.getClusterRegions();
 
-      List<Cluster.Region> clusterRegionsList = new ArrayList<Cluster.Region>();
-      clusterRegionsList.addAll(clusterRegions.values());
+      List<Cluster.Region> clusterRegionsList = new ArrayList<>(clusterRegions.values());
 
       ArrayNode regionsList = mapper.createArrayNode();
 
@@ -143,7 +142,7 @@ public class MemberGatewayHubService implements PulseService {
           regionsList.add(regionJSON);
         }
       }
-      responseJSON.put("regionsInvolved", regionsList);
+      responseJSON.set("regionsInvolved", regionsList);
     }
 
     // Send json response

@@ -34,7 +34,7 @@ import org.apache.geode.tools.pulse.internal.data.Repository;
 /**
  * Class MemberHeapUsageService
  *
- * This class contains implementations of getting Memeber's current Heap Usage and its trend over
+ * This class contains implementations of getting Member's current Heap Usage and its trend over
  * the time.
  *
  * @since GemFire version 7.5
@@ -63,7 +63,7 @@ public class MemberHeapUsageService implements PulseService {
 
     if (clusterMember != null) {
       // response
-      responseJSON.put("heapUsageTrend", mapper.valueToTree(
+      responseJSON.set("heapUsageTrend", mapper.valueToTree(
           clusterMember.getMemberStatisticTrend(Cluster.Member.MEMBER_STAT_HEAP_USAGE_SAMPLE)));
       responseJSON.put("currentHeapUsage", clusterMember.getCurrentHeapSize());
     }

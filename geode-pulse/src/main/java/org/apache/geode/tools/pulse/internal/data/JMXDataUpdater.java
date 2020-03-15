@@ -37,7 +37,6 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import javax.management.Attribute;
 import javax.management.AttributeList;
@@ -88,12 +87,11 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
   private ObjectName MBEAN_OBJECT_NAME_SYSTEM_DISTRIBUTED;
   private ObjectName MBEAN_OBJECT_NAME_REGION_DISTRIBUTED;
   private ObjectName MBEAN_OBJECT_NAME_MEMBER;
-  private ObjectName MBEAN_OBJECT_NAME_MEMBER_MANAGER;
   private ObjectName MBEAN_OBJECT_NAME_STATEMENT_DISTRIBUTED;
 
   private Set<ObjectName> systemMBeans = null;
 
-  private final String opSignature[] =
+  private final String[] opSignature =
       {String.class.getName(), String.class.getName(), int.class.getName()};
 
   private final ObjectMapper mapper = new ObjectMapper();
@@ -102,20 +100,18 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
    * constructor used for creating JMX connection
    */
   public JMXDataUpdater(String server, String port, Cluster cluster) {
-    this.serverName = server;
+    serverName = server;
     this.port = port;
     this.cluster = cluster;
 
     try {
       // Initialize MBean object names
-      this.MBEAN_OBJECT_NAME_SYSTEM_DISTRIBUTED =
+      MBEAN_OBJECT_NAME_SYSTEM_DISTRIBUTED =
           new ObjectName(PulseConstants.OBJECT_NAME_SYSTEM_DISTRIBUTED);
-      this.MBEAN_OBJECT_NAME_REGION_DISTRIBUTED =
+      MBEAN_OBJECT_NAME_REGION_DISTRIBUTED =
           new ObjectName(PulseConstants.OBJECT_NAME_REGION_DISTRIBUTED);
-      this.MBEAN_OBJECT_NAME_MEMBER_MANAGER =
-          new ObjectName(PulseConstants.OBJECT_NAME_MEMBER_MANAGER);
-      this.MBEAN_OBJECT_NAME_MEMBER = new ObjectName(PulseConstants.OBJECT_NAME_MEMBER);
-      this.MBEAN_OBJECT_NAME_STATEMENT_DISTRIBUTED =
+      MBEAN_OBJECT_NAME_MEMBER = new ObjectName(PulseConstants.OBJECT_NAME_MEMBER);
+      MBEAN_OBJECT_NAME_STATEMENT_DISTRIBUTED =
           new ObjectName(PulseConstants.OBJECT_NAME_STATEMENT_DISTRIBUTED);
 
     } catch (MalformedObjectNameException | NullPointerException e) {
@@ -200,15 +196,15 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
               formJMXServiceURLString(jmxManagerInfo.host, String.valueOf(jmxManagerInfo.port));
         }
       } else {
-        logger.info("{}={} & {}={}", resourceBundle.getString("LOG_MSG_HOST"), this.serverName,
-            resourceBundle.getString("LOG_MSG_PORT"), this.port);
-        jmxSerURL = formJMXServiceURLString(this.serverName, this.port);
+        logger.info("{}={} & {}={}", resourceBundle.getString("LOG_MSG_HOST"), serverName,
+            resourceBundle.getString("LOG_MSG_PORT"), port);
+        jmxSerURL = formJMXServiceURLString(serverName, port);
       }
 
       if (StringUtils.isNotBlank(jmxSerURL)) {
         JMXServiceURL url = new JMXServiceURL(jmxSerURL);
         String[] creds = {username, password};
-        Map<String, Object> env = new HashMap<String, Object>();
+        Map<String, Object> env = new HashMap<>();
         env.put(JMXConnector.CREDENTIALS, creds);
 
         Properties originalProperties = System.getProperties();
@@ -224,8 +220,8 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
             env.put("com.sun.jndi.rmi.factory.socket", new SslRMIClientSocketFactory());
           }
           logger.info("Connecting to jmxURL : {}", jmxSerURL);
-          this.conn = JMXConnectorFactory.connect(url, env);
-          this.mbs = this.conn.getMBeanServerConnection();
+          conn = JMXConnectorFactory.connect(url, env);
+          mbs = conn.getMBeanServerConnection();
           cluster.setConnectedFlag(true);
         } finally {
           System.setProperties(originalProperties);
@@ -235,16 +231,16 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
       cluster.setConnectedFlag(false);
       cluster.setConnectionErrorMsg(e.getMessage());
       logger.fatal(e.getMessage(), e);
-      if (this.conn != null) {
+      if (conn != null) {
         try {
-          this.conn.close();
+          conn.close();
         } catch (Exception e1) {
           logger.fatal(e1.getMessage(), e1);
         }
-        this.conn = null;
+        conn = null;
       }
     }
-    return this.conn;
+    return conn;
   }
 
   private String formJMXServiceURLString(String host, String port) throws UnknownHostException {
@@ -277,7 +273,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
   @Override
   public boolean updateData() {
     try {
-      if (this.conn == null) {
+      if (conn == null) {
         return false;
       }
 
@@ -293,14 +289,14 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
         cluster.getDeletedRegions().add(region.getFullPath());
       }
 
-      this.systemMBeans = this.mbs.queryNames(this.MBEAN_OBJECT_NAME_SYSTEM_DISTRIBUTED, null);
-      for (ObjectName sysMBean : this.systemMBeans) {
+      systemMBeans = mbs.queryNames(MBEAN_OBJECT_NAME_SYSTEM_DISTRIBUTED, null);
+      for (ObjectName sysMBean : systemMBeans) {
         updateClusterSystem(sysMBean);
       }
 
       // Cluster Regions/Tables
       Set<ObjectName> regionMBeans =
-          this.mbs.queryNames(this.MBEAN_OBJECT_NAME_REGION_DISTRIBUTED, null);
+          mbs.queryNames(MBEAN_OBJECT_NAME_REGION_DISTRIBUTED, null);
 
       // For Gemfire
       for (ObjectName regMBean : regionMBeans) {
@@ -308,14 +304,14 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
       }
 
       // Remove deleted regions from cluster's regions list
-      for (Iterator<String> it = cluster.getDeletedRegions().iterator(); it.hasNext();) {
-        cluster.removeClusterRegion(it.next());
+      for (String s : cluster.getDeletedRegions()) {
+        cluster.removeClusterRegion(s);
       }
 
       List<ObjectName> serviceMBeans = new ArrayList<>();
       List<ObjectName> nonServiceMBeans = new ArrayList<>();
 
-      Set<ObjectName> memberMBeans = this.mbs.queryNames(this.MBEAN_OBJECT_NAME_MEMBER, null);
+      Set<ObjectName> memberMBeans = mbs.queryNames(MBEAN_OBJECT_NAME_MEMBER, null);
       for (ObjectName mBean : memberMBeans) {
         String service = mBean.getKeyProperty(PulseConstants.MBEAN_KEY_PROPERTY_SERVICE);
         if (service == null) {
@@ -359,20 +355,20 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
 
       // Cluster Query Statistics
       Set<ObjectName> statementObjectNames =
-          this.mbs.queryNames(this.MBEAN_OBJECT_NAME_STATEMENT_DISTRIBUTED, null);
+          mbs.queryNames(MBEAN_OBJECT_NAME_STATEMENT_DISTRIBUTED, null);
       for (ObjectName stmtObjectName : statementObjectNames) {
         updateClusterStatement(stmtObjectName);
       }
     } catch (IOException ioe) {
       logger.fatal(ioe.getMessage(), ioe);
-      this.mbs = null;
-      if (this.conn != null) {
+      mbs = null;
+      if (conn != null) {
         try {
-          this.conn.close();
+          conn.close();
         } catch (IOException e1) {
           logger.fatal(e1.getMessage(), e1);
         }
-        this.conn = null;
+        conn = null;
         cluster.setConnectedFlag(false);
         cluster.setConnectionErrorMsg(ioe.getMessage());
       }
@@ -382,9 +378,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
 
     // If there were members deleted, remove them from the membersList &
     // physicalToMember.
-    Iterator<String> iterator = cluster.getDeletedMembers().iterator();
-    while (iterator.hasNext()) {
-      String memberKey = iterator.next();
+    for (String memberKey : cluster.getDeletedMembers()) {
       if (cluster.getMembersHMap().containsKey(memberKey)) {
         Cluster.Member member = cluster.getMembersHMap().get(memberKey);
         List<Cluster.Member> memberArrList = cluster.getPhysicalToMember().get(member.getHost());
@@ -413,18 +407,19 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
    */
   private void updateClusterSystem(ObjectName mbeanName) throws IOException {
     try {
-      if (!this.isAddedNotiListner) {
-        this.mbs.addNotificationListener(mbeanName, this, null, new Object());
-        this.isAddedNotiListner = true;
+      if (!isAddedNotiListner) {
+        mbs.addNotificationListener(mbeanName, this, null, new Object());
+        isAddedNotiListner = true;
       }
 
-      String[] serverCnt = (String[]) (this.mbs.invoke(mbeanName,
+      String[] serverCnt = (String[]) (mbs.invoke(mbeanName,
           PulseConstants.MBEAN_OPERATION_LISTSERVERS, null, null));
       cluster.setServerCount(serverCnt.length);
 
-      TabularData table = (TabularData) (this.mbs.invoke(mbeanName,
+      TabularData table = (TabularData) (mbs.invoke(mbeanName,
           PulseConstants.MBEAN_OPERATION_VIEWREMOTECLUSTERSTATUS, null, null));
 
+      @SuppressWarnings("unchecked")
       Collection<CompositeData> rows = (Collection<CompositeData>) table.values();
       cluster.getWanInformationObject().clear();
       for (CompositeData row : rows) {
@@ -434,11 +429,11 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
       }
 
       AttributeList attributeList =
-          this.mbs.getAttributes(mbeanName, PulseConstants.CLUSTER_MBEAN_ATTRIBUTES);
+          mbs.getAttributes(mbeanName, PulseConstants.CLUSTER_MBEAN_ATTRIBUTES);
 
-      for (int i = 0; i < attributeList.size(); i++) {
+      for (Object o : attributeList) {
 
-        Attribute attribute = (Attribute) attributeList.get(i);
+        Attribute attribute = (Attribute) o;
         String name = attribute.getName();
         switch (name) {
           case PulseConstants.MBEAN_ATTRIBUTE_MEMBERCOUNT:
@@ -486,7 +481,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
             try {
               cluster.setUsedHeapSize(getLongAttribute(attribute.getValue(), attribute.getName()));
             } catch (Exception e) {
-              cluster.setUsedHeapSize((long) 0);
+              cluster.setUsedHeapSize(0);
               continue;
             }
             cluster.getMemoryUsageTrend().add(cluster.getUsedHeapSize());
@@ -504,7 +499,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
               cluster
                   .setTotalBytesOnDisk(getLongAttribute(attribute.getValue(), attribute.getName()));
             } catch (Exception e) {
-              cluster.setTotalBytesOnDisk((long) 0);
+              cluster.setTotalBytesOnDisk(0);
               continue;
             }
             cluster.getTotalBytesOnDiskTrend().add(cluster.getTotalBytesOnDisk());
@@ -565,29 +560,33 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
    * @return GatewayReceiver object
    */
   private Cluster.GatewayReceiver initGatewayReceiver(ObjectName mbeanName)
-      throws InstanceNotFoundException, IntrospectionException, ReflectionException, IOException,
-      AttributeNotFoundException, MBeanException {
+      throws InstanceNotFoundException, ReflectionException, IOException {
 
     Cluster.GatewayReceiver gatewayReceiver = new Cluster.GatewayReceiver();
 
     AttributeList attributeList =
-        this.mbs.getAttributes(mbeanName, PulseConstants.GATEWAY_MBEAN_ATTRIBUTES);
+        mbs.getAttributes(mbeanName, PulseConstants.GATEWAY_MBEAN_ATTRIBUTES);
 
-    for (int i = 0; i < attributeList.size(); i++) {
-      Attribute attribute = (Attribute) attributeList.get(i);
+    for (Object o : attributeList) {
+      Attribute attribute = (Attribute) o;
 
-      if (attribute.getName().equals(PulseConstants.MBEAN_ATTRIBUTE_PORT)) {
-        gatewayReceiver
-            .setListeningPort(getIntegerAttribute(attribute.getValue(), attribute.getName()));
-      } else if (attribute.getName().equals(PulseConstants.MBEAN_ATTRIBUTE_EVENTRECEIVEDDATE)) {
-        gatewayReceiver
-            .setLinkThroughput(getDoubleAttribute(attribute.getValue(), attribute.getName()));
-      } else if (attribute.getName()
-          .equals(PulseConstants.MBEAN_ATTRIBUTE_AVEARGEBATCHPROCESSINGTIME)) {
-        gatewayReceiver
-            .setAvgBatchProcessingTime(getLongAttribute(attribute.getValue(), attribute.getName()));
-      } else if (attribute.getName().equals(PulseConstants.MBEAN_ATTRIBUTE_RUNNING)) {
-        gatewayReceiver.setStatus(getBooleanAttribute(attribute.getValue(), attribute.getName()));
+      switch (attribute.getName()) {
+        case PulseConstants.MBEAN_ATTRIBUTE_PORT:
+          gatewayReceiver
+              .setListeningPort(getIntegerAttribute(attribute.getValue(), attribute.getName()));
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_EVENTRECEIVEDDATE:
+          gatewayReceiver
+              .setLinkThroughput(getDoubleAttribute(attribute.getValue(), attribute.getName()));
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_AVEARGEBATCHPROCESSINGTIME:
+          gatewayReceiver
+              .setAvgBatchProcessingTime(
+                  getLongAttribute(attribute.getValue(), attribute.getName()));
+          break;
+        case PulseConstants.MBEAN_ATTRIBUTE_RUNNING:
+          gatewayReceiver.setStatus(getBooleanAttribute(attribute.getValue(), attribute.getName()));
+          break;
       }
     }
     return gatewayReceiver;
@@ -598,15 +597,14 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
    * class object
    */
   private Cluster.GatewaySender initGatewaySender(ObjectName mbeanName)
-      throws InstanceNotFoundException, IntrospectionException, ReflectionException, IOException,
-      AttributeNotFoundException, MBeanException {
+      throws InstanceNotFoundException, ReflectionException, IOException {
 
     Cluster.GatewaySender gatewaySender = new Cluster.GatewaySender();
     AttributeList attributeList =
-        this.mbs.getAttributes(mbeanName, PulseConstants.GATEWAYSENDER_MBEAN_ATTRIBUTES);
+        mbs.getAttributes(mbeanName, PulseConstants.GATEWAYSENDER_MBEAN_ATTRIBUTES);
 
-    for (int i = 0; i < attributeList.size(); i++) {
-      Attribute attribute = (Attribute) attributeList.get(i);
+    for (Object o : attributeList) {
+      Attribute attribute = (Attribute) o;
       String name = attribute.getName();
       switch (name) {
         case PulseConstants.MBEAN_ATTRIBUTE_EVENTRECEIVEDDATE:
@@ -683,8 +681,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
         member.getGatewaySenderList().add(gatewaySender);
         cluster.getMembersHMap().put(memberName, member);
       }
-    } catch (InstanceNotFoundException | ReflectionException | AttributeNotFoundException
-        | IntrospectionException | MBeanException infe) {
+    } catch (InstanceNotFoundException | ReflectionException infe) {
       logger.warn(infe);
     }
   }
@@ -694,15 +691,14 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
    * inner class object
    */
   private Cluster.AsyncEventQueue initAsyncEventQueue(ObjectName mbeanName)
-      throws InstanceNotFoundException, IntrospectionException, ReflectionException, IOException,
-      AttributeNotFoundException, MBeanException {
+      throws InstanceNotFoundException, ReflectionException, IOException {
 
     Cluster.AsyncEventQueue asyncEventQueue = new Cluster.AsyncEventQueue();
     AttributeList attributeList =
-        this.mbs.getAttributes(mbeanName, PulseConstants.ASYNC_EVENT_QUEUE_MBEAN_ATTRIBUTES);
+        mbs.getAttributes(mbeanName, PulseConstants.ASYNC_EVENT_QUEUE_MBEAN_ATTRIBUTES);
 
-    for (int i = 0; i < attributeList.size(); i++) {
-      Attribute attribute = (Attribute) attributeList.get(i);
+    for (Object o : attributeList) {
+      Attribute attribute = (Attribute) o;
       String name = attribute.getName();
       switch (name) {
         case PulseConstants.MBEAN_ATTRIBUTE_AEQ_ASYNCEVENTID:
@@ -773,8 +769,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
 
         cluster.getMembersHMap().put(memberName, member);
       }
-    } catch (InstanceNotFoundException | ReflectionException | AttributeNotFoundException
-        | IntrospectionException | MBeanException infe) {
+    } catch (InstanceNotFoundException | ReflectionException infe) {
       logger.warn(infe);
     }
   }
@@ -800,8 +795,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
         member.setGatewayReceiver(gatewayReceiver);
         cluster.getMembersHMap().put(memberName, member);
       }
-    } catch (InstanceNotFoundException | ReflectionException | MBeanException
-        | AttributeNotFoundException | IntrospectionException infe) {
+    } catch (InstanceNotFoundException | ReflectionException infe) {
       logger.warn(infe);
     }
   }
@@ -817,18 +811,18 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
 
       if (cluster.getMembersHMap().containsKey(memberName)) {
         Cluster.Member existingMember = cluster.getMembersHMap().get(memberName);
-        HashMap<String, Cluster.Client> memberClientsHM = new HashMap<String, Cluster.Client>();
+        HashMap<String, Cluster.Client> memberClientsHM = new HashMap<>();
 
         existingMember.setMemberPort(
-            "" + this.mbs.getAttribute(mbeanName, PulseConstants.MBEAN_ATTRIBUTE_PORT));
+            "" + mbs.getAttribute(mbeanName, PulseConstants.MBEAN_ATTRIBUTE_PORT));
 
-        this.mbs.getAttribute(mbeanName, PulseConstants.MBEAN_ATTRIBUTE_HOSTNAMEFORCLIENTS_ALT);
-        existingMember.setHostnameForClients((String) this.mbs.getAttribute(mbeanName,
+        mbs.getAttribute(mbeanName, PulseConstants.MBEAN_ATTRIBUTE_HOSTNAMEFORCLIENTS_ALT);
+        existingMember.setHostnameForClients((String) mbs.getAttribute(mbeanName,
             PulseConstants.MBEAN_ATTRIBUTE_HOSTNAMEFORCLIENTS_ALT));
         existingMember.setBindAddress(
-            (String) this.mbs.getAttribute(mbeanName, PulseConstants.MBEAN_ATTRIBUTE_BINDADDRESS));
+            (String) mbs.getAttribute(mbeanName, PulseConstants.MBEAN_ATTRIBUTE_BINDADDRESS));
 
-        CompositeData[] compositeData = (CompositeData[]) (this.mbs.invoke(mbeanName,
+        CompositeData[] compositeData = (CompositeData[]) (mbs.invoke(mbeanName,
             PulseConstants.MBEAN_OPERATION_SHOWALLCLIENTS, null, null));
         for (CompositeData cmd : compositeData) {
           Cluster.Client client = new Cluster.Client();
@@ -898,15 +892,15 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
 
     try {
       List<String> memberNamesTemp = region.getMemberName();
-      ArrayList<String> memberNames = new ArrayList<String>(memberNamesTemp);
+      ArrayList<String> memberNames = new ArrayList<>(memberNamesTemp);
 
-      List<Cluster.RegionOnMember> regionOnMemberList = new ArrayList<Cluster.RegionOnMember>();
-      List<Cluster.RegionOnMember> regionOnMemberListNew = new ArrayList<Cluster.RegionOnMember>();
+      List<Cluster.RegionOnMember> regionOnMemberList = new ArrayList<>();
+      List<Cluster.RegionOnMember> regionOnMemberListNew = new ArrayList<>();
       Cluster.RegionOnMember[] regionOnMemberNames = region.getRegionOnMembers();
 
       if ((regionOnMemberNames != null) && (regionOnMemberNames.length > 0)) {
         regionOnMemberList =
-            new ArrayList<Cluster.RegionOnMember>(Arrays.asList(regionOnMemberNames));
+            new ArrayList<>(Arrays.asList(regionOnMemberNames));
       }
       logger.debug("updateRegionOnMembers : # regionOnMembers objects in region = {}",
           regionOnMemberList.size());
@@ -926,10 +920,10 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
             logger.debug("updateRegionOnMembers : Object name = {}",
                 regionOnMemberMBean.getCanonicalName());
 
-            AttributeList attributeList = this.mbs.getAttributes(regionOnMemberMBean,
+            AttributeList attributeList = mbs.getAttributes(regionOnMemberMBean,
                 PulseConstants.REGION_ON_MEMBER_MBEAN_ATTRIBUTES);
-            for (int i = 0; i < attributeList.size(); i++) {
-              Attribute attribute = (Attribute) attributeList.get(i);
+            for (Object o : attributeList) {
+              Attribute attribute = (Attribute) o;
               String name = attribute.getName();
               switch (name) {
                 case PulseConstants.MBEAN_ATTRIBUTE_ENTRYSIZE:
@@ -1002,10 +996,10 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
         Cluster.RegionOnMember regionOnMember = new Cluster.RegionOnMember();
         regionOnMember.setMemberName(memberName);
         regionOnMember.setRegionFullPath(regionFullPath);
-        AttributeList attributeList = this.mbs.getAttributes(regionOnMemberMBean,
+        AttributeList attributeList = mbs.getAttributes(regionOnMemberMBean,
             PulseConstants.REGION_ON_MEMBER_MBEAN_ATTRIBUTES);
-        for (int i = 0; i < attributeList.size(); i++) {
-          Attribute attribute = (Attribute) attributeList.get(i);
+        for (Object o : attributeList) {
+          Attribute attribute = (Attribute) o;
           String name = attribute.getName();
           switch (name) {
             case PulseConstants.MBEAN_ATTRIBUTE_ENTRYSIZE:
@@ -1053,7 +1047,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
 
       // set region on member
       region.setRegionOnMembers(regionOnMemberListNew);
-      logger.debug("updateRegionOnMembers : Total regions on member in region after update = {}",
+      logger.debug("updateRegionOnMembers : Total regions on member in region {} after update = {}",
           region.getFullPath(), region.getRegionOnMembers().length);
     } catch (MalformedObjectNameException | InstanceNotFoundException | ReflectionException e) {
       logger.warn(e);
@@ -1070,13 +1064,13 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
     try {
 
       AttributeList attributeList =
-          this.mbs.getAttributes(mbeanName, PulseConstants.REGION_MBEAN_ATTRIBUTES);
+          mbs.getAttributes(mbeanName, PulseConstants.REGION_MBEAN_ATTRIBUTES);
 
       // retrieve the full path of the region
       String regionObjectName = mbeanName.getKeyProperty("name");
       String regionFullPath = null;
-      for (int i = 0; i < attributeList.size(); i++) {
-        Attribute attribute = (Attribute) attributeList.get(i);
+      for (Object value : attributeList) {
+        Attribute attribute = (Attribute) value;
 
         if (attribute.getName().equals(PulseConstants.MBEAN_ATTRIBUTE_FULLPATH)) {
           regionFullPath = getStringAttribute(attribute.getValue(), attribute.getName());
@@ -1090,17 +1084,17 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
         region = new Cluster.Region();
       }
 
-      for (int i = 0; i < attributeList.size(); i++) {
+      for (Object o : attributeList) {
 
-        Attribute attribute = (Attribute) attributeList.get(i);
+        Attribute attribute = (Attribute) o;
 
         String name = attribute.getName();
         switch (name) {
           case PulseConstants.MBEAN_ATTRIBUTE_MEMBERS:
-            String memName[] = (String[]) attribute.getValue();
+            String[] memName = (String[]) attribute.getValue();
             region.getMemberName().clear();
-            for (int k = 0; k < memName.length; k++) {
-              region.getMemberName().add(memName[k]);
+            for (String s : memName) {
+              region.getMemberName().add(s);
             }
             break;
           case PulseConstants.MBEAN_ATTRIBUTE_FULLPATH:
@@ -1173,11 +1167,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
 
   private static boolean isQuoted(String value) {
     final int len = value.length();
-    if (len < 2 || value.charAt(0) != '"' || value.charAt(len - 1) != '"') {
-      return false;
-    } else {
-      return true;
-    }
+    return len >= 2 && value.charAt(0) == '"' && value.charAt(len - 1) == '"';
   }
 
   private void updateClusterStatement(ObjectName mbeanName) throws IOException {
@@ -1185,7 +1175,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
     try {
 
       AttributeList attributeList =
-          this.mbs.getAttributes(mbeanName, PulseConstants.STATEMENT_MBEAN_ATTRIBUTES);
+          mbs.getAttributes(mbeanName, PulseConstants.STATEMENT_MBEAN_ATTRIBUTES);
       // retrieve the full path of the region
       String statementDefinition = mbeanName.getKeyProperty("name");
 
@@ -1200,8 +1190,8 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
         statement.setQueryDefinition(statementDefinition);
       }
 
-      for (int i = 0; i < attributeList.size(); i++) {
-        Attribute attribute = (Attribute) attributeList.get(i);
+      for (Object o : attributeList) {
+        Attribute attribute = (Attribute) o;
         String name = attribute.getName();
         switch (name) {
           case PulseConstants.MBEAN_ATTRIBUTE_NUMTIMESCOMPILED:
@@ -1291,16 +1281,16 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
   private Cluster.Member initializeMember(ObjectName mbeanName, Cluster.Member member)
       throws InstanceNotFoundException, ReflectionException, IOException, IntrospectionException {
 
-    MBeanAttributeInfo[] mbeanAttributes = this.mbs.getMBeanInfo(mbeanName).getAttributes();
-    Set<String> mbeanAttributeNames =
-        Arrays.stream(mbeanAttributes).map(MBeanAttributeInfo::getName).collect(Collectors.toSet());
+    MBeanAttributeInfo[] mbeanAttributes = mbs.getMBeanInfo(mbeanName).getAttributes();
 
     AttributeList attributeList =
-        this.mbs.getAttributes(mbeanName, mbeanAttributeNames.toArray(new String[0]));
+        mbs.getAttributes(mbeanName,
+            Arrays.stream(mbeanAttributes).map(MBeanAttributeInfo::getName).distinct()
+                .toArray(String[]::new));
 
-    for (int i = 0; i < attributeList.size(); i++) {
+    for (Object o : attributeList) {
 
-      Attribute attribute = (Attribute) attributeList.get(i);
+      Attribute attribute = (Attribute) o;
       String name = attribute.getName();
 
       switch (name) {
@@ -1407,10 +1397,10 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
           member.setOffHeapUsedSize(getLongAttribute(attribute.getValue(), attribute.getName()));
           break;
         case PulseConstants.MBEAN_ATTRIBUTE_SERVERGROUPS:
-          String sgValues[] = (String[]) attribute.getValue();
+          String[] sgValues = (String[]) attribute.getValue();
           member.getServerGroups().clear();
-          for (int k = 0; k < sgValues.length; k++) {
-            member.getServerGroups().add(sgValues[k]);
+          for (String sgValue : sgValues) {
+            member.getServerGroups().add(sgValue);
           }
           break;
         case PulseConstants.MBEAN_ATTRIBUTE_REDUNDANCYZONES:
@@ -1458,7 +1448,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
           memberArrList.add(clusterMember);
         }
       } else {
-        ArrayList<Cluster.Member> memberList = new ArrayList<Cluster.Member>();
+        ArrayList<Cluster.Member> memberList = new ArrayList<>();
         memberList.add(clusterMember);
         cluster.getPhysicalToMember().put(clusterMember.getHost(), memberList);
       }
@@ -1468,36 +1458,12 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
   }
 
   /**
-   * function used to handle Float data type if the value for mbean for an attribute is null then
-   * return 0.0 as default value else return the attribute value
-   */
-  private Float getFloatAttribute(Object object, String name) {
-    if (object == null) {
-      return Float.valueOf(0.0f);
-    }
-
-    try {
-      if (!(object.getClass().equals(Float.class))) {
-        logger.info(
-            "************************Unexpected type for attribute: {}; Expected type: {}; Received type: {}************************",
-            name, Float.class.getName(), object.getClass().getName());
-        return Float.valueOf(0.0f);
-      } else {
-        return (Float) object;
-      }
-    } catch (Exception e) {
-      logger.info("Exception occurred: ", e);
-      return Float.valueOf(0.0f);
-    }
-  }
-
-  /**
    * function used to handle Integer data type if the value for mbean for an attribute is null then
    * return 0 as default value else return the attribute value
    */
   private Integer getIntegerAttribute(Object object, String name) {
     if (object == null) {
-      return Integer.valueOf(0);
+      return 0;
     }
 
     try {
@@ -1505,13 +1471,13 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
         logger.info(
             "************************Unexpected type for attribute: {}; Expected type: {}; Received type: {}************************",
             name, Integer.class.getName(), object.getClass().getName());
-        return Integer.valueOf(0);
+        return 0;
       } else {
         return (Integer) object;
       }
     } catch (Exception e) {
       logger.info("Exception occurred: ", e);
-      return Integer.valueOf(0);
+      return 0;
     }
   }
 
@@ -1521,7 +1487,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
    */
   private Long getLongAttribute(Object object, String name) {
     if (object == null) {
-      return Long.valueOf(0);
+      return 0L;
     }
 
     try {
@@ -1529,13 +1495,13 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
         logger.info(
             "************************Unexpected type for attribute: {}; Expected type: {}; Received type: {}************************",
             name, Long.class.getName(), object.getClass().getName());
-        return Long.valueOf(0);
+        return 0L;
       } else {
         return (Long) object;
       }
     } catch (Exception e) {
       logger.info("Exception occurred: ", e);
-      return Long.valueOf(0);
+      return 0L;
     }
 
   }
@@ -1594,7 +1560,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
    */
   Double getDoubleAttribute(Object object, String name) {
     if (object == null) {
-      return Double.valueOf(0);
+      return (double) 0;
     }
 
     try {
@@ -1606,11 +1572,11 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
         logger.info(
             "************************Unexpected type for attribute: {}; Expected type: {}; Received type: {}************************",
             name, Double.class.getName(), object.getClass().getName());
-        return Double.valueOf(0);
+        return (double) 0;
       }
     } catch (Exception e) {
       logger.info("Exception occurred: ", e);
-      return Double.valueOf(0);
+      return (double) 0;
     }
   }
 
@@ -1632,12 +1598,12 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
       // "SystemRegionEntryCount"
       // "MemberCount"
       AttributeList attributeList =
-          this.mbs.getAttributes(mbeanName, PulseConstants.REGION_MBEAN_ATTRIBUTES);
+          mbs.getAttributes(mbeanName, PulseConstants.REGION_MBEAN_ATTRIBUTES);
 
       // retrieve the full path of the region
       String regionFullPathKey = null;
-      for (int i = 0; i < attributeList.size(); i++) {
-        Attribute attribute = (Attribute) attributeList.get(i);
+      for (Object value : attributeList) {
+        Attribute attribute = (Attribute) value;
 
         if (attribute.getName().equals(PulseConstants.MBEAN_ATTRIBUTE_FULLPATH)) {
           regionFullPathKey = getStringAttribute(attribute.getValue(), attribute.getName());
@@ -1662,8 +1628,8 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
       region.setFullPath(regionFullPathKey); // use already retrieved values
 
       // update the existing or new region
-      for (int i = 0; i < attributeList.size(); i++) {
-        Attribute attribute = (Attribute) attributeList.get(i);
+      for (Object o : attributeList) {
+        Attribute attribute = (Attribute) o;
         String name = attribute.getName();
         switch (name) {
           case PulseConstants.MBEAN_ATTRIBUTE_FULLPATH:
@@ -1791,8 +1757,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
         // Remove deleted region from member's regions list
         String msg = notification.getMessage();
         String deletedRegion = msg.substring(msg.indexOf("Name ") + "Name ".length());
-        String memberName = notificationSource;
-        Cluster.Member member = cluster.getMembersHMap().get(memberName);
+        Cluster.Member member = cluster.getMembersHMap().get(notificationSource);
 
         if (member.getMemberRegions().get(deletedRegion) != null) {
           member.getMemberRegions().remove(deletedRegion);
@@ -1807,12 +1772,12 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
 
     ObjectNode queryResult = mapper.createObjectNode();
 
-    if (this.mbs != null && this.systemMBeans != null) {
-      Object opParams[] = {queryText, members, limit};
-      for (ObjectName sysMBean : this.systemMBeans) {
+    if (mbs != null && systemMBeans != null) {
+      Object[] opParams = {queryText, members, limit};
+      for (ObjectName sysMBean : systemMBeans) {
         try {
-          String resultString = (String) (this.mbs.invoke(sysMBean,
-              PulseConstants.MBEAN_OPERATION_QUERYDATABROWSER, opParams, this.opSignature));
+          String resultString = (String) (mbs.invoke(sysMBean,
+              PulseConstants.MBEAN_OPERATION_QUERYDATABROWSER, opParams, opSignature));
 
           // Convert result into JSON
           queryResult = (ObjectNode) mapper.readTree(resultString);
@@ -1863,9 +1828,8 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
   private String obtainGemfireVersion(String version) {
 
     final String versionText = "Java version:   ";
-    String gemfireVersion = "";
     int startIndex = version.indexOf(versionText) + versionText.length();
-    gemfireVersion = version.substring(startIndex);
+    String gemfireVersion = version.substring(startIndex);
     gemfireVersion = gemfireVersion.substring(0, gemfireVersion.indexOf(" "));
 
     return gemfireVersion;

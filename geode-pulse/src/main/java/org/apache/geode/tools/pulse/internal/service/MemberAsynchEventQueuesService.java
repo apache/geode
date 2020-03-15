@@ -84,7 +84,7 @@ public class MemberAsynchEventQueuesService implements PulseService {
 
           asyncEventQueueJsonList.add(asyncEventQueueJSON);
         }
-        responseJSON.put("asyncEventQueues", asyncEventQueueJsonList);
+        responseJSON.set("asyncEventQueues", asyncEventQueueJsonList);
       } else {
         responseJSON.put("isAsyncEventQueuesPresent", false);
       }
