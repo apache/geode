@@ -18,18 +18,24 @@ import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_C
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_ENABLED;
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_PROTOCOLS;
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_REQUIRE_AUTHENTICATION;
+import static org.apache.geode.util.internal.GeodeGlossary.GEMFIRE_PREFIX;
 
+import java.net.InetSocketAddress;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.security.KeyStore;
 import java.util.Iterator;
 import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.security.CallbackInstantiator;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.SSLUtil;
 import org.apache.geode.net.SSLParameterExtension;
 
@@ -41,6 +47,8 @@ import org.apache.geode.net.SSLParameterExtension;
  */
 @Immutable
 public class SSLConfig {
+
+  private static final Logger logger = LogService.getLogger();
 
   private final boolean endpointIdentification;
   private final boolean useDefaultSSLContext;
@@ -68,6 +76,8 @@ public class SSLConfig {
   @Immutable
   private final SSLParameterExtension sslParameterExtension;
 
+  private final InetSocketAddress sniProxyAddress;
+
   private SSLConfig(boolean endpointIdentification,
       boolean useDefaultSSLContext,
       boolean enabled,
@@ -83,7 +93,8 @@ public class SSLConfig {
       String alias,
       SecurableCommunicationChannel securableCommunicationChannel,
       Properties properties,
-      SSLParameterExtension sslParameterExtension) {
+      SSLParameterExtension sslParameterExtension,
+      final InetSocketAddress sniProxyAddress) {
     this.endpointIdentification = endpointIdentification;
     this.useDefaultSSLContext = useDefaultSSLContext;
     this.enabled = enabled;
@@ -100,6 +111,7 @@ public class SSLConfig {
     this.securableCommunicationChannel = securableCommunicationChannel;
     this.properties = properties;
     this.sslParameterExtension = sslParameterExtension;
+    this.sniProxyAddress = sniProxyAddress;
   }
 
   public String getAlias() {
@@ -174,6 +186,10 @@ public class SSLConfig {
     return sslParameterExtension;
   }
 
+  public InetSocketAddress getSniProxyAddress() {
+    return sniProxyAddress;
+  }
+
   @Override
   public String toString() {
     return "SSLConfig{" + "enabled=" + enabled + ", protocols='" + protocols + '\'' + ", ciphers='"
@@ -237,10 +253,11 @@ public class SSLConfig {
     public Builder() {}
 
     public SSLConfig build() {
+
       return new SSLConfig(endpointIdentification, useDefaultSSLContext, enabled,
           protocols, ciphers, requireAuth, keystore, keystoreType, keystorePassword,
           truststore, truststorePassword, truststoreType, alias, securableCommunicationChannel,
-          properties, sslParameterExtension);
+          properties, sslParameterExtension, getSniProxyAddress());
     }
 
     public Builder setAlias(final String alias) {
@@ -366,6 +383,48 @@ public class SSLConfig {
     public String getTruststoreType() {
       return truststoreType;
     }
+
+    private InetSocketAddress getSniProxyAddress() {
+      final InetSocketAddress sniProxyAddress;
+      final String propertyKey = GEMFIRE_PREFIX + "security.sni-proxy";
+      final String propertyValue = System.getProperty(propertyKey);
+      if (propertyValue == null) {
+        sniProxyAddress = null;
+      } else {
+        logger.info(
+            String.format("using experimental '%s' configuration property set to '%s'",
+                propertyKey, propertyValue));
+        final URL parser;
+        try {
+          parser = new URL("http://" + propertyValue);
+        } catch (final MalformedURLException e) {
+          throw new IllegalArgumentException(
+              String.format("%s setting '%s' is formatted wrong",
+                  propertyKey, propertyValue),
+              e);
+        }
+        final String host = parser.getHost();
+        if (host == null) {
+          throw new IllegalArgumentException(
+              String.format("%s setting '%s' is missing host part (or host part is malformed)",
+                  propertyKey, propertyValue));
+        }
+        final int port = parser.getPort();
+        if (port == -1) {
+          throw new IllegalArgumentException(
+              String.format("%s setting '%s' is missing port",
+                  propertyKey, propertyValue));
+        }
+        sniProxyAddress = new InetSocketAddress(host, port);
+        if (sniProxyAddress.getAddress() == null) {
+          throw new IllegalArgumentException(
+              String.format("%s setting '%s' is missing host part (or host part is malformed)",
+                  propertyKey, propertyValue));
+        }
+      }
+      return sniProxyAddress;
+    }
+
   }
 
 }

@@ -18,16 +18,25 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.net.SocketFactory;
+import javax.net.ssl.SNIHostName;
+import javax.net.ssl.SNIServerName;
+
+import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.SystemConnectException;
 import org.apache.geode.distributed.internal.tcpserver.AdvancedSocketCreatorImpl;
 import org.apache.geode.distributed.internal.tcpserver.ConnectionWatcher;
 import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 class SCAdvancedSocketCreator extends AdvancedSocketCreatorImpl {
+  private static final Logger logger = LogService.getLogger();
+
   final SocketCreator coreSocketCreator;
 
   protected SCAdvancedSocketCreator(SocketCreator socketCreator) {
@@ -55,18 +64,12 @@ class SCAdvancedSocketCreator extends AdvancedSocketCreatorImpl {
 
     // create an SSL connection
 
-    Socket socket;
-    InetSocketAddress sockaddr = addr.getSocketInetAddress();
-    if (sockaddr.getAddress() == null) {
-      InetAddress address = InetAddress.getByName(sockaddr.getHostString());
-      sockaddr = new InetSocketAddress(address, sockaddr.getPort());
-    }
-
     if (coreSocketCreator.getSslContext() == null) {
       throw new GemFireConfigException(
           "SSL not configured correctly, Please look at previous error");
     }
     SocketFactory sf = coreSocketCreator.getSslContext().getSocketFactory();
+    final Socket socket;
     socket = sf.createSocket();
 
     // Optionally enable SO_KEEPALIVE in the OS network protocol.
@@ -83,8 +86,33 @@ class SCAdvancedSocketCreator extends AdvancedSocketCreatorImpl {
       if (optionalWatcher != null) {
         optionalWatcher.beforeConnect(socket);
       }
-      socket.connect(sockaddr, Math.max(timeout, 0));
-      coreSocketCreator.configureClientSSLSocket(socket, timeout);
+
+      final InetSocketAddress sniProxyAddress =
+          coreSocketCreator.getSslConfig().getSniProxyAddress();
+      final boolean provideSNI = sniProxyAddress != null;
+
+      if (provideSNI) {
+        socket.connect(sniProxyAddress, Math.max(timeout, 0));
+        coreSocketCreator.configureClientSSLSocket(socket, timeout, sslParameters -> {
+          final List<SNIServerName> sniHostNames = new ArrayList<>(1);
+          sniHostNames.add(new SNIHostName(addr.getHostName()));
+          sslParameters.setServerNames(sniHostNames);
+        });
+      } else {
+        final InetSocketAddress sockaddr;
+        final InetSocketAddress sockaddrTemp = addr.getSocketInetAddress();
+        if (sockaddrTemp.getAddress() == null) {
+          // first address resolution attempt failed; try again, usually throwing an exception
+          final InetAddress address = InetAddress.getByName(sockaddrTemp.getHostString());
+          sockaddr = new InetSocketAddress(address, sockaddrTemp.getPort());
+        } else {
+          sockaddr = sockaddrTemp;
+        }
+        socket.connect(sockaddr, Math.max(timeout, 0));
+        coreSocketCreator.configureClientSSLSocket(socket, timeout, _ignored -> {
+        });
+      }
+
       return socket;
 
     } finally {
@@ -113,7 +141,5 @@ class SCAdvancedSocketCreator extends AdvancedSocketCreatorImpl {
     }
     return null;
   }
-
-
 
 }

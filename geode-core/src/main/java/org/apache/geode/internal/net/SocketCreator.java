@@ -41,6 +41,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
@@ -707,7 +708,8 @@ public class SocketCreator extends TcpSocketCreatorImpl {
    * When a socket is accepted from a server socket, it should be passed to this method for SSL
    * configuration.
    */
-  void configureClientSSLSocket(Socket socket, int timeout) throws IOException {
+  void configureClientSSLSocket(Socket socket, int timeout,
+      final Consumer<SSLParameters> modifySSLParameters) throws IOException {
     if (socket instanceof SSLSocket) {
       SSLSocket sslSocket = (SSLSocket) socket;
 
@@ -716,6 +718,9 @@ public class SocketCreator extends TcpSocketCreatorImpl {
 
       SSLParameters modifiedParams =
           checkAndEnableHostnameValidation(sslSocket.getSSLParameters());
+
+      modifySSLParameters.accept(modifiedParams); // allow caller's lambda to operate on SSL
+                                                  // parameters
 
       SSLParameterExtension sslParameterExtension = this.sslConfig.getSSLParameterExtension();
       if (sslParameterExtension != null) {
