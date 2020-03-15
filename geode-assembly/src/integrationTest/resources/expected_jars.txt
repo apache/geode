@@ -19,6 +19,7 @@ commons-lang
 commons-logging
 commons-math
 commons-modeler
+commons-text
 commons-validator
 error_prone_annotations
 failureaccess

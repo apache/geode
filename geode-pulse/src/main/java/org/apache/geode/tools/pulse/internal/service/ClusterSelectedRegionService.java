@@ -21,7 +21,6 @@ import static org.apache.geode.tools.pulse.internal.data.PulseConstants.FOUR_PLA
 import static org.apache.geode.tools.pulse.internal.data.PulseConstants.TWO_PLACE_DECIMAL_FORMAT;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -59,19 +58,13 @@ public class ClusterSelectedRegionService implements PulseService {
   private static final Logger logger = LogManager.getLogger();
 
   // String constants used for forming a json response
-  private final String ENTRY_SIZE = "entrySize";
+  private static final String ENTRY_SIZE = "entrySize";
 
   // Comparator based upon regions entry count
   private static Comparator<Cluster.Member> memberCurrentHeapUsageComparator = (m1, m2) -> {
     long m1HeapUsage = m1.getCurrentHeapSize();
     long m2HeapUsage = m2.getCurrentHeapSize();
-    if (m1HeapUsage < m2HeapUsage) {
-      return -1;
-    } else if (m1HeapUsage > m2HeapUsage) {
-      return 1;
-    } else {
-      return 0;
-    }
+    return Long.compare(m1HeapUsage, m2HeapUsage);
   };
 
   @Override
@@ -92,7 +85,7 @@ public class ClusterSelectedRegionService implements PulseService {
     // getting cluster's Regions
     responseJSON.put("clusterName", cluster.getServerName());
     responseJSON.put("userName", userName);
-    responseJSON.put("selectedRegion", getSelectedRegionJson(cluster, selectedRegionFullPath));
+    responseJSON.set("selectedRegion", getSelectedRegionJson(cluster, selectedRegionFullPath));
 
     // Send json response
     return responseJSON;
@@ -126,7 +119,7 @@ public class ClusterSelectedRegionService implements PulseService {
       Cluster.Member[] clusterMembersList = cluster.getMembers();
 
       // collect members of this region
-      List<Cluster.Member> clusterMembersL = new ArrayList<Cluster.Member>();
+      List<Cluster.Member> clusterMembersL = new ArrayList<>();
       for (String memberName : reg.getMemberName()) {
         for (Cluster.Member member : clusterMembersList) {
           String name = member.getName();
@@ -141,7 +134,7 @@ public class ClusterSelectedRegionService implements PulseService {
       }
 
       // sort members of this region
-      Collections.sort(clusterMembersL, memberCurrentHeapUsageComparator);
+      clusterMembersL.sort(memberCurrentHeapUsageComparator);
 
       // return sorted member list by heap usage
       ArrayNode memberArray = mapper.createArrayNode();
@@ -177,7 +170,7 @@ public class ClusterSelectedRegionService implements PulseService {
         memberArray.add(regionMember);
       }
 
-      regionJSON.put("members", memberArray);
+      regionJSON.set("members", memberArray);
       regionJSON.put("entryCount", reg.getSystemRegionEntryCount());
 
       regionJSON.put("persistence",
@@ -197,22 +190,22 @@ public class ClusterSelectedRegionService implements PulseService {
       regionJSON.put("regionPath", reg.getFullPath());
 
 
-      regionJSON.put("memoryReadsTrend", mapper.<JsonNode>valueToTree(
+      regionJSON.set("memoryReadsTrend", mapper.valueToTree(
           reg.getRegionStatisticTrend(Cluster.Region.REGION_STAT_GETS_PER_SEC_TREND)));
-      regionJSON.put("memoryWritesTrend", mapper.<JsonNode>valueToTree(
+      regionJSON.set("memoryWritesTrend", mapper.valueToTree(
           reg.getRegionStatisticTrend(Cluster.Region.REGION_STAT_PUTS_PER_SEC_TREND)));
-      regionJSON.put("diskReadsTrend", mapper.<JsonNode>valueToTree(
+      regionJSON.set("diskReadsTrend", mapper.valueToTree(
           reg.getRegionStatisticTrend(Cluster.Region.REGION_STAT_DISK_READS_PER_SEC_TREND)));
-      regionJSON.put("diskWritesTrend", mapper.<JsonNode>valueToTree(
+      regionJSON.set("diskWritesTrend", mapper.valueToTree(
           reg.getRegionStatisticTrend(Cluster.Region.REGION_STAT_DISK_WRITES_PER_SEC_TREND)));
 
       regionJSON.put("emptyNodes", reg.getEmptyNode());
       long entrySize = reg.getEntrySize();
       String entrySizeInMB = FOUR_PLACE_DECIMAL_FORMAT.format(entrySize / (1024f * 1024f));
       if (entrySize < 0) {
-        regionJSON.put(this.ENTRY_SIZE, PulseService.VALUE_NA);
+        regionJSON.put(ENTRY_SIZE, PulseService.VALUE_NA);
       } else {
-        regionJSON.put(this.ENTRY_SIZE, entrySizeInMB);
+        regionJSON.put(ENTRY_SIZE, entrySizeInMB);
       }
       regionJSON.put("dataUsage", reg.getDiskUsage());
       regionJSON.put("wanEnabled", reg.getWanEnabled());

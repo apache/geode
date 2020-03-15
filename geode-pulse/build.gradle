@@ -21,6 +21,7 @@ apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 apply plugin: 'war'
 
 apply from: "${project.projectDir}/../gradle/publish-war.gradle"
+apply from: "${project.projectDir}/../gradle/warnings.gradle"
 
 jar.enabled = true
 
@@ -55,6 +56,7 @@ dependencies {
   implementation('commons-collections:commons-collections')
   implementation('commons-digester:commons-digester')
   implementation('org.apache.commons:commons-lang3')
+  implementation('org.apache.commons:commons-text')
   implementation('org.springframework.ldap:spring-ldap-core')
 
   implementation('org.springframework.security:spring-security-config') {

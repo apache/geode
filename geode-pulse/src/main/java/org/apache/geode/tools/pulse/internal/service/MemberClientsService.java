@@ -36,7 +36,7 @@ import org.apache.geode.tools.pulse.internal.util.TimeUtils;
 /**
  * Class MemberClientsService
  *
- * This class contains implementations of getting Memeber's Clients.
+ * This class contains implementations of getting Member's Clients.
  *
  * @since GemFire version 7.5
  */
@@ -48,8 +48,8 @@ public class MemberClientsService implements PulseService {
   private final ObjectMapper mapper = new ObjectMapper();
 
   // String constants used for forming a json response
-  private final String NAME = "name";
-  private final String HOST = "host";
+  private static final String NAME = "name";
+  private static final String HOST = "host";
 
   @Override
   public ObjectNode execute(final HttpServletRequest request) throws Exception {
@@ -68,8 +68,8 @@ public class MemberClientsService implements PulseService {
     Cluster.Member clusterMember = cluster.getMember(makeCompliantName(memberName));
     if (clusterMember != null) {
       responseJSON.put("memberId", clusterMember.getId());
-      responseJSON.put(this.NAME, clusterMember.getName());
-      responseJSON.put(this.HOST, clusterMember.getHost());
+      responseJSON.put(NAME, clusterMember.getName());
+      responseJSON.put(HOST, clusterMember.getHost());
 
       // member's clients
 
@@ -77,8 +77,8 @@ public class MemberClientsService implements PulseService {
       for (Cluster.Client memberClient : memberClients) {
         ObjectNode regionJSON = mapper.createObjectNode();
         regionJSON.put("clientId", memberClient.getId());
-        regionJSON.put(this.NAME, memberClient.getName());
-        regionJSON.put(this.HOST, memberClient.getHost());
+        regionJSON.put(NAME, memberClient.getName());
+        regionJSON.put(HOST, memberClient.getHost());
         regionJSON.put("queueSize", memberClient.getQueueSize());
         regionJSON.put("clientCQCount", memberClient.getClientCQCount());
         regionJSON.put("isConnected", memberClient.isConnected() ? "Yes" : "No");
@@ -94,7 +94,7 @@ public class MemberClientsService implements PulseService {
 
         clientListJson.add(regionJSON);
       }
-      responseJSON.put("memberClients", clientListJson);
+      responseJSON.set("memberClients", clientListJson);
     }
     // Send json response
     return responseJSON;

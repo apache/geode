@@ -34,7 +34,7 @@ import org.apache.geode.tools.pulse.internal.data.Repository;
 /**
  * Class MemberDiskThroughputService
  *
- * This class contains implementations for getting Memeber's current Disk Throughput trends over the
+ * This class contains implementations for getting Member's current Disk Throughput trends over the
  * time.
  *
  * @since GemFire version 7.5
@@ -64,10 +64,10 @@ public class MemberDiskThroughputService implements PulseService {
     if (clusterMember != null) {
       // response
       responseJSON.put("throughputWrites", clusterMember.getThroughputWrites());
-      responseJSON.put("throughputWritesTrend", mapper.valueToTree(
+      responseJSON.set("throughputWritesTrend", mapper.valueToTree(
           clusterMember.getMemberStatisticTrend(Cluster.Member.MEMBER_STAT_THROUGHPUT_WRITES)));
       responseJSON.put("throughputReads", clusterMember.getThroughputWrites());
-      responseJSON.put("throughputReadsTrend", mapper.valueToTree(
+      responseJSON.set("throughputReadsTrend", mapper.valueToTree(
           clusterMember.getMemberStatisticTrend(Cluster.Member.MEMBER_STAT_THROUGHPUT_READS)));
     }
 

@@ -56,7 +56,7 @@ public class ClusterMemoryUsageService implements PulseService {
     // cluster's Memory Usage trend added to json response object
 
     responseJSON.put("currentMemoryUsage", cluster.getUsedHeapSize());
-    responseJSON.put("memoryUsageTrend",
+    responseJSON.set("memoryUsageTrend",
         mapper.valueToTree(cluster.getStatisticTrend(Cluster.CLUSTER_STAT_MEMORY_USAGE)));
 
     // Send json response
