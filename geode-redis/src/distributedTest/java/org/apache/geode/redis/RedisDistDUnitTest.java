@@ -30,7 +30,7 @@ import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.dunit.SerializableCallable;
+import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -45,9 +45,6 @@ public class RedisDistDUnitTest implements Serializable {
   private static String LOCALHOST = "localhost";
 
   public static final String TEST_KEY = "key";
-  private static MemberVM locator;
-  private static MemberVM server1;
-  private static MemberVM server2;
   private static VM client1;
   private static VM client2;
 
@@ -57,7 +54,7 @@ public class RedisDistDUnitTest implements Serializable {
   private static final int JEDIS_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().getValueInMS());
 
-  private abstract static class ClientTestBase extends SerializableCallable<Object> {
+  private abstract static class ClientTestBase extends SerializableRunnable {
     int port;
 
     protected ClientTestBase(int port) {
@@ -71,15 +68,15 @@ public class RedisDistDUnitTest implements Serializable {
     server1Port = ports[0];
     server2Port = ports[1];
 
-    locator = cluster.startLocatorVM(0);
+    MemberVM locator = cluster.startLocatorVM(0);
 
     Properties redisProps = new Properties();
     redisProps.setProperty("redis-bind-address", LOCALHOST);
     redisProps.setProperty("redis-port", Integer.toString(ports[0]));
-    server1 = cluster.startServerVM(1, redisProps, locator.getPort());
+    cluster.startServerVM(1, redisProps, locator.getPort());
 
     redisProps.setProperty("redis-port", Integer.toString(ports[1]));
-    server2 = cluster.startServerVM(2, redisProps, locator.getPort());
+    cluster.startServerVM(2, redisProps, locator.getPort());
 
     client1 = cluster.getVM(3);
     client2 = cluster.getVM(4);
@@ -97,7 +94,7 @@ public class RedisDistDUnitTest implements Serializable {
       }
 
       @Override
-      public Object call() throws Exception {
+      public void run() {
         Jedis jedis = new Jedis(LOCALHOST, port, JEDIS_TIMEOUT);
         Random r = new Random();
         for (int i = 0; i < pushes; i++) {
@@ -107,13 +104,12 @@ public class RedisDistDUnitTest implements Serializable {
             jedis.rpush(TEST_KEY, randString());
           }
         }
-        return null;
       }
-    };
+    }
 
-    AsyncInvocation i = client1.invokeAsync(new ConcListOps(server1Port));
+    AsyncInvocation<Void> i = client1.invokeAsync(new ConcListOps(server1Port));
     client2.invoke(new ConcListOps(server2Port));
-    i.get();
+    i.await();
     long expected = 2 * pushes;
     long result1 = jedis1.llen(TEST_KEY);
     long result2 = jedis2.llen(TEST_KEY);
@@ -137,7 +133,7 @@ public class RedisDistDUnitTest implements Serializable {
       }
 
       @Override
-      public Object call() throws Exception {
+      public void run() {
         Jedis jedis = new Jedis(LOCALHOST, port, JEDIS_TIMEOUT);
         Random r = new Random();
         for (int i = 0; i < ops; i++) {
@@ -168,19 +164,19 @@ public class RedisDistDUnitTest implements Serializable {
             }
           }
         }
-        return null;
       }
     }
 
     // Expect to run with no exception
-    AsyncInvocation i = client1.invokeAsync(new ConcCreateDestroy(server1Port));
+    AsyncInvocation<Void> i = client1.invokeAsync(new ConcCreateDestroy(server1Port));
     client2.invoke(new ConcCreateDestroy(server2Port));
-    i.get();
+    i.await();
   }
 
   /**
    * Just make sure there are no unexpected server crashes
    */
+  @Test
   public void testConcOps() throws Exception {
 
     final int ops = 100;
@@ -196,7 +192,7 @@ public class RedisDistDUnitTest implements Serializable {
       }
 
       @Override
-      public Object call() throws Exception {
+      public void run() {
         Jedis jedis = new Jedis(LOCALHOST, port, JEDIS_TIMEOUT);
         Random r = new Random();
         for (int i = 0; i < ops; i++) {
@@ -222,14 +218,13 @@ public class RedisDistDUnitTest implements Serializable {
             jedis.sunionstore("dst", sKey, "afds");
           }
         }
-        return null;
       }
     }
 
     // Expect to run with no exception
-    AsyncInvocation i = client1.invokeAsync(new ConcOps(server1Port));
+    AsyncInvocation<Void> i = client1.invokeAsync(new ConcOps(server1Port));
     client2.invoke(new ConcOps(server2Port));
-    i.getResult();
+    i.await();
   }
 
   private String randString() {

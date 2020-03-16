@@ -26,7 +26,7 @@ import org.apache.geode.redis.internal.RedisDataType;
 
 public abstract class PushExecutor extends PushXExecutor implements Extendable {
 
-  private final int START_VALUES_INDEX = 2;
+  private static final int START_VALUES_INDEX = 2;
 
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
@@ -39,7 +39,7 @@ public abstract class PushExecutor extends PushXExecutor implements Extendable {
 
     ByteArrayWrapper key = command.getKey();
 
-    Region<Integer, ByteArrayWrapper> keyRegion =
+    Region<Object, Object> keyRegion =
         getOrCreateRegion(context, key, RedisDataType.REDIS_LIST);
     pushElements(key, commandElems, START_VALUES_INDEX, commandElems.size(), keyRegion, pushType(),
         context);

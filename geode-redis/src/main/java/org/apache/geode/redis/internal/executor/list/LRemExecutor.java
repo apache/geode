@@ -30,9 +30,9 @@ import org.apache.geode.redis.internal.executor.ListQuery;
 
 public class LRemExecutor extends ListExecutor {
 
-  private final String ERROR_NOT_NUMERIC = "The count provided is not numeric";
+  private static final String ERROR_NOT_NUMERIC = "The count provided is not numeric";
 
-  private final int NOT_EXISTS = 0;
+  private static final int NOT_EXISTS = 0;
 
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
@@ -50,7 +50,7 @@ public class LRemExecutor extends ListExecutor {
     int count;
 
     checkDataType(key, RedisDataType.REDIS_LIST, context);
-    Region<Integer, ByteArrayWrapper> keyRegion = getRegion(context, key);
+    Region<Object, Object> keyRegion = getRegion(context, key);
 
     if (keyRegion == null) {
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_EXISTS));
@@ -94,15 +94,16 @@ public class LRemExecutor extends ListExecutor {
     Query query;
     if (count > 0) {
       query = getQuery(key, ListQuery.LREMG, context);
-      params = new Object[] {value, Integer.valueOf(count)};
+      params = new Object[] {value, count};
     } else if (count < 0) {
       query = getQuery(key, ListQuery.LREML, context);
-      params = new Object[] {value, Integer.valueOf(-count)};
+      params = new Object[] {value, -count};
     } else {
       query = getQuery(key, ListQuery.LREME, context);
       params = new Object[] {value};
     }
 
+    @SuppressWarnings("unchecked")
     SelectResults<Struct> results = (SelectResults<Struct>) query.execute(params);
 
     if (results == null || results.isEmpty()) {

@@ -45,6 +45,7 @@ public class PubSubImpl implements PubSub {
 
   @Override
   public long publish(String channel, byte[] message) {
+    @SuppressWarnings("unchecked")
     ResultCollector<String[], List<Long>> subscriberCountCollector = FunctionService
         .onMembers()
         .setArguments(new Object[] {channel, message})
@@ -95,20 +96,20 @@ public class PubSubImpl implements PubSub {
 
   @Override
   public long unsubscribe(String channel, Client client) {
-    this.subscriptions.remove(channel, client);
-    return this.subscriptions.findSubscriptions(client).size();
+    subscriptions.remove(channel, client);
+    return subscriptions.findSubscriptions(client).size();
   }
 
   @Override
   public long punsubscribe(GlobPattern pattern, Client client) {
-    this.subscriptions.remove(pattern, client);
-    return this.subscriptions.findSubscriptions(client).size();
+    subscriptions.remove(pattern, client);
+    return subscriptions.findSubscriptions(client).size();
   }
 
   @VisibleForTesting
   long publishMessageToSubscribers(String channel, byte[] message) {
 
-    Map<Boolean, List<PublishResult>> results = this.subscriptions
+    Map<Boolean, List<PublishResult>> results = subscriptions
         .findSubscriptions(channel)
         .stream()
         .map(subscription -> subscription.publishMessage(channel, message))

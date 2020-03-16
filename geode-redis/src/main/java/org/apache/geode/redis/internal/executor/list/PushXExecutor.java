@@ -26,7 +26,7 @@ import org.apache.geode.redis.internal.RedisDataType;
 
 public abstract class PushXExecutor extends ListExecutor implements Extendable {
 
-  private final int NOT_EXISTS = 0;
+  private static final int NOT_EXISTS = 0;
 
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
@@ -39,7 +39,7 @@ public abstract class PushXExecutor extends ListExecutor implements Extendable {
 
     ByteArrayWrapper key = command.getKey();
 
-    Region<Integer, ByteArrayWrapper> keyRegion = getRegion(context, key);
+    Region<Object, Object> keyRegion = getRegion(context, key);
     if (keyRegion == null) {
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_EXISTS));
       return;
