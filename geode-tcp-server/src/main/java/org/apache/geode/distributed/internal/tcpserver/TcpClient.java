@@ -32,7 +32,6 @@ import javax.net.ssl.SSLException;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.internal.serialization.ObjectDeserializer;
 import org.apache.geode.internal.serialization.ObjectSerializer;
 import org.apache.geode.internal.serialization.UnsupportedSerializationVersionException;
@@ -54,8 +53,7 @@ public class TcpClient {
 
   private static final int DEFAULT_REQUEST_TIMEOUT = 60 * 2 * 1000;
 
-  @MakeNotStatic
-  private static final Map<HostAndPort, Short> serverVersions =
+  private final Map<HostAndPort, Short> serverVersions =
       new HashMap<>();
 
   private final TcpSocketCreator socketCreator;
@@ -308,17 +306,5 @@ public class TcpClient {
       serverVersions.put(addr, Version.GFE_57.ordinal());
     }
     return Short.valueOf(Version.GFE_57.ordinal());
-  }
-
-
-  /**
-   * Clear static class information concerning Locators. This is used in unit tests. It will force
-   * TcpClient to send version-request messages to locators to reestablish knowledge of their
-   * communication protocols.
-   */
-  public static void clearStaticData() {
-    synchronized (serverVersions) {
-      serverVersions.clear();
-    }
   }
 }
