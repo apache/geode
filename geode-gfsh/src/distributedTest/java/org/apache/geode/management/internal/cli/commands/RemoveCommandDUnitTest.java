@@ -145,8 +145,8 @@ public class RemoveCommandDUnitTest {
     assertThat(gfsh.getGfshOutput()).contains("Cleared all keys in the region")
         .contains(CliStrings.REMOVE__MSG__CLEARALL_DEPRECATION_WARNING);;
 
-    server1.invoke(() -> verifyAllKeysAreRemoved(REPLICATE_REGION_NAME));
-    server2.invoke(() -> verifyAllKeysAreRemoved(REPLICATE_REGION_NAME));
+    server1.invoke(() -> verifyAllKeysAreRemoved(PARTITIONED_REGION_NAME));
+    server2.invoke(() -> verifyAllKeysAreRemoved(PARTITIONED_REGION_NAME));
   }
 
   /**
