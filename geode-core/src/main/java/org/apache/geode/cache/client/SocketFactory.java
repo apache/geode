@@ -19,9 +19,28 @@ import java.io.IOException;
 import java.net.Socket;
 
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.net.SSLParameterExtension;
 
 /**
  * A socket factory used to create sockets from a client to locators or servers.
+ *
+ *
+ * Sockets returned by this factory will have the rest of the configuration options
+ * specified on this pool and on the {@link ClientCache} applied to them. In particular,
+ * sockets returned by this factory will be wrapped with SSLSockets if ssl is enabled
+ * for this client cache.
+ *
+ * Sockets returned by this factory should be in an unconnected state, similar to
+ * {@link Socket#Socket()}
+ * Sockets return by this factory should not be SSLSockets, because they may be wrapped in
+ * SSLSockets
+ * later, based on {@link ConfigurationProperties#SSL_ENABLED_COMPONENTS}. For modifying SSL
+ * settings,
+ * see {@link SSLParameterExtension}
+ *
+ * This factory can be used for configuring a proxy, or overriding various socket settings.
+ *
  *
  * @see PoolFactory#setSocketFactory(SocketFactory)
  */
@@ -34,7 +53,7 @@ public interface SocketFactory {
   SocketFactory DEFAULT = Socket::new;
 
   /**
-   * Create a (unconnected) tcp socket for establishing a client.
+   * Create an unconnected tcp socket for establishing a client.
    *
    * @return an unconnected socket
    */
