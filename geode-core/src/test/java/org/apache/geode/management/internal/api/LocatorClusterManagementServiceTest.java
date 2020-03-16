@@ -95,7 +95,7 @@ public class LocatorClusterManagementServiceTest {
   private ClusterManagementResult result;
   private Map<Class, ConfigurationValidator> validators = new HashMap<>();
   private Map<Class, ConfigurationManager> managers = new HashMap<>();
-  private OperationManager executorManager;
+  private OperationManager operationManager;
   private ConfigurationValidator<Region> regionValidator;
   private CommonConfigurationValidator cacheElementValidator;
   private CacheConfigurationManager<Region> regionManager;
@@ -124,10 +124,10 @@ public class LocatorClusterManagementServiceTest {
     doReturn(new CacheConfig()).when(persistenceService).getCacheConfig(any(), anyBoolean());
     doReturn(true).when(persistenceService).lockSharedConfiguration();
     doNothing().when(persistenceService).unlockSharedConfiguration();
-    executorManager = mock(OperationManager.class);
+    operationManager = mock(OperationManager.class);
     service =
         spy(new LocatorClusterManagementService(cache, persistenceService, managers, validators,
-            memberValidator, cacheElementValidator, executorManager));
+            memberValidator, cacheElementValidator, operationManager));
 
     regionConfig = new Region();
     regionConfig.setName("region1");
@@ -373,7 +373,7 @@ public class LocatorClusterManagementServiceTest {
     final String URI = "/test/uri";
     ClusterManagementOperation<OperationResult> operation = mock(ClusterManagementOperation.class);
     when(operation.getEndpoint()).thenReturn(URI);
-    when(executorManager.submit(any()))
+    when(operationManager.submit(any()))
         .thenReturn(new OperationState<>("42", operation, new Date()));
     ClusterManagementOperationResult<?, ?> result = service.start(operation);
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.ACCEPTED);
@@ -389,7 +389,7 @@ public class LocatorClusterManagementServiceTest {
   @Test
   public void getRebalance() {
     OperationState operationState = mock(OperationState.class);
-    when(executorManager.get(any())).thenReturn(operationState);
+    when(operationManager.get(any())).thenReturn(operationState);
     ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> result =
         service.get(rebalanceOperation, "456");
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.IN_PROGRESS);
@@ -398,6 +398,59 @@ public class LocatorClusterManagementServiceTest {
     when(operationState.getOperationEnd()).thenReturn(new Date());
     result = service.get(rebalanceOperation, "456");
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
+  }
+
+  @Test
+  public void getRebalanceWithOperationStateThrowableCorrectlySetsStatusMessage() {
+    OperationState operationState = mock(OperationState.class);
+    when(operationManager.get(any())).thenReturn(operationState);
+    when(operationState.getOperationEnd()).thenReturn(new Date());
+    Throwable throwable = new NullPointerException("NPE");
+    when(operationState.getThrowable()).thenReturn(throwable);
+
+    ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> result =
+        service.get(rebalanceOperation, "456");
+
+    assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.ERROR);
+    assertThat(result.getOperationResult()).isNull();
+    assertThat(result.getThrowable()).isSameAs(throwable);
+    assertThat(result.getStatusMessage()).contains("NPE").contains("NullPointerException");
+  }
+
+  @Test
+  public void getRebalanceWithOperationResultThatFailedCorrectlySetsStatusMessage() {
+    OperationState operationState = mock(OperationState.class);
+    when(operationManager.get(any())).thenReturn(operationState);
+    when(operationState.getOperationEnd()).thenReturn(new Date());
+    OperationResult operationResult = mock(OperationResult.class);
+    when(operationResult.getSuccess()).thenReturn(false);
+    when(operationResult.getStatusMessage()).thenReturn("Failure status message.");
+    when(operationState.getResult()).thenReturn(operationResult);
+
+    ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> result =
+        service.get(rebalanceOperation, "456");
+
+    assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.ERROR);
+    assertThat(result.getOperationResult()).isSameAs(operationResult);
+    assertThat(result.getStatusMessage()).isEqualTo("Failure status message.");
+  }
+
+  @Test
+  public void getRebalanceWithOperationResultThatSucceededCorrectlySetsStatusMessage() {
+    OperationState operationState = mock(OperationState.class);
+    when(operationManager.get(any())).thenReturn(operationState);
+    when(operationState.getOperationEnd()).thenReturn(new Date());
+    OperationResult operationResult = mock(OperationResult.class);
+    when(operationResult.getSuccess()).thenReturn(true);
+    when(operationResult.getStatusMessage()).thenReturn("Success status message.");
+    when(operationState.getResult()).thenReturn(operationResult);
+
+    ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> result =
+        service.get(rebalanceOperation, "456");
+
+    assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
+    assertThat(result.getOperationResult()).isSameAs(operationResult);
+    assertThat(result.getStatusMessage()).isEqualTo("Success status message.");
   }
 
   @Test

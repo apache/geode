@@ -496,7 +496,14 @@ public class LocatorClusterManagementService implements ClusterManagementService
       resultStatus = StatusCode.IN_PROGRESS;
     } else if (operationState.getThrowable() != null) {
       resultStatus = StatusCode.ERROR;
-      resultMessage = operationState.getThrowable().getMessage();
+      resultMessage = operationState.getThrowable().toString();
+    } else if (operationState.getResult() != null) {
+      if (!operationState.getResult().getSuccess()) {
+        resultStatus = StatusCode.ERROR;
+      }
+      if (operationState.getResult().getStatusMessage() != null) {
+        resultMessage = operationState.getResult().getStatusMessage();
+      }
     }
     return toClusterManagementOperationResult(resultStatus, resultMessage, operationState);
   }

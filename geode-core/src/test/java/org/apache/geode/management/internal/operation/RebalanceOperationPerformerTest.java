@@ -33,9 +33,12 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.ManagementService;
+import org.apache.geode.management.internal.BaseManagementService;
+import org.apache.geode.management.operation.RebalanceOperation;
 import org.apache.geode.management.runtime.RebalanceRegionResult;
 import org.apache.geode.management.runtime.RebalanceResult;
 
@@ -143,7 +146,23 @@ public class RebalanceOperationPerformerTest {
     assertThat(regionResult.getPrimaryTransferTimeInMilliseconds()).isEqualTo(6);
     assertThat(regionResult.getPrimaryTransfersCompleted()).isEqualTo(7);
     assertThat(regionResult.getTimeInMilliseconds()).isEqualTo(8);
+  }
 
+
+  @Test
+  public void performWithIncludeRegionsWhenRegionOnNoMembersReturnsFalseWithCorrectMessage() {
+    RebalanceOperation rebalanceOperation = mock(RebalanceOperation.class);
+    when(rebalanceOperation.getIncludeRegions()).thenReturn(Collections.singletonList("region1"));
+    InternalCacheForClientAccess cache = mock(InternalCacheForClientAccess.class);
+    when(cache.getCacheForProcessingClientRequests()).thenReturn(cache);
+    BaseManagementService managementService = mock(BaseManagementService.class);
+    BaseManagementService.setManagementService(cache, managementService);
+
+    RebalanceResult result = RebalanceOperationPerformer.perform(cache, rebalanceOperation);
+
+    assertThat(result.getSuccess()).isFalse();
+    assertThat(result.getStatusMessage())
+        .isEqualTo("For the region /region1, no member was found.");
   }
 
 }
