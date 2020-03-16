@@ -66,6 +66,12 @@ public interface ServerCQ extends InternalCqQuery {
   void setCqResultsCacheInitialized();
 
   /**
+   *
+   * @return true if the CQ Results key cache is initialized.
+   */
+  boolean isCqResultsCacheInitialized();
+
+  /**
    * Returns true if old value is required for query processing.
    */
   boolean isOldValueRequiredForQueryProcessing(Object key);

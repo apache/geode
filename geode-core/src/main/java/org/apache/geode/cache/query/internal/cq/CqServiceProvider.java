@@ -36,7 +36,7 @@ public class CqServiceProvider {
    */
   @MutableForTesting
   public static boolean MAINTAIN_KEYS = Boolean
-      .valueOf(System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + "cq.MAINTAIN_KEYS", "true"));
+      .parseBoolean(System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + "cq.MAINTAIN_KEYS", "true"));
 
   /**
    * A debug flag used for testing vMotion during CQ registration
