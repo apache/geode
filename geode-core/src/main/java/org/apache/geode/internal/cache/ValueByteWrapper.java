@@ -38,12 +38,6 @@ class ValueByteWrapper {
   }
 
   /**
-   * @return boolean returns true if the value bytes are a serialized object
-   *
-   *         boolean isSerialized() { return isSerialized; }
-   */
-
-  /**
    * @return byte[] returns the value bytes stored
    */
   byte[] getValueBytes() {

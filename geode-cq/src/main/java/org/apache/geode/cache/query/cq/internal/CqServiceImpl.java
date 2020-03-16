@@ -727,7 +727,7 @@ public class CqServiceImpl implements CqService {
           if (!isRunning()) {
             // Not cache shutdown
             logger
-                .warn("Failed to close CQ %s %s",
+                .warn("Failed to close CQ {} : {}",
                     cqName, e.getMessage());
           }
           if (logger.isDebugEnabled()) {

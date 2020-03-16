@@ -299,7 +299,6 @@ public class DLockToken {
    * @param newLeaseId uniquely identifies the lease for this thread
    * @param newRecursion recursion count if lock has been re-entered
    * @param remoteThread identity of the leasing thread
-   * @return true if lease for this lock token is successfully granted
    */
   synchronized void grantLock(long newLeaseExpireTime, int newLeaseId, int newRecursion,
       RemoteThread remoteThread) {

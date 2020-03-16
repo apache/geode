@@ -116,7 +116,7 @@ public class AbstractStringIdResourceBundle {
   }
 
   /**
-   * @param key StringId passed to {@link #getString java.util.ResourceBundle} for translation.
+   * @param key StringId passed for translation.
    * @return a String translated to the current {@link java.util.Locale}
    */
   public String getString(StringId key) {

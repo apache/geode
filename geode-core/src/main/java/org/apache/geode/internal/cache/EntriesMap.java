@@ -34,25 +34,25 @@ public interface EntriesMap extends ConcurrentMap {
    * the map is constructed has no effect.
    */
   class Attributes {
-    /**
+    /*
      * The initial capacity. The implementation performs internal sizing to accommodate this many
      * elements.
      */
     // int initialCapacity = 16;
 
-    /** the load factor threshold, used to control resizing. */
+    /* the load factor threshold, used to control resizing. */
     // float loadFactor = 0.75f;
 
-    /**
+    /*
      * the estimated number of concurrently updating threads. The implementation performs internal
      * sizing to try to accommodate this many threads.
      */
     // int concurrencyLevel = 16;
 
-    /** whether "api" statistics are enabled */
+    /* whether "api" statistics are enabled */
     // boolean statisticsEnabled = false;
 
-    /** whether LRU stats are required */
+    /* whether LRU stats are required */
     // boolean lru = false;
   }
 

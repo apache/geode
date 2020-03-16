@@ -16,8 +16,7 @@
 package org.apache.geode.internal.cache;
 
 
-/**
- *
+/*
  *
  * Helper class that holds values needed by the search optimizer to do its work.
  *

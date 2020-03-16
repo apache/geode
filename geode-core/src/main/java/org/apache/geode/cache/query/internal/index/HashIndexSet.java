@@ -576,7 +576,7 @@ public class HashIndexSet implements Set {
   }
 
   @Override
-  /**
+  /*
    * return true if no elements exist in the array that are non null or REMOVED tokens
    */
   public boolean isEmpty() {

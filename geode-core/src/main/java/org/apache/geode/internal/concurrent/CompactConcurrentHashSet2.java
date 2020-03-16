@@ -1604,11 +1604,6 @@ public class CompactConcurrentHashSet2<V> extends AbstractSet<V> implements Set<
      *
      * @return null if added
      */
-    /**
-     * Finds or adds a node.
-     *
-     * @return null if added
-     */
     TreeNode<K> putTreeVal(int h, K k) {
       Class<?> kc = null;
       boolean searched = false;

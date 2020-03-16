@@ -1895,7 +1895,6 @@ public class BucketRegion extends DistributedRegion implements Bucket {
    * @param adjunctRecipients recipients that must unconditionally get the event
    * @param filterRoutingInfo routing information for all members having the region
    * @param processor the reply processor, or null if there isn't one
-   * @return the set of failed recipients
    */
   void performRemoveAllAdjunctMessaging(DistributedRemoveAllOperation op,
       Set cacheOpRecipients, Set<InternalDistributedMember> adjunctRecipients,

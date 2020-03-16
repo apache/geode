@@ -1463,7 +1463,7 @@ public class LonerDistributionManager implements DistributionManager {
   }
 
   @Override
-  /** returns the Threads Monitoring instance */
+  /* returns the Threads Monitoring instance */
   public ThreadsMonitoring getThreadMonitoring() {
     return this.threadMonitor;
   }

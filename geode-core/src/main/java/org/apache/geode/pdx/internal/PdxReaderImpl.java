@@ -44,7 +44,6 @@ import org.apache.geode.pdx.internal.AutoSerializableManager.PdxFieldWrapper;
  * base class of our {@link PdxInstance} implementation. It is serializable because PdxInstance is.
  *
  * @since GemFire 6.6
- * @see InternalDataSerializer#readPdxSerializable(java.io.DataInput)
  */
 public class PdxReaderImpl implements InternalPdxReader, java.io.Serializable {
 

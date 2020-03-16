@@ -18,6 +18,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 
 import org.apache.logging.log4j.Logger;
+import org.jgroups.annotations.GuardedBy;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.InternalGemFireError;
@@ -186,9 +187,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
 
   protected abstract void basicPerformTimeout(boolean isPending) throws CacheException;
 
-  /**
-   * @guarded.By suspendLock
-   */
+  @GuardedBy("suspendLock")
   @MakeNotStatic
   private static boolean expirationSuspended = false;
 

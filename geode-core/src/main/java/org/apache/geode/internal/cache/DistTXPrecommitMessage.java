@@ -280,9 +280,7 @@ public class DistTXPrecommitMessage extends TXMessage {
    * Reply processor which collects all CommitReplyExceptions for Dist Tx and emits a detailed
    * failure exception if problems occur
    *
-   * @see TXCommitMessage.CommitReplyProcessor
-   *
-   *      [DISTTX] TODO see if need ReliableReplyProcessor21? departed members?
+   * [DISTTX] TODO see if need ReliableReplyProcessor21? departed members?
    */
   public static class DistTxPrecommitReplyProcessor extends ReplyProcessor21 {
     private HashMap<DistributedMember, DistTXCoordinatorInterface> msgMap;

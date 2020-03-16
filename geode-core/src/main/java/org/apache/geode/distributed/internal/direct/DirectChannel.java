@@ -251,7 +251,7 @@ public class DirectChannel {
     try {
       do {
         interrupted = Thread.interrupted() || interrupted;
-        /**
+        /*
          * Exceptions that happened during one attempt to send
          */
         if (retryInfo != null) {

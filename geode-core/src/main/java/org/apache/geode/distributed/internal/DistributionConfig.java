@@ -4356,7 +4356,7 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
   /**
    * Sets the value of the {@link ConfigurationProperties#SERVER_SSL_TRUSTSTORE} property.
    *
-   * @deprecated Geode 1.0 use {@link #setServerSSLTrustStore(String)}
+   * @deprecated Geode 1.0 use {@link #setClusterSSLTrustStore(String)}
    */
   @Deprecated
   @ConfigAttributeSetter(name = SERVER_SSL_TRUSTSTORE)
@@ -4550,7 +4550,7 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
    * Sets the value of the {@link ConfigurationProperties#GATEWAY_SSL_REQUIRE_AUTHENTICATION}
    * property.
    *
-   * @deprecated Geode 1.0 use {@link #setGatewaySSLRequireAuthentication(boolean)}
+   * @deprecated Geode 1.0 use {@link #setClusterSSLRequireAuthentication(boolean)}
    */
   @Deprecated
   @ConfigAttributeSetter(name = GATEWAY_SSL_REQUIRE_AUTHENTICATION)

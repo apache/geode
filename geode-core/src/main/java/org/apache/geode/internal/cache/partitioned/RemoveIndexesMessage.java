@@ -53,11 +53,6 @@ public class RemoveIndexesMessage extends PartitionMessage {
   private static final Logger logger = LogService.getLogger();
 
   /**
-   * Represents how many buckets had indexes and got removed.
-   */
-  // private int bucketIndexesRemoved;
-
-  /**
    * Name of the index to be removed.
    */
   private String indexName;
@@ -322,13 +317,6 @@ public class RemoveIndexesMessage extends PartitionMessage {
    */
   public static class RemoveIndexesResponse extends PartitionResponse {
 
-
-    /**
-     * Result of remove index.
-     */
-    // boolean result;
-
-
     /**
      * Number of buckets index removed.
      */
@@ -389,11 +377,6 @@ public class RemoveIndexesMessage extends PartitionMessage {
    *
    */
   public static class RemoveIndexesResult {
-
-    /**
-     * Int representing number of total bucket indexes removed.
-     */
-    // private int numBucketIndexRemoved;
 
     /**
      * Constructor.

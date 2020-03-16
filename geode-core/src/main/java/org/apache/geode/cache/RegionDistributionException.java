@@ -38,7 +38,7 @@ public class RegionDistributionException extends RegionRoleException {
 
   /**
    * Set of missing required roles causing access to the region to fail. failedRoles is transient to
-   * avoid NotSerializableException. See {@link #writeObject} and {@link #readObject} for custom
+   * avoid NotSerializableException. See {@see #writeObject} and {@see #readObject} for custom
    * serialization.
    */
   private transient Set failedRoles = Collections.EMPTY_SET;

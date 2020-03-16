@@ -95,11 +95,6 @@ public class MessageDispatcher extends LoggingThread {
   private volatile boolean _isStopped = true;
 
   /**
-   * guarded.By _pausedLock
-   */
-  // boolean _isPausedDispatcher = false;
-
-  /**
    * A lock object used to control pausing this dispatcher
    */
   protected final Object _pausedLock = new Object();

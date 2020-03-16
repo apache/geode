@@ -15,7 +15,7 @@
 
 package org.apache.geode.internal.cache;
 
-/**
+/*
  * RegionExpiryTask represents a timeout event for region expiration
  */
 

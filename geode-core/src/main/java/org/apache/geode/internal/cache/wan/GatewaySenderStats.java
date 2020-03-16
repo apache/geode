@@ -161,7 +161,7 @@ public class GatewaySenderStats {
   /** Id of synchronization events provided */
   private static final int synchronizationEventsProvidedId;
 
-  /**
+  /*
    * Static initializer to create and initialize the <code>StatisticsType</code>
    */
   static {

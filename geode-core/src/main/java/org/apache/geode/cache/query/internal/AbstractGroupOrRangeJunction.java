@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
+/*
  * Abstract Super class of the Group or Range Junction. The common functionality of Group or Range
  * Junction is present in this class.
  */

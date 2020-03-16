@@ -34,7 +34,7 @@ import org.apache.geode.internal.cache.UserSpecifiedDiskStoreAttributes;
 public class DiskStoreAttributesCreation extends UserSpecifiedDiskStoreAttributes
     implements Serializable, DiskStore {
 
-  /**
+  /*
    * An <code>AttributesFactory</code> for creating default <code>RegionAttribute</code>s
    */
   // private static final DiskStoreFactory defaultFactory = new DiskStoreFactoryImpl();
