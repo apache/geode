@@ -56,8 +56,6 @@ public abstract class CqQueryImpl implements InternalCqQuery {
 
   protected String queryString;
 
-  static final Object TOKEN = new Object();
-
   LocalRegion cqBaseRegion;
 
   protected Query query = null;
