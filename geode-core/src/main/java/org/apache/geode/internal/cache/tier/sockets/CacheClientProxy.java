@@ -188,7 +188,7 @@ public class CacheClientProxy implements ClientSession {
    */
   protected static final int MESSAGE_OFFER_TIME = 0;
 
-  /**
+  /*
    * The default maximum message queue size
    */
   // protected static final int MESSAGE_QUEUE_SIZE_DEFAULT = 230000;
@@ -1898,15 +1898,19 @@ public class CacheClientProxy implements ClientSession {
         terminateDispatching(false);
         _cacheClientNotifier.statistics.incQueueDroppedCount();
 
-        /**
+        /*
          * Setting the expiration task to null again and cancelling existing one, if any. See
          * #50894.
          * <p/>
          * The message dispatcher may again set the expiry task in below path: <code>
-         *  org.apache.geode.internal.cache.tier.sockets.CacheClientProxy.scheduleDurableExpirationTask(CacheClientProxy.java:2020)
-         *  org.apache.geode.internal.cache.tier.sockets.CacheClientProxy.pauseDispatching(CacheClientProxy.java:924)
-         *  org.apache.geode.internal.cache.tier.sockets.CacheClientProxy$MessageDispatcher.pauseOrUnregisterProxy(CacheClientProxy.java:2813)
-         *  org.apache.geode.internal.cache.tier.sockets.CacheClientProxy$MessageDispatcher.run(CacheClientProxy.java:2692)
+         * org.apache.geode.internal.cache.tier.sockets.CacheClientProxy.
+         * scheduleDurableExpirationTask(CacheClientProxy.java:2020)
+         * org.apache.geode.internal.cache.tier.sockets.CacheClientProxy.pauseDispatching(
+         * CacheClientProxy.java:924)
+         * org.apache.geode.internal.cache.tier.sockets.CacheClientProxy$MessageDispatcher.
+         * pauseOrUnregisterProxy(CacheClientProxy.java:2813)
+         * org.apache.geode.internal.cache.tier.sockets.CacheClientProxy$MessageDispatcher.run(
+         * CacheClientProxy.java:2692)
          * </code>
          * <p/>
          * This is because message dispatcher may get an IOException with "Proxy closing due to

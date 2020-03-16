@@ -52,7 +52,7 @@ public class TabularResultModelTest {
 
     assertThat(table2.getColumnSize()).isEqualTo(3);
 
-    assertThat(table1.getContent()).isEqualToComparingFieldByFieldRecursively(table2.getContent());
+    assertThat(table1.getContent()).usingRecursiveComparison().isEqualTo(table2.getContent());
   }
 
   @Test

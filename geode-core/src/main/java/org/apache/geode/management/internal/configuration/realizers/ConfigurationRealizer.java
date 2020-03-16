@@ -17,6 +17,7 @@
 package org.apache.geode.management.internal.configuration.realizers;
 
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.configuration.AbstractConfiguration;

@@ -23,7 +23,6 @@ import java.util.Stack;
 import org.apache.commons.lang3.JavaVersion;
 
 import org.apache.geode.GemFireException;
-import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.lang.SystemUtils;
 import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.management.internal.i18n.CliStrings;
@@ -94,6 +93,6 @@ public class JdkTool {
   }
 
   protected static String getExecutableSuffix() {
-    return SystemUtils.isWindows() ? ".exe" : StringUtils.EMPTY;
+    return SystemUtils.isWindows() ? ".exe" : "";
   }
 }

@@ -112,7 +112,7 @@ public class CacheXmlPropertyResolver implements PropertyResolver {
       if (helper == null) {
         helper = new CacheXmlPropertyResolverHelper(prefix, suffix);
       }
-      /**
+      /*
        * A <code>resolvedString</code> can be same as <code>stringWithPrefixAndSuffix</code> if
        * <code>ignoreUnresolvedProperties</code> is set true and we just return it as is.
        */

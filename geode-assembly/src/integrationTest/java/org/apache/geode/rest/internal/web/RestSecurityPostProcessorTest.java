@@ -18,7 +18,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANA
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
 import static org.apache.geode.test.junit.rules.HttpResponseAssert.assertResponse;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.net.URLEncoder;
 
@@ -59,8 +58,9 @@ public class RestSecurityPostProcessorTest {
   public RequiresGeodeHome requiresGeodeHome = new RequiresGeodeHome();
 
   @BeforeClass
-  public static void before() throws Exception {
-    Region region = serverStarter.createRegion(RegionShortcut.REPLICATE, "customers");
+  public static void before() {
+    Region<String, Customer> region =
+        serverStarter.createRegion(RegionShortcut.REPLICATE, "customers");
     region.put("1", new Customer(1L, "John", "Doe", "555555555"));
     region.put("2", new Customer(2L, "Richard", "Roe", "222533554"));
     region.put("3", new Customer(3L, "Jane", "Doe", "555223333"));
@@ -76,7 +76,7 @@ public class RestSecurityPostProcessorTest {
     JsonNode jsonNode =
         assertResponse(restClient.doGet("/customers/1", "dataReader", "1234567"))
             .hasStatusCode(200)
-            .hasContentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
+            .hasContentType(MediaType.APPLICATION_JSON_VALUE)
             .getJsonObject();
 
     assertEquals("*********", jsonNode.get("ssn").asText());
@@ -86,7 +86,7 @@ public class RestSecurityPostProcessorTest {
     jsonNode =
         assertResponse(restClient.doGet("/customers/1", "super-user", "1234567"))
             .hasStatusCode(200)
-            .hasContentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
+            .hasContentType(MediaType.APPLICATION_JSON_VALUE)
             .getJsonObject();
     assertEquals("555555555", jsonNode.get("ssn").asText());
     assertEquals(1L, jsonNode.get("id").asLong());
@@ -98,7 +98,7 @@ public class RestSecurityPostProcessorTest {
     JsonNode jsonNode =
         assertResponse(restClient.doGet("/customers/1,3", "dataReader", "1234567"))
             .hasStatusCode(200)
-            .hasContentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
+            .hasContentType(MediaType.APPLICATION_JSON_VALUE)
             .getJsonObject();
 
     JsonNode customers = jsonNode.get("customers");
@@ -116,7 +116,7 @@ public class RestSecurityPostProcessorTest {
   public void getRegion() throws Exception {
     JsonNode jsonNode = assertResponse(restClient.doGet("/customers", "dataReader", "1234567"))
         .hasStatusCode(200)
-        .hasContentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
+        .hasContentType(MediaType.APPLICATION_JSON_VALUE)
         .getJsonObject();
 
     JsonNode customers = jsonNode.get("customers");
@@ -134,7 +134,7 @@ public class RestSecurityPostProcessorTest {
         + URLEncoder.encode("SELECT * FROM /customers order by customerId", "UTF-8");
     JsonNode jsonArray = assertResponse(restClient.doGet(query, "dataReader", "1234567"))
         .hasStatusCode(200)
-        .hasContentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
+        .hasContentType(MediaType.APPLICATION_JSON_VALUE)
         .getJsonObject();
 
     final int length = jsonArray.size();
@@ -160,7 +160,7 @@ public class RestSecurityPostProcessorTest {
     String query = "/queries";
     assertResponse(restClient.doGet(query, "dataReader", "1234567"))
         .hasStatusCode(200)
-        .hasContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+        .hasContentType(MediaType.APPLICATION_JSON_VALUE);
 
     // Execute the query
     JsonNode jsonArray =
@@ -169,7 +169,7 @@ public class RestSecurityPostProcessorTest {
                 .hasStatusCode(200)
                 .getJsonObject();
 
-    assertTrue(jsonArray.size() == 1);
+    assertEquals(1, jsonArray.size());
     JsonNode customer = jsonArray.get(0);
     assertEquals("*********", customer.get("ssn").asText());
     assertEquals(1L, customer.get("id").asLong());

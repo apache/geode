@@ -40,14 +40,14 @@ public class DestroyGatewaySenderCommandTest {
   public static GfshParserRule parser = new GfshParserRule();
 
   private DestroyGatewaySenderCommand command;
-  private InternalCache cache;
   private List<CliFunctionResult> functionResults;
   private CliFunctionResult result1, result2;
 
   @Before
-  public void before() throws Exception {
+  @SuppressWarnings("unchecked")
+  public void before() {
     command = spy(DestroyGatewaySenderCommand.class);
-    cache = mock(InternalCache.class);
+    InternalCache cache = mock(InternalCache.class);
     doReturn(cache).when(command).getCache();
     doReturn(true).when(command).waitForGatewaySenderMBeanDeletion(any(), any());
     functionResults = new ArrayList<>();
@@ -56,12 +56,13 @@ public class DestroyGatewaySenderCommandTest {
   }
 
   @Test
-  public void mandatoryOptions() throws Exception {
+  public void mandatoryOptions() {
     assertThat(parser.parse("destroy gateway-sender --member=A")).isNull();
   }
 
   @Test
-  public void allFunctionReturnsOK() throws Exception {
+  @SuppressWarnings("deprecation")
+  public void allFunctionReturnsOK() {
     result1 = new CliFunctionResult("member", CliFunctionResult.StatusState.OK,
         "result1");
     result2 = new CliFunctionResult("member", CliFunctionResult.StatusState.OK,
@@ -75,7 +76,8 @@ public class DestroyGatewaySenderCommandTest {
   }
 
   @Test
-  public void oneFunctionReturnsError() throws Exception {
+  @SuppressWarnings("deprecation")
+  public void oneFunctionReturnsError() {
     result1 = new CliFunctionResult("member", CliFunctionResult.StatusState.OK,
         "result1");
     result2 = new CliFunctionResult("member", CliFunctionResult.StatusState.ERROR,
@@ -89,7 +91,8 @@ public class DestroyGatewaySenderCommandTest {
   }
 
   @Test
-  public void oneFunctionThrowsGeneralException() throws Exception {
+  @SuppressWarnings("deprecation")
+  public void oneFunctionThrowsGeneralException() {
     result1 = new CliFunctionResult("member", CliFunctionResult.StatusState.OK, "result1");
     result2 = new CliFunctionResult("member", new Exception("something happened"), null);
     functionResults.add(result1);
@@ -103,7 +106,7 @@ public class DestroyGatewaySenderCommandTest {
   }
 
   @Test
-  public void putsIdOfDestroyedSenderInResult() throws Exception {
+  public void putsIdOfDestroyedSenderInResult() {
     result1 = new CliFunctionResult("member", CliFunctionResult.StatusState.OK,
         "result1");
     functionResults.add(result1);

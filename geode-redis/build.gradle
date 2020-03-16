@@ -18,6 +18,7 @@
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
+apply from: "${rootDir}/${scriptDir}/warnings.gradle"
 
 dependencies {
   compile(platform(project(':boms:geode-all-bom')))

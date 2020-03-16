@@ -39,7 +39,7 @@ public class RegisterDriverFunction extends CliFunction<Object[]> {
       DriverJarUtil util = getDriverJarUtil();
       util.registerDriver(driverClassName);
       return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.OK,
-          driverClassName + " was succesfully registered.");
+          driverClassName + " was successfully registered.");
     } catch (Exception ex) {
       return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
           ex.getMessage());

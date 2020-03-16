@@ -37,6 +37,7 @@ public class DeregisterDriverFunctionTest {
   private DriverJarUtil util;
   private final String DRIVER_CLASS_NAME = "Test.Driver.Name";
 
+  @SuppressWarnings("unchecked")
   @Before
   public void setUp() {
     context = mock(FunctionContextImpl.class);
@@ -51,7 +52,7 @@ public class DeregisterDriverFunctionTest {
   public void testExecuteFunctionDoesNotReturnError() {
     CliFunctionResult functionResult = function.executeFunction(context);
     assertThat(functionResult.getStatusMessage())
-        .contains(DRIVER_CLASS_NAME + " was succesfully deregistered.");
+        .contains(DRIVER_CLASS_NAME + " was successfully deregistered.");
     assertThat(functionResult.getStatus()).contains(CliFunctionResult.StatusState.OK.toString());
   }
 

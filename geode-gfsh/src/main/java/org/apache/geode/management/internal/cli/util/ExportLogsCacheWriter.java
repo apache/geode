@@ -23,31 +23,25 @@ import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import org.apache.commons.io.IOUtils;
-
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.util.CacheWriterAdapter;
 
-public class ExportLogsCacheWriter extends CacheWriterAdapter implements Serializable {
+public class ExportLogsCacheWriter extends CacheWriterAdapter<String, byte[]>
+    implements Serializable {
   private Path currentFile;
   private boolean isEmpty = true;
   private BufferedOutputStream currentOutputStream;
 
   @Override
-  public void beforeCreate(EntryEvent event) throws CacheWriterException {
+  public void beforeCreate(EntryEvent<String, byte[]> event) throws CacheWriterException {
     if (currentOutputStream == null) {
       throw new IllegalStateException(
           "No outputStream is open.  You must call startFile before sending data.");
     }
 
     try {
-      Object newValue = event.getNewValue();
-      if (!(newValue instanceof byte[])) {
-        throw new IllegalArgumentException(
-            "Value must be a byte[].  Received " + newValue.getClass().getCanonicalName());
-      }
-      currentOutputStream.write((byte[]) newValue);
+      currentOutputStream.write(event.getNewValue());
       isEmpty = false;
     } catch (IOException e) {
       throw new CacheWriterException(e);
@@ -67,7 +61,13 @@ public class ExportLogsCacheWriter extends CacheWriterAdapter implements Seriali
   public Path endFile() {
     Path completedFile = currentFile;
 
-    IOUtils.closeQuietly(currentOutputStream);
+    try {
+      if (null != currentOutputStream) {
+        currentOutputStream.close();
+      }
+    } catch (IOException ignore) {
+    }
+
     currentOutputStream = null;
     currentFile = null;
     if (isEmpty)

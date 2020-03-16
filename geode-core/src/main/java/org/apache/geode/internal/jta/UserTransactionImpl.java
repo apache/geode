@@ -14,19 +14,6 @@
  */
 package org.apache.geode.internal.jta;
 
-/**
- * <p>
- * <code> UserTransactionImpl </code> is an implementation of UserTransaction interface. It is
- * hard-coded to <code> TransactionManagerImpl
- * </code>.
- * </p>
- *
- *
- * @since GemFire 4.0
- *
- * @deprecated as of Geode 1.2.0 user should use a third party JTA transaction manager to manage JTA
- *             transactions.
- */
 
 import java.io.Serializable;
 
@@ -41,6 +28,19 @@ import javax.transaction.UserTransaction;
 import org.apache.geode.LogWriter;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 
+/**
+ * <p>
+ * <code> UserTransactionImpl </code> is an implementation of UserTransaction interface. It is
+ * hard-coded to <code> TransactionManagerImpl
+ * </code>.
+ * </p>
+ *
+ *
+ * @since GemFire 4.0
+ *
+ * @deprecated as of Geode 1.2.0 user should use a third party JTA transaction manager to manage JTA
+ *             transactions.
+ */
 @Deprecated
 public class UserTransactionImpl implements UserTransaction, Serializable {
   private static final long serialVersionUID = 2994652455204901910L;
@@ -58,19 +58,10 @@ public class UserTransactionImpl implements UserTransaction, Serializable {
   }
 
   /**
-   * has setTimeOutbeenCalled
-   */
-  // private boolean timeOutCalled = false;
-  /**
    * timeOut which is stored in case timeOut is called before begin
    */
   private int storedTimeOut = TransactionManagerImpl.DEFAULT_TRANSACTION_TIMEOUT;
 
-  /**
-   * defaultTimeOut in seconds;
-   *
-   */
-  // private int defaultTimeOut = 600;
   /**
    * Calls begin() of the transaction manager owning this user transaction
    *

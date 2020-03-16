@@ -73,7 +73,7 @@ public class DataBrowser {
 
       // Add query in user's query history list
       userQueries.put(Long.toString(System.currentTimeMillis()), queryText);
-      queries.put(userId, userQueries);
+      queries.set(userId, userQueries);
 
       // Store queries in file back
       operationStatus = storeQueriesInFile(queries);
@@ -102,7 +102,7 @@ public class DataBrowser {
       if (userQueries != null) {
         // Remove user's query
         userQueries.remove(queryId);
-        queries.put(userId, userQueries);
+        queries.set(userId, userQueries);
 
         // Store queries in file back
         operationStatus = storeQueriesInFile(queries);

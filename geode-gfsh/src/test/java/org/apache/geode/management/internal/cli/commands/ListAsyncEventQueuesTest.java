@@ -54,7 +54,7 @@ public class ListAsyncEventQueuesTest {
 
 
   @Before
-  public void before() throws Exception {
+  public void before() {
     mockedMember = mock(DistributedMember.class);
     anotherMockedMember = mock(DistributedMember.class);
     command = spy(ListAsyncEventQueuesCommand.class);
@@ -71,6 +71,7 @@ public class ListAsyncEventQueuesTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   public void oneServerWithOneQueue() {
     // Mock one member
     doReturn(new HashSet<>(Collections.singletonList(mockedMember))).when(command)
@@ -90,6 +91,7 @@ public class ListAsyncEventQueuesTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   public void oneServerWithOneParameterizedQueue() {
     // Mock one member
     doReturn(new HashSet<>(Collections.singletonList(mockedMember))).when(command)
@@ -145,6 +147,7 @@ public class ListAsyncEventQueuesTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   public void twoServersWithManyQueues() {
     // Mock two members, even though they're not directly consumed
     doReturn(new HashSet<>(Arrays.asList(mockedMember, anotherMockedMember))).when(command)
@@ -185,6 +188,7 @@ public class ListAsyncEventQueuesTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   public void oneMemberSucceedsAndOneFails() {
     // Mock two members, even though they're not directly consumed
     doReturn(new HashSet<>(Arrays.asList(mockedMember, anotherMockedMember))).when(command)
@@ -219,7 +223,7 @@ public class ListAsyncEventQueuesTest {
   /**
    * Wrapper for mocked AsyncEventQueueData, with convenience method for expected table output.
    */
-  class FakeDetails {
+  static class FakeDetails {
     private String memberName;
     private String queueId;
     private int batchSize;

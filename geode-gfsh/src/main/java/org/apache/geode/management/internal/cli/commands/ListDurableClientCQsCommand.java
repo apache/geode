@@ -61,6 +61,7 @@ public class ListDurableClientCQsCommand extends GfshCommand {
 
     final ResultCollector<?, ?> rc =
         executeFunction(new ListDurableCqNamesFunction(), durableClientId, targetMembers);
+    @SuppressWarnings("unchecked")
     final List<List<CliFunctionResult>> results = (List<List<CliFunctionResult>>) rc.getResult();
 
     ResultModel result = new ResultModel();

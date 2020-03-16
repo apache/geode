@@ -15,6 +15,8 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
 import java.util.List;
 import java.util.Set;
 
@@ -27,7 +29,6 @@ import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.lang.Identifiable;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
@@ -62,7 +63,7 @@ public class DestroyIndexCommand extends SingleGfshCommand {
       @CliOption(key = CliStrings.IFEXISTS, specifiedDefaultValue = "true",
           unspecifiedDefaultValue = "false", help = CliStrings.IFEXISTS_HELP) boolean ifExists) {
 
-    if (StringUtils.isBlank(indexName) && StringUtils.isBlank(regionPath)
+    if (isBlank(indexName) && isBlank(regionPath)
         && ArrayUtils.isEmpty(group) && ArrayUtils.isEmpty(memberNameOrID)) {
       return ResultModel.createError(
           CliStrings.format(CliStrings.PROVIDE_ATLEAST_ONE_OPTION, CliStrings.DESTROY_INDEX));

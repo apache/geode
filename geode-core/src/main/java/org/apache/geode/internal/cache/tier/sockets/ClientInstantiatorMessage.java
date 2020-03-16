@@ -24,6 +24,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.cache.EnumListenerEvent;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.tier.MessageType;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
@@ -144,7 +145,7 @@ public class ClientInstantiatorMessage extends ClientUpdateMessageImpl {
    * Writes an object to a <code>Datautput</code>.
    *
    * @throws IOException If this serializer cannot write an object to <code>out</code>.
-   * @see DataSerializableFixedID#fromData
+   * @see DataSerializableFixedID#toData(DataOutput, SerializationContext)
    */
   @Override
   public void toData(DataOutput out,
@@ -165,7 +166,7 @@ public class ClientInstantiatorMessage extends ClientUpdateMessageImpl {
    *
    * @throws IOException If this serializer cannot read an object from <code>in</code>.
    * @throws ClassNotFoundException If the class for an object being restored cannot be found.
-   * @see DataSerializableFixedID#toData
+   * @see DataSerializableFixedID#fromData(DataInput, DeserializationContext)
    */
   @Override
   public void fromData(DataInput in,

@@ -67,10 +67,12 @@ public class ExportDataCommand extends GfshCommand {
     ResultModel result;
     try {
       String path = dirPath != null ? defaultFileName(dirPath, regionName) : filePath;
-      final String args[] = {regionName, path, Boolean.toString(parallel)};
+      final String[] args = {regionName, path, Boolean.toString(parallel)};
 
       ResultCollector<?, ?> rc = executeFunction(exportDataFunction, args, targetMember);
-      result = ResultModel.createMemberStatusResult((List<CliFunctionResult>) rc.getResult());
+      @SuppressWarnings("unchecked")
+      final List<CliFunctionResult> results = (List<CliFunctionResult>) rc.getResult();
+      result = ResultModel.createMemberStatusResult(results);
     } catch (CacheClosedException e) {
       result = ResultModel.createError(e.getMessage());
     } catch (FunctionInvocationTargetException e) {

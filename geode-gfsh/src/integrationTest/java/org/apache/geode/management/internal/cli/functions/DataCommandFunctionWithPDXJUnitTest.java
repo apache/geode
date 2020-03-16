@@ -61,7 +61,7 @@ public class DataCommandFunctionWithPDXJUnitTest {
     dan = new CustomerWithPhone("3", "Dan", "Dickinson", "(333) 333-3333");
 
     cache = server.getCache();
-    Region region = cache.getRegion(PARTITIONED_REGION);
+    Region<Integer, Customer> region = cache.getRegion(PARTITIONED_REGION);
     region.put(0, alice);
     region.put(1, bob);
     region.put(2, charlie);

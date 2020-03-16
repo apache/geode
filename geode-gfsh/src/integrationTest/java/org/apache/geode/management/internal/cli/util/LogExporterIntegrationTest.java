@@ -60,7 +60,7 @@ public class LogExporterIntegrationTest {
   public ServerStarterRule server = new ServerStarterRule();
 
   @Before
-  public void before() throws Exception {
+  public void before() {
     properties = new Properties();
     // make sure the server's working dir has no log files or stats file to begin with, since in
     // some tests we are asserting on the # of log files and stats files created by the server
@@ -177,7 +177,9 @@ public class LogExporterIntegrationTest {
     ExportLogsFunction.Args args =
         new ExportLogsFunction.Args(null, null, "info", false, false, false);
     CapturingResultSender resultSender = new CapturingResultSender();
-    FunctionContext context = new FunctionContextImpl(cache, "functionId", args, resultSender);
+    @SuppressWarnings("unchecked")
+    FunctionContext<ExportLogsFunction.Args> context =
+        new FunctionContextImpl(cache, "functionId", args, resultSender);
     new ExportLogsFunction().execute(context);
     if (resultSender.getThrowable() != null) {
       throw resultSender.getThrowable();
@@ -188,7 +190,7 @@ public class LogExporterIntegrationTest {
     return new ZipFile(zipFilePath).stream().map(ZipEntry::getName).collect(Collectors.toSet());
   }
 
-  private static class CapturingResultSender implements ResultSender {
+  private static class CapturingResultSender implements ResultSender<Object> {
 
     private Throwable throwable;
 

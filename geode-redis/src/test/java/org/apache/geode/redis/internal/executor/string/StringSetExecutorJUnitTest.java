@@ -50,10 +50,10 @@ public class StringSetExecutorJUnitTest {
   private ExecutionHandlerContext context;
   private SetExecutor executor;
   private ByteBuf buffer;
-  private KeyRegistrar keyRegistrar;
   private Region<ByteArrayWrapper, ByteArrayWrapper> region;
   private RegionProvider regionProvider;
 
+  @SuppressWarnings("unchecked")
   @Before
   public void setup() {
     command = mock(Command.class);
@@ -72,7 +72,7 @@ public class StringSetExecutorJUnitTest {
     when(allocator.buffer(anyInt())).thenReturn(buffer);
     when(context.getByteBufAllocator()).thenReturn(allocator);
 
-    keyRegistrar = mock(KeyRegistrar.class);
+    KeyRegistrar keyRegistrar = mock(KeyRegistrar.class);
     when(context.getKeyRegistrar()).thenReturn(keyRegistrar);
 
     executor = spy(new SetExecutor());

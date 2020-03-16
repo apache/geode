@@ -30,7 +30,7 @@ import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 
-public class ListDeployedFunction implements InternalFunction {
+public class ListDeployedFunction implements InternalFunction<Void> {
   private static final Logger logger = LogService.getLogger();
 
   public static final String ID = ListDeployedFunction.class.getName();
@@ -38,7 +38,7 @@ public class ListDeployedFunction implements InternalFunction {
   private static final long serialVersionUID = 1L;
 
   @Override
-  public void execute(FunctionContext context) {
+  public void execute(FunctionContext<Void> context) {
     // Declared here so that it's available when returning a Throwable
     String memberId = "";
 

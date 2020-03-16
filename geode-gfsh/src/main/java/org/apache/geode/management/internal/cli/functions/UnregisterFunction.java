@@ -18,13 +18,13 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 
-public class UnregisterFunction implements InternalFunction {
+public class UnregisterFunction implements InternalFunction<Object[]> {
   public static final String ID = UnregisterFunction.class.getName();
   private static final long serialVersionUID = 1L;
 
   @Override
-  public void execute(FunctionContext context) {
-    Object[] args = (Object[]) context.getArguments();
+  public void execute(FunctionContext<Object[]> context) {
+    Object[] args = context.getArguments();
     String functionId = (String) args[0];
     try {
       FunctionService.unregisterFunction(functionId);

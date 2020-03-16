@@ -82,7 +82,7 @@ public class CqQueryVsdStats {
   /** Id for the queued CQ events size during execute with initial results */
   private static final int _queuedCqListenerEventsId;
 
-  /**
+  /*
    * Static initializer to create and initialize the <code>StatisticsType</code>
    */
   static {

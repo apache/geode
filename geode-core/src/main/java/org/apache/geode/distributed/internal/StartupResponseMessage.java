@@ -77,7 +77,7 @@ public class StartupResponseMessage extends DistributionMessage
     this.distributedSystemId = dm.getDistributedSystemId();
     this.redundancyZone = dm.getRedundancyZone(dm.getId());
 
-    /**
+    /*
      * To fix B39705, we have added the instance variables to initialize the information about the
      * instantiators. While preparing the response message, we populate this information.
      **/

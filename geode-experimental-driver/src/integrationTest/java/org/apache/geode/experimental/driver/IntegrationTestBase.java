@@ -86,15 +86,15 @@ public class IntegrationTestBase {
     cache.close();
   }
 
-  class TestFunction implements org.apache.geode.cache.execute.Function {
+  static class TestFunction implements org.apache.geode.cache.execute.Function<Void> {
     @Override
     public String getId() {
       return FUNCTION_ID;
     }
 
     @Override
-    public void execute(FunctionContext context) {
-      final ResultSender resultSender = context.getResultSender();
+    public void execute(FunctionContext<Void> context) {
+      final ResultSender<String> resultSender = context.getResultSender();
       resultSender.sendResult("first result");
       resultSender.sendResult("next result");
       resultSender.lastResult("last result");

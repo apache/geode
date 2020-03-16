@@ -33,7 +33,7 @@ public class ListJndiBindingFunction extends CliFunction<Void> {
   private static final long serialVersionUID = 5254506785395069200L;
 
   @Override
-  public CliFunctionResult executeFunction(FunctionContext context) {
+  public CliFunctionResult executeFunction(FunctionContext<Void> context) {
     CliFunctionResult result;
     try {
       Context ctx = JNDIInvoker.getJNDIContext();
@@ -41,12 +41,18 @@ public class ListJndiBindingFunction extends CliFunction<Void> {
       List<String> resultValues = bindings.entrySet().stream()
           .flatMap((e) -> Arrays.stream(new String[] {e.getKey(), e.getValue()}))
           .collect(Collectors.toList());
-      result = new CliFunctionResult(context.getMemberName(),
-          resultValues.toArray(new Serializable[] {}));
+      result = createCliFunctionResult(context, resultValues);
     } catch (Exception e) {
       result =
           new CliFunctionResult(context.getMemberName(), e, "Unable to retrieve JNDI bindings");
     }
     return result;
+  }
+
+  @SuppressWarnings("deprecation")
+  private CliFunctionResult createCliFunctionResult(FunctionContext<Void> context,
+      List<String> resultValues) {
+    return new CliFunctionResult(context.getMemberName(),
+        resultValues.toArray(new Serializable[] {}));
   }
 }

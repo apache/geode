@@ -281,7 +281,7 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
     for (Object key : r.keySet()) {
       RegionEntry re = r.getRegionEntry(key);
       if (re != null) {
-        /**
+        /*
          * value could be GATEWAY_SENDER_EVENT_IMPL_VALUE or region entry value.
          */
         @Unretained(OffHeapIdentifier.GATEWAY_SENDER_EVENT_IMPL_VALUE)

@@ -45,13 +45,16 @@ public class RenameExecutor extends StringExecutor {
       return;
     }
 
-    try (AutoCloseableLock lockForOldKey = context.getLockService().lock(key)) {
-      try (AutoCloseableLock lockForNewKey = context.getLockService().lock(newKey)) {
+    try (@SuppressWarnings("unused")
+    AutoCloseableLock lockForOldKey = context.getLockService().lock(key)) {
+      try (@SuppressWarnings("unused")
+      AutoCloseableLock lockForNewKey = context.getLockService().lock(newKey)) {
         RedisDataType redisDataType = context.getKeyRegistrar().getType(key);
         switch (redisDataType) {
           case REDIS_STRING:
           case REDIS_HASH:
           case REDIS_SET:
+            @SuppressWarnings("unchecked")
             Region<ByteArrayWrapper, Object> region =
                 (Region<ByteArrayWrapper, Object>) context.getRegionProvider()
                     .getRegionForType(redisDataType);

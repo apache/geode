@@ -1323,7 +1323,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
     try {
       locatorStats.hookupStats(sys,
           LocalHostUtil.getCanonicalLocalHostName() + '-' + membershipLocator
-              .getBindAddress());
+              .getSocketAddress());
     } catch (UnknownHostException e) {
       logger.warn(e);
     }

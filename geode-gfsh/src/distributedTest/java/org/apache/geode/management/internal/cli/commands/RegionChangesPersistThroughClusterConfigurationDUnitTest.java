@@ -51,7 +51,8 @@ public class RegionChangesPersistThroughClusterConfigurationDUnitTest {
   @Rule
   public ClusterStartupRule lsRule = new ClusterStartupRule();
 
-  private MemberVM locator, server1, server2;
+  private MemberVM locator;
+  private MemberVM server2;
 
   private static final String REGION_NAME = "testRegionSharedConfigRegion";
   private static final String REGION_PATH = "/" + REGION_NAME;
@@ -81,7 +82,8 @@ public class RegionChangesPersistThroughClusterConfigurationDUnitTest {
     Properties serverProps = new Properties();
     serverProps.setProperty(MCAST_PORT, "0");
     serverProps.setProperty(USE_CLUSTER_CONFIGURATION, "true");
-    server1 = lsRule.startServerVM(1, serverProps, locator.getPort());
+    @SuppressWarnings("unused")
+    MemberVM server1 = lsRule.startServerVM(1, serverProps, locator.getPort());
     server2 = lsRule.startServerVM(2, serverProps, locator.getPort());
 
     gfsh.executeAndAssertThat(
@@ -92,6 +94,7 @@ public class RegionChangesPersistThroughClusterConfigurationDUnitTest {
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   public void createdRegionPersistsThroughCacheConfig() {
     locator.invoke(() -> {
       InternalConfigurationPersistenceService sharedConfig =
@@ -114,6 +117,7 @@ public class RegionChangesPersistThroughClusterConfigurationDUnitTest {
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   public void regionUpdatePersistsThroughClusterConfig() {
     server2.invoke(() -> {
       InternalDistributedSystem system = InternalDistributedSystem.getConnectedInstance();
@@ -147,6 +151,7 @@ public class RegionChangesPersistThroughClusterConfigurationDUnitTest {
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   public void destroyRegionPersistsThroughClusterConfig() {
     gfsh.executeAndAssertThat("destroy region --name=" + REGION_PATH).statusIsSuccess();
 

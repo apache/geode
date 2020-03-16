@@ -44,20 +44,22 @@ public class ClusterManagementOperationResultTest {
             null, "id", null, null);
     String json = mapper.writeValueAsString(result);
     System.out.println(json);
+    @SuppressWarnings("unchecked")
     ClusterManagementOperationResult<ClusterManagementOperation<OperationResult>, OperationResult> value =
         mapper.readValue(json, ClusterManagementOperationResult.class);
     assertThat(value.getStatusMessage()).isEqualTo("Success!!");
   }
 
   @Test
-  public void serializeRebal() throws Exception {
+  public void serializeRebalance() throws Exception {
     RebalanceOperation rebalanceOperation = new RebalanceOperation();
     rebalanceOperation.setOperator("operator");
     ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> result =
-        new ClusterManagementOperationResult(StatusCode.OK, "Success!!", new Date(), new Date(),
+        new ClusterManagementOperationResult<>(StatusCode.OK, "Success!!", new Date(), new Date(),
             rebalanceOperation, "id", new RebalanceResultImpl(), null);
     String json = mapper.writeValueAsString(result);
     System.out.println(json);
+    @SuppressWarnings("unchecked")
     ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> value =
         mapper.readValue(json, ClusterManagementOperationResult.class);
     assertThat(value.getStatusMessage()).isEqualTo("Success!!");

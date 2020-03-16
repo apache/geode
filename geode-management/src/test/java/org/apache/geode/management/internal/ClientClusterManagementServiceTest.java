@@ -56,6 +56,7 @@ public class ClientClusterManagementServiceTest {
   private ClusterManagementOperationResult<RebalanceOperation, RebalanceResult> successOperationResult;
   private ClusterManagementOperation<OperationResult> operation;
 
+  @SuppressWarnings("unchecked")
   @Before
   public void init() {
     serviceTransport = mock(ClusterManagementServiceTransport.class);
@@ -101,6 +102,7 @@ public class ClientClusterManagementServiceTest {
 
   @Test
   public void listCallsSubmitMessageAndReturnsResult() {
+    @SuppressWarnings("unchecked")
     ClusterManagementListResult<AbstractConfiguration<RuntimeInfo>, RuntimeInfo> successListResult =
         mock(ClusterManagementListResult.class);
     when(successListResult.isSuccessful()).thenReturn(true);
@@ -115,6 +117,7 @@ public class ClientClusterManagementServiceTest {
 
   @Test
   public void getCallsSubmitMessageAndReturnsResult() {
+    @SuppressWarnings("unchecked")
     ClusterManagementGetResult<AbstractConfiguration<RuntimeInfo>, RuntimeInfo> successGetResult =
         mock(ClusterManagementGetResult.class);
     when(successGetResult.isSuccessful()).thenReturn(true);
@@ -192,6 +195,7 @@ public class ClientClusterManagementServiceTest {
 
   @Test
   public void listOperationCallsSubmitMessageAndReturnsResult() {
+    @SuppressWarnings("unchecked")
     ClusterManagementListOperationsResult<ClusterManagementOperation<OperationResult>, OperationResult> successListOperationsResult =
         mock(ClusterManagementListOperationsResult.class);
     when(successListOperationsResult.isSuccessful()).thenReturn(true);

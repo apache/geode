@@ -29,7 +29,6 @@ import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.configuration.RegionConfig;
-import org.apache.geode.cache.query.IndexType;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.api.ClusterManagementService;
@@ -53,6 +52,7 @@ public class CreateIndexCommand extends GfshCommand {
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.QUERY)
+  @SuppressWarnings("deprecation")
   public ResultModel createIndex(@CliOption(key = CliStrings.CREATE_INDEX__NAME, mandatory = true,
       help = CliStrings.CREATE_INDEX__NAME__HELP) final String indexName,
 
@@ -69,7 +69,7 @@ public class CreateIndexCommand extends GfshCommand {
 
       @CliOption(key = CliStrings.CREATE_INDEX__TYPE, unspecifiedDefaultValue = "range",
           optionContext = ConverterHint.INDEX_TYPE,
-          help = CliStrings.CREATE_INDEX__TYPE__HELP) final IndexType indexType,
+          help = CliStrings.CREATE_INDEX__TYPE__HELP) final org.apache.geode.cache.query.IndexType indexType,
 
       @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           optionContext = ConverterHint.MEMBERGROUP,
@@ -114,7 +114,7 @@ public class CreateIndexCommand extends GfshCommand {
     index.setName(indexName);
     index.setExpression(indexedExpression);
     index.setFromClause(regionPath);
-    if (indexType == IndexType.PRIMARY_KEY) {
+    if (indexType == org.apache.geode.cache.query.IndexType.PRIMARY_KEY) {
       index.setKeyIndex(true);
     } else {
       index.setKeyIndex(false);

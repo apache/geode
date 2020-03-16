@@ -19,9 +19,9 @@ import org.apache.geode.cache.CustomExpiry;
 import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.Region;
 
-public class TestCustomIdleExpiry implements CustomExpiry {
+public class TestCustomIdleExpiry implements CustomExpiry<String, Integer> {
   @Override
-  public ExpirationAttributes getExpiry(Region.Entry entry) {
+  public ExpirationAttributes getExpiry(Region.Entry<String, Integer> entry) {
     return null;
   }
 

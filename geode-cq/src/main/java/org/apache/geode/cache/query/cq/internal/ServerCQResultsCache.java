@@ -12,17 +12,37 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.codeAnalysis;
+package org.apache.geode.cache.query.cq.internal;
 
-import org.junit.experimental.categories.Category;
+import java.util.Set;
 
-import org.apache.geode.test.junit.categories.SerializationTest;
+/**
+ * Holds the keys that are part of the CQ query results.
+ * Using this, the CQ engine can determine whether to execute query on an old value from EntryEvent
+ * or not,which is an expensive operation.
+ */
+interface ServerCQResultsCache {
+  Object TOKEN = new Object();
 
-@Category({SerializationTest.class})
-public class AnalyzeSerializablesJUnitTest extends AnalyzeSerializablesJUnitTestBase {
+  void setInitialized();
 
-  @Override
-  protected String getModuleName() {
-    return "geode-core";
-  }
+  boolean isInitialized();
+
+  void add(Object key);
+
+  void remove(Object key, boolean isTokenMode);
+
+  void invalidate();
+
+  boolean contains(Object key);
+
+  void markAsDestroyed(Object key);
+
+  int size();
+
+  Set<Object> getKeys();
+
+  boolean isOldValueRequiredForQueryProcessing(Object key);
+
+  void clear();
 }

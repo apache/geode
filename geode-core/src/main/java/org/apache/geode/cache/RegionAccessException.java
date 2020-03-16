@@ -36,7 +36,7 @@ public class RegionAccessException extends RegionRoleException {
 
   /**
    * Set of missing required roles causing access to the region to fail. missingRoles is transient
-   * to avoid NotSerializableException. See {@link #writeObject} and {@link #readObject} for custom
+   * to avoid NotSerializableException. See {@see #writeObject} and {@see #readObject} for custom
    * serialization.
    */
   private transient Set missingRoles = Collections.EMPTY_SET;

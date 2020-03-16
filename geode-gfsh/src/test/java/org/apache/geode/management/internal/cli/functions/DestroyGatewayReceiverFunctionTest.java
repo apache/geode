@@ -38,12 +38,13 @@ import org.apache.geode.management.internal.functions.CliFunctionResult;
 
 public class DestroyGatewayReceiverFunctionTest {
   private DestroyGatewayReceiverFunction function;
-  private FunctionContext context;
+  private FunctionContext<Void> context;
   private InternalCache cache;
-  private ResultSender resultSender;
+  private ResultSender<Object> resultSender;
   private ArgumentCaptor<CliFunctionResult> resultCaptor;
 
   @Before
+  @SuppressWarnings("unchecked")
   public void setUp() throws Exception {
     function = spy(DestroyGatewayReceiverFunction.class);
     context = mock(FunctionContext.class);
@@ -53,10 +54,10 @@ public class DestroyGatewayReceiverFunctionTest {
     when(context.getCache()).thenReturn(cache);
     when(context.getResultSender()).thenReturn(resultSender);
     when(cache.getDistributedSystem()).thenReturn(mock(DistributedSystem.class));
-    when(context.getArguments()).thenReturn(false);
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   public void getGatewayReceiversNull_doesNotThrowException() {
     when(cache.getGatewayReceivers()).thenReturn(null);
     function.execute(context);
@@ -69,6 +70,7 @@ public class DestroyGatewayReceiverFunctionTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   public void getGatewayReceiversNotFound_returnsStatusIgnored() {
     when(cache.getGatewayReceivers()).thenReturn(Collections.emptySet());
     function.execute(context);

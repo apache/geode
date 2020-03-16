@@ -27,10 +27,10 @@ import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationServi
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
 @Category({ClientServerTest.class})
-public class OperationHandlerJUnitTest {
+public class OperationHandlerJUnitTest<Req, Res> {
   protected InternalCache cacheStub;
   protected ProtobufSerializationService serializationService;
-  protected ProtobufOperationHandler operationHandler;
+  protected ProtobufOperationHandler<Req, Res> operationHandler;
 
   // if we name this setUp, then our children override, which is all kinds of annoying.
   @Before

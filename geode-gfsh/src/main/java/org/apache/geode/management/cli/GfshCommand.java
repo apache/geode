@@ -81,10 +81,12 @@ public abstract class GfshCommand implements CommandMarker {
     return cache.getCacheForProcessingClientRequests();
   }
 
+  @SuppressWarnings("unchecked")
   public <T extends ManagementService> T getManagementService() {
     return (T) ManagementService.getExistingManagementService(cache);
   }
 
+  @SuppressWarnings("unchecked")
   public <T extends ConfigurationPersistenceService> T getConfigurationPersistenceService() {
     InternalLocator locator = InternalLocator.getLocator();
     return locator == null ? null : (T) locator.getConfigurationPersistenceService();
@@ -149,6 +151,7 @@ public abstract class GfshCommand implements CommandMarker {
     return ManagementUtils.getNormalMembersWithSameOrNewerVersion(cache, version);
   }
 
+  @SuppressWarnings("rawtypes")
   public Execution getMembersFunctionExecutor(final Set<DistributedMember> members) {
     return FunctionService.onMembers(members);
   }
@@ -198,26 +201,26 @@ public abstract class GfshCommand implements CommandMarker {
     return ManagementUtils.getRegionAssociatedMembers(regionPath, cache, false);
   }
 
-  public ResultCollector<?, ?> executeFunction(Function function, Object args,
+  public ResultCollector<?, ?> executeFunction(Function<?> function, Object args,
       final Set<DistributedMember> targetMembers) {
     return ManagementUtils.executeFunction(function, args, targetMembers);
   }
 
-  public ResultCollector<?, ?> executeFunction(Function function, Object args,
+  public ResultCollector<?, ?> executeFunction(Function<?> function, Object args,
       final DistributedMember targetMember) {
     return executeFunction(function, args, Collections.singleton(targetMember));
   }
 
-  public CliFunctionResult executeFunctionAndGetFunctionResult(Function function, Object args,
+  public CliFunctionResult executeFunctionAndGetFunctionResult(Function<?> function, Object args,
       final DistributedMember targetMember) {
-    ResultCollector rc = executeFunction(function, args, Collections.singleton(targetMember));
+    ResultCollector<?, ?> rc = executeFunction(function, args, Collections.singleton(targetMember));
     List<CliFunctionResult> results = CliFunctionResult.cleanResults((List<?>) rc.getResult());
     return results.size() > 0 ? results.get(0) : null;
   }
 
-  public List<CliFunctionResult> executeAndGetFunctionResult(Function function, Object args,
+  public List<CliFunctionResult> executeAndGetFunctionResult(Function<?> function, Object args,
       Set<DistributedMember> targetMembers) {
-    ResultCollector rc = executeFunction(function, args, targetMembers);
+    ResultCollector<?, ?> rc = executeFunction(function, args, targetMembers);
     return CliFunctionResult.cleanResults((List<?>) rc.getResult());
   }
 

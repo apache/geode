@@ -37,7 +37,7 @@ import org.apache.geode.tools.pulse.internal.data.Repository;
 /**
  * Class MemberRegionsService
  *
- * This class contains implementations of getting Memeber's Regions details.
+ * This class contains implementations of getting Member's Regions details.
  *
  * @since GemFire version 7.5
  */
@@ -50,10 +50,10 @@ public class MemberRegionsService implements PulseService {
   private final ObjectMapper mapper = new ObjectMapper();
 
   // String constants used for forming a json response
-  private final String NAME = "name";
-  private final String ENTRY_SIZE = "entrySize";
-  private final String DISC_STORE_NAME = "diskStoreName";
-  private final String DISC_SYNCHRONOUS = "diskSynchronous";
+  private static final String NAME = "name";
+  private static final String ENTRY_SIZE = "entrySize";
+  private static final String DISC_STORE_NAME = "diskStoreName";
+  private static final String DISC_SYNCHRONOUS = "diskSynchronous";
 
   @Override
   public ObjectNode execute(final HttpServletRequest request) throws Exception {
@@ -71,7 +71,7 @@ public class MemberRegionsService implements PulseService {
 
     if (clusterMember != null) {
       responseJSON.put("memberId", clusterMember.getId());
-      responseJSON.put(this.NAME, clusterMember.getName());
+      responseJSON.put(NAME, clusterMember.getName());
       responseJSON.put("host", clusterMember.getHost());
 
       // member's regions
@@ -79,7 +79,7 @@ public class MemberRegionsService implements PulseService {
       ArrayNode regionsListJson = mapper.createArrayNode();
       for (Cluster.Region memberRegion : memberRegions) {
         ObjectNode regionJSON = mapper.createObjectNode();
-        regionJSON.put(this.NAME, memberRegion.getName());
+        regionJSON.put(NAME, memberRegion.getName());
 
         regionJSON.put("fullPath", memberRegion.getFullPath());
 
@@ -90,24 +90,24 @@ public class MemberRegionsService implements PulseService {
         String entrySizeInMB = FOUR_PLACE_DECIMAL_FORMAT.format(entrySize / (1024f * 1024f));
 
         if (entrySize < 0) {
-          regionJSON.put(this.ENTRY_SIZE, VALUE_NA);
+          regionJSON.put(ENTRY_SIZE, VALUE_NA);
         } else {
-          regionJSON.put(this.ENTRY_SIZE, entrySizeInMB);
+          regionJSON.put(ENTRY_SIZE, entrySizeInMB);
         }
         regionJSON.put("scope", memberRegion.getScope());
         String diskStoreName = memberRegion.getDiskStoreName();
         if (StringUtils.isNotBlank(diskStoreName)) {
-          regionJSON.put(this.DISC_STORE_NAME, diskStoreName);
-          regionJSON.put(this.DISC_SYNCHRONOUS, memberRegion.isDiskSynchronous());
+          regionJSON.put(DISC_STORE_NAME, diskStoreName);
+          regionJSON.put(DISC_SYNCHRONOUS, memberRegion.isDiskSynchronous());
         } else {
-          regionJSON.put(this.DISC_SYNCHRONOUS, VALUE_NA);
-          regionJSON.put(this.DISC_STORE_NAME, "");
+          regionJSON.put(DISC_SYNCHRONOUS, VALUE_NA);
+          regionJSON.put(DISC_STORE_NAME, "");
         }
         regionJSON.put("gatewayEnabled", memberRegion.getWanEnabled());
 
         regionsListJson.add(regionJSON);
       }
-      responseJSON.put("memberRegions", regionsListJson);
+      responseJSON.set("memberRegions", regionsListJson);
 
       // response
       responseJSON.put("status", "Normal");

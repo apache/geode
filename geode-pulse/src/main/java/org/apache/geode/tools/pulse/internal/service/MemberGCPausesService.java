@@ -34,7 +34,7 @@ import org.apache.geode.tools.pulse.internal.data.Repository;
 /**
  * Class MemberGCPausesService
  *
- * This class contains implementations of getting Memeber's GC Pauses (JVM Pauses) details and its
+ * This class contains implementations of getting Member's GC Pauses (JVM Pauses) details and its
  * trend over the time.
  *
  * @since GemFire version 7.5
@@ -63,7 +63,7 @@ public class MemberGCPausesService implements PulseService {
 
     if (clusterMember != null) {
       // response
-      responseJSON.put("gcPausesTrend", mapper.valueToTree(
+      responseJSON.set("gcPausesTrend", mapper.valueToTree(
           clusterMember.getMemberStatisticTrend(Cluster.Member.MEMBER_STAT_GARBAGE_COLLECTION)));
       responseJSON.put("gcPausesCount", clusterMember.getGarbageCollectionCount());
     }

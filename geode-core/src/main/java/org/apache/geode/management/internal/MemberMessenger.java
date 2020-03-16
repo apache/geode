@@ -42,8 +42,8 @@ public class MemberMessenger {
   /**
    * <pre>
    * Code path 1:  {@link FederatingManager#startManager()} ->
-   *               {@link FederatingManager#startManagingActivity()} ->
-   *               {@link FederatingManager.GIITask#call()} ->
+   *               FederatingManager.startManagingActivity() ->
+   *               FederatingManager.GIITask.call() ->
    *               {@code sendManagerInfo}
    * Recipient(s): {@link DistributionManager#getOtherDistributionManagerIds()}
    * When:         starting the manager
@@ -52,8 +52,8 @@ public class MemberMessenger {
    * <p>
    *
    * <pre>
-   * Code path 2:  {@link FederatingManager#addMember(DistributedMember)} ->
-   *               {@link FederatingManager.GIITask#call()} ->
+   * Code path 2:  FederatingManager.addMember(DistributedMember)} ->
+   *               FederatingManager.GIITask#call() ->
    *               {@code sendManagerInfo}
    * Recipient(s): one new member from membership listener
    * When:         new member joins

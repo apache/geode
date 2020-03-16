@@ -35,6 +35,7 @@ import org.apache.geode.internal.InternalDataSerializer.SerializerAttributesHold
 import org.apache.geode.internal.InternalInstantiator;
 import org.apache.geode.internal.InternalInstantiator.InstantiatorAttributesHolder;
 import org.apache.geode.internal.inet.LocalHostUtil;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
@@ -377,7 +378,8 @@ public class StartupMessage extends DistributionMessage implements AdminMessageT
   }
 
   /**
-   * Notes a problem that occurs while invoking {@link DataSerializableFixedID#fromData}.
+   * Notes a problem that occurs while invoking
+   * {@link DataSerializableFixedID#fromData(DataInput, DeserializationContext)}.
    */
   private void recordFromDataProblem(String s) {
     if (this.fromDataProblems == null) {

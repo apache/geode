@@ -61,13 +61,13 @@ public class MemberKeyStatisticsService implements PulseService {
 
     if (clusterMember != null) {
       // response
-      responseJSON.put("cpuUsageTrend", mapper.valueToTree(
+      responseJSON.set("cpuUsageTrend", mapper.valueToTree(
           clusterMember.getMemberStatisticTrend(Cluster.Member.MEMBER_STAT_CPU_USAGE_SAMPLE)));
-      responseJSON.put("memoryUsageTrend", mapper.valueToTree(
+      responseJSON.set("memoryUsageTrend", mapper.valueToTree(
           clusterMember.getMemberStatisticTrend(Cluster.Member.MEMBER_STAT_HEAP_USAGE_SAMPLE)));
-      responseJSON.put("readPerSecTrend", mapper.valueToTree(
+      responseJSON.set("readPerSecTrend", mapper.valueToTree(
           clusterMember.getMemberStatisticTrend(Cluster.Member.MEMBER_STAT_GETS_PER_SECOND)));
-      responseJSON.put("writePerSecTrend", mapper.valueToTree(
+      responseJSON.set("writePerSecTrend", mapper.valueToTree(
           clusterMember.getMemberStatisticTrend(Cluster.Member.MEMBER_STAT_PUTS_PER_SECOND)));
     }
     // Send json response

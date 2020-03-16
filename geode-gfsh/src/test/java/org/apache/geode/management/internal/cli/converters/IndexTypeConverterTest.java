@@ -21,7 +21,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.cache.query.IndexType;
 import org.apache.geode.management.cli.ConverterHint;
 
 public class IndexTypeConverterTest {
@@ -30,32 +29,40 @@ public class IndexTypeConverterTest {
   EnumConverter enumConverter;
 
   @Before
-  public void before() throws Exception {
+  public void before() {
     typeConverter = new IndexTypeConverter();
     enumConverter = new EnumConverter();
   }
 
   @Test
-  public void supports() throws Exception {
-    assertThat(typeConverter.supports(IndexType.class, ConverterHint.INDEX_TYPE)).isTrue();
+  @SuppressWarnings("deprecation")
+  public void supports() {
+    assertThat(typeConverter.supports(org.apache.geode.cache.query.IndexType.class,
+        ConverterHint.INDEX_TYPE)).isTrue();
     assertThat(typeConverter.supports(Enum.class, ConverterHint.INDEX_TYPE)).isFalse();
-    assertThat(typeConverter.supports(IndexType.class, "")).isFalse();
+    assertThat(typeConverter.supports(org.apache.geode.cache.query.IndexType.class, "")).isFalse();
 
-    assertThat(enumConverter.supports(IndexType.class, "")).isTrue();
+    assertThat(enumConverter.supports(org.apache.geode.cache.query.IndexType.class, "")).isTrue();
     assertThat(enumConverter.supports(Enum.class, "")).isTrue();
-    assertThat(enumConverter.supports(IndexType.class, ConverterHint.INDEX_TYPE)).isFalse();
+    assertThat(enumConverter.supports(org.apache.geode.cache.query.IndexType.class,
+        ConverterHint.INDEX_TYPE)).isFalse();
     assertThat(enumConverter.supports(Enum.class, ConverterHint.DISABLE_ENUM_CONVERTER)).isFalse();
   }
 
   @Test
-  public void convert() throws Exception {
-    assertThat(typeConverter.convertFromText("hash", IndexType.class, ""))
-        .isEqualTo(IndexType.HASH);
-    assertThat(typeConverter.convertFromText("range", IndexType.class, ""))
-        .isEqualTo(IndexType.FUNCTIONAL);
-    assertThat(typeConverter.convertFromText("key", IndexType.class, ""))
-        .isEqualTo(IndexType.PRIMARY_KEY);
-    assertThatThrownBy(() -> typeConverter.convertFromText("invalid", IndexType.class, ""))
-        .isInstanceOf(IllegalArgumentException.class);
+  @SuppressWarnings("deprecation")
+  public void convert() {
+    assertThat(
+        typeConverter.convertFromText("hash", org.apache.geode.cache.query.IndexType.class, ""))
+            .isEqualTo(org.apache.geode.cache.query.IndexType.HASH);
+    assertThat(
+        typeConverter.convertFromText("range", org.apache.geode.cache.query.IndexType.class, ""))
+            .isEqualTo(org.apache.geode.cache.query.IndexType.FUNCTIONAL);
+    assertThat(
+        typeConverter.convertFromText("key", org.apache.geode.cache.query.IndexType.class, ""))
+            .isEqualTo(org.apache.geode.cache.query.IndexType.PRIMARY_KEY);
+    assertThatThrownBy(() -> typeConverter.convertFromText("invalid",
+        org.apache.geode.cache.query.IndexType.class, ""))
+            .isInstanceOf(IllegalArgumentException.class);
   }
 }

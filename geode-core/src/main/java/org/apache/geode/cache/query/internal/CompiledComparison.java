@@ -328,8 +328,8 @@ public class CompiledComparison extends AbstractCompiledValue
     return idxInfo[0]._index.getSizeEstimate(key, op, idxInfo[0]._matchLevel);
   }
 
-  /** **************** PRIVATE METHODS ************************** */
-  /**
+  /* **************** PRIVATE METHODS ************************** */
+  /*
    * evaluate as a filter, involving a single iterator. Use an index if possible.
    */
   // Invariant: the receiver is dependent on the current iterator.

@@ -24,7 +24,6 @@ import com.healthmarketscience.rmiio.RemoteInputStream;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.DistributedMember;
@@ -36,7 +35,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.functions.CacheRealizationFunction;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 
-public class DeployFunction implements InternalFunction {
+public class DeployFunction implements InternalFunction<Object[]> {
   private static final Logger logger = LogService.getLogger();
 
   public static final String ID = DeployFunction.class.getName();
@@ -44,14 +43,17 @@ public class DeployFunction implements InternalFunction {
   private static final long serialVersionUID = 1L;
 
   @Override
-  public void execute(FunctionContext context) {
+  @SuppressWarnings("deprecation")
+  public void execute(FunctionContext<Object[]> context) {
     // Declared here so that it's available when returning a Throwable
     String memberId = "";
     File stagingDir = null;
 
     try {
-      final Object[] args = (Object[]) context.getArguments();
+      final Object[] args = context.getArguments();
+      @SuppressWarnings("unchecked")
       final List<String> jarFilenames = (List<String>) args[0];
+      @SuppressWarnings("unchecked")
       final List<RemoteInputStream> jarStreams = (List<RemoteInputStream>) args[1];
 
       InternalCache cache = (InternalCache) context.getCache();
@@ -93,11 +95,11 @@ public class DeployFunction implements InternalFunction {
       context.getResultSender().lastResult(result);
 
     } catch (VirtualMachineError e) {
-      SystemFailure.initiateFailure(e);
+      org.apache.geode.SystemFailure.initiateFailure(e);
       throw e;
 
     } catch (Throwable th) {
-      SystemFailure.checkFailure();
+      org.apache.geode.SystemFailure.checkFailure();
       logger.error("Could not deploy JAR file {}", th.getMessage(), th);
 
       CliFunctionResult result = new CliFunctionResult(memberId, th, null);

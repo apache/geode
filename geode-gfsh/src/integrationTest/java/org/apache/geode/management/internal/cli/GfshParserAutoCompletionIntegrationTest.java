@@ -22,7 +22,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.shell.core.Completion;
 
-import org.apache.geode.cache.query.IndexType;
 import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.rules.GfshParserRule;
@@ -422,10 +421,12 @@ public class GfshParserAutoCompletionIntegrationTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   public void testIndexType() {
     String buffer = "create index --type=";
     CommandCandidate candidate = gfshParserRule.complete(buffer);
-    assertThat(candidate.getCandidates()).hasSize(IndexType.values().length);
+    assertThat(candidate.getCandidates())
+        .hasSize(org.apache.geode.cache.query.IndexType.values().length);
     assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + "hash");
   }
 }

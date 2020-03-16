@@ -14,6 +14,7 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.Mockito.any;
@@ -72,7 +73,6 @@ public class CreateMappingPreconditionCheckFunctionTest {
 
   private RegionMapping regionMapping;
   private FunctionContext<Object[]> context;
-  private ResultSender<Object> resultSender;
   private InternalCache cache;
   private TypeRegistry typeRegistry;
   private TableMetaDataManager tableMetaDataManager;
@@ -89,13 +89,14 @@ public class CreateMappingPreconditionCheckFunctionTest {
   }
 
   public static class PdxClassDummyNoZeroArg {
-    public PdxClassDummyNoZeroArg(int arg) {}
+    public PdxClassDummyNoZeroArg(@SuppressWarnings("unused") int arg) {}
   }
 
+  @SuppressWarnings("unchecked")
   @Before
   public void setUp() throws SQLException, ClassNotFoundException {
     context = mock(FunctionContext.class);
-    resultSender = mock(ResultSender.class);
+    ResultSender<Object> resultSender = mock(ResultSender.class);
     cache = mock(InternalCache.class);
     typeRegistry = mock(TypeRegistry.class);
     when(cache.getPdxRegistry()).thenReturn(typeRegistry);
@@ -160,7 +161,7 @@ public class CreateMappingPreconditionCheckFunctionTest {
   }
 
   @Test
-  public void executeFunctionThrowsIfDataSourceDoesNotExist() throws Exception {
+  public void executeFunctionThrowsIfDataSourceDoesNotExist() {
     doReturn(null).when(function).getDataSource(DATA_SOURCE_NAME);
 
     Throwable throwable = catchThrowable(() -> function.executeFunction(context));
@@ -194,20 +195,19 @@ public class CreateMappingPreconditionCheckFunctionTest {
   }
 
   @Test
-  public void executeFunctionReturnsNoFieldMappingsIfNoColumns() throws Exception {
+  public void executeFunctionReturnsNoFieldMappingsIfNoColumns() {
     Set<String> columnNames = Collections.emptySet();
     when(tableMetaDataView.getColumnNames()).thenReturn(columnNames);
 
     CliFunctionResult result = function.executeFunction(context);
 
     assertThat(result.isSuccessful()).isTrue();
-    Object[] outputs = (Object[]) result.getResultObject();
-    ArrayList<FieldMapping> fieldsMappings = (ArrayList<FieldMapping>) outputs[1];
+    ArrayList<FieldMapping> fieldsMappings = getFieldMappings(result);
     assertThat(fieldsMappings).isEmpty();
   }
 
   @Test
-  public void executeFunctionReturnsFieldMappingsThatMatchTableMetaData() throws Exception {
+  public void executeFunctionReturnsFieldMappingsThatMatchTableMetaData() {
     Set<String> columnNames = new LinkedHashSet<>(Arrays.asList("col1", "col2"));
     when(tableMetaDataView.getColumnNames()).thenReturn(columnNames);
     when(tableMetaDataView.isColumnNullable("col1")).thenReturn(false);
@@ -227,8 +227,7 @@ public class CreateMappingPreconditionCheckFunctionTest {
     CliFunctionResult result = function.executeFunction(context);
 
     assertThat(result.isSuccessful()).isTrue();
-    Object[] outputs = (Object[]) result.getResultObject();
-    ArrayList<FieldMapping> fieldsMappings = (ArrayList<FieldMapping>) outputs[1];
+    ArrayList<FieldMapping> fieldsMappings = getFieldMappings(result);
     assertThat(fieldsMappings).hasSize(2);
     assertThat(fieldsMappings.get(0))
         .isEqualTo(
@@ -239,9 +238,8 @@ public class CreateMappingPreconditionCheckFunctionTest {
   }
 
   @Test
-  public void executeFunctionReturnsFieldMappingsThatMatchTableMetaDataAndExistingPdxField()
-      throws Exception {
-    Set<String> columnNames = new LinkedHashSet<>(Arrays.asList("col1"));
+  public void executeFunctionReturnsFieldMappingsThatMatchTableMetaDataAndExistingPdxField() {
+    Set<String> columnNames = new LinkedHashSet<>(singletonList("col1"));
     when(tableMetaDataView.getColumnNames()).thenReturn(columnNames);
     when(tableMetaDataView.isColumnNullable("col1")).thenReturn(false);
     when(tableMetaDataView.getColumnDataType("col1")).thenReturn(JDBCType.DATE);
@@ -249,13 +247,12 @@ public class CreateMappingPreconditionCheckFunctionTest {
     when(pdxField1.getFieldName()).thenReturn("COL1");
     when(pdxField1.getFieldType()).thenReturn(FieldType.LONG);
     when(pdxType.getFieldCount()).thenReturn(1);
-    when(pdxType.getFields()).thenReturn(Arrays.asList(pdxField1));
+    when(pdxType.getFields()).thenReturn(singletonList(pdxField1));
 
     CliFunctionResult result = function.executeFunction(context);
 
     assertThat(result.isSuccessful()).isTrue();
-    Object[] outputs = (Object[]) result.getResultObject();
-    ArrayList<FieldMapping> fieldsMappings = (ArrayList<FieldMapping>) outputs[1];
+    ArrayList<FieldMapping> fieldsMappings = getFieldMappings(result);
     assertThat(fieldsMappings).hasSize(1);
     assertThat(fieldsMappings.get(0))
         .isEqualTo(
@@ -263,9 +260,8 @@ public class CreateMappingPreconditionCheckFunctionTest {
   }
 
   @Test
-  public void executeFunctionGivenPdxSerializableCallsRegisterPdxMetaData()
-      throws Exception {
-    Set<String> columnNames = new LinkedHashSet<>(Arrays.asList("col1"));
+  public void executeFunctionGivenPdxSerializableCallsRegisterPdxMetaData() {
+    Set<String> columnNames = new LinkedHashSet<>(singletonList("col1"));
     when(tableMetaDataView.getColumnNames()).thenReturn(columnNames);
     when(tableMetaDataView.isColumnNullable("col1")).thenReturn(false);
     when(tableMetaDataView.getColumnDataType("col1")).thenReturn(JDBCType.DATE);
@@ -273,7 +269,7 @@ public class CreateMappingPreconditionCheckFunctionTest {
     when(pdxField1.getFieldName()).thenReturn("COL1");
     when(pdxField1.getFieldType()).thenReturn(FieldType.LONG);
     when(pdxType.getFieldCount()).thenReturn(1);
-    when(pdxType.getFields()).thenReturn(Arrays.asList(pdxField1));
+    when(pdxType.getFields()).thenReturn(singletonList(pdxField1));
     when(typeRegistry.getExistingTypeForClass(PdxClassDummy.class)).thenReturn(null)
         .thenReturn(pdxType);
 
@@ -281,8 +277,7 @@ public class CreateMappingPreconditionCheckFunctionTest {
 
     assertThat(result.isSuccessful()).isTrue();
     verify(cache).registerPdxMetaData(any());
-    Object[] outputs = (Object[]) result.getResultObject();
-    ArrayList<FieldMapping> fieldsMappings = (ArrayList<FieldMapping>) outputs[1];
+    ArrayList<FieldMapping> fieldsMappings = getFieldMappings(result);
     assertThat(fieldsMappings).hasSize(1);
     assertThat(fieldsMappings.get(0))
         .isEqualTo(
@@ -292,7 +287,7 @@ public class CreateMappingPreconditionCheckFunctionTest {
   @Test
   public void executeFunctionThrowsGivenPdxSerializableWithNoZeroArgConstructor()
       throws Exception {
-    Set<String> columnNames = new LinkedHashSet<>(Arrays.asList("col1"));
+    Set<String> columnNames = new LinkedHashSet<>(singletonList("col1"));
     when(tableMetaDataView.getColumnNames()).thenReturn(columnNames);
     when(tableMetaDataView.isColumnNullable("col1")).thenReturn(false);
     when(tableMetaDataView.getColumnDataType("col1")).thenReturn(JDBCType.DATE);
@@ -300,7 +295,7 @@ public class CreateMappingPreconditionCheckFunctionTest {
     when(pdxField1.getFieldName()).thenReturn("COL1");
     when(pdxField1.getFieldType()).thenReturn(FieldType.LONG);
     when(pdxType.getFieldCount()).thenReturn(1);
-    when(pdxType.getFields()).thenReturn(Arrays.asList(pdxField1));
+    when(pdxType.getFields()).thenReturn(singletonList(pdxField1));
     doReturn(PdxClassDummyNoZeroArg.class).when(function).loadClass(PDX_CLASS_NAME);
     when(typeRegistry.getExistingTypeForClass(PdxClassDummyNoZeroArg.class)).thenReturn(null);
 
@@ -312,9 +307,8 @@ public class CreateMappingPreconditionCheckFunctionTest {
   }
 
   @Test
-  public void executeFunctionGivenNonPdxUsesReflectionBasedAutoSerializer()
-      throws Exception {
-    Set<String> columnNames = new LinkedHashSet<>(Arrays.asList("col1"));
+  public void executeFunctionGivenNonPdxUsesReflectionBasedAutoSerializer() {
+    Set<String> columnNames = new LinkedHashSet<>(singletonList("col1"));
     when(tableMetaDataView.getColumnNames()).thenReturn(columnNames);
     when(tableMetaDataView.isColumnNullable("col1")).thenReturn(false);
     when(tableMetaDataView.getColumnDataType("col1")).thenReturn(JDBCType.DATE);
@@ -322,7 +316,7 @@ public class CreateMappingPreconditionCheckFunctionTest {
     when(pdxField1.getFieldName()).thenReturn("COL1");
     when(pdxField1.getFieldType()).thenReturn(FieldType.LONG);
     when(pdxType.getFieldCount()).thenReturn(1);
-    when(pdxType.getFields()).thenReturn(Arrays.asList(pdxField1));
+    when(pdxType.getFields()).thenReturn(singletonList(pdxField1));
     when(typeRegistry.getExistingTypeForClass(PdxClassDummy.class)).thenReturn(null)
         .thenReturn(pdxType);
     String domainClassNameInAutoSerializer = "\\Q" + PdxClassDummy.class.getName() + "\\E";
@@ -340,18 +334,22 @@ public class CreateMappingPreconditionCheckFunctionTest {
 
     assertThat(result.isSuccessful()).isTrue();
     verify(function).getReflectionBasedAutoSerializer(domainClassNameInAutoSerializer);
-    Object[] outputs = (Object[]) result.getResultObject();
-    ArrayList<FieldMapping> fieldsMappings = (ArrayList<FieldMapping>) outputs[1];
+    ArrayList<FieldMapping> fieldsMappings = getFieldMappings(result);
     assertThat(fieldsMappings).hasSize(1);
     assertThat(fieldsMappings.get(0))
         .isEqualTo(
             new FieldMapping("COL1", FieldType.LONG.name(), "col1", JDBCType.DATE.name(), false));
   }
 
+  @SuppressWarnings("unchecked")
+  private ArrayList<FieldMapping> getFieldMappings(CliFunctionResult result) {
+    Object[] outputs = (Object[]) result.getResultObject();
+    return (ArrayList<FieldMapping>) outputs[1];
+  }
+
   @Test
-  public void executeFunctionThrowsGivenPdxRegistrationFailsAndReflectionBasedAutoSerializerThatReturnsFalse()
-      throws Exception {
-    Set<String> columnNames = new LinkedHashSet<>(Arrays.asList("col1"));
+  public void executeFunctionThrowsGivenPdxRegistrationFailsAndReflectionBasedAutoSerializerThatReturnsFalse() {
+    Set<String> columnNames = new LinkedHashSet<>(singletonList("col1"));
     when(tableMetaDataView.getColumnNames()).thenReturn(columnNames);
     when(tableMetaDataView.isColumnNullable("col1")).thenReturn(false);
     when(tableMetaDataView.getColumnDataType("col1")).thenReturn(JDBCType.DATE);
@@ -359,7 +357,7 @@ public class CreateMappingPreconditionCheckFunctionTest {
     when(pdxField1.getFieldName()).thenReturn("COL1");
     when(pdxField1.getFieldType()).thenReturn(FieldType.LONG);
     when(pdxType.getFieldCount()).thenReturn(1);
-    when(pdxType.getFields()).thenReturn(Arrays.asList(pdxField1));
+    when(pdxType.getFields()).thenReturn(singletonList(pdxField1));
     when(typeRegistry.getExistingTypeForClass(PdxClassDummy.class)).thenReturn(null)
         .thenReturn(pdxType);
     String domainClassNameInAutoSerializer = "\\Q" + PdxClassDummy.class.getName() + "\\E";
@@ -383,9 +381,8 @@ public class CreateMappingPreconditionCheckFunctionTest {
   }
 
   @Test
-  public void executeFunctionThrowsGivenExistingPdxTypeWithMultipleInexactMatches()
-      throws Exception {
-    Set<String> columnNames = new LinkedHashSet<>(Arrays.asList("col1"));
+  public void executeFunctionThrowsGivenExistingPdxTypeWithMultipleInexactMatches() {
+    Set<String> columnNames = new LinkedHashSet<>(singletonList("col1"));
     when(tableMetaDataView.getColumnNames()).thenReturn(columnNames);
     when(tableMetaDataView.isColumnNullable("col1")).thenReturn(false);
     when(tableMetaDataView.getColumnDataType("col1")).thenReturn(JDBCType.DATE);
@@ -405,9 +402,8 @@ public class CreateMappingPreconditionCheckFunctionTest {
   }
 
   @Test
-  public void executeFunctionThrowsGivenExistingPdxTypeWithNoMatches()
-      throws Exception {
-    Set<String> columnNames = new LinkedHashSet<>(Arrays.asList("col1"));
+  public void executeFunctionThrowsGivenExistingPdxTypeWithNoMatches() {
+    Set<String> columnNames = new LinkedHashSet<>(singletonList("col1"));
     when(tableMetaDataView.getColumnNames()).thenReturn(columnNames);
     when(tableMetaDataView.isColumnNullable("col1")).thenReturn(false);
     when(tableMetaDataView.getColumnDataType("col1")).thenReturn(JDBCType.DATE);
@@ -427,9 +423,8 @@ public class CreateMappingPreconditionCheckFunctionTest {
   }
 
   @Test
-  public void executeFunctionThrowsGivenExistingPdxTypeWithWrongNumberOfFields()
-      throws Exception {
-    Set<String> columnNames = new LinkedHashSet<>(Arrays.asList("col1"));
+  public void executeFunctionThrowsGivenExistingPdxTypeWithWrongNumberOfFields() {
+    Set<String> columnNames = new LinkedHashSet<>(singletonList("col1"));
     when(tableMetaDataView.getColumnNames()).thenReturn(columnNames);
     when(tableMetaDataView.isColumnNullable("col1")).thenReturn(false);
     when(tableMetaDataView.getColumnDataType("col1")).thenReturn(JDBCType.DATE);
@@ -443,7 +438,7 @@ public class CreateMappingPreconditionCheckFunctionTest {
   }
 
   @Test
-  public void executeFunctionReturnsResultWithCorrectMemberName() throws Exception {
+  public void executeFunctionReturnsResultWithCorrectMemberName() {
     when(regionMapping.getIds()).thenReturn("myId");
 
     CliFunctionResult result = function.executeFunction(context);
@@ -453,7 +448,7 @@ public class CreateMappingPreconditionCheckFunctionTest {
   }
 
   @Test
-  public void executeFunctionReturnsNullInSlotZeroIfRegionMappingHasIds() throws Exception {
+  public void executeFunctionReturnsNullInSlotZeroIfRegionMappingHasIds() {
     when(regionMapping.getIds()).thenReturn("myId");
 
     CliFunctionResult result = function.executeFunction(context);
@@ -464,8 +459,7 @@ public class CreateMappingPreconditionCheckFunctionTest {
   }
 
   @Test
-  public void executeFunctionReturnsViewsKeyColumnsInSlotZeroIfRegionMappingHasNullIds()
-      throws Exception {
+  public void executeFunctionReturnsViewsKeyColumnsInSlotZeroIfRegionMappingHasNullIds() {
     when(regionMapping.getIds()).thenReturn(null);
     when(tableMetaDataView.getKeyColumnNames()).thenReturn(Arrays.asList("keyCol1", "keyCol2"));
 
@@ -477,10 +471,9 @@ public class CreateMappingPreconditionCheckFunctionTest {
   }
 
   @Test
-  public void executeFunctionReturnsViewsKeyColumnsInSlotZeroIfRegionMappingHasEmptyIds()
-      throws Exception {
+  public void executeFunctionReturnsViewsKeyColumnsInSlotZeroIfRegionMappingHasEmptyIds() {
     when(regionMapping.getIds()).thenReturn("");
-    when(tableMetaDataView.getKeyColumnNames()).thenReturn(Arrays.asList("keyCol1"));
+    when(tableMetaDataView.getKeyColumnNames()).thenReturn(singletonList("keyCol1"));
 
     CliFunctionResult result = function.executeFunction(context);
 

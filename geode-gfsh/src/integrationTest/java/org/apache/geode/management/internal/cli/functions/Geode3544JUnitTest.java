@@ -39,8 +39,6 @@ public class Geode3544JUnitTest {
 
   private static Cache cache;
 
-  private static Region region1;
-
   private static final String PARTITIONED_REGION = "emp_region";
   private static String emp_key;
 
@@ -130,8 +128,8 @@ public class Geode3544JUnitTest {
   @BeforeClass
   public static void setUp() throws Exception {
     cache = new CacheFactory().set(MCAST_PORT, "0").create();
-    RegionFactory factory = cache.createRegionFactory(RegionShortcut.PARTITION);
-    region1 = factory.create(PARTITIONED_REGION);
+    RegionFactory<EmpData, String> factory = cache.createRegionFactory(RegionShortcut.PARTITION);
+    Region<EmpData, String> region1 = factory.create(PARTITIONED_REGION);
     EmpData emp_data_key = new EmpData(1, (short) 1, 1, 1);
     region1.put(emp_data_key, "value_1");
     ObjectMapper mapper = new ObjectMapper();
@@ -140,7 +138,7 @@ public class Geode3544JUnitTest {
   }
 
   @AfterClass
-  public static void tearDown() throws Exception {
+  public static void tearDown() {
     cache.close();
     cache = null;
   }
@@ -149,7 +147,7 @@ public class Geode3544JUnitTest {
    * This test addresses GEODE-3544
    */
   @Test
-  public void testLocateKeyIsObject() throws Exception {
+  public void testLocateKeyIsObject() {
     DataCommandFunction dataCmdFn = new DataCommandFunction();
 
     DataCommandResult result = dataCmdFn.locateEntry(emp_key, EmpData.class.getName(),

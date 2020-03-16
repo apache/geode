@@ -25,14 +25,16 @@ import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 
-public class GatewaySenderDestroyFunction implements InternalFunction {
+public class GatewaySenderDestroyFunction
+    implements InternalFunction<GatewaySenderDestroyFunctionArgs> {
   private static final long serialVersionUID = 1L;
   private static final String ID = GatewaySenderDestroyFunction.class.getName();
   @Immutable
   public static final GatewaySenderDestroyFunction INSTANCE = new GatewaySenderDestroyFunction();
 
   @Override
-  public void execute(FunctionContext context) {
+  @SuppressWarnings("deprecation")
+  public void execute(FunctionContext<GatewaySenderDestroyFunctionArgs> context) {
     ResultSender<Object> resultSender = context.getResultSender();
 
     Cache cache = context.getCache();
@@ -40,7 +42,7 @@ public class GatewaySenderDestroyFunction implements InternalFunction {
         CliUtil.getMemberNameOrId(cache.getDistributedSystem().getDistributedMember());
 
     GatewaySenderDestroyFunctionArgs gatewaySenderDestroyFunctionArgs =
-        (GatewaySenderDestroyFunctionArgs) context.getArguments();
+        context.getArguments();
 
     String senderId = gatewaySenderDestroyFunctionArgs.getId();
     boolean ifExists = gatewaySenderDestroyFunctionArgs.isIfExists();

@@ -38,7 +38,7 @@ public abstract class PopExecutor extends ListExecutor implements Extendable {
     ByteArrayWrapper key = command.getKey();
 
     checkDataType(key, RedisDataType.REDIS_LIST, context);
-    Region keyRegion = getRegion(context, key);
+    Region<Object, Object> keyRegion = getRegion(context, key);
 
     if (keyRegion == null || keyRegion.size() == LIST_EMPTY_SIZE) {
       command.setResponse(Coder.getNilResponse(context.getByteBufAllocator()));
@@ -50,7 +50,7 @@ public abstract class PopExecutor extends ListExecutor implements Extendable {
     Integer index = 0;
     int originalIndex = index;
     int incr = popType() == ListDirection.LEFT ? 1 : -1;
-    ByteArrayWrapper valueWrapper = null;
+    ByteArrayWrapper valueWrapper;
 
     /**
      *
@@ -59,7 +59,7 @@ public abstract class PopExecutor extends ListExecutor implements Extendable {
      *
      */
 
-    boolean indexChanged = false;
+    boolean indexChanged;
     do {
       index = (Integer) keyRegion.get(indexKey);
       Integer opp = (Integer) keyRegion.get(oppositeKey);
@@ -124,7 +124,7 @@ public abstract class PopExecutor extends ListExecutor implements Extendable {
         index = metaIndex;
       }
       i++;
-    } while (!removed && keyRegion.size() != LIST_EMPTY_SIZE);
+    } while (keyRegion.size() != LIST_EMPTY_SIZE);
     respondBulkStrings(command, context, valueWrapper);
   }
 

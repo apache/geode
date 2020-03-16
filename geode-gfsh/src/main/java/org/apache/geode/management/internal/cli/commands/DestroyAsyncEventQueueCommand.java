@@ -62,8 +62,7 @@ public class DestroyAsyncEventQueueCommand extends GfshCommand {
           optionContext = ConverterHint.MEMBERGROUP,
           help = DESTROY_ASYNC_EVENT_QUEUE__GROUP__HELP) String[] onGroups,
       @CliOption(key = IFEXISTS, help = IFEXISTS_HELP, specifiedDefaultValue = "true",
-          unspecifiedDefaultValue = "false") boolean ifExists)
-      throws Throwable {
+          unspecifiedDefaultValue = "false") boolean ifExists) {
     DestroyAsyncEventQueueFunctionArgs asyncEventQueueDestoryFunctionArgs =
         new DestroyAsyncEventQueueFunctionArgs(aeqId, ifExists);
 
@@ -72,8 +71,7 @@ public class DestroyAsyncEventQueueCommand extends GfshCommand {
         new DestroyAsyncEventQueueFunction(), asyncEventQueueDestoryFunctionArgs, members);
 
     ResultModel result = ResultModel.createMemberStatusResult(functionResults);
-    XmlEntity xmlEntity = functionResults.stream().filter(CliFunctionResult::isSuccessful)
-        .map(CliFunctionResult::getXmlEntity).filter(Objects::nonNull).findFirst().orElse(null);
+    XmlEntity xmlEntity = getXmlEntity(functionResults);
     InternalConfigurationPersistenceService cps = getConfigurationPersistenceService();
     if (xmlEntity != null) {
       if (cps == null) {
@@ -83,5 +81,11 @@ public class DestroyAsyncEventQueueCommand extends GfshCommand {
       }
     }
     return result;
+  }
+
+  @SuppressWarnings("deprecation")
+  private XmlEntity getXmlEntity(List<CliFunctionResult> functionResults) {
+    return functionResults.stream().filter(CliFunctionResult::isSuccessful)
+        .map(CliFunctionResult::getXmlEntity).filter(Objects::nonNull).findFirst().orElse(null);
   }
 }

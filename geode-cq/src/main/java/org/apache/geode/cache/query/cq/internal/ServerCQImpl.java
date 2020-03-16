@@ -17,15 +17,13 @@ package org.apache.geode.cache.query.cq.internal;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.query.CqAttributes;
@@ -35,7 +33,6 @@ import org.apache.geode.cache.query.CqException;
 import org.apache.geode.cache.query.CqExistsException;
 import org.apache.geode.cache.query.CqResults;
 import org.apache.geode.cache.query.Query;
-import org.apache.geode.cache.query.QueryException;
 import org.apache.geode.cache.query.RegionNotFoundException;
 import org.apache.geode.cache.query.internal.CompiledBindArgument;
 import org.apache.geode.cache.query.internal.CompiledIteratorDef;
@@ -47,7 +44,6 @@ import org.apache.geode.cache.query.internal.cq.CqServiceProvider;
 import org.apache.geode.cache.query.internal.cq.ServerCQ;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
@@ -55,26 +51,14 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class ServerCQImpl extends CqQueryImpl implements DataSerializable, ServerCQ {
   private static final Logger logger = LogService.getLogger();
+  private static final ServerCQResultsCache NO_OP_CACHE = new ServerCQResultsCacheNoOpImpl();
 
   /**
-   * This holds the keys that are part of the CQ query results. Using this CQ engine can determine
-   * whether to execute query on old value from EntryEvent, which is an expensive operation.
-   *
-   * NOTE: In case of RR this map is populated and used as intended. In case of PR this map will not
-   * be populated. If executeCQ happens after update operations this map will remain empty.
+   * NOTE: In case of Replicated Regions this cache is populated and used as intended. In case of
+   * Partition Regions this cache will not be populated. If executeCQ happens after update
+   * operations this cache will remain empty.
    */
-  private volatile HashMap<Object, Object> cqResultKeys;
-
-  /**
-   * This maintains the keys that are destroyed while the Results Cache is getting constructed. This
-   * avoids any keys that are destroyed (after query execution) but is still part of the CQs result.
-   */
-  private HashSet<Object> destroysWhileCqResultsInProgress;
-
-  /**
-   * To indicate if the CQ results key cache is initialized.
-   */
-  public volatile boolean cqResultKeysInitialized = false;
+  private volatile ServerCQResultsCache serverCQResultsCache = NO_OP_CACHE;
 
   /** Boolean flag to see if the CQ is on Partitioned Region */
   volatile boolean isPR = false;
@@ -155,6 +139,7 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
         if (isDebugEnabled) {
           logger.debug(s, t);
         }
+
         throw new CqException(s);
       }
     }
@@ -165,8 +150,8 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
     this.cqBaseRegion = (LocalRegion) cqService.getCache().getRegion(regionName);
     if (this.cqBaseRegion == null) {
       throw new RegionNotFoundException(
-          String.format("Region : %s specified with cq not found. CqName: %s",
-              new Object[] {regionName, this.cqName}));
+          String.format("Region : %s specified with cq not found. CqName: %s", regionName,
+              this.cqName));
     }
 
     // Make sure that the region is partitioned or
@@ -232,7 +217,6 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
 
     // Initialize CQ results (key) cache.
     if (CqServiceProvider.MAINTAIN_KEYS) {
-      this.cqResultKeys = new HashMap<>();
       // Currently the CQ Result keys are not cached for the Partitioned
       // Regions. Supporting this with PR needs more work like forcing
       // query execution on primary buckets only; and handling the bucket
@@ -240,9 +224,10 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
       // Only the events which are seen during event processing is
       // added to the results cache (not from the CQ Results).
       if (this.isPR) {
-        this.setCqResultsCacheInitialized();
+        serverCQResultsCache = new ServerCQResultsCachePartitionRegionImpl();
+        setCqResultsCacheInitialized();
       } else {
-        this.destroysWhileCqResultsInProgress = new HashSet<>();
+        serverCQResultsCache = new ServerCQResultsCacheReplicateRegionImpl();
       }
     }
 
@@ -251,9 +236,10 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
         cqService.addToCqMap(this);
       } catch (CqExistsException cqe) {
         // Should not happen.
-        throw new CqException(String.format("Unable to create cq %s Error : %s",
-            new Object[] {cqName, cqe.getMessage()}));
+        throw new CqException(
+            String.format("Unable to create cq %s Error : %s", cqName, cqe.getMessage()));
       }
+
       this.cqBaseRegion.getFilterProfile().registerCq(this);
     }
   }
@@ -263,14 +249,9 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
    *
    * @return CQ Results Cache.
    */
+  @VisibleForTesting
   public Set<Object> getCqResultKeyCache() {
-    if (this.cqResultKeys != null) {
-      synchronized (this.cqResultKeys) {
-        return Collections.synchronizedSet(new HashSet<>(this.cqResultKeys.keySet()));
-      }
-    } else {
-      return null;
-    }
+    return serverCQResultsCache.getKeys();
   }
 
   /**
@@ -280,7 +261,7 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
    *
    * @return String modified query.
    */
-  Query constructServerSideQuery() throws QueryException {
+  Query constructServerSideQuery() {
     InternalCache cache = cqService.getInternalCache();
     DefaultQuery locQuery = (DefaultQuery) cache.getLocalQueryService().newQuery(this.queryString);
     CompiledSelect select = locQuery.getSimpleSelect();
@@ -292,6 +273,7 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
     // CompiledRegion
     this.regionName = ((CompiledRegion) from.getCollectionExpr()).getRegionPath();
     from.setCollectionExpr(new CompiledBindArgument(1));
+
     return locQuery;
   }
 
@@ -302,108 +284,39 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
    * @return true if key is in the Results Cache.
    */
   public boolean isPartOfCqResult(Object key) {
-    // Handle events that may have been deleted,
-    // but added by result caching.
-    if (this.cqResultKeys == null) {
-      logger.warn(
-          "The CQ Result key cache is Null. This should not happen as the call to isPartOfCqResult() is based on the condition cqResultsCacheInitialized.");
-      return false;
-    }
-
-    synchronized (this.cqResultKeys) {
-      if (this.destroysWhileCqResultsInProgress != null) {
-        // this.logger.fine("Removing keys from Destroy Cache For CQ :" +
-        // this.cqName + " Keys :" + this.destroysWhileCqResultsInProgress);
-        for (Object k : this.destroysWhileCqResultsInProgress) {
-          this.cqResultKeys.remove(k);
-        }
-        this.destroysWhileCqResultsInProgress = null;
-      }
-      return this.cqResultKeys.containsKey(key);
-    }
+    return serverCQResultsCache.contains(key);
   }
 
   @Override
   public void addToCqResultKeys(Object key) {
-    if (!CqServiceProvider.MAINTAIN_KEYS) {
-      return;
-    }
-
-    if (this.cqResultKeys != null) {
-      synchronized (this.cqResultKeys) {
-        this.cqResultKeys.put(key, TOKEN);
-        if (!this.cqResultKeysInitialized) {
-          // This key could be coming after add, destroy.
-          // Remove this from destroy queue.
-          if (this.destroysWhileCqResultsInProgress != null) {
-            this.destroysWhileCqResultsInProgress.remove(key);
-          }
-        }
-      }
-    }
+    serverCQResultsCache.add(key);
   }
 
   @Override
   public void removeFromCqResultKeys(Object key, boolean isTokenMode) {
-    if (!CqServiceProvider.MAINTAIN_KEYS) {
-      return;
-    }
-    if (this.cqResultKeys != null) {
-      synchronized (this.cqResultKeys) {
-        if (isTokenMode && this.cqResultKeys.get(key) != Token.DESTROYED) {
-          return;
-        }
-        this.cqResultKeys.remove(key);
-        if (!this.cqResultKeysInitialized) {
-          if (this.destroysWhileCqResultsInProgress != null) {
-            this.destroysWhileCqResultsInProgress.add(key);
-          }
-        }
-      }
-    }
+    serverCQResultsCache.remove(key, isTokenMode);
   }
 
   @Override
   public void invalidateCqResultKeys() {
-    if (!CqServiceProvider.MAINTAIN_KEYS) {
-      return;
-    }
-
-    if (this.cqResultKeys != null) {
-      synchronized (this.cqResultKeys) {
-        this.cqResultKeys.clear();
-        this.cqResultKeysInitialized = false;
-      }
-    }
+    serverCQResultsCache.invalidate();
   }
 
   /**
    * Marks the key as destroyed in the CQ Results key cache.
    */
   void markAsDestroyedInCqResultKeys(Object key) {
-    if (!CqServiceProvider.MAINTAIN_KEYS) {
-      return;
-    }
-
-    if (this.cqResultKeys != null) {
-      synchronized (this.cqResultKeys) {
-        this.cqResultKeys.put(key, Token.DESTROYED);
-        if (!this.cqResultKeysInitialized) {
-          // this.logger.fine("Adding key to Destroy Cache For CQ :" +
-          // this.cqName + " key :" + key);
-          if (this.destroysWhileCqResultsInProgress != null) {
-            this.destroysWhileCqResultsInProgress.add(key);
-          }
-        }
-      }
-    }
+    serverCQResultsCache.markAsDestroyed(key);
   }
 
   @Override
   public void setCqResultsCacheInitialized() {
-    if (CqServiceProvider.MAINTAIN_KEYS) {
-      this.cqResultKeysInitialized = true;
-    }
+    serverCQResultsCache.setInitialized();
+  }
+
+  @Override
+  public boolean isCqResultsCacheInitialized() {
+    return serverCQResultsCache.isInitialized();
   }
 
   /**
@@ -412,17 +325,12 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
    * @return size of CQ Result key cache.
    */
   public int getCqResultKeysSize() {
-    if (this.cqResultKeys == null) {
-      return 0;
-    }
-    synchronized (this.cqResultKeys) {
-      return this.cqResultKeys.size();
-    }
+    return serverCQResultsCache.size();
   }
 
   @Override
   public boolean isOldValueRequiredForQueryProcessing(Object key) {
-    return !this.cqResultKeysInitialized || !this.isPartOfCqResult(key);
+    return serverCQResultsCache.isOldValueRequiredForQueryProcessing(key);
   }
 
   /**
@@ -454,7 +362,6 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
 
       int stateBeforeClosing = this.cqState.getState();
       this.cqState.setState(CqStateImpl.CLOSING);
-      boolean isClosed = false;
 
       // Cleanup the resource used by cq.
       this.removeFromCqMap();
@@ -467,11 +374,7 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
       }
 
       // Clean-up the CQ Results Cache.
-      if (this.cqResultKeys != null) {
-        synchronized (this.cqResultKeys) {
-          this.cqResultKeys.clear();
-        }
-      }
+      serverCQResultsCache.clear();
 
       // Set the state to close, and update stats
       this.cqState.setState(CqStateImpl.CLOSED);
@@ -503,7 +406,7 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
    * Clears the resource used by CQ.
    */
   @Override
-  protected void cleanup() throws CqException {
+  protected void cleanup() {
     // CqBaseRegion
     try {
       if (this.cqBaseRegion != null && !this.cqBaseRegion.isDestroyed()) {
@@ -526,8 +429,7 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
    * Stop or pause executing the query.
    */
   @Override
-  public void stop() throws CqClosedException, CqException {
-    boolean isStopped = false;
+  public void stop() throws CqClosedException {
     synchronized (this.cqState) {
       if (this.isClosed()) {
         throw new CqClosedException(
@@ -551,7 +453,7 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in) throws IOException {
     synchronized (cqState) {
       this.cqState.setState(DataSerializer.readInteger(in));
     }
@@ -584,14 +486,12 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
   }
 
   @Override
-  public <E> CqResults<E> executeWithInitialResults()
-      throws CqClosedException, RegionNotFoundException, CqException {
+  public <E> CqResults<E> executeWithInitialResults() throws CqClosedException {
     throw new IllegalStateException("Execute cannot be called on a CQ on the server");
   }
 
   @Override
-  public void execute() throws CqClosedException, RegionNotFoundException, CqException {
+  public void execute() throws CqClosedException {
     throw new IllegalStateException("Execute cannot be called on a CQ on the server");
   }
-
 }

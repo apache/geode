@@ -53,13 +53,13 @@ public class ClusterKeyStatisticsService implements PulseService {
     // json object to be sent as response
     ObjectNode responseJSON = mapper.createObjectNode();
 
-    responseJSON.put("writePerSecTrend",
+    responseJSON.set("writePerSecTrend",
         mapper.valueToTree(cluster.getStatisticTrend(Cluster.CLUSTER_STAT_WRITES_PER_SECOND)));
 
-    responseJSON.put("readPerSecTrend",
+    responseJSON.set("readPerSecTrend",
         mapper.valueToTree(cluster.getStatisticTrend(Cluster.CLUSTER_STAT_READ_PER_SECOND)));
 
-    responseJSON.put("queriesPerSecTrend",
+    responseJSON.set("queriesPerSecTrend",
         mapper.valueToTree(cluster.getStatisticTrend(Cluster.CLUSTER_STAT_QUERIES_PER_SECOND)));
 
     // Send json response

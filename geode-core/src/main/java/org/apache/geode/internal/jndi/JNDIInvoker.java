@@ -98,7 +98,7 @@ public class JNDIInvoker {
       {"java:comp/UserTransaction", "Orion, JTOM, BEA WebLogic"},
       // not sure about the following but leaving it for backwards compat
       {"javax.transaction.TransactionManager", "BEA WebLogic"}};
-  /** ************************************************* */
+  /* ************************************************* */
   /**
    * WebSphere 5.1 TransactionManagerFactory
    */

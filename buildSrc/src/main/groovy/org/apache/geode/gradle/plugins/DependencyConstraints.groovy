@@ -134,6 +134,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'net.spy', name: 'spymemcached', version: '2.12.3')
         api(group: 'org.apache.bcel', name: 'bcel', version: '6.2')
         api(group: 'org.apache.commons', name: 'commons-lang3', version: get('commons-lang3.version'))
+        api(group: 'org.apache.commons', name: 'commons-text', version: 1.8)
         api(group: 'org.apache.derby', name: 'derby', version: '10.14.2.0')
         api(group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.10')
         api(group: 'org.apache.httpcomponents', name: 'httpcore', version: '4.4.12')

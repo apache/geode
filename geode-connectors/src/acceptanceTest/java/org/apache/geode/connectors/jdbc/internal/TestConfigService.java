@@ -19,6 +19,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 
+import org.apache.geode.cache.Cache;
 import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.internal.cache.InternalCache;
@@ -52,7 +53,9 @@ public class TestConfigService {
 
   private static InternalCache createMockCache() {
     InternalCache cache = mock(InternalCache.class);
-    when(cache.getExtensionPoint()).thenReturn(mock(ExtensionPoint.class));
+    @SuppressWarnings("unchecked")
+    final ExtensionPoint<Cache> mockExtensionPoint = mock(ExtensionPoint.class);
+    when(cache.getExtensionPoint()).thenReturn(mockExtensionPoint);
     return cache;
   }
 

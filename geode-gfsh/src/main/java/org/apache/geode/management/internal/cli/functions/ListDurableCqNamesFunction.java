@@ -36,14 +36,13 @@ import org.apache.geode.management.internal.i18n.CliStrings;
  *
  * @see org.apache.geode.cache.Cache
  * @see org.apache.geode.cache.execute.Function
- * @see org.apache.geode.cache.execute.FunctionAdapter
  * @see org.apache.geode.cache.execute.FunctionContext
  * @see org.apache.geode.internal.InternalEntity
  * @see org.apache.geode.management.internal.cli.domain.IndexDetails
  * @since GemFire 7.0.1
  */
 @SuppressWarnings("unused")
-public class ListDurableCqNamesFunction implements InternalFunction {
+public class ListDurableCqNamesFunction implements InternalFunction<String> {
   private static final long serialVersionUID = 1L;
 
   @Override
@@ -52,12 +51,12 @@ public class ListDurableCqNamesFunction implements InternalFunction {
   }
 
   @Override
-  public void execute(final FunctionContext context) {
+  public void execute(final FunctionContext<String> context) {
     final Cache cache = context.getCache();
     final DistributedMember member = cache.getDistributedSystem().getDistributedMember();
     String memberNameOrId = CliUtil.getMemberNameOrId(member);
 
-    String durableClientId = (String) context.getArguments();
+    String durableClientId = context.getArguments();
 
     context.getResultSender().lastResult(createFunctionResult(memberNameOrId, durableClientId));
   }

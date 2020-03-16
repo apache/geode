@@ -36,15 +36,15 @@ public class JdbcConnectorServiceXmlParserTest {
 
   private Attributes attributes;
   private RegionCreation regionCreation;
-  private ExtensionPoint<Region<?, ?>> extensionPoint;
   private Stack<Object> stack;
 
+  @SuppressWarnings("unchecked")
   @Before
   public void setup() {
     attributes = mock(Attributes.class);
     regionCreation = mock(RegionCreation.class);
     when(regionCreation.getFullPath()).thenReturn("/region");
-    extensionPoint = mock(ExtensionPoint.class);
+    ExtensionPoint<Region<?, ?>> extensionPoint = mock(ExtensionPoint.class);
     when(regionCreation.getExtensionPoint()).thenReturn(extensionPoint);
     stack = new Stack<>();
   }

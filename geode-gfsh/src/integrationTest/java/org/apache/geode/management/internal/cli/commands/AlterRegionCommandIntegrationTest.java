@@ -44,42 +44,42 @@ public class AlterRegionCommandIntegrationTest {
   }
 
   @Test
-  public void validateGroup() throws Exception {
+  public void validateGroup() {
     gfsh.executeAndAssertThat("alter region --name=/REPLICATED --group=unknown").statusIsError()
         .containsOutput("No Members Found");
   }
 
   @Test
-  public void invalidCacheListener() throws Exception {
+  public void invalidCacheListener() {
     gfsh.executeAndAssertThat("alter region --name=/REPLICATED --cache-listener=abc-def")
         .statusIsError().containsOutput(
             "java.lang.IllegalArgumentException: Failed to convert 'abc-def' to type ClassName[] for option 'cache-listener'");
   }
 
   @Test
-  public void invalidCacheLoader() throws Exception {
+  public void invalidCacheLoader() {
     gfsh.executeAndAssertThat("alter region --name=/REPLICATED --cache-loader=abc-def")
         .statusIsError().containsOutput(
             "java.lang.IllegalArgumentException: Failed to convert 'abc-def' to type ClassName for option 'cache-loader'");
   }
 
   @Test
-  public void invalidCacheWriter() throws Exception {
+  public void invalidCacheWriter() {
     gfsh.executeAndAssertThat("alter region --name=/REPLICATED --cache-writer=abc-def")
         .statusIsError().containsOutput(
             "java.lang.IllegalArgumentException: Failed to convert 'abc-def' to type ClassName for option 'cache-writer'");
   }
 
   @Test
-  public void invalidEvictionMax() throws Exception {
+  public void invalidEvictionMax() {
     gfsh.executeAndAssertThat("alter region --name=/REPLICATED --eviction-max=-1").statusIsError()
         .containsOutput("Specify 0 or a positive integer value for eviction-max");
   }
 
 
   @Test
-  public void alterRegionWithGatewaySender() throws Exception {
-    Region region = server.getCache().getRegion("/REPLICATED");
+  public void alterRegionWithGatewaySender() {
+    Region<?, ?> region = server.getCache().getRegion("/REPLICATED");
     region.getAttributesMutator().addGatewaySenderId("1");
     gfsh.executeAndAssertThat("alter region --name=REPLICATED --gateway-sender-id='1,2'")
         .statusIsSuccess();
@@ -91,8 +91,8 @@ public class AlterRegionCommandIntegrationTest {
   }
 
   @Test
-  public void alterRegionWithAsyncEventQueue() throws Exception {
-    Region region = server.getCache().getRegion("/REPLICATED");
+  public void alterRegionWithAsyncEventQueue() {
+    Region<?, ?> region = server.getCache().getRegion("/REPLICATED");
     region.getAttributesMutator().addAsyncEventQueueId("1");
     gfsh.executeAndAssertThat("alter region --name=REPLICATED --async-event-queue-id='1,2'")
         .statusIsSuccess();

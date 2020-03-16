@@ -93,7 +93,7 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
   /** JMX Service URL template for JMX/RMI Connector Server */
   private static final String JMX_SERVICE_URL = "service:jmx:rmi://{0}:{1}/jndi/rmi://{2}:{3}{4}";
 
-  /**
+  /*
    * Set third-party logging configration: MX4J, Jakarta Commons-Logging.
    */
   static {

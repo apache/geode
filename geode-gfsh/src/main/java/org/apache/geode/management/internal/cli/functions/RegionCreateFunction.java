@@ -19,7 +19,6 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.RegionExistsException;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
@@ -38,6 +37,7 @@ import org.apache.geode.management.internal.util.RegionPath;
  *
  * @since GemFire 7.0
  */
+@SuppressWarnings("rawtypes")
 public class RegionCreateFunction implements InternalFunction {
 
   private static final Logger logger = LogService.getLogger();
@@ -58,18 +58,19 @@ public class RegionCreateFunction implements InternalFunction {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public void execute(FunctionContext context) {
     ResultSender<Object> resultSender = context.getResultSender();
 
-    Cache cache = ((InternalCache) context.getCache()).getCacheForProcessingClientRequests();
+    InternalCache cache =
+        ((InternalCache) context.getCache()).getCacheForProcessingClientRequests();
     String memberNameOrId = context.getMemberName();
 
     CreateRegionFunctionArgs regionCreateArgs = (CreateRegionFunctionArgs) context.getArguments();
 
     try {
       RegionPath regionPath = new RegionPath(regionCreateArgs.getRegionPath());
-      getRealizer().create(regionCreateArgs.getConfig(), regionCreateArgs.getRegionPath(),
-          (InternalCache) cache);
+      getRealizer().create(regionCreateArgs.getConfig(), regionCreateArgs.getRegionPath(), cache);
       XmlEntity xmlEntity = new XmlEntity(CacheXml.REGION, "name", regionPath.getRootRegionName());
       resultSender.lastResult(new CliFunctionResult(memberNameOrId, xmlEntity.getXmlDefinition(),
           CliStrings.format(CliStrings.CREATE_REGION__MSG__REGION_0_CREATED_ON_1,

@@ -39,14 +39,15 @@ public class DestroyAsyncEventQueueFunctionTest {
 
   private static final String TEST_AEQ_ID = "Test-AEQ";
   private AsyncEventQueue mockAEQ;
-  private FunctionContext mockContext;
+  private FunctionContext<DestroyAsyncEventQueueFunctionArgs> mockContext;
   private DestroyAsyncEventQueueFunctionArgs mockArgs;
   private GemFireCacheImpl cache;
-  private ResultSender resultSender;
+  private ResultSender<Object> resultSender;
   private ArgumentCaptor<CliFunctionResult> resultCaptor;
   private DestroyAsyncEventQueueFunction function;
 
   @Before
+  @SuppressWarnings("unchecked")
   public void setUp() throws Exception {
     mockAEQ = mock(AsyncEventQueueImpl.class);
     mockContext = mock(FunctionContext.class);
@@ -64,7 +65,8 @@ public class DestroyAsyncEventQueueFunctionTest {
   }
 
   @Test
-  public void execute_validAeqId_OK() throws Throwable {
+  @SuppressWarnings("deprecation")
+  public void execute_validAeqId_OK() {
     XmlEntity xmlEntity = mock(XmlEntity.class);
     doReturn(xmlEntity).when(function).getAEQXmlEntity(anyString(), anyString());
     when(cache.getAsyncEventQueue(TEST_AEQ_ID)).thenReturn(mockAEQ);
@@ -79,7 +81,8 @@ public class DestroyAsyncEventQueueFunctionTest {
   }
 
   @Test
-  public void execute_nonexistentAeqId_returnsError() throws Throwable {
+  @SuppressWarnings("deprecation")
+  public void execute_nonexistentAeqId_returnsError() {
     when(cache.getAsyncEventQueue(TEST_AEQ_ID)).thenReturn(null);
 
     function.execute(mockContext);
@@ -91,7 +94,8 @@ public class DestroyAsyncEventQueueFunctionTest {
   }
 
   @Test
-  public void execute_nonexistentAeqIdIfExists_returnsSuccess() throws Throwable {
+  @SuppressWarnings("deprecation")
+  public void execute_nonexistentAeqIdIfExists_returnsSuccess() {
     when(cache.getAsyncEventQueue(TEST_AEQ_ID)).thenReturn(null);
     when(mockArgs.isIfExists()).thenReturn(true);
 

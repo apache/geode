@@ -102,6 +102,7 @@ public class TcpClient {
    *
    * @deprecated this was created for the deprecated Admin API
    */
+  @Deprecated
   public String[] getInfo(HostAndPort addr) {
     try {
       InfoRequest request = new InfoRequest();
@@ -309,7 +310,7 @@ public class TcpClient {
     synchronized (serverVersions) {
       serverVersions.put(addr, Version.GFE_57.ordinal());
     }
-    return Short.valueOf(Version.GFE_57.ordinal());
+    return Version.GFE_57.ordinal();
   }
 
 

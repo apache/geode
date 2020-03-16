@@ -383,7 +383,7 @@ public class PartitionedIndex extends AbstractIndex {
     return false;
   }
 
-  /**
+  /*
    * Not supported on partitioned index.
    */
   /*

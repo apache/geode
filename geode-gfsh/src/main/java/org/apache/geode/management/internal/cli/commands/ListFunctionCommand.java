@@ -62,6 +62,7 @@ public class ListFunctionCommand extends GfshCommand {
     ResultModel result = new ResultModel();
     TabularResultModel tabularData = result.addTable("functions");
     for (CliFunctionResult cliResult : results) {
+      @SuppressWarnings("unchecked")
       Set<String> resultObject = (Set<String>) cliResult.getResultObject();
       if (resultObject == null) {
         continue;

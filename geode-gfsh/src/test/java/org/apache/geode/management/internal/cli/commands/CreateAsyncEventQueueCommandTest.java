@@ -66,7 +66,7 @@ public class CreateAsyncEventQueueCommandTest {
   private InternalConfigurationPersistenceService service;
 
   @Before
-  public void before() throws Exception {
+  public void before() {
     command = spy(CreateAsyncEventQueueCommand.class);
     service = mock(InternalConfigurationPersistenceService.class);
     doReturn(service).when(command).getConfigurationPersistenceService();
@@ -123,6 +123,7 @@ public class CreateAsyncEventQueueCommandTest {
   }
 
   @Test
+  @SuppressWarnings({"deprecation", "unchecked"})
   public void buildResult_all_success() {
     List<CliFunctionResult> functionResults = new ArrayList<>();
     functionResults.add(new CliFunctionResult("member1", StatusState.OK, "SUCCESS"));
@@ -143,6 +144,7 @@ public class CreateAsyncEventQueueCommandTest {
 
 
   @Test
+  @SuppressWarnings("unchecked")
   public void buildResult_all_failure() {
     List<CliFunctionResult> functionResults = new ArrayList<>();
     functionResults.add(new CliFunctionResult("member1", StatusState.ERROR, "failed"));
@@ -166,6 +168,7 @@ public class CreateAsyncEventQueueCommandTest {
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   public void buildResult_one_failure_one_success() {
     List<CliFunctionResult> functionResults = new ArrayList<>();
     functionResults.add(new CliFunctionResult("member1", StatusState.OK, "SUCCESS"));
@@ -190,6 +193,7 @@ public class CreateAsyncEventQueueCommandTest {
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   public void command_succeeded_but_no_cluster_config_service() {
     doReturn(null).when(command).getConfigurationPersistenceService();
     doReturn(Collections.emptySet()).when(command).getMembers(any(), any());

@@ -55,9 +55,10 @@ import org.apache.geode.management.internal.cli.domain.DiskStoreDetails;
  */
 public class ListDiskStoresFunctionJUnitTest {
   private InternalCache mockCache;
-  private FunctionContext mockFunctionContext;
+  private FunctionContext<Void> mockFunctionContext;
 
   @Before
+  @SuppressWarnings("unchecked")
   public void setup() {
     mockCache = mock(InternalCache.class, "Cache");
     mockFunctionContext = mock(FunctionContext.class, "FunctionContext");
@@ -183,7 +184,7 @@ public class ListDiskStoresFunctionJUnitTest {
         .hasMessage("Mock RuntimeException");
   }
 
-  private static class TestResultSender implements ResultSender {
+  private static class TestResultSender implements ResultSender<Object> {
     private Throwable t;
     private final List<Object> results = new LinkedList<>();
 

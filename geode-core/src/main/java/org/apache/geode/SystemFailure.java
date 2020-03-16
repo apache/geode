@@ -14,6 +14,8 @@
  */
 package org.apache.geode;
 
+import org.jgroups.annotations.GuardedBy;
+
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.internal.ExitCode;
@@ -279,9 +281,8 @@ public final class SystemFailure {
 
   /**
    * This is the watchdog thread
-   *
-   * @guarded.By {@link #failureSync}
    */
+  @GuardedBy("failureSync")
   @MakeNotStatic
   private static Thread watchDog;
 
@@ -439,9 +440,9 @@ public final class SystemFailure {
   /**
    * Spies on system statistics looking for low memory threshold
    *
-   * @guarded.By {@link #failureSync}
    * @see #minimumMemoryThreshold
    */
+  @GuardedBy("failureSync")
   @MakeNotStatic
   private static Thread proctor;
 
@@ -459,8 +460,8 @@ public final class SystemFailure {
    * failure.
    *
    * @see #setFailureMemoryThreshold(long)
-   * @guarded.By {@link #memorySync}
    */
+  @GuardedBy("memorySync")
   @MakeNotStatic
   private static long minimumMemoryThreshold = Long.getLong(
       GeodeGlossary.GEMFIRE_PREFIX + "SystemFailure.chronic_memory_threshold", 1048576);
@@ -544,9 +545,8 @@ public final class SystemFailure {
 
   /**
    * this is the last time we saw memory starvation
-   *
-   * @guarded.By {@link #memorySync}}}
    */
+  @GuardedBy("memorySync")
   @MakeNotStatic
   private static long firstStarveTime = NEVER_STARVED;
 

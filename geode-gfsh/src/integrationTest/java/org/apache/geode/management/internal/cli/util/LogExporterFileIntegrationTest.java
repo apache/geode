@@ -24,6 +24,7 @@ import static org.mockito.Mockito.when;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.List;
@@ -70,7 +71,8 @@ public class LogExporterFileIntegrationTest {
   @Test
   public void exporterShouldStillReturnFileIfNoAcceptableLogs() throws Exception {
     File logFile1 = new File(workingDir, "server1.log");
-    FileUtils.writeStringToFile(logFile1, "some log for server1 \n some other log line");
+    FileUtils.writeStringToFile(logFile1, "some log for server1 \n some other log line",
+        Charset.defaultCharset());
     when(logFilter.acceptsLine(any())).thenReturn(LogFilter.LineFilterResult.LINE_REJECTED);
     Path exportedZip = logExporter.export();
     assertThat(exportedZip).isNotNull();
@@ -88,12 +90,14 @@ public class LogExporterFileIntegrationTest {
   @Test
   public void exportBuildsZipCorrectlyWithTwoLogFiles() throws Exception {
     File logFile1 = new File(workingDir, "server1.log");
-    FileUtils.writeStringToFile(logFile1, "some log for server1 \n some other log line");
+    FileUtils.writeStringToFile(logFile1, "some log for server1 \n some other log line",
+        Charset.defaultCharset());
     File logFile2 = new File(workingDir, "server2.log");
-    FileUtils.writeStringToFile(logFile2, "some log for server2 \n some other log line");
+    FileUtils.writeStringToFile(logFile2, "some log for server2 \n some other log line",
+        Charset.defaultCharset());
 
     File notALogFile = new File(workingDir, "foo.txt");
-    FileUtils.writeStringToFile(notALogFile, "some text");
+    FileUtils.writeStringToFile(notALogFile, "some text", Charset.defaultCharset());
 
 
     Path zippedExport = logExporter.export();
@@ -113,10 +117,10 @@ public class LogExporterFileIntegrationTest {
   public void findLogFilesExcludesFilesWithIncorrectExtension() throws Exception {
     File logFile = new File(workingDir, "server.log");
 
-    FileUtils.writeStringToFile(logFile, "some log line");
+    FileUtils.writeStringToFile(logFile, "some log line", Charset.defaultCharset());
 
     File notALogFile = new File(workingDir, "foo.txt");
-    FileUtils.writeStringToFile(notALogFile, "some text");
+    FileUtils.writeStringToFile(notALogFile, "some text", Charset.defaultCharset());
 
     assertThat(logExporter.findLogFiles(workingDir.toPath())).contains(logFile.toPath());
     assertThat(logExporter.findLogFiles(workingDir.toPath())).doesNotContain(notALogFile.toPath());
@@ -126,10 +130,10 @@ public class LogExporterFileIntegrationTest {
   public void findStatFiles() throws Exception {
     File statFile = new File(workingDir, "server.gfs");
 
-    FileUtils.writeStringToFile(statFile, "some stat line");
+    FileUtils.writeStringToFile(statFile, "some stat line", Charset.defaultCharset());
 
     File notALogFile = new File(workingDir, "foo.txt");
-    FileUtils.writeStringToFile(notALogFile, "some text");
+    FileUtils.writeStringToFile(notALogFile, "some text", Charset.defaultCharset());
 
     assertThat(logExporter.findStatFiles(workingDir.toPath())).contains(statFile.toPath());
     assertThat(logExporter.findStatFiles(workingDir.toPath())).doesNotContain(notALogFile.toPath());
@@ -139,10 +143,10 @@ public class LogExporterFileIntegrationTest {
   // GEODE-6707 - Rolled over GC logs end with names like ".log.1"
   public void findLogsWhichContainsTheWordLog() throws Exception {
     File gcLogFile = new File(workingDir, "gc.log");
-    FileUtils.writeStringToFile(gcLogFile, "some gc log line");
+    FileUtils.writeStringToFile(gcLogFile, "some gc log line", Charset.defaultCharset());
 
     File gcRolledOverLogFile = new File(workingDir, "gc.log.1");
-    FileUtils.writeStringToFile(gcRolledOverLogFile, "some gc log line");
+    FileUtils.writeStringToFile(gcRolledOverLogFile, "some gc log line", Charset.defaultCharset());
 
     assertThat(logExporter.findLogFiles(workingDir.toPath())).contains(gcLogFile.toPath());
     assertThat(logExporter.findLogFiles(workingDir.toPath()))

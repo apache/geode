@@ -38,7 +38,6 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
-import org.apache.geode.LogWriter;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -47,11 +46,13 @@ import org.apache.geode.test.assertj.LogFileAssert;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
 /**
- * Integration tests for logging of main and security {@code Logger}s and {@link LogWriter}s to
+ * Integration tests for logging of main and security {@code Logger}s and
+ * {@link org.apache.geode.LogWriter}s to
  * {@link ConfigurationProperties#LOG_FILE} and {@link ConfigurationProperties#SECURITY_LOG_FILE}
  * with {@link DistributedSystem}.
  */
 @Category(LoggingTest.class)
+@SuppressWarnings("deprecation")
 public class DistributedSystemWithBothLogWriterAppendersIntegrationTest {
 
   private static final String CONFIG_FILE_NAME =
@@ -64,8 +65,8 @@ public class DistributedSystemWithBothLogWriterAppendersIntegrationTest {
   private InternalDistributedSystem system;
   private Logger mainLogger;
   private Logger securityLogger;
-  private LogWriter mainLogWriter;
-  private LogWriter securityLogWriter;
+  private org.apache.geode.LogWriter mainLogWriter;
+  private org.apache.geode.LogWriter securityLogWriter;
   private String logMessage;
 
   @ClassRule

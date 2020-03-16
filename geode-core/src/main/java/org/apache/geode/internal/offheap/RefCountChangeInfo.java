@@ -19,7 +19,7 @@ import java.io.PrintStream;
 
 
 @SuppressWarnings("serial")
-/**
+/*
  * Used by MemoryAllocatorImpl to debug off-heap memory leaks.
  */
 public class RefCountChangeInfo extends Throwable {

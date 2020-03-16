@@ -84,7 +84,8 @@ public class RegionAlterFunction extends CliFunction<RegionConfig> {
           String.format("Region does not exist: %s", regionPathString));
     }
 
-    AttributesMutator<?, ?> mutator = region.getAttributesMutator();
+    @SuppressWarnings("unchecked")
+    AttributesMutator<Object, Object> mutator = region.getAttributesMutator();
     RegionAttributesType regionAttributes = deltaConfig.getRegionAttributes();
 
     if (regionAttributes.isCloningEnabled() != null) {
@@ -179,8 +180,9 @@ public class RegionAlterFunction extends CliFunction<RegionConfig> {
     if (!newCacheListeners.isEmpty()) {
       // remove the old ones, even if the new set includes the same class name, the init properties
       // might be different
-      CacheListener[] oldCacheListeners = region.getCacheListeners();
-      for (CacheListener oldCacheListener : oldCacheListeners) {
+      @SuppressWarnings("unchecked")
+      CacheListener<Object, Object>[] oldCacheListeners = region.getCacheListeners();
+      for (CacheListener<Object, Object> oldCacheListener : oldCacheListeners) {
         mutator.removeCacheListener(oldCacheListener);
       }
 
@@ -225,7 +227,7 @@ public class RegionAlterFunction extends CliFunction<RegionConfig> {
   private void updateExpirationAttributes(Cache cache,
       RegionAttributesType.ExpirationAttributesType newAttributes,
       ExpirationAttributes existingAttributes, Consumer<ExpirationAttributes> mutator1,
-      Consumer<CustomExpiry> mutator2) {
+      Consumer<CustomExpiry<Object, Object>> mutator2) {
     if (newAttributes == null) {
       return;
     }

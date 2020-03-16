@@ -70,7 +70,7 @@ public class TransactionImplJUnitTest {
     TransactionImpl txn = (TransactionImpl) tm.getTransaction();
     Synchronization sync = new SyncImpl();
     txn.registerSynchronization(sync);
-    assertTrue("Synchronization not registered succesfully", txn.getSyncList().contains(sync));
+    assertTrue("Synchronization not registered successfully", txn.getSyncList().contains(sync));
     utx.commit();
   }
 
@@ -81,7 +81,7 @@ public class TransactionImplJUnitTest {
     SyncImpl sync = new SyncImpl();
     txn.registerSynchronization(sync);
     txn.notifyBeforeCompletion();
-    assertTrue("Notify before completion not executed succesfully", sync.befCompletion);
+    assertTrue("Notify before completion not executed successfully", sync.befCompletion);
     utx.commit();
   }
 
@@ -92,7 +92,7 @@ public class TransactionImplJUnitTest {
     SyncImpl sync = new SyncImpl();
     txn.registerSynchronization(sync);
     txn.notifyAfterCompletion(1);
-    assertTrue("Notify after completion not executed succesfully", sync.aftCompletion);
+    assertTrue("Notify after completion not executed successfully", sync.aftCompletion);
     utx.commit();
   }
 }

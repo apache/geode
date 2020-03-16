@@ -114,7 +114,7 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
 
   @Override
   protected void distributeUpdateOperation(EntryEventImpl event, long lastModified) {
-    /**
+    /*
      * no-op as there is no need to distribute this operation.
      */
   }
@@ -148,7 +148,7 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
 
   @Override
   public void basicDestroyBeforeRemoval(RegionEntry entry, EntryEventImpl event) {
-    /**
+    /*
      * We are doing local destroy on this bucket. No need to send destroy operation to remote nodes.
      */
     if (logger.isDebugEnabled()) {
@@ -160,7 +160,7 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
 
   @Override
   protected void distributeDestroyOperation(EntryEventImpl event) {
-    /**
+    /*
      * no-op as there is no need to distribute this operation.
      */
   }

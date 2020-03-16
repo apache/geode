@@ -114,17 +114,18 @@ public class ListMappingCommandDUnitTest implements Serializable {
 
     @Override
     public void toData(PdxWriter writer) {
-      writer.writeString("id", this.id);
-      writer.writeString("name", this.name);
+      writer.writeString("id", id);
+      writer.writeString("name", name);
     }
 
     @Override
     public void fromData(PdxReader reader) {
-      this.id = reader.readString("id");
-      this.name = reader.readString("name");
+      id = reader.readString("id");
+      name = reader.readString("name");
     }
   }
 
+  @SuppressWarnings("deprecation")
   @Test
   public void listsRegionMapping() throws Exception {
     locator = startupRule.startLocatorVM(0);
@@ -154,6 +155,7 @@ public class ListMappingCommandDUnitTest implements Serializable {
     }
   }
 
+  @SuppressWarnings("deprecation")
   @Test
   public void reportsNoRegionMappingsFoundForServerGroup() throws Exception {
     locator = startupRule.startLocatorVM(0);
@@ -188,6 +190,7 @@ public class ListMappingCommandDUnitTest implements Serializable {
   }
 
 
+  @SuppressWarnings("deprecation")
   @Test
   public void listsRegionMappingForServerGroup() throws Exception {
     locator = startupRule.startLocatorVM(0);
@@ -223,6 +226,7 @@ public class ListMappingCommandDUnitTest implements Serializable {
     }
   }
 
+  @SuppressWarnings("deprecation")
   @Test
   public void listsRegionMappingForMultiServerGroup() throws Exception {
     locator = startupRule.startLocatorVM(0);
@@ -322,6 +326,7 @@ public class ListMappingCommandDUnitTest implements Serializable {
     }
   }
 
+  @SuppressWarnings("deprecation")
   @Test
   public void reportsNoRegionMappingsFound() throws Exception {
     locator = startupRule.startLocatorVM(0);

@@ -25,23 +25,25 @@ import org.apache.geode.distributed.DistributedMember;
 
 public class RestServersResultCollector<String, Object> implements ResultCollector<String, Object> {
 
-  private ArrayList resultList = new ArrayList();
+  private ArrayList<String> resultList = new ArrayList<>();
 
   @Override
   public void addResult(DistributedMember memberID, String result) {
     if (!StringUtils.isEmpty(result)) {
-      this.resultList.add(result);
+      resultList.add(result);
     }
   }
 
   @Override
   public void endResults() {}
 
+  @SuppressWarnings("unchecked")
   @Override
   public Object getResult() throws FunctionException {
     return (Object) resultList;
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   public Object getResult(long timeout, TimeUnit unit) throws FunctionException {
     return (Object) resultList;

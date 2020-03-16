@@ -44,17 +44,17 @@ import org.apache.geode.test.junit.categories.GfshTest;
 public class DestroyJndiBindingFunctionTest {
 
   private DestroyJndiBindingFunction destroyJndiBindingFunction;
-  private FunctionContext context;
-  private DistributedSystem distributedSystem;
-  private ResultSender resultSender;
+  private FunctionContext<Object[]> context;
+  private ResultSender<Object> resultSender;
   private ArgumentCaptor<CliFunctionResult> resultCaptor;
 
   @Before
+  @SuppressWarnings({"unchecked", "deprecation"})
   public void setup() throws Exception {
     destroyJndiBindingFunction = spy(new DestroyJndiBindingFunction());
     context = mock(FunctionContext.class);
 
-    distributedSystem = mock(DistributedSystem.class);
+    DistributedSystem distributedSystem = mock(DistributedSystem.class);
     resultSender = mock(ResultSender.class);
     resultCaptor = ArgumentCaptor.forClass(CliFunctionResult.class);
 
@@ -72,7 +72,8 @@ public class DestroyJndiBindingFunctionTest {
   }
 
   @Test
-  public void destroyJndiBindingIsSuccessfulWhenBindingFound() throws Exception {
+  @SuppressWarnings("deprecation")
+  public void destroyJndiBindingIsSuccessfulWhenBindingFound() {
     when(context.getArguments()).thenReturn(new Object[] {"jndi1", false});
     when(context.getMemberName()).thenReturn("server-1");
     when(context.getResultSender()).thenReturn(resultSender);
@@ -86,8 +87,9 @@ public class DestroyJndiBindingFunctionTest {
     assertThat(result.getMessage()).contains("Jndi binding \"jndi1\" destroyed on \"server-1\"");
   }
 
+  @SuppressWarnings("deprecation")
   @Test
-  public void destroyJndiBindingIsSuccessfulWhenNoBindingFound() throws Exception {
+  public void destroyJndiBindingIsSuccessfulWhenNoBindingFound() {
     when(context.getArguments()).thenReturn(new Object[] {"\"somectx/unknownjndi\"", false});
     when(context.getResultSender()).thenReturn(resultSender);
 
@@ -101,7 +103,8 @@ public class DestroyJndiBindingFunctionTest {
   }
 
   @Test
-  public void destroyDataSourceIsSuccessfulWhenBindingFound() throws Exception {
+  @SuppressWarnings("deprecation")
+  public void destroyDataSourceIsSuccessfulWhenBindingFound() {
     when(context.getArguments()).thenReturn(new Object[] {"jndi1", true});
     when(context.getMemberName()).thenReturn("server-1");
     when(context.getResultSender()).thenReturn(resultSender);
@@ -116,7 +119,8 @@ public class DestroyJndiBindingFunctionTest {
   }
 
   @Test
-  public void destroyDataSourceIsSuccessfulWhenNoBindingFound() throws Exception {
+  @SuppressWarnings("deprecation")
+  public void destroyDataSourceIsSuccessfulWhenNoBindingFound() {
     when(context.getArguments()).thenReturn(new Object[] {"\"somectx/unknownjndi\"", true});
     when(context.getResultSender()).thenReturn(resultSender);
 
@@ -130,7 +134,8 @@ public class DestroyJndiBindingFunctionTest {
   }
 
   @Test
-  public void destroyDataSourceFailsWhenBindingHasInvalidType() throws Exception {
+  @SuppressWarnings("deprecation")
+  public void destroyDataSourceFailsWhenBindingHasInvalidType() {
 
     when(context.getArguments()).thenReturn(new Object[] {"jndi1", true});
     when(context.getResultSender()).thenReturn(resultSender);

@@ -47,6 +47,7 @@ public class ConcurrentDeployDUnitTest {
   private VM gfsh1, gfsh2, gfsh3;
 
   @Test
+  @SuppressWarnings("deprecation")
   public void testMultipleGfshClientToOneServer() throws Exception {
     lsRule.startServerVM(0, locator.getPort());
     gfsh1 = lsRule.getVM(1);
@@ -60,9 +61,12 @@ public class ConcurrentDeployDUnitTest {
     gfsh3.invoke(() -> connectToLocator(locatorPort));
 
     File jar1 = jar1Rule.getJarFile();
-    AsyncInvocation gfsh1Invocation = gfsh1.invokeAsync(() -> loopThroughDeployAndUndeploys(jar1));
-    AsyncInvocation gfsh2Invocation = gfsh2.invokeAsync(() -> loopThroughDeployAndUndeploys(jar1));
-    AsyncInvocation gfsh3Invocation = gfsh3.invokeAsync(() -> loopThroughDeployAndUndeploys(jar1));
+    AsyncInvocation<Void> gfsh1Invocation =
+        gfsh1.invokeAsync(() -> loopThroughDeployAndUndeploys(jar1));
+    AsyncInvocation<Void> gfsh2Invocation =
+        gfsh2.invokeAsync(() -> loopThroughDeployAndUndeploys(jar1));
+    AsyncInvocation<Void> gfsh3Invocation =
+        gfsh3.invokeAsync(() -> loopThroughDeployAndUndeploys(jar1));
 
     gfsh1Invocation.await(30, TimeUnit.MINUTES);
     gfsh2Invocation.await(30, TimeUnit.MINUTES);
@@ -81,7 +85,7 @@ public class ConcurrentDeployDUnitTest {
     gfsh.connectAndVerify(locatorPort, GfshCommandRule.PortType.locator);
   }
 
-  public static void loopThroughDeployAndUndeploys(File jar1) throws Exception {
+  public static void loopThroughDeployAndUndeploys(File jar1) {
     int numTimesToExecute = 50;
     String command;
 

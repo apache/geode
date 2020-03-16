@@ -27,5 +27,5 @@ public interface FunctionService {
    *        of any involved regions.
    * @return Function abstraction.
    */
-  <T> Function newFunction(String functionId);
+  <T> Function<T> newFunction(String functionId);
 }

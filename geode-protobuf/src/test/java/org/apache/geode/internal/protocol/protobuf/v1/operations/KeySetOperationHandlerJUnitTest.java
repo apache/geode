@@ -14,8 +14,7 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -24,7 +23,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -37,19 +35,21 @@ import org.apache.geode.internal.protocol.protobuf.v1.Success;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
 @Category({ClientServerTest.class})
-public class KeySetOperationHandlerJUnitTest extends OperationHandlerJUnitTest {
+public class KeySetOperationHandlerJUnitTest
+    extends OperationHandlerJUnitTest<RegionAPI.KeySetRequest, RegionAPI.KeySetResponse> {
   private final String TEST_KEY1 = "Key1";
   private final String TEST_KEY2 = "Key2";
   private final String TEST_KEY3 = "Key3";
   private final String TEST_REGION = "test region";
 
   @Before
-  public void setUp() throws Exception {
-    Region regionStub = mock(Region.class);
+  public void setUp() {
+    @SuppressWarnings("unchecked")
+    Region<String, Object> regionStub = mock(Region.class);
     when(regionStub.keySet())
-        .thenReturn(new HashSet<String>(Arrays.asList(TEST_KEY1, TEST_KEY2, TEST_KEY3)));
+        .thenReturn(new HashSet<>(Arrays.asList(TEST_KEY1, TEST_KEY2, TEST_KEY3)));
 
-    when(cacheStub.getRegion(TEST_REGION)).thenReturn(regionStub);
+    when(cacheStub.<String, Object>getRegion(TEST_REGION)).thenReturn(regionStub);
     operationHandler = new KeySetOperationHandler();
   }
 
@@ -57,17 +57,15 @@ public class KeySetOperationHandlerJUnitTest extends OperationHandlerJUnitTest {
   public void verifyKeySetReturnsExpectedKeys() throws Exception {
     RegionAPI.KeySetRequest request =
         RegionAPI.KeySetRequest.newBuilder().setRegionName(TEST_REGION).build();
-    Result result = operationHandler.process(serializationService, request,
+    Result<?> result = operationHandler.process(serializationService, request,
         TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
 
-    Assert.assertTrue(result instanceof Success);
+    assertThat(result).isInstanceOf(Success.class);
     RegionAPI.KeySetResponse response = (RegionAPI.KeySetResponse) result.getMessage();
 
     List<Object> results = response.getKeysList().stream().map(serializationService::decode)
         .collect(Collectors.toList());
-    assertEquals(3, results.size());
-    assertTrue(results.contains(TEST_KEY1));
-    assertTrue(results.contains(TEST_KEY2));
-    assertTrue(results.contains(TEST_KEY3));
+    assertThat(results.size()).isEqualTo(3);
+    assertThat(results).containsExactlyInAnyOrder(TEST_KEY1, TEST_KEY2, TEST_KEY3);
   }
 }

@@ -76,6 +76,7 @@ public class CreateDefinedIndexesCommand extends SingleGfshCommand {
 
   @Override
   public boolean updateConfigForGroup(String group, CacheConfig config, Object configObject) {
+    @SuppressWarnings("unchecked")
     Set<RegionConfig.Index> updatedIndexes = (Set<RegionConfig.Index>) configObject;
     if (updatedIndexes == null) {
       return false;

@@ -97,13 +97,13 @@ public class CacheXmlPropertyResolverHelper {
           throw new IllegalArgumentException("Some still unresolved string " + replaceableString
               + " was replaced by resolver, leading to circular references.");
         }
-        /** Find the replacement using given <code>resolver</code> */
+        /* Find the replacement using given <code>resolver</code> */
         replaceableString =
             parseResolvablePropString(replaceableString, resolver, visitedReplaceableStrings);
         String replacement = resolver.resolveReplaceString(replaceableString);
 
         if (replacement != null) {
-          /**
+          /*
            * put replacement in <code>unparsedString</code> and call
            * <code>parseResolvablePropString</code> recursively to find more unparsedStrings in the
            * replaced value of given unparsedString.
@@ -112,7 +112,7 @@ public class CacheXmlPropertyResolverHelper {
           buf.replace(prefixIndex, suffixIndex + propertySuffix.length(), replacement);
           prefixIndex = buf.indexOf(propertyPrefix, prefixIndex + replacement.length());
         } else if (resolver.isIgnoreUnresolvedProperties()) {
-          /** Look for more replaceable strings in given <code>unparsedString</code>. */
+          /* Look for more replaceable strings in given <code>unparsedString</code>. */
           prefixIndex = buf.indexOf(propertyPrefix, suffixIndex + propertySuffix.length());
         } else {
           throw new IllegalArgumentException(

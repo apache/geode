@@ -410,15 +410,16 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
    *
    * @param regionFactoryConsumer a lamda that allows you to customize the regionFactory
    */
-  public Region createRegion(RegionShortcut type, String name,
-      Consumer<RegionFactory> regionFactoryConsumer) {
-    RegionFactory regionFactory = getCache().createRegionFactory(type);
+  public <K, V> Region<K, V> createRegion(RegionShortcut type, String name,
+      Consumer<RegionFactory<K, V>> regionFactoryConsumer) {
+    RegionFactory<K, V> regionFactory = getCache().createRegionFactory(type);
     regionFactoryConsumer.accept(regionFactory);
     return regionFactory.create(name);
   }
 
-  public Region createRegion(RegionShortcut type, String name) {
-    return getCache().createRegionFactory(type).create(name);
+  public <K, V> Region<K, V> createRegion(RegionShortcut type, String name) {
+    final RegionFactory<K, V> regionFactory = getCache().createRegionFactory(type);
+    return regionFactory.create(name);
   }
 
   /**

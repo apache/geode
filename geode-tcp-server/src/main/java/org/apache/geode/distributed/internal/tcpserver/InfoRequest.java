@@ -23,5 +23,6 @@ import org.apache.geode.internal.serialization.BasicSerializable;
  *
  * @deprecated this was created for the deprecated Admin API
  */
+@Deprecated
 public class InfoRequest implements BasicSerializable {
 }

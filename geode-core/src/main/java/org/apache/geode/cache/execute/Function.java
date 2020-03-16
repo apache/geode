@@ -42,11 +42,11 @@ public interface Function<T> extends Identifiable<String> {
    * Specifies whether the function sends results while executing. The method returns false if no
    * result is expected.<br>
    * <p>
-   * If {@link Function#hasResult()} returns false, {@link ResultCollector#getResult()} throws
+   * If this method returns false, {@link ResultCollector#getResult()} throws
    * {@link FunctionException}.
    * </p>
    * <p>
-   * If {@link Function#hasResult()} returns true, {@link ResultCollector#getResult()} blocks and
+   * If this method returns true, {@link ResultCollector#getResult()} blocks and
    * waits for the result of function execution
    * </p>
    *

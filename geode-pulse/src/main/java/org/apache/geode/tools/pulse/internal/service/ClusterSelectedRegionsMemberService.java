@@ -18,7 +18,6 @@
 package org.apache.geode.tools.pulse.internal.service;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -58,13 +57,7 @@ public class ClusterSelectedRegionsMemberService implements PulseService {
   private static Comparator<Cluster.RegionOnMember> romEntryCountComparator = (m1, m2) -> {
     long m1EntryCount = m1.getEntryCount();
     long m2EntryCount = m2.getEntryCount();
-    if (m1EntryCount < m2EntryCount) {
-      return -1;
-    } else if (m1EntryCount > m2EntryCount) {
-      return 1;
-    } else {
-      return 0;
-    }
+    return Long.compare(m1EntryCount, m2EntryCount);
   };
 
   @Override
@@ -86,7 +79,7 @@ public class ClusterSelectedRegionsMemberService implements PulseService {
     // getting cluster's Regions
     responseJSON.put("clusterName", cluster.getServerName());
     responseJSON.put("userName", userName);
-    responseJSON.put("selectedRegionsMembers",
+    responseJSON.set("selectedRegionsMembers",
         getSelectedRegionsMembersJson(cluster, selectedRegionFullPath));
     // Send json response
     return responseJSON;
@@ -104,7 +97,7 @@ public class ClusterSelectedRegionsMemberService implements PulseService {
 
       // sort on entry count
       List<RegionOnMember> romList = Arrays.asList(regionOnMembers);
-      Collections.sort(romList, romEntryCountComparator);
+      romList.sort(romEntryCountComparator);
 
       for (RegionOnMember rom : romList) {
         ObjectNode memberJSON = mapper.createObjectNode();
@@ -117,30 +110,30 @@ public class ClusterSelectedRegionsMemberService implements PulseService {
         logger.trace("calling getSelectedRegionsMembersJson :: rom.getLocalMaxMemory() = {}",
             rom.getLocalMaxMemory());
 
-        memberJSON.put("memoryReadsTrend",
-            mapper.<JsonNode>valueToTree(rom.getRegionOnMemberStatisticTrend(
+        memberJSON.set("memoryReadsTrend",
+            mapper.valueToTree(rom.getRegionOnMemberStatisticTrend(
                 RegionOnMember.REGION_ON_MEMBER_STAT_GETS_PER_SEC_TREND)));
         logger.trace("memoryReadsTrend = {}", rom.getRegionOnMemberStatisticTrend(
             RegionOnMember.REGION_ON_MEMBER_STAT_GETS_PER_SEC_TREND).length);
 
-        memberJSON.put("memoryWritesTrend",
-            mapper.<JsonNode>valueToTree(rom.getRegionOnMemberStatisticTrend(
+        memberJSON.set("memoryWritesTrend",
+            mapper.valueToTree(rom.getRegionOnMemberStatisticTrend(
                 RegionOnMember.REGION_ON_MEMBER_STAT_PUTS_PER_SEC_TREND)));
         logger.trace("memoryWritesTrend = {}", rom.getRegionOnMemberStatisticTrend(
             RegionOnMember.REGION_ON_MEMBER_STAT_PUTS_PER_SEC_TREND).length);
-        memberJSON.put("diskReadsTrend",
-            mapper.<JsonNode>valueToTree(rom.getRegionOnMemberStatisticTrend(
+        memberJSON.set("diskReadsTrend",
+            mapper.valueToTree(rom.getRegionOnMemberStatisticTrend(
                 RegionOnMember.REGION_ON_MEMBER_STAT_DISK_READS_PER_SEC_TREND)));
         logger.trace("diskReadsTrend = {}", rom.getRegionOnMemberStatisticTrend(
             RegionOnMember.REGION_ON_MEMBER_STAT_DISK_READS_PER_SEC_TREND).length);
 
-        memberJSON.put("diskWritesTrend",
-            mapper.<JsonNode>valueToTree(rom.getRegionOnMemberStatisticTrend(
+        memberJSON.set("diskWritesTrend",
+            mapper.valueToTree(rom.getRegionOnMemberStatisticTrend(
                 RegionOnMember.REGION_ON_MEMBER_STAT_DISK_WRITES_PER_SEC_TREND)));
         logger.trace("diskWritesTrend = {}", rom.getRegionOnMemberStatisticTrend(
             RegionOnMember.REGION_ON_MEMBER_STAT_DISK_WRITES_PER_SEC_TREND).length);
 
-        regionMemberJSON.put(rom.getMemberName(), memberJSON);
+        regionMemberJSON.set(rom.getMemberName(), memberJSON);
       }
 
       logger.debug("calling getSelectedRegionsMembersJson :: regionJSON = {}", regionMemberJSON);

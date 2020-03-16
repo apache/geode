@@ -14,18 +14,6 @@
  */
 package org.apache.geode.internal.jta;
 
-/**
- * <p>
- * GlobalTransaction is the JTA concept of a Global Transaction.
- * </p>
- *
- *
- * @since GemFire 4.0
- *
- * @deprecated as of Geode 1.2.0 user should use a third party JTA transaction manager to manage JTA
- *             transactions.
- */
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -43,6 +31,8 @@ import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
+import org.jgroups.annotations.GuardedBy;
+
 import org.apache.geode.LogWriter;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.internal.MakeNotStatic;
@@ -51,6 +41,17 @@ import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 
+/**
+ * <p>
+ * GlobalTransaction is the JTA concept of a Global Transaction.
+ * </p>
+ *
+ *
+ * @since GemFire 4.0
+ *
+ * @deprecated as of Geode 1.2.0 user should use a third party JTA transaction manager to manage JTA
+ *             transactions.
+ */
 @Deprecated
 public class GlobalTransaction {
 
@@ -549,8 +550,8 @@ public class GlobalTransaction {
    * String for current distributed system
    *
    * @see #IdsForId
-   * @guarded.By {@link #DmidMutex}
    */
+  @GuardedBy("DmidMutex")
   @MakeNotStatic
   private static String DMid = null;
 
@@ -558,8 +559,8 @@ public class GlobalTransaction {
    * Distributed system for given string
    *
    * @see #DMid
-   * @guarded.By {@link #DmidMutex}
    */
+  @GuardedBy("DmidMutex")
   @MakeNotStatic
   private static InternalDistributedSystem IdsForId = null;
 

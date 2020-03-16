@@ -83,7 +83,6 @@ public class QueryCommand extends GfshCommand {
       limitAdded = true;
     }
 
-    @SuppressWarnings("deprecation")
     QCompiler compiler = new QCompiler();
     Set<String> regionsInQuery;
     try {
@@ -138,9 +137,10 @@ public class QueryCommand extends GfshCommand {
 
     if (members.size() == 1) {
       DistributedMember member = members.iterator().next();
-      ResultCollector collector =
+      @SuppressWarnings("unchecked")
+      ResultCollector<Object, List<Object>> collector =
           FunctionService.onMember(member).setArguments(request).execute(putfn);
-      List list = (List) collector.getResult();
+      List<Object> list = collector.getResult();
       Object object = list.get(0);
       if (object instanceof Throwable) {
         Throwable error = (Throwable) object;
@@ -153,9 +153,10 @@ public class QueryCommand extends GfshCommand {
       result.aggregate(null);
       return result;
     } else {
-      ResultCollector collector =
+      @SuppressWarnings("unchecked")
+      ResultCollector<Object, List<Object>> collector =
           FunctionService.onMembers(members).setArguments(request).execute(putfn);
-      List list = (List) collector.getResult();
+      List<Object> list = collector.getResult();
       DataCommandResult result = null;
       for (Object object : list) {
         if (object instanceof Throwable) {

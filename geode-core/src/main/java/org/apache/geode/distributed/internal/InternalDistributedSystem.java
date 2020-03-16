@@ -881,9 +881,6 @@ public class InternalDistributedSystem extends DistributedSystem
   /**
    * Starts a locator in this JVM iff the distribution config wants one started.
    *
-   * @return the membershipLocatorArg if the distribution config has no locator specified;
-   *         otherwise starts a new InternalLocator and returns its associated MembershipLocator
-   *
    * @since GemFire 5.7
    * @param membershipLocatorArg on initial startup, a MembershipLocator provided explicitly by
    *        a caller, or null; on restart, the old MembershipLocator (from the previous instance of

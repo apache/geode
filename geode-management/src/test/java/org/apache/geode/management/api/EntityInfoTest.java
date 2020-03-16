@@ -107,6 +107,7 @@ public class EntityInfoTest {
 
     System.out.println(json);
 
+    @SuppressWarnings("unchecked")
     EntityInfo<Region, RuntimeRegionInfo> deserialized =
         mapper.readValue(json, EntityInfo.class);
 

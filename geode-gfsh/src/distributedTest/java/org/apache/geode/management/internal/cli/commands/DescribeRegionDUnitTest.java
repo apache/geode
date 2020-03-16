@@ -65,7 +65,6 @@ public class DescribeRegionDUnitTest {
   private static final String PART1_NAME = "Par1";
   private static final String PART2_NAME = "Par2";
 
-  private static MemberVM locator;
   private static MemberVM server1;
   private static MemberVM server2;
   private static MemberVM server3;
@@ -80,7 +79,7 @@ public class DescribeRegionDUnitTest {
 
   @BeforeClass
   public static void setupSystem() throws Exception {
-    locator = lsRule.startLocatorVM(0);
+    MemberVM locator = lsRule.startLocatorVM(0);
     server1 = lsRule.startServerVM(1, "group1", locator.getPort());
     server2 = lsRule.startServerVM(2, "group2", locator.getPort());
     server3 = lsRule.startServerVM(3, locator.getPort());
@@ -92,6 +91,7 @@ public class DescribeRegionDUnitTest {
       RegionFactory<String, Integer> dataRegionFactory =
           cache.createRegionFactory(RegionShortcut.PARTITION);
       dataRegionFactory.setConcurrencyLevel(4);
+      @SuppressWarnings("deprecation")
       EvictionAttributes ea =
           EvictionAttributes.createLIFOEntryAttributes(100, EvictionAction.LOCAL_DESTROY);
       dataRegionFactory.setEvictionAttributes(ea);
@@ -99,9 +99,11 @@ public class DescribeRegionDUnitTest {
 
       FixedPartitionAttributes fpa =
           FixedPartitionAttributes.createFixedPartition(PART1_NAME, true);
-      PartitionAttributes pa = new PartitionAttributesFactory().setLocalMaxMemory(100)
-          .setRecoveryDelay(2).setTotalMaxMemory(200).setRedundantCopies(1)
-          .addFixedPartitionAttributes(fpa).create();
+      @SuppressWarnings("deprecation")
+      PartitionAttributes<String, Integer> pa =
+          new PartitionAttributesFactory<String, Integer>().setLocalMaxMemory(100)
+              .setRecoveryDelay(2).setTotalMaxMemory(200).setRedundantCopies(1)
+              .addFixedPartitionAttributes(fpa).create();
       dataRegionFactory.setPartitionAttributes(pa);
 
       dataRegionFactory.setCustomEntryIdleTimeout(new TestCustomIdleExpiry());
@@ -117,15 +119,18 @@ public class DescribeRegionDUnitTest {
       RegionFactory<String, Integer> dataRegionFactory =
           cache.createRegionFactory(RegionShortcut.PARTITION);
       dataRegionFactory.setConcurrencyLevel(4);
+      @SuppressWarnings("deprecation")
       EvictionAttributes ea =
           EvictionAttributes.createLIFOEntryAttributes(100, EvictionAction.LOCAL_DESTROY);
       dataRegionFactory.setEvictionAttributes(ea);
       dataRegionFactory.setEnableAsyncConflation(true);
 
       FixedPartitionAttributes fpa = FixedPartitionAttributes.createFixedPartition(PART2_NAME, 4);
-      PartitionAttributes pa = new PartitionAttributesFactory().setLocalMaxMemory(150)
-          .setRecoveryDelay(4).setTotalMaxMemory(200).setRedundantCopies(1)
-          .addFixedPartitionAttributes(fpa).create();
+      @SuppressWarnings("deprecation")
+      PartitionAttributes<String, Integer> pa =
+          new PartitionAttributesFactory<String, Integer>().setLocalMaxMemory(150)
+              .setRecoveryDelay(4).setTotalMaxMemory(200).setRedundantCopies(1)
+              .addFixedPartitionAttributes(fpa).create();
       dataRegionFactory.setPartitionAttributes(pa);
 
       dataRegionFactory.setCustomEntryIdleTimeout(new TestCustomIdleExpiry());
@@ -151,7 +156,7 @@ public class DescribeRegionDUnitTest {
   }
 
   @Test
-  public void describeRegionOnBothServers() throws Exception {
+  public void describeRegionOnBothServers() {
     CommandStringBuilder csb = new CommandStringBuilder(DESCRIBE_REGION);
     csb.addOption(DESCRIBE_REGION__NAME, PR1);
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess().containsOutput(PR1, "server-1",
@@ -159,7 +164,7 @@ public class DescribeRegionDUnitTest {
   }
 
   @Test
-  public void describeLocalRegionOnlyOneServer1() throws Exception {
+  public void describeLocalRegionOnlyOneServer1() {
     CommandStringBuilder csb = new CommandStringBuilder(DESCRIBE_REGION);
     csb.addOption(DESCRIBE_REGION__NAME, LOCAL_REGION);
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
@@ -185,7 +190,7 @@ public class DescribeRegionDUnitTest {
    * non default region attribute for compression and the correct codec value.
    */
   @Test
-  public void describeRegionWithCompressionCodec() throws Exception {
+  public void describeRegionWithCompressionCodec() {
     // Test the describe command; look for compression
     CommandStringBuilder csb = new CommandStringBuilder(DESCRIBE_REGION);
     csb.addOption(DESCRIBE_REGION__NAME, COMPRESSED_REGION_NAME);
@@ -196,13 +201,13 @@ public class DescribeRegionDUnitTest {
   }
 
   @Test
-  public void describeRegionWithAsyncEventQueue() throws Exception {
+  public void describeRegionWithAsyncEventQueue() {
     gfsh.executeAndAssertThat("describe region --name=region4").statusIsSuccess()
         .containsOutput("async-event-queue-id", "queue1");
   }
 
   @Test
-  public void testDescribeRegionReturnsDescriptionFromAllMembers() throws Exception {
+  public void testDescribeRegionReturnsDescriptionFromAllMembers() {
     CommandStringBuilder csb = new CommandStringBuilder(DESCRIBE_REGION);
     csb.addOption(DESCRIBE_REGION__NAME, HOSTING_AND_ACCESSOR_REGION_NAME);
 
@@ -264,6 +269,7 @@ public class DescribeRegionDUnitTest {
    *
    * @param regionName a unique region name.
    */
+  @SuppressWarnings("deprecation")
   private static void createCompressedRegion(final String regionName) {
     final Cache cache = CacheFactory.getAnyInstance();
 

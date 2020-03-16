@@ -50,30 +50,30 @@ public class ClusterMembersRGraphService implements PulseService {
   private final ObjectMapper mapper = new ObjectMapper();
 
   // String constants used for forming a json response
-  private final String CLUSTER = "clustor";
-  private final String MEMBER_COUNT = "memberCount";
-  private final String ID = "id";
-  private final String NAME = "name";
-  private final String DATA = "data";
-  private final String MEMORY_USAGE = "memoryUsage";
-  private final String CPU_USAGE = "cpuUsage";
-  private final String REGIONS = "regions";
-  private final String HOST = "host";
-  private final String PORT = "port";
-  private final String CLIENTS = "clients";
-  private final String GC_PAUSES = "gcPauses";
-  private final String GATEWAY_SENDER = "gatewaySender";
-  private final String GATEWAY_RECEIVER = "gatewayReceiver";
-  private final String LOAD_AVG = "loadAvg";
-  private final String SOCKETS = "sockets";
-  private final String THREADS = "threads";
-  private final String NUM_THREADS = "numThreads";
+  private static final String CLUSTER = "clustor";
+  private static final String MEMBER_COUNT = "memberCount";
+  private static final String ID = "id";
+  private static final String NAME = "name";
+  private static final String DATA = "data";
+  private static final String MEMORY_USAGE = "memoryUsage";
+  private static final String CPU_USAGE = "cpuUsage";
+  private static final String REGIONS = "regions";
+  private static final String HOST = "host";
+  private static final String PORT = "port";
+  private static final String CLIENTS = "clients";
+  private static final String GC_PAUSES = "gcPauses";
+  private static final String GATEWAY_SENDER = "gatewaySender";
+  private static final String GATEWAY_RECEIVER = "gatewayReceiver";
+  private static final String LOAD_AVG = "loadAvg";
+  private static final String SOCKETS = "sockets";
+  private static final String THREADS = "threads";
+  private static final String NUM_THREADS = "numThreads";
 
-  private final String MEMBER_NODE_TYPE_NORMAL = "Normal";
-  private final String MEMBER_NODE_TYPE_WARNING = "Warning";
-  private final String MEMBER_NODE_TYPE_ERROR = "Error";
-  private final String MEMBER_NODE_TYPE_SEVERE = "Severe";
-  private final String CHILDREN = "children";
+  private static final String MEMBER_NODE_TYPE_NORMAL = "Normal";
+  private static final String MEMBER_NODE_TYPE_WARNING = "Warning";
+  private static final String MEMBER_NODE_TYPE_ERROR = "Error";
+  private static final String MEMBER_NODE_TYPE_SEVERE = "Severe";
+  private static final String CHILDREN = "children";
 
   // traversing the alert array list and members which have severe, error or
   // warnings
@@ -95,9 +95,9 @@ public class ClusterMembersRGraphService implements PulseService {
     ObjectNode responseJSON = mapper.createObjectNode();
 
     // cluster's Members
-    responseJSON.put(this.CLUSTER,
-        getPhysicalServerJson(cluster, repository.getHost(), repository.getPort()));
-    responseJSON.put(this.MEMBER_COUNT, cluster.getMemberCount());
+    responseJSON.set(CLUSTER,
+        getPhysicalServerJson(cluster));
+    responseJSON.put(MEMBER_COUNT, cluster.getMemberCount());
 
     // Send json response
     return responseJSON;
@@ -110,15 +110,15 @@ public class ClusterMembersRGraphService implements PulseService {
    *
    * @return Array list of JSON objects for required fields of members in cluster
    */
-  private ObjectNode getPhysicalServerJson(Cluster cluster, String host, String port) {
+  private ObjectNode getPhysicalServerJson(Cluster cluster) {
     Map<String, List<Cluster.Member>> physicalToMember = cluster.getPhysicalToMember();
 
     ObjectNode clusterTopologyJSON = mapper.createObjectNode();
 
-    clusterTopologyJSON.put(this.ID, cluster.getClusterId());
-    clusterTopologyJSON.put(this.NAME, cluster.getClusterId());
+    clusterTopologyJSON.put(ID, cluster.getClusterId());
+    clusterTopologyJSON.put(NAME, cluster.getClusterId());
     ObjectNode data1 = mapper.createObjectNode();
-    clusterTopologyJSON.put(this.DATA, data1);
+    clusterTopologyJSON.set(DATA, data1);
     ArrayNode childHostArray = mapper.createArrayNode();
 
     updateAlertLists(cluster);
@@ -135,8 +135,8 @@ public class ClusterMembersRGraphService implements PulseService {
       boolean hostWarning = false;
       String hostStatus;
       ObjectNode childHostObject = mapper.createObjectNode();
-      childHostObject.put(this.ID, hostName);
-      childHostObject.put(this.NAME, hostName);
+      childHostObject.put(ID, hostName);
+      childHostObject.put(NAME, hostName);
 
       ArrayNode membersArray = mapper.createArrayNode();
 
@@ -144,8 +144,8 @@ public class ClusterMembersRGraphService implements PulseService {
       for (Cluster.Member member : memberList) {
         ObjectNode memberJSONObj = mapper.createObjectNode();
 
-        memberJSONObj.put(this.ID, member.getId());
-        memberJSONObj.put(this.NAME, member.getName());
+        memberJSONObj.put(ID, member.getId());
+        memberJSONObj.put(NAME, member.getName());
 
         ObjectNode memberData = mapper.createObjectNode();
 
@@ -157,23 +157,23 @@ public class ClusterMembersRGraphService implements PulseService {
         if (usedHeapSize > 0) {
           double heapUsage = ((currentHeap * 1D) / usedHeapSize) * 100;
 
-          memberData.put(this.MEMORY_USAGE, TWO_PLACE_DECIMAL_FORMAT.format(heapUsage));
+          memberData.put(MEMORY_USAGE, TWO_PLACE_DECIMAL_FORMAT.format(heapUsage));
         } else
-          memberData.put(this.MEMORY_USAGE, 0);
+          memberData.put(MEMORY_USAGE, 0);
 
         double currentCPUUsage = member.getCpuUsage();
 
-        memberData.put(this.CPU_USAGE, TWO_PLACE_DECIMAL_FORMAT.format(currentCPUUsage));
-        memberData.put(this.REGIONS, member.getMemberRegions().size());
-        memberData.put(this.HOST, member.getHost());
+        memberData.put(CPU_USAGE, TWO_PLACE_DECIMAL_FORMAT.format(currentCPUUsage));
+        memberData.put(REGIONS, member.getMemberRegions().size());
+        memberData.put(HOST, member.getHost());
         if ((member.getMemberPort() == null) || (member.getMemberPort().equals(""))) {
-          memberData.put(this.PORT, "-");
+          memberData.put(PORT, "-");
         } else {
-          memberData.put(this.PORT, member.getMemberPort());
+          memberData.put(PORT, member.getMemberPort());
         }
-        memberData.put(this.CLIENTS, member.getMemberClientsHMap().size());
-        memberData.put(this.GC_PAUSES, member.getGarbageCollectionCount());
-        memberData.put(this.NUM_THREADS, member.getNumThreads());
+        memberData.put(CLIENTS, member.getMemberClientsHMap().size());
+        memberData.put(GC_PAUSES, member.getGarbageCollectionCount());
+        memberData.put(NUM_THREADS, member.getNumThreads());
 
         // Host CPU Usage is aggregate of all members cpu usage
         // hostCpuUsage = hostCpuUsage + currentCPUUsage;
@@ -185,74 +185,74 @@ public class ClusterMembersRGraphService implements PulseService {
 
         // defining the status of Member Icons for R Graph based on the alerts
         // created for that member
-        String memberNodeType = "";
+        String memberNodeType;
         // for severe alert
         if (severeAlertList.contains(member.getName())) {
-          memberNodeType = getMemberNodeType(member, this.MEMBER_NODE_TYPE_SEVERE);
+          memberNodeType = getMemberNodeType(member, MEMBER_NODE_TYPE_SEVERE);
           if (!hostSevere) {
             hostSevere = true;
           }
         } else if (errorAlertsList.contains(member.getName())) {
           // for error alerts
-          memberNodeType = getMemberNodeType(member, this.MEMBER_NODE_TYPE_ERROR);
+          memberNodeType = getMemberNodeType(member, MEMBER_NODE_TYPE_ERROR);
           if (!hostError) {
             hostError = true;
           }
         }
         // for warning alerts
         else if (warningAlertsList.contains(member.getName())) {
-          memberNodeType = getMemberNodeType(member, this.MEMBER_NODE_TYPE_WARNING);
+          memberNodeType = getMemberNodeType(member, MEMBER_NODE_TYPE_WARNING);
           if (!hostWarning) {
             hostWarning = true;
           }
         } else {
-          memberNodeType = getMemberNodeType(member, this.MEMBER_NODE_TYPE_NORMAL);
+          memberNodeType = getMemberNodeType(member, MEMBER_NODE_TYPE_NORMAL);
         }
 
         memberData.put("nodeType", memberNodeType);
         memberData.put("$type", memberNodeType);
-        memberData.put(this.GATEWAY_SENDER, member.getGatewaySenderList().size());
+        memberData.put(GATEWAY_SENDER, member.getGatewaySenderList().size());
         if (member.getGatewayReceiver() != null) {
-          memberData.put(this.GATEWAY_RECEIVER, 1);
+          memberData.put(GATEWAY_RECEIVER, 1);
         } else {
-          memberData.put(this.GATEWAY_RECEIVER, 0);
+          memberData.put(GATEWAY_RECEIVER, 0);
         }
-        memberJSONObj.put(this.DATA, memberData);
-        memberJSONObj.put(this.CHILDREN, mapper.createArrayNode());
+        memberJSONObj.set(DATA, memberData);
+        memberJSONObj.set(CHILDREN, mapper.createArrayNode());
         membersArray.add(memberJSONObj);
       }
       ObjectNode data = mapper.createObjectNode();
 
-      data.put(this.LOAD_AVG, TWO_PLACE_DECIMAL_FORMAT.format(hostLoadAvg));
-      data.put(this.SOCKETS, hostSockets);
-      data.put(this.THREADS, hostNumThreads);
-      data.put(this.CPU_USAGE, TWO_PLACE_DECIMAL_FORMAT.format(hostCpuUsage));
-      data.put(this.MEMORY_USAGE, hostMemoryUsage);
+      data.put(LOAD_AVG, TWO_PLACE_DECIMAL_FORMAT.format(hostLoadAvg));
+      data.put(SOCKETS, hostSockets);
+      data.put(THREADS, hostNumThreads);
+      data.put(CPU_USAGE, TWO_PLACE_DECIMAL_FORMAT.format(hostCpuUsage));
+      data.put(MEMORY_USAGE, hostMemoryUsage);
 
       String hostNodeType;
       // setting physical host status
       if (hostSevere) {
-        hostStatus = this.MEMBER_NODE_TYPE_SEVERE;
+        hostStatus = MEMBER_NODE_TYPE_SEVERE;
         hostNodeType = "hostSevereNode";
       } else if (hostError) {
-        hostStatus = this.MEMBER_NODE_TYPE_ERROR;
+        hostStatus = MEMBER_NODE_TYPE_ERROR;
         hostNodeType = "hostErrorNode";
       } else if (hostWarning) {
-        hostStatus = this.MEMBER_NODE_TYPE_WARNING;
+        hostStatus = MEMBER_NODE_TYPE_WARNING;
         hostNodeType = "hostWarningNode";
       } else {
-        hostStatus = this.MEMBER_NODE_TYPE_NORMAL;
+        hostStatus = MEMBER_NODE_TYPE_NORMAL;
         hostNodeType = "hostNormalNode";
       }
       data.put("hostStatus", hostStatus);
       data.put("$type", hostNodeType);
 
-      childHostObject.put(this.DATA, data);
+      childHostObject.set(DATA, data);
 
-      childHostObject.put(this.CHILDREN, membersArray);
+      childHostObject.set(CHILDREN, membersArray);
       childHostArray.add(childHostObject);
     }
-    clusterTopologyJSON.put(this.CHILDREN, childHostArray);
+    clusterTopologyJSON.set(CHILDREN, childHostArray);
 
     return clusterTopologyJSON;
   }
@@ -293,18 +293,16 @@ public class ClusterMembersRGraphService implements PulseService {
    */
   private void updateAlertLists(Cluster cluster) {
 
-    severeAlertList = new ArrayList<String>();
-    errorAlertsList = new ArrayList<String>();
-    warningAlertsList = new ArrayList<String>();
+    severeAlertList = new ArrayList<>();
+    errorAlertsList = new ArrayList<>();
+    warningAlertsList = new ArrayList<>();
 
     Cluster.Alert[] alertsList = cluster.getAlertsList();
 
     for (Cluster.Alert alert : alertsList) {
       // if alert is severe
       if (alert.getSeverity() == Cluster.Alert.SEVERE) {
-        if (errorAlertsList.contains(alert.getMemberName())) {
-          errorAlertsList.remove(alert.getMemberName());
-        } else if (warningAlertsList.contains(alert.getMemberName())) {
+        if (!errorAlertsList.remove(alert.getMemberName())) {
           warningAlertsList.remove(alert.getMemberName());
         }
         if (!severeAlertList.contains(alert.getMemberName())) {
@@ -314,9 +312,7 @@ public class ClusterMembersRGraphService implements PulseService {
       // if alert is error
       else if (alert.getSeverity() == Cluster.Alert.ERROR) {
         if (!severeAlertList.contains(alert.getMemberName())) {
-          if (warningAlertsList.contains(alert.getMemberName())) {
-            warningAlertsList.remove(alert.getMemberName());
-          }
+          warningAlertsList.remove(alert.getMemberName());
           if (!errorAlertsList.contains(alert.getMemberName())) {
             errorAlertsList.add(alert.getMemberName());
           }

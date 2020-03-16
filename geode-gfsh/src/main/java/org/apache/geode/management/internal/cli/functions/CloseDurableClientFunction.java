@@ -27,13 +27,13 @@ import org.apache.geode.management.internal.i18n.CliStrings;
  * Function to close a durable client
  *
  */
-public class CloseDurableClientFunction implements InternalFunction {
+public class CloseDurableClientFunction implements InternalFunction<String> {
 
   private static final long serialVersionUID = 1L;
 
   @Override
-  public void execute(FunctionContext context) {
-    String durableClientId = (String) context.getArguments();
+  public void execute(FunctionContext<String> context) {
+    String durableClientId = context.getArguments();
     final Cache cache = context.getCache();
     final String memberNameOrId =
         CliUtil.getMemberNameOrId(cache.getDistributedSystem().getDistributedMember());

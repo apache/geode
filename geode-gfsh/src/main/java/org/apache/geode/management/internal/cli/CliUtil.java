@@ -14,6 +14,8 @@
  */
 package org.apache.geode.management.internal.cli;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -33,7 +35,6 @@ import java.util.zip.Inflater;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.Result;
@@ -177,7 +178,7 @@ public class CliUtil {
    * @return a String specifying a path relative to Gfsh.
    */
   public static String resolvePathname(final String pathname) {
-    return (StringUtils.isBlank(pathname) ? pathname
+    return (isBlank(pathname) ? pathname
         : IOUtils.tryGetCanonicalPathElseGetAbsolutePath(new File(pathname)));
   }
 

@@ -33,10 +33,6 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.cache.query.FunctionDomainException;
-import org.apache.geode.cache.query.NameResolutionException;
-import org.apache.geode.cache.query.QueryInvocationTargetException;
-import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.cache.query.data.PortfolioPdx;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.cache.InternalCache;
@@ -52,7 +48,6 @@ import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI.OQLQueryResponse
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
-import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
 @Category({ClientServerTest.class})
@@ -60,9 +55,10 @@ public class OqlQueryRequestOperationHandlerIntegrationTest {
   private Cache cache;
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     cache = new CacheFactory().set(ConfigurationProperties.LOCATORS, "").create();
-    Region region = cache.createRegionFactory(RegionShortcut.LOCAL).create("region");
+    Region<String, PortfolioPdx> region =
+        cache.<String, PortfolioPdx>createRegionFactory(RegionShortcut.LOCAL).create("region");
 
     IntStream.range(0, 2).forEach(i -> region.put("key" + i, new PortfolioPdx(i)));
   }
@@ -73,46 +69,41 @@ public class OqlQueryRequestOperationHandlerIntegrationTest {
   }
 
   @Test
-  public void queryForSingleObject() throws ConnectionStateException, DecodingException,
-      InvalidExecutionContextException, EncodingException, NameResolutionException,
-      TypeMismatchException, QueryInvocationTargetException, FunctionDomainException {
+  public void queryForSingleObject() throws DecodingException,
+      InvalidExecutionContextException, EncodingException {
     checkResults("(select * from /region).size", 2);
   }
 
   @Test
-  public void queryForMultipleWholeObjects() throws ConnectionStateException, DecodingException,
-      InvalidExecutionContextException, EncodingException, NameResolutionException,
-      TypeMismatchException, QueryInvocationTargetException, FunctionDomainException {
+  public void queryForMultipleWholeObjects() throws DecodingException,
+      InvalidExecutionContextException, EncodingException {
     checkResults("select ID from /region order by ID", 0, 1);
   }
 
   @Test
-  public void queryForMultipleProjectionFields() throws ConnectionStateException, DecodingException,
-      InvalidExecutionContextException, EncodingException, NameResolutionException,
-      TypeMismatchException, QueryInvocationTargetException, FunctionDomainException {
+  public void queryForMultipleProjectionFields() throws DecodingException,
+      InvalidExecutionContextException, EncodingException {
     checkResults("select ID,status from /region order by ID", new EncodedValue[] {},
         new String[] {"ID", "status"}, new Object[] {0, "active"}, new Object[] {1, "inactive"});
   }
 
   @Test
-  public void queryForSingleStruct() throws ConnectionStateException, DecodingException,
-      InvalidExecutionContextException, EncodingException, NameResolutionException,
-      TypeMismatchException, QueryInvocationTargetException, FunctionDomainException {
+  public void queryForSingleStruct() throws DecodingException,
+      InvalidExecutionContextException, EncodingException {
     checkResults("select count(*),min(ID) from /region", new EncodedValue[] {},
         new String[] {"0", "ID"}, new Object[] {2, 0});
   }
 
   @Test
-  public void queryWithBindParameters() throws ConnectionStateException, DecodingException,
-      InvalidExecutionContextException, EncodingException, NameResolutionException,
-      TypeMismatchException, QueryInvocationTargetException, FunctionDomainException {
+  public void queryWithBindParameters() throws DecodingException,
+      InvalidExecutionContextException, EncodingException {
     checkResults("select ID,status from /region where ID=$1",
         new EncodedValue[] {new ProtobufSerializationService().encode(0)},
         new String[] {"ID", "status"}, new Object[] {0, "active"});
   }
 
   private void checkResults(final String query, final Object value)
-      throws InvalidExecutionContextException, ConnectionStateException, EncodingException,
+      throws InvalidExecutionContextException, EncodingException,
       DecodingException {
     ProtobufSerializationService serializer = new ProtobufSerializationService();
     final Result<OQLQueryResponse> results =
@@ -122,19 +113,19 @@ public class OqlQueryRequestOperationHandlerIntegrationTest {
   }
 
   private void checkResults(final String query, final Object... values)
-      throws InvalidExecutionContextException, ConnectionStateException, EncodingException,
+      throws InvalidExecutionContextException, EncodingException,
       DecodingException {
     ProtobufSerializationService serializer = new ProtobufSerializationService();
     final Result<OQLQueryResponse> results =
         invokeHandler(query, new EncodedValue[] {}, serializer);
 
     List<EncodedValue> expected =
-        Arrays.asList(values).stream().map(serializer::encode).collect(Collectors.toList());
+        Arrays.stream(values).map(serializer::encode).collect(Collectors.toList());
     assertEquals(expected, results.getMessage().getListResult().getElementList());
   }
 
   private void checkResults(final String query, EncodedValue[] bindParameters, String[] fieldnames,
-      final Object[]... rows) throws InvalidExecutionContextException, ConnectionStateException,
+      final Object[]... rows) throws InvalidExecutionContextException,
       EncodingException, DecodingException {
     ProtobufSerializationService serializer = new ProtobufSerializationService();
     final Result<OQLQueryResponse> results = invokeHandler(query, bindParameters, serializer);
@@ -142,7 +133,7 @@ public class OqlQueryRequestOperationHandlerIntegrationTest {
     List<BasicTypes.EncodedValueList> expected = new ArrayList<>();
     for (Object[] row : rows) {
       List<EncodedValue> encodedRow =
-          Arrays.asList(row).stream().map(serializer::encode).collect(Collectors.toList());
+          Arrays.stream(row).map(serializer::encode).collect(Collectors.toList());
       expected.add(BasicTypes.EncodedValueList.newBuilder().addAllElement(encodedRow).build());
     }
 
@@ -153,15 +144,13 @@ public class OqlQueryRequestOperationHandlerIntegrationTest {
 
   private Result<OQLQueryResponse> invokeHandler(String query, EncodedValue[] bindParameters,
       ProtobufSerializationService serializer) throws InvalidExecutionContextException,
-      ConnectionStateException, EncodingException, DecodingException {
+      EncodingException, DecodingException {
     final MessageExecutionContext context = mock(MessageExecutionContext.class);
     when(context.getSecureCache())
         .thenReturn(new SecureCacheImpl((InternalCache) cache, new NoSecurity()));
     final OQLQueryRequest request = OQLQueryRequest.newBuilder().setQuery(query)
         .addAllBindParameter(Arrays.asList(bindParameters)).build();
-    Result<OQLQueryResponse> result =
-        new OqlQueryRequestOperationHandler().process(serializer, request, context);
 
-    return result;
+    return new OqlQueryRequestOperationHandler().process(serializer, request, context);
   }
 }

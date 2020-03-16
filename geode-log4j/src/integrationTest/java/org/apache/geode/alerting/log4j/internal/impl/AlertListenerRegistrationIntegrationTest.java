@@ -40,6 +40,7 @@ import org.apache.geode.test.junit.categories.AlertingTest;
  * Integration tests for adding and removing {@code Alert} listeners.
  */
 @Category(AlertingTest.class)
+@SuppressWarnings("deprecation")
 public class AlertListenerRegistrationIntegrationTest {
 
   private InternalDistributedSystem internalDistributedSystem;

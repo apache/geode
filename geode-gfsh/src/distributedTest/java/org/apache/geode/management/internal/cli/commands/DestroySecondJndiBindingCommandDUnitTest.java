@@ -73,6 +73,7 @@ public class DestroySecondJndiBindingCommandDUnitTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   public void testDestroySecondJndiBinding() {
 
     gfsh.executeAndAssertThat("destroy jndi-binding --name=jndi2").statusIsSuccess()

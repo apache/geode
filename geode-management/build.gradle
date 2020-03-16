@@ -18,6 +18,7 @@
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
+apply from: "${project.projectDir}/../gradle/warnings.gradle"
 
 dependencies {
   compile(platform(project(':boms:geode-all-bom')))
@@ -43,4 +44,9 @@ dependencies {
 
   testCompileOnly(platform(project(':boms:geode-all-bom')))
   testCompileOnly('io.swagger:swagger-annotations')
+
+  integrationTestImplementation(project(':geode-dunit'))
+  integrationTestImplementation(project(':geode-junit'))
+  integrationTestImplementation('junit:junit')
+  integrationTestImplementation('org.awaitility:awaitility')
 }
