@@ -54,7 +54,6 @@ public class StartGatewaySenderCommandDUnitTest implements Serializable {
   public transient GfshCommandRule gfsh = new GfshCommandRule();
 
   private MemberVM locatorSite1;
-  private MemberVM locatorSite2;
   private MemberVM server1;
   private MemberVM server2;
   private MemberVM server3;
@@ -69,7 +68,7 @@ public class StartGatewaySenderCommandDUnitTest implements Serializable {
 
     props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + 2);
     props.setProperty(REMOTE_LOCATORS, "localhost[" + locatorSite1.getPort() + "]");
-    locatorSite2 = clusterStartupRule.startLocatorVM(2, props);
+    clusterStartupRule.startLocatorVM(2, props);
 
     // Connect Gfsh to locator.
     gfsh.connectAndVerify(locatorSite1);
@@ -97,7 +96,7 @@ public class StartGatewaySenderCommandDUnitTest implements Serializable {
   }
 
   @Test
-  public void testStartGatewaySender() throws Exception {
+  public void testStartGatewaySender() {
     Integer locator1Port = locatorSite1.getPort();
 
     // setup servers in Site #1
@@ -147,7 +146,7 @@ public class StartGatewaySenderCommandDUnitTest implements Serializable {
    * test to validate that the start gateway sender starts the gateway sender on a member
    */
   @Test
-  public void testStartGatewaySender_onMember() throws Exception {
+  public void testStartGatewaySender_onMember() {
     Integer locator1Port = locatorSite1.getPort();
 
     // setup servers in Site #1
@@ -180,8 +179,8 @@ public class StartGatewaySenderCommandDUnitTest implements Serializable {
    * test to validate that the start gateway sender starts the gateway sender on a group of members
    */
   @Test
-  public void testStartGatewaySender_Group() throws Exception {
-    Integer locator1Port = locatorSite1.getPort();
+  public void testStartGatewaySender_Group() {
+    int locator1Port = locatorSite1.getPort();
 
     // setup servers in Site #1
     server1 = startServerWithGroups(3, "SenderGroup1", locator1Port);
@@ -231,8 +230,8 @@ public class StartGatewaySenderCommandDUnitTest implements Serializable {
    * to multiple groups
    */
   @Test
-  public void testStartGatewaySender_MultipleGroup() throws Exception {
-    Integer locator1Port = locatorSite1.getPort();
+  public void testStartGatewaySender_MultipleGroup() {
+    int locator1Port = locatorSite1.getPort();
 
     // setup servers in Site #1
     server1 = startServerWithGroups(3, "SenderGroup1", locator1Port);
@@ -297,8 +296,8 @@ public class StartGatewaySenderCommandDUnitTest implements Serializable {
    * Test to validate the test scenario when one of the member ion group does not have the sender.
    */
   @Test
-  public void testStartGatewaySender_Group_MissingSenderFromGroup() throws Exception {
-    Integer locator1Port = locatorSite1.getPort();
+  public void testStartGatewaySender_Group_MissingSenderFromGroup() {
+    int locator1Port = locatorSite1.getPort();
 
     // setup servers in Site #1
     server1 = startServerWithGroups(3, "SenderGroup1", locator1Port);
@@ -432,13 +431,13 @@ public class StartGatewaySenderCommandDUnitTest implements Serializable {
   }
 
 
-  private CommandResult executeCommandWithIgnoredExceptions(String command) throws Exception {
-    try (IgnoredException ie = IgnoredException.addIgnoredException("Could not connect")) {
-      return gfsh.executeCommand(command);
+  private CommandResult executeCommandWithIgnoredExceptions(String command) {
+    try (IgnoredException ignored = IgnoredException.addIgnoredException("Could not connect")) {
+      return gfsh.executeAndAssertThat(command).getCommandResult();
     }
   }
 
-  private MemberVM startServerWithGroups(int index, String groups, int locPort) throws Exception {
+  private MemberVM startServerWithGroups(int index, String groups, int locPort) {
     Properties props = new Properties();
     props.setProperty(GROUPS, groups);
     return clusterStartupRule.startServerVM(index, props, locPort);

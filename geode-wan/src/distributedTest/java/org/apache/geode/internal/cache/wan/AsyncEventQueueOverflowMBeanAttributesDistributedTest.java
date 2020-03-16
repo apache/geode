@@ -38,14 +38,14 @@ import org.apache.geode.management.AsyncEventQueueMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.test.junit.categories.WanTest;
 
+@SuppressWarnings("deprecation")
 @Category({WanTest.class})
 @RunWith(JUnitParamsRunner.class)
 public class AsyncEventQueueOverflowMBeanAttributesDistributedTest extends AsyncEventQueueTestBase {
 
   @Test
   @Parameters({"true", "false"})
-  public void testParallelAsyncEventQueueOverflowMBeanAttributes(boolean createSenderFirst)
-      throws Exception {
+  public void testParallelAsyncEventQueueOverflowMBeanAttributes(boolean createSenderFirst) {
     // Start locator
     Integer locatorPort = vm0.invoke(() -> createFirstLocatorWithDSId(1));
 
@@ -94,8 +94,7 @@ public class AsyncEventQueueOverflowMBeanAttributesDistributedTest extends Async
 
   @Test
   @Parameters({"true", "false"})
-  public void testSerialAsyncEventQueueOverflowMBeanAttributes(boolean createSenderFirst)
-      throws Exception {
+  public void testSerialAsyncEventQueueOverflowMBeanAttributes(boolean createSenderFirst) {
     // Start locator
     Integer locatorPort = vm0.invoke(() -> createFirstLocatorWithDSId(1));
 
@@ -186,7 +185,7 @@ public class AsyncEventQueueOverflowMBeanAttributesDistributedTest extends Async
     await().untilAsserted(() -> {
       // Calculate the total entries and bytes overflowed to disk
       int entriesOverflowedToDisk = 0;
-      long bytesOverflowedToDisk = 0l;
+      long bytesOverflowedToDisk = 0L;
       for (RegionQueue queue : queues) {
         LocalRegion lr = (LocalRegion) queue.getRegion();
         DiskRegionStats drs = lr.getDiskRegion().getStats();

@@ -54,6 +54,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 /**
  * DUnit tests for 'create gateway-receiver' command.
  */
+@SuppressWarnings("deprecation")
 @Category(WanTest.class)
 @RunWith(JUnitParamsRunner.class)
 public class CreateGatewayReceiverCommandDUnitTest {

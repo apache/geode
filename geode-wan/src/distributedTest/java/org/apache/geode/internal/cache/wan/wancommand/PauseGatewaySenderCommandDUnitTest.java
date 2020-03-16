@@ -34,9 +34,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -55,7 +53,6 @@ public class PauseGatewaySenderCommandDUnitTest implements Serializable {
   public transient GfshCommandRule gfsh = new GfshCommandRule();
 
   private MemberVM locatorSite1;
-  private MemberVM locatorSite2;
   private MemberVM server1;
   private MemberVM server2;
   private MemberVM server3;
@@ -70,14 +67,14 @@ public class PauseGatewaySenderCommandDUnitTest implements Serializable {
 
     props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + 2);
     props.setProperty(REMOTE_LOCATORS, "localhost[" + locatorSite1.getPort() + "]");
-    locatorSite2 = clusterStartupRule.startLocatorVM(2, props);
+    clusterStartupRule.startLocatorVM(2, props);
 
     // Connect Gfsh to locator.
     gfsh.connectAndVerify(locatorSite1);
   }
 
   @Test
-  public void testPauseGatewaySender_ErrorConditions() throws Exception {
+  public void testPauseGatewaySender_ErrorConditions() {
     server1 = clusterStartupRule.startServerVM(3, locatorSite1.getPort());
     DistributedMember vm1Member = getMember(server1.getVM());
     String command = CliStrings.PAUSE_GATEWAYSENDER + " --" + CliStrings.PAUSE_GATEWAYSENDER__ID
@@ -91,7 +88,7 @@ public class PauseGatewaySenderCommandDUnitTest implements Serializable {
    * test to validate that the start gateway sender starts the gateway sender on a member
    */
   @Test
-  public void testPauseGatewaySender_onMember() throws Exception {
+  public void testPauseGatewaySender_onMember() {
     Integer locator1Port = locatorSite1.getPort();
 
     // setup servers in Site #1
@@ -109,11 +106,10 @@ public class PauseGatewaySenderCommandDUnitTest implements Serializable {
     DistributedMember vm1Member = getMember(server1.getVM());
     String command = CliStrings.PAUSE_GATEWAYSENDER + " --" + CliStrings.PAUSE_GATEWAYSENDER__ID
         + "=ln --" + CliStrings.MEMBER + "=" + vm1Member.getId();
-    CommandResult cmdResult = gfsh.executeCommand(command);
-    assertThat(cmdResult).isNotNull();
+    CommandResult cmdResult =
+        gfsh.executeAndAssertThat(command).isNotNull().statusIsSuccess().getCommandResult();
 
-    assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
-    TabularResultModel resultData = ((ResultModel) cmdResult.getResultData())
+    TabularResultModel resultData = cmdResult.getResultData()
         .getTableSection(CliStrings.PAUSE_GATEWAYSENDER);
     List<String> messages = resultData.getValuesInColumn("Message");
     assertThat(messages.get(0)).contains("is paused on member");
@@ -125,7 +121,7 @@ public class PauseGatewaySenderCommandDUnitTest implements Serializable {
   }
 
   @Test
-  public void testPauseGatewaySender() throws Exception {
+  public void testPauseGatewaySender() {
     Integer locator1Port = locatorSite1.getPort();
 
     // setup servers in Site #1
@@ -154,11 +150,10 @@ public class PauseGatewaySenderCommandDUnitTest implements Serializable {
 
     String command =
         CliStrings.PAUSE_GATEWAYSENDER + " --" + CliStrings.PAUSE_GATEWAYSENDER__ID + "=ln";
-    CommandResult cmdResult = gfsh.executeCommand(command);
-    assertThat(cmdResult).isNotNull();
-    assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
+    CommandResult cmdResult =
+        gfsh.executeAndAssertThat(command).isNotNull().statusIsSuccess().getCommandResult();
 
-    TabularResultModel resultData = ((ResultModel) cmdResult.getResultData())
+    TabularResultModel resultData = cmdResult.getResultData()
         .getTableSection(CliStrings.PAUSE_GATEWAYSENDER);
     List<String> status = resultData.getValuesInColumn("Result");
     assertThat(status).containsExactlyInAnyOrder("OK", "OK", "OK");
@@ -179,8 +174,8 @@ public class PauseGatewaySenderCommandDUnitTest implements Serializable {
    * test to validate that the start gateway sender starts the gateway sender on a group of members
    */
   @Test
-  public void testPauseGatewaySender_Group() throws Exception {
-    Integer locator1Port = locatorSite1.getPort();
+  public void testPauseGatewaySender_Group() {
+    int locator1Port = locatorSite1.getPort();
 
     // setup servers in Site #1
     String groups = "SenderGroup1";
@@ -209,11 +204,10 @@ public class PauseGatewaySenderCommandDUnitTest implements Serializable {
 
     String command = CliStrings.PAUSE_GATEWAYSENDER + " --" + CliStrings.PAUSE_GATEWAYSENDER__ID
         + "=ln --" + CliStrings.GROUP + "=SenderGroup1";
-    CommandResult cmdResult = gfsh.executeCommand(command);
-    assertThat(cmdResult).isNotNull();
-    assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
+    CommandResult cmdResult =
+        gfsh.executeAndAssertThat(command).isNotNull().statusIsSuccess().getCommandResult();
 
-    TabularResultModel resultData = ((ResultModel) cmdResult.getResultData())
+    TabularResultModel resultData = cmdResult.getResultData()
         .getTableSection(CliStrings.PAUSE_GATEWAYSENDER);
     List<String> status = resultData.getValuesInColumn("Result");
     assertThat(status).containsExactlyInAnyOrder("OK", "OK", "OK");
@@ -235,8 +229,8 @@ public class PauseGatewaySenderCommandDUnitTest implements Serializable {
    * to multiple groups
    */
   @Test
-  public void testPauseGatewaySender_MultipleGroup() throws Exception {
-    Integer locator1Port = locatorSite1.getPort();
+  public void testPauseGatewaySender_MultipleGroup() {
+    int locator1Port = locatorSite1.getPort();
 
     // setup servers in Site #1
     server1 = startServerWithGroups(3, "SenderGroup1", locator1Port);
@@ -276,9 +270,8 @@ public class PauseGatewaySenderCommandDUnitTest implements Serializable {
 
     String command = CliStrings.PAUSE_GATEWAYSENDER + " --" + CliStrings.PAUSE_GATEWAYSENDER__ID
         + "=ln --" + CliStrings.GROUP + "=SenderGroup1,SenderGroup2";
-    CommandResult cmdResult = gfsh.executeCommand(command);
-    assertThat(cmdResult).isNotNull();
-    assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
+    CommandResult cmdResult =
+        gfsh.executeAndAssertThat(command).isNotNull().statusIsSuccess().getCommandResult();
 
     TabularResultModel resultData = cmdResult.getResultData()
         .getTableSection(CliStrings.PAUSE_GATEWAYSENDER);
@@ -303,7 +296,7 @@ public class PauseGatewaySenderCommandDUnitTest implements Serializable {
     server5.invoke(() -> verifySenderState("ln", true, false));
   }
 
-  private MemberVM startServerWithGroups(int index, String groups, int locPort) throws Exception {
+  private MemberVM startServerWithGroups(int index, String groups, int locPort) {
     Properties props = new Properties();
     props.setProperty(GROUPS, groups);
     return clusterStartupRule.startServerVM(index, props, locPort);

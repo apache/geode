@@ -35,7 +35,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.i18n.CliStrings;
@@ -55,7 +54,6 @@ public class ResumeGatewaySenderCommandDUnitTest implements Serializable {
   public transient GfshCommandRule gfsh = new GfshCommandRule();
 
   private MemberVM locatorSite1;
-  private MemberVM locatorSite2;
   private MemberVM server1;
   private MemberVM server2;
   private MemberVM server3;
@@ -70,14 +68,14 @@ public class ResumeGatewaySenderCommandDUnitTest implements Serializable {
 
     props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + 2);
     props.setProperty(REMOTE_LOCATORS, "localhost[" + locatorSite1.getPort() + "]");
-    locatorSite2 = clusterStartupRule.startLocatorVM(2, props);
+    clusterStartupRule.startLocatorVM(2, props);
 
     // Connect Gfsh to locator.
     gfsh.connectAndVerify(locatorSite1);
   }
 
   @Test
-  public void testResumeGatewaySender_ErrorConditions() throws Exception {
+  public void testResumeGatewaySender_ErrorConditions() {
     Integer locator1Port = locatorSite1.getPort();
 
     // setup servers in Site #1
@@ -94,7 +92,7 @@ public class ResumeGatewaySenderCommandDUnitTest implements Serializable {
   }
 
   @Test
-  public void testResumeGatewaySender() throws Exception {
+  public void testResumeGatewaySender() {
     Integer locator1Port = locatorSite1.getPort();
 
     // setup servers in Site #1
@@ -131,9 +129,8 @@ public class ResumeGatewaySenderCommandDUnitTest implements Serializable {
 
     String command =
         CliStrings.RESUME_GATEWAYSENDER + " --" + CliStrings.RESUME_GATEWAYSENDER__ID + "=ln";
-    CommandResult cmdResult = gfsh.executeCommand(command);
-    assertThat(cmdResult).isNotNull();
-    assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
+    CommandResult cmdResult =
+        gfsh.executeAndAssertThat(command).isNotNull().statusIsSuccess().getCommandResult();
 
     TabularResultModel resultData = cmdResult.getResultData()
         .getTableSection(CliStrings.RESUME_GATEWAYSENDER);
@@ -156,7 +153,7 @@ public class ResumeGatewaySenderCommandDUnitTest implements Serializable {
    * test to validate that the start gateway sender starts the gateway sender on a member
    */
   @Test
-  public void testResumeGatewaySender_onMember() throws Exception {
+  public void testResumeGatewaySender_onMember() {
     Integer locator1Port = locatorSite1.getPort();
 
     // setup servers in Site #1
@@ -176,11 +173,8 @@ public class ResumeGatewaySenderCommandDUnitTest implements Serializable {
     DistributedMember vm1Member = getMember(server1.getVM());
     String command = CliStrings.RESUME_GATEWAYSENDER + " --" + CliStrings.RESUME_GATEWAYSENDER__ID
         + "=ln --" + CliStrings.MEMBER + "=" + vm1Member.getId();
-    CommandResult cmdResult = gfsh.executeCommand(command);
-    assertThat(cmdResult).isNotNull();
-
-    String strCmdResult = cmdResult.toString();
-    assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
+    CommandResult cmdResult =
+        gfsh.executeAndAssertThat(command).isNotNull().statusIsSuccess().getCommandResult();
 
     TabularResultModel resultData = cmdResult.getResultData()
         .getTableSection(CliStrings.RESUME_GATEWAYSENDER);
@@ -197,8 +191,8 @@ public class ResumeGatewaySenderCommandDUnitTest implements Serializable {
    * test to validate that the start gateway sender starts the gateway sender on a group of members
    */
   @Test
-  public void testResumeGatewaySender_Group() throws Exception {
-    Integer locator1Port = locatorSite1.getPort();
+  public void testResumeGatewaySender_Group() {
+    int locator1Port = locatorSite1.getPort();
 
     // setup servers in Site #1
     server1 = startServerWithGroups(3, "SenderGroup1", locator1Port);
@@ -234,9 +228,8 @@ public class ResumeGatewaySenderCommandDUnitTest implements Serializable {
 
     String command = CliStrings.RESUME_GATEWAYSENDER + " --" + CliStrings.RESUME_GATEWAYSENDER__ID
         + "=ln --" + CliStrings.GROUP + "=SenderGroup1";
-    CommandResult cmdResult = gfsh.executeCommand(command);
-    assertThat(cmdResult).isNotNull();
-    assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
+    CommandResult cmdResult =
+        gfsh.executeAndAssertThat(command).isNotNull().statusIsSuccess().getCommandResult();
 
     TabularResultModel resultData = cmdResult.getResultData()
         .getTableSection(CliStrings.RESUME_GATEWAYSENDER);
@@ -260,8 +253,8 @@ public class ResumeGatewaySenderCommandDUnitTest implements Serializable {
    * to multiple groups
    */
   @Test
-  public void testResumeGatewaySender_MultipleGroup() throws Exception {
-    Integer locator1Port = locatorSite1.getPort();
+  public void testResumeGatewaySender_MultipleGroup() {
+    int locator1Port = locatorSite1.getPort();
 
     server1 = startServerWithGroups(3, "SenderGroup1", locator1Port);
     server2 = startServerWithGroups(4, "SenderGroup1", locator1Port);
@@ -312,9 +305,8 @@ public class ResumeGatewaySenderCommandDUnitTest implements Serializable {
 
     String command = CliStrings.RESUME_GATEWAYSENDER + " --" + CliStrings.RESUME_GATEWAYSENDER__ID
         + "=ln --" + CliStrings.GROUP + "=SenderGroup1,SenderGroup2";
-    CommandResult cmdResult = gfsh.executeCommand(command);
-    assertThat(cmdResult).isNotNull();
-    assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
+    CommandResult cmdResult =
+        gfsh.executeAndAssertThat(command).isNotNull().statusIsSuccess().getCommandResult();
 
     TabularResultModel resultData = cmdResult.getResultData()
         .getTableSection(CliStrings.RESUME_GATEWAYSENDER);
@@ -339,7 +331,7 @@ public class ResumeGatewaySenderCommandDUnitTest implements Serializable {
     server5.invoke(() -> verifySenderState("ln", true, true));
   }
 
-  private MemberVM startServerWithGroups(int index, String groups, int locPort) throws Exception {
+  private MemberVM startServerWithGroups(int index, String groups, int locPort) {
     Properties props = new Properties();
     props.setProperty(GROUPS, groups);
     return clusterStartupRule.startServerVM(index, props, locPort);

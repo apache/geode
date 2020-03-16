@@ -99,9 +99,8 @@ public class StatusGatewayReceiverCommandDUnitTest implements Serializable {
     locatorSite2.invoke(() -> validateGatewayReceiverMXBeanProxy(getMember(server4.getVM()), true));
 
     String command = CliStrings.STATUS_GATEWAYRECEIVER;
-    CommandResult cmdResult = gfsh.executeCommand(command);
-    assertThat(cmdResult).isNotNull();
-    assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
+    CommandResult cmdResult =
+        gfsh.executeAndAssertThat(command).isNotNull().statusIsSuccess().getCommandResult();
 
     TabularResultModel resultData = cmdResult.getResultData()
         .getTableSection(CliStrings.SECTION_GATEWAY_RECEIVER_AVAILABLE);
@@ -121,9 +120,8 @@ public class StatusGatewayReceiverCommandDUnitTest implements Serializable {
         .invoke(() -> validateGatewayReceiverMXBeanProxy(getMember(server3.getVM()), false));
 
     command = CliStrings.STATUS_GATEWAYRECEIVER;
-    cmdResult = gfsh.executeCommand(command);
-    assertThat(cmdResult).isNotNull();
-    assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
+    cmdResult =
+        gfsh.executeAndAssertThat(command).isNotNull().statusIsSuccess().getCommandResult();
 
     resultData = cmdResult.getResultData()
         .getTableSection(CliStrings.SECTION_GATEWAY_RECEIVER_AVAILABLE);
@@ -160,7 +158,8 @@ public class StatusGatewayReceiverCommandDUnitTest implements Serializable {
     DistributedMember vm3Member = getMember(server1.getVM());
     String command =
         CliStrings.STATUS_GATEWAYRECEIVER + " --" + CliStrings.MEMBER + "=" + vm3Member.getId();
-    CommandResult cmdResult = gfsh.executeCommand(command);
+    CommandResult cmdResult =
+        gfsh.executeAndAssertThat(command).isNotNull().statusIsSuccess().getCommandResult();
     assertThat(cmdResult).isNotNull();
     assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
 
@@ -183,8 +182,8 @@ public class StatusGatewayReceiverCommandDUnitTest implements Serializable {
 
     command =
         CliStrings.STATUS_GATEWAYRECEIVER + " --" + CliStrings.MEMBER + "=" + vm3Member.getId();
-    cmdResult = gfsh.executeCommand(command);
-    assertThat(cmdResult).isNotNull();
+    cmdResult =
+        gfsh.executeAndAssertThat(command).isNotNull().statusIsSuccess().getCommandResult();
 
     resultData = cmdResult.getResultData()
         .getTableSection(CliStrings.SECTION_GATEWAY_RECEIVER_AVAILABLE);
@@ -222,7 +221,8 @@ public class StatusGatewayReceiverCommandDUnitTest implements Serializable {
     locatorSite2.invoke(() -> validateGatewayReceiverMXBeanProxy(getMember(server5.getVM()), true));
 
     String command = CliStrings.STATUS_GATEWAYRECEIVER + " --" + CliStrings.GROUP + "=RG1";
-    CommandResult cmdResult = gfsh.executeCommand(command);
+    CommandResult cmdResult =
+        gfsh.executeAndAssertThat(command).isNotNull().statusIsSuccess().getCommandResult();
     assertThat(cmdResult).isNotNull();
     assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
 
@@ -244,9 +244,8 @@ public class StatusGatewayReceiverCommandDUnitTest implements Serializable {
         .invoke(() -> validateGatewayReceiverMXBeanProxy(getMember(server3.getVM()), false));
 
     command = CliStrings.STATUS_GATEWAYRECEIVER + " --" + CliStrings.GROUP + "=RG1";
-    cmdResult = gfsh.executeCommand(command);
-    assertThat(cmdResult).isNotNull();
-    assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
+    cmdResult =
+        gfsh.executeAndAssertThat(command).isNotNull().statusIsSuccess().getCommandResult();
 
     resultData = cmdResult.getResultData()
         .getTableSection(CliStrings.SECTION_GATEWAY_RECEIVER_AVAILABLE);

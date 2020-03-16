@@ -59,7 +59,6 @@ public class StatusGatewaySenderCommandDUnitTest implements Serializable {
   private MemberVM server2;
   private MemberVM server3;
   private MemberVM server4;
-  private MemberVM server5;
 
   @Before
   public void before() throws Exception {
@@ -76,9 +75,9 @@ public class StatusGatewaySenderCommandDUnitTest implements Serializable {
   }
 
   @Test
-  public void testGatewaySenderStatus() throws Exception {
+  public void testGatewaySenderStatus() {
     Integer lnPort = locatorSite1.getPort();
-    Integer nyPort = locatorSite2.getPort();
+    int nyPort = locatorSite2.getPort();
 
     // setup servers in Site #1 (London)
     server1 = clusterStartupRule.startServerVM(3, lnPort);
@@ -116,8 +115,8 @@ public class StatusGatewaySenderCommandDUnitTest implements Serializable {
 
     String command = CliStrings.STATUS_GATEWAYSENDER + " --" + CliStrings.STATUS_GATEWAYSENDER__ID
         + "=ln_Serial";
-    CommandResult cmdResult = gfsh.executeCommand(command);
-    assertThat(cmdResult).isNotNull();
+    CommandResult cmdResult =
+        gfsh.executeAndAssertThat(command).isNotNull().statusIsSuccess().getCommandResult();
 
     TabularResultModel tableResultData = cmdResult.getResultData()
         .getTableSection(CliStrings.SECTION_GATEWAY_SENDER_AVAILABLE);
@@ -153,8 +152,8 @@ public class StatusGatewaySenderCommandDUnitTest implements Serializable {
 
     command = CliStrings.STATUS_GATEWAYSENDER + " --" + CliStrings.STATUS_GATEWAYSENDER__ID
         + "=ln_Serial";
-    cmdResult = gfsh.executeCommand(command);
-    assertThat(cmdResult).isNotNull();
+    cmdResult =
+        gfsh.executeAndAssertThat(command).isNotNull().statusIsSuccess().getCommandResult();
 
     tableResultData = cmdResult.getResultData()
         .getTableSection(CliStrings.SECTION_GATEWAY_SENDER_AVAILABLE);
@@ -165,9 +164,9 @@ public class StatusGatewaySenderCommandDUnitTest implements Serializable {
   }
 
   @Test
-  public void testGatewaySenderStatus_OnMember() throws Exception {
+  public void testGatewaySenderStatus_OnMember() {
     Integer lnPort = locatorSite1.getPort();
-    Integer nyPort = locatorSite2.getPort();
+    int nyPort = locatorSite2.getPort();
 
     // setup servers in Site #1 (London)
     server1 = clusterStartupRule.startServerVM(3, lnPort);
@@ -206,7 +205,8 @@ public class StatusGatewaySenderCommandDUnitTest implements Serializable {
     DistributedMember server1DM = getMember(server1.getVM());
     String command = CliStrings.STATUS_GATEWAYSENDER + " --" + CliStrings.STATUS_GATEWAYSENDER__ID
         + "=ln_Serial --" + CliStrings.MEMBER + "=" + server1DM.getId();
-    CommandResult cmdResult = gfsh.executeCommand(command);
+    CommandResult cmdResult =
+        gfsh.executeAndAssertThat(command).isNotNull().statusIsSuccess().getCommandResult();
     assertThat(cmdResult).isNotNull();
 
     TabularResultModel tableResultData = cmdResult.getResultData()
@@ -239,8 +239,8 @@ public class StatusGatewaySenderCommandDUnitTest implements Serializable {
 
     command = CliStrings.STATUS_GATEWAYSENDER + " --" + CliStrings.STATUS_GATEWAYSENDER__ID
         + "=ln_Serial --" + CliStrings.MEMBER + "=" + server1DM.getId();
-    cmdResult = gfsh.executeCommand(command);
-    assertThat(cmdResult).isNotNull();
+    cmdResult =
+        gfsh.executeAndAssertThat(command).isNotNull().statusIsSuccess().getCommandResult();
 
     tableResultData = cmdResult.getResultData()
         .getTableSection(CliStrings.SECTION_GATEWAY_SENDER_AVAILABLE);
@@ -252,14 +252,14 @@ public class StatusGatewaySenderCommandDUnitTest implements Serializable {
     DistributedMember server3DM = getMember(server3.getVM());
     command = CliStrings.STATUS_GATEWAYSENDER + " --" + CliStrings.STATUS_GATEWAYSENDER__ID
         + "=ln_Serial --" + CliStrings.MEMBER + "=" + server3DM.getId();
-    cmdResult = gfsh.executeCommand(command);
-    assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
+
+    gfsh.executeAndAssertThat(command).isNotNull().statusIsSuccess();
   }
 
   @Test
-  public void testGatewaySenderStatus_OnGroups() throws Exception {
-    Integer lnPort = locatorSite1.getPort();
-    Integer nyPort = locatorSite2.getPort();
+  public void testGatewaySenderStatus_OnGroups() {
+    int lnPort = locatorSite1.getPort();
+    int nyPort = locatorSite2.getPort();
 
     // setup servers in Site #1 (London)
     server1 = startServerWithGroups(3, "Serial_Sender, Parallel_Sender", lnPort);
@@ -268,7 +268,7 @@ public class StatusGatewaySenderCommandDUnitTest implements Serializable {
     server4 = startServerWithGroups(6, "Serial_Sender", lnPort);
 
     // server in Site 2 (New York)
-    server5 = clusterStartupRule.startServerVM(7, nyPort);
+    MemberVM server5 = clusterStartupRule.startServerVM(7, nyPort);
 
     server5.invoke(() -> createAndStartReceiver(nyPort));
 
@@ -298,7 +298,8 @@ public class StatusGatewaySenderCommandDUnitTest implements Serializable {
 
     String command = CliStrings.STATUS_GATEWAYSENDER + " --" + CliStrings.STATUS_GATEWAYSENDER__ID
         + "=ln_Serial --" + CliStrings.GROUP + "=Serial_Sender";
-    CommandResult cmdResult = gfsh.executeCommand(command);
+    CommandResult cmdResult =
+        gfsh.executeAndAssertThat(command).isNotNull().statusIsSuccess().getCommandResult();
     assertThat(cmdResult).isNotNull();
 
     TabularResultModel tableResultData = cmdResult.getResultData()
@@ -336,8 +337,8 @@ public class StatusGatewaySenderCommandDUnitTest implements Serializable {
 
     command = CliStrings.STATUS_GATEWAYSENDER + " --" + CliStrings.STATUS_GATEWAYSENDER__ID
         + "=ln_Serial --" + CliStrings.GROUP + "=Serial_Sender";
-    cmdResult = gfsh.executeCommand(command);
-    assertThat(cmdResult).isNotNull();
+    cmdResult =
+        gfsh.executeAndAssertThat(command).isNotNull().statusIsSuccess().getCommandResult();
 
     tableResultData = cmdResult.getResultData()
         .getTableSection(CliStrings.SECTION_GATEWAY_SENDER_AVAILABLE);
@@ -352,7 +353,7 @@ public class StatusGatewaySenderCommandDUnitTest implements Serializable {
     assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
   }
 
-  private MemberVM startServerWithGroups(int index, String groups, int locPort) throws Exception {
+  private MemberVM startServerWithGroups(int index, String groups, int locPort) {
     Properties props = new Properties();
     props.setProperty(GROUPS, groups);
     return clusterStartupRule.startServerVM(index, props, locPort);

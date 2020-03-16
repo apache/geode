@@ -129,7 +129,7 @@ public class SenderWithTransportFilterDUnitTest extends WANTestBase {
       boolean isParallel, Integer maxMemory, Integer batchSize, boolean isConflation,
       boolean isPersistent, boolean isManualStart) {
     File persistentDirectory =
-        new File(dsName + "_disk_" + System.currentTimeMillis() + "_" + VM.getCurrentVMNum());
+        new File(dsName + "_disk_" + System.currentTimeMillis() + "_" + VM.getVMId());
     persistentDirectory.mkdir();
     DiskStoreFactory dsf = cache.createDiskStoreFactory();
     File[] dirs1 = new File[] {persistentDirectory};
@@ -161,7 +161,7 @@ public class SenderWithTransportFilterDUnitTest extends WANTestBase {
       GatewaySenderFactory gateway = cache.createGatewaySenderFactory();
       gateway.setMaximumQueueMemory(maxMemory);
       gateway.setBatchSize(batchSize);
-      gateway.setManualStart(isManualStart);
+      deprecatedSetManualStart(gateway, isManualStart);
       ((InternalGatewaySenderFactory) gateway).setLocatorDiscoveryCallback(new MyLocatorCallback());
       ArrayList<GatewayTransportFilter> transportFilters = new ArrayList<>();
       transportFilters.add(new CheckSumTransportFilter("CheckSumTransportFilter"));
@@ -180,6 +180,12 @@ public class SenderWithTransportFilterDUnitTest extends WANTestBase {
       }
       gateway.create(dsName, remoteDsId);
     }
+  }
+
+  @SuppressWarnings("deprecation")
+  private static void deprecatedSetManualStart(GatewaySenderFactory gateway,
+      boolean isManualStart) {
+    gateway.setManualStart(isManualStart);
   }
 
   static class CheckSumTransportFilter implements GatewayTransportFilter {

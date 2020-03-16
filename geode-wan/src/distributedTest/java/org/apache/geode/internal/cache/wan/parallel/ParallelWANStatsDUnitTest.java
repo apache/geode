@@ -42,6 +42,7 @@ import org.apache.geode.internal.cache.execute.data.Shipment;
 import org.apache.geode.internal.cache.execute.data.ShipmentId;
 import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.test.dunit.AsyncInvocation;
+import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.WanTest;
 
@@ -59,7 +60,7 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
 
   @Override
   protected final void postSetUpWANTestBase() {
-    this.testName = getTestMethodName();
+    testName = getTestMethodName();
   }
 
   @Test
@@ -127,7 +128,7 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
     // stop vm7 to trigger rebalance and move some primary buckets
     System.out.println("Current secondary queue sizes:" + v4List.get(10) + ":" + v5List.get(10)
         + ":" + v6List.get(10) + ":" + v7List.get(10));
-    vm7.invoke(() -> WANTestBase.closeCache());
+    vm7.invoke(WANTestBase::closeCache);
     await().untilAsserted(() -> {
       int v4secondarySize = vm4.invoke(() -> WANTestBase.getSecondaryQueueSizeInStats("ln"));
       int v5secondarySize = vm5.invoke(() -> WANTestBase.getSecondaryQueueSizeInStats("ln"));
@@ -1217,12 +1218,12 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
 
     createReceiverPR(vm2, 1);
 
-    Map<Object, Object> keyValues = putKeyValues();
+    Map<Integer, Object> keyValues = putKeyValues();
 
     // Verify the conflation indexes map is empty
     verifyConflationIndexesSize("ln", 0, vm4, vm5, vm6, vm7);
 
-    final Map<Object, Object> updateKeyValues = new HashMap<>();
+    final Map<Integer, String> updateKeyValues = new HashMap<>();
     for (int i = 0; i < 50; i++) {
       updateKeyValues.put(i, i + "_updated");
     }
@@ -1294,7 +1295,7 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
 
     // Configure sending site member
     String senderId = "ny";
-    String regionName = this.testName + "_PR";
+    String regionName = testName + "_PR";
     vm1.invoke(() -> createCache(lnPort));
     vm1.invoke(() -> createSender(senderId, 2, true, 100, 10, true, true, null, false));
     vm1.invoke(() -> createPartitionedRegion(regionName, senderId, 0, 10, isOffHeap()));
@@ -1311,7 +1312,7 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
 
     // Configure receiving site member
     vm3.invoke(() -> createCache(nyPort));
-    vm3.invoke(() -> createReceiver());
+    vm3.invoke(WANTestBase::createReceiver);
     vm3.invoke(() -> createPartitionedRegion(regionName, null, 0, 10, isOffHeap()));
 
     // Wait for queue to drain
@@ -1411,8 +1412,8 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
     assertEquals(0, ((PoolImpl) clientCache.getDefaultPool()).getStats().getDisConnects());
   }
 
-  protected Map<Object, Object> putKeyValues() {
-    final Map<Object, Object> keyValues = new HashMap<>();
+  protected Map<Integer, Object> putKeyValues() {
+    final Map<Integer, Object> keyValues = new HashMap<>();
     for (int i = 0; i < NUM_PUTS; i++) {
       keyValues.put(i, i);
     }
@@ -1516,7 +1517,7 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
 
   private void putSameEntry(String regionName, int numIterations) {
     // This does one create and numInterations-1 updates
-    Region<Object, Object> region = cache.getRegion(regionName);
+    Region<Integer, Integer> region = cache.getRegion(regionName);
     for (int i = 0; i < numIterations; i++) {
       region.put(0, i);
     }
