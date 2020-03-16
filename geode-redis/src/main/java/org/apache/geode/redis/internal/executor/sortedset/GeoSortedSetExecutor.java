@@ -59,6 +59,7 @@ public abstract class GeoSortedSetExecutor extends AbstractExecutor {
       ByteArrayWrapper key, String hash) throws Exception {
     Query query = getQuery(key, SortedSetQuery.GEORADIUS, context);
     Object[] params = {hash + "%"};
+    @SuppressWarnings("unchecked")
     SelectResults<StructImpl> results = (SelectResults<StructImpl>) query.execute(params);
     return results.asList();
   }

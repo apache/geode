@@ -24,7 +24,6 @@ import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.SelectResults;
-import org.apache.geode.cache.query.Struct;
 import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
@@ -38,9 +37,9 @@ import org.apache.geode.redis.internal.executor.SortedSetQuery;
 
 public class ZRangeByScoreExecutor extends SortedSetExecutor implements Extendable {
 
-  private final String ERROR_NOT_NUMERIC = "The number provided is not numeric";
+  private static final String ERROR_NOT_NUMERIC = "The number provided is not numeric";
 
-  private final String ERROR_LIMIT = "The offset and count cannot be negative";
+  private static final String ERROR_LIMIT = "The offset and count cannot be negative";
 
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
@@ -52,7 +51,7 @@ public class ZRangeByScoreExecutor extends SortedSetExecutor implements Extendab
     }
 
     boolean withScores = false;
-    byte[] elem4Array = null;
+    byte[] elem4Array;
     int offset = 0;
     int limit = -1;
     if (commandElems.size() >= 5) {
@@ -162,7 +161,7 @@ public class ZRangeByScoreExecutor extends SortedSetExecutor implements Extendab
       return null;
     }
     if (start == Double.NEGATIVE_INFINITY && stop == Double.POSITIVE_INFINITY) {
-      return new HashSet(keyRegion.entrySet());
+      return new HashSet<>(keyRegion.entrySet());
     }
 
     Query query;
@@ -181,7 +180,6 @@ public class ZRangeByScoreExecutor extends SortedSetExecutor implements Extendab
           query = getQuery(key, SortedSetQuery.ZREVRBS, context);
         }
       }
-      params = new Object[] {start, stop, INFINITY_LIMIT};
     } else {
       if (startInclusive) {
         if (stopInclusive) {
@@ -196,15 +194,15 @@ public class ZRangeByScoreExecutor extends SortedSetExecutor implements Extendab
           query = getQuery(key, SortedSetQuery.ZRBS, context);
         }
       }
-      params = new Object[] {start, stop, INFINITY_LIMIT};
     }
+    params = new Object[] {start, stop, INFINITY_LIMIT};
     if (limit > 0) {
       params[params.length - 1] = (limit + offset);
     }
 
     SelectResults<?> results = (SelectResults<?>) query.execute(params);
     if (offset < results.size()) {
-      return (Collection<Struct>) results.asList().subList(offset, results.size());
+      return results.asList().subList(offset, results.size());
     } else {
       return null;
     }
