@@ -40,8 +40,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 import org.apache.geode.internal.serialization.BasicSerializable;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
@@ -87,13 +85,15 @@ public class TcpServerJUnitTest {
   }
 
   @Test
-  public void testConnectToUnknownHost() throws Exception {
+  public void testConnectToUnknownHost() {
     final TcpClient tcpClient = createTcpClient();
+    @SuppressWarnings("deprecation")
     InfoRequest testInfoRequest = new InfoRequest();
     assertThatThrownBy(() -> tcpClient.requestToServer(new HostAndPort("unknown host name", port),
         testInfoRequest, TIMEOUT)).isInstanceOf(UnknownHostException.class);
   }
 
+  @SuppressWarnings("deprecation")
   @Test
   public void testClientGetInfo() throws Exception {
     TcpHandler handler = new InfoRequestHandler();
@@ -131,22 +131,16 @@ public class TcpServerJUnitTest {
     final TcpClient tcpClient = createTcpClient();
 
     final AtomicBoolean done = new AtomicBoolean();
-    Thread delayedThread = new Thread() {
-      @Override
-      public void run() {
-        Boolean delay = Boolean.valueOf(true);
-        try {
-          tcpClient.requestToServer(new HostAndPort(localhost.getHostAddress(), port),
-              new TestObject(1),
-              TIMEOUT);
-        } catch (IOException e) {
-          e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-          e.printStackTrace();
-        }
-        done.set(true);
+    Thread delayedThread = new Thread(() -> {
+      try {
+        tcpClient.requestToServer(new HostAndPort(localhost.getHostAddress(), port),
+            new TestObject(1),
+            TIMEOUT);
+      } catch (IOException | ClassNotFoundException e) {
+        e.printStackTrace();
       }
-    };
+      done.set(true);
+    });
     delayedThread.start();
     try {
       Thread.sleep(500);
@@ -161,7 +155,7 @@ public class TcpServerJUnitTest {
     } finally {
       latch.countDown();
       delayedThread.join(TIMEOUT);
-      assertTrue(!delayedThread.isAlive()); // GemStoneAddition
+      assertFalse(delayedThread.isAlive()); // GemStoneAddition
       stopServer(tcpClient);
     }
   }
@@ -183,12 +177,8 @@ public class TcpServerJUnitTest {
                 .isInstanceOf(EOFException.class);
 
     // Change the mock handler behavior to echo the request back
-    doAnswer(new Answer() {
-      @Override
-      public Object answer(InvocationOnMock invocation) throws Throwable {
-        return invocation.getArgument(0);
-      }
-    }).when(mockTcpHandler).processRequest(any(Object.class));
+    doAnswer(invocation -> invocation.getArgument(0)).when(mockTcpHandler)
+        .processRequest(any(Object.class));
 
     // Perform another request and validate that it was served successfully
     TestObject test = new TestObject();
@@ -245,7 +235,7 @@ public class TcpServerJUnitTest {
     public void init(TcpServer tcpServer) {}
 
     @Override
-    public Object processRequest(Object request) throws IOException {
+    public Object processRequest(Object request) {
       TestObject delay = (TestObject) request;
       if (delay.id > 0) {
         try {
@@ -268,11 +258,12 @@ public class TcpServerJUnitTest {
   }
 
 
-  public class InfoRequestHandler implements TcpHandler {
+  public static class InfoRequestHandler implements TcpHandler {
     public InfoRequestHandler() {}
 
+    @SuppressWarnings("deprecation")
     @Override
-    public Object processRequest(final Object request) throws IOException {
+    public Object processRequest(final Object request) {
       String[] info = new String[2];
       info[0] = System.getProperty("user.dir");
       info[1] = System.getProperty("java.version");
