@@ -18,6 +18,8 @@ package org.apache.geode.cache.client;
 import java.io.IOException;
 import java.net.Socket;
 
+import org.apache.geode.annotations.Immutable;
+
 /**
  * A socket factory used to create sockets from a client to locators or servers.
  *
@@ -28,6 +30,7 @@ public interface SocketFactory {
   /**
    * The default socket factory, which just calls {@link Socket#Socket()}
    */
+  @Immutable
   SocketFactory DEFAULT = Socket::new;
 
   /**

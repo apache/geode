@@ -15,6 +15,7 @@
 
 package org.apache.geode.cache.client;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.proxy.Proxies;
@@ -226,6 +227,7 @@ public interface PoolFactory {
    *
    * Current value {@link SocketFactory#DEFAULT}
    */
+  @Immutable
   SocketFactory DEFAULT_SOCKET_FACTORY = SocketFactory.DEFAULT;
 
   /**
