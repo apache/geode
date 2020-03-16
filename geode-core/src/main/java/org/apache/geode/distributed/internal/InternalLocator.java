@@ -100,6 +100,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.logging.internal.spi.LogConfig;
 import org.apache.geode.logging.internal.spi.LogConfigListener;
 import org.apache.geode.logging.internal.spi.LogConfigSupplier;
+import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.internal.AgentUtil;
 import org.apache.geode.management.internal.JmxManagerLocator;
@@ -816,6 +817,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
     if (distributionConfig.getEnableManagementRestService()) {
       myCache.getOptionalService(HttpService.class).ifPresent(x -> {
         try {
+          ManagementService.getManagementService(myCache).startManager();
           logger.info("Geode Property {}=true Geode Management Rest Service is enabled.",
               ConfigurationProperties.ENABLE_MANAGEMENT_REST_SERVICE);
           x.addWebApplication("/management", Paths.get(gemfireManagementWar), serviceAttributes);
