@@ -37,6 +37,11 @@ import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.DistributedMember;
 
+/**
+ * Unit tests for {@link ManagementCacheListener} (ie the SUT). These are characterization tests
+ * that define behavior for an existing class. Test method names specify the SUT method, the result
+ * of invoking that method, and whether or not there are any specific preconditions.
+ */
 public class ManagementCacheListenerTest {
 
   private static final String OBJECT_NAME_KEY =
